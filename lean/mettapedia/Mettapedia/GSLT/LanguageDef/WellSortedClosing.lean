@@ -33,13 +33,15 @@ theorem matchesParameterRepresentation_closeFVar_iff
 
 mutual
   /-- A typed name can be closed into one additional outer binder. -/
-  theorem HasType.closeFVar
-      {language : LanguageDef} {free : FreeTypeContext}
+  theorem HasType.closeFVarInto
+      {language : LanguageDef} {free destination : FreeTypeContext}
       {bound : List TypeExpr} {pattern : Pattern} {type : TypeExpr}
       (typed : HasType language free bound pattern type)
       (name : String) (binderType : TypeExpr)
-      (lookup : free name = some binderType) :
-      HasType language free (bound ++ [binderType])
+      (lookup : free name = some binderType)
+      (preserves : ∀ actual actualType, actual ≠ name →
+        free actual = some actualType → destination actual = some actualType) :
+      HasType language destination (bound ++ [binderType])
         (closeFVar bound.length name pattern) type := by
     cases typed with
     | @bvar bound index type present =>
@@ -54,69 +56,102 @@ mutual
           simp only [closeFVar, beq_self_eq_true, if_true]
           exact .bvar (by simp)
         · simp only [closeFVar, beq_eq_false_iff_ne.mpr same]
-          exact .fvar present
+          exact .fvar (preserves actualName type same present)
     | @constructor bound rule arguments member notBare argumentsTyped =>
         simpa only [closeFVar] using
-          HasType.constructor member notBare (argumentsTyped.closeFVar name binderType lookup)
+          HasType.constructor member notBare (argumentsTyped.closeFVarInto name binderType lookup preserves)
     | @lambda bound binder body domain codomain bodyTyped =>
-        have closedBody : HasType language free (domain :: (bound ++ [binderType]))
+        have closedBody : HasType language destination (domain :: (bound ++ [binderType]))
             (closeFVar (bound.length + 1) name body) codomain := by
           simpa only [List.cons_append, List.length_cons] using
-            bodyTyped.closeFVar name binderType lookup
+            bodyTyped.closeFVarInto name binderType lookup preserves
         simpa only [closeFVar] using HasType.lambda closedBody
     | @multiLambda bound arity binders body domain codomain bodyTyped =>
-        have closedBody : HasType language free
+        have closedBody : HasType language destination
             (List.replicate arity domain ++ (bound ++ [binderType]))
             (closeFVar (bound.length + arity) name body) codomain := by
           simpa only [List.append_assoc, List.length_append,
             List.length_replicate, Nat.add_comm] using
-            bodyTyped.closeFVar name binderType lookup
+            bodyTyped.closeFVarInto name binderType lookup preserves
         simpa only [closeFVar] using HasType.multiLambda closedBody
     | @subst bound body replacement domain codomain bodyTyped replacementTyped =>
-        have closedBody : HasType language free (domain :: (bound ++ [binderType]))
+        have closedBody : HasType language destination (domain :: (bound ++ [binderType]))
             (closeFVar (bound.length + 1) name body) type := by
           simpa only [List.cons_append, List.length_cons] using
-            bodyTyped.closeFVar name binderType lookup
+            bodyTyped.closeFVarInto name binderType lookup preserves
         simpa only [closeFVar] using HasType.subst closedBody
-            (replacementTyped.closeFVar name binderType lookup)
+            (replacementTyped.closeFVarInto name binderType lookup preserves)
     | @collection bound collectionType elements rest elementType elementsTyped =>
         simpa only [closeFVar] using
-          HasType.collection (elementsTyped.closeFVar name binderType lookup)
+          HasType.collection (elementsTyped.closeFVarInto name binderType lookup preserves)
     | @collectionConstructor bound rule parameterName collectionType elements rest elementType member shape elementsTyped =>
         simpa only [closeFVar] using
           HasType.collectionConstructor member shape
-            (elementsTyped.closeFVar name binderType lookup)
+            (elementsTyped.closeFVarInto name binderType lookup preserves)
 
   /-- Closing preserves each constructor argument at its declared type. -/
-  theorem ArgumentsHaveTypes.closeFVar
-      {language : LanguageDef} {free : FreeTypeContext}
+  theorem ArgumentsHaveTypes.closeFVarInto
+      {language : LanguageDef} {free destination : FreeTypeContext}
       {bound : List TypeExpr} {patterns : List Pattern} {parameters : List TermParam}
       (typed : ArgumentsHaveTypes language free bound patterns parameters)
       (name : String) (binderType : TypeExpr)
-      (lookup : free name = some binderType) :
-      ArgumentsHaveTypes language free (bound ++ [binderType])
+      (lookup : free name = some binderType)
+      (preserves : ∀ actual actualType, actual ≠ name →
+        free actual = some actualType → destination actual = some actualType) :
+      ArgumentsHaveTypes language destination (bound ++ [binderType])
         (patterns.map (closeFVar bound.length name)) parameters := by
     cases typed with
     | nil => exact .nil
     | @cons bound argument arguments parameter parameters expected representation parameterType typed rest =>
         exact .cons
           ((matchesParameterRepresentation_closeFVar_iff _ _ _ _).mpr representation)
-          parameterType (typed.closeFVar name binderType lookup)
-          (rest.closeFVar name binderType lookup)
+          parameterType (typed.closeFVarInto name binderType lookup preserves)
+          (rest.closeFVarInto name binderType lookup preserves)
 
   /-- Closing preserves the element type of a collection spine. -/
-  theorem ElementsHaveType.closeFVar
-      {language : LanguageDef} {free : FreeTypeContext}
+  theorem ElementsHaveType.closeFVarInto
+      {language : LanguageDef} {free destination : FreeTypeContext}
       {bound : List TypeExpr} {patterns : List Pattern} {type : TypeExpr}
       (typed : ElementsHaveType language free bound patterns type)
       (name : String) (binderType : TypeExpr)
-      (lookup : free name = some binderType) :
-      ElementsHaveType language free (bound ++ [binderType])
+      (lookup : free name = some binderType)
+      (preserves : ∀ actual actualType, actual ≠ name →
+        free actual = some actualType → destination actual = some actualType) :
+      ElementsHaveType language destination (bound ++ [binderType])
         (patterns.map (closeFVar bound.length name)) type := by
     cases typed with
     | nil => exact .nil _ _
     | @cons bound element elements elementType typed rest =>
-        exact .cons (typed.closeFVar name binderType lookup)
-          (rest.closeFVar name binderType lookup)
+        exact .cons (typed.closeFVarInto name binderType lookup preserves)
+          (rest.closeFVarInto name binderType lookup preserves)
 end
+
+/-- Closing in the unchanged ambient free context is the context-preserving
+specialization of the primitive name-removal theorem. -/
+theorem HasType.closeFVar
+    {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {pattern : Pattern} {type : TypeExpr}
+    (typed : HasType language free bound pattern type)
+    (name : String) (binderType : TypeExpr) (lookup : free name = some binderType) :
+    HasType language free (bound ++ [binderType]) (closeFVar bound.length name pattern) type :=
+  typed.closeFVarInto name binderType lookup (fun _ _ _ present => present)
+
+theorem ArgumentsHaveTypes.closeFVar
+    {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {patterns : List Pattern} {parameters : List TermParam}
+    (typed : ArgumentsHaveTypes language free bound patterns parameters)
+    (name : String) (binderType : TypeExpr) (lookup : free name = some binderType) :
+    ArgumentsHaveTypes language free (bound ++ [binderType])
+      (patterns.map (closeFVar bound.length name)) parameters :=
+  typed.closeFVarInto name binderType lookup (fun _ _ _ present => present)
+
+theorem ElementsHaveType.closeFVar
+    {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {patterns : List Pattern} {type : TypeExpr}
+    (typed : ElementsHaveType language free bound patterns type)
+    (name : String) (binderType : TypeExpr) (lookup : free name = some binderType) :
+    ElementsHaveType language free (bound ++ [binderType])
+      (patterns.map (closeFVar bound.length name)) type :=
+  typed.closeFVarInto name binderType lookup (fun _ _ _ present => present)
+
 end Mettapedia.GSLT.LanguageDef.WellSorted

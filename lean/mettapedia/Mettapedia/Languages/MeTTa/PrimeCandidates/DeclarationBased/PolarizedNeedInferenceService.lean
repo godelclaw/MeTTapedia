@@ -1,8 +1,10 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.RawInferenceService
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeWireData
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeWireData
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.PolarizedNeedNaturalAdequacy
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.PolarizedNeedNaturalMachineLaws
 import Mettapedia.Machines.BranchLocalNeed.AllocationBound
+
+open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
 
 /-!
 # Raw inference checking through first-class owned computations

@@ -134,6 +134,9 @@ theorem QueryHolds.produces {environment : Environment} {context : Context}
   | row _ actual _ arguments _ =>
       cases Option.some.inj (actual.symm.trans found)
       exact arguments.produces
+  | dynamicRow _ actual _ _ _ _ arguments _ =>
+      cases Option.some.inj (actual.symm.trans found)
+      exact arguments.produces
 
 theorem BoundNames.eraseDups {assignment : Assignment} {names : List String}
     (bound : BoundNames assignment names) : BoundNames assignment names.eraseDups := by
@@ -150,6 +153,10 @@ theorem PremiseHolds.bindingFlow {environment : Environment} {context : Context}
   | query traced =>
       cases traced with
       | row _ found _ arguments typed =>
+          simp only [premiseFlow, found]
+          exact (arguments.readout.produces.append
+            (bound.extension arguments.readout.extension)).eraseDups
+      | dynamicRow _ found _ _ _ _ arguments _ =>
           simp only [premiseFlow, found]
           exact (arguments.readout.produces.append
             (bound.extension arguments.readout.extension)).eraseDups

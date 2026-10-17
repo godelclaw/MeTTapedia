@@ -42,7 +42,7 @@ open Mettapedia.GSLT.LanguageDef.InferenceNewJudgmentConservativity
 open Mettapedia.GSLT.LanguageDef.CalculusLanguageExtension
 open Mettapedia.GSLT.LanguageDef.InferenceProofRelevantSemanticExtension
 open Mettapedia.GSLT.LanguageDef.KernelAuthority.Checker
-open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareCheckedContext
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.Declaration
@@ -151,7 +151,7 @@ theorem prior_formed_images_disjoint :
       cases typing
       cases formed
       simp [towerJudgmentCodec, sumOfDisjoint, towerTypingClaimCodec,
-        typingClaimCodec, encodeTypingClaim, formedTypingQueryCodec,
+        typingClaimCodec, formedTypingQueryCodec,
         encodeFormedTypingQuery, formedHasTypePattern] at equality
   | inr context =>
       cases context
@@ -258,7 +258,7 @@ private theorem formedTypingTarget_valid :
     DeclarationAwareDataLanguage.constructorArities,
     DeclarationAwareDataLanguage.kernelDataType,
     TypeDecl.plain,
-    encodeTowerHead, LevelTower.zero, encodeLevel, encodeNat, encodeCtx,
+    encodeTowerHead, LevelTower.zero, encodeNat, encodeCtx,
     CalculusLanguageDef.ruleIds, CalculusLanguageDef.judgmentSignatureValid,
     CalculusLanguageDef.judgmentHeads, CalculusLanguageDef.conversionDeclarationValid,
     CalculusLanguageDef.lookupJudgment?, RuleSchema.isValidIn,
@@ -520,7 +520,7 @@ private def formedTypingConclusion_reflects
           (.head (.sort level) : Tower.Tm arity) =
         DeclarationAwareStructuralTyping.tmHeadPattern
           (DeclarationAwareStructuralTyping.headSortPattern levelPattern) := by
-    simp [encodeTm, towerHeadCodec, encodeTowerHead,
+    simp [encodeTm, towerHeadCodec,
       DeclarationAwareStructuralTyping.tmHeadPattern,
       DeclarationAwareStructuralTyping.headSortPattern,
       equality.2.2.2.2.2]
@@ -632,8 +632,7 @@ private def formedTypingAddedMeaning
                         exact
                           ⟨⟨fun typingQuery equality => by
                                 cases typingQuery
-                                simp [towerTypingClaimCodec, typingClaimCodec,
-                                  encodeTypingClaim] at equality,
+                                simp [towerTypingClaimCodec, typingClaimCodec] at equality,
                               fun contextQuery equality => by
                                 cases contextQuery
                                 simp [contextFormationQueryCodec,
@@ -744,7 +743,7 @@ private theorem instantiateFormedTypingRule (query : FormedTypingQuery) :
     encodeTypingClaim, DeclarationAwareStructuralTyping.hasTypePattern,
     DeclarationAwareStructuralTyping.tmHeadPattern,
     DeclarationAwareStructuralTyping.headSortPattern]
-  exact encodedSort
+  exact (List.cons.inj (Pattern.apply.inj encodedSort).2).1
 
 /-- All three trees are checked by the same declaration-aware presentation. -/
 def checkRaw (query : FormedTypingQuery) (proof : RawFormedProof) : Bool :=
@@ -764,7 +763,7 @@ private theorem structuralClaim_hasJudgmentShape
       (encodeTypingClaim towerHeadCodec claim) = true := by
   cases claim
   simp [Structural.checked, DeclarationAwareStructuralTyping.checked,
-    CalculusLanguageDef.hasJudgmentShape, encodeTypingClaim,
+    CalculusLanguageDef.hasJudgmentShape,
     DeclarationAwareStructuralTyping.hasTypingJudgment]
 
 private theorem structuralClaim_hasContextTargetJudgmentShape

@@ -1,6 +1,8 @@
 import Mettapedia.OSLF.MeTTaIL.StructuralDescentScheduledFrames
 import Mettapedia.OSLF.MeTTaIL.GeneralPremiseQuery
 import Mettapedia.OSLF.MeTTaIL.GeneralScopedMatchMachineCorrectness
+import Mettapedia.OSLF.MeTTaIL.GeneralPremiseFiniteWork
+import Mettapedia.Coalgebra.CoherentPrefixTower
 
 /-!
 # Fine-grained recursive scoped execution
@@ -325,5 +327,43 @@ theorem work_add (environment : Environment) (goal : Goal) (first second : Nat)
       Scheduler.spent (expand environment goal) first state +
       Scheduler.spent (expand environment goal) second (run environment goal first state) :=
   Scheduler.spent_add _ _ _ _
+
+/-- The real scheduled frames instantiate the shared continuation law.
+Observations retain obligations and the entire agenda, not just endpoints. -/
+def trajectory (environment : Environment) (goal : Goal) (state : State environment goal) :
+    Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory (run environment goal) state :=
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.canonical
+    (run environment goal) state (fun _ => rfl) (run_add environment goal)
+
+theorem trajectory_answers_prefix (environment : Environment) (goal : Goal)
+    (state : State environment goal) (first extra : Nat) :
+    ((trajectory environment goal state).observation first).answers <+:
+      ((trajectory environment goal state).observation (first + extra)).answers := by
+  apply (trajectory environment goal state).observer_prefix_after_resume (·.answers)
+  intro fuel current
+  obtain ⟨tail, appended⟩ := receipts_prefix environment goal fuel current
+  exact ⟨tail, appended.symm⟩
+
+theorem trajectory_obligations_prefix (environment : Environment) (goal : Goal)
+    (state : State environment goal) (first extra : Nat) :
+    ((trajectory environment goal state).observation first).unresolved <+:
+      ((trajectory environment goal state).observation (first + extra)).unresolved := by
+  apply (trajectory environment goal state).observer_prefix_after_resume (·.unresolved)
+  intro fuel current
+  obtain ⟨tail, appended⟩ := Scheduler.run_obligations_prefix (expand environment goal) fuel current
+  exact ⟨tail, appended.symm⟩
+
+/-- A drained agenda stays fixed even when unresolved obligations block
+completion. Budget exhaustion alone is not this settlement condition. -/
+theorem trajectory_settled (environment : Environment) (goal : Goal)
+    (state : State environment goal) (first extra : Nat)
+    (settled : ((trajectory environment goal state).observation first).agenda = []) :
+    (trajectory environment goal state).observation (first + extra) =
+      (trajectory environment goal state).observation first := by
+  apply (trajectory environment goal state).observation_constant_after_settlement
+    (fun current => current.agenda = [])
+  · intro current idle fuel
+    exact Scheduler.run_idle (expand environment goal) fuel current idle
+  · exact settled
 
 end Mettapedia.OSLF.MeTTaIL.StructuralDescent.Scheduled

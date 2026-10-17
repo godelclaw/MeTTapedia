@@ -1090,7 +1090,7 @@ theorem CostStaticAtomEnvironment.constructorsWithin_reify
 and from the embedding parent forest preserves the restoration meaning of
 every occurrence.  The ambient suffix is empty because restriction changes
 the finite table, not the binder context. -/
-noncomputable def CostStaticRegionPlan.restrictedReificationAligned
+theorem CostStaticRegionPlan.restrictedReificationAligned
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {sourceBound targetBound : List TypeExpr}
@@ -1246,7 +1246,7 @@ noncomputable def CostStaticRegionPlan.restrictedReificationAligned
 /-- Reifying a Quote-root plan from its restricted child forest and from an
 embedding parent forest gives the same occurrence-wise restoration meaning.
 The comparison retains the exact occurrence lift into the parent inventory. -/
-noncomputable def CostStaticRegionPlan.restrictedQuoteReificationAligned
+theorem CostStaticRegionPlan.restrictedQuoteReificationAligned
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {sourceBound targetBound : List TypeExpr}
@@ -1374,7 +1374,7 @@ noncomputable def CostStaticRegionPlan.restrictedQuoteReificationAligned
 
 /-- Positionally restricted and parent environments produce
 restoration-related target canonical frames at every ambient depth. -/
-noncomputable def CostStaticRegionPlan.restrictedCanonicalRestoresTogether
+theorem CostStaticRegionPlan.restrictedCanonicalRestoresTogether
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {sourceBound targetBound : List TypeExpr}
@@ -1536,7 +1536,7 @@ noncomputable def CostStaticRegionPlan.restrictedCanonicalRestoresTogether
 
 /-- Positional restriction remains restoration-invariant after a common
 binder thinning and selected-colour keyed canonicalization. -/
-noncomputable def CostStaticRegionPlan.restrictedThickenedCanonicalRestoresTogether
+theorem CostStaticRegionPlan.restrictedThickenedCanonicalRestoresTogether
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {sourceBound targetBound frameSourceBound frameTargetBound : List TypeExpr}
@@ -1709,7 +1709,7 @@ noncomputable def CostStaticRegionPlan.restrictedThickenedCanonicalRestoresToget
 
 /-- Authored-Quote specialization of
 `CostStaticRegionPlan.restrictedCanonicalRestoresTogether`. -/
-noncomputable def CostStaticRegionPlan.restrictedQuoteCanonicalRestoresTogether
+theorem CostStaticRegionPlan.restrictedQuoteCanonicalRestoresTogether
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {sourceBound targetBound : List TypeExpr}
@@ -1773,7 +1773,7 @@ noncomputable def CostStaticRegionPlan.restrictedQuoteCanonicalRestoresTogether
 endpoint-local reification alignment.  The apparent re-exposure callback is
 vacuous because every boundary selected below the small Quote has empty
 target support. -/
-noncomputable def CostStaticRegionPlan.quoteReificationAligned_of_normalizedSuffix
+theorem CostStaticRegionPlan.quoteReificationAligned_of_normalizedSuffix
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {smallSourceBound smallTargetBound largeSourceBound largeTargetBound :
@@ -1843,7 +1843,7 @@ noncomputable def CostStaticRegionPlan.quoteReificationAligned_of_normalizedSuff
 
 /-- The selected-color keyed canonicalizer preserves a sealed Quote-plan
 suffix after the positional boundary forests have been normalized. -/
-noncomputable def CostStaticRegionPlan.quoteCanonicalRestoresTogether_of_normalizedSuffix
+theorem CostStaticRegionPlan.quoteCanonicalRestoresTogether_of_normalizedSuffix
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {smallSourceBound smallTargetBound largeSourceBound largeTargetBound :
@@ -2004,7 +2004,7 @@ noncomputable def CostStaticRegionPlan.quoteCanonicalRestoresTogether_of_normali
 set_option backward.isDefEq.respectTransparency false in
 /-- A reached authored Quote, interpreted in the enclosing static
 environment, restores to the hereditary normal form of its payload tree. -/
-noncomputable def CostStaticPlanReached.parentQuoteFrame_restoresToPayloadNormal
+theorem CostStaticPlanReached.parentQuoteFrame_restoresToPayloadNormal
     {color : CostStaticColor} {targetFree : WellSorted.FreeTypeContext}
     (parentNode : CostStaticRegionNode rhoCIGSLT color targetFree)
     (parentTrees : CostRegionBoundaryTrees rhoCIGSLT targetFree color
@@ -2465,7 +2465,7 @@ set_option backward.isDefEq.respectTransparency false in
 /-- A certified boundary facing an admitted authored Quote reduces the exact
 plan-stop source-alignment obligation to the recursively normalized payload
 pair and the Quote plan's sealed positional forest. -/
-noncomputable def boundaryQuotePlanStops_sourcePatternLeafAligned_withCospan_of_closeSmaller
+theorem boundaryQuotePlanStops_sourcePatternLeafAligned_withCospan_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -3225,7 +3225,7 @@ noncomputable def boundaryQuotePlanStops_sourcePatternLeafAligned_withCospan_of_
 /-- Every certified-boundary plan stop is source aligned, including the two
 authored-Quote orientations.  The non-Quote cells use the finite root
 switchboard; the Quote cells share one cospan-parametric sealed-root proof. -/
-noncomputable def rhoPlanStopBoundarySide_sourceAligned
+theorem rhoPlanStopBoundarySide_sourceAligned
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -3392,7 +3392,7 @@ noncomputable def rhoPlanStopBoundarySide_sourceAligned
 
 /-- A strictly smaller pair of reached authored Quotes has an exact apex in
 the enclosing semantic-atom cospan. -/
-noncomputable def quotePlanStops_commonRestorationApex_of_closeSmaller
+theorem quotePlanStops_commonRestorationApex_of_closeSmaller
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -3579,7 +3579,7 @@ noncomputable def quotePlanStops_commonRestorationApex_of_closeSmaller
 /-- A certified-boundary stop reached inside an already reached pair retains
 its parent-cospan apex after composing contexts, entry embeddings, and type
 routes back to the static roots. -/
-noncomputable def nestedBoundaryPlanStops_commonRestorationApex_of_closeSmaller
+theorem nestedBoundaryPlanStops_commonRestorationApex_of_closeSmaller
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -3709,7 +3709,7 @@ noncomputable def nestedBoundaryPlanStops_commonRestorationApex_of_closeSmaller
 /-- A nested pair of certified-boundary stops retains its exact apex after
 both reached contexts, entry embeddings, and the target-fibre route are
 composed back to the enclosing static roots. -/
-noncomputable def nestedBoundaryPairPlanStops_commonRestorationApex_of_closeSmaller
+theorem nestedBoundaryPairPlanStops_commonRestorationApex_of_closeSmaller
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -3835,7 +3835,7 @@ noncomputable def nestedBoundaryPairPlanStops_commonRestorationApex_of_closeSmal
 to the paired authored-Quote and bare-parallel terminals.  Certified-boundary
 stops are discharged here, with both levels of entry embeddings and type
 routes composed into the static root cospan. -/
-noncomputable def nestedForeignPlanStop_commonRestorationApex_of_quoteParallel
+theorem nestedForeignPlanStop_commonRestorationApex_of_quoteParallel
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern

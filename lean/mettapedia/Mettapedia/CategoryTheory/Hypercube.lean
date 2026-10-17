@@ -3,7 +3,7 @@ import Mettapedia.CategoryTheory.PLNInstance
 import Mettapedia.PLN.Bridges.CategoryTheory.EvidenceFibration
 import Mettapedia.CategoryTheory.PLNTerms
 import Mettapedia.CategoryTheory.ModalTypes
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # The Hypercube Construction H_Σ

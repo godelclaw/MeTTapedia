@@ -3437,7 +3437,7 @@ canonicalized in their respective parent semantic environments, then the two
 finite frontier permutations are composed with the foreign canonical
 matching.  The singleton parallel wrappers expose exactly the representation
 consumed by `CommonRestorationApex.parallel`. -/
-noncomputable def
+theorem
     processPlans_commonRestorationApex_of_foreignCanonical
     {color declarationColor : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
@@ -3610,7 +3610,7 @@ restoration depth are independent.  Canonically paired source occurrences
 establish the key permutation; every equal-key cross-pair must additionally
 restore uniformly, which is precisely the coherence required by stable
 sorting in the presence of ties. -/
-noncomputable def
+theorem
     processPlans_commonRestorationApex_at_independentDepths_of_foreignCanonical
     {color declarationColor : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
@@ -3899,7 +3899,7 @@ noncomputable def
 the diagonal where the restoration and available-depth indices agree.  This
 is the exact parallel adapter used below an authored Quote, whose child
 indices are all reset to zero. -/
-noncomputable def
+theorem
     parallelPlanStops_commonRestorationApex_of_frontiers_at_availableDepth
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}

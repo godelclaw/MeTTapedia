@@ -63,7 +63,7 @@ open Mettapedia.OSLF.MeTTaIL.ScopedPattern
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.Languages.MeTTa
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.AtomsReduce
   (symbolAtom releaseRule step_release step_beta step_appArgument wellSorted_apply_binder
     wellSorted_extendOuter tokens_numeral instantiateBVarAt_numeral liftBVars_numeral

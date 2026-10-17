@@ -47,7 +47,7 @@ open Mettapedia.GSLT.LanguageDef.Contexts (contextTheory termSetoid TermStep)
 open Mettapedia.GSLT.Dedukti (Theory RewriteRule Reduces patternVars usesOnly)
 open Mettapedia.Logic.Relation (IsNormal)
 open Mettapedia.OSLF.MeTTaIL.Syntax (Pattern)
-open Mettapedia.Logic.HostingStyles.PrimeCandidate (runPattern)
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles (runPattern)
 open Mettapedia.Logic.HostingStyles.AtomsReduce
   (RunnableEquations programTheory atomAt ruleSpace closedAtom atomInterface rootStep_program_inv
     atomAt_ne_apply)

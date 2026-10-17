@@ -40,6 +40,9 @@ Negative example:
 
 3. **Concrete test** (`main.rs:3478`): Declares `a,b : Int`, asserts `a > 0, b < 0`,
    queries `(define-fun a $_ Int $v)`, gets `$v = 1`.
+
+The `z3` feature is not in the kernel's default build; there both forms abort with a
+missing feature (`Mainline.MainlineFault.missingFeature`).
 -/
 
 namespace Mettapedia.Languages.ProcessCalculi.MORK.Z3Oracle
@@ -81,8 +84,9 @@ noncomputable def oracleQuerySpace (env : OracleEnv) (q : OracleQuery) : Space :
     Reuses the existing `matchOneInSpace` infrastructure from `Space.lean`.
     This is the oracle analogue of BTM workspace matching.
 
-    In the MORK Rust runtime, this corresponds to `Z3Source::query()` which
-    matches a user-provided pattern against the parsed Z3 model atoms. -/
+    In the MORK Rust runtime, `Z3Source::source` exposes the parsed model under the
+    prefix `(z3 instance …)` to the ordinary factor matcher, which unifies the
+    pattern with the model atoms.  The `z3` feature is not in the default build. -/
 noncomputable def oracleMatchPattern (σ : Subst) (resp : OracleResponse)
     (pat : Atom) : List (Subst × Atom) :=
   matchOneInSpace σ pat (oraclePayloadSpace resp)

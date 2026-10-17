@@ -35,7 +35,7 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 
 /-! ## Phase type -/
 
-/-- The three phases of MORK execution. -/
+/-- The three phases of the authored protocol; the kernel has no phases. -/
 inductive Phase where
   | unfold : Phase   -- Phase 1: spawn sub-queries
   | base   : Phase   -- Phase 2: resolve leaf cases

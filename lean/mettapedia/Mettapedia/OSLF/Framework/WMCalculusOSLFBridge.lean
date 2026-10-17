@@ -33,7 +33,7 @@ backward safety (□) properties for free.
 - `TypeSynthesis.lean` — `langDiamond`, `langBox`, `langGalois`, `langDiamond_spec`, `langBox_spec`
 - `WMCalculusLanguageDef.lean` — pattern vocabulary, step lemmas
 - `WMCalculusGSLTVertex.lean` — vertex OSLF, transport
-- `PLNWorldModel.lean` — `BinaryWorldModel` class, `evidence_add`
+- `BinaryWorldModel.lean` — `BinaryWorldModel` class, `evidence_add`
 - `PLNSelectorLanguageDef.lean` — `ExprEncodes` (relational encoding pattern)
 -/
 

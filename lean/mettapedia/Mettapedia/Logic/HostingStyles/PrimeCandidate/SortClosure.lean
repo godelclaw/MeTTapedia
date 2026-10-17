@@ -19,7 +19,9 @@ are allowed.  This module relates them.
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -64,4 +66,4 @@ theorem dkLanguage_lfSorts_not_sortsClosed :
 #print axioms sortsFrom_self_of_sortsClosed
 #print axioms dkLanguage_lfSorts_not_sortsClosed
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

@@ -7,7 +7,7 @@ This file connects BinaryEvidence to Heyting/KS probability theory via strength
 valuations and credal sets.
 
 BinaryEvidence IS a Frame (complete Heyting algebra) — see `Order.Frame BinaryEvidence` in
-`EvidenceQuantale.lean`. It has a natural Heyting implication (`himp`) satisfying
+`BinaryEvidence.lean`. It has a natural Heyting implication (`himp`) satisfying
 the residuation law `a ≤ b ⇨ c ↔ a ⊓ b ≤ c`.
 
 However, BinaryEvidence is NOT Boolean (no complement satisfying excluded middle),
@@ -19,7 +19,7 @@ valuation. The connection to KS probability is instead through:
 
 ## References
 
-- See EvidenceQuantale.lean for the canonical Frame instance
+- See BinaryEvidence.lean for the canonical Frame instance
 - See EvidenceIntervalBounds.lean for interval construction
 - See HeytingBounds.lean for the Heyting probability bounds construction
 -/
@@ -29,7 +29,7 @@ import Mathlib.Data.ENNReal.Operations
 import Mathlib.Data.Real.Basic
 import Mathlib.Order.Lattice
 import Mathlib.Tactic
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Evidence.EvidenceIntervalBounds
 import KnuthSkilling.Core.HeytingBounds
 
@@ -43,12 +43,12 @@ open BinaryEvidence
 /-! ## BinaryEvidence is a Frame (Complete Heyting Algebra)
 
 BinaryEvidence = ℝ≥0∞ × ℝ≥0∞ with coordinatewise lattice operations.
-This is a Frame (`Order.Frame BinaryEvidence` in EvidenceQuantale.lean), hence
+This is a Frame (`Order.Frame BinaryEvidence` in BinaryEvidence.lean), hence
 a complete Heyting algebra with Heyting implication ⇨ satisfying residuation.
 It is NOT Boolean (no complement satisfying excluded middle for all elements).
 -/
 
-/-- Verify BinaryEvidence has DistribLattice structure (from EvidenceQuantale.lean) -/
+/-- Verify BinaryEvidence has DistribLattice structure (from BinaryEvidence.lean) -/
 noncomputable example : DistribLattice BinaryEvidence := inferInstance
 
 /-- Verify BinaryEvidence has BoundedOrder structure (from CompleteLattice) -/
@@ -364,7 +364,7 @@ theorem evidence_confidence_distinguishes :
 
 This file establishes:
 
-1. BinaryEvidence is a Frame (complete Heyting algebra) — see `EvidenceQuantale.lean`
+1. BinaryEvidence is a Frame (complete Heyting algebra) — see `BinaryEvidence.lean`
 2. Strength is NOT a modular valuation (it's a ratio, not additive)
 3. Credal sets of BinaryEvidence values induce strength intervals
 4. The credal gap is analogous to the Heyting excluded middle gap

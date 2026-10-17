@@ -30,7 +30,7 @@ inductive ToyInheritanceQuery where
   deriving DecidableEq, Repr
 
 /-- Triple-state fixture: extensional / ASSOC / PAT evidence channels. -/
-abbrev ToyState := BinaryEvidence × BinaryEvidence × BinaryEvidence
+abbrev ToyState := Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence × Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence × Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
 
 noncomputable instance : EvidenceType ToyState where
   toAddCommMonoid := inferInstance
@@ -50,35 +50,35 @@ def toyPat (a b : Bool) : ToyInheritanceQuery := .pat a b
 
 /-- Mixed-query policy that projects to the extensional channel. -/
 def encMixedExtensional :
-    InheritanceQueryBuilder Bool ToyInheritanceQuery :=
-  InheritanceQueryBuilder.mixedAsExtensional toyExt toyAssoc toyPat
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder Bool ToyInheritanceQuery :=
+  Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedAsExtensional toyExt toyAssoc toyPat
 
 /-- Mixed-query policy that projects to the ASSOC channel. -/
 def encMixedAssoc :
-    InheritanceQueryBuilder Bool ToyInheritanceQuery :=
-  InheritanceQueryBuilder.mixedAsAssoc toyExt toyAssoc toyPat
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder Bool ToyInheritanceQuery :=
+  Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedAsAssoc toyExt toyAssoc toyPat
 
 /-- Split fixture: extensional and ASSOC channels intentionally disagree. -/
 def Wsplit : ToyState := (⟨3, 1⟩, ⟨1, 4⟩, ⟨0, 2⟩)
 
 /-- Positive canary: extensional-projection mixed policy equals extensional evidence. -/
 theorem canary_mixed_extensional_projection :
-    InheritanceQueryBuilder.mixedEvidence
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedEvidence
         (State := ToyState) (Atom := Bool) (Query := ToyInheritanceQuery)
         Wsplit encMixedExtensional true false
       =
-    InheritanceQueryBuilder.extensionalEvidence
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.extensionalEvidence
         (State := ToyState) (Atom := Bool) (Query := ToyInheritanceQuery)
         Wsplit encMixedExtensional true false := by
   rfl
 
 /-- Positive canary: ASSOC-projection mixed policy equals ASSOC evidence. -/
 theorem canary_mixed_assoc_projection :
-    InheritanceQueryBuilder.mixedEvidence
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedEvidence
         (State := ToyState) (Atom := Bool) (Query := ToyInheritanceQuery)
         Wsplit encMixedAssoc true false
       =
-    InheritanceQueryBuilder.intensionalAssocEvidence
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.intensionalAssocEvidence
         (State := ToyState) (Atom := Bool) (Query := ToyInheritanceQuery)
         Wsplit encMixedAssoc true false := by
   rfl
@@ -86,18 +86,18 @@ theorem canary_mixed_assoc_projection :
 /-- Negative canary (non-equivalence):
 on `Wsplit`, extensional-projection and ASSOC-projection mixed policies diverge. -/
 theorem canary_mixed_projection_non_equivalent :
-    InheritanceQueryBuilder.mixedEvidence
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedEvidence
         (State := ToyState) (Atom := Bool) (Query := ToyInheritanceQuery)
         Wsplit encMixedExtensional true false
       ≠
-    InheritanceQueryBuilder.mixedEvidence
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedEvidence
         (State := ToyState) (Atom := Bool) (Query := ToyInheritanceQuery)
         Wsplit encMixedAssoc true false := by
   intro hEq
   have hpos : (3 : ℝ≥0∞) = 1 := by
-    exact congrArg BinaryEvidence.pos (by simpa [Wsplit, encMixedExtensional, encMixedAssoc,
-      InheritanceQueryBuilder.mixedEvidence, InheritanceQueryBuilder.mixedQ,
-      InheritanceQueryBuilder.mixedAsExtensional, InheritanceQueryBuilder.mixedAsAssoc,
+    exact congrArg Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.pos (by simpa [Wsplit, encMixedExtensional, encMixedAssoc,
+      Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedEvidence, Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedQ,
+      Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedAsExtensional, Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedAsAssoc,
       toyExt, toyAssoc] using hEq)
   norm_num at hpos
 
@@ -122,8 +122,8 @@ def toyPatternAssoc (a b : Pattern) : ToyPatternInheritanceQuery := .assoc a b
 def toyPatternPat (a b : Pattern) : ToyPatternInheritanceQuery := .pat a b
 
 def encPatternMixedExtensional :
-    InheritanceQueryBuilder Pattern ToyPatternInheritanceQuery :=
-  InheritanceQueryBuilder.mixedAsExtensional toyPatternExt toyPatternAssoc toyPatternPat
+    Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder Pattern ToyPatternInheritanceQuery :=
+  Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedAsExtensional toyPatternExt toyPatternAssoc toyPatternPat
 
 def WsplitPattern : ToyState := Wsplit
 
@@ -133,29 +133,29 @@ mixed policy, composed through WM rewrite and OSLF truth transport. -/
 theorem canary_end_to_end_bayesNormal_lower_threshold :
     Mettapedia.OSLF.Formula.sem (fun _ _ => True)
       (PLNWMOSLFBridgeITVTyped.thresholdAtomSemOfWMITVQSigma
-        (State := ToyState) (Srt := InheritanceSort)
-        (Query := InheritanceQueryFamily ToyPatternInheritanceQuery)
-        (Ctx := Mettapedia.PLN.Core.PLNCanonical.CtxOfInterval .bayesNormal)
-        (Mettapedia.PLN.Core.PLNCanonical.semanticsOfInterval .bayesNormal)
-        BinaryContext.uniform WsplitPattern
+        (State := ToyState) (Srt := Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceSort)
+        (Query := Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryFamily ToyPatternInheritanceQuery)
+        (Ctx := Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.CtxOfInterval .bayesNormal)
+        (Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval .bayesNormal)
+        Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform WsplitPattern
         0 (fun itv => itv.lower)
         (Mettapedia.PLN.Core.PLNCanonical.patternInheritanceQueryOfAtom_mixed
           encPatternMixedExtensional))
       (.atom "a0") (Pattern.fvar "p") := by
   refine Mettapedia.PLN.Core.PLNCanonical.intensional_mixed_assoc_threshold_atom_of_interval
     (State := ToyState) (Query := ToyPatternInheritanceQuery)
-    .bayesNormal (R := fun _ _ => True) BinaryContext.uniform
+    .bayesNormal (R := fun _ _ => True) Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform
     encPatternMixedExtensional (fun e _ => e) True ?_ WsplitPattern
     "a0" (Pattern.fvar "p") (fun itv => itv.lower) 0 trivial ?_
   · intro _
-    exact InheritanceQueryBuilder.mixedPolicyAssoc_mixedAsExtensional
+    exact Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedPolicyAssoc_mixedAsExtensional
       (State := ToyState) (Atom := Pattern) (Query := ToyPatternInheritanceQuery)
       toyPatternExt toyPatternAssoc toyPatternPat
   · simpa [encPatternMixedExtensional, WsplitPattern,
       Mettapedia.PLN.Core.PLNCanonical.patternInheritanceQueryOfAtom_mixed] using
-      (((Mettapedia.PLN.Core.PLNCanonical.semanticsOfInterval .bayesNormal).eval
-        BinaryContext.uniform
-        ((InheritanceQueryBuilder.extensionalEvidence
+      (((Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval .bayesNormal).eval
+        Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform
+        ((Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.extensionalEvidence
           (State := ToyState) (Atom := Pattern) (Query := ToyPatternInheritanceQuery)
           WsplitPattern encPatternMixedExtensional (Pattern.fvar "a0") (Pattern.fvar "p")))).lower_in_unit.1)
 
@@ -165,29 +165,29 @@ mixed policy, composed through WM rewrite and OSLF truth transport. -/
 theorem canary_end_to_end_bayesExact_lower_threshold :
     Mettapedia.OSLF.Formula.sem (fun _ _ => True)
       (PLNWMOSLFBridgeITVTyped.thresholdAtomSemOfWMITVQSigma
-        (State := ToyState) (Srt := InheritanceSort)
-        (Query := InheritanceQueryFamily ToyPatternInheritanceQuery)
-        (Ctx := Mettapedia.PLN.Core.PLNCanonical.CtxOfInterval .bayesExact)
-        (Mettapedia.PLN.Core.PLNCanonical.semanticsOfInterval .bayesExact)
-        BinaryContext.uniform WsplitPattern
+        (State := ToyState) (Srt := Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceSort)
+        (Query := Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryFamily ToyPatternInheritanceQuery)
+        (Ctx := Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.CtxOfInterval .bayesExact)
+        (Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval .bayesExact)
+        Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform WsplitPattern
         0 (fun itv => itv.lower)
         (Mettapedia.PLN.Core.PLNCanonical.patternInheritanceQueryOfAtom_mixed
           encPatternMixedExtensional))
       (.atom "a0") (Pattern.fvar "p") := by
   refine Mettapedia.PLN.Core.PLNCanonical.intensional_mixed_assoc_threshold_atom_of_interval
     (State := ToyState) (Query := ToyPatternInheritanceQuery)
-    .bayesExact (R := fun _ _ => True) BinaryContext.uniform
+    .bayesExact (R := fun _ _ => True) Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform
     encPatternMixedExtensional (fun e _ => e) True ?_ WsplitPattern
     "a0" (Pattern.fvar "p") (fun itv => itv.lower) 0 trivial ?_
   · intro _
-    exact InheritanceQueryBuilder.mixedPolicyAssoc_mixedAsExtensional
+    exact Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedPolicyAssoc_mixedAsExtensional
       (State := ToyState) (Atom := Pattern) (Query := ToyPatternInheritanceQuery)
       toyPatternExt toyPatternAssoc toyPatternPat
   · simpa [encPatternMixedExtensional, WsplitPattern,
       Mettapedia.PLN.Core.PLNCanonical.patternInheritanceQueryOfAtom_mixed] using
-      (((Mettapedia.PLN.Core.PLNCanonical.semanticsOfInterval .bayesExact).eval
-        BinaryContext.uniform
-        ((InheritanceQueryBuilder.extensionalEvidence
+      (((Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval .bayesExact).eval
+        Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform
+        ((Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.extensionalEvidence
           (State := ToyState) (Atom := Pattern) (Query := ToyPatternInheritanceQuery)
           WsplitPattern encPatternMixedExtensional (Pattern.fvar "a0") (Pattern.fvar "p")))).lower_in_unit.1)
 
@@ -197,29 +197,29 @@ mixed policy, composed through WM rewrite and OSLF truth transport. -/
 theorem canary_end_to_end_walley_lower_threshold :
     Mettapedia.OSLF.Formula.sem (fun _ _ => True)
       (PLNWMOSLFBridgeITVTyped.thresholdAtomSemOfWMITVQSigma
-        (State := ToyState) (Srt := InheritanceSort)
-        (Query := InheritanceQueryFamily ToyPatternInheritanceQuery)
-        (Ctx := Mettapedia.PLN.Core.PLNCanonical.CtxOfInterval .walleyIDM)
-        (Mettapedia.PLN.Core.PLNCanonical.semanticsOfInterval .walleyIDM)
-        Mettapedia.PLN.WorldModel.PLNWorldModel.IDMPredictiveContext.default WsplitPattern
+        (State := ToyState) (Srt := Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceSort)
+        (Query := Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryFamily ToyPatternInheritanceQuery)
+        (Ctx := Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.CtxOfInterval .walleyIDM)
+        (Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval .walleyIDM)
+        Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default WsplitPattern
         0 (fun itv => itv.lower)
         (Mettapedia.PLN.Core.PLNCanonical.patternInheritanceQueryOfAtom_mixed
           encPatternMixedExtensional))
       (.atom "a0") (Pattern.fvar "p") := by
   refine Mettapedia.PLN.Core.PLNCanonical.intensional_mixed_assoc_threshold_atom_of_interval
     (State := ToyState) (Query := ToyPatternInheritanceQuery)
-    .walleyIDM (R := fun _ _ => True) Mettapedia.PLN.WorldModel.PLNWorldModel.IDMPredictiveContext.default
+    .walleyIDM (R := fun _ _ => True) Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
     encPatternMixedExtensional (fun e _ => e) True ?_ WsplitPattern
     "a0" (Pattern.fvar "p") (fun itv => itv.lower) 0 trivial ?_
   · intro _
-    exact InheritanceQueryBuilder.mixedPolicyAssoc_mixedAsExtensional
+    exact Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedPolicyAssoc_mixedAsExtensional
       (State := ToyState) (Atom := Pattern) (Query := ToyPatternInheritanceQuery)
       toyPatternExt toyPatternAssoc toyPatternPat
   · simpa [encPatternMixedExtensional, WsplitPattern,
       Mettapedia.PLN.Core.PLNCanonical.patternInheritanceQueryOfAtom_mixed] using
-      (((Mettapedia.PLN.Core.PLNCanonical.semanticsOfInterval .walleyIDM).eval
-        Mettapedia.PLN.WorldModel.PLNWorldModel.IDMPredictiveContext.default
-        ((InheritanceQueryBuilder.extensionalEvidence
+      (((Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval .walleyIDM).eval
+        Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
+        ((Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.extensionalEvidence
           (State := ToyState) (Atom := Pattern) (Query := ToyPatternInheritanceQuery)
           WsplitPattern encPatternMixedExtensional (Pattern.fvar "a0") (Pattern.fvar "p")))).lower_in_unit.1)
 

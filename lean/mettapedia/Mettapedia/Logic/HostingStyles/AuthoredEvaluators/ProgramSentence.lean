@@ -63,7 +63,7 @@ open Mettapedia.GSLT.Dedukti (Theory RuleTable FirstOrderTable rewritingTheory)
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.Guests (patternCode patternCode_injective)
 
 /-! ## Programmed candidates -/
@@ -94,7 +94,7 @@ def theory (candidate : ProgrammedCandidate) : ContextTheory.{0} := candidate.pr
 
 /-- **The hosting sentence, with the program named.** -/
 def Hosts (candidate : ProgrammedCandidate) (sources : ContextTheory.{0} → Prop)
-    (level : PrimeCandidate.Level) (demand : PrimeCandidate.Demand) : Prop :=
+    (level : Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles.Level) (demand : Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles.Demand) : Prop :=
   candidate.presented.Hosts sources level demand
 
 end ProgrammedCandidate

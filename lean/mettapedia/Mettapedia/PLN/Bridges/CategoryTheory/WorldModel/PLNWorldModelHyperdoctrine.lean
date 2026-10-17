@@ -1,4 +1,4 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 import Mettapedia.GSLT.Topos.PredicateFibration
 
 /-!

@@ -27,8 +27,6 @@ open scoped ENNReal
 abbrev TVState := Mettapedia.PLN.InferenceControl.ProtocolDynamics.PLNTrailFreeDampedConvergence.TVState
 abbrev OrbitState := BinaryEvidence
 abbrev OrbitQuery := Nat × TVState
-abbrev PolicyWeightedState := Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointPolicy.WeightedState
-abbrev PolicyModalQuery := Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointPolicy.ModalQuery
 
 noncomputable instance : EvidenceType OrbitState := inferInstance
 
@@ -162,8 +160,8 @@ theorem dampedOrbit_eventualFresh_to_fixpointClosure_endpoint
 states at a selected modal query witness. -/
 noncomputable def policyOrbitState
     (trusted : String → Prop) [DecidablePred trusted]
-    (W₁ W₂ : PolicyWeightedState) (qPolicy : PolicyModalQuery) : OrbitState :=
-  BinaryWorldModel.evidence (State := PolicyWeightedState) (Query := PolicyModalQuery)
+    (W₁ W₂ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedState) (qPolicy : (LO.Modal.Formula ℕ)) : OrbitState :=
+  BinaryWorldModel.evidence (State := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedState) (Query := (LO.Modal.Formula ℕ))
     (policyRevisedState trusted W₁ W₂) qPolicy
 
 /-- Single policy-aware SP/SPN endpoint:
@@ -171,7 +169,7 @@ eventual-fresh convergence lifts directly to least-closure membership over the
 overlap/trusted policy-adapted WM state. -/
 theorem dampedOrbit_eventualFresh_to_fixpointClosure_endpoint_policy
     (trusted : String → Prop) [DecidablePred trusted]
-    (W₁ W₂ : PolicyWeightedState) (qPolicy : PolicyModalQuery)
+    (W₁ W₂ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedState) (qPolicy : (LO.Modal.Formula ℕ))
     (freshAt : Nat → Bool) (freshState x0 : TVState)
     (hFreshEventually : ∃ N, ∀ n, N ≤ n → freshAt n = true) :
     ∃ M, ∀ n, M ≤ n →
@@ -188,7 +186,7 @@ theorem dampedOrbit_eventualFresh_to_fixpointClosure_endpoint_policy
 /-- Trusted-all + compatibility specialization of the policy-aware endpoint:
 the policy state contracts to additive revision before orbit closure. -/
 theorem dampedOrbit_eventualFresh_to_fixpointClosure_endpoint_policy_add_of_compatible_trustedAll
-    (W₁ W₂ : PolicyWeightedState) (qPolicy : PolicyModalQuery)
+    (W₁ W₂ : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedState) (qPolicy : (LO.Modal.Formula ℕ))
     (hcompat : Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeightedOverlap.compatible W₁ W₂)
     (freshAt : Nat → Bool) (freshState x0 : TVState)
     (hFreshEventually : ∃ N, ∀ n, N ≤ n → freshAt n = true) :
@@ -196,7 +194,7 @@ theorem dampedOrbit_eventualFresh_to_fixpointClosure_endpoint_policy_add_of_comp
       (n, freshState) ∈
         leastRuleClosure (State := OrbitState) (Query := OrbitQuery)
           (orbitRules freshAt freshState)
-          (BinaryWorldModel.evidence (State := PolicyWeightedState) (Query := PolicyModalQuery)
+          (BinaryWorldModel.evidence (State := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedState) (Query := (LO.Modal.Formula ℕ))
             (W₁ + W₂) qPolicy) (orbitSeed x0) := by
   rcases
     dampedOrbit_eventualFresh_to_fixpointClosure_endpoint_policy
@@ -207,7 +205,7 @@ theorem dampedOrbit_eventualFresh_to_fixpointClosure_endpoint_policy_add_of_comp
   intro n hn
   have hState :
       policyOrbitState trustedAll W₁ W₂ qPolicy =
-        BinaryWorldModel.evidence (State := PolicyWeightedState) (Query := PolicyModalQuery)
+        BinaryWorldModel.evidence (State := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedState) (Query := (LO.Modal.Formula ℕ))
           (W₁ + W₂) qPolicy := by
     simp [policyOrbitState,
       policyRevisedState_eq_add_of_compatible_trustedAll (hcompat := hcompat)]

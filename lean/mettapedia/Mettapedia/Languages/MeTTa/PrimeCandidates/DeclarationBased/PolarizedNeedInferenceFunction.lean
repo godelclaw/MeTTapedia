@@ -1,6 +1,8 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.PolarizedNeedInferenceService
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.PolarizedNeedNaturalEquations
 
+open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
+
 /-!
 # A reified native-argument inference service
 

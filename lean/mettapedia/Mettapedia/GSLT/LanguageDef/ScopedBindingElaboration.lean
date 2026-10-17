@@ -1,4 +1,7 @@
+import Mettapedia.GSLT.LanguageDef.BindingSignatureWire
 import Mettapedia.GSLT.LanguageDef.BindingSignatureSubstitution
+import Mettapedia.GSLT.LanguageDef.NamedFreeContext
+import Mettapedia.OSLF.MeTTaIL.GeneralPremiseSchemaTyping
 import Mettapedia.OSLF.MeTTaIL.RuleBinding
 import Mettapedia.OSLF.MeTTaIL.BindingAgreement
 import Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching
@@ -2300,69 +2303,240 @@ private theorem variableIndex_injected {S : Signature} :
   | _, _, .zero => rfl
   | _, _, .succ position => congrArg Nat.succ (variableIndex_injected position)
 
-/-- A bounded structural codec over the original pattern. Its recursive calls
-use the declaration-derived contexts and actual source-child addresses.
-Explicit substitution, unordered collections and collection rests are not
-admitted by this profile. Fuel exhaustion is an admission failure,
-not a statement that the source typing judgment is false. -/
+/-- One-step assembly for the existing raw source traversal. The family fixes
+which evidence each consumer retains, while recursion and physical child
+addresses are supplied by the single fuelled walker. -/
+structure Assembly (family : List TypeExpr → Pattern → TypeExpr → Type) where
+  bound : (locals : List TypeExpr) → (index : Nat) → (sort : TypeExpr) →
+    Option (family locals (.bvar index) sort)
+  free : (locals : List TypeExpr) → (path : List Nat) → (name : String) → (sort : TypeExpr) →
+    Option (family locals (.fvar name) sort)
+  constructor :
+    ((locals : List TypeExpr) → (path : List Nat) → (source : Pattern) → (sort : TypeExpr) →
+      Option (family locals source sort)) →
+    (locals : List TypeExpr) → (path : List Nat) → (label : String) →
+    (sources : List Pattern) → (sort : TypeExpr) →
+      Option (family locals (.apply label sources) sort)
+  abstraction : {locals : List TypeExpr} → {source : Pattern} → {domain codomain : TypeExpr} →
+    family (domain :: locals) source codomain →
+      family locals (.lambda none source) (.arrow domain codomain)
+  multiAbstraction : {locals : List TypeExpr} → {source : Pattern} → {domain codomain : TypeExpr} →
+    (count : Nat) → family (List.replicate count domain ++ locals) source codomain →
+      family locals (.multiLambda count [] source) (.arrow (.multiBinder domain) codomain)
+  substitution :
+    ((locals : List TypeExpr) → (path : List Nat) → (source : Pattern) → (sort : TypeExpr) →
+      Option (family locals source sort)) →
+    (locals : List TypeExpr) → (path : List Nat) → (body replacement : Pattern) → (sort : TypeExpr) →
+      Option (family locals (.subst body replacement) sort)
+  vector :
+    ((locals : List TypeExpr) → (path : List Nat) → (source : Pattern) → (sort : TypeExpr) →
+      Option (family locals source sort)) →
+    (locals : List TypeExpr) → (path : List Nat) → (sources : List Pattern) → (sort : TypeExpr) →
+      Option (family locals (.collection .vec sources none) sort)
+
+/-- One structural source step delegates all smaller calls through the
+supplied recursion, retaining the physical addresses of the original pattern. -/
+def Assembly.step {family : List TypeExpr → Pattern → TypeExpr → Type}
+    (assembly : Assembly family)
+    (compile : (locals : List TypeExpr) → (path : List Nat) →
+      (source : Pattern) → (sort : TypeExpr) → Option (family locals source sort)) :
+    (locals : List TypeExpr) → (path : List Nat) →
+      (source : Pattern) → (sort : TypeExpr) → Option (family locals source sort)
+  | locals, _, .bvar index, sort => assembly.bound locals index sort
+  | locals, path, .fvar name, sort => assembly.free locals path name sort
+  | locals, path, .apply label sources, sort =>
+      assembly.constructor compile locals path label sources sort
+  | locals, path, .lambda none source, .arrow domain codomain => do
+      let body ← compile (domain :: locals) (path ++ [0]) source codomain
+      pure (assembly.abstraction body)
+  | locals, path, .multiLambda count [] source, .arrow (.multiBinder domain) codomain => do
+      let body ← compile (List.replicate count domain ++ locals) (path ++ [0]) source codomain
+      pure (assembly.multiAbstraction count body)
+  | locals, path, .subst body replacement, sort =>
+      assembly.substitution compile locals path body replacement sort
+  | locals, path, .collection .vec sources none, sort => assembly.vector compile locals path sources sort
+  | _, _, _, _ => none
+
+/-- Fuelled recursion is shared by the input and output assemblies. -/
+def Assembly.walk {family : List TypeExpr → Pattern → TypeExpr → Type}
+    (assembly : Assembly family) : Nat → (locals : List TypeExpr) → (path : List Nat) →
+      (source : Pattern) → (sort : TypeExpr) → Option (family locals source sort)
+  | 0 => fun _ _ _ _ => none
+  | fuel + 1 => assembly.step (assembly.walk fuel)
+
+private theorem prefix_index {S : Signature} :
+    ∀ {locals : Ctx S} {sort : S.Srt} (position : Var locals sort),
+      variableIndex (injPrefix (S := S) (Γ := []) locals position) = variableIndex position
+  | _, _, .zero => rfl
+  | _, _, .succ old => congrArg Nat.succ (prefix_index old)
+
+/-- Input matching retains exactly its established injective-spine evidence.
+The output operation does not weaken this assembly. -/
+def inputAssembly (language : LanguageDef) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (site : RulePatternSite) : Assembly (CompiledSchema language rule spec) where
+  bound locals index sort :=
+    match found : boundPosition? locals index sort with
+    | none => none
+    | some position => some {
+        term := .var (injPrefix (S := SchemaSignature language rule spec) (Γ := []) locals position)
+        source_readback := by
+          change Pattern.bvar (variableIndex (injPrefix (S := SchemaSignature language rule spec)
+            (Γ := []) locals position)) = Pattern.bvar index
+          rw [prefix_index (S := SchemaSignature language rule spec) position,
+            boundPosition?_index locals index sort found]
+        matching_supported := by
+          rw [MatchingSupportedT.eq_def (S := signatureOf language) (M := metaArities rule spec)]
+          trivial
+        inputOccurrences := []
+        constructorOccurrences := [] }
+  free locals path name sort := do
+    let input ← elaborateInputOccurrence? language rule spec locals site path name sort
+    pure (CompiledSchema.ofInput input)
+  constructor compile locals path label sources sort := do
+    let selected ← selectConstructor? language label
+    if same : TypeExpr.base (language.terms.get selected.index).category = sort then
+      if notBare : usesBareCollection? (language.terms.get selected.index) = false then
+        let arguments ← compileConstructorArguments? compile locals path 0
+          (language.terms.get selected.index).params sources
+        let ordinary : ¬ UsesBareCollection (language.terms.get selected.index) := by
+          intro bare
+          have checked := (usesBareCollection?_eq_true_iff _).mpr bare
+          rw [notBare] at checked
+          cases checked
+        pure ((CompiledSchema.constructor path selected ordinary arguments).castSort same)
+      else none
+    else none
+  abstraction := CompiledSchema.lambda
+  multiAbstraction := CompiledSchema.multiLambda
+  substitution _ _ _ _ _ _ := none
+  vector compile locals path sources sort :=
+    match sort with
+    | .collection .vec elementSort => do
+        let elements ← compileVectorElements? compile locals path 0 elementSort sources
+        pure (CompiledSchema.vector elements)
+    | .base category => do
+        let selected ← selectVectorConstructor? language category
+        let elements ← compileVectorElements? compile locals path 0 selected.elementSort sources
+        pure (CompiledSchema.vectorConstructor path selected elements)
+    | _ => none
+
+/-- Input matching specializes the common source traversal. Its assembly
+retains the established inverse-spine checks and occurrence receipts. -/
 def compileSchemaWithFuel? (language : LanguageDef) (rule : RewriteRule)
     (spec : RuleBindingSpec) (site : RulePatternSite) :
     Nat → (locals : List TypeExpr) → (path : List Nat) →
       (source : Pattern) → (sort : TypeExpr) →
-        Option (CompiledSchema language rule spec locals source sort)
-  | 0, _, _, _, _ => none
-  | _ + 1, locals, _, .bvar index, sort =>
-      match found : boundPosition? locals index sort with
-      | none => none
-      | some position => some {
-          term := .var (injPrefix (S := SchemaSignature language rule spec) (Γ := []) locals position)
-          source_readback := by
-            change Pattern.bvar (variableIndex (injPrefix (S := SchemaSignature language rule spec)
-              (Γ := []) locals position)) = Pattern.bvar index
-            rw [variableIndex_injected (S := SchemaSignature language rule spec),
-              boundPosition?_index locals index sort found]
-          matching_supported := by
-            rw [MatchingSupportedT.eq_def (S := signatureOf language) (M := metaArities rule spec)]
-            trivial
-          inputOccurrences := []
-          constructorOccurrences := [] }
-  | _ + 1, locals, path, .fvar name, sort => do
-      let input ← elaborateInputOccurrence? language rule spec locals site path name sort
-      pure (CompiledSchema.ofInput input)
-  | fuel + 1, locals, path, .apply label sources, sort => do
-      let selected ← selectConstructor? language label
-      if same : TypeExpr.base (language.terms.get selected.index).category = sort then
-        if notBare : usesBareCollection? (language.terms.get selected.index) = false then
-          let arguments ← compileConstructorArguments?
-            (compileSchemaWithFuel? language rule spec site fuel) locals path 0
-            (language.terms.get selected.index).params sources
-          let ordinary : ¬ UsesBareCollection (language.terms.get selected.index) := by
-            intro bare
-            have checked := (usesBareCollection?_eq_true_iff _).mpr bare
-            rw [notBare] at checked
-            cases checked
-          pure ((CompiledSchema.constructor path selected ordinary arguments).castSort same)
-        else none
-      else none
-  | fuel + 1, locals, path, .lambda none source, .arrow domain codomain => do
-      let body ← compileSchemaWithFuel? language rule spec site fuel
-        (domain :: locals) (path ++ [0]) source codomain
-      pure (CompiledSchema.lambda body)
-  | fuel + 1, locals, path, .multiLambda count [] source,
-      .arrow (.multiBinder domain) codomain => do
-      let body ← compileSchemaWithFuel? language rule spec site fuel
-        (List.replicate count domain ++ locals) (path ++ [0]) source codomain
-      pure (CompiledSchema.multiLambda count body)
-  | fuel + 1, locals, path, .collection .vec sources none, .collection .vec elementSort => do
-      let elements ← compileVectorElements? (compileSchemaWithFuel? language rule spec site fuel)
-        locals path 0 elementSort sources
-      pure (CompiledSchema.vector elements)
-  | fuel + 1, locals, path, .collection .vec sources none, .base category => do
-      let selected ← selectVectorConstructor? language category
-      let elements ← compileVectorElements? (compileSchemaWithFuel? language rule spec site fuel)
-        locals path 0 selected.elementSort sources
-      pure (CompiledSchema.vectorConstructor path selected elements)
-  | _, _, _, _, _ => none
+        Option (CompiledSchema language rule spec locals source sort) :=
+  (inputAssembly language rule spec site).walk
+
+private theorem compileSchemaWithFuel?_zero (language : LanguageDef) (rule : RewriteRule)
+    (spec : RuleBindingSpec) (site : RulePatternSite) (locals : List TypeExpr) (path : List Nat)
+    (source : Pattern) (sort : TypeExpr) :
+    compileSchemaWithFuel? language rule spec site 0 locals path source sort = none := rfl
+
+private theorem compileSchemaWithFuel?_succ (language : LanguageDef) (rule : RewriteRule)
+    (spec : RuleBindingSpec) (site : RulePatternSite) (fuel : Nat)
+    (locals : List TypeExpr) (path : List Nat) (source : Pattern) (sort : TypeExpr) :
+    compileSchemaWithFuel? language rule spec site (fuel + 1) locals path source sort =
+      (inputAssembly language rule spec site).step
+        (compileSchemaWithFuel? language rule spec site fuel) locals path source sort := rfl
+
+/-- An induction algebra for the one shared source traversal. Each law only
+receives already established results for smaller source calls. -/
+structure Assembly.Invariant {family : List TypeExpr → Pattern → TypeExpr → Type}
+    (assembly : Assembly family)
+    (property : (locals : List TypeExpr) → (path : List Nat) →
+      (source : Pattern) → (sort : TypeExpr) → family locals source sort → Prop) : Prop where
+  bound : ∀ locals path index sort compiled, assembly.bound locals index sort = some compiled →
+    property locals path (.bvar index) sort compiled
+  free : ∀ locals path name sort compiled, assembly.free locals path name sort = some compiled →
+    property locals path (.fvar name) sort compiled
+  constructor : ∀ compile,
+    (∀ locals path source sort compiled, compile locals path source sort = some compiled →
+      property locals path source sort compiled) →
+    ∀ locals path label sources sort compiled,
+      assembly.constructor compile locals path label sources sort = some compiled →
+        property locals path (.apply label sources) sort compiled
+  abstraction : ∀ locals path source domain codomain body,
+    property (domain :: locals) (path ++ [0]) source codomain body →
+      property locals path (.lambda none source) (.arrow domain codomain) (assembly.abstraction body)
+  multiAbstraction : ∀ locals path source domain codomain count body,
+    property (List.replicate count domain ++ locals) (path ++ [0]) source codomain body →
+      property locals path (.multiLambda count [] source) (.arrow (.multiBinder domain) codomain)
+        (assembly.multiAbstraction count body)
+  substitution : ∀ compile,
+    (∀ locals path source sort compiled, compile locals path source sort = some compiled →
+      property locals path source sort compiled) →
+    ∀ locals path body replacement sort compiled,
+      assembly.substitution compile locals path body replacement sort = some compiled →
+        property locals path (.subst body replacement) sort compiled
+  vector : ∀ compile,
+    (∀ locals path source sort compiled, compile locals path source sort = some compiled →
+      property locals path source sort compiled) →
+    ∀ locals path sources sort compiled,
+      assembly.vector compile locals path sources sort = some compiled →
+        property locals path (.collection .vec sources none) sort compiled
+
+theorem Assembly.walk_invariant {family : List TypeExpr → Pattern → TypeExpr → Type}
+    {assembly : Assembly family}
+    {property : (locals : List TypeExpr) → (path : List Nat) →
+      (source : Pattern) → (sort : TypeExpr) → family locals source sort → Prop}
+    (laws : assembly.Invariant property) :
+    ∀ fuel locals path source sort compiled,
+      assembly.walk fuel locals path source sort = some compiled →
+        property locals path source sort compiled := by
+  intro fuel
+  induction fuel with
+  | zero => intro locals path source sort compiled found; cases found
+  | succ fuel children =>
+      intro locals path source sort compiled found
+      cases source with
+      | bvar index => exact laws.bound locals path index sort compiled found
+      | fvar name => exact laws.free locals path name sort compiled found
+      | apply label sources => exact laws.constructor _ children locals path label sources sort compiled found
+      | lambda annotation body =>
+          cases annotation with
+          | some name => cases found
+          | none =>
+              cases sort with
+              | base name => cases found
+              | multiBinder domain => cases found
+              | collection kind element => cases found
+              | arrow domain codomain =>
+                  simp only [Assembly.walk, Assembly.step, Option.bind_eq_bind, Option.bind_eq_some_iff] at found
+                  obtain ⟨body, bodyFound, same⟩ := found
+                  cases same
+                  exact laws.abstraction locals path _ domain codomain body
+                    (children _ _ _ _ body bodyFound)
+      | multiLambda count names body =>
+          cases names with
+          | cons name names => cases found
+          | nil =>
+              cases sort with
+              | base name => cases found
+              | multiBinder domain => cases found
+              | collection kind element => cases found
+              | arrow domain codomain =>
+                  cases domain with
+                  | base name => cases found
+                  | arrow first last => cases found
+                  | collection kind element => cases found
+                  | multiBinder domain =>
+                      simp only [Assembly.walk, Assembly.step, Option.bind_eq_bind, Option.bind_eq_some_iff] at found
+                      obtain ⟨body, bodyFound, same⟩ := found
+                      cases same
+                      exact laws.multiAbstraction locals path _ domain codomain count body
+                        (children _ _ _ _ body bodyFound)
+      | subst body replacement => exact laws.substitution _ children locals path body replacement sort compiled found
+      | collection kind sources rest =>
+          cases kind with
+          | hashBag => cases found
+          | hashSet => cases found
+          | vec =>
+              cases rest with
+              | some name => cases found
+              | none => exact laws.vector _ children locals path sources sort compiled found
+
 
 /-- Success exposes exact source readback and the existing matcher profile.
 Both proofs are constructed by the codec; neither is a caller premise. -/
@@ -2578,7 +2752,7 @@ theorem compileSchemaWithFuel?_ordered (language : LanguageDef) (rule : RewriteR
   induction fuel with
   | zero =>
       intro locals path source sort compiled found
-      simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+      simp only [compileSchemaWithFuel?_zero, reduceCtorEq] at found
   | succ fuel children =>
       intro locals path source sort compiled found
       cases source with
@@ -2587,7 +2761,7 @@ theorem compileSchemaWithFuel?_ordered (language : LanguageDef) (rule : RewriteR
       | apply label sources =>
           cases selectedFound : selectConstructor? language label with
           | none =>
-              simp only [compileSchemaWithFuel?, selectedFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, Option.bind_eq_bind,
                 Option.bind_none, reduceCtorEq] at found
           | some selected =>
               by_cases same : TypeExpr.base (language.terms.get selected.index).category = sort
@@ -2596,75 +2770,75 @@ theorem compileSchemaWithFuel?_ordered (language : LanguageDef) (rule : RewriteR
                       (compileSchemaWithFuel? language rule spec site fuel) locals path 0
                       (language.terms.get selected.index).params sources with
                   | none =>
-                      simp only [compileSchemaWithFuel?, selectedFound, same, notBare,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare,
                         argumentsFound, dite_true, Option.bind_eq_bind, Option.bind_some,
                         Option.bind_none, reduceCtorEq] at found
                   | some arguments =>
                       exact .apply label sources (constructor_children_ordered language rule spec
                         (compileSchemaWithFuel? language rule spec site fuel) children
                         locals path sources 0 _ arguments argumentsFound)
-                · simp only [compileSchemaWithFuel?, selectedFound, same, notBare, dite_true,
+                · simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare, dite_true,
                     dite_false, Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
-              · simp only [compileSchemaWithFuel?, selectedFound, same, dite_false,
+              · simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, dite_false,
                   Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
       | lambda annotation source =>
           cases annotation with
-          | some name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | some name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | none =>
               cases sort with
-              | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | arrow domain codomain =>
                   cases bodyFound : compileSchemaWithFuel? language rule spec site fuel
                       (domain :: locals) (path ++ [0]) source codomain with
                   | none =>
-                      simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                         Option.bind_none, reduceCtorEq] at found
                   | some body => exact .lambda none source (children _ _ _ _ body bodyFound)
       | multiLambda count annotations source =>
           cases annotations with
-          | cons name names => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | cons name names => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | nil =>
               cases sort with
-              | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | arrow domain codomain =>
                   cases domain with
-                  | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | arrow first second => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                  | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+                  | arrow first second => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+                  | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
                   | multiBinder domain =>
                       cases bodyFound : compileSchemaWithFuel? language rule spec site fuel
                           (List.replicate count domain ++ locals) (path ++ [0]) source codomain with
                       | none =>
-                          simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                             Option.bind_none, reduceCtorEq] at found
                       | some body => exact .multiLambda count [] source (children _ _ _ _ body bodyFound)
-      | subst body replacement => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+      | subst body replacement => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
       | collection kind sources rest =>
           cases kind with
-          | hashBag => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-          | hashSet => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | hashBag => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+          | hashSet => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | vec =>
               cases rest with
-              | some name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | some name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | none =>
                   cases sort with
-                  | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | arrow domain codomain => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                  | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
+                  | arrow domain codomain => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
                   | base category =>
                       cases selectedFound : selectVectorConstructor? language category with
                       | none =>
-                          simp only [compileSchemaWithFuel?, selectedFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, Option.bind_eq_bind,
                             Option.bind_none, reduceCtorEq] at found
                       | some selected =>
                           cases elementsFound : compileVectorElements?
                               (compileSchemaWithFuel? language rule spec site fuel)
                               locals path 0 selected.elementSort sources with
                           | none =>
-                              simp only [compileSchemaWithFuel?, selectedFound, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, Option.bind_none, reduceCtorEq] at found
                           | some elements =>
                               exact .vector sources none (vector_children_ordered language rule spec
@@ -2672,14 +2846,14 @@ theorem compileSchemaWithFuel?_ordered (language : LanguageDef) (rule : RewriteR
                                 locals path selected.elementSort sources 0 elements elementsFound)
                   | collection kind elementSort =>
                       cases kind with
-                      | hashBag => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                      | hashSet => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                      | hashBag => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
+                      | hashSet => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
                       | vec =>
                           cases elementsFound : compileVectorElements?
                               (compileSchemaWithFuel? language rule spec site fuel)
                               locals path 0 elementSort sources with
                           | none =>
-                              simp only [compileSchemaWithFuel?, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, elementsFound,
                                 Option.bind_eq_bind, Option.bind_none, reduceCtorEq] at found
                           | some elements =>
                               exact .vector sources none (vector_children_ordered language rule spec
@@ -3575,7 +3749,7 @@ theorem compileSchemaWithFuel?_canonical (language : LanguageDef) (rule : Rewrit
                 (.bvar (variableIndex position)) sort = some compiled ∧
               compiled.term = .var (injPrefix (S := signatureOf language)
                 (Γ := []) bound position)
-          simp only [compileSchemaWithFuel?]
+          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly]
           split
           · rename_i missing
             have present := boundPosition?_complete position
@@ -3622,7 +3796,7 @@ theorem compileSchemaWithFuel?_canonical (language : LanguageDef) (rule : Rewrit
                   compiled.term = embed (rename (fun _ position =>
                     injPrefix (S := signatureOf language) (Γ := []) bound position)
                     (.op (.constructor _ member ordinary scopes) arguments))
-              simp only [compileSchemaWithFuel?]
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly]
               rw [selectConstructor?_complete selected]
               simp only [notBare, dite_true, Option.bind_eq_bind, Option.bind_some]
               rw [foundArguments]
@@ -3667,7 +3841,7 @@ theorem compileSchemaWithFuel?_canonical (language : LanguageDef) (rule : Rewrit
                     injPrefix (S := signatureOf language) (Γ := []) bound position)
                     (.op (.collectionConstructor _ member selected.parameterName .vec
                       selected.elementSort shape count) arguments))
-              simp only [compileSchemaWithFuel?]
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly]
               rw [SelectedVectorConstructor.selected selected]
               simp only [foundElements, Option.bind_eq_bind, Option.bind_some, pure]
               refine ⟨_, rfl, ?_⟩
@@ -3698,7 +3872,7 @@ theorem compileSchemaWithFuel?_canonical (language : LanguageDef) (rule : Rewrit
                       compiled.term = embed (rename (fun _ position =>
                         injPrefix (S := signatureOf language) (Γ := []) bound position)
                         (.op (.lambda domain codomain) (.cons body .nil)))
-                  simp only [compileSchemaWithFuel?, foundBody, Option.bind_eq_bind, Option.bind_some, pure]
+                  simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, foundBody, Option.bind_eq_bind, Option.bind_some, pure]
                   refine ⟨_, rfl, ?_⟩
                   change (show Term (SchemaSignature language rule spec) (bound ++ []) (.arrow domain codomain)
                       from .op (.inl (.lambda domain codomain)) (.cons compiledBody.term .nil)) =
@@ -3731,7 +3905,7 @@ theorem compileSchemaWithFuel?_canonical (language : LanguageDef) (rule : Rewrit
                       compiled.term = embed (rename (fun _ position =>
                         injPrefix (S := signatureOf language) (Γ := []) bound position)
                         (.op (.multiLambda domain codomain count) (.cons body .nil)))
-                  simp only [compileSchemaWithFuel?, foundBody, Option.bind_eq_bind, Option.bind_some, pure]
+                  simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, foundBody, Option.bind_eq_bind, Option.bind_some, pure]
                   refine ⟨_, rfl, ?_⟩
                   change (show Term (SchemaSignature language rule spec) (bound ++ [])
                       (.arrow (.multiBinder domain) codomain) from
@@ -3765,7 +3939,7 @@ theorem compileSchemaWithFuel?_canonical (language : LanguageDef) (rule : Rewrit
                   compiled.term = embed (rename (fun _ position =>
                     injPrefix (S := signatureOf language) (Γ := []) bound position)
                     (.op (.collection .vec elementSort count) arguments))
-              simp only [compileSchemaWithFuel?, foundElements, Option.bind_eq_bind, Option.bind_some, pure]
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, foundElements, Option.bind_eq_bind, Option.bind_some, pure]
               refine ⟨_, rfl, ?_⟩
               change (show Term (SchemaSignature language rule spec) (bound ++ [])
                   (.collection .vec elementSort) from
@@ -5467,12 +5641,12 @@ theorem compileSchemaWithFuel?_matches
   induction fuel with
   | zero =>
       intro locals path source sort compiled found
-      simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+      simp only [compileSchemaWithFuel?_zero, reduceCtorEq] at found
   | succ fuel children =>
       intro locals path source sort compiled found
       cases source with
       | bvar index =>
-          simp only [compileSchemaWithFuel?] at found
+          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly] at found
           split at found
           · simp only [reduceCtorEq] at found
           · rename_i position positionFound
@@ -5486,17 +5660,17 @@ theorem compileSchemaWithFuel?_matches
       | fvar name =>
           cases inputFound : elaborateInputOccurrence? language rule spec locals site path name sort with
           | none =>
-              simp only [compileSchemaWithFuel?, inputFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, inputFound, Option.bind_eq_bind,
                 Option.bind_none, reduceCtorEq] at found
           | some input =>
-              simp only [compileSchemaWithFuel?, inputFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, inputFound, Option.bind_eq_bind,
                 Option.bind_some, pure, Option.some.injEq] at found
               cases found
               exact input_schema_matches input
       | apply label sources =>
           cases selectedFound : selectConstructor? language label with
           | none =>
-              simp only [compileSchemaWithFuel?, selectedFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, Option.bind_eq_bind,
                 Option.bind_none, reduceCtorEq] at found
           | some selected =>
               by_cases same : TypeExpr.base (language.terms.get selected.index).category = sort
@@ -5505,11 +5679,11 @@ theorem compileSchemaWithFuel?_matches
                       (compileSchemaWithFuel? language rule spec site fuel) locals path 0
                       (language.terms.get selected.index).params sources with
                   | none =>
-                      simp only [compileSchemaWithFuel?, selectedFound, same, notBare,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare,
                         argumentsFound, dite_true, Option.bind_eq_bind, Option.bind_some,
                         Option.bind_none, reduceCtorEq] at found
                   | some arguments =>
-                      simp only [compileSchemaWithFuel?, selectedFound, same, notBare,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare,
                         argumentsFound, dite_true, Option.bind_eq_bind, Option.bind_some,
                         pure, Option.some.injEq] at found
                       cases found
@@ -5519,82 +5693,82 @@ theorem compileSchemaWithFuel?_matches
                         arguments argumentsFound
                       apply cast_sort_schema_matches
                       exact constructor_schema_matches path selected _ arguments argumentsMatch
-                · simp only [compileSchemaWithFuel?, selectedFound, same, notBare, dite_true,
+                · simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare, dite_true,
                     dite_false, Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
-              · simp only [compileSchemaWithFuel?, selectedFound, same, dite_false,
+              · simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, dite_false,
                   Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
       | lambda annotation source =>
           cases annotation with
-          | some name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | some name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | none =>
               cases sort with
-              | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | arrow domain codomain =>
                   cases bodyFound : compileSchemaWithFuel? language rule spec site fuel
                       (domain :: locals) (path ++ [0]) source codomain with
                   | none =>
-                      simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                         Option.bind_none, reduceCtorEq] at found
                   | some body =>
-                      simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                         Option.bind_some, pure, Option.some.injEq] at found
                       cases found
                       exact lambda_schema_matches body
                         (children (domain :: locals) (path ++ [0]) source codomain body bodyFound)
       | multiLambda count annotations source =>
           cases annotations with
-          | cons name names => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | cons name names => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | nil =>
               cases sort with
-              | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | arrow domain codomain =>
                   cases domain with
-                  | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | arrow first second => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                  | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+                  | arrow first second => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+                  | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
                   | multiBinder domain =>
                       cases bodyFound : compileSchemaWithFuel? language rule spec site fuel
                           (List.replicate count domain ++ locals) (path ++ [0]) source codomain with
                       | none =>
-                          simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                             Option.bind_none, reduceCtorEq] at found
                       | some body =>
-                          simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                             Option.bind_some, pure, Option.some.injEq] at found
                           cases found
                           exact multiLambda_schema_matches count body
                             (children (List.replicate count domain ++ locals)
                               (path ++ [0]) source codomain body bodyFound)
-      | subst body replacement => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+      | subst body replacement => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
       | collection kind sources rest =>
           cases kind with
-          | hashBag => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-          | hashSet => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | hashBag => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+          | hashSet => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | vec =>
               cases rest with
-              | some name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | some name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | none =>
                   cases sort with
-                  | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | arrow domain codomain => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                  | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
+                  | arrow domain codomain => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
                   | base category =>
                       cases selectedFound : selectVectorConstructor? language category with
                       | none =>
-                          simp only [compileSchemaWithFuel?, selectedFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, Option.bind_eq_bind,
                             Option.bind_none, reduceCtorEq] at found
                       | some selected =>
                           cases elementsFound : compileVectorElements?
                               (compileSchemaWithFuel? language rule spec site fuel)
                               locals path 0 selected.elementSort sources with
                           | none =>
-                              simp only [compileSchemaWithFuel?, selectedFound, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, Option.bind_none, reduceCtorEq] at found
                           | some elements =>
-                              simp only [compileSchemaWithFuel?, selectedFound, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, pure, Option.some.injEq] at found
                               cases found
                               have elementsMatch := compile_vector_elements_matches
@@ -5603,17 +5777,17 @@ theorem compileSchemaWithFuel?_matches
                               exact vector_constructor_schema_matches path selected elements elementsMatch
                   | collection kind elementSort =>
                       cases kind with
-                      | hashBag => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                      | hashSet => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                      | hashBag => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
+                      | hashSet => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
                       | vec =>
                           cases elementsFound : compileVectorElements?
                               (compileSchemaWithFuel? language rule spec site fuel)
                               locals path 0 elementSort sources with
                           | none =>
-                              simp only [compileSchemaWithFuel?, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, elementsFound,
                                 Option.bind_eq_bind, Option.bind_none, reduceCtorEq] at found
                           | some elements =>
-                              simp only [compileSchemaWithFuel?, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, pure, Option.some.injEq] at found
                               cases found
                               have elementsMatch := compile_vector_elements_matches
@@ -6133,12 +6307,12 @@ theorem compileSchemaWithFuel?_instantiates
   induction fuel with
   | zero =>
       intro locals path source sort compiled found
-      simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+      simp only [compileSchemaWithFuel?_zero, reduceCtorEq] at found
   | succ fuel children =>
       intro locals path source sort compiled found
       cases source with
       | bvar index =>
-          simp only [compileSchemaWithFuel?] at found
+          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly] at found
           split at found
           · simp only [reduceCtorEq] at found
           · rename_i position positionFound
@@ -6151,17 +6325,17 @@ theorem compileSchemaWithFuel?_instantiates
       | fvar name =>
           cases inputFound : elaborateInputOccurrence? language rule spec locals site path name sort with
           | none =>
-              simp only [compileSchemaWithFuel?, inputFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, inputFound, Option.bind_eq_bind,
                 Option.bind_none, reduceCtorEq] at found
           | some input =>
-              simp only [compileSchemaWithFuel?, inputFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, inputFound, Option.bind_eq_bind,
                 Option.bind_some, pure, Option.some.injEq] at found
               cases found
               exact input_schema_instantiates input
       | apply label sources =>
           cases selectedFound : selectConstructor? language label with
           | none =>
-              simp only [compileSchemaWithFuel?, selectedFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, Option.bind_eq_bind,
                 Option.bind_none, reduceCtorEq] at found
           | some selected =>
               by_cases same : TypeExpr.base (language.terms.get selected.index).category = sort
@@ -6170,11 +6344,11 @@ theorem compileSchemaWithFuel?_instantiates
                       (compileSchemaWithFuel? language rule spec site fuel) locals path 0
                       (language.terms.get selected.index).params sources with
                   | none =>
-                      simp only [compileSchemaWithFuel?, selectedFound, same, notBare,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare,
                         argumentsFound, dite_true, Option.bind_eq_bind, Option.bind_some,
                         Option.bind_none, reduceCtorEq] at found
                   | some arguments =>
-                      simp only [compileSchemaWithFuel?, selectedFound, same, notBare,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare,
                         argumentsFound, dite_true, Option.bind_eq_bind, Option.bind_some,
                         pure, Option.some.injEq] at found
                       cases found
@@ -6184,82 +6358,82 @@ theorem compileSchemaWithFuel?_instantiates
                         arguments argumentsFound
                       apply cast_sort_instantiates
                       exact constructor_schema_instantiates path selected _ arguments argumentsMatch
-                · simp only [compileSchemaWithFuel?, selectedFound, same, notBare, dite_true,
+                · simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare, dite_true,
                     dite_false, Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
-              · simp only [compileSchemaWithFuel?, selectedFound, same, dite_false,
+              · simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, dite_false,
                   Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
       | lambda annotation source =>
           cases annotation with
-          | some name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | some name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | none =>
               cases sort with
-              | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | arrow domain codomain =>
                   cases bodyFound : compileSchemaWithFuel? language rule spec site fuel
                       (domain :: locals) (path ++ [0]) source codomain with
                   | none =>
-                      simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                         Option.bind_none, reduceCtorEq] at found
                   | some body =>
-                      simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                         Option.bind_some, pure, Option.some.injEq] at found
                       cases found
                       exact lambda_schema_instantiates body
                         (children (domain :: locals) (path ++ [0]) source codomain body bodyFound)
       | multiLambda count annotations source =>
           cases annotations with
-          | cons name names => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | cons name names => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | nil =>
               cases sort with
-              | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | arrow domain codomain =>
                   cases domain with
-                  | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | arrow first second => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                  | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+                  | arrow first second => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+                  | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
                   | multiBinder domain =>
                       cases bodyFound : compileSchemaWithFuel? language rule spec site fuel
                           (List.replicate count domain ++ locals) (path ++ [0]) source codomain with
                       | none =>
-                          simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                             Option.bind_none, reduceCtorEq] at found
                       | some body =>
-                          simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                             Option.bind_some, pure, Option.some.injEq] at found
                           cases found
                           exact multiLambda_schema_instantiates count body
                             (children (List.replicate count domain ++ locals)
                               (path ++ [0]) source codomain body bodyFound)
-      | subst body replacement => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+      | subst body replacement => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
       | collection kind sources rest =>
           cases kind with
-          | hashBag => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-          | hashSet => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | hashBag => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+          | hashSet => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | vec =>
               cases rest with
-              | some name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | some name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | none =>
                   cases sort with
-                  | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | arrow domain codomain => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                  | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
+                  | arrow domain codomain => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
                   | base category =>
                       cases selectedFound : selectVectorConstructor? language category with
                       | none =>
-                          simp only [compileSchemaWithFuel?, selectedFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, Option.bind_eq_bind,
                             Option.bind_none, reduceCtorEq] at found
                       | some selected =>
                           cases elementsFound : compileVectorElements?
                               (compileSchemaWithFuel? language rule spec site fuel)
                               locals path 0 selected.elementSort sources with
                           | none =>
-                              simp only [compileSchemaWithFuel?, selectedFound, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, Option.bind_none, reduceCtorEq] at found
                           | some elements =>
-                              simp only [compileSchemaWithFuel?, selectedFound, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, pure, Option.some.injEq] at found
                               cases found
                               have elementsMatch := compile_vector_elements_instantiates
@@ -6268,17 +6442,17 @@ theorem compileSchemaWithFuel?_instantiates
                               exact vector_constructor_schema_instantiates path selected elements elementsMatch
                   | collection kind elementSort =>
                       cases kind with
-                      | hashBag => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                      | hashSet => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                      | hashBag => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
+                      | hashSet => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
                       | vec =>
                           cases elementsFound : compileVectorElements?
                               (compileSchemaWithFuel? language rule spec site fuel)
                               locals path 0 elementSort sources with
                           | none =>
-                              simp only [compileSchemaWithFuel?, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, elementsFound,
                                 Option.bind_eq_bind, Option.bind_none, reduceCtorEq] at found
                           | some elements =>
-                              simp only [compileSchemaWithFuel?, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, pure, Option.some.injEq] at found
                               cases found
                               have elementsMatch := compile_vector_elements_instantiates
@@ -6851,66 +7025,6 @@ abbrev scopedArguments {ambient locals : List TypeExpr}
       (fun _ (position : Var ambient _) => Term.var position))
     (liftSub (emptyAmbientSub ambient) locals) arguments
 
-private theorem contextual_instantiate_cast_context
-    {S : Signature} {M : List (MetaArity S)} {ambient source source' target target' : Ctx S}
-    (sourceEqual : source = source') (targetEqual : target = target')
-    (bodies : ContextualAssignment S M ambient) (ambientSub : Sub S ambient target)
-    (valuation : Sub S source target) {sort : S.Srt}
-    (term : Term (withMetas S M) source sort) :
-    ContextualAssignment.instantiate bodies
-      (fun sort position => castTermCtx targetEqual (ambientSub sort position))
-      (fun sort position => castTermCtx targetEqual
-        (valuation sort (sourceEqual.symm ▸ position)))
-      (castTermCtx (T := withMetas S M) sourceEqual term) =
-    castTermCtx targetEqual (ContextualAssignment.instantiate bodies ambientSub valuation term) := by
-  cases sourceEqual
-  cases targetEqual
-  rfl
-
-private theorem weakenSub_append {S : Signature} {source target : Ctx S}
-    (sigma : Sub S source target) : ∀ (binders locals : Ctx S),
-    ContextualAssignment.weakenSub (binders ++ locals) sigma =
-      fun sort position => castTermCtx (List.append_assoc binders locals target).symm
-        (ContextualAssignment.weakenSub binders
-          (ContextualAssignment.weakenSub locals sigma) sort position)
-  | [], locals => by
-      simp only [List.nil_append, ContextualAssignment.weakenSub_nil, castTermCtx]
-  | binder :: binders, locals => by
-      change ContextualAssignment.weakenSub (binder :: (binders ++ locals)) sigma = _
-      rw [ContextualAssignment.weakenSub_cons,
-        ContextualAssignment.weakenSub_cons, weakenSub_append sigma binders locals]
-      funext sort position
-      exact (castTermCtx_weaken (List.append_assoc binders locals target).symm _).symm
-
-private theorem contextual_instantiate_append
-    {S : Signature} {M : List (MetaArity S)} {ambient source target : Ctx S}
-    (bodies : ContextualAssignment S M ambient) (ambientSub : Sub S ambient target)
-    (valuation : Sub S source target) (binders locals : Ctx S) {sort : S.Srt}
-    (term : Term (withMetas S M) (binders ++ (locals ++ source)) sort) :
-    ContextualAssignment.instantiate bodies
-      (ContextualAssignment.weakenSub (binders ++ locals) ambientSub)
-      (liftSub valuation (binders ++ locals))
-      (castTermCtx (T := withMetas S M) (List.append_assoc binders locals source).symm term) =
-    castTermCtx (List.append_assoc binders locals target).symm
-      (ContextualAssignment.instantiate bodies
-        (ContextualAssignment.weakenSub binders (ContextualAssignment.weakenSub locals ambientSub))
-        (liftSub (liftSub valuation locals) binders) term) := by
-  have lifted : liftSub valuation (binders ++ locals) = fun result position =>
-      castTermCtx (List.append_assoc binders locals target).symm
-        (liftSub (liftSub valuation locals) binders result
-          (List.append_assoc binders locals source ▸ position)) := by
-    funext result position
-    have equality := liftSub_append valuation binders locals result
-      (List.append_assoc binders locals source ▸ position)
-    have cancel : ∀ {first second : Ctx S} (same : first = second) (v : Var first result),
-        same.symm ▸ (same ▸ v) = v := by
-      intro first second same v
-      cases same
-      rfl
-    simpa only [cancel] using equality
-  rw [weakenSub_append, lifted]
-  exact contextual_instantiate_cast_context _ _ _ _ _ term
-
 private theorem erase_scoped_cast_append {ambient binders locals : List TypeExpr}
     {sort : TypeExpr} (bodies : AmbientBodies language rule spec ambient)
     (term : Term (SchemaSignature language rule spec) ((binders ++ locals) ++ []) sort) :
@@ -6922,7 +7036,7 @@ private theorem erase_scoped_cast_append {ambient binders locals : List TypeExpr
       (castTermCtx (T := SchemaSignature language rule spec)
         (List.append_assoc binders locals []) term)) =
     erase (scopedInstantiation bodies term) := by
-  have action := contextual_instantiate_append bodies
+  have action := ContextualAssignment.instantiate_append bodies
     (fun _ (position : Var ambient _) => Term.var position) (emptyAmbientSub ambient) binders locals
     (castTermCtx (T := SchemaSignature language rule spec) (List.append_assoc binders locals []) term)
   simp only [cast_context_inverse] at action
@@ -7267,12 +7381,12 @@ theorem compileSchemaWithFuel?_instantiates
   induction fuel with
   | zero =>
       intro locals path source sort compiled found
-      simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+      simp only [compileSchemaWithFuel?_zero, reduceCtorEq] at found
   | succ fuel children =>
       intro locals path source sort compiled found
       cases source with
       | bvar index =>
-          simp only [compileSchemaWithFuel?] at found
+          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly] at found
           split at found
           · simp only [reduceCtorEq] at found
           · rename_i position positionFound
@@ -7287,17 +7401,17 @@ theorem compileSchemaWithFuel?_instantiates
       | fvar name =>
           cases inputFound : elaborateInputOccurrence? language rule spec locals site path name sort with
           | none =>
-              simp only [compileSchemaWithFuel?, inputFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, inputFound, Option.bind_eq_bind,
                 Option.bind_none, reduceCtorEq] at found
           | some input =>
-              simp only [compileSchemaWithFuel?, inputFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, inputFound, Option.bind_eq_bind,
                 Option.bind_some, pure, Option.some.injEq] at found
               cases found
               exact input_schema_instantiates input
       | apply label sources =>
           cases selectedFound : selectConstructor? language label with
           | none =>
-              simp only [compileSchemaWithFuel?, selectedFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, Option.bind_eq_bind,
                 Option.bind_none, reduceCtorEq] at found
           | some selected =>
               by_cases same : TypeExpr.base (language.terms.get selected.index).category = sort
@@ -7306,11 +7420,11 @@ theorem compileSchemaWithFuel?_instantiates
                       (compileSchemaWithFuel? language rule spec site fuel) locals path 0
                       (language.terms.get selected.index).params sources with
                   | none =>
-                      simp only [compileSchemaWithFuel?, selectedFound, same, notBare,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare,
                         argumentsFound, dite_true, Option.bind_eq_bind, Option.bind_some,
                         Option.bind_none, reduceCtorEq] at found
                   | some arguments =>
-                      simp only [compileSchemaWithFuel?, selectedFound, same, notBare,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare,
                         argumentsFound, dite_true, Option.bind_eq_bind, Option.bind_some,
                         pure, Option.some.injEq] at found
                       cases found
@@ -7320,82 +7434,82 @@ theorem compileSchemaWithFuel?_instantiates
                         arguments argumentsFound
                       apply cast_sort_instantiates
                       exact constructor_schema_instantiates path selected _ arguments argumentsMatch
-                · simp only [compileSchemaWithFuel?, selectedFound, same, notBare, dite_true,
+                · simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare, dite_true,
                     dite_false, Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
-              · simp only [compileSchemaWithFuel?, selectedFound, same, dite_false,
+              · simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, dite_false,
                   Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
       | lambda annotation source =>
           cases annotation with
-          | some name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | some name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | none =>
               cases sort with
-              | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | arrow domain codomain =>
                   cases bodyFound : compileSchemaWithFuel? language rule spec site fuel
                       (domain :: locals) (path ++ [0]) source codomain with
                   | none =>
-                      simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                         Option.bind_none, reduceCtorEq] at found
                   | some body =>
-                      simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                         Option.bind_some, pure, Option.some.injEq] at found
                       cases found
                       exact lambda_schema_instantiates body
                         (children (domain :: locals) (path ++ [0]) source codomain body bodyFound)
       | multiLambda count annotations source =>
           cases annotations with
-          | cons name names => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | cons name names => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | nil =>
               cases sort with
-              | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | arrow domain codomain =>
                   cases domain with
-                  | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | arrow first second => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                  | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+                  | arrow first second => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+                  | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
                   | multiBinder domain =>
                       cases bodyFound : compileSchemaWithFuel? language rule spec site fuel
                           (List.replicate count domain ++ locals) (path ++ [0]) source codomain with
                       | none =>
-                          simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                             Option.bind_none, reduceCtorEq] at found
                       | some body =>
-                          simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                             Option.bind_some, pure, Option.some.injEq] at found
                           cases found
                           exact multiLambda_schema_instantiates count body
                             (children (List.replicate count domain ++ locals)
                               (path ++ [0]) source codomain body bodyFound)
-      | subst body replacement => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+      | subst body replacement => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
       | collection kind sources rest =>
           cases kind with
-          | hashBag => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-          | hashSet => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | hashBag => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+          | hashSet => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | vec =>
               cases rest with
-              | some name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | some name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | none =>
                   cases sort with
-                  | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | arrow domain codomain => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                  | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
+                  | arrow domain codomain => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
                   | base category =>
                       cases selectedFound : selectVectorConstructor? language category with
                       | none =>
-                          simp only [compileSchemaWithFuel?, selectedFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, Option.bind_eq_bind,
                             Option.bind_none, reduceCtorEq] at found
                       | some selected =>
                           cases elementsFound : compileVectorElements?
                               (compileSchemaWithFuel? language rule spec site fuel)
                               locals path 0 selected.elementSort sources with
                           | none =>
-                              simp only [compileSchemaWithFuel?, selectedFound, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, Option.bind_none, reduceCtorEq] at found
                           | some elements =>
-                              simp only [compileSchemaWithFuel?, selectedFound, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, pure, Option.some.injEq] at found
                               cases found
                               have elementsMatch := compile_vector_elements_instantiates
@@ -7404,17 +7518,17 @@ theorem compileSchemaWithFuel?_instantiates
                               exact vector_constructor_schema_instantiates path selected elements elementsMatch
                   | collection kind elementSort =>
                       cases kind with
-                      | hashBag => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                      | hashSet => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                      | hashBag => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
+                      | hashSet => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
                       | vec =>
                           cases elementsFound : compileVectorElements?
                               (compileSchemaWithFuel? language rule spec site fuel)
                               locals path 0 elementSort sources with
                           | none =>
-                              simp only [compileSchemaWithFuel?, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, elementsFound,
                                 Option.bind_eq_bind, Option.bind_none, reduceCtorEq] at found
                           | some elements =>
-                              simp only [compileSchemaWithFuel?, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, pure, Option.some.injEq] at found
                               cases found
                               have elementsMatch := compile_vector_elements_instantiates
@@ -8269,12 +8383,12 @@ theorem compileSchemaWithFuel?_instance_matches
   induction fuel with
   | zero =>
       intro locals path source sort compiled found
-      simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+      simp only [compileSchemaWithFuel?_zero, reduceCtorEq] at found
   | succ fuel children =>
       intro locals path source sort compiled found
       cases source with
       | bvar index =>
-          simp only [compileSchemaWithFuel?] at found
+          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly] at found
           split at found
           · simp only [reduceCtorEq] at found
           · rename_i position positionFound
@@ -8290,17 +8404,17 @@ theorem compileSchemaWithFuel?_instance_matches
       | fvar name =>
           cases inputFound : elaborateInputOccurrence? language rule spec locals site path name sort with
           | none =>
-              simp only [compileSchemaWithFuel?, inputFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, inputFound, Option.bind_eq_bind,
                 Option.bind_none, reduceCtorEq] at found
           | some input =>
-              simp only [compileSchemaWithFuel?, inputFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, inputFound, Option.bind_eq_bind,
                 Option.bind_some, pure, Option.some.injEq] at found
               cases found
               exact input_schema_instance_matches input
       | apply label sources =>
           cases selectedFound : selectConstructor? language label with
           | none =>
-              simp only [compileSchemaWithFuel?, selectedFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, Option.bind_eq_bind,
                 Option.bind_none, reduceCtorEq] at found
           | some selected =>
               by_cases same : TypeExpr.base (language.terms.get selected.index).category = sort
@@ -8309,11 +8423,11 @@ theorem compileSchemaWithFuel?_instance_matches
                       (compileSchemaWithFuel? language rule spec site fuel) locals path 0
                       (language.terms.get selected.index).params sources with
                   | none =>
-                      simp only [compileSchemaWithFuel?, selectedFound, same, notBare,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare,
                         argumentsFound, dite_true, Option.bind_eq_bind, Option.bind_some,
                         Option.bind_none, reduceCtorEq] at found
                   | some arguments =>
-                      simp only [compileSchemaWithFuel?, selectedFound, same, notBare,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare,
                         argumentsFound, dite_true, Option.bind_eq_bind, Option.bind_some,
                         pure, Option.some.injEq] at found
                       cases found
@@ -8323,82 +8437,82 @@ theorem compileSchemaWithFuel?_instance_matches
                         arguments argumentsFound
                       apply cast_sort_instance_matches
                       exact constructor_schema_instance_matches path selected _ arguments argumentsMatch
-                · simp only [compileSchemaWithFuel?, selectedFound, same, notBare, dite_true,
+                · simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare, dite_true,
                     dite_false, Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
-              · simp only [compileSchemaWithFuel?, selectedFound, same, dite_false,
+              · simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, dite_false,
                   Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
       | lambda annotation source =>
           cases annotation with
-          | some name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | some name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | none =>
               cases sort with
-              | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | arrow domain codomain =>
                   cases bodyFound : compileSchemaWithFuel? language rule spec site fuel
                       (domain :: locals) (path ++ [0]) source codomain with
                   | none =>
-                      simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                         Option.bind_none, reduceCtorEq] at found
                   | some body =>
-                      simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                         Option.bind_some, pure, Option.some.injEq] at found
                       cases found
                       exact lambda_schema_instance_matches body
                         (children (domain :: locals) (path ++ [0]) source codomain body bodyFound)
       | multiLambda count annotations source =>
           cases annotations with
-          | cons name names => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | cons name names => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | nil =>
               cases sort with
-              | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | arrow domain codomain =>
                   cases domain with
-                  | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | arrow first second => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                  | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+                  | arrow first second => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+                  | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
                   | multiBinder domain =>
                       cases bodyFound : compileSchemaWithFuel? language rule spec site fuel
                           (List.replicate count domain ++ locals) (path ++ [0]) source codomain with
                       | none =>
-                          simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                             Option.bind_none, reduceCtorEq] at found
                       | some body =>
-                          simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                             Option.bind_some, pure, Option.some.injEq] at found
                           cases found
                           exact multiLambda_schema_instance_matches count body
                             (children (List.replicate count domain ++ locals)
                               (path ++ [0]) source codomain body bodyFound)
-      | subst body replacement => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+      | subst body replacement => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
       | collection kind sources rest =>
           cases kind with
-          | hashBag => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-          | hashSet => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | hashBag => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+          | hashSet => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | vec =>
               cases rest with
-              | some name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | some name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | none =>
                   cases sort with
-                  | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | arrow domain codomain => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                  | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
+                  | arrow domain codomain => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
                   | base category =>
                       cases selectedFound : selectVectorConstructor? language category with
                       | none =>
-                          simp only [compileSchemaWithFuel?, selectedFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, Option.bind_eq_bind,
                             Option.bind_none, reduceCtorEq] at found
                       | some selected =>
                           cases elementsFound : compileVectorElements?
                               (compileSchemaWithFuel? language rule spec site fuel)
                               locals path 0 selected.elementSort sources with
                           | none =>
-                              simp only [compileSchemaWithFuel?, selectedFound, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, Option.bind_none, reduceCtorEq] at found
                           | some elements =>
-                              simp only [compileSchemaWithFuel?, selectedFound, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, pure, Option.some.injEq] at found
                               cases found
                               have elementsMatch := compile_vector_elements_instance_matches
@@ -8407,17 +8521,17 @@ theorem compileSchemaWithFuel?_instance_matches
                               exact vector_constructor_schema_instance_matches path selected elements elementsMatch
                   | collection kind elementSort =>
                       cases kind with
-                      | hashBag => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                      | hashSet => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                      | hashBag => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
+                      | hashSet => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
                       | vec =>
                           cases elementsFound : compileVectorElements?
                               (compileSchemaWithFuel? language rule spec site fuel)
                               locals path 0 elementSort sources with
                           | none =>
-                              simp only [compileSchemaWithFuel?, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, elementsFound,
                                 Option.bind_eq_bind, Option.bind_none, reduceCtorEq] at found
                           | some elements =>
-                              simp only [compileSchemaWithFuel?, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, pure, Option.some.injEq] at found
                               cases found
                               have elementsMatch := compile_vector_elements_instance_matches
@@ -8723,12 +8837,12 @@ theorem compileSchemaWithFuel?_reconstructs
   induction fuel with
   | zero =>
       intro locals path source sort compiled found
-      simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+      simp only [compileSchemaWithFuel?_zero, reduceCtorEq] at found
   | succ fuel children =>
       intro locals path source sort compiled found
       cases source with
       | bvar index =>
-          simp only [compileSchemaWithFuel?] at found
+          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly] at found
           split at found
           · simp only [reduceCtorEq] at found
           · rename_i position positionFound
@@ -8738,17 +8852,17 @@ theorem compileSchemaWithFuel?_reconstructs
       | fvar name =>
           cases inputFound : elaborateInputOccurrence? language rule spec locals site path name sort with
           | none =>
-              simp only [compileSchemaWithFuel?, inputFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, inputFound, Option.bind_eq_bind,
                 Option.bind_none, reduceCtorEq] at found
           | some input =>
-              simp only [compileSchemaWithFuel?, inputFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, inputFound, Option.bind_eq_bind,
                 Option.bind_some, pure, Option.some.injEq] at found
               cases found
               exact input_schema_reconstructs input
       | apply label sources =>
           cases selectedFound : selectConstructor? language label with
           | none =>
-              simp only [compileSchemaWithFuel?, selectedFound, Option.bind_eq_bind,
+              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, Option.bind_eq_bind,
                 Option.bind_none, reduceCtorEq] at found
           | some selected =>
               by_cases same : TypeExpr.base (language.terms.get selected.index).category = sort
@@ -8757,11 +8871,11 @@ theorem compileSchemaWithFuel?_reconstructs
                       (compileSchemaWithFuel? language rule spec site fuel) locals path 0
                       (language.terms.get selected.index).params sources with
                   | none =>
-                      simp only [compileSchemaWithFuel?, selectedFound, same, notBare,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare,
                         argumentsFound, dite_true, Option.bind_eq_bind, Option.bind_some,
                         Option.bind_none, reduceCtorEq] at found
                   | some arguments =>
-                      simp only [compileSchemaWithFuel?, selectedFound, same, notBare,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare,
                         argumentsFound, dite_true, Option.bind_eq_bind, Option.bind_some,
                         pure, Option.some.injEq] at found
                       cases found
@@ -8771,82 +8885,82 @@ theorem compileSchemaWithFuel?_reconstructs
                         arguments argumentsFound
                       apply cast_sort_reconstructs
                       exact constructor_schema_reconstructs path selected _ arguments argumentsMatch
-                · simp only [compileSchemaWithFuel?, selectedFound, same, notBare, dite_true,
+                · simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, notBare, dite_true,
                     dite_false, Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
-              · simp only [compileSchemaWithFuel?, selectedFound, same, dite_false,
+              · simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, same, dite_false,
                   Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
       | lambda annotation source =>
           cases annotation with
-          | some name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | some name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | none =>
               cases sort with
-              | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | arrow domain codomain =>
                   cases bodyFound : compileSchemaWithFuel? language rule spec site fuel
                       (domain :: locals) (path ++ [0]) source codomain with
                   | none =>
-                      simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                         Option.bind_none, reduceCtorEq] at found
                   | some body =>
-                      simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                      simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                         Option.bind_some, pure, Option.some.injEq] at found
                       cases found
                       exact lambda_schema_reconstructs body
                         (children (domain :: locals) (path ++ [0]) source codomain body bodyFound)
       | multiLambda count annotations source =>
           cases annotations with
-          | cons name names => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | cons name names => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | nil =>
               cases sort with
-              | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-              | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+              | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | arrow domain codomain =>
                   cases domain with
-                  | base name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | arrow first second => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | collection kind sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                  | base name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+                  | arrow first second => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+                  | collection kind sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
                   | multiBinder domain =>
                       cases bodyFound : compileSchemaWithFuel? language rule spec site fuel
                           (List.replicate count domain ++ locals) (path ++ [0]) source codomain with
                       | none =>
-                          simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                             Option.bind_none, reduceCtorEq] at found
                       | some body =>
-                          simp only [compileSchemaWithFuel?, bodyFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, bodyFound, Option.bind_eq_bind,
                             Option.bind_some, pure, Option.some.injEq] at found
                           cases found
                           exact multiLambda_schema_reconstructs count body
                             (children (List.replicate count domain ++ locals)
                               (path ++ [0]) source codomain body bodyFound)
-      | subst body replacement => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+      | subst body replacement => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
       | collection kind sources rest =>
           cases kind with
-          | hashBag => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-          | hashSet => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+          | hashBag => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
+          | hashSet => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
           | vec =>
               cases rest with
-              | some name => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+              | some name => simp only [compileSchemaWithFuel?_succ, Assembly.step, reduceCtorEq] at found
               | none =>
                   cases sort with
-                  | multiBinder sort => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                  | arrow domain codomain => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                  | multiBinder sort => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
+                  | arrow domain codomain => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
                   | base category =>
                       cases selectedFound : selectVectorConstructor? language category with
                       | none =>
-                          simp only [compileSchemaWithFuel?, selectedFound, Option.bind_eq_bind,
+                          simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, Option.bind_eq_bind,
                             Option.bind_none, reduceCtorEq] at found
                       | some selected =>
                           cases elementsFound : compileVectorElements?
                               (compileSchemaWithFuel? language rule spec site fuel)
                               locals path 0 selected.elementSort sources with
                           | none =>
-                              simp only [compileSchemaWithFuel?, selectedFound, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, Option.bind_none, reduceCtorEq] at found
                           | some elements =>
-                              simp only [compileSchemaWithFuel?, selectedFound, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, selectedFound, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, pure, Option.some.injEq] at found
                               cases found
                               have elementsMatch := compile_vector_elements_reconstruct
@@ -8855,17 +8969,17 @@ theorem compileSchemaWithFuel?_reconstructs
                               exact vector_constructor_schema_reconstructs path selected elements elementsMatch
                   | collection kind elementSort =>
                       cases kind with
-                      | hashBag => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
-                      | hashSet => simp only [compileSchemaWithFuel?, reduceCtorEq] at found
+                      | hashBag => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
+                      | hashSet => simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, reduceCtorEq] at found
                       | vec =>
                           cases elementsFound : compileVectorElements?
                               (compileSchemaWithFuel? language rule spec site fuel)
                               locals path 0 elementSort sources with
                           | none =>
-                              simp only [compileSchemaWithFuel?, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, elementsFound,
                                 Option.bind_eq_bind, Option.bind_none, reduceCtorEq] at found
                           | some elements =>
-                              simp only [compileSchemaWithFuel?, elementsFound,
+                              simp only [compileSchemaWithFuel?_succ, Assembly.step, inputAssembly, elementsFound,
                                 Option.bind_eq_bind, Option.bind_some, pure, Option.some.injEq] at found
                               cases found
                               have elementsMatch := compile_vector_elements_reconstruct
@@ -11601,7 +11715,7 @@ theorem actual_generator_refuses_blocked_open_focus :
 def snapshot : Snapshot where
   language := outputLanguage
   freeTypes := []
-  provider := ⟨[], []⟩
+  provider := { signatures := [], rows := [] }
 
 def permissionData : Permissions where
   sites := boxCapabilities
@@ -11681,7 +11795,7 @@ theorem actual_compiled_guarded_receipt_earns_permission_and_both_fills :
 def rootEnvironment : GeneralPremise.Environment where
   language := outputLanguage
   free := FreeTypeContext.empty
-  provider := ⟨[], []⟩
+  provider := { signatures := [], rows := [] }
   specifications := [(0, outputSpec), (1, outputSpec)]
 
 theorem whole_original_compiler_joins_guarded_same_fin_firing :
@@ -11729,7 +11843,7 @@ def blockedGuardRule : RewriteRule :=
 def blockedGuardEnvironment : GeneralPremise.Environment where
   language := { outputLanguage with rewrites := [blockedGuardRule] }
   free := FreeTypeContext.empty
-  provider := ⟨[], []⟩
+  provider := { signatures := [], rows := [] }
   specifications := []
 
 theorem candidate_and_path_do_not_discharge_original_guard :
@@ -11748,6 +11862,8 @@ theorem candidate_and_path_do_not_discharge_original_guard :
           cases query with
           | row declared specified typed arguments completed =>
               simp only [blockedGuardEnvironment, List.getElem?_nil, reduceCtorEq] at declared
+          | dynamicRow registered _ _ _ _ _ _ _ =>
+              simp only [blockedGuardEnvironment, List.not_mem_nil] at registered
 
 def guardedScopedSpec : RuleBindingSpec where
   dependencies := [("P", [u, u]), ("Q", [u, u])]
@@ -11770,7 +11886,7 @@ def guardedScopedRule : RewriteRule :=
     bindings := some guardedScopedSpec }
 
 def scopedProvider : GeneralPremise.ProviderSnapshot :=
-  ⟨[⟨"allowed", [], []⟩], [⟨"allowed", []⟩]⟩
+  { signatures := [⟨"allowed", [], []⟩], rows := [⟨"allowed", []⟩] }
 
 def guardedScopedLanguage : LanguageDef :=
   { outputLanguage with rewrites := [outputRule, guardedScopedRule] }
@@ -11912,6 +12028,8 @@ theorem empty_declared_guard_blocks_actual_scoped_parent :
           cases queried with
           | row declared specified typed arguments completed =>
               simp only [emptyScopedProviderEnvironment, List.getElem?_nil, reduceCtorEq] at declared
+          | dynamicRow registered _ _ _ _ _ _ _ =>
+              simp only [emptyScopedProviderEnvironment, scopedProvider, List.not_mem_nil] at registered
 
 /-- The original langGSLT contextual evaluator still refuses this nonempty
 scoped row. The typed guarded semantics does not enlarge that evaluator. -/
@@ -11925,3 +12043,1898 @@ end ScopedPermissionControls
 end Controls
 
 end Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration
+
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.RuleBinding
+open Mettapedia.OSLF.Binding
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open Mettapedia.OSLF.MeTTaIL.GeneralPremise
+
+variable {language : LanguageDef} {rule : RewriteRule} {spec : RuleBindingSpec}
+
+/-- An output occurrence retains the original declaration, location and typed
+dependency values without requiring a recoverable matching spine. -/
+abbrev OutputEvidence (language : LanguageDef) (rule : RewriteRule) (spec : RuleBindingSpec) :=
+  (site : RulePatternSite) × (locals : List TypeExpr) × (path : List Nat) ×
+    (name : String) × (sort : TypeExpr) ×
+      CompiledOccurrence language rule spec locals site path name sort
+
+/-- The original output representation and its effective intrinsic template
+are distinct. Explicit substitution is retained in the former and performed
+by the existing capture-aware binding action in the latter. -/
+structure OutputSchema (language : LanguageDef) (rule : RewriteRule)
+    (spec : RuleBindingSpec) (locals : List TypeExpr) (source : Pattern) (sort : TypeExpr) where
+  representation : Term (SchemaSignature language rule spec) locals sort
+  term : Term (SchemaSignature language rule spec) locals sort
+  source_readback : readback representation = source
+  occurrences : List (OutputEvidence language rule spec)
+  constructorOccurrences : List (List Nat × Fin language.terms.length)
+
+def OutputSchema.bound {locals : List TypeExpr} {index : Nat} {sort : TypeExpr}
+    (position : Var locals sort) (found : variableIndex position = index) :
+    OutputSchema language rule spec locals (.bvar index) sort where
+  representation := .var position
+  term := .var position
+  source_readback := congrArg Pattern.bvar found
+  occurrences := []
+  constructorOccurrences := []
+
+def OutputSchema.ofOccurrence {locals : List TypeExpr} {site : RulePatternSite}
+    {path : List Nat} {name : String} {sort : TypeExpr}
+    (occurrence : CompiledOccurrence language rule spec locals site path name sort) :
+    OutputSchema language rule spec locals (.fvar name) sort where
+  representation := occurrence.term
+  term := occurrence.term
+  source_readback := by
+    rw [CompiledOccurrence.term, readback_cast_sort]
+    exact congrArg Pattern.fvar occurrence.named
+  occurrences := [⟨site, locals, path, name, sort, occurrence⟩]
+  constructorOccurrences := []
+
+def OutputSchema.castSort {locals : List TypeExpr} {source : Pattern}
+    {first second : TypeExpr} (compiled : OutputSchema language rule spec locals source first)
+    (same : first = second) : OutputSchema language rule spec locals source second where
+  representation := same ▸ compiled.representation
+  term := same ▸ compiled.term
+  source_readback := (readback_cast_sort same compiled.representation).trans compiled.source_readback
+  occurrences := compiled.occurrences
+  constructorOccurrences := compiled.constructorOccurrences
+
+def OutputSchema.lambda {locals : List TypeExpr} {source : Pattern}
+    {domain codomain : TypeExpr}
+    (body : OutputSchema language rule spec (domain :: locals) source codomain) :
+    OutputSchema language rule spec locals (.lambda none source) (.arrow domain codomain) where
+  representation := .op (.inl (.lambda domain codomain)) (.cons body.representation .nil)
+  term := .op (.inl (.lambda domain codomain)) (.cons body.term .nil)
+  source_readback := by change Pattern.lambda none (readback body.representation) = _; rw [body.source_readback]
+  occurrences := body.occurrences
+  constructorOccurrences := body.constructorOccurrences
+
+def OutputSchema.multiLambda {locals : List TypeExpr} {source : Pattern}
+    {domain codomain : TypeExpr} (count : Nat)
+    (body : OutputSchema language rule spec (List.replicate count domain ++ locals) source codomain) :
+    OutputSchema language rule spec locals (.multiLambda count [] source)
+      (.arrow (.multiBinder domain) codomain) where
+  representation := .op (.inl (.multiLambda domain codomain count)) (.cons body.representation .nil)
+  term := .op (.inl (.multiLambda domain codomain count)) (.cons body.term .nil)
+  source_readback := by change Pattern.multiLambda count [] (readback body.representation) = _; rw [body.source_readback]
+  occurrences := body.occurrences
+  constructorOccurrences := body.constructorOccurrences
+
+/-- Effective substitution uses the sole binding operation, retaining both
+physical source children even when substitution duplicates or erases values. -/
+def OutputSchema.subst {locals : List TypeExpr} {body replacement : Pattern}
+    {domain codomain : TypeExpr}
+    (compiledBody : OutputSchema language rule spec (domain :: locals) body codomain)
+    (compiledReplacement : OutputSchema language rule spec locals replacement domain) :
+    OutputSchema language rule spec locals (.subst body replacement) codomain where
+  representation := .op (.inl (.subst domain codomain))
+    (.cons compiledBody.representation (.cons compiledReplacement.representation .nil))
+  term := inst compiledBody.term compiledReplacement.term
+  source_readback := by
+    change Pattern.subst (readback compiledBody.representation) (readback compiledReplacement.representation) = _
+    rw [compiledBody.source_readback, compiledReplacement.source_readback]
+  occurrences := compiledBody.occurrences ++ compiledReplacement.occurrences
+  constructorOccurrences := compiledBody.constructorOccurrences ++ compiledReplacement.constructorOccurrences
+
+structure OutputConstructorArguments (language : LanguageDef) (rule : RewriteRule)
+    (spec : RuleBindingSpec) (locals : List TypeExpr)
+    (parameters : List TermParam) (sources : List Pattern) where
+  arity : List (List TypeExpr × TypeExpr)
+  scopes : ParameterScopes parameters arity
+  representation : Args (SchemaSignature language rule spec) arity locals
+  terms : Args (SchemaSignature language rule spec) arity locals
+  source_readback : readbackConstructorArguments scopes representation = sources
+  occurrences : List (OutputEvidence language rule spec)
+  constructorOccurrences : List (List Nat × Fin language.terms.length)
+
+def outputConstructorArguments?
+    (compile : (locals : List TypeExpr) → (path : List Nat) →
+      (source : Pattern) → (sort : TypeExpr) →
+        Option (OutputSchema language rule spec locals source sort))
+    (locals : List TypeExpr) (path : List Nat) (offset : Nat) :
+    (parameters : List TermParam) → (sources : List Pattern) →
+      Option (OutputConstructorArguments language rule spec locals parameters sources)
+  | [], [] => some {
+      arity := [], scopes := .nil, representation := .nil, terms := .nil,
+      source_readback := rfl, occurrences := [], constructorOccurrences := [] }
+  | parameter :: parameters, source :: sources => do
+      let body ← parameterBody? parameter source
+      let head ← compile (body.binders ++ locals) (path ++ [offset] ++ body.pathSuffix)
+        body.body body.sort
+      let tail ← outputConstructorArguments? compile locals path (offset + 1) parameters sources
+      pure {
+        arity := (body.binders, body.sort) :: tail.arity
+        scopes := .cons body.scope tail.scopes
+        representation := .cons head.representation tail.representation
+        terms := .cons head.term tail.terms
+        source_readback := by
+          change body.scope.wrap (readback head.representation) ::
+            readbackConstructorArguments tail.scopes tail.representation = source :: sources
+          rw [head.source_readback, body.source_readback, tail.source_readback]
+        occurrences := head.occurrences ++ tail.occurrences
+        constructorOccurrences := head.constructorOccurrences ++ tail.constructorOccurrences }
+  | _, _ => none
+
+def OutputSchema.constructor {locals : List TypeExpr} {label : String}
+    (path : List Nat) (selected : SelectedConstructor language label)
+    (ordinary : ¬ UsesBareCollection (language.terms.get selected.index)) {sources : List Pattern}
+    (arguments : OutputConstructorArguments language rule spec locals
+      (language.terms.get selected.index).params sources) :
+    OutputSchema language rule spec locals (.apply label sources)
+      (.base (language.terms.get selected.index).category) where
+  representation := .op (.inl (.constructor (language.terms.get selected.index)
+    (List.get_mem _ _) ordinary arguments.scopes)) arguments.representation
+  term := .op (.inl (.constructor (language.terms.get selected.index)
+    (List.get_mem _ _) ordinary arguments.scopes)) arguments.terms
+  source_readback := by
+    change Pattern.apply (language.terms.get selected.index).label
+      (readbackConstructorArguments arguments.scopes arguments.representation) = _
+    rw [selected.named, arguments.source_readback]
+  occurrences := arguments.occurrences
+  constructorOccurrences := (path, selected.index) :: arguments.constructorOccurrences
+
+structure OutputVectorElements (language : LanguageDef) (rule : RewriteRule)
+    (spec : RuleBindingSpec) (locals : List TypeExpr)
+    (sources : List Pattern) (elementSort : TypeExpr) where
+  representation : Args (SchemaSignature language rule spec)
+    (List.replicate sources.length ([], elementSort)) locals
+  terms : Args (SchemaSignature language rule spec)
+    (List.replicate sources.length ([], elementSort)) locals
+  source_readback : readbackArguments representation = sources
+  occurrences : List (OutputEvidence language rule spec)
+  constructorOccurrences : List (List Nat × Fin language.terms.length)
+
+def outputVectorElements?
+    (compile : (locals : List TypeExpr) → (path : List Nat) →
+      (source : Pattern) → (sort : TypeExpr) →
+        Option (OutputSchema language rule spec locals source sort))
+    (locals : List TypeExpr) (path : List Nat) (offset : Nat) (elementSort : TypeExpr) :
+    (sources : List Pattern) → Option (OutputVectorElements language rule spec locals sources elementSort)
+  | [] => some {
+      representation := .nil, terms := .nil, source_readback := rfl,
+      occurrences := [], constructorOccurrences := [] }
+  | source :: sources => do
+      let head ← compile locals (path ++ [offset]) source elementSort
+      let tail ← outputVectorElements? compile locals path (offset + 1) elementSort sources
+      pure {
+        representation := .cons head.representation tail.representation
+        terms := .cons head.term tail.terms
+        source_readback := by
+          change readback head.representation :: readbackArguments tail.representation = source :: sources
+          rw [head.source_readback, tail.source_readback]
+        occurrences := head.occurrences ++ tail.occurrences
+        constructorOccurrences := head.constructorOccurrences ++ tail.constructorOccurrences }
+
+def OutputSchema.vector {locals : List TypeExpr} {sources : List Pattern} {elementSort : TypeExpr}
+    (elements : OutputVectorElements language rule spec locals sources elementSort) :
+    OutputSchema language rule spec locals (.collection .vec sources none) (.collection .vec elementSort) where
+  representation := .op (.inl (.collection .vec elementSort sources.length)) elements.representation
+  term := .op (.inl (.collection .vec elementSort sources.length)) elements.terms
+  source_readback := by change Pattern.collection .vec (readbackArguments elements.representation) none = _; rw [elements.source_readback]
+  occurrences := elements.occurrences
+  constructorOccurrences := elements.constructorOccurrences
+
+def OutputSchema.vectorConstructor {locals : List TypeExpr} {sources : List Pattern} {category : String}
+    (path : List Nat) (selected : SelectedVectorConstructor language category)
+    (elements : OutputVectorElements language rule spec locals sources selected.elementSort) :
+    OutputSchema language rule spec locals (.collection .vec sources none) (.base category) :=
+  OutputSchema.castSort {
+    representation := .op (.inl (.collectionConstructor (language.terms.get selected.index)
+      (List.get_mem _ _) selected.parameterName .vec selected.elementSort selected.shape sources.length)) elements.representation
+    term := .op (.inl (.collectionConstructor (language.terms.get selected.index)
+      (List.get_mem _ _) selected.parameterName .vec selected.elementSort selected.shape sources.length)) elements.terms
+    source_readback := by change Pattern.collection .vec (readbackArguments elements.representation) none = _; rw [elements.source_readback]
+    occurrences := elements.occurrences
+    constructorOccurrences := (path, selected.index) :: elements.constructorOccurrences }
+    (congrArg TypeExpr.base selected.categorized)
+
+/-- Ground object arguments use the shared output source traversal with
+contextual metavariable callbacks disabled. -/
+def groundOutputAssembly (language : LanguageDef) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (_site : RulePatternSite) : Assembly (OutputSchema language rule spec) where
+  bound locals index sort := do
+    match found : boundPosition? locals index sort with
+    | none => none
+    | some position => some (OutputSchema.bound position (boundPosition?_index locals index sort found))
+  free _ _ _ _ := none
+  constructor compile locals path label sources sort := do
+    let selected ← selectConstructor? language label
+    if same : TypeExpr.base (language.terms.get selected.index).category = sort then
+      if notBare : usesBareCollection? (language.terms.get selected.index) = false then
+        let arguments ← outputConstructorArguments? compile locals path 0
+          (language.terms.get selected.index).params sources
+        let ordinary : ¬ UsesBareCollection (language.terms.get selected.index) := by
+          intro bare
+          have checked := (usesBareCollection?_eq_true_iff _).mpr bare
+          rw [notBare] at checked
+          cases checked
+        pure ((OutputSchema.constructor path selected ordinary arguments).castSort same)
+      else none
+    else none
+  abstraction := OutputSchema.lambda
+  multiAbstraction := OutputSchema.multiLambda
+  substitution compile locals path body replacement sort :=
+    (SchemaTyping.declaredDomains language rule locals).findSome? fun domain => do
+      let compiledBody ← compile (domain :: locals) (path ++ [0]) body sort
+      let compiledReplacement ← compile locals (path ++ [1]) replacement domain
+      pure (OutputSchema.subst compiledBody compiledReplacement)
+  vector compile locals path sources sort :=
+    match sort with
+    | .collection .vec elementSort => do
+        let elements ← outputVectorElements? compile locals path 0 elementSort sources
+        pure (OutputSchema.vector elements)
+    | .base category => do
+        let selected ← selectVectorConstructor? language category
+        let elements ← outputVectorElements? compile locals path 0 selected.elementSort sources
+        pure (OutputSchema.vectorConstructor path selected elements)
+    | _ => none
+
+/-- Read back the retained representation, before effective output substitution. -/
+def groundOutputTerm? (language : LanguageDef) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (site : RulePatternSite) (locals : List TypeExpr) (source : Pattern) (sort : TypeExpr) :
+    Option { term : Term (signatureOf language) locals sort // erase term = source } := do
+  let compiled ← (groundOutputAssembly language rule spec site).walk
+    (sourceHeight source) locals [] source sort
+  let projected ← TargetReification.projectObject? compiled.representation
+  pure ⟨projected.term, projected.readback.trans compiled.source_readback⟩
+
+/-- Dependency arguments are the original ordered typed object terms.
+Only the shared source traversal decides which raw terms are admitted. -/
+def groundOutputArguments? (language : LanguageDef) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (site : RulePatternSite) (locals : List TypeExpr) :
+    (sources : List Pattern) → (dependencies : List TypeExpr) →
+      Option { arguments : DependencyArguments (language := language) dependencies locals //
+        eraseArguments arguments = sources }
+  | [], [] => some ⟨.nil, rfl⟩
+  | source :: sources, sort :: dependencies => do
+      let head ← groundOutputTerm? language rule spec site locals source sort
+      let tail ← groundOutputArguments? language rule spec site locals sources dependencies
+      pure ⟨.cons head.val tail.val, by
+        change erase head.val :: eraseArguments tail.val = _
+        rw [head.property, tail.property]⟩
+  | _, _ => none
+
+/-- Output applications accept ground dependency terms while retaining the
+actual source position, metadata row and declaration guards. -/
+def outputOccurrenceCandidate? (language : LanguageDef) (rule : RewriteRule)
+    (spec : RuleBindingSpec) (bound : List TypeExpr)
+    (site : RulePatternSite) (path : List Nat) (name : String) (sort : TypeExpr)
+    (index : Fin rule.typeContext.length) :
+    Option (CompiledOccurrence language rule spec bound site path name sort) :=
+  if named : (rule.typeContext.get index).1 = name then
+    if sorted : (rule.typeContext.get index).2 = sort then
+      if declared : dependencies? spec name =
+          some ((metaArities (language := language) rule spec).get (metaIndex rule spec index)).1 then
+        match source : arguments? rule spec name site path with
+        | none => none
+        | some patterns =>
+            match groundOutputArguments? language rule spec site bound patterns
+                ((metaArities (language := language) rule spec).get (metaIndex rule spec index)).1 with
+            | none => none
+            | some arguments => some ⟨index, named, sorted, declared, arguments.val,
+                by rw [source, arguments.property]⟩
+      else none
+    else none
+  else none
+
+def elaborateOutputOccurrence? (language : LanguageDef) (rule : RewriteRule)
+    (spec : RuleBindingSpec) (bound : List TypeExpr)
+    (site : RulePatternSite) (path : List Nat) (name : String) (sort : TypeExpr) :
+    Option (CompiledOccurrence language rule spec bound site path name sort) :=
+  if decide (rule.bindings = some spec) && admittedFor rule spec &&
+      dependencySortsDeclared language spec then
+    (List.finRange rule.typeContext.length).findSome?
+      (outputOccurrenceCandidate? language rule spec bound site path name sort)
+  else none
+
+theorem elaborateOutputOccurrence?_admitted {language : LanguageDef} {rule : RewriteRule}
+    {spec : RuleBindingSpec} {bound : List TypeExpr} {site : RulePatternSite}
+    {path : List Nat} {name : String} {sort : TypeExpr}
+    {compiled : CompiledOccurrence language rule spec bound site path name sort}
+    (accepted : elaborateOutputOccurrence? language rule spec bound site path name sort = some compiled) :
+    rule.bindings = some spec ∧ admittedFor rule spec = true ∧
+      dependencySortsDeclared language spec = true := by
+  unfold elaborateOutputOccurrence? at accepted
+  split at accepted
+  · rename_i admitted
+    simp only [Bool.and_eq_true, decide_eq_true_eq] at admitted
+    exact ⟨admitted.1.1, admitted.1.2, admitted.2⟩
+  · contradiction
+
+/-- Ground argument parsing changes only the output metavariable callback. -/
+def outputAssembly (language : LanguageDef) (rule : RewriteRule)
+    (spec : RuleBindingSpec) (site : RulePatternSite) : Assembly (OutputSchema language rule spec) :=
+  { groundOutputAssembly language rule spec site with
+    free := fun locals path name sort => do
+      let occurrence ← elaborateOutputOccurrence? language rule spec locals site path name sort
+      pure (OutputSchema.ofOccurrence occurrence) }
+
+
+/-- A whole side is independently sorted by the established schema typing
+checker. Its raw output and occurrence addresses remain exact source data. -/
+structure AuthoredOutputSchema (language : LanguageDef) (ruleIndex : Fin language.rewrites.length)
+    (site : RulePatternSite) (sort : TypeExpr) where
+  spec : RuleBindingSpec
+  attached : (language.rewrites.get ruleIndex).bindings = some spec
+  admitted : admittedFor (language.rewrites.get ruleIndex) spec = true
+  sortsDeclared : dependencySortsDeclared language spec = true
+  source : Pattern
+  atSite : sitePattern? (language.rewrites.get ruleIndex) site = some source
+  locals : List TypeExpr
+  atBinders : siteBinders? (language.rewrites.get ruleIndex) site = some locals
+  compiled : OutputSchema language (language.rewrites.get ruleIndex) spec locals source sort
+  compiled_from : (outputAssembly language (language.rewrites.get ruleIndex) spec site).walk
+    (sourceHeight source) locals [] source sort = some compiled
+  source_typed : HasType language
+    (FreeTypeContext.ofList (language.rewrites.get ruleIndex).typeContext) locals source sort
+
+def elaborateAuthoredOutput? (language : LanguageDef)
+    (ruleIndex : Fin language.rewrites.length) (site : RulePatternSite) (sort : TypeExpr) :
+    Option (AuthoredOutputSchema language ruleIndex site sort) := do
+  let rule := language.rewrites.get ruleIndex
+  let spec ← rule.bindings
+  if attached : rule.bindings = some spec then
+    if admitted : admittedFor rule spec = true then
+      if declared : dependencySortsDeclared language spec = true then
+        let source ← sitePattern? rule site
+        if atSite : sitePattern? rule site = some source then
+          let locals ← siteBinders? rule site
+          if atBinders : siteBinders? rule site = some locals then
+            if typed : SchemaTyping.checkSchemaType (SchemaTyping.declaredDomains language rule locals) language
+              (FreeTypeContext.ofList rule.typeContext) locals source sort = true then
+              match compiledFound : (outputAssembly language rule spec site).walk
+                  (sourceHeight source) locals [] source sort with
+              | none => none
+              | some compiled => pure {
+                  spec := spec, attached := attached, admitted := admitted, sortsDeclared := declared,
+                  source := source, atSite := atSite, locals := locals, atBinders := atBinders, compiled := compiled, compiled_from := compiledFound,
+                  source_typed := SchemaTyping.checkSchemaType_sound typed }
+            else none
+          else none
+        else none
+      else none
+    else none
+  else none
+
+
+end Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration
+
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.RuleBinding
+open Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching
+open Mettapedia.OSLF.Binding
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open AmbientCorrespondence InputRecovery
+
+variable {language : LanguageDef} {rule : RewriteRule} {spec : RuleBindingSpec}
+
+abbrev outputInstantiation {ambient locals : List TypeExpr} {sort : TypeExpr}
+    (bodies : AmbientBodies language rule spec ambient)
+    (term : Term (SchemaSignature language rule spec) locals sort) :=
+  ContextualAssignment.instantiate bodies
+    (ContextualAssignment.weakenSub (S := signatureOf language) locals
+      (fun _ (position : Var ambient _) => Term.var position))
+    (fun _ position => Term.var
+      (injPrefix (S := signatureOf language) (Γ := ambient) locals position)) term
+
+abbrev outputArguments {ambient locals : List TypeExpr}
+    {arity : List (List TypeExpr × TypeExpr)}
+    (bodies : AmbientBodies language rule spec ambient)
+    (arguments : Args (SchemaSignature language rule spec) arity locals) :=
+  ContextualAssignment.instantiateArgs bodies
+    (ContextualAssignment.weakenSub (S := signatureOf language) locals
+      (fun _ (position : Var ambient _) => Term.var position))
+    (fun _ position => Term.var
+      (injPrefix (S := signatureOf language) (Γ := ambient) locals position)) arguments
+
+def outputName : OutputEvidence language rule spec → String
+  | ⟨_, _, _, name, _, _⟩ => name
+
+def outputIndex : OutputEvidence language rule spec →
+    Fin (metaArities (language := language) rule spec).length
+  | ⟨_, _, _, _, _, occurrence⟩ => metaIndex rule spec occurrence.index
+
+def CapturesOutputs {ambient : List TypeExpr}
+    (occurrences : List (OutputEvidence language rule spec))
+    (raw : Assignment) (bodies : AmbientBodies language rule spec ambient) : Prop :=
+  ∀ occurrence ∈ occurrences, lookup raw (outputName occurrence) =
+    some (contextualValue (bodies (outputIndex occurrence)))
+
+theorem capturesOutputs_append {ambient : List TypeExpr}
+    (first second : List (OutputEvidence language rule spec)) (raw : Assignment)
+    (bodies : AmbientBodies language rule spec ambient) :
+    CapturesOutputs (first ++ second) raw bodies ↔
+      CapturesOutputs first raw bodies ∧ CapturesOutputs second raw bodies := by
+  constructor
+  · intro captured
+    exact ⟨fun occurrence member => captured occurrence (List.mem_append_left _ member),
+      fun occurrence member => captured occurrence (List.mem_append_right _ member)⟩
+  · rintro ⟨firstCaptured, secondCaptured⟩ occurrence member
+    rcases List.mem_append.mp member with firstMember | secondMember
+    · exact firstCaptured occurrence firstMember
+    · exact secondCaptured occurrence secondMember
+
+private theorem erase_output_cast_sort {ambient locals : List TypeExpr}
+    {first second : TypeExpr} (same : first = second)
+    (bodies : AmbientBodies language rule spec ambient)
+    (term : Term (SchemaSignature language rule spec) locals first) :
+    erase (outputInstantiation bodies (same ▸ term)) =
+      erase (outputInstantiation bodies term) := by
+  cases same
+  rfl
+
+/-- Applying a sorted output occurrence needs its supplied value, not the
+injectivity obligations needed to recover that value from an input. -/
+theorem output_occurrence_instantiates {ambient locals : List TypeExpr} {site : RulePatternSite}
+    {path : List Nat} {name : String} {sort : TypeExpr}
+    (occurrence : CompiledOccurrence language rule spec locals site path name sort)
+    (raw : Assignment) (bodies : AmbientBodies language rule spec ambient)
+    (captured : lookup raw name =
+      some (contextualValue (bodies (metaIndex rule spec occurrence.index)))) :
+    instantiateAt? rule spec ambient.length site path locals.length raw (.fvar name) =
+      some (erase (outputInstantiation bodies occurrence.term)) := by
+  simp only [instantiateAt?, instantiateWith?, captured, occurrence.source,
+    Option.bind_eq_bind, Option.bind_some]
+  have action := instantiateValue?_typed (bodies (metaIndex rule spec occurrence.index))
+    (appendAmbientArguments occurrence.arguments ambient)
+  rw [appendAmbientArguments_erases] at action
+  rw [action]
+  congr 1
+  simp only [outputInstantiation, CompiledOccurrence.term, erase_output_cast_sort,
+    CompiledOccurrence.schemaTerm, ContextualAssignment.instantiate,
+    ContextualAssignment.instantiateArgs_embedArgs, bindArgs_var_eq_renameArgs]
+  rfl
+
+private theorem cast_context_cancel {S : Signature} {first second : Ctx S}
+    (same : first = second) {sort : S.Srt} (term : Term S second sort) :
+    castTermCtx same (castTermCtx same.symm term) = term := by
+  cases same
+  rfl
+
+private theorem prefixSub_lift {S : Signature} (locals ambient : Ctx S) :
+    ∀ binders : Ctx S,
+      liftSub (S := S)
+        (fun result (position : Var locals result) => Term.var
+          (injPrefix (S := S) (Γ := ambient) locals position)) binders =
+        (fun result (position : Var (binders ++ locals) result) =>
+          castTermCtx (List.append_assoc binders locals ambient)
+            (Term.var (injPrefix (S := S) (Γ := ambient) (binders ++ locals) position)))
+  | [] => rfl
+  | binder :: binders => by
+      funext result position
+      cases position with
+      | zero =>
+          change Term.var Var.zero = castTermCtx
+            (congrArg (List.cons binder) (List.append_assoc binders locals ambient)) (Term.var Var.zero)
+          rw [castTermCtx_var, eqRec_var_zero (S := S) (List.append_assoc binders locals ambient) binder]
+      | succ old =>
+          change weaken (liftSub (S := S)
+              (fun r (v : Var locals r) => Term.var (injPrefix (S := S) (Γ := ambient) locals v))
+              binders result old) =
+            castTermCtx (congrArg (List.cons binder) (List.append_assoc binders locals ambient))
+              (weaken (Term.var (injPrefix (S := S) (Γ := ambient) (binders ++ locals) old)))
+          rw [castTermCtx_weaken, congrFun (congrFun (prefixSub_lift locals ambient binders) result) old]
+
+/-- Crossing constructor binders preserves the same output interpretation;
+the only target difference is reassociation of the explicit ambient suffix. -/
+theorem erase_output_under_binders {ambient locals binders : List TypeExpr} {sort : TypeExpr}
+    (bodies : AmbientBodies language rule spec ambient)
+    (term : Term (SchemaSignature language rule spec) (binders ++ locals) sort) :
+    erase (ContextualAssignment.instantiate bodies
+      (ContextualAssignment.weakenSub binders
+        (ContextualAssignment.weakenSub (S := signatureOf language) locals
+          (fun _ (position : Var ambient _) => Term.var position)))
+      (liftSub (S := signatureOf language)
+        (fun result (position : Var locals result) => Term.var
+          (injPrefix (S := signatureOf language) (Γ := ambient) locals position)) binders) term) =
+      erase (outputInstantiation bodies term) := by
+  have action := ContextualAssignment.instantiate_context_cast
+    (S := signatureOf language) (M := metaArities rule spec)
+    (sourceEqual := rfl) (targetEqual := List.append_assoc binders locals ambient) bodies
+    (ContextualAssignment.weakenSub (S := signatureOf language) (binders ++ locals)
+      (fun _ (position : Var ambient _) => Term.var position))
+    (fun result (position : Var (binders ++ locals) result) => Term.var
+      (injPrefix (S := signatureOf language) (Γ := ambient) (binders ++ locals) position)) term
+  have environment : (fun result (position : Var ambient result) =>
+      castTermCtx (List.append_assoc binders locals ambient)
+        (ContextualAssignment.weakenSub (S := signatureOf language) (binders ++ locals)
+          (fun _ (old : Var ambient _) => Term.var old) result position)) =
+      ContextualAssignment.weakenSub binders
+        (ContextualAssignment.weakenSub (S := signatureOf language) locals
+          (fun _ (old : Var ambient _) => Term.var old)) := by
+    rw [ContextualAssignment.weakenSub_append (S := signatureOf language)]
+    funext result position
+    exact cast_context_cancel _ _
+  change ContextualAssignment.instantiate bodies
+      (fun result (position : Var ambient result) =>
+        castTermCtx (List.append_assoc binders locals ambient)
+          (ContextualAssignment.weakenSub (S := signatureOf language) (binders ++ locals)
+            (fun _ (old : Var ambient _) => Term.var old) result position))
+      (fun result (position : Var (binders ++ locals) result) =>
+        castTermCtx (List.append_assoc binders locals ambient)
+          (Term.var (injPrefix (S := signatureOf language) (Γ := ambient) (binders ++ locals) position))) term =
+      castTermCtx (List.append_assoc binders locals ambient) (outputInstantiation bodies term) at action
+  rw [environment, ← prefixSub_lift (S := signatureOf language) locals ambient binders] at action
+  have eraseCast : ∀ {first second : List TypeExpr} (same : first = second)
+      (value : Term (signatureOf language) first sort),
+      erase (castTermCtx same value) = erase value := by
+    intro first second same value
+    cases same
+    rfl
+  exact (congrArg (fun value => erase value) action).trans (eraseCast _ _)
+
+/-- Eliminating an output binder commutes with contextual metavariable
+instantiation, including an arbitrary ambient suffix. -/
+theorem outputInstantiation_inst {ambient locals : List TypeExpr} {domain sort : TypeExpr}
+    (bodies : AmbientBodies language rule spec ambient)
+    (body : Term (SchemaSignature language rule spec) (domain :: locals) sort)
+    (replacement : Term (SchemaSignature language rule spec) locals domain) :
+    outputInstantiation bodies (inst body replacement) =
+      inst (outputInstantiation bodies body) (outputInstantiation bodies replacement) := by
+  dsimp only [outputInstantiation]
+  rw [ContextualAssignment.instantiate_inst]
+  have environment : ContextualAssignment.weakenSub [domain]
+      (ContextualAssignment.weakenSub (S := signatureOf language) locals
+        (fun _ (position : Var ambient _) => Term.var position)) =
+      ContextualAssignment.weakenSub (S := signatureOf language) (domain :: locals)
+        (fun _ (position : Var ambient _) => Term.var position) := by
+    funext result position
+    rfl
+  have valuation : liftSub (S := signatureOf language)
+      (fun result (position : Var locals result) => Term.var
+        (injPrefix (S := signatureOf language) (Γ := ambient) locals position)) [domain] =
+      (fun result (position : Var (domain :: locals) result) => Term.var
+        (injPrefix (S := signatureOf language) (Γ := ambient) (domain :: locals) position)) := by
+    funext result position
+    cases position <;> rfl
+  rw [environment, valuation]
+
+/-- The checked raw instantiator and the intrinsic effective output agree
+when every retained physical occurrence has its actual supplied value. -/
+def OutputInstantiatesAt {ambient locals : List TypeExpr} {source : Pattern} {sort : TypeExpr}
+    (compiled : OutputSchema language rule spec locals source sort)
+    (site : RulePatternSite) (path : List Nat) : Prop :=
+  ∀ raw (bodies : AmbientBodies language rule spec ambient),
+    CapturesOutputs compiled.occurrences raw bodies →
+    instantiateAt? rule spec ambient.length site path locals.length raw source =
+      some (erase (outputInstantiation bodies compiled.term))
+
+theorem output_substitution_instantiates {ambient locals : List TypeExpr}
+    {body replacement : Pattern} {domain sort : TypeExpr}
+    (compiledBody : OutputSchema language rule spec (domain :: locals) body sort)
+    (compiledReplacement : OutputSchema language rule spec locals replacement domain)
+    {site : RulePatternSite} {path : List Nat}
+    (bodyAction : OutputInstantiatesAt (ambient := ambient) compiledBody site (path ++ [0]))
+    (replacementAction : OutputInstantiatesAt (ambient := ambient) compiledReplacement site (path ++ [1])) :
+    OutputInstantiatesAt (ambient := ambient) (OutputSchema.subst compiledBody compiledReplacement) site path := by
+  intro raw bodies captured
+  obtain ⟨bodyCaptured, replacementCaptured⟩ :=
+    (capturesOutputs_append _ _ raw bodies).mp captured
+  have bodyRun := bodyAction raw bodies bodyCaptured
+  have replacementRun := replacementAction raw bodies replacementCaptured
+  simp only [List.length_cons] at bodyRun
+  rw [instantiateAt?, instantiateWith?]
+  change (instantiateAt? rule spec ambient.length site (path ++ [0]) (locals.length + 1) raw body).bind
+      (fun actualBody =>
+        (instantiateAt? rule spec ambient.length site (path ++ [1]) locals.length raw replacement).bind
+          (fun actualReplacement => some
+            (Mettapedia.OSLF.MeTTaIL.Substitution.instantiateBVar actualReplacement actualBody))) = _
+  rw [bodyRun, replacementRun]
+  simp only [Option.bind_some, OutputSchema.subst]
+  rw [outputInstantiation_inst]
+  exact congrArg some (erase_bind_extend _ _).symm
+
+theorem output_bound_instantiates {ambient locals : List TypeExpr} {index : Nat} {sort : TypeExpr}
+    (position : Var locals sort) (found : variableIndex position = index)
+    (site : RulePatternSite) (path : List Nat) :
+    OutputInstantiatesAt (ambient := ambient) (language := language) (rule := rule) (spec := spec)
+      (OutputSchema.bound position found) site path := by
+  intro raw bodies _
+  simp only [instantiateAt?, instantiateWith?, OutputSchema.bound, outputInstantiation,
+    ContextualAssignment.instantiate, erase]
+  rw [InputRecovery.variableIndex_injPrefix (language := language) (ambient := ambient) position, found]
+
+theorem output_free_instantiates {ambient locals : List TypeExpr} {site : RulePatternSite}
+    {path : List Nat} {name : String} {sort : TypeExpr}
+    (occurrence : CompiledOccurrence language rule spec locals site path name sort) :
+    OutputInstantiatesAt (ambient := ambient) (OutputSchema.ofOccurrence occurrence) site path := by
+  intro raw bodies captured
+  exact output_occurrence_instantiates occurrence raw bodies
+    (captured ⟨site, locals, path, name, sort, occurrence⟩ (List.mem_cons_self))
+
+theorem output_cast_instantiates {ambient locals : List TypeExpr} {source : Pattern}
+    {first second : TypeExpr} (same : first = second)
+    (compiled : OutputSchema language rule spec locals source first)
+    {site : RulePatternSite} {path : List Nat}
+    (action : OutputInstantiatesAt (ambient := ambient) compiled site path) :
+    OutputInstantiatesAt (ambient := ambient) (compiled.castSort same) site path := by
+  cases same
+  exact action
+
+theorem output_lambda_instantiates {ambient locals : List TypeExpr} {source : Pattern}
+    {domain codomain : TypeExpr}
+    (compiled : OutputSchema language rule spec (domain :: locals) source codomain)
+    {site : RulePatternSite} {path : List Nat}
+    (action : OutputInstantiatesAt (ambient := ambient) compiled site (path ++ [0])) :
+    OutputInstantiatesAt (ambient := ambient) (OutputSchema.lambda compiled) site path := by
+  intro raw bodies captured
+  have bodyRun := action raw bodies captured
+  simp only [List.length_cons] at bodyRun
+  rw [instantiateAt?, instantiateWith?]
+  change (instantiateAt? rule spec ambient.length site (path ++ [0]) (locals.length + 1) raw source).bind
+    (fun result => some (Pattern.lambda none result)) = _
+  rw [bodyRun]
+  simp only [Option.bind_some, OutputSchema.lambda, outputInstantiation,
+    ContextualAssignment.instantiate, ContextualAssignment.instantiateArgs, erase,
+    erase_output_under_binders]
+  rfl
+
+theorem output_multiLambda_instantiates {ambient locals : List TypeExpr} {source : Pattern}
+    {domain codomain : TypeExpr} (count : Nat)
+    (compiled : OutputSchema language rule spec (List.replicate count domain ++ locals) source codomain)
+    {site : RulePatternSite} {path : List Nat}
+    (action : OutputInstantiatesAt (ambient := ambient) compiled site (path ++ [0])) :
+    OutputInstantiatesAt (ambient := ambient) (OutputSchema.multiLambda count compiled) site path := by
+  intro raw bodies captured
+  have bodyRun := action raw bodies captured
+  rw [show (List.replicate count domain ++ locals).length = locals.length + count by
+    simp [List.length_append, Nat.add_comm]] at bodyRun
+  rw [instantiateAt?, instantiateWith?]
+  change (instantiateAt? rule spec ambient.length site (path ++ [0]) (locals.length + count) raw source).bind
+    (fun result => some (Pattern.multiLambda count [] result)) = _
+  rw [bodyRun]
+  simp only [Option.bind_some, OutputSchema.multiLambda, outputInstantiation,
+    ContextualAssignment.instantiate, ContextualAssignment.instantiateArgs, erase,
+    erase_output_under_binders]
+
+def OutputConstructorInstantiatesAt {ambient locals : List TypeExpr}
+    {parameters : List TermParam} {sources : List Pattern}
+    (arguments : OutputConstructorArguments language rule spec locals parameters sources)
+    (site : RulePatternSite) (path : List Nat) (offset : Nat) : Prop :=
+  ∀ raw (bodies : AmbientBodies language rule spec ambient),
+    CapturesOutputs arguments.occurrences raw bodies →
+    instantiateArgsAt? rule spec ambient.length site path locals.length raw offset sources =
+      some (eraseConstructorArguments arguments.scopes (outputArguments bodies arguments.terms))
+
+theorem output_constructor_arguments_instantiates
+    (compile : (locals : List TypeExpr) → (path : List Nat) →
+      (source : Pattern) → (sort : TypeExpr) →
+        Option (OutputSchema language rule spec locals source sort))
+    (site : RulePatternSite) {ambient : List TypeExpr}
+    (children : ∀ locals path source sort compiled,
+      compile locals path source sort = some compiled →
+        OutputInstantiatesAt (ambient := ambient) compiled site path)
+    (locals : List TypeExpr) (path : List Nat) :
+    ∀ sources offset parameters
+      (arguments : OutputConstructorArguments language rule spec locals parameters sources),
+      outputConstructorArguments? compile locals path offset parameters sources = some arguments →
+        OutputConstructorInstantiatesAt (ambient := ambient) arguments site path offset := by
+  intro sources
+  induction sources with
+  | nil =>
+      intro offset parameters arguments found
+      cases parameters with
+      | nil =>
+          simp only [outputConstructorArguments?, Option.some.injEq] at found
+          cases found
+          intro raw bodies _
+          simp only [instantiateArgsAt?, instantiateArgsWith?, outputArguments,
+            ContextualAssignment.instantiateArgs, eraseConstructorArguments]
+      | cons parameter parameters => simp [outputConstructorArguments?] at found
+  | cons source sources induction =>
+      intro offset parameters arguments found
+      cases parameters with
+      | nil => simp [outputConstructorArguments?] at found
+      | cons parameter parameters =>
+          cases bodyFound : parameterBody? parameter source with
+          | none => simp [outputConstructorArguments?, bodyFound] at found
+          | some body =>
+              cases headFound : compile (body.binders ++ locals)
+                  (path ++ [offset] ++ body.pathSuffix) body.body body.sort with
+              | none =>
+                  simp only [outputConstructorArguments?, bodyFound, headFound,
+                    Option.bind_eq_bind, Option.bind_some, Option.bind_none, reduceCtorEq] at found
+              | some head =>
+                  cases tailFound : outputConstructorArguments? compile locals path
+                      (offset + 1) parameters sources with
+                  | none =>
+                      simp only [outputConstructorArguments?, bodyFound, headFound, tailFound,
+                        Option.bind_eq_bind, Option.bind_some, Option.bind_none, reduceCtorEq] at found
+                  | some tail =>
+                      simp only [outputConstructorArguments?, bodyFound, headFound, tailFound,
+                        Option.bind_eq_bind, Option.bind_some, pure, Option.some.injEq] at found
+                      cases found
+                      intro raw bodies captured
+                      change CapturesOutputs (head.occurrences ++ tail.occurrences) raw bodies at captured
+                      obtain ⟨headCaptured, tailCaptured⟩ := (capturesOutputs_append _ _ raw bodies).mp captured
+                      have headAction := children _ _ _ _ head headFound raw bodies headCaptured
+                      have wrapped := AmbientCorrespondence.parameter_body_instantiates
+                        (rule := rule) (spec := spec) (ambient := ambient) body bodyFound site
+                        (path ++ [offset]) locals.length raw
+                      rw [show locals.length + body.binders.length = (body.binders ++ locals).length by
+                        simp [List.length_append, Nat.add_comm], headAction] at wrapped
+                      simp only [Option.map_some] at wrapped
+                      rw [instantiateArgsAt?, instantiateArgsWith?]
+                      change (instantiateAt? rule spec ambient.length site (path ++ [offset]) locals.length raw source).bind
+                          (fun first => (instantiateArgsAt? rule spec ambient.length site path locals.length raw
+                            (offset + 1) sources).bind (fun rest => some (first :: rest))) = _
+                      rw [wrapped, induction (offset + 1) parameters tail tailFound raw bodies tailCaptured]
+                      simp only [Option.bind_some, outputArguments, ContextualAssignment.instantiateArgs,
+                        eraseConstructorArguments, erase_output_under_binders]
+
+theorem output_constructor_instantiates {ambient locals : List TypeExpr} {label : String}
+    (path : List Nat) (selected : SelectedConstructor language label)
+    (ordinary : ¬ UsesBareCollection (language.terms.get selected.index)) {sources : List Pattern}
+    (arguments : OutputConstructorArguments language rule spec locals
+      (language.terms.get selected.index).params sources)
+    {site : RulePatternSite}
+    (action : OutputConstructorInstantiatesAt (ambient := ambient) arguments site path 0) :
+    OutputInstantiatesAt (ambient := ambient)
+      (OutputSchema.constructor path selected ordinary arguments) site path := by
+  intro raw bodies captured
+  rw [instantiateAt?, instantiateWith?]
+  change (instantiateArgsAt? rule spec ambient.length site path locals.length raw 0 sources).bind
+    (fun values => some (Pattern.apply label values)) = _
+  rw [action raw bodies captured]
+  simp only [Option.bind_some, OutputSchema.constructor, outputInstantiation,
+    ContextualAssignment.instantiate, erase, selected.named]
+
+def OutputVectorInstantiatesAt {ambient locals : List TypeExpr} {sources : List Pattern} {sort : TypeExpr}
+    (elements : OutputVectorElements language rule spec locals sources sort)
+    (site : RulePatternSite) (path : List Nat) (offset : Nat) : Prop :=
+  ∀ raw (bodies : AmbientBodies language rule spec ambient),
+    CapturesOutputs elements.occurrences raw bodies →
+    instantiateArgsAt? rule spec ambient.length site path locals.length raw offset sources =
+      some (eraseArguments (outputArguments bodies elements.terms))
+
+theorem output_vector_elements_instantiates
+    (compile : (locals : List TypeExpr) → (path : List Nat) →
+      (source : Pattern) → (sort : TypeExpr) →
+        Option (OutputSchema language rule spec locals source sort))
+    (site : RulePatternSite) {ambient : List TypeExpr}
+    (children : ∀ locals path source sort compiled,
+      compile locals path source sort = some compiled →
+        OutputInstantiatesAt (ambient := ambient) compiled site path)
+    (locals : List TypeExpr) (path : List Nat) (sort : TypeExpr) :
+    ∀ sources offset (elements : OutputVectorElements language rule spec locals sources sort),
+      outputVectorElements? compile locals path offset sort sources = some elements →
+        OutputVectorInstantiatesAt (ambient := ambient) elements site path offset := by
+  intro sources
+  induction sources with
+  | nil =>
+      intro offset elements found
+      simp only [outputVectorElements?, Option.some.injEq] at found
+      cases found
+      intro raw bodies _
+      simp only [instantiateArgsAt?, instantiateArgsWith?, outputArguments,
+        ContextualAssignment.instantiateArgs, eraseArguments]
+  | cons source sources induction =>
+      intro offset elements found
+      cases headFound : compile locals (path ++ [offset]) source sort with
+      | none => simp [outputVectorElements?, headFound] at found
+      | some head =>
+          cases tailFound : outputVectorElements? compile locals path (offset + 1) sort sources with
+          | none => simp [outputVectorElements?, headFound, tailFound] at found
+          | some tail =>
+              simp only [outputVectorElements?, headFound, tailFound, Option.bind_eq_bind,
+                Option.bind_some, pure, Option.some.injEq] at found
+              cases found
+              intro raw bodies captured
+              change CapturesOutputs (head.occurrences ++ tail.occurrences) raw bodies at captured
+              obtain ⟨headCaptured, tailCaptured⟩ := (capturesOutputs_append _ _ raw bodies).mp captured
+              rw [instantiateArgsAt?, instantiateArgsWith?]
+              change (instantiateAt? rule spec ambient.length site (path ++ [offset]) locals.length raw source).bind
+                  (fun first => (instantiateArgsAt? rule spec ambient.length site path locals.length raw
+                    (offset + 1) sources).bind (fun rest => some (first :: rest))) = _
+              rw [children _ _ _ _ head headFound raw bodies headCaptured,
+                induction (offset + 1) tail tailFound raw bodies tailCaptured]
+              rfl
+
+theorem output_vector_instantiates {ambient locals : List TypeExpr} {sources : List Pattern} {sort : TypeExpr}
+    (elements : OutputVectorElements language rule spec locals sources sort)
+    {site : RulePatternSite} {path : List Nat}
+    (action : OutputVectorInstantiatesAt (ambient := ambient) elements site path 0) :
+    OutputInstantiatesAt (ambient := ambient) (OutputSchema.vector elements) site path := by
+  intro raw bodies captured
+  rw [instantiateAt?, instantiateWith?]
+  change (instantiateArgsAt? rule spec ambient.length site path locals.length raw 0 sources).bind
+    (fun values => some (Pattern.collection .vec values none)) = _
+  rw [action raw bodies captured]
+  rfl
+
+theorem output_vector_constructor_instantiates {ambient locals : List TypeExpr} {sources : List Pattern}
+    {category : String} (path : List Nat) (selected : SelectedVectorConstructor language category)
+    (elements : OutputVectorElements language rule spec locals sources selected.elementSort)
+    {site : RulePatternSite}
+    (action : OutputVectorInstantiatesAt (ambient := ambient) elements site path 0) :
+    OutputInstantiatesAt (ambient := ambient) (OutputSchema.vectorConstructor path selected elements) site path := by
+  cases selected with
+  | mk index unique parameterName elementSort shape categorized =>
+      cases categorized
+      intro raw bodies captured
+      rw [instantiateAt?, instantiateWith?]
+      change (instantiateArgsAt? rule spec ambient.length site path locals.length raw 0 sources).bind
+        (fun values => some (Pattern.collection .vec values none)) = _
+      rw [action raw bodies captured]
+      rfl
+
+/-- Every local output assembly law is proved against the actual scoped
+instantiator. No whole-redex agreement is supplied by a caller. -/
+theorem outputAssemblyInvariant (language : LanguageDef) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (site : RulePatternSite) (ambient : List TypeExpr) :
+    (outputAssembly language rule spec site).Invariant
+      (fun _ path _ _ compiled => OutputInstantiatesAt (ambient := ambient) compiled site path) where
+  bound locals path index sort compiled found := by
+    dsimp only [outputAssembly, groundOutputAssembly] at found
+    split at found
+    · contradiction
+    · rename_i position positionFound
+      cases Option.some.inj found
+      exact output_bound_instantiates position (boundPosition?_index locals index sort positionFound) site path
+  free locals path name sort compiled found := by
+    cases occurrenceFound : elaborateOutputOccurrence? language rule spec locals site path name sort with
+    | none => simp [outputAssembly, groundOutputAssembly, occurrenceFound] at found
+    | some occurrence =>
+        simp only [outputAssembly, groundOutputAssembly, occurrenceFound, Option.bind_eq_bind,
+          Option.bind_some, pure, Option.some.injEq] at found
+        cases found
+        exact output_free_instantiates occurrence
+  constructor compile children locals path label sources sort compiled found := by
+    cases selectedFound : selectConstructor? language label with
+    | none => simp [outputAssembly, groundOutputAssembly, selectedFound] at found
+    | some selected =>
+        by_cases same : TypeExpr.base (language.terms.get selected.index).category = sort
+        · by_cases notBare : usesBareCollection? (language.terms.get selected.index) = false
+          · cases argumentsFound : outputConstructorArguments? compile locals path 0
+                (language.terms.get selected.index).params sources with
+            | none =>
+                simp only [outputAssembly, groundOutputAssembly, selectedFound, same, notBare, argumentsFound,
+                  dite_true, Option.bind_eq_bind, Option.bind_some, Option.bind_none, reduceCtorEq] at found
+            | some arguments =>
+                simp only [outputAssembly, groundOutputAssembly, selectedFound, same, notBare, argumentsFound,
+                  dite_true, Option.bind_eq_bind, Option.bind_some, pure, Option.some.injEq] at found
+                cases found
+                apply output_cast_instantiates same
+                apply output_constructor_instantiates
+                exact output_constructor_arguments_instantiates compile site children
+                  locals path sources 0 _ arguments argumentsFound
+          · simp only [outputAssembly, groundOutputAssembly, selectedFound, same, notBare, dite_true,
+              dite_false, Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
+        · simp only [outputAssembly, groundOutputAssembly, selectedFound, same, dite_false,
+            Option.bind_eq_bind, Option.bind_some, reduceCtorEq] at found
+  abstraction _ _ _ _ _ body action := output_lambda_instantiates body action
+  multiAbstraction _ _ _ _ _ count body action := output_multiLambda_instantiates count body action
+  substitution compile children locals path body replacement sort compiled found := by
+    obtain ⟨domain, _, domainFound⟩ := List.exists_of_findSome?_eq_some found
+    cases bodyFound : compile (domain :: locals) (path ++ [0]) body sort with
+    | none => simp [bodyFound] at domainFound
+    | some compiledBody =>
+        cases replacementFound : compile locals (path ++ [1]) replacement domain with
+        | none => simp [bodyFound, replacementFound] at domainFound
+        | some compiledReplacement =>
+            simp only [bodyFound, replacementFound, Option.bind_eq_bind,
+              Option.bind_some, pure, Option.some.injEq] at domainFound
+            cases domainFound
+            exact output_substitution_instantiates compiledBody compiledReplacement
+              (children _ _ _ _ compiledBody bodyFound)
+              (children _ _ _ _ compiledReplacement replacementFound)
+  vector compile children locals path sources sort compiled found := by
+    cases sort with
+    | arrow first last => simp [outputAssembly, groundOutputAssembly] at found
+    | multiBinder domain => simp [outputAssembly, groundOutputAssembly] at found
+    | base category =>
+        cases selectedFound : selectVectorConstructor? language category with
+        | none => simp [outputAssembly, groundOutputAssembly, selectedFound] at found
+        | some selected =>
+            cases elementsFound : outputVectorElements? compile locals path 0 selected.elementSort sources with
+            | none => simp [outputAssembly, groundOutputAssembly, selectedFound, elementsFound] at found
+            | some elements =>
+                simp only [outputAssembly, groundOutputAssembly, selectedFound, elementsFound, Option.bind_eq_bind,
+                  Option.bind_some, pure, Option.some.injEq] at found
+                cases found
+                exact output_vector_constructor_instantiates path selected elements
+                  (output_vector_elements_instantiates compile site children locals path
+                    selected.elementSort sources 0 elements elementsFound)
+    | collection kind elementSort =>
+        cases kind with
+        | hashBag => simp [outputAssembly, groundOutputAssembly] at found
+        | hashSet => simp [outputAssembly, groundOutputAssembly] at found
+        | vec =>
+            cases elementsFound : outputVectorElements? compile locals path 0 elementSort sources with
+            | none => simp [outputAssembly, groundOutputAssembly, elementsFound] at found
+            | some elements =>
+                simp only [outputAssembly, groundOutputAssembly, elementsFound, Option.bind_eq_bind,
+                  Option.bind_some, pure, Option.some.injEq] at found
+                cases found
+                exact output_vector_instantiates elements
+                  (output_vector_elements_instantiates compile site children locals path
+                    elementSort sources 0 elements elementsFound)
+
+/-- Arbitrary accepted output templates agree with the existing executable
+source instantiator, for every ambient context and captured typed value. -/
+theorem outputAssembly_walk_instantiates (language : LanguageDef) (rule : RewriteRule)
+    (spec : RuleBindingSpec) (site : RulePatternSite) (ambient : List TypeExpr)
+    {fuel : Nat} {locals : List TypeExpr} {path : List Nat} {source : Pattern} {sort : TypeExpr}
+    (compiled : OutputSchema language rule spec locals source sort)
+    (found : (outputAssembly language rule spec site).walk fuel locals path source sort = some compiled) :
+    OutputInstantiatesAt (ambient := ambient) compiled site path :=
+  Assembly.walk_invariant (outputAssemblyInvariant language rule spec site ambient)
+    fuel locals path source sort compiled found
+
+/-- A successful authored output carries the actual parser run used by the
+source-to-native boundary, alongside independent source sorting. -/
+theorem AuthoredOutputSchema.instantiates {ruleIndex : Fin language.rewrites.length}
+    {site : RulePatternSite} {sort : TypeExpr} {ambient : List TypeExpr}
+    (compiled : AuthoredOutputSchema language ruleIndex site sort)
+    (raw : Assignment)
+    (bodies : AmbientBodies language (language.rewrites.get ruleIndex) compiled.spec ambient)
+    (captured : CapturesOutputs compiled.compiled.occurrences raw bodies) :
+    instantiateAt? (language.rewrites.get ruleIndex) compiled.spec ambient.length
+        site [] compiled.locals.length raw compiled.source =
+      some (erase (outputInstantiation bodies compiled.compiled.term)) :=
+  outputAssembly_walk_instantiates language _ compiled.spec site ambient
+    compiled.compiled compiled.compiled_from raw bodies captured
+
+/-- The effective output schema is precisely the contractum produced by the
+original rule engine, including explicit substitution and open ambient data. -/
+theorem AuthoredOutputSchema.reduct {ruleIndex : Fin language.rewrites.length}
+    {sort : TypeExpr} {ambient : List TypeExpr}
+    (compiled : AuthoredOutputSchema language ruleIndex .right sort)
+    (raw : Assignment)
+    (bodies : AmbientBodies language (language.rewrites.get ruleIndex) compiled.spec ambient)
+    (captured : CapturesOutputs compiled.compiled.occurrences raw bodies) :
+    reduct? (language.rewrites.get ruleIndex) compiled.spec ambient.length raw =
+      some (erase (outputInstantiation bodies compiled.compiled.term)) := by
+  have source : compiled.source = (language.rewrites.get ruleIndex).right :=
+    (Option.some.inj compiled.atSite).symm
+  have locals : compiled.locals = [] := by
+    have actual := compiled.atBinders
+    simp only [siteBinders?, Option.some.injEq] at actual
+    exact actual.symm
+  simpa only [reduct?, source, locals, List.length_nil] using compiled.instantiates raw bodies captured
+
+/-- A scoped child premise retains either actual endpoint and its original
+binder context. The source site determines the endpoint; no term is chosen. -/
+theorem AuthoredOutputSchema.premise_endpoint {language : LanguageDef}
+    {ruleIndex : Fin language.rewrites.length} {sort : TypeExpr} {ambient : List TypeExpr}
+    {index endpoint : Nat} {step : ScopedStepPremise}
+    (found : (language.rewrites.get ruleIndex).premises[index]? = some (.scopedStep step))
+    (valid : endpoint < 2)
+    (compiled : AuthoredOutputSchema language ruleIndex (.premise index 0 endpoint) sort)
+    (raw : Assignment)
+    (bodies : AmbientBodies language (language.rewrites.get ruleIndex) compiled.spec ambient)
+    (captured : CapturesOutputs compiled.compiled.occurrences raw bodies) :
+    instantiateAt? (language.rewrites.get ruleIndex) compiled.spec ambient.length
+        (.premise index 0 endpoint) [] step.binders.length raw
+        (if endpoint = 0 then step.source else step.target) =
+      some (erase (outputInstantiation bodies compiled.compiled.term)) := by
+  have locals : compiled.locals = step.binders := by
+    have context := compiled.atBinders
+    rw [siteBinders?_scopedStep _ index step found endpoint valid] at context
+    exact (Option.some.inj context).symm
+  have original : compiled.source = if endpoint = 0 then step.source else step.target := by
+    have actualSite : sitePattern? (language.rewrites.get ruleIndex) (.premise index 0 endpoint) =
+        some (if endpoint = 0 then step.source else step.target) := by
+      have cases : endpoint = 0 ∨ endpoint = 1 := by omega
+      rcases cases with rfl | rfl
+      · dsimp only [sitePattern?]; rw [found]; rfl
+      · dsimp only [sitePattern?]; rw [found]; rfl
+    exact Option.some.inj (compiled.atSite.symm.trans actualSite)
+  simpa only [locals, original] using compiled.instantiates raw bodies captured
+
+theorem AuthoredOutputSchema.premise_source {language : LanguageDef}
+    {ruleIndex : Fin language.rewrites.length} {sort : TypeExpr} {ambient : List TypeExpr}
+    {index : Nat} {step : ScopedStepPremise}
+    (found : (language.rewrites.get ruleIndex).premises[index]? = some (.scopedStep step))
+    (compiled : AuthoredOutputSchema language ruleIndex (.premise index 0 0) sort)
+    (raw : Assignment)
+    (bodies : AmbientBodies language (language.rewrites.get ruleIndex) compiled.spec ambient)
+    (captured : CapturesOutputs compiled.compiled.occurrences raw bodies) :
+    instantiateAt? (language.rewrites.get ruleIndex) compiled.spec ambient.length
+        (.premise index 0 0) [] step.binders.length raw step.source =
+      some (erase (outputInstantiation bodies compiled.compiled.term)) := by
+  simpa only [ite_true] using AuthoredOutputSchema.premise_endpoint found (by decide) compiled raw bodies captured
+
+theorem AuthoredOutputSchema.premise_target {language : LanguageDef}
+    {ruleIndex : Fin language.rewrites.length} {sort : TypeExpr} {ambient : List TypeExpr}
+    {index : Nat} {step : ScopedStepPremise}
+    (found : (language.rewrites.get ruleIndex).premises[index]? = some (.scopedStep step))
+    (compiled : AuthoredOutputSchema language ruleIndex (.premise index 0 1) sort)
+    (raw : Assignment)
+    (bodies : AmbientBodies language (language.rewrites.get ruleIndex) compiled.spec ambient)
+    (captured : CapturesOutputs compiled.compiled.occurrences raw bodies) :
+    instantiateAt? (language.rewrites.get ruleIndex) compiled.spec ambient.length
+        (.premise index 0 1) [] step.binders.length raw step.target =
+      some (erase (outputInstantiation bodies compiled.compiled.term)) := by
+  simpa only [Nat.one_ne_zero, ite_false] using
+    AuthoredOutputSchema.premise_endpoint found (by decide) compiled raw bodies captured
+
+end Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration
+
+set_option autoImplicit false
+
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies
+
+open Mettapedia.OSLF.Binding
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.RuleBinding
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+/-- A source body retains its exact raw spelling. Only its declared named
+free occurrences are closed into a new outer context suffix. -/
+structure Parsed (language : LanguageDef) (entries : List (String × TypeExpr))
+    (bound : List TypeExpr) (source : Pattern) (sort : TypeExpr) where
+  term : Term (signatureOf language) (bound ++ NamedFreeContext.contextSorts entries) sort
+  closed_readback : erase term = NamedFreeContext.closeContext bound.length entries source
+  source_scope : source.isWellScopedAt bound.length = true
+  names_unique : (entries.map Prod.fst).Nodup
+
+/-- The existing output traversal also handles explicit substitution; free
+names are resolved by their actual finite source declarations first. -/
+def parse? (language : LanguageDef) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (site : RulePatternSite) (entries : List (String × TypeExpr))
+    (bound : List TypeExpr) (source : Pattern) (sort : TypeExpr) :
+    Option (Parsed language entries bound source sort) :=
+  if unique : (entries.map Prod.fst).Nodup then
+    if scopeProof : source.isWellScopedAt bound.length = true then do
+      let compiled ← groundOutputTerm? language rule spec site
+        (bound ++ NamedFreeContext.contextSorts entries)
+        (NamedFreeContext.closeContext bound.length entries source) sort
+      pure ⟨compiled.val, compiled.property, scopeProof, unique⟩
+    else none
+  else none
+
+theorem Parsed.readback {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {bound : List TypeExpr} {source : Pattern} {sort : TypeExpr}
+    (parsed : Parsed language entries bound source sort) :
+    NamedFreeContext.openContext bound.length entries (erase parsed.term) = source := by
+  rw [parsed.closed_readback]
+  exact NamedFreeContext.openNames_closeNames bound.length (entries.map Prod.fst) source
+    (by rw [← Mettapedia.OSLF.MeTTaIL.Substitution.isWellScopedAt_eq_lc_at]
+        exact parsed.source_scope)
+
+/-- Successful source decoding earns the original independent authored
+sorting judgment, rather than merely the target term's intrinsic sort. -/
+theorem Parsed.typed {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {bound : List TypeExpr} {source : Pattern} {sort : TypeExpr}
+    (parsed : Parsed language entries bound source sort) :
+    HasType language (FreeTypeContext.ofList entries) bound source sort := by
+  have opened := NamedFreeContext.openContext_typed_of_nodup entries parsed.names_unique
+    (erase_typed parsed.term)
+  rwa [parsed.readback] at opened
+
+/-- Decoding does not merge two raw source bodies, even when they use both
+bound and named free variables beneath binders. -/
+theorem Parsed.term_injective {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {bound : List TypeExpr} {left right : Pattern} {sort : TypeExpr}
+    (first : Parsed language entries bound left sort)
+    (second : Parsed language entries bound right sort) (same : first.term = second.term) :
+    left = right := by
+  rw [← first.readback, ← second.readback, same]
+
+/-- The computed guards are exactly the source-name and scope requirements.
+The source grammar remains the existing ground output traversal. -/
+theorem parse?_isSome_iff (language : LanguageDef) (rule : RewriteRule)
+    (spec : RuleBindingSpec) (site : RulePatternSite)
+    (entries : List (String × TypeExpr)) (bound : List TypeExpr)
+    (source : Pattern) (sort : TypeExpr) :
+    (parse? language rule spec site entries bound source sort).isSome = true ↔
+      (entries.map Prod.fst).Nodup ∧ source.isWellScopedAt bound.length = true ∧
+      (groundOutputTerm? language rule spec site (bound ++ NamedFreeContext.contextSorts entries)
+        (NamedFreeContext.closeContext bound.length entries source) sort).isSome = true := by
+  unfold parse?
+  split
+  · rename_i unique
+    split
+    · rename_i scopeProof
+      simp only [unique, scopeProof, true_and]
+      cases result : groundOutputTerm? language rule spec site
+        (bound ++ NamedFreeContext.contextSorts entries)
+        (NamedFreeContext.closeContext bound.length entries source) sort <;> rfl
+    · rename_i absent
+      simp only [absent, Option.isSome_none, Bool.false_eq_true,
+        false_and, and_false]
+  · rename_i absent
+    simp only [absent, Option.isSome_none, Bool.false_eq_true, false_and]
+
+/-- Original contextual indices are checked before the body is decoded. -/
+structure Captured (language : LanguageDef) (entries : List (String × TypeExpr))
+    (dependencies ambient : List TypeExpr) (source : ContextualValue) (sort : TypeExpr) where
+  body : Parsed language entries (dependencies ++ ambient) source.body sort
+  dependencies_eq : source.dependencies = dependencies
+  ambient_eq : source.ambient = ambient.length
+
+def capture? (language : LanguageDef) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (site : RulePatternSite) (entries : List (String × TypeExpr))
+    (dependencies ambient : List TypeExpr) (source : ContextualValue) (sort : TypeExpr) :
+    Option (Captured language entries dependencies ambient source sort) :=
+  if dependenciesEq : source.dependencies = dependencies then
+    if ambientEq : source.ambient = ambient.length then do
+      let body ← parse? language rule spec site entries (dependencies ++ ambient) source.body sort
+      pure ⟨body, dependenciesEq, ambientEq⟩
+    else none
+  else none
+
+/-- Reconstruction retains the original dependency types and ambient count;
+new free-name slots never silently become original contextual metadata. -/
+def Captured.readValue {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {dependencies ambient : List TypeExpr} {source : ContextualValue} {sort : TypeExpr}
+    (captured : Captured language entries dependencies ambient source sort) : ContextualValue where
+  dependencies := dependencies
+  ambient := ambient.length
+  body := NamedFreeContext.openContext (dependencies ++ ambient).length entries (erase captured.body.term)
+
+theorem Captured.readValue_eq {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {dependencies ambient : List TypeExpr} {source : ContextualValue} {sort : TypeExpr}
+    (captured : Captured language entries dependencies ambient source sort) :
+    captured.readValue = source := by
+  cases source
+  simp only [Captured.readValue, ContextualValue.mk.injEq]
+  exact ⟨captured.dependencies_eq.symm, captured.ambient_eq.symm, captured.body.readback⟩
+
+/-- The snapshot's executable first-name lookup is the same source context
+used by the independent sorting judgment. -/
+theorem snapshot_free_eq_ofList (snapshot :
+    Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.Snapshot) :
+    snapshot.free = FreeTypeContext.ofList snapshot.freeTypes := by
+  funext name
+  change ((snapshot.freeTypes.find? fun entry => entry.1 == name).map Prod.snd) = _
+  induction snapshot.freeTypes with
+  | nil => rfl
+  | cons entry rest ih =>
+      by_cases same : entry.1 = name
+      · simp [FreeTypeContext.ofList, same]
+      · simp only [List.find?_cons, beq_eq_false_iff_ne.mpr same,
+          if_false, FreeTypeContext.ofList, same, ih]
+
+/-- The original source admission already requires distinct free names. -/
+theorem snapshot_names_unique {snapshot :
+    Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.Snapshot}
+    (admitted : Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.checkFreeContext snapshot = true) :
+    (snapshot.freeTypes.map Prod.fst).Nodup := by
+  simp only [Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.checkFreeContext,
+    Bool.and_eq_true, decide_eq_true_eq] at admitted
+  exact admitted.1
+
+theorem Parsed.typed_snapshot {snapshot :
+    Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.Snapshot}
+    {bound : List TypeExpr} {source : Pattern} {sort : TypeExpr}
+    (parsed : Parsed snapshot.language snapshot.freeTypes bound source sort) :
+    HasType snapshot.language snapshot.free bound source sort := by
+  rw [snapshot_free_eq_ofList]
+  exact parsed.typed
+
+/-- Free-name admission comes from the same snapshot as the original rule
+machine. No separate free-name inventory is installed by this decoder. -/
+def parseSnapshot? (snapshot : Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.Snapshot)
+    (rule : RewriteRule) (spec : RuleBindingSpec) (site : RulePatternSite)
+    (bound : List TypeExpr) (source : Pattern) (sort : TypeExpr) :
+    Option (Parsed snapshot.language snapshot.freeTypes bound source sort) :=
+  if Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.checkFreeContext snapshot then
+    parse? snapshot.language rule spec site snapshot.freeTypes bound source sort
+  else none
+
+/-- A snapshot admitted by the complete original plan supplies the same
+name uniqueness needed by inverse body typing. -/
+theorem complete_snapshot_names_unique
+    {snapshot : Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.Snapshot}
+    {permissions : Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.Permissions}
+    (admitted : (Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.compile
+      snapshot permissions).complete = true) :
+    (snapshot.freeTypes.map Prod.fst).Nodup :=
+  snapshot_names_unique
+    (Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.complete_snapshot_checks admitted).2.1
+
+/-- The original finite metadata selects a stored runtime capture by its
+actual declared name. The retained raw value includes its original indices. -/
+structure SelectedCapture (language : LanguageDef) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (entries : List (String × TypeExpr)) (ambient : List TypeExpr)
+    (assignment : Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.Assignment)
+    (index : Fin (metaArities (language := language) rule spec).length) where
+  original : ContextualValue
+  stored : Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.lookup assignment
+    (metaName rule spec index) = some original
+  parsed : Captured language entries ((metaArities rule spec).get index).1 ambient
+    original ((metaArities rule spec).get index).2
+
+def selectCapture? (language : LanguageDef) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (site : RulePatternSite) (entries : List (String × TypeExpr)) (ambient : List TypeExpr)
+    (assignment : Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.Assignment)
+    (index : Fin (metaArities (language := language) rule spec).length) :
+    Option (SelectedCapture language rule spec entries ambient assignment index) :=
+  match found : Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.lookup assignment
+      (metaName rule spec index) with
+  | none => none
+  | some original => do
+      let parsed ← capture? language rule spec site entries
+        ((metaArities rule spec).get index).1 ambient original
+        ((metaArities rule spec).get index).2
+      pure ⟨original, found, parsed⟩
+
+/-- Checked source reconstruction reads the same original runtime value,
+including for source type contexts with unused declarations. -/
+theorem SelectedCapture.stored_readback {language : LanguageDef}
+    {rule : RewriteRule} {spec : RuleBindingSpec} {entries : List (String × TypeExpr)}
+    {ambient : List TypeExpr}
+    {assignment : Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.Assignment}
+    {index : Fin (metaArities (language := language) rule spec).length}
+    (selected : SelectedCapture language rule spec entries ambient assignment index) :
+    Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.lookup assignment
+      (metaName rule spec index) = some selected.parsed.readValue := by
+  rw [selected.parsed.readValue_eq]
+  exact selected.stored
+
+/-- No two differently indexed raw bodies are conflated by the finite
+free-name closure representation at fixed source metadata. -/
+theorem Captured.term_injective {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {dependencies ambient : List TypeExpr} {left right : ContextualValue} {sort : TypeExpr}
+    (first : Captured language entries dependencies ambient left sort)
+    (second : Captured language entries dependencies ambient right sort)
+    (same : first.body.term = second.body.term) : left = right := by
+  rw [← first.readValue_eq, ← second.readValue_eq]
+  simp only [Captured.readValue, same]
+
+end Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies
+
+set_option autoImplicit false
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies.Controls
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.RuleBinding
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+private def t : TypeExpr := .base "Term"
+private def u : TypeExpr := .base "Name"
+private def language : LanguageDef where
+  name := "finite-named-source"
+  types := [{ name := "Term" }, { name := "Name" }]
+  terms := []
+  equations := []
+  rewrites := []
+private def rule : RewriteRule where
+  name := "body"
+  typeContext := []
+  premises := []
+  left := .bvar 0
+  right := .bvar 0
+private def spec : RuleBindingSpec := { dependencies := [] }
+private def entries : List (String × TypeExpr) := [("a", t)]
+private def nested : Pattern := .lambda none (.subst (.fvar "a") (.bvar 0))
+private def namedMetadata : Pattern := .lambda (some "shown") (.fvar "a")
+private def capturedValue : ContextualValue where
+  dependencies := [t]
+  ambient := 1
+  body := .subst (.fvar "a") (.bvar 0)
+
+private def parses (context : List (String × TypeExpr)) (bound : List TypeExpr)
+    (source : Pattern) (sort : TypeExpr) : Bool :=
+  (parse? language rule spec .right context bound source sort).isSome
+
+private def captured : Captured language entries [t] [u] capturedValue t :=
+  (capture? language rule spec .right entries [t] [u] capturedValue t).get (by decide +kernel)
+
+example : HasType language (FreeTypeContext.ofList entries) [t, u] capturedValue.body t :=
+  captured.body.typed
+example : captured.readValue = capturedValue := captured.readValue_eq
+
+private def nestedParsed : Parsed language entries [] nested (.arrow t t) :=
+  (parse? language rule spec .right entries [] nested (.arrow t t)).get (by decide +kernel)
+
+example : HasType language (FreeTypeContext.ofList entries) [] nested (.arrow t t) :=
+  nestedParsed.typed
+example : NamedFreeContext.openContext 0 entries (erase nestedParsed.term) = nested :=
+  nestedParsed.readback
+
+private def checks : List (String × Bool) := [
+  ("declared-free-name", parses entries [] (.fvar "a") t),
+  ("full-arrow-free-type", parses [("f", .arrow t t)] [] (.fvar "f") (.arrow t t)),
+  ("bound-and-named-subst", parses entries [t] (.subst (.fvar "a") (.bvar 0)) t),
+  ("nested-lambda-subst-retained", parses entries [] nested (.arrow t t)),
+  ("unknown-free-refuses", !(parses entries [] (.fvar "missing") t)),
+  ("wrong-free-sort-refuses", !(parses [("a", u)] [] (.fvar "a") t)),
+  ("out-of-scope-does-not-steal-free-slot", !(parses entries [] (.bvar 0) t)),
+  ("duplicate-name-conflicting-sorts-refuses", !(parses [("a", t), ("a", u)] [] (.fvar "a") t)),
+  ("duplicate-name-same-sort-refuses", !(parses [ ("a", t), ("a", t)] [] (.fvar "a") t)),
+  ("unknown-bound-sort-refuses", !(parses entries [u] (.bvar 0) t)),
+  ("bound-prefix-retained", parses entries [t] (.bvar 0) t),
+  ("captured-metadata-exact", (capture? language rule spec .right entries [t] [u] capturedValue t).isSome),
+  ("captured-dependencies-wrong-sort-refuses", (capture? language rule spec .right entries [u] [u] capturedValue t).isNone),
+  ("captured-ambient-count-refuses", (capture? language rule spec .right entries [t] [] capturedValue t).isNone),
+  ("raw-named-binder-spelling-retained", NamedFreeContext.openContext 0 entries
+    (NamedFreeContext.closeContext 0 entries namedMetadata) == namedMetadata),
+  ("parser-metadata-profile-is-explicit", !(parses entries [] namedMetadata (.arrow t t))),
+  ("collection-rest-metadata-is-retained", NamedFreeContext.openContext 0 entries
+    (NamedFreeContext.closeContext 0 entries (.collection .hashBag [.fvar "a"] (some "tail"))) ==
+      .collection .hashBag [.fvar "a"] (some "tail")),
+  ("nonvector-rest-not-claimed-by-parser", !(parses entries []
+    (.collection .hashBag [.fvar "a"] (some "tail")) (.collection .hashBag t)))
+]
+
+#guard checks.all Prod.snd
+
+def main : IO Unit := do
+  for (label, okay) in checks do
+    unless okay do throw <| IO.userError ("FAILED " ++ label)
+  IO.println s!"{checks.length} named-source controls PASS"
+
+end Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies.Controls
+
+set_option autoImplicit false
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies
+open Mettapedia.OSLF.Binding
+open Mettapedia.OSLF.MeTTaIL
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.ContextSubstitution
+open Mettapedia.OSLF.MeTTaIL.RuleBinding
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+private theorem position_index {S : Signature} {context : Ctx S} {sort : S.Srt}
+    (position : Var context sort) : variableIndex position = (varIdx position).val := by
+  induction position <;> simp_all [variableIndex, varIdx]
+
+/-- A raw view of an actual typed substitution has scoped images at every
+position it can read. No out-of-context default is admitted by this law. -/
+theorem readsSub_scoped {language : LanguageDef} {source target : List TypeExpr}
+    (action : Sub (signatureOf language) source target)
+    (raw : Mettapedia.OSLF.MeTTaIL.ContextSubstitution.Assignment) (reads : ReadsSub action raw) :
+    WellScopedAssignment source.length target.length raw := by
+  intro index inside
+  let position : Fin source.length := ⟨index, inside⟩
+  let sourceVariable := varOfIdx (S := signatureOf language) source position
+  have observed := reads _ sourceVariable
+  have same : variableIndex sourceVariable = index := by
+    calc
+      variableIndex sourceVariable = (varIdx (S := signatureOf language) sourceVariable).val :=
+        position_index (S := signatureOf language) sourceVariable
+      _ = index := congrArg Fin.val (varIdx_varOfIdx (S := signatureOf language) source position)
+  rw [same] at observed
+  rw [observed]
+  exact erase_wellScoped (action _ sourceVariable)
+
+/-- The checked body representation respects actual intrinsic simultaneous
+substitution and reconstructs the original raw source action. -/
+theorem Parsed.substitution_readback {language : LanguageDef}
+    {entries : List (String × TypeExpr)} {source target : List TypeExpr}
+    {pattern : Pattern} {sort : TypeExpr}
+    (parsed : Parsed language entries source pattern sort)
+    (action : Sub (signatureOf language)
+      (source ++ NamedFreeContext.contextSorts entries)
+      (target ++ NamedFreeContext.contextSorts entries))
+    (actual original : Mettapedia.OSLF.MeTTaIL.ContextSubstitution.Assignment) (reads : ReadsSub action actual)
+    (images : ∀ index, index < source.length →
+      NamedFreeContext.openContext target.length entries (actual index) = original index)
+    (slots : ∀ position : Fin entries.length,
+      actual (source.length + position.val) = .bvar (target.length + position.val)) :
+    NamedFreeContext.openContext target.length entries (erase (bind action parsed.term)) =
+      substitute original pattern := by
+  rw [ScopedElaboration.erase_bind action actual reads, parsed.closed_readback]
+  apply NamedFreeContext.closeNames_substitution_readback source.length target.length
+    (entries.map Prod.fst) actual original pattern parsed.source_scope
+  · simpa only [List.length_map, List.length_append, NamedFreeContext.contextSorts]
+      using readsSub_scoped action actual reads
+  · exact images
+  · intro position
+    exact slots ⟨position.val, by simpa only [List.length_map] using position.isLt⟩
+
+/-- Restore the same finite names in an existing ordered dependency list. -/
+def openedArguments (entries : List (String × TypeExpr)) (bound : List TypeExpr)
+    (values : List Pattern) : List Pattern :=
+  values.map (NamedFreeContext.openContext bound.length entries)
+
+private theorem openedArguments_typed {language : LanguageDef}
+    {entries : List (String × TypeExpr)} (unique : (entries.map Prod.fst).Nodup)
+    {bound : List TypeExpr} {values : List Pattern} {sorts : List TypeExpr}
+    (typed : List.Forall₂
+      (HasType language FreeTypeContext.empty (bound ++ NamedFreeContext.contextSorts entries))
+      values sorts) :
+    List.Forall₂ (HasType language (FreeTypeContext.ofList entries) bound)
+      (openedArguments entries bound values) sorts := by
+  induction typed with
+  | nil => exact .nil
+  | cons first _ ih =>
+      exact .cons (NamedFreeContext.openContext_typed_of_nodup entries unique first) ih
+
+private theorem typed_arguments_scoped {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {values : List Pattern} {sorts : List TypeExpr}
+    (typed : List.Forall₂ (HasType language free bound) values sorts) :
+    values.all (fun pattern => pattern.isWellScopedAt bound.length) = true := by
+  induction typed with
+  | nil => rfl
+  | cons first _ ih =>
+      simp only [List.all_cons, Bool.and_eq_true]
+      exact ⟨first.isWellScopedAt, ih⟩
+
+/-- Source metadata keeps the original ambient count; the extra name slots
+only occur in the intrinsic representation's outer ambient suffix. -/
+def Captured.extendedBody {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {dependencies ambient : List TypeExpr} {source : ContextualValue} {sort : TypeExpr}
+    (captured : Captured language entries dependencies ambient source sort) :
+    Term (signatureOf language) (dependencies ++ (ambient ++ NamedFreeContext.contextSorts entries)) sort :=
+  castTermCtx (List.append_assoc dependencies ambient (NamedFreeContext.contextSorts entries))
+    captured.body.term
+
+/-- Invoke the same existing intrinsic occurrence action with its actual
+sorted arguments and extended ambient suffix. -/
+def Captured.occurrence {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {dependencies ambient locals : List TypeExpr} {source : ContextualValue} {sort : TypeExpr}
+    (captured : Captured language entries dependencies ambient source sort)
+    (arguments : DependencyArguments (language := language) dependencies
+      (locals ++ (ambient ++ NamedFreeContext.contextSorts entries))) :
+    Term (signatureOf language) (locals ++ (ambient ++ NamedFreeContext.contextSorts entries)) sort :=
+  bind (occurrenceSubstitution arguments) captured.extendedBody
+
+def Captured.occurrenceReadback {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {dependencies ambient locals : List TypeExpr} {source : ContextualValue} {sort : TypeExpr}
+    (captured : Captured language entries dependencies ambient source sort)
+    (arguments : DependencyArguments (language := language) dependencies
+      (locals ++ (ambient ++ NamedFreeContext.contextSorts entries))) : Pattern :=
+  NamedFreeContext.openContext (locals ++ ambient).length entries (erase (captured.occurrence arguments))
+
+/-- The operation result independently has the requested source sort after
+exact finite free-name restoration. -/
+theorem Captured.occurrence_typed {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {dependencies ambient locals : List TypeExpr} {source : ContextualValue} {sort : TypeExpr}
+    (captured : Captured language entries dependencies ambient source sort)
+    (arguments : DependencyArguments (language := language) dependencies
+      (locals ++ (ambient ++ NamedFreeContext.contextSorts entries))) :
+    HasType language (FreeTypeContext.ofList entries) (locals ++ ambient)
+      (captured.occurrenceReadback arguments) sort := by
+  apply NamedFreeContext.openContext_typed_of_nodup entries captured.body.names_unique
+  simpa only [List.append_assoc] using erase_typed (captured.occurrence arguments)
+
+private theorem occurrenceAssignment_open_names (dependencies ambient depth : Nat)
+    (names : List String) (arguments : List Pattern) (count : arguments.length = dependencies)
+    (index : Nat) (inside : index < dependencies + ambient) :
+    NamedFreeContext.openNames (depth + ambient) names
+        (occurrenceAssignment dependencies depth arguments index) =
+      occurrenceAssignment dependencies depth
+        (arguments.map (NamedFreeContext.openNames (depth + ambient) names)) index := by
+  by_cases dependency : index < dependencies
+  · have argumentIndex : index < arguments.length := by omega
+    have present : arguments[index]? = some (arguments.get ⟨index, argumentIndex⟩) :=
+      List.getElem?_eq_getElem argumentIndex
+    simp only [occurrenceAssignment, if_pos dependency, List.getD_eq_getElem?_getD,
+      List.getElem?_map, present, Option.getD_some, Option.map_some]
+  · simp only [occurrenceAssignment, if_neg dependency]
+    exact NamedFreeContext.openNames_before (depth + ambient) names _ (by omega)
+
+/-- Every native-context occurrence, with the source dependency arguments
+retained, reads back as the original raw occurrence substitution. -/
+theorem Captured.occurrence_readback {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {dependencies ambient locals : List TypeExpr} {source : ContextualValue} {sort : TypeExpr}
+    (captured : Captured language entries dependencies ambient source sort)
+    (arguments : DependencyArguments (language := language) dependencies
+      (locals ++ (ambient ++ NamedFreeContext.contextSorts entries))) :
+    captured.occurrenceReadback arguments =
+      substitute (occurrenceAssignment dependencies.length locals.length
+        (openedArguments entries (locals ++ ambient) (eraseArguments arguments))) source.body := by
+  have sourceRead : erase captured.extendedBody =
+      NamedFreeContext.closeContext (dependencies ++ ambient).length entries source.body := by
+    have castRead : ∀ {first second : List TypeExpr} (same : first = second)
+        (term : Term (signatureOf language) first sort),
+        erase (castTermCtx same term) = erase term := by
+      intro first second same term
+      cases same
+      rfl
+    exact (castRead _ captured.body.term).trans captured.body.closed_readback
+  unfold Captured.occurrenceReadback Captured.occurrence
+  rw [ScopedElaboration.erase_bind _ _ (occurrenceSubstitution_reads arguments), sourceRead]
+  apply NamedFreeContext.closeNames_substitution_readback (dependencies ++ ambient).length
+    (locals ++ ambient).length (entries.map Prod.fst) _ _ source.body captured.body.source_scope
+  · simpa only [List.length_append, NamedFreeContext.contextSorts, List.length_map, Nat.add_assoc]
+      using readsSub_scoped (occurrenceSubstitution arguments) _ (occurrenceSubstitution_reads arguments)
+  · intro index inside
+    simp only [List.length_append, openedArguments]
+    change NamedFreeContext.openNames (locals.length + ambient.length) (entries.map Prod.fst)
+      (occurrenceAssignment dependencies.length locals.length (eraseArguments arguments) index) =
+      occurrenceAssignment dependencies.length locals.length
+        ((eraseArguments arguments).map
+          (NamedFreeContext.openNames (locals.length + ambient.length) (entries.map Prod.fst))) index
+    exact occurrenceAssignment_open_names dependencies.length ambient.length locals.length
+        (entries.map Prod.fst) (eraseArguments arguments)
+        (eraseDependencyArguments_length arguments) index
+        (by simpa only [List.length_append] using inside)
+  · intro position
+    have later : ¬ (dependencies ++ ambient).length + position.val < dependencies.length := by
+      simp only [List.length_append]
+      omega
+    simp only [occurrenceAssignment]
+    rw [if_neg later]
+    simp only [List.length_append]
+    congr 1
+    omega
+
+/-- The original executable interpreter accepts exactly this captured
+source instance with the reconstructed argument list and computed result. -/
+theorem Captured.instantiateValue?_occurrence {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {dependencies ambient locals : List TypeExpr} {source : ContextualValue} {sort : TypeExpr}
+    (captured : Captured language entries dependencies ambient source sort)
+    (arguments : DependencyArguments (language := language) dependencies
+      (locals ++ (ambient ++ NamedFreeContext.contextSorts entries))) :
+    instantiateValue? source ambient.length locals.length
+      (openedArguments entries (locals ++ ambient) (eraseArguments arguments)) =
+        some (captured.occurrenceReadback arguments) := by
+  have argumentCount :
+      (openedArguments entries (locals ++ ambient) (eraseArguments arguments)).length = dependencies.length := by
+    simp only [openedArguments, List.length_map, eraseDependencyArguments_length]
+  have argumentTyping := openedArguments_typed (bound := locals ++ ambient)
+    captured.body.names_unique
+    (by simpa only [List.append_assoc] using dependency_arguments_typed arguments)
+  have argumentScope := typed_arguments_scoped argumentTyping
+  have bodyScope : source.body.isWellScopedAt (dependencies.length + ambient.length) = true := by
+    simpa only [List.length_append] using captured.body.source_scope
+  have resultScope :
+      (substitute (occurrenceAssignment dependencies.length locals.length
+        (openedArguments entries (locals ++ ambient) (eraseArguments arguments))) source.body).isWellScopedAt
+          (locals.length + ambient.length) = true := by
+    rw [← captured.occurrence_readback arguments]
+    simpa only [List.length_append] using (captured.occurrence_typed arguments).isWellScopedAt
+  simp only [List.length_append] at argumentScope
+  simp [instantiateValue?, captured.dependencies_eq, captured.ambient_eq, argumentCount,
+    bodyScope, argumentScope, resultScope]
+  exact (captured.occurrence_readback arguments).symm
+
+/-- At the original public occurrence observation, no other result is
+introduced by executing a checked captured body. -/
+theorem Captured.instantiateValue?_occurrence_iff {language : LanguageDef}
+    {entries : List (String × TypeExpr)} {dependencies ambient locals : List TypeExpr}
+    {source : ContextualValue} {sort : TypeExpr}
+    (captured : Captured language entries dependencies ambient source sort)
+    (arguments : DependencyArguments (language := language) dependencies
+      (locals ++ (ambient ++ NamedFreeContext.contextSorts entries))) (result : Pattern) :
+    instantiateValue? source ambient.length locals.length
+        (openedArguments entries (locals ++ ambient) (eraseArguments arguments)) = some result ↔
+      captured.occurrenceReadback arguments = result := by
+  rw [captured.instantiateValue?_occurrence arguments, Option.some.injEq]
+
+/-- The actual runtime lookup at the original declaration name feeds the
+original captured-value interpreter, preserving its selected source value. -/
+theorem SelectedCapture.instantiateValue?_stored {language : LanguageDef}
+    {rule : RewriteRule} {spec : RuleBindingSpec} {entries : List (String × TypeExpr)}
+    {ambient locals : List TypeExpr}
+    {assignment : Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.Assignment}
+    {index : Fin (metaArities (language := language) rule spec).length}
+    (selected : SelectedCapture language rule spec entries ambient assignment index)
+    (arguments : DependencyArguments (language := language)
+      ((metaArities rule spec).get index).1
+      (locals ++ (ambient ++ NamedFreeContext.contextSorts entries))) :
+    (Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.lookup assignment (metaName rule spec index)).bind
+        (fun value => instantiateValue? value ambient.length locals.length
+          (openedArguments entries (locals ++ ambient) (eraseArguments arguments))) =
+      some (selected.parsed.occurrenceReadback arguments) := by
+  rw [selected.stored, Option.bind_some]
+  exact selected.parsed.instantiateValue?_occurrence arguments
+
+end Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies
+
+set_option autoImplicit false
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies.OperationControls
+open Mettapedia.OSLF.Binding
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.RuleBinding
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+private def t : TypeExpr := .base "Term"
+private def language : LanguageDef where
+  name := "finite-named-operation"
+  types := [{ name := "Term" }]
+  terms := []
+  equations := []
+  rewrites := []
+private def rule : RewriteRule where
+  name := "body-operation"
+  typeContext := [("B", t), ("unused", t)]
+  premises := []
+  left := .fvar "B"
+  right := .fvar "B"
+private def spec : RuleBindingSpec where
+  dependencies := [("B", [t]), ("unused", [])]
+private def entries : List (String × TypeExpr) := [("a", t), ("b", t)]
+private def source : ContextualValue := ⟨[t], 1, .subst (.fvar "a") (.bvar 0)⟩
+private def nestedSource : ContextualValue :=
+  ⟨[t], 1, .lambda none (.subst (.bvar 2) (.fvar "a"))⟩
+private def ambientSource : ContextualValue := ⟨[t], 1, .bvar 1⟩
+private def zeroSource : ContextualValue := ⟨[], 1, .fvar "a"⟩
+private def captured : Captured language entries [t] [t] source t :=
+  (capture? language rule spec .right entries [t] [t] source t).get (by decide +kernel)
+private def nestedCaptured : Captured language entries [t] [t] nestedSource (.arrow t t) :=
+  (capture? language rule spec .right entries [t] [t] nestedSource (.arrow t t)).get (by decide +kernel)
+private def ambientCaptured : Captured language entries [t] [t] ambientSource t :=
+  (capture? language rule spec .right entries [t] [t] ambientSource t).get (by decide +kernel)
+private def zeroCaptured : Captured language entries [] [t] zeroSource t :=
+  (capture? language rule spec .right entries [] [t] zeroSource t).get (by decide +kernel)
+
+private def localArgument : DependencyArguments (language := language) [t]
+    ([t] ++ ([t] ++ NamedFreeContext.contextSorts entries)) := .cons (.var .zero) .nil
+private def namedArgument : DependencyArguments (language := language) [t]
+    ([t] ++ ([t] ++ NamedFreeContext.contextSorts entries)) :=
+  .cons (.var (.succ (.succ (.succ .zero)))) .nil
+private def noArguments : DependencyArguments (language := language) []
+    ([t] ++ ([t] ++ NamedFreeContext.contextSorts entries)) := .nil
+
+example : instantiateValue? source 1 1 [.bvar 0] =
+    some (captured.occurrenceReadback localArgument) := by
+  convert captured.instantiateValue?_occurrence localArgument using 1
+  decide +kernel
+example : instantiateValue? source 1 1 [.fvar "b"] =
+    some (captured.occurrenceReadback namedArgument) := by
+  convert captured.instantiateValue?_occurrence namedArgument using 1
+  decide +kernel
+example : instantiateValue? nestedSource 1 1 [.fvar "b"] =
+    some (nestedCaptured.occurrenceReadback namedArgument) := by
+  convert nestedCaptured.instantiateValue?_occurrence namedArgument using 1
+  decide +kernel
+example : HasType language (FreeTypeContext.ofList entries) [t, t]
+    (nestedCaptured.occurrenceReadback namedArgument) (.arrow t t) :=
+  nestedCaptured.occurrence_typed namedArgument
+
+private def raw : Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.Assignment := [("B", source)]
+private def first : Fin (metaArities (language := language) rule spec).length := ⟨0, by decide⟩
+private def unused : Fin (metaArities (language := language) rule spec).length := ⟨1, by decide⟩
+private def selected : SelectedCapture language rule spec entries [t] raw first :=
+  (selectCapture? language rule spec .right entries [t] raw first).get (by decide +kernel)
+
+example : (Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.lookup raw "B").bind
+    (fun value => instantiateValue? value 1 1 [.fvar "b"]) =
+    some (selected.parsed.occurrenceReadback namedArgument) := by
+  convert selected.instantiateValue?_stored namedArgument using 1
+  decide +kernel
+
+/-- A well-typed map may still swap the two external name slots. -/
+private def swappedNames : Sub (signatureOf language) [t, t, t, t] [t, t, t, t] :=
+  fun _ position => match position with
+    | .zero => .var .zero
+    | .succ .zero => .var (.succ .zero)
+    | .succ (.succ .zero) => .var (.succ (.succ (.succ .zero)))
+    | .succ (.succ (.succ .zero)) => .var (.succ (.succ .zero))
+    | .succ (.succ (.succ (.succ impossible))) => nomatch impossible
+private def swappedReadback : Pattern :=
+  NamedFreeContext.openContext 2 entries (erase (bind swappedNames captured.body.term))
+
+private def checks : List (String × Bool) := [
+  ("original-argument-source-order", openedArguments entries [t, t] (eraseArguments localArgument) == [.bvar 0]),
+  ("named-argument-source-readback", openedArguments entries [t, t] (eraseArguments namedArgument) == [.fvar "b"]),
+  ("actual-original-local-run", instantiateValue? source 1 1 [.bvar 0] == some (captured.occurrenceReadback localArgument)),
+  ("actual-original-named-run", instantiateValue? source 1 1 [.fvar "b"] == some (captured.occurrenceReadback namedArgument)),
+  ("local-result-exact", captured.occurrenceReadback localArgument == .subst (.fvar "a") (.bvar 0)),
+  ("named-result-exact", captured.occurrenceReadback namedArgument == .subst (.fvar "a") (.fvar "b")),
+  ("raw-substitution-is-retained", captured.occurrenceReadback namedArgument != .fvar "a"),
+  ("changing-arguments-changes-readback", captured.occurrenceReadback localArgument != captured.occurrenceReadback namedArgument),
+  ("nested-capture-avoiding-result", nestedCaptured.occurrenceReadback namedArgument ==
+    .lambda none (.subst (.fvar "b") (.fvar "a"))),
+  ("nested-original-run", instantiateValue? nestedSource 1 1 [.fvar "b"] ==
+    some (nestedCaptured.occurrenceReadback namedArgument)),
+  ("ambient-is-not-dependency", ambientCaptured.occurrenceReadback namedArgument == .bvar 1),
+  ("zero-dependency-retains-free-ambient", zeroCaptured.occurrenceReadback noArguments == .fvar "a"),
+  ("zero-dependency-original-run", instantiateValue? zeroSource 1 1 [] == some (zeroCaptured.occurrenceReadback noArguments)),
+  ("missing-dependency-refuses", (instantiateValue? source 1 1 []).isNone),
+  ("extra-dependency-refuses", (instantiateValue? source 1 1 [.bvar 0, .bvar 0]).isNone),
+  ("wrong-original-ambient-refuses", (instantiateValue? source 0 1 [.bvar 0]).isNone),
+  ("out-of-scope-argument-refuses", (instantiateValue? source 1 1 [.bvar 2]).isNone),
+  ("declared-selected-source-lookup", selected.original == source),
+  ("unused-declaration-not-fabricated", (selectCapture? language rule spec .right entries [t] raw unused).isNone),
+  ("stored-native-source-call", (Mettapedia.OSLF.MeTTaIL.ScopedRuleMatching.lookup raw "B").bind
+      (fun value => instantiateValue? value 1 1 [.fvar "b"]) ==
+      some (selected.parsed.occurrenceReadback namedArgument)),
+  ("typed-name-swap-really-changes-result", swappedReadback == .subst (.fvar "b") (.bvar 0)),
+  ("typed-map-does-not-authorize-name-swap", instantiateValue? source 1 1 [.bvar 0] != some swappedReadback)
+]
+
+#guard checks.all Prod.snd
+
+def main : IO Unit := do
+  for (label, okay) in checks do
+    unless okay do throw <| IO.userError ("FAILED " ++ label)
+  IO.println s!"{checks.length} named source-operation controls PASS"
+
+end Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies.OperationControls
+
+
+
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies
+open Mettapedia.OSLF.Binding
+open Mettapedia.OSLF.Binding.WireCodec
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.RuleBinding
+
+/-- Explicit finite source evidence retains its exact original operator,
+sort, binding arity and declaration descriptors, as well as the raw body. -/
+structure EvidenceParsed (language : LanguageDef) (entries : List (String × TypeExpr))
+    (bound : List TypeExpr) (source : Pattern) (sort : TypeExpr) (evidence : Data)
+    extends Parsed language entries bound source sort where
+  encoded : (Wire.termCodec language (bound ++ NamedFreeContext.contextSorts entries) sort).put term = evidence
+
+/-- The automatic source parser is optional. An explicit original binding
+term is also checked against its actual closed raw body and finite names. -/
+def parseEvidence? (language : LanguageDef) (entries : List (String × TypeExpr))
+    (bound : List TypeExpr) (source : Pattern) (sort : TypeExpr) (evidence : Data) :
+    Option (EvidenceParsed language entries bound source sort evidence) :=
+  match decoded : (Wire.termCodec language (bound ++ NamedFreeContext.contextSorts entries) sort).canonicalGet evidence with
+  | none => none
+  | some term =>
+      if unique : (entries.map Prod.fst).Nodup then
+        if scopeProof : source.isWellScopedAt bound.length = true then
+          if sourceRead : erase term = NamedFreeContext.closeContext bound.length entries source then
+            some {
+              term := term
+              closed_readback := sourceRead
+              source_scope := scopeProof
+              names_unique := unique
+              encoded := Codec.put_of_canonicalGet _ _ _ decoded }
+          else none
+        else none
+      else none
+
+/-- Every actual represented body has finite explicit evidence. This
+includes source operators beyond the automatic parser's search profile. -/
+theorem parseEvidence?_put {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {bound : List TypeExpr} {source : Pattern} {sort : TypeExpr}
+    (parsed : Parsed language entries bound source sort) :
+    parseEvidence? language entries bound source sort
+      ((Wire.termCodec language (bound ++ NamedFreeContext.contextSorts entries) sort).put parsed.term) =
+        some { toParsed := parsed, encoded := rfl } := by
+  unfold parseEvidence?
+  split
+  · rename_i decoded
+    have accepted := Codec.canonicalGet_put
+      (Wire.termCodec language (bound ++ NamedFreeContext.contextSorts entries) sort) parsed.term
+    rw [decoded] at accepted
+    cases accepted
+  · rename_i term decoded
+    have accepted := Codec.canonicalGet_put
+      (Wire.termCodec language (bound ++ NamedFreeContext.contextSorts entries) sort) parsed.term
+    have same : term = parsed.term := Option.some.inj (decoded.symm.trans accepted)
+    cases same
+    simp only [parsed.names_unique, parsed.source_scope, parsed.closed_readback, dite_true]
+
+
+/-- Original capture metadata and explicit source evidence are checked
+independently. The packet retains both the actual intrinsic body and code. -/
+structure EvidenceCaptured (language : LanguageDef) (entries : List (String × TypeExpr))
+    (dependencies ambient : List TypeExpr) (source : ContextualValue) (sort : TypeExpr)
+    (evidence : Data) extends Captured language entries dependencies ambient source sort where
+  encoded : (Wire.termCodec language
+    ((dependencies ++ ambient) ++ NamedFreeContext.contextSorts entries) sort).put body.term = evidence
+
+def captureEvidence? (language : LanguageDef) (entries : List (String × TypeExpr))
+    (dependencies ambient : List TypeExpr) (source : ContextualValue) (sort : TypeExpr)
+    (evidence : Data) : Option (EvidenceCaptured language entries dependencies ambient source sort evidence) :=
+  if dependenciesEq : source.dependencies = dependencies then
+    if ambientEq : source.ambient = ambient.length then do
+      let body ← parseEvidence? language entries (dependencies ++ ambient) source.body sort evidence
+      pure {
+        body := body.toParsed
+        dependencies_eq := dependenciesEq
+        ambient_eq := ambientEq
+        encoded := body.encoded }
+    else none
+  else none
+
+/-- Every represented original contextual value has finite source evidence;
+its dependency types and ambient length are not guessed from body erasure. -/
+theorem captureEvidence?_put {language : LanguageDef} {entries : List (String × TypeExpr)}
+    {dependencies ambient : List TypeExpr} {source : ContextualValue} {sort : TypeExpr}
+    (captured : Captured language entries dependencies ambient source sort) :
+    captureEvidence? language entries dependencies ambient source sort
+      ((Wire.termCodec language ((dependencies ++ ambient) ++ NamedFreeContext.contextSorts entries)
+        sort).put captured.body.term) = some { toCaptured := captured, encoded := rfl } := by
+  unfold captureEvidence?
+  simp only [captured.dependencies_eq, captured.ambient_eq, dite_true,
+    parseEvidence?_put, Bind.bind, Option.bind, pure]
+
+end Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies
+
+
+
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies
+open Mettapedia.OSLF.Binding
+open Mettapedia.OSLF.Binding.WireCodec
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.RuleBinding
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+/-- Every original well-sorted open object has an exactly represented body
+over its admitted finite free-name context. This derives representation from
+the original source judgment, not from the automatic parser's profile. -/
+theorem Parsed.exists_of_openTyped {language : LanguageDef}
+    {entries : List (String × TypeExpr)} {bound : List TypeExpr}
+    {source : Pattern} {sort : TypeExpr}
+    (unique : (entries.map Prod.fst).Nodup)
+    (typed : OpenPatternWellSorted language (FreeTypeContext.ofList entries) bound sort source) :
+    Nonempty (Parsed language entries bound source sort) := by
+  have closedTyped := NamedFreeContext.closeContext_typed entries typed.1
+  have closedCanonical :
+      (NamedFreeContext.closeContext bound.length entries source).hasCanonicalBinderMetadata = true :=
+    (NamedFreeContext.closeNames_metadata bound.length (entries.map Prod.fst) source).trans typed.2.1
+  have closedObject : isObjectPattern (NamedFreeContext.closeContext bound.length entries source) = true :=
+    (NamedFreeContext.closeNames_object bound.length (entries.map Prod.fst) source).trans typed.2.2.1
+  obtain ⟨term, readback⟩ := typedObject_exists closedTyped closedCanonical closedObject
+  exact ⟨⟨term, readback, typed.2.2.2, unique⟩⟩
+
+/-- The runnable explicit-evidence checker is complete for the independently
+stated source object judgment, including arbitrary binding headers and all
+collection kinds. Its finite evidence retains the real constructor rows. -/
+theorem parseEvidence?_complete {language : LanguageDef}
+    {entries : List (String × TypeExpr)} {bound : List TypeExpr}
+    {source : Pattern} {sort : TypeExpr}
+    (unique : (entries.map Prod.fst).Nodup)
+    (typed : OpenPatternWellSorted language (FreeTypeContext.ofList entries) bound sort source) :
+    ∃ (evidence : Data) (parsed : EvidenceParsed language entries bound source sort evidence),
+      parseEvidence? language entries bound source sort evidence = some parsed := by
+  obtain ⟨parsed⟩ := Parsed.exists_of_openTyped unique typed
+  exact ⟨_, { toParsed := parsed, encoded := rfl }, parseEvidence?_put parsed⟩
+
+/-- Source typing, the original ambient count and dependency types earn
+finite accepted contextual evidence without any body-inference assumption. -/
+theorem captureEvidence?_complete {language : LanguageDef}
+    {entries : List (String × TypeExpr)} {dependencies ambient : List TypeExpr}
+    {source : ContextualValue} {sort : TypeExpr}
+    (unique : (entries.map Prod.fst).Nodup)
+    (typed : OpenPatternWellSorted language (FreeTypeContext.ofList entries)
+      (dependencies ++ ambient) sort source.body)
+    (dependenciesEq : source.dependencies = dependencies)
+    (ambientEq : source.ambient = ambient.length) :
+    ∃ (evidence : Data) (captured : EvidenceCaptured language entries dependencies ambient source sort evidence),
+      captureEvidence? language entries dependencies ambient source sort evidence = some captured := by
+  obtain ⟨body⟩ := Parsed.exists_of_openTyped unique typed
+  let captured : Captured language entries dependencies ambient source sort :=
+    ⟨body, dependenciesEq, ambientEq⟩
+  exact ⟨_, { toCaptured := captured, encoded := rfl }, captureEvidence?_put captured⟩
+
+
+/-- On the original canonical object profile, finite accepted wire evidence
+exists exactly when the original source object judgment holds. -/
+theorem parseEvidence?_exists_iff_openTyped {language : LanguageDef}
+    {entries : List (String × TypeExpr)} {bound : List TypeExpr}
+    {source : Pattern} {sort : TypeExpr}
+    (unique : (entries.map Prod.fst).Nodup)
+    (canonical : source.hasCanonicalBinderMetadata = true)
+    (object : isObjectPattern source = true) :
+    (∃ evidence, (parseEvidence? language entries bound source sort evidence).isSome = true) ↔
+      OpenPatternWellSorted language (FreeTypeContext.ofList entries) bound sort source := by
+  constructor
+  · rintro ⟨evidence, accepted⟩
+    cases decoded : parseEvidence? language entries bound source sort evidence with
+    | none => simp only [decoded, Option.isSome_none, Bool.false_eq_true] at accepted
+    | some parsed => exact ⟨parsed.toParsed.typed, canonical, object, parsed.source_scope⟩
+  · intro typed
+    obtain ⟨evidence, parsed, decoded⟩ := parseEvidence?_complete unique typed
+    exact ⟨evidence, by rw [decoded]; rfl⟩
+
+/-- The same coverage theorem uses the original snapshot's admitted names
+and actual first-match free typing context. -/
+theorem parseEvidence?_snapshot_complete
+    (snapshot : Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.Snapshot)
+    (admitted : Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission.checkFreeContext snapshot = true)
+    {bound : List TypeExpr} {source : Pattern} {sort : TypeExpr}
+    (typed : OpenPatternWellSorted snapshot.language snapshot.free bound sort source) :
+    ∃ evidence, (parseEvidence? snapshot.language snapshot.freeTypes bound source sort evidence).isSome = true := by
+  rw [snapshot_free_eq_ofList] at typed
+  exact (parseEvidence?_exists_iff_openTyped (snapshot_names_unique admitted)
+    typed.2.1 typed.2.2.1).mpr typed
+end Mettapedia.GSLT.LanguageDef.BindingSyntax.ScopedElaboration.SchemaElaboration.NamedBodies

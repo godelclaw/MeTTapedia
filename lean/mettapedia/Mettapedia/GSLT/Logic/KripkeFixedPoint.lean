@@ -1,4 +1,5 @@
 import Mathlib.Data.Set.Insert
+import Mathlib.Data.Set.Card
 import Mettapedia.TypeTheory.Authority
 import Mettapedia.Logic.Diagonal.Lawvere
 
@@ -44,6 +45,25 @@ grounded truth (`groundedAuthority`), knowledge-below the verdicts of every
 consistent pre-fixed valuation (`verdict_least_knowledgeLE`), and the liar's
 verdict is `outsideFragment` (`verdict_liar_outside`).  Authority refinement is
 a special case of the knowledge order (`knowledgeLE_of_authorityRefines`).
+
+**Three readings of grounded truth.**  The least fixed point is the union of the
+stages of the jump (`mem_least_iff_exists_stage`) and is derivability by well-founded
+evidence trees (`mem_least_iff_evidence`); evidence of height `n` is decided at stage
+`n + 1` and conversely (`mem_stage_succ_iff_evidence`).  Two evidence trees can give
+one verdict (`Controls.twoEvidence_ne`).  **Circular justification** is the greatest
+fixed point: every sound valuation lies below it (`le_greatest`), and with bivalent
+base facts it is the union of the sound valuations (`mem_greatest_iff_sound`).  The
+liar justifies both verdicts by itself (`liar_selfJustifying`) and has well-founded
+evidence for neither (`liar_noEvidence`).  **The gap is invisible from inside**: no
+formula holds exactly where a judgment is undetermined (`undetermined_not_definable`),
+and the true statement that the liar is not true is not held by the least fixed point
+(`liar_revenge`); it is made one level up.
+
+**Finite systems are decided.**  For finitely many judgments the stages reach the least
+fixed point after at most twice as many jumps as there are judgments (`stage_eq_least`),
+and the Boolean iteration of the jump (`groundedDecide`) returns exactly its verdicts
+(`groundedDecide_spec`); the concrete system below is decided by the kernel
+(`Example.decided_verdicts`).
 
 Base facts are three-valued too (`baseHolds`, `baseFails`, disjoint), so a
 bubble's own budgeted verdicts can ground the system.
@@ -526,16 +546,20 @@ theorem jump_greatest (bivalent : system.Bivalent) :
     system.jump system.greatest = system.greatest := by
   rw [greatest, jump_dual bivalent, jump_least]
 
-/-- **Every fixed point lies below the dual of the least.** -/
-theorem le_greatest (bivalent : system.Bivalent) {valuation : Valuation Judgment}
-    (fixed : system.jump valuation = valuation) : valuation.Le system.greatest := by
-  have dualFixed : system.jump valuation.dual = valuation.dual := by
-    rw [jump_dual bivalent, fixed]
-  have below : system.least.Le valuation.dual := system.least_le (by
-    rw [dualFixed]
-    exact Valuation.le_refl _)
+/-- **Every sound valuation lies below the dual of the least**, in particular every
+fixed point.  No bivalence is needed: the dual of a sound valuation is a pre-fixed
+point (`jump_dual_le`), so it lies above the least fixed point. -/
+theorem le_greatest {valuation : Valuation Judgment} (sound : system.Sound valuation) :
+    valuation.Le system.greatest := by
+  have below : system.least.Le valuation.dual := system.least_le (system.jump_dual_le sound)
   have reversed := Valuation.dual_le_dual below
   rwa [Valuation.dual_dual] at reversed
+
+/-- With bivalent base facts the greatest fixed point is sound. -/
+theorem greatest_sound (bivalent : system.Bivalent) : system.Sound system.greatest := by
+  unfold Sound
+  rw [jump_greatest bivalent]
+  exact Valuation.le_refl _
 
 /-- Every judgment is held or failed by the greatest fixed point. -/
 theorem greatest_complete (judgment : Judgment) :
@@ -558,6 +582,617 @@ theorem liar_both_greatest {liar : Judgment} (isLiar : system.spec liar = .neg (
 
 end System
 
+/-! ## Three readings of grounded truth: stages, evidence and the fixed point
+
+The least fixed point is read in three ways, and the three readings agree on every
+verdict.
+
+* **By stages.** The stages of the jump from the empty valuation increase
+  (`stage_mono`) and stay below the least fixed point (`stage_le_least`); a judgment is
+  held or failed by the least fixed point exactly when some stage holds or fails it
+  (`mem_least_iff_exists_stage`).
+* **By evidence.** `Evidence` is the inductive family of well-founded derivations:
+  base facts at the leaves, a truth node unfolding a judgment into its specification,
+  and one node for each strong Kleene clause.  Evidence is sound (`Evidence.takes_least`)
+  and complete (`exists_evidence`), so a judgment is held exactly when its specification
+  has evidence (`mem_least_iff_evidence`).  The height of an evidence tree counts truth
+  nodes along its longest branch, and a judgment is decided at stage `n + 1` exactly
+  when its specification has evidence of height at most `n`
+  (`mem_stage_succ_iff_evidence`).
+* **By the fixed point** itself.
+
+Each comparison forgets in one direction: two different evidence trees can give one
+verdict (`Controls.twoEvidence_ne`).
+
+**Circular justification.** A sound valuation justifies each of its verdicts by its own
+verdicts, possibly in a circle.  Every sound valuation lies below the greatest fixed
+point (`le_greatest`), so with bivalent base facts a judgment is held or failed by the
+greatest fixed point exactly when some circular justification holds or fails it
+(`mem_greatest_iff_sound`).  The liar justifies both verdicts by itself
+(`liar_selfJustifying`) and has well-founded evidence for neither (`liar_noEvidence`):
+a derivation of a verdict on a loop through truth and negation alone would descend
+forever (`noEvidence_of_closed`).  Grounded truth is well-founded evidence; the greatest
+fixed point is circular justification.
+-/
+
+namespace Valuation
+
+variable {Judgment : Type u}
+
+/-- Membership by polarity: `true` reads the held set, `false` the failed set. -/
+def Mem (valuation : Valuation Judgment) (judgment : Judgment) : Bool → Prop
+  | true => judgment ∈ valuation.holds
+  | false => judgment ∈ valuation.fails
+
+theorem Le.mem {first second : Valuation Judgment} (le : first.Le second)
+    {judgment : Judgment} : ∀ {polarity : Bool},
+      first.Mem judgment polarity → second.Mem judgment polarity
+  | true, held => le.1 held
+  | false, failed => le.2 failed
+
+/-- The empty valuation, which determines nothing. -/
+def bottom : Valuation Judgment := ⟨∅, ∅⟩
+
+theorem bottom_le (valuation : Valuation Judgment) : bottom.Le valuation :=
+  ⟨fun _ member => absurd member (Set.notMem_empty _),
+    fun _ member => absurd member (Set.notMem_empty _)⟩
+
+/-- A consistent valuation never holds and fails a judgment at once. -/
+theorem Consistent.not_mem_both {valuation : Valuation Judgment}
+    (consistent : valuation.Consistent) (judgment : Judgment) :
+    ¬ (valuation.Mem judgment true ∧ valuation.Mem judgment false) :=
+  fun ⟨held, failed⟩ => consistent judgment held failed
+
+end Valuation
+
+namespace System
+
+variable {Judgment : Type u} {Base : Type v} (system : System Judgment Base)
+
+/-- A formula takes a polarity in a valuation: `true` when it holds, `false` when it
+fails. -/
+def Takes (valuation : Valuation Judgment) (formula : Formula Judgment Base) : Bool → Prop
+  | true => (system.eval valuation formula).1
+  | false => (system.eval valuation formula).2
+
+variable {system}
+
+theorem takes_truth {valuation : Valuation Judgment} {judgment : Judgment} :
+    ∀ {polarity : Bool},
+      system.Takes valuation (.truth judgment) polarity ↔ valuation.Mem judgment polarity
+  | true => Iff.rfl
+  | false => Iff.rfl
+
+theorem takes_neg {valuation : Valuation Judgment} {formula : Formula Judgment Base} :
+    ∀ {polarity : Bool},
+      system.Takes valuation (.neg formula) polarity ↔ system.Takes valuation formula (!polarity)
+  | true => Iff.rfl
+  | false => Iff.rfl
+
+theorem mem_jump {valuation : Valuation Judgment} {judgment : Judgment} :
+    ∀ {polarity : Bool},
+      (system.jump valuation).Mem judgment polarity ↔
+        system.Takes valuation (system.spec judgment) polarity
+  | true => Iff.rfl
+  | false => Iff.rfl
+
+theorem takes_mono {first second : Valuation Judgment} (le : first.Le second)
+    {formula : Formula Judgment Base} : ∀ {polarity : Bool},
+      system.Takes first formula polarity → system.Takes second formula polarity
+  | true => (system.eval_mono le formula).1
+  | false => (system.eval_mono le formula).2
+
+variable (system)
+
+/-- The least fixed point holds a judgment exactly when it holds its specification. -/
+theorem mem_least_iff {judgment : Judgment} {polarity : Bool} :
+    system.least.Mem judgment polarity ↔
+      system.Takes system.least (system.spec judgment) polarity := by
+  rw [← mem_jump, system.jump_least]
+
+/-! ### Stages -/
+
+/-- **The stages of the jump** from the empty valuation. -/
+def stage : ℕ → Valuation Judgment
+  | 0 => Valuation.bottom
+  | n + 1 => system.jump (stage n)
+
+theorem stage_le_least : ∀ n, (system.stage n).Le system.least
+  | 0 => Valuation.bottom_le _
+  | n + 1 => Valuation.le_trans (system.jump_mono (stage_le_least n)) system.jump_least_le
+
+theorem stage_le_succ : ∀ n, (system.stage n).Le (system.stage (n + 1))
+  | 0 => Valuation.bottom_le _
+  | n + 1 => system.jump_mono (stage_le_succ n)
+
+theorem stage_mono {m n : ℕ} (le : m ≤ n) : (system.stage m).Le (system.stage n) := by
+  induction n, le using Nat.le_induction with
+  | base => exact Valuation.le_refl _
+  | succ n _ ih => exact Valuation.le_trans ih (system.stage_le_succ n)
+
+/-! ### Evidence -/
+
+/-- **Evidence** that a formula takes a polarity: a well-founded derivation whose leaves
+are base facts, whose truth nodes unfold a judgment into its specification, and whose
+other nodes are the strong Kleene clauses. -/
+inductive Evidence : Formula Judgment Base → Bool → Type (max u v)
+  | baseHolds {fact : Base} (holds : system.baseHolds fact) : Evidence (.base fact) true
+  | baseFails {fact : Base} (fails : system.baseFails fact) : Evidence (.base fact) false
+  | truth {judgment : Judgment} {polarity : Bool}
+      (body : Evidence (system.spec judgment) polarity) : Evidence (.truth judgment) polarity
+  | neg {formula : Formula Judgment Base} {polarity : Bool}
+      (body : Evidence formula (!polarity)) : Evidence (.neg formula) polarity
+  | conjHolds {first second : Formula Judgment Base}
+      (left : Evidence first true) (right : Evidence second true) :
+      Evidence (.conj first second) true
+  | conjFailsLeft {first second : Formula Judgment Base} (left : Evidence first false) :
+      Evidence (.conj first second) false
+  | conjFailsRight {first second : Formula Judgment Base} (right : Evidence second false) :
+      Evidence (.conj first second) false
+  | disjHoldsLeft {first second : Formula Judgment Base} (left : Evidence first true) :
+      Evidence (.disj first second) true
+  | disjHoldsRight {first second : Formula Judgment Base} (right : Evidence second true) :
+      Evidence (.disj first second) true
+  | disjFails {first second : Formula Judgment Base}
+      (left : Evidence first false) (right : Evidence second false) :
+      Evidence (.disj first second) false
+
+variable {system}
+
+/-- The height of an evidence tree: the number of truth nodes on its longest branch. -/
+def Evidence.height : {formula : Formula Judgment Base} → {polarity : Bool} →
+    system.Evidence formula polarity → ℕ
+  | _, _, .baseHolds _ => 0
+  | _, _, .baseFails _ => 0
+  | _, _, .truth body => body.height + 1
+  | _, _, .neg body => body.height
+  | _, _, .conjHolds left right => max left.height right.height
+  | _, _, .conjFailsLeft left => left.height
+  | _, _, .conjFailsRight right => right.height
+  | _, _, .disjHoldsLeft left => left.height
+  | _, _, .disjHoldsRight right => right.height
+  | _, _, .disjFails left right => max left.height right.height
+
+/-- **Evidence of height `n` is decided at stage `n`.** -/
+theorem Evidence.takes_stage : {formula : Formula Judgment Base} → {polarity : Bool} →
+    (evidence : system.Evidence formula polarity) →
+      system.Takes (system.stage evidence.height) formula polarity
+  | _, _, .baseHolds holds => holds
+  | _, _, .baseFails fails => fails
+  | _, _, .truth body => takes_truth.mpr (mem_jump.mpr body.takes_stage)
+  | _, _, .neg body => takes_neg.mpr body.takes_stage
+  | _, _, .conjHolds left right =>
+      ⟨takes_mono (system.stage_mono (le_max_left _ _)) left.takes_stage,
+        takes_mono (system.stage_mono (le_max_right _ _)) right.takes_stage⟩
+  | _, _, .conjFailsLeft left => Or.inl left.takes_stage
+  | _, _, .conjFailsRight right => Or.inr right.takes_stage
+  | _, _, .disjHoldsLeft left => Or.inl left.takes_stage
+  | _, _, .disjHoldsRight right => Or.inr right.takes_stage
+  | _, _, .disjFails left right =>
+      ⟨takes_mono (system.stage_mono (le_max_left _ _)) left.takes_stage,
+        takes_mono (system.stage_mono (le_max_right _ _)) right.takes_stage⟩
+
+/-- **Soundness of evidence**: evidence for a polarity is confirmed by the least fixed
+point. -/
+theorem Evidence.takes_least {formula : Formula Judgment Base} {polarity : Bool}
+    (evidence : system.Evidence formula polarity) :
+    system.Takes system.least formula polarity :=
+  takes_mono (system.stage_le_least _) evidence.takes_stage
+
+variable (system)
+
+/-- **Completeness by stages**: whatever a stage decides has evidence of height at most
+the stage. -/
+theorem exists_evidence_of_takes_stage : ∀ (n : ℕ) (formula : Formula Judgment Base)
+    (polarity : Bool), system.Takes (system.stage n) formula polarity →
+      ∃ evidence : system.Evidence formula polarity, evidence.height ≤ n
+  | _, .base _, true, holds => ⟨.baseHolds holds, Nat.zero_le _⟩
+  | _, .base _, false, fails => ⟨.baseFails fails, Nat.zero_le _⟩
+  | 0, .truth _, true, member => nomatch member
+  | 0, .truth _, false, member => nomatch member
+  | n + 1, .truth judgment, true, member => by
+      obtain ⟨body, height⟩ :=
+        exists_evidence_of_takes_stage n (system.spec judgment) true member
+      exact ⟨.truth body, Nat.succ_le_succ height⟩
+  | n + 1, .truth judgment, false, member => by
+      obtain ⟨body, height⟩ :=
+        exists_evidence_of_takes_stage n (system.spec judgment) false member
+      exact ⟨.truth body, Nat.succ_le_succ height⟩
+  | n, .neg formula, true, takes => by
+      obtain ⟨body, height⟩ := exists_evidence_of_takes_stage n formula false takes
+      exact ⟨.neg body, height⟩
+  | n, .neg formula, false, takes => by
+      obtain ⟨body, height⟩ := exists_evidence_of_takes_stage n formula true takes
+      exact ⟨.neg body, height⟩
+  | n, .conj first second, true, ⟨left, right⟩ => by
+      obtain ⟨leftEvidence, leftHeight⟩ := exists_evidence_of_takes_stage n first true left
+      obtain ⟨rightEvidence, rightHeight⟩ :=
+        exists_evidence_of_takes_stage n second true right
+      exact ⟨.conjHolds leftEvidence rightEvidence, max_le leftHeight rightHeight⟩
+  | n, .conj first second, false, takes => by
+      rcases takes with left | right
+      · obtain ⟨evidence, height⟩ := exists_evidence_of_takes_stage n first false left
+        exact ⟨.conjFailsLeft evidence, height⟩
+      · obtain ⟨evidence, height⟩ := exists_evidence_of_takes_stage n second false right
+        exact ⟨.conjFailsRight evidence, height⟩
+  | n, .disj first second, true, takes => by
+      rcases takes with left | right
+      · obtain ⟨evidence, height⟩ := exists_evidence_of_takes_stage n first true left
+        exact ⟨.disjHoldsLeft evidence, height⟩
+      · obtain ⟨evidence, height⟩ := exists_evidence_of_takes_stage n second true right
+        exact ⟨.disjHoldsRight evidence, height⟩
+  | n, .disj first second, false, ⟨left, right⟩ => by
+      obtain ⟨leftEvidence, leftHeight⟩ := exists_evidence_of_takes_stage n first false left
+      obtain ⟨rightEvidence, rightHeight⟩ :=
+        exists_evidence_of_takes_stage n second false right
+      exact ⟨.disjFails leftEvidence rightEvidence, max_le leftHeight rightHeight⟩
+
+/-- **A judgment is decided at stage `n + 1` exactly when its specification has evidence
+of height at most `n`.** -/
+theorem mem_stage_succ_iff_evidence {n : ℕ} {judgment : Judgment} {polarity : Bool} :
+    (system.stage (n + 1)).Mem judgment polarity ↔
+      ∃ evidence : system.Evidence (system.spec judgment) polarity, evidence.height ≤ n :=
+  ⟨fun member => system.exists_evidence_of_takes_stage n _ _ (mem_jump.mp member),
+    fun ⟨evidence, height⟩ =>
+      mem_jump.mpr (takes_mono (system.stage_mono height) evidence.takes_stage)⟩
+
+/-- The valuation of the judgments whose specifications have evidence. -/
+def evidenced : Valuation Judgment :=
+  ⟨{judgment | Nonempty (system.Evidence (system.spec judgment) true)},
+    {judgment | Nonempty (system.Evidence (system.spec judgment) false)}⟩
+
+theorem evidence_of_takes_evidenced : ∀ (formula : Formula Judgment Base) (polarity : Bool),
+    system.Takes system.evidenced formula polarity → Nonempty (system.Evidence formula polarity)
+  | .base _, true, holds => ⟨.baseHolds holds⟩
+  | .base _, false, fails => ⟨.baseFails fails⟩
+  | .truth _, true, ⟨body⟩ => ⟨.truth body⟩
+  | .truth _, false, ⟨body⟩ => ⟨.truth body⟩
+  | .neg formula, true, takes =>
+      let ⟨body⟩ := evidence_of_takes_evidenced formula false takes
+      ⟨.neg body⟩
+  | .neg formula, false, takes =>
+      let ⟨body⟩ := evidence_of_takes_evidenced formula true takes
+      ⟨.neg body⟩
+  | .conj first second, true, ⟨left, right⟩ =>
+      let ⟨leftEvidence⟩ := evidence_of_takes_evidenced first true left
+      let ⟨rightEvidence⟩ := evidence_of_takes_evidenced second true right
+      ⟨.conjHolds leftEvidence rightEvidence⟩
+  | .conj first _, false, .inl left =>
+      let ⟨evidence⟩ := evidence_of_takes_evidenced first false left
+      ⟨.conjFailsLeft evidence⟩
+  | .conj _ second, false, .inr right =>
+      let ⟨evidence⟩ := evidence_of_takes_evidenced second false right
+      ⟨.conjFailsRight evidence⟩
+  | .disj first _, true, .inl left =>
+      let ⟨evidence⟩ := evidence_of_takes_evidenced first true left
+      ⟨.disjHoldsLeft evidence⟩
+  | .disj _ second, true, .inr right =>
+      let ⟨evidence⟩ := evidence_of_takes_evidenced second true right
+      ⟨.disjHoldsRight evidence⟩
+  | .disj first second, false, ⟨left, right⟩ =>
+      let ⟨leftEvidence⟩ := evidence_of_takes_evidenced first false left
+      let ⟨rightEvidence⟩ := evidence_of_takes_evidenced second false right
+      ⟨.disjFails leftEvidence rightEvidence⟩
+
+/-- The evidenced valuation is a pre-fixed point. -/
+theorem jump_evidenced_le : (system.jump system.evidenced).Le system.evidenced :=
+  ⟨fun judgment takes => system.evidence_of_takes_evidenced (system.spec judgment) true takes,
+    fun judgment takes => system.evidence_of_takes_evidenced (system.spec judgment) false takes⟩
+
+/-- **Completeness of evidence**: whatever the least fixed point confirms has evidence. -/
+theorem exists_evidence {formula : Formula Judgment Base} {polarity : Bool}
+    (takes : system.Takes system.least formula polarity) :
+    Nonempty (system.Evidence formula polarity) :=
+  system.evidence_of_takes_evidenced formula polarity
+    (takes_mono (system.least_le system.jump_evidenced_le) takes)
+
+/-- **Grounded truth is well-founded evidence.** -/
+theorem takes_least_iff_evidence {formula : Formula Judgment Base} {polarity : Bool} :
+    system.Takes system.least formula polarity ↔ Nonempty (system.Evidence formula polarity) :=
+  ⟨system.exists_evidence, fun ⟨evidence⟩ => evidence.takes_least⟩
+
+/-- **A judgment is held (failed) by the least fixed point exactly when its specification
+has evidence of holding (failing).** -/
+theorem mem_least_iff_evidence {judgment : Judgment} {polarity : Bool} :
+    system.least.Mem judgment polarity ↔
+      Nonempty (system.Evidence (system.spec judgment) polarity) :=
+  system.mem_least_iff.trans system.takes_least_iff_evidence
+
+/-- **The least fixed point is the union of the stages.** -/
+theorem mem_least_iff_exists_stage {judgment : Judgment} {polarity : Bool} :
+    system.least.Mem judgment polarity ↔ ∃ n, (system.stage n).Mem judgment polarity := by
+  constructor
+  · intro member
+    obtain ⟨evidence⟩ := system.mem_least_iff_evidence.mp member
+    exact ⟨evidence.height + 1, system.mem_stage_succ_iff_evidence.mpr ⟨evidence, le_refl _⟩⟩
+  · rintro ⟨n, member⟩
+    exact (system.stage_le_least n).mem member
+
+/-! ### Finite systems: the stages reach the least fixed point -/
+
+/-- A stage that the jump does not move is the least fixed point. -/
+theorem stage_eq_least_of_fixed {n : ℕ} (fixed : system.stage (n + 1) = system.stage n) :
+    system.stage n = system.least :=
+  Valuation.le_antisymm (system.stage_le_least n)
+    (system.least_le (by
+      change (system.stage (n + 1)).Le (system.stage n)
+      rw [fixed]
+      exact Valuation.le_refl _))
+
+/-- Once the stages stop moving they stay. -/
+theorem stage_stable {n : ℕ} (fixed : system.stage (n + 1) = system.stage n) :
+    ∀ m, n ≤ m → system.stage m = system.stage n := by
+  intro m le
+  induction m, le using Nat.le_induction with
+  | base => rfl
+  | succ m _ ih =>
+      change system.jump (system.stage m) = system.stage n
+      rw [ih]
+      exact fixed
+
+section Finite
+
+variable [Finite Judgment]
+
+/-- The number of verdicts a valuation gives. -/
+noncomputable def verdictCount (valuation : Valuation Judgment) : ℕ :=
+  valuation.holds.ncard + valuation.fails.ncard
+
+omit [Finite Judgment] in
+theorem verdictCount_le (valuation : Valuation Judgment) [Finite Judgment] :
+    verdictCount valuation ≤ 2 * Nat.card Judgment := by
+  unfold verdictCount
+  have holds := Set.ncard_le_card valuation.holds
+  have fails := Set.ncard_le_card valuation.fails
+  omega
+
+/-- A strict increase in the knowledge order adds a verdict. -/
+theorem verdictCount_lt {first second : Valuation Judgment} (le : first.Le second)
+    (different : first ≠ second) : verdictCount first < verdictCount second := by
+  unfold verdictCount
+  have holdsLe := Set.ncard_le_ncard le.1 (Set.toFinite _)
+  have failsLe := Set.ncard_le_ncard le.2 (Set.toFinite _)
+  by_cases sameHolds : first.holds = second.holds
+  · have differentFails : first.fails ≠ second.fails :=
+      fun sameFails => different (Valuation.ext' sameHolds sameFails)
+    have := Set.ncard_lt_ncard (Set.ssubset_iff_subset_ne.mpr ⟨le.2, differentFails⟩)
+      (Set.toFinite _)
+    omega
+  · have := Set.ncard_lt_ncard (Set.ssubset_iff_subset_ne.mpr ⟨le.1, sameHolds⟩)
+      (Set.toFinite _)
+    omega
+
+theorem le_verdictCount_stage {n : ℕ}
+    (moving : ∀ m < n, system.stage m ≠ system.stage (m + 1)) :
+    n ≤ verdictCount (system.stage n) := by
+  induction n with
+  | zero => exact Nat.zero_le _
+  | succ n ih =>
+      have previous := ih (fun m lt => moving m (Nat.lt_succ_of_lt lt))
+      have step := verdictCount_lt (system.stage_le_succ n) (moving n (Nat.lt_succ_self n))
+      omega
+
+/-- **Finite systems reach their grounded truth in finitely many jumps**: at most twice
+the number of judgments. -/
+theorem stage_eq_least :
+    system.stage (2 * Nat.card Judgment) = system.least := by
+  by_cases moving : ∀ m < 2 * Nat.card Judgment + 1, system.stage m ≠ system.stage (m + 1)
+  · have := system.le_verdictCount_stage moving
+    have := verdictCount_le (system.stage (2 * Nat.card Judgment + 1))
+    omega
+  · push Not at moving
+    obtain ⟨m, lt, same⟩ := moving
+    rw [system.stage_stable same.symm _ (Nat.le_of_lt_succ lt)]
+    exact system.stage_eq_least_of_fixed same.symm
+
+end Finite
+
+/-! ### Deciding grounded truth -/
+
+section Decide
+
+variable [DecidablePred system.baseHolds] [DecidablePred system.baseFails]
+
+/-- Strong Kleene evaluation over decided verdicts, as a pair of Booleans. -/
+def evalDecide (verdict : Judgment → Bool × Bool) : Formula Judgment Base → Bool × Bool
+  | .base fact => (decide (system.baseHolds fact), decide (system.baseFails fact))
+  | .truth judgment => verdict judgment
+  | .neg formula => ((evalDecide verdict formula).2, (evalDecide verdict formula).1)
+  | .conj first second =>
+      ((evalDecide verdict first).1 && (evalDecide verdict second).1,
+        (evalDecide verdict first).2 || (evalDecide verdict second).2)
+  | .disj first second =>
+      ((evalDecide verdict first).1 || (evalDecide verdict second).1,
+        (evalDecide verdict first).2 && (evalDecide verdict second).2)
+
+/-- The stages of the jump, decided. -/
+def stageDecide : ℕ → Judgment → Bool × Bool
+  | 0 => fun _ => (false, false)
+  | n + 1 => fun judgment => system.evalDecide (stageDecide n) (system.spec judgment)
+
+/-- Decided verdicts that agree with a valuation. -/
+def Decides (valuation : Valuation Judgment) (verdict : Judgment → Bool × Bool) : Prop :=
+  ∀ judgment, ((verdict judgment).1 = true ↔ judgment ∈ valuation.holds) ∧
+    ((verdict judgment).2 = true ↔ judgment ∈ valuation.fails)
+
+theorem evalDecide_spec {valuation : Valuation Judgment} {verdict : Judgment → Bool × Bool}
+    (decides : Decides valuation verdict) : ∀ formula : Formula Judgment Base,
+      ((system.evalDecide verdict formula).1 = true ↔ (system.eval valuation formula).1) ∧
+        ((system.evalDecide verdict formula).2 = true ↔ (system.eval valuation formula).2)
+  | .base _ => ⟨decide_eq_true_iff, decide_eq_true_iff⟩
+  | .truth judgment => decides judgment
+  | .neg formula =>
+      let ih := evalDecide_spec decides formula
+      ⟨ih.2, ih.1⟩
+  | .conj first second => by
+      have ihFirst := evalDecide_spec decides first
+      have ihSecond := evalDecide_spec decides second
+      simp only [evalDecide, eval, Bool.and_eq_true, Bool.or_eq_true]
+      exact ⟨and_congr ihFirst.1 ihSecond.1, or_congr ihFirst.2 ihSecond.2⟩
+  | .disj first second => by
+      have ihFirst := evalDecide_spec decides first
+      have ihSecond := evalDecide_spec decides second
+      simp only [evalDecide, eval, Bool.and_eq_true, Bool.or_eq_true]
+      exact ⟨or_congr ihFirst.1 ihSecond.1, and_congr ihFirst.2 ihSecond.2⟩
+
+/-- The decided stages agree with the stages. -/
+theorem stageDecide_spec : ∀ n, Decides (system.stage n) (system.stageDecide n)
+  | 0 => fun _ => ⟨⟨fun bad => (nomatch bad), fun member => absurd member (Set.notMem_empty _)⟩,
+      ⟨fun bad => (nomatch bad), fun member => absurd member (Set.notMem_empty _)⟩⟩
+  | n + 1 => fun judgment => system.evalDecide_spec (stageDecide_spec n) (system.spec judgment)
+
+/-- **Grounded truth of a finite system, decided**: iterate the decided jump twice the
+number of judgments times. -/
+def groundedDecide [Fintype Judgment] : Judgment → Bool × Bool :=
+  system.stageDecide (2 * Fintype.card Judgment)
+
+/-- **The decision procedure is correct**: it returns exactly the verdicts of the least
+fixed point. -/
+theorem groundedDecide_spec [Fintype Judgment] : Decides system.least system.groundedDecide := by
+  have reaches := system.stage_eq_least
+  rw [Nat.card_eq_fintype_card] at reaches
+  rw [← reaches]
+  exact system.stageDecide_spec _
+
+end Decide
+
+/-! ### Loops through truth and negation have no evidence -/
+
+/-- **No well-founded evidence on an ungrounded loop.**  If every formula of a set is a
+truth node whose judgment's specification is in the set, or a negation of a formula in
+the set, then no formula of the set has evidence: a derivation would descend forever. -/
+theorem noEvidence_of_closed {loop : Set (Formula Judgment Base)}
+    (closed : ∀ formula ∈ loop,
+      (∃ judgment, formula = .truth judgment ∧ system.spec judgment ∈ loop) ∨
+        (∃ body, formula = .neg body ∧ body ∈ loop)) :
+    ∀ {formula : Formula Judgment Base} {polarity : Bool},
+      formula ∈ loop → IsEmpty (system.Evidence formula polarity) := by
+  intro formula polarity member
+  refine ⟨fun evidence => ?_⟩
+  induction evidence with
+  | baseHolds _ =>
+      rcases closed _ member with ⟨_, same, _⟩ | ⟨_, same, _⟩ <;> cases same
+  | baseFails _ =>
+      rcases closed _ member with ⟨_, same, _⟩ | ⟨_, same, _⟩ <;> cases same
+  | truth _ ih =>
+      rcases closed _ member with ⟨_, same, inLoop⟩ | ⟨_, same, _⟩
+      · cases same
+        exact ih inLoop
+      · cases same
+  | neg _ ih =>
+      rcases closed _ member with ⟨_, same, _⟩ | ⟨_, same, inLoop⟩
+      · cases same
+      · cases same
+        exact ih inLoop
+  | conjHolds _ _ _ _ =>
+      rcases closed _ member with ⟨_, same, _⟩ | ⟨_, same, _⟩ <;> cases same
+  | conjFailsLeft _ _ =>
+      rcases closed _ member with ⟨_, same, _⟩ | ⟨_, same, _⟩ <;> cases same
+  | conjFailsRight _ _ =>
+      rcases closed _ member with ⟨_, same, _⟩ | ⟨_, same, _⟩ <;> cases same
+  | disjHoldsLeft _ _ =>
+      rcases closed _ member with ⟨_, same, _⟩ | ⟨_, same, _⟩ <;> cases same
+  | disjHoldsRight _ _ =>
+      rcases closed _ member with ⟨_, same, _⟩ | ⟨_, same, _⟩ <;> cases same
+  | disjFails _ _ _ _ =>
+      rcases closed _ member with ⟨_, same, _⟩ | ⟨_, same, _⟩ <;> cases same
+
+variable {system}
+
+/-- **The liar has no well-founded evidence**, for either verdict.  This is read off the
+evidence alone, without the fixed point. -/
+theorem liar_noEvidence {liar : Judgment} (isLiar : system.spec liar = .neg (.truth liar))
+    (polarity : Bool) : IsEmpty (system.Evidence (system.spec liar) polarity) := by
+  refine system.noEvidence_of_closed (loop := {.neg (.truth liar), .truth liar}) ?_ ?_
+  · intro formula member
+    rcases member with rfl | rfl
+    · exact Or.inr ⟨.truth liar, rfl, Or.inr rfl⟩
+    · exact Or.inl ⟨liar, rfl, by rw [isLiar]; exact Or.inl rfl⟩
+  · rw [isLiar]
+    exact Or.inl rfl
+
+/-- **The truth-teller has no well-founded evidence**, for either verdict. -/
+theorem teller_noEvidence {teller : Judgment} (isTeller : system.spec teller = .truth teller)
+    (polarity : Bool) : IsEmpty (system.Evidence (system.spec teller) polarity) := by
+  refine system.noEvidence_of_closed (loop := {.truth teller}) ?_ ?_
+  · intro formula member
+    rcases member with rfl
+    exact Or.inl ⟨teller, rfl, by rw [isTeller]; rfl⟩
+  · rw [isTeller]
+    rfl
+
+/-! ### The gap is invisible from inside -/
+
+variable (system) in
+/-- **No formula defines a gap.**  No strong Kleene formula holds exactly at the
+valuations that leave a given judgment undetermined: evaluation is monotone in the
+knowledge order, and deciding the judgment only adds information. -/
+theorem undetermined_not_definable (judgment : Judgment) :
+    ¬ ∃ formula : Formula Judgment Base, ∀ valuation : Valuation Judgment,
+      (system.eval valuation formula).1 ↔
+        (judgment ∉ valuation.holds ∧ judgment ∉ valuation.fails) := by
+  rintro ⟨formula, defines⟩
+  have atBottom : (system.eval Valuation.bottom formula).1 :=
+    (defines Valuation.bottom).mpr
+      ⟨fun member => absurd member (Set.notMem_empty _),
+        fun member => absurd member (Set.notMem_empty _)⟩
+  have decided : (Valuation.bottom : Valuation Judgment).Le ⟨{judgment}, ∅⟩ :=
+    Valuation.bottom_le _
+  have atDecided := (system.eval_mono decided formula).1 atBottom
+  exact ((defines ⟨{judgment}, ∅⟩).mp atDecided).1 rfl
+
+/-- **Revenge.**  The least fixed point does not hold the liar, and it does not hold the
+sentence that says so either: "the liar is not true" is the liar's own specification,
+which holds only where the liar fails.  The fact that the liar is not true is stated one
+level up. -/
+theorem liar_revenge {liar : Judgment} (isLiar : system.spec liar = .neg (.truth liar)) :
+    liar ∉ system.least.holds ∧ ¬ system.Takes system.least (.neg (.truth liar)) true :=
+  ⟨(system.liar_not_mem_least isLiar).1, (system.liar_not_mem_least isLiar).2⟩
+
+/-! ### Circular justification and the greatest fixed point -/
+
+/-- **The greatest fixed point is circular justification**: with bivalent base facts, a
+judgment is held (failed) by the greatest fixed point exactly when some sound valuation
+holds (fails) it. -/
+theorem mem_greatest_iff_sound (bivalent : system.Bivalent) {judgment : Judgment}
+    {polarity : Bool} :
+    system.greatest.Mem judgment polarity ↔
+      ∃ valuation : Valuation Judgment, system.Sound valuation ∧ valuation.Mem judgment polarity :=
+  ⟨fun member => ⟨system.greatest, greatest_sound bivalent, member⟩,
+    fun ⟨_, sound, member⟩ => (le_greatest sound).mem member⟩
+
+/-- **The liar justifies both verdicts by itself**: the valuation holding and failing the
+liar and nothing else is sound. -/
+theorem liar_selfJustifying {liar : Judgment} (isLiar : system.spec liar = .neg (.truth liar)) :
+    system.Sound ⟨{liar}, {liar}⟩ := by
+  constructor
+  · intro judgment held
+    rcases held with rfl
+    change (system.eval _ (system.spec judgment)).1
+    rw [isLiar]
+    exact rfl
+  · intro judgment failed
+    rcases failed with rfl
+    change (system.eval _ (system.spec judgment)).2
+    rw [isLiar]
+    exact rfl
+
+/-- **The truth-teller justifies either verdict by itself**, consistently. -/
+theorem teller_selfJustifying {teller : Judgment} (isTeller : system.spec teller = .truth teller) :
+    system.Sound ⟨{teller}, ∅⟩ ∧ system.Sound ⟨∅, {teller}⟩ := by
+  refine ⟨⟨fun judgment held => ?_, fun _ failed => absurd failed (Set.notMem_empty _)⟩,
+    ⟨fun _ held => absurd held (Set.notMem_empty _), fun judgment failed => ?_⟩⟩
+  · rcases held with rfl
+    change (system.eval _ (system.spec judgment)).1
+    rw [isTeller]
+    exact rfl
+  · rcases failed with rfl
+    change (system.eval _ (system.spec judgment)).2
+    rw [isTeller]
+    exact rfl
+
+end System
+
 /-! ## A concrete system -/
 
 namespace Example
@@ -574,6 +1209,11 @@ inductive Sentence where
   | liarAndNotFact
   | liarOrNotFact
   deriving DecidableEq
+
+instance : Fintype Sentence where
+  elems := {.fact, .factTrue, .factTrueTrue, .liar, .teller, .liarOrFact, .liarAndNotFact,
+    .liarOrNotFact}
+  complete sentence := by cases sentence <;> simp
 
 /-- The base: one true fact. -/
 def system : System Sentence Unit where
@@ -692,6 +1332,18 @@ theorem verdicts :
 
 theorem bivalent : system.Bivalent := fun _ => Or.inl trivial
 
+instance : DecidablePred system.baseHolds := fun _ => instDecidableTrue
+instance : DecidablePred system.baseFails := fun _ => instDecidableFalse
+
+/-- **Grounded truth, computed by the kernel**: the twice-ascribed fact is held, the
+mixed conjunction is failed, and the liar and the truth-teller get no verdict. -/
+theorem decided_verdicts :
+    system.groundedDecide .factTrueTrue = (true, false) ∧
+      system.groundedDecide .liarAndNotFact = (false, true) ∧
+      system.groundedDecide .liar = (false, false) ∧
+      system.groundedDecide .teller = (false, false) := by
+  decide
+
 /-- **The ungrounded judgments are both in the greatest fixed point, the grounded
 ones keep their single value**: the liar, the truth-teller and the disjunction of
 the liar with a false judgment are held and failed; the grounded fact is held and
@@ -707,6 +1359,79 @@ theorem greatest_values :
   refine ⟨system.liar_both_greatest rfl, ?_, ?_, ?_, System.jump_greatest bivalent⟩ <;>
     simp [System.greatest, Valuation.dual, holdsEq, failsEq, groundedHolds, groundedFails]
 
+/-- **Explicit evidence** for the twice-ascribed fact: two truth nodes over a base
+leaf. -/
+def factTrueTrue_evidence : system.Evidence (system.spec .factTrueTrue) true :=
+  .truth (.truth (.baseHolds trivial))
+
+theorem factTrueTrue_evidence_height : factTrueTrue_evidence.height = 2 := rfl
+
+/-- **Time.** The twice-ascribed fact is decided at stage three and not before: its
+evidence has two truth nodes. -/
+theorem factTrueTrue_stage :
+    Sentence.factTrueTrue ∈ (system.stage 3).holds ∧
+      Sentence.factTrueTrue ∉ (system.stage 2).holds :=
+  ⟨trivial, fun member => absurd member (Set.notMem_empty Sentence.fact)⟩
+
+/-- The liar and the truth-teller have no evidence; the disjunction of the liar with the
+fact has evidence through the fact only. -/
+theorem evidence_controls :
+    IsEmpty (system.Evidence (system.spec .liar) true) ∧
+      IsEmpty (system.Evidence (system.spec .liar) false) ∧
+      IsEmpty (system.Evidence (system.spec .teller) true) ∧
+      Nonempty (system.Evidence (system.spec .liarOrFact) true) :=
+  ⟨System.liar_noEvidence rfl true, System.liar_noEvidence rfl false,
+    System.teller_noEvidence rfl true, ⟨.disjHoldsRight (.truth (.baseHolds trivial))⟩⟩
+
 end Example
+
+/-! ## Controls: evidence is finer than the verdict -/
+
+namespace Controls
+
+/-- One judgment whose specification is the disjunction of a true base fact with
+itself. -/
+def twice : System Unit Unit where
+  spec _ := .disj (.base ()) (.base ())
+  baseHolds _ := True
+  baseFails _ := False
+  base_consistent _ _ failed := failed
+
+/-- Evidence through the left disjunct. -/
+def leftEvidence : twice.Evidence (twice.spec ()) true := .disjHoldsLeft (.baseHolds trivial)
+
+/-- Evidence through the right disjunct. -/
+def rightEvidence : twice.Evidence (twice.spec ()) true := .disjHoldsRight (.baseHolds trivial)
+
+/-- **Two different evidence trees for one held judgment**: the map from evidence to
+verdicts is not injective. -/
+theorem twoEvidence_ne : leftEvidence ≠ rightEvidence := by
+  unfold leftEvidence rightEvidence
+  intro same
+  cases same
+
+theorem twice_held : () ∈ twice.least.holds :=
+  twice.mem_least_iff_evidence.mpr ⟨leftEvidence⟩
+
+end Controls
+
+#print axioms System.le_greatest
+#print axioms System.mem_least_iff_evidence
+#print axioms System.mem_least_iff_exists_stage
+#print axioms System.mem_stage_succ_iff_evidence
+#print axioms System.noEvidence_of_closed
+#print axioms System.liar_noEvidence
+#print axioms System.teller_noEvidence
+#print axioms System.mem_greatest_iff_sound
+#print axioms System.liar_selfJustifying
+#print axioms System.teller_selfJustifying
+#print axioms System.undetermined_not_definable
+#print axioms System.stage_eq_least
+#print axioms System.groundedDecide_spec
+#print axioms Example.decided_verdicts
+#print axioms System.liar_revenge
+#print axioms Example.factTrueTrue_stage
+#print axioms Example.evidence_controls
+#print axioms Controls.twoEvidence_ne
 
 end Mettapedia.GSLT.KripkeTruth

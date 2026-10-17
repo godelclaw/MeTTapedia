@@ -239,6 +239,16 @@ def completedReceipts (plan : GeneralExecutionAdmission.Plan) (bound : List Synt
     let licensed := (GeneralRuleJobs.jobs_spec plan bound expected source item.val).mp item.property
     (finishState request licensed).answers.map Subtype.val
 
+/-- Every emitted receipt retains its validity witness. Soundness of this
+readout does not require the stratification used for complete coverage. -/
+theorem completedReceipts_valid {plan : GeneralExecutionAdmission.Plan}
+    {bound : List Syntax.TypeExpr} {expected : Syntax.TypeExpr} {source : Syntax.Pattern}
+    {receipt : Receipt} (present : receipt ∈ completedReceipts plan bound expected source) :
+    receipt.Valid plan bound expected source := by
+  obtain ⟨item, _, present⟩ := List.mem_flatMap.mp present
+  obtain ⟨answer, _, rfl⟩ := List.mem_map.mp present
+  exact answer.property
+
 /-- Exhausting the original per-job cursors covers every original valid
 receipt at every permitted typed site. Stratification comes from the actual
 preceding-declaration admission check. -/
@@ -249,11 +259,7 @@ theorem mem_completedReceipts_iff (plan : GeneralExecutionAdmission.Plan)
     receipt ∈ completedReceipts plan bound expected source ↔
       receipt.Valid plan bound expected source := by
   constructor
-  · intro present
-    obtain ⟨item, _, present⟩ := List.mem_flatMap.mp present
-    exact ((finishState_receipt_iff ⟨plan, bound, expected, source, item.val⟩
-      ((GeneralRuleJobs.jobs_spec plan bound expected source item.val).mp item.property)
-      checked receipt).mp present).1
+  · exact completedReceipts_valid
   · intro valid
     let item : {job // job ∈ GeneralRuleJobs.jobs plan bound expected source} :=
       ⟨receipt.job, (GeneralRuleJobs.jobs_spec plan bound expected source receipt.job).mpr valid.1⟩
@@ -340,6 +346,7 @@ theorem request_run_finite_free_within (request : GeneralRuleJobExecution.Reques
   · exact provider_coverage_mono _ _ request.environment.provider
       (fun name member => List.mem_append_right _ member)
       (provider_covered_by_own_names request.environment.provider)
+  · exact Query.DynamicOutputsFreeWithin.of_empty _ _ rfl
   · exact licensed_focus_free_within _ _ _ _ _ _ _ _ licensed.2
       (fun _ occurs => List.mem_append_left _ occurs)
 
@@ -487,7 +494,8 @@ theorem job_expansion_free_within (footprint : List String) (request : GeneralRu
           · constructor
             · intro next member
               rcases List.mem_singleton.mp member with rfl
-              exact tick_free_within footprint request.environment request.goal provider frame.state covered
+              exact tick_free_within footprint request.environment request.goal provider
+                (Query.DynamicOutputsFreeWithin.of_empty _ _ rfl) frame.state covered
             · intro answer member; cases member
       | some result =>
           have produced := covered.2 result (List.mem_of_getElem? found)

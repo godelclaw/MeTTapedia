@@ -25,22 +25,22 @@ deriving instance DecidableEq for SpaceSemantics.Equation
 
 def kernelSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/kernel.generated.metta"
+    "../../../../../../metta/mm0/kernel.generated.metta"
     sha256 "e78b478b59f0d527f92333d1ceb86d64e100f0d102876ea1cb3ac37b1a020a6e"
 
 def dataSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/data.metta"
+    "../../../../../../metta/mm0/data.metta"
     sha256 "79783cec682ee65da5e87844b4eafe4fb40a99e0db455b225769320d54dc60d6"
 
 def serviceSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/service.metta"
+    "../../../../../../metta/mm0/service.metta"
     sha256 "5e3fb8b14e74293d594a60a976550eec6ab3c1bca0b5ac3451df62db2dbba1e9"
 
 def streamSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/stream.metta"
+    "../../../../../../metta/mm0/stream.metta"
     sha256 "c2c3c71d1bd65e2cda3cf83e412c8bfeaed74acf41391bfd8555707e2bb7b00d"
 
 def program : Program := {

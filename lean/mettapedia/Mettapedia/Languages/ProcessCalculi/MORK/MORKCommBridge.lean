@@ -4,8 +4,8 @@ import Mettapedia.Languages.ProcessCalculi.MQCalculus.CommRule
 /-!
 # MORK ↔ MQ-Calculus COMM Bridge
 
-This file proves the structural correspondence between MORK's three-phase
-execution and the MQ-calculus COMM rule.
+This file proves the structural correspondence between the authored three-phase
+protocol over MORK (`ThreePhaseExec`) and the MQ-calculus COMM rule.
 
 ## The Correspondence
 
@@ -21,9 +21,11 @@ Non-determinism: EITHER outcome   comm_both_outcomes i p q
 ```
 
 The connection is:
-- **MORK produces EITHER sub-result-0 OR sub-result-1** from the fold step,
-  non-deterministically.  This is structural non-determinism: there exist
-  TWO possible FoldStep firings (one per measurement outcome).
+- **The protocol's fold step admits EITHER sub-result-0 OR sub-result-1.**  This
+  is the abstraction's non-determinism (the `selectAll` aggregator): there exist
+  TWO possible FoldStep firings (one per measurement outcome).  A kernel run is
+  deterministic: it fires the least executable on all of its rows, so a realization
+  of the protocol picks one outcome.
 - **MQ-COMM produces EITHER P or Q** from `out i | in i {P, Q}`,
   non-deterministically.  Both `CommReduction.outcome_zero` and
   `CommReduction.outcome_one` are constructively inhabited.
@@ -35,7 +37,7 @@ This is the abstract analog of `MeasurementBranch.outcome`.
 
 ## Spec Warning
 
-This bridge formalizes the CURRENT (2026-02) MORK protocol.  The mapping
+This bridge formalizes the CURRENT (2026-02) authored protocol.  The mapping
 between `MorkOutcome` and `MeasurementBranch.outcome` is definitional: both
 are binary enumerations indexed 0/1.  If MORK changes the fold protocol or
 adds more sub-results, this bridge needs updating.
@@ -43,7 +45,8 @@ adds more sub-results, this bridge needs updating.
 ## Canary theorems
 
 `canary_mork_binary_fold_is_nondeterministic` — both outcomes are constructively
-inhabited for any binary fold step.  Fails if MORK makes folds deterministic.
+inhabited for any binary fold step of the abstraction.  Fails if the protocol's fold
+is made deterministic.
 
 `canary_comm_reduction_matches_mork_outcome` — for each MORK binary outcome,
 there is a MQ `CommReduction` with the same branch selection.
@@ -107,9 +110,10 @@ theorem mork_fold_is_comm (fold : FoldStep) (hb : fold.isBinary) (o : MorkOutcom
   | subResult0 => exact CommReduction.outcome_zero 0 Process.MQNil Process.MQNil
   | subResult1 => exact CommReduction.outcome_one  0 Process.MQNil Process.MQNil
 
-/-- **Both MORK outcomes are constructively possible** for any binary fold step.
-    Non-determinism is structural: for any binary fold, there EXIST two possible
-    outcomes.  This corresponds to `comm_both_outcomes` in MQCalculus. -/
+/-- **Both outcomes of the protocol's fold are constructively possible** for any binary
+    fold step.  Non-determinism is structural in the abstraction: for any binary fold,
+    there EXIST two possible outcomes; a kernel run picks one.  This corresponds to
+    `comm_both_outcomes` in MQCalculus. -/
 theorem mork_fold_both_outcomes_exist (fold : FoldStep) (hb : fold.isBinary) :
     (∃ (fold0 : FoldStep) (_ : fold0.isBinary),
        FoldPicksSubResult fold0 ‹_› .subResult0) ∧
@@ -261,7 +265,8 @@ theorem nary_fold_all_outcomes_consistent (fold : FoldStep)
 
 section Canaries
 
-/-- MORK binary fold is non-deterministic: BOTH outcomes are always constructively possible. -/
+/-- The protocol's binary fold is non-deterministic in the abstraction: BOTH outcomes are
+always constructively possible. -/
 theorem canary_mork_binary_fold_is_nondeterministic
     (fold : FoldStep) (hb : fold.isBinary) :
     (∃ (f : FoldStep) (_ : f.isBinary), FoldPicksSubResult f ‹_› .subResult0) ∧

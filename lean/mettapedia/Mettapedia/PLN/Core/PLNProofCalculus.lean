@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 
 /-!
@@ -56,7 +56,7 @@ This file provides:
 ## References
 
 - Foundation/Logic/Calculus.lean (Tait sequent calculus)
-- EvidenceQuantale.lean (BinaryEvidence quantale structure)
+- BinaryEvidence.lean (BinaryEvidence quantale structure)
 - PLNDeduction.lean (PLN inference formulas)
 -/
 

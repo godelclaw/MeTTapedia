@@ -1876,10 +1876,10 @@ theorem addValRaw_closed {b : Bindings} {x : VarName} {a : Atom}
 
 /-- Consistency-checked value insertion preserves the closed-value shape when the inserted value is
 closed and the accumulator is closed-value-only. -/
-theorem addVarBinding_closed_mem {b out : Bindings} {x : VarName} {a : Atom}
+theorem addVarBinding_closed_cases {b out : Bindings} {x : VarName} {a : Atom}
     (ha : a.vars = []) (hb : ClosedValueBindings b)
     (hout : out ∈ Bindings.addVarBinding b x a) :
-    ClosedValueBindings out := by
+    out = b ∨ out = Bindings.addValRaw b x a := by
   have hnotvar : ∀ y, a ≠ Atom.var y := by
     intro y h
     subst a
@@ -1890,7 +1890,7 @@ theorem addVarBinding_closed_mem {b out : Bindings} {x : VarName} {a : Atom}
       rw [hadd] at hout
       simp at hout
       subst out
-      exact addValRaw_closed ha hb
+      exact Or.inr rfl
   | cons first rest =>
       cases hunify : Bindings.unifyValues ((first :: rest) ++ [a]) with
       | none =>
@@ -1914,7 +1914,16 @@ theorem addVarBinding_closed_mem {b out : Bindings} {x : VarName} {a : Atom}
           rw [hadd] at hout
           simp at hout
           subst out
-          exact hb
+          exact Or.inl rfl
+
+/-- Closed insertion retains the closed-value shape. -/
+theorem addVarBinding_closed_mem {b out : Bindings} {x : VarName} {a : Atom}
+    (ha : a.vars = []) (hb : ClosedValueBindings b)
+    (hout : out ∈ Bindings.addVarBinding b x a) :
+    ClosedValueBindings out := by
+  rcases addVarBinding_closed_cases ha hb hout with rfl | rfl
+  · exact hb
+  · exact addValRaw_closed ha hb
 
 /-- Membership in `bindingValueKeys` is exactly membership of a direct value
 relation with that key. -/
@@ -1986,46 +1995,10 @@ theorem addVarBinding_closed_valueKeys_subset
     (hout : out ∈ Bindings.addVarBinding b key value) :
     ∀ {x}, x ∈ bindingValueKeys out →
       x = key ∨ x ∈ bindingValueKeys b := by
-  have hnotvar : ∀ y, value ≠ Atom.var y := by
-    intro y h
-    subst value
-    simp [Atom.vars] at hvalueClosed
-  cases hvalues : Bindings.classValues b key with
-  | nil =>
-      have hadd := Bindings.addVarBinding_fresh hvalues hnotvar
-      rw [hadd] at hout
-      simp at hout
-      subst out
-      intro x hx
-      exact bindingValueKeys_addValRaw_subset b key value hx
-  | cons first rest =>
-      cases hunify : Bindings.unifyValues ((first :: rest) ++ [value]) with
-      | none =>
-          have hadd := Bindings.addVarBinding_conflict hnotvar hvalues (by simp) hunify
-          rw [hadd] at hout
-          cases hout
-      | some sigma =>
-          have hclosedValues :
-              ∀ atom ∈ (first :: rest) ++ [value], atom.vars = [] := by
-            intro atom hmem
-            rw [List.mem_append] at hmem
-            rcases hmem with hmemClass | hmemLast
-            · exact ClosedValueBindings.classValues_closed hb key atom (by
-                rw [hvalues]
-                exact hmemClass)
-            · simp at hmemLast
-              subst atom
-              exact hvalueClosed
-          have hsigma :=
-            Bindings.unifyValues_some_eq_empty_of_closed hclosedValues hunify
-          subst sigma
-          have hadd :=
-            Bindings.addVarBinding_nochange hnotvar hvalues (by simp) hunify
-          rw [hadd] at hout
-          simp at hout
-          subst out
-          intro x hx
-          exact Or.inr hx
+  rcases addVarBinding_closed_cases hvalueClosed hb hout with rfl | rfl
+  · intro x hx
+    exact Or.inr hx
+  · exact bindingValueKeys_addValRaw_subset b key value
 
 /-- One closed value-relation merge step preserves a declared key support. -/
 theorem mergeOne_closed_valueKeys_subset
@@ -2260,6 +2233,67 @@ theorem merge_value_value_mem {left right out : Bindings}
 
 -/
 
+/-- Removing a value relation filters exactly its direct key. -/
+theorem bindingValueKeys_removeVal (b : Bindings) (key : VarName) :
+    bindingValueKeys (Bindings.removeVal b key) =
+      (bindingValueKeys b).filter (fun other => other != key) := by
+  induction b with
+  | nil => rfl
+  | cons rel rest ih =>
+    cases rel with
+    | eq left right => simpa [Bindings.removeVal,bindingValueKeys] using ih
+    | val other value =>
+      by_cases h : other = key
+      · simpa [Bindings.removeVal,bindingValueKeys,h] using ih
+      · simpa [Bindings.removeVal,bindingValueKeys,h] using ih
+
+/-- Raw insertion never duplicates a direct value key. -/
+theorem bindingValueKeys_addValRaw_nodup {b : Bindings} (key : VarName) (value : Atom)
+    (hb : (bindingValueKeys b).Nodup) :
+    (bindingValueKeys (Bindings.addValRaw b key value)).Nodup := by
+  simp only [Bindings.addValRaw,bindingValueKeys,bindingValueKeys_removeVal]
+  apply List.nodup_cons.mpr
+  exact ⟨by simp, hb.filter _⟩
+
+/-- Closed consistency checking either retains the record or replaces one key. -/
+theorem addVarBinding_closed_valueKeys_nodup
+    {b out : Bindings} {key : VarName} {value : Atom}
+    (hv : value.vars = []) (hb : ClosedValueBindings b)
+    (hnodup : (bindingValueKeys b).Nodup)
+    (hout : out ∈ Bindings.addVarBinding b key value) :
+    (bindingValueKeys out).Nodup := by
+  rcases addVarBinding_closed_cases hv hb hout with rfl | rfl
+  · exact hnodup
+  · exact bindingValueKeys_addValRaw_nodup key value hnodup
+
+/-- A closed merge preserves unique keys in every accumulator. -/
+theorem merge_closed_right_valueKeys_nodup :
+    ∀ {right : Bindings}, ClosedValueBindings right →
+      ∀ {accs : List Bindings} {out : Bindings},
+      (∀ b ∈ accs, ClosedValueBindings b) →
+      (∀ b ∈ accs, (bindingValueKeys b).Nodup) →
+      out ∈ right.foldl Bindings.mergeOne accs → (bindingValueKeys out).Nodup
+  | [], .nil, _, out, _, hnodup, hout => hnodup out hout
+  | .val key value :: rest, .val hv hrest, accs, out, hc, hn, hout => by
+      apply merge_closed_right_valueKeys_nodup hrest
+        (accs := Bindings.mergeOne accs (.val key value))
+      · intro b hb
+        exact mergeOne_val_closed_mem hv hc hb
+      · intro b hb
+        rcases List.mem_flatMap.mp hb with ⟨acc,hacc,hb⟩
+        exact addVarBinding_closed_valueKeys_nodup hv (hc acc hacc) (hn acc hacc) hb
+      · exact hout
+
+/-- Closed matcher results preserve the accumulator's unique direct keys. -/
+theorem merge_closed_valueKeys_nodup {left right out : Bindings}
+    (hl : ClosedValueBindings left) (hr : ClosedValueBindings right)
+    (hn : (bindingValueKeys left).Nodup) (hout : out ∈ Bindings.merge left right) :
+    (bindingValueKeys out).Nodup := by
+  exact merge_closed_right_valueKeys_nodup hr
+    (accs := [left]) (by intro b hb; simpa using (List.mem_singleton.mp hb) ▸ hl)
+    (by intro b hb; simpa using (List.mem_singleton.mp hb) ▸ hn) hout
+
+
 /-- If an expression atom is closed, then every immediate child is closed. -/
 theorem expr_vars_nil_of_mem {ys : List Atom} (hclosed : (Atom.expr ys).vars = []) :
     ∀ y ∈ ys, y.vars = [] := by
@@ -2285,31 +2319,31 @@ theorem expr_vars_nil_of_mem {ys : List Atom} (hclosed : (Atom.expr ys).vars = [
           | cons _ _ =>
               simp [hz] at hclosed) hy
 
-/-- Matching against a closed target produces only closed value bindings.
-
-This is the matcher-side invariant needed by the generic freshening bridge: once the query atom is
-closed, runtime matching cannot introduce equality aliases or open values. Expression matching is
-handled through `matchAll` and the closedness-preservation of `Bindings.merge`. -/
-theorem matchAtomsWith_closed_value_mem :
+/-- Matching a closed target produces closed values, unique direct keys, and
+only keys from the pattern. All three facts follow the same recursive matcher,
+including its consistency merges and loop filters. -/
+theorem matchAtomsWith_closed_footprint :
     ∀ (lhs target : Atom) (b : Bindings),
-      target.vars = [] → b ∈ matchAtomsWith none lhs target → ClosedValueBindings b := by
+      target.vars = [] → b ∈ matchAtomsWith none lhs target →
+        ClosedValueBindings b ∧ (bindingValueKeys b).Nodup ∧
+          ∀ key ∈ bindingValueKeys b, key ∈ lhs.vars := by
   refine Metta.Atom.recAux ?_ ?_ ?_ ?_
   · intro s target b hclosed hmem
     cases target with
     | sym t =>
         simp [matchAtomsWith] at hmem
         rcases hmem with ⟨_, rfl⟩
-        exact ClosedValueBindings.nil
+        exact ⟨ClosedValueBindings.nil, by simp [bindingValueKeys], by simp [bindingValueKeys]⟩
     | var v =>
         simp [Atom.vars] at hclosed
     | gnd g =>
         simp [matchAtomsWith] at hmem
         rcases hmem with ⟨_, rfl⟩
-        exact ClosedValueBindings.nil
+        exact ⟨ClosedValueBindings.nil, by simp [bindingValueKeys], by simp [bindingValueKeys]⟩
     | expr xs =>
         simp [matchAtomsWith] at hmem
         rcases hmem with ⟨_, rfl⟩
-        exact ClosedValueBindings.nil
+        exact ⟨ClosedValueBindings.nil, by simp [bindingValueKeys], by simp [bindingValueKeys]⟩
   · intro v target b hclosed hmem
     cases target with
     | var w =>
@@ -2317,17 +2351,20 @@ theorem matchAtomsWith_closed_value_mem :
     | sym s =>
         simp [matchAtomsWith, Subst.occurs] at hmem
         rcases hmem with rfl
-        exact ClosedValueBindings.val (by simp [Atom.vars]) ClosedValueBindings.nil
+        exact ⟨ClosedValueBindings.val (by simp [Atom.vars]) ClosedValueBindings.nil,
+          by simp [bindingValueKeys], by simp [bindingValueKeys,Atom.vars]⟩
     | gnd g =>
         simp [matchAtomsWith, Subst.occurs] at hmem
         rcases hmem with rfl
-        exact ClosedValueBindings.val (by simp [Atom.vars]) ClosedValueBindings.nil
+        exact ⟨ClosedValueBindings.val (by simp [Atom.vars]) ClosedValueBindings.nil,
+          by simp [bindingValueKeys], by simp [bindingValueKeys,Atom.vars]⟩
     | expr xs =>
         have hocc : Subst.occurs v (Atom.expr xs) = false :=
           occurs_eq_false_of_not_mem_vars v (Atom.expr xs) (by simp [hclosed])
         simp [matchAtomsWith, hocc] at hmem
         rcases hmem with rfl
-        exact ClosedValueBindings.val hclosed ClosedValueBindings.nil
+        exact ⟨ClosedValueBindings.val hclosed ClosedValueBindings.nil,
+          by simp [bindingValueKeys], by simp [bindingValueKeys,Atom.vars]⟩
   · intro g target b hclosed hmem
     cases target with
     | var w =>
@@ -2335,15 +2372,15 @@ theorem matchAtomsWith_closed_value_mem :
     | sym s =>
         simp [matchAtomsWith] at hmem
         rcases hmem with ⟨_, rfl⟩
-        exact ClosedValueBindings.nil
+        exact ⟨ClosedValueBindings.nil, by simp [bindingValueKeys], by simp [bindingValueKeys]⟩
     | gnd g2 =>
         simp [matchAtomsWith] at hmem
         rcases hmem with ⟨_, rfl⟩
-        exact ClosedValueBindings.nil
+        exact ⟨ClosedValueBindings.nil, by simp [bindingValueKeys], by simp [bindingValueKeys]⟩
     | expr xs =>
         simp [matchAtomsWith] at hmem
         rcases hmem with ⟨_, rfl⟩
-        exact ClosedValueBindings.nil
+        exact ⟨ClosedValueBindings.nil, by simp [bindingValueKeys], by simp [bindingValueKeys]⟩
   · intro xs ih target b hclosed hmem
     cases target with
     | var w =>
@@ -2351,11 +2388,11 @@ theorem matchAtomsWith_closed_value_mem :
     | sym s =>
         simp [matchAtomsWith] at hmem
         rcases hmem with ⟨_, rfl⟩
-        exact ClosedValueBindings.nil
+        exact ⟨ClosedValueBindings.nil, by simp [bindingValueKeys], by simp [bindingValueKeys]⟩
     | gnd g =>
         simp [matchAtomsWith] at hmem
         rcases hmem with ⟨_, rfl⟩
-        exact ClosedValueBindings.nil
+        exact ⟨ClosedValueBindings.nil, by simp [bindingValueKeys], by simp [bindingValueKeys]⟩
     | expr ys =>
         simp only [Atom.vars] at hclosed
         have hysClosed : ∀ y ∈ ys, y.vars = [] := by
@@ -2370,8 +2407,11 @@ theorem matchAtomsWith_closed_value_mem :
         have hlist : ∀ xs' ys' acc out,
             (∀ x ∈ xs', x ∈ xs) →
             (∀ y ∈ ys', y.vars = []) →
-            (∀ c ∈ acc, ClosedValueBindings c) →
-            out ∈ matchAll none acc xs' ys' → ClosedValueBindings out := by
+            (∀ c ∈ acc, ClosedValueBindings c ∧ (bindingValueKeys c).Nodup ∧
+              ∀ key ∈ bindingValueKeys c, key ∈ (Atom.expr xs).vars) →
+            out ∈ matchAll none acc xs' ys' →
+              ClosedValueBindings out ∧ (bindingValueKeys out).Nodup ∧
+                ∀ key ∈ bindingValueKeys out, key ∈ (Atom.expr xs).vars := by
           intro xs'
           induction xs' with
           | nil =>
@@ -2405,26 +2445,43 @@ theorem matchAtomsWith_closed_value_mem :
                       have hyClosed : y.vars = [] := hyclosed y (by simp)
                       have hbClosed := ih x (hxsub x (by simp)) y hb hyClosed
                         (List.mem_filter.mp hhb).1
-                      exact merge_closed_closed_mem haClosed hbClosed hmerge)
+                      refine ⟨merge_closed_closed_mem haClosed.1 hbClosed.1 hmerge,
+                        merge_closed_valueKeys_nodup haClosed.1 hbClosed.1 haClosed.2.1 hmerge, ?_⟩
+                      intro key hkey
+                      rcases merge_closed_closed_valueKeys_subset haClosed.1 hbClosed.1 hmerge
+                          key hkey with hleft | hright
+                      · exact haClosed.2.2 key hleft
+                      · have hchild := hbClosed.2.2 key hright
+                        simp only [Atom.vars,List.mem_flatten,List.mem_map]
+                        exact ⟨x.vars,⟨x,hxsub x (by simp),rfl⟩,hchild⟩)
                     hout
         exact hlist xs ys [[]] b (fun x hx => hx) hysClosed
           (by
             intro c hc
             cases hc with
-            | head => exact ClosedValueBindings.nil
+            | head => exact ⟨ClosedValueBindings.nil, by simp [bindingValueKeys], by simp [bindingValueKeys]⟩
             | tail _ htail => cases htail)
           hmem
 
-/-- The public matcher inherits closed-value preservation from the raw recursive matcher. -/
-theorem matchAtoms_closed_value_mem
-    (lhs target : Atom) (b : Bindings)
+/-- Public matching keeps the complete closed-target footprint. -/
+theorem matchAtoms_closed_footprint (lhs target : Atom) (b : Bindings)
+    (ht : target.vars = []) (hb : b ∈ matchAtoms lhs target) :
+    ClosedValueBindings b ∧ (bindingValueKeys b).Nodup ∧
+      ∀ key ∈ bindingValueKeys b, key ∈ lhs.vars := by
+  apply matchAtomsWith_closed_footprint lhs target b ht
+  exact (List.mem_filter.mp hb).1
+
+/-- Closed-value preservation is the shape projection of the matcher's footprint. -/
+theorem matchAtomsWith_closed_value_mem (lhs target : Atom) (b : Bindings)
+    (hclosed : target.vars = []) (hmem : b ∈ matchAtomsWith none lhs target) :
+    ClosedValueBindings b :=
+  (matchAtomsWith_closed_footprint lhs target b hclosed hmem).1
+
+/-- The public matcher preserves the same closed-value shape. -/
+theorem matchAtoms_closed_value_mem (lhs target : Atom) (b : Bindings)
     (hclosed : target.vars = []) (hmem : b ∈ matchAtoms lhs target) :
-    ClosedValueBindings b := by
-  have hfiltered : b ∈
-      (matchAtomsWith none lhs target).filter (fun bindings => !bindings.hasLoop) := by
-    simpa [matchAtoms] using hmem
-  exact matchAtomsWith_closed_value_mem lhs target b hclosed
-    (List.mem_filter.mp hfiltered).1
+    ClosedValueBindings b :=
+  (matchAtoms_closed_footprint lhs target b hclosed hmem).1
 
 /-- Value keys commute with binding-key renaming. -/
 theorem bindingValueKeys_renameBindings (f : VarName → VarName) :
@@ -3304,161 +3361,143 @@ theorem matchAtoms_freshenRule_lhs_leftPattern_mem
 
 -/
 
-/-- Matching a renamed pattern against a closed target transports matcher bindings by renaming
-their keys. The target values are not renamed: runtime rule freshening changes only rule-variable
-names, while the queried atom stays in the ambient namespace. -/
-theorem matchAtomsWith_renBy_closed_target_mem (f : VarName → VarName)
-    (hf : Function.Injective f) :
-    ∀ (lhs target : Atom) (b : Bindings),
-      target.vars = [] → b ∈ matchAtomsWith none lhs target →
-        renameBindings f b ∈ matchAtomsWith none (renBy f lhs) target := by
-  refine Metta.Atom.recAux ?_ ?_ ?_ ?_
-  · intro s target b hclosed hmem
-    cases target with
-    | sym t =>
-        simp [matchAtomsWith, renBy] at hmem ⊢
-        rcases hmem with ⟨hst, rfl⟩
-        exact ⟨hst, rfl⟩
-    | var _ =>
-        simp [Atom.vars] at hclosed
-    | gnd _ =>
-        simp [matchAtomsWith, Atom.equiv] at hmem
-    | expr _ =>
-        simp [matchAtomsWith, Atom.equiv] at hmem
-  · intro v target b hclosed hmem
-    cases target with
-    | var _ =>
-        simp [Atom.vars] at hclosed
-    | sym _ =>
-        simp [matchAtomsWith, Subst.occurs] at hmem ⊢
-        rcases hmem with rfl
-        rfl
-    | gnd _ =>
-        simp [matchAtomsWith, Subst.occurs] at hmem ⊢
-        rcases hmem with rfl
-        rfl
-    | expr xs =>
-        have hvNot : v ∉ (Atom.expr xs).vars := by simp [hclosed]
-        have hfvNot : f v ∉ (Atom.expr xs).vars := by simp [hclosed]
-        have hocc : Subst.occurs v (Atom.expr xs) = false :=
-          occurs_eq_false_of_not_mem_vars v (Atom.expr xs) hvNot
-        have hfocc : Subst.occurs (f v) (Atom.expr xs) = false :=
-          occurs_eq_false_of_not_mem_vars (f v) (Atom.expr xs) hfvNot
-        simp [matchAtomsWith, hocc, hfocc] at hmem ⊢
-        rcases hmem with rfl
-        rfl
-  · intro g target b hclosed hmem
-    cases target with
-    | var _ =>
-        simp [Atom.vars] at hclosed
-    | sym _ =>
-        simp [matchAtomsWith, Atom.equiv] at hmem
-    | gnd _ =>
-        simp [matchAtomsWith, renBy] at hmem ⊢
-        rcases hmem with ⟨hgg, rfl⟩
-        exact ⟨hgg, rfl⟩
-    | expr _ =>
-        simp [matchAtomsWith, Atom.equiv] at hmem
-  · intro xs ih target b hclosed hmem
-    cases target with
-    | var _ =>
-        simp [Atom.vars] at hclosed
-    | sym _ =>
-        simp [matchAtomsWith, Atom.equiv] at hmem
-    | gnd _ =>
-        simp [matchAtomsWith, Atom.equiv] at hmem
-    | expr ys =>
-        simp only [matchAtomsWith, renBy_expr]
-        simp only [matchAtomsWith] at hmem
-        have hysClosed : ∀ y ∈ ys, y.vars = [] := expr_vars_nil_of_mem hclosed
-        have hlist : ∀ xs' ys' acc accRen out,
-            (∀ x ∈ xs', x ∈ xs) →
-            (∀ y ∈ ys', y.vars = []) →
-            (∀ a ∈ acc, ClosedValueBindings a) →
-            (∀ a ∈ acc, renameBindings f a ∈ accRen) →
-            out ∈ matchAll none acc xs' ys' →
-              renameBindings f out ∈ matchAll none accRen (xs'.map (renBy f)) ys' := by
-          intro xs'
-          induction xs' with
-          | nil =>
-              intro ys' acc accRen out _ _ _haccClosed hacc hout
-              cases ys' with
-              | nil =>
-                  simp only [matchAll] at hout ⊢
-                  exact hacc out hout
-              | cons _ _ =>
-                  simp [matchAll] at hout
-          | cons x xsTail ihTail =>
-              intro ys' acc accRen out hxsub hysClosed' haccClosed hacc hout
-              cases ys' with
-              | nil =>
-                  simp [matchAll] at hout
-              | cons y ysTail =>
-                  simp only [matchAll] at hout ⊢
-                  exact ihTail ysTail
-                    (acc.flatMap (fun a =>
-                      ((matchAtomsWith none x y).filter
-                        (fun bindings => !bindings.hasLoop)).flatMap fun b => Bindings.merge a b))
-                    (accRen.flatMap (fun a =>
-                      ((matchAtomsWith none (renBy f x) y).filter
-                        (fun bindings => !bindings.hasLoop)).flatMap fun b => Bindings.merge a b))
-                    out
-                    (by intro z hz; exact hxsub z (by simp [hz]))
-                    (by intro z hz; exact hysClosed' z (by simp [hz]))
-                    (by
-                      intro merged hmerged
-                      rw [List.mem_flatMap] at hmerged
-                      rcases hmerged with ⟨a, ha, hmerged⟩
-                      rw [List.mem_flatMap] at hmerged
-                      rcases hmerged with ⟨b0, hb0, hmerge⟩
-                      have hbClosed : ClosedValueBindings b0 :=
-                        matchAtomsWith_closed_value_mem x y b0 (hysClosed' y (by simp))
-                          (List.mem_filter.mp hb0).1
-                      exact merge_closed_closed_mem (haccClosed a ha) hbClosed hmerge)
-                    (by
-                      intro merged hmerged
-                      rw [List.mem_flatMap] at hmerged ⊢
-                      rcases hmerged with ⟨a, ha, hmerged⟩
-                      rw [List.mem_flatMap] at hmerged
-                      rcases hmerged with ⟨b0, hb0, hmerge⟩
-                      have haRen : renameBindings f a ∈ accRen := hacc a ha
-                      have hbClosed : ClosedValueBindings b0 :=
-                        matchAtomsWith_closed_value_mem x y b0 (hysClosed' y (by simp))
-                          (List.mem_filter.mp hb0).1
-                      have hbRenRaw : renameBindings f b0 ∈ matchAtomsWith none (renBy f x) y :=
-                        ih x (hxsub x (by simp)) y b0 (hysClosed' y (by simp))
-                          (List.mem_filter.mp hb0).1
-                      have hbRen : renameBindings f b0 ∈
-                          (matchAtomsWith none (renBy f x) y).filter
-                            (fun bindings => !bindings.hasLoop) := by
-                        rw [List.mem_filter]
-                        exact ⟨hbRenRaw, by
-                          simp [ClosedValueBindings.rename_hasLoop_false hbClosed]⟩
-                      refine ⟨renameBindings f a, haRen, ?_⟩
-                      rw [List.mem_flatMap]
-                      refine ⟨renameBindings f b0, hbRen, ?_⟩
-                      exact merge_renameBindings_closed_right_mem f hf
-                        (haccClosed a ha) hbClosed hmerge)
-                    hout
-        exact hlist xs ys [[]] [[]] b (by intro x hx; exact hx) hysClosed
-          (by intro a ha; simp at ha; subst a; exact ClosedValueBindings.nil)
-          (by intro a ha; simp at ha; subst a; simp [renameBindings]) hmem
+/-- A complete closed merge fold commutes with injective key renaming. -/
+theorem merge_closed_right_renameBindings_eq (f : VarName → VarName) (hf : Function.Injective f) :
+    ∀ {right : Bindings}, ClosedValueBindings right →
+      ∀ {accs : List Bindings}, (∀ b ∈ accs, ClosedValueBindings b) →
+      (renameBindings f right).foldl Bindings.mergeOne (accs.map (renameBindings f)) =
+        (right.foldl Bindings.mergeOne accs).map (renameBindings f)
+  | [], .nil, _, _ => rfl
+  | .val key value :: rest, .val hv hrest, accs, hc => by
+      simp only [renameBindings,List.foldl_cons]
+      rw [mergeOne_val_renameBindings f hf accs key value hc hv]
+      exact merge_closed_right_renameBindings_eq f hf hrest
+        (fun b hb => mergeOne_val_closed_mem hv hc hb)
 
-/-- Public closed-target matching transports across injective rule-variable renaming. -/
-theorem matchAtoms_renBy_closed_target_mem (f : VarName → VarName) (hf : Function.Injective f)
-    (lhs target : Atom) (b : Bindings)
+/-- Renaming preserves the complete list of closed merge alternatives. -/
+theorem merge_renameBindings_closed_eq (f : VarName → VarName) (hf : Function.Injective f)
+    {left right : Bindings} (hl : ClosedValueBindings left) (hr : ClosedValueBindings right) :
+    Bindings.merge (renameBindings f left) (renameBindings f right) =
+      (Bindings.merge left right).map (renameBindings f) := by
+  exact merge_closed_right_renameBindings_eq f hf hr
+    (accs := [left]) (by intro b hb; simpa using (List.mem_singleton.mp hb) ▸ hl)
+
+/-- A closed target's matcher rows all survive the runtime loop filter. -/
+theorem filter_matchAtomsWith_closed_eq (lhs target : Atom)
+    (ht : target.vars = []) :
+    (matchAtomsWith none lhs target).filter (fun b => !b.hasLoop) =
+      matchAtomsWith none lhs target := by
+  apply List.filter_eq_self.mpr
+  intro b hb
+  simp [ClosedValueBindings.hasLoop_false (matchAtomsWith_closed_value_mem lhs target b ht hb)]
+
+/-- Injective renaming preserves and reflects every closed-target match,
+including the runtime's alternative occurrences. -/
+theorem matchAtomsWith_renBy_closed_target_eq (f : VarName → VarName)
+    (hf : Function.Injective f) :
+    ∀ (lhs target : Atom), target.vars = [] →
+      matchAtomsWith none (renBy f lhs) target =
+        (matchAtomsWith none lhs target).map (renameBindings f) := by
+  refine Metta.Atom.recAux ?_ ?_ ?_ ?_
+  · intro s target ht
+    cases target with
+    | var v => simp [Atom.vars] at ht
+    | sym t =>
+      simp only [renBy,matchAtomsWith]
+      split <;> rfl
+    | gnd g => simp [renBy,matchAtomsWith,Atom.equiv]
+    | expr xs => simp [renBy,matchAtomsWith,Atom.equiv]
+  · intro v target ht
+    have hv : Subst.occurs v target = false :=
+      occurs_eq_false_of_not_mem_vars v target (by simp [ht])
+    have hfv : Subst.occurs (f v) target = false :=
+      occurs_eq_false_of_not_mem_vars (f v) target (by simp [ht])
+    cases target with
+    | var w => simp [Atom.vars] at ht
+    | sym s => simp [matchAtomsWith,Subst.occurs,renameBindings]
+    | gnd g => simp [matchAtomsWith,Subst.occurs,renameBindings]
+    | expr xs => simp [matchAtomsWith,hv,hfv,renameBindings]
+  · intro g target ht
+    cases target with
+    | var v => simp [Atom.vars] at ht
+    | sym s => simp [renBy,matchAtomsWith,Atom.equiv]
+    | gnd h =>
+      simp only [renBy,matchAtomsWith]
+      split <;> rfl
+    | expr xs => simp [renBy,matchAtomsWith,Atom.equiv]
+  · intro xs ih target ht
+    cases target with
+    | var v => simp [Atom.vars] at ht
+    | sym s => simp [matchAtomsWith,Atom.equiv]
+    | gnd g => simp [matchAtomsWith,Atom.equiv]
+    | expr ys =>
+      have hy := expr_vars_nil_of_mem ht
+      have hlist : ∀ (xs' ys' : List Atom) (acc : List Bindings),
+          (∀ x ∈ xs', x ∈ xs) → (∀ y ∈ ys', y.vars = []) →
+          (∀ b ∈ acc, ClosedValueBindings b) →
+          matchAll none (acc.map (renameBindings f)) (xs'.map (renBy f)) ys' =
+            (matchAll none acc xs' ys').map (renameBindings f) := by
+        intro xs'
+        induction xs' with
+        | nil => intro ys' acc _ _ _; cases ys' <;> rfl
+        | cons x xt iht =>
+          intro ys' acc hxsub hyclosed hacc
+          cases ys' with
+          | nil => rfl
+          | cons y yt =>
+            have hmatch := ih x (hxsub x (by simp)) y (hyclosed y (by simp))
+            have hplain := filter_matchAtomsWith_closed_eq x y (hyclosed y (by simp))
+            have hren := filter_matchAtomsWith_closed_eq (renBy f x) y (hyclosed y (by simp))
+            simp only [List.map_cons,matchAll]
+            rw [hren,hplain,hmatch]
+            have hmerge :
+                (acc.map (renameBindings f)).flatMap (fun a =>
+                  ((matchAtomsWith none x y).map (renameBindings f)).flatMap
+                    (fun b => Bindings.merge a b)) =
+                (acc.flatMap (fun a => (matchAtomsWith none x y).flatMap
+                  (fun b => Bindings.merge a b))).map (renameBindings f) := by
+              rw [List.flatMap_map,List.map_flatMap]
+              apply List.flatMap_congr
+              intro a ha
+              rw [List.flatMap_map,List.map_flatMap]
+              apply List.flatMap_congr
+              intro b hb
+              exact merge_renameBindings_closed_eq f hf (hacc a ha)
+                (matchAtomsWith_closed_value_mem x y b (hyclosed y (by simp)) hb)
+            rw [hmerge]
+            apply iht yt _ (fun z hz => hxsub z (by simp [hz]))
+              (fun z hz => hyclosed z (by simp [hz]))
+            intro b hb
+            rcases List.mem_flatMap.mp hb with ⟨a,ha,hb⟩
+            rcases List.mem_flatMap.mp hb with ⟨child,hchild,hb⟩
+            exact merge_closed_closed_mem (hacc a ha)
+              (matchAtomsWith_closed_value_mem x y child (hyclosed y (by simp)) hchild) hb
+      simpa only [renBy_expr,matchAtomsWith,List.map_cons,List.map_nil,renameBindings] using
+        hlist xs ys [[]] (fun _ h => h) hy
+          (by intro b hb; simp at hb; subst b; exact .nil)
+
+/-- The public matcher has the same complete renaming correspondence. -/
+theorem matchAtoms_renBy_closed_target_eq (f : VarName → VarName)
+    (hf : Function.Injective f) (lhs target : Atom) (ht : target.vars = []) :
+    matchAtoms (renBy f lhs) target = (matchAtoms lhs target).map (renameBindings f) := by
+  simp only [matchAtoms,filter_matchAtomsWith_closed_eq _ _ ht]
+  exact matchAtomsWith_renBy_closed_target_eq f hf lhs target ht
+
+/-- Forward membership is a projection of the complete matcher correspondence. -/
+theorem matchAtomsWith_renBy_closed_target_mem (f : VarName → VarName)
+    (hf : Function.Injective f) (lhs target : Atom) (b : Bindings)
+    (hclosed : target.vars = []) (hmem : b ∈ matchAtomsWith none lhs target) :
+    renameBindings f b ∈ matchAtomsWith none (renBy f lhs) target := by
+  rw [matchAtomsWith_renBy_closed_target_eq f hf lhs target hclosed]
+  exact List.mem_map.mpr ⟨b,hmem,rfl⟩
+
+/-- Public forward membership inherits the same exact-list correspondence. -/
+theorem matchAtoms_renBy_closed_target_mem (f : VarName → VarName)
+    (hf : Function.Injective f) (lhs target : Atom) (b : Bindings)
     (hclosed : target.vars = []) (hmem : b ∈ matchAtoms lhs target) :
     renameBindings f b ∈ matchAtoms (renBy f lhs) target := by
-  have hfiltered : b ∈
-      (matchAtomsWith none lhs target).filter (fun bindings => !bindings.hasLoop) := by
-    simpa [matchAtoms] using hmem
-  have hraw := (List.mem_filter.mp hfiltered).1
-  have hrenRaw := matchAtomsWith_renBy_closed_target_mem f hf
-    lhs target b hclosed hraw
-  have hclosedB := matchAtomsWith_closed_value_mem lhs target b hclosed hraw
-  rw [matchAtoms, List.mem_filter]
-  exact ⟨hrenRaw, by
-    simp [ClosedValueBindings.rename_hasLoop_false hclosedB]⟩
+  rw [matchAtoms_renBy_closed_target_eq f hf lhs target hclosed]
+  exact List.mem_map.mpr ⟨b,hmem,rfl⟩
 
 /-- LeaTTa runtime freshening on the rule LHS transports matcher bindings by renaming their
 variable keys when the queried atom is closed. -/
@@ -4733,5 +4772,900 @@ theorem queryOp_item_and_kernelStep_symbolic_id_closed
   constructor
   · simpa [hfr, Metta.instantiate_nil] using hpair.1
   · simpa [Metta.instantiate_nil] using hpair.2
+
+/-! ## Resolution success and selected equations -/
+
+/-- Once recursive binding resolution succeeds, adding fuel preserves both
+success and the resolved atom.  Fuel is only a cutoff; it does not otherwise
+steer equality-class or value selection. -/
+theorem Bindings.resolveAtomAux_some_add_fuel
+    {bindings : Metta.Bindings} {visited : List String}
+    {atom resolved : Metta.Atom} {fuel : Nat}
+    (extra : Nat)
+    (hresolve :
+      Metta.Bindings.resolveAtomAux bindings fuel visited atom =
+        some resolved) :
+    Metta.Bindings.resolveAtomAux bindings (fuel + extra) visited atom =
+      some resolved := by
+  induction fuel generalizing visited atom resolved with
+  | zero =>
+      simp [Metta.Bindings.resolveAtomAux] at hresolve
+  | succ fuel ih =>
+      cases atom with
+      | sym symbol =>
+          simpa [Metta.Bindings.resolveAtomAux, Nat.succ_add] using hresolve
+      | gnd ground =>
+          simpa [Metta.Bindings.resolveAtomAux, Nat.succ_add] using hresolve
+      | var key =>
+          simp only [Metta.Bindings.resolveAtomAux, Nat.succ_add] at hresolve ⊢
+          cases hoverlap :
+              (Metta.Bindings.eqClassOrdered bindings key).any visited.contains with
+          | true =>
+              simp only [hoverlap, ↓reduceIte] at hresolve ⊢
+              contradiction
+          | false =>
+              cases hvalues : Metta.Bindings.classValues bindings key with
+              | nil =>
+                  simpa only [hoverlap, Bool.false_eq_true, ↓reduceIte,
+                    hvalues] using hresolve
+              | cons value rest =>
+                  simp only [hoverlap, Bool.false_eq_true, ↓reduceIte,
+                    hvalues] at hresolve ⊢
+                  cases value with
+                  | var target =>
+                      change
+                        (if (Metta.Bindings.eqClassOrdered bindings key).contains
+                              target = true then
+                          if (Metta.Bindings.eqClassOrdered bindings key).length == 1
+                              then none
+                          else some (Metta.Atom.var
+                            (Metta.Bindings.eqRepresentative bindings key))
+                        else Metta.Bindings.resolveAtomAux bindings fuel
+                          (Metta.Bindings.eqClassOrdered bindings key ++ visited)
+                          (.var target)) = some resolved at hresolve
+                      change
+                        (if (Metta.Bindings.eqClassOrdered bindings key).contains
+                              target = true then
+                          if (Metta.Bindings.eqClassOrdered bindings key).length == 1
+                              then none
+                          else some (Metta.Atom.var
+                            (Metta.Bindings.eqRepresentative bindings key))
+                        else Metta.Bindings.resolveAtomAux bindings (fuel + extra)
+                          (Metta.Bindings.eqClassOrdered bindings key ++ visited)
+                          (.var target)) = some resolved
+                      cases hclass :
+                          (Metta.Bindings.eqClassOrdered bindings key).contains target with
+                      | true =>
+                          simp only [hclass, ↓reduceIte] at hresolve ⊢
+                          cases hlength :
+                              (Metta.Bindings.eqClassOrdered bindings key).length == 1 with
+                          | true =>
+                              simp only [hlength, ↓reduceIte] at hresolve ⊢
+                              contradiction
+                          | false =>
+                              simpa only [hlength,
+                                Bool.false_eq_true] using hresolve
+                      | false =>
+                          simp only [hclass, Bool.false_eq_true,
+                            ↓reduceIte] at hresolve ⊢
+                          exact ih hresolve
+                  | sym symbol => exact ih hresolve
+                  | gnd ground => exact ih hresolve
+                  | expr atoms => exact ih hresolve
+      | expr atoms =>
+          simp only [Metta.Bindings.resolveAtomAux, Nat.succ_add] at hresolve ⊢
+          cases hmap : atoms.mapM
+              (Metta.Bindings.resolveAtomAux bindings fuel visited) with
+          | none => simp [hmap] at hresolve
+          | some resolvedAtoms =>
+              have hmapMono : atoms.mapM
+                  (Metta.Bindings.resolveAtomAux bindings (fuel + extra)
+                    visited) = some resolvedAtoms := by
+                clear hresolve
+                induction atoms generalizing resolvedAtoms with
+                | nil =>
+                    simp at hmap
+                    subst resolvedAtoms
+                    simp
+                | cons head tail tailIH =>
+                    simp only [List.mapM_cons] at hmap ⊢
+                    cases hhead : Metta.Bindings.resolveAtomAux bindings fuel
+                        visited head with
+                    | none => simp [hhead] at hmap
+                    | some resolvedHead =>
+                        cases htail : tail.mapM
+                            (Metta.Bindings.resolveAtomAux bindings fuel visited) with
+                        | none => simp [hhead, htail] at hmap
+                        | some resolvedTail =>
+                            simp [hhead, htail] at hmap
+                            subst resolvedAtoms
+                            rw [ih hhead, tailIH resolvedTail htail]
+                            rfl
+              simpa [hmap, hmapMono] using hresolve
+
+/-- Pointwise fuel monotonicity in order form. -/
+theorem Bindings.resolveAtomAux_some_mono
+    {bindings : Metta.Bindings} {visited : List String}
+    {atom resolved : Metta.Atom} {small large : Nat}
+    (hresolve :
+      Metta.Bindings.resolveAtomAux bindings small visited atom =
+        some resolved)
+    (hle : small ≤ large) :
+    Metta.Bindings.resolveAtomAux bindings large visited atom =
+      some resolved := by
+  obtain ⟨extra, rfl⟩ := Nat.exists_eq_add_of_le hle
+  exact Bindings.resolveAtomAux_some_add_fuel extra hresolve
+
+/-- The visited set and fuel only refuse resolution; neither changes a
+successful value. -/
+theorem Bindings.resolveAtomAux_some_unique
+    {bindings : Metta.Bindings} {firstFuel secondFuel : Nat}
+    {firstVisited secondVisited : List VarName} {atom first second : Atom}
+    (hfirst : Metta.Bindings.resolveAtomAux bindings firstFuel firstVisited atom =
+      some first)
+    (hsecond : Metta.Bindings.resolveAtomAux bindings secondFuel secondVisited atom =
+      some second) : first = second := by
+  induction firstFuel generalizing secondFuel firstVisited secondVisited atom first second with
+  | zero => simp [Metta.Bindings.resolveAtomAux] at hfirst
+  | succ fuel ih =>
+    cases secondFuel with
+    | zero => simp [Metta.Bindings.resolveAtomAux] at hsecond
+    | succ otherFuel =>
+      cases atom with
+      | sym name => simpa [Metta.Bindings.resolveAtomAux] using hfirst.symm.trans hsecond
+      | gnd value => simpa [Metta.Bindings.resolveAtomAux] using hfirst.symm.trans hsecond
+      | var key =>
+        simp only [Metta.Bindings.resolveAtomAux] at hfirst hsecond
+        split at hfirst
+        · contradiction
+        · split at hsecond
+          · contradiction
+          · cases hvalues : Metta.Bindings.classValues bindings key with
+            | nil =>
+              simp only [hvalues] at hfirst hsecond
+              exact Option.some.inj (hfirst.symm.trans hsecond)
+            | cons value rest =>
+              simp only [hvalues] at hfirst hsecond
+              cases value with
+              | var target =>
+                dsimp only at hfirst hsecond
+                by_cases hclass : (Metta.Bindings.eqClassOrdered bindings key).contains target = true
+                · by_cases hlength : ((Metta.Bindings.eqClassOrdered bindings key).length == 1) = true
+                  · simp only [hclass, hlength, ↓reduceIte] at hfirst
+                    contradiction
+                  · simp only [hclass, hlength, ↓reduceIte] at hfirst hsecond
+                    exact Option.some.inj (hfirst.symm.trans hsecond)
+                · simp only [hclass] at hfirst hsecond
+                  exact ih hfirst hsecond
+              | sym name => exact ih hfirst hsecond
+              | gnd value => exact ih hfirst hsecond
+              | expr children => exact ih hfirst hsecond
+      | expr children =>
+        simp only [Metta.Bindings.resolveAtomAux] at hfirst hsecond
+        cases hmapFirst : children.mapM
+            (Metta.Bindings.resolveAtomAux bindings fuel firstVisited) with
+        | none => simp [hmapFirst] at hfirst
+        | some firstChildren =>
+          cases hmapSecond : children.mapM
+              (Metta.Bindings.resolveAtomAux bindings otherFuel secondVisited) with
+          | none => simp [hmapSecond] at hsecond
+          | some secondChildren =>
+            simp only [hmapFirst, Option.some.injEq] at hfirst
+            simp only [hmapSecond, Option.some.injEq] at hsecond
+            subst first second
+            congr 1
+            induction children generalizing firstChildren secondChildren with
+            | nil => simpa using hmapFirst.symm.trans hmapSecond
+            | cons head tail tailIH =>
+              simp only [List.mapM_cons] at hmapFirst hmapSecond
+              cases hheadFirst : Metta.Bindings.resolveAtomAux bindings fuel
+                  firstVisited head with
+              | none => simp [hheadFirst] at hmapFirst
+              | some firstHead =>
+                cases htailFirst : tail.mapM
+                    (Metta.Bindings.resolveAtomAux bindings fuel firstVisited) with
+                | none => simp [hheadFirst, htailFirst] at hmapFirst
+                | some firstTail =>
+                  cases hheadSecond : Metta.Bindings.resolveAtomAux bindings otherFuel
+                      secondVisited head with
+                  | none => simp [hheadSecond] at hmapSecond
+                  | some secondHead =>
+                    cases htailSecond : tail.mapM
+                        (Metta.Bindings.resolveAtomAux bindings otherFuel secondVisited) with
+                    | none => simp [hheadSecond, htailSecond] at hmapSecond
+                    | some secondTail =>
+                      simp [hheadFirst, htailFirst] at hmapFirst
+                      simp [hheadSecond, htailSecond] at hmapSecond
+                      subst firstChildren secondChildren
+                      rw [ih hheadFirst hheadSecond,
+                        tailIH firstTail htailFirst secondTail htailSecond]
+
+/-- A variable mentioned by no equality edge has a singleton ordered class,
+even when arbitrary value relations are retained beside it. -/
+theorem Bindings.eqClassOrdered_singleton_of_no_edge
+    {b : Bindings} {key : VarName}
+    (hedge : ∀ left right, BindingRel.eq left right ∈ b → left ≠ key ∧ right ≠ key) :
+    Bindings.eqClassOrdered b key = [key] := by
+  have hstep : ∀ bs : Metta.Bindings,
+      (∀ left right, BindingRel.eq left right ∈ bs → left ≠ key ∧ right ≠ key) →
+      Metta.Bindings.eqStep bs [key] = [key] := by
+    intro bs
+    induction bs with
+    | nil => intro _; rfl
+    | cons rel rest ih =>
+      intro hav
+      have hrest := ih (fun left right hmem => hav left right (List.mem_cons_of_mem _ hmem))
+      cases rel with
+      | val x value => exact hrest
+      | eq left right =>
+        obtain ⟨hl, hr⟩ := hav left right (by simp)
+        simpa [Metta.Bindings.eqStep, hl, hr, Ne.symm hl, Ne.symm hr] using hrest
+  have hclass : Metta.Bindings.eqClass b key = [key] := by
+    unfold Metta.Bindings.eqClass
+    generalize 2 * b.length + 1 = fuel
+    induction fuel with
+    | zero => rfl
+    | succ fuel ih => simpa only [Metta.Bindings.eqClassAux, hstep b hedge] using ih
+  have hfold : ∀ (bs : Metta.Bindings) (acc : List VarName),
+      (∀ left right, BindingRel.eq left right ∈ bs → left ≠ key ∧ right ≠ key) →
+      key ∉ acc → key ∉ bs.foldl
+        (fun acc rel => match rel with
+        | BindingRel.eq left right =>
+            let acc := if acc.contains right then acc else acc ++ [right]
+            if acc.contains left then acc else acc ++ [left]
+        | _ => acc) acc := by
+    intro bs
+    induction bs with
+    | nil => intro acc _ hacc; exact hacc
+    | cons rel rest ih =>
+      intro acc hav hacc
+      apply ih _ (fun left right hmem => hav left right (List.mem_cons_of_mem _ hmem))
+      cases rel with
+      | val x value => exact hacc
+      | eq left right =>
+        obtain ⟨hl, hr⟩ := hav left right (by simp)
+        have hkl := Ne.symm hl
+        have hkr := Ne.symm hr
+        dsimp only
+        split <;> split <;> simp_all
+  have horder : key ∉ Metta.Bindings.eqVarsInOrder b := by
+    exact hfold b.reverse []
+      (by intro left right hmem; exact hedge left right (List.mem_reverse.mp hmem))
+      (by simp)
+  have hordered : Metta.Bindings.eqClassOrdered b key = [key] := by
+    unfold Metta.Bindings.eqClassOrdered
+    have hfilter : (Metta.Bindings.eqVarsInOrder b).filter
+        (fun other => (Metta.Bindings.eqClass b key).contains other) = [] := by
+      apply List.filter_eq_nil_iff.mpr
+      intro other hmem
+      have hne : other ≠ key := by intro heq; subst other; exact horder hmem
+      simp [hclass, hne]
+    rw [hfilter]
+  exact hordered
+
+/-- A variable absent from the entire binding record has no aliases or
+stored value. -/
+theorem Bindings.outside_class
+    {b : Metta.Bindings} {key : VarName} (houtside : key ∉ Metta.Bindings.vars b) :
+    Metta.Bindings.eqClassOrdered b key = [key] ∧
+      Metta.Bindings.classValues b key = [] := by
+  have hedge : ∀ left right, BindingRel.eq left right ∈ b →
+      left ≠ key ∧ right ≠ key := by
+    intro left right hrel
+    constructor <;> intro heq <;> subst_vars <;> apply houtside
+    all_goals
+      simp only [Metta.Bindings.vars, List.mem_eraseDups, List.mem_flatMap]
+      exact ⟨_, hrel, by simp⟩
+  have hval : ∀ value, BindingRel.val key value ∉ b := by
+    intro value hrel
+    apply houtside
+    simp only [Metta.Bindings.vars, List.mem_eraseDups, List.mem_flatMap]
+    exact ⟨_, hrel, by simp⟩
+  have hordered := Bindings.eqClassOrdered_singleton_of_no_edge hedge
+  have hlookup : Metta.Bindings.lookupVal b key = none := by
+    clear houtside hedge hordered
+    induction b with
+    | nil => rfl
+    | cons rel rest ih =>
+      have hrest := ih (fun value hmem => hval value (List.mem_cons_of_mem _ hmem))
+      cases rel with
+      | eq left right => exact hrest
+      | val other value =>
+        have hne : key ≠ other := by
+          intro heq; subst other
+          exact hval value (by simp)
+        simpa [Metta.Bindings.lookupVal, hne] using hrest
+  exact ⟨hordered, by simp [Metta.Bindings.classValues, hordered, hlookup]⟩
+
+theorem Bindings.resolve_outside {bindings : Metta.Bindings} {key : VarName}
+    (outside : key ∉ bindings.vars) : Metta.Bindings.resolve bindings key = none := by
+  obtain ⟨classEq, valuesEq⟩ := Bindings.outside_class outside
+  simp [Metta.Bindings.resolve, classEq, valuesEq]
+
+/-- A valueless equality class preserves each occurrence already written at
+its representative, even when other spellings are aliases for that local. -/
+theorem instantiate_eq_self_of_valueless_representatives
+    (record : Metta.Bindings) (atom : Atom)
+    (valueless : ∀ key ∈ atom.vars, Metta.Bindings.classValues record key = [])
+    (representative : ∀ key ∈ atom.vars, Metta.Bindings.eqRepresentative record key = key) :
+    Metta.instantiate record atom = atom := by
+  have same : Metta.instantiate record atom = Metta.instantiate [] atom := by
+    apply instantiate_eq_of_resolve_readout_on_vars
+    intro key mentioned
+    have values := valueless key mentioned
+    have self := representative key mentioned
+    rw [Bindings.resolve_nil]
+    unfold Metta.Bindings.resolve
+    dsimp only
+    by_cases unbound : (record.eqClassOrdered key == [key] &&
+        (record.classValues key).isEmpty) = true
+    · rw [if_pos unbound]
+    · rw [if_neg unbound]
+      simp [Metta.Bindings.resolutionFuel, Atom.size, Nat.add_assoc,
+        Metta.Bindings.resolveAtomAux, values, self]
+  simpa only [Metta.instantiate_nil] using same
+
+/-- A term referring only to names outside a binding record stays literal.
+Aliases and open values elsewhere in that record need no normalization. -/
+theorem instantiate_eq_self_of_outside_vars
+    (bindings : Metta.Bindings) (atom : Atom)
+    (outside : ∀ key ∈ atom.vars, key ∉ bindings.vars) :
+    Metta.instantiate bindings atom = atom := by
+  apply instantiate_eq_self_of_valueless_representatives
+  · intro key member
+    exact (Bindings.outside_class (outside key member)).2
+  · intro key member
+    simp [Metta.Bindings.eqRepresentative, (Bindings.outside_class (outside key member)).1]
+
+theorem instantiate_var_outside {bindings : Metta.Bindings} {key : VarName}
+    (outside : key ∉ bindings.vars) :
+    Metta.instantiate bindings (.var key) = .var key := by
+  apply instantiate_eq_self_of_outside_vars
+  simpa [Metta.Atom.vars] using outside
+
+namespace OutsideControls
+
+#guard Metta.instantiate [.eq "private" "hole"]
+    (.expr [.sym "pair", .var "hole", .var "hole"]) ==
+      .expr [.sym "pair", .var "hole", .var "hole"]
+#guard Metta.instantiate [.eq "private" "hole"] (.var "private") != .var "private"
+
+theorem unrelated_aliases_keep_the_same_two_holes :
+    Metta.instantiate [.val "held" (.expr [.sym "node", .var "tail"]),
+        .eq "tail" "end"] (.expr [.sym "pair", .var "hole", .var "hole"]) =
+      .expr [.sym "pair", .var "hole", .var "hole"] := by
+  apply instantiate_eq_self_of_outside_vars
+  simp [Metta.Atom.vars, Metta.Bindings.vars]
+
+theorem a_bound_hole_is_not_held_literal :
+    Metta.instantiate [.val "hole" (.sym "value")] (.var "hole") ≠ .var "hole" := by
+  rw [instantiate_singleton_val_var _ _ (by simp [Metta.Atom.vars])]
+  simp
+
+end OutsideControls
+/-- The actual loop filter certifies successful canonical resolution of every
+variable, including variables not stored in the record. -/
+theorem Bindings.resolveAtomAux_some_of_hasLoop_false
+    {b : Metta.Bindings} (hloop : Metta.Bindings.hasLoop b = false)
+    (key : VarName) : ∃ value,
+    Metta.Bindings.resolveAtomAux b
+      (Metta.Bindings.resolutionFuel b (.var key)) [] (.var key) = some value := by
+  by_cases hkey : key ∈ Metta.Bindings.vars b
+  · have hrecursive := (Bool.or_eq_false_iff.mp hloop).2
+    rw [List.any_eq_false] at hrecursive
+    have hsome := hrecursive key hkey
+    cases hvalue : Metta.Bindings.resolveAtomAux b
+        (Metta.Bindings.resolutionFuel b (.var key)) [] (.var key) with
+    | none => simp [hvalue] at hsome
+    | some value => exact ⟨value, rfl⟩
+  · obtain ⟨hclass, hvalues⟩ := Bindings.outside_class hkey
+    refine ⟨.var key, ?_⟩
+    simp [Metta.Bindings.resolutionFuel, Metta.Atom.size,
+      Nat.add_assoc, Metta.Bindings.resolveAtomAux,
+      hclass, hvalues, Metta.Bindings.eqRepresentative]
+
+/-- Successful canonical resolution agrees with the public instantiator,
+including its unchanged-variable convention at an unbound singleton class. -/
+theorem Bindings.instantiate_var_of_resolveAtomAux_some
+    {b : Metta.Bindings} {key : VarName} {value : Atom}
+    (hresolve : Metta.Bindings.resolveAtomAux b
+      (Metta.Bindings.resolutionFuel b (.var key)) [] (.var key) = some value) :
+    Metta.instantiate b (.var key) = value := by
+  unfold Metta.instantiate Metta.Bindings.resolveAtom Metta.Bindings.resolve
+  dsimp only
+  by_cases hunbound : ((Metta.Bindings.eqClassOrdered b key == [key]) &&
+      (Metta.Bindings.classValues b key).isEmpty) = true
+  · rw [if_pos hunbound]
+    obtain ⟨hclass, hvalues⟩ := Bool.and_eq_true_iff.mp hunbound
+    have hclass : Metta.Bindings.eqClassOrdered b key = [key] := by simpa using hclass
+    have hvalues : Metta.Bindings.classValues b key = [] := by simpa using hvalues
+    have hvalue : value = .var key := by
+      simpa [Metta.Bindings.resolutionFuel, Metta.Atom.size,
+        Nat.add_assoc, Metta.Bindings.resolveAtomAux,
+        hclass, hvalues, Metta.Bindings.eqRepresentative] using hresolve.symm
+    simp [hvalue]
+  · rw [if_neg hunbound]
+    simp [hresolve]
+
+/-- Any successful recursive resolution gives the same value as public
+instantiation in a record accepted by the native loop filter. -/
+theorem Bindings.resolveAtomAux_some_eq_instantiate
+    {b : Metta.Bindings} (hloop : Metta.Bindings.hasLoop b = false) :
+    ∀ (atom : Atom) {fuel : Nat} {visited : List VarName} {value : Atom},
+      Metta.Bindings.resolveAtomAux b fuel visited atom = some value →
+        value = Metta.instantiate b atom := by
+  refine Atom.recAux ?_ ?_ ?_ ?_
+  · intro name fuel visited value hresolve
+    cases fuel with
+    | zero => simp [Metta.Bindings.resolveAtomAux] at hresolve
+    | succ fuel => simpa [Metta.Bindings.resolveAtomAux, Metta.instantiate,
+        Metta.Bindings.resolveAtom] using hresolve.symm
+  · intro key fuel visited value hresolve
+    obtain ⟨canonical, hcanonical⟩ := Bindings.resolveAtomAux_some_of_hasLoop_false hloop key
+    exact (Bindings.resolveAtomAux_some_unique hresolve hcanonical).trans
+      (Bindings.instantiate_var_of_resolveAtomAux_some hcanonical).symm
+  · intro ground fuel visited value hresolve
+    cases fuel with
+    | zero => simp [Metta.Bindings.resolveAtomAux] at hresolve
+    | succ fuel => simpa [Metta.Bindings.resolveAtomAux, Metta.instantiate,
+        Metta.Bindings.resolveAtom] using hresolve.symm
+  · intro children ih fuel visited value hresolve
+    cases fuel with
+    | zero => simp [Metta.Bindings.resolveAtomAux] at hresolve
+    | succ fuel =>
+      simp only [Metta.Bindings.resolveAtomAux] at hresolve
+      cases hmap : children.mapM (Metta.Bindings.resolveAtomAux b fuel visited) with
+      | none => simp [hmap] at hresolve
+      | some values =>
+        simp only [hmap, Option.some.injEq] at hresolve
+        subst value
+        simp only [Metta.instantiate, Metta.Bindings.resolveAtom]
+        change Atom.expr values = Atom.expr (children.map (Metta.instantiate b))
+        congr 1
+        induction children generalizing values with
+        | nil => simpa using hmap.symm
+        | cons head tail tailIH =>
+          simp only [List.mapM_cons] at hmap
+          cases hhead : Metta.Bindings.resolveAtomAux b fuel visited head with
+          | none => simp [hhead] at hmap
+          | some headValue =>
+            cases htail : tail.mapM (Metta.Bindings.resolveAtomAux b fuel visited) with
+            | none => simp [hhead, htail] at hmap
+            | some tailValues =>
+              simp [hhead, htail] at hmap
+              subst values
+              rw [ih head (by simp) hhead]
+              congr 1
+              exact tailIH (fun child hchild => ih child (by simp [hchild])) tailValues htail
+
+/-- The selected non-variable class value is an actual instantiation equation,
+not merely a successful syntactic lookup. -/
+theorem Bindings.instantiate_first_class_value
+    {b : Metta.Bindings} (hloop : Metta.Bindings.hasLoop b = false)
+    {key : VarName} {value : Atom} {rest : List Atom}
+    (hvalues : Metta.Bindings.classValues b key = value :: rest)
+    (hnonvar : ∀ other, value ≠ .var other) :
+    Metta.instantiate b (.var key) = Metta.instantiate b value := by
+  obtain ⟨resolved, hresolve⟩ := Bindings.resolveAtomAux_some_of_hasLoop_false hloop key
+  have hinstantiate := Bindings.instantiate_var_of_resolveAtomAux_some hresolve
+  cases hfuel : Metta.Bindings.resolutionFuel b (.var key) with
+  | zero => simp [Metta.Bindings.resolutionFuel, Metta.Atom.size] at hfuel
+  | succ fuel =>
+    rw [hfuel] at hresolve
+    rw [Metta.Bindings.resolveAtomAux] at hresolve
+    have hclear : ¬ (Metta.Bindings.eqClassOrdered b key).any ([] : List VarName).contains = true := by simp
+    rw [if_neg hclear, hvalues] at hresolve
+    cases value with
+    | var other => exact False.elim (hnonvar other rfl)
+    | sym name =>
+      exact hinstantiate.trans (Bindings.resolveAtomAux_some_eq_instantiate hloop _ hresolve)
+    | gnd ground =>
+      exact hinstantiate.trans (Bindings.resolveAtomAux_some_eq_instantiate hloop _ hresolve)
+    | expr children =>
+      exact hinstantiate.trans (Bindings.resolveAtomAux_some_eq_instantiate hloop _ hresolve)
+
+theorem Bindings.eqClassOrdered_ne_nil (b : Metta.Bindings) (key : VarName) :
+    Metta.Bindings.eqClassOrdered b key ≠ [] := by
+  unfold Metta.Bindings.eqClassOrdered
+  split <;> simp_all
+
+theorem Bindings.eqRepresentative_eq_of_eqClassOrdered_eq
+    {b : Metta.Bindings} {first second : VarName}
+    (hclasses : Metta.Bindings.eqClassOrdered b first =
+      Metta.Bindings.eqClassOrdered b second) :
+    Metta.Bindings.eqRepresentative b first =
+      Metta.Bindings.eqRepresentative b second := by
+  have hnonempty := Bindings.eqClassOrdered_ne_nil b second
+  simp only [Metta.Bindings.eqRepresentative, hclasses]
+  cases hclass : Metta.Bindings.eqClassOrdered b second with
+  | nil => exact False.elim (hnonempty hclass)
+  | cons head tail => rfl
+
+/-- Variables in the same ordered equality class resolve identically at every
+fuel and visited set. -/
+theorem Bindings.resolveAtomAux_var_eq_of_eqClassOrdered_eq
+    {b : Metta.Bindings} {first second : VarName}
+    (hclasses : Metta.Bindings.eqClassOrdered b first =
+      Metta.Bindings.eqClassOrdered b second)
+    (fuel : Nat) (visited : List VarName) :
+    Metta.Bindings.resolveAtomAux b fuel visited (.var first) =
+      Metta.Bindings.resolveAtomAux b fuel visited (.var second) := by
+  have hvalues : Metta.Bindings.classValues b first =
+      Metta.Bindings.classValues b second := by
+    simp only [Metta.Bindings.classValues, hclasses]
+  have hrep := Bindings.eqRepresentative_eq_of_eqClassOrdered_eq hclasses
+  cases fuel with
+  | zero => rfl
+  | succ fuel => simp only [Metta.Bindings.resolveAtomAux, hclasses, hvalues, hrep]
+
+/-- Equal ordered equality classes have equal public instantiations. -/
+theorem Bindings.instantiate_var_eq_of_eqClassOrdered_eq
+    {b : Metta.Bindings} (hloop : Metta.Bindings.hasLoop b = false)
+    {first second : VarName}
+    (hclasses : Metta.Bindings.eqClassOrdered b first =
+      Metta.Bindings.eqClassOrdered b second) :
+    Metta.instantiate b (.var first) = Metta.instantiate b (.var second) := by
+  obtain ⟨resolved, hresolve⟩ := Bindings.resolveAtomAux_some_of_hasLoop_false hloop first
+  have hfirst := Bindings.instantiate_var_of_resolveAtomAux_some hresolve
+  have hsecond : Metta.Bindings.resolveAtomAux b
+      (Metta.Bindings.resolutionFuel b (.var second)) [] (.var second) = some resolved := by
+    rw [← Bindings.resolveAtomAux_var_eq_of_eqClassOrdered_eq hclasses]
+    simpa only [Metta.Bindings.resolutionFuel, Metta.Atom.size] using hresolve
+  exact hfirst.trans (Bindings.instantiate_var_of_resolveAtomAux_some hsecond).symm
+
+
+/-! ## Scoped queries retain fresh caller frames -/
+
+/-- A fresh closed matcher row extends any caller by raw insertion. The caller
+may contain aliases; freshness is tested against its full variable domain. -/
+theorem mergeOne_singleton_closed_of_not_mem_vars
+    {caller : Bindings} {key : VarName} {value : Atom}
+    (hclosed : value.vars = []) (hfresh : key ∉ caller.vars) :
+    Bindings.mergeOne [caller] (.val key value) = [[.val key value] ++ caller] := by
+  have hclass := Bindings.outside_class hfresh
+  have hnotvar : ∀ other, value ≠ .var other := by
+    intro other heq
+    subst value
+    simp [Atom.vars] at hclosed
+  have hnotkey : key ∉ bindingValueKeys caller :=
+    fun hkey => hfresh (bindingValueKey_mem_vars hkey)
+  simpa only [Bindings.merge,List.foldl_cons,List.foldl_nil] using
+    (merge_singleton_val_eq_of_fresh_class hclass.2 hnotvar hnotkey)
+
+/-- Fresh closed rule bindings have one exact merge result with an arbitrary
+retained caller. Every caller relation remains present. -/
+theorem merge_closed_fresh_caller_eq :
+    ∀ {matched caller : Bindings}, ClosedValueBindings matched →
+      (bindingValueKeys matched).Nodup →
+      (∀ key ∈ bindingValueKeys matched, key ∉ caller.vars) →
+      Bindings.merge caller matched = [matched.reverse ++ caller]
+  | [], caller, ClosedValueBindings.nil, _, _ => by simp [Bindings.merge]
+  | .val key value :: rest, caller, ClosedValueBindings.val hclosed hrest, hnodup, hfresh => by
+      have hkey : key ∉ caller.vars := hfresh key (by simp [bindingValueKeys])
+      have hmerge := mergeOne_singleton_closed_of_not_mem_vars hclosed hkey
+      have hparts := List.nodup_cons.mp (by simpa [bindingValueKeys] using hnodup)
+      have hrestFresh : ∀ other ∈ bindingValueKeys rest,
+          other ∉ Bindings.vars (.val key value :: caller) := by
+        intro other hother hvars
+        have hf := hfresh other (by simp [bindingValueKeys,hother])
+        have hne : other ≠ key := by intro heq; subst other; exact hparts.1 hother
+        apply hf
+        simpa [Bindings.vars,hclosed,hne] using hvars
+      have ih := merge_closed_fresh_caller_eq hrest hparts.2 hrestFresh
+      unfold Bindings.merge
+      simp only [List.foldl_cons]
+      rw [hmerge]
+      simpa [Bindings.merge,List.reverse_cons,List.append_assoc] using ih
+
+/-- Adding value-only bindings cannot introduce an equality edge. -/
+theorem ValueBindings.eq_edge_mem_append {values caller : Bindings}
+    (hvalues : ValueBindings values) {left right : VarName}
+    (hmem : BindingRel.eq left right ∈ values ++ caller) :
+    BindingRel.eq left right ∈ caller := by
+  have noEq : ∀ {xs : Bindings}, ValueBindings xs → BindingRel.eq left right ∉ xs := by
+    intro xs hxs
+    induction hxs with
+    | nil => simp
+    | val htail ih => simpa using ih
+  rcases List.mem_append.mp hmem with hvaluesMem | hcaller
+  · exact False.elim (noEq hvalues hvaluesMem)
+  · exact hcaller
+
+/-- The caller cannot join a fresh key to one of its alias classes. -/
+theorem ClosedValueBindings.fresh_class_append {values caller : Bindings}
+    (hvalues : ClosedValueBindings values) {key : VarName}
+    (hfresh : key ∉ caller.vars) :
+    Bindings.eqClassOrdered (values ++ caller) key = [key] := by
+  apply Bindings.eqClassOrdered_singleton_of_no_edge
+  intro left right hmem
+  have hcaller := ValueBindings.eq_edge_mem_append hvalues.toValueBindings hmem
+  constructor <;> intro heq <;> subst_vars <;> apply hfresh
+  all_goals
+    simp only [Bindings.vars,List.mem_eraseDups,List.mem_flatMap]
+    exact ⟨_,hcaller,by simp⟩
+
+/-- An isolated closed class value has enough structural resolver fuel merely
+because its value relation is present in the retained record. -/
+theorem Bindings.resolve_closed_class_value_of_mem
+    {bindings : Bindings} {key : VarName} {value : Atom}
+    (hclass : Bindings.eqClassOrdered bindings key = [key])
+    (hvalues : Bindings.classValues bindings key = [value])
+    (hclosed : value.vars = [])
+    (hmem : BindingRel.val key value ∈ bindings) :
+    Bindings.resolve bindings key = some value := by
+  apply Bindings.resolve_eq_closed_class_value hclass hvalues hclosed
+  have hsum : value.size + 1 ≤ (bindings.map Bindings.relationResolutionFuel).sum := by
+    apply List.le_sum_of_mem
+    exact List.mem_map.mpr ⟨.val key value,hmem,rfl⟩
+  simp only [Bindings.resolutionFuel,Atom.size,Nat.add_one,Nat.pred_succ]
+  omega
+
+/-- Instantiation of a fresh rule body is unaffected by an arbitrary retained
+caller once that rule's closed matching bindings have been installed. Unbound
+rule variables stay unbound; caller aliases and values remain in the record. -/
+theorem instantiate_closed_fresh_caller
+    {values caller : Bindings} (hvalues : ClosedValueBindings values)
+    (body : Atom) (hfresh : ∀ key ∈ body.vars, key ∉ caller.vars) :
+    instantiate (values ++ caller) body = instantiate values body := by
+  apply instantiate_eq_of_resolve_on_vars
+  intro key hkey
+  have hnotCaller := hfresh key hkey
+  have hnotKey : key ∉ bindingValueKeys caller :=
+    fun h => hnotCaller (bindingValueKey_mem_vars h)
+  have hlookupCaller := lookupVal_none_of_not_mem_keys hnotKey
+  have hclass := ClosedValueBindings.fresh_class_append hvalues hnotCaller
+  have hlookup : Bindings.lookupVal (values ++ caller) key = Bindings.lookupVal values key := by
+    rw [lookupVal_append,hlookupCaller]
+    cases Bindings.lookupVal values key <;> rfl
+  rw [ClosedValueBindings.resolve_eq_lookupVal hvalues key]
+  cases hvalue : Bindings.lookupVal values key with
+  | none =>
+      have hclassValues : Bindings.classValues (values ++ caller) key = [] := by
+        simp only [Bindings.classValues,hclass,List.filterMap_cons,List.filterMap_nil,hlookup,hvalue]
+      simp [Bindings.resolve,hclass,hclassValues]
+  | some value =>
+      have hclassValues : Bindings.classValues (values ++ caller) key = [value] := by
+        simp only [Bindings.classValues,hclass,List.filterMap_cons,List.filterMap_nil,hlookup,hvalue]
+      apply Bindings.resolve_closed_class_value_of_mem hclass hclassValues
+        (lookupVal_closed_value hvalues hvalue)
+      exact lookupVal_some_val_mem (hlookup.trans hvalue)
+
+/-- The actual merge-then-instantiate rule path preserves the isolated rule
+readout while retaining all caller relations. -/
+theorem instantiate_merge_closed_fresh_caller
+    {matched caller merged : Bindings} (hclosed : ClosedValueBindings matched)
+    (hnodup : (bindingValueKeys matched).Nodup)
+    (hkeys : ∀ key ∈ bindingValueKeys matched, key ∉ caller.vars)
+    (body : Atom) (hbody : ∀ key ∈ body.vars, key ∉ caller.vars)
+    (hmerged : merged ∈ Bindings.merge caller matched) :
+    merged = matched.reverse ++ caller ∧ instantiate merged body = instantiate matched body := by
+  rw [merge_closed_fresh_caller_eq hclosed hnodup hkeys] at hmerged
+  have hmerged := List.mem_singleton.mp hmerged
+  subst merged
+  exact ⟨rfl,(instantiate_closed_fresh_caller (ClosedValueBindings.reverse hclosed) body hbody).trans
+    (instantiate_reverse_closed_nodup hclosed hnodup body)⟩
+
+/-- Substituting closed values can remove variables but cannot create one. -/
+theorem instantiate_closed_value_vars_subset {bindings : Bindings}
+    (hclosed : ClosedValueBindings bindings) :
+    ∀ body : Atom, ∀ key ∈ (instantiate bindings body).vars, key ∈ body.vars := by
+  refine Metta.Atom.recAux ?_ ?_ ?_ ?_
+  · intro s key hk
+    simp [instantiate,Bindings.resolveAtom,Atom.vars] at hk
+  · intro v key hk
+    simp only [instantiate,Bindings.resolveAtom,
+      ClosedValueBindings.resolve_eq_lookupVal hclosed] at hk
+    cases hlookup : Bindings.lookupVal bindings v with
+    | none => simpa [hlookup] using hk
+    | some value =>
+      have hv := lookupVal_closed_value hclosed hlookup
+      simp [hlookup,hv] at hk
+  · intro g key hk
+    simp [instantiate,Bindings.resolveAtom,Atom.vars] at hk
+  · intro xs ih key hk
+    simp only [instantiate,Bindings.resolveAtom,Atom.vars,List.mem_flatten,List.mem_map] at hk
+    rcases hk with ⟨vars,⟨child,⟨old,hold,rfl⟩,rfl⟩,hkey⟩
+    simp only [Atom.vars,List.mem_flatten,List.mem_map]
+    exact ⟨old.vars,⟨old,hold,rfl⟩,ih old hold key hkey⟩
+
+/-- A returned rule value remains unchanged when the complete retained record
+materializes it again. The preserved caller may contain open values or aliases. -/
+theorem instantiate_closed_fresh_caller_idempotent
+    {values caller : Bindings} (hvalues : ClosedValueBindings values)
+    (body : Atom) (hfresh : ∀ key ∈ body.vars, key ∉ caller.vars) :
+    instantiate (values ++ caller) (instantiate values body) = instantiate values body := by
+  rw [instantiate_closed_fresh_caller hvalues]
+  · exact instantiate_closed_value_bindings_idempotent hvalues body
+  · intro key hkey
+    exact hfresh key (instantiate_closed_value_vars_subset hvalues body key hkey)
+
+/-- Actual query freshening avoids the caller's complete dependency domain. -/
+theorem queryOp_freshened_rule_avoids_caller
+    (prev : Stack) (target : Atom) (caller : Bindings) (counter : Nat) (rule : Atom × Atom)
+    (key : VarName)
+    (hkey : key ∈
+      (freshenRuleAvoiding counter (queryOpAvoid prev target caller) rule.1 rule.2).1.1.vars ++
+      (freshenRuleAvoiding counter (queryOpAvoid prev target caller) rule.1 rule.2).1.2.vars) :
+    key ∉ caller.vars := by
+  intro hcaller
+  apply freshenRuleAvoiding_vars_fresh counter (queryOpAvoid prev target caller)
+    rule.1 rule.2 key hkey
+  simp only [queryOpAvoid,Metta.Minimal.queryOpAvoid,List.mem_append]
+  exact Or.inl (Or.inl hcaller)
+
+/-- A closed query's actual matched row merges by fresh extension. No hypothesis
+about the caller being empty or closed is required. -/
+theorem queryOp_closed_match_merge
+    (prev : Stack) (target : Atom) (caller : Bindings) (counter : Nat) (rule : Atom × Atom)
+    (htarget : target.vars = []) {matched : Bindings}
+    (hmatched : matched ∈ matchAtoms
+      (freshenRuleAvoiding counter (queryOpAvoid prev target caller) rule.1 rule.2).1.1 target) :
+    Bindings.merge caller matched = [matched.reverse ++ caller] := by
+  obtain ⟨hc,hn,hs⟩ := matchAtoms_closed_footprint _ _ _ htarget hmatched
+  apply merge_closed_fresh_caller_eq hc hn
+  intro key hkey
+  exact queryOp_freshened_rule_avoids_caller prev target caller counter rule key
+    (List.mem_append_left _ (hs key hkey))
+
+/-- A closed query's scoped candidate retains its caller exactly, while its value
+readout depends only on the rule's own match. Loop refusal is still observed. -/
+theorem mem_queryOpItemsOfRule_closed_frame_iff
+    (prev : Stack) (target : Atom) (caller : Bindings) (counter : Nat) (rule : Atom × Atom)
+    (htarget : target.vars = []) (item : Item) :
+    item ∈ queryOpItemsOfRule prev target caller counter rule ↔
+      ∃ matched ∈ matchAtoms
+        (freshenRuleAvoiding counter (queryOpAvoid prev target caller) rule.1 rule.2).1.1 target,
+        Bindings.hasLoop (matched.reverse ++ caller) = false ∧
+        item = evalResult prev
+          (instantiate matched
+            (freshenRuleAvoiding counter (queryOpAvoid prev target caller) rule.1 rule.2).1.2)
+          (matched.reverse ++ caller) := by
+  rw [mem_queryOpItemsOfRule_iff]
+  have hbody : ∀ key ∈
+      (freshenRuleAvoiding counter (queryOpAvoid prev target caller) rule.1 rule.2).1.2.vars,
+      key ∉ caller.vars := by
+    intro key hkey
+    exact queryOp_freshened_rule_avoids_caller prev target caller counter rule key
+      (List.mem_append_right _ hkey)
+  constructor
+  · rintro ⟨matched,hm,merged,hmerge,hloop,hitem⟩
+    have heq := queryOp_closed_match_merge prev target caller counter rule htarget hm
+    rw [heq] at hmerge
+    have hmerge := List.mem_singleton.mp hmerge
+    subst merged
+    obtain ⟨hc,hn,_⟩ := matchAtoms_closed_footprint _ _ _ htarget hm
+    refine ⟨matched,hm,hloop,?_⟩
+    rw [instantiate_closed_fresh_caller (ClosedValueBindings.reverse hc) _ hbody,
+      instantiate_reverse_closed_nodup hc hn] at hitem
+    exact hitem
+  · rintro ⟨matched,hm,hloop,hitem⟩
+    obtain ⟨hc,hn,_⟩ := matchAtoms_closed_footprint _ _ _ htarget hm
+    refine ⟨matched,hm,matched.reverse ++ caller,?_,hloop,?_⟩
+    · rw [queryOp_closed_match_merge prev target caller counter rule htarget hm]
+      simp
+    · rw [instantiate_closed_fresh_caller (ClosedValueBindings.reverse hc) _ hbody,
+        instantiate_reverse_closed_nodup hc hn]
+      exact hitem
+
+/-- The executable freshener uses the same total leaf renaming as the shared
+renaming algebra. -/
+theorem renameAllVars_eq_renBy (f : VarName → VarName) (a : Atom) :
+    renameAllVars f a = renBy f a := by
+  induction a with
+  | expr xs ih =>
+      simp only [renameAllVars,renBy_expr]
+      exact congrArg Atom.expr (List.map_congr_left ih)
+  | _ => simp [renameAllVars,renBy]
+
+/-- Both branches of the actual scoped freshener are injective rule renamings. -/
+theorem freshenRuleAvoiding_injective_renaming
+    (counter : Nat) (avoid : List VarName) (lhs rhs : Atom) :
+    ∃ f : VarName → VarName, Function.Injective f ∧
+      (freshenRuleAvoiding counter avoid lhs rhs).1 = (renBy f lhs,renBy f rhs) := by
+  by_cases h : ∃ v ∈ (freshenRule counter lhs rhs).1.vars ++
+      (freshenRule counter lhs rhs).2.vars, v ∈ avoid
+  · rw [freshenRuleAvoiding,if_pos h]
+    refine ⟨captureAvoidingName avoid counter,captureAvoidingName_injective avoid counter,?_⟩
+    simp only [renameAllVars_eq_renBy]
+  · rw [freshenRuleAvoiding,if_neg h]
+    exact ⟨counterSuffix counter,counterSuffix_injective counter,
+      freshenRule_eq_renBy counter lhs rhs⟩
+
+/-- Every actual scoped match against closed data comes from exactly the
+original matcher alternatives, after one shared injective rule renaming. -/
+theorem matchAtoms_freshenRuleAvoiding_closed_origin
+    (counter : Nat) (avoid : List VarName) (lhs rhs target : Atom)
+    (ht : target.vars = []) :
+    ∃ f : VarName → VarName, Function.Injective f ∧
+      (freshenRuleAvoiding counter avoid lhs rhs).1 = (renBy f lhs,renBy f rhs) ∧
+      matchAtoms (freshenRuleAvoiding counter avoid lhs rhs).1.1 target =
+        (matchAtoms lhs target).map (renameBindings f) := by
+  obtain ⟨f,hf,hpair⟩ := freshenRuleAvoiding_injective_renaming counter avoid lhs rhs
+  exact ⟨f,hf,hpair,by rw [hpair]; exact matchAtoms_renBy_closed_target_eq f hf lhs target ht⟩
+
+/-- The caller frame and actual renaming are explicit in every accepted
+candidate. The source match is reflected back to the unrenamed rule. -/
+theorem queryOpItemsOfRule_closed_source_origins
+    (prev : Stack) (target : Atom) (caller : Bindings) (counter : Nat)
+    (rule : Atom × Atom) (ht : target.vars = []) :
+    ∃ f : VarName → VarName, Function.Injective f ∧
+      (freshenRuleAvoiding counter (queryOpAvoid prev target caller) rule.1 rule.2).1 =
+        (renBy f rule.1,renBy f rule.2) ∧
+      ∀ item, item ∈ queryOpItemsOfRule prev target caller counter rule ↔
+        ∃ source ∈ matchAtoms rule.1 target,
+          Bindings.hasLoop ((renameBindings f source).reverse ++ caller) = false ∧
+          item = evalResult prev (renBy f (instantiate source rule.2))
+            ((renameBindings f source).reverse ++ caller) := by
+  obtain ⟨f,hf,hpair,hmatches⟩ := matchAtoms_freshenRuleAvoiding_closed_origin
+    counter (queryOpAvoid prev target caller) rule.1 rule.2 target ht
+  refine ⟨f,hf,hpair,?_⟩
+  intro item
+  rw [mem_queryOpItemsOfRule_closed_frame_iff prev target caller counter rule ht item,
+    hmatches]
+  constructor
+  · rintro ⟨matched,hm,hloop,hitem⟩
+    rcases List.mem_map.mp hm with ⟨source,hs,rfl⟩
+    refine ⟨source,hs,hloop,?_⟩
+    rw [hpair,instantiate_renBy_of_renamed_closed_bindings f hf source rule.2
+      (matchAtoms_closed_value_mem rule.1 target source ht hs)] at hitem
+    exact hitem
+  · rintro ⟨source,hs,hloop,hitem⟩
+    refine ⟨renameBindings f source,List.mem_map.mpr ⟨source,hs,rfl⟩,hloop,?_⟩
+    rw [hpair,instantiate_renBy_of_renamed_closed_bindings f hf source rule.2
+      (matchAtoms_closed_value_mem rule.1 target source ht hs)]
+    exact hitem
+
+/-- Every work item in a candidate scan is either an earlier occurrence or
+was emitted by an actual candidate at a reached scan counter. -/
+theorem queryOpFold_mem_origin (prev : Stack) (target : Atom) (caller : Bindings) :
+    ∀ (candidates : List (Atom × Atom)) (acc : List Item) (st : St) (item : Item),
+      item ∈ (candidates.foldl (queryOpFoldStep prev target caller) (acc,st)).1 →
+      item ∈ acc ∨ ∃ rule ∈ candidates, ∃ counter,
+        item ∈ queryOpItemsOfRule prev target caller counter rule := by
+  intro candidates
+  induction candidates with
+  | nil => intro acc st item hm; exact Or.inl hm
+  | cons rule rules ih =>
+    intro acc st item hm
+    simp only [List.foldl_cons] at hm
+    rcases ih _ _ _ hm with hhere | ⟨other,hother,counter,hitem⟩
+    · change item ∈ acc ++ queryOpItemsOfRule prev target caller st.counter rule at hhere
+      rcases List.mem_append.mp hhere with hold | hnew
+      · exact Or.inl hold
+      · exact Or.inr ⟨rule,by simp,st.counter,hnew⟩
+    · exact Or.inr ⟨other,by simp [hother],counter,hitem⟩
+
+/-- A complete query exposes either its actual refusal item or an unrenamed
+source-rule match with the exact retained caller. The source candidate comes
+from the actual world-dependent candidate index. -/
+theorem queryOp_closed_source_origin
+    (env : MinEnv) (st : St) (prev : Stack) (target : Atom) (caller : Bindings)
+    (ht : target.vars = []) (item : Item)
+    (hm : item ∈ (queryOp env st prev target caller).1) :
+    item = finItem prev notReducibleA caller ∨
+      ∃ rule ∈ candidatesW env st.world target,
+        ∃ f : VarName → VarName, Function.Injective f ∧
+          ∃ source ∈ matchAtoms rule.1 target,
+            Bindings.hasLoop ((renameBindings f source).reverse ++ caller) = false ∧
+            item = evalResult prev (renBy f (instantiate source rule.2))
+              ((renameBindings f source).reverse ++ caller) := by
+  by_cases hvar : isVariableHeaded target = true
+  · exact Or.inl (by simpa [queryOp,hvar] using hm)
+  · unfold queryOp at hm
+    rw [if_neg hvar] at hm
+    let folded := (candidatesW env st.world target).foldl
+      (queryOpFoldStep prev target caller) ([],st)
+    change item ∈ (if folded.1.isEmpty = true then
+      ([finItem prev notReducibleA caller],folded.2) else folded).1 at hm
+    by_cases hempty : folded.1.isEmpty = true
+    · exact Or.inl (by simpa [hempty] using hm)
+    · have hm' : item ∈ folded.1 := by simpa [hempty] using hm
+      rcases queryOpFold_mem_origin prev target caller _ [] st item hm' with hempty | horigin
+      · cases hempty
+      · rcases horigin with ⟨rule,hrule,counter,hcandidate⟩
+        obtain ⟨f,hf,_hpair,horigin⟩ :=
+          queryOpItemsOfRule_closed_source_origins prev target caller counter rule ht
+        obtain ⟨source,hs,hloop,hitem⟩ := (horigin item).mp hcandidate
+        exact Or.inr ⟨rule,hrule,f,hf,source,hs,hloop,hitem⟩
 
 end Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge

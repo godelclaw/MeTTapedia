@@ -104,6 +104,42 @@ mutual
     | value :: values, tail => "h" :: write value (writeList values tail)
 end
 
+
+theorem option_append (value : Option String) (first second : List String) :
+    option value (first ++ second) = option value first ++ second := by
+  cases value <;> rfl
+
+theorem names_append (values first second : List String) :
+    names values (first ++ second) = names values first ++ second := by
+  induction values with
+  | nil => rfl
+  | cons value values ih => simpa only [names, List.cons_append] using congrArg (fun values => "h" :: value :: values) ih
+
+mutual
+  /-- The original writer preserves an arbitrary caller suffix. -/
+  theorem write_append (value : Pattern) (first second : List String) :
+      write value (first ++ second) = write value first ++ second := by
+    cases value with
+    | bvar index => simp only [write, List.cons_append, List.append_assoc]
+    | fvar name => rfl
+    | apply name arguments => simp only [write, writeList_append arguments first second, List.cons_append]
+    | lambda name body => simp only [write, write_append body, option_append, List.cons_append]
+    | multiLambda arity binderNames body =>
+        simp only [write, write_append body, names_append, List.cons_append, List.append_assoc]
+    | subst body replacement => simp only [write, write_append replacement, write_append body, List.cons_append]
+    | collection kind elements rest =>
+        simp only [write, writeList_append elements first second, option_append, List.cons_append]
+    termination_by sizeOf value
+    decreasing_by all_goals sizeOf_pattern_dec
+  theorem writeList_append (values : List Pattern) (first second : List String) :
+      writeList values (first ++ second) = writeList values first ++ second := by
+    cases values with
+    | nil => rfl
+    | cons value values => simp only [writeList, writeList_append values, write_append value, List.cons_append]
+    termination_by sizeOf values
+    decreasing_by all_goals sizeOf_pattern_dec
+end
+
 mutual
   def read : Nat → List String → Option (Pattern × List String)
     | 0, _ => none

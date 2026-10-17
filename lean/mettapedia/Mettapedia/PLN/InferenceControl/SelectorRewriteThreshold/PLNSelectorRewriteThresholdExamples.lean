@@ -26,21 +26,21 @@ theorem bool_selector_rewrite_threshold_end_to_end_fixture
     [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
     [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
     {L₁ L₂ : Mettapedia.OSLF.MeTTaIL.Syntax.LanguageDef}
-    (i : WMIntervalSemantics)
+    (i : Mettapedia.OSLF.Framework.PLNWMHypercubeBasis.WMIntervalSemantics)
     (R : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern →
       Mettapedia.OSLF.MeTTaIL.Syntax.Pattern → Prop)
     (m : Mettapedia.OSLF.Framework.LangMorphism.LanguageMorphism L₁ L₂ Eq)
-    (ctx : CtxOfInterval i)
-    {r : WMRewriteRuleSigma State Srt Query} {W₁ W₂ : State}
+    (ctx : Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.CtxOfInterval i)
+    {r : Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMRewriteRuleSigma State Srt Query} {W₁ W₂ : State}
     (queryOfAtom₁ queryOfAtom₂ :
       String → Mettapedia.OSLF.MeTTaIL.Syntax.Pattern → Sigma Query)
     (a0 : String)
     (p : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern)
-    (coord : ITV → ℝ) (tau : ℝ)
+    (coord : Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV → ℝ) (tau : ℝ)
     (hSide : r.side) (hW : Mettapedia.PLN.WorldModel.PLNWorldModel.WMJudgment W₁)
     (hTau :
-      tau ≤ coord ((semanticsOfInterval i).eval ctx (r.derive W₁)))
-    (hEq : WMQueryEqSigma (State := State) (Srt := Srt) (Query := Query)
+      tau ≤ coord ((Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval i).eval ctx (r.derive W₁)))
+    (hEq : Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMQueryEqSigma (State := State) (Srt := Srt) (Query := Query)
       r.conclusion (queryOfAtom₁ a0 p))
     (hVal : ∀ p',
       PLNWMOSLFBridgeITVTyped.wmPatternValuation
@@ -56,7 +56,7 @@ theorem bool_selector_rewrite_threshold_end_to_end_fixture
             ∧ (Mettapedia.PLN.InferenceControl.PremiseSelection.selectorDefaults_halfGate Bool Bool).gate g' f' ≤ 1)
       ∧ Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality.BayesOptimalRanking etaBool
           (Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality.perturbedScore
-            (pooledSelectorScore globalPriorBool localPriorBool likelihoodBool true)
+            (Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore.pooledSelectorScore globalPriorBool localPriorBool likelihoodBool true)
             deltaZero)
       ∧ (1 - Real.exp (-1)) * (Nat.min checklistBool.topK dependencyBool.card : ℝ) ≤
           Mettapedia.PLN.InferenceControl.PremiseSelection.dependencyCoverage dependencyBool G)
@@ -93,21 +93,21 @@ theorem thresholdAccepted_bool_selector_fixture
     [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
     [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
     {L₁ L₂ : Mettapedia.OSLF.MeTTaIL.Syntax.LanguageDef}
-    (i : WMIntervalSemantics)
+    (i : Mettapedia.OSLF.Framework.PLNWMHypercubeBasis.WMIntervalSemantics)
     (R : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern →
       Mettapedia.OSLF.MeTTaIL.Syntax.Pattern → Prop)
     (m : Mettapedia.OSLF.Framework.LangMorphism.LanguageMorphism L₁ L₂ Eq)
-    (ctx : CtxOfInterval i)
-    {r : WMRewriteRuleSigma State Srt Query} {W₁ W₂ : State}
+    (ctx : Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.CtxOfInterval i)
+    {r : Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMRewriteRuleSigma State Srt Query} {W₁ W₂ : State}
     (queryOfAtom₁ queryOfAtom₂ :
       String → Mettapedia.OSLF.MeTTaIL.Syntax.Pattern → Sigma Query)
     (a0 : String)
     (p : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern)
-    (coord : ITV → ℝ) (tau : ℝ)
+    (coord : Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV → ℝ) (tau : ℝ)
     (hSide : r.side) (hW : Mettapedia.PLN.WorldModel.PLNWorldModel.WMJudgment W₁)
     (hTau :
-      tau ≤ coord ((semanticsOfInterval i).eval ctx (r.derive W₁)))
-    (hEq : WMQueryEqSigma (State := State) (Srt := Srt) (Query := Query)
+      tau ≤ coord ((Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval i).eval ctx (r.derive W₁)))
+    (hEq : Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMQueryEqSigma (State := State) (Srt := Srt) (Query := Query)
       r.conclusion (queryOfAtom₁ a0 p))
     (hVal : ∀ p',
       PLNWMOSLFBridgeITVTyped.wmPatternValuation

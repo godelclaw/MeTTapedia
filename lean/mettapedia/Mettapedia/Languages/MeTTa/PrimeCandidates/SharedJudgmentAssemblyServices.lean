@@ -28,6 +28,8 @@ open Mettapedia.TypeTheory.UniverseLevel
 
 set_option autoImplicit false
 
+open Mettapedia.GSLT.LanguageDef.SemanticService
+
 open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
 
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentAssemblyServices
@@ -96,7 +98,7 @@ theorem receipt_decision_qualified (admission : MatchAdmission assembly)
   fun input => receipt_callback_iff admission coverage input.1 input.2
 
 theorem receipt_interface_matches (assembly : Assembly) :
-    SharedJudgmentServiceRegistry.InterfaceMatches (receiptDecisionRaw assembly) .directDecision :=
+    SemanticService.InterfaceMatches (receiptDecisionRaw assembly) .directDecision :=
   .directDecision _
 
 def receiptService (assembly : Assembly) (admission : MatchAdmission assembly)
@@ -152,7 +154,7 @@ theorem receipt_accepted_actual_response (admission : MatchAdmission assembly)
 variable {Γ : HOL.Ctx HOL.UniformListInduction.BaseSort}
 
 theorem hol_interface_matches (Γ : HOL.Ctx HOL.UniformListInduction.BaseSort) :
-    SharedJudgmentServiceRegistry.InterfaceMatches (HOLControls.raw Γ)
+    SemanticService.InterfaceMatches (HOLControls.raw Γ)
       (.nativeProof (UniformListChartService.intrinsicProofSystem Γ)) :=
   .nativeProof _ _
 

@@ -96,9 +96,11 @@ theorem actual_work_item_constructs_an_independent_derivation
         ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
         ∀ valuation,
           HEBindingSatisfied valuation output ↔
-            HEBindingSatisfied valuation (QueryBindingProjection.project merged) :=
-  LeaTTaScopedQuery.queryOpItemsOfRule_sound stored leaBindingsHEImage_empty
-    LeaTTaSpecConformance.leaRuntimeBindingInvariant_empty member
+            HEBindingSatisfied valuation (QueryBindingProjection.project merged) := by
+  obtain ⟨emitted, output, merged, candidate, itemEq, paired, theory, _⟩ :=
+    LeaTTaScopedQuery.queryOpItemsOfRule_sound stored leaBindingsHEImage_empty
+      LeaTTaSpecConformance.leaRuntimeBindingInvariant_empty member
+  exact ⟨emitted, output, merged, candidate, itemEq, paired, theory⟩
 
 theorem malformed_outer_shape_rejected : readBindings (.symbol "bindings") = none := rfl
 

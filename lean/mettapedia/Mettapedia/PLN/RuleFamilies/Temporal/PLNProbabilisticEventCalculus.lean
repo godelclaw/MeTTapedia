@@ -1,4 +1,4 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 import Mettapedia.OSLF.MeTTaIL.Syntax
 import Mettapedia.OSLF.Framework.VertexTemporalRewriteRules
 

@@ -112,6 +112,7 @@ def provider (substitution : ContextSubstitution.Assignment)
     (original : ProviderSnapshot) : ProviderSnapshot where
   signatures := original.signatures
   rows := original.rows.map (row substitution)
+  dynamicRelations := original.dynamicRelations
 
 theorem closed_provider_fixed {language : LanguageDef} {free : FreeTypeContext}
     {original : ProviderSnapshot}

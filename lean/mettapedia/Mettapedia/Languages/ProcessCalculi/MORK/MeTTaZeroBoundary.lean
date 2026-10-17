@@ -1,5 +1,7 @@
 import Mettapedia.Languages.MeTTa.MeTTaZeroWorkClosure
+import Mettapedia.Languages.MeTTa.MeTTaZeroAnswerAlgebra
 import Mettapedia.Languages.ProcessCalculi.MORK.GSLTSemantics
+import Mettapedia.Languages.ProcessCalculi.MORK.CapabilityProfile
 
 /-!
 # The generated-work boundary between MM2 and bare MeTTa Zero
@@ -195,5 +197,39 @@ theorem bareZero_and_iterativeZero_are_separated :
       HasComposableSteps (iterativeGSLT chainModel) :=
   ⟨bareZero_has_no_composable_steps chainModel,
     iterativeZero_has_composable_steps⟩
+
+
+/-! ## The multiplicity boundary
+
+Zero's spaces and answers are bags; MM2's store is a set.  A store translation
+that turns bag union into set union stores `{p}` and `{p, p}` alike
+(`preservesBagChoice_eq_of_toFinset_eq`), while Zero's public query answers
+them differently.  So no such translation, with any read-back, gives Zero's
+answers: a faithful realization over a set store must put occurrence
+identities into the keys (`occurrence_keys_injective`;
+`MM2OccurrenceSupport.erase_support_bag` is the construction) or update counts
+by read-modify-write (`countedAtom`), which is not union. -/
+
+/-- **No union-preserving store translation recovers Zero's answers.** -/
+theorem no_union_store_recovers_zero_answers {Key : Type} [DecidableEq Key]
+    (answer : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern) :
+    ¬ ∃ (store : Multiset Mettapedia.OSLF.MeTTaIL.Syntax.Pattern → Finset Key)
+        (read : Finset Key → Multiset Mettapedia.OSLF.MeTTaIL.Syntax.Pattern),
+        PreservesBagChoice store ∧
+          ∀ space, read (store space) = queryAll (structuralModel fun _ => 0) space := by
+  rintro ⟨store, read, preserves, recovers⟩
+  have everything : ∀ space : Multiset Mettapedia.OSLF.MeTTaIL.Syntax.Pattern,
+      queryAll (structuralModel fun _ => 0) space = space := fun space =>
+    queryAll_eq_contents (structuralModel fun _ => 0) (structuralModel_lawful _) space
+  have sameStore : store {answer} = store {answer, answer} :=
+    preservesBagChoice_eq_of_toFinset_eq preserves (by simp)
+  have once := recovers {answer}
+  have twice := recovers {answer, answer}
+  rw [everything] at once twice
+  rw [sameStore] at once
+  exact Mettapedia.Languages.MeTTa.MeTTaZeroAnswerAlgebra.singleton_ne_duplicate answer
+    (once.symm.trans twice)
+
+#print axioms no_union_store_recovers_zero_answers
 
 end Mettapedia.Languages.ProcessCalculi.MORK

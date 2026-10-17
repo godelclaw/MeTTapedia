@@ -50,7 +50,8 @@ def language : LanguageDef where
   equations := []
   rewrites := [declarationRule]
 
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot :=
+  ⟨language, [], {signatures := [], rows := [], dynamicRelations := []}⟩
 def permissions : Permissions := {sites := .all}
 def binding : GeneralRuleBindingInference.BindingPlan :=
   ⟨GeneralRuleBindingInference.inferredSpec declarationRule, .inferredRootInputs⟩
@@ -192,8 +193,9 @@ properly sorted function body, including bodies containing binders. -/
 theorem all_proper_bodies_execute {bound : List TypeExpr} {body : Pattern} {supplied : Assignment}
     (proper : OpenPatternWellSorted language snapshot.free bound functionCarrier body)
     (reads : lookup supplied "F" = some (value bound body)) :
-    result bound body ∈ baseIntroductions (schema bound) supplied :=
-  baseIntroductions_complete (introduction_derived proper reads)
+    result bound body ∈ baseIntroductions (schema bound) supplied [] :=
+  by
+    simpa only [result, primitive] using baseIntroductions_complete (introduction_derived proper reads)
 
 def continuation : Continuation := fun _ target => PLift (target = done)
 
@@ -223,6 +225,7 @@ def bodyEvidence {bound : List TypeExpr} {body : Pattern}
       rw [schema_position]
       apply Mettapedia.OSLF.NativeTypes.Modal.Instantiation.FocusInstance.application (index := 0) (argument := .fvar "F") rfl
       exact .here (variable_instance proper.2.2.2 (request_reads request)))
+    (fun _ _ => [])
     (fun supplied request => by
       intro empty
       have admitted := all_proper_bodies_execute proper (request_reads request)

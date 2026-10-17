@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.Logic.HOL.LogicalInduction.Market
 import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
 

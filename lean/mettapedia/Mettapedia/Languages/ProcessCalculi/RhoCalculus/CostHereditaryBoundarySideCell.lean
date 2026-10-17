@@ -1520,7 +1520,7 @@ supports are equal or either occurrence is quote-sealed.
 The three support cases are exactly the interface of the existing recursive
 leaf closure.  This adapter only transfers the two ordinary source-context
 collapses through endpoint reification and keyed canonicalization. -/
-noncomputable def stoppedPair_sourcePatternLeafAligned_of_closeSmaller
+theorem stoppedPair_sourcePatternLeafAligned_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -2131,7 +2131,7 @@ target both expose stopped contributors in their reached subplans.  Their
 supports and target types agree by the reached-pair telescope, so the
 stopped-pair leaf closure applies after replaying both contributors into the
 parent semantic forests. -/
-noncomputable def boundaryProcEscapePlanStops_sourcePatternLeafAligned_of_closeSmaller
+theorem boundaryProcEscapePlanStops_sourcePatternLeafAligned_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -2356,7 +2356,7 @@ noncomputable def boundaryProcEscapePlanStops_sourcePatternLeafAligned_of_closeS
 `boundaryProcEscapePlanStops_sourcePatternLeafAligned_of_closeSmaller`.
 The process contributor is descended on the left while the endpoint cospan
 retains its original left-to-right ordering. -/
-noncomputable def procEscapeBoundaryPlanStops_sourcePatternLeafAligned_of_closeSmaller
+theorem procEscapeBoundaryPlanStops_sourcePatternLeafAligned_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -2576,7 +2576,7 @@ noncomputable def procEscapeBoundaryPlanStops_sourcePatternLeafAligned_of_closeS
 /-- Residual-telescope wrapper for the left-boundary/right-process escape
 cell.  All semantic environments are the endpoint environments selected by
 the terminal callback; no auxiliary atom carrier is introduced. -/
-noncomputable def rhoPlanStopBoundarySide_procEscapePartner_sourceAligned
+theorem rhoPlanStopBoundarySide_procEscapePartner_sourceAligned
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -2699,7 +2699,7 @@ boundary endpoint itself proves that the common raw-stop target is an escaped,
 non-unit application; canonical equality transports those two facts to the
 partner, where the production process descent exposes its stopped
 contributor. -/
-noncomputable def rhoPlanStopBoundarySide_processPartner_sourceAligned
+theorem rhoPlanStopBoundarySide_processPartner_sourceAligned
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -2822,7 +2822,7 @@ noncomputable def rhoPlanStopBoundarySide_processPartner_sourceAligned
 facing a certified boundary on the right.  The right boundary supplies the
 escaped, non-unit raw target; canonical equality transports that gate to the
 left process descent. -/
-noncomputable def rhoPlanStopProcessPartner_boundarySide_sourceAligned
+theorem rhoPlanStopProcessPartner_boundarySide_sourceAligned
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -2971,7 +2971,7 @@ hereditary normal form of its content; the source variable contributes one
 semantic atom whose value is that variable.  Recursive closure of the strictly
 smaller payload pair identifies the two, and the resulting value is closed, so
 the unequal target-support stamps are inert. -/
-noncomputable def boundarySourceVariablePlanStops_sourcePatternLeafAligned_of_closeSmaller
+theorem boundarySourceVariablePlanStops_sourcePatternLeafAligned_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -3223,7 +3223,7 @@ set_option backward.isDefEq.respectTransparency false in
 `boundarySourceVariablePlanStops_sourcePatternLeafAligned_of_closeSmaller`**:
 the authored source variable on the left, the certified boundary on the
 right. -/
-noncomputable def sourceVariableBoundaryPlanStops_sourcePatternLeafAligned_of_closeSmaller
+theorem sourceVariableBoundaryPlanStops_sourcePatternLeafAligned_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -3483,7 +3483,7 @@ Only the sub-family hypotheses `leftBoundaryClass`, `rightRigid` and
 recursion callback is the provider's, taken at the endpoint pair size, which
 is exactly the budget `rho_planStop_boundarySide_size_lt` certifies for this
 family at both measures. -/
-noncomputable def rhoPlanStopBoundarySide_sourceVariablePartner_sourceAligned
+theorem rhoPlanStopBoundarySide_sourceVariablePartner_sourceAligned
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -3599,7 +3599,7 @@ noncomputable def rhoPlanStopBoundarySide_sourceVariablePartner_sourceAligned
     exact absurd rightAbstractNameEq (by simp)
 
 /-- Mirror of `rhoPlanStopBoundarySide_sourceVariablePartner_sourceAligned`. -/
-noncomputable def rhoPlanStopSourceVariablePartner_boundarySide_sourceAligned
+theorem rhoPlanStopSourceVariablePartner_boundarySide_sourceAligned
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -3725,7 +3725,7 @@ def RhoPlanStopBoundaryRigidCell (leftClass rightClass :
 closed.  The raw stop excludes bound variables, common typing excludes both
 binder plans, and the remaining source-variable case is the semantic atom
 alignment proved above. -/
-noncomputable def rhoPlanStopBoundaryRigid_sourceAligned
+theorem rhoPlanStopBoundaryRigid_sourceAligned
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -3808,7 +3808,7 @@ def RhoPlanStopBoundaryNonQuoteCell (leftClass rightClass :
 /-- Every certified-boundary residual whose partner is not an authored quote
 is source aligned.  Rigid partners reduce to source variables, while ordinary
 applications and admissible collections lie in rho's process fibre. -/
-noncomputable def rhoPlanStopBoundaryNonQuote_sourceAligned
+theorem rhoPlanStopBoundaryNonQuote_sourceAligned
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}

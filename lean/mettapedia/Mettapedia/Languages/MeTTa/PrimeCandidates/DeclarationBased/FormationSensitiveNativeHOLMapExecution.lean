@@ -28,19 +28,11 @@ variable {n : Nat}
 
 def mapRelIota (map : Tower.Head → Tower.Head) {left right : Tower.Tm n}
     (evidence : IntrinsicRelator.IotaEvidence n left right) :
-    IntrinsicRelator.IotaEvidence n (left.mapHead map) (right.mapHead map) := by
-  cases evidence with
-  | nil => exact .nil _ _ _ _ _ _
-  | cons => exact .cons _ _ _ _ _ _ _ _ _ _ _ _
+    IntrinsicRelator.IotaEvidence n (left.mapHead map) (right.mapHead map) :=
+  FormationSensitiveNativeList.Instantiated.mapRelIota map evidence
 
-def nativeInstance : LevelInstance IntrinsicRelator.rawSignature (sameLevelSubstitution Tower.zero) where
-  computation := IntrinsicRelator.combinedProofRelevantIotaComputation.support
-  computationMap := by
-    intro n left right step
-    rcases step with ⟨evidence⟩
-    cases evidence with
-    | list evidence => exact ⟨.list (mapIotaEvidence _ evidence)⟩
-    | rel evidence => exact ⟨.rel (mapRelIota _ evidence)⟩
+def nativeInstance : LevelInstance IntrinsicRelator.rawSignature (sameLevelSubstitution Tower.zero) :=
+  FormationSensitiveNativeList.Instantiated.levelInstance Tower.zero
 
 def rules : Rules Tower.Head :=
   extendRules nativeInstance.rules FormationSensitiveHOLUniformList.declarations
@@ -53,11 +45,10 @@ theorem native_typed {context : Tower.Ctx n} {term type : Tower.Tm n}
     Typing (RussellTarski.substLevelsCtx (sameLevelSubstitution Tower.zero) context)
       (RussellTarski.substLevelsTm (sameLevelSubstitution Tower.zero) term)
       (RussellTarski.substLevelsTm (sameLevelSubstitution Tower.zero) type) := by
-  have instantiated := typed.mapHead nativeInstance.morphism
+  have instantiated := FormationSensitiveNativeList.Instantiated.transport Tower.zero typed
   have included := instantiated.mapHead
     (includeMorphism nativeInstance.rules FormationSensitiveHOLUniformList.declarations)
-  simpa only [Ctx.mapHead_id, Tm.mapHead_id, Typing, rules,
-    RussellTarski.substLevelsCtx, RussellTarski.substLevelsTm] using included
+  simpa only [Ctx.mapHead_id, Tm.mapHead_id, Typing, rules] using included
 
 theorem holMorphism : FormationSensitiveHOLUniformList.rules.Morphism rules (fun h => h) where
   headTyping := fun h => h
@@ -127,43 +118,23 @@ open RussellTarski Intrinsic
 
 theorem listApp_typed {context : Tower.Ctx n} {element : Tower.Tm n}
     (formed : Typing context element (sortTm Tower.zero)) :
-    Typing context (Intrinsic.listApp element) (sortTm Tower.zero) := by
-  have application := FormationSensitive.Typing.appElim (listConstant_typed context) formed
-  simpa [listTypeAt, Intrinsic.listType, Intrinsic.listApp,
-    sameLevelSubstitution, substLevelsTm, substLevelsHead, liftClosed,
-    LevelExpr.subst, Intrinsic.elementLevel, Tm.mapHead, sortTm,
-    Presentation.rename, Presentation.inst0, Presentation.subst] using application
+    Typing context (Intrinsic.listApp element) (sortTm Tower.zero) :=
+  FormationSensitiveNativeList.Instantiated.listApp_of_constant Tower.zero
+    (listConstant_typed context) formed
 
 theorem nilApp_typed {context : Tower.Ctx n} {element : Tower.Tm n}
     (formed : Typing context element (sortTm Tower.zero)) :
-    Typing context (Intrinsic.nilApp element) (Intrinsic.listApp element) := by
-  have application := FormationSensitive.Typing.appElim (nilConstant_typed context) formed
-  simpa [nilTypeAt, Intrinsic.nilType, Intrinsic.nilApp,
-    Intrinsic.listApp, sameLevelSubstitution, substLevelsTm,
-    substLevelsHead, LevelExpr.subst, Intrinsic.elementLevel, Tm.mapHead,
-    liftClosed, sortTm, Presentation.rename,
-    Presentation.inst0, Presentation.subst, Presentation.subst0,
-    Presentation.liftRen, Presentation.liftSub] using application
+    Typing context (Intrinsic.nilApp element) (Intrinsic.listApp element) :=
+  FormationSensitiveNativeList.Instantiated.nilApp_of_constant Tower.zero
+    (nilConstant_typed context) formed
 
 theorem consApp_typed {context : Tower.Ctx n} {element head tail : Tower.Tm n}
     (formed : Typing context element (sortTm Tower.zero))
     (headTyped : Typing context head element)
     (tailTyped : Typing context tail (Intrinsic.listApp element)) :
-    Typing context (Intrinsic.consApp element head tail) (Intrinsic.listApp element) := by
-  have consBodyAsArrows : Intrinsic.consBodyType =
-      arrow (.var 0) (arrow (Intrinsic.listApp (.var 0)) (Intrinsic.listApp (.var 0))) := by decide
-  have first := FormationSensitive.Typing.appElim (consConstant_typed context) formed
-  change Typing context (.app (.const Intrinsic.consName) element)
-    (inst0 element (rename (liftRen Fin.elim0) Intrinsic.consBodyType)) at first
-  have firstNormalized : Typing context (.app (.const Intrinsic.consName) element)
-      (arrow element (arrow (Intrinsic.listApp element) (Intrinsic.listApp element))) := by
-    simpa [consBodyAsArrows, liftClosed, Presentation.inst0, Presentation.subst0] using first
-  have second := FormationSensitive.Typing.appElim firstNormalized headTyped
-  have secondNormalized : Typing context (.app (.app (.const Intrinsic.consName) element) head)
-      (arrow (Intrinsic.listApp element) (Intrinsic.listApp element)) := by
-    simpa only [Presentation.inst0_rename_wk] using second
-  have third := FormationSensitive.Typing.appElim secondNormalized tailTyped
-  simpa only [Intrinsic.consApp, arrow, Presentation.inst0_rename_wk] using third
+    Typing context (Intrinsic.consApp element head tail) (Intrinsic.listApp element) :=
+  FormationSensitiveNativeList.Instantiated.consApp_of_constant Tower.zero
+    (consConstant_typed context) formed headTyped tailTyped
 
 theorem pi_zero {context : Tower.Ctx n} {a : Tower.Tm n} {b : Tower.Tm (n + 1)}
     (domain : Typing context a (sortTm Tower.zero))

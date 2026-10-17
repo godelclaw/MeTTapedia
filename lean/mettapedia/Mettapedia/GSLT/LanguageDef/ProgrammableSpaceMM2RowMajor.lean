@@ -9,6 +9,13 @@ matching cursor, selected source scope and physical receipt are shared with
 the existing MM2 source profile. Finalization follows each row through its
 authored add/remove sinks. No default profile is changed. This is an explicit
 semantic model of the provider's effect order, not verification of compiled C.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  This profile applies each row's sinks before the next
+row's.  The kernel (`Mainline`) writes the instances of every `+` sink over all rows
+first and then finalizes the other sinks: on `(edge a b) (edge b c)`, the directive
+`(exec 0 (, (edge $x $y)) (O (+ $x) (- $y)))` leaves `a` in the kernel and both
+`a` and `b` in this profile.
 -/
 
 set_option autoImplicit false

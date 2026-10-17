@@ -1,3 +1,4 @@
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.StructuralConversionPaths
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.StructuralConversionCode
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedSubstitution
 
@@ -164,3 +165,22 @@ end Code
 
 end StructuralConversionCode
 end Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
+
+namespace Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.StructuralConversionCode
+
+variable {Head : Type} {RootCode : Nat → Type}
+
+/-- Substitution retains selected inference occurrences, independently of
+the sizes of the substituted payloads and of the root-code implementation. -/
+theorem Code.substitute_stepCount
+    (substituteRoot : {n m : Nat} → Sub Head n m → RootCode n → RootCode m)
+    {n m : Nat} (arguments : Sub Head n m) (code : Code Head RootCode n) :
+    (code.substitute substituteRoot arguments).stepCount = code.stepCount := by
+  induction code with
+  | single step => rfl
+  | refl term => rfl
+  | symm code ih => exact ih
+  | trans first second ihFirst ihSecond =>
+      simp only [Code.substitute, Code.stepCount, ihFirst, ihSecond]
+
+end Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.StructuralConversionCode

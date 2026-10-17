@@ -191,17 +191,17 @@ theorem rhoCostLayerIteration_nik_policy_key_boundary
         targetSort)
       (policy : CostOpenElaboration configuration.source term → Bool),
       ¬ Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest policy False) (compactFibreKey term)) ∧
       ¬ Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest policy True) (compactFibreKey term)) ∧
       Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest policy False)
           (provenanceKey (source := configuration.source) (term := term))) ∧
       Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest policy True)
           (provenanceKey (source := configuration.source) (term := term))) := by
   obtain ⟨targetFree, targetBound, targetSort, term, policy, compactUnsafe,
@@ -242,17 +242,17 @@ theorem rhoCostLayerIteration_compact_hot_key_but_not_exact_receipt
       CostIterationObstruction.RhoEmptyParallelSourceRepresentative
         configuration) :
     Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest
             (compactCarrierKey configuration.source) False)
           (compactCarrierKey configuration.source)) ∧
       ¬ Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest
             (compactCarrierKey configuration.source) True)
           (compactCarrierKey configuration.source)) ∧
       Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest
             (compactCarrierKey configuration.source) True)
           (id : CostElaborationFiber configuration.source →
@@ -294,7 +294,7 @@ theorem rho_compact_policy_admission_without_exact_replay
       Mettapedia.Languages.ProcessCalculi.RhoCalculus.CostIterationObstruction.RhoEmptyParallelSourceRepresentative
         configuration) :
     Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest
             (compactCarrierKey configuration.source) False)
           (compactCarrierKey configuration.source)) ∧

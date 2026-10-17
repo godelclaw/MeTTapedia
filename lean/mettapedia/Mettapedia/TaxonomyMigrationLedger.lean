@@ -4743,4 +4743,70 @@ Verification scope:
   `_wanted`, `theorem_wanted`, or `native_decide`.
 - Spot-check theorem axiom footprints remain within the accepted project
   footprint.
+
+## Cluster 6c.97: PLN facade removal and crisp world-model consolidation
+
+Status: completed in the working tree; emptied files await deletion approval.
+
+Facade and shim removal:
+- Sixteen import-only re-export modules under `PLN/Evidence`, `PLN/WorldModel`
+  and `PLN/Bridges/HOL` (for example `EvidenceQuantale`, `PLNWorldModel`,
+  `PLNWorldModelCalculus`, `WorldModel`, `GenericWorldModel`) were left by the
+  earlier clusters.  Every importer, including the root barrel and 47 modules
+  outside `PLN/`, now imports the content module directly; the shims are in no
+  barrel.
+- The umbrella modules `PLN/Core/PLNCore`, `PLNCOMPLETE` and `PLNExperimental`
+  left the `Core` barrel; every module they imported remains reachable.
+- `PLN/Core/PLNCanonicalAPI` lost its 1668 pure and pass-through aliases; the
+  composite end-to-end theorems that remain refer to declarations by their own
+  names.  `PLN/Core/PLNEndToEnd` (15 aliases) was replaced by the theorems it
+  aliased.
+
+Crisp world-model consolidation:
+- `PLN/WorldModel/PLNWorldModelCrispSpecialization` is the world model of a
+  crisp semantics (`crispWorldModel`) and owns its whole theorem family:
+  singleton adequacy, absolute and admissible-relative consequence lifting,
+  query equivalence (as `WMQueryEq`), consequence-rule constructions,
+  proof-system lemmas and the countably infinitary closure.
+- The Kripke, neighborhood, first-order, infinitary first-order, predicate-code,
+  infinitary predicate-code, Henkin HOL and set-based HOL bridges are now their
+  satisfaction relation plus `instance := crispWorldModel satisfies`.
+- The restatement modules `PLNWorldModelPredCodeCompleteness`,
+  `PLNWorldModelPredCodeConsequence`, `PLNWorldModelPredCodeInfinitaryCompleteness`,
+  `PLNWorldModelFOLInfinitaryCompleteness`, `PLNWorldModelHOLCompletenessCore`,
+  `PLNWorldModelHOL` and `PLNWorldModelHOLConsequence` are emptied.
+
+Rule and readout duplicates:
+- `PLNConsistencyLemmas` merged into `PLNDeduction`; the source/sink rule-name
+  aliases, the duplicate `c2w`/`w2c` charts in `PLNInferenceCalculus` and
+  `PLNBugAnalysis`, the duplicate `MAX_CONF`, the `capConf` aliases and the
+  `EvidenceBeta` copy of `clamp01` were replaced by their canonical owners.
+- The NARS comparison of arXiv:2412.19524 moved from `PLNDerivation` to
+  `NARS/Bridges/PLN/RuleCorrespondence`.
+
+Relative families, re-aliases and the second alias pass:
+- The theory-relative specializations `pointwiseImpliesOnTheory` /
+  `singletonStrengthLEOnTheory` of the first-order, classical HOL and Heyting
+  HOL completeness modules are the generic relative family at the logic's
+  models-of-a-theory predicate; theorems that named them were renamed (for
+  example `provable_imp_iff_singletonStrengthLEOn`).
+- The duplicated `iAnd`/`iOr` closure of the infinitary first-order and
+  predicate-code bridges is the generic `InfQuery` / `SatisfiesInf`.
+- Type re-aliases (`ModalQuery`, the pointed-model and weighted-state
+  re-aliases, the higher-order HOL query/state/provability re-aliases) and the
+  duplicate `IDMPredictiveContext` of `WorldModelITV` were removed.
+- The `...Fin` front doors of the finite fuzzy quantifiers
+  (`FuzzyITVBridgeFin`, `FuzzyQuantifierAlgorithmTheoremsFin`,
+  `FuzzyQuantifierWorkedExamplesFin`, `FuzzySyllogismCanaryFin`) and the
+  aliases in `PLNKyburgReduction` and `PLNIntensionalRegression` were replaced
+  by the declarations they named.
+- New: `PLN/Bridges/GSLT/EvidenceCalculusModule` and
+  `EvidenceCalculusSemantics` present the evidence calculus as portable module
+  data and prove the revision rule sound with its contract.
+
+Verification scope:
+- Builds of every PLN sub-barrel, the rewired modules outside `PLN/`, and the
+  modules downstream of the crisp consolidation.
+- Old shim import paths, removed alias names and removed bridge-local theorem
+  names have no matches outside this ledger and the emptied files.
 -/

@@ -26,12 +26,12 @@ theorem zf_bottom_to_top_rule_singleton_fixture
       BinaryWorldModel.queryStrength (State := SetState) (Query := SetQuery) ({S} : SetState) (⊤ : SetQuery) := by
   let φ : SetQuery := (⊥ : SetQuery)
   let ψ : SetQuery := (⊤ : SetQuery)
-  have hpoint : pointwiseImpliesOnTheory 𝗭𝗙 φ ψ := by
+  have hpoint : Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.pointwiseImpliesOn
+      Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies (fun S => S ⊧* 𝗭𝗙) φ ψ := by
     intro S' _hT hφ
     simp [φ, Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies] at hφ
-  have hsing : singletonStrengthLEOnTheory 𝗭𝗙 φ ψ :=
-    (Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness.pointwiseImpliesOnTheory_iff_singletonStrengthLEOnTheory
-      (T := 𝗭𝗙) (φ := φ) (ψ := ψ)).1 hpoint
+  have hsing := (Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.pointwiseImpliesOn_iff_singletonStrengthLEOn
+      Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL.folSatisfies (fun S => S ⊧* 𝗭𝗙) φ ψ).1 hpoint
   have hprov : 𝗭𝗙 ⊢ (φ ➝ ψ) :=
     (provable_imp_iff_singletonStrengthLEOnZF (φ := φ) (ψ := ψ)).2 hsing
   let rule := wmConsequenceRuleOn_of_provable_imp_ZF (φ := φ) (ψ := ψ) hprov

@@ -13,6 +13,9 @@ namespace Mettapedia.GSLT.LanguageDef.RefinementInterface
 
 universe uState uHole uAction uProgram
 
+-- The four carrier universes are independent choices. The bundled interface
+-- necessarily lives in their maximum without identifying those choices.
+set_option linter.checkUnivs false in
 /-- Data exposed to a root-conditioned action policy. -/
 structure RefinementInterface where
   State : Type uState

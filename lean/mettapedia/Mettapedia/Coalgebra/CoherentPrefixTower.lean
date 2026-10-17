@@ -11,6 +11,11 @@ not the unrestricted dependent function space.
 Streams and coherent prefix towers are equivalent.  This sharpens the
 finite-view result: every fixed component is lossy, but the compatible tower
 of all components retains exactly the stream and neither more nor less.
+
+A resumable trajectory additionally relates those observations to an explicit
+finite runner.  Its state may retain several answers, outstanding obligations,
+or effect receipts: the trajectory law does not prescribe a scheduler or a
+shape for the retained state.
 -/
 
 set_option autoImplicit false
@@ -125,5 +130,194 @@ theorem no_tower_has_incoherentBooleanViews :
 #print axioms no_tower_has_incoherentBooleanViews
 
 end Tower
+
+/-! ## Resumable trajectories of an explicit finite runner -/
+
+/-- The complete retained state at every budget, with exact continuation from
+each observation boundary. -/
+structure ResumableTrajectory {State : Type uLabel}
+    (run : Nat → State → State) (start : State) where
+  observation : Stream State
+  at_zero : observation 0 = start
+  resume : ∀ first extra,
+    observation (first + extra) = run extra (observation first)
+
+namespace ResumableTrajectory
+
+variable {State : Type uLabel} {run : Nat → State → State} {start : State}
+
+@[ext]
+theorem ext {first second : ResumableTrajectory run start}
+    (observations : first.observation = second.observation) :
+    first = second := by
+  cases first
+  cases second
+  cases observations
+  rfl
+
+/-- Actual executions define a trajectory when the runner's zero and budget
+composition laws have been proved. -/
+abbrev canonical (run : Nat → State → State) (start : State)
+    (zero : ∀ state, run 0 state = state)
+    (add : ∀ first extra state,
+      run (first + extra) state = run extra (run first state)) :
+    ResumableTrajectory run start where
+  observation fuel := run fuel start
+  at_zero := zero start
+  resume first extra := add first extra start
+
+@[simp]
+theorem canonical_observation (run : Nat → State → State) (start : State)
+    (zero : ∀ state, run 0 state = state)
+    (add : ∀ first extra state,
+      run (first + extra) state = run extra (run first state)) (fuel : Nat) :
+    (canonical run start zero add).observation fuel = run fuel start :=
+  rfl
+
+/-- Exact continuation determines every observation, without requiring
+termination or a bound on the number of answers produced per tick. -/
+theorem observation_eq_run (trajectory : ResumableTrajectory run start)
+    (fuel : Nat) : trajectory.observation fuel = run fuel start := by
+  calc
+    trajectory.observation fuel = run fuel (trajectory.observation 0) := by
+      simpa using trajectory.resume 0 fuel
+    _ = run fuel start := by rw [trajectory.at_zero]
+
+theorem unique (first second : ResumableTrajectory run start) :
+    first = second := by
+  apply ext
+  funext fuel
+  rw [first.observation_eq_run, second.observation_eq_run]
+
+theorem eq_canonical (trajectory : ResumableTrajectory run start)
+    (zero : ∀ state, run 0 state = state)
+    (add : ∀ first extra state,
+      run (first + extra) state = run extra (run first state)) :
+    trajectory = canonical run start zero add :=
+  unique _ _
+
+/-- Continuing from a saved observation retains the original trajectory's
+future, rather than re-running its prefix. -/
+def resumeFrom (trajectory : ResumableTrajectory run start) (first : Nat) :
+    ResumableTrajectory run (trajectory.observation first) where
+  observation extra := trajectory.observation (first + extra)
+  at_zero := congrArg trajectory.observation (Nat.add_zero first)
+  resume before extra := by
+    simpa only [Nat.add_assoc] using trajectory.resume (first + before) extra
+
+@[simp]
+theorem resumeFrom_observation (trajectory : ResumableTrajectory run start)
+    (first extra : Nat) :
+    (trajectory.resumeFrom first).observation extra =
+      trajectory.observation (first + extra) :=
+  rfl
+
+/-- A relation proved for every finite continuation transports to every pair
+of trajectory observations separated by that continuation. -/
+theorem relation_after_resume (trajectory : ResumableTrajectory run start)
+    (relation : State → State → Prop)
+    (preserved : ∀ fuel state, relation state (run fuel state))
+    (first extra : Nat) :
+    relation (trajectory.observation first)
+      (trajectory.observation (first + extra)) := by
+  rw [trajectory.resume]
+  exact preserved extra (trajectory.observation first)
+
+/-- Publication and receipt-prefix laws remain laws of the concrete runner;
+the same continuation interface carries each chosen observer. -/
+theorem observer_prefix_after_resume {Event : Type*}
+    (trajectory : ResumableTrajectory run start) (observe : State → List Event)
+    (grows : ∀ fuel state, (observe state).IsPrefix (observe (run fuel state)))
+    (first extra : Nat) :
+    (observe (trajectory.observation first)).IsPrefix
+      (observe (trajectory.observation (first + extra))) :=
+  trajectory.relation_after_resume
+    (fun earlier later => (observe earlier).IsPrefix (observe later))
+    grows first extra
+
+/-- Settlement is supplied by the runner, not inferred from an empty output
+list.  In particular, unresolved obligations need not count as settled. -/
+theorem observation_constant_after_settlement
+    (trajectory : ResumableTrajectory run start) (settled : State → Prop)
+    (stable : ∀ state, settled state → ∀ fuel, run fuel state = state)
+    (first extra : Nat) (complete : settled (trajectory.observation first)) :
+    trajectory.observation (first + extra) = trajectory.observation first := by
+  rw [trajectory.resume]
+  exact stable (trajectory.observation first) complete extra
+
+/-- A concrete run invariant propagates from the retained initial state. -/
+theorem invariant (trajectory : ResumableTrajectory run start)
+    (property : State → Prop)
+    (preserved : ∀ fuel state, property state → property (run fuel state))
+    (initial : property start) (fuel : Nat) :
+    property (trajectory.observation fuel) := by
+  rw [trajectory.observation_eq_run]
+  exact preserved fuel start initial
+
+/-- The coherent tower retains all finite observations of the complete state. -/
+def coherentTower (trajectory : ResumableTrajectory run start) : Tower State :=
+  Tower.ofStream trajectory.observation
+
+@[simp]
+theorem toStream_coherentTower (trajectory : ResumableTrajectory run start) :
+    Tower.toStream trajectory.coherentTower = trajectory.observation :=
+  Tower.toStream_ofStream trajectory.observation
+
+/-- Reconstructing the tower also reconstructs its exact continuation law. -/
+theorem reconstructed_resume (trajectory : ResumableTrajectory run start)
+    (first extra : Nat) :
+    Tower.toStream trajectory.coherentTower (first + extra) =
+      run extra (Tower.toStream trajectory.coherentTower first) := by
+  simpa only [toStream_coherentTower] using trajectory.resume first extra
+
+theorem coherentTower_injective :
+    Function.Injective (@coherentTower State run start) := by
+  intro first second towers
+  apply ext
+  exact Tower.ofStream_injective towers
+
+/-! ## Controls -/
+
+namespace Canary
+
+/-- A budget runner retaining its number of completed ticks. -/
+def counterRun (fuel state : Nat) : Nat := state + fuel
+
+def counterTrajectory (start : Nat) : ResumableTrajectory counterRun start :=
+  canonical counterRun start (fun _ => Nat.add_zero _)
+    (fun _ _ _ => (Nat.add_assoc _ _ _).symm)
+
+theorem counter_resume_from_retained_state :
+    ((counterTrajectory 7).resumeFrom 3).observation 2 = 12 :=
+  rfl
+
+/-- Stream-prefix coherence alone does not assert that a stream follows a
+runner: a constant retained counter cannot continue an incrementing run. -/
+theorem constant_counter_not_resumable (start : Nat) :
+    ¬ ∃ trajectory : ResumableTrajectory counterRun start,
+      trajectory.observation = fun _ => start := by
+  rintro ⟨trajectory, observations⟩
+  have resumed := trajectory.resume 0 1
+  rw [congrFun observations 1, congrFun observations 0] at resumed
+  exact Nat.ne_add_one start resumed
+
+end Canary
+
+/-! ## Axiom audit -/
+
+#print axioms observation_eq_run
+#print axioms unique
+#print axioms eq_canonical
+#print axioms resumeFrom
+#print axioms observer_prefix_after_resume
+#print axioms observation_constant_after_settlement
+#print axioms invariant
+#print axioms toStream_coherentTower
+#print axioms reconstructed_resume
+#print axioms coherentTower_injective
+#print axioms Canary.counter_resume_from_retained_state
+#print axioms Canary.constant_counter_not_resumable
+
+end ResumableTrajectory
 
 end Mettapedia.Coalgebra.CoherentPrefixTower

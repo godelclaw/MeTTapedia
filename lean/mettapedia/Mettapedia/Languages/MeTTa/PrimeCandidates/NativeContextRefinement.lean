@@ -1,10 +1,10 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary
+import Mettapedia.Machines.DemandBoundary
 
 /-!
 # candidate native context refinement
 
 This module gives the parent-linked runtime representation an independent
-mathematical model and interprets it into `PrimeCandidates.DemandBoundary.Context`.  The
+mathematical model and interprets it into `Mettapedia.Machines.DemandBoundary.Context`.  The
 native model includes the cached depth stored by each frame; correspondence of
 bounded views therefore requires a real representation invariant.
 
@@ -14,7 +14,7 @@ runtime context with a typing context or establish Curry--Howard soundness.
 
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.NativeContextRefinement
 
-open PrimeCandidates.DemandBoundary
+open Mettapedia.Machines.DemandBoundary
 
 /-- A native-style immutable context spine.  `storedDepth` models the cached
 depth field in a runtime frame rather than recomputing it by recursion. -/

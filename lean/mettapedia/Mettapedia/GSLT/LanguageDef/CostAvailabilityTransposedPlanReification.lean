@@ -188,7 +188,7 @@ mutual
   /-- Applying one binder thinning to both endpoints preserves structural
   availability alignment.  The same positional embedding acts on both bound
   leaves; free-variable restoration certificates are retained verbatim. -/
-  def AvailabilityTransposedPatternAligned.thickenAmbientBVars
+  theorem AvailabilityTransposedPatternAligned.thickenAmbientBVars
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
       {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -248,7 +248,7 @@ mutual
               thinning depth elements)
 
   /-- Listwise companion of common binder thinning. -/
-  def AvailabilityTransposedPatternAlignedList.thickenAmbientBVars
+  theorem AvailabilityTransposedPatternAlignedList.thickenAmbientBVars
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
       {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -573,7 +573,7 @@ mutual
   environments.  Each callback is indexed by every parameter occurring in
   its conclusion: authored source name, or the paired finite boundary
   positions together with their positional equality. -/
-  def reifyAligned
+  theorem reifyAligned
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {smallOccurrences largeOccurrences : List CostRegionOccurrence}
@@ -716,7 +716,7 @@ mutual
                 exact Or.inl membership))))
 
   /-- Ordered-list companion of `reifyAligned`. -/
-  def CostStaticAbstractPatternListAlignment.reifyAligned
+  theorem CostStaticAbstractPatternListAlignment.reifyAligned
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {smallOccurrences largeOccurrences : List CostRegionOccurrence}
@@ -869,7 +869,7 @@ mutual
   occurrence selected at every leaf.  The leaf callbacks are token-complete:
   every name, table position, support regime, and structural zipper appearing
   in their conclusions is determined by their arguments. -/
-  def reifyAlignedAtOccurrences
+  theorem reifyAlignedAtOccurrences
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {smallOccurrences largeOccurrences : List CostRegionOccurrence}
@@ -1129,7 +1129,7 @@ mutual
                   largePath nested)))
 
   /-- Ordered-list companion of exact occurrence interpretation. -/
-  def CostStaticAbstractPatternListAlignment.reifyAlignedAtOccurrences
+  theorem CostStaticAbstractPatternListAlignment.reifyAlignedAtOccurrences
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {smallOccurrences largeOccurrences : List CostRegionOccurrence}

@@ -77,6 +77,34 @@ def LosesProgramInformation
       comparison.programToSpace.app context left =
         comparison.programToSpace.app context right
 
+/-- Information loss rules out every natural isomorphism from programs to
+spaces that agrees with the direct interpretation. -/
+theorem no_programSpace_iso_of_losesProgramInformation
+    (comparison : Comparison.{u, v, w} Context)
+    (loses : comparison.LosesProgramInformation) :
+    ¬ ∃ isomorphism : comparison.program ≅ comparison.space,
+      isomorphism.hom = comparison.programToSpace := by
+  rintro ⟨isomorphism, agrees⟩
+  obtain ⟨context, left, right, distinct, sameObservation⟩ := loses
+  apply distinct
+  apply (isomorphism.app context).toEquiv.injective
+  change isomorphism.hom.app context left = isomorphism.hom.app context right
+  rw [agrees]
+  exact sameObservation
+
+/-- Restrict a comparison along a functor of context categories: every face
+and every interpretation is precomposed with the functor. -/
+def reindex {Context' : Type u} [Category.{v} Context'] (functor : Context' ⥤ Context)
+    (comparison : Comparison.{u, v, w} Context) : Comparison.{u, v, w} Context' where
+  program := functor.op ⋙ comparison.program
+  logic := functor.op ⋙ comparison.logic
+  space := functor.op ⋙ comparison.space
+  programToLogic := Functor.whiskerLeft functor.op comparison.programToLogic
+  logicToSpace := Functor.whiskerLeft functor.op comparison.logicToSpace
+  programToSpace := Functor.whiskerLeft functor.op comparison.programToSpace
+  coherence := by
+    rw [← Functor.whiskerLeft_comp, comparison.coherence]
+
 end Comparison
 
 /-- The exact computational trinity.  Two natural isomorphisms suffice; the
@@ -230,21 +258,13 @@ theorem comparison_losesProgramInformation :
 exact trinity with the same program-to-space interpretation. -/
 theorem no_compatible_programSpace_iso :
     ¬ ∃ exactProgramSpace : programFace ≅ spaceFace,
-      exactProgramSpace.hom = comparison.programToSpace := by
-  rintro ⟨exactProgramSpace, agrees⟩
-  let context : Contextᵒᵖ := Opposite.op (Discrete.mk PUnit.unit)
-  have sameExact : exactProgramSpace.hom.app context (false, false) =
-      exactProgramSpace.hom.app context (false, true) := by
-    rw [agrees]
-    rfl
-  have pairEquality : (false, false) = (false, true) :=
-    (exactProgramSpace.app context).toEquiv.injective sameExact
-  have secondBits := congrArg Prod.snd pairEquality
-  simp at secondBits
+      exactProgramSpace.hom = comparison.programToSpace :=
+  comparison.no_programSpace_iso_of_losesProgramInformation comparison_losesProgramInformation
 
 end FirstBitObservation
 
 #print axioms Comparison.coherence_apply
+#print axioms Comparison.no_programSpace_iso_of_losesProgramInformation
 #print axioms Exact.programToSpace_bijective
 #print axioms Exact.not_losesProgramInformation
 #print axioms FirstBitObservation.comparison_losesProgramInformation

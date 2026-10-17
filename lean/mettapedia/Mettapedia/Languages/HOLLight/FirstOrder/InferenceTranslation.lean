@@ -161,6 +161,52 @@ theorem ruleApplication_iff (definition : ValidatedCalculusLanguageDef)
     (inferenceRule rule) convertedMember (admitted.lookup convertedMember)
     arguments premises conclusion
 
+/-- A fixed finite rule family's complete premise and conclusion payload. -/
+def schemaPayloadFactor (definition : CalculusLanguageDef) : Nat :=
+  1 + (definition.rules.map (fun rule =>
+    Mettapedia.OSLF.MeTTaIL.PatternTokens.listWeight rule.premises +
+      Mettapedia.OSLF.MeTTaIL.PatternTokens.weight rule.conclusion)).sum
+
+/-- Successful original instantiation is linear in the complete argument
+payload for each fixed finite rule family. Constructor names, ordered
+premise occurrences and copied metavariables are all included. -/
+theorem instantiateRule_payload (definition : ValidatedCalculusLanguageDef)
+    (firstOrder : FirstOrderCalculus definition.1) {ruleInstance : RuleInstance}
+    {premises : List Pattern} {conclusion : Pattern}
+    (instantiated : instantiateRule? definition ruleInstance = some (premises, conclusion)) :
+    Mettapedia.OSLF.MeTTaIL.PatternTokens.listWeight premises +
+        Mettapedia.OSLF.MeTTaIL.PatternTokens.weight conclusion ≤
+      schemaPayloadFactor definition.1 *
+        (Mettapedia.OSLF.MeTTaIL.PatternTokens.listWeight ruleInstance.arguments + 1) := by
+  have application := instantiateRule?_eq_some_iff_application.mp instantiated
+  cases application with
+  | intro rule found valid sideConditions instantiated concluded =>
+      have member : rule ∈ definition.1.rules := List.mem_of_find?_eq_some found
+      have idSame : rule.id = ruleInstance.ruleId := by
+        simpa [CalculusLanguageDef.lookupRule?] using List.find?_some found
+      have applied : RuleApplication definition ⟨rule.id, ruleInstance.arguments⟩ premises conclusion := by
+        simpa only [idSame] using (RuleApplication.intro rule found valid sideConditions instantiated concluded)
+      have shapes := (ruleApplication_iff definition firstOrder member _ _ _).mp applied
+      have converted : inferenceRule rule ∈ inferenceRules definition.1 := List.mem_map.mpr ⟨rule, member, rfl⟩
+      have package := inferenceRules_package firstOrder
+      have p := FORule.instPremises_weight (inferenceRule rule) ruleInstance.arguments
+        (package.premisesFragment _ converted)
+      have c := FORule.instConclusion_weight (inferenceRule rule) ruleInstance.arguments
+        (package.conclusionFragment _ converted)
+      have ps : premises = (inferenceRule rule).instPremises ruleInstance.arguments := shapes.2.2.1
+      have cs : conclusion = (inferenceRule rule).instConclusion ruleInstance.arguments := shapes.2.2.2
+      rw [← ps] at p
+      rw [← cs] at c
+      have row := List.le_sum_of_mem (List.mem_map.mpr ⟨rule, member, rfl⟩ :
+        Mettapedia.OSLF.MeTTaIL.PatternTokens.listWeight rule.premises +
+          Mettapedia.OSLF.MeTTaIL.PatternTokens.weight rule.conclusion ∈
+            definition.1.rules.map (fun candidate =>
+              Mettapedia.OSLF.MeTTaIL.PatternTokens.listWeight candidate.premises +
+                Mettapedia.OSLF.MeTTaIL.PatternTokens.weight candidate.conclusion))
+      simp only [inferenceRule] at p c
+      unfold schemaPayloadFactor
+      nlinarith
+
 /-- Source derivations and first-order rule derivations coincide. -/
 theorem derivation_iff (definition : ValidatedCalculusLanguageDef)
     (firstOrder : FirstOrderCalculus definition.1) (goal : Pattern) :

@@ -150,7 +150,17 @@ theorem old_cache_does_not_resurrect_right :
       some (some 11) := rfl
 
 theorem same_owner_merge_is_idempotent :
-    (Scoped.merge? innerHandled innerHandled).map (Scoped.selected 0) = some [] := rfl
+    (Scoped.merge? innerHandled innerHandled).map (Scoped.selected 0) = some [] := by
+  rw [Scoped.merge_self innerHandled (by decide +kernel)]
+  rfl
+
+/-- Agreement with itself cannot repair a ledger containing the same
+physical production twice. Claim agreement is a separate requirement. -/
+theorem identical_invalid_world_refused :
+    let repeated := [factor 1 2, factor 1 2]
+    ¬ Valid repeated ∧ merge? repeated repeated = none ∧
+      Scoped.merge? (unclaimed repeated) (unclaimed repeated) = none := by
+  decide +kernel
 
 /-- Incomparable observers cannot both acquire one shared production. -/
 theorem conflicting_handlers_refused :
@@ -216,5 +226,81 @@ theorem renaming_keeps_matrix_order :
         denote completionMatrixOrder := by
   rw [denote_rename]
   exact ⟨rfl, completion_order_changes_denotation⟩
+
+/-! ## Shared productions beyond a common prefix
+
+These are account views, not source-execution or permission certificates.
+Their compatible subsequences exhibit a limit of the prefix merge. Choosing
+a global order still needs the actual demand, resource and observer contract.
+-/
+
+def lateSharedLeft : Ledger Nat Nat Nat := [factor 11 2, factor 33 5]
+def lateSharedRight : Ledger Nat Nat Nat := [factor 22 3, factor 33 5]
+def lateSharedJoined : Ledger Nat Nat Nat := [factor 11 2, factor 22 3, factor 33 5]
+
+/-- Safe prefix refusal does not imply that no common ordered view exists. -/
+theorem nonprefix_sharing_has_a_valid_ordered_view :
+    Valid lateSharedLeft ∧ Valid lateSharedRight ∧ Valid lateSharedJoined ∧
+      lateSharedLeft.Sublist lateSharedJoined ∧ lateSharedRight.Sublist lateSharedJoined ∧
+      merge? lateSharedLeft lateSharedRight = none ∧
+      (identities lateSharedJoined).count 33 = 1 := by
+  decide +kernel
+
+def lateSharedCapture : Scoped Nat Nat Nat Nat := unclaimed lateSharedLeft
+def lateSharedWorld : Scoped Nat Nat Nat Nat := unclaimed lateSharedJoined
+
+/-- Reusing the old integer cut would select the inherited shared factor.
+The occurrence capture selects the inserted fresh factor instead. -/
+theorem occurrence_capture_distinguishes_an_inserted_factor :
+    Scoped.extendsCapture lateSharedCapture lateSharedWorld = false ∧
+      Scoped.extendsOccurrenceCapture lateSharedCapture lateSharedWorld = true ∧
+      Scoped.selected lateSharedCapture.productions.length lateSharedWorld = [factor 33 5] ∧
+      Scoped.selectedSince lateSharedCapture.productions lateSharedWorld = [factor 22 3] ∧
+      (Scoped.handleSince? lateSharedCapture lateSharedWorld 77).map Prod.snd =
+        some [factor 22 3] := by
+  decide +kernel
+
+theorem occurrence_capture_preserves_the_complete_world :
+    (Scoped.handleSince lateSharedCapture.productions 77 lateSharedWorld).productions =
+      lateSharedJoined ∧
+      (Scoped.handleSince lateSharedCapture.productions 77 lateSharedWorld).claims 22 = some 77 ∧
+      Scoped.selectedSince lateSharedCapture.productions
+        (Scoped.handleSince lateSharedCapture.productions 77 lateSharedWorld) = [] := by
+  decide +kernel
+
+theorem occurrence_capture_does_not_hide_changed_coefficients :
+    Scoped.extendsOccurrenceCapture lateSharedCapture
+      (unclaimed [factor 11 2, factor 22 3, factor 33 9]) = false := by
+  decide +kernel
+
+theorem occurrence_capture_does_not_hide_changed_dependencies :
+    Scoped.extendsOccurrenceCapture lateSharedCapture
+      (unclaimed [factor 11 2, factor 22 3, factor 33 5 17]) = false := by
+  decide +kernel
+
+theorem occurrence_capture_refuses_duplicated_identity :
+    Scoped.extendsOccurrenceCapture lateSharedCapture
+      (unclaimed [factor 11 2, factor 22 3, factor 33 5, factor 22 3]) = false := by
+  decide +kernel
+
+theorem occurrence_capture_does_not_hide_lost_claims :
+    Scoped.extendsOccurrenceCapture
+      (Scoped.handleSince [] 66 lateSharedCapture) lateSharedWorld = false := by
+  decide +kernel
+
+theorem fresh_zero_occurrence_is_still_claimed :
+    (Scoped.handleSince lateSharedLeft 77
+      (unclaimed [factor 11 2, factor 22 0, factor 33 5])).claims 22 = some 77 ∧
+      (Scoped.handleSince lateSharedLeft 77
+        (unclaimed [factor 11 2, factor 22 0, factor 33 5])).productions =
+        [factor 11 2, factor 22 0, factor 33 5] := by
+  decide +kernel
+
+/-- The two valid common-supersequence choices still differ in a matrix
+account. Order compatibility alone is not observer-preserving admission. -/
+theorem compatible_view_orders_can_change_the_coefficient :
+    denote (logicalMatrixOrder ++ [matrixFactor 3 1]) ≠
+      denote (completionMatrixOrder ++ [matrixFactor 3 1]) := by
+  simpa [denote_append, denote, matrixFactor] using completion_order_changes_denotation
 
 end Mettapedia.Algebra.SharedCoefficientLedgerControls

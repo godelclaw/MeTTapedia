@@ -17,13 +17,13 @@ namespace Mettapedia.OSLF.MeTTaIL.GeneralOccurrenceFrontier
 
 open GeneralOccurrenceKeys
 
-def edgeKey {request : Request} (edge : Edge request) : Syntax.Pattern × EquationReceipt :=
-  ⟨edge.source, equationReceipt edge.receipt⟩
+def edgeKey {request : Request} (edge : Edge request) : Syntax.Pattern × EquationReplayRecord :=
+  ⟨edge.source, equationReplayRecord edge.receipt⟩
 
-def answerKeys (request : Request) (state : State request) : List (Syntax.Pattern × RuleReceipt) :=
-  state.answers.map fun answer => occurrence answer.val
+def answerKeys (request : Request) (state : State request) : List (Syntax.Pattern × RuleReplayRecord) :=
+  state.answers.map fun answer => replayOccurrence answer.val
 
-def edgeKeys (request : Request) (state : State request) : List (Syntax.Pattern × EquationReceipt) :=
+def edgeKeys (request : Request) (state : State request) : List (Syntax.Pattern × EquationReplayRecord) :=
   state.edges.map edgeKey
 
 def representedPatterns (request : Request) (state : State request) : List Syntax.Pattern :=
@@ -31,11 +31,11 @@ def representedPatterns (request : Request) (state : State request) : List Synta
 
 def equationArchiveRead (request : Request) (state : State request) (archive : EquationArchive request) : Bool :=
   archive.frame.state.answers.all fun answer =>
-    decide ((archive.frame.source, equationReceipt answer.val) ∈ edgeKeys request state)
+    decide ((archive.frame.source, equationReplayRecord answer.val) ∈ edgeKeys request state)
 
 def ruleArchiveRead (request : Request) (state : State request) (archive : RuleArchive request) : Bool :=
   archive.frame.state.answers.all fun answer =>
-    decide ((archive.frame.representative.pattern, ruleReceipt answer.val) ∈ answerKeys request state)
+    decide ((archive.frame.representative.pattern, ruleReplayRecord answer.val) ∈ answerKeys request state)
 
 def equationJobChecked (request : Request) (state : State request) (source : Syntax.Pattern)
     (job : GeneralEquationJobs.Job) : Bool :=
@@ -79,7 +79,7 @@ def EquationJobCertified (request : Request) (state : State request)
     archive.frame.source = source ∧ equationJob archive.frame.job = equationJob job ∧
       GeneralEquationJobExecution.complete archive.frame.state = true ∧
       ∀ answer ∈ archive.frame.state.answers,
-        (archive.frame.source, equationReceipt answer.val) ∈ edgeKeys request state
+        (archive.frame.source, equationReplayRecord answer.val) ∈ edgeKeys request state
 
 def RuleJobCertified (request : Request) (state : State request)
     (representative : Representative request) (job : GeneralRuleJobs.Job) : Prop :=
@@ -87,7 +87,7 @@ def RuleJobCertified (request : Request) (state : State request)
     archive.frame.representative.pattern = representative.pattern ∧
       ruleJob archive.frame.job = ruleJob job ∧ GeneralRuleJobExecution.complete archive.frame.state = true ∧
       ∀ answer ∈ archive.frame.state.answers,
-        (archive.frame.representative.pattern, ruleReceipt answer.val) ∈ answerKeys request state
+        (archive.frame.representative.pattern, ruleReplayRecord answer.val) ∈ answerKeys request state
 
 theorem equationJobChecked_iff (request : Request) (state : State request)
     (source : Syntax.Pattern) (job : GeneralEquationJobs.Job) :

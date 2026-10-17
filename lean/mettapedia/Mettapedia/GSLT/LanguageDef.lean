@@ -3,6 +3,9 @@ import Mettapedia.GSLT.LanguageDef.InferenceExtension
 import Mettapedia.GSLT.LanguageDef.ValidatedInferenceExtension
 import Mettapedia.GSLT.LanguageDef.ExtensionComposition
 import Mettapedia.GSLT.LanguageDef.ExtensionGluing
+import Mettapedia.GSLT.LanguageDef.ExtensionAlongMorphisms
+import Mettapedia.GSLT.LanguageDef.ExtensionConservativity
+import Mettapedia.GSLT.LanguageDef.ExtensionAlongMorphismsControls
 import Mettapedia.GSLT.LanguageDef.InferenceNewJudgmentConservativity
 import Mettapedia.GSLT.LanguageDef.InferenceRuleSupport
 import Mettapedia.GSLT.LanguageDef.RewriteValidationCertificateExtension
@@ -15,6 +18,14 @@ import Mettapedia.GSLT.LanguageDef.GradedLanguageDef
 import Mettapedia.GSLT.LanguageDef.CalculusAsLanguage
 import Mettapedia.GSLT.LanguageDef.CalculusExtension
 import Mettapedia.GSLT.LanguageDef.CertificateGSLT
+import Mettapedia.GSLT.LanguageDef.CertificateDataEncoding
+import Mettapedia.GSLT.LanguageDef.CertificateDataTraversal
+import Mettapedia.GSLT.LanguageDef.CertificateArgumentFraming
+import Mettapedia.GSLT.LanguageDef.CertificateChronologicalTraversal
+import Mettapedia.GSLT.LanguageDef.CertificateProofTraversal
+import Mettapedia.GSLT.LanguageDef.CertificateRuleAdmission
+import Mettapedia.GSLT.LanguageDef.PatternSpanExecution
+import Mettapedia.GSLT.LanguageDef.PatternScopeExecution
 import Mettapedia.GSLT.LanguageDef.RuleMachineCompilation
 import Mettapedia.GSLT.LanguageDef.ContextualEffectTreeLanguage
 import Mettapedia.GSLT.LanguageDef.ContextualEffectTreeExactness
@@ -104,6 +115,7 @@ import Mettapedia.GSLT.LanguageDef.LanguageDefTransformation
 import Mettapedia.GSLT.LanguageDef.BindingSignature
 import Mettapedia.GSLT.LanguageDef.BindingSignatureSubstitution
 import Mettapedia.GSLT.LanguageDef.ScopedBindingElaboration
+import Mettapedia.GSLT.LanguageDef.ScopedBindingCaptureSupport
 import Mettapedia.GSLT.LanguageDef.BindingSignatureControls
 import Mettapedia.GSLT.LanguageDef.BindingSignatureTransport
 import Mettapedia.GSLT.LanguageDef.BindingSignatureReification
@@ -112,6 +124,7 @@ import Mettapedia.GSLT.LanguageDef.WellSortedOccurrence
 import Mettapedia.GSLT.LanguageDef.WellSortedOccurrenceReplacement
 import Mettapedia.GSLT.LanguageDef.WellSortedOccurrenceAdmission
 import Mettapedia.GSLT.LanguageDef.WellSortedOccurrenceControls
+import Mettapedia.GSLT.LanguageDef.ClosedInhabitation
 import Mettapedia.GSLT.LanguageDef.OpenSortedEquationInstance
 import Mettapedia.GSLT.LanguageDef.MetaDependencyBoundary
 import Mettapedia.GSLT.LanguageDef.MetaDependencyBoundaryControls
@@ -128,6 +141,31 @@ import Mettapedia.GSLT.LanguageDef.BoundPrefixProjectionControls
 import Mettapedia.GSLT.LanguageDef.GSLTILOperationalPlans
 import Mettapedia.GSLT.LanguageDef.GSLTILOperationalPlanControls
 import Mettapedia.GSLT.LanguageDef.ProofSystemExecution
+import Mettapedia.GSLT.LanguageDef.SharedReferenceExecution
+import Mettapedia.GSLT.LanguageDef.ResourceTranslation
+import Mettapedia.GSLT.LanguageDef.ResourceExecution
+import Mettapedia.GSLT.LanguageDef.ResourcePreorder
+import Mettapedia.GSLT.LanguageDef.ResourceExecutionControls
+import Mettapedia.GSLT.LanguageDef.ResourceMachineBounds
+import Mettapedia.GSLT.LanguageDef.ResourceComputation
+import Mettapedia.GSLT.LanguageDef.ResourceSelection
+import Mettapedia.GSLT.LanguageDef.EffectiveKernelSearch
+import Mettapedia.GSLT.LanguageDef.NonEffectiveKernelBoundary
+import Mettapedia.GSLT.LanguageDef.FiniteCertificateSearch
+import Mettapedia.GSLT.LanguageDef.KernelCheckingClasses
+import Mettapedia.GSLT.LanguageDef.InferenceBasisBoundary
+import Mettapedia.GSLT.LanguageDef.HeuristicEvidence
+import Mettapedia.GSLT.LanguageDef.CertificateDigestBoundary
+import Mettapedia.GSLT.LanguageDef.BindingCollectionEquationFamily
+import Mettapedia.GSLT.LanguageDef.BindingCollectionEquationGenerators
+import Mettapedia.GSLT.LanguageDef.BindingSignatureWire
+import Mettapedia.GSLT.LanguageDef.GeneralPremiseReceiptWire
+import Mettapedia.GSLT.LanguageDef.GeneralPremiseNativeEvidence
+import Mettapedia.GSLT.LanguageDef.GeneralPremiseNativeDiscovery
+import Mettapedia.GSLT.LanguageDef.BindingCollectionEquationWire
+import Mettapedia.GSLT.LanguageDef.GSLTILNativeKernel
+import Mettapedia.GSLT.LanguageDef.GSLTILNativeKernelWire
+import Mettapedia.GSLT.LanguageDef.ModuleSource
 
 /-!
 # Compositional language definitions
@@ -310,6 +348,13 @@ Admission is deliberately separate: authored documents always compose, while
 admitted payloads compose only when their overlap conditions hold.  Pairwise
 gluing is not called descent: covers and coherent higher overlaps have not been
 chosen here.
+
+`ExtensionAlongMorphisms` moves layers along morphisms of their cores: the
+decorated cores of a layer form the category of elements of its transport
+functor, and two decorated cores have a union over a structural coproduct
+exactly when their transported calculi are compatible.
+`ExtensionConservativity` states, per observation class, what a structural
+coproduct, an inclusion and an overlapping union conserve.
 
 The strict `CertificateGSLT` nucleus is included here.  Stronger certificate-GSLT
 interpretation, cyclic, and ultrainfinite modules have their own imports so

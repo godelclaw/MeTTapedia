@@ -1,5 +1,5 @@
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost.ActivationGenerated
-import Mettapedia.Languages.ProcessCalculi.RhoCalculus.TypedCommunicationVerticalBraid
+import Mettapedia.Languages.MeTTa.PrimeComparisons.Rho.TypedCommunicationVerticalBraid
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost.ActivationAmbientBorrow
 
 /-!

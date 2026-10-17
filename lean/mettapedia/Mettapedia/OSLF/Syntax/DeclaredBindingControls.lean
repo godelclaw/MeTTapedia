@@ -1,6 +1,6 @@
 import Mettapedia.OSLF.Syntax.DeclaredBindingSource
 import Mettapedia.OSLF.Syntax.DeclaredBindingProvenance
-import Mettapedia.OSLF.Syntax.SignatureMorphism
+import Mettapedia.OSLF.Syntax.SignatureMorphismReadback
 
 /-!
 # Scope and transport controls for the authored binding interpretation
@@ -123,3 +123,161 @@ theorem where_advances_and_preserves_denotation :
   cases equal
 
 end Mettapedia.OSLF.Binding.DeclaredBindingInterpretation.Controls
+
+namespace Mettapedia.OSLF.Binding.SignatureSortReindexingControls
+
+inductive Operator : Option Bool → Type where
+  | useName : Operator (some false)
+  | binder : Operator (some false)
+  | undeclared : Operator (some false)
+
+def source : Signature where
+  Srt := Option Bool
+  Op := Operator
+  arity
+    | .useName => [([], some true)]
+    | .binder => [([some true], some false)]
+    | .undeclared => [([none], some false)]
+
+def selected : Signature := source.reindexSorts some
+
+theorem decodeSound (sort : Option Bool) (index : Bool) (decoded : sort = some index) :
+    some index = sort := decoded.symm
+
+def nameUse : selected.Op false := ⟨.useName, [([], true)], rfl⟩
+def nameBinder : selected.Op false := ⟨.binder, [([true], false)], rfl⟩
+
+def localTerm : Term selected [] false :=
+  .op nameBinder (.cons (.op nameUse (.cons (.var .zero) .nil)) .nil)
+
+def original : Term source [] (some false) :=
+  .op .binder (.cons (.op .useName (.cons (.var .zero) .nil)) .nil)
+
+theorem literal_scope_retained : (source.reindexProjection some).onTerm localTerm = original := rfl
+
+theorem actual_binding_operator_lifted :
+    source.reindexOperator? some id decodeSound .binder = some nameBinder := rfl
+
+theorem unavailable_binding_sort_refused :
+    source.reindexOperator? some id decodeSound .undeclared = none := rfl
+
+theorem constructor_identity_retained : nameUse ≠ nameBinder := by
+  intro same
+  have different := congrArg ReindexedOperator.original same
+  cases different
+
+#guard (source.reindexOperator? some id decodeSound .binder).isSome
+#guard (source.reindexOperator? some id decodeSound .useName).isSome
+#guard (source.reindexOperator? some id decodeSound .undeclared).isNone
+#guard (SortArityDecoder.decodeArity id ([some true], some false)).isSome
+#guard (SortArityDecoder.decodeArity id ([none], some false)).isNone
+#guard (SortArityDecoder.decodeArity id ([some true], none)).isNone
+
+local instance : DecidableEq (source.reindexSorts (some : Bool → Option Bool)).Srt :=
+  inferInstanceAs (DecidableEq Bool)
+
+abbrev projection := source.reindexProjection some
+
+def reader : projection.OperatorReader := source.reindexOperatorReader some id decodeSound
+
+theorem binder_reader_roundtrip :
+    source.reindexTerm? some id decodeSound (context := []) (sort := false) original = some localTerm := rfl
+
+def unsupportedBinder : Term source [some true] (some false) :=
+  .op .undeclared (.cons (.op .useName (.cons (.var (.succ .zero)) .nil)) .nil)
+
+theorem term_with_undeclared_binding_sort_refused :
+    source.reindexTerm? some id decodeSound (context := [true]) unsupportedBinder = none := rfl
+
+def nestedOuter : Term source [] (some false) :=
+  .op .binder (.cons (.op .binder
+    (.cons (.op .useName (.cons (.var (.succ .zero)) .nil)) .nil)) .nil)
+
+def nestedInner : Term source [] (some false) :=
+  .op .binder (.cons (.op .binder
+    (.cons (.op .useName (.cons (.var .zero) .nil)) .nil)) .nil)
+
+theorem distinct_binding_positions_retained :
+    source.reindexTerm? some id decodeSound (context := []) (sort := false) nestedOuter ≠
+      source.reindexTerm? some id decodeSound (context := []) (sort := false) nestedInner := by
+  intro same
+  cases same
+
+def schemaMetas : List (MetaArity selected) := [([true], false), ([], true)]
+
+def dependentSchema : Term (withMetas selected schemaMetas) [true] false :=
+  .op (.inl nameBinder) (.cons
+    (.op (.inr (.mk ⟨0, by decide⟩)) (.cons (.var (.succ .zero)) .nil)) .nil)
+
+def schemaReader := reader.withMetas projection schemaMetas
+
+theorem dependent_schema_roundtrip :
+    SigMor.OperatorReader.readTerm (projection.withMetas schemaMetas) schemaReader
+      ((projection.withMetas schemaMetas).onTerm dependentSchema) = some dependentSchema := by
+  exact SigMor.OperatorReader.readWithMetas_roundtrip projection reader
+    (source.reindexOperator?_roundtrip some id decodeSound (fun _ => rfl)) schemaMetas dependentSchema
+
+#guard (source.reindexTerm? some id decodeSound (context := []) (sort := false) original).isSome
+#guard (source.reindexTerm? some id decodeSound (context := [true]) unsupportedBinder).isNone
+#guard (source.reindexTerm? some id decodeSound (context := []) (sort := false) nestedOuter).isSome
+#guard (source.reindexTerm? some id decodeSound (context := []) (sort := false) nestedInner).isSome
+#guard (SigMor.OperatorReader.readTermWithFuel projection reader 0 (context := []) (sort := false) original).isNone
+#guard (SigMor.OperatorReader.readTermWithFuel projection reader 1 (context := []) (sort := false) original).isNone
+#guard (SigMor.OperatorReader.readTermWithFuel projection reader 32 (context := []) (sort := false) original).isSome
+#guard (SigMor.OperatorReader.readTerm (projection.withMetas schemaMetas) schemaReader
+  ((projection.withMetas schemaMetas).onTerm dependentSchema)).isSome
+
+
+end Mettapedia.OSLF.Binding.SignatureSortReindexingControls
+
+
+namespace Mettapedia.OSLF.Binding.SignatureReaderBoundaryControls
+
+open RedexPositionWitness
+
+def collapsingReader : SortCollapse.collapse.OperatorReader where
+  read {sort} operator := match sort, operator with
+    | .pr, .out => some .out
+    | .pr, .aName => none
+    | .nm, .out => none
+    | .nm, .aName => some .aName
+  projects original selected found := by
+    cases selected with
+    | out =>
+        cases original with
+        | out => rfl
+        | aName => cases found
+    | aName =>
+        cases original with
+        | out => cases found
+        | aName => rfl
+
+def collapsedWrongSort : Term SortCollapse.osig [SortCollapse.OneSrt.all] .all := .var .zero
+
+theorem collapsing_sorts_does_not_give_source_coverage :
+    SigMor.OperatorReader.readTerm SortCollapse.collapse collapsingReader
+      (context := [Srt.nm]) (sort := Srt.pr) collapsedWrongSort = none := rfl
+
+theorem collapsing_sorts_keeps_an_actual_image_variable :
+    SigMor.OperatorReader.readTerm SortCollapse.collapse collapsingReader
+      (context := [Srt.nm]) (sort := Srt.nm) collapsedWrongSort = some (.var .zero) := rfl
+
+def mergingReader : ConstantMerge.merge.OperatorReader where
+  read _ := some .a
+  projects original selected found := by
+    cases original
+    cases Option.some.inj found
+    rfl
+
+theorem merged_constructor_does_not_roundtrip_second_source :
+    SigMor.OperatorReader.readTerm ConstantMerge.merge mergingReader
+      (ConstantMerge.merge.onTerm ConstantMerge.tb) = some ConstantMerge.ta := rfl
+
+#guard (SigMor.OperatorReader.readTerm SortCollapse.collapse collapsingReader
+  (context := [Srt.nm]) (sort := Srt.pr) collapsedWrongSort).isNone
+#guard (SigMor.OperatorReader.readTerm SortCollapse.collapse collapsingReader
+  (context := [Srt.nm]) (sort := Srt.nm) collapsedWrongSort).isSome
+#guard (SigMor.OperatorReader.readTerm ConstantMerge.merge mergingReader
+  (ConstantMerge.merge.onTerm ConstantMerge.tb)).map ConstantMerge.isA == some true
+
+end Mettapedia.OSLF.Binding.SignatureReaderBoundaryControls

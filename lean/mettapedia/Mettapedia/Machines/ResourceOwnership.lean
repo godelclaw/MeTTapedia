@@ -79,6 +79,22 @@ theorem rootAddresses_subset_iff_validRoots (heap : Heap Address Value)
     obtain ⟨pair, present, rfl⟩ := Finset.mem_image.mp member
     exact valid pair present
 
+/-- Inspecting every allocated cell requires an owner for the full snapshot.
+This policy differs from retaining only the active computation's roots. -/
+def Heap.snapshotRoots [DecidableEq Owner] (heap : Heap Address Value)
+    (owner : Owner) : Roots Owner Address :=
+  heap.allocated.image fun address => (owner, address)
+
+@[simp] theorem rootAddresses_snapshotRoots [DecidableEq Owner]
+    (heap : Heap Address Value) (owner : Owner) :
+    rootAddresses (heap.snapshotRoots owner) = heap.allocated := by
+  simp [rootAddresses, Heap.snapshotRoots, Finset.image_image]
+
+theorem Heap.snapshotRoots_valid [DecidableEq Owner]
+    (heap : Heap Address Value) (owner : Owner) :
+    ValidRoots heap (heap.snapshotRoots owner) :=
+  (rootAddresses_subset_iff_validRoots heap _).mp (by simp)
+
 /-- Interpret the finite heap in the existing graph reachability semantics. -/
 def Heap.toStore (h : Heap Address Value) (roots : Roots Owner Address) :
     Store Address where
@@ -235,6 +251,23 @@ theorem census_eq_footprint (h : Heap Address Value) (roots : Roots Owner Addres
   ext address
   rw [mem_census_iff_live h roots valid, mem_footprint]
 
+@[simp] theorem census_empty (heap : Heap Address Value) :
+    census heap (∅ : Roots Owner Address) = ∅ := by
+  apply Finset.eq_empty_iff_forall_notMem.mpr
+  intro address member
+  exact not_live_empty heap address
+    ((mem_census_iff_live heap ∅ (by simp [ValidRoots]) address).mp member)
+
+@[simp] theorem census_snapshotRoots [DecidableEq Owner]
+    (heap : Heap Address Value) (owner : Owner) :
+    census heap (heap.snapshotRoots owner) = heap.allocated := by
+  ext address
+  rw [mem_census_iff_live heap _ (heap.snapshotRoots_valid owner)]
+  constructor
+  · exact live_allocated heap _
+  · intro allocated
+    exact .root ⟨allocated, by simpa using allocated⟩
+
 /-- Several owners retain the union of their transitive footprints, counting
 each shared allocation address only once. -/
 theorem footprint_union [DecidableEq Owner] (h : Heap Address Value)
@@ -304,6 +337,64 @@ theorem lookup_collect_none_iff (h : Heap Address Value)
     rw [lookup_collect_of_live h roots live, found] at absent
     cases absent
   · exact lookup_collect_of_not_live h roots
+
+/-- Preservation of an allocated lookup requires, and is guaranteed by,
+retention of that cell. This concerns complete cells, not only their values. -/
+theorem lookup_collect_eq_iff_live (heap : Heap Address Value)
+    (roots : Roots Owner Address) {address : Address}
+    (allocated : address ∈ heap.allocated) :
+    (collect heap roots).lookup address = heap.lookup address ↔
+      Live heap roots address := by
+  constructor
+  · intro same
+    by_contra dead
+    obtain ⟨cell, found⟩ := (heap.allocated_iff address).mp allocated
+    rw [lookup_collect_of_not_live heap roots dead, found] at same
+    cases same
+  · exact lookup_collect_of_live heap roots
+
+theorem lookup_collect_of_unallocated (heap : Heap Address Value)
+    (roots : Roots Owner Address) {address : Address}
+    (unallocated : address ∉ heap.allocated) :
+    (collect heap roots).lookup address = heap.lookup address := by
+  have absent : heap.lookup address = none := by
+    cases found : heap.lookup address with
+    | none => rfl
+    | some cell =>
+      exact False.elim (unallocated ((heap.allocated_iff address).mpr ⟨cell, found⟩))
+  have dead : ¬ Live heap roots address :=
+    fun live => unallocated (live_allocated heap roots live)
+  rw [lookup_collect_of_not_live heap roots dead, absent]
+
+/-- A complete heap observer can retain every lookup with snapshot roots.
+This intentionally gives up collection of allocated cells while it is held. -/
+theorem lookup_collect_snapshotRoots [DecidableEq Owner]
+    (heap : Heap Address Value) (owner : Owner) (address : Address) :
+    (collect heap (heap.snapshotRoots owner)).lookup address = heap.lookup address := by
+  by_cases allocated : address ∈ heap.allocated
+  · apply lookup_collect_of_live
+    exact .root ⟨allocated, by simpa using allocated⟩
+  · exact lookup_collect_of_unallocated heap _ allocated
+
+/-- Preserving every lookup is exactly the policy that retains every allocated
+cell. A full heap observer cannot authorize removal of an allocated cell. -/
+theorem collect_preserves_all_lookups_iff (heap : Heap Address Value)
+    (roots : Roots Owner Address) (valid : ValidRoots heap roots) :
+    (collect heap roots).lookup = heap.lookup ↔ census heap roots = heap.allocated := by
+  constructor
+  · intro same
+    ext address
+    rw [mem_census_iff_live heap roots valid]
+    constructor
+    · exact live_allocated heap roots
+    · intro allocated
+      exact (lookup_collect_eq_iff_live heap roots allocated).mp (congrFun same address)
+  · intro allRetained
+    funext address
+    by_cases allocated : address ∈ heap.allocated
+    · exact lookup_collect_of_live heap roots
+        ((mem_census_iff_live heap roots valid address).mp (allRetained ▸ allocated))
+    · exact lookup_collect_of_unallocated heap roots allocated
 
 /-- Collection computes the same rooted graph reachability, in both directions. -/
 theorem live_collect_iff (h : Heap Address Value)
@@ -637,6 +728,22 @@ theorem retentionCheck_iff (heap : Heap Address Value) (roots : Roots Owner Addr
     intro start member
     exact (mem_census_iff_live heap roots valid start).mpr
       (live start (List.mem_toFinset.mp member))
+
+/-- For allocated captures, the executable retention checker exactly decides
+valid roots and preservation of all requested complete lookups. -/
+theorem retentionCheck_iff_preserves_lookups (heap : Heap Address Value)
+    (roots : Roots Owner Address) (captured : List Address)
+    (allocated : ∀ address ∈ captured, address ∈ heap.allocated) :
+    retentionCheck heap roots captured = true ↔
+      ValidRoots heap roots ∧ ∀ address ∈ captured,
+        (collect heap roots).lookup address = heap.lookup address := by
+  rw [retentionCheck_iff]
+  constructor
+  · rintro ⟨valid, live⟩
+    exact ⟨valid, fun address member => lookup_collect_of_live heap roots (live address member)⟩
+  · rintro ⟨valid, same⟩
+    exact ⟨valid, fun address member =>
+      (lookup_collect_eq_iff_live heap roots (allocated address member)).mp (same address member)⟩
 
 theorem retentionCheck_congr_rootAddresses (heap : Heap Address Value)
     (roots more : Roots Owner Address)
@@ -1325,6 +1432,27 @@ omit [DecidableEq Address] in
     pair ∈ release roots owner ↔ pair ∈ roots ∧ pair.1 ≠ owner := by
   simp [release]
 
+theorem release_union (first second : Roots Owner Address) (owner : Owner) :
+    release (first ∪ second) owner = release first owner ∪ release second owner := by
+  ext pair
+  simp only [mem_release, Finset.mem_union]
+  tauto
+
+@[simp] theorem release_snapshotRoots (heap : Heap Address Value) (owner : Owner) :
+    release (heap.snapshotRoots owner) owner = ∅ := by
+  apply Finset.eq_empty_iff_forall_notMem.mpr
+  intro pair member
+  obtain ⟨captured, different⟩ := (mem_release _ _ _).mp member
+  obtain ⟨address, _, rfl⟩ := Finset.mem_image.mp captured
+  exact different rfl
+
+/-- Closing a heap inspector removes its snapshot pin. Other owners' roots
+remain governed by their existing release contract. -/
+theorem release_inspection (heap : Heap Address Value) (roots : Roots Owner Address)
+    (inspector : Owner) :
+    release (roots ∪ heap.snapshotRoots inspector) inspector = release roots inspector := by
+  rw [release_union, release_snapshotRoots, Finset.union_empty]
+
 omit [DecidableEq Address] in
 theorem cancel_subset (roots : Roots Owner Address) (dead : Finset Owner) :
     cancel roots dead ⊆ roots := Finset.filter_subset _ _
@@ -1351,6 +1479,31 @@ theorem live_release_mono (h : Heap Address Value) (roots : Roots Owner Address)
     (owner : Owner) {a : Address} :
     Live h (release roots owner) a → Live h roots a :=
   live_cancel_mono h roots {owner}
+
+/-- Cancelling every owner other than `survivor` retains the graph reachable
+from that survivor's own roots. The opposite direction is `live_cancel_mono`:
+cancellation does not make a new resource live. -/
+theorem live_cancel_other_owner (heap : Heap Address Value)
+    (roots : Roots Owner Address) (dead : Finset Owner) (survivor : Owner)
+    (outside : survivor ∉ dead) {address : Address}
+    (live : Live heap (roots.filter fun pair => pair.1 = survivor) address) :
+    Live heap (cancel roots dead) address := by
+  refine live_mono heap ?_ live
+  intro pair member
+  obtain ⟨present, sameOwner⟩ := Finset.mem_filter.mp member
+  refine (mem_cancel roots dead pair).mpr ⟨present, ?_⟩
+  rw [sameOwner]
+  exact outside
+
+/-- Releasing one owner retains the graph rooted at a different owner. -/
+theorem live_release_other_owner (heap : Heap Address Value)
+    (roots : Roots Owner Address) (released survivor : Owner)
+    (different : survivor ≠ released) {address : Address}
+    (live : Live heap (roots.filter fun pair => pair.1 = survivor) address) :
+    Live heap (release roots released) address := by
+  refine live_cancel_other_owner heap roots {released} survivor ?_ live
+  intro member
+  exact different (Finset.mem_singleton.mp member)
 
 /-- Reclamation after the final protecting owner disappears.  The hypothesis
 accounts for *every transitive path*, including ones through sibling roots. -/
@@ -2926,6 +3079,11 @@ def censusBytes (h : Heap Address Value) (roots : Roots Owner Address) : Nat :=
   ∑ a ∈ census h roots, cellBytes h a
 
 omit [DecidableEq Owner] in
+@[simp] theorem censusBytes_empty (heap : Heap Address Value) :
+    censusBytes heap (∅ : Roots Owner Address) = 0 := by
+  simp [censusBytes]
+
+omit [DecidableEq Owner] in
 theorem censusBytes_eq_retainedBytes (h : Heap Address Value)
     (roots : Roots Owner Address) (valid : ValidRoots h roots) :
     censusBytes h roots = retainedBytes h roots := by
@@ -2985,6 +3143,27 @@ theorem censusBytes_fork_list (h : Heap Address Value) (roots : Roots Owner Addr
     censusBytes h (destinations.foldl (fun retained next => fork retained source next) roots) =
       censusBytes h roots :=
   censusBytes_congr_rootAddresses h _ _ (rootAddresses_fork_list roots source destinations)
+
+namespace PinnedReset
+
+/-- A detached revision retains exactly the old payload allocation account.
+The pin and store links have their own bookkeeping cost; neither creates a
+second copy of the graph, nor makes the old revision current again. -/
+theorem censusBytes_after_detach (heap : Heap Address Value)
+    (old : Roots Owner Address) (store reader : Owner) (different : reader ≠ store) :
+    censusBytes heap (roots old store reader) = censusBytes heap old :=
+  censusBytes_congr_rootAddresses heap _ _
+    (rootAddresses_release_after_fork old store reader different)
+
+/-- Once the final reader of a detached generation releases it, that
+generation contributes no retained payload bytes, including cyclic storage. -/
+theorem censusBytes_after_last_reader (heap : Heap Address Value)
+    (old : Roots Owner Address) (store reader : Owner)
+    (owned : ∀ pair ∈ old, pair.1 = store) :
+    censusBytes heap (release (roots old store reader) reader) = 0 := by
+  rw [last_reader_releases old store reader owned, censusBytes_empty]
+
+end PinnedReset
 
 section RelocationStorage
 
@@ -3225,6 +3404,16 @@ descendants count once in the complete census. -/
 theorem cyclic_census_and_bytes :
     census cyclicHeap siblingRoots = {0, 1, 2} ∧
       censusBytes cyclicHeap siblingRoots = 48 := by decide
+
+/-- The old graph stays charged while its reader is pinned. Final release
+and reset without a pin both lose that graph; neither is a zero-cost live
+revision. -/
+theorem pinned_reset_storage_lifecycle :
+    censusBytes cyclicHeap (PinnedReset.roots ({(0, 0)} : Roots Nat (Fin 3)) 0 7) = 48 ∧
+      censusBytes cyclicHeap
+        (release (PinnedReset.roots ({(0, 0)} : Roots Nat (Fin 3)) 0 7) 7) = 0 ∧
+      censusBytes cyclicHeap (release ({(0, 0)} : Roots Nat (Fin 3)) 0) = 0 := by
+  decide
 
 /-- Two owners of the same cycle do not create two physical copies. -/
 theorem per_owner_census_overcounts_shared_cycle :
@@ -3728,5 +3917,793 @@ theorem checked_borrow_missing_owner_changes_readout :
     Option.bind_none]
 
 end Examples
+
+/-! ## Stored operational and observer fields
+
+A cell payload may be the record `StoredFields`. Its operational value and its
+operational references are fields of that record. Projection is the
+corresponding field projection. It is not a function from an arbitrary payload
+to a replacement payload, and the two reference fields need not be disjoint.
+`observeOperational` reads the stored operational field from the source heap.
+-/
+
+structure StoredFields (Address : Type) (Operational : Type) (Observer : Type) where
+  operational : Operational
+  observer : Option Observer
+  operationalReferences : Finset Address
+  observerReferences : Finset Address
+  deriving DecidableEq
+
+/-- The heap edge set is the stored reference fields, overlap included. -/
+def Cell.storesFields {Operational Observer : Type}
+    (cell : Cell Address (StoredFields Address Operational Observer)) : Prop :=
+  cell.references =
+    cell.value.operationalReferences ∪ cell.value.observerReferences
+
+def Heap.storesFields {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) : Prop :=
+  ∀ address cell, heap.lookup address = some cell → cell.storesFields
+
+/-- Operational value, operational references and the stored byte weight. -/
+def projectCell {Operational Observer : Type}
+    (cell : Cell Address (StoredFields Address Operational Observer)) : Cell Address Operational where
+  value := cell.value.operational
+  references := cell.value.operationalReferences
+  bytes := cell.bytes
+
+omit [DecidableEq Address] in
+theorem projectCell_value {Operational Observer : Type}
+    (cell : Cell Address (StoredFields Address Operational Observer)) :
+    (projectCell cell).value = cell.value.operational := rfl
+
+omit [DecidableEq Address] in
+theorem projectCell_references {Operational Observer : Type}
+    (cell : Cell Address (StoredFields Address Operational Observer)) :
+    (projectCell cell).references = cell.value.operationalReferences := rfl
+
+omit [DecidableEq Address] in
+theorem projectCell_bytes {Operational Observer : Type}
+    (cell : Cell Address (StoredFields Address Operational Observer)) :
+    (projectCell cell).bytes = cell.bytes := rfl
+
+/-- Same addresses. Each stored record is replaced by its operational fields. -/
+def projectHeap {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer))
+    (stored : heap.storesFields) : Heap Address Operational where
+  lookup address := (heap.lookup address).map projectCell
+  allocated := heap.allocated
+  allocated_iff address := by
+    constructor
+    · intro member
+      obtain ⟨cell, found⟩ := (heap.allocated_iff address).mp member
+      exact ⟨projectCell cell, by simp [found]⟩
+    · rintro ⟨_cell, found⟩
+      obtain ⟨storedCell, looked, _⟩ := Option.map_eq_some_iff.mp found
+      exact (heap.allocated_iff address).mpr ⟨storedCell, looked⟩
+  closed address cell found next reference := by
+    obtain ⟨storedCell, looked, same⟩ := Option.map_eq_some_iff.mp found
+    apply heap.closed address storedCell looked
+    rw [stored address storedCell looked]
+    refine Finset.mem_union.mpr (Or.inl ?_)
+    rw [← same] at reference
+    simpa [projectCell] using reference
+
+theorem projectHeap_lookup {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer))
+    (stored : heap.storesFields) (address : Address) :
+    (projectHeap heap stored).lookup address =
+      (heap.lookup address).map projectCell := rfl
+
+theorem projectHeap_allocated {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer))
+    (stored : heap.storesFields) :
+    (projectHeap heap stored).allocated = heap.allocated := rfl
+
+theorem projectHeap_lookup_cell {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer))
+    (stored : heap.storesFields) {address : Address} {cell : Cell Address Operational}
+    (found : (projectHeap heap stored).lookup address = some cell) :
+    ∃ storedCell, heap.lookup address = some storedCell ∧ cell = projectCell storedCell := by
+  rw [projectHeap_lookup] at found
+  obtain ⟨storedCell, looked, same⟩ := Option.map_eq_some_iff.mp found
+  exact ⟨storedCell, looked, same.symm⟩
+
+/-- Source readout of the stored operational field. This does not use
+`projectHeap`. -/
+def observeOperational {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (address : Address) :
+    Option Operational :=
+  (heap.lookup address).map fun cell => cell.value.operational
+
+omit [DecidableEq Address] in
+theorem observeOperational_eq_stored {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) {address : Address}
+    {cell : Cell Address (StoredFields Address Operational Observer)}
+    (found : heap.lookup address = some cell) :
+    observeOperational heap address = some cell.value.operational := by
+  simp [observeOperational, found]
+
+theorem observeOperational_eq_projected {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (address : Address) :
+    observeOperational heap address =
+      ((projectHeap heap stored).lookup address).map Cell.value := by
+  simp only [observeOperational, projectHeap_lookup]
+  cases heap.lookup address with
+  | none => rfl
+  | some _ => simp [projectCell]
+
+theorem projected_value_eq_stored_operational {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    {address : Address} {cell : Cell Address (StoredFields Address Operational Observer)}
+    (found : heap.lookup address = some cell) :
+    observeOperational heap address = some cell.value.operational ∧
+      ((projectHeap heap stored).lookup address).map Cell.value =
+        some cell.value.operational := by
+  refine ⟨observeOperational_eq_stored heap found, ?_⟩
+  rw [← observeOperational_eq_projected heap stored address,
+    observeOperational_eq_stored heap found]
+
+omit [DecidableEq Owner] in
+/-- A target stored in both reference fields stays reachable on the projection.
+The observer membership is not erased by the operational one. -/
+theorem shared_operational_reference_stays {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (roots : Roots Owner Address) {holder target : Address}
+    {cell : Cell Address (StoredFields Address Operational Observer)}
+    (live : Live (projectHeap heap stored) roots holder)
+    (found : heap.lookup holder = some cell)
+    (shared : target ∈ cell.value.operationalReferences ∩ cell.value.observerReferences) :
+    Live (projectHeap heap stored) roots target := by
+  have looked : (projectHeap heap stored).lookup holder = some (projectCell cell) := by
+    rw [projectHeap_lookup, found]
+    rfl
+  exact live_step (projectHeap heap stored) roots live looked (Finset.mem_inter.mp shared).1
+
+omit [DecidableEq Owner] in
+/-- An address outside the roots and outside every stored operational reference
+field is not reachable on the projection. -/
+theorem observer_only_not_live {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (roots : Roots Owner Address) (recording : Address)
+    (notRoot : recording ∉ rootAddresses roots)
+    (absent : ∀ holder cell, heap.lookup holder = some cell →
+      recording ∉ cell.value.operationalReferences) :
+    ¬ Live (projectHeap heap stored) roots recording := by
+  intro live
+  cases live with
+  | root rooted => exact notRoot rooted.2
+  | step _ edge =>
+      obtain ⟨projected, found, reference⟩ := edge
+      obtain ⟨storedCell, sourceFound, same⟩ := projectHeap_lookup_cell heap stored found
+      rw [same] at reference
+      exact absent _ storedCell sourceFound (by simpa [projectCell] using reference)
+
+theorem walk_endpoint_is_stored_operational {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (path : List Address) {start endpoint : Address} {cell : Cell Address Operational}
+    (success : walk (projectHeap heap stored) start path = some (endpoint, cell)) :
+    observeOperational heap endpoint = some cell.value ∧
+      ∃ storedCell, heap.lookup endpoint = some storedCell ∧
+        cell = projectCell storedCell ∧ cell.value = storedCell.value.operational := by
+  have looked := walk_success_lookup (projectHeap heap stored) path success
+  obtain ⟨storedCell, sourceFound, same⟩ := projectHeap_lookup_cell heap stored looked
+  refine ⟨?_, storedCell, sourceFound, same, ?_⟩
+  · rw [observeOperational_eq_stored heap sourceFound, same]
+    rfl
+  · rw [same]
+    rfl
+
+/-- Source heap, retained outside frame, operational roots and the collected
+private image. The source is not rewritten. -/
+structure ProjectedFields (Operational Observer : Type) where
+  source : Heap Address (StoredFields Address Operational Observer)
+  outsideFrame : Roots Owner Address
+  privateRoots : Roots Owner Address
+  privateImage : Heap Address Operational
+
+noncomputable def projectOptionalFields {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (privateRoots outsideFrame : Roots Owner Address) :
+    ProjectedFields (Address := Address) (Owner := Owner) Operational Observer where
+  source := heap
+  outsideFrame := outsideFrame
+  privateRoots := privateRoots
+  privateImage := collect (projectHeap heap stored) privateRoots
+
+omit [DecidableEq Owner] in
+theorem projectOptionalFields_spec {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (privateRoots outsideFrame : Roots Owner Address) :
+    let image := projectOptionalFields heap stored privateRoots outsideFrame
+    image.source = heap ∧ image.outsideFrame = outsideFrame ∧
+      image.privateRoots = privateRoots ∧
+      image.privateImage = collect (projectHeap heap stored) privateRoots := by
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+omit [DecidableEq Owner] in
+theorem private_root_reads_stored_operational {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (privateRoots outsideFrame : Roots Owner Address) {owner : Owner} {address : Address}
+    {cell : Cell Address (StoredFields Address Operational Observer)}
+    (member : (owner, address) ∈ privateRoots) (found : heap.lookup address = some cell) :
+    observeOperational heap address = some cell.value.operational ∧
+      (projectOptionalFields heap stored privateRoots outsideFrame).privateImage.lookup address =
+        some (projectCell cell) ∧
+      (projectOptionalFields heap stored privateRoots outsideFrame).source.lookup address =
+        some cell := by
+  have live : Live (projectHeap heap stored) privateRoots address :=
+    live_of_root (projectHeap heap stored) privateRoots member
+      (by rw [projectHeap_allocated]; exact (heap.allocated_iff address).mpr ⟨cell, found⟩)
+  refine ⟨observeOperational_eq_stored heap found, ?_, ?_⟩
+  · rw [show (projectOptionalFields heap stored privateRoots outsideFrame).privateImage =
+        collect (projectHeap heap stored) privateRoots from rfl,
+      lookup_collect_of_live (projectHeap heap stored) privateRoots live,
+      projectHeap_lookup, found]
+    rfl
+  · rw [show (projectOptionalFields heap stored privateRoots outsideFrame).source = heap from rfl]
+    exact found
+
+omit [DecidableEq Owner] in
+theorem walk_privateImage {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (privateRoots outsideFrame : Roots Owner Address) {start : Address}
+    (live : Live (projectHeap heap stored) privateRoots start) (path : List Address) :
+    walk (projectOptionalFields heap stored privateRoots outsideFrame).privateImage start path =
+      walk (projectHeap heap stored) start path := by
+  rw [show (projectOptionalFields heap stored privateRoots outsideFrame).privateImage =
+      collect (projectHeap heap stored) privateRoots from rfl]
+  exact walk_collect (projectHeap heap stored) privateRoots live path
+
+omit [DecidableEq Owner] in
+theorem aliases_privateImage {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (privateRoots outsideFrame : Roots Owner Address) {leftStart rightStart : Address}
+    (leftLive : Live (projectHeap heap stored) privateRoots leftStart)
+    (rightLive : Live (projectHeap heap stored) privateRoots rightStart)
+    (left right : List Address) :
+    Aliases (projectOptionalFields heap stored privateRoots outsideFrame).privateImage
+        leftStart left rightStart right ↔
+      Aliases (projectHeap heap stored) leftStart left rightStart right := by
+  rw [show (projectOptionalFields heap stored privateRoots outsideFrame).privateImage =
+      collect (projectHeap heap stored) privateRoots from rfl]
+  exact aliases_collect (projectHeap heap stored) privateRoots leftLive rightLive left right
+
+omit [DecidableEq Owner] in
+theorem observer_only_reclaimed {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (privateRoots outsideFrame : Roots Owner Address) (recording : Address)
+    (notRoot : recording ∉ rootAddresses privateRoots)
+    (absent : ∀ holder cell, heap.lookup holder = some cell →
+      recording ∉ cell.value.operationalReferences) :
+    (projectOptionalFields heap stored privateRoots outsideFrame).privateImage.lookup recording =
+        none ∧
+      (projectOptionalFields heap stored privateRoots outsideFrame).source.lookup recording =
+        heap.lookup recording ∧
+      observeOperational heap recording =
+        ((projectOptionalFields heap stored privateRoots outsideFrame).source.lookup recording).map
+          (fun cell => cell.value.operational) := by
+  have dead := observer_only_not_live heap stored privateRoots recording notRoot absent
+  refine ⟨?_, rfl, rfl⟩
+  rw [show (projectOptionalFields heap stored privateRoots outsideFrame).privateImage =
+      collect (projectHeap heap stored) privateRoots from rfl]
+  exact lookup_collect_of_not_live (projectHeap heap stored) privateRoots dead
+
+omit [DecidableEq Owner] in
+/-- Reachable projected cells contain only stored operational references. -/
+theorem projectHeap_omits_observer_reference {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (roots : Roots Owner Address) (recording : Address)
+    (absent : ∀ holder cell, heap.lookup holder = some cell →
+      recording ∉ cell.value.operationalReferences) :
+    ∀ holder, Live (projectHeap heap stored) roots holder →
+      ∀ cell, (projectHeap heap stored).lookup holder = some cell →
+        recording ∉ cell.references := by
+  intro holder _live cell found reference
+  obtain ⟨storedCell, sourceFound, same⟩ := projectHeap_lookup_cell heap stored found
+  rw [same] at reference
+  exact absent holder storedCell sourceFound (by simpa [projectCell] using reference)
+
+omit [DecidableEq Owner] in
+theorem framed_source_keeps_stored_cell {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (privateRoots outsideFrame : Roots Owner Address) {owner : Owner} {address : Address}
+    (framed : (owner, address) ∈ outsideFrame) :
+    let image := projectOptionalFields heap stored privateRoots outsideFrame
+    image.outsideFrame = outsideFrame ∧ (owner, address) ∈ image.outsideFrame ∧
+      image.source = heap ∧ image.source.lookup address = heap.lookup address ∧
+      observeOperational image.source address = observeOperational heap address := by
+  exact ⟨rfl, framed, rfl, rfl, rfl⟩
+
+/-! ### Stored seven is not an observer replacement -/
+
+def sevenPayload (address : Fin 3) : StoredFields (Fin 3) Nat Nat :=
+  if address = 0 then
+    { operational := 7, observer := some 99, operationalReferences := {2},
+      observerReferences := {1, 2} }
+  else if address = 1 then
+    { operational := 0, observer := some 99, operationalReferences := ∅,
+      observerReferences := ∅ }
+  else
+    { operational := 7, observer := none, operationalReferences := ∅,
+      observerReferences := ∅ }
+
+def sevenCell (address : Fin 3) : Cell (Fin 3) (StoredFields (Fin 3) Nat Nat) where
+  value := sevenPayload address
+  references := (sevenPayload address).operationalReferences ∪
+    (sevenPayload address).observerReferences
+  bytes := if address = 0 then 4 else 1
+
+def sevenHeap : Heap (Fin 3) (StoredFields (Fin 3) Nat Nat) where
+  lookup address := some (sevenCell address)
+  allocated := Finset.univ
+  allocated_iff _ := by simp
+  closed _ _ _ _ _ := Finset.mem_univ _
+
+theorem sevenHeap_stores : sevenHeap.storesFields := by
+  intro address cell found
+  simp only [sevenHeap, Option.some.injEq] at found
+  subst found
+  rfl
+
+/-- The stored operational field is 7. The projection reads 7. Replacing that
+field by the observer payload 99 is a different cell. -/
+theorem stored_seven_projects_as_seven :
+    observeOperational sevenHeap (0 : Fin 3) = some 7 ∧
+      ((projectHeap sevenHeap sevenHeap_stores).lookup 0).map Cell.value = some 7 ∧
+      ((projectHeap sevenHeap sevenHeap_stores).lookup 0).map Cell.value ≠ some 99 ∧
+      (sevenHeap.lookup 0).map (fun cell => cell.value.observer) = some (some 99) ∧
+      (projectHeap sevenHeap sevenHeap_stores).lookup 0 ≠
+        some ({ value := 99, references := {2}, bytes := 4 } : Cell (Fin 3) Nat) := by
+  have storedRead : observeOperational sevenHeap (0 : Fin 3) = some 7 := by
+    simp [observeOperational, sevenHeap, sevenCell, sevenPayload]
+  have projected := observeOperational_eq_projected sevenHeap sevenHeap_stores (0 : Fin 3)
+  refine ⟨storedRead, ?_, ?_, ?_, ?_⟩
+  · rw [← projected, storedRead]
+  · rw [← projected, storedRead]
+    decide
+  · simp [sevenHeap, sevenCell, sevenPayload]
+  · intro same
+    have read := projected
+    rw [storedRead] at read
+    rw [same] at read
+    have values : (7 : Nat) = 99 := by
+      injection read
+    exact absurd values (by decide)
+
+theorem seven_operational_path :
+    walk (projectHeap sevenHeap sevenHeap_stores) 0 [2] =
+      some ((2 : Fin 3), projectCell (sevenCell 2)) ∧
+      observeOperational sevenHeap 2 = some 7 ∧
+      walk sevenHeap 0 [1] = some (1, sevenCell 1) ∧
+      walk (projectHeap sevenHeap sevenHeap_stores) 0 [1] = none ∧
+      Aliases (projectHeap sevenHeap sevenHeap_stores) 0 [2] 2 [] := by
+  refine ⟨by decide, by decide, by decide, by decide, ⟨2, by decide, by decide⟩⟩
+
+/-- Address 2 is in both reference fields and stays on the collected image.
+Address 1 is only an observer reference and is reclaimed there. The source
+cell at 0 still carries observer payload 99. -/
+theorem shared_target_stays_and_observer_receipt_drops :
+    (2 : Fin 3) ∈ (sevenCell 0).value.operationalReferences ∩
+        (sevenCell 0).value.observerReferences ∧
+      Live (projectHeap sevenHeap sevenHeap_stores) ({((), 0)} : Roots Unit (Fin 3)) 2 ∧
+      observeOperational sevenHeap 2 = some 7 ∧
+      ((projectOptionalFields sevenHeap sevenHeap_stores ({((), 0)} : Roots Unit (Fin 3))
+        (∅ : Roots Unit (Fin 3))).privateImage.lookup 2).map Cell.value = some 7 ∧
+      (projectOptionalFields sevenHeap sevenHeap_stores ({((), 0)} : Roots Unit (Fin 3))
+        (∅ : Roots Unit (Fin 3))).privateImage.lookup 1 = none ∧
+      (projectOptionalFields sevenHeap sevenHeap_stores ({((), 0)} : Roots Unit (Fin 3))
+        (∅ : Roots Unit (Fin 3))).source.lookup 0 = sevenHeap.lookup 0 ∧
+      ((projectOptionalFields sevenHeap sevenHeap_stores ({((), 0)} : Roots Unit (Fin 3))
+        (∅ : Roots Unit (Fin 3))).source.lookup 0).map (fun cell => cell.value.observer) =
+        some (some 99) := by
+  set roots : Roots Unit (Fin 3) := {((), 0)}
+  set image := projectOptionalFields sevenHeap sevenHeap_stores roots (∅ : Roots Unit (Fin 3))
+  have shared : (2 : Fin 3) ∈ (sevenCell 0).value.operationalReferences ∩
+      (sevenCell 0).value.observerReferences := by decide
+  have found0 : sevenHeap.lookup 0 = some (sevenCell 0) := by simp [sevenHeap]
+  have live0 : Live (projectHeap sevenHeap sevenHeap_stores) roots 0 :=
+    live_of_root _ roots (by decide : ((), (0 : Fin 3)) ∈ roots)
+      (by rw [projectHeap_allocated]; decide)
+  have live2 :=
+    shared_operational_reference_stays sevenHeap sevenHeap_stores roots live0 found0 shared
+  have notRoot : (1 : Fin 3) ∉ rootAddresses roots := by decide
+  have absent : ∀ holder cell, sevenHeap.lookup holder = some cell →
+      (1 : Fin 3) ∉ cell.value.operationalReferences := by
+    intro holder cell found
+    simp only [sevenHeap, Option.some.injEq] at found
+    subst found
+    cases holder using Fin.cases with
+    | zero => decide
+    | succ holder =>
+        cases holder using Fin.cases with
+        | zero => decide
+        | succ holder =>
+            cases holder using Fin.cases with
+            | zero => decide
+            | succ holder => exact Fin.elim0 holder
+  have released := observer_only_reclaimed sevenHeap sevenHeap_stores roots ∅ 1 notRoot absent
+  have kept := lookup_collect_of_live (projectHeap sevenHeap sevenHeap_stores) roots live2
+  have projected2 : (projectHeap sevenHeap sevenHeap_stores).lookup 2 =
+      some (projectCell (sevenCell 2)) := by simp [projectHeap, sevenHeap]
+  have observed2 : observeOperational sevenHeap 2 = some 7 := by
+    simp [observeOperational, sevenHeap, sevenCell, sevenPayload]
+  refine ⟨shared, live2, observed2, ?_, ?_, ?_, ?_⟩
+  · have imageLookup : image.privateImage.lookup 2 =
+        (projectHeap sevenHeap sevenHeap_stores).lookup 2 := by
+      simpa [image, projectOptionalFields] using kept
+    rw [imageLookup, projected2]
+    simp [projectCell, sevenCell, sevenPayload]
+  · simpa [image, projectOptionalFields] using released.1
+  · simp [image, projectOptionalFields]
+  · simp [image, projectOptionalFields, sevenHeap, sevenCell, sevenPayload]
+
+/-! ## Framed history release
+
+An observer notebook is one owner in a finite root set. Releasing that owner
+drops its pairs. Any other owner's reachable component stays, including a
+shared address and a cyclic path: reachability is the component of the
+retained root, and collection preserves its cells and finite walks.
+
+`framedHistoryRelease` splits the existing `ProjectedFields` record from the
+retained observers' footprint.
+
+* The first component is `collect` of the other observers' roots. Its
+  allocation is that footprint. Retained observers read full stored cells and
+  paths there, including observer payloads.
+* The second component is `projectOptionalFields`. Its `privateRoots` are the
+  producer and environment roots, and its `privateImage` is the operational
+  projection collected at those roots. That is the forgetting computation.
+  `outsideFrame` records the retained observer roots and is not part of the
+  private image. `source` remains the original heap for comparison; it is not
+  the retained footprint.
+
+`projectHeap` drops every observer field, so it is not a readout for a
+retained observer. These laws are a finite-heap contract for G4 physical
+forgetting. Native pointer classification and erasure of a C arena stay
+outside this contract.
+-/
+
+inductive HistoryRole where
+  | producer
+  | environment
+  | observer
+  deriving DecidableEq
+
+def semanticRoots (role : Owner → HistoryRole) (roots : Roots Owner Address) :
+    Roots Owner Address :=
+  roots.filter fun pair =>
+    role pair.1 = HistoryRole.producer ∨ role pair.1 = HistoryRole.environment
+
+def observerRoots (role : Owner → HistoryRole) (roots : Roots Owner Address) :
+    Roots Owner Address :=
+  roots.filter fun pair => role pair.1 = HistoryRole.observer
+
+omit [DecidableEq Address] [DecidableEq Owner] in
+@[simp] theorem mem_semanticRoots (role : Owner → HistoryRole) (roots : Roots Owner Address)
+    (pair : Owner × Address) :
+    pair ∈ semanticRoots role roots ↔ pair ∈ roots ∧
+      (role pair.1 = HistoryRole.producer ∨ role pair.1 = HistoryRole.environment) := by
+  simp [semanticRoots]
+
+omit [DecidableEq Address] [DecidableEq Owner] in
+@[simp] theorem mem_observerRoots (role : Owner → HistoryRole) (roots : Roots Owner Address)
+    (pair : Owner × Address) :
+    pair ∈ observerRoots role roots ↔ pair ∈ roots ∧ role pair.1 = HistoryRole.observer := by
+  simp [observerRoots]
+
+omit [DecidableEq Address] in
+/-- Removing an observer notebook does not change the producer and environment
+roots. Their operational projection is independent of that observer frame. -/
+theorem semanticRoots_release_observer (role : Owner → HistoryRole)
+    (roots : Roots Owner Address) (notebook : Owner)
+    (notebookObserver : role notebook = HistoryRole.observer) :
+    semanticRoots role (release roots notebook) = semanticRoots role roots := by
+  ext pair
+  simp only [mem_semanticRoots, mem_release]
+  constructor
+  · intro kept
+    exact ⟨kept.1.1, kept.2⟩
+  · intro kept
+    refine ⟨⟨kept.1, ?_⟩, kept.2⟩
+    intro same
+    rcases kept.2 with producer | environment
+    · rw [same] at producer
+      rw [notebookObserver] at producer
+      cases producer
+    · rw [same] at environment
+      rw [notebookObserver] at environment
+      cases environment
+
+omit [DecidableEq Owner] in
+/-- The reachable component of one root that belongs to `roots`. The root may
+be shared, and the component may contain a cycle: `Live` from that pair is
+any finite chain of stored references. Collection keeps every cell in the
+component and every finite walk from the root. -/
+theorem root_component_collected (heap : Heap Address Value) (roots : Roots Owner Address)
+    {owner : Owner} {rootAddress target : Address}
+    (frame : (owner, rootAddress) ∈ roots) (allocated : rootAddress ∈ heap.allocated)
+    (component : Live heap {(owner, rootAddress)} target) :
+    Live heap roots target ∧
+      (collect heap roots).lookup target = heap.lookup target ∧
+      ∀ path, walk (collect heap roots) rootAddress path = walk heap rootAddress path := by
+  have targetLive :=
+    live_mono heap (Finset.singleton_subset_iff.mpr frame) component
+  have rootLive := live_of_root heap roots frame allocated
+  refine ⟨targetLive, lookup_collect_of_live heap roots targetLive, ?_⟩
+  intro path
+  exact walk_collect heap roots rootLive path
+
+/-- Releasing one owner leaves every other owner's component. The surviving
+pair is proved from `release`, and the cells and walks are the component of
+that retained root. -/
+theorem retained_owner_component (heap : Heap Address Value) (roots : Roots Owner Address)
+    (released : Owner) {owner : Owner} {rootAddress target : Address}
+    (kept : owner ≠ released) (frame : (owner, rootAddress) ∈ roots)
+    (allocated : rootAddress ∈ heap.allocated)
+    (component : Live heap {(owner, rootAddress)} target) :
+    (owner, rootAddress) ∈ release roots released ∧
+      Live heap (release roots released) target ∧
+      (collect heap (release roots released)).lookup target = heap.lookup target ∧
+      ∀ path, walk (collect heap (release roots released)) rootAddress path =
+        walk heap rootAddress path := by
+  have keptFrame : (owner, rootAddress) ∈ release roots released :=
+    (mem_release roots released (owner, rootAddress)).mpr ⟨frame, kept⟩
+  have base := root_component_collected heap (release roots released)
+    keptFrame allocated component
+  exact ⟨keptFrame, base.1, base.2.1, base.2.2⟩
+
+omit [DecidableEq Owner] in
+/-- Producer and environment roots keep their operational component on the
+projected heap. The component is reachability through operational references
+from that root. -/
+theorem semantic_owner_component {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (role : Owner → HistoryRole) (roots : Roots Owner Address) {owner : Owner}
+    {rootAddress target : Address}
+    (semantic : role owner = HistoryRole.producer ∨ role owner = HistoryRole.environment)
+    (frame : (owner, rootAddress) ∈ roots)
+    (allocated : rootAddress ∈ (projectHeap heap stored).allocated)
+    (component : Live (projectHeap heap stored) {(owner, rootAddress)} target) :
+    (owner, rootAddress) ∈ semanticRoots role roots ∧
+      Live (projectHeap heap stored) (semanticRoots role roots) target ∧
+      (collect (projectHeap heap stored) (semanticRoots role roots)).lookup target =
+        (projectHeap heap stored).lookup target ∧
+      ∀ path, walk (collect (projectHeap heap stored) (semanticRoots role roots))
+          rootAddress path = walk (projectHeap heap stored) rootAddress path := by
+  have member : (owner, rootAddress) ∈ semanticRoots role roots :=
+    (mem_semanticRoots role roots (owner, rootAddress)).mpr ⟨frame, semantic⟩
+  have base := root_component_collected (projectHeap heap stored) (semanticRoots role roots)
+    member allocated component
+  exact ⟨member, base.1, base.2.1, base.2.2⟩
+
+/-- Other observers keep the full stored component of their roots. -/
+theorem retained_observer_component (heap : Heap Address Value) (role : Owner → HistoryRole)
+    (roots : Roots Owner Address) (notebook : Owner) {observer : Owner}
+    {rootAddress target : Address} (observerRole : role observer = HistoryRole.observer)
+    (kept : observer ≠ notebook) (frame : (observer, rootAddress) ∈ roots)
+    (allocated : rootAddress ∈ heap.allocated)
+    (component : Live heap {(observer, rootAddress)} target) :
+    (observer, rootAddress) ∈ release (observerRoots role roots) notebook ∧
+      Live heap (release (observerRoots role roots) notebook) target ∧
+      (collect heap (release (observerRoots role roots) notebook)).lookup target =
+        heap.lookup target ∧
+      ∀ path, walk (collect heap (release (observerRoots role roots) notebook)) rootAddress path =
+        walk heap rootAddress path := by
+  have member : (observer, rootAddress) ∈ observerRoots role roots :=
+    (mem_observerRoots role roots (observer, rootAddress)).mpr ⟨frame, observerRole⟩
+  exact retained_owner_component heap (observerRoots role roots) notebook
+    kept member allocated component
+
+/-- Collected observer footprint, together with the operational projection of
+the producer and environment roots. -/
+noncomputable def framedHistoryRelease {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (role : Owner → HistoryRole) (roots : Roots Owner Address) (notebook : Owner) :
+    Heap Address (StoredFields Address Operational Observer) ×
+      ProjectedFields (Address := Address) (Owner := Owner) Operational Observer :=
+  let outside := release (observerRoots role roots) notebook
+  (collect heap outside,
+    projectOptionalFields heap stored (semanticRoots role roots) outside)
+
+theorem framedHistoryRelease_spec {Operational Observer : Type}
+    (heap : Heap Address (StoredFields Address Operational Observer)) (stored : heap.storesFields)
+    (role : Owner → HistoryRole) (roots : Roots Owner Address) (notebook : Owner)
+    (notebookObserver : role notebook = HistoryRole.observer) :
+    (framedHistoryRelease heap stored role roots notebook).1 =
+        collect heap (release (observerRoots role roots) notebook) ∧
+      (framedHistoryRelease heap stored role roots notebook).1.allocated =
+        footprint heap (release (observerRoots role roots) notebook) ∧
+      (∀ address, (notebook, address) ∉ release (observerRoots role roots) notebook) ∧
+      semanticRoots role (release roots notebook) = semanticRoots role roots ∧
+      (framedHistoryRelease heap stored role roots notebook).2.source = heap ∧
+      (framedHistoryRelease heap stored role roots notebook).2.outsideFrame =
+        release (observerRoots role roots) notebook ∧
+      (framedHistoryRelease heap stored role roots notebook).2.privateRoots =
+        semanticRoots role roots ∧
+      (framedHistoryRelease heap stored role roots notebook).2.privateImage =
+        collect (projectHeap heap stored) (semanticRoots role roots) := by
+  refine ⟨rfl, rfl, ?_, semanticRoots_release_observer role roots notebook notebookObserver,
+    rfl, rfl, rfl, rfl⟩
+  intro address member
+  exact ((mem_release (observerRoots role roots) notebook (notebook, address)).mp member).2 rfl
+
+/-! ### Shared cycle, semantic edge, retained observer note -/
+
+/-- Owners 0 and 1 both root the cyclic cell at address 1 of `cyclicHeap`. -/
+def sharedCycleRoots : Roots Nat (Fin 3) := {(0, 1), (1, 1)}
+
+/-- Owner 0 produces, owners 1 and 2 observe, and every remaining owner is an
+environment. Owner 1 is the notebook released by the examples. -/
+def notebookReleaseRole : Nat → HistoryRole
+  | 0 => .producer
+  | 1 => .observer
+  | 2 => .observer
+  | _ => .environment
+
+/-- Producer 0 and environment 3 root the operational holder at address 0.
+Notebook 1 and observer 2 both root the note at address 1. -/
+def notebookReleaseRoots : Roots Nat (Fin 3) := {(0, 0), (1, 1), (2, 1), (3, 0)}
+
+/-- Releasing owner 0 leaves owner 1's cyclic component, including the return
+walk `1 → 2 → 1`. -/
+theorem shared_owner_keeps_cyclic_cell :
+    (1, (1 : Fin 3)) ∈ release sharedCycleRoots 0 ∧
+      Live Examples.cyclicHeap (release sharedCycleRoots 0) 1 ∧
+      Live Examples.cyclicHeap (release sharedCycleRoots 0) 2 ∧
+      (collect Examples.cyclicHeap (release sharedCycleRoots 0)).lookup 1 =
+        Examples.cyclicHeap.lookup 1 ∧
+      (collect Examples.cyclicHeap (release sharedCycleRoots 0)).lookup 2 =
+        Examples.cyclicHeap.lookup 2 ∧
+      walk (collect Examples.cyclicHeap (release sharedCycleRoots 0)) 1 [2, 1] =
+        some (1, Examples.cyclicCell 1) := by
+  have frame : (1, (1 : Fin 3)) ∈ sharedCycleRoots := by decide
+  have allocated : (1 : Fin 3) ∈ Examples.cyclicHeap.allocated := Finset.mem_univ _
+  have rootLive : Live Examples.cyclicHeap ({(1, (1 : Fin 3))} : Roots Nat (Fin 3)) 1 :=
+    live_of_root Examples.cyclicHeap _ (Finset.mem_singleton_self _) allocated
+  have found : Examples.cyclicHeap.lookup 1 = some (Examples.cyclicCell 1) := by
+    simp [Examples.cyclicHeap]
+  have forward : (2 : Fin 3) ∈ (Examples.cyclicCell 1).references := by decide
+  have cycleLive : Live Examples.cyclicHeap ({(1, (1 : Fin 3))} : Roots Nat (Fin 3)) 2 :=
+    live_step Examples.cyclicHeap _ rootLive found forward
+  have atRoot := retained_owner_component Examples.cyclicHeap sharedCycleRoots 0
+    (by decide : (1 : Nat) ≠ 0) frame allocated rootLive
+  have atCycle := retained_owner_component Examples.cyclicHeap sharedCycleRoots 0
+    (by decide : (1 : Nat) ≠ 0) frame allocated cycleLive
+  refine ⟨atRoot.1, atRoot.2.1, atCycle.2.1, atRoot.2.2.1, atCycle.2.2.1, ?_⟩
+  have walkEq := atRoot.2.2.2 [2, 1]
+  rw [walkEq]
+  decide
+
+/-- History address 2 has no semantic root. The producer's operational edge
+keeps it in the forgetting image after the notebook root is released. The
+observer-only note at address 1 is absent from that image. -/
+theorem semantic_reference_keeps_history :
+    (2 : Fin 3) ∉ rootAddresses (semanticRoots notebookReleaseRole notebookReleaseRoots) ∧
+      semanticRoots notebookReleaseRole (release notebookReleaseRoots 1) =
+        semanticRoots notebookReleaseRole notebookReleaseRoots ∧
+      Live (projectHeap sevenHeap sevenHeap_stores)
+        (semanticRoots notebookReleaseRole notebookReleaseRoots) 2 ∧
+      (framedHistoryRelease sevenHeap sevenHeap_stores notebookReleaseRole
+        notebookReleaseRoots 1).2.privateImage.lookup 2 =
+        (projectHeap sevenHeap sevenHeap_stores).lookup 2 ∧
+      walk (framedHistoryRelease sevenHeap sevenHeap_stores notebookReleaseRole
+        notebookReleaseRoots 1).2.privateImage 0 [2] =
+        some ((2 : Fin 3), projectCell (sevenCell 2)) ∧
+      (framedHistoryRelease sevenHeap sevenHeap_stores notebookReleaseRole
+        notebookReleaseRoots 1).2.privateImage.lookup 1 = none := by
+  have notebookObserver : notebookReleaseRole 1 = HistoryRole.observer := by decide
+  have frame : (0, (0 : Fin 3)) ∈ notebookReleaseRoots := by decide
+  have semantic : notebookReleaseRole 0 = HistoryRole.producer ∨
+      notebookReleaseRole 0 = HistoryRole.environment := by decide
+  have allocated : (0 : Fin 3) ∈ (projectHeap sevenHeap sevenHeap_stores).allocated := by
+    rw [projectHeap_allocated]
+    exact Finset.mem_univ _
+  have rootLive : Live (projectHeap sevenHeap sevenHeap_stores)
+      ({(0, (0 : Fin 3))} : Roots Nat (Fin 3)) 0 :=
+    live_of_root _ _ (Finset.mem_singleton_self _) allocated
+  have found : sevenHeap.lookup 0 = some (sevenCell 0) := by simp [sevenHeap]
+  have looked : (projectHeap sevenHeap sevenHeap_stores).lookup 0 =
+      some (projectCell (sevenCell 0)) := by
+    rw [projectHeap_lookup, found]
+    rfl
+  have edge : (2 : Fin 3) ∈ (projectCell (sevenCell 0)).references := by
+    rw [projectCell_references]
+    decide
+  have historyLive : Live (projectHeap sevenHeap sevenHeap_stores)
+      ({(0, (0 : Fin 3))} : Roots Nat (Fin 3)) 2 :=
+    live_step _ _ rootLive looked edge
+  have component := semantic_owner_component sevenHeap sevenHeap_stores notebookReleaseRole
+    notebookReleaseRoots semantic frame allocated historyLive
+  rcases framedHistoryRelease_spec sevenHeap sevenHeap_stores notebookReleaseRole
+      notebookReleaseRoots 1 notebookObserver with
+    ⟨_, _, _, semanticStable, _, _, _, privateImageEq⟩
+  have notRoot : (2 : Fin 3) ∉
+      rootAddresses (semanticRoots notebookReleaseRole notebookReleaseRoots) := by decide
+  have valid : ValidRoots (projectHeap sevenHeap sevenHeap_stores)
+      (semanticRoots notebookReleaseRole notebookReleaseRoots) := by
+    intro _pair _member
+    rw [projectHeap_allocated]
+    exact Finset.mem_univ _
+  have missing : (1 : Fin 3) ∉ census (projectHeap sevenHeap sevenHeap_stores)
+      (semanticRoots notebookReleaseRole notebookReleaseRoots) := by decide
+  have dead : ¬ Live (projectHeap sevenHeap sevenHeap_stores)
+      (semanticRoots notebookReleaseRole notebookReleaseRoots) 1 :=
+    fun live => missing ((mem_census_iff_live _ _ valid 1).mpr live)
+  have walkEq := component.2.2.2 [2]
+  refine ⟨notRoot, semanticStable, component.2.1, ?_, ?_, ?_⟩
+  · rw [privateImageEq]
+    exact component.2.2.1
+  · rw [privateImageEq, walkEq]
+    exact seven_operational_path.1
+  · rw [privateImageEq]
+    exact lookup_collect_of_not_live _ _ dead
+
+/-- After notebook 1 is released, observer 2 still reads the stored note at
+address 1 from the collected observer footprint, including its observer
+payload. The footprint does not keep the unrelated holder at address 0.
+Releasing observer 2, or reading the same root through `projectHeap`, loses
+that payload. -/
+theorem second_observer_reads_notebook_note :
+    ((framedHistoryRelease sevenHeap sevenHeap_stores notebookReleaseRole
+        notebookReleaseRoots 1).1.lookup 1).map (fun cell => cell.value.observer) =
+      some (some 99) ∧
+      (framedHistoryRelease sevenHeap sevenHeap_stores notebookReleaseRole
+        notebookReleaseRoots 1).1.lookup 0 = none ∧
+      (framedHistoryRelease sevenHeap sevenHeap_stores notebookReleaseRole
+        notebookReleaseRoots 1).1.allocated =
+        footprint sevenHeap (release (observerRoots notebookReleaseRole notebookReleaseRoots) 1) ∧
+      (collect sevenHeap (release
+        (release (observerRoots notebookReleaseRole notebookReleaseRoots) 1) 2)).lookup 1 = none ∧
+      ((collect (projectHeap sevenHeap sevenHeap_stores)
+        (release (observerRoots notebookReleaseRole notebookReleaseRoots) 1)).lookup 1).map
+        Cell.value = some 0 := by
+  have notebookObserver : notebookReleaseRole 1 = HistoryRole.observer := by decide
+  have frame : (2, (1 : Fin 3)) ∈ notebookReleaseRoots := by decide
+  have allocated : (1 : Fin 3) ∈ sevenHeap.allocated := Finset.mem_univ _
+  have rootLive : Live sevenHeap ({(2, (1 : Fin 3))} : Roots Nat (Fin 3)) 1 :=
+    live_of_root sevenHeap _ (Finset.mem_singleton_self _) allocated
+  have kept := retained_observer_component sevenHeap notebookReleaseRole notebookReleaseRoots 1
+    (by decide : notebookReleaseRole 2 = HistoryRole.observer)
+    (by decide : (2 : Nat) ≠ 1) frame allocated rootLive
+  rcases framedHistoryRelease_spec sevenHeap sevenHeap_stores notebookReleaseRole
+      notebookReleaseRoots 1 notebookObserver with
+    ⟨imageEq, footprintEq, _, _, _, _, _, _⟩
+  have outsideEq : release (observerRoots notebookReleaseRole notebookReleaseRoots) 1 =
+      ({(2, (1 : Fin 3))} : Roots Nat (Fin 3)) := by decide
+  have sourceLookup : sevenHeap.lookup 1 = some (sevenCell 1) := by simp [sevenHeap]
+  have note : (sevenCell 1).value.observer = some 99 := by
+    simp [sevenCell, sevenPayload]
+  have validOutside : ValidRoots sevenHeap ({(2, (1 : Fin 3))} : Roots Nat (Fin 3)) := by
+    intro _pair _member
+    exact Finset.mem_univ _
+  have missingHolder : (0 : Fin 3) ∉ census sevenHeap ({(2, (1 : Fin 3))} : Roots Nat (Fin 3)) := by
+    decide
+  have holderDead : ¬ Live sevenHeap ({(2, (1 : Fin 3))} : Roots Nat (Fin 3)) 0 :=
+    fun live => missingHolder ((mem_census_iff_live _ _ validOutside 0).mpr live)
+  have dropped : release (release (observerRoots notebookReleaseRole notebookReleaseRoots) 1) 2 =
+      (∅ : Roots Nat (Fin 3)) := by
+    rw [outsideEq]
+    decide
+  have projectedAllocated : (1 : Fin 3) ∈ (projectHeap sevenHeap sevenHeap_stores).allocated := by
+    rw [projectHeap_allocated]
+    exact Finset.mem_univ _
+  have projectedLive := live_of_root (projectHeap sevenHeap sevenHeap_stores)
+    (release (observerRoots notebookReleaseRole notebookReleaseRoots) 1)
+    kept.1 projectedAllocated
+  have projectedLookup := lookup_collect_of_live (projectHeap sevenHeap sevenHeap_stores)
+    (release (observerRoots notebookReleaseRole notebookReleaseRoots) 1) projectedLive
+  have projectedCell : (projectHeap sevenHeap sevenHeap_stores).lookup 1 =
+      some (projectCell (sevenCell 1)) := by
+    simp [projectHeap_lookup, sevenHeap]
+  refine ⟨?_, ?_, footprintEq, ?_, ?_⟩
+  · rw [imageEq, kept.2.2.1, sourceLookup]
+    simp [note]
+  · rw [imageEq, outsideEq]
+    exact lookup_collect_of_not_live sevenHeap _ holderDead
+  · rw [dropped]
+    exact lookup_collect_of_not_live sevenHeap _ (not_live_empty sevenHeap 1)
+  · rw [projectedLookup, projectedCell]
+    simp [projectCell, sevenCell, sevenPayload]
 
 end Mettapedia.Machines.ResourceOwnership

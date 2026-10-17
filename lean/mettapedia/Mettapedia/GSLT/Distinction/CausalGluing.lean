@@ -1,3 +1,4 @@
+import Mettapedia.Machines.TraceObservationBoundary
 import Mettapedia.Machines.BranchLocalNeed.Worlds
 import Mettapedia.GSLT.Causality.SiteValuationDescent
 import Mettapedia.Algebra.OrderedProductCommutation
@@ -1003,5 +1004,75 @@ theorem observationValuation_descends :
   · simp only [seenFirst, if_false, add_zero, zero_add]
 
 end Occurrences
+
+/-! ## Resource-frontier observations on the common trace quotient -/
+
+/-- The constructed producer/reader frontier gives a causal observation of
+resource-separated words. Arbitrary context is handled by the existing tile
+closure, with no change to the language's ordered execution. -/
+theorem resourceFrontier_dependencyView_invariant
+    {Resource Identity Action : Type} [DecidableEq Resource] [DecidableEq Identity]
+    (identity : Action → Identity) (consume read produce : Action → List Resource)
+    {first second : List Action}
+    (equivalent : TraceEquiv (fun left right =>
+      Mettapedia.Machines.CausalReceipt.ResourceFrontier.Independent
+        (consume left) (read left) (produce left)
+        (consume right) (read right) (produce right)) first second) :
+    (Mettapedia.Machines.CausalReceipt.ResourceFrontier.receipt identity consume read produce first).dependencyView =
+      (Mettapedia.Machines.CausalReceipt.ResourceFrontier.receipt identity consume read produce second).dependencyView :=
+  TraceEquiv.invariant
+    (fun word => (Mettapedia.Machines.CausalReceipt.ResourceFrontier.receipt
+      identity consume read produce word).dependencyView)
+    (fun earlier later left right separate =>
+      Mettapedia.Machines.CausalReceipt.ResourceFrontier.receipt_view_swap
+        identity consume read produce earlier later left right separate)
+    equivalent
+
+/-- Checking freshness neither chooses an order nor hides a rejected word.
+The optional checked graph observation agrees across the same legal swaps. -/
+theorem resourceFrontier_checkedView_invariant
+    {Resource Identity Action : Type} [DecidableEq Resource] [DecidableEq Identity]
+    (identity : Action → Identity) (consume read produce : Action → List Resource)
+    {first second : List Action}
+    (equivalent : TraceEquiv (fun left right =>
+      Mettapedia.Machines.CausalReceipt.ResourceFrontier.Independent
+        (consume left) (read left) (produce left)
+        (consume right) (read right) (produce right)) first second) :
+    ((Mettapedia.Machines.CausalReceipt.ResourceFrontier.receipt?
+      identity consume read produce first).map
+      Mettapedia.Machines.CausalReceipt.dependencyView) =
+    ((Mettapedia.Machines.CausalReceipt.ResourceFrontier.receipt?
+      identity consume read produce second).map
+      Mettapedia.Machines.CausalReceipt.dependencyView) := by
+  have sameFresh := (equivalent.perm.map identity).nodup_iff
+  by_cases fresh : (first.map identity).Nodup
+  · simp only [Mettapedia.Machines.CausalReceipt.ResourceFrontier.receipt?,
+      if_pos fresh, if_pos (sameFresh.mp fresh), Option.map_some]
+    exact congrArg some (resourceFrontier_dependencyView_invariant
+      identity consume read produce equivalent)
+  · have refused : ¬ (second.map identity).Nodup := fun valid => fresh (sameFresh.mpr valid)
+    simp only [Mettapedia.Machines.CausalReceipt.ResourceFrontier.receipt?,
+      if_neg fresh, if_neg refused, Option.map_none]
+
+/-- Declared work and dependency span survive source-independent swaps of
+fresh occurrences. Required occurrence identity and the graph remain explicit. -/
+theorem resourceFrontier_dependencyReadout_invariant
+    {Resource Identity Action : Type} [DecidableEq Resource] [DecidableEq Identity]
+    (identity : Action → Identity) (consume read produce : Action → List Resource)
+    (cost : Identity → Mettapedia.Algebra.WorkSpan)
+    {first second : List Action} (fresh : (first.map identity).Nodup)
+    (equivalent : TraceEquiv (fun left right =>
+      Mettapedia.Machines.CausalReceipt.ResourceFrontier.Independent
+        (consume left) (read left) (produce left)
+        (consume right) (read right) (produce right)) first second) :
+    (Mettapedia.Machines.CausalReceipt.ResourceFrontier.receipt identity consume read produce first).dependencyReadout cost =
+      (Mettapedia.Machines.CausalReceipt.ResourceFrontier.receipt identity consume read produce second).dependencyReadout cost := by
+  have secondFresh := (equivalent.perm.map identity).nodup_iff.mp fresh
+  exact Mettapedia.Machines.CausalReceipt.dependencyReadout_of_dependencyView _ _
+    (resourceFrontier_dependencyView_invariant identity consume read produce equivalent)
+    (Mettapedia.Machines.CausalReceipt.ResourceFrontier.receipt_wellFormed
+      identity consume read produce first fresh).2.1
+    (Mettapedia.Machines.CausalReceipt.ResourceFrontier.receipt_wellFormed
+      identity consume read produce second secondFresh).2.1 cost
 
 end Mettapedia.GSLT.Distinction.CausalGluing

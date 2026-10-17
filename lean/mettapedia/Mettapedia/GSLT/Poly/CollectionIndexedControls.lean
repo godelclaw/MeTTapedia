@@ -1,5 +1,6 @@
 import Mettapedia.GSLT.Poly.CollectionIndexedAlgebra
 import Mettapedia.GSLT.Poly.CollectionIndexedEquiv
+import Mettapedia.GSLT.Poly.CollectionIndexedQuotient
 import Mettapedia.GSLT.Poly.CollectionIndexedRho
 
 /-!
@@ -23,9 +24,11 @@ open Mettapedia.GSLT.Poly.CollectionIndexedEquiv
 open Mettapedia.GSLT.Poly.CollectionIndexedRho
 open Mettapedia.GSLT.Poly.CollectionIndexedAlgebra
 open Mettapedia.GSLT.Poly.RhoCalcControl
+open Mettapedia.GSLT.Poly.BindingLanguage hiding toPattern
 open Mettapedia.GSLT.Poly.BindingSignature
 open IPFunctor
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.CanonicalBag
+open Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefGSLT
 
 def unitRule : GrammarRule :=
   { label := "Unit", category := "A", params := [], syntaxPattern := [] }
@@ -81,12 +84,15 @@ noncomputable def binderBagEquiv :
     Tree binderBagLanguage ([], "B") ≃ ClosedObject binderBagLanguage "B" :=
   closedIndexedEquiv binderBag_fragment binderBag_labels binderBag_uniqueBare "B"
 
+/-- The same language, quotiented by bag permutation. -/
+noncomputable def binderBagQuotient :
+    Quotient (treeSetoid (language := binderBagLanguage) "B") ≃
+      Quotient (patternSetoid (language := binderBagLanguage) "B") :=
+  collectionQuotientEquiv binderBag_fragment binderBag_labels binderBag_uniqueBare "B"
+
 theorem vec_pair_shaped :
     VecShaped (.collection .vec [.apply "U" [], .apply "W" []] none) := by
-  refine ⟨rfl, ?_⟩
-  intro element member
-  simp only [List.mem_cons, List.mem_singleton] at member
-  rcases member with rfl | rfl <;> simp [VecShaped]
+  simp [VecShaped]
 
 /-- A vector does not identify a permutation of its elements. -/
 theorem vec_keeps_order :
@@ -102,12 +108,20 @@ theorem set_forgets_duplicate :
     PatternCong
       (.collection .hashSet [.apply "U" [], .apply "U" []] none)
       (.collection .hashSet [.apply "U" []] none) :=
-  PatternCong.setDup
+  PatternCong.setDup (before := []) (element := .apply "U" []) (after := [])
 
 /-- Length of a top-level hash bag. -/
 def hashBagLength : Pattern → Option Nat
   | .collection .hashBag elements none => some elements.length
   | _ => none
+
+/-- Replacing one child of a collection does not change that length. -/
+theorem hashBagLength_replace {kind : CollType} {before : List Pattern}
+    {left right : Pattern} {after : List Pattern} {rest : Option String} :
+    hashBagLength (.collection kind (before ++ left :: after) rest) =
+      hashBagLength (.collection kind (before ++ right :: after) rest) := by
+  cases kind <;> cases rest <;>
+    simp [hashBagLength, List.length_append, List.length_cons]
 
 theorem patternCong_hashBagLength {left right : Pattern}
     (related : PatternCong left right) :
@@ -124,8 +138,7 @@ theorem patternCong_hashBagLength {left right : Pattern}
   | applyAt _ _ => simp [hashBagLength]
   | lambdaAt _ _ => simp [hashBagLength]
   | multiLambdaAt _ _ => simp [hashBagLength]
-  | collectionAt _ _ =>
-      simp [hashBagLength, List.length_append]
+  | collectionAt _ _ => exact hashBagLength_replace
 
 /-- A bag keeps both copies of a duplicated element. -/
 theorem bag_keeps_duplicate :
@@ -165,7 +178,7 @@ def flatProcess : RhoProcess := ofList [procDrop, procOutput] flatClosed
 
 /-- The algebra flattens a nested bag, and the multiset reading agrees. -/
 theorem nested_same_bag : fromProcess nestedProcess = fromProcess flatProcess :=
-  algebra_fromProcess (by simpa [nestedProcess, flatProcess, ofList] using nested_flattens)
+  algebra_fromProcess nested_flattens
 
 /-- `QuoteDrop` identifies a bag the parallel algebra keeps apart. -/
 theorem quote_drop_outside : ¬ AlgebraCong quotedOutput procOutput :=
@@ -238,21 +251,44 @@ def rightVecPacked :
       subst member
       simp [bindingDecl?, baseCollection?]⟩
 
+def emptyChildren {operator : (indexedSignature twoBareLanguage).Op "A"}
+    (lengthZero : ((indexedSignature twoBareLanguage).arity operator).length = 0) :
+    (direction : (polynomial (indexedSignature twoBareLanguage)).B ([], "A") operator) →
+      IFreeM (polynomial (indexedSignature twoBareLanguage))
+        (Vars (indexedSignature twoBareLanguage))
+        ((polynomial (indexedSignature twoBareLanguage)).src ([], "A") operator direction) :=
+  fun direction => (Nat.not_lt_zero direction.val
+    (by simpa [lengthZero] using direction.isLt)).elim
+
+theorem leftLengthZero :
+    ((indexedSignature twoBareLanguage).arity ⟨leftVecPacked, leftVecHead⟩).length = 0 := by
+  simp [indexedSignature, expandSlots, expandParam, baseCollection?,
+    leftVecHead, leftVecPacked, leftVecRule]
+
+theorem rightLengthZero :
+    ((indexedSignature twoBareLanguage).arity ⟨rightVecPacked, rightVecHead⟩).length = 0 := by
+  simp [indexedSignature, expandSlots, expandParam, baseCollection?,
+    rightVecHead, rightVecPacked, rightVecRule]
+
 def leftEmptyTree : Tree twoBareLanguage ([], "A") :=
-  IFreeM.liftBind (P := polynomial (indexedSignature twoBareLanguage))
-    ⟨leftVecPacked, leftVecHead⟩ Fin.elim0
+  IFreeM.liftBind (P := polynomial (indexedSignature twoBareLanguage)) (s := ([], "A"))
+    ⟨leftVecPacked, leftVecHead⟩ (emptyChildren leftLengthZero)
 
 def rightEmptyTree : Tree twoBareLanguage ([], "A") :=
-  IFreeM.liftBind (P := polynomial (indexedSignature twoBareLanguage))
-    ⟨rightVecPacked, rightVecHead⟩ Fin.elim0
+  IFreeM.liftBind (P := polynomial (indexedSignature twoBareLanguage)) (s := ([], "A"))
+    ⟨rightVecPacked, rightVecHead⟩ (emptyChildren rightLengthZero)
 
 theorem leftEmpty_pattern : toPattern leftEmptyTree = .collection .vec [] none := by
+  unfold leftEmptyTree
   rw [toPattern_liftBind]
-  simp [nodeOf, leftEmptyTree, leftVecPacked, leftVecRule, bareCollection?, List.ofFn_zero]
+  simp [nodeOf, leftVecPacked, leftVecRule, leftVecHead, bareCollection?, expandSlots, expandParam,
+    baseCollection?, List.ofFn_zero]
 
 theorem rightEmpty_pattern : toPattern rightEmptyTree = .collection .vec [] none := by
+  unfold rightEmptyTree
   rw [toPattern_liftBind]
-  simp [nodeOf, rightEmptyTree, rightVecPacked, rightVecRule, bareCollection?, List.ofFn_zero]
+  simp [nodeOf, rightVecPacked, rightVecRule, rightVecHead, bareCollection?, expandSlots, expandParam,
+    baseCollection?, List.ofFn_zero]
 
 /-- The two labels are distinct, and both rules are bare vectors. -/
 theorem twoBare_not_unique : ¬ UniqueBare twoBareLanguage := by
@@ -270,13 +306,12 @@ theorem bare_labels_not_injective :
   refine ⟨?_, ?_⟩
   · rw [leftEmpty_pattern, rightEmpty_pattern]
   · intro same
-    have operators :=
+    unfold leftEmptyTree rightEmptyTree at same
+    obtain ⟨equal, _children⟩ :=
       (IFreeM.liftBind_inj (P := polynomial (indexedSignature twoBareLanguage))
         (s := ([], "A")) ⟨leftVecPacked, leftVecHead⟩ ⟨rightVecPacked, rightVecHead⟩
-        Fin.elim0 Fin.elim0).mp same
-    obtain ⟨equal, _⟩ := operators
+        (emptyChildren leftLengthZero) (emptyChildren rightLengthZero)).mp same
     have rules := congrArg (fun operator => operator.1.1.label) equal
     simp [leftVecPacked, rightVecPacked, leftVecRule, rightVecRule] at rules
-    exact absurd rules (by decide)
 
 end Mettapedia.GSLT.Poly.CollectionIndexedControls

@@ -9,6 +9,8 @@ import Mettapedia.Languages.HOLLight.MeTTa.ProofEvents
 import Mettapedia.Languages.HOLLight.MeTTa.CacheAuthorizationControls
 import Mettapedia.Languages.HOLLight.MeTTa.AxiomExecution
 
+open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
+
 /-!
 # Authored HOL operations on native typed configuration data
 

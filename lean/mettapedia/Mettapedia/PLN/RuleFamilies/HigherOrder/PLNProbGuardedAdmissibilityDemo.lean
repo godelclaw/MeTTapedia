@@ -48,7 +48,7 @@ theorem cleanHard_D_carries_fork_sigma :
     forkStep_B_given_A, chainStep_C_given_A, chainStep_D_given_A]
 
 theorem cleanHard_D_carries_chain_provenance :
-    "PLNEndToEnd.chainFormulaExact" ∈ cleanHard_D.provenance := by
+    "PLNXiDerivedBNRules.xi_deduction_queryStrength_eq_plnDeduction_of_chainBN" ∈ cleanHard_D.provenance := by
   simp [cleanHard_D, cleanHard_C, cleanHard_B, chainWithStep, ofExactContraction,
     forkStep_B_given_A, chainStep_C_given_A, chainStep_D_given_A]
 
@@ -127,7 +127,7 @@ theorem colliderHardBlocked_has_no_value :
   rfl
 
 theorem colliderHardBlocked_carries_no_go_provenance :
-    "PLNEndToEnd.colliderNotExact" ∈ colliderHardBlocked.provenance := by
+    "PLNXiDerivedBNRules.plnAbductionStrength_not_exact_collider" ∈ colliderHardBlocked.provenance := by
   simp [colliderHardBlocked, hardGatedBlocked, colliderNegativeControl]
 
 theorem collider_demo_still_blocks_naive_abduction :

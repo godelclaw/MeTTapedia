@@ -2,6 +2,7 @@ import Mettapedia.OSLF.NativeTypes.Generation.BindingCarrierSemantics
 import Mettapedia.GSLT.LanguageDef.WellSortedClosing
 import Mettapedia.OSLF.MeTTaIL.ClosingRepresentation
 import Mettapedia.OSLF.MeTTaIL.NameSubstitutionLaws
+import Mettapedia.GSLT.LanguageDef.NamedFreeContext
 
 /-!
 # Finite declared free names in the authored binder interpretation
@@ -31,13 +32,28 @@ def freeContext : FreeDeclarations → FreeTypeContext
   | (name, sort) :: rest => fun actual =>
       if actual = name then some (.base sort) else freeContext rest actual
 
-def closeFree (depth : Nat) : FreeDeclarations → Pattern → Pattern
-  | [], pattern => pattern
-  | (name, _) :: rest, pattern => closeFree (depth + 1) rest (closeFVar depth name pattern)
+/-- The base-sort profile specializes the shared finite context action. -/
+def closeFree (depth : Nat) (declarations : FreeDeclarations) (pattern : Pattern) : Pattern :=
+  Mettapedia.GSLT.LanguageDef.NamedFreeContext.closeNames depth
+    (declarations.map Prod.fst) pattern
 
-def openFree (depth : Nat) : FreeDeclarations → Pattern → Pattern
-  | [], pattern => pattern
-  | (name, _) :: rest, pattern => openBVar depth (.fvar name) (openFree (depth + 1) rest pattern)
+def openFree (depth : Nat) (declarations : FreeDeclarations) (pattern : Pattern) : Pattern :=
+  Mettapedia.GSLT.LanguageDef.NamedFreeContext.openNames depth
+    (declarations.map Prod.fst) pattern
+
+/-- The legacy base-sort context is the same first-match source assignment. -/
+theorem freeContext_eq_ofList (declarations : FreeDeclarations) :
+    freeContext declarations = FreeTypeContext.ofList
+      (declarations.map (fun entry => (entry.1, TypeExpr.base entry.2))) := by
+  funext actual
+  induction declarations with
+  | nil => rfl
+  | cons entry rest ih =>
+      rcases entry with ⟨name, sort⟩
+      by_cases same : actual = name
+      · simp [freeContext, FreeTypeContext.ofList, same]
+      · simp only [freeContext, List.map_cons, FreeTypeContext.ofList,
+          if_neg same, if_neg (Ne.symm same), ih]
 
 mutual
   theorem object_free_names (pattern : Pattern) (object : isObjectPattern pattern = true) :
@@ -78,68 +94,48 @@ theorem close_name_absent (pattern : Pattern) (object : isObjectPattern pattern 
   exact ((freeVars_closeFVar_iff pattern depth name name).mp member).1 rfl
 
 theorem closeFree_object (depth : Nat) (declarations : FreeDeclarations) (pattern : Pattern) :
-    isObjectPattern (closeFree depth declarations pattern) = isObjectPattern pattern := by
-  induction declarations generalizing depth pattern with
-  | nil => rfl
-  | cons entry rest ih =>
-      simp only [closeFree, ih, isObjectPattern_closeFVar]
+    isObjectPattern (closeFree depth declarations pattern) = isObjectPattern pattern :=
+  Mettapedia.GSLT.LanguageDef.NamedFreeContext.closeNames_object depth
+    (declarations.map Prod.fst) pattern
 
-/-- Closing consumes the free lookup only after its actual occurrences have
-been replaced. Other declarations retain their original meanings. -/
+/-- Closing consumes the selected free lookup and preserves every other
+lookup. The old object-profile argument is retained by this specialization. -/
 theorem close_one_typed {language : LanguageDef} {bound : List TypeExpr}
     {pattern : Pattern} {type : TypeExpr} (name sort : String)
     (rest : FreeDeclarations)
     (typed : HasType language (freeContext ((name, sort) :: rest)) bound pattern type)
-    (object : isObjectPattern pattern = true) :
+    (_object : isObjectPattern pattern = true) :
     HasType language (freeContext rest) (bound ++ [.base sort])
-      (closeFVar bound.length name pattern) type := by
-  have closed := typed.closeFVar name (.base sort) (by simp [freeContext])
-  apply closed.recontextualizeFree
-  intro actual actualType member lookup
-  have distinct : actual ≠ name := by
-    intro same
-    subst actual
-    exact close_name_absent pattern object bound.length name member
-  simpa only [freeContext, if_neg distinct] using lookup
+      (closeFVar bound.length name pattern) type :=
+  typed.closeFVarInto name (.base sort) (by simp [freeContext])
+    (by
+      intro actual actualType distinct present
+      simpa only [freeContext, if_neg distinct] using present)
 
-/-- The independent authored typing judgment certifies every closed body
-at its computed combined bound context, for every finite declaration list. -/
+/-- The base-sort interpretation reuses the full-TypeExpr closing theorem. -/
 theorem closeFree_typed {language : LanguageDef} (declarations : FreeDeclarations)
     {bound : List TypeExpr} {pattern : Pattern} {type : TypeExpr}
     (typed : HasType language (freeContext declarations) bound pattern type)
-    (object : isObjectPattern pattern = true) :
+    (_object : isObjectPattern pattern = true) :
     HasType language FreeTypeContext.empty
       (bound ++ declarations.map (fun entry => .base entry.2))
       (closeFree bound.length declarations pattern) type := by
-  induction declarations generalizing bound pattern with
-  | nil => simpa only [List.map_nil, List.append_nil, closeFree, freeContext] using typed
-  | cons entry rest ih =>
-      obtain ⟨name, sort⟩ := entry
-      have closed := close_one_typed name sort rest typed object
-      have closedObject : isObjectPattern (closeFVar bound.length name pattern) = true := by
-        rw [isObjectPattern_closeFVar]; exact object
-      simpa only [List.map_cons, List.length_append, List.length_singleton,
-        List.append_assoc, List.singleton_append, closeFree] using ih closed closedObject
+  have closed := Mettapedia.GSLT.LanguageDef.NamedFreeContext.closeContext_typed
+    (declarations.map (fun entry => (entry.1, TypeExpr.base entry.2)))
+    (by rwa [← freeContext_eq_ofList])
+  simpa only [Mettapedia.GSLT.LanguageDef.NamedFreeContext.closeContext,
+    Mettapedia.GSLT.LanguageDef.NamedFreeContext.contextSorts, List.map_map,
+    Function.comp_def, closeFree] using closed
 
-/-- Actual opening reconstructs the original independently typed pattern,
-including its named free occurrences and original binder display metadata. -/
+/-- Opening reconstructs the same original source through the shared inverse. -/
 theorem openFree_closeFree {language : LanguageDef} (declarations : FreeDeclarations)
     {bound : List TypeExpr} {pattern : Pattern} {type : TypeExpr}
     (typed : HasType language (freeContext declarations) bound pattern type)
-    (object : isObjectPattern pattern = true) :
-    openFree bound.length declarations (closeFree bound.length declarations pattern) = pattern := by
-  induction declarations generalizing bound pattern with
-  | nil => rfl
-  | cons entry rest ih =>
-      obtain ⟨name, sort⟩ := entry
-      have closed := close_one_typed name sort rest typed object
-      have closedObject : isObjectPattern (closeFVar bound.length name pattern) = true := by
-        rw [isObjectPattern_closeFVar]; exact object
-      have recovered := ih closed closedObject
-      simp only [List.length_append, List.length_singleton] at recovered
-      simp only [openFree, closeFree, recovered]
-      exact open_close_id _ _ _
-        (by rw [← isWellScopedAt_eq_lc_at]; exact typed.isWellScopedAt)
+    (_object : isObjectPattern pattern = true) :
+    openFree bound.length declarations (closeFree bound.length declarations pattern) = pattern :=
+  Mettapedia.GSLT.LanguageDef.NamedFreeContext.openNames_closeNames bound.length
+    (declarations.map Prod.fst) pattern
+    (by rw [← isWellScopedAt_eq_lc_at]; exact typed.isWellScopedAt)
 
 abbrev FreeTypedObject (language : LanguageDef) (declarations : FreeDeclarations)
     (context : List String) (sort : String) :=

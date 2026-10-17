@@ -29,7 +29,7 @@ The theorem is deliberately relative to the declared propensity readout.  It
 does not claim that a real number cannot set-theoretically encode a pair.  The
 positive result is that the native two-coordinate sufficient statistic
 `BinaryEvidence` is closed under revision, while the scheduler projection is
-not.  Raw additive revision retains its existing independent-evidence scope;
+not.  Raw additive revision keeps its disjoint-observation scope;
 provenance admissibility is handled by the stamped-witness bridge.
 -/
 
@@ -115,7 +115,8 @@ end RevisionObservation
 
 /-! ## The PLN mortal-scientist witness -/
 
-/-- Full binary evidence with raw independent-evidence revision and unit-prior
+/-- Full binary evidence with raw additive revision (exact for disjoint
+observations) and unit-prior
 propensity as the controller-visible value. -/
 def propensityRevisionSystem :
     RevisionObservation BinaryEvidence BinaryEvidence ℝ≥0∞ where

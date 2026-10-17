@@ -9,6 +9,13 @@ keys satisfy the general support agreement theorem. A shared middle key
 separates the two finalization profiles. The row-major language executes the
 same admitted directive through a retained pause and actual publication;
 the complete source receipt and physical positions remain available.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  This profile applies each row's sinks before the next
+row's.  The kernel (`Mainline`) writes the instances of every `+` sink over all rows
+first and then finalizes the other sinks: on `(edge a b) (edge b c)`, the directive
+`(exec 0 (, (edge $x $y)) (O (+ $x) (- $y)))` leaves `a` in the kernel and both
+`a` and `b` in this profile.
 -/
 
 set_option autoImplicit false

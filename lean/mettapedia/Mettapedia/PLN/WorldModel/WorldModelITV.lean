@@ -1,5 +1,5 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModel
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 -- PLNWorldModelCalculusTyped merged into PLNWorldModelCalculus
 import Mettapedia.PLN.TruthValues.PLNIndefiniteTruth
 import Mettapedia.PLN.TruthValues.PLNTruthTower
@@ -21,22 +21,12 @@ namespace Mettapedia.PLN.WorldModel.PLNWorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.PLN.TruthValues.PLNIndefiniteTruth
+open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet (IDMPredictiveContext)
 
 /-- Context-indexed ITV semantics: how to map extracted evidence to an ITV. -/
 structure ITVSemantics (Ctx : Type*) where
   eval : Ctx → BinaryEvidence → Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV
 
-/-- Context for Walley IDM predictive intervals (`s > 0` is IDM prior strength). -/
-structure IDMPredictiveContext where
-  s : ℝ
-  s_pos : 0 < s
-
-namespace IDMPredictiveContext
-
-/-- Common default in IDM examples (`s = 2`). -/
-def default : IDMPredictiveContext := ⟨2, by norm_num⟩
-
-end IDMPredictiveContext
 
 namespace ITVSemantics
 

@@ -35,6 +35,7 @@ open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
 namespace Mettapedia.Languages.MeTTa.PrimeCandidates.SharedJudgmentServiceRegistry
 
 open Mettapedia.GSLT.LanguageDef
+open SemanticService
 open KernelAuthority SemanticEvidence
 open Mettapedia.GSLT.Core.ContextualLadder
 open Mettapedia.TypeTheory.DesignStudy
@@ -48,71 +49,12 @@ section General
 
 variable {Index : Type uIndex} {assembly : Assembly} {C : Cwf.{u, v, w, w'}}
 
-/-- The existing face classifier, applied before correctness is supplied. -/
-def rawFace {target : AdmissionObject.{uArtifact}} :
-    RawService.{uArtifact, uEvidence} target → SemanticService.Face
-  | .directDecision _ => .directDecision
-  | .nativeProof .. => .nativeProof
-  | .nativeOperation .. => .nativeOperation
-  | .certificateBoundary .. => .certificateBoundary
-
-theorem toService_face {target : AdmissionObject.{uArtifact}}
-    (raw : RawService.{uArtifact, uEvidence} target) (qualified : raw.Qualified) :
-    (raw.toService qualified).face = rawFace raw := by
-  cases raw <;> rfl
-
 /-- Raw operations and representations for an independently required family.
 There are no correctness proofs in this data record. -/
 structure Data (targets : Index → AdmissionObject.{uArtifact})
     (interpretation : SharedJudgmentInterpretation.Data assembly C) where
   service : (index : Index) → RawService.{uArtifact, uEvidence} (targets index)
   attachment : (index : Index) → NativeAttachment (targets index) interpretation
-
-/-- Required request data, independently of the proposed implementation.
-The native guest includes its judgment; an operation source includes its
-meaning. Changing either requires an explicit interface translation. -/
-inductive Interface (target : AdmissionObject.{uArtifact}) :
-    Type (max (uArtifact + 1) (uEvidence + 1)) where
-  | directDecision
-  | nativeProof (guest : NativeProofSystem.{uArtifact, uEvidence} target.Carrier)
-  | nativeOperation (source : AdmissionObject.{uArtifact})
-  | certificateBoundary (Certificate : Type uEvidence)
-
-def Interface.face {target : AdmissionObject.{uArtifact}} :
-    Interface.{uArtifact, uEvidence} target → SemanticService.Face
-  | .directDecision => .directDecision
-  | .nativeProof _ => .nativeProof
-  | .nativeOperation _ => .nativeOperation
-  | .certificateBoundary _ => .certificateBoundary
-
-/-- Exact request-interface agreement leaves the checker/run unqualified.
-Equivalent but differently represented requests need an explicit adapter;
-this relation does not invent one. -/
-inductive InterfaceMatches {target : AdmissionObject.{uArtifact}} :
-    RawService.{uArtifact, uEvidence} target → Interface target → Prop where
-  | directDecision (decide : target.Carrier → Bool) :
-      InterfaceMatches (.directDecision decide) .directDecision
-  | nativeProof (guest : NativeProofSystem.{uArtifact, uEvidence} target.Carrier)
-      (check : target.Carrier → guest.ProofObject → Bool) :
-      InterfaceMatches (.nativeProof guest check) (.nativeProof guest)
-  | nativeOperation (source : AdmissionObject.{uArtifact})
-      (run : source.Carrier → target.Carrier) :
-      InterfaceMatches (.nativeOperation source run) (.nativeOperation source)
-  | certificateBoundary (Certificate : Type uEvidence)
-      (checker : Checker target.Carrier Certificate) :
-      InterfaceMatches (.certificateBoundary Certificate checker) (.certificateBoundary Certificate)
-
-theorem InterfaceMatches.face {target : AdmissionObject.{uArtifact}}
-    {raw : RawService.{uArtifact, uEvidence} target} {interface : Interface target}
-    (agrees : InterfaceMatches raw interface) : rawFace raw = interface.face := by
-  cases agrees <;> rfl
-
-theorem InterfaceMatches.operation_source {target source expected : AdmissionObject.{uArtifact}}
-    {run : source.Carrier → target.Carrier}
-    (agrees : InterfaceMatches (.nativeOperation source run : RawService.{uArtifact, uEvidence} target)
-      (.nativeOperation expected)) : source = expected := by
-  cases agrees
-  rfl
 
 /-- The required native syntax, before assigning its semantic type/value. -/
 structure NativeSurface (target : AdmissionObject.{uArtifact}) where

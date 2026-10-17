@@ -40,7 +40,7 @@ open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.Substitution (instantiateBVar instantiateBVarAt)
 open Mettapedia.OSLF.MeTTaIL.ScopedPattern
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
   (contract contractList contractRoot contract_apply_of_ne contractRoot_quote_cases quoted
     dropped unitAtom numeral contract_numeral variableAtom emptySpace nameCode)
 open Mettapedia.Logic.HostingStyles.AtomsReduce (symbolAtom tokens_numeral)

@@ -235,10 +235,10 @@ theorem recording_erasure {Memory Event : Type}
     (observe : Memory → WorkState → Option (Outcome × List Nat) → List WorkState → Event)
     (capacity : Option Nat) (fuel : Nat)
     (snapshot : Snapshot WorkState (Outcome × List Nat) Memory) :
-    Recording.erase (Snapshot.run (occurrenceSystem program)
-      (Recording.controller base observe capacity) fuel (Recording.start snapshot capacity)) =
-        Snapshot.run (occurrenceSystem program) base fuel snapshot :=
-  Recording.run_erasure _ _ _ _ _ _
+    Recording.erase (Recording.runSelected (occurrenceSystem program)
+      base observe fuel (Recording.start snapshot capacity)) =
+        Snapshot.run (occurrenceSystem program) base fuel snapshot := by
+  rw [Recording.runSelected_erasure, Recording.erase_start]
 
 /-- Each retained selected Need occurrence has its ordinary replay history
 and independently admitted authored-row trace. Recording exhaustion does not
@@ -2220,16 +2220,16 @@ theorem authored_recording_erasure {V : Type} [Monoid V]
     (controller : Controller (AuthoredWork × V) (AuthoredResult × V) Memory)
     (observe : Memory → (AuthoredWork × V) → Option (AuthoredResult × V) →
       List (AuthoredWork × V) → Event)
-    (capacity : Option Nat) (fuel : Nat)
+    (fuel : Nat)
     (snapshot : Mettapedia.GSLT.Core.InferenceControl.Snapshot
       (AuthoredWork × V) (AuthoredResult × V) (Memory × Option (Recording.Prefix Event))) :
-    Recording.erase (Mettapedia.GSLT.Core.InferenceControl.Snapshot.run
+    Recording.erase (Recording.runSelected
       (authoredSystem program annotation interpretation)
-      (Recording.controller controller observe capacity) fuel snapshot) =
+      controller observe fuel snapshot) =
       Mettapedia.GSLT.Core.InferenceControl.Snapshot.run
         (authoredSystem program annotation interpretation) controller fuel
         (Recording.erase snapshot) :=
-  Recording.run_erasure _ _ _ _ _ _
+  Recording.runSelected_erasure _ _ _ _ _
 
 /-- Retained graph nodes inherit the source's caller agreement even when the
 recording omits later work. No completeness claim follows from this fact. -/
@@ -2316,15 +2316,15 @@ theorem authored_recorded_replay {V : Type} [Monoid V] [DecidableEq V]
     (capacity fuel : Nat)
     (fits : (Recording.stream (authoredOccurrenceSystem program annotation interpretation)
       controller Recording.Replay.observe fuel snapshot).length ≤ capacity) :
-    ((Mettapedia.GSLT.Core.InferenceControl.Snapshot.run
+    ((Recording.runSelected
       (authoredOccurrenceSystem program annotation interpretation)
-      (Recording.controller controller Recording.Replay.observe (some capacity)) fuel
+      controller Recording.Replay.observe fuel
       (Recording.start snapshot (some capacity))).memory.2).bind
         (fun record => Recording.Replay.readout
           (authoredOccurrenceSystem program annotation interpretation) controller record snapshot) =
       some (.ok (Mettapedia.GSLT.Core.InferenceControl.Snapshot.run
         (authoredOccurrenceSystem program annotation interpretation) controller fuel snapshot)) :=
-  Recording.Replay.recorded_replay _ _ _ _ _ fits
+  Recording.Replay.selected_recorded_replay _ _ _ _ _ fits
 
 /-- A rejected native replay preserves the full nested checkpoint and the
 entire suffix. Its accepted prefix consists of actual source expansions. -/
@@ -2893,15 +2893,15 @@ theorem recorded_native_replay {V : Type} [Monoid V] [DecidableEq V]
     (capacity fuel : Nat)
     (fits : (Recording.stream (recordedAuthoredOccurrenceSystem program annotation interpretation)
       controller Recording.Replay.observe fuel snapshot).length ≤ capacity) :
-    ((Mettapedia.GSLT.Core.InferenceControl.Snapshot.run
+    ((Recording.runSelected
       (recordedAuthoredOccurrenceSystem program annotation interpretation)
-      (Recording.controller controller Recording.Replay.observe (some capacity)) fuel
+      controller Recording.Replay.observe fuel
       (Recording.start snapshot (some capacity))).memory.2).bind
         (fun record => Recording.Replay.readout
           (recordedAuthoredOccurrenceSystem program annotation interpretation) controller record snapshot) =
       some (.ok (Mettapedia.GSLT.Core.InferenceControl.Snapshot.run
         (recordedAuthoredOccurrenceSystem program annotation interpretation) controller fuel snapshot)) :=
-  Recording.Replay.recorded_replay _ _ _ _ _ fits
+  Recording.Replay.selected_recorded_replay _ _ _ _ _ fits
 
 /-- A mismatch preserves its entire native checkpoint and unconsumed suffix.
 The accepted prefix consists of actual recomputed source transitions. -/

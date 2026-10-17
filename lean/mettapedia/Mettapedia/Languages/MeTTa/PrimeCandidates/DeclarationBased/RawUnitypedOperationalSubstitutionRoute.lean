@@ -168,7 +168,7 @@ theorem noncanonicalInput_has_no_successOutput
           (.fvar "outside-canonical-term-image") = some output :=
     witness.down.down
   simp [substituteEncoded?, decodeRawTerm?,
-    Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec.decodeTm?]
+    Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec.decodeTm?]
     at impossible
 
 /-- Negative non-collapse control: the partial successful-output relation on

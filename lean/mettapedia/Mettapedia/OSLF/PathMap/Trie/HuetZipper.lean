@@ -83,7 +83,7 @@ theorem splitAtByte_rejoin (b : UInt8) (children : List (UInt8 × FTrie V))
         simp only [Option.some.injEq, Prod.mk.injEq] at hsplit
         obtain ⟨rfl, rfl, rfl⟩ := hsplit
         have hrej := ih left' hsplit'
-        simp only [rejoinChildren, List.append] at hrej ⊢
+        simp only [rejoinChildren] at hrej ⊢
         exact congrArg ((k, c) :: ·) hrej
       | none => rw [hsplit'] at hsplit; simp at hsplit
 
@@ -296,7 +296,7 @@ theorem HuetTrieZipper.toSimpleZipper_values (z : HuetTrieZipper V) :
     the OSLF type system transfers to HuetTrieZipper because the focus's
     iteration-sound zipper agrees with the full trie at the cursor path. -/
 theorem HuetTrieZipper.zam_transfer (t : FTrie V)
-    (z : HuetTrieZipper V) (hreach : ReachableFrom t z) :
+    (z : HuetTrieZipper V) (_hreach : ReachableFrom t z) :
     z.toSimpleZipper.remaining.map Prod.snd =
     z.focus.entries.map Prod.snd := by
   simp [toSimpleZipper, SimpleTrieZipper.fromTrie]

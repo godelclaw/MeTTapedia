@@ -2488,6 +2488,13 @@ def paramsHasSet : List TermParam → Bool
       | some (.hashSet, _) => true
       | _ => paramsHasSet parameters
 
+/-- A parameter whose collection is a hash set. Binder counts ignore it, and its
+length is the datum a set deletion may change. -/
+def isHashSetParam (parameter : TermParam) : Bool :=
+  match baseCollection? parameter with
+  | some (.hashSet, _) => true
+  | _ => false
+
 theorem paramsHasSet_get {parameters : List TermParam} {index : Nat} {element : String}
     (bound : index < parameters.length)
     (shape : baseCollection? (parameters.get ⟨index, bound⟩) = some (.hashSet, element)) :
@@ -2803,6 +2810,240 @@ theorem recover_no_set {total total' : Nat}
                                   tailLengthsFixed tailLengthsFixed' tailNoSet tailRel
                               exact ⟨by rw [countEq, countsTailEq], by rw [lengthEq, lengthsTailEq]⟩
 
+/-- Binder counts agree, and so does every length that is not a hash set.
+A hash-set length is not part of the result: a set deletion may change it. -/
+theorem recover_partial {total total' : Nat}
+    (printed : Fin total → Pattern) (printed' : Fin total' → Pattern)
+    (offset offset' : Nat) (parameters : List TermParam)
+    (counts lengths counts' lengths' : List Nat)
+    (countsLength : counts.length = parameters.length)
+    (lengthsLength : lengths.length = parameters.length)
+    (countsLength' : counts'.length = parameters.length)
+    (lengthsLength' : lengths'.length = parameters.length)
+    (countsFixed : ∀ index : Nat,
+      (multiBase? (parameters.getD index missingParameter)).isNone →
+        counts.getD index 0 = 0)
+    (countsFixed' : ∀ index : Nat,
+      (multiBase? (parameters.getD index missingParameter)).isNone →
+        counts'.getD index 0 = 0)
+    (lengthsFixed : ∀ index : Nat,
+      (baseCollection? (parameters.getD index missingParameter)).isNone →
+        lengths.getD index 0 = 0)
+    (lengthsFixed' : ∀ index : Nat,
+      (baseCollection? (parameters.getD index missingParameter)).isNone →
+        lengths'.getD index 0 = 0)
+    (related : List.Forall₂ PatternCong
+      (assemblePrinted printed offset parameters counts lengths)
+      (assemblePrinted printed' offset' parameters counts' lengths')) :
+    counts = counts' ∧
+      (∀ index : Nat,
+        isHashSetParam (parameters.getD index missingParameter) = false →
+          lengths.getD index 0 = lengths'.getD index 0) := by
+  induction parameters generalizing counts lengths counts' lengths' offset offset' with
+  | nil =>
+      cases counts with
+      | cons _ _ => simp at countsLength
+      | nil =>
+          cases lengths with
+          | cons _ _ => simp at lengthsLength
+          | nil =>
+              cases counts' with
+              | cons _ _ => simp at countsLength'
+              | nil =>
+                  cases lengths' with
+                  | cons _ _ => simp at lengthsLength'
+                  | nil => exact ⟨rfl, fun _ _ => rfl⟩
+  | cons parameter parameters inductionHypothesis =>
+      cases counts with
+      | nil => simp at countsLength
+      | cons count counts =>
+          cases lengths with
+          | nil => simp at lengthsLength
+          | cons length lengths =>
+              cases counts' with
+              | nil => simp at countsLength'
+              | cons count' counts' =>
+                  cases lengths' with
+                  | nil => simp at lengthsLength'
+                  | cons length' lengths' =>
+                      have tailCountsLength : counts.length = parameters.length := by
+                        simp only [List.length_cons] at countsLength
+                        exact Nat.succ.inj countsLength
+                      have tailLengthsLength : lengths.length = parameters.length := by
+                        simp only [List.length_cons] at lengthsLength
+                        exact Nat.succ.inj lengthsLength
+                      have tailCountsLength' : counts'.length = parameters.length := by
+                        simp only [List.length_cons] at countsLength'
+                        exact Nat.succ.inj countsLength'
+                      have tailLengthsLength' : lengths'.length = parameters.length := by
+                        simp only [List.length_cons] at lengthsLength'
+                        exact Nat.succ.inj lengthsLength'
+                      have tailCountsFixed : ∀ index : Nat,
+                          (multiBase? (parameters.getD index missingParameter)).isNone →
+                            counts.getD index 0 = 0 := by
+                        intro index hypothesis
+                        simpa [List.getD] using
+                          countsFixed (index + 1) (by simpa [List.getD] using hypothesis)
+                      have tailCountsFixed' : ∀ index : Nat,
+                          (multiBase? (parameters.getD index missingParameter)).isNone →
+                            counts'.getD index 0 = 0 := by
+                        intro index hypothesis
+                        simpa [List.getD] using
+                          countsFixed' (index + 1) (by simpa [List.getD] using hypothesis)
+                      have tailLengthsFixed : ∀ index : Nat,
+                          (baseCollection? (parameters.getD index missingParameter)).isNone →
+                            lengths.getD index 0 = 0 := by
+                        intro index hypothesis
+                        simpa [List.getD] using
+                          lengthsFixed (index + 1) (by simpa [List.getD] using hypothesis)
+                      have tailLengthsFixed' : ∀ index : Nat,
+                          (baseCollection? (parameters.getD index missingParameter)).isNone →
+                            lengths'.getD index 0 = 0 := by
+                        intro index hypothesis
+                        simpa [List.getD] using
+                          lengthsFixed' (index + 1) (by simpa [List.getD] using hypothesis)
+                      cases reading : baseCollection? parameter with
+                      | some packed =>
+                          obtain ⟨kind, element⟩ := packed
+                          cases kind with
+                          | hashSet =>
+                              simp only [assemblePrinted, reading] at related
+                              cases related with
+                              | cons _headRel tailRel =>
+                                  have countEq : count = count' := by
+                                    have countZ : count = 0 := by
+                                      simpa [List.getD] using countsFixed 0
+                                        (by simp [List.getD, multiBase_of_collection reading])
+                                    have countZ' : count' = 0 := by
+                                      simpa [List.getD] using countsFixed' 0
+                                        (by simp [List.getD, multiBase_of_collection reading])
+                                    rw [countZ, countZ']
+                                  obtain ⟨countsTailEq, lengthsAgree⟩ :=
+                                    inductionHypothesis (offset + length) (offset' + length')
+                                      counts lengths counts' lengths' tailCountsLength
+                                      tailLengthsLength tailCountsLength' tailLengthsLength'
+                                      tailCountsFixed tailCountsFixed' tailLengthsFixed
+                                      tailLengthsFixed' tailRel
+                                  refine ⟨by rw [countEq, countsTailEq], ?_⟩
+                                  intro index marked
+                                  cases index with
+                                  | zero =>
+                                      have bad : isHashSetParam parameter = true := by
+                                        simp [isHashSetParam, reading]
+                                      have marked' : isHashSetParam parameter = false := by
+                                        simpa [List.getD] using marked
+                                      rw [bad] at marked'
+                                      cases marked'
+                                  | succ index =>
+                                      exact lengthsAgree index (by simpa [List.getD] using marked)
+                          | hashBag =>
+                              simp only [assemblePrinted, reading] at related
+                              cases related with
+                              | cons headRel tailRel =>
+                                  obtain ⟨_leftElements, _rightElements, leftEq, rightEq, elementsRel⟩ :=
+                                    patternCong_bag_elements headRel
+                                      (Or.inl ⟨List.ofFn fun index : Fin length =>
+                                        nthPrinted printed (offset + index.val), rfl⟩)
+                                  simp only [Pattern.collection.injEq] at leftEq rightEq
+                                  obtain ⟨_, leftList, _⟩ := leftEq
+                                  obtain ⟨_, rightList, _⟩ := rightEq
+                                  subst leftList
+                                  subst rightList
+                                  have lengthEq : length = length' := by
+                                    simpa [List.length_ofFn] using bagElementRel_length elementsRel
+                                  subst lengthEq
+                                  have countEq : count = count' := by
+                                    have countZ : count = 0 := by
+                                      simpa [List.getD] using countsFixed 0
+                                        (by simp [List.getD, multiBase_of_collection reading])
+                                    have countZ' : count' = 0 := by
+                                      simpa [List.getD] using countsFixed' 0
+                                        (by simp [List.getD, multiBase_of_collection reading])
+                                    rw [countZ, countZ']
+                                  obtain ⟨countsTailEq, lengthsAgree⟩ :=
+                                    inductionHypothesis (offset + length) (offset' + length)
+                                      counts lengths counts' lengths' tailCountsLength
+                                      tailLengthsLength tailCountsLength' tailLengthsLength'
+                                      tailCountsFixed tailCountsFixed' tailLengthsFixed
+                                      tailLengthsFixed' tailRel
+                                  refine ⟨by rw [countEq, countsTailEq], ?_⟩
+                                  intro index marked
+                                  cases index with
+                                  | zero => simp [List.getD]
+                                  | succ index =>
+                                      exact lengthsAgree index (by simpa [List.getD] using marked)
+                          | vec =>
+                              simp only [assemblePrinted, reading] at related
+                              cases related with
+                              | cons headRel tailRel =>
+                                  obtain ⟨_leftElements, _rightElements, leftEq, rightEq, pointwise⟩ :=
+                                    patternCong_vec_elements headRel
+                                      (Or.inl ⟨List.ofFn fun index : Fin length =>
+                                        nthPrinted printed (offset + index.val), rfl⟩)
+                                  simp only [Pattern.collection.injEq] at leftEq rightEq
+                                  obtain ⟨_, leftList, _⟩ := leftEq
+                                  obtain ⟨_, rightList, _⟩ := rightEq
+                                  subst leftList
+                                  subst rightList
+                                  have lengthEq : length = length' := by
+                                    simpa [List.length_ofFn] using
+                                      List.Forall₂.length_eq pointwise
+                                  subst lengthEq
+                                  have countEq : count = count' := by
+                                    have countZ : count = 0 := by
+                                      simpa [List.getD] using countsFixed 0
+                                        (by simp [List.getD, multiBase_of_collection reading])
+                                    have countZ' : count' = 0 := by
+                                      simpa [List.getD] using countsFixed' 0
+                                        (by simp [List.getD, multiBase_of_collection reading])
+                                    rw [countZ, countZ']
+                                  obtain ⟨countsTailEq, lengthsAgree⟩ :=
+                                    inductionHypothesis (offset + length) (offset' + length)
+                                      counts lengths counts' lengths' tailCountsLength
+                                      tailLengthsLength tailCountsLength' tailLengthsLength'
+                                      tailCountsFixed tailCountsFixed' tailLengthsFixed
+                                      tailLengthsFixed' tailRel
+                                  refine ⟨by rw [countEq, countsTailEq], ?_⟩
+                                  intro index marked
+                                  cases index with
+                                  | zero => simp [List.getD]
+                                  | succ index =>
+                                      exact lengthsAgree index (by simpa [List.getD] using marked)
+                      | none =>
+                          simp only [assemblePrinted, reading] at related
+                          cases related with
+                          | cons headRel tailRel =>
+                              obtain ⟨countEq, _body⟩ :=
+                                printArgument_body parameter count count'
+                                  (nthPrinted printed offset) (nthPrinted printed' offset') headRel
+                                  (by
+                                    intro notMulti
+                                    simpa [List.getD] using
+                                      countsFixed 0 (by simpa [List.getD] using notMulti))
+                                  (by
+                                    intro notMulti
+                                    simpa [List.getD] using
+                                      countsFixed' 0 (by simpa [List.getD] using notMulti))
+                              have lengthEq : length = length' := by
+                                have lengthZero : length = 0 := by
+                                  simpa [List.getD] using
+                                    lengthsFixed 0 (by simp [List.getD, reading])
+                                have lengthZero' : length' = 0 := by
+                                  simpa [List.getD] using
+                                    lengthsFixed' 0 (by simp [List.getD, reading])
+                                rw [lengthZero, lengthZero']
+                              obtain ⟨countsTailEq, lengthsAgree⟩ :=
+                                inductionHypothesis (offset + 1) (offset' + 1) counts lengths
+                                  counts' lengths' tailCountsLength tailLengthsLength
+                                  tailCountsLength' tailLengthsLength' tailCountsFixed
+                                  tailCountsFixed' tailLengthsFixed tailLengthsFixed' tailRel
+                              refine ⟨by rw [countEq, countsTailEq], ?_⟩
+                              intro index marked
+                              cases index with
+                              | zero => simpa [List.getD] using lengthEq
+                              | succ index =>
+                                  exact lengthsAgree index (by simpa [List.getD] using marked)
+
 /-- One collection parameter splits the arity into a prefix, a replicate, and a suffix. -/
 theorem expand_split (parameters : List TermParam) (counts lengths : List Nat)
     (countsLength : counts.length = parameters.length)
@@ -3105,6 +3346,21 @@ theorem assemble_at_vec {total : Nat} (printed : Fin total → Pattern)
   rw [reading]
   simp
 
+theorem assemble_at_set {total : Nat} (printed : Fin total → Pattern)
+    (parameters : List TermParam) (counts lengths : List Nat)
+    (countsLength : counts.length = parameters.length)
+    (lengthsLength : lengths.length = parameters.length)
+    (done : Nat) (doneBound : done < parameters.length) {element : String}
+    (reading : baseCollection? (parameters.get ⟨done, doneBound⟩) = some (.hashSet, element)) :
+    (assemblePrinted printed 0 parameters counts lengths).getD done (.bvar 0) =
+      .collection .hashSet
+        (List.ofFn fun index : Fin (lengths.getD done 0) =>
+          nthPrinted printed (takenSlots parameters counts lengths done + index.val))
+        none := by
+  rw [assemble_at printed 0 parameters counts lengths countsLength lengthsLength done doneBound]
+  rw [reading]
+  simp
+
 theorem assemble_at_bag {total : Nat} (printed : Fin total → Pattern)
     (parameters : List TermParam) (counts lengths : List Nat)
     (countsLength : counts.length = parameters.length)
@@ -3149,482 +3405,6 @@ theorem overlay_segment {Γ : List String} {sort element : String}
   show start + index.val - start = index.val
   have indexLt := index.isLt
   omega
-
-/-- Advance one parameter. A binder or a vector stays pointwise. A hash bag is
-rearranged once, with every other direction held fixed. -/
-theorem extend_alignment
-    (labels : (language.terms.map (·.label)).Nodup)
-    (uniqueBare : UniqueBare language)
-    {Γ : List String} {sort : String}
-    (operator : (indexedSignature language).Op sort)
-    (done : Nat) (doneBound : done < operator.1.1.params.length)
-    (leftChildren rightChildren current : Child language Γ sort operator)
-    (ih : ∀ direction
-        (other : Tree language
-          ((polynomial (indexedSignature language)).src (Γ, sort) operator direction)),
-        PatternCong (toPattern (leftChildren direction)) (toPattern other) →
-          TreeCong language (leftChildren direction) other)
-    (noSet : paramsHasSet operator.1.1.params = false)
-    (argRel : List.Forall₂ PatternCong
-      (assemblePrinted (fun direction => toPattern (leftChildren direction)) 0
-        operator.1.1.params operator.2.counts operator.2.lengths)
-      (assemblePrinted (fun direction => toPattern (rightChildren direction)) 0
-        operator.1.1.params operator.2.counts operator.2.lengths))
-    (rightToCurrent : TreeCong language
-      (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
-        operator rightChildren)
-      (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
-        operator current))
-    (aligned : ∀ direction : Fin ((indexedSignature language).arity operator).length,
-      direction.val <
-          takenSlots operator.1.1.params operator.2.counts operator.2.lengths done →
-        PatternCong (toPattern (leftChildren direction)) (toPattern (current direction)))
-    (suffix : ∀ direction : Fin ((indexedSignature language).arity operator).length,
-      takenSlots operator.1.1.params operator.2.counts operator.2.lengths done ≤
-          direction.val →
-        current direction = rightChildren direction) :
-    ∃ current' : Child language Γ sort operator,
-      TreeCong language
-        (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
-          operator rightChildren)
-        (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
-          operator current') ∧
-      (∀ direction : Fin ((indexedSignature language).arity operator).length,
-        direction.val <
-            takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) →
-          PatternCong (toPattern (leftChildren direction))
-            (toPattern (current' direction))) ∧
-      (∀ direction : Fin ((indexedSignature language).arity operator).length,
-        takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) ≤
-            direction.val →
-          current' direction = rightChildren direction) := by
-  have _ih := ih
-  let start := takenSlots operator.1.1.params operator.2.counts operator.2.lengths done
-  have stepEq :=
-    takenSlots_step operator.1.1.params operator.2.counts operator.2.lengths
-      operator.2.counts_length operator.2.lengths_length done doneBound
-  have nextLe : done + 1 ≤ operator.1.1.params.length := by omega
-  have nextSlots :=
-    takenSlots_le operator.1.1.params operator.2.counts operator.2.lengths
-      operator.2.counts_length operator.2.lengths_length nextLe
-  have widthRoom :
-      start + directionsOf (operator.1.1.params.get ⟨done, doneBound⟩)
-          (operator.2.counts.getD done 0) (operator.2.lengths.getD done 0) ≤
-        ((indexedSignature language).arity operator).length := by
-    rw [← stepEq, expandSlots_length]
-    exact nextSlots
-  have lenL :=
-    assemblePrinted_length (fun direction => toPattern (leftChildren direction)) 0
-      operator.1.1.params operator.2.counts operator.2.lengths
-      operator.2.counts_length operator.2.lengths_length
-  have lenR :=
-    assemblePrinted_length (fun direction => toPattern (rightChildren direction)) 0
-      operator.1.1.params operator.2.counts operator.2.lengths
-      operator.2.counts_length operator.2.lengths_length
-  have atArgs :=
-    (List.forall₂_iff_get.mp argRel).2 done (lenL.symm ▸ doneBound) (lenR.symm ▸ doneBound)
-  cases reading : baseCollection? (operator.1.1.params.get ⟨done, doneBound⟩) with
-  | some packed =>
-      obtain ⟨kind, element⟩ := packed
-      cases kind with
-      | hashSet =>
-          exact False.elim <| by
-            have marked := paramsHasSet_get doneBound reading
-            simp [noSet] at marked
-      | vec =>
-          let segLen := operator.2.lengths.getD done 0
-          have widthEq : directionsOf (operator.1.1.params.get ⟨done, doneBound⟩)
-              (operator.2.counts.getD done 0) (operator.2.lengths.getD done 0) = segLen := by
-            rw [directionsOf, reading]
-          by_cases empty : segLen = 0
-          · refine ⟨current, rightToCurrent, ?_, ?_⟩
-            · intro direction bound
-              have sameSlots :
-                  takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
-                    start := by
-                rw [stepEq, widthEq, empty]
-                simp [start]
-              exact aligned direction (by omega)
-            · intro direction bound
-              have sameSlots :
-                  takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
-                    start := by
-                rw [stepEq, widthEq, empty]
-                simp [start]
-              exact suffix direction (by omega)
-          · have leftArg :=
-              assemble_at_vec (fun direction => toPattern (leftChildren direction))
-                operator.1.1.params operator.2.counts operator.2.lengths
-                operator.2.counts_length operator.2.lengths_length done doneBound reading
-            have rightArg :=
-              assemble_at_vec (fun direction => toPattern (rightChildren direction))
-                operator.1.1.params operator.2.counts operator.2.lengths
-                operator.2.counts_length operator.2.lengths_length done doneBound reading
-            rw [← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenL.symm ▸ doneBound⟩),
-              ← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenR.symm ▸ doneBound⟩)] at atArgs
-            rw [leftArg, rightArg] at atArgs
-            obtain ⟨_leftElements, _rightElements, leftEq, rightEq, pointwise⟩ :=
-              patternCong_vec_elements atArgs
-                (Or.inl ⟨List.ofFn fun index : Fin segLen =>
-                  nthPrinted (fun direction => toPattern (leftChildren direction))
-                    (start + index.val), rfl⟩)
-            simp only [Pattern.collection.injEq] at leftEq rightEq
-            obtain ⟨_, leftList, _⟩ := leftEq
-            obtain ⟨_, rightList, _⟩ := rightEq
-            subst leftList
-            subst rightList
-            refine ⟨current, rightToCurrent, ?_, ?_⟩
-            · intro direction bound
-              by_cases earlier : direction.val < start
-              · exact aligned direction earlier
-              · have indexFit : direction.val - start < segLen := by
-                  have slots :
-                      takenSlots operator.1.1.params operator.2.counts operator.2.lengths
-                          (done + 1) = start + segLen := by
-                    rw [stepEq, widthEq]
-                  omega
-                let index : Fin segLen := ⟨direction.val - start, indexFit⟩
-                have atIndex :=
-                  (List.forall₂_iff_get.mp pointwise).2 index.val
-                    (by rw [List.length_ofFn]; exact index.isLt)
-                    (by rw [List.length_ofFn]; exact index.isLt)
-                rw [ofFn_get_apply, ofFn_get_apply] at atIndex
-                have dirFit : direction.val <
-                    ((indexedSignature language).arity operator).length := direction.isLt
-                have startFit : start + index.val <
-                    ((indexedSignature language).arity operator).length := by
-                  omega
-                have asStart : direction.val = start + index.val := by
-                  simp [index]
-                  omega
-                have dirEq :
-                    direction = ⟨start + index.val, startFit⟩ := by
-                  apply Fin.ext
-                  exact asStart
-                have childEq :
-                    current ⟨start + index.val, startFit⟩ =
-                      rightChildren ⟨start + index.val, startFit⟩ :=
-                  suffix _ (Nat.le_add_right _ _)
-                rw [nthPrinted_of_lt _ (by omega : start + index.val <
-                    ((indexedSignature language).arity operator).length),
-                  nthPrinted_of_lt _ (by omega : start + index.val <
-                    ((indexedSignature language).arity operator).length)] at atIndex
-                rw [dirEq, childEq]
-                simpa [Fin.eta] using atIndex
-            · intro direction bound
-              have slots :
-                  takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
-                    start + segLen := by
-                rw [stepEq, widthEq]
-              exact suffix direction (by omega)
-      | hashBag =>
-          let segLen := operator.2.lengths.getD done 0
-          have widthEq : directionsOf (operator.1.1.params.get ⟨done, doneBound⟩)
-              (operator.2.counts.getD done 0) (operator.2.lengths.getD done 0) = segLen := by
-            rw [directionsOf, reading]
-          by_cases empty : segLen = 0
-          · refine ⟨current, rightToCurrent, ?_, ?_⟩
-            · intro direction bound
-              have sameSlots :
-                  takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
-                    start := by
-                rw [stepEq, widthEq, empty]
-                simp [start]
-              exact aligned direction (by omega)
-            · intro direction bound
-              have sameSlots :
-                  takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
-                    start := by
-                rw [stepEq, widthEq, empty]
-                simp [start]
-              exact suffix direction (by omega)
-          · have leftArg :=
-              assemble_at_bag (fun direction => toPattern (leftChildren direction))
-                operator.1.1.params operator.2.counts operator.2.lengths
-                operator.2.counts_length operator.2.lengths_length done doneBound reading
-            have rightArg :=
-              assemble_at_bag (fun direction => toPattern (rightChildren direction))
-                operator.1.1.params operator.2.counts operator.2.lengths
-                operator.2.counts_length operator.2.lengths_length done doneBound reading
-            rw [← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenL.symm ▸ doneBound⟩),
-              ← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenR.symm ▸ doneBound⟩)] at atArgs
-            rw [leftArg, rightArg] at atArgs
-            obtain ⟨_leftElements, _rightElements, leftEq, rightEq, elementsRel⟩ :=
-              patternCong_bag_elements atArgs
-                (Or.inl ⟨List.ofFn fun index : Fin segLen =>
-                  nthPrinted (fun direction => toPattern (leftChildren direction))
-                    (start + index.val), rfl⟩)
-            simp only [Pattern.collection.injEq] at leftEq rightEq
-            obtain ⟨_, leftList, _⟩ := leftEq
-            obtain ⟨_, rightList, _⟩ := rightEq
-            subst leftList
-            subst rightList
-            obtain ⟨alignedList, permAligned, pointwise⟩ := bagElementRel_align elementsRel
-            have fitLen : start + segLen ≤
-                ((indexedSignature language).arity operator).length := by
-              have room := widthRoom
-              rw [widthEq] at room
-              exact room
-            have uniform (index : Fin segLen) :
-                ((indexedSignature language).arity operator).get
-                    ⟨start + index.val, by
-                      have indexLt := index.isLt
-                      omega⟩ = ([], element) := by
-              rw [List.get_eq_getElem]
-              exact expand_segment_getElem operator.1.1.params operator.2.counts
-                operator.2.lengths operator.2.counts_length operator.2.lengths_length doneBound
-                reading index (by
-                  have indexLt := index.isLt
-                  have sameLength :
-                      (expandSlots operator.1.1.params operator.2.counts
-                          operator.2.lengths).length =
-                        ((indexedSignature language).arity operator).length := rfl
-                  rw [sameLength]
-                  omega)
-            let rightElem : Fin segLen → Tree language (Γ, element) :=
-              fun index =>
-                atElement operator ⟨start + index.val, by
-                  have indexLt := index.isLt
-                  omega⟩ (uniform index) rightChildren
-            have rightPrinted :
-                List.ofFn (fun index => toPattern (rightElem index)) =
-                  List.ofFn fun index : Fin segLen =>
-                    nthPrinted (fun direction => toPattern (rightChildren direction))
-                      (start + index.val) := by
-              refine ofFn_pointwise ?_
-              intro index
-              rw [toPattern_atElement]
-              have printedBound :
-                  start + index.val < ((indexedSignature language).arity operator).length := by
-                have indexLt := index.isLt
-                omega
-              exact (nthPrinted_of_lt
-                (fun direction => toPattern (rightChildren direction)) printedBound).symm
-            have alignedLength : alignedList.length = segLen := by
-              have permLength := List.Perm.length_eq permAligned
-              simp only [List.length_ofFn] at permLength
-              exact permLength.symm
-            have alignedBound (index : Fin segLen) : index.val < alignedList.length :=
-              alignedLength.symm ▸ index.isLt
-            have inPrinted (index : Fin segLen) :
-                alignedList.get ⟨index.val, alignedBound index⟩ ∈
-                  List.ofFn fun direction => toPattern (rightElem direction) := by
-              rw [rightPrinted]
-              exact permAligned.symm.subset
-                (List.get_mem alignedList ⟨index.val, alignedBound index⟩)
-            let pick : Fin segLen → Fin segLen :=
-              fun index => Classical.choose (List.mem_ofFn.mp (inPrinted index))
-            have pick_spec (index : Fin segLen) :
-                toPattern (rightElem (pick index)) =
-                  alignedList.get ⟨index.val, alignedBound index⟩ :=
-              Classical.choose_spec (List.mem_ofFn.mp (inPrinted index))
-            let pickedElem : Fin segLen → Tree language (Γ, element) :=
-              fun index => rightElem (pick index)
-            have pickedPrinted :
-                List.ofFn (fun index => toPattern (pickedElem index)) = alignedList := by
-              refine List.ext_get ?_ ?_
-              · simp only [List.length_ofFn, alignedLength]
-              · intro n hOfFn hAligned
-                let index : Fin segLen := ⟨n, by simpa [List.length_ofFn] using hOfFn⟩
-                have read := ofFn_get_apply (fun i => toPattern (pickedElem i)) index
-                have sameGet :
-                    (List.ofFn fun i => toPattern (pickedElem i)).get ⟨n, hOfFn⟩ =
-                      (List.ofFn fun i => toPattern (pickedElem i)).get
-                        ⟨index.val, List.length_ofFn.symm ▸ index.isLt⟩ := by
-                  apply congrArg
-                    (List.get (List.ofFn fun i => toPattern (pickedElem i)))
-                  apply Fin.ext
-                  rfl
-                rw [sameGet, read, pick_spec index]
-            have pointwiseElements :
-                List.Forall₂ PatternCong
-                  (List.ofFn fun index : Fin segLen =>
-                    nthPrinted (fun direction => toPattern (leftChildren direction))
-                      (start + index.val))
-                  (List.ofFn fun index => toPattern (pickedElem index)) :=
-              pickedPrinted.symm ▸ pointwise
-            let current' := overlaySegment operator start segLen fitLen uniform current pickedElem
-            have outsideProof :
-                ∀ direction : Fin ((indexedSignature language).arity operator).length,
-                  direction.val < start ∨ start + segLen ≤ direction.val →
-                    current direction = current' direction := by
-              intro direction outside
-              exact (overlay_outside operator start segLen fitLen uniform current pickedElem
-                direction outside).symm
-            have leftSeg :
-                List.ofFn (fun index =>
-                  segmentChild operator start index (by omega) (uniform index) current) =
-                  List.ofFn rightElem := by
-              refine ofFn_pointwise ?_
-              intro index
-              unfold segmentChild
-              have childEq :
-                  current ⟨start + index.val, by omega⟩ =
-                    rightChildren ⟨start + index.val, by omega⟩ :=
-                suffix _ (Nat.le_add_right _ _)
-              simp only [atElement, childEq, rightElem]
-            have rightSeg :
-                List.ofFn (fun index =>
-                  segmentChild operator start index (by omega) (uniform index) current') =
-                  List.ofFn pickedElem := by
-              refine ofFn_pointwise ?_
-              intro index
-              exact overlay_segment operator start segLen fitLen uniform current pickedElem index
-                (by omega)
-            have treePerm : List.Perm (List.ofFn rightElem) (List.ofFn pickedElem) := by
-              have patternPerm :
-                  List.Perm
-                    (List.ofFn fun index => toPattern (rightElem index))
-                    (List.ofFn fun index => toPattern (pickedElem index)) := by
-                rw [rightPrinted, pickedPrinted]
-                exact permAligned
-              have asMap :
-                  List.map toPattern (List.ofFn rightElem) =
-                    List.ofFn fun index => toPattern (rightElem index) := by
-                rw [List.map_ofFn]
-                exact ofFn_pointwise fun _ => rfl
-              have asMap' :
-                  List.map toPattern (List.ofFn pickedElem) =
-                    List.ofFn fun index => toPattern (pickedElem index) := by
-                rw [List.map_ofFn]
-                exact ofFn_pointwise fun _ => rfl
-              have patternPerm' :
-                  List.Perm (List.map toPattern (List.ofFn rightElem))
-                    (List.map toPattern (List.ofFn pickedElem)) := by
-                rw [asMap, asMap']
-                exact patternPerm
-              exact (List.map_perm_map_iff
-                (toPattern_fn_injective labels uniqueBare (Γ, element))).mp patternPerm'
-            have permStep :=
-              TreeCong.bagPerm operator start segLen fitLen .hashBag (Or.inl rfl) done doneBound
-                reading (by simp [start, takenSlots]) rfl uniform current current' outsideProof
-                (leftSeg.symm ▸ rightSeg.symm ▸ treePerm)
-            refine ⟨current', rightToCurrent.trans permStep, ?_, ?_⟩
-            · intro direction bound
-              by_cases earlier : direction.val < start
-              · have stayed : current' direction = current direction :=
-                  overlay_outside operator start segLen fitLen uniform current pickedElem direction
-                    (Or.inl earlier)
-                rw [stayed]
-                exact aligned direction earlier
-              · have indexFit : direction.val - start < segLen := by
-                  have slots :
-                      takenSlots operator.1.1.params operator.2.counts operator.2.lengths
-                          (done + 1) = start + segLen := by
-                    rw [stepEq, widthEq]
-                  omega
-                let index : Fin segLen := ⟨direction.val - start, indexFit⟩
-                have atIndex :=
-                  (List.forall₂_iff_get.mp pointwiseElements).2 index.val
-                    (by rw [List.length_ofFn]; exact index.isLt)
-                    (by rw [List.length_ofFn]; exact index.isLt)
-                rw [ofFn_get_apply, ofFn_get_apply] at atIndex
-                have startFit : start + index.val <
-                    ((indexedSignature language).arity operator).length := by omega
-                have asStart : direction.val = start + index.val := by
-                  simp [index]
-                  omega
-                have dirEq : direction = ⟨start + index.val, startFit⟩ := by
-                  apply Fin.ext
-                  exact asStart
-                rw [nthPrinted_of_lt _ startFit] at atIndex
-                have placed :
-                    toPattern (current' ⟨start + index.val, startFit⟩) =
-                      toPattern (pickedElem index) := by
-                  have segEq :=
-                    overlay_segment operator start segLen fitLen uniform current pickedElem index
-                      startFit
-                  have asChild :
-                      toPattern
-                          (segmentChild operator start index startFit (uniform index) current') =
-                        toPattern (current' ⟨start + index.val, startFit⟩) := by
-                    unfold segmentChild
-                    exact toPattern_atElement operator ⟨start + index.val, startFit⟩
-                      (uniform index) current'
-                  rw [← asChild]
-                  exact congrArg toPattern segEq
-                rw [dirEq, placed]
-                simpa using atIndex
-            · intro direction bound
-              have slots :
-                  takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
-                    start + segLen := by
-                rw [stepEq, widthEq]
-              have past : start + segLen ≤ direction.val := by omega
-              have stayed : current' direction = current direction :=
-                overlay_outside operator start segLen fitLen uniform current pickedElem direction
-                  (Or.inr past)
-              rw [stayed]
-              exact suffix direction (by omega)
-  | none =>
-      have leftArg :=
-        assemble_at_none (fun direction => toPattern (leftChildren direction))
-          operator.1.1.params operator.2.counts operator.2.lengths
-          operator.2.counts_length operator.2.lengths_length done doneBound reading
-      have rightArg :=
-        assemble_at_none (fun direction => toPattern (rightChildren direction))
-          operator.1.1.params operator.2.counts operator.2.lengths
-          operator.2.counts_length operator.2.lengths_length done doneBound reading
-      rw [← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenL.symm ▸ doneBound⟩),
-        ← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenR.symm ▸ doneBound⟩)] at atArgs
-      rw [leftArg, rightArg] at atArgs
-      have paramGet :
-          operator.1.1.params.getD done missingParameter =
-            operator.1.1.params.get ⟨done, doneBound⟩ :=
-        List.getD_eq_get (d := missingParameter) (i := ⟨done, doneBound⟩)
-      obtain ⟨_countEq, bodyCong⟩ :=
-        printArgument_body (operator.1.1.params.get ⟨done, doneBound⟩)
-          (operator.2.counts.getD done 0) (operator.2.counts.getD done 0)
-          (nthPrinted (fun direction => toPattern (leftChildren direction)) start)
-          (nthPrinted (fun direction => toPattern (rightChildren direction)) start) atArgs
-          (by
-            intro notMulti
-            exact operator.2.counts_fixed done (by
-              rw [paramGet]
-              exact notMulti))
-          (by
-            intro notMulti
-            exact operator.2.counts_fixed done (by
-              rw [paramGet]
-              exact notMulti))
-      have widthEq :
-          directionsOf (operator.1.1.params.get ⟨done, doneBound⟩)
-              (operator.2.counts.getD done 0) (operator.2.lengths.getD done 0) = 1 := by
-        rw [directionsOf, reading]
-      have startFit : start < ((indexedSignature language).arity operator).length := by
-        have slots :
-            takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
-              start + 1 := by
-          rw [stepEq, widthEq]
-        have room : start + 1 ≤ ((indexedSignature language).arity operator).length := by
-          have widened := widthRoom
-          rw [widthEq] at widened
-          exact widened
-        omega
-      rw [nthPrinted_of_lt _ startFit, nthPrinted_of_lt _ startFit] at bodyCong
-      refine ⟨current, rightToCurrent, ?_, ?_⟩
-      · intro direction bound
-        by_cases earlier : direction.val < start
-        · exact aligned direction earlier
-        · have atStart : direction.val = start := by
-            have slots :
-                takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
-                  start + 1 := by
-              rw [stepEq, widthEq]
-            omega
-          have dirEq : direction = ⟨start, startFit⟩ := by
-            apply Fin.ext
-            exact atStart
-          have childEq : current ⟨start, startFit⟩ = rightChildren ⟨start, startFit⟩ :=
-            suffix ⟨start, startFit⟩ (by simp [start])
-          rw [dirEq, childEq]
-          simpa [Fin.eta] using bodyCong
-      · intro direction bound
-        have slots :
-            takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
-              start + 1 := by
-          rw [stepEq, widthEq]
-        exact suffix direction (by omega)
 
 /-- Replace one collection length and keep the rule, the counts, and the other
 lengths. The replaced parameter is a hash set, so the fixed-length condition
@@ -4391,6 +4171,118 @@ theorem atElement_fin {Γ : List String} {sort element : String}
   subst h
   rfl
 
+theorem liftBind_op {Γ : List String} {sort : String}
+    {op1 op2 : (indexedSignature language).Op sort}
+    (opEq : op1 = op2)
+    (children : Child language Γ sort op1) :
+    IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        op1 children =
+      IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        op2 (cast (congrArg (Child language Γ sort) opEq) children) := by
+  subst opEq
+  rfl
+
+theorem cast_child_direction {Γ : List String} {sort : String}
+    {op1 op2 : (indexedSignature language).Op sort}
+    (h : op1 = op2)
+    (children : Child language Γ sort op1)
+    (direction : Fin ((indexedSignature language).arity op2).length) :
+    HEq (cast (congrArg (Child language Γ sort) h) children direction)
+      (children
+        (Fin.cast
+          (congrArg
+            (fun op : (indexedSignature language).Op sort =>
+              ((indexedSignature language).arity op).length)
+            h.symm)
+          direction)) := by
+  subst h
+  simp [cast_eq]
+
+/-- A splice at the operator's own hash-set length is that operator. -/
+theorem spliceNode_segment {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (outside : Child language Γ sort operator)
+    (k : Nat)
+    (kEq : k = operator.2.lengths.getD parameterIndex 0) :
+    spliceNode operator parameterIndex bound shape outside k
+        (fun index : Fin k =>
+          atElement operator
+            ⟨takenSlots operator.1.1.params operator.2.counts operator.2.lengths
+                parameterIndex + index.val,
+              by
+                have indexLt := index.isLt
+                have room :=
+                  segment_room operator bound (by rw [shape]; rfl)
+                omega⟩
+            (by
+              rw [List.get_eq_getElem]
+              exact expand_segment_getElem operator.1.1.params operator.2.counts
+                operator.2.lengths operator.2.counts_length operator.2.lengths_length bound
+                shape (index.cast kEq)
+                (by
+                  have indexLt := index.isLt
+                  have room :=
+                    segment_room operator bound (by rw [shape]; rfl)
+                  have sameLength :
+                      (expandSlots operator.1.1.params operator.2.counts
+                          operator.2.lengths).length =
+                        ((indexedSignature language).arity operator).length := rfl
+                  have castVal : (index.cast kEq).val = index.val := rfl
+                  rw [← sameLength] at room
+                  omega))
+            outside) =
+      IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        operator outside := by
+  unfold spliceNode
+  have opEq := resizedAt_eq_self operator parameterIndex bound shape k kEq
+  rw [liftBind_op opEq]
+  apply congrArg
+    (fun children =>
+      IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        operator children)
+  funext direction
+  apply eq_of_heq
+  refine HEq.trans (cast_child_direction opEq _ direction) ?_
+  let moved : Fin ((indexedSignature language).arity
+      (resizedAt operator parameterIndex bound shape k)).length :=
+    Fin.cast
+      (congrArg
+        (fun op : (indexedSignature language).Op sort =>
+          ((indexedSignature language).arity op).length)
+        opEq.symm)
+      direction
+  change HEq
+    (spliceChild operator parameterIndex bound shape k outside _ moved)
+    (outside direction)
+  have movedVal : moved.val = direction.val := by
+    simp [moved]
+  unfold spliceChild
+  by_cases hPrefix : moved.val <
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex
+  · simp only [dif_pos hPrefix]
+    rw [cast_heq_iff_heq]
+    refine congr_arg_heq outside ?_
+    apply Fin.ext
+    exact movedVal
+  · by_cases hSeg : moved.val <
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex + k
+    · simp only [dif_neg hPrefix, dif_pos hSeg]
+      unfold atElement
+      rw [cast_heq_iff_heq, cast_heq_iff_heq]
+      refine congr_arg_heq outside ?_
+      apply Fin.ext
+      simp [movedVal]
+      omega
+    · simp only [dif_neg hPrefix, dif_neg hSeg]
+      rw [cast_heq_iff_heq]
+      refine congr_arg_heq outside ?_
+      apply Fin.ext
+      simp [movedVal, kEq]
+
 /-- Deleting the first of two equal element trees shortens that one hash-set parameter. -/
 theorem spliceNode_dup {Γ : List String} {sort element : String}
     (operator : (indexedSignature language).Op sort)
@@ -4485,7 +4377,7 @@ theorem spliceNode_dup {Γ : List String} {sort element : String}
               (resizedAt operator parameterIndex bound shape n)).length) =
             ⟨removed.val + 1, successor⟩ := by
         apply Fin.ext
-        simp [removed, Fin.val_mk]
+        simp [removed]
       have bridge :=
         (atElement_fin (resizedAt operator parameterIndex bound shape n) align
           (resized_segment_decl operator parameterIndex bound shape n
@@ -4634,16 +4526,16 @@ theorem spliceNode_dup {Γ : List String} {sort element : String}
             simpa [removed] using hLt
           have loS : takenSlots operator.1.1.params operator.2.counts operator.2.lengths
               parameterIndex ≤ dropped.val := by
-            simp only [dropped, Fin.val_mk]
+            simp only [dropped]
             exact Nat.le_trans loT (Nat.le_succ direction.val)
           have hiS : dropped.val <
               takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
                 n := by
-            simp only [dropped, Fin.val_mk]
+            simp only [dropped]
             omega
           have notPrefixD : ¬ dropped.val <
               takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex := by
-            simp only [dropped, Fin.val_mk]
+            simp only [dropped]
             exact Nat.not_lt_of_ge (Nat.le_trans loT (Nat.le_succ direction.val))
           have leftSrc :=
             splice_segment_src (Γ := Γ) operator parameterIndex bound shape (n - 1) direction loT
@@ -4665,7 +4557,7 @@ theorem spliceNode_dup {Γ : List String} {sort element : String}
           apply HEq.symm
           refine congr_arg_heq trees ?_
           apply Fin.ext
-          simp only [dropped, Fin.val_mk]
+          simp only [dropped]
           omega
         · have hPast :
               takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
@@ -4696,7 +4588,7 @@ theorem spliceNode_dup {Γ : List String} {sort element : String}
             simpa [dropped, Fin.val_mk] using pastDir
           have notPrefixD : ¬ dropped.val <
               takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex := by
-            simp only [dropped, Fin.val_mk]
+            simp only [dropped]
             exact Nat.not_lt_of_ge (Nat.le_trans (Nat.le_of_not_lt notPrefix) (Nat.le_succ _))
           have notSegD : ¬ dropped.val <
               takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
@@ -4730,19 +4622,2502 @@ theorem spliceNode_dup {Γ : List String} {sort element : String}
           apply HEq.symm
           refine congr_arg_heq outside ?_
           apply Fin.ext
-          simp only [dropped, Fin.val_mk]
+          simp only [dropped]
           omega
   }
   simpa [spliceNode, source, target, sourceChildren, targetChildren, removed, start, shorter] using
     TreeCong.setDup source target sourceChildren targetChildren removed parameterIndex start
       deletion
 
+/-- The element trees of one hash-set parameter, read at that parameter's length. -/
+def segmentTrees {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (kEq : k = operator.2.lengths.getD parameterIndex 0)
+    (children : Child language Γ sort operator) :
+    Fin k → Tree language (Γ, element) :=
+  fun index =>
+    atElement operator
+      ⟨takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
+          index.val,
+        by
+          have indexLt := index.isLt
+          have room := segment_room operator bound (by rw [shape]; rfl)
+          rw [← kEq] at room
+          omega⟩
+      (by
+        rw [List.get_eq_getElem]
+        exact expand_segment_getElem operator.1.1.params operator.2.counts
+          operator.2.lengths operator.2.counts_length operator.2.lengths_length bound
+          shape (index.cast kEq)
+          (by
+            have indexLt := index.isLt
+            have room := segment_room operator bound (by rw [shape]; rfl)
+            have sameLength :
+                (expandSlots operator.1.1.params operator.2.counts
+                    operator.2.lengths).length =
+                  ((indexedSignature language).arity operator).length := rfl
+            have castVal : (index.cast kEq).val = index.val := rfl
+            rw [← sameLength] at room
+            omega))
+      children
+
+/-- A splice at the stored length does not depend on which proof reads the segment. -/
+theorem spliceNode_at_self {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (outside : Child language Γ sort operator)
+    (k : Nat)
+    (kEq : k = operator.2.lengths.getD parameterIndex 0)
+    (trees : Fin k → Tree language (Γ, element))
+    (agree : ∀ index,
+      trees index = segmentTrees operator parameterIndex bound shape k kEq outside index) :
+    spliceNode operator parameterIndex bound shape outside k trees =
+      IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        operator outside := by
+  have base := spliceNode_segment operator parameterIndex bound shape outside k kEq
+  refine (spliceNode_cast operator parameterIndex bound shape outside ?point).trans base
+  intro index
+  rw [agree]
+  unfold segmentTrees
+  apply atElement_fin
+  · apply Fin.ext
+    rfl
+
+/-- The induction hypothesis, read on the element trees of one hash-set segment. -/
+theorem segmentTrees_ih {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (kEq : k = operator.2.lengths.getD parameterIndex 0)
+    (children : Child language Γ sort operator)
+    (ih : ∀ direction
+        (other : Tree language
+          ((polynomial (indexedSignature language)).src (Γ, sort) operator direction)),
+        PatternCong (toPattern (children direction)) (toPattern other) →
+          TreeCong language (children direction) other) :
+    ∀ index : Fin k, ∀ other : Tree language (Γ, element),
+      PatternCong
+          (toPattern (segmentTrees operator parameterIndex bound shape k kEq children index))
+          (toPattern other) →
+        TreeCong language
+          (segmentTrees operator parameterIndex bound shape k kEq children index) other := by
+  intro index other related
+  have fit :
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
+          index.val <
+        ((indexedSignature language).arity operator).length := by
+    have indexLt := index.isLt
+    have room := segment_room operator bound (by rw [shape]; rfl)
+    rw [← kEq] at room
+    omega
+  let direction : Fin ((indexedSignature language).arity operator).length :=
+    ⟨takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
+        index.val, fit⟩
+  have decl :
+      ((indexedSignature language).arity operator).get direction = ([], element) := by
+    rw [List.get_eq_getElem]
+    exact expand_segment_getElem operator.1.1.params operator.2.counts
+      operator.2.lengths operator.2.counts_length operator.2.lengths_length bound
+      shape (index.cast kEq)
+      (by
+        have indexLt := index.isLt
+        have room := segment_room operator bound (by rw [shape]; rfl)
+        have sameLength :
+            (expandSlots operator.1.1.params operator.2.counts operator.2.lengths).length =
+              ((indexedSignature language).arity operator).length := rfl
+        have castVal : (index.cast kEq).val = index.val := rfl
+        rw [← sameLength] at room
+        omega)
+  have srcEq :
+      (polynomial (indexedSignature language)).src (Γ, sort) operator direction = (Γ, element) := by
+    rw [polynomial_direction, decl]
+    rfl
+  have treeEq :
+      segmentTrees operator parameterIndex bound shape k kEq children index =
+        cast (congrArg (Tree language) srcEq) (children direction) := by
+    unfold segmentTrees atElement
+    apply eq_of_heq
+    rw [cast_heq_iff_heq]
+    apply HEq.symm
+    rw [cast_heq_iff_heq]
+  let otherChild : Tree language
+      ((polynomial (indexedSignature language)).src (Γ, sort) operator direction) :=
+    cast (congrArg (Tree language) srcEq.symm) other
+  have relatedChild :
+      PatternCong (toPattern (children direction)) (toPattern otherChild) := by
+    have leftPrint :
+        toPattern (segmentTrees operator parameterIndex bound shape k kEq children index) =
+          toPattern (children direction) := by
+      rw [treeEq]
+      exact toPattern_cast srcEq (children direction)
+    rw [← leftPrint, toPattern_cast srcEq.symm other]
+    exact related
+  have step := ih direction otherChild relatedChild
+  have back : cast (congrArg (Tree language) srcEq) otherChild = other := by
+    unfold otherChild
+    apply eq_of_heq
+    rw [cast_heq_iff_heq, cast_heq_iff_heq]
+  rw [treeEq]
+  have transported := treeCong_cast srcEq step
+  rw [back] at transported
+  exact transported
+
+/-- Replace the element family of one hash-set parameter whose length stays fixed. -/
+theorem set_overlay_current {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (leftChildren current : Child language Γ sort operator)
+    (k : Nat)
+    (kEq : k = operator.2.lengths.getD parameterIndex 0)
+    (coverL : ∀ i : Fin k, ∃ j : Fin k,
+      PatternCong
+        (toPattern (segmentTrees operator parameterIndex bound shape k kEq leftChildren i))
+        (toPattern (segmentTrees operator parameterIndex bound shape k kEq current j)))
+    (coverR : ∀ j : Fin k, ∃ i : Fin k,
+      PatternCong
+        (toPattern (segmentTrees operator parameterIndex bound shape k kEq leftChildren i))
+        (toPattern (segmentTrees operator parameterIndex bound shape k kEq current j)))
+    (ihTrees : ∀ i : Fin k, ∀ other : Tree language (Γ, element),
+      PatternCong
+          (toPattern (segmentTrees operator parameterIndex bound shape k kEq leftChildren i))
+          (toPattern other) →
+        TreeCong language
+          (segmentTrees operator parameterIndex bound shape k kEq leftChildren i) other) :
+    ∃ current' : Child language Γ sort operator,
+      TreeCong language
+        (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+          operator current')
+        (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+          operator current) ∧
+      (∀ direction : Fin ((indexedSignature language).arity operator).length,
+        direction.val <
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex →
+          current' direction = current direction) ∧
+      (∀ direction : Fin ((indexedSignature language).arity operator).length,
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex ≤
+            direction.val →
+          direction.val <
+              takenSlots operator.1.1.params operator.2.counts operator.2.lengths
+                parameterIndex + k →
+            current' direction = leftChildren direction) ∧
+      (∀ direction : Fin ((indexedSignature language).arity operator).length,
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex + k ≤
+            direction.val →
+          current' direction = current direction) := by
+  have opEq := resizedAt_eq_self operator parameterIndex bound shape k kEq
+  let leftTrees := segmentTrees operator parameterIndex bound shape k kEq leftChildren
+  let rightTrees := segmentTrees operator parameterIndex bound shape k kEq current
+  let raw := spliceChild operator parameterIndex bound shape k current leftTrees
+  let current' : Child language Γ sort operator :=
+    cast (congrArg (Child language Γ sort) opEq) raw
+  refine ⟨current', ?_, ?_, ?_, ?_⟩
+  · have compared :=
+      setCover_engine
+        (fun k' family => spliceNode operator parameterIndex bound shape current k' family)
+        (fun {_k} {_left} {_right} permuted =>
+          spliceNode_perm operator parameterIndex bound shape current permuted)
+        (fun {_k} {_left} {_right} steps =>
+          spliceNode_point operator parameterIndex bound shape current steps)
+        (fun {_n} wide family copies =>
+          spliceNode_dup operator parameterIndex bound shape current wide family copies)
+        (fun {_k} {_left} {_right} agree =>
+          spliceNode_cast operator parameterIndex bound shape current agree)
+        (k + k) leftTrees rightTrees (Nat.le_refl _) coverL coverR ihTrees
+    have leftNode :
+        spliceNode operator parameterIndex bound shape current k leftTrees =
+          IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+            operator current' := by
+      unfold spliceNode
+      exact liftBind_op opEq raw
+    have rightNode :
+        spliceNode operator parameterIndex bound shape current k rightTrees =
+          IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+            operator current :=
+      spliceNode_at_self operator parameterIndex bound shape current k kEq rightTrees
+        (fun _ => rfl)
+    rw [leftNode, rightNode] at compared
+    exact compared
+  · intro direction low
+    apply eq_of_heq
+    refine HEq.trans (cast_child_direction opEq raw direction) ?_
+    let moved : Fin ((indexedSignature language).arity
+        (resizedAt operator parameterIndex bound shape k)).length :=
+      Fin.cast
+        (congrArg
+          (fun op : (indexedSignature language).Op sort =>
+            ((indexedSignature language).arity op).length)
+          opEq.symm)
+        direction
+    change HEq
+      (spliceChild operator parameterIndex bound shape k current leftTrees moved)
+      (current direction)
+    have movedVal : moved.val = direction.val := by simp [moved]
+    unfold spliceChild
+    have inPrefix : moved.val <
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex := by
+      rw [movedVal]
+      exact low
+    simp only [dif_pos inPrefix]
+    rw [cast_heq_iff_heq]
+    refine congr_arg_heq current ?_
+    apply Fin.ext
+    exact movedVal
+  · intro direction low high
+    apply eq_of_heq
+    refine HEq.trans (cast_child_direction opEq raw direction) ?_
+    let moved : Fin ((indexedSignature language).arity
+        (resizedAt operator parameterIndex bound shape k)).length :=
+      Fin.cast
+        (congrArg
+          (fun op : (indexedSignature language).Op sort =>
+            ((indexedSignature language).arity op).length)
+          opEq.symm)
+        direction
+    change HEq
+      (spliceChild operator parameterIndex bound shape k current leftTrees moved)
+      (leftChildren direction)
+    have movedVal : moved.val = direction.val := by simp [moved]
+    unfold spliceChild
+    have notPrefix : ¬ moved.val <
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex := by
+      rw [movedVal]
+      exact Nat.not_lt_of_ge low
+    have inSeg : moved.val <
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex + k := by
+      rw [movedVal]
+      exact high
+    simp only [dif_neg notPrefix, dif_pos inSeg]
+    unfold leftTrees segmentTrees atElement
+    rw [cast_heq_iff_heq, cast_heq_iff_heq]
+    refine congr_arg_heq leftChildren ?_
+    apply Fin.ext
+    simp [movedVal]
+    omega
+  · intro direction high
+    apply eq_of_heq
+    refine HEq.trans (cast_child_direction opEq raw direction) ?_
+    let moved : Fin ((indexedSignature language).arity
+        (resizedAt operator parameterIndex bound shape k)).length :=
+      Fin.cast
+        (congrArg
+          (fun op : (indexedSignature language).Op sort =>
+            ((indexedSignature language).arity op).length)
+          opEq.symm)
+        direction
+    change HEq
+      (spliceChild operator parameterIndex bound shape k current leftTrees moved)
+      (current direction)
+    have movedVal : moved.val = direction.val := by simp [moved]
+    unfold spliceChild
+    have notPrefix : ¬ moved.val <
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex := by
+      rw [movedVal]
+      exact Nat.not_lt_of_ge
+        (Nat.le_trans
+          (Nat.le_add_right
+            (takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex)
+            k)
+          high)
+    have notSeg : ¬ moved.val <
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex + k := by
+      rw [movedVal]
+      exact Nat.not_lt_of_ge high
+    simp only [dif_neg notPrefix, dif_neg notSeg]
+    rw [cast_heq_iff_heq]
+    refine congr_arg_heq current ?_
+    apply Fin.ext
+    simp [movedVal, kEq]
+
+/-- Change one hash-set length to a covered family. The other directions stay. -/
+theorem adopt_one_set {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (outside : Child language Γ sort operator)
+    (ih : ∀ direction
+        (other : Tree language
+          ((polynomial (indexedSignature language)).src (Γ, sort) operator direction)),
+        PatternCong (toPattern (outside direction)) (toPattern other) →
+          TreeCong language (outside direction) other)
+    {k : Nat}
+    (trees : Fin k → Tree language (Γ, element))
+    (coverL : ∀ i : Fin (operator.2.lengths.getD parameterIndex 0),
+      ∃ j : Fin k,
+        PatternCong
+          (toPattern (segmentTrees operator parameterIndex bound shape
+            (operator.2.lengths.getD parameterIndex 0) rfl outside i))
+          (toPattern (trees j)))
+    (coverR : ∀ j : Fin k,
+      ∃ i : Fin (operator.2.lengths.getD parameterIndex 0),
+        PatternCong
+          (toPattern (segmentTrees operator parameterIndex bound shape
+            (operator.2.lengths.getD parameterIndex 0) rfl outside i))
+          (toPattern (trees j))) :
+    TreeCong language
+      (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        operator outside)
+      (spliceNode operator parameterIndex bound shape outside k trees) := by
+  have base :=
+    spliceNode_at_self operator parameterIndex bound shape outside
+      (operator.2.lengths.getD parameterIndex 0) rfl
+      (segmentTrees operator parameterIndex bound shape
+        (operator.2.lengths.getD parameterIndex 0) rfl outside)
+      (fun _ => rfl)
+  have compared :=
+    setCover_engine
+      (fun k' family => spliceNode operator parameterIndex bound shape outside k' family)
+      (fun {_k} {_left} {_right} permuted =>
+        spliceNode_perm operator parameterIndex bound shape outside permuted)
+      (fun {_k} {_left} {_right} steps =>
+        spliceNode_point operator parameterIndex bound shape outside steps)
+      (fun {_n} wide family copies =>
+        spliceNode_dup operator parameterIndex bound shape outside wide family copies)
+      (fun {_k} {_left} {_right} agree =>
+        spliceNode_cast operator parameterIndex bound shape outside agree)
+      (operator.2.lengths.getD parameterIndex 0 + k)
+      (segmentTrees operator parameterIndex bound shape
+        (operator.2.lengths.getD parameterIndex 0) rfl outside)
+      trees (Nat.le_refl _) coverL coverR
+      (segmentTrees_ih operator parameterIndex bound shape
+        (operator.2.lengths.getD parameterIndex 0) rfl outside ih)
+  rw [← base]
+  exact compared
+
+/-- One hash-set parameter, already at the same length on both sides. The set
+cover overlays the left element trees; directions outside that segment stay. -/
+theorem hashSet_step {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (done : Nat) (doneBound : done < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨done, doneBound⟩) =
+      some (.hashSet, element))
+    (leftChildren rightChildren current : Child language Γ sort operator)
+    (ih : ∀ direction
+        (other : Tree language
+          ((polynomial (indexedSignature language)).src (Γ, sort) operator direction)),
+        PatternCong (toPattern (leftChildren direction)) (toPattern other) →
+          TreeCong language (leftChildren direction) other)
+    (argRel : List.Forall₂ PatternCong
+      (assemblePrinted (fun direction => toPattern (leftChildren direction)) 0
+        operator.1.1.params operator.2.counts operator.2.lengths)
+      (assemblePrinted (fun direction => toPattern (rightChildren direction)) 0
+        operator.1.1.params operator.2.counts operator.2.lengths))
+    (rightToCurrent : TreeCong language
+      (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        operator rightChildren)
+      (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        operator current))
+    (aligned : ∀ direction : Fin ((indexedSignature language).arity operator).length,
+      direction.val <
+          takenSlots operator.1.1.params operator.2.counts operator.2.lengths done →
+        PatternCong (toPattern (leftChildren direction)) (toPattern (current direction)))
+    (suffix : ∀ direction : Fin ((indexedSignature language).arity operator).length,
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths done ≤
+          direction.val →
+        current direction = rightChildren direction) :
+    ∃ current' : Child language Γ sort operator,
+      TreeCong language
+        (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+          operator rightChildren)
+        (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+          operator current') ∧
+      (∀ direction : Fin ((indexedSignature language).arity operator).length,
+        direction.val <
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) →
+          PatternCong (toPattern (leftChildren direction))
+            (toPattern (current' direction))) ∧
+      (∀ direction : Fin ((indexedSignature language).arity operator).length,
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) ≤
+            direction.val →
+          current' direction = rightChildren direction) := by
+  let start := takenSlots operator.1.1.params operator.2.counts operator.2.lengths done
+  let segLen := operator.2.lengths.getD done 0
+  have segEq : segLen = operator.2.lengths.getD done 0 := rfl
+  have stepEq :=
+    takenSlots_step operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length done doneBound
+  have widthEq : directionsOf (operator.1.1.params.get ⟨done, doneBound⟩)
+      (operator.2.counts.getD done 0) (operator.2.lengths.getD done 0) = segLen := by
+    rw [directionsOf, shape]
+  have lenL :=
+    assemblePrinted_length (fun direction => toPattern (leftChildren direction)) 0
+      operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length
+  have lenR :=
+    assemblePrinted_length (fun direction => toPattern (rightChildren direction)) 0
+      operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length
+  have atArgs :=
+    (List.forall₂_iff_get.mp argRel).2 done (lenL.symm ▸ doneBound) (lenR.symm ▸ doneBound)
+  have leftArg :=
+    assemble_at_set (fun direction => toPattern (leftChildren direction))
+      operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length done doneBound shape
+  have rightArg :=
+    assemble_at_set (fun direction => toPattern (rightChildren direction))
+      operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length done doneBound shape
+  rw [← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenL.symm ▸ doneBound⟩),
+    ← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenR.symm ▸ doneBound⟩)] at atArgs
+  rw [leftArg, rightArg] at atArgs
+  obtain ⟨_leftElements, _rightElements, leftEq, rightEq, elementsRel⟩ :=
+    patternCong_set_elements atArgs
+      (Or.inl ⟨List.ofFn fun index : Fin segLen =>
+        nthPrinted (fun direction => toPattern (leftChildren direction))
+          (start + index.val), rfl⟩)
+  simp only [Pattern.collection.injEq] at leftEq rightEq
+  obtain ⟨_, leftList, _⟩ := leftEq
+  obtain ⟨_, rightList, _⟩ := rightEq
+  subst leftList
+  subst rightList
+  have covers := setElementRel_both elementsRel
+  have dirBound (index : Fin segLen) :
+      start + index.val < ((indexedSignature language).arity operator).length := by
+    have indexLt := index.isLt
+    have room := segment_room operator doneBound (by rw [shape]; rfl)
+    rw [← segEq] at room
+    simp only [start] at room ⊢
+    omega
+  have leftPrinted :
+      List.ofFn (fun index =>
+          toPattern (segmentTrees operator done doneBound shape segLen segEq leftChildren index)) =
+        List.ofFn (fun index : Fin segLen =>
+          nthPrinted (fun direction => toPattern (leftChildren direction))
+            (start + index.val)) := by
+    refine ofFn_pointwise ?_
+    intro index
+    have asTree :
+        segmentTrees operator done doneBound shape segLen segEq leftChildren index =
+          atElement operator ⟨start + index.val, dirBound index⟩
+            (by
+              rw [List.get_eq_getElem]
+              exact expand_segment_getElem operator.1.1.params operator.2.counts
+                operator.2.lengths operator.2.counts_length operator.2.lengths_length
+                doneBound shape (index.cast segEq)
+                (by
+                  have indexLt := index.isLt
+                  have room := segment_room operator doneBound (by rw [shape]; rfl)
+                  have sameLength :
+                      (expandSlots operator.1.1.params operator.2.counts
+                          operator.2.lengths).length =
+                        ((indexedSignature language).arity operator).length := rfl
+                  have castVal : (index.cast segEq).val = index.val := rfl
+                  rw [← sameLength] at room
+                  omega))
+            leftChildren := by
+      unfold segmentTrees
+      apply atElement_fin
+      · apply Fin.ext
+        simp [start]
+    rw [asTree, toPattern_atElement]
+    exact (nthPrinted_of_lt
+      (fun direction => toPattern (leftChildren direction)) (dirBound index)).symm
+  have rightPrinted :
+      List.ofFn (fun index =>
+          toPattern (segmentTrees operator done doneBound shape segLen segEq current index)) =
+        List.ofFn (fun index : Fin segLen =>
+          nthPrinted (fun direction => toPattern (rightChildren direction))
+            (start + index.val)) := by
+    refine ofFn_pointwise ?_
+    intro index
+    have asTree :
+        segmentTrees operator done doneBound shape segLen segEq current index =
+          atElement operator ⟨start + index.val, dirBound index⟩
+            (by
+              rw [List.get_eq_getElem]
+              exact expand_segment_getElem operator.1.1.params operator.2.counts
+                operator.2.lengths operator.2.counts_length operator.2.lengths_length
+                doneBound shape (index.cast segEq)
+                (by
+                  have indexLt := index.isLt
+                  have room := segment_room operator doneBound (by rw [shape]; rfl)
+                  have sameLength :
+                      (expandSlots operator.1.1.params operator.2.counts
+                          operator.2.lengths).length =
+                        ((indexedSignature language).arity operator).length := rfl
+                  have castVal : (index.cast segEq).val = index.val := rfl
+                  rw [← sameLength] at room
+                  omega))
+            current := by
+      unfold segmentTrees
+      apply atElement_fin
+      · apply Fin.ext
+        simp [start]
+    rw [asTree, toPattern_atElement]
+    have childEq :
+        current ⟨start + index.val, dirBound index⟩ =
+          rightChildren ⟨start + index.val, dirBound index⟩ :=
+      suffix ⟨start + index.val, dirBound index⟩ (by simp [start])
+    rw [childEq]
+    exact (nthPrinted_of_lt
+      (fun direction => toPattern (rightChildren direction)) (dirBound index)).symm
+  have coverL : ∀ i : Fin segLen, ∃ j : Fin segLen,
+      PatternCong
+        (toPattern (segmentTrees operator done doneBound shape segLen segEq leftChildren i))
+        (toPattern (segmentTrees operator done doneBound shape segLen segEq current j)) := by
+    intro i
+    have mem : toPattern (segmentTrees operator done doneBound shape segLen segEq leftChildren i) ∈
+        List.ofFn fun index : Fin segLen =>
+          nthPrinted (fun direction => toPattern (leftChildren direction))
+            (start + index.val) := by
+      rw [← leftPrinted]
+      exact List.mem_ofFn.mpr ⟨i, rfl⟩
+    obtain ⟨image, imageMem, step⟩ := covers.1 _ mem
+    have imageMem' : image ∈
+        List.ofFn fun index =>
+          toPattern (segmentTrees operator done doneBound shape segLen segEq current index) := by
+      rw [rightPrinted]
+      exact imageMem
+    obtain ⟨j, imageEq⟩ := List.mem_ofFn.mp imageMem'
+    exact ⟨j, by simpa [imageEq] using step⟩
+  have coverR : ∀ j : Fin segLen, ∃ i : Fin segLen,
+      PatternCong
+        (toPattern (segmentTrees operator done doneBound shape segLen segEq leftChildren i))
+        (toPattern (segmentTrees operator done doneBound shape segLen segEq current j)) := by
+    intro j
+    have mem : toPattern (segmentTrees operator done doneBound shape segLen segEq current j) ∈
+        List.ofFn fun index : Fin segLen =>
+          nthPrinted (fun direction => toPattern (rightChildren direction))
+            (start + index.val) := by
+      rw [← rightPrinted]
+      exact List.mem_ofFn.mpr ⟨j, rfl⟩
+    obtain ⟨image, imageMem, step⟩ := covers.2 _ mem
+    have imageMem' : image ∈
+        List.ofFn fun index =>
+          toPattern (segmentTrees operator done doneBound shape segLen segEq leftChildren index) := by
+      rw [leftPrinted]
+      exact imageMem
+    obtain ⟨i, imageEq⟩ := List.mem_ofFn.mp imageMem'
+    exact ⟨i, by simpa [imageEq] using step⟩
+  obtain ⟨current', forward, samePrefix, sameSegment, sameSuffix⟩ :=
+    set_overlay_current operator done doneBound shape leftChildren current segLen segEq
+      coverL coverR
+      (segmentTrees_ih operator done doneBound shape segLen segEq leftChildren ih)
+  refine ⟨current', rightToCurrent.trans (TreeCong.symm forward), ?_, ?_⟩
+  · intro direction bound
+    by_cases earlier : direction.val < start
+    · have stayed : current' direction = current direction :=
+        samePrefix direction (by simpa [start] using earlier)
+      rw [stayed]
+      exact aligned direction (by simpa [start] using earlier)
+    · have inSeg : direction.val < start + segLen := by
+        have slots :
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
+              start + segLen := by
+          rw [stepEq, widthEq]
+        omega
+      have childEq : current' direction = leftChildren direction :=
+        sameSegment direction (by simpa [start] using Nat.le_of_not_lt earlier)
+          (by simpa [start] using inSeg)
+      rw [childEq]
+      exact PatternCong.refl _
+  · intro direction bound
+    have slots :
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
+          start + segLen := by
+      rw [stepEq, widthEq]
+    have past : start + segLen ≤ direction.val := by omega
+    have stayed : current' direction = current direction :=
+      sameSuffix direction (by simpa [start] using past)
+    rw [stayed]
+    exact suffix direction (by simpa [start] using Nat.le_trans (Nat.le_add_right start segLen) past)
+
+theorem extend_alignment
+    (labels : (language.terms.map (·.label)).Nodup)
+    (uniqueBare : UniqueBare language)
+    {Γ : List String} {sort : String}
+    (operator : (indexedSignature language).Op sort)
+    (done : Nat) (doneBound : done < operator.1.1.params.length)
+    (leftChildren rightChildren current : Child language Γ sort operator)
+    (ih : ∀ direction
+        (other : Tree language
+          ((polynomial (indexedSignature language)).src (Γ, sort) operator direction)),
+        PatternCong (toPattern (leftChildren direction)) (toPattern other) →
+          TreeCong language (leftChildren direction) other)
+    (argRel : List.Forall₂ PatternCong
+      (assemblePrinted (fun direction => toPattern (leftChildren direction)) 0
+        operator.1.1.params operator.2.counts operator.2.lengths)
+      (assemblePrinted (fun direction => toPattern (rightChildren direction)) 0
+        operator.1.1.params operator.2.counts operator.2.lengths))
+    (rightToCurrent : TreeCong language
+      (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        operator rightChildren)
+      (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        operator current))
+    (aligned : ∀ direction : Fin ((indexedSignature language).arity operator).length,
+      direction.val <
+          takenSlots operator.1.1.params operator.2.counts operator.2.lengths done →
+        PatternCong (toPattern (leftChildren direction)) (toPattern (current direction)))
+    (suffix : ∀ direction : Fin ((indexedSignature language).arity operator).length,
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths done ≤
+          direction.val →
+        current direction = rightChildren direction) :
+    ∃ current' : Child language Γ sort operator,
+      TreeCong language
+        (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+          operator rightChildren)
+        (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+          operator current') ∧
+      (∀ direction : Fin ((indexedSignature language).arity operator).length,
+        direction.val <
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) →
+          PatternCong (toPattern (leftChildren direction))
+            (toPattern (current' direction))) ∧
+      (∀ direction : Fin ((indexedSignature language).arity operator).length,
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) ≤
+            direction.val →
+          current' direction = rightChildren direction) := by
+  let start := takenSlots operator.1.1.params operator.2.counts operator.2.lengths done
+  have stepEq :=
+    takenSlots_step operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length done doneBound
+  have nextLe : done + 1 ≤ operator.1.1.params.length := by omega
+  have nextSlots :=
+    takenSlots_le operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length nextLe
+  have widthRoom :
+      start + directionsOf (operator.1.1.params.get ⟨done, doneBound⟩)
+          (operator.2.counts.getD done 0) (operator.2.lengths.getD done 0) ≤
+        ((indexedSignature language).arity operator).length := by
+    rw [← stepEq, expandSlots_length]
+    exact nextSlots
+  have lenL :=
+    assemblePrinted_length (fun direction => toPattern (leftChildren direction)) 0
+      operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length
+  have lenR :=
+    assemblePrinted_length (fun direction => toPattern (rightChildren direction)) 0
+      operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length
+  have atArgs :=
+    (List.forall₂_iff_get.mp argRel).2 done (lenL.symm ▸ doneBound) (lenR.symm ▸ doneBound)
+  cases reading : baseCollection? (operator.1.1.params.get ⟨done, doneBound⟩) with
+  | some packed =>
+      obtain ⟨kind, element⟩ := packed
+      cases kind with
+      | hashSet =>
+          exact hashSet_step operator done doneBound reading leftChildren rightChildren
+            current ih argRel rightToCurrent aligned suffix
+      | vec =>
+          let segLen := operator.2.lengths.getD done 0
+          have widthEq : directionsOf (operator.1.1.params.get ⟨done, doneBound⟩)
+              (operator.2.counts.getD done 0) (operator.2.lengths.getD done 0) = segLen := by
+            rw [directionsOf, reading]
+          by_cases empty : segLen = 0
+          · refine ⟨current, rightToCurrent, ?_, ?_⟩
+            · intro direction bound
+              have sameSlots :
+                  takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
+                    start := by
+                rw [stepEq, widthEq, empty]
+                simp [start]
+              exact aligned direction (by omega)
+            · intro direction bound
+              have sameSlots :
+                  takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
+                    start := by
+                rw [stepEq, widthEq, empty]
+                simp [start]
+              exact suffix direction (by omega)
+          · have leftArg :=
+              assemble_at_vec (fun direction => toPattern (leftChildren direction))
+                operator.1.1.params operator.2.counts operator.2.lengths
+                operator.2.counts_length operator.2.lengths_length done doneBound reading
+            have rightArg :=
+              assemble_at_vec (fun direction => toPattern (rightChildren direction))
+                operator.1.1.params operator.2.counts operator.2.lengths
+                operator.2.counts_length operator.2.lengths_length done doneBound reading
+            rw [← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenL.symm ▸ doneBound⟩),
+              ← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenR.symm ▸ doneBound⟩)] at atArgs
+            rw [leftArg, rightArg] at atArgs
+            obtain ⟨_leftElements, _rightElements, leftEq, rightEq, pointwise⟩ :=
+              patternCong_vec_elements atArgs
+                (Or.inl ⟨List.ofFn fun index : Fin segLen =>
+                  nthPrinted (fun direction => toPattern (leftChildren direction))
+                    (start + index.val), rfl⟩)
+            simp only [Pattern.collection.injEq] at leftEq rightEq
+            obtain ⟨_, leftList, _⟩ := leftEq
+            obtain ⟨_, rightList, _⟩ := rightEq
+            subst leftList
+            subst rightList
+            refine ⟨current, rightToCurrent, ?_, ?_⟩
+            · intro direction bound
+              by_cases earlier : direction.val < start
+              · exact aligned direction earlier
+              · have indexFit : direction.val - start < segLen := by
+                  have slots :
+                      takenSlots operator.1.1.params operator.2.counts operator.2.lengths
+                          (done + 1) = start + segLen := by
+                    rw [stepEq, widthEq]
+                  omega
+                let index : Fin segLen := ⟨direction.val - start, indexFit⟩
+                have atIndex :=
+                  (List.forall₂_iff_get.mp pointwise).2 index.val
+                    (by rw [List.length_ofFn]; exact index.isLt)
+                    (by rw [List.length_ofFn]; exact index.isLt)
+                rw [ofFn_get_apply, ofFn_get_apply] at atIndex
+                have dirFit : direction.val <
+                    ((indexedSignature language).arity operator).length := direction.isLt
+                have startFit : start + index.val <
+                    ((indexedSignature language).arity operator).length := by
+                  omega
+                have asStart : direction.val = start + index.val := by
+                  simp [index]
+                  omega
+                have dirEq :
+                    direction = ⟨start + index.val, startFit⟩ := by
+                  apply Fin.ext
+                  exact asStart
+                have childEq :
+                    current ⟨start + index.val, startFit⟩ =
+                      rightChildren ⟨start + index.val, startFit⟩ :=
+                  suffix _ (Nat.le_add_right _ _)
+                rw [nthPrinted_of_lt _ (by omega : start + index.val <
+                    ((indexedSignature language).arity operator).length),
+                  nthPrinted_of_lt _ (by omega : start + index.val <
+                    ((indexedSignature language).arity operator).length)] at atIndex
+                rw [dirEq, childEq]
+                simpa [Fin.eta] using atIndex
+            · intro direction bound
+              have slots :
+                  takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
+                    start + segLen := by
+                rw [stepEq, widthEq]
+              exact suffix direction (by omega)
+      | hashBag =>
+          let segLen := operator.2.lengths.getD done 0
+          have widthEq : directionsOf (operator.1.1.params.get ⟨done, doneBound⟩)
+              (operator.2.counts.getD done 0) (operator.2.lengths.getD done 0) = segLen := by
+            rw [directionsOf, reading]
+          by_cases empty : segLen = 0
+          · refine ⟨current, rightToCurrent, ?_, ?_⟩
+            · intro direction bound
+              have sameSlots :
+                  takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
+                    start := by
+                rw [stepEq, widthEq, empty]
+                simp [start]
+              exact aligned direction (by omega)
+            · intro direction bound
+              have sameSlots :
+                  takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
+                    start := by
+                rw [stepEq, widthEq, empty]
+                simp [start]
+              exact suffix direction (by omega)
+          · have leftArg :=
+              assemble_at_bag (fun direction => toPattern (leftChildren direction))
+                operator.1.1.params operator.2.counts operator.2.lengths
+                operator.2.counts_length operator.2.lengths_length done doneBound reading
+            have rightArg :=
+              assemble_at_bag (fun direction => toPattern (rightChildren direction))
+                operator.1.1.params operator.2.counts operator.2.lengths
+                operator.2.counts_length operator.2.lengths_length done doneBound reading
+            rw [← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenL.symm ▸ doneBound⟩),
+              ← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenR.symm ▸ doneBound⟩)] at atArgs
+            rw [leftArg, rightArg] at atArgs
+            obtain ⟨_leftElements, _rightElements, leftEq, rightEq, elementsRel⟩ :=
+              patternCong_bag_elements atArgs
+                (Or.inl ⟨List.ofFn fun index : Fin segLen =>
+                  nthPrinted (fun direction => toPattern (leftChildren direction))
+                    (start + index.val), rfl⟩)
+            simp only [Pattern.collection.injEq] at leftEq rightEq
+            obtain ⟨_, leftList, _⟩ := leftEq
+            obtain ⟨_, rightList, _⟩ := rightEq
+            subst leftList
+            subst rightList
+            obtain ⟨alignedList, permAligned, pointwise⟩ := bagElementRel_align elementsRel
+            have fitLen : start + segLen ≤
+                ((indexedSignature language).arity operator).length := by
+              have room := widthRoom
+              rw [widthEq] at room
+              exact room
+            have uniform (index : Fin segLen) :
+                ((indexedSignature language).arity operator).get
+                    ⟨start + index.val, by
+                      have indexLt := index.isLt
+                      omega⟩ = ([], element) := by
+              rw [List.get_eq_getElem]
+              exact expand_segment_getElem operator.1.1.params operator.2.counts
+                operator.2.lengths operator.2.counts_length operator.2.lengths_length doneBound
+                reading index (by
+                  have indexLt := index.isLt
+                  have sameLength :
+                      (expandSlots operator.1.1.params operator.2.counts
+                          operator.2.lengths).length =
+                        ((indexedSignature language).arity operator).length := rfl
+                  rw [sameLength]
+                  omega)
+            let rightElem : Fin segLen → Tree language (Γ, element) :=
+              fun index =>
+                atElement operator ⟨start + index.val, by
+                  have indexLt := index.isLt
+                  omega⟩ (uniform index) rightChildren
+            have rightPrinted :
+                List.ofFn (fun index => toPattern (rightElem index)) =
+                  List.ofFn fun index : Fin segLen =>
+                    nthPrinted (fun direction => toPattern (rightChildren direction))
+                      (start + index.val) := by
+              refine ofFn_pointwise ?_
+              intro index
+              rw [toPattern_atElement]
+              have printedBound :
+                  start + index.val < ((indexedSignature language).arity operator).length := by
+                have indexLt := index.isLt
+                omega
+              exact (nthPrinted_of_lt
+                (fun direction => toPattern (rightChildren direction)) printedBound).symm
+            have alignedLength : alignedList.length = segLen := by
+              have permLength := List.Perm.length_eq permAligned
+              simp only [List.length_ofFn] at permLength
+              exact permLength.symm
+            have alignedBound (index : Fin segLen) : index.val < alignedList.length :=
+              alignedLength.symm ▸ index.isLt
+            have inPrinted (index : Fin segLen) :
+                alignedList.get ⟨index.val, alignedBound index⟩ ∈
+                  List.ofFn fun direction => toPattern (rightElem direction) := by
+              rw [rightPrinted]
+              exact permAligned.symm.subset
+                (List.get_mem alignedList ⟨index.val, alignedBound index⟩)
+            let pick : Fin segLen → Fin segLen :=
+              fun index => Classical.choose (List.mem_ofFn.mp (inPrinted index))
+            have pick_spec (index : Fin segLen) :
+                toPattern (rightElem (pick index)) =
+                  alignedList.get ⟨index.val, alignedBound index⟩ :=
+              Classical.choose_spec (List.mem_ofFn.mp (inPrinted index))
+            let pickedElem : Fin segLen → Tree language (Γ, element) :=
+              fun index => rightElem (pick index)
+            have pickedPrinted :
+                List.ofFn (fun index => toPattern (pickedElem index)) = alignedList := by
+              refine List.ext_get ?_ ?_
+              · simp only [List.length_ofFn, alignedLength]
+              · intro n hOfFn hAligned
+                let index : Fin segLen := ⟨n, by simpa [List.length_ofFn] using hOfFn⟩
+                have read := ofFn_get_apply (fun i => toPattern (pickedElem i)) index
+                have sameGet :
+                    (List.ofFn fun i => toPattern (pickedElem i)).get ⟨n, hOfFn⟩ =
+                      (List.ofFn fun i => toPattern (pickedElem i)).get
+                        ⟨index.val, List.length_ofFn.symm ▸ index.isLt⟩ := by
+                  apply congrArg
+                    (List.get (List.ofFn fun i => toPattern (pickedElem i)))
+                  apply Fin.ext
+                  rfl
+                rw [sameGet, read, pick_spec index]
+            have pointwiseElements :
+                List.Forall₂ PatternCong
+                  (List.ofFn fun index : Fin segLen =>
+                    nthPrinted (fun direction => toPattern (leftChildren direction))
+                      (start + index.val))
+                  (List.ofFn fun index => toPattern (pickedElem index)) :=
+              pickedPrinted.symm ▸ pointwise
+            let current' := overlaySegment operator start segLen fitLen uniform current pickedElem
+            have outsideProof :
+                ∀ direction : Fin ((indexedSignature language).arity operator).length,
+                  direction.val < start ∨ start + segLen ≤ direction.val →
+                    current direction = current' direction := by
+              intro direction outside
+              exact (overlay_outside operator start segLen fitLen uniform current pickedElem
+                direction outside).symm
+            have leftSeg :
+                List.ofFn (fun index =>
+                  segmentChild operator start index (by omega) (uniform index) current) =
+                  List.ofFn rightElem := by
+              refine ofFn_pointwise ?_
+              intro index
+              unfold segmentChild
+              have childEq :
+                  current ⟨start + index.val, by omega⟩ =
+                    rightChildren ⟨start + index.val, by omega⟩ :=
+                suffix _ (Nat.le_add_right _ _)
+              simp only [atElement, childEq, rightElem]
+            have rightSeg :
+                List.ofFn (fun index =>
+                  segmentChild operator start index (by omega) (uniform index) current') =
+                  List.ofFn pickedElem := by
+              refine ofFn_pointwise ?_
+              intro index
+              exact overlay_segment operator start segLen fitLen uniform current pickedElem index
+                (by omega)
+            have treePerm : List.Perm (List.ofFn rightElem) (List.ofFn pickedElem) := by
+              have patternPerm :
+                  List.Perm
+                    (List.ofFn fun index => toPattern (rightElem index))
+                    (List.ofFn fun index => toPattern (pickedElem index)) := by
+                rw [rightPrinted, pickedPrinted]
+                exact permAligned
+              have asMap :
+                  List.map toPattern (List.ofFn rightElem) =
+                    List.ofFn fun index => toPattern (rightElem index) := by
+                rw [List.map_ofFn]
+                exact ofFn_pointwise fun _ => rfl
+              have asMap' :
+                  List.map toPattern (List.ofFn pickedElem) =
+                    List.ofFn fun index => toPattern (pickedElem index) := by
+                rw [List.map_ofFn]
+                exact ofFn_pointwise fun _ => rfl
+              have patternPerm' :
+                  List.Perm (List.map toPattern (List.ofFn rightElem))
+                    (List.map toPattern (List.ofFn pickedElem)) := by
+                rw [asMap, asMap']
+                exact patternPerm
+              exact (List.map_perm_map_iff
+                (toPattern_fn_injective labels uniqueBare (Γ, element))).mp patternPerm'
+            have permStep :=
+              TreeCong.bagPerm operator start segLen fitLen .hashBag (Or.inl rfl) done doneBound
+                reading (by simp [start, takenSlots]) rfl uniform current current' outsideProof
+                (leftSeg.symm ▸ rightSeg.symm ▸ treePerm)
+            refine ⟨current', rightToCurrent.trans permStep, ?_, ?_⟩
+            · intro direction bound
+              by_cases earlier : direction.val < start
+              · have stayed : current' direction = current direction :=
+                  overlay_outside operator start segLen fitLen uniform current pickedElem direction
+                    (Or.inl earlier)
+                rw [stayed]
+                exact aligned direction earlier
+              · have indexFit : direction.val - start < segLen := by
+                  have slots :
+                      takenSlots operator.1.1.params operator.2.counts operator.2.lengths
+                          (done + 1) = start + segLen := by
+                    rw [stepEq, widthEq]
+                  omega
+                let index : Fin segLen := ⟨direction.val - start, indexFit⟩
+                have atIndex :=
+                  (List.forall₂_iff_get.mp pointwiseElements).2 index.val
+                    (by rw [List.length_ofFn]; exact index.isLt)
+                    (by rw [List.length_ofFn]; exact index.isLt)
+                rw [ofFn_get_apply, ofFn_get_apply] at atIndex
+                have startFit : start + index.val <
+                    ((indexedSignature language).arity operator).length := by omega
+                have asStart : direction.val = start + index.val := by
+                  simp [index]
+                  omega
+                have dirEq : direction = ⟨start + index.val, startFit⟩ := by
+                  apply Fin.ext
+                  exact asStart
+                rw [nthPrinted_of_lt _ startFit] at atIndex
+                have placed :
+                    toPattern (current' ⟨start + index.val, startFit⟩) =
+                      toPattern (pickedElem index) := by
+                  have segEq :=
+                    overlay_segment operator start segLen fitLen uniform current pickedElem index
+                      startFit
+                  have asChild :
+                      toPattern
+                          (segmentChild operator start index startFit (uniform index) current') =
+                        toPattern (current' ⟨start + index.val, startFit⟩) := by
+                    unfold segmentChild
+                    exact toPattern_atElement operator ⟨start + index.val, startFit⟩
+                      (uniform index) current'
+                  rw [← asChild]
+                  exact congrArg toPattern segEq
+                rw [dirEq, placed]
+                simpa using atIndex
+            · intro direction bound
+              have slots :
+                  takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
+                    start + segLen := by
+                rw [stepEq, widthEq]
+              have past : start + segLen ≤ direction.val := by omega
+              have stayed : current' direction = current direction :=
+                overlay_outside operator start segLen fitLen uniform current pickedElem direction
+                  (Or.inr past)
+              rw [stayed]
+              exact suffix direction (by omega)
+  | none =>
+      have leftArg :=
+        assemble_at_none (fun direction => toPattern (leftChildren direction))
+          operator.1.1.params operator.2.counts operator.2.lengths
+          operator.2.counts_length operator.2.lengths_length done doneBound reading
+      have rightArg :=
+        assemble_at_none (fun direction => toPattern (rightChildren direction))
+          operator.1.1.params operator.2.counts operator.2.lengths
+          operator.2.counts_length operator.2.lengths_length done doneBound reading
+      rw [← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenL.symm ▸ doneBound⟩),
+        ← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenR.symm ▸ doneBound⟩)] at atArgs
+      rw [leftArg, rightArg] at atArgs
+      have paramGet :
+          operator.1.1.params.getD done missingParameter =
+            operator.1.1.params.get ⟨done, doneBound⟩ :=
+        List.getD_eq_get (d := missingParameter) (i := ⟨done, doneBound⟩)
+      obtain ⟨_countEq, bodyCong⟩ :=
+        printArgument_body (operator.1.1.params.get ⟨done, doneBound⟩)
+          (operator.2.counts.getD done 0) (operator.2.counts.getD done 0)
+          (nthPrinted (fun direction => toPattern (leftChildren direction)) start)
+          (nthPrinted (fun direction => toPattern (rightChildren direction)) start) atArgs
+          (by
+            intro notMulti
+            exact operator.2.counts_fixed done (by
+              rw [paramGet]
+              exact notMulti))
+          (by
+            intro notMulti
+            exact operator.2.counts_fixed done (by
+              rw [paramGet]
+              exact notMulti))
+      have widthEq :
+          directionsOf (operator.1.1.params.get ⟨done, doneBound⟩)
+              (operator.2.counts.getD done 0) (operator.2.lengths.getD done 0) = 1 := by
+        rw [directionsOf, reading]
+      have startFit : start < ((indexedSignature language).arity operator).length := by
+        have slots :
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
+              start + 1 := by
+          rw [stepEq, widthEq]
+        have room : start + 1 ≤ ((indexedSignature language).arity operator).length := by
+          have widened := widthRoom
+          rw [widthEq] at widened
+          exact widened
+        omega
+      rw [nthPrinted_of_lt _ startFit, nthPrinted_of_lt _ startFit] at bodyCong
+      refine ⟨current, rightToCurrent, ?_, ?_⟩
+      · intro direction bound
+        by_cases earlier : direction.val < start
+        · exact aligned direction earlier
+        · have atStart : direction.val = start := by
+            have slots :
+                takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
+                  start + 1 := by
+              rw [stepEq, widthEq]
+            omega
+          have dirEq : direction = ⟨start, startFit⟩ := by
+            apply Fin.ext
+            exact atStart
+          have childEq : current ⟨start, startFit⟩ = rightChildren ⟨start, startFit⟩ :=
+            suffix ⟨start, startFit⟩ (by simp [start])
+          rw [dirEq, childEq]
+          simpa [Fin.eta] using bodyCong
+      · intro direction bound
+        have slots :
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths (done + 1) =
+              start + 1 := by
+          rw [stepEq, widthEq]
+        exact suffix direction (by omega)
+
+/-- A cast tree keeps the induction hypothesis of the tree it came from. -/
+theorem ih_cast {index index' : List String × String}
+    (eq : index = index') (tree : Tree language index)
+    (preserved : ∀ other : Tree language index,
+      PatternCong (toPattern tree) (toPattern other) → TreeCong language tree other)
+    (other : Tree language index')
+    (related : PatternCong
+      (toPattern (cast (congrArg (Tree language) eq) tree)) (toPattern other)) :
+    TreeCong language (cast (congrArg (Tree language) eq) tree) other := by
+  have relatedOld :
+      PatternCong (toPattern tree)
+        (toPattern (cast (congrArg (Tree language) eq.symm) other)) := by
+    rw [toPattern_cast eq tree] at related
+    rw [← toPattern_cast eq.symm other] at related
+    exact related
+  have step := preserved _ relatedOld
+  have casted := treeCong_cast eq step
+  have back :
+      cast (congrArg (Tree language) eq)
+          (cast (congrArg (Tree language) eq.symm) other) = other := by
+    apply eq_of_heq
+    rw [cast_heq_iff_heq, cast_heq_iff_heq]
+  rw [back] at casted
+  exact casted
+
+/-- Printing a prefix child of a splice is printing the outside child. -/
+theorem spliceChild_toPattern_prefix {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (outside : Child language Γ sort operator)
+    (trees : Fin k → Tree language (Γ, element))
+    (direction : Fin ((indexedSignature language).arity
+      (resizedAt operator parameterIndex bound shape k)).length)
+    (hPrefix : direction.val <
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex) :
+    toPattern (spliceChild operator parameterIndex bound shape k outside trees direction) =
+      toPattern (outside
+        ⟨direction.val, resized_prefix_fit operator parameterIndex bound shape k hPrefix⟩) := by
+  unfold spliceChild
+  simp only [dif_pos hPrefix]
+  exact toPattern_cast
+    (splice_prefix_src (Γ := Γ) operator parameterIndex bound shape k direction hPrefix).symm _
+
+/-- Printing a segment child of a splice is printing the supplied element tree. -/
+theorem spliceChild_toPattern_segment {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (outside : Child language Γ sort operator)
+    (trees : Fin k → Tree language (Γ, element))
+    (direction : Fin ((indexedSignature language).arity
+      (resizedAt operator parameterIndex bound shape k)).length)
+    (lo : takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex ≤
+      direction.val)
+    (hi : direction.val <
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex + k) :
+    toPattern (spliceChild operator parameterIndex bound shape k outside trees direction) =
+      toPattern (trees
+        ⟨direction.val -
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex,
+          by omega⟩) := by
+  unfold spliceChild
+  have notPrefix : ¬ direction.val <
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex :=
+    Nat.not_lt_of_ge lo
+  simp only [dif_neg notPrefix, dif_pos hi]
+  exact toPattern_cast
+    (splice_segment_src (Γ := Γ) operator parameterIndex bound shape k direction lo hi).symm _
+
+/-- Printing a suffix child of a splice is printing the shifted outside child. -/
+theorem spliceChild_toPattern_suffix {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (outside : Child language Γ sort operator)
+    (trees : Fin k → Tree language (Γ, element))
+    (direction : Fin ((indexedSignature language).arity
+      (resizedAt operator parameterIndex bound shape k)).length)
+    (hPast : takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
+        k ≤ direction.val) :
+    toPattern (spliceChild operator parameterIndex bound shape k outside trees direction) =
+      toPattern (outside
+        ⟨direction.val + operator.2.lengths.getD parameterIndex 0 - k,
+          resized_suffix_fit operator parameterIndex bound shape k direction.isLt hPast⟩) := by
+  unfold spliceChild
+  have notPrefix : ¬ direction.val <
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex :=
+    Nat.not_lt_of_ge
+      (Nat.le_trans
+        (Nat.le_add_right
+          (takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex) k)
+        hPast)
+  have notSeg : ¬ direction.val <
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex + k :=
+    Nat.not_lt_of_ge hPast
+  simp only [dif_neg notPrefix, dif_neg notSeg]
+  exact toPattern_cast
+    (splice_suffix_src (Γ := Γ) operator parameterIndex bound shape k direction hPast).symm _
+
+/-- Element trees named by a cover inherit the element induction hypothesis. -/
+theorem target_element_ih {Γ : List String} {element : String} {n m : Nat}
+    (leftSegment : Fin n → Tree language (Γ, element))
+    (rightSegment : Fin m → Tree language (Γ, element))
+    (leftIh : ∀ i : Fin n, ∀ other : Tree language (Γ, element),
+      PatternCong (toPattern (leftSegment i)) (toPattern other) →
+        TreeCong language (leftSegment i) other)
+    (coverR : ∀ j : Fin m, ∃ i : Fin n,
+      PatternCong (toPattern (leftSegment i)) (toPattern (rightSegment j))) :
+    ∀ j : Fin m, ∀ other : Tree language (Γ, element),
+      PatternCong (toPattern (rightSegment j)) (toPattern other) →
+        TreeCong language (rightSegment j) other := by
+  intro j other related
+  obtain ⟨i, toRight⟩ := coverR j
+  exact (TreeCong.symm (leftIh i (rightSegment j) toRight)).trans
+    (leftIh i other (PatternCong.trans toRight related))
+
+/-- A splice keeps the induction hypothesis: outside children by the cast, and the
+new segment by the element hypothesis of the family that was written there. -/
+theorem spliceChild_ih {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (outside : Child language Γ sort operator)
+    (trees : Fin k → Tree language (Γ, element))
+    (ih : ∀ direction
+        (other : Tree language
+          ((polynomial (indexedSignature language)).src (Γ, sort) operator direction)),
+        PatternCong (toPattern (outside direction)) (toPattern other) →
+          TreeCong language (outside direction) other)
+    (treeIh : ∀ index : Fin k, ∀ other : Tree language (Γ, element),
+      PatternCong (toPattern (trees index)) (toPattern other) →
+        TreeCong language (trees index) other) :
+    ∀ direction
+      (other : Tree language
+        ((polynomial (indexedSignature language)).src (Γ, sort)
+          (resizedAt operator parameterIndex bound shape k) direction)),
+      PatternCong
+          (toPattern (spliceChild operator parameterIndex bound shape k outside trees direction))
+          (toPattern other) →
+        TreeCong language
+          (spliceChild operator parameterIndex bound shape k outside trees direction) other := by
+  intro direction other related
+  unfold spliceChild at related ⊢
+  by_cases hPrefix : direction.val <
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex
+  · simp only [dif_pos hPrefix] at related ⊢
+    exact ih_cast
+      (splice_prefix_src (Γ := Γ) operator parameterIndex bound shape k direction hPrefix).symm
+      (outside ⟨direction.val,
+        resized_prefix_fit operator parameterIndex bound shape k hPrefix⟩)
+      (fun other' rel =>
+        ih ⟨direction.val, resized_prefix_fit operator parameterIndex bound shape k hPrefix⟩
+          other' rel)
+      other related
+  · by_cases hSeg : direction.val <
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex + k
+    · simp only [dif_neg hPrefix, dif_pos hSeg] at related ⊢
+      exact ih_cast
+        (splice_segment_src (Γ := Γ) operator parameterIndex bound shape k direction
+          (by omega) hSeg).symm
+        (trees ⟨direction.val -
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex,
+            by omega⟩)
+        (fun other' rel => treeIh _ other' rel)
+        other related
+    · simp only [dif_neg hPrefix, dif_neg hSeg] at related ⊢
+      exact ih_cast
+        (splice_suffix_src (Γ := Γ) operator parameterIndex bound shape k direction
+          (by omega)).symm
+        (outside ⟨direction.val + operator.2.lengths.getD parameterIndex 0 - k,
+          resized_suffix_fit operator parameterIndex bound shape k direction.isLt (by omega)⟩)
+        (fun other' rel => ih _ other' rel)
+        other related
+
+/-- `List.set` leaves every other `getD` entry unchanged. -/
+theorem lengths_set_getD_ne (lengths : List Nat) (index value i : Nat) (different : i ≠ index) :
+    (lengths.set index value).getD i 0 = lengths.getD i 0 := by
+  by_cases iLt : i < lengths.length
+  · have iLt' : i < (lengths.set index value).length := by
+      simpa [List.length_set] using iLt
+    rw [List.getD_eq_getElem (hn := iLt'), List.getD_eq_getElem (hn := iLt)]
+    rw [List.getElem_set_ne (Ne.symm different)]
+  · have iGe : lengths.length ≤ i := Nat.le_of_not_lt iLt
+    have iGe' : (lengths.set index value).length ≤ i := by
+      simpa [List.length_set] using iGe
+    rw [List.getD_eq_default (d := 0) (hn := iGe), List.getD_eq_default (d := 0) (hn := iGe')]
+
+/-- Earlier parameters occupy at most as many directions as a later prefix. -/
+theorem takenSlots_mono (parameters : List TermParam) (counts lengths : List Nat)
+    (countsLength : counts.length = parameters.length)
+    (lengthsLength : lengths.length = parameters.length)
+    {i j : Nat} (ij : i ≤ j) (jLe : j ≤ parameters.length) :
+    takenSlots parameters counts lengths i ≤ takenSlots parameters counts lengths j := by
+  suffices ∀ j, i ≤ j → j ≤ parameters.length →
+      takenSlots parameters counts lengths i ≤ takenSlots parameters counts lengths j by
+    exact this j ij jLe
+  intro j
+  induction extra : j - i generalizing j with
+  | zero =>
+      intro ij jLe
+      have : j = i := by omega
+      subst this
+      exact Nat.le_refl _
+  | succ extra inductionHypothesis =>
+      intro ij jLe
+      have predBound : j - 1 < parameters.length := by omega
+      have smaller :=
+        inductionHypothesis (j - 1) (by omega) (by omega) (Nat.le_of_lt predBound)
+      have step :=
+        takenSlots_step parameters counts lengths countsLength lengthsLength (j - 1) predBound
+      have jEq : j - 1 + 1 = j := by omega
+      rw [← jEq, step]
+      exact Nat.le_trans smaller (Nat.le_add_right _ _)
+
+/-- Replacing one hash-set length shifts every later prefix by that difference. -/
+theorem takenSlots_set_shift (parameters : List TermParam) (counts lengths : List Nat)
+    (countsLength : counts.length = parameters.length)
+    (lengthsLength : lengths.length = parameters.length)
+    (parameterIndex : Nat) (bound : parameterIndex < parameters.length)
+    {element : String}
+    (shape : baseCollection? (parameters.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k done : Nat) (low : parameterIndex < done) (high : done ≤ parameters.length) :
+    takenSlots parameters counts (lengths.set parameterIndex k) done =
+      takenSlots parameters counts lengths done + k - lengths.getD parameterIndex 0 := by
+  induction done with
+  | zero => omega
+  | succ done inductionHypothesis =>
+      have doneBound : done < parameters.length := by omega
+      have lengthsLength' : (lengths.set parameterIndex k).length = parameters.length := by
+        simpa [List.length_set] using lengthsLength
+      have stepOld :=
+        takenSlots_step parameters counts lengths countsLength lengthsLength done doneBound
+      have stepNew :=
+        takenSlots_step parameters counts (lengths.set parameterIndex k)
+          countsLength lengthsLength' done doneBound
+      by_cases crossed : done = parameterIndex
+      · subst crossed
+        have startEq :
+            takenSlots parameters counts (lengths.set done k) done =
+              takenSlots parameters counts lengths done := by
+          simp only [takenSlots]
+          rw [List.take_set_of_le (Nat.le_refl done)]
+        have written : (lengths.set done k).getD done 0 = k := by
+          have inRange : done < (lengths.set done k).length := by
+            rw [List.length_set, lengthsLength]
+            exact bound
+          rw [List.getD_eq_getElem (hn := inRange)]
+          exact List.getElem_set_self inRange
+        have width :
+            directionsOf (parameters.get ⟨done, bound⟩) (counts.getD done 0)
+                (lengths.getD done 0) =
+              lengths.getD done 0 := by
+          rw [directionsOf, shape]
+        rw [stepOld, stepNew, startEq, width]
+        have widthNew :
+            directionsOf (parameters.get ⟨done, bound⟩) (counts.getD done 0)
+                ((lengths.set done k).getD done 0) =
+              k := by
+          rw [written]
+          rw [directionsOf, shape]
+        rw [widthNew]
+        omega
+      · have low' : parameterIndex < done := by omega
+        have shifted := inductionHypothesis low' (Nat.le_of_lt doneBound)
+        have sameEntry :=
+          lengths_set_getD_ne lengths parameterIndex k done crossed
+        rw [stepOld, stepNew, shifted, sameEntry]
+        have oldLe : lengths.getD parameterIndex 0 ≤
+            takenSlots parameters counts lengths (parameterIndex + 1) := by
+          have atIndex :=
+            takenSlots_step parameters counts lengths countsLength lengthsLength
+              parameterIndex bound
+          have widthAt :
+              directionsOf (parameters.get ⟨parameterIndex, bound⟩)
+                  (counts.getD parameterIndex 0) (lengths.getD parameterIndex 0) =
+                lengths.getD parameterIndex 0 := by
+            rw [directionsOf, shape]
+          rw [atIndex, widthAt]
+          exact Nat.le_add_left _ _
+        have later : takenSlots parameters counts lengths (parameterIndex + 1) ≤
+            takenSlots parameters counts lengths done :=
+          takenSlots_mono parameters counts lengths countsLength lengthsLength
+            (Nat.succ_le_of_lt low') (Nat.le_of_lt doneBound)
+        omega
+
+/-- The element trees of one hash-set parameter print as that parameter's list. -/
+theorem segment_prints_eq {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (done : Nat) (doneBound : done < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨done, doneBound⟩) =
+      some (.hashSet, element))
+    (children : Child language Γ sort operator) :
+    List.ofFn (fun index =>
+        toPattern (segmentTrees operator done doneBound shape
+          (operator.2.lengths.getD done 0) rfl children index)) =
+      List.ofFn (fun index : Fin (operator.2.lengths.getD done 0) =>
+        nthPrinted (fun direction => toPattern (children direction))
+          (takenSlots operator.1.1.params operator.2.counts operator.2.lengths done +
+            index.val)) := by
+  refine ofFn_pointwise ?_
+  intro index
+  have fit :
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths done + index.val <
+        ((indexedSignature language).arity operator).length := by
+    have indexLt := index.isLt
+    have room := segment_room operator doneBound (by rw [shape]; rfl)
+    omega
+  have asTree :
+      segmentTrees operator done doneBound shape (operator.2.lengths.getD done 0) rfl
+          children index =
+        atElement operator
+          ⟨takenSlots operator.1.1.params operator.2.counts operator.2.lengths done + index.val,
+            fit⟩
+          (by
+            rw [List.get_eq_getElem]
+            exact expand_segment_getElem operator.1.1.params operator.2.counts
+              operator.2.lengths operator.2.counts_length operator.2.lengths_length
+              doneBound shape index
+              (by
+                have indexLt := index.isLt
+                have room := segment_room operator doneBound (by rw [shape]; rfl)
+                have sameLength :
+                    (expandSlots operator.1.1.params operator.2.counts
+                        operator.2.lengths).length =
+                      ((indexedSignature language).arity operator).length := rfl
+                rw [← sameLength] at room
+                omega))
+          children := by
+    unfold segmentTrees
+    apply atElement_fin
+    · apply Fin.ext
+      rfl
+  rw [asTree, toPattern_atElement]
+  exact (nthPrinted_of_lt (fun direction => toPattern (children direction)) fit).symm
+
+/-- The two element lists of one hash-set argument cover each other. -/
+theorem set_segment_covers {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (rightOp : (indexedSignature language).Op sort)
+    (done : Nat) (doneBound : done < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨done, doneBound⟩) =
+      some (.hashSet, element))
+    (children : Child language Γ sort operator)
+    (rightChildren : Child language Γ sort rightOp)
+    (sameRule : operator.1.1 = rightOp.1.1)
+    (rightBound : done < rightOp.1.1.params.length)
+    (shapeR : baseCollection? (rightOp.1.1.params.get ⟨done, rightBound⟩) =
+      some (.hashSet, element))
+    (argRel : List.Forall₂ PatternCong
+      (assemblePrinted (fun direction => toPattern (children direction)) 0
+        operator.1.1.params operator.2.counts operator.2.lengths)
+      (assemblePrinted (fun direction => toPattern (rightChildren direction)) 0
+        operator.1.1.params rightOp.2.counts rightOp.2.lengths)) :
+    (∀ i : Fin (operator.2.lengths.getD done 0),
+      ∃ j : Fin (rightOp.2.lengths.getD done 0),
+        PatternCong
+          (toPattern (segmentTrees operator done doneBound shape
+            (operator.2.lengths.getD done 0) rfl children i))
+          (toPattern (segmentTrees rightOp done rightBound shapeR
+            (rightOp.2.lengths.getD done 0) rfl rightChildren j))) ∧
+      (∀ j : Fin (rightOp.2.lengths.getD done 0),
+        ∃ i : Fin (operator.2.lengths.getD done 0),
+          PatternCong
+            (toPattern (segmentTrees operator done doneBound shape
+              (operator.2.lengths.getD done 0) rfl children i))
+            (toPattern (segmentTrees rightOp done rightBound shapeR
+              (rightOp.2.lengths.getD done 0) rfl rightChildren j))) := by
+  have paramsEq : rightOp.1.1.params = operator.1.1.params :=
+    congrArg (fun rule => rule.params) sameRule.symm
+  let rightCounts := rightOp.2.counts
+  let rightLengths := rightOp.2.lengths
+  have slotsEq :
+      takenSlots rightOp.1.1.params rightCounts rightLengths done =
+        takenSlots operator.1.1.params rightCounts rightLengths done :=
+    congrArg (fun parameters => takenSlots parameters rightCounts rightLengths done) paramsEq
+  have rightCountsLength : rightOp.2.counts.length = operator.1.1.params.length := by
+    rw [rightOp.2.counts_length, paramsEq]
+  have rightLengthsLength : rightOp.2.lengths.length = operator.1.1.params.length := by
+    rw [rightOp.2.lengths_length, paramsEq]
+  have lenL :=
+    assemblePrinted_length (fun direction => toPattern (children direction)) 0
+      operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length
+  have lenR :=
+    assemblePrinted_length (fun direction => toPattern (rightChildren direction)) 0
+      operator.1.1.params rightOp.2.counts rightOp.2.lengths
+      rightCountsLength rightLengthsLength
+  have atArgs :=
+    (List.forall₂_iff_get.mp argRel).2 done (lenL.symm ▸ doneBound) (lenR.symm ▸ doneBound)
+  have leftArg :=
+    assemble_at_set (fun direction => toPattern (children direction))
+      operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length done doneBound shape
+  have rightArg :=
+    assemble_at_set (fun direction => toPattern (rightChildren direction))
+      operator.1.1.params rightOp.2.counts rightOp.2.lengths
+      rightCountsLength rightLengthsLength done doneBound shape
+  rw [← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenL.symm ▸ doneBound⟩),
+    ← List.getD_eq_get (d := .bvar 0) (i := ⟨done, lenR.symm ▸ doneBound⟩)] at atArgs
+  rw [leftArg, rightArg] at atArgs
+  obtain ⟨_leftElements, _rightElements, leftEq, rightEq, elementsRel⟩ :=
+    patternCong_set_elements atArgs
+      (Or.inl ⟨List.ofFn fun index : Fin (operator.2.lengths.getD done 0) =>
+        nthPrinted (fun direction => toPattern (children direction))
+          (takenSlots operator.1.1.params operator.2.counts operator.2.lengths done +
+            index.val), rfl⟩)
+  simp only [Pattern.collection.injEq] at leftEq rightEq
+  obtain ⟨_, leftList, _⟩ := leftEq
+  obtain ⟨_, rightList, _⟩ := rightEq
+  subst leftList
+  subst rightList
+  have covers := setElementRel_both elementsRel
+  have leftPrinted := segment_prints_eq operator done doneBound shape children
+  have rightBase := segment_prints_eq rightOp done rightBound shapeR rightChildren
+  have rightPrinted :
+      List.ofFn (fun index =>
+          toPattern (segmentTrees rightOp done rightBound shapeR
+            (rightOp.2.lengths.getD done 0) rfl rightChildren index)) =
+        List.ofFn (fun index : Fin (rightOp.2.lengths.getD done 0) =>
+          nthPrinted (fun direction => toPattern (rightChildren direction))
+            (takenSlots operator.1.1.params rightOp.2.counts rightOp.2.lengths done +
+              index.val)) := by
+    rw [rightBase]
+    refine ofFn_pointwise ?_
+    intro index
+    have posEq :
+        takenSlots rightOp.1.1.params rightOp.2.counts rightOp.2.lengths done + index.val =
+          takenSlots operator.1.1.params rightOp.2.counts rightOp.2.lengths done +
+            index.val := by
+      rw [slotsEq]
+    rw [posEq]
+  refine ⟨?_, ?_⟩
+  · intro i
+    have mem :
+        toPattern (segmentTrees operator done doneBound shape
+          (operator.2.lengths.getD done 0) rfl children i) ∈
+          List.ofFn fun index : Fin (operator.2.lengths.getD done 0) =>
+            nthPrinted (fun direction => toPattern (children direction))
+              (takenSlots operator.1.1.params operator.2.counts operator.2.lengths done +
+                index.val) := by
+      rw [← leftPrinted]
+      exact List.mem_ofFn.mpr ⟨i, rfl⟩
+    obtain ⟨image, imageMem, step⟩ := covers.1 _ mem
+    have imageMem' :
+        image ∈ List.ofFn fun index =>
+          toPattern (segmentTrees rightOp done rightBound shapeR
+            (rightOp.2.lengths.getD done 0) rfl rightChildren index) := by
+      rw [rightPrinted]
+      exact imageMem
+    obtain ⟨j, imageEq⟩ := List.mem_ofFn.mp imageMem'
+    exact ⟨j, by simpa [imageEq] using step⟩
+  · intro j
+    have mem :
+        toPattern (segmentTrees rightOp done rightBound shapeR
+          (rightOp.2.lengths.getD done 0) rfl rightChildren j) ∈
+          List.ofFn fun index : Fin (rightOp.2.lengths.getD done 0) =>
+            nthPrinted (fun direction => toPattern (rightChildren direction))
+              (takenSlots operator.1.1.params rightOp.2.counts rightOp.2.lengths done +
+                index.val) := by
+      rw [← rightPrinted]
+      exact List.mem_ofFn.mpr ⟨j, rfl⟩
+    obtain ⟨image, imageMem, step⟩ := covers.2 _ mem
+    have imageMem' :
+        image ∈ List.ofFn fun index =>
+          toPattern (segmentTrees operator done doneBound shape
+            (operator.2.lengths.getD done 0) rfl children index) := by
+      rw [leftPrinted]
+      exact imageMem
+    obtain ⟨i, imageEq⟩ := List.mem_ofFn.mp imageMem'
+    exact ⟨i, by simpa [imageEq] using step⟩
+
+/-- Once both heads carry the same lengths, the parameter walk is the tree congruence. -/
+theorem sameHead_walk
+    (labels : (language.terms.map (·.label)).Nodup)
+    (uniqueBare : UniqueBare language)
+    {Γ : List String} {sort : String}
+    (operator : (indexedSignature language).Op sort)
+    (leftChildren rightChildren : Child language Γ sort operator)
+    (ih : ∀ direction
+        (other : Tree language
+          ((polynomial (indexedSignature language)).src (Γ, sort) operator direction)),
+        PatternCong (toPattern (leftChildren direction)) (toPattern other) →
+          TreeCong language (leftChildren direction) other)
+    (argRel : List.Forall₂ PatternCong
+      (assemblePrinted (fun direction => toPattern (leftChildren direction)) 0
+        operator.1.1.params operator.2.counts operator.2.lengths)
+      (assemblePrinted (fun direction => toPattern (rightChildren direction)) 0
+        operator.1.1.params operator.2.counts operator.2.lengths)) :
+    TreeCong language
+      (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        operator leftChildren)
+      (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        operator rightChildren) := by
+  have advance :
+      ∀ fuel done (current : Child language Γ sort operator),
+        done + fuel = operator.1.1.params.length →
+        TreeCong language
+          (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+            operator rightChildren)
+          (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+            operator current) →
+        (∀ direction : Fin ((indexedSignature language).arity operator).length,
+          direction.val <
+              takenSlots operator.1.1.params operator.2.counts operator.2.lengths done →
+            PatternCong (toPattern (leftChildren direction))
+              (toPattern (current direction))) →
+        (∀ direction : Fin ((indexedSignature language).arity operator).length,
+          takenSlots operator.1.1.params operator.2.counts operator.2.lengths done ≤
+              direction.val →
+            current direction = rightChildren direction) →
+        TreeCong language
+          (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+            operator leftChildren)
+          (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+            operator rightChildren) := by
+    intro fuel
+    induction fuel with
+    | zero =>
+        intro done current sum rightToCurrent aligned suffix
+        have doneAll : done = operator.1.1.params.length := by omega
+        subst doneAll
+        have covered :
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths
+                operator.1.1.params.length =
+              ((indexedSignature language).arity operator).length := by
+          rw [takenSlots_all _ _ _ operator.2.counts_length operator.2.lengths_length,
+            expandSlots_length]
+        have steps :
+            ∀ direction, TreeCong language (leftChildren direction) (current direction) := by
+          intro direction
+          apply ih
+          have bound :
+              direction.val <
+                takenSlots operator.1.1.params operator.2.counts operator.2.lengths
+                  operator.1.1.params.length := by
+            rw [covered]
+            exact direction.isLt
+          exact aligned direction bound
+        exact (treeCong_pointwise operator leftChildren current steps).trans
+          (TreeCong.symm rightToCurrent)
+    | succ fuel inductionHypothesis =>
+        intro done current sum rightToCurrent aligned suffix
+        have doneBound : done < operator.1.1.params.length := by omega
+        obtain ⟨current', stepped, aligned', suffix'⟩ :=
+          extend_alignment labels uniqueBare operator done doneBound leftChildren rightChildren
+            current ih argRel rightToCurrent aligned suffix
+        exact inductionHypothesis (done + 1) current' (by omega) stepped aligned' suffix'
+  exact advance operator.1.1.params.length 0 rightChildren (by omega) (TreeCong.refl _)
+    (by
+      intro direction bound
+      simp [takenSlots_zero] at bound)
+    (by
+      intro direction _
+      rfl)
+
+/-- Equal counts and pointwise lengths make the two operator nodes the same head. -/
+theorem agreed_lengths_walk
+    (labels : (language.terms.map (·.label)).Nodup)
+    (uniqueBare : UniqueBare language)
+    {Γ : List String} {sort : String}
+    (operator : (indexedSignature language).Op sort)
+    (children : Child language Γ sort operator)
+    (rightOp : (indexedSignature language).Op sort)
+    (rightChildren : Child language Γ sort rightOp)
+    (ih : ∀ direction
+        (other : Tree language
+          ((polynomial (indexedSignature language)).src (Γ, sort) operator direction)),
+        PatternCong (toPattern (children direction)) (toPattern other) →
+          TreeCong language (children direction) other)
+    (sameRule : operator.1.1 = rightOp.1.1)
+    (countsEq : operator.2.counts = rightOp.2.counts)
+    (argRel : List.Forall₂ PatternCong
+      (assemblePrinted (fun direction => toPattern (children direction)) 0
+        operator.1.1.params operator.2.counts operator.2.lengths)
+      (assemblePrinted (fun direction => toPattern (rightChildren direction)) 0
+        operator.1.1.params rightOp.2.counts rightOp.2.lengths))
+    (allLengths : ∀ i, i < operator.1.1.params.length →
+      operator.2.lengths.getD i 0 = rightOp.2.lengths.getD i 0) :
+    TreeCong language
+      (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        operator children)
+      (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+        rightOp rightChildren) := by
+  have lengthsEq : operator.2.lengths = rightOp.2.lengths := by
+    have lenLen : operator.2.lengths.length = rightOp.2.lengths.length := by
+      rw [operator.2.lengths_length, rightOp.2.lengths_length]
+      exact congrArg List.length (congrArg (fun rule => rule.params) sameRule)
+    apply List.ext_get lenLen
+    intro n h₁ h₂
+    rw [← List.getD_eq_get (d := 0) (i := ⟨n, h₁⟩),
+      ← List.getD_eq_get (d := 0) (i := ⟨n, h₂⟩)]
+    exact allLengths n (by simpa [operator.2.lengths_length] using h₁)
+  have opEq : operator = rightOp := by
+    rcases operator with ⟨packedLeft, dataLeft⟩
+    rcases rightOp with ⟨packedRight, dataRight⟩
+    have packedEq : packedLeft = packedRight := Subtype.ext sameRule
+    subst packedEq
+    have dataEq : dataLeft = dataRight := headData_ext countsEq lengthsEq
+    subst dataEq
+    rfl
+  subst opEq
+  exact sameHead_walk labels uniqueBare operator children rightChildren ih argRel
+
+/-- `List.set` does not change a prefix that stops at the replaced index. -/
+theorem takenSlots_set_before
+    (parameters : List TermParam) (counts lengths : List Nat)
+    (parameterIndex k : Nat) {j : Nat} (jLe : j ≤ parameterIndex) :
+    takenSlots parameters counts (lengths.set parameterIndex k) j =
+      takenSlots parameters counts lengths j := by
+  simp only [takenSlots]
+  rw [List.take_set_of_le jLe]
+
+/-- A direction before the resized segment still lies in the resized arity. -/
+theorem resized_early_fit {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat) {pos : Nat}
+    (hPrefix : pos <
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex) :
+    pos < ((indexedSignature language).arity
+      (resizedAt operator parameterIndex bound shape k)).length := by
+  have lengthsLength' :
+      (operator.2.lengths.set parameterIndex k).length = operator.1.1.params.length := by
+    simpa [List.length_set] using operator.2.lengths_length
+  have covered :
+      takenSlots operator.1.1.params operator.2.counts
+          (operator.2.lengths.set parameterIndex k) operator.1.1.params.length =
+        ((indexedSignature language).arity
+          (resizedAt operator parameterIndex bound shape k)).length := by
+    unfold resizedAt
+    rw [takenSlots_all _ _ _ operator.2.counts_length lengthsLength', expandSlots_length]
+  have slotsSame :=
+    takenSlots_set_before operator.1.1.params operator.2.counts operator.2.lengths
+      parameterIndex k (Nat.le_refl parameterIndex)
+  have mono :=
+    takenSlots_mono operator.1.1.params operator.2.counts
+      (operator.2.lengths.set parameterIndex k) operator.2.counts_length lengthsLength'
+      (Nat.le_of_lt bound) (Nat.le_refl _)
+  rw [← covered]
+  exact Nat.lt_of_lt_of_le (by rw [slotsSame]; exact hPrefix) mono
+
+/-- A position before the resized segment prints as the outside child. -/
+theorem nth_splice_prefix {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (outside : Child language Γ sort operator)
+    (trees : Fin k → Tree language (Γ, element))
+    {pos : Nat}
+    (hPrefix : pos <
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex) :
+    nthPrinted (fun direction =>
+        toPattern (spliceChild operator parameterIndex bound shape k outside trees direction))
+        pos =
+      nthPrinted (fun direction => toPattern (outside direction)) pos := by
+  have posFit := resized_early_fit operator parameterIndex bound shape k hPrefix
+  rw [nthPrinted_of_lt _ posFit]
+  rw [spliceChild_toPattern_prefix operator parameterIndex bound shape k outside trees
+    ⟨pos, posFit⟩ hPrefix]
+  apply Eq.symm
+  rw [nthPrinted_of_lt (fun direction => toPattern (outside direction))
+    (resized_prefix_fit operator parameterIndex bound shape k hPrefix)]
+
+/-- A position after the resized segment prints as the shifted outside child. -/
+theorem nth_splice_suffix {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (outside : Child language Γ sort operator)
+    (trees : Fin k → Tree language (Γ, element))
+    {pos oldPos : Nat}
+    (hPast : takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
+      k ≤ pos)
+    (posFit : pos < ((indexedSignature language).arity
+      (resizedAt operator parameterIndex bound shape k)).length)
+    (valEq : pos + operator.2.lengths.getD parameterIndex 0 - k = oldPos) :
+    nthPrinted (fun direction =>
+        toPattern (spliceChild operator parameterIndex bound shape k outside trees direction))
+        pos =
+      nthPrinted (fun direction => toPattern (outside direction)) oldPos := by
+  have shiftedFit :=
+    resized_suffix_fit operator parameterIndex bound shape k posFit hPast
+  have oldFit : oldPos < ((indexedSignature language).arity operator).length := by
+    rw [← valEq]
+    exact shiftedFit
+  rw [nthPrinted_of_lt _ posFit]
+  rw [spliceChild_toPattern_suffix operator parameterIndex bound shape k outside trees
+    ⟨pos, posFit⟩ hPast]
+  have finEq :
+      (⟨pos + operator.2.lengths.getD parameterIndex 0 - k, shiftedFit⟩ :
+        Fin ((indexedSignature language).arity operator).length) =
+        ⟨oldPos, oldFit⟩ := by
+    apply Fin.ext
+    exact valEq
+  rw [finEq]
+  exact (nthPrinted_of_lt (fun direction => toPattern (outside direction)) oldFit).symm
+
+/-- A position inside the resized segment prints as the supplied element tree. -/
+theorem nth_splice_segment {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (outside : Child language Γ sort operator)
+    (trees : Fin k → Tree language (Γ, element))
+    (index : Fin k) :
+    nthPrinted (fun direction =>
+        toPattern (spliceChild operator parameterIndex bound shape k outside trees direction))
+        (takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
+          index.val) =
+      toPattern (trees index) := by
+  have posFit :
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
+          index.val <
+        ((indexedSignature language).arity
+          (resizedAt operator parameterIndex bound shape k)).length := by
+    have lengthsLength' :
+        (operator.2.lengths.set parameterIndex k).length = operator.1.1.params.length := by
+      simpa [List.length_set] using operator.2.lengths_length
+    have covered :
+        takenSlots operator.1.1.params operator.2.counts
+            (operator.2.lengths.set parameterIndex k) operator.1.1.params.length =
+          ((indexedSignature language).arity
+            (resizedAt operator parameterIndex bound shape k)).length := by
+      unfold resizedAt
+      rw [takenSlots_all _ _ _ operator.2.counts_length lengthsLength', expandSlots_length]
+    have stepNew :=
+      takenSlots_step operator.1.1.params operator.2.counts
+        (operator.2.lengths.set parameterIndex k) operator.2.counts_length lengthsLength'
+        parameterIndex bound
+    have written :=
+      resizedAt_getD operator parameterIndex
+        (by simpa [operator.2.lengths_length] using bound) k
+    have slotsSame :=
+      takenSlots_set_before operator.1.1.params operator.2.counts operator.2.lengths
+        parameterIndex k (Nat.le_refl parameterIndex)
+    have nextLe :
+        takenSlots operator.1.1.params operator.2.counts
+            (operator.2.lengths.set parameterIndex k) (parameterIndex + 1) ≤
+          takenSlots operator.1.1.params operator.2.counts
+            (operator.2.lengths.set parameterIndex k) operator.1.1.params.length :=
+      takenSlots_mono operator.1.1.params operator.2.counts
+        (operator.2.lengths.set parameterIndex k) operator.2.counts_length lengthsLength'
+        (Nat.succ_le_of_lt bound) (Nat.le_refl _)
+    have indexLt := index.isLt
+    have width :
+        directionsOf (operator.1.1.params.get ⟨parameterIndex, bound⟩)
+            (operator.2.counts.getD parameterIndex 0)
+            ((operator.2.lengths.set parameterIndex k).getD parameterIndex 0) =
+          k := by
+      rw [written]
+      rw [directionsOf, shape]
+    rw [← covered]
+    refine Nat.lt_of_lt_of_le ?_ nextLe
+    rw [stepNew, width, slotsSame]
+    omega
+  have lo :
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex ≤
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
+          index.val :=
+    Nat.le_add_right _ _
+  have hi :
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
+          index.val <
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex + k := by
+    have indexLt := index.isLt
+    omega
+  rw [nthPrinted_of_lt _ posFit]
+  rw [spliceChild_toPattern_segment operator parameterIndex bound shape k outside trees
+    ⟨takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
+        index.val, posFit⟩ lo hi]
+  apply congrArg toPattern
+  apply congrArg trees
+  apply Fin.ext
+  show takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
+      index.val -
+      takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex =
+    index.val
+  omega
+
+/-- `isHashSetParam` picks a hash set out of the parameter list. -/
+theorem hashSet_shape_of_flag {parameters : List TermParam} {index : Nat}
+    (bound : index < parameters.length)
+    (flag : isHashSetParam (parameters.getD index missingParameter) = true) :
+    ∃ element : String,
+      baseCollection? (parameters.get ⟨index, bound⟩) = some (.hashSet, element) := by
+  have paramGet :
+      parameters.getD index missingParameter = parameters.get ⟨index, bound⟩ :=
+    List.getD_eq_get (d := missingParameter) (i := ⟨index, bound⟩)
+  match reading : baseCollection? (parameters.get ⟨index, bound⟩) with
+  | none =>
+      simp only [isHashSetParam, paramGet, reading] at flag
+      exact (Bool.false_ne_true flag).elim
+  | some (.vec, _) =>
+      simp only [isHashSetParam, paramGet, reading] at flag
+      exact (Bool.false_ne_true flag).elim
+  | some (.hashBag, _) =>
+      simp only [isHashSetParam, paramGet, reading] at flag
+      exact (Bool.false_ne_true flag).elim
+  | some (.hashSet, element) =>
+      exact ⟨element, rfl⟩
+
+/-- Parameters before the resized hash set assemble exactly as they did. -/
+theorem assemble_before {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (outside : Child language Γ sort operator)
+    (trees : Fin k → Tree language (Γ, element))
+    (j : Nat) (jLt : j < parameterIndex) (jBound : j < operator.1.1.params.length) :
+    (assemblePrinted (fun direction =>
+        toPattern (spliceChild operator parameterIndex bound shape k outside trees direction)) 0
+      operator.1.1.params operator.2.counts (operator.2.lengths.set parameterIndex k)).getD
+        j (.bvar 0) =
+      (assemblePrinted (fun direction => toPattern (outside direction)) 0
+        operator.1.1.params operator.2.counts operator.2.lengths).getD j (.bvar 0) := by
+  have lengthsLength' :
+      (operator.2.lengths.set parameterIndex k).length = operator.1.1.params.length := by
+    simpa [List.length_set] using operator.2.lengths_length
+  rw [assemble_at (fun direction =>
+        toPattern (spliceChild operator parameterIndex bound shape k outside trees direction)) 0
+      operator.1.1.params operator.2.counts (operator.2.lengths.set parameterIndex k)
+      operator.2.counts_length lengthsLength' j jBound]
+  rw [assemble_at (fun direction => toPattern (outside direction)) 0
+      operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length j jBound]
+  have lenEq :=
+    lengths_set_getD_ne operator.2.lengths parameterIndex k j (Nat.ne_of_lt jLt)
+  have slotsEq :=
+    takenSlots_set_before operator.1.1.params operator.2.counts operator.2.lengths
+      parameterIndex k (Nat.le_of_lt jLt)
+  cases reading : baseCollection? (operator.1.1.params.get ⟨j, jBound⟩) with
+  | some packed =>
+      obtain ⟨kind, _elementSort⟩ := packed
+      simp only [Nat.zero_add]
+      rw [lenEq, slotsEq]
+      apply congrArg (fun elements => Pattern.collection kind elements none)
+      refine ofFn_pointwise ?_
+      intro index
+      have step :=
+        takenSlots_step operator.1.1.params operator.2.counts operator.2.lengths
+          operator.2.counts_length operator.2.lengths_length j jBound
+      have width :
+          directionsOf (operator.1.1.params.get ⟨j, jBound⟩) (operator.2.counts.getD j 0)
+              (operator.2.lengths.getD j 0) =
+            operator.2.lengths.getD j 0 := by
+        rw [directionsOf, reading]
+      have later :
+          takenSlots operator.1.1.params operator.2.counts operator.2.lengths (j + 1) ≤
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex :=
+        takenSlots_mono operator.1.1.params operator.2.counts operator.2.lengths
+          operator.2.counts_length operator.2.lengths_length
+          (Nat.succ_le_of_lt jLt) (Nat.le_of_lt bound)
+      have indexLt := index.isLt
+      have hPrefix :
+          takenSlots operator.1.1.params operator.2.counts operator.2.lengths j + index.val <
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex := by
+        rw [step, width] at later
+        omega
+      exact nth_splice_prefix operator parameterIndex bound shape k outside trees hPrefix
+  | none =>
+      simp only [Nat.zero_add]
+      rw [slotsEq]
+      apply congrArg (printArgument (operator.1.1.params.get ⟨j, jBound⟩)
+        (operator.2.counts.getD j 0))
+      have step :=
+        takenSlots_step operator.1.1.params operator.2.counts operator.2.lengths
+          operator.2.counts_length operator.2.lengths_length j jBound
+      have width :
+          directionsOf (operator.1.1.params.get ⟨j, jBound⟩) (operator.2.counts.getD j 0)
+              (operator.2.lengths.getD j 0) =
+            1 := by
+        rw [directionsOf, reading]
+      have later :
+          takenSlots operator.1.1.params operator.2.counts operator.2.lengths (j + 1) ≤
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex :=
+        takenSlots_mono operator.1.1.params operator.2.counts operator.2.lengths
+          operator.2.counts_length operator.2.lengths_length
+          (Nat.succ_le_of_lt jLt) (Nat.le_of_lt bound)
+      have hPrefix :
+          takenSlots operator.1.1.params operator.2.counts operator.2.lengths j <
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex := by
+        rw [step, width] at later
+        omega
+      exact nth_splice_prefix operator parameterIndex bound shape k outside trees hPrefix
+
+/-- Parameters after the resized hash set assemble as the unshifted outside children. -/
+theorem assemble_after {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (outside : Child language Γ sort operator)
+    (trees : Fin k → Tree language (Γ, element))
+    (j : Nat) (jGt : parameterIndex < j) (jBound : j < operator.1.1.params.length) :
+    (assemblePrinted (fun direction =>
+        toPattern (spliceChild operator parameterIndex bound shape k outside trees direction)) 0
+      operator.1.1.params operator.2.counts (operator.2.lengths.set parameterIndex k)).getD
+        j (.bvar 0) =
+      (assemblePrinted (fun direction => toPattern (outside direction)) 0
+        operator.1.1.params operator.2.counts operator.2.lengths).getD j (.bvar 0) := by
+  have lengthsLength' :
+      (operator.2.lengths.set parameterIndex k).length = operator.1.1.params.length := by
+    simpa [List.length_set] using operator.2.lengths_length
+  have shift :=
+    takenSlots_set_shift operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length parameterIndex bound shape k j
+      jGt (Nat.le_of_lt jBound)
+  have nextShift :=
+    takenSlots_set_shift operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length parameterIndex bound shape k
+      (parameterIndex + 1) (Nat.lt_succ_self parameterIndex) (Nat.succ_le_of_lt bound)
+  have stepAt :=
+    takenSlots_step operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length parameterIndex bound
+  have collapsed :
+      takenSlots operator.1.1.params operator.2.counts
+          (operator.2.lengths.set parameterIndex k) (parameterIndex + 1) =
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex + k := by
+    have widthAt :
+        directionsOf (operator.1.1.params.get ⟨parameterIndex, bound⟩)
+            (operator.2.counts.getD parameterIndex 0)
+            (operator.2.lengths.getD parameterIndex 0) =
+          operator.2.lengths.getD parameterIndex 0 := by
+      rw [directionsOf, shape]
+    rw [nextShift, stepAt, widthAt]
+    omega
+  have oldLenLe :
+      operator.2.lengths.getD parameterIndex 0 ≤
+        takenSlots operator.1.1.params operator.2.counts operator.2.lengths j := by
+    have mono :=
+      takenSlots_mono operator.1.1.params operator.2.counts operator.2.lengths
+        operator.2.counts_length operator.2.lengths_length
+        (Nat.succ_le_of_lt jGt) (Nat.le_of_lt jBound)
+    have widthAt :
+        directionsOf (operator.1.1.params.get ⟨parameterIndex, bound⟩)
+            (operator.2.counts.getD parameterIndex 0)
+            (operator.2.lengths.getD parameterIndex 0) =
+          operator.2.lengths.getD parameterIndex 0 := by
+      rw [directionsOf, shape]
+    rw [stepAt, widthAt] at mono
+    omega
+  have laterStart :
+      takenSlots operator.1.1.params operator.2.counts
+          (operator.2.lengths.set parameterIndex k) (parameterIndex + 1) ≤
+        takenSlots operator.1.1.params operator.2.counts
+          (operator.2.lengths.set parameterIndex k) j :=
+    takenSlots_mono operator.1.1.params operator.2.counts
+      (operator.2.lengths.set parameterIndex k) operator.2.counts_length lengthsLength'
+      (Nat.succ_le_of_lt jGt) (Nat.le_of_lt jBound)
+  have covered :
+      takenSlots operator.1.1.params operator.2.counts
+          (operator.2.lengths.set parameterIndex k) operator.1.1.params.length =
+        ((indexedSignature language).arity
+          (resizedAt operator parameterIndex bound shape k)).length := by
+    unfold resizedAt
+    rw [takenSlots_all _ _ _ operator.2.counts_length lengthsLength', expandSlots_length]
+  rw [assemble_at (fun direction =>
+        toPattern (spliceChild operator parameterIndex bound shape k outside trees direction)) 0
+      operator.1.1.params operator.2.counts (operator.2.lengths.set parameterIndex k)
+      operator.2.counts_length lengthsLength' j jBound]
+  rw [assemble_at (fun direction => toPattern (outside direction)) 0
+      operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length j jBound]
+  have lenEq :=
+    lengths_set_getD_ne operator.2.lengths parameterIndex k j (Nat.ne_of_lt jGt).symm
+  cases reading : baseCollection? (operator.1.1.params.get ⟨j, jBound⟩) with
+  | some packed =>
+      obtain ⟨kind, _elementSort⟩ := packed
+      simp only [Nat.zero_add]
+      rw [lenEq]
+      apply congrArg (fun elements => Pattern.collection kind elements none)
+      refine ofFn_pointwise ?_
+      intro index
+      have stepNew :=
+        takenSlots_step operator.1.1.params operator.2.counts
+          (operator.2.lengths.set parameterIndex k) operator.2.counts_length lengthsLength' j jBound
+      have width :
+          directionsOf (operator.1.1.params.get ⟨j, jBound⟩) (operator.2.counts.getD j 0)
+              ((operator.2.lengths.set parameterIndex k).getD j 0) =
+            operator.2.lengths.getD j 0 := by
+        rw [directionsOf, reading, lenEq]
+      have indexLt := index.isLt
+      have posLt :
+          takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) j + index.val <
+            takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) (j + 1) := by
+        rw [stepNew, width]
+        omega
+      have nextLe :
+          takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) (j + 1) ≤
+            takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) operator.1.1.params.length :=
+        takenSlots_mono operator.1.1.params operator.2.counts
+          (operator.2.lengths.set parameterIndex k) operator.2.counts_length lengthsLength'
+          (Nat.succ_le_of_lt jBound) (Nat.le_refl _)
+      have posFit :
+          takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) j + index.val <
+            ((indexedSignature language).arity
+              (resizedAt operator parameterIndex bound shape k)).length := by
+        rw [← covered]
+        exact Nat.lt_of_lt_of_le posLt nextLe
+      have hPast :
+          takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex + k ≤
+            takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) j + index.val := by
+        rw [collapsed] at laterStart
+        omega
+      have valEq :
+          takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) j + index.val +
+            operator.2.lengths.getD parameterIndex 0 - k =
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths j + index.val := by
+        rw [shift]
+        omega
+      exact nth_splice_suffix operator parameterIndex bound shape k outside trees hPast posFit valEq
+  | none =>
+      simp only [Nat.zero_add]
+      apply congrArg (printArgument (operator.1.1.params.get ⟨j, jBound⟩)
+        (operator.2.counts.getD j 0))
+      have stepNew :=
+        takenSlots_step operator.1.1.params operator.2.counts
+          (operator.2.lengths.set parameterIndex k) operator.2.counts_length lengthsLength' j jBound
+      have width :
+          directionsOf (operator.1.1.params.get ⟨j, jBound⟩) (operator.2.counts.getD j 0)
+              ((operator.2.lengths.set parameterIndex k).getD j 0) =
+            1 := by
+        rw [directionsOf, reading]
+      have posLt :
+          takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) j <
+            takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) (j + 1) := by
+        rw [stepNew, width]
+        omega
+      have nextLe :
+          takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) (j + 1) ≤
+            takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) operator.1.1.params.length :=
+        takenSlots_mono operator.1.1.params operator.2.counts
+          (operator.2.lengths.set parameterIndex k) operator.2.counts_length lengthsLength'
+          (Nat.succ_le_of_lt jBound) (Nat.le_refl _)
+      have posFit :
+          takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) j <
+            ((indexedSignature language).arity
+              (resizedAt operator parameterIndex bound shape k)).length := by
+        rw [← covered]
+        exact Nat.lt_of_lt_of_le posLt nextLe
+      have hPast :
+          takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex + k ≤
+            takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) j := by
+        rw [collapsed] at laterStart
+        omega
+      have valEq :
+          takenSlots operator.1.1.params operator.2.counts
+              (operator.2.lengths.set parameterIndex k) j +
+            operator.2.lengths.getD parameterIndex 0 - k =
+            takenSlots operator.1.1.params operator.2.counts operator.2.lengths j := by
+        rw [shift]
+        omega
+      exact nth_splice_suffix operator parameterIndex bound shape k outside trees hPast posFit valEq
+
+/-- The resized hash set assembles as the element list that was written into it. -/
+theorem resizedSet_assemble {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (outside : Child language Γ sort operator)
+    (trees : Fin k → Tree language (Γ, element))
+    (rightOp : (indexedSignature language).Op sort)
+    (rightChildren : Child language Γ sort rightOp)
+    (rightCountsLength : rightOp.2.counts.length = operator.1.1.params.length)
+    (rightLengthsLength : rightOp.2.lengths.length = operator.1.1.params.length)
+    (kEq : k = rightOp.2.lengths.getD parameterIndex 0)
+    (treesPrint :
+      List.ofFn (fun index => toPattern (trees index)) =
+        List.ofFn (fun index : Fin k =>
+          nthPrinted (fun direction => toPattern (rightChildren direction))
+            (takenSlots operator.1.1.params rightOp.2.counts rightOp.2.lengths parameterIndex +
+              index.val))) :
+    (assemblePrinted (fun direction =>
+        toPattern (spliceChild operator parameterIndex bound shape k outside trees direction)) 0
+      operator.1.1.params operator.2.counts (operator.2.lengths.set parameterIndex k)).getD
+        parameterIndex (.bvar 0) =
+      (assemblePrinted (fun direction => toPattern (rightChildren direction)) 0
+        operator.1.1.params rightOp.2.counts rightOp.2.lengths).getD parameterIndex (.bvar 0) := by
+  have lengthsLength' :
+      (operator.2.lengths.set parameterIndex k).length = operator.1.1.params.length := by
+    simpa [List.length_set] using operator.2.lengths_length
+  have written :=
+    resizedAt_getD operator parameterIndex
+      (by simpa [operator.2.lengths_length] using bound) k
+  have startSame :=
+    takenSlots_set_before operator.1.1.params operator.2.counts operator.2.lengths
+      parameterIndex k (Nat.le_refl parameterIndex)
+  rw [assemble_at_set (fun direction =>
+        toPattern (spliceChild operator parameterIndex bound shape k outside trees direction))
+      operator.1.1.params operator.2.counts (operator.2.lengths.set parameterIndex k)
+      operator.2.counts_length lengthsLength' parameterIndex bound shape]
+  rw [assemble_at_set (fun direction => toPattern (rightChildren direction))
+      operator.1.1.params rightOp.2.counts rightOp.2.lengths
+      rightCountsLength rightLengthsLength parameterIndex bound shape]
+  simp only
+  rw [written, startSame, ← kEq]
+  have leftList :
+      List.ofFn (fun index : Fin k =>
+        nthPrinted (fun direction =>
+            toPattern (spliceChild operator parameterIndex bound shape k outside trees direction))
+          (takenSlots operator.1.1.params operator.2.counts operator.2.lengths parameterIndex +
+            index.val)) =
+        List.ofFn (fun index => toPattern (trees index)) := by
+    refine ofFn_pointwise ?_
+    intro index
+    exact nth_splice_segment operator parameterIndex bound shape k outside trees index
+  rw [leftList, treesPrint]
+
+/-- Resizing one hash set preserves the assembled argument relation. -/
+theorem argRel_resized {Γ : List String} {sort element : String}
+    (operator : (indexedSignature language).Op sort)
+    (parameterIndex : Nat)
+    (bound : parameterIndex < operator.1.1.params.length)
+    (shape : baseCollection? (operator.1.1.params.get ⟨parameterIndex, bound⟩) =
+      some (.hashSet, element))
+    (k : Nat)
+    (outside : Child language Γ sort operator)
+    (trees : Fin k → Tree language (Γ, element))
+    (rightOp : (indexedSignature language).Op sort)
+    (rightChildren : Child language Γ sort rightOp)
+    (rightCountsLength : rightOp.2.counts.length = operator.1.1.params.length)
+    (rightLengthsLength : rightOp.2.lengths.length = operator.1.1.params.length)
+    (kEq : k = rightOp.2.lengths.getD parameterIndex 0)
+    (treesPrint :
+      List.ofFn (fun index => toPattern (trees index)) =
+        List.ofFn (fun index : Fin k =>
+          nthPrinted (fun direction => toPattern (rightChildren direction))
+            (takenSlots operator.1.1.params rightOp.2.counts rightOp.2.lengths parameterIndex +
+              index.val)))
+    (argRel : List.Forall₂ PatternCong
+      (assemblePrinted (fun direction => toPattern (outside direction)) 0
+        operator.1.1.params operator.2.counts operator.2.lengths)
+      (assemblePrinted (fun direction => toPattern (rightChildren direction)) 0
+        operator.1.1.params rightOp.2.counts rightOp.2.lengths)) :
+    List.Forall₂ PatternCong
+      (assemblePrinted (fun direction =>
+          toPattern (spliceChild operator parameterIndex bound shape k outside trees direction)) 0
+        operator.1.1.params operator.2.counts (operator.2.lengths.set parameterIndex k))
+      (assemblePrinted (fun direction => toPattern (rightChildren direction)) 0
+        operator.1.1.params rightOp.2.counts rightOp.2.lengths) := by
+  have lengthsLength' :
+      (operator.2.lengths.set parameterIndex k).length = operator.1.1.params.length := by
+    simpa [List.length_set] using operator.2.lengths_length
+  have lenNew :=
+    assemblePrinted_length (fun direction =>
+        toPattern (spliceChild operator parameterIndex bound shape k outside trees direction)) 0
+      operator.1.1.params operator.2.counts (operator.2.lengths.set parameterIndex k)
+      operator.2.counts_length lengthsLength'
+  have lenOld :=
+    assemblePrinted_length (fun direction => toPattern (outside direction)) 0
+      operator.1.1.params operator.2.counts operator.2.lengths
+      operator.2.counts_length operator.2.lengths_length
+  have lenRight :=
+    assemblePrinted_length (fun direction => toPattern (rightChildren direction)) 0
+      operator.1.1.params rightOp.2.counts rightOp.2.lengths
+      rightCountsLength rightLengthsLength
+  apply List.forall₂_iff_get.mpr
+  refine ⟨by rw [lenNew, lenRight], ?_⟩
+  intro i hNew hRight
+  have iBound : i < operator.1.1.params.length := by
+    simpa [lenNew] using hNew
+  have oldAt :=
+    (List.forall₂_iff_get.mp argRel).2 i (by simpa [lenOld] using iBound)
+      (by simpa [lenRight] using iBound)
+  rw [← List.getD_eq_get (d := .bvar 0) (i := ⟨i, hNew⟩),
+    ← List.getD_eq_get (d := .bvar 0) (i := ⟨i, hRight⟩)]
+  rw [← List.getD_eq_get (d := .bvar 0)
+      (i := ⟨i, by simpa [lenOld] using iBound⟩),
+    ← List.getD_eq_get (d := .bvar 0)
+      (i := ⟨i, by simpa [lenRight] using iBound⟩)] at oldAt
+  by_cases earlier : i < parameterIndex
+  · rw [assemble_before operator parameterIndex bound shape k outside trees i earlier iBound]
+    exact oldAt
+  · by_cases focus : i = parameterIndex
+    · subst focus
+      rw [resizedSet_assemble operator i bound shape k outside trees rightOp rightChildren
+        rightCountsLength rightLengthsLength kEq treesPrint]
+      exact PatternCong.refl _
+    · have jGt : parameterIndex < i := by omega
+      rw [assemble_after operator parameterIndex bound shape k outside trees i jGt iBound]
+      exact oldAt
+
+/-- Bring every hash-set length into agreement with the right operator, then walk. -/
+theorem set_apply_from
+    (labels : (language.terms.map (·.label)).Nodup)
+    (uniqueBare : UniqueBare language)
+    {Γ : List String} {sort : String}
+    (rightOp : (indexedSignature language).Op sort)
+    (rightChildren : Child language Γ sort rightOp) :
+    ∀ (fuel : Nat)
+      (operator : (indexedSignature language).Op sort)
+      (children : Child language Γ sort operator)
+      (_ih : ∀ direction
+          (other : Tree language
+            ((polynomial (indexedSignature language)).src (Γ, sort) operator direction)),
+          PatternCong (toPattern (children direction)) (toPattern other) →
+            TreeCong language (children direction) other)
+      (_sameRule : operator.1.1 = rightOp.1.1)
+      (_countsEq : operator.2.counts = rightOp.2.counts)
+      (_plain : ∀ index : Nat,
+        isHashSetParam (operator.1.1.params.getD index missingParameter) = false →
+          operator.2.lengths.getD index 0 = rightOp.2.lengths.getD index 0)
+      (_argRel : List.Forall₂ PatternCong
+        (assemblePrinted (fun direction => toPattern (children direction)) 0
+          operator.1.1.params operator.2.counts operator.2.lengths)
+        (assemblePrinted (fun direction => toPattern (rightChildren direction)) 0
+          operator.1.1.params rightOp.2.counts rightOp.2.lengths))
+      (done : Nat)
+      (_doneLe : done ≤ operator.1.1.params.length)
+      (_fuelBound : operator.1.1.params.length - done ≤ fuel)
+      (_prefixOk : ∀ i, i < done →
+        operator.2.lengths.getD i 0 = rightOp.2.lengths.getD i 0),
+      TreeCong language
+        (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+          operator children)
+        (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
+          rightOp rightChildren) := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro operator children ih sameRule countsEq _plain argRel done doneLe _fuelBound prefixOk
+      have doneAll : done = operator.1.1.params.length := by omega
+      subst doneAll
+      exact agreed_lengths_walk labels uniqueBare operator children rightOp rightChildren ih
+        sameRule countsEq argRel (fun i hi => prefixOk i hi)
+  | succ fuel inductionHypothesis =>
+      intro operator children ih sameRule countsEq plain argRel done doneLe _fuelBound prefixOk
+      by_cases doneAll : done = operator.1.1.params.length
+      · subst doneAll
+        exact agreed_lengths_walk labels uniqueBare operator children rightOp rightChildren ih
+          sameRule countsEq argRel (fun i hi => prefixOk i hi)
+      · have doneBound : done < operator.1.1.params.length := by omega
+        cases setFlag : isHashSetParam (operator.1.1.params.getD done missingParameter) with
+        | false =>
+            have lenEq := plain done setFlag
+            exact inductionHypothesis operator children ih sameRule countsEq plain argRel (done + 1)
+              (by omega) (by omega)
+              (by
+                intro i hi
+                by_cases same : i = done
+                · subst same
+                  exact lenEq
+                · exact prefixOk i (by omega))
+        | true =>
+            by_cases lenEq : operator.2.lengths.getD done 0 = rightOp.2.lengths.getD done 0
+            · exact inductionHypothesis operator children ih sameRule countsEq plain argRel
+                (done + 1) (by omega) (by omega)
+                (by
+                  intro i hi
+                  by_cases same : i = done
+                  · subst same
+                    exact lenEq
+                  · exact prefixOk i (by omega))
+            · obtain ⟨element, shape⟩ := hashSet_shape_of_flag doneBound setFlag
+              have paramsEq : rightOp.1.1.params = operator.1.1.params :=
+                congrArg (fun rule => rule.params) sameRule.symm
+              have rightBound : done < rightOp.1.1.params.length := by
+                simpa [paramsEq] using doneBound
+              have shapeR :
+                  baseCollection? (rightOp.1.1.params.get ⟨done, rightBound⟩) =
+                    some (.hashSet, element) := by
+                simpa [paramsEq] using shape
+              let newLen := rightOp.2.lengths.getD done 0
+              let trees :=
+                segmentTrees rightOp done rightBound shapeR newLen rfl rightChildren
+              have covers :=
+                set_segment_covers operator rightOp done doneBound shape children rightChildren
+                  sameRule rightBound shapeR argRel
+              have treesPrint :
+                  List.ofFn (fun index => toPattern (trees index)) =
+                    List.ofFn (fun index : Fin newLen =>
+                      nthPrinted (fun direction => toPattern (rightChildren direction))
+                        (takenSlots operator.1.1.params rightOp.2.counts rightOp.2.lengths done +
+                          index.val)) := by
+                simp only [trees, newLen]
+                have raw := segment_prints_eq rightOp done rightBound shapeR rightChildren
+                let rightCounts := rightOp.2.counts
+                let rightLengths := rightOp.2.lengths
+                have slotsEq :
+                    takenSlots rightOp.1.1.params rightCounts rightLengths done =
+                      takenSlots operator.1.1.params rightCounts rightLengths done :=
+                  congrArg
+                    (fun parameters => takenSlots parameters rightCounts rightLengths done)
+                    paramsEq
+                rw [raw]
+                refine ofFn_pointwise ?_
+                intro index
+                rw [slotsEq]
+              have treeIh :=
+                target_element_ih
+                  (segmentTrees operator done doneBound shape
+                    (operator.2.lengths.getD done 0) rfl children)
+                  trees
+                  (segmentTrees_ih operator done doneBound shape
+                    (operator.2.lengths.getD done 0) rfl children ih)
+                  covers.2
+              have adopted :=
+                adopt_one_set operator done doneBound shape children ih trees covers.1 covers.2
+              have newIh :=
+                spliceChild_ih operator done doneBound shape newLen children trees ih treeIh
+              have rightCountsLength : rightOp.2.counts.length = operator.1.1.params.length := by
+                rw [rightOp.2.counts_length, paramsEq]
+              have rightLengthsLength : rightOp.2.lengths.length = operator.1.1.params.length := by
+                rw [rightOp.2.lengths_length, paramsEq]
+              have newArgRel :=
+                argRel_resized operator done doneBound shape newLen children trees rightOp
+                  rightChildren rightCountsLength rightLengthsLength rfl treesPrint argRel
+              have newCounts :
+                  (resizedAt operator done doneBound shape newLen).2.counts = rightOp.2.counts := by
+                simpa [resizedAt] using countsEq
+              have ruleKept :
+                  (resizedAt operator done doneBound shape newLen).1.1 = rightOp.1.1 := by
+                simpa [resizedAt] using sameRule
+              have newPlain :
+                  ∀ index : Nat,
+                    isHashSetParam ((resizedAt operator done doneBound shape newLen).1.1.params.getD
+                        index missingParameter) = false →
+                      (resizedAt operator done doneBound shape newLen).2.lengths.getD index 0 =
+                        rightOp.2.lengths.getD index 0 := by
+                intro index hyp
+                by_cases same : index = done
+                · rw [same] at hyp
+                  simp only [resizedAt] at hyp
+                  have marked :
+                      isHashSetParam (operator.1.1.params.getD done missingParameter) = true := by
+                    rw [isHashSetParam,
+                      List.getD_eq_get (d := missingParameter) (i := ⟨done, doneBound⟩), shape]
+                  rw [marked] at hyp
+                  exact (Bool.false_ne_true hyp.symm).elim
+                · have kept :=
+                    lengths_set_getD_ne operator.2.lengths done newLen index same
+                  have old := plain index (by simpa [resizedAt] using hyp)
+                  simpa [resizedAt] using kept.trans old
+              have newPrefix :
+                  ∀ i, i < done + 1 →
+                    (resizedAt operator done doneBound shape newLen).2.lengths.getD i 0 =
+                      rightOp.2.lengths.getD i 0 := by
+                intro i hi
+                by_cases same : i = done
+                · rw [same]
+                  have written :=
+                    resizedAt_getD operator done
+                      (by simpa [operator.2.lengths_length] using doneBound) newLen
+                  simpa [resizedAt, newLen] using written
+                · have kept := lengths_set_getD_ne operator.2.lengths done newLen i same
+                  have earlier := prefixOk i (by omega)
+                  simpa [resizedAt] using kept.trans earlier
+              have sameLen :
+                  (resizedAt operator done doneBound shape newLen).1.1.params.length =
+                    operator.1.1.params.length := by
+                simp [resizedAt]
+              exact adopted.trans
+                (inductionHypothesis (resizedAt operator done doneBound shape newLen)
+                  (spliceChild operator done doneBound shape newLen children trees)
+                  newIh ruleKept newCounts newPlain newArgRel (done + 1)
+                  (by rw [sameLen]; omega) (by rw [sameLen]; omega) newPrefix)
+
 /-- A non-bare operator whose parameters include a hash set. Lengths of those
 sets are the head data the pattern congruence may change, by deleting one of
 two equal children. -/
 theorem set_apply_treeCong
     (labels : (language.terms.map (·.label)).Nodup)
-    (_uniqueBare : UniqueBare language)
+    (uniqueBare : UniqueBare language)
     {Γ : List String} {sort : String}
     (leftOp : (indexedSignature language).Op sort)
     (leftChildren : Child language Γ sort leftOp)
@@ -4764,12 +7139,30 @@ theorem set_apply_treeCong
         leftOp leftChildren)
       (IFreeM.liftBind (P := polynomial (indexedSignature language)) (s := (Γ, sort))
         rightOp rightChildren) := by
-  have _labels := labels
-  have _rule := sameRule
-  have _related := argRel
-  -- Open half of this encoding: a hash-set segment is transported by
-  -- `TreeCong.bagPerm` and `TreeCong.setDup`, and the other directions stay
-  -- fixed. The goal is that transport.
+  obtain ⟨countsEq, plainLengths⟩ :=
+    recover_partial
+      (fun direction => toPattern (leftChildren direction))
+      (fun direction => toPattern (rightChildren direction))
+      0 0 leftOp.1.1.params leftOp.2.counts leftOp.2.lengths rightOp.2.counts
+      rightOp.2.lengths leftOp.2.counts_length leftOp.2.lengths_length
+      (by rw [rightOp.2.counts_length,
+          ← congrArg List.length (congrArg (fun rule => rule.params) sameRule)])
+      (by rw [rightOp.2.lengths_length,
+          ← congrArg List.length (congrArg (fun rule => rule.params) sameRule)])
+      leftOp.2.counts_fixed
+      (by
+        intro index hypothesis
+        exact rightOp.2.counts_fixed index
+          (by simpa [congrArg (fun rule => rule.params) sameRule] using hypothesis))
+      leftOp.2.lengths_fixed
+      (by
+        intro index hypothesis
+        exact rightOp.2.lengths_fixed index
+          (by simpa [congrArg (fun rule => rule.params) sameRule] using hypothesis))
+      argRel
+  exact set_apply_from labels uniqueBare rightOp rightChildren
+    leftOp.1.1.params.length leftOp leftChildren ih sameRule countsEq plainLengths argRel
+    0 (Nat.zero_le _) (Nat.le_refl _) (fun i hi => (Nat.not_lt_zero i hi).elim)
 
 /-- A non-bare operator with a bag or a set parameter. The generators are the
 segment permutation and the set deletion; this is the first encoding. -/
@@ -4881,7 +7274,7 @@ theorem bagset_from_rule
           have doneBound : done < operator.1.1.params.length := by omega
           obtain ⟨current', stepped, aligned', suffix'⟩ :=
             extend_alignment labels uniqueBare operator done doneBound leftChildren rightChildren
-              current ih noSet argRel rightToCurrent aligned suffix
+              current ih argRel rightToCurrent aligned suffix
           exact inductionHypothesis (done + 1) current' (by omega) stepped aligned' suffix'
     exact advance operator.1.1.params.length 0 rightChildren (by omega) (TreeCong.refl _)
       (by
@@ -5205,5 +7598,18 @@ theorem pattern_treeCong
               | none =>
                   exact applyBare_treeCong labels uniqueBare operator reading children
                     operator' reading' children' inductionHypothesis related
+
+/-- Closed object patterns modulo one bag permutation, or one deletion of a
+duplicate set child, are the indexed trees modulo that same congruence. -/
+noncomputable def collectionQuotientEquiv
+    (fragment : ∀ rule ∈ language.terms, FragmentRule rule)
+    (labels : (language.terms.map (·.label)).Nodup)
+    (uniqueBare : UniqueBare language) (sort : String) :
+    Quotient (treeSetoid (language := language) sort) ≃
+      Quotient (patternSetoid (language := language) sort) :=
+  Quotient.congr (closedIndexedEquiv fragment labels uniqueBare sort)
+    (fun left right =>
+      ⟨fun related => treeCong_pattern related,
+        fun related => pattern_treeCong labels uniqueBare left right related⟩)
 
 end Mettapedia.GSLT.Poly.CollectionIndexedEquiv

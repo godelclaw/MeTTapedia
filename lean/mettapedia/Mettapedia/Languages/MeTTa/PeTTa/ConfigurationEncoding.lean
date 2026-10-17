@@ -547,3 +547,59 @@ theorem named_cell_configuration_representable (name : String) (value : Atom)
     rfl
 
 end Mettapedia.Languages.MeTTa.PeTTa.ConfigurationEncoding
+
+
+
+set_option autoImplicit false
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.ConfigurationEncoding
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.ProcessCalculi.MORK (Subst)
+
+theorem bindingData_of_readBinding {atom : Atom} {binding : String × Atom}
+    (read : readBinding atom = some binding) :
+    .expression [text binding.1, binding.2] = atom := by
+  unfold readBinding at read
+  split at read
+  · cases Option.some.inj read
+    rfl
+  · contradiction
+
+theorem bindingsData_of_readBindings {atom : Atom} {bindings : Subst}
+    (read : readBindings atom = some bindings) : bindingsData bindings = atom := by
+  cases atom with
+  | expression rows =>
+      have listRead : rows.mapM readBinding = some bindings := read
+      clear read
+      have rowsImage : bindings.map (fun (name, value) => .expression [text name, value]) = rows := by
+        induction rows generalizing bindings with
+        | nil =>
+            change some [] = some bindings at listRead
+            cases Option.some.inj listRead
+            rfl
+        | cons first rest ih =>
+            simp only [List.mapM_cons, bind, Option.bind] at listRead
+            cases headRead : readBinding first with
+            | none => simp only [headRead] at listRead; contradiction
+            | some binding =>
+                cases restRead : rest.mapM readBinding with
+                | none => simp only [headRead, restRead] at listRead; contradiction
+                | some tail =>
+                    simp only [headRead, restRead] at listRead
+                    change some (binding :: tail) = some bindings at listRead
+                    cases Option.some.inj listRead
+                    simp only [List.map_cons]
+                    rw [bindingData_of_readBinding headRead, ih restRead]
+      simpa only [bindingsData] using congrArg Atom.expression rowsImage
+  | var _ | symbol _ | grounded _ => simp only [readBindings] at read; contradiction
+
+@[simp] theorem readBindings_exact (atom : Atom) (bindings : Subst) :
+    readBindings atom = some bindings ↔ bindingsData bindings = atom := by
+  constructor
+  · exact bindingsData_of_readBindings
+  · intro same
+    rw [← same]
+    exact readBindings_bindingsData bindings
+
+end Mettapedia.Languages.MeTTa.PeTTa.ConfigurationEncoding

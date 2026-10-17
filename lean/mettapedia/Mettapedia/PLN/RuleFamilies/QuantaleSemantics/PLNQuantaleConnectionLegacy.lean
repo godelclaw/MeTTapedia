@@ -279,7 +279,7 @@ The full formalization as a CompleteLattice requires:
 3. The quantale distributivity axiom
 
 This is straightforward but tedious - the key mathematical content is already proven:
-- `deductionEvidence_strength` in EvidenceQuantale.lean connects evidence to deduction
+- `deductionEvidence_strength` in BinaryEvidence.lean connects evidence to deduction
 - `product_le_deduction_result` below proves the quantale transitivity
 
 TODO: Complete the CompleteLattice instance. The proof strategy:

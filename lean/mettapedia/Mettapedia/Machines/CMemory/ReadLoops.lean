@@ -22,11 +22,19 @@ open Mettapedia.GSLT.Logic.AbstractSeparationLogic
 open ReadExpressions
 
 def assignValue (old value : CVal) : CProg CVal CVal := match old, value with
+  | .u8 _, .u8 value => pure (.u8 value)
   | .bool _, value => truth value >>= fun selected => pure (.bool selected)
   | .i32 _, .i32 value => pure (.i32 value)
   | .u32 _, .u32 value => pure (.u32 value)
   | .ptr _, .ptr value => pure (.ptr value)
   | _, _ => CProg.undefined
+
+theorem byte_assignment_retains_actual_value (old value : UInt8) :
+    assignValue (.u8 old) (.u8 value) = pure (.u8 value) := rfl
+
+/-- This storage adapter has no implicit integer-to-byte assignment conversion. -/
+theorem byte_assignment_does_not_narrow_word (old : UInt8) (value : UInt32) :
+    assignValue (.u8 old) (.u32 value) = CProg.undefined := rfl
 
 theorem signed_assignment_retains_actual_value (old value : Int32) :
     assignValue (.i32 old) (.i32 value) = pure (.i32 value) := rfl

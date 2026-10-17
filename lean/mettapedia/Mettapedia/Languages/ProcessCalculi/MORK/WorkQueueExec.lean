@@ -15,6 +15,13 @@ matching and support-valued updates.
 5. **Apply** template outputs (add/remove) to live space (NOT to read copy)
 6. **Repeat** until no more exec facts or the selected fuel observer stops
 
+The firing in this module is the support model's: patterns are matched one way
+and sinks are finalized in their authored order.  The kernel unifies patterns
+with stored atoms and writes the instances of every `+` sink before it finalizes
+the other sinks (`Mainline.fireDirective`); the two agree on ground stored atoms
+and ground instances when every `+` sink precedes every `-` sink
+(`MM2SupportKernelBridge`).
+
 ## Design decisions
 
 - **Exact scheduler key**: this module orders the complete `(exec ...)` atom by
@@ -391,8 +398,8 @@ def insertSupport (support : List Atom) (atom : Atom) : List Atom :=
 
 The stage is support-valued, mirroring the private `PathMap<()>` used by MORK
 sinks.  This admitted fragment requires produced insertion/extrema values to be
-ground.  Removing a value retains the historical exact-key behavior of the
-support model. -/
+ground; the kernel also writes instances with variables.  Removing a value
+retains the historical exact-key behavior of the support model. -/
 def stageSupportSink (sink : Sink) (staged : List Atom) (substitution : Subst) :
     List Atom :=
   let instantiated := applySubst substitution sink.atom
@@ -403,7 +410,9 @@ def stageSupportSink (sink : Sink) (staged : List Atom) (substitution : Subst) :
       else staged
 
 /-- Sort staged support by the exact compact-expression key.  `head` keeps the
-least paths and `tail` the greatest paths, matching MORK's extrema sink. -/
+least paths and `tail` the greatest paths, as MORK's extrema sink does on distinct
+instances; the kernel aborts on some repeated instances
+(`Mainline.MainlineFault.extremaDuplicate`). -/
 def compactExtremaList (least : Bool) (count : Nat) (staged : List Atom) :
     List Atom :=
   let ordered := staged.mergeSort fun left right =>
@@ -427,9 +436,12 @@ def finalizeSupportSink (sink : Sink) (staged : List Atom) (space : Space) :
   | .head count _ => space ∪ compactExtrema true count staged
   | .tail count _ => space ∪ compactExtrema false count staged
 
-/-- The exact batched provider for the currently admitted, support-valued MM2
-sink fragment.  Native Rust and C realizations may use different data
-structures; adequacy depends only on these stage/finalize operations. -/
+/-- The support model's batched provider for the admitted, support-valued sink
+fragment.  Native Rust and C realizations may use different data structures;
+adequacy depends only on these stage/finalize operations.  It finalizes sinks in
+their authored order, so it gives the kernel's result only when no `+` sink follows
+a sink that removes the same instance and every instance is ground: the kernel
+writes `+` instances first (`Mainline.applyMainlineSinks`). -/
 def morkSupportSinkProvider : BatchSinkProvider Sink where
   Stage := fun _ => List Atom
   init := fun _ => []
@@ -693,7 +705,9 @@ are not scheduled.  `consume` applies the current upstream boundary shape to
 the selected Lean interpreter: the raw shell is selected and removed before
 interpretation, so failed interpretation does not restore it.  It does not
 assert that source/sink cases absent from the Lean decoder are also absent
-from upstream's larger factory. -/
+from upstream's larger factory.  The kernel consumes a shell whose input or output
+is not a recognized form, but aborts the whole run on an unknown sink or source
+inside a recognized form (`Mainline.MainlineFault`); neither policy aborts. -/
 inductive UnsupportedExecPolicy where
   | leaveInert
   | consume
@@ -759,8 +773,9 @@ theorem sourceWorkQueueStep_consume_supported
   simp [sourceWorkQueueStep, selected, decoded]
 
 /-- A selected unsupported raw shell is consumed and nothing else is
-interpreted.  This is the exact remove-before-interpret behavior of the
-modeled upstream boundary. -/
+interpreted.  This is the kernel's remove-before-interpret behavior for a shell
+whose input or output form it does not recognize; an unknown sink or source inside
+a recognized form aborts the kernel instead. -/
 theorem sourceWorkQueueStep_consume_unsupported
     {s : Space} {raw : RawExecFact}
     (selected : selectNextScheduled (rawExecFactsOfSpace s) = some raw)
@@ -1761,9 +1776,9 @@ theorem canary3_readcopy_has_exec :
 
 /-- The self-referential rule fires and produces `(fired)`, but the respawned exec
     is rejected by `isGroundAtom` because `$ps`/`$cs` substitute to atoms containing
-    `.var` nodes. In MORK's byte representation, captured bytes are always ground.
-    This is a known modeling gap: coreferential byte-capture is not faithfully
-    represented by Lean's `Atom.var` constructor. -/
+    `.var` nodes.  The kernel writes the respawned executable with its variables; it
+    fires once more, finds no `(trigger)` and leaves, so both end at `(fired)`, one
+    firing apart.  The support model drops non-ground instances. -/
 theorem canary3_coreferential_gap :
     cWorkQueueStep canary3_space =
       some [.expression [.symbol "fired"]] := rfl

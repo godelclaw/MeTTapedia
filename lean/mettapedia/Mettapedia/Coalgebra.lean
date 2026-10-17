@@ -7,6 +7,11 @@ import Mettapedia.Coalgebra.ComputationalTrinity
 import Mettapedia.Coalgebra.FiniteViewComputationalTrinity
 import Mettapedia.Coalgebra.GuardedFinality
 import Mettapedia.Coalgebra.GuardedFiniteViewSystem
+import Mettapedia.Coalgebra.InitialFinal.WellFounded
+import Mettapedia.Coalgebra.InitialFinal.Recursive
+import Mettapedia.Coalgebra.InitialFinal.QPFMeet
+import Mettapedia.Coalgebra.InitialFinal.Instances
+import Mettapedia.Coalgebra.InitialFinal.Controls
 
 /-!
 # Coalgebra

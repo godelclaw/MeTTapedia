@@ -48,8 +48,10 @@ theorem fault_keeps_effects (program : Program) (fuel : Nat) (source : Configura
     · cases computed
     · cases computed
       exact ⟨⟨[], by simp⟩, ⟨[], by simp⟩⟩
-    · split at computed
-      next next stepped =>
+    · cases stepped : step program source with
+      | none => simp [stepped] at computed
+      | some next =>
+        simp only [stepped] at computed
         obtain ⟨⟨added, output⟩, ⟨consumed, input⟩⟩ := ih next computed
         obtain ⟨first, firstOutput⟩ :=
           OperationalGSLT.output_extends program source next stepped
@@ -57,7 +59,6 @@ theorem fault_keeps_effects (program : Program) (fuel : Nat) (source : Configura
           OperationalGSLT.input_is_consumed_in_order program source next stepped
         exact ⟨⟨first ++ added, by rw [output, firstOutput, List.append_assoc]⟩,
           ⟨firstConsumed ++ consumed, by rw [firstInput, input, List.append_assoc]⟩⟩
-      next => cases computed
 
 /-! ## Controls -/
 

@@ -24,7 +24,7 @@ import Mathlib.Tactic
 import Mathlib.Order.GaloisConnection.Defs
 import Mathlib.Data.ENNReal.Basic
 import Mathlib.Data.ENNReal.Real
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Evidence.EvidenceClass
 import Mettapedia.NARS.TruthFunctions
 import Mettapedia.NARS.Bridges.PLN.EvidenceTranslation

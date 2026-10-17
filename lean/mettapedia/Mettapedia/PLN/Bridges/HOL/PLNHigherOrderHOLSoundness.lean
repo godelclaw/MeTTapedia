@@ -7,27 +7,11 @@ namespace Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSoundness
 universe u v w
 
 open Mettapedia.Logic.HOL
+open Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore (HOLState HOLProvable HOLProvImp HOLProvEq)
+open Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLRules (HOLProvIff)
 open Mettapedia.PLN.WorldModel.PLNWorldModel
 
 variable {Base : Type u} {Const : Ty Base → Type v}
-
-abbrev HOLQuery (Const : Ty Base → Type v) :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery (Base := Base) Const
-
-abbrev HOLState (Base : Type u) (Const : Ty Base → Type v) :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState Base Const
-
-abbrev HOLProvable (φ : HOLQuery Const) : Prop :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLProvable (Const := Const) φ
-
-abbrev HOLProvImp (φ ψ : HOLQuery Const) : Prop :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLProvImp (Const := Const) φ ψ
-
-abbrev HOLProvEq {τ : Ty Base} (t u : Term Const [] τ) : Prop :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLProvEq (Const := Const) t u
-
-abbrev HOLProvIff (φ ψ : HOLQuery Const) : Prop :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLRules.HOLProvIff (Base := Base) (Const := Const) φ ψ
 
 /-- Closed HOL theorems are satisfied by every pointed Henkin model. -/
 theorem holProvable_models {φ : HOLQuery Const}
@@ -52,9 +36,9 @@ theorem holProvImp_implies_singletonConsequence {φ ψ : HOLQuery Const}
           ({M} : HOLState Base Const) φ ≤
         BinaryWorldModel.queryStrength (State := HOLState Base Const) (Query := HOLQuery Const)
           ({M} : HOLState Base Const) ψ :=
-  (_root_.Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.pointwiseImplies_iff_singletonConsequence
-    (Base := Base) (Const := Const) (φ := φ) (ψ := ψ)).mp
-      (holProvImp_implies_pointwise (Const := Const) h)
+  fun M =>
+    (_root_.Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.pointwiseImplies_iff_singletonStrengthLE
+      holSatisfies φ ψ).mp (holProvImp_implies_pointwise (Const := Const) h) M trivial
 
 /-- Provable HOL implication transports to multiset WM consequence. -/
 theorem holProvImp_implies_multisetConsequence {φ ψ : HOLQuery Const}
@@ -63,9 +47,8 @@ theorem holProvImp_implies_multisetConsequence {φ ψ : HOLQuery Const}
       BinaryWorldModel.queryStrength (State := HOLState Base Const) (Query := HOLQuery Const) W φ ≤
         BinaryWorldModel.queryStrength (State := HOLState Base Const) (Query := HOLQuery Const) W ψ := by
   intro W
-  exact _root_.Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.multiset_strength_le_of_pointwise
-    (Base := Base) (Const := Const) (W := W) (φ := φ) (ψ := ψ)
-    (holProvImp_implies_pointwise (Const := Const) h)
+  exact _root_.Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.queryStrength_le_of_pointwise
+    holSatisfies W φ ψ (holProvImp_implies_pointwise (Const := Const) h)
 
 /-- Provable closed HOL equalities are valid in every pointed Henkin model. -/
 theorem holProvEq_models {τ : Ty Base} {t u : Term Const [] τ}
@@ -90,9 +73,8 @@ theorem holProvIff_implies_pointwise {φ ψ : HOLQuery Const}
 theorem holProvIff_implies_queryEq {φ ψ : HOLQuery Const}
     (h : HOLProvIff (Const := Const) φ ψ) :
     WMQueryEq (State := HOLState Base Const) (Query := HOLQuery Const) φ ψ :=
-  (_root_.Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.pointwiseIff_iff_queryEq
-    (Base := Base) (Const := Const) (φ := φ) (ψ := ψ)).mp
-      (holProvIff_implies_pointwise (Const := Const) h)
+  (_root_.Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.pointwiseIff_iff_queryEq
+    holSatisfies φ ψ).mp (holProvIff_implies_pointwise (Const := Const) h)
 
 /-- Provable HOL equivalence transports to WM strength equality. -/
 theorem holProvIff_implies_strengthEq {φ ψ : HOLQuery Const}

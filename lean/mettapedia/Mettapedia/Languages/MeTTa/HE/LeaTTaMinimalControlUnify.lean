@@ -1,5 +1,8 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaMinimalControlReturn
 import Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge
+import Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
+import Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
+import Mettapedia.Languages.MeTTa.HE.Spec.Eval
 
 /-!
 # Executing a selected branch of minimal MeTTa
@@ -445,7 +448,7 @@ theorem instantiate_fresh_value (bindings : Metta.Bindings) (name : VarName)
 theorem occurs_closed (name : VarName) (atom : Atom) (closed : atom.vars = []) :
     Subst.occurs name atom = false := by
   induction atom with
-  | sym | gnd => simp [Subst.occurs]
+  | sym | gnd => simp []
   | var other => simp [Atom.vars] at closed
   | expr atoms ih =>
       simp only [Subst.occurs, List.any_eq_false]
@@ -464,7 +467,7 @@ private theorem matchRaw_closed_input (input pattern : Atom) (output : Metta.Bin
   | sym symbol =>
     cases pattern with
     | var name =>
-      simp [Metta.matchAtomsWith, Subst.occurs] at member
+      simp [Metta.matchAtomsWith] at member
       subst output
       exact .val closed .nil
     | sym | gnd | expr =>
@@ -474,7 +477,7 @@ private theorem matchRaw_closed_input (input pattern : Atom) (output : Metta.Bin
   | gnd grounded =>
     cases pattern with
     | var name =>
-      simp [Metta.matchAtomsWith, Subst.occurs] at member
+      simp [Metta.matchAtomsWith] at member
       subst output
       exact .val closed .nil
     | sym | gnd | expr =>
@@ -567,7 +570,7 @@ private theorem matchRaw_closed_keys (left right : Atom) (output : Metta.Binding
   | sym symbol =>
     cases right with
     | var key =>
-      simp [Metta.matchAtomsWith, Subst.occurs] at member
+      simp [Metta.matchAtomsWith] at member
       subst output
       intro name here
       simp only [bindingValueKeys, List.mem_singleton] at here
@@ -580,7 +583,7 @@ private theorem matchRaw_closed_keys (left right : Atom) (output : Metta.Binding
   | gnd value =>
     cases right with
     | var key =>
-      simp [Metta.matchAtomsWith, Subst.occurs] at member
+      simp [Metta.matchAtomsWith] at member
       subst output
       intro name here
       simp only [bindingValueKeys, List.mem_singleton] at here
@@ -810,7 +813,7 @@ theorem match_tagged_variable (tag : String) (payload : Atom) (name : VarName)
     cases payload <;> simp_all [Metta.matchAtomsWith, Atom.vars]
   have emptyAcyclic : Metta.Bindings.hasLoop [] = false := rfl
   simp [Metta.matchAtoms, Metta.matchAtomsWith, Metta.matchAll, raw, merged, acyclic,
-    Metta.Bindings.merge_empty_right, emptyAcyclic]
+    emptyAcyclic]
 
 /-- A two-input equation header matches closed arguments exactly once,
 retaining both values under its distinct parameter names. -/
@@ -838,7 +841,7 @@ theorem match_two_input_header (head firstName secondName : String)
   simp [Metta.matchAll, sameHead, raw firstName firstValue firstClosed,
     raw secondName secondValue secondClosed, firstMerge, secondMerge,
     firstStored.hasLoop_false, secondStored.hasLoop_false, bothStored.hasLoop_false,
-    Bindings.merge_empty_right, show Bindings.hasLoop [] = false from rfl]
+    show Bindings.hasLoop [] = false from rfl]
 
 /-- Actual capture-avoiding query freshening makes a two-input header viable
 in every closed-value store, even when its original names already occur in
@@ -962,7 +965,7 @@ theorem unify_same_symbol (previous : Stack) (symbol : String) (yes no : Atom)
       [finItem previous (instantiate bindings yes) bindings] := by
   have matched : Metta.matchAtoms (.sym symbol) (.sym symbol) = [[]] := by
     simp [Metta.matchAtoms, Metta.matchAtomsWith, Metta.Bindings.hasLoop, Metta.Bindings.vars]
-  simp [unifyOp, matched, Metta.Bindings.merge_empty_right, acyclic]
+  simp [unifyOp, matched, acyclic]
 
 /-- Resuming an embedded instruction materializes its operands in the current
 frame before pushing the next instruction. -/
@@ -1098,5 +1101,500 @@ theorem unify_unmatched_selects (environment : MinEnv) (state : St)
   · simp only [atomToStack, step_unify]
     exact congrArg (fun items => (items, state)) (unify_refuses _ _ _ _ _ _ missing)
   · rfl
+
+/-! ## Independent finite-match endpoint correspondence -/
+
+open LeaTTaBridge LeaTTaSpecConformance
+
+/-- The actual default match-and-merge endpoints, before selecting a branch.
+This is a readout of the interpreter's finite candidate scan: no candidates
+are deduplicated or identified by their solution theory. -/
+def unifyCandidateBindings (target pattern : Atom) (incoming : Metta.Bindings) :
+    List Metta.Bindings :=
+  (Metta.matchAtoms target pattern).flatMap fun matched =>
+    (Metta.Bindings.merge incoming matched).filter (fun output => !output.hasLoop)
+
+theorem mem_unifyCandidateBindings_iff
+    {target pattern : Atom} {incoming output : Metta.Bindings} :
+    output ∈ unifyCandidateBindings target pattern incoming ↔
+      ∃ matched, matched ∈ Metta.matchAtoms target pattern ∧
+        output ∈ Metta.Bindings.merge incoming matched ∧ output.hasLoop = false := by
+  simp [unifyCandidateBindings]
+
+/-- Every physical surviving endpoint constructs the independent matcher and
+matched-then-incoming merger. The latter need not equal the runtime's raw
+incoming-then-matched binding list. -/
+theorem unifyCandidateBindings_sound
+    {target pattern : OSLFCore.Atom}
+    {specIncoming : Mettapedia.Languages.MeTTa.HE.Bindings}
+    {incoming output : Metta.Bindings}
+    (paired : ScopedEquationQuery.BindingInvariant specIncoming incoming)
+    (member : output ∈ unifyCandidateBindings
+      (toLeaTTaAtom target) (toLeaTTaAtom pattern) incoming) :
+    ∃ specOutput,
+      Spec.Eval.Steps.UnifyCandidateRel target pattern specIncoming specOutput ∧
+      ScopedEquationQuery.BindingInvariant specOutput output := by
+  obtain ⟨matched, matching, merging, noLoop⟩ := mem_unifyCandidateBindings_iff.mp member
+  have runtime := paired.semantic.runtime.merge_matchOutput
+    (toLeaTTaAtom_noFloat target) (toLeaTTaAtom_noFloat pattern) matching merging noLoop
+  let valuation := leaClassSolution output
+  have outputSatisfied : LeaBindingSatisfied valuation output := runtime.canonical.1
+  have split := (leaMerge_solution_iff valuation paired.semantic.runtime.noFloat
+    (leaMatchAtoms_result_noFloat (toLeaTTaAtom_noFloat target)
+      (toLeaTTaAtom_noFloat pattern) matching) merging).mp outputSatisfied
+  have equation : HEAtomEquationSatisfied valuation target pattern :=
+    (leaMatchAtoms_solution_iff valuation (toLeaTTaAtom_noFloat target)
+      (toLeaTTaAtom_noFloat pattern) matching).mp split.2
+  obtain ⟨specMatched, specMatch, matchedSatisfied⟩ :=
+    Spec.Match.Completeness.exists_specMatch_of_solution equation
+  obtain ⟨specOutput, specMerge, specSatisfied, nonvariable⟩ :=
+    Spec.Match.Completeness.exists_specMerge_of_solution matchedSatisfied
+      (specMatch_assignmentsNonVariable specMatch)
+      ((paired.semantic.solutionTheory valuation).mpr split.1)
+      paired.semantic.specAssignmentsNonVariable
+  have theory : LeaBindingSolutionTheoryEquiv specOutput output := by
+    intro model
+    rw [Spec.Match.SolutionTheory.mergeRel_solution_iff specMerge,
+      Spec.Match.SolutionTheory.matchRel_solution_iff specMatch,
+      paired.semantic.solutionTheory model]
+    rw [leaMerge_solution_iff model paired.semantic.runtime.noFloat
+      (leaMatchAtoms_result_noFloat (toLeaTTaAtom_noFloat target)
+        (toLeaTTaAtom_noFloat pattern) matching) merging,
+      leaMatchAtoms_solution_iff model (toLeaTTaAtom_noFloat target)
+        (toLeaTTaAtom_noFloat pattern) matching]
+    exact and_comm
+  have image : LeaBindingsHEImage output :=
+    leaMerge_result_image paired.image
+      (leaMatchAtoms_result_heImage (leaAtomHEImage_toLeaTTaAtom target)
+        (leaAtomHEImage_toLeaTTaAtom pattern) matching) merging
+  exact ⟨specOutput, ⟨specMatched, specMatch, specMerge,
+    semanticLoopFree_of_satisfied_nonvariable specSatisfied nonvariable,
+    ⟨valuation, specSatisfied⟩⟩, ⟨⟨theory, nonvariable, runtime⟩, image⟩⟩
+
+/-- Every independent candidate has an actual surviving finite-scan endpoint
+with the same complete theory. Shared and reflexive variables are admitted;
+no raw matcher or merger commutativity is assumed. -/
+theorem unifyCandidateBindings_complete
+    {target pattern : OSLFCore.Atom}
+    {specIncoming specOutput : Mettapedia.Languages.MeTTa.HE.Bindings}
+    {incoming : Metta.Bindings}
+    (paired : ScopedEquationQuery.BindingInvariant specIncoming incoming)
+    (candidate : Spec.Eval.Steps.UnifyCandidateRel target pattern specIncoming specOutput) :
+    ∃ output,
+      output ∈ unifyCandidateBindings (toLeaTTaAtom target) (toLeaTTaAtom pattern) incoming ∧
+      LeaBindingSolutionTheoryEquiv specOutput output ∧
+      LeaRuntimeBindingInvariant output ∧ LeaBindingsHEImage output := by
+  obtain ⟨specMatched, specMatch, specMerge, _, valuation, specSatisfied⟩ := candidate
+  have split := (Spec.Match.SolutionTheory.mergeRel_solution_iff specMerge valuation).mp specSatisfied
+  have equation := (Spec.Match.SolutionTheory.matchRel_solution_iff specMatch valuation).mp split.1
+  obtain ⟨reverseMatched, reverseMatch, _⟩ :=
+    Spec.Match.Completeness.exists_specMatch_of_solution equation.symm
+  obtain ⟨matched, matching, matchedSatisfied, matchedNoFloat⟩ :=
+    specMatch_complete_of_equation reverseMatch equation.symm
+  obtain ⟨output, merging, outputSatisfied, _⟩ :=
+    LeaTTaMergeExistence.merge_exists_of_satisfied paired.semantic.runtime.noFloat matchedNoFloat
+      ((paired.semantic.solutionTheory valuation).mp split.2) matchedSatisfied
+  have noLoop : output.hasLoop = false :=
+    leaBindings_hasLoop_false_of_satisfied outputSatisfied
+      (leaMerge_result_assignmentsNonVariable paired.semantic.runtime.assignmentsNonVariable merging)
+      (leaMerge_result_equalitiesIrreflexive paired.semantic.runtime.equalitiesIrreflexive merging)
+  have runtime := paired.semantic.runtime.merge_matchOutput
+    (toLeaTTaAtom_noFloat target) (toLeaTTaAtom_noFloat pattern) matching merging noLoop
+  have theory : LeaBindingSolutionTheoryEquiv specOutput output := by
+    intro model
+    rw [Spec.Match.SolutionTheory.mergeRel_solution_iff specMerge,
+      Spec.Match.SolutionTheory.matchRel_solution_iff specMatch,
+      paired.semantic.solutionTheory model]
+    rw [leaMerge_solution_iff model paired.semantic.runtime.noFloat matchedNoFloat merging,
+      leaMatchAtoms_solution_iff model (toLeaTTaAtom_noFloat target)
+        (toLeaTTaAtom_noFloat pattern) matching]
+    exact and_comm
+  refine ⟨output, mem_unifyCandidateBindings_iff.mpr ⟨matched, matching, merging, noLoop⟩,
+    theory, runtime, ?_⟩
+  exact leaMerge_result_image paired.image
+    (leaMatchAtoms_result_heImage (leaAtomHEImage_toLeaTTaAtom target)
+      (leaAtomHEImage_toLeaTTaAtom pattern) matching) merging
+
+/-- Empty actual candidate scans are exactly independent no-match judgments,
+including matcher successes rejected by the incoming binding frame. -/
+theorem unifyCandidateBindings_empty_iff
+    {target pattern : OSLFCore.Atom}
+    {specIncoming : Mettapedia.Languages.MeTTa.HE.Bindings} {incoming : Metta.Bindings}
+    (paired : ScopedEquationQuery.BindingInvariant specIncoming incoming) :
+    unifyCandidateBindings (toLeaTTaAtom target) (toLeaTTaAtom pattern) incoming = [] ↔
+      Spec.Eval.Steps.UnifyNoMatchRel target pattern specIncoming := by
+  constructor
+  · intro empty specOutput candidate
+    obtain ⟨output, member, _⟩ := unifyCandidateBindings_complete paired candidate
+    simp [empty] at member
+  · intro missing
+    by_contra nonempty
+    obtain ⟨output, member⟩ := List.exists_mem_of_ne_nil _ nonempty
+    obtain ⟨specOutput, candidate, _⟩ := unifyCandidateBindings_sound paired member
+    exact missing specOutput candidate
+
+/-- Refactoring the existing branch selector through its actual endpoint
+list preserves every surviving occurrence and its binding frame. -/
+theorem unifyOp_eq_candidateBindings (previous : Stack) (target pattern yes no : Atom)
+    (incoming : Metta.Bindings) :
+    unifyOp previous target pattern yes no incoming =
+      if (unifyCandidateBindings target pattern incoming).isEmpty then
+        [finItem previous no incoming]
+      else (unifyCandidateBindings target pattern incoming).map
+        (fun output => finItem previous (instantiate output yes) output) := by
+  have candidates :
+      (Metta.matchAtoms target pattern).flatMap (fun matched =>
+        (Metta.Bindings.merge incoming matched).filterMap fun output =>
+          if output.hasLoop then none
+          else some (finItem previous (instantiate output yes) output)) =
+      (unifyCandidateBindings target pattern incoming).map
+        (fun output => finItem previous (instantiate output yes) output) := by
+    rw [unifyCandidateBindings, List.map_flatMap]
+    apply congrArg (fun operation : Metta.Bindings → List Item =>
+      (Metta.matchAtoms target pattern).flatMap operation)
+    funext matched
+    generalize Metta.Bindings.merge incoming matched = outputs
+    induction outputs with
+    | nil => rfl
+    | cons output outputs ih =>
+        cases loop : output.hasLoop <;> simp [loop, ih]
+  unfold unifyOp
+  simp only [candidates, List.isEmpty_map]
+
+/-- The default scan retains all of its actual occurrences. In this
+specific matcher/merger profile there is at most one; no quotient by output
+values or by equivalent binding theories is used to obtain this bound. -/
+theorem unifyCandidateBindings_at_most_one (target pattern : Atom) (incoming : Metta.Bindings) :
+    (unifyCandidateBindings target pattern incoming).length ≤ 1 := by
+  unfold unifyCandidateBindings
+  apply flatMap_at_most_one _ _ (match_at_most_one target pattern)
+  intro matched _
+  exact (List.length_filter_le _ _).trans (merge_at_most_one incoming matched)
+
+/-- Nonempty finite matching means precisely that the incoming binding
+theory and the new atom equation have a common finite Herbrand model. This
+includes shared variables; the independent match/merge witnesses are built
+from that model rather than read back from an assumed correspondence. -/
+theorem unifyCandidateBindings_nonempty_iff_common_model
+    {target pattern : OSLFCore.Atom}
+    {specIncoming : Mettapedia.Languages.MeTTa.HE.Bindings} {incoming : Metta.Bindings}
+    (paired : ScopedEquationQuery.BindingInvariant specIncoming incoming) :
+    unifyCandidateBindings (toLeaTTaAtom target) (toLeaTTaAtom pattern) incoming ≠ [] ↔
+      ∃ valuation : String → Metta.Atom,
+        HEBindingSatisfied valuation specIncoming ∧
+        HEAtomEquationSatisfied valuation target pattern := by
+  constructor
+  · intro nonempty
+    obtain ⟨output, member⟩ := List.exists_mem_of_ne_nil _ nonempty
+    obtain ⟨specOutput, candidate, _⟩ := unifyCandidateBindings_sound paired member
+    obtain ⟨matched, matching, merging, _, valuation, satisfied⟩ := candidate
+    have split := (Spec.Match.SolutionTheory.mergeRel_solution_iff merging valuation).mp satisfied
+    exact ⟨valuation, split.2,
+      (Spec.Match.SolutionTheory.matchRel_solution_iff matching valuation).mp split.1⟩
+  · rintro ⟨valuation, incomingSatisfied, equation⟩ empty
+    obtain ⟨matched, matching, matchedSatisfied⟩ :=
+      Spec.Match.Completeness.exists_specMatch_of_solution equation
+    obtain ⟨output, merging, outputSatisfied, nonvariable⟩ :=
+      Spec.Match.Completeness.exists_specMerge_of_solution matchedSatisfied
+        (specMatch_assignmentsNonVariable matching)
+        incomingSatisfied paired.semantic.specAssignmentsNonVariable
+    have candidate : Spec.Eval.Steps.UnifyCandidateRel target pattern specIncoming output :=
+      ⟨matched, matching, merging,
+        semanticLoopFree_of_satisfied_nonvariable outputSatisfied nonvariable,
+        ⟨valuation, outputSatisfied⟩⟩
+    obtain ⟨native, member, _⟩ := unifyCandidateBindings_complete paired candidate
+    simp [empty] at member
+
+/-- One surviving endpoint constructs an independent source instruction
+step and the actual selected work item with its unchanged caller and exact
+native output frame. The then payload is compared through the full theory. -/
+theorem unifyOp_endpoint_sound
+    (space : Space) (dispatch : Spec.Eval.GroundedDispatch) (live : List OSLFCore.Atom)
+    (typing : Spec.Eval.EvalTypeService) (previous : Stack)
+    {target pattern : OSLFCore.Atom} (yes no : OSLFCore.Atom)
+    {specIncoming : Mettapedia.Languages.MeTTa.HE.Bindings}
+    {incoming output : Metta.Bindings}
+    (paired : ScopedEquationQuery.BindingInvariant specIncoming incoming)
+    (member : output ∈ unifyCandidateBindings
+      (toLeaTTaAtom target) (toLeaTTaAtom pattern) incoming) :
+    ∃ specOutput,
+      Spec.Eval.Minimal.CoreStepRel space dispatch live
+        (.expression [.symbol "unify", target, pattern, yes, no]) specIncoming
+        (yes, specOutput) (typing := typing) ∧
+      ScopedEquationQuery.BindingInvariant specOutput output ∧
+      unifyOp previous (toLeaTTaAtom target) (toLeaTTaAtom pattern)
+        (toLeaTTaAtom yes) (toLeaTTaAtom no) incoming =
+        [finItem previous (instantiate output (toLeaTTaAtom yes)) output] ∧
+      ∀ valuation, HEBindingSatisfied valuation specOutput →
+        applyClassSolution valuation (instantiate output (toLeaTTaAtom yes)) =
+          applyClassSolution valuation (toLeaTTaAtom yes) := by
+  obtain ⟨specOutput, candidate, outputPaired⟩ := unifyCandidateBindings_sound paired member
+  obtain ⟨matched, matching, merging, noLoop⟩ := mem_unifyCandidateBindings_iff.mp member
+  refine ⟨specOutput, .unify space target pattern yes no yes specIncoming specOutput
+    (.success ⟨candidate, fun _ _ => rfl⟩), outputPaired,
+    unify_candidate_exact previous _ _ _ _ incoming matched output matching merging noLoop, ?_⟩
+  intro valuation satisfied
+  exact instantiate_semantically_inert ((outputPaired.semantic.solutionTheory valuation).mp satisfied) _
+
+/-- Independent no-match selects the literal fallback without instantiating
+or invoking it at this boundary, retaining the original native frame. -/
+theorem unifyOp_of_noMatch
+    {target pattern : OSLFCore.Atom} {specIncoming : Mettapedia.Languages.MeTTa.HE.Bindings}
+    {incoming : Metta.Bindings} (paired : ScopedEquationQuery.BindingInvariant specIncoming incoming)
+    (missing : Spec.Eval.Steps.UnifyNoMatchRel target pattern specIncoming)
+    (previous : Stack) (yes no : OSLFCore.Atom) :
+    unifyOp previous (toLeaTTaAtom target) (toLeaTTaAtom pattern)
+      (toLeaTTaAtom yes) (toLeaTTaAtom no) incoming = [finItem previous (toLeaTTaAtom no) incoming] := by
+  rw [unifyOp_eq_candidateBindings, (unifyCandidateBindings_empty_iff paired).mpr missing]
+  rfl
+
+/-- Any independent success or refusal selects an actual native work item.
+The native binding record is the actual merged endpoint, and only its full
+solution theory is identified with the independent output record. -/
+theorem unifyStep_complete
+    {target pattern yes no emitted : OSLFCore.Atom}
+    {specIncoming specOutput : Mettapedia.Languages.MeTTa.HE.Bindings}
+    {incoming : Metta.Bindings} (paired : ScopedEquationQuery.BindingInvariant specIncoming incoming)
+    (selected : Spec.Eval.Steps.UnifyStep target pattern yes no specIncoming emitted specOutput)
+    (previous : Stack) :
+    ∃ value output,
+      unifyOp previous (toLeaTTaAtom target) (toLeaTTaAtom pattern)
+        (toLeaTTaAtom yes) (toLeaTTaAtom no) incoming = [finItem previous value output] ∧
+      LeaBindingSolutionTheoryEquiv specOutput output ∧
+      LeaRuntimeBindingInvariant output ∧ LeaBindingsHEImage output ∧
+      ∀ valuation, HEBindingSatisfied valuation specOutput →
+        applyClassSolution valuation value =
+          applyClassSolution valuation (toLeaTTaAtom emitted) := by
+  cases selected with
+  | success successful =>
+      obtain ⟨candidate, observed⟩ := successful
+      obtain ⟨output, member, theory, runtime, image⟩ := unifyCandidateBindings_complete paired candidate
+      obtain ⟨matched, matching, merging, noLoop⟩ := mem_unifyCandidateBindings_iff.mp member
+      refine ⟨instantiate output (toLeaTTaAtom yes), output,
+        unify_candidate_exact previous _ _ _ _ incoming matched output matching merging noLoop,
+        theory, runtime, image, ?_⟩
+      intro valuation satisfied
+      exact (instantiate_semantically_inert ((theory valuation).mp satisfied) _).trans
+        (observed valuation satisfied).symm
+  | noMatch missing =>
+      exact ⟨toLeaTTaAtom no, incoming, unifyOp_of_noMatch paired missing previous yes no,
+        paired.semantic.solutionTheory, paired.semantic.runtime, paired.image, fun _ _ => rfl⟩
+
+/-- Both selection branches agree with the independent emission after
+actual binding materialization. The extra instantiation is essential for a
+raw fallback; this is not equality of unresolved dispatch syntax. -/
+theorem unifyStep_complete_materialized
+    {target pattern yes no emitted : OSLFCore.Atom}
+    {specIncoming specOutput : Mettapedia.Languages.MeTTa.HE.Bindings}
+    {incoming : Metta.Bindings} (paired : ScopedEquationQuery.BindingInvariant specIncoming incoming)
+    (selected : Spec.Eval.Steps.UnifyStep target pattern yes no specIncoming emitted specOutput)
+    (previous : Stack) :
+    ∃ value output,
+      unifyOp previous (toLeaTTaAtom target) (toLeaTTaAtom pattern)
+        (toLeaTTaAtom yes) (toLeaTTaAtom no) incoming = [finItem previous value output] ∧
+      LeaBindingSolutionTheoryEquiv specOutput output ∧
+      LeaRuntimeBindingInvariant output ∧ LeaBindingsHEImage output ∧
+      instantiate output value = instantiate output (toLeaTTaAtom emitted) := by
+  obtain ⟨value, output, same, theory, runtime, image, observed⟩ :=
+    unifyStep_complete paired selected previous
+  refine ⟨value, output, same, theory, runtime, image, ?_⟩
+  have materialized := observed (leaClassSolution output)
+    ((theory _).mpr runtime.canonical.1)
+  simpa only [applyClassSolution_lea_eq_instantiate] using materialized
+
+/-- Source branch selection constructs an actual pending path under an
+arbitrary saved caller. It may change the native binding endpoint; no body
+path or unchanged-frame assumption is supplied by the caller. -/
+theorem unifyStep_pending_prefix_complete
+    {target pattern yes no emitted : OSLFCore.Atom}
+    {specIncoming specOutput : Mettapedia.Languages.MeTTa.HE.Bindings}
+    {incoming : Metta.Bindings} (paired : ScopedEquationQuery.BindingInvariant specIncoming incoming)
+    (selected : Spec.Eval.Steps.UnifyStep target pattern yes no specIncoming emitted specOutput)
+    (environment : MinEnv) (state : St) (fuel : Nat) (parent : Frame)
+    (previous : Stack) (scope : List VarName) :
+    ∃ value output,
+      PendingSteps environment
+        (fuel + 1, state,
+          [⟨{ atom := .expr [.sym "unify", toLeaTTaAtom target, toLeaTTaAtom pattern,
+              toLeaTTaAtom yes, toLeaTTaAtom no], vars := scope } :: parent :: previous, incoming⟩])
+        (fuel, state, [finItem (parent :: previous) value output]) ∧
+      LeaBindingSolutionTheoryEquiv specOutput output ∧
+      LeaRuntimeBindingInvariant output ∧ LeaBindingsHEImage output ∧
+      ∀ valuation, HEBindingSatisfied valuation specOutput →
+        applyClassSolution valuation value =
+          applyClassSolution valuation (toLeaTTaAtom emitted) := by
+  obtain ⟨value, output, selectedNative, theory, runtime, image, observed⟩ :=
+    unifyStep_complete paired selected (parent :: previous)
+  refine ⟨value, output, Relation.ReflTransGen.single (pendingStep_singleton ?_ (by rfl)),
+    theory, runtime, image, observed⟩
+  rw [step_unify, selectedNative]
+
+/-- The real driver retains every selected work occurrence, the caller,
+queued work and earlier results, including its actual public-final split. -/
+theorem unify_driver (environment : MinEnv) (state : St) (fuel : Nat)
+    (previous : Stack) (scope : List VarName) (target pattern yes no : Atom)
+    (incoming : Metta.Bindings) (queued : List Item) (done : List (Atom × Metta.Bindings)) :
+    let selected := unifyOp previous target pattern yes no incoming
+    interpretFuel environment (fuel + 1) state
+      (⟨{ atom := .expr [.sym "unify", target, pattern, yes, no], vars := scope } :: previous,
+        incoming⟩ :: queued) done =
+      interpretFuel environment fuel state
+        ((selected.filter (fun item => !isFinal item)) ++ queued)
+        (((selected.filter isFinal).map finalPair).reverse ++ done) :=
+  FuelConvergenceInterpreter.interpretFuel_succ_of environment fuel state state _ queued _ done
+    (step_unify environment fuel state previous scope target pattern yes no incoming)
+
+/-- Each actual selected occurrence has an independent branch derivation
+and a paired binding endpoint. Success and fallback are distinguished by the
+actual candidate scan, even when their visible values happen to coincide. -/
+theorem unifyOp_item_sound
+    {target pattern yes no : OSLFCore.Atom}
+    {specIncoming : Mettapedia.Languages.MeTTa.HE.Bindings} {incoming : Metta.Bindings}
+    (paired : ScopedEquationQuery.BindingInvariant specIncoming incoming)
+    (previous : Stack) {item : Item}
+    (member : item ∈ unifyOp previous (toLeaTTaAtom target) (toLeaTTaAtom pattern)
+      (toLeaTTaAtom yes) (toLeaTTaAtom no) incoming) :
+    ∃ emitted specOutput value output,
+      item = finItem previous value output ∧
+      Spec.Eval.Steps.UnifyStep target pattern yes no specIncoming emitted specOutput ∧
+      ScopedEquationQuery.BindingInvariant specOutput output ∧
+      ∀ valuation, HEBindingSatisfied valuation specOutput →
+        applyClassSolution valuation value =
+          applyClassSolution valuation (toLeaTTaAtom emitted) := by
+  rw [unifyOp_eq_candidateBindings] at member
+  split at member
+  · rename_i empty
+    have emptyScan : unifyCandidateBindings (toLeaTTaAtom target) (toLeaTTaAtom pattern) incoming = [] :=
+      List.isEmpty_iff.mp empty
+    exact ⟨no, specIncoming, toLeaTTaAtom no, incoming, List.mem_singleton.mp member,
+      .noMatch ((unifyCandidateBindings_empty_iff paired).mp emptyScan), paired, fun _ _ => rfl⟩
+  · obtain ⟨output, selected, same⟩ := List.mem_map.mp member
+    obtain ⟨specOutput, candidate, outputPaired⟩ := unifyCandidateBindings_sound paired selected
+    refine ⟨yes, specOutput, instantiate output (toLeaTTaAtom yes), output, same.symm,
+      .success ⟨candidate, fun _ _ => rfl⟩, outputPaired, ?_⟩
+    intro valuation satisfied
+    exact instantiate_semantically_inert ((outputPaired.semantic.solutionTheory valuation).mp satisfied) _
+
+/-! ## Shared-variable and refusal controls -/
+
+/-- A reflexive open-variable query produces exactly the incoming native
+frame, while its independent match may retain a reflexive equality record.
+Their raw records are not identified; their complete theories agree. -/
+theorem unify_reflexive_variable_retains_endpoint
+    {specIncoming : Mettapedia.Languages.MeTTa.HE.Bindings} {incoming : Metta.Bindings}
+    (paired : ScopedEquationQuery.BindingInvariant specIncoming incoming)
+    (name : String) (previous : Stack) (yes no : Atom) :
+    unifyCandidateBindings (.var name) (.var name) incoming = [incoming] ∧
+    (∃ specOutput,
+      Spec.Eval.Steps.UnifyCandidateRel (.var name) (.var name) specIncoming specOutput ∧
+      ScopedEquationQuery.BindingInvariant specOutput incoming) ∧
+    unifyOp previous (.var name) (.var name) yes no incoming =
+      [finItem previous (instantiate incoming yes) incoming] := by
+  have scan : unifyCandidateBindings (.var name) (.var name) incoming = [incoming] := by
+    have emptyLoop : Metta.Bindings.hasLoop [] = false := rfl
+    simp [unifyCandidateBindings, Metta.matchAtoms, Metta.matchAtomsWith,
+      emptyLoop, paired.semantic.runtime.loopFree]
+  refine ⟨scan, ?_, ?_⟩
+  · exact unifyCandidateBindings_sound (target := .var name) (pattern := .var name) paired
+      (by simpa only [toLeaTTaAtom, scan] using (List.mem_singleton_self incoming))
+  · rw [unifyOp_eq_candidateBindings, scan]
+    rfl
+
+/-- Repeated and shared variables are admitted at arbitrary open then code.
+Matching `(pair $x $x)` with `(pair a $x)` selects a real endpoint under which
+both occurrences of `$x` are `a`; the free branch variable stays in the
+observation rather than being required closed. -/
+theorem unify_shared_variable_success
+    (space : Space) (dispatch : Spec.Eval.GroundedDispatch) (live : List OSLFCore.Atom)
+    (typing : Spec.Eval.EvalTypeService) (previous : Stack) :
+    let target := OSLFCore.Atom.expression [.symbol "pair", .var "x", .var "x"]
+    let pattern := OSLFCore.Atom.expression [.symbol "pair", .symbol "a", .var "x"]
+    let yes := OSLFCore.Atom.expression [.symbol "return",
+      .expression [.symbol "pair", .var "x", .var "x", .var "free"]]
+    ∃ specOutput output,
+      Spec.Eval.Minimal.CoreStepRel space dispatch live
+        (.expression [.symbol "unify", target, pattern, yes, .symbol "refused"])
+        Mettapedia.Languages.MeTTa.HE.Bindings.empty (yes, specOutput) (typing := typing) ∧
+      ScopedEquationQuery.BindingInvariant specOutput output ∧
+      unifyOp previous (toLeaTTaAtom target) (toLeaTTaAtom pattern) (toLeaTTaAtom yes)
+        (.sym "refused") [] = [finItem previous (instantiate output (toLeaTTaAtom yes)) output] ∧
+      (∀ valuation, HEBindingSatisfied valuation specOutput → valuation "x" = .sym "a") ∧
+      ∀ valuation, HEBindingSatisfied valuation specOutput →
+        applyClassSolution valuation (instantiate output (toLeaTTaAtom yes)) =
+          .expr [.sym "return", .expr [.sym "pair", .sym "a", .sym "a", valuation "free"]] := by
+  intro target pattern yes
+  have paired := ScopedEquationQuery.bindingInvariant_empty
+  have nonempty : unifyCandidateBindings (toLeaTTaAtom target) (toLeaTTaAtom pattern) [] ≠ [] := by
+    apply (unifyCandidateBindings_nonempty_iff_common_model paired).mpr
+    exact ⟨fun _ => .sym "a", by simp [HEBindingSatisfied, Bindings.empty],
+      by simp [target, pattern, HEAtomEquationSatisfied, toLeaTTaAtom, toLeaTTaAtoms,
+        applyClassSolution]⟩
+  obtain ⟨output, member⟩ := List.exists_mem_of_ne_nil _ nonempty
+  obtain ⟨specOutput, candidate, outputPaired⟩ := unifyCandidateBindings_sound paired member
+  obtain ⟨matched, matching, merging, noLoop⟩ := mem_unifyCandidateBindings_iff.mp member
+  have selected := unify_candidate_exact previous _ _ (toLeaTTaAtom yes) (.sym "refused")
+    [] matched output matching merging noLoop
+  have source : Spec.Eval.Minimal.CoreStepRel space dispatch live
+      (.expression [.symbol "unify", target, pattern, yes, .symbol "refused"])
+      Bindings.empty (yes, specOutput) (typing := typing) :=
+    .unify space target pattern yes (.symbol "refused") yes Bindings.empty specOutput
+      (.success ⟨candidate, fun _ _ => rfl⟩)
+  have fixes : ∀ valuation, HEBindingSatisfied valuation specOutput → valuation "x" = .sym "a" := by
+    intro valuation satisfied
+    obtain ⟨specMatched, specMatching, specMerging, _, _⟩ := candidate
+    have equation := (Spec.Match.SolutionTheory.matchRel_solution_iff specMatching valuation).mp
+      ((Spec.Match.SolutionTheory.mergeRel_solution_iff specMerging valuation).mp satisfied).1
+    simpa [target, pattern, toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution] using equation
+  refine ⟨specOutput, output, source, outputPaired, selected, fixes, ?_⟩
+  intro valuation satisfied
+  rw [instantiate_semantically_inert ((outputPaired.semantic.solutionTheory valuation).mp satisfied)]
+  simp [yes, toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution, fixes valuation satisfied]
+
+/-- Inconsistent overlap is rejected through the independent incoming-plus-
+equation theory. No matcher success or selected-value equality can bypass
+that contradiction, and the raw fallback retains its original bindings. -/
+theorem unify_inconsistent_overlap_refuses (previous : Stack) (yes no : OSLFCore.Atom) :
+    let target := OSLFCore.Atom.expression [.symbol "pair", .var "x", .symbol "a"]
+    let pattern := OSLFCore.Atom.expression [.symbol "pair", .symbol "b", .var "x"]
+    Spec.Eval.Steps.UnifyNoMatchRel target pattern Mettapedia.Languages.MeTTa.HE.Bindings.empty ∧
+    unifyCandidateBindings (toLeaTTaAtom target) (toLeaTTaAtom pattern) [] = [] ∧
+    unifyOp previous (toLeaTTaAtom target) (toLeaTTaAtom pattern)
+      (toLeaTTaAtom yes) (toLeaTTaAtom no) [] = [finItem previous (toLeaTTaAtom no) []] := by
+  intro target pattern
+  have missing : Spec.Eval.Steps.UnifyNoMatchRel target pattern Bindings.empty := by
+    intro specOutput candidate
+    obtain ⟨matched, matching, merging, _, valuation, satisfied⟩ := candidate
+    have equation := (Spec.Match.SolutionTheory.matchRel_solution_iff matching valuation).mp
+      ((Spec.Match.SolutionTheory.mergeRel_solution_iff merging valuation).mp satisfied).1
+    simp [target, pattern, toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution] at equation
+    obtain ⟨first, second⟩ := equation
+    have impossible : (Atom.sym "a") = .sym "b" := second.trans first
+    simp at impossible
+  have paired := ScopedEquationQuery.bindingInvariant_empty
+  exact ⟨missing, (unifyCandidateBindings_empty_iff paired).mpr missing,
+    unifyOp_of_noMatch paired missing previous yes no⟩
+
+/-- A bound fallback variable is returned literally by branch selection;
+its later binding materialization is different syntax. This prevents moving
+the continuation's materialization into the wrong primitive boundary. -/
+theorem unify_fallback_alias_is_raw (previous : Stack) (yes : Atom) :
+    let specIncoming : Mettapedia.Languages.MeTTa.HE.Bindings :=
+      ⟨[("branch", .symbol "held")], []⟩
+    let incoming : Metta.Bindings := [.val "branch" (.sym "held")]
+    Spec.Eval.Steps.UnifyNoMatchRel (.symbol "a") (.symbol "b") specIncoming ∧
+    unifyOp previous (.sym "a") (.sym "b") yes (.var "branch") incoming =
+      [finItem previous (.var "branch") incoming] ∧
+    instantiate incoming (.var "branch") = .sym "held" ∧
+    (Atom.var "branch") ≠ .sym "held" := by
+  intro specIncoming incoming
+  refine ⟨?_, ?_, ?_, by intro impossible; cases impossible⟩
+  · intro output candidate
+    obtain ⟨matched, matching, merging, _, valuation, satisfied⟩ := candidate
+    have equation := (Spec.Match.SolutionTheory.matchRel_solution_iff matching valuation).mp
+      ((Spec.Match.SolutionTheory.mergeRel_solution_iff merging valuation).mp satisfied).1
+    simp [toLeaTTaAtom, applyClassSolution] at equation
+  · exact unify_refuses previous _ _ _ _ incoming
+      (by simp [Metta.matchAtoms, Metta.matchAtomsWith])
+  · exact Metta.instantiate_singleton_val_var_of_not_mem _ _ (by simp [Atom.vars])
 
 end Mettapedia.Languages.MeTTa.HE.LeaTTaMinimalControlExecution

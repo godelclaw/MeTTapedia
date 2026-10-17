@@ -1,5 +1,5 @@
 import Mathlib.Probability.ProbabilityMassFunction.Constructions
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.WorldModel.BayesNet.PLNBayesNetWorldModel
 import Mettapedia.ProbabilityTheory.BayesianNetworks.BayesianNetwork
 import Mettapedia.ProbabilityTheory.BayesianNetworks.VariableElimination

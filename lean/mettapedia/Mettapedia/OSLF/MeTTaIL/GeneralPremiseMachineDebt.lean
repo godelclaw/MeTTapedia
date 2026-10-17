@@ -44,9 +44,23 @@ theorem query_expand_answers_length (environment : Environment) (request : Query
   cases task with
   | start =>
       simp only [Query.expand]
-      split <;> simp
+      split
+      · simp
+      · split <;> simp
   | rows frame =>
       simp only [Query.expand]
+      split
+      · simp
+      · split <;> simp
+  | dynamicInputs frame =>
+      simp only [Query.expand, Query.expandDynamicInputs]
+      split
+      · split <;> simp
+      · split <;> simp
+      · simp
+      · simp
+  | dynamicRows frame =>
+      simp only [Query.expand, Query.expandDynamicRows]
       split
       · simp
       · split <;> simp

@@ -28,7 +28,9 @@ sort `Space` of the probe is one; its sort `Atom` is not.
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -496,4 +498,4 @@ end
 #print axioms probeWithRun_atom_not_apart
 #print axioms misquotedLanguage_not_quoteDropSorted
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

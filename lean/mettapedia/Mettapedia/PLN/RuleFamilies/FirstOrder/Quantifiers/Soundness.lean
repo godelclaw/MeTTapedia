@@ -46,7 +46,7 @@ This file proves the **5 critical theorems** establishing the correctness of PLN
 
 - Plan file (hashed-baking-bumblebee.md), "Critical Theorems (All Must Be Proven)"
 - QuantaleWeakness.lean (820+ proven lines)
-- EvidenceQuantale.lean (BinaryEvidence with Frame structure)
+- BinaryEvidence.lean (BinaryEvidence with Frame structure)
 -/
 
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers

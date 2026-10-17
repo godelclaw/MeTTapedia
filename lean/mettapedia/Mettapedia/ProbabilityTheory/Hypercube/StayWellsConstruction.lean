@@ -51,10 +51,11 @@ inductive ProbObj where
   | Density : ProbObj         -- Quantum density matrices
   deriving DecidableEq, Repr, Inhabited
 
-/-- Sort symbols: ∗ (inhabited types) and □ (uninhabited kinds) -/
+/-- Sort symbols: ∗ classifies ordinary types and □ classifies kinds.
+Neither symbol asserts that every classifier has an inhabitant. -/
 inductive PSort where
-  | star : PSort  -- ∗ = concrete values that exist
-  | box : PSort   -- □ = type-level only (no inhabitants)
+  | star : PSort
+  | box : PSort
   deriving DecidableEq, Repr
 
 /-!
@@ -232,7 +233,7 @@ def ksAssocPositions : List ProbSubtermPosition :=
 /-!
 ## §4: Slots and Sort Assignments
 
-Each position has slots that can be assigned ∗ (inhabited) or □ (uninhabited).
+Each position has slots that can be assigned the type sort ∗ or the kind sort □.
 -/
 
 /-- A slot in a modality's sort family -/

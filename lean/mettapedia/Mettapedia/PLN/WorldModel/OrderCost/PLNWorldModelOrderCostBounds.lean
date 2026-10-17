@@ -1,5 +1,5 @@
 import Mettapedia.PLN.Bridges.ProbabilityTheory.ConjugateEvidenceCore
-import Mettapedia.PLN.WorldModel.PLNWorldModelOverlap
+import Mettapedia.PLN.WorldModel.WorldModelOverlap
 
 /-!
 # WM Quantitative Order-Cost Bounds

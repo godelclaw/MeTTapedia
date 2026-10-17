@@ -1,9 +1,9 @@
 import Mettapedia.GSLT.Logic.ObserverRefinement
 import Mettapedia.GSLT.Core.SemanticImplementation
 import Mettapedia.OSLF.Framework.HennessyMilnerNativeTypes
-import Mettapedia.CognitiveArchitecture.Consciousness.TraceAndImplementation
+import Mettapedia.CogArch.Consciousness.TraceAndImplementation
 import Mettapedia.GSLT.Weighting.QuantumJump
-import Mettapedia.CognitiveArchitecture.GodelClaw.GlobalWorkspace
+import Mettapedia.CogArch.GodelClaw.GlobalWorkspace
 import Lean.Util.CollectAxioms
 import Lean.Compiler.Old
 

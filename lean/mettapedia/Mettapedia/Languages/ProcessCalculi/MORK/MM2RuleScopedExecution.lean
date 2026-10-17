@@ -13,6 +13,12 @@ variables inside such a value belong to the captured expression.
 The physical workspace is keyed by MORK compact expressions.  Compact keys
 replace variable spellings by first-occurrence indices, so insertion and
 removal below use those keys rather than nominal `Atom` equality.
+
+The executor below is the support model's: its matcher is one way and it
+finalizes sinks in their authored order.  The kernel unifies and writes `+`
+instances first (`Mainline.fireDirective`); they agree on ground stored atoms when
+every `+` sink precedes every `-` sink
+(`MM2SupportKernelBridge.fireDirective_eq_ruleScoped_ground`).
 -/
 
 namespace Mettapedia.Languages.ProcessCalculi.MORK

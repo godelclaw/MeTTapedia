@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+import Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
 
 /-!
 # Executable-independent equation-query steps
@@ -19,6 +20,7 @@ namespace Mettapedia.Languages.MeTTa.HE
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open LeaTTaBridge (HEBindingSatisfied applyClassSolution)
+open Spec.Bindings.ScopeObservation
 
 /-- One successful equation-query step from a selected, freshened rule.
 
@@ -35,11 +37,7 @@ def Spec.Eval.EquationQueryStep
       Spec.Match.Merge.MatchRel
         Spec.Match.Merge.equalityGroundedSemantic
         query freshPattern matched ∧
-      Spec.Match.Merge.MergeRel
-        Spec.Match.Merge.equalityGroundedSemantic
-        incoming matched output ∧
-      (∃ valuation : String → Metta.Atom,
-        HEBindingSatisfied valuation output) ∧
+      LogicalMergeRel incoming matched output ∧
       ∀ valuation : String → Metta.Atom,
         HEBindingSatisfied valuation output →
           applyClassSolution valuation emitted =
@@ -57,12 +55,9 @@ example :
     (by simp [LeaTTaBridge.VarsDisjoint, LeaTTaBridge.toLeaTTaAtom,
       Metta.Atom.vars]),
     Spec.Match.Merge.MatchRel.symSym "a"
-      Spec.Match.Merge.semanticLoopFree_empty, ?_, ?_, ?_⟩
-  · exact Spec.Match.Merge.MergeRel.mk
-      (by simp [Spec.Match.Merge.constraints, Bindings.empty])
-      Spec.Match.Merge.MergeConstraintsRel.nil
-  · exact ⟨fun name => .var name, by
-      simp [HEBindingSatisfied, Bindings.empty]⟩
+      Spec.Match.Merge.semanticLoopFree_empty, ?_, ?_⟩
+  · refine ⟨BindingSourceAgreement.refl _, fun name => .var name, ?_⟩
+    simp [Spec.Type.RuntimeRefinement.TypeBindingSatisfied, Bindings.empty]
   · intro valuation _
     rfl
 
@@ -74,7 +69,7 @@ theorem symbol_mismatch_not_specEquationQueryStep
     ¬Spec.Eval.EquationQueryStep
       (.symbol left) (.symbol right)
       incoming output freshRhs emitted := by
-  rintro ⟨matched, _hygienic, hmatch, _hmerge, _hsatisfiable, _hemitted⟩
+  rintro ⟨matched, _hygienic, hmatch, _hmerge, _hemitted⟩
   exact Spec.Match.Merge.symbol_mismatch_not_match
     hne matched hmatch
 

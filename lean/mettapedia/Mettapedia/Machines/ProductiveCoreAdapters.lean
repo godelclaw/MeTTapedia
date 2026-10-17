@@ -503,4 +503,223 @@ theorem answer_diverges_iff_core (core : AnswerMachineCore Term Answer) (state :
     · exact False.elim (continues last (trace.reachable _) stopped)
     · exact False.elim (continues last (trace.reachable _) (core.answer_final last answer observed))
 
+/-! ## Total strategy ticks and actual core traces -/
+
+/-- A fixed missing-transition strategy retains its state. This operation is
+for reproducible iteration; it does not turn a stuck state into a verdict. -/
+def retainedTick (core : MachineCore Term) (state : core.State) : core.State :=
+  (core.step state).getD state
+
+theorem retainedTick_trace (core : MachineCore Term) (budget : Nat) (state : core.State) :
+    ∃ events, Trace core state events ((retainedTick core)^[budget] state) ∧ events.length ≤ budget := by
+  induction budget generalizing state with
+  | zero => exact ⟨[], .empty _, Nat.zero_le _⟩
+  | succ budget ih =>
+      cases stepped : core.step state with
+      | none =>
+          have fixed : retainedTick core state = state := by simp [retainedTick, stepped]
+          rw [Function.iterate_fixed fixed]
+          exact ⟨[], .empty _, Nat.zero_le _⟩
+      | some next =>
+          obtain ⟨events, trace, count⟩ := ih next
+          have moved : retainedTick core state = next := by simp [retainedTick, stepped]
+          rw [Function.iterate_succ_apply, moved]
+          exact ⟨(state, next) :: events, .cons stepped trace, by simpa using Nat.succ_le_succ count⟩
+
+/-- A strategy ending at a checked answer has an actual terminating machine
+run with at most one finishing transition beyond its supplied tick budget. -/
+theorem retainedTick_finished (core : AnswerMachineCore Term Answer) (budget : Nat)
+    (state : core.State) (answer : Answer)
+    (observed : core.answer ((retainedTick core.toMachineCore)^[budget] state) = some answer) :
+    ∃ fuel events, fuel ≤ budget + 1 ∧
+      (answerMachine core).run fuel state = (events, .finished answer) := by
+  obtain ⟨events, trace, count⟩ := retainedTick_trace core.toMachineCore budget state
+  exact ⟨events.length + 1, events, Nat.add_le_add_right count 1,
+    trace_answer_finish core trace observed⟩
+
+/-! ## Partial folds with a retained refused suffix -/
+
+namespace RetainedFold
+
+variable {Item Accumulator : Type}
+
+/-- Raw execution state. A table supplied by a caller is not authenticated
+evidence. Sound publication uses the proved run from its intended initial
+state, or a separately validated prefix under the same fixed consumer. -/
+structure Work (Item Accumulator : Type) where
+  pending : List Item
+  accumulator : Accumulator
+  inspected : Nat
+  refused : Bool
+
+def start (items : List Item) (accumulator : Accumulator) : Work Item Accumulator :=
+  ⟨items, accumulator, 0, false⟩
+
+def Work.settled (work : Work Item Accumulator) : Bool := work.refused || work.pending.isEmpty
+
+def reference (consume : Accumulator → Item → Option Accumulator) :
+    Accumulator → List Item → Option Accumulator
+  | accumulator, [] => some accumulator
+  | accumulator, item :: rest => (consume accumulator item).bind (fun next => reference consume next rest)
+
+def Work.meaning (consume : Accumulator → Item → Option Accumulator)
+    (work : Work Item Accumulator) : Option Accumulator :=
+  if work.refused then none else reference consume work.accumulator work.pending
+
+/-- One original row is consumed. On refusal the old accumulator, refused
+head and complete later suffix are retained. -/
+def tick (consume : Accumulator → Item → Option Accumulator)
+    (work : Work Item Accumulator) : Work Item Accumulator :=
+  if work.refused then work else
+    match work.pending with
+    | [] => work
+    | item :: rest =>
+        match consume work.accumulator item with
+        | none => { work with inspected := work.inspected + 1, refused := true }
+        | some next => ⟨rest, next, work.inspected + 1, false⟩
+
+theorem tick_meaning (consume : Accumulator → Item → Option Accumulator)
+    (work : Work Item Accumulator) : (tick consume work).meaning consume = work.meaning consume := by
+  rcases work with ⟨pending, accumulator, inspected, refused⟩
+  cases refused with
+  | true => rfl
+  | false =>
+      cases pending with
+      | nil => rfl
+      | cons item rest =>
+          cases result : consume accumulator item <;> simp [tick, Work.meaning, reference, result]
+
+theorem tick_settled (consume : Accumulator → Item → Option Accumulator)
+    (work : Work Item Accumulator) (settled : work.settled = true) : tick consume work = work := by
+  rcases work with ⟨pending, accumulator, inspected, refused⟩
+  cases refused with
+  | true => rfl
+  | false =>
+      cases pending with
+      | nil => rfl
+      | cons item rest => simp [Work.settled] at settled
+
+def advance (consume : Accumulator → Item → Option Accumulator) (budget : Nat)
+    (work : Work Item Accumulator) : Work Item Accumulator := (tick consume)^[budget] work
+
+theorem advance_add (consume : Accumulator → Item → Option Accumulator) (first second : Nat)
+    (work : Work Item Accumulator) :
+    advance consume (first + second) work = advance consume second (advance consume first work) := by
+  change (tick consume)^[first + second] work = (tick consume)^[second] ((tick consume)^[first] work)
+  rw [Nat.add_comm first second, Function.iterate_add_apply]
+
+theorem refused_suffix (consume : Accumulator → Item → Option Accumulator)
+    (accumulator : Accumulator) (item : Item) (rest : List Item) (inspected : Nat)
+    (refused : consume accumulator item = none) :
+    tick consume ⟨item :: rest, accumulator, inspected, false⟩ =
+      ⟨item :: rest, accumulator, inspected + 1, true⟩ := by simp [tick, refused]
+
+theorem advance_meaning (consume : Accumulator → Item → Option Accumulator) (budget : Nat)
+    (work : Work Item Accumulator) : (advance consume budget work).meaning consume = work.meaning consume := by
+  induction budget generalizing work with
+  | zero => rfl
+  | succ budget ih =>
+      exact (ih (tick consume work)).trans (tick_meaning consume work)
+
+theorem settled_within (consume : Accumulator → Item → Option Accumulator) (budget : Nat)
+    (work : Work Item Accumulator) (enough : work.pending.length ≤ budget) :
+    (advance consume budget work).settled = true := by
+  induction budget generalizing work with
+  | zero =>
+      have empty : work.pending = [] := List.eq_nil_of_length_eq_zero (Nat.eq_zero_of_le_zero enough)
+      simp [advance, Work.settled, empty]
+  | succ budget ih =>
+      cases settled : work.settled with
+      | true =>
+          rw [advance, Function.iterate_fixed (tick_settled consume work settled)]
+          exact settled
+      | false =>
+          rcases work with ⟨pending, accumulator, inspected, refused⟩
+          cases refused with
+          | true => simp [Work.settled] at settled
+          | false =>
+              cases pending with
+              | nil => simp [Work.settled] at settled
+              | cons item rest =>
+                  change (advance consume budget (tick consume _)).settled = true
+                  cases result : consume accumulator item with
+                  | none =>
+                      have done : (tick consume ⟨item :: rest, accumulator, inspected, false⟩).settled = true := by
+                        simp [tick, result, Work.settled]
+                      rw [advance, Function.iterate_fixed (tick_settled consume _ done)]
+                      exact done
+                  | some next =>
+                      simp only [tick, Bool.false_eq_true, ↓reduceIte, result]
+                      exact ih ⟨rest, next, inspected + 1, false⟩ (by simpa using enough)
+
+/-- Only completed unrejected work exposes its accumulator. Authenticity of
+the starting accumulator remains a separate invariant. -/
+def Work.result (work : Work Item Accumulator) : Option Accumulator :=
+  if work.refused then none else if work.pending.isEmpty then some work.accumulator else none
+
+theorem result_meaning (consume : Accumulator → Item → Option Accumulator)
+    (work : Work Item Accumulator) (settled : work.settled = true) :
+    work.result = work.meaning consume := by
+  rcases work with ⟨pending, accumulator, inspected, refused⟩
+  cases refused with
+  | true => rfl
+  | false =>
+      have empty : pending = [] := by simpa [Work.settled] using settled
+      simp [empty, Work.result, Work.meaning, reference]
+
+theorem complete_exact (consume : Accumulator → Item → Option Accumulator)
+    (items : List Item) (accumulator : Accumulator) :
+    (advance consume items.length (start items accumulator)).result = reference consume accumulator items := by
+  rw [result_meaning consume _ (settled_within consume _ _ (by rfl)), advance_meaning]
+  rfl
+
+def core (consume : Accumulator → Item → Option Accumulator) :
+    AnswerMachineCore (List Item × Accumulator) (Work Item Accumulator) where
+  State := Work Item Accumulator
+  load input := start input.1 input.2
+  step work := if work.settled then none else some (tick consume work)
+  answer work := if work.settled then some work else none
+  answer_final := by intro work result; split <;> simp_all
+
+theorem retainedTick_eq (consume : Accumulator → Item → Option Accumulator) :
+    retainedTick (core consume).toMachineCore = tick consume := by
+  funext work
+  cases settled : work.settled with
+  | false => simp [retainedTick, core, settled]; rfl
+  | true => simp [retainedTick, core, settled, tick_settled consume work settled]; rfl
+
+theorem machine_completes (consume : Accumulator → Item → Option Accumulator)
+    (items : List Item) (accumulator : Accumulator) :
+    ∃ fuel events report, fuel ≤ items.length + 1 ∧
+      (answerMachine (core consume)).run fuel (start items accumulator) = (events, .finished report) ∧
+      report.result = reference consume accumulator items := by
+  let final := advance consume items.length (start items accumulator)
+  have observed : (core consume).answer final = some final := by
+    simp only [core]
+    exact if_pos (settled_within consume _ _ (by rfl))
+  have finalTick : (retainedTick (core consume).toMachineCore)^[items.length] (start items accumulator) = final := by
+    rw [retainedTick_eq]
+    rfl
+  obtain ⟨fuel, events, bounded, finished⟩ :=
+    retainedTick_finished (core consume) items.length (start items accumulator) final (by simpa [finalTick] using observed)
+  exact ⟨fuel, events, final, bounded, finished, complete_exact consume items accumulator⟩
+
+/-- Every actual finished run from the intended load has the original fold
+result. The report cannot be replaced by an arbitrary raw accumulator. -/
+theorem finished_result (consume : Accumulator → Item → Option Accumulator)
+    (items : List Item) (accumulator : Accumulator) {fuel : Nat}
+    {events : List (Occurrence (Work Item Accumulator))} {report : Work Item Accumulator}
+    (finished : (answerMachine (core consume)).run fuel (start items accumulator) =
+      (events, .finished report)) : report.result = reference consume accumulator items := by
+  obtain ⟨otherFuel, otherEvents, otherReport, _, otherFinished, result⟩ :=
+    machine_completes consume items accumulator
+  have first : (core consume).Produces (items, accumulator) report :=
+    (produces_iff_finished (core consume) (items, accumulator) report).mpr ⟨fuel, events, finished⟩
+  have second : (core consume).Produces (items, accumulator) otherReport :=
+    (produces_iff_finished (core consume) (items, accumulator) otherReport).mpr
+      ⟨otherFuel, otherEvents, otherFinished⟩
+  exact (congrArg Work.result ((core consume).produces_unique first second)).trans result
+
+end RetainedFold
+
 end Mettapedia.Machines.ProductiveCoreAdapters

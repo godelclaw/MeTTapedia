@@ -1,5 +1,6 @@
 import Mettapedia.OSLF.PathMap.CandidateArchitecture
 import Mettapedia.Languages.MeTTa.HE.Matching
+import Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge
 
 /-!
 # PathMap Matcher Instance: Connecting HE matchAtoms to CandidateArchitecture
@@ -107,7 +108,7 @@ theorem match_success_passes_filter (fuel : Nat) (query atom : Atom)
 
 /-- Helper: `Bindings.empty` has no loop. -/
 private theorem bindings_empty_no_loop : Bindings.empty.hasLoop = false := by
-  simp [Bindings.hasLoop, Bindings.empty]
+  exact Bindings.hasLoop_empty
 
 /-- For identical ground atoms (no variables), `matchAtoms` with fuel ≥ 1
     returns `[Bindings.empty]`. This covers the common case in PathMap
@@ -130,63 +131,54 @@ theorem heIsMatch_self_symbol (s : String) (n : Nat) :
 
 /-! ## §4: Variable matching -/
 
-/-- Helper: `Bindings.empty.assign v atom` has no loop when atom is not a
-    variable named `v`. For non-variable atoms, this is trivially true. -/
-private theorem assign_nonvar_no_loop (v : String) (atom : Atom)
-    (hNotVar : ∀ w, atom ≠ .var w) :
+/-- The single-assignment occurs check also scans compound values. -/
+private theorem assign_no_occurrence_no_loop (v : String) (atom : Atom)
+    (hNoOccurs : v ∉ Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars atom) :
     (Bindings.empty.assign v atom).hasLoop = false := by
-  match atom with
-  | .var w => exact absurd rfl (hNotVar w)
-  | .symbol _ =>
-    unfold Bindings.assign; simp only [Bindings.empty, Bindings.isBound, Bindings.lookup,
-      List.lookup, Option.isSome, Bool.false_eq_true, ite_false, List.nil_append]
-    unfold Bindings.hasLoop; simp only [List.any_cons, List.any_nil, Bool.or_false]
-    unfold Bindings.hasLoop.hasLoopFrom
-    simp only [Bindings.lookup, List.lookup, beq_self_eq_true]
-  | .grounded _ =>
-    unfold Bindings.assign; simp only [Bindings.empty, Bindings.isBound, Bindings.lookup,
-      List.lookup, Option.isSome, Bool.false_eq_true, ite_false, List.nil_append]
-    unfold Bindings.hasLoop; simp only [List.any_cons, List.any_nil, Bool.or_false]
-    unfold Bindings.hasLoop.hasLoopFrom
-    simp only [Bindings.lookup, List.lookup, beq_self_eq_true]
-  | .expression _ =>
-    unfold Bindings.assign; simp only [Bindings.empty, Bindings.isBound, Bindings.lookup,
-      List.lookup, Option.isSome, Bool.false_eq_true, ite_false, List.nil_append]
-    unfold Bindings.hasLoop; simp only [List.any_cons, List.any_nil, Bool.or_false]
-    unfold Bindings.hasLoop.hasLoopFrom
-    simp only [Bindings.lookup, List.lookup, beq_self_eq_true]
+  apply Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge.hasLoop_single_assignment_eq_false_iff.mpr
+  intro occurs
+  exact hNoOccurs
+    (Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge.mem_vars_iff_atomOccurs.mpr occurs)
 
-/-- A variable query matches any non-variable atom (with fuel ≥ 1).
-    This is the HE spec: `$x` matches anything by binding `x` to the atom.
+/-- A variable query matches a non-variable atom that does not contain the query
+    variable (with fuel ≥ 1). The occurs check prevents recursive assignment.
 
     Variables as queries are the MOST GENERAL pattern — they produce
     candidates = full support, which the two-phase architecture handles
     correctly (candidate selector may overapproximate, but native match
     filters precisely). -/
 theorem matchAtoms_var_any (v : String) (atom : Atom) (n : Nat)
-    (hNotVar : ∀ w, atom ≠ .var w) :
+    (hNotVar : ∀ w, atom ≠ .var w)
+    (hNoOccurs : v ∉ Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars atom) :
     matchAtoms (.var v) atom (n + 1) = [Bindings.empty.assign v atom] := by
   unfold matchAtoms
   simp only [getMetaType, Atom.variableType]
   match atom with
   | .symbol s =>
     simp [Atom.symbolType, Atom.beq, BEq.beq,
-          List.filter, assign_nonvar_no_loop v (.symbol s) hNotVar]
+          List.filter, assign_no_occurrence_no_loop v (.symbol s) hNoOccurs]
   | .grounded g =>
     simp [Atom.groundedType, Atom.beq, BEq.beq,
-          List.filter, assign_nonvar_no_loop v (.grounded g) hNotVar]
+          List.filter, assign_no_occurrence_no_loop v (.grounded g) hNoOccurs]
   | .expression es =>
     simp [Atom.expressionType, Atom.beq, BEq.beq,
-          List.filter, assign_nonvar_no_loop v (.expression es) hNotVar]
+          List.filter, assign_no_occurrence_no_loop v (.expression es) hNoOccurs]
   | .var w => exact absurd rfl (hNotVar w)
 
-/-- Variable queries always pass heIsMatch (for non-variable atoms). -/
+/-- A variable query passes the exact filter when its non-variable payload
+contains no occurrence of that query variable. -/
 theorem heIsMatch_var_any (v : String) (atom : Atom) (n : Nat)
-    (hNotVar : ∀ w, atom ≠ .var w) :
+    (hNotVar : ∀ w, atom ≠ .var w)
+    (hNoOccurs : v ∉ Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars atom) :
     heIsMatch (n + 1) (.var v) atom = true := by
-  simp only [heIsMatch, matchAtoms_var_any v atom n hNotVar, List.length_cons,
+  simp only [heIsMatch, matchAtoms_var_any v atom n hNotVar hNoOccurs, List.length_cons,
              List.length_nil]
   decide
+
+/-- A candidate containing the query variable is correctly refused by the exact
+matcher even though the coarse full-support selector may include it. -/
+theorem recursive_candidate_refused :
+    heIsMatch 10 (.var "x") (.expression [.symbol "f", .var "x"]) = false := by decide
 
 /-! ## §5: Summary
 
@@ -196,7 +188,7 @@ Key results:
 - `not_match_not_in_direct` — match failure ↔ exclusion from query results
 - `match_success_passes_filter` — match success ↔ passes native filter
 - `matchAtoms_self_symbol` — identical symbols always match
-- `matchAtoms_var_any` — variable queries match any non-variable atom
+- `matchAtoms_var_any` — variable queries match non-recursive non-variable payloads
 - `heIsMatch_self_symbol` / `heIsMatch_var_any` — Bool-level consequences
 
 Maps to CeTTa: `space_match_backend.c` `match_atoms_epoch` = `heNativeMatcher`

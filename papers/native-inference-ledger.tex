@@ -1,0 +1,126 @@
+% Generated from the axiom audit; do not edit by hand.
+\begin{small}
+\begin{longtable}{@{}l>{\raggedright\arraybackslash}p{0.37\linewidth}>{\raggedright\arraybackslash}p{0.34\linewidth}ll@{}}
+\toprule
+Part & Claim & Lean declaration & Axioms & Status\\
+\midrule
+\endhead
+A1 & Freeness: multifunctors out of open derivations are interpretations of rule instances & \name{RuleSignature.universal} & Q & proved\\
+A1 & A multifunctor is determined by its generators & \name{RuleSignature.functor_eq_of_gen} & Q & proved\\
+A1 & Extension agrees with the interpretation on generators & \name{RuleSignature.lift_gen} & none & proved\\
+A1 & Extension preserves substitution & \name{RuleSignature.Term.lift_subst} & Q & proved\\
+A1 & Right unit law & \name{RuleSignature.Term.subst_vars} & Q & proved\\
+A1 & Associativity of substitution & \name{RuleSignature.Term.subst_subst} & Q & proved\\
+A1 & Closed derivability is the inductive rule closure & \name{RuleSignature.derivable_iff_derives} & PQ & proved\\
+A1 & Closed derivations are planar & \name{RuleSignature.Term.closed_linear} & P & proved\\
+A1 & Generators are planar & \name{RuleSignature.Term.gen_linear} & PQ & proved\\
+A1 & Holes of equal sort stay distinct & \name{RuleSignature.Term.duplicate_holes_distinct} & P & proved\\
+A1 & Stable instance actions induce multifunctors & \name{RuleSignature.actFunctor} & PQ & proved\\
+A1 & Derivability is closed under instance actions & \name{RuleSignature.Derivable.act} & PQ & proved\\
+A1 & Substitution acts on Hilbert multicategories & \name{Hilbert.substFunctor} & PQ & proved\\
+A1 & Hilbert derivability is substitution closed & \name{Hilbert.source_subst} & PQ & proved\\
+A1 & Instance actions compose coherently & \name{RuleSignature.act_comp_heq} & PQ & proved\\
+A1 & Substitution multifunctors compose coherently & \name{Hilbert.substFunctor_comp_heq} & PCQ & proved\\
+A1 & Multifunctors compose associatively & \name{CartesianMulticategory.Functor.comp_assoc} & Q & proved\\
+A1 & Multifunctors preserve closed morphisms & \name{CartesianMulticategory.Functor.inhabited} & none & proved\\
+A1 & Kernel derivability is closed derivability & \name{RuleWitness.derivable_iff_derives} & PQ & proved\\
+A1 & Closed morphisms are accepted certificate trees & \name{RuleWitness.closedEquiv} & PQ & proved\\
+A1 & Erasure to trees is injective & \name{RuleWitness.toDerivation_injective} & PQ & proved\\
+A1 & Unfolding replay agrees with judgment replay & \name{RuleWitness.unfold_judgments} & PQ & proved\\
+A1 & Every accepted graph node unfolds to a closed morphism & \name{RuleWitness.unfold_root} & PQ & proved\\
+A1 & Every accepted graph node yields an accepted tree & \name{RuleWitness.unfold_tree} & PQ & proved\\
+A1 & Every closed morphism is the unfolding of an accepted graph root & \name{RuleWitness.presented} & PCQ & proved\\
+A1 & Presented blocks combine into one graph & \name{RuleWitness.presented_block} & PCQ & proved\\
+A1 & Authored open derivations are free-multicategory terms & \name{CertificateGSLT.OpenDerivation.termEquiv} & PQ & proved\\
+A1 & Plugging is substitution & \name{CertificateGSLT.OpenDerivation.toTerm_bind} & PQ & proved\\
+A1 & Interpretation of open derivations preserves substitution & \name{CertificateGSLT.interpret_bind} & PQ & proved\\
+A1 & Interpretation of open derivations is unique & \name{CertificateGSLT.interpret_unique} & PQ & proved\\
+A1 & Computable decoding of accepted raw open proofs & \name{CertificateGSLT.decodeOpen} & PCQ & proved\\
+A2 & Translations preserve derivability & \name{RuleSignature.Derivable.map} & Q & proved\\
+A2 & Injective renamings induce faithful multifunctors & \name{RuleSignature.lift_rename_injective} & Q & proved\\
+A2 & Intuitionistic into classical: faithful & \name{Hilbert.inclusion_faithful} & PQ & proved\\
+A2 & Intuitionistic into classical: not reflecting & \name{Hilbert.inclusion_not_reflecting} & PCQ & proved\\
+A2 & Classical into extended: faithful & \name{Extension.inclusion_faithful} & PQ & proved\\
+A2 & Classical into extended: conservative & \name{Extension.inclusion_conservative} & PCQ & proved\\
+A2 & Classical into extended: not full & \name{Extension.inclusion_not_full} & PCQ & proved\\
+A2 & HOL Light into its first-order calculus: multifunctor & \name{HOLLight.FirstOrder.translation} & PCQ & proved\\
+A2 & That multifunctor is determined by rule images & \name{HOLLight.FirstOrder.translation_unique} & PCQ & proved\\
+A2 & It preserves derivability & \name{HOLLight.FirstOrder.translation_derivable} & PCQ & proved\\
+A2 & It reflects derivability & \name{HOLLight.FirstOrder.translation_reflects} & PCQ & proved\\
+A2 & Positive control: REFL translated & \name{HOLLight.FirstOrder.Kernel.reflexivity_translated} & PCQ & proved\\
+A2 & Negative control: F not derivable & \name{HOLLight.FirstOrder.Kernel.falsity_not_translated} & PCQ & proved\\
+A2 & Node-by-node translation of one node is the multifunctor image & \name{RuleWitness.liftStep_liftEntry} & PCQ & proved\\
+A2 & Shared translation commutes with unfolding & \name{RuleWitness.replay_liftStep} & PCQ & proved\\
+A2 & Accepted graphs translate with sharing, coherently & \name{RuleWitness.shared_translation} & PCQ & proved\\
+A2 & HOL Light graphs translate with sharing, coherently & \name{HOLLight.FirstOrder.shared_translation} & PCQ & proved\\
+A3 & Logical work is additive under substitution & \name{RuleSignature.Term.size_subst} & PQ & proved\\
+A3 & Affine translations are linear on trees & \name{RuleSignature.lift_size_le} & PCQ & proved\\
+A3 & Contraction: linear source, exponential tree, linear graph & \name{Contraction.contraction_gap} & PCQ & proved\\
+A3 & The contracting image is not affine & \name{Contraction.image_not_affine} & PQ & proved\\
+A3 & Trees do not size-simulate graphs (existing) & \name{ProofSharingBounds.no_tree_sizeSimulation_dag} & PCQ & proved\\
+A3 & Literal expansion of definitions is exponential (existing) & \name{PropositionalExtension.literal_expansion_gap} & PCQ & proved\\
+A3 & HOL graph to MM0 certificate bound, degree 10 (existing) & \name{HOLLight.FirstOrder.graphTranslate_weight} & PCQ & proved\\
+A3 & Declared time is at least the written lemma weight & \name{HOLLight.FirstOrder.graphTime_ge_weight} & PCQ & proved\\
+A3 & MM0 p-simulates HOL Light graphs, declared time (existing) & \name{HOLLight.FirstOrder.Kernel.mm0Simulation} & PCQ & proved\\
+A3 & Operational clocks are positive (existing) & \name{ProofSystems.OperationalPSimulation.time_positive} & PCQ & proved\\
+A4 & Sequential replay is local & \name{DerivationGraph.replayWith_iff_local} & PCQ & proved\\
+A4 & Schedule independence (forward) & \name{DerivationGraph.replayWith_permute} & PCQ & proved\\
+A4 & Schedule independence (reflection) & \name{DerivationGraph.replayWith_permute_reflect} & PCQ & proved\\
+A4 & Schedule independence (both directions) & \name{DerivationGraph.replayWith_permute_iff} & PCQ & proved\\
+A4 & Dependency-violating schedules are refused & \name{DerivationGraph.replayWith_permute_refused} & PCQ & proved\\
+A4 & Lookup count is schedule invariant & \name{DerivationGraph.permute_lookups} & PCQ & proved\\
+A4 & Replayed blocks relocate into larger caches & \name{DerivationGraph.replayWith_relocate} & PCQ & proved\\
+A4 & Unfoldings are schedule invariant & \name{RuleWitness.unfold_permute} & PCQ & proved\\
+A4 & Monotone single-product steps are graph replay & \name{MultiPremiseSteps.run_monotone} & PQ & proved\\
+A4 & Monotone traces denote closed morphisms & \name{MultiPremiseSteps.run_monotone_unfolds} & PQ & proved\\
+A4 & Monotone multi-product steps split & \name{MultiPremiseSteps.run_split} & PQ & proved\\
+A4 & Consumption is linear & \name{MultiPremiseSteps.consumed_not_cited} & PQ & proved\\
+A4 & Consumption is not confluent & \name{MultiPremiseSteps.Controls.consumption_not_confluent} & PQ & proved\\
+A4 & Independent consuming steps commute up to product order & \name{MultiPremiseSteps.independent_commute} & PQ & proved\\
+A4 & Control: two independent consuming steps commute & \name{MultiPremiseSteps.Controls.independent_steps_commute} & PQ & proved\\
+A4 & Split/join exceeds tree-shaped single-wire-cut composition & \name{MultiPremiseSteps.process_not_polycategorical} & PQ & proved\\
+C & HOL Light kernel module loads exactly & \name{HOLLight.FirstOrder.kernelModule_read} & PCQ & proved\\
+C & Loaded HOL Light module is faithful & \name{HOLLight.FirstOrder.kernelModule_faithful} & PCQ & proved\\
+C & VibeITP module loads exactly (existing) & \name{VibeITP.CheckingMachine.kernelModule_read} & PCQ & proved\\
+C & RUP instances are sound & \name{PropositionalLRATActions.rupCheck_sound} & PQ & proved\\
+C & LRAT action checker is sound & \name{PropositionalLRATActions.check_sound} & PQ & proved\\
+C & LRAT actions denote closed morphisms & \name{PropositionalLRATActions.check_unfolds} & PQ & proved\\
+C & RAT additions are not RUP rule instances & \name{PropositionalLRATActions.rat_not_rule_instance} & PQ & proved\\
+C & Positive control: RUP refutation & \name{PropositionalLRATActions.Controls.xor_accepted} & PQ & proved\\
+C & Negative control: deleted premise & \name{PropositionalLRATActions.Controls.deleted_premise_refused} & PQ & proved\\
+C & RAT proof classified as extension & \name{PropositionalLRATActions.Controls.rat_refused} & PQ & proved\\
+D & Revalidation is exact & \name{DerivationGraph.revalidate_iff} & PCQ & proved\\
+D & Admitted extensions transport evidence & \name{DerivationGraph.replay_extend} & PCQ & proved\\
+D & Checked judgments extend to larger rule systems & \name{DerivationGraph.CheckedJudgment.extend} & none & proved\\
+D & Retained schedules reinterpret under accepting interfaces & \name{DerivationGraph.BorrowedCursor.run_reinterpret} & PQ & proved\\
+D & Intuitionistic evidence is classical evidence & \name{Revalidation.intuitionistic_to_classical} & PCQ & proved\\
+D & Evidence survives appended admitted definitions & \name{Revalidation.checkDAG_append} & PCQ & proved\\
+D & Negative control: excluded middle refused & \name{Revalidation.Controls.em_refused_intuitionistically} & P & proved\\
+D & Positive control: extended definitions & \name{Revalidation.Controls.worked_extended} & PCQ & proved\\
+D & Negative control: changed definition & \name{Revalidation.Controls.worked_changed_refused} & PQ & proved\\
+G & Ten source evidence rules have an exact executable interface & \name{KripkeTruth.Checking.interface} & P & proved\\
+G & Accepted certificates yield original source evidence & \name{KripkeTruth.Checking.check_sound} & PQ & proved\\
+G & Certificate coverage is exactly source evidence & \name{KripkeTruth.Checking.coverage} & PCQ & proved\\
+G & Certificates characterize least-fixed-point membership & \name{KripkeTruth.Checking.judgment_coverage} & PCQ & proved\\
+G & Closed categorical proofs characterize grounded judgments & \name{KripkeTruth.Checking.closed_proof_iff_grounded} & PQ & proved\\
+G & Finite decision and certificate authority coincide & \name{KripkeTruth.Checking.finite_decision_iff_certificate} & PCQ & proved\\
+G & Completed unknown excludes both certificate polarities & \name{KripkeTruth.Checking.finite_undetermined_iff_no_certificates} & PCQ & proved\\
+G & Positive control: admitted fact & \name{KripkeTruth.Checking.Controls.fact_accepts} & P & proved\\
+G & Negative control: forged negative conclusion & \name{KripkeTruth.Checking.Controls.forged_false_refuses} & P & proved\\
+G & Negative control: unsupported truth reference & \name{KripkeTruth.Checking.Controls.absent_premise_refuses} & P & proved\\
+G & Liar has no certificate at either polarity & \name{KripkeTruth.Checking.Controls.liar_has_no_certificate} & PCQ & proved\\
+G & Negative control: unadmitted negative base leaf & \name{KripkeTruth.Checking.Controls.false_base_leaf_refuses} & P & proved\\
+G & Negative control: cyclic proof-graph reference & \name{KripkeTruth.Checking.Controls.cyclic_graph_refuses} & P & proved\\
+E & Weighted state and branch-cost sequencing is associative & \name{LayerEffects.Spec.bind_assoc} & PCQ & proved\\
+E & A write and a read need not commute & \name{LayerEffects.Controls.put_get_not_comm} & PCQ & proved\\
+E & The specified distribution-over-finite-sets law is impossible & \name{NondeterminismProbability.no_distributiveLaw} & PCQ & proved\\
+E & Surviving answers cannot recover every failed-branch charge & \name{LayerEffects.Spec.no_failed_cost_recovery} & PCQ & proved\\
+E & Marginals cannot determine same-world conjunction & \name{EvidenceSpaces.no_same_world_conjunction_from_marginals} & PQ & proved\\
+\midrule
+A3 & Finite-stack realization of the HOL Light to MM0 translation & --- & --- & open\\
+A2 & Existing shared-lemma HOL translation equals the node-by-node translation & --- & --- & open\\
+A4 & Free symmetric monoidal category of consuming processes & --- & --- & open\\
+C & Portable modules for rho, MeTTa equations, recipes, rule-code kernels & --- & --- & open\\
+\bottomrule
+\end{longtable}
+\end{small}

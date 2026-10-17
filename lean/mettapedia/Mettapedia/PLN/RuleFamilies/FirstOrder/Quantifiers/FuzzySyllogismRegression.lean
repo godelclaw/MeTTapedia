@@ -6,12 +6,7 @@ import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismCanary
 Dedicated build target for extended fuzzy-quantifier syllogism checks
 (`most ∘ most`, `few ∘ most`, QFM-style monotonicity/conservativity canaries).
 
-Build command:
-
-```bash
-cd lean/mettapedia
-lake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegression
-```
+Build with `lake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegression`.
 -/
 
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers

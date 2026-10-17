@@ -3,6 +3,7 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 import Mettapedia.Languages.MM0.Formats.MMB.Machine
 import Mettapedia.Machines.ProductiveCoreAdapters
+import Mettapedia.GSLT.Distinction.SimulationComposition
 
 /-!
 # The MMB proof machine checks in linearly many transitions
@@ -24,9 +25,10 @@ What one transition costs is a separate matter. It touches the arguments of one
 declaration and the heap of one unification, so its work is bounded by the size of
 the largest declaration, which is constant for fixed tables. That reading assumes the
 store and heap are arrays and that expressions are compared by position, as in the
-reference verifier `mm0-c`. This module counts transitions only. The machine's
-soundness with respect to the kernel's derivability is not proved here; `Soundness`
-covers the decoding of expressions.
+reference verifier `mm0-c`. This module counts transitions only. It also joins
+completed retained runs to the unchanged assertion acceptance test.
+`MeTTa.Formats.MMB.ExecutedSoundness` composes this exact checking boundary with
+the independently stated kernel derivability theorem.
 -/
 
 set_option autoImplicit false
@@ -481,6 +483,13 @@ def eventMachine (tables : Tables) (mode : Mode) :
     Machine Config (ProductiveCoreAdapters.Occurrence Config) (Option State) Empty :=
   ProductiveCoreAdapters.answerMachine (answerCore tables mode)
 
+/-- The binary command/unification machine as an object of the existing
+checking-machine category. Its state, occurrences and verdict are unchanged;
+the command-stream verdict is not a whole-file theorem-admission claim. -/
+def checkingObject (tables : Tables) (mode : Mode) :
+    ObservedMachine (ProductiveCoreAdapters.Occurrence Config) (Option State) Empty :=
+  ObservedMachine.of (eventMachine tables mode)
+
 /-- The old transition bound constructs a connected occurrence trace, with no
     unification call hidden inside one event. -/
 theorem command_trace (tables : Tables) (mode : Mode) (state : State)
@@ -529,6 +538,150 @@ theorem event_run_add (tables : Tables) (mode : Mode) (first second : Nat)
       (eventMachine tables mode).continueRun second
         ((eventMachine tables mode).run first config) :=
   Machine.run_add _ _ _ _
+
+/-- Every saved prefix has a finite completion with the same chronological
+occurrences and stream result. The bound on the whole run remains the one
+proved for the original microstep machine. -/
+theorem event_run_complete_after (tables : Tables) (mode : Mode) (state : State)
+    (cmds : List ProofCmd) (first : Nat) :
+    ∃ events, events.length ≤ (unifyBound tables + 2) * cmds.length + 1 ∧
+      (eventMachine tables mode).continueRun (events.length + 1)
+        ((eventMachine tables mode).run first (.commands state cmds)) =
+          (events, .finished (run tables mode state cmds)) := by
+  obtain ⟨events, bound, completed⟩ := event_run_complete tables mode state cmds
+  refine ⟨events, bound, ?_⟩
+  rw [← event_run_add, Nat.add_comm first, event_run_add, completed]
+  rfl
+
+/-! ## Assertion checking from retained execution
+
+The common checkpoint contains the existing configuration and chronological
+microstep occurrences. Its final assertion observer validates the completed
+state; it never restarts the proof stream. Argument-loading refusal, stream
+refusal and final-statement refusal all remain refusals. An exhausted budget
+has no assertion verdict.
+-/
+
+/-- Load the assertion's own arguments, retaining the original proof stream.
+Loading refusal is terminal; successful loading has not checked a command. -/
+def beginAssertion (tables : Tables) (entry : ThmEntry) (commands : List ProofCmd) :
+    List (ProductiveCoreAdapters.Occurrence Config) × Outcome Config (Option State) Empty :=
+  match loadArgs tables.sorts entry.args with
+  | none => ([], .finished none)
+  | some state => ([], .exhausted (.commands state commands))
+
+/-- MM0 assertions use the common retained trajectory directly, including the
+microstep continuation inside a theorem application or definition unfolding. -/
+def assertionTrajectory (tables : Tables) (entry : ThmEntry) (commands : List ProofCmd) :
+    Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory
+      (eventMachine tables .assertion).continueRun (beginAssertion tables entry commands) :=
+  (eventMachine tables .assertion).retainedTrajectory (beginAssertion tables entry commands)
+
+/-- The assertion observer only checks completed stream results. In particular,
+`none` means no verdict yet, while `some false` means completed refusal. -/
+def assertionVerdict (tables : Tables) (entry : ThmEntry) (isAxiom : Bool) :
+    Outcome Config (Option State) Empty → Option Bool
+  | .finished none => some false
+  | .finished (some after) => some (finishAssertion tables entry after isAxiom)
+  | _ => none
+
+theorem assertionTrajectory_loaded (tables : Tables) (entry : ThmEntry)
+    (commands : List ProofCmd) (loaded : State)
+    (initialized : loadArgs tables.sorts entry.args = some loaded) (fuel : Nat) :
+    (assertionTrajectory tables entry commands).observation fuel =
+      (eventMachine tables .assertion).run fuel (.commands loaded commands) := by
+  simp [assertionTrajectory, beginAssertion, initialized, Machine.retainedTrajectory,
+    Machine.continueRun]
+
+theorem assertionTrajectory_load_refused (tables : Tables) (entry : ThmEntry)
+    (commands : List ProofCmd) (refused : loadArgs tables.sorts entry.args = none) (fuel : Nat) :
+    (assertionTrajectory tables entry commands).observation fuel = ([], .finished none) := by
+  simp [assertionTrajectory, beginAssertion, refused, Machine.retainedTrajectory,
+    Machine.continueRun]
+
+/-- Resuming preserves the entire checkpoint, not merely its final Boolean. -/
+theorem assertionTrajectory_resume (tables : Tables) (entry : ThmEntry)
+    (commands : List ProofCmd) (first extra : Nat) :
+    (assertionTrajectory tables entry commands).observation (first + extra) =
+      (eventMachine tables .assertion).continueRun extra
+        ((assertionTrajectory tables entry commands).observation first) :=
+  (assertionTrajectory tables entry commands).resume first extra
+
+/-- The published occurrence history never shrinks or restarts on resumption. -/
+theorem assertionTrajectory_events_prefix (tables : Tables) (entry : ThmEntry)
+    (commands : List ProofCmd) (first extra : Nat) :
+    ((assertionTrajectory tables entry commands).observation first).1.IsPrefix
+      ((assertionTrajectory tables entry commands).observation (first + extra)).1 :=
+  (assertionTrajectory tables entry commands).observer_prefix_after_resume Prod.fst
+    (eventMachine tables .assertion).continueRun_events_prefix first extra
+
+/-- A verdict observed at any budget agrees exactly with the original full
+assertion checker. This includes refusals after successful command execution. -/
+theorem assertionTrajectory_verdict_sound (tables : Tables) (entry : ThmEntry)
+    (commands : List ProofCmd) (isAxiom : Bool) (fuel : Nat) (verdict : Bool)
+    (observed : assertionVerdict tables entry isAxiom
+      ((assertionTrajectory tables entry commands).observation fuel).2 = some verdict) :
+    checkAssertion tables entry commands isAxiom = verdict := by
+  cases initialized : loadArgs tables.sorts entry.args with
+  | none =>
+      rw [assertionTrajectory_load_refused tables entry commands initialized] at observed
+      have same : false = verdict := Option.some.inj observed
+      simp only [checkAssertion, initialized, Option.bind_none]
+      exact same
+  | some loaded =>
+      rw [assertionTrajectory_loaded tables entry commands loaded initialized] at observed
+      cases completed : (eventMachine tables .assertion).run fuel (.commands loaded commands) with
+      | mk events outcome =>
+          rw [completed] at observed
+          cases outcome with
+          | exhausted _ | stuck _ | suspended _ _ | faulted => cases observed
+          | finished result =>
+              have executed := (event_finished_iff tables .assertion loaded commands result).mp
+                ⟨fuel, events, completed⟩
+              cases result with
+              | none =>
+                  have same : false = verdict := Option.some.inj observed
+                  simp only [checkAssertion, initialized, Option.bind_some, executed]
+                  exact same
+              | some after =>
+                  have same : finishAssertion tables entry after isAxiom = verdict :=
+                    Option.some.inj observed
+                  exact (checkAssertion_of_run tables entry commands isAxiom loaded after
+                    initialized executed).trans same
+
+/-- After any previously spent budget, the same retained execution eventually
+publishes the original assertion verdict. No proof prefix is rerun. -/
+theorem assertionTrajectory_verdict_complete (tables : Tables) (entry : ThmEntry)
+    (commands : List ProofCmd) (isAxiom : Bool) (first : Nat) :
+    ∃ extra, assertionVerdict tables entry isAxiom
+      ((assertionTrajectory tables entry commands).observation (first + extra)).2 =
+        some (checkAssertion tables entry commands isAxiom) := by
+  cases initialized : loadArgs tables.sorts entry.args with
+  | none =>
+      refine ⟨0, ?_⟩
+      rw [assertionTrajectory_load_refused tables entry commands initialized]
+      simp only [assertionVerdict, checkAssertion, initialized, Option.bind_none]
+  | some loaded =>
+      obtain ⟨events, _, completed⟩ := event_run_complete_after tables .assertion loaded commands first
+      refine ⟨events.length + 1, ?_⟩
+      rw [assertionTrajectory_resume,
+        assertionTrajectory_loaded tables entry commands loaded initialized, completed]
+      cases executed : run tables .assertion loaded commands <;>
+        simp only [assertionVerdict, checkAssertion, initialized, Option.bind_some, executed]
+
+/-- Exact preservation and reflection of acceptance and rejection, independently
+of where execution was paused. -/
+theorem assertionTrajectory_verdict_iff (tables : Tables) (entry : ThmEntry)
+    (commands : List ProofCmd) (isAxiom : Bool) (first : Nat) (verdict : Bool) :
+    (∃ extra, assertionVerdict tables entry isAxiom
+      ((assertionTrajectory tables entry commands).observation (first + extra)).2 = some verdict) ↔
+        checkAssertion tables entry commands isAxiom = verdict := by
+  constructor
+  · rintro ⟨extra, observed⟩
+    exact assertionTrajectory_verdict_sound tables entry commands isAxiom (first + extra) verdict observed
+  · intro same
+    obtain ⟨extra, observed⟩ := assertionTrajectory_verdict_complete tables entry commands isAxiom first
+    exact ⟨extra, same ▸ observed⟩
 
 /-- Published occurrences account for the actual microsteps, excluding the
     terminal observation. -/

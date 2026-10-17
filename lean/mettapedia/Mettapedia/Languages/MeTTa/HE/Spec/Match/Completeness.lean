@@ -1,3 +1,4 @@
+import Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
 import Mettapedia.Languages.MeTTa.HE.LeaTTaSpecConformance
 import Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
 
@@ -1103,5 +1104,145 @@ example : ¬∃ valuation : String → Metta.Atom,
   rcases h with ⟨valuation, hequation⟩
   simp [HEAtomEquationSatisfied, toLeaTTaAtom,
     applyClassSolution] at hequation
+
+
+open Spec.Match.Merge Spec.Match.SolutionTheory
+
+/-- Reversing a satisfiable source merge constructs a new derivation with
+exactly the same complete solution theory. Row layout and class representatives
+are not asserted equal. The nonvariable input condition is the existing finite
+source presentation discipline. -/
+theorem exists_swapped_specMerge_of_satisfied
+    {left right out : Bindings}
+    (merged : MergeRel equalityGroundedSemantic left right out)
+    (leftShape : HEAssignmentsNonVariable left)
+    (rightShape : HEAssignmentsNonVariable right)
+    (model : ∃ valuation, HEBindingSatisfied valuation out) :
+    ∃ swapped,
+      MergeRel equalityGroundedSemantic right left swapped ∧
+      HEAssignmentsNonVariable swapped ∧
+      (∃ valuation, HEBindingSatisfied valuation swapped) ∧
+      ∀ valuation, HEBindingSatisfied valuation out ↔ HEBindingSatisfied valuation swapped := by
+  obtain ⟨valuation, satisfied⟩ := model
+  have inputs := (mergeRel_solution_iff merged valuation).mp satisfied
+  obtain ⟨swapped, reversed, swappedModel, swappedShape⟩ :=
+    exists_specMerge_of_solution inputs.2 rightShape inputs.1 leftShape
+  refine ⟨swapped, reversed, swappedShape, ⟨valuation, swappedModel⟩, ?_⟩
+  intro observer
+  rw [mergeRel_solution_iff merged observer, mergeRel_solution_iff reversed observer]
+  exact and_comm
+
+namespace MergeSwapControls
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+def left : Bindings := ⟨[("left", .symbol "A")], []⟩
+def right : Bindings := ⟨[("right", .symbol "A")], []⟩
+
+private theorem leftShape : HEAssignmentsNonVariable left := by
+  intro key name stored
+  simp [left] at stored
+
+private theorem rightShape : HEAssignmentsNonVariable right := by
+  intro key name stored
+  simp [right] at stored
+
+/-- Both orientations are constructed from one common model, and all other
+models agree at their resulting endpoints. -/
+theorem both_orders_constructed :
+    ∃ original swapped,
+      MergeRel equalityGroundedSemantic left right original ∧
+      MergeRel equalityGroundedSemantic right left swapped ∧
+      ∀ valuation, HEBindingSatisfied valuation original ↔ HEBindingSatisfied valuation swapped := by
+  let model : String → Metta.Atom := fun _ => .sym "A"
+  have leftModel : HEBindingSatisfied model left := by
+    simp [HEBindingSatisfied, left, model, toLeaTTaAtom, applyClassSolution]
+  have rightModel : HEBindingSatisfied model right := by
+    simp [HEBindingSatisfied, right, model, toLeaTTaAtom, applyClassSolution]
+  obtain ⟨original, merged, satisfied, _shape⟩ :=
+    exists_specMerge_of_solution leftModel leftShape rightModel rightShape
+  obtain ⟨swapped, reversed, _shape, _model, theory⟩ :=
+    exists_swapped_specMerge_of_satisfied merged leftShape rightShape ⟨model, satisfied⟩
+  exact ⟨original, swapped, merged, reversed, theory⟩
+
+def inconsistent : Bindings := ⟨[("x", .symbol "A"), ("x", .symbol "B")], []⟩
+
+/-- A source merge alone does not supply the model required above: even an
+already inconsistent seed can pass through the empty constraint list. -/
+theorem inconsistent_seed_merges_empty :
+    MergeRel equalityGroundedSemantic inconsistent Bindings.empty inconsistent := by
+  apply MergeRel.mk (order := [])
+  · simp [constraints, Bindings.empty]
+  · exact .nil
+
+theorem inconsistent_seed_has_no_model :
+    ¬∃ valuation, HEBindingSatisfied valuation inconsistent := by
+  rintro ⟨valuation, satisfied⟩
+  have first := satisfied.1 "x" (.symbol "A") (by simp [inconsistent])
+  have second := satisfied.1 "x" (.symbol "B") (by simp [inconsistent])
+  have impossible := first.symm.trans second
+  simp [toLeaTTaAtom, applyClassSolution] at impossible
+
+end MergeSwapControls
+end Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.HE
+open Spec.Type.Presentation Spec.Type.Presentation.BindingTheory
+open Spec.Type.RuntimeRefinement Spec.Bindings.ScopeObservation
+open Spec.Match.Merge Spec.Match.ModelTheory
+open LeaTTaBridge LeaTTaTypeConformance
+/-- Exposing bare aliases constructs an old finite merge implementing the
+logical contract. The resulting representative is not prescribed by this law. -/
+theorem exists_alias_specMerge_of_common_model {left right : Bindings}
+    (common : ∃ valuation : String → Atom,
+      TypeBindingSatisfied valuation left ∧ TypeBindingSatisfied valuation right) :
+    ∃ output, MergeRel equalityGroundedSemantic
+        (aliasConstraints left) (aliasConstraints right) output ∧
+      LogicalMergeRel left right output ∧ AssignmentsNonVariable output ∧ SemanticLoopFree output := by
+  have noBare (bindings : Bindings) : HEAssignmentsNonVariable (aliasConstraints bindings) := by
+    intro key other stored
+    have shape := aliasConstraints_nonvariable bindings key (.var other) stored
+    simp [isVariableB] at shape
+  obtain ⟨valuation, leftModel, rightModel⟩ := common
+  obtain ⟨output, merged, satisfied, nonvariable⟩ :=
+    Spec.Match.Completeness.exists_specMerge_of_solution
+      (heBindingSatisfied_of_specTypeBindingSatisfied
+        ((aliasConstraints_models left valuation).mpr leftModel)) (noBare left)
+      (heBindingSatisfied_of_specTypeBindingSatisfied
+        ((aliasConstraints_models right valuation).mpr rightModel)) (noBare right)
+  have shape : AssignmentsNonVariable output := by
+    intro key value present
+    cases value with
+    | var other => exact (nonvariable key other present).elim
+    | symbol | grounded | expression => rfl
+  have agreement : BindingSourceAgreement output
+      ⟨left.assignments ++ right.assignments, left.equalities ++ right.equalities⟩ := by
+    constructor
+    · intro observer
+      rw [bindingSatisfied_append_iff, ← aliasConstraints_models left observer,
+        ← aliasConstraints_models right observer]
+      simp only [specTypeBindingSatisfied_iff_heBindingSatisfied_translated]
+      exact Spec.Match.SolutionTheory.mergeRel_solution_iff merged _
+    · intro name
+      rw [mem_specBindingVars_append, QueryBindingProjection.SourceSupport.merge_support merged,
+        aliasConstraints_support, aliasConstraints_support]
+  refine ⟨output, merged, ⟨agreement, valuation, ?_⟩, shape,
+    semanticLoopFree_of_satisfied_nonvariable satisfied shape⟩
+  exact (agreement.solutions valuation).mpr
+    ((bindingSatisfied_append_iff valuation left right).mpr ⟨leftModel, rightModel⟩)
+
+theorem alias_specMerge_exists_iff_common_model (left right : Bindings) :
+    (∃ output, MergeRel equalityGroundedSemantic
+        (aliasConstraints left) (aliasConstraints right) output ∧ LogicalMergeRel left right output) ↔
+      ∃ valuation : String → Atom,
+        TypeBindingSatisfied valuation left ∧ TypeBindingSatisfied valuation right := by
+  constructor
+  · rintro ⟨output, _merged, logical⟩
+    exact logical.common_model
+  · intro common
+    obtain ⟨output, merged, logical, _shape, _loopFree⟩ := exists_alias_specMerge_of_common_model common
+    exact ⟨output, merged, logical⟩
+
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness

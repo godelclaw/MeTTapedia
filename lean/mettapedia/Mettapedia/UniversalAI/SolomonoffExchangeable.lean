@@ -1,6 +1,6 @@
 import Mettapedia.ProbabilityTheory.Exchangeability
 import Mettapedia.ProbabilityTheory.Exchangeability.DeFinetti
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.UniversalAI.SolomonoffMeasure
 import Mettapedia.UniversalAI.SolomonoffPrior
 import Mettapedia.UniversalAI.UniversalPrediction.MarkovExchangeabilityBridge

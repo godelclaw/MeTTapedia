@@ -25,41 +25,6 @@ open Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Alpha
 open Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.PrincipalAlpha
 open Mettapedia.Languages.MeTTa.HE.Spec.Type.RuntimeRefinement
 
-mutual
-
-/-- Valuation after whole-type renaming is valuation conjugation on variable
-names. -/
-theorem applyTypeValuation_renameTypeVars
-    (valuation : String → Atom) (rename : String → String) (atom : Atom) :
-    applyTypeValuation valuation (renameTypeVars rename atom) =
-      applyTypeValuation (valuation ∘ rename) atom := by
-  cases atom with
-  | symbol name => simp [renameTypeVars, applyTypeValuation]
-  | var name => simp [renameTypeVars, applyTypeValuation]
-  | grounded value => simp [renameTypeVars, applyTypeValuation]
-  | expression atoms =>
-      simp only [renameTypeVars, applyTypeValuation,
-        Atom.expression.injEq]
-      exact applyTypeValuationList_renameTypeVars
-        valuation rename atoms
-
-/-- List companion of `applyTypeValuation_renameTypeVars`. -/
-theorem applyTypeValuationList_renameTypeVars
-    (valuation : String → Atom) (rename : String → String)
-    (atoms : List Atom) :
-    (atoms.map (renameTypeVars rename)).map
-        (applyTypeValuation valuation) =
-      atoms.map (applyTypeValuation (valuation ∘ rename)) := by
-  cases atoms with
-  | nil => rfl
-  | cons atom atoms =>
-      simp only [List.map_cons, List.cons.injEq]
-      exact ⟨applyTypeValuation_renameTypeVars
-          valuation rename atom,
-        applyTypeValuationList_renameTypeVars
-          valuation rename atoms⟩
-
-end
 
 mutual
 

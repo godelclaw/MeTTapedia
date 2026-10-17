@@ -277,7 +277,7 @@ def request : PolicyRequest (ExecutionTrace operational) :=
 def fullKey : ExecutionTrace operational → ExecutionTrace operational := id
 
 def fullAdmission :
-    PolicyKeyAdmission dependencies (false, false) request fullKey :=
+    PolicyKeyAdmission.Admission dependencies (false, false) request fullKey :=
   identityKeyAdmission dependencies (false, false) request
 
 def fullView : AdmittedReceiptView model request fullKey where
@@ -342,7 +342,7 @@ support a policy which distinguishes its collided traces. -/
 theorem semantic_and_profitability_do_not_imply_receipt_sufficiency :
     Nonempty (ExecutionProfitabilityReceipt model Nat sourceCost targetCost) ∧
       ¬ Nonempty
-        (PolicyKeyAdmission dependencies (false, false) request collapsedKey) := by
+        (PolicyKeyAdmission.Admission dependencies (false, false) request collapsedKey) := by
   constructor
   · exact ⟨profitable⟩
   · rintro ⟨admission⟩

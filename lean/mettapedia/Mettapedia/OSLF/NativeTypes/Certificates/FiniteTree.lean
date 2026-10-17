@@ -1,5 +1,6 @@
 import Mettapedia.TypeTheory.JudgmentDerivation
 import Mathlib.Data.Fintype.Defs
+import Mathlib.Data.List.OfFn
 
 /-!
 # Finite certificate checking for generated judgment presentations
@@ -17,7 +18,7 @@ namespace Mettapedia.OSLF.NativeTypes.Certificates
 
 open Mettapedia.TypeTheory
 
-universe u
+universe u v
 
 structure Presentation where
   Judgment : Type u
@@ -155,6 +156,228 @@ theorem reconstructed_root [DecidableEq P.Judgment] (tree : Tree P)
     (judgment : P.Judgment) (accepted : check tree judgment = true) :
     root (erase (reconstruct tree judgment accepted)) = root tree := by
   rw [erase_reconstruct]
+
+/-- Transport changes the derivation's index, not its supplied rule history. -/
+def castDerivation {first second : P.Judgment} (same : first = second)
+    (derivation : P.Derivation first) : P.Derivation second := same ▸ derivation
+
+@[simp] theorem erase_cast {first second : P.Judgment} (same : first = second)
+    (derivation : P.Derivation first) : erase (castDerivation same derivation) = erase derivation := by
+  cases same
+  rfl
+
+end Tree
+
+namespace Presentation
+
+/-- A rule translation preserves each premise position. It need not reflect
+arbitrary target derivations or identify the two presentations. -/
+structure Morphism (source target : Presentation.{u}) where
+  judgment : source.Judgment → target.Judgment
+  rule : source.Rule → target.Rule
+  conclusion : ∀ code, target.conclusion (rule code) = judgment (source.conclusion code)
+  premises : ∀ code, target.premises (rule code) = (source.premises code).map judgment
+
+namespace Morphism
+
+variable {source target : Presentation.{u}} (translation : Morphism source target)
+
+/-- Target and source premise positions have the same ordinal. -/
+def sourceIndex (code : source.Rule)
+    (position : Fin (target.premises (translation.rule code)).length) :
+    Fin (source.premises code).length :=
+  ⟨position.val, by simpa only [translation.premises, List.length_map] using position.isLt⟩
+
+def targetIndex (code : source.Rule) (position : Fin (source.premises code).length) :
+    Fin (target.premises (translation.rule code)).length :=
+  ⟨position.val, by simpa only [translation.premises, List.length_map] using position.isLt⟩
+
+@[simp] theorem source_target (code : source.Rule)
+    (position : Fin (source.premises code).length) :
+    translation.sourceIndex code (translation.targetIndex code position) = position := by
+  apply Fin.ext
+  rfl
+
+@[simp] theorem target_source (code : source.Rule)
+    (position : Fin (target.premises (translation.rule code)).length) :
+    translation.targetIndex code (translation.sourceIndex code position) = position := by
+  apply Fin.ext
+  rfl
+
+theorem premise (code : source.Rule)
+    (position : Fin (target.premises (translation.rule code)).length) :
+    (target.premises (translation.rule code)).get position =
+      translation.judgment ((source.premises code).get (translation.sourceIndex code position)) := by
+  have same := congrArg (fun judgments => judgments[position.val]?) (translation.premises code)
+  have bound : position.val < (source.premises code).length :=
+    (translation.sourceIndex code position).isLt
+  simpa only [List.getElem?_eq_getElem position.isLt, List.getElem?_map,
+    List.getElem?_eq_getElem bound,
+    Option.map_some, Option.some.injEq, List.get_eq_getElem, sourceIndex] using same
+
+theorem ofFn_sourceIndex {Value : Type v} (code : source.Rule)
+    (values : Fin (source.premises code).length → Value) :
+    List.ofFn (fun position => values (translation.sourceIndex code position)) = List.ofFn values := by
+  have lengths : (target.premises (translation.rule code)).length =
+      (source.premises code).length := by rw [translation.premises, List.length_map]
+  exact (List.ofFn_congr lengths.symm values).symm
+
+def identity (presentation : Presentation.{u}) : Morphism presentation presentation where
+  judgment := id
+  rule := id
+  conclusion _ := rfl
+  premises _ := (List.map_id _).symm
+
+def comp {last : Presentation.{u}} (first : Morphism source target)
+    (second : Morphism target last) : Morphism source last where
+  judgment := second.judgment ∘ first.judgment
+  rule := second.rule ∘ first.rule
+  conclusion code := by rw [Function.comp_apply, second.conclusion, first.conclusion]; rfl
+  premises code := by rw [Function.comp_apply, second.premises, first.premises, List.map_map]
+
+/-- Interpret original source derivations using the mapped target rules.
+This construction is independent of the Boolean certificate checker. -/
+def derivationAlgebra : JudgmentDerivation.Algebra source.signature where
+  Carrier judgment := target.Derivation (translation.judgment judgment)
+  conclude := by
+    intro judgment code children
+    refine .node ⟨translation.rule code.val,
+      (translation.conclusion code.val).trans (congrArg translation.judgment code.property)⟩ ?_
+    intro position
+    exact Tree.castDerivation (translation.premise code.val position.down).symm
+      (children ⟨translation.sourceIndex code.val position.down⟩)
+
+def mapDerivation {judgment : source.Judgment} :
+    source.Derivation judgment → target.Derivation (translation.judgment judgment) :=
+  JudgmentDerivation.interpret translation.derivationAlgebra
+
+end Morphism
+end Presentation
+
+namespace Tree
+
+variable {source target : Presentation.{u}}
+
+/-- Compute the translated proof, retaining each child occurrence exactly once. -/
+def map (translation : Presentation.Morphism source target) : Tree source → Tree target
+  | .node code children => .node (translation.rule code)
+      (fun position => map translation (children (translation.sourceIndex code position)))
+
+/-- A structural count of certificate occurrences, independent of payload
+bytes and the work performed by equality checks or rule calculations. -/
+def nodeCount {presentation : Presentation.{u}} : Tree presentation → Nat
+  | .node _ children => 1 + (List.ofFn fun position => nodeCount (children position)).sum
+
+theorem nodeCount_map (translation : Presentation.Morphism source target) (tree : Tree source) :
+    (tree.map translation).nodeCount = tree.nodeCount := by
+  induction tree with
+  | node code children ih =>
+      simp only [map, nodeCount]
+      apply congrArg (fun values : List Nat => 1 + values.sum)
+      calc
+        List.ofFn (fun position => nodeCount (map translation
+            (children (translation.sourceIndex code position)))) =
+            List.ofFn (fun position => nodeCount (children (translation.sourceIndex code position))) := by
+          congr 1
+          funext position
+          exact ih (translation.sourceIndex code position)
+        _ = List.ofFn (fun position => nodeCount (children position)) :=
+          translation.ofFn_sourceIndex (Value := Nat) code (fun position => nodeCount (children position))
+
+/-- Mapping rule instances preserves acceptance. This direction does not
+require an injective judgment map. -/
+theorem check_map [DecidableEq source.Judgment] [DecidableEq target.Judgment]
+    (translation : Presentation.Morphism source target)
+    (tree : Tree source) (judgment : source.Judgment)
+    (accepted : tree.check judgment = true) :
+    (tree.map translation).check (translation.judgment judgment) = true := by
+  induction tree generalizing judgment with
+  | node code children ih =>
+      have clauses : source.conclusion code = judgment ∧
+          ∀ position, (children position).check ((source.premises code).get position) = true := by
+        simpa only [check, Bool.and_eq_true, decide_eq_true_eq] using accepted
+      simp only [map, check, Bool.and_eq_true, decide_eq_true_eq]
+      refine ⟨(translation.conclusion code).trans (congrArg translation.judgment clauses.1), ?_⟩
+      intro position
+      rw [translation.premise]
+      exact ih _ _ (clauses.2 _)
+
+/-- Injectivity reflects acceptance of the translated certificate. This is
+reflection on the translated proof image, not conservativity for all target proofs. -/
+theorem check_map_iff [DecidableEq source.Judgment] [DecidableEq target.Judgment]
+    (translation : Presentation.Morphism source target)
+    (injective : Function.Injective translation.judgment)
+    (tree : Tree source) (judgment : source.Judgment) :
+    (tree.map translation).check (translation.judgment judgment) = true ↔
+      tree.check judgment = true := by
+  constructor
+  · intro accepted
+    induction tree generalizing judgment with
+    | node code children ih =>
+        have clauses : target.conclusion (translation.rule code) = translation.judgment judgment ∧
+            ∀ position, ((children (translation.sourceIndex code position)).map translation).check
+              ((target.premises (translation.rule code)).get position) = true := by
+          simpa only [map, check, Bool.and_eq_true, decide_eq_true_eq] using accepted
+        simp only [check, Bool.and_eq_true, decide_eq_true_eq]
+        refine ⟨injective ((translation.conclusion code).symm.trans clauses.1), ?_⟩
+        intro position
+        have checked := clauses.2 (translation.targetIndex code position)
+        rw [translation.premise, translation.source_target] at checked
+        exact ih position _ checked
+  · exact check_map translation tree judgment
+
+@[simp] theorem map_identity (presentation : Presentation.{u}) (tree : Tree presentation) :
+    tree.map (Presentation.Morphism.identity presentation) = tree := by
+  induction tree with
+  | node code children ih =>
+      change Tree.node code (fun position =>
+        map (Presentation.Morphism.identity presentation)
+          (children ((Presentation.Morphism.identity presentation).sourceIndex code position))) =
+        Tree.node code children
+      congr 1
+      funext position
+      have same : (Presentation.Morphism.identity presentation).sourceIndex code position = position :=
+        Fin.ext rfl
+      simpa only [same] using ih position
+
+theorem map_comp {last : Presentation.{u}}
+    (first : Presentation.Morphism source target) (second : Presentation.Morphism target last)
+    (tree : Tree source) :
+    (tree.map first).map second = tree.map (first.comp second) := by
+  induction tree with
+  | node code children ih =>
+      change Tree.node (second.rule (first.rule code)) (fun position =>
+        map second (map first (children
+          (first.sourceIndex code (second.sourceIndex (first.rule code) position))))) =
+        Tree.node (second.rule (first.rule code)) (fun position =>
+          map (first.comp second) (children ((first.comp second).sourceIndex code position)))
+      congr 1
+      funext position
+      have same : first.sourceIndex code (second.sourceIndex (first.rule code) position) =
+          (first.comp second).sourceIndex code position := Fin.ext rfl
+      simpa only [same] using ih ((first.comp second).sourceIndex code position)
+
+/-- Translation commutes with erasing the independently generated derivation.
+The concrete rule codes and every premise occurrence are retained. -/
+theorem erase_mapDerivation (translation : Presentation.Morphism source target)
+    {judgment : source.Judgment} (derivation : source.Derivation judgment) :
+    erase (translation.mapDerivation derivation) = (erase derivation).map translation := by
+  apply JudgmentDerivation.Derivation.rec
+    (motive := fun judgment derivation =>
+      erase (translation.mapDerivation derivation) = (erase derivation).map translation)
+    (t := derivation)
+  intro judgment code children ih
+  rcases code with ⟨code, conclusion⟩
+  cases conclusion
+  change Tree.node (translation.rule code) (fun position =>
+    erase (castDerivation (translation.premise code position).symm
+      (translation.mapDerivation (children ⟨translation.sourceIndex code position⟩)))) =
+    Tree.node (translation.rule code) (fun position =>
+      map translation (erase (children ⟨translation.sourceIndex code position⟩)))
+  congr 1
+  funext position
+  rw [erase_cast]
+  exact ih ⟨translation.sourceIndex code position⟩
 
 end Tree
 

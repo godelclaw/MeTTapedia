@@ -226,7 +226,7 @@ theorem CoversJustification.mono
 /-- Erase a proof-relevant scheduled history to ordinary semantic
 reachability.  The retained scheduler choices add evidence; they do not add
 new semantic steps. -/
-def eraseScheduledPath
+theorem eraseScheduledPath
     {source target : GoalState} :
     ScheduledProofSearchPath definition source target ->
       (scheduledProofSearchGSLT definition).MultiStep source target
@@ -271,7 +271,7 @@ def extend (node : ScheduledSearchNode definition roots)
 
 /-- Every retained node has an ordinary semantic proof-search path from the
 selected roots, independently of how it was scheduled. -/
-def semanticPath (node : ScheduledSearchNode definition roots) :
+theorem semanticPath (node : ScheduledSearchNode definition roots) :
     (scheduledProofSearchGSLT definition).MultiStep roots node.state :=
   eraseScheduledPath node.history
 

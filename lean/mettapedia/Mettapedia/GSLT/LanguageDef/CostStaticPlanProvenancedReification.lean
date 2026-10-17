@@ -149,7 +149,7 @@ mutual
   membership-certified leaf.  The inclusions thread structurally: pattern
   binders bind only de Bruijn indices, so each subterm's free variables
   inject into its parent's. -/
-  def CanonicalStopAligned.routeFVars
+  theorem CanonicalStopAligned.routeFVars
       {declaration : ReflectivePresentationDecl}
       {stop : Pattern → Pattern → Prop}
       {leftRootFree rightRootFree : List String} :
@@ -214,7 +214,7 @@ mutual
                 exact Or.inl (List.mem_flatMap.mp mem))))
 
   /-- Listwise companion of `CanonicalStopAligned.routeFVars`. -/
-  def CanonicalStopAlignedList.routeFVars
+  theorem CanonicalStopAlignedList.routeFVars
       {declaration : ReflectivePresentationDecl}
       {stop : Pattern → Pattern → Prop}
       {leftRootFree rightRootFree : List String} :
@@ -253,7 +253,7 @@ mutual
   /-- Reify a routed alignment and pass it through two keyed
   canonicalizers.  There is no free-variable callback: every leaf is a
   stop, so the caller is consulted only at stops. -/
-  def CanonicalStopRouted.environmentReifyCanonicalizeByDepths
+  theorem CanonicalStopRouted.environmentReifyCanonicalizeByDepths
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -364,7 +364,7 @@ mutual
             normalizedElements)
 
   /-- Listwise companion. -/
-  def CanonicalStopRoutedList.environmentReifyCanonicalizeByDepths
+  theorem CanonicalStopRoutedList.environmentReifyCanonicalizeByDepths
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -416,7 +416,7 @@ mutual
 end
 
 mutual
-  def CanonicalStopRouted.environmentMapThickenCanonicalizeCommonApexByDepths
+  theorem CanonicalStopRouted.environmentMapThickenCanonicalizeCommonApexByDepths
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : FreeTypeContext}
       {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -563,7 +563,7 @@ mutual
 
   /-- Listwise companion of
   `CanonicalStopRouted.environmentMapThickenCanonicalizeCommonApexByDepths`. -/
-  def CanonicalStopRoutedList.environmentMapThickenCanonicalizeCommonApexByDepths
+  theorem CanonicalStopRoutedList.environmentMapThickenCanonicalizeCommonApexByDepths
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : FreeTypeContext}
       {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -667,7 +667,7 @@ namespace CostStaticRegionNode
 plan descent, membership-certified free-variable routing, semantic-atom
 reification, and keyed canonical congruence.  The declaration governing raw
 collapse may differ from the declaration governing source-frame descent. -/
-noncomputable def reifiedSourceProvenancedAlignment_of_rawAlignment
+theorem reifiedSourceProvenancedAlignment_of_rawAlignment
     {source : CIGSLT} {color : CostStaticColor}
     (collectionDeterministic : CollectionChoiceDeterministic
       source.theory.presentation.presentation.language)
@@ -743,7 +743,7 @@ noncomputable def reifiedSourceProvenancedAlignment_of_rawAlignment
 /-- Route plan stops and membership-certified source variables into one
 target-coloured common-restoration apex. Endpoint thinning equality is
 transported explicitly; it is never treated as definitional equality. -/
-noncomputable def reifiedSourceProvenancedCommonApex_of_rawAlignment
+theorem reifiedSourceProvenancedCommonApex_of_rawAlignment
     {source : CIGSLT} {color : CostStaticColor}
     (collectionDeterministic : CollectionChoiceDeterministic
       source.theory.presentation.presentation.language)
@@ -884,7 +884,7 @@ noncomputable def reifiedSourceProvenancedCommonApex_of_rawAlignment
 
 /-- Same-declaration specialization obtained from equality of raw canonical
 forms. -/
-noncomputable def reifiedSourceProvenancedAlignment_of_canonicalize_eq
+theorem reifiedSourceProvenancedAlignment_of_canonicalize_eq
     {source : CIGSLT} {color : CostStaticColor}
     (collectionDeterministic : CollectionChoiceDeterministic
       source.theory.presentation.presentation.language)

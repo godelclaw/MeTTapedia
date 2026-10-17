@@ -1,5 +1,5 @@
 import Mettapedia.PLN.InferenceControl.PremiseSelection.KNN
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # PLN Bridge for k-NN Premise Selection

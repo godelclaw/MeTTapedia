@@ -135,35 +135,35 @@ theorem oneStep01_transitionEvidence :
 
 theorem oneStep01_walley_lower :
     (truthMarkovDirichletTransitionITVWalley
-      Mettapedia.PLN.WorldModel.PLNWorldModel.IDMPredictiveContext.default
+      Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       oneStep01State (.link bit0 bit1)).lower = 1 / 3 := by
   unfold truthMarkovDirichletTransitionITVWalley
   unfold Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITV
   unfold Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.walleyIDMPredictive
   rw [oneStep01_transitionEvidence]
-  norm_num [Mettapedia.PLN.WorldModel.PLNWorldModel.IDMPredictiveContext.default,
+  norm_num [Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default,
     Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV.fromWalleyIDMPredictive]
 
 theorem oneStep01_walley_upper :
     (truthMarkovDirichletTransitionITVWalley
-      Mettapedia.PLN.WorldModel.PLNWorldModel.IDMPredictiveContext.default
+      Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       oneStep01State (.link bit0 bit1)).upper = 1 := by
   unfold truthMarkovDirichletTransitionITVWalley
   unfold Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITV
   unfold Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.walleyIDMPredictive
   rw [oneStep01_transitionEvidence]
-  norm_num [Mettapedia.PLN.WorldModel.PLNWorldModel.IDMPredictiveContext.default,
+  norm_num [Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default,
     Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV.fromWalleyIDMPredictive]
 
 theorem oneStep01_walley_credibility :
     (truthMarkovDirichletTransitionITVWalley
-      Mettapedia.PLN.WorldModel.PLNWorldModel.IDMPredictiveContext.default
+      Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       oneStep01State (.link bit0 bit1)).credibility = 1 / 3 := by
   unfold truthMarkovDirichletTransitionITVWalley
   unfold Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITV
   unfold Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.walleyIDMPredictive
   rw [oneStep01_transitionEvidence]
-  norm_num [Mettapedia.PLN.WorldModel.PLNWorldModel.IDMPredictiveContext.default,
+  norm_num [Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default,
     Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV.fromWalleyIDMPredictive]
 
 theorem binary_markovTwoStepArrivalMass_example

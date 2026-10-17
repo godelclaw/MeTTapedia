@@ -1,4 +1,5 @@
 import Mettapedia.Machines.BranchLocalNeed.ReferenceSemantics
+import Mettapedia.Machines.BranchLocalNeed.FrontierLaws
 
 /-!
 # Representation changes of the owned Need machine
@@ -636,6 +637,259 @@ namespace Mettapedia.Machines.BranchLocalNeed.NeedReference
 
 variable {Origin Local Resume Rule Value StableFault RetryableFault Effect : Type*}
 
+namespace Heap
+
+/-- Complete cell records at each update, newest first. Unlike a table of
+latest values, this view keeps allocation and retry history distinct. -/
+abbrev FullHistory (Origin Value StableFault : Type*) :=
+  List (CellId × CellRecord Origin Value StableFault)
+
+def lookupFullHistory : FullHistory Origin Value StableFault →
+    CellId → Option (CellRecord Origin Value StableFault)
+  | [], _ => none
+  | (cell, record) :: rest, queried =>
+      if queried = cell then some record else lookupFullHistory rest queried
+
+/-- Materialize only record metadata. Missing earlier allocations and
+duplicate allocations are rejected; no producer or cached value is run. -/
+def fullHistory? : List (HeapUpdate Origin Value StableFault) →
+    Option (FullHistory Origin Value StableFault)
+  | [] => some []
+  | .allocate cell origin :: rest =>
+      match fullHistory? rest, lookupSpine rest cell with
+      | some rows, none => some ((cell, ⟨origin, .suspended⟩) :: rows)
+      | _, _ => none
+  | .cache cell state :: rest =>
+      match fullHistory? rest, lookupSpine rest cell with
+      | some rows, some previous => some ((cell, { previous with cache := state }) :: rows)
+      | _, _ => none
+
+/-- The guard is a computed property of the recorded history, rather than
+an assumed relation to a second evaluator. -/
+def HistoryEncodable (heap : Heap Origin Value StableFault) : Prop :=
+  ∃ rows, fullHistory? heap.spine = some rows
+
+/-- The oldest row of a cell must be suspended. Later rows must retain its
+producer; their cache includes evaluator ownership or the completed result. -/
+def readFullHistory [DecidableEq Origin] : FullHistory Origin Value StableFault →
+    Option (List (HeapUpdate Origin Value StableFault))
+  | [] => some []
+  | (cell, record) :: rest =>
+      match readFullHistory rest with
+      | none => none
+      | some history =>
+          match lookupSpine history cell with
+          | none => match record.cache with
+              | .suspended => some (.allocate cell record.origin :: history)
+              | _ => none
+          | some previous =>
+              if previous.origin = record.origin then
+                some (.cache cell record.cache :: history)
+              else none
+
+theorem fullHistory?_lookup
+    {history : List (HeapUpdate Origin Value StableFault)}
+    {rows : FullHistory Origin Value StableFault}
+    (encoded : fullHistory? history = some rows) (cell : CellId) :
+    lookupFullHistory rows cell = lookupSpine history cell := by
+  induction history generalizing rows with
+  | nil =>
+      simp only [fullHistory?, Option.some.injEq] at encoded
+      subst rows
+      rfl
+  | cons update rest ih =>
+      cases earlier : fullHistory? rest with
+      | none => cases update <;> simp [fullHistory?, earlier] at encoded
+      | some tail =>
+          cases update with
+          | allocate allocated origin =>
+              cases found : lookupSpine rest allocated with
+              | some previous => simp [fullHistory?, earlier, found] at encoded
+              | none =>
+                  simp only [fullHistory?, earlier, found,
+                    Option.some.injEq] at encoded
+                  subst rows
+                  by_cases same : cell = allocated
+                  · simp [lookupFullHistory, lookupSpine, same]
+                  · simp [lookupFullHistory, lookupSpine, same, ih earlier]
+          | cache changed state =>
+              cases found : lookupSpine rest changed with
+              | none => simp [fullHistory?, earlier, found] at encoded
+              | some previous =>
+                  simp only [fullHistory?, earlier, found,
+                    Option.some.injEq] at encoded
+                  subst rows
+                  by_cases same : cell = changed
+                  · simp [lookupFullHistory, lookupSpine, same, found]
+                  · simp [lookupFullHistory, lookupSpine, same, ih earlier]
+
+theorem readFullHistory_fullHistory? [DecidableEq Origin]
+    {history : List (HeapUpdate Origin Value StableFault)}
+    {rows : FullHistory Origin Value StableFault}
+    (encoded : fullHistory? history = some rows) :
+    readFullHistory rows = some history := by
+  induction history generalizing rows with
+  | nil =>
+      simp only [fullHistory?, Option.some.injEq] at encoded
+      subst rows
+      rfl
+  | cons update rest ih =>
+      cases earlier : fullHistory? rest with
+      | none => cases update <;> simp [fullHistory?, earlier] at encoded
+      | some tail =>
+          have decoded := ih earlier
+          cases update with
+          | allocate cell origin =>
+              cases found : lookupSpine rest cell with
+              | some previous => simp [fullHistory?, earlier, found] at encoded
+              | none =>
+                  simp only [fullHistory?, earlier, found,
+                    Option.some.injEq] at encoded
+                  subst rows
+                  simp [readFullHistory, decoded, found]
+          | cache cell state =>
+              cases found : lookupSpine rest cell with
+              | none => simp [fullHistory?, earlier, found] at encoded
+              | some previous =>
+                  simp only [fullHistory?, earlier, found,
+                    Option.some.injEq] at encoded
+                  subst rows
+                  simp [readFullHistory, decoded, found]
+
+theorem fullHistory?_readFullHistory [DecidableEq Origin]
+    {rows : FullHistory Origin Value StableFault}
+    {history : List (HeapUpdate Origin Value StableFault)}
+    (decoded : readFullHistory rows = some history) :
+    fullHistory? history = some rows := by
+  induction rows generalizing history with
+  | nil =>
+      simp only [readFullHistory, Option.some.injEq] at decoded
+      subst history
+      rfl
+  | cons row rest ih =>
+      rcases row with ⟨cell, record⟩
+      cases earlier : readFullHistory rest with
+      | none => simp [readFullHistory, earlier] at decoded
+      | some tail =>
+          have encoded := ih earlier
+          cases found : lookupSpine tail cell with
+          | none =>
+              cases state : record.cache with
+              | suspended =>
+                  simp only [readFullHistory, earlier, found, state,
+                    Option.some.injEq] at decoded
+                  subst history
+                  cases record
+                  simp_all [fullHistory?]
+              | evaluating owner => simp [readFullHistory, earlier, found, state] at decoded
+              | value value => simp [readFullHistory, earlier, found, state] at decoded
+              | stableFault fault => simp [readFullHistory, earlier, found, state] at decoded
+          | some previous =>
+              by_cases same : previous.origin = record.origin
+              · simp only [readFullHistory, earlier, found, same,
+                  if_true, Option.some.injEq] at decoded
+                subst history
+                cases record
+                cases previous
+                simp_all [fullHistory?]
+              · simp [readFullHistory, earlier, found, same] at decoded
+
+theorem empty_historyEncodable :
+    (empty : Heap Origin Value StableFault).HistoryEncodable := ⟨[], rfl⟩
+
+theorem setKnownCache_historyEncodable
+    (heap : Heap Origin Value StableFault) (recorded : heap.Recorded)
+    (valid : heap.HistoryEncodable) (cell : CellId)
+    (record : CellRecord Origin Value StableFault)
+    (found : heap.lookup cell = some record) (state : Cache Value StableFault) :
+    (heap.setKnownCache cell record state).HistoryEncodable := by
+  obtain ⟨rows, encoded⟩ := valid
+  refine ⟨(cell, { record with cache := state }) :: rows, ?_⟩
+  have earlier := (recorded cell).symm.trans found
+  simp [setKnownCache, fullHistory?, encoded, earlier]
+
+theorem allocate?_historyEncodable
+    (heap next : Heap Origin Value StableFault) (recorded : heap.Recorded)
+    (valid : heap.HistoryEncodable) (cell : CellId) (origin : Origin)
+    (allocated : heap.allocate? cell origin = some next) : next.HistoryEncodable := by
+  obtain ⟨rows, encoded⟩ := valid
+  cases found : heap.lookup cell with
+  | some previous => simp [allocate?, found] at allocated
+  | none =>
+      simp only [allocate?, found, Option.some.injEq] at allocated
+      subst next
+      refine ⟨(cell, ⟨origin, .suspended⟩) :: rows, ?_⟩
+      have earlier := (recorded cell).symm.trans found
+      simp [fullHistory?, encoded, earlier]
+
+namespace HistoryControls
+
+private def cell : CellId := ⟨13, [], 0, 0⟩
+
+private def history : List (HeapUpdate Nat Nat Unit) :=
+  [.cache cell (.value 7), .cache cell (.evaluating 9), .allocate cell 1]
+
+theorem complete_records_keep_all_updates :
+    fullHistory? history = some
+      [(cell, ⟨1, .value 7⟩), (cell, ⟨1, .evaluating 9⟩), (cell, ⟨1, .suspended⟩)] :=
+  by decide
+
+theorem retry_keeps_its_evaluation_history :
+    fullHistory? ([.cache cell .suspended, .cache cell (.evaluating 9),
+      .allocate cell 1] : List (HeapUpdate Nat Nat Unit)) = some
+      [(cell, ⟨1, .suspended⟩), (cell, ⟨1, .evaluating 9⟩), (cell, ⟨1, .suspended⟩)] :=
+  by decide
+
+theorem altered_origin_rejected :
+    readFullHistory ([(cell, ⟨2, .value 7⟩), (cell, ⟨1, .suspended⟩)] :
+      FullHistory Nat Nat Unit) = none := by decide
+
+theorem missing_producer_rejected :
+    readFullHistory ([(cell, ⟨1, .value 7⟩)] : FullHistory Nat Nat Unit) = none := by decide
+
+theorem duplicate_allocation_rejected :
+    fullHistory? ([.allocate cell 1, .allocate cell 1] :
+      List (HeapUpdate Nat Nat Unit)) = none := by decide
+
+end HistoryControls
+
+end Heap
+
+/-- The original world primitives preserve the checked full-record image.
+The generic instruction theorem supplies every control case, including
+fault completion, retries, branch alternatives and resampling. -/
+theorem historyWorldInvariant : WorldInstructionInvariant
+    (fun world : World Origin Rule Value StableFault RetryableFault Effect =>
+      world.heap.Recorded ∧ world.heap.HistoryEncodable) := {
+  fork _ _ valid := valid
+  nextEvaluator _ valid := valid
+  record _ _ valid _ := valid
+  cache world cell record state valid found :=
+    ⟨Heap.setKnownCache_recorded _ valid.1 _ _ found _,
+      Heap.setKnownCache_historyEncodable _ valid.1 valid.2 _ _ found _⟩
+  allocate world next origin generation cell valid success := by
+    refine ⟨World.allocate?_heap_recorded _ _ valid.1 _ _ _ success, ?_⟩
+    cases found : world.heap.allocate? (world.freshCell generation) origin with
+    | none => simp [World.allocate?, found] at success
+    | some heap =>
+        simp only [World.allocate?, found, World.record] at success
+        cases Option.some.inj success
+        exact Heap.allocate?_historyEncodable _ _ valid.1 valid.2 _ _ found
+}
+
+theorem runFrontier_historyEncodable
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (fuel : Nat)
+    {states : List (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)}
+    (valid : ∀ machine ∈ states,
+      machine.world.heap.Recorded ∧ machine.world.heap.HistoryEncodable)
+    {next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (member : next ∈ runFrontier spec fuel states) :
+    next.world.heap.Recorded ∧ next.world.heap.HistoryEncodable :=
+  NeedFrontierLaws.runFrontier_preserves spec _
+    (fun initial selected => step_preserves_world historyWorldInvariant spec _ _ initial selected)
+    fuel valid member
+
 namespace World
 
 abbrev RecordedView (Origin Rule Value StableFault RetryableFault Effect : Type*) :=
@@ -748,6 +1002,82 @@ theorem ofRecordedView_recordedView
   exact recordedView_injective _ _ (ofRecordedView_recorded _) recorded
     (recordedView_ofRecordedView _)
 
+/-- A full-record view keeps the same world coordinates and causal support
+as the instruction-history view. It changes only the heap representation. -/
+abbrev FullHistoryView (Origin Rule Value StableFault RetryableFault Effect : Type*) :=
+  LineageId × WorldPath × Heap.FullHistory Origin Value StableFault ×
+    ReceiptGraph Origin Rule Value StableFault RetryableFault Effect × Nat × EvaluatorId
+
+def fullHistoryView?
+    (world : World Origin Rule Value StableFault RetryableFault Effect) :
+    Option (FullHistoryView Origin Rule Value StableFault RetryableFault Effect) :=
+  match Heap.fullHistory? world.heap.spine with
+  | none => none
+  | some rows => some
+      (world.lineage, world.path, rows, world.receipts, world.nextCell, world.nextEvaluator)
+
+/-- Checked data reconstruction supplies no execution or publication rights. -/
+def ofFullHistoryView? [DecidableEq Origin]
+    (view : FullHistoryView Origin Rule Value StableFault RetryableFault Effect) :
+    Option (World Origin Rule Value StableFault RetryableFault Effect) :=
+  match Heap.readFullHistory view.2.2.1 with
+  | none => none
+  | some history => some (ofRecordedView
+      (view.1, view.2.1, history, view.2.2.2.1, view.2.2.2.2.1, view.2.2.2.2.2))
+
+theorem fullHistoryView?_exists
+    (world : World Origin Rule Value StableFault RetryableFault Effect)
+    (valid : world.heap.HistoryEncodable) : ∃ view, world.fullHistoryView? = some view := by
+  obtain ⟨rows, encoded⟩ := valid
+  exact ⟨(world.lineage, world.path, rows, world.receipts, world.nextCell,
+    world.nextEvaluator), by simp [fullHistoryView?, encoded]⟩
+
+theorem ofFullHistoryView?_fullHistoryView? [DecidableEq Origin]
+    {world : World Origin Rule Value StableFault RetryableFault Effect}
+    (recorded : world.heap.Recorded)
+    {view : FullHistoryView Origin Rule Value StableFault RetryableFault Effect}
+    (encoded : world.fullHistoryView? = some view) :
+    ofFullHistoryView? view = some world := by
+  cases rowsFound : Heap.fullHistory? world.heap.spine with
+  | none => simp [fullHistoryView?, rowsFound] at encoded
+  | some rows =>
+      simp only [fullHistoryView?, rowsFound, Option.some.injEq] at encoded
+      subst view
+      simp only [ofFullHistoryView?, Heap.readFullHistory_fullHistory? rowsFound]
+      change some (ofRecordedView world.recordedView) = some world
+      rw [ofRecordedView_recordedView world recorded]
+
+theorem fullHistoryView?_ofFullHistoryView? [DecidableEq Origin]
+    {view : FullHistoryView Origin Rule Value StableFault RetryableFault Effect}
+    {world : World Origin Rule Value StableFault RetryableFault Effect}
+    (decoded : ofFullHistoryView? view = some world) :
+    world.fullHistoryView? = some view := by
+  cases rowsFound : Heap.readFullHistory view.2.2.1 with
+  | none => simp [ofFullHistoryView?, rowsFound] at decoded
+  | some history =>
+      simp only [ofFullHistoryView?, rowsFound, Option.some.injEq] at decoded
+      subst world
+      rcases view with ⟨lineage, path, rows, receipts, nextCell, nextEvaluator⟩
+      simpa only [fullHistoryView?, ofRecordedView] using
+        congrArg
+          (fun result : Option (Heap.FullHistory Origin Value StableFault) =>
+            match result with
+            | none => none
+            | some records => some (lineage, path, records, receipts, nextCell, nextEvaluator))
+          (Heap.fullHistory?_readFullHistory rowsFound)
+
+theorem ofFullHistoryView?_valid [DecidableEq Origin]
+    {view : FullHistoryView Origin Rule Value StableFault RetryableFault Effect}
+    {world : World Origin Rule Value StableFault RetryableFault Effect}
+    (decoded : ofFullHistoryView? view = some world) :
+    world.heap.Recorded ∧ world.heap.HistoryEncodable := by
+  cases rowsFound : Heap.readFullHistory view.2.2.1 with
+  | none => simp [ofFullHistoryView?, rowsFound] at decoded
+  | some history =>
+      simp only [ofFullHistoryView?, rowsFound, Option.some.injEq] at decoded
+      subst world
+      exact ⟨ofRecordedView_recorded _, ⟨_, Heap.fullHistory?_readFullHistory rowsFound⟩⟩
+
 end World
 
 namespace Machine
@@ -771,6 +1101,103 @@ theorem ofRecordedView_recordedView
     ofRecordedView machine.recordedView = machine :=
   recordedView_injective _ _ (ofRecordedView_recorded _) recorded
     (recordedView_ofRecordedView _)
+
+/-- Full-cell history, control stack and work form one finite retained
+configuration. The control's language payload keeps its own representation. -/
+abbrev FullHistoryView (Origin Local Resume Rule Value StableFault RetryableFault Effect : Type*) :=
+  World.FullHistoryView Origin Rule Value StableFault RetryableFault Effect ×
+    Control Local Resume Value StableFault RetryableFault × Work
+
+def fullHistoryView?
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) :
+    Option (FullHistoryView Origin Local Resume Rule Value StableFault RetryableFault Effect) :=
+  machine.world.fullHistoryView?.map fun world => (world, machine.control, machine.work)
+
+def ofFullHistoryView? [DecidableEq Origin]
+    (view : FullHistoryView Origin Local Resume Rule Value StableFault RetryableFault Effect) :
+    Option (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) :=
+  (World.ofFullHistoryView? view.1).map fun world => ⟨world, view.2.1, view.2.2⟩
+
+theorem fullHistoryView?_exists
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (valid : machine.world.heap.HistoryEncodable) :
+    ∃ view, machine.fullHistoryView? = some view := by
+  obtain ⟨world, encoded⟩ := World.fullHistoryView?_exists machine.world valid
+  exact ⟨(world, machine.control, machine.work), by simp [fullHistoryView?, encoded]⟩
+
+theorem ofFullHistoryView?_fullHistoryView? [DecidableEq Origin]
+    {machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (recorded : machine.world.heap.Recorded)
+    {view : FullHistoryView Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (encoded : machine.fullHistoryView? = some view) :
+    ofFullHistoryView? view = some machine := by
+  cases worldFound : machine.world.fullHistoryView? with
+  | none => simp [fullHistoryView?, worldFound] at encoded
+  | some world =>
+      simp only [fullHistoryView?, worldFound, Option.map_some, Option.some.injEq] at encoded
+      subst view
+      simp only [ofFullHistoryView?, World.ofFullHistoryView?_fullHistoryView? recorded worldFound,
+        Option.map_some]
+
+theorem fullHistoryView?_ofFullHistoryView? [DecidableEq Origin]
+    {view : FullHistoryView Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    {machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (decoded : ofFullHistoryView? view = some machine) :
+    machine.fullHistoryView? = some view := by
+  cases worldFound : World.ofFullHistoryView? view.1 with
+  | none => simp [ofFullHistoryView?, worldFound] at decoded
+  | some world =>
+      simp only [ofFullHistoryView?, worldFound, Option.map_some, Option.some.injEq] at decoded
+      subst machine
+      rcases view with ⟨worldView, control, work⟩
+      simp only [fullHistoryView?, World.fullHistoryView?_ofFullHistoryView? worldFound,
+        Option.map_some]
+
+/-- Every retained point of the actual source frontier has a complete,
+checked full-record view, including pending configurations and duplicates. -/
+theorem runFrontier_fullHistory_readback [DecidableEq Origin]
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (fuel : Nat)
+    {states : List (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)}
+    (valid : ∀ machine ∈ states,
+      machine.world.heap.Recorded ∧ machine.world.heap.HistoryEncodable)
+    {next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (member : next ∈ runFrontier spec fuel states) :
+    ∃ view, next.fullHistoryView? = some view ∧ ofFullHistoryView? view = some next := by
+  have current := runFrontier_historyEncodable spec fuel valid member
+  obtain ⟨view, encoded⟩ := fullHistoryView?_exists next current.2
+  exact ⟨view, encoded, ofFullHistoryView?_fullHistoryView? current.1 encoded⟩
+
+/-- Traversal retains the ordered list itself, including every duplicate
+configuration. No set quotient or table of final answers is introduced. -/
+theorem fullHistory_frontier_readback [DecidableEq Origin]
+    (states : List (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+    (valid : ∀ machine ∈ states,
+      machine.world.heap.Recorded ∧ machine.world.heap.HistoryEncodable) :
+    ∃ views, states.mapM fullHistoryView? = some views ∧
+      views.mapM ofFullHistoryView? = some states := by
+  induction states with
+  | nil => exact ⟨[], rfl, rfl⟩
+  | cons first rest ih =>
+      have initial := valid first (List.mem_cons_self)
+      obtain ⟨head, encoded⟩ := fullHistoryView?_exists first initial.2
+      have decoded := ofFullHistoryView?_fullHistoryView? initial.1 encoded
+      obtain ⟨tail, tailEncoded, tailDecoded⟩ :=
+        ih (fun machine member => valid machine (List.mem_cons_of_mem _ member))
+      exact ⟨head :: tail,
+        by simp [List.mapM_cons, encoded, tailEncoded],
+        by simp [List.mapM_cons, decoded, tailDecoded]⟩
+
+theorem runFrontier_fullHistory_frontier_readback [DecidableEq Origin]
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (fuel : Nat)
+    {states : List (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)}
+    (valid : ∀ machine ∈ states,
+      machine.world.heap.Recorded ∧ machine.world.heap.HistoryEncodable) :
+    ∃ views, (runFrontier spec fuel states).mapM fullHistoryView? = some views ∧
+      views.mapM ofFullHistoryView? = some (runFrontier spec fuel states) :=
+  fullHistory_frontier_readback _
+    (fun _ member => runFrontier_historyEncodable spec fuel valid member)
 
 /-- Execute the original instruction through its finite retained-state view.
 Reconstruction expense is not identified with the semantic instruction count. -/

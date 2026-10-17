@@ -143,7 +143,7 @@ theorem rho_sameColorQuoteSide_quotePair_or_canonicalIsVariable
 in the enclosing semantic cospan.  Paired Quotes use the compact hereditary
 elaboration supplied at the smaller measure; a lone Quote can share its
 canonical result only with a bound or free variable. -/
-noncomputable def rho_sameColorQuoteStop_commonRestorationApex
+theorem rho_sameColorQuoteStop_commonRestorationApex
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern

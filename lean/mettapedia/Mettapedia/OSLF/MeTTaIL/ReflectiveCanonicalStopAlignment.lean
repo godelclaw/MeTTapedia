@@ -444,7 +444,7 @@ mutual
   /-- A stopped structural alignment preserves ordinary canonical form when
   every delegated stop does.  This is the eliminator clients use to recover
   the canonical equality carried through a provenance-preserving descent. -/
-  def CanonicalStopAligned.canonicalize_eq
+  theorem CanonicalStopAligned.canonicalize_eq
       (declaration : ReflectivePresentationDecl)
       {stop : Pattern → Pattern → Prop}
       (stopCanonical : ∀ {left right}, stop left right →
@@ -484,7 +484,7 @@ mutual
           (elements.canonicalizeList_eq declaration stopCanonical)
 
   /-- Listwise companion of `CanonicalStopAligned.canonicalize_eq`. -/
-  def CanonicalStopAlignedList.canonicalizeList_eq
+  theorem CanonicalStopAlignedList.canonicalizeList_eq
       (declaration : ReflectivePresentationDecl)
       {stop : Pattern → Pattern → Prop}
       (stopCanonical : ∀ {left right}, stop left right →

@@ -1,5 +1,5 @@
 import Mettapedia.PLN.InferenceControl.PremiseSelection.KNN_PLNBridge
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # Fusion of Premise Selectors via PLN Revision

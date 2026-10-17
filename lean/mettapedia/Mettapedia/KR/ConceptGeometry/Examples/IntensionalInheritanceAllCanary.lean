@@ -205,12 +205,12 @@ theorem positiveExample_semantic_induction_conf_eq_min_capped :
           MembershipConcept.witness
           MembershipConcept.feature))).c =
     min
-      (Mettapedia.PLN.TruthValues.WMPLNJustifiedTruthFunctions.capConf
+      (Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions.capConf
         (Mettapedia.KR.ConceptGeometry.ExtensionalIntensionalDivergence.inheritanceTV
           (MembershipCounts.semanticInterpretation MembershipCounts.positiveExample)
           MembershipConcept.feature
           MembershipConcept.witness).confidence)
-      (Mettapedia.PLN.TruthValues.WMPLNJustifiedTruthFunctions.capConf
+      (Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions.capConf
         (Mettapedia.KR.ConceptGeometry.ExtensionalIntensionalDivergence.inheritanceTV
           (MembershipCounts.semanticInterpretation MembershipCounts.positiveExample)
           MembershipConcept.witness

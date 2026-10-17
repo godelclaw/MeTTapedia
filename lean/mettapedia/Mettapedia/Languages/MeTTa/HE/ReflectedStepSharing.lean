@@ -58,17 +58,21 @@ abbrev d : GroundedDispatch := GroundedDispatch.none
 
 def xFresh : Atom := .var "x#0"
 
+/-- Root instances use the same visible-name discipline as the reflected relation. -/
+private abbrev rootEquationQuery (space : Space) (atom : Atom) (fuel : Nat) :=
+  queryEquationsAvoiding (equationScope [] atom Atom.undefinedType Bindings.empty) space atom fuel
+
 theorem query_same (x : Atom) (hx : x = pickCall ∨ x = a ∨ x = b) :
-    queryEquations space (sameOf x) fuel =
+    rootEquationQuery space (sameOf x) fuel =
       [(pairOf xFresh xFresh, ⟨[("x#0", x)], []⟩)] := by
   rcases hx with rfl | rfl | rfl <;> decide +kernel
 
 theorem query_pick :
-    queryEquations space pickCall fuel = [(a, ⟨[], []⟩), (b, ⟨[], []⟩)] := by
+    rootEquationQuery space pickCall fuel = [(a, ⟨[], []⟩), (b, ⟨[], []⟩)] := by
   decide +kernel
 
 theorem query_pair (x y : Atom) (hx : x = pickCall ∨ x = a ∨ x = b)
-    (hy : y = pickCall ∨ y = a ∨ y = b) : queryEquations space (pairOf x y) fuel = [] := by
+    (hy : y = pickCall ∨ y = a ∨ y = b) : rootEquationQuery space (pairOf x y) fuel = [] := by
   rcases hx with rfl | rfl | rfl <;> rcases hy with rfl | rfl | rfl <;> decide +kernel
 
 theorem apply_pair (x : Atom) (hx : x = pickCall ∨ x = a ∨ x = b) :
@@ -85,7 +89,7 @@ theorem noLoop (x : Atom) (hx : x = pickCall ∨ x = a ∨ x = b) :
 
 /-! ## The reflected relation copies the unevaluated argument -/
 
-theorem symbol_cannot_step (s : String) : ¬ HECanSmallStep space d fuel (.symbol s) := by
+theorem symbol_cannot_step (s : String) {live : List Atom} : ¬ HECanSmallStep space d fuel (.symbol s) live := by
   intro h
   cases h with
   | grounded _ hr =>
@@ -110,17 +114,18 @@ theorem not_grounded (es : List Atom) : ¬ GroundedRedex d (.expression es) := b
 theorem pair_not_equationRedex (x y : Atom) (hx : x = pickCall ∨ x = a ∨ x = b)
     (hy : y = pickCall ∨ y = a ∨ y = b) : ¬ EquationRedex space d fuel (pairOf x y) := by
   rintro ⟨_, _, _, p, hp, _⟩
-  unfold pairOf at hp
-  rw [show (Atom.expression [.symbol "pair", x, y]) = pairOf x y from rfl, query_pair x y hx hy]
-    at hp
+  change p ∈ rootEquationQuery space (pairOf x y) fuel at hp
+  rw [query_pair x y hx hy] at hp
   simp at hp
 
-theorem pick_step (x : Atom) (hx : x = a ∨ x = b) : HESmallStep space d fuel pickCall x := by
+theorem pick_step (x : Atom) (hx : x = a ∨ x = b) {live : List Atom}
+    (h_live : atomListVariables live = []) : HESmallStep space d fuel pickCall x live := by
   have hstep := HESmallStep.equation_match (space := space) (d := d) (fuel := fuel)
-    (es := [.symbol "pick"]) (rhs := x) (qb := ⟨[], []⟩)
+    (live := live) (es := [.symbol "pick"]) (rhs := x) (qb := ⟨[], []⟩)
     (not_special "pick" (by simp) []) (head_not_executable _ (by simp) [])
     (by
-      show (x, (⟨[], []⟩ : Bindings)) ∈ queryEquations space pickCall fuel
+      simp only [equationScope, h_live, List.nil_append]
+      change (x, (⟨[], []⟩ : Bindings)) ∈ rootEquationQuery space pickCall fuel
       rw [query_pick]
       rcases hx with rfl | rfl <;> simp)
     (by decide)
@@ -129,11 +134,11 @@ theorem pick_step (x : Atom) (hx : x = a ∨ x = b) : HESmallStep space d fuel p
 theorem reflected_copies :
     HESmallStep space d fuel (sameOf pickCall) (pairOf pickCall pickCall) := by
   have hstep := HESmallStep.equation_match (space := space) (d := d) (fuel := fuel)
-    (es := [.symbol "same", pickCall]) (rhs := pairOf xFresh xFresh)
+    (live := []) (es := [.symbol "same", pickCall]) (rhs := pairOf xFresh xFresh)
     (qb := ⟨[("x#0", pickCall)], []⟩)
     (not_special "same" (by simp) _) (head_not_executable _ (by simp) _)
     (by
-      show _ ∈ queryEquations space (sameOf pickCall) fuel
+      show _ ∈ rootEquationQuery space (sameOf pickCall) fuel
       rw [query_same pickCall (by simp)]
       simp)
     (noLoop pickCall (by simp))
@@ -150,7 +155,7 @@ theorem reflected_left :
       simp only [List.mem_singleton] at hy
       subst hy
       exact symbol_cannot_step "pair")
-    (pick_step a (by simp))
+    (pick_step a (by simp) (by decide +kernel))
   exact h
 
 theorem reflected_right :
@@ -165,7 +170,7 @@ theorem reflected_right :
       rcases hy with rfl | rfl
       · exact symbol_cannot_step "pair"
       · exact symbol_cannot_step "a")
-    (pick_step b (by simp))
+    (pick_step b (by simp) (by decide +kernel))
   exact h
 
 theorem pair_quiescent (x y : Atom) (hx : x = a ∨ x = b) (hy : y = a ∨ y = b) :
@@ -215,7 +220,7 @@ inductive ArgFirstCan (space : Space) (raw : Atom → Nat → Bool) (fuel : Nat)
       (h_raw : raw op pre.length = false) (h : ArgFirstCan space raw fuel x) :
       ArgFirstCan space raw fuel (.expression (op :: pre ++ x :: post))
   | equation {es : List Atom}
-      (h : ∃ p ∈ queryEquations space (.expression es) fuel, p.2.hasLoop = false) :
+      (h : ∃ p ∈ rootEquationQuery space (.expression es) fuel, p.2.hasLoop = false) :
       ArgFirstCan space raw fuel (.expression es)
 
 /-- **The argument-first successor relation.** The leftmost evaluated argument
@@ -233,7 +238,7 @@ inductive ArgFirstStep (space : Space) (raw : Atom → Nat → Bool) (fuel : Nat
   | equation {op : Atom} {args : List Atom} {rhs : Atom} {qb : Bindings}
       (h_quiet : ∀ (i : Nat) (y : Atom), args[i]? = some y → raw op i = false →
         ¬ ArgFirstCan space raw fuel y)
-      (h_query : (rhs, qb) ∈ queryEquations space (.expression (op :: args)) fuel)
+      (h_query : (rhs, qb) ∈ rootEquationQuery space (.expression (op :: args)) fuel)
       (h_no_loop : qb.hasLoop = false) :
       ArgFirstStep space raw fuel (.expression (op :: args)) (qb.applyFull rhs fuel)
 
@@ -269,7 +274,7 @@ theorem argFirst_symbol_cannot (s : String) : ¬ ArgFirstCan space noRaw fuel (.
 
 theorem argFirst_pick_can : ArgFirstCan space noRaw fuel pickCall :=
   .equation ⟨(a, ⟨[], []⟩), by
-    show (a, (⟨[], []⟩ : Bindings)) ∈ queryEquations space pickCall fuel
+    show (a, (⟨[], []⟩ : Bindings)) ∈ rootEquationQuery space pickCall fuel
     rw [query_pick]; simp, rfl⟩
 
 theorem expr_cons_inj {op op' : Atom} {xs ys : List Atom}
@@ -283,7 +288,7 @@ theorem argFirst_pick_step (x : Atom) (hx : x = a ∨ x = b) :
     (op := .symbol "pick") (args := []) (rhs := x) (qb := ⟨[], []⟩)
     (by intro i y hy; simp at hy)
     (by
-      show (x, (⟨[], []⟩ : Bindings)) ∈ queryEquations space pickCall fuel
+      show (x, (⟨[], []⟩ : Bindings)) ∈ rootEquationQuery space pickCall fuel
       rw [query_pick]
       rcases hx with rfl | rfl <;> simp)
     (by decide)
@@ -309,7 +314,7 @@ theorem argFirst_same_value (x : Atom) (hx : x = a ∨ x = b) :
       | zero => simp at hy; subst hy; exact argFirst_symbol_cannot s
       | succ i => simp at hy)
     (by
-      show _ ∈ queryEquations space (sameOf x) fuel
+      show _ ∈ rootEquationQuery space (sameOf x) fuel
       rw [query_same x (by rcases hx with h | h <;> simp [h])]
       simp)
     (noLoop x (by rcases hx with h | h <;> simp [h]))

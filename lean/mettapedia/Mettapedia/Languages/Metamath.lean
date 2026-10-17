@@ -1,4 +1,5 @@
 import Mettapedia.Languages.Metamath.MMLean4Bridge
+import Mettapedia.Languages.Metamath.CheckingDiscipline
 import Metamath.ModeInterpretationOrder
 import Mettapedia.Languages.Metamath.GroundedSemantics
 import Mettapedia.Languages.Metamath.LanguageDefDSL
@@ -21,6 +22,8 @@ import Mettapedia.Languages.Metamath.InferenceOperationalExprReification
 import Mettapedia.Languages.Metamath.InferenceOperationalSubstitutionReification
 import Mettapedia.Languages.Metamath.InferenceOperationalProjectedImage
 import Mettapedia.Languages.Metamath.InferenceNormalTraceReflection
+import Mettapedia.Languages.Metamath.InferenceNormalFoldReflection
+import Mettapedia.Languages.Metamath.CheckingMachine
 import Mettapedia.Languages.Metamath.InferenceNormalByteLedger
 import Mettapedia.Languages.Metamath.InferenceNormalByteReflection
 import Mettapedia.Languages.Metamath.InferenceNormalProvabilitySoundness

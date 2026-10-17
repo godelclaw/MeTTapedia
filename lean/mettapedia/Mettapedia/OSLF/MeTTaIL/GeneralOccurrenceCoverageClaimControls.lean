@@ -38,7 +38,7 @@ def unlicensedContext : DerivedContexts.OneHoleContext := .substBody .hole Local
 
 #guard !LocalEquationFree.Controls.permissions.sites.permitsContext unlicensedContext
 
-def illicitSite (key : Pattern × RuleReceipt) : Pattern × RuleReceipt :=
+def illicitSite (key : Pattern × RuleReplayRecord) : Pattern × RuleReplayRecord :=
   (key.1, {key.2 with job := (key.2.job.1,
     {key.2.job.2 with address := [0], context := unlicensedContext})})
 

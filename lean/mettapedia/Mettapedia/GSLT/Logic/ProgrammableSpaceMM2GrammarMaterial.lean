@@ -13,6 +13,11 @@ The observation retains current facts, the selected source literal and its
 poll account. Publication supplies an actual dependent material continuation
 and the existing inverse decoder. The row list comes from the structural
 cursor, while source-order witnesses remain distinct from its reverse stack.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  Rows are matched one way and sinks are finalized in
+their authored order, as in the support model (`Space`); the kernel (`Mainline`)
+unifies patterns with stored atoms and writes the instances of every `+` sink first.
 -/
 
 set_option autoImplicit false

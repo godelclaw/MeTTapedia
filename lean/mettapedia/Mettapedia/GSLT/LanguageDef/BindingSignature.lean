@@ -237,4 +237,281 @@ theorem erase_wellScoped {language : LanguageDef} {bound : List TypeExpr}
     (erase term).isWellScopedAt bound.length = true :=
   (erase_typed term).isWellScopedAt
 
+theorem ParameterScope.heq_of_binders_eq {parameter : TermParam}
+    {firstBinders secondBinders : List TypeExpr} {firstType secondType : TypeExpr}
+    (first : ParameterScope parameter firstBinders firstType)
+    (second : ParameterScope parameter secondBinders secondType)
+    (same : firstBinders = secondBinders) : HEq first second := by
+  cases first <;> cases second
+  all_goals first
+    | exact HEq.rfl
+    | have counts := congrArg List.length same
+      simp only [List.length_replicate] at counts
+      cases counts
+      exact HEq.rfl
+
+instance {parameter : TermParam} {binders : List TypeExpr} {type : TypeExpr} :
+    Subsingleton (ParameterScope parameter binders type) :=
+  ⟨fun first second => eq_of_heq (ParameterScope.heq_of_binders_eq first second rfl)⟩
+
+instance {parameter : TermParam} {binders : List TypeExpr} {type : TypeExpr} :
+    DecidableEq (ParameterScope parameter binders type) := fun first second =>
+  .isTrue (Subsingleton.elim first second)
+
+instance {parameters : List TermParam} {arity : List (List TypeExpr × TypeExpr)} :
+    Subsingleton (ParameterScopes parameters arity) where
+  allEq first := by
+    induction first with
+    | nil => intro second; cases second; rfl
+    | cons head tail ih =>
+        intro second
+        cases second with
+        | cons other rest =>
+            have heads := Subsingleton.elim head other
+            have tails := ih rest
+            cases heads
+            cases tails
+            rfl
+
+instance {parameters : List TermParam} {arity : List (List TypeExpr × TypeExpr)} :
+    DecidableEq (ParameterScopes parameters arity) := fun first second =>
+  .isTrue (Subsingleton.elim first second)
+
+/-- A structural comparison projection; it retains all constructor metadata and
+actual binding arities. No raw erasure or semantic equality is consulted. -/
+private def operatorKey {language : LanguageDef} : {sort : TypeExpr} → Operator language sort →
+    ((GrammarRule × List (List TypeExpr × TypeExpr)) ⊕
+      (GrammarRule × String × CollType × TypeExpr × Nat)) ⊕
+      (((TypeExpr × TypeExpr) ⊕ (TypeExpr × TypeExpr × Nat)) ⊕
+        ((TypeExpr × TypeExpr) ⊕ (CollType × TypeExpr × Nat)))
+  | _, .constructor rule _ _ (arity := arity) _ => .inl (.inl (rule, arity))
+  | _, .collectionConstructor rule _ parameter kind element _ count =>
+      .inl (.inr (rule, parameter, kind, element, count))
+  | _, .lambda domain codomain => .inr (.inl (.inl (domain, codomain)))
+  | _, .multiLambda domain codomain count => .inr (.inl (.inr (domain, codomain, count)))
+  | _, .subst domain codomain => .inr (.inr (.inl (domain, codomain)))
+  | _, .collection kind element count => .inr (.inr (.inr (kind, element, count)))
+
+private theorem operatorKey_heq {language : LanguageDef} {firstSort secondSort : TypeExpr}
+    (first : Operator language firstSort) (second : Operator language secondSort)
+    (same : operatorKey first = operatorKey second) : HEq first second := by
+  cases first <;> cases second <;>
+    simp only [operatorKey, Sum.inl.injEq, Sum.inr.injEq, Sum.inl_ne_inr, Sum.inr_ne_inl,
+      Prod.mk.injEq] at same
+  case constructor.constructor firstRow firstMember firstOrdinary firstArity firstScopes
+      secondRow secondMember secondOrdinary secondArity secondScopes =>
+    rcases same with ⟨rfl, rfl⟩
+    have scopes := Subsingleton.elim firstScopes secondScopes
+    cases scopes
+    rfl
+  case collectionConstructor.collectionConstructor =>
+    rcases same with ⟨rfl, rfl, rfl, rfl, rfl⟩
+    rfl
+  case lambda.lambda => rcases same with ⟨rfl, rfl⟩; rfl
+  case multiLambda.multiLambda => rcases same with ⟨rfl, rfl, rfl⟩; rfl
+  case subst.subst => rcases same with ⟨rfl, rfl⟩; rfl
+  case collection.collection => rcases same with ⟨rfl, rfl, rfl⟩; rfl
+
+instance {language : LanguageDef} {sort : TypeExpr} : DecidableEq (Operator language sort) := by
+  letI : DecidableEq (GrammarRule × List (List TypeExpr × TypeExpr)) := inferInstance
+  letI : DecidableEq (GrammarRule × String × CollType × TypeExpr × Nat) := inferInstance
+  letI : DecidableEq (TypeExpr × TypeExpr) := inferInstance
+  letI : DecidableEq (TypeExpr × TypeExpr × Nat) := inferInstance
+  letI : DecidableEq (CollType × TypeExpr × Nat) := inferInstance
+  letI : DecidableEq ((GrammarRule × List (List TypeExpr × TypeExpr)) ⊕
+    (GrammarRule × String × CollType × TypeExpr × Nat)) := inferInstance
+  letI : DecidableEq ((TypeExpr × TypeExpr) ⊕ (TypeExpr × TypeExpr × Nat)) := inferInstance
+  letI : DecidableEq ((TypeExpr × TypeExpr) ⊕ (CollType × TypeExpr × Nat)) := inferInstance
+  exact fun first second => if same : operatorKey first = operatorKey second then
+    .isTrue (eq_of_heq (operatorKey_heq first second same))
+  else .isFalse (fun equal => same (congrArg operatorKey equal))
+
+end Mettapedia.GSLT.LanguageDef.BindingSyntax
+
+
+set_option autoImplicit false
+namespace Mettapedia.GSLT.LanguageDef.BindingSyntax
+open Mettapedia.OSLF.Binding
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+private theorem variableIndex_exists_of_lookup {SortType : Type} :
+    ∀ (bound : List SortType) (index : Nat) (sort : SortType),
+      bound[index]? = some sort → ∃ position : Var bound sort, variableIndex position = index
+  | [], index, _, lookup => by cases index <;> cases lookup
+  | head :: tail, 0, sort, lookup => by
+      cases Option.some.inj lookup
+      exact ⟨.zero, rfl⟩
+  | _ :: tail, index + 1, sort, lookup => by
+      obtain ⟨position, same⟩ := variableIndex_exists_of_lookup tail index sort lookup
+      exact ⟨.succ position, congrArg (· + 1) same⟩
+
+mutual
+/-- Independent authored typing and object formation supply an intrinsic
+term with the exact original source erasure. No type-inference search is
+assumed; ambiguous constructor declarations retain the supplied witness. -/
+theorem typedObject_exists {language : LanguageDef} {bound : List TypeExpr}
+    {source : Pattern} {sort : TypeExpr}
+    (typed : HasType language FreeTypeContext.empty bound source sort)
+    (canonical : source.hasCanonicalBinderMetadata = true)
+    (object : isObjectPattern source = true) :
+    ∃ term : Term (signatureOf language) bound sort, erase term = source := by
+  cases typed with
+  | bvar lookup =>
+      obtain ⟨position, same⟩ := variableIndex_exists_of_lookup _ _ _ lookup
+      exact ⟨.var position, congrArg Pattern.bvar same⟩
+  | fvar lookup => cases lookup
+  | constructor member ordinary arguments =>
+      obtain ⟨arity, scopes, values, readback⟩ :=
+        typedObjectArguments_exists arguments canonical object
+      exact ⟨.op (.constructor _ member ordinary scopes) values,
+        congrArg (Pattern.apply _) readback⟩
+  | @lambda bound binder body domain codomain bodyTyped =>
+      cases binder with
+      | some name => simp [Pattern.hasCanonicalBinderMetadata] at canonical
+      | none =>
+          have bodyCanonical : body.hasCanonicalBinderMetadata = true := by
+            simpa [Pattern.hasCanonicalBinderMetadata] using canonical
+          obtain ⟨value, readback⟩ := typedObject_exists bodyTyped bodyCanonical object
+          exact ⟨.op (.lambda domain codomain) (.cons value .nil), congrArg (Pattern.lambda none) readback⟩
+  | @multiLambda bound count names body domain codomain bodyTyped =>
+      cases names with
+      | cons name names => simp [Pattern.hasCanonicalBinderMetadata] at canonical
+      | nil =>
+          have bodyCanonical : body.hasCanonicalBinderMetadata = true := by
+            simpa [Pattern.hasCanonicalBinderMetadata] using canonical
+          obtain ⟨value, readback⟩ := typedObject_exists bodyTyped bodyCanonical object
+          exact ⟨.op (.multiLambda domain codomain count) (.cons value .nil),
+            congrArg (Pattern.multiLambda count []) readback⟩
+  | subst bodyTyped replacementTyped => cases object
+  | @collection bound kind elements rest elementType elementsTyped =>
+      cases rest with
+      | some name => simp [isObjectPattern] at object
+      | none =>
+          have elementsObject : isObjectPatternList elements = true := by
+            simpa only [isObjectPattern, Option.isNone_none, Bool.true_and] using object
+          obtain ⟨values, readback⟩ := typedObjectElements_exists elementsTyped canonical elementsObject
+          exact ⟨.op (.collection kind elementType elements.length) values,
+            congrArg (fun values => Pattern.collection kind values none) readback⟩
+  | @collectionConstructor bound declaration name kind elements rest elementType member shape elementsTyped =>
+      cases rest with
+      | some name => simp [isObjectPattern] at object
+      | none =>
+          have elementsObject : isObjectPatternList elements = true := by
+            simpa only [isObjectPattern, Option.isNone_none, Bool.true_and] using object
+          obtain ⟨values, readback⟩ := typedObjectElements_exists elementsTyped canonical elementsObject
+          exact ⟨.op (.collectionConstructor declaration member name kind elementType shape elements.length) values,
+            congrArg (fun values => Pattern.collection kind values none) readback⟩
+termination_by sizeOf source
+
+theorem typedObjectArguments_exists {language : LanguageDef} {bound : List TypeExpr}
+    {sources : List Pattern} {parameters : List TermParam}
+    (typed : ArgumentsHaveTypes language FreeTypeContext.empty bound sources parameters)
+    (canonical : Pattern.hasCanonicalBinderMetadataList sources = true)
+    (object : isObjectPatternList sources = true) :
+    ∃ (arity : List (List TypeExpr × TypeExpr)) (scopes : ParameterScopes parameters arity)
+      (arguments : Args (signatureOf language) arity bound),
+      eraseConstructorArguments scopes arguments = sources := by
+  cases typed with
+  | nil => exact ⟨[], .nil, .nil, rfl⟩
+  | @cons bound source sources parameter parameters expected representation expectedType headTyped tailTyped =>
+      have canonicalParts := (Bool.and_eq_true_iff).mp canonical
+      have objectParts := (Bool.and_eq_true_iff).mp object
+      obtain ⟨arity, scopes, rest, restRead⟩ :=
+        typedObjectArguments_exists tailTyped canonicalParts.2 objectParts.2
+      cases parameter with
+      | simple name type =>
+          cases Option.some.inj expectedType
+          obtain ⟨value, readback⟩ := typedObject_exists headTyped canonicalParts.1 objectParts.1
+          exact ⟨([], expected) :: arity, .cons (.simple name expected) scopes,
+            .cons value rest, congrArg₂ List.cons readback restRead⟩
+      | abstractionNamed binder name type =>
+          obtain ⟨body, rfl⟩ :=
+            (matchesParameterRepresentation_abstractionNamed_iff binder name type source).mp representation
+          cases type with
+          | base sort =>
+              cases Option.some.inj expectedType
+              cases headTyped with
+              | lambda bodyTyped =>
+                  have bodyCanonical : body.hasCanonicalBinderMetadata = true := by
+                    simpa [Pattern.hasCanonicalBinderMetadata] using canonicalParts.1
+                  obtain ⟨value, readback⟩ := typedObject_exists bodyTyped bodyCanonical objectParts.1
+                  exact ⟨([.base sort], .base sort) :: arity,
+                    .cons (.abstractionBase binder name sort) scopes, .cons value rest,
+                    congrArg₂ List.cons (congrArg (Pattern.lambda none) readback) restRead⟩
+          | arrow domain codomain =>
+              cases Option.some.inj expectedType
+              cases headTyped with
+              | lambda bodyTyped =>
+                  have bodyCanonical : body.hasCanonicalBinderMetadata = true := by
+                    simpa [Pattern.hasCanonicalBinderMetadata] using canonicalParts.1
+                  obtain ⟨value, readback⟩ := typedObject_exists bodyTyped bodyCanonical objectParts.1
+                  exact ⟨([domain], codomain) :: arity,
+                    .cons (.abstraction binder name domain codomain) scopes, .cons value rest,
+                    congrArg₂ List.cons (congrArg (Pattern.lambda none) readback) restRead⟩
+          | multiBinder domain => cases expectedType
+          | collection kind type => cases expectedType
+      | multiAbstractionNamed names name type =>
+          obtain ⟨count, body, rfl⟩ :=
+            (matchesParameterRepresentation_multiAbstractionNamed_iff names name type source).mp representation
+          cases type with
+          | base sort =>
+              cases Option.some.inj expectedType
+              cases headTyped with
+              | multiLambda bodyTyped =>
+                  have bodyCanonical : body.hasCanonicalBinderMetadata = true := by
+                    simpa [Pattern.hasCanonicalBinderMetadata] using canonicalParts.1
+                  obtain ⟨value, readback⟩ := typedObject_exists bodyTyped bodyCanonical objectParts.1
+                  exact ⟨(List.replicate count (.base sort), .base sort) :: arity,
+                    .cons (.multiAbstractionBase names name sort count) scopes, .cons value rest,
+                    congrArg₂ List.cons (congrArg (Pattern.multiLambda count []) readback) restRead⟩
+          | arrow domain codomain =>
+              cases domain with
+              | multiBinder domain =>
+                  cases Option.some.inj expectedType
+                  cases headTyped with
+                  | multiLambda bodyTyped =>
+                      have bodyCanonical : body.hasCanonicalBinderMetadata = true := by
+                        simpa [Pattern.hasCanonicalBinderMetadata] using canonicalParts.1
+                      obtain ⟨value, readback⟩ := typedObject_exists bodyTyped bodyCanonical objectParts.1
+                      exact ⟨(List.replicate count domain, codomain) :: arity,
+                        .cons (.multiAbstraction names name domain codomain count) scopes, .cons value rest,
+                        congrArg₂ List.cons (congrArg (Pattern.multiLambda count []) readback) restRead⟩
+              | base _ => cases expectedType
+              | arrow _ _ => cases expectedType
+              | collection _ _ => cases expectedType
+          | multiBinder domain => cases expectedType
+          | collection kind type => cases expectedType
+termination_by sizeOf sources
+
+theorem typedObjectElements_exists {language : LanguageDef} {bound : List TypeExpr}
+    {sources : List Pattern} {sort : TypeExpr}
+    (typed : ElementsHaveType language FreeTypeContext.empty bound sources sort)
+    (canonical : Pattern.hasCanonicalBinderMetadataList sources = true)
+    (object : isObjectPatternList sources = true) :
+    ∃ arguments : Args (signatureOf language) (List.replicate sources.length ([], sort)) bound,
+      eraseArguments arguments = sources := by
+  cases typed with
+  | nil => exact ⟨.nil, rfl⟩
+  | cons headTyped tailTyped =>
+      have canonicalParts := (Bool.and_eq_true_iff).mp canonical
+      have objectParts := (Bool.and_eq_true_iff).mp object
+      obtain ⟨value, headRead⟩ := typedObject_exists headTyped canonicalParts.1 objectParts.1
+      obtain ⟨rest, tailRead⟩ := typedObjectElements_exists tailTyped canonicalParts.2 objectParts.2
+      exact ⟨.cons value rest, congrArg₂ List.cons headRead tailRead⟩
+termination_by sizeOf sources
+end
+
+/-- On the independently stated canonical object profile, exact intrinsic
+representability is precisely the original authored sorting judgment. -/
+theorem typedObject_iff_represented {language : LanguageDef} {bound : List TypeExpr}
+    {source : Pattern} {sort : TypeExpr}
+    (canonical : source.hasCanonicalBinderMetadata = true)
+    (object : isObjectPattern source = true) :
+    HasType language FreeTypeContext.empty bound source sort ↔
+      ∃ term : Term (signatureOf language) bound sort, erase term = source := by
+  constructor
+  · exact fun typed => typedObject_exists typed canonical object
+  · rintro ⟨term, rfl⟩
+    exact erase_typed term
 end Mettapedia.GSLT.LanguageDef.BindingSyntax

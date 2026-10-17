@@ -1,7 +1,7 @@
 import Mathlib.Data.Multiset.AddSub
 import Mathlib.Data.Multiset.Count
 import Mettapedia.AutoBooks.Codex.IntuitionisticHOL.ClosedTermQuotient
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 namespace Mettapedia.AutoBooks.Codex.IntuitionisticHOL
 

@@ -1,5 +1,5 @@
-import Mettapedia.CognitiveArchitecture.Consciousness.ArchitecturalIndicators
-import Mettapedia.CognitiveArchitecture.Consciousness.TraceAndImplementation
+import Mettapedia.CogArch.Consciousness.ArchitecturalIndicators
+import Mettapedia.CogArch.Consciousness.TraceAndImplementation
 import Mettapedia.Coalgebra.StreamFinality
 import Lean.Util.CollectAxioms
 import Lean.Compiler.Old

@@ -9,32 +9,39 @@ internal provability operator `box` satisfying the Hilbert–Bernays–Löb
 derivability conditions: necessitation, distribution over implication, and
 `box a → box (box a)`.
 
-Its codes are its sentences, and `run code argument` is the sentence obtained
-by applying the formula `code` to the code of `argument`.  The stage is
-**diagonalizable** when, for every sentence `c`, the predicate
-`x ↦ box (run x x) → c` is represented by a code up to provable equivalence.
-This is the relative point-surjectivity hypothesis of
+A **code map** `run : Code → Code → Sentence` applies a code to (the name of) a
+code.  The stage is **diagonalizable** along it when, for every sentence `c`,
+the predicate `x ↦ box (run x x) → c` is represented by a code up to provable
+equivalence.  This is the relative point-surjectivity hypothesis of
 `Mettapedia.Logic.Diagonal.Lawvere`, restricted to the predicates the argument
-uses, and its diagonal step produces a sentence `L` with `L ↔ (box L → c)`.
+uses, and its diagonal step produces a **Löb sentence** `L` with
+`L ↔ (box L → c)` (`exists_diagonal`).  Codes need not be sentences: for
+arithmetic they are formulas with one free variable.
 
-**Theorems.**
-* `loeb`: in a diagonalizable stage, if `box c → c` is provable then `c` is
-  provable.
-* `goedel_second`: a diagonalizable stage that proves its consistency
-  statement `box ⊥ → ⊥` proves `⊥`.
-* `not_proves_of_implies_consistency`: a consistent diagonalizable stage
-  proves no sentence from which it proves its own consistency statement.  In
-  particular it does not prove the consistency statement of any stronger
-  stage whose consistency it can show implies its own.
+**Theorems.**  Everything below uses only Löb sentences (`HasLoebSentences`),
+however they are obtained: by the diagonal step from a code map, or literally,
+as in a universe of circular sentences.
+* `loeb`: if `box c → c` is provable then `c` is provable.
+* `goedel_second`: a stage that proves its consistency statement `box ⊥ → ⊥`
+  proves `⊥`.
+* `not_proves_of_implies_consistency`: a consistent stage proves no sentence
+  from which it proves its own consistency statement.
+* `proves_beyond_of_proves_consistency`: **zoom-out is strict**.  A stage that
+  proves the consistency statement of a consistent stage with Löb sentences
+  proves something that stage does not.
+* `curry`: **Curry's paradox is Löb's theorem for the identity operator.**  A
+  stage built from a bare Hilbert system (`ofHilbert`, with `box` the identity)
+  in which every sentence `c` has a Curry sentence `L ↔ (L → c)` proves every
+  sentence.
 
 **The stratified escape.**  `Model.consistent`: a model of a stage, given one
 level up, proves that stage consistent.  The stage itself cannot prove it
-when it is diagonalizable.
+when it has Löb sentences.
 
 **Controls.**
 * `truthStage`: the Boolean stage whose `box` is truth itself.  It is
-  consistent and proves its own consistency statement, so it is not
-  diagonalizable: with no diagonal the conclusion fails.
+  consistent and proves its own consistency statement, so it has no Löb
+  sentences: with no diagonal the conclusion fails.
 * `saturatedStage`: the Boolean stage whose `box` holds of every sentence.  It
   is consistent, diagonalizable, and does not prove its consistency
   statement.
@@ -46,7 +53,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.Logic.Diagonal
 
-universe u
+universe u w
 
 /-- A provability stage: Hilbert implication, falsum, and an internal
 provability operator with the Hilbert–Bernays–Löb derivability conditions. -/
@@ -79,10 +86,15 @@ def Consistent : Prop := ¬ stage.Proves stage.falsum
 
 /-- The codes of the stage represent its predicates `x ↦ box (run x x) → c`
 up to provable equivalence. -/
-def Diagonalizable (run : Sentence → Sentence → Sentence) : Prop :=
+def Diagonalizable {Code : Type w} (run : Code → Code → Sentence) : Prop :=
   ∀ c : Sentence,
     Representable run stage.Equivalent
       (diagonalComposite run fun value => stage.imp (stage.box value) c)
+
+/-- **Löb sentences**: for every `c`, a sentence provably equivalent to
+`box L → c`. -/
+def HasLoebSentences : Prop :=
+  ∀ c : Sentence, ∃ sentence, stage.Equivalent sentence (stage.imp (stage.box sentence) c)
 
 variable {stage}
 
@@ -101,16 +113,20 @@ theorem boxMonotone {a b : Sentence} (implication : stage.Proves (stage.imp a b)
 
 /-- **The diagonal sentence.**  A diagonalizable stage has, for every `c`, a
 sentence provably equivalent to `box L → c`. -/
-theorem exists_diagonal {run : Sentence → Sentence → Sentence}
+theorem exists_diagonal {Code : Type w} {run : Code → Code → Sentence}
     (diagonal : stage.Diagonalizable run) (c : Sentence) :
     ∃ sentence, stage.Equivalent sentence (stage.imp (stage.box sentence) c) :=
   exists_fixedPoint run stage.Equivalent _ (diagonal c)
 
-/-- **Löb's theorem.** -/
-theorem loeb {run : Sentence → Sentence → Sentence} (diagonal : stage.Diagonalizable run)
-    {c : Sentence} (reflection : stage.Proves (stage.imp (stage.box c) c)) :
-    stage.Proves c := by
-  obtain ⟨sentence, forward, backward⟩ := exists_diagonal diagonal c
+/-- The diagonal step gives Löb sentences. -/
+theorem Diagonalizable.hasLoebSentences {Code : Type w} {run : Code → Code → Sentence}
+    (diagonal : stage.Diagonalizable run) : stage.HasLoebSentences :=
+  exists_diagonal diagonal
+
+/-- **Löb's theorem**, from Löb sentences. -/
+theorem loeb_of_hasLoebSentences (sentences : stage.HasLoebSentences) {c : Sentence}
+    (reflection : stage.Proves (stage.imp (stage.box c) c)) : stage.Proves c := by
+  obtain ⟨sentence, forward, backward⟩ := sentences c
   have boxForward := boxMonotone forward
   have unfolded :
       stage.Proves (stage.imp (stage.box sentence)
@@ -122,29 +138,55 @@ theorem loeb {run : Sentence → Sentence → Sentence} (diagonal : stage.Diagon
   have proved : stage.Proves sentence := stage.modusPonens backward toC
   exact stage.modusPonens toC (stage.necessitation proved)
 
+/-- **Löb's theorem.** -/
+theorem loeb {Code : Type w} {run : Code → Code → Sentence}
+    (diagonal : stage.Diagonalizable run) {c : Sentence}
+    (reflection : stage.Proves (stage.imp (stage.box c) c)) : stage.Proves c :=
+  loeb_of_hasLoebSentences diagonal.hasLoebSentences reflection
+
+/-- **The second incompleteness theorem**, from Löb sentences. -/
+theorem goedel_second_of_hasLoebSentences (sentences : stage.HasLoebSentences)
+    (provesConsistency : stage.Proves stage.consistency) : stage.Proves stage.falsum :=
+  loeb_of_hasLoebSentences sentences provesConsistency
+
 /-- **The second incompleteness theorem.**  A diagonalizable stage that
 proves its consistency statement proves `⊥`. -/
-theorem goedel_second {run : Sentence → Sentence → Sentence}
+theorem goedel_second {Code : Type w} {run : Code → Code → Sentence}
     (diagonal : stage.Diagonalizable run)
     (provesConsistency : stage.Proves stage.consistency) : stage.Proves stage.falsum :=
   loeb diagonal provesConsistency
 
+/-- A consistent stage with Löb sentences does not prove its consistency
+statement. -/
+theorem not_proves_consistency_of_hasLoebSentences (sentences : stage.HasLoebSentences)
+    (consistent : stage.Consistent) : ¬ stage.Proves stage.consistency :=
+  fun provesConsistency => consistent (goedel_second_of_hasLoebSentences sentences provesConsistency)
+
 /-- A consistent diagonalizable stage does not prove its consistency
 statement. -/
-theorem not_proves_consistency {run : Sentence → Sentence → Sentence}
+theorem not_proves_consistency {Code : Type w} {run : Code → Code → Sentence}
     (diagonal : stage.Diagonalizable run) (consistent : stage.Consistent) :
     ¬ stage.Proves stage.consistency :=
-  fun provesConsistency => consistent (goedel_second diagonal provesConsistency)
+  not_proves_consistency_of_hasLoebSentences diagonal.hasLoebSentences consistent
 
 /-- **The relative form.**  A consistent diagonalizable stage proves no
 sentence from which it proves its own consistency statement: for instance
 the consistency statement of any theory that the stage shows would
 certify its own consistency. -/
-theorem not_proves_of_implies_consistency {run : Sentence → Sentence → Sentence}
+theorem not_proves_of_implies_consistency {Code : Type w} {run : Code → Code → Sentence}
     (diagonal : stage.Diagonalizable run) (consistent : stage.Consistent)
     {statement : Sentence} (implies : stage.Proves (stage.imp statement stage.consistency)) :
     ¬ stage.Proves statement :=
   fun proved => not_proves_consistency diagonal consistent (stage.modusPonens implies proved)
+
+/-- **Zoom-out is strict.**  A stage `next` that proves the consistency
+statement of a consistent stage with Löb sentences proves a sentence that the
+stage does not prove: no stage contains the stage that certifies it. -/
+theorem proves_beyond_of_proves_consistency (sentences : stage.HasLoebSentences)
+    (consistent : stage.Consistent) {next : ProvabilityStage Sentence}
+    (certifies : next.Proves stage.consistency) :
+    ∃ sentence, next.Proves sentence ∧ ¬ stage.Proves sentence :=
+  ⟨stage.consistency, certifies, not_proves_consistency_of_hasLoebSentences sentences consistent⟩
 
 /-! ## The stratified escape -/
 
@@ -162,10 +204,61 @@ theorem Model.consistent (model : Model stage) : stage.Consistent :=
 /-- **Stratification.**  A diagonalizable stage with a model is consistent,
 and its consistency statement is not provable inside it: the consistency
 lives one level up. -/
-theorem stratified {run : Sentence → Sentence → Sentence}
+theorem stratified {Code : Type w} {run : Code → Code → Sentence}
     (diagonal : stage.Diagonalizable run) (model : Model stage) :
     stage.Consistent ∧ ¬ stage.Proves stage.consistency :=
   ⟨model.consistent, not_proves_consistency diagonal model.consistent⟩
+
+/-! ## Curry's paradox: Löb's theorem for the identity operator -/
+
+section Hilbert
+
+variable {Proves : Sentence → Prop} {imp : Sentence → Sentence → Sentence}
+
+/-- The identity `a → a`, from K and S. -/
+theorem hilbert_identity
+    (modusPonens : ∀ {a b : Sentence}, Proves (imp a b) → Proves a → Proves b)
+    (axiomK : ∀ a b : Sentence, Proves (imp a (imp b a)))
+    (axiomS : ∀ a b c : Sentence, Proves (imp (imp a (imp b c)) (imp (imp a b) (imp a c))))
+    (a : Sentence) : Proves (imp a a) :=
+  modusPonens (modusPonens (axiomS a (imp a a) a) (axiomK a (imp a a))) (axiomK a a)
+
+/-- The provability stage of a bare Hilbert system: its operator is the
+identity, so necessitation and the derivability conditions are instances of
+`a → a`. -/
+def ofHilbert (Proves : Sentence → Prop) (imp : Sentence → Sentence → Sentence)
+    (falsum : Sentence)
+    (modusPonens : ∀ {a b : Sentence}, Proves (imp a b) → Proves a → Proves b)
+    (axiomK : ∀ a b : Sentence, Proves (imp a (imp b a)))
+    (axiomS : ∀ a b c : Sentence, Proves (imp (imp a (imp b c)) (imp (imp a b) (imp a c)))) :
+    ProvabilityStage Sentence where
+  Proves := Proves
+  imp := imp
+  falsum := falsum
+  box := id
+  modusPonens := modusPonens
+  axiomK := axiomK
+  axiomS := axiomS
+  necessitation := id
+  boxDistribution a b := hilbert_identity modusPonens axiomK axiomS (imp a b)
+  boxBox a := hilbert_identity modusPonens axiomK axiomS a
+
+end Hilbert
+
+/-- **Curry's paradox.**  In a stage whose operator is the identity, if every
+sentence `c` has a Curry sentence `L`, provably equivalent to `L → c`, then
+every sentence is provable: Löb's theorem with `box = id`, whose reflection
+premise `c → c` is the identity. -/
+theorem curry (identityBox : ∀ a, stage.box a = a)
+    (currySentences : ∀ c : Sentence, ∃ sentence, stage.Equivalent sentence (stage.imp sentence c))
+    (c : Sentence) : stage.Proves c := by
+  have sentences : stage.HasLoebSentences := by
+    intro c
+    obtain ⟨sentence, equivalent⟩ := currySentences c
+    exact ⟨sentence, by rw [identityBox]; exact equivalent⟩
+  refine loeb_of_hasLoebSentences sentences ?_
+  rw [identityBox]
+  exact hilbert_identity stage.modusPonens stage.axiomK stage.axiomS c
 
 end ProvabilityStage
 
@@ -267,6 +360,26 @@ and, as the theorem requires, proves `⊥`. -/
 theorem trivialStage_proves_falsum : trivialStage.Proves trivialStage.falsum :=
   goedel_second (trivialStage_diagonalizable fun code _ => code) trivial
 
+/-- **Control for Curry.**  The truth stage has the identity as its operator and
+is consistent, so some sentence has no Curry sentence: `L ↔ (L → ⊥)` asks for a
+fixed point of Boolean negation. -/
+theorem truthStage_no_curry :
+    ¬ ∀ c : Bool, ∃ sentence, truthStage.Equivalent sentence (truthStage.imp sentence c) :=
+  fun currySentences => truthStage_consistent (curry (fun _ => rfl) currySentences false)
+
+/-- **Positive control for Curry.**  The trivial stage has the identity as its
+operator and Curry sentences, and proves everything. -/
+theorem trivialStage_curry (c : Bool) : trivialStage.Proves c :=
+  curry (fun _ => rfl) (fun _ => ⟨false, trivial, trivial⟩) c
+
 end ProvabilityStage
+
+#print axioms ProvabilityStage.loeb_of_hasLoebSentences
+#print axioms ProvabilityStage.loeb
+#print axioms ProvabilityStage.goedel_second
+#print axioms ProvabilityStage.proves_beyond_of_proves_consistency
+#print axioms ProvabilityStage.curry
+#print axioms ProvabilityStage.stratified
+#print axioms ProvabilityStage.truthStage_no_curry
 
 end Mettapedia.Logic.Diagonal

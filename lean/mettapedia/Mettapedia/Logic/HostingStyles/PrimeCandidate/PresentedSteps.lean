@@ -24,7 +24,9 @@ Three tools for the extensions of the probe.
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -300,4 +302,4 @@ def silentRankOfRules (presentation : ValidatedLanguageDef)
 #print axioms runRules_termStep_lowers_or_runs
 #print axioms silentRankOfRules
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

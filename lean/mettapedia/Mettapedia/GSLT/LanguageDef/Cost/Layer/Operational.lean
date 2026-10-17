@@ -105,7 +105,7 @@ def ofIndexed {Ground : Type uGround}
       .cons ⟨waveReceipt, ⟨head⟩⟩ (ofIndexed tail)
 
 /-- Forget wave data only after retaining the established reachability trace. -/
-def toTrace {Ground : Type uGround} {source target : CostConfig Ground}
+theorem toTrace {Ground : Type uGround} {source target : CostConfig Ground}
     (execution : OperationalSchedule Ground source target) :
     ParallelCostTrace source (receipt execution) target (count execution) :=
   (toIndexed execution).toTrace

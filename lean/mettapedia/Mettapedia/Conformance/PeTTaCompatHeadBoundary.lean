@@ -13,7 +13,10 @@ without extending the formal MORK model.
 The intended execution story is staged:
 
 1. a certified external witness phase on the PeTTa side
-2. a residual source-rule firing phase on actual MORK as it exists
+2. a residual source-rule firing phase in the support model of MORK
+   (`fireSourceRule`); "actual MORK" below names that model, whose firing agrees with
+   the kernel (`Mainline`) on ground stored atoms and ground instances when every `+`
+   sink precedes every `-` sink (`MM2SupportKernelBridge`)
 
 Positive example:
 - tuple membership / generator-style heads can first obtain witnesses through a

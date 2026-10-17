@@ -30,6 +30,30 @@ theorem listNodes_selected (targets : List Pattern) (selected : Nat)
           simp only [List.eraseIdx_cons_succ, listNodes, List.getElem_cons_succ]
           omega
 
+/-- A captured value's weight is its matched target's size, at a supported spine. -/
+theorem captured_weight {rule : RewriteRule} {spec : RuleBindingSpec} {ambient depth : Nat}
+    {site : RulePatternSite} {path : List Nat} {initial final complete : Assignment}
+    {name : String} {target : Pattern}
+    (captured : capture? rule spec ambient depth site path initial name target = some final)
+    (spine : ∀ arguments, arguments? rule spec name site path = some arguments →
+      arguments.all variableArgument = true)
+    (extension : Extends final complete) :
+    nodes target = capturedWeight complete name := by
+  obtain ⟨dependencies, arguments, value, _, occurrence, _, retained, interpreted, _⟩ :=
+    capture_interpretation captured
+  have count := instantiateValue_nodes value ambient depth arguments target (spine arguments occurrence) interpreted
+  have finalLookup := extension _ _ retained
+  simpa only [capturedWeight, finalLookup, Option.map_some, Option.getD_some] using count
+
+theorem rest_spine {rule : RewriteRule} {spec : RuleBindingSpec} {site : RulePatternSite}
+    {path : List Nat} {depth : Nat} {name : String}
+    (supported : restSupported rule spec site path depth (some name) = true) :
+    ∀ arguments, arguments? rule spec name site path = some arguments →
+      arguments.all variableArgument = true := by
+  intro arguments occurrence
+  simp only [restSupported, occurrence, Bool.and_eq_true] at supported
+  exact supported.1
+
 mutual
   theorem matched_nodes {rule : RewriteRule} {spec : RuleBindingSpec} {ambient : Nat}
       {site : RulePatternSite} {path : List Nat} {depth : Nat}
@@ -37,41 +61,52 @@ mutual
       (matched : Matches rule spec ambient site path depth initial pattern target final)
       (supported : checkSide rule spec site path depth pattern = true)
       (extension : Extends final complete) :
-      nodes target = evaluate (capturedWeight complete) pattern := by
+      nodes target + restCount pattern = evaluate (capturedWeight complete) pattern := by
     cases matched with
     | capture captured =>
-        obtain ⟨dependencies, arguments, value, _, occurrence, _, retained, interpreted, _⟩ :=
-          capture_interpretation captured
-        simp only [checkSide, occurrence, Bool.and_eq_true] at supported
-        have count := instantiateValue_nodes value ambient depth arguments target supported.1 interpreted
-        have finalLookup := extension _ _ retained
-        simpa only [evaluate, capturedWeight, finalLookup, Option.map_some, Option.getD_some] using count
-    | bound => rfl
+        have weight := captured_weight captured (fun arguments occurrence => by
+          simp only [checkSide, occurrence, Bool.and_eq_true] at supported
+          exact supported.1) extension
+        simp only [restCount, evaluate, Nat.add_zero, weight]
+    | bound => simp [nodes, restCount, evaluate]
     | constructor arguments =>
         simp only [checkSide] at supported
         have count := matchedArguments_nodes arguments supported extension
-        simp only [nodes, evaluate, count]
+        simp only [nodes, evaluate, restCount]
+        omega
     | binder body =>
         simp only [checkSide] at supported
         have count := matched_nodes body supported extension
-        simp only [nodes, evaluate, count]
+        simp only [nodes, evaluate, restCount]
+        omega
     | binders body =>
         simp only [checkSide] at supported
         have count := matched_nodes body supported extension
-        simp only [nodes, evaluate, count]
+        simp only [nodes, evaluate, restCount]
+        omega
     | substitution _ _ => simp only [checkSide, Bool.false_eq_true] at supported
     | bag _notVector bag =>
         rename_i kind patterns rest targets
         simp only [checkSide, Bool.and_eq_true] at supported
-        have noRest : rest = none := Option.isNone_iff_eq_none.mp supported.1
-        subst rest
-        have count := matchedBag_nodes bag supported.2 extension
-        simp only [nodes, evaluate, Option.toList_none, List.map_nil, List.sum_nil, Nat.add_zero, count]
+        have count := matchedBag_nodes bag supported.2 (by simpa using supported.1) extension
+        simp only [nodes, evaluate, restCount]
+        omega
     | vector arguments =>
-        simp only [checkSide, Option.isNone_none, Bool.true_and] at supported
-        have count := matchedArguments_nodes arguments supported extension
-        simp only [nodes, evaluate, Option.toList_none, List.map_nil, List.sum_nil, Nat.add_zero, count]
-    | vectorRest _ _ => simp only [checkSide, Option.isNone_some, Bool.false_and, Bool.false_eq_true] at supported
+        simp only [checkSide, Bool.and_eq_true] at supported
+        have count := matchedArguments_nodes arguments supported.2 extension
+        simp only [nodes, evaluate, restCount, Option.toList_none, List.map_nil, List.sum_nil, List.length_nil]
+        omega
+    | vectorRest arguments captured =>
+        rename_i patterns name targets middle
+        simp only [checkSide, Bool.and_eq_true] at supported
+        have count := matchedArguments_nodes arguments supported.2 ((GeneralScopedMatch.capture_extends captured).trans extension)
+        have weight := captured_weight captured (rest_spine supported.1) extension
+        have split : listNodes targets = listNodes (targets.take patterns.length) + listNodes (targets.drop patterns.length) := by
+          rw [← listNodes_append, List.take_append_drop]
+        simp only [nodes] at weight
+        simp only [nodes, evaluate, restCount, Option.toList_some, List.map_cons, List.map_nil, List.sum_cons,
+          List.sum_nil, List.length_cons, List.length_nil]
+        omega
   termination_by sizeOf pattern
 
   theorem matchedArguments_nodes {rule : RewriteRule} {spec : RuleBindingSpec} {ambient : Nat}
@@ -80,31 +115,43 @@ mutual
       (matched : Arguments rule spec ambient site path depth initial index patterns targets final)
       (supported : checkArguments rule spec site path depth index patterns = true)
       (extension : Extends final complete) :
-      listNodes targets = evaluateList (capturedWeight complete) patterns := by
+      listNodes targets + restCountList patterns = evaluateList (capturedWeight complete) patterns := by
     cases matched with
-    | nil => rfl
+    | nil => simp [listNodes, restCountList, evaluateList]
     | cons head tail =>
         simp only [checkArguments, Bool.and_eq_true] at supported
         have headCount := matched_nodes head supported.1 (tail.extends.trans extension)
         have tailCount := matchedArguments_nodes tail supported.2 extension
-        simp only [listNodes, evaluateList, headCount, tailCount]
+        simp only [listNodes, evaluateList, restCountList]
+        omega
   termination_by sizeOf patterns
 
   theorem matchedBag_nodes {rule : RewriteRule} {spec : RuleBindingSpec} {ambient : Nat}
       {site : RulePatternSite} {path : List Nat} {depth index : Nat}
       {initial final complete : Assignment} {patterns targets : List Pattern} {kind : CollType}
-      (matched : Bag rule spec ambient site path depth initial index patterns none kind targets final)
+      {rest : Option String}
+      (matched : Bag rule spec ambient site path depth initial index patterns rest kind targets final)
       (supported : checkArguments rule spec site path depth index patterns = true)
+      (restOk : restSupported rule spec site (path ++ [index + patterns.length]) depth rest = true)
       (extension : Extends final complete) :
-      listNodes targets = evaluateList (capturedWeight complete) patterns := by
+      listNodes targets + restCountList patterns + rest.toList.length =
+        evaluateList (capturedWeight complete) patterns + (rest.toList.map (capturedWeight complete)).sum := by
     cases matched with
-    | nil => rfl
+    | nil => simp [listNodes, restCountList, evaluateList]
+    | rest captured =>
+        have weight := captured_weight captured (rest_spine (by simpa using restOk)) extension
+        simp only [nodes] at weight
+        simp only [restCountList, evaluateList, Option.toList_some, List.map_cons, List.map_nil, List.sum_cons,
+          List.sum_nil, List.length_cons, List.length_nil]
+        omega
     | cons selected within head tail =>
         simp only [checkArguments, Bool.and_eq_true] at supported
         have headCount := matched_nodes head supported.1 (tail.extends.trans extension)
-        have tailCount := matchedBag_nodes tail supported.2 extension
-        rw [listNodes_selected targets selected within, headCount, tailCount]
-        rfl
+        have tailCount := matchedBag_nodes tail supported.2
+          (by simpa [List.length_cons, Nat.add_assoc, Nat.add_comm 1] using restOk) extension
+        rw [listNodes_selected targets selected within]
+        simp only [restCountList, evaluateList]
+        omega
   termination_by sizeOf patterns
 end
 
@@ -113,7 +160,7 @@ theorem matchRule_nodes {rule : RewriteRule} {spec : RuleBindingSpec} {ambient :
     (supported : checkSide rule spec .left [] 0 rule.left = true)
     (matched : captured ∈ matchRuleAt rule spec ambient source)
     (extension : Extends captured completed) :
-    nodes source = evaluate (capturedWeight completed) rule.left :=
+    nodes source + restCount rule.left = evaluate (capturedWeight completed) rule.left :=
   matched_nodes (matchRuleAt_iff.mp matched) supported extension
 
 theorem matched_reduct_preserves_nodes {rule : RewriteRule} {spec : RuleBindingSpec}
@@ -123,8 +170,10 @@ theorem matched_reduct_preserves_nodes {rule : RewriteRule} {spec : RuleBindingS
     (extension : Extends captured completed)
     (reduct : reduct? rule spec ambient completed = some target) : nodes source = nodes target := by
   have ready := checkRule_sides rule spec accepted
-  rw [matchRule_nodes ready.2.1 matched extension,
-    instantiate_nodes rule spec ambient .right [] 0 completed rule.right target ready.2.2.1 reduct]
-  exact balanced_evaluate rule.left rule.right ready.2.2.2 (capturedWeight completed)
+  have leftCount := matchRule_nodes ready.2.1 matched extension
+  have rightCount := instantiate_nodes rule spec ambient .right [] 0 completed rule.right target ready.2.2.1 reduct
+  have same := balanced_evaluate rule.left rule.right (balancedSides_balanced ready.2.2.2) (capturedWeight completed)
+  have rests := balancedSides_rest ready.2.2.2
+  omega
 
 end Mettapedia.OSLF.MeTTaIL.GeneralScopedMatchMeasures

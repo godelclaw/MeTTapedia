@@ -49,9 +49,14 @@ def strategyTerm : Strategy → Term
 
 /-- Current source premise profile, refining the canonical structural wire
 and the independently proved first-order contextual syntax admission. -/
+def variableRelationSourceShape (premise : Premise) : Bool :=
+  match premise with
+  | .relationQuery _ arguments => (compileArgumentNames? arguments).isSome
+  | _ => true
+
 def premiseAdmitted (premise : Premise) : Bool :=
   MeTTaILFirstOrderContextualExecution.premiseAdmitted premise &&
-    CanonicalWire.premiseSupported premise
+    (CanonicalWire.premiseSupported premise && variableRelationSourceShape premise)
 
 /-- Projection is partial: unsupported authored data has no successful wire. -/
 def premiseTerm? (premise : Premise) : Option Term :=
@@ -590,7 +595,9 @@ private theorem premise_choices_firstOrder (rows : List ProviderRow) (language :
     seed seedFirstOrder premise (by
       have parts : MeTTaILFirstOrderContextualExecution.premiseAdmitted premise = true ∧
           CanonicalWire.premiseSupported premise = true := by
-        simpa only [premiseAdmitted, Bool.and_eq_true] using admitted
+        have checked := admitted
+        simp only [premiseAdmitted, Bool.and_eq_true] at checked
+        exact ⟨checked.1, checked.2.1⟩
       exact parts.1)
 
 private theorem premisesAt_body_returns (state : State) (strategy : Strategy) (language : LanguageDef)
@@ -639,7 +646,9 @@ private theorem premisesAt_body_returns (state : State) (strategy : Strategy) (l
             have termAdmitted : isMatchCorrectAux condition.term = true := by
               have parts : MeTTaILFirstOrderContextualExecution.premiseAdmitted (.freshness condition) = true ∧
                   CanonicalWire.premiseSupported (.freshness condition) = true := by
-                simpa only [premiseAdmitted, Bool.and_eq_true] using admitted
+                have checked := admitted
+                simp only [premiseAdmitted, Bool.and_eq_true] at checked
+                exact ⟨checked.1, checked.2.1⟩
               exact parts.1
             cases compiled : compilePattern? condition.term with
             | none =>
@@ -697,11 +706,9 @@ private theorem premisesAt_body_returns (state : State) (strategy : Strategy) (l
               simp [premiseAdmitted, CanonicalWire.premiseSupported] at admitted
           | relationQuery relation arguments =>
             have argumentAdmitted : (compileArgumentNames? arguments).isSome = true := by
-              have parts : (compileArgumentNames? arguments).isSome = true ∧
-                  CanonicalWire.premiseSupported (.relationQuery relation arguments) = true := by
-                simpa only [premiseAdmitted, MeTTaILFirstOrderContextualExecution.premiseAdmitted,
-                  Bool.and_eq_true] using admitted
-              exact parts.1
+              have checked := admitted
+              simp only [premiseAdmitted, Bool.and_eq_true] at checked
+              exact checked.2.2
             cases accepted : compileArgumentNames? arguments with
             | none => simp [accepted] at argumentAdmitted
             | some names =>
@@ -713,7 +720,7 @@ private theorem premisesAt_body_returns (state : State) (strategy : Strategy) (l
                   [.string relation, InferenceCettaWire.encodePatterns (names.map Pattern.fvar)] := by
                 simpa only [premiseTerm?, admittedNames, ↓reduceIte, InferenceCettaWire.AuthoredRule.premiseTerm, Option.some.injEq] using first.symm
               subst firstWire
-              let plan : PremisePlan := ⟨relation, names⟩
+              let plan : VariablePremisePlan := ⟨relation, names⟩
               let wire : Term := .application "LCons" [.application "RelationQuery"
                 [.string relation, InferenceCettaWire.encodePatterns (names.map Pattern.fvar)], restWire]
               let caller := premiseEnvironment .premises strategy language types terms contexts fields
@@ -726,9 +733,10 @@ private theorem premisesAt_body_returns (state : State) (strategy : Strategy) (l
               let choicesBound := ("choices", resultsValue choices) :: namesBound
               have sameChoices : choices = premiseStepUsing (engineBasePremises (providerEnv rows))
                   language (recursiveStep rows language depth) seed (.relationQuery relation arguments) := by
-                simpa only [choices, plan, PremisePlan.erase, erased] using
+                simpa only [choices, VariablePremisePlan.toPlan_run,
+                  VariablePremisePlan.toPlan_erase, plan, VariablePremisePlan.erase, erased] using
                   PremisePlan.run_eq_premiseStepUsing (providerEnv rows) language
-                    (recursiveStep rows language depth) seed plan
+                    (recursiveStep rows language depth) seed plan.toPlan
               have namesReturned := RelationPremiseExecution.argument_names_captured_returns selected state names
                 (v "arguments") (by simp [selected, caller, contextEnvironment, ContextHelper.names,
                   applySubst, Subst.lookup])
@@ -767,7 +775,9 @@ private theorem premisesAt_body_returns (state : State) (strategy : Strategy) (l
             have syntaxAdmitted : isMatchCorrectAux source = true ∧ isMatchCorrectAux target = true := by
               have parts : MeTTaILFirstOrderContextualExecution.premiseAdmitted (.congruence source target) = true ∧
                   CanonicalWire.premiseSupported (.congruence source target) = true := by
-                simpa only [premiseAdmitted, Bool.and_eq_true] using admitted
+                have checked := admitted
+                simp only [premiseAdmitted, Bool.and_eq_true] at checked
+                exact ⟨checked.1, checked.2.1⟩
               simpa only [MeTTaILFirstOrderContextualExecution.premiseAdmitted, Bool.and_eq_true] using parts.1
             cases sourceAccepted : compilePattern? source with
             | none =>
@@ -1583,6 +1593,17 @@ theorem observes_contextual_iff_gslt_step (state : State) (strategy : Strategy)
 
 namespace Controls
 
+theorem variable_query_source_admitted :
+    premiseAdmitted (.relationQuery "r" [.fvar "x"]) = true := by decide +kernel
+
+theorem constructed_query_core_admitted :
+    MeTTaILFirstOrderContextualExecution.premiseAdmitted
+      (.relationQuery "r" [.apply "wrap" [.fvar "x"]]) = true := by decide +kernel
+
+theorem constructed_query_source_refused :
+    premiseTerm? (.relationQuery "r" [.apply "wrap" [.fvar "x"]]) = none := by decide +kernel
+
+
 open MeTTaILFirstOrderContextualExecution.Controls
 
 /-- The controls use the sole partial premise adapter. Its unsuccessful case
@@ -1774,6 +1795,10 @@ theorem incorrect_observation_refused (state : State) (strategy : Strategy)
     state [patternsValue incorrect] [] []).mp executed
   have sameAtom := List.cons.inj observed.2.1 |>.1
   exact different (InferenceCettaWire.encodePatterns_injective (CettaWireAtom.encode_injective _ _ sameAtom))
+
+#print axioms variable_query_source_admitted
+#print axioms constructed_query_core_admitted
+#print axioms constructed_query_source_refused
 
 end Controls
 

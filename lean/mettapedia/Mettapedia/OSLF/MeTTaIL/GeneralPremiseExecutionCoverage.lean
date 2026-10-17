@@ -933,6 +933,7 @@ theorem query_outer_expansion_free_within (footprint : List String) (environment
     (tail : Execution.Continuation environment
       (.premise request.context (.relationQuery request.relation request.arguments) request.initial) outer)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : Query.DynamicOutputsFreeWithin footprint environment)
     (initial : goalFreeWithin footprint
       (.premise request.context (.relationQuery request.relation request.arguments) request.initial))
     (query : Query.stateFreeWithin footprint environment request state)
@@ -957,19 +958,20 @@ theorem query_outer_expansion_free_within (footprint : List String) (environment
     · constructor
       · intro task member
         rcases List.mem_singleton.mp member with rfl
-        exact ⟨initial, Query.tick_free_within footprint environment request provider state query, continued⟩
+        exact ⟨initial, Query.tick_free_within footprint environment request provider dynamic state query, continued⟩
       · intro answer member; cases member
 
 theorem expansion_free_within (footprint : List String) (environment : Environment)
     (outer : Execution.Goal)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : Query.DynamicOutputsFreeWithin footprint environment)
     (task : Execution.Task environment outer) (covered : taskFreeWithin footprint task) :
     (∀ next ∈ (Execution.expand environment outer task).tasks, taskFreeWithin footprint next) ∧
     (∀ answer ∈ (Execution.expand environment outer task).answers, resultFreeWithin footprint answer) := by
   cases task with
   | evaluate goal tail => exact evaluate_free_within footprint environment outer goal tail covered.1 covered.2
   | deliver result tail => exact delivered_free_within footprint environment outer result tail covered.1 covered.2
-  | query request state cursor tail => exact query_outer_expansion_free_within footprint environment outer request state cursor tail provider covered.1 covered.2.1 covered.2.2
+  | query request state cursor tail => exact query_outer_expansion_free_within footprint environment outer request state cursor tail provider dynamic covered.1 covered.2.1 covered.2.2
   | rootMatch frame => exact root_match_expansion_free_within footprint environment outer frame covered.1 covered.2
   | targetMatch frame => exact target_match_expansion_free_within footprint environment outer frame covered.1 covered.2.1 covered.2.2.1 covered.2.2.2.1 covered.2.2.2.2
   | scanChildren bound type source limit cursor tail =>
@@ -986,17 +988,19 @@ theorem expansion_free_within (footprint : List String) (environment : Environme
 
 theorem tick_free_within (footprint : List String) (environment : Environment) (goal : Execution.Goal)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : Query.DynamicOutputsFreeWithin footprint environment)
     (state : Execution.State environment goal) (covered : stateFreeWithin footprint environment goal state) :
     stateFreeWithin footprint environment goal (Execution.tick environment goal state) :=
   Scheduler.tick_preserves (taskFreeWithin footprint) (resultFreeWithin footprint)
-    (Execution.expand environment goal) (expansion_free_within footprint environment goal provider) state covered
+    (Execution.expand environment goal) (expansion_free_within footprint environment goal provider dynamic) state covered
 
 theorem run_free_within (footprint : List String) (environment : Environment) (goal : Execution.Goal)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : Query.DynamicOutputsFreeWithin footprint environment)
     (fuel : Nat) (state : Execution.State environment goal) (covered : stateFreeWithin footprint environment goal state) :
     stateFreeWithin footprint environment goal (Execution.run environment goal fuel state) :=
   Scheduler.run_preserves (taskFreeWithin footprint) (resultFreeWithin footprint)
-    (Execution.expand environment goal) (expansion_free_within footprint environment goal provider) fuel state covered
+    (Execution.expand environment goal) (expansion_free_within footprint environment goal provider dynamic) fuel state covered
 
 theorem start_free_within (footprint : List String) (environment : Environment) (goal : Execution.Goal)
     (initial : goalFreeWithin footprint goal) :
@@ -1010,31 +1014,35 @@ theorem start_free_within (footprint : List String) (environment : Environment) 
 theorem run_from_start_free_within (footprint : List String) (environment : Environment)
     (goal : Execution.Goal)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : Query.DynamicOutputsFreeWithin footprint environment)
     (initial : goalFreeWithin footprint goal) (fuel : Nat) :
     stateFreeWithin footprint environment goal
       (Execution.run environment goal fuel (Execution.start environment goal)) :=
-  run_free_within footprint environment goal provider fuel _ (start_free_within footprint environment goal initial)
+  run_free_within footprint environment goal provider dynamic fuel _ (start_free_within footprint environment goal initial)
 
 theorem run_task_free_within (footprint : List String) (environment : Environment)
     (goal : Execution.Goal)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : Query.DynamicOutputsFreeWithin footprint environment)
     (initial : goalFreeWithin footprint goal) (fuel : Nat)
     (task : Execution.Task environment goal)
     (member : task ∈ (Execution.run environment goal fuel (Execution.start environment goal)).agenda) :
     taskFreeWithin footprint task :=
-  (run_from_start_free_within footprint environment goal provider initial fuel).1 task member
+  (run_from_start_free_within footprint environment goal provider dynamic initial fuel).1 task member
 
 theorem run_result_free_within (footprint : List String) (environment : Environment)
     (goal : Execution.Goal)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : Query.DynamicOutputsFreeWithin footprint environment)
     (initial : goalFreeWithin footprint goal) (fuel : Nat)
     (result : Execution.Result environment goal)
     (member : result ∈ (Execution.run environment goal fuel (Execution.start environment goal)).answers) :
     resultFreeWithin footprint result :=
-  (run_from_start_free_within footprint environment goal provider initial fuel).2 result member
+  (run_from_start_free_within footprint environment goal provider dynamic initial fuel).2 result member
 theorem root_run_receipt_free_within (footprint : List String) (environment : Environment)
     (bound : List TypeExpr) (type : TypeExpr) (source target : Pattern) (index : Nat)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : Query.DynamicOutputsFreeWithin footprint environment)
     (covered : ∀ name ∈ source.freeFvarNames, name ∈ footprint) (fuel : Nat)
     (trace : List GeneralScopedMatchMachine.BagChoice) (captured completed : Assignment) (history : List Event)
     (valid : RootFiring environment bound type source index trace captured completed history target)
@@ -1043,11 +1051,12 @@ theorem root_run_receipt_free_within (footprint : List String) (environment : En
         (Execution.start environment (.root bound type source index))).answers) :
     assignmentFreeWithin footprint captured ∧ assignmentFreeWithin footprint completed ∧
       (∀ name ∈ target.freeFvarNames, name ∈ footprint) :=
-  (run_result_free_within footprint environment (.root bound type source index) provider covered fuel _ member).2
+  (run_result_free_within footprint environment (.root bound type source index) provider dynamic covered fuel _ member).2
 
 theorem premises_run_assignment_free_within (footprint : List String) (environment : Environment)
     (context : Context) (premises : List Premise) (initial completed : Assignment) (history : List Event)
     (provider : ∀ row ∈ environment.provider.rows, patternsFreeWithin footprint row.values)
+    (dynamic : Query.DynamicOutputsFreeWithin footprint environment)
     (admitted : admittedFor context.rule context.spec = true)
     (stored : assignmentFreeWithin footprint initial) (fuel : Nat)
     (valid : PremisesHold environment context premises initial completed history)
@@ -1055,10 +1064,11 @@ theorem premises_run_assignment_free_within (footprint : List String) (environme
       (Execution.run environment (.premises context premises initial) fuel
         (Execution.start environment (.premises context premises initial))).answers) :
     assignmentFreeWithin footprint completed :=
-  (run_result_free_within footprint environment (.premises context premises initial) provider
+  (run_result_free_within footprint environment (.premises context premises initial) provider dynamic
     ⟨admitted, stored⟩ fuel _ member).2
 theorem root_run_finite_free_within (environment : Environment) (bound : List TypeExpr)
-    (type : TypeExpr) (source : Pattern) (index fuel : Nat) :
+    (type : TypeExpr) (source : Pattern) (index fuel : Nat)
+    (dynamic : Query.DynamicOutputsFreeWithin (source.freeFvarNames ++ providerFreeNames environment.provider) environment) :
     stateFreeWithin (source.freeFvarNames ++ providerFreeNames environment.provider)
       environment (.root bound type source index)
       (Execution.run environment (.root bound type source index) fuel
@@ -1066,11 +1076,13 @@ theorem root_run_finite_free_within (environment : Environment) (bound : List Ty
   apply run_from_start_free_within
   · exact provider_coverage_mono _ _ environment.provider
       (fun name member => List.mem_append_right _ member) (provider_covered_by_own_names environment.provider)
+  · exact dynamic
   · intro name member
     exact List.mem_append_left _ member
 
 theorem steps_run_finite_free_within (environment : Environment) (bound : List TypeExpr)
-    (type : TypeExpr) (source : Pattern) (limit fuel : Nat) :
+    (type : TypeExpr) (source : Pattern) (limit fuel : Nat)
+    (dynamic : Query.DynamicOutputsFreeWithin (source.freeFvarNames ++ providerFreeNames environment.provider) environment) :
     stateFreeWithin (source.freeFvarNames ++ providerFreeNames environment.provider)
       environment (.steps bound type source limit)
       (Execution.run environment (.steps bound type source limit) fuel
@@ -1078,11 +1090,13 @@ theorem steps_run_finite_free_within (environment : Environment) (bound : List T
   apply run_from_start_free_within
   · exact provider_coverage_mono _ _ environment.provider
       (fun name member => List.mem_append_right _ member) (provider_covered_by_own_names environment.provider)
+  · exact dynamic
   · intro name member
     exact List.mem_append_left _ member
 
 theorem premises_run_finite_free_within (environment : Environment) (context : Context)
     (premises : List Premise) (initial : Assignment) (fuel : Nat)
+    (dynamic : Query.DynamicOutputsFreeWithin (ConditionalEquationExecution.assignmentFreeNames initial ++ providerFreeNames environment.provider) environment)
     (admitted : admittedFor context.rule context.spec = true) :
     stateFreeWithin (ConditionalEquationExecution.assignmentFreeNames initial ++ providerFreeNames environment.provider)
       environment (.premises context premises initial)
@@ -1091,11 +1105,13 @@ theorem premises_run_finite_free_within (environment : Environment) (context : C
   apply run_from_start_free_within
   · exact provider_coverage_mono _ _ environment.provider
       (fun name member => List.mem_append_right _ member) (provider_covered_by_own_names environment.provider)
+  · exact dynamic
   · exact ⟨admitted, assignment_coverage_mono _ _ initial
       (fun name member => List.mem_append_left _ member) (assignment_covered_by_own_names initial)⟩
 
 theorem premise_run_finite_free_within (environment : Environment) (context : Context)
     (premise : Premise) (initial : Assignment) (fuel : Nat)
+    (dynamic : Query.DynamicOutputsFreeWithin (ConditionalEquationExecution.assignmentFreeNames initial ++ providerFreeNames environment.provider) environment)
     (admitted : admittedFor context.rule context.spec = true) :
     stateFreeWithin (ConditionalEquationExecution.assignmentFreeNames initial ++ providerFreeNames environment.provider)
       environment (.premise context premise initial)
@@ -1104,12 +1120,15 @@ theorem premise_run_finite_free_within (environment : Environment) (context : Co
   apply run_from_start_free_within
   · exact provider_coverage_mono _ _ environment.provider
       (fun name member => List.mem_append_right _ member) (provider_covered_by_own_names environment.provider)
+  · exact dynamic
   · exact ⟨admitted, assignment_coverage_mono _ _ initial
       (fun name member => List.mem_append_left _ member) (assignment_covered_by_own_names initial)⟩
 
 theorem quantified_run_finite_free_within (environment : Environment) (context : Context)
     (parameter : String) (body : Premise) (index : Nat) (elements : List Pattern)
     (initial : Assignment) (fuel : Nat)
+    (dynamic : Query.DynamicOutputsFreeWithin (ConditionalEquationExecution.assignmentFreeNames initial ++
+        elements.flatMap Pattern.freeFvarNames ++ providerFreeNames environment.provider) environment)
     (admitted : admittedFor context.rule context.spec = true) :
     stateFreeWithin
       (ConditionalEquationExecution.assignmentFreeNames initial ++
@@ -1120,6 +1139,7 @@ theorem quantified_run_finite_free_within (environment : Environment) (context :
   apply run_from_start_free_within
   · exact provider_coverage_mono _ _ environment.provider
       (fun name member => List.mem_append_right _ member) (provider_covered_by_own_names environment.provider)
+  · exact dynamic
   · refine ⟨admitted, ?_, ?_⟩
     · exact assignment_coverage_mono _ _ initial
         (fun name member => List.mem_append_left _ (List.mem_append_left _ member))
@@ -1129,6 +1149,7 @@ theorem quantified_run_finite_free_within (environment : Environment) (context :
 
 theorem root_run_receipt_finite_free_within (environment : Environment)
     (bound : List TypeExpr) (type : TypeExpr) (source target : Pattern) (index fuel : Nat)
+    (dynamic : Query.DynamicOutputsFreeWithin (source.freeFvarNames ++ providerFreeNames environment.provider) environment)
     (trace : List GeneralScopedMatchMachine.BagChoice) (captured completed : Assignment) (history : List Event)
     (valid : RootFiring environment bound type source index trace captured completed history target)
     (member : Execution.Result.root trace captured completed history target valid ∈
@@ -1137,7 +1158,7 @@ theorem root_run_receipt_finite_free_within (environment : Environment)
     assignmentFreeWithin (source.freeFvarNames ++ providerFreeNames environment.provider) captured ∧
     assignmentFreeWithin (source.freeFvarNames ++ providerFreeNames environment.provider) completed ∧
     (∀ name ∈ target.freeFvarNames, name ∈ source.freeFvarNames ++ providerFreeNames environment.provider) :=
-  ((root_run_finite_free_within environment bound type source index fuel).2 _ member).2
+  ((root_run_finite_free_within environment bound type source index fuel dynamic).2 _ member).2
 
 #print axioms Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.goalFreeWithin
 #print axioms Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.resultFreeWithin

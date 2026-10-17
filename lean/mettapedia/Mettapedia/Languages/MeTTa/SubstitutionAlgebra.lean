@@ -380,3 +380,85 @@ end Insertion
 #print axioms comp_comm_of_disjoint
 
 end Mettapedia.Languages.MeTTa.SubstitutionAlgebra
+
+namespace Mettapedia.Languages.MeTTa.SubstitutionAlgebra
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+/-- Structural first-order substitution reveals precisely the materialized
+values of variables occurring in the observed term. -/
+theorem subst_eq_iff_on_vars (left right : Subst) (atom : Atom) :
+    subst left atom = subst right atom ↔
+      ∀ name ∈ vars atom, subst left (.var name) = subst right (.var name) := by
+  induction atom using Atom.rec
+      (motive_2 := fun atoms =>
+        subst.substList left atoms = subst.substList right atoms ↔
+          ∀ name ∈ vars.varsList atoms,
+            subst left (.var name) = subst right (.var name)) with
+  | symbol name => simp [subst, vars]
+  | var name => simp [vars]
+  | grounded value => simp [subst, vars]
+  | expression atoms ih => simpa only [subst, vars, Atom.expression.injEq] using ih
+  | nil => simp [subst.substList, vars.varsList]
+  | cons atom atoms head tail =>
+    simp only [subst.substList, List.cons.injEq, vars.varsList,
+      List.mem_append, or_imp, forall_and, ← head, ← tail]
+
+/-- Matching one pattern determines every template using only its variables. -/
+theorem subst_template_eq_of_pattern_eq (left right : Subst) (pattern template : Atom)
+    (covered : ∀ name ∈ vars template, name ∈ vars pattern)
+    (same : subst left pattern = subst right pattern) :
+    subst left template = subst right template := by
+  apply (subst_eq_iff_on_vars left right template).mpr
+  intro name member
+  exact (subst_eq_iff_on_vars left right pattern).mp same name (covered name member)
+
+/-- Substitution transports variable occurrences with their full multiplicity. -/
+theorem vars_subst (replacement : Subst) (atom : Atom) :
+    vars (subst replacement atom) =
+      (vars atom).flatMap fun name => vars (subst replacement (.var name)) := by
+  induction atom using Atom.rec
+      (motive_2 := fun atoms =>
+        vars.varsList (subst.substList replacement atoms) =
+          (vars.varsList atoms).flatMap fun name => vars (subst replacement (.var name))) with
+  | symbol name => rfl
+  | var name => simp only [vars, List.flatMap_cons, List.flatMap_nil, List.append_nil]
+  | grounded value => rfl
+  | expression atoms ih => exact ih
+  | nil => rfl
+  | cons atom atoms head tail =>
+    simp only [subst.substList, vars.varsList, List.flatMap_append, head, tail]
+
+theorem vars_subst_eq_nil_iff (replacement : Subst) (atom : Atom) :
+    vars (subst replacement atom) = [] ↔
+      ∀ name ∈ vars atom, vars (subst replacement (.var name)) = [] := by
+  rw [vars_subst]
+  simp only [List.flatMap_eq_nil_iff]
+
+namespace DeterminationControls
+
+def left : Subst := fun name => if name = "x" then some (.symbol "a") else none
+def right : Subst := fun name =>
+  if name = "x" then some (.symbol "a") else
+    if name = "unused" then some (.symbol "different") else none
+
+theorem different_unused_entry_keeps_template :
+    subst left (.expression [.symbol "pair", .var "x", .var "x"]) =
+      subst right (.expression [.symbol "pair", .var "x", .var "x"]) := by
+  apply subst_template_eq_of_pattern_eq left right (.var "x")
+  · simp [vars, vars.varsList]
+  · simp [left, right, subst]
+
+theorem uncovered_variable_is_not_determined :
+    subst left (.var "x") = subst right (.var "x") ∧
+      subst left (.var "unused") ≠ subst right (.var "unused") := by
+  simp [left, right, subst]
+
+theorem absent_and_explicit_self_are_observationally_equal :
+    subst empty (.var "x") = subst (Insertion.single "x" (.var "x")) (.var "x") ∧
+      empty "x" ≠ Insertion.single "x" (.var "x") "x" := by
+  simp [empty, Insertion.single, subst]
+
+end DeterminationControls
+
+end Mettapedia.Languages.MeTTa.SubstitutionAlgebra

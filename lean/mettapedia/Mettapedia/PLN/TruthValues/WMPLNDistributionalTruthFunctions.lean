@@ -11,6 +11,13 @@ noncomputable section
 
 namespace Mettapedia.PLN.TruthValues.WMPLNDistributionalTruthFunctions
 
+open Mettapedia.PLN.Evidence.EvidenceSTVBridge (DeductionSTV)
+open Mettapedia.PLN.TruthValues.PLNWeightTV (WTV)
+open Mettapedia.PLN.TruthValues.PLNIndefiniteTruth (ITV)
+open Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions (TV)
+open Mettapedia.PLN.Evidence.EvidenceClass (BinaryContext)
+open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet (IDMPredictiveContext)
+
 open Mettapedia.PLN.WorldModel.PLNWorldModel
 open Mettapedia.PLN.Evidence.PLNJointEvidence
 open Mettapedia.Logic.WMMarkovCanonical
@@ -31,11 +38,11 @@ regimes into a single overloaded `truthConjunction`-style API.
 Current public regimes:
 
 * Dirichlet-over-worlds joint-evidence views
-  - proposition/link STV views
+  - proposition/link strength-confidence views
   - proposition/link WTV views
   - proposition/link ITV views (exact-invCDF Bayesian 95%)
 * Markov-Dirichlet transition-query views
-  - STV / WTV query views
+  - strength-confidence / WTV query views
   - Walley-IDM interval view
   - predictive chain mass (process-level rather than additive TV)
 * Hypergeometric finite-population conjunction views
@@ -67,26 +74,19 @@ has been retired. The classical mirrored/theorem-backed split now lives in
 distributional sibling.
 -/
 
-abbrev STV := Mettapedia.PLN.Evidence.EvidenceSTVBridge.DeductionSTV
-abbrev WTV := Mettapedia.PLN.TruthValues.PLNWeightTV.WTV
-abbrev ITV := Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV
-abbrev TV := Mettapedia.PLN.TruthValues.WMPLNJustifiedTruthFunctions.TV
-abbrev BinaryContext := Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext
-abbrev IDMPredictiveContext := Mettapedia.PLN.WorldModel.PLNWorldModel.IDMPredictiveContext
 
-abbrev JointEvidence (n : ℕ) := Mettapedia.PLN.Evidence.PLNJointEvidence.JointEvidence n
 
 /-! ## Dirichlet-over-worlds joint-evidence views -/
 
-/-- STV proposition view extracted from the Dirichlet-over-worlds carrier. -/
+/-- DeductionSTV proposition view extracted from the Dirichlet-over-worlds carrier. -/
 noncomputable def truthDirichletOverWorldsPropSTV
-    (κ : ℝ≥0∞) {n : ℕ} (E : JointEvidence n) (A : Fin n) : STV :=
+    (κ : ℝ≥0∞) {n : ℕ} (E : JointEvidence n) (A : Fin n) : DeductionSTV :=
   Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToDeductionSTV κ
     (Mettapedia.PLN.Evidence.PLNJointEvidence.JointEvidence.propEvidence (n := n) (E := E) A)
 
-/-- STV link view extracted from the Dirichlet-over-worlds carrier. -/
+/-- DeductionSTV link view extracted from the Dirichlet-over-worlds carrier. -/
 noncomputable def truthDirichletOverWorldsLinkSTV
-    (κ : ℝ≥0∞) {n : ℕ} (E : JointEvidence n) (A B : Fin n) : STV :=
+    (κ : ℝ≥0∞) {n : ℕ} (E : JointEvidence n) (A B : Fin n) : DeductionSTV :=
   Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToDeductionSTV κ
     (Mettapedia.PLN.Evidence.PLNJointEvidence.JointEvidence.linkEvidence (n := n) (E := E) A B)
 
@@ -138,9 +138,9 @@ noncomputable def truthDirichletOverWorldsLinkITVBayesExact95
 
 /-! ## Markov-Dirichlet transition-query views -/
 
-/-- STV view of a binary transition query over the Markov Dirichlet carrier. -/
+/-- DeductionSTV view of a binary transition query over the Markov Dirichlet carrier. -/
 noncomputable def truthMarkovDirichletTransitionSTV
-    (κ : ℝ≥0∞) {k : ℕ} (W : MarkovTransitionWMState k) (q : MarkovTransitionQuery k) : STV :=
+    (κ : ℝ≥0∞) {k : ℕ} (W : MarkovTransitionWMState k) (q : MarkovTransitionQuery k) : DeductionSTV :=
   Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToDeductionSTV κ
     (Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.evidence
       (State := MarkovTransitionWMState k) (Query := MarkovTransitionQuery k) W q)
@@ -170,7 +170,7 @@ noncomputable def truthMarkovDirichletTransitionITVBayesExact95
     Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.bayesCredibleExact95 ctx W q
 
 /-- Sequential predictive chain mass for Markov-Dirichlet futures.
-This is intentionally not collapsed into STV/WTV because it is a path-mass
+This is intentionally not collapsed into DeductionSTV/WTV because it is a path-mass
 process quantity rather than a single additive query view. -/
 noncomputable def truthMarkovDirichletPredictiveChainMass
     {k : ℕ} (hk : 0 < k)

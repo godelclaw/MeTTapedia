@@ -2390,7 +2390,7 @@ theorem classValueSafeAt
     profile.classSupport.occurrenceAvailable position.1
   obtain ⟨representative, representativeClass⟩ :=
     profile.exists_representative slot
-  letI : Nonempty Fiber := ⟨⟨representative, representativeClass⟩⟩
+  let : Nonempty Fiber := ⟨⟨representative, representativeClass⟩⟩
   have greatest : GreatestCommonSuffix fiberAvailable
       (profile.classSupport.classAvailable slot) := by
     constructor
@@ -2448,7 +2448,7 @@ structure ClassValueSupport
 and the independent root-footprint obligation.  The latter is kept as an
 explicit argument because support safety below an internal binder does not
 entail a root-level suffix. -/
-def classValueSupport
+theorem classValueSupport
     {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {occurrences : List CostRegionOccurrence}

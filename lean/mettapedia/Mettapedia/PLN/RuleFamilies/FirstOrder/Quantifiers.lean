@@ -25,13 +25,12 @@ import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzyDomainQuantifiers
 import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzyDomainQuantifierCanary
 import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzyDomainQuantifierRegression
 import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzyQuantifierSemanticsFin
-import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzyQuantifierAlgorithmTheoremsFin
-import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzyITVBridgeFin
+import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierAlgorithmTheorems
+import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzyITVBridge
 import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierCanary
-import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzyQuantifierWorkedExamplesFin
+import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierWorkedExamples
 import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression
-import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismCanaryFin
-import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegressionFin
+import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismCanary
 
 /-!
 # PLN First-Order Quantifiers
@@ -45,8 +44,9 @@ Complete formalization of PLN first-order quantifiers via:
   `SugenoIntegral`, `ChoquetQuantifierSemantics`,
   `GradedQuantifierSpecialization`,
   `FuzzyQuantifierSemanticsInf`, and `FuzzyDomainQuantifiers`
-- **Finite/counting fuzzy semantics**: now explicitly packaged through
-  `FuzzyQuantifierSemanticsFin` and companion `...Fin` wrappers
+- **Finite/counting fuzzy semantics**: `FuzzyQuantifierSemantics`, with
+  `FuzzyQuantifierSemanticsFin` proving it is the counting instance of the
+  arbitrary-domain semantics
 
 ## Main Exports
 
@@ -71,8 +71,8 @@ Complete formalization of PLN first-order quantifiers via:
   regression interfaces for the shared graded layer itself
 - `domainRestrict` / `eqOnDomain` / `fuzzyAllOnDomainHoldsInf` /
   `choquetAllOnDomainHoldsInf` - fuzzy-domain restriction and relativization layer
-- `FuzzyQuantifierParamsFin` / `nearOneFractionFin` / `nearZeroFractionFin` /
-  `fuzzyExistsScoreFin` - finite/counting fuzzy quantifier instance
+- `FuzzyQuantifierParams` / `nearOneFraction` / `nearZeroFraction` /
+  `fuzzyExistsScore` - finite/counting fuzzy quantifier instance
 - Key theorems:
   - `forAll_is_weakness_of_diagonal` - Goertzel's insight (✅ proven)
   - `forAllEval_mono_weights` - Monotonicity (✅ proven)
@@ -96,8 +96,8 @@ Complete formalization of PLN first-order quantifiers via:
   - `fuzzyExistsOnDomainScoreInf_eq_of_eqOnDomain` /
     `choquetOnDomainScoreInf_eq_of_eqOnDomain` -
     fuzzy-domain "living on the domain" theorem family
-  - `nearOneMassInf_counting_eq_nearOneFractionFin` /
-    `fuzzyIntervalHoldsInf_counting_iff_fuzzyIntervalHoldsFin` -
+  - `nearOneMassInf_counting_eq_nearOneFraction` /
+    `fuzzyIntervalHoldsInf_counting_iff_fuzzyIntervalHolds` -
     exact finite-to-infinitary reduction theorems for the counting instance
   - `canary_exists_deMorgan` / `canary_existential_generalization_ext` /
     `canary_universal_specification_ext` - literature-aligned quantifier canaries
@@ -132,16 +132,8 @@ Complete formalization of PLN first-order quantifiers via:
 - Higher-order / WM / Henkin promotion is still future work after this arbitrary-domain
   FOL and fuzzy-FOL cleanup
 
-## Build
-
-```bash
-cd lean/mettapedia
-lake build Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers
-```
-
 ## References
 
-- Goertzel, "Weakness and Its Quantale"
-- QuantaleWeakness.lean (820+ proven lines)
-- EvidenceQuantale.lean (BinaryEvidence with Frame structure)
+- Goertzel, *Weakness and Its Quantale*
+- `QuantaleWeakness` (the weakness quantale) and `BinaryEvidence` (the evidence frame)
 -/

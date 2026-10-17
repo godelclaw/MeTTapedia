@@ -14,6 +14,12 @@ function, with forward and backward simulations as separate laws.  This module
 joins the two: relations between reduction spans, with four separate lifting
 laws.
 
+`Machine.run_related_of_one` also transports every finite machine run from
+local finite implementations, without a uniform instruction bound. Exact
+events, faults, requests and related residuals are retained. Its resumption,
+completion and regional-divergence laws separate behavioral correspondence
+from the additional resource bounds of `CostSimulation`.
+
 * **The four laws of a state relation** (`SourceForth`, `SourceBack`,
   `TargetForth`, `TargetBack`).  Forth laws carry an event of the first span to
   a related event of the second, back laws lift an event of the second span;
@@ -1054,7 +1060,7 @@ end Stages
 
 end Mettapedia.GSLT.Distinction.SpanTransport
 
-/-! ## Cost simulations as event relations -/
+/-! ## Finite execution transport and cost simulations as event relations -/
 
 namespace Mettapedia.GSLT.Distinction.ProductiveBlocks
 
@@ -1107,6 +1113,167 @@ theorem OutcomeRel.exhausted_inv {residual : Source} {outcome' : Outcome Target 
   | exhausted relatedResidual => exact ⟨_, rfl, relatedResidual⟩
 
 end Outcomes
+
+namespace Machine
+
+/-- Local finite implementations of one inspection compose into a finite
+implementation of every source prefix. Events are exact, and `OutcomeRel`
+retains requests, faults, stuckness and related residuals. No uniform cost
+bound is required; productive divergence and converse transport are separate. -/
+theorem run_related_of_one
+    {Source Target Event Verdict Request : Type}
+    (source : Machine Source Event Verdict Request)
+    (target : Machine Target Event Verdict Request)
+    (related : Source → Target → Prop)
+    (one : ∀ {state state'}, related state state' →
+      ∃ count, (target.run count state').1 = (source.run 1 state).1 ∧
+        OutcomeRel related (source.run 1 state).2 (target.run count state').2)
+    (fuel : Nat) {state : Source} {state' : Target} (retained : related state state') :
+    ∃ count, (target.run count state').1 = (source.run fuel state).1 ∧
+      OutcomeRel related (source.run fuel state).2 (target.run count state').2 := by
+  induction fuel generalizing state state' with
+  | zero => exact ⟨0, rfl, .exhausted retained⟩
+  | succ fuel ih =>
+      obtain ⟨first, eventsFirst, outcomeFirst⟩ := one retained
+      cases found : source.step state with
+      | none =>
+          refine ⟨first, ?_, ?_⟩
+          · simpa only [run, found] using eventsFirst
+          · simpa only [run, found] using outcomeFirst
+      | some transition =>
+          cases transition with
+          | finish verdict | fail faults | call request saved =>
+              refine ⟨first, ?_, ?_⟩
+              · simpa only [run, found] using eventsFirst
+              · simpa only [run, found] using outcomeFirst
+          | silent next =>
+              simp only [run, found] at eventsFirst outcomeFirst
+              obtain ⟨next', reached, relatedNext⟩ := outcomeFirst.exhausted_inv
+              have prefixRun : target.run first state' = ([], .exhausted next') :=
+                Prod.ext eventsFirst reached
+              obtain ⟨later, eventsLater, outcomeLater⟩ := ih relatedNext
+              rw [source.run_succ_silent found]
+              refine ⟨first + later, ?_, ?_⟩
+              · rw [target.run_add, prefixRun]
+                simpa only [continueRun, List.nil_append] using eventsLater
+              · rw [target.run_add, prefixRun]
+                simpa only [continueRun] using outcomeLater
+          | publish events next =>
+              simp only [run, found, List.append_nil] at eventsFirst outcomeFirst
+              obtain ⟨next', reached, relatedNext⟩ := outcomeFirst.exhausted_inv
+              have prefixRun : target.run first state' = (events, .exhausted next') :=
+                Prod.ext eventsFirst reached
+              obtain ⟨later, eventsLater, outcomeLater⟩ := ih relatedNext
+              rw [source.run_succ_publish found]
+              refine ⟨first + later, ?_, ?_⟩
+              · rw [target.run_add, prefixRun]
+                simp only [continueRun]
+                exact congrArg (events ++ ·) eventsLater
+              · rw [target.run_add, prefixRun]
+                simpa only [continueRun] using outcomeLater
+
+/-- A matched exhausted prefix is reused for every following source slice.
+The implementation continues at its actual related residual and appends only
+the later events; it does not restart the prefix. -/
+theorem run_resume_related_of_one
+    {Source Target Event Verdict Request : Type}
+    (source : Machine Source Event Verdict Request)
+    (target : Machine Target Event Verdict Request)
+    (related : Source → Target → Prop)
+    (one : ∀ {state state'}, related state state' →
+      ∃ count, (target.run count state').1 = (source.run 1 state).1 ∧
+        OutcomeRel related (source.run 1 state).2 (target.run count state').2)
+    {state saved : Source} {state' : Target} {first : Nat} {events : List Event}
+    (retained : related state state')
+    (paused : source.run first state = (events, .exhausted saved)) :
+    ∃ count saved', target.run count state' = (events, .exhausted saved') ∧
+      related saved saved' ∧
+      ∀ second, ∃ later,
+        (target.run (count + later) state').1 = events ++ (source.run second saved).1 ∧
+        OutcomeRel related (source.run second saved).2
+          (target.run (count + later) state').2 := by
+  obtain ⟨count, eventEq, outcome⟩ :=
+    source.run_related_of_one target related one first retained
+  rw [paused] at eventEq outcome
+  obtain ⟨saved', endpoint, retainedSaved⟩ := outcome.exhausted_inv
+  have reached : target.run count state' = (events, .exhausted saved') :=
+    Prod.ext eventEq endpoint
+  refine ⟨count, saved', reached, retainedSaved, ?_⟩
+  intro second
+  obtain ⟨later, laterEvents, laterOutcome⟩ :=
+    source.run_related_of_one target related one second retainedSaved
+  refine ⟨later, ?_, ?_⟩
+  · rw [target.run_add, reached]
+    simp only [continueRun]
+    exact congrArg (events ++ ·) laterEvents
+  · rw [target.run_add, reached]
+    simpa only [continueRun] using laterOutcome
+
+/-- Finite implementations in both directions give exactly the same completed
+event lists and verdicts, without requiring equal transition counts. -/
+theorem finished_iff_of_one
+    {Source Target Event Verdict Request : Type}
+    (source : Machine Source Event Verdict Request)
+    (target : Machine Target Event Verdict Request)
+    (related : Source → Target → Prop)
+    (forth : ∀ {state state'}, related state state' →
+      ∃ count, (target.run count state').1 = (source.run 1 state).1 ∧
+        OutcomeRel related (source.run 1 state).2 (target.run count state').2)
+    (back : ∀ {state state'}, related state state' →
+      ∃ count, (source.run count state).1 = (target.run 1 state').1 ∧
+        OutcomeRel related (source.run count state).2 (target.run 1 state').2)
+    {state : Source} {state' : Target} (retained : related state state')
+    (events : List Event) (verdict : Verdict) :
+    (∃ fuel, source.run fuel state = (events, .finished verdict)) ↔
+      ∃ count, target.run count state' = (events, .finished verdict) := by
+  constructor
+  · rintro ⟨fuel, completed⟩
+    obtain ⟨count, eventEq, outcome⟩ :=
+      source.run_related_of_one target related forth fuel retained
+    rw [completed] at eventEq outcome
+    have terminal : (target.run count state').2 = .finished verdict := by
+      generalize (target.run count state').2 = stopped at outcome ⊢
+      cases outcome
+      rfl
+    exact ⟨count, Prod.ext eventEq terminal⟩
+  · rintro ⟨count, completed⟩
+    have reverse : ∀ {right left}, related left right →
+        ∃ fuel, (source.run fuel left).1 = (target.run 1 right).1 ∧
+          OutcomeRel (fun r l => related l r) (target.run 1 right).2
+            (source.run fuel left).2 := by
+      intro right left linked
+      obtain ⟨fuel, eventEq, outcome⟩ := back linked
+      exact ⟨fuel, eventEq, outcome.symm⟩
+    obtain ⟨fuel, eventEq, outcome⟩ :=
+      target.run_related_of_one source (fun right left => related left right)
+        reverse count retained
+    rw [completed] at eventEq outcome
+    have terminal : (source.run fuel state).2 = .finished verdict := by
+      generalize (source.run fuel state).2 = stopped at outcome ⊢
+      cases outcome
+      rfl
+    exact ⟨fuel, Prod.ext eventEq terminal⟩
+
+/-- Exact local boundary transport reflects divergence within an interaction
+region, including the distinction between stuckness and endless execution. -/
+theorem divergesWithin_reflected_of_one
+    {Source Target Event Verdict Request : Type}
+    (source : Machine Source Event Verdict Request)
+    (target : Machine Target Event Verdict Request)
+    (related : Source → Target → Prop)
+    (one : ∀ {state state'}, related state state' →
+      ∃ count, (target.run count state').1 = (source.run 1 state).1 ∧
+        OutcomeRel related (source.run 1 state).2 (target.run count state').2)
+    {state : Source} {state' : Target} (retained : related state state')
+    (diverges : target.DivergesWithin state') : source.DivergesWithin state := by
+  intro fuel
+  obtain ⟨count, _, outcomes⟩ := source.run_related_of_one target related one fuel retained
+  obtain ⟨residual, remains⟩ := diverges count
+  rw [remains] at outcomes
+  obtain ⟨residual', same, _⟩ := outcomes.symm.exhausted_inv
+  exact ⟨residual', same⟩
+
+end Machine
 
 namespace CostSimulation
 

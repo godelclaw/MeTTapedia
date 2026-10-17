@@ -279,7 +279,7 @@ noncomputable def rhoHereditaryCostLayer_ofRestorationObligations
     rhoHereditaryStaticNormalizer_preservesReflectiveSupport_path
 
 /-- The cost layer object laws over the restoration obligations. -/
-noncomputable def rhoHereditaryCompactOpenNormalizerLaws_ofRestorationObligations
+theorem rhoHereditaryCompactOpenNormalizerLaws_ofRestorationObligations
     (alignedApex : ∀ color, RhoAlignedPlanStops.HaveCommonRestoration color)
     (collapsingApex :
       ∀ color, RhoCollapsingPlanStops.HaveCommonRestoration color)

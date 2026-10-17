@@ -4,6 +4,9 @@ import Mathlib.Data.List.Dedup
 import Mathlib.Logic.Relation
 import Mathlib.Data.List.Forall2
 import Mathlib.Algebra.BigOperators.Group.List.Basic
+import Mathlib.Logic.Function.Iterate
+import Mathlib.Data.List.Iterate
+import Mettapedia.Algebra.WorkSpan
 
 /-!
 # Dependency analysis over a finite catalogue
@@ -46,7 +49,7 @@ namespace Mettapedia.Algorithms.WellFoundedServices
 
 open Relation Mettapedia.Order
 
-universe u v
+universe u v w
 
 /-- A catalogue of items, each listing the items it depends on. -/
 structure Catalogue (α : Type u) where
@@ -829,6 +832,41 @@ theorem depFold_eq (A : c.Acyclic) {β : Type v} (f : α → List β → β) (x 
     rfl
   · rw [dif_neg hx, if_neg hx]
 
+/-- Interpret a dependency fold through an algebra morphism, retaining the
+listed dependency occurrences and their order. -/
+theorem depFold_map (A : c.Acyclic) {β : Type v} {γ : Type w}
+    (combine : α → List β → β) (combine' : α → List γ → γ)
+    (project : β → γ)
+    (hom : ∀ item values, project (combine item values) =
+      combine' item (values.map project)) (item : α) :
+    project (c.depFold A combine item) = c.depFold A combine' item := by
+  induction acc_of_accCode (A.accCode item) with
+  | intro item _ ih =>
+      rw [c.depFold_eq A combine item, c.depFold_eq A combine' item, hom]
+      by_cases admitted : item ∈ c.items
+      · simp only [if_pos admitted, List.map_map]
+        congr 1
+        exact List.map_congr_left fun child member => ih child ⟨admitted, member⟩
+      · simp only [if_neg admitted, List.map_nil]
+
+
+/-- An algebra that preserves a property yields that property for every
+computed dependency fold, including items outside the catalogue. -/
+theorem depFold_preserves (A : c.Acyclic) {β : Type v}
+    (combine : α → List β → β) (property : β → Prop)
+    (closed : ∀ item values, (∀ value ∈ values, property value) → property (combine item values))
+    (item : α) : property (c.depFold A combine item) := by
+  induction acc_of_accCode (A.accCode item) with
+  | intro item _ ih =>
+      rw [c.depFold_eq A combine item]
+      apply closed
+      by_cases admitted : item ∈ c.items
+      · simp only [if_pos admitted]
+        intro value member
+        obtain ⟨child, included, rfl⟩ := List.mem_map.mp member
+        exact ih child ⟨admitted, included⟩
+      · simp only [if_neg admitted, List.not_mem_nil, false_implies, implies_true]
+
 /-- **Incremental rebuild is sound.** If a fold changes only at changed items,
 its values outside the affected set do not change. -/
 theorem depFold_eq_of_not_affected (A : c.Acyclic) {β : Type v} (f₁ f₂ : α → List β → β)
@@ -952,6 +990,338 @@ def Graph.catalogue (graph : Graph) : Catalogue Nat where
 def Graph.combine (graph : Graph) (node : Nat) (children : List Nat) : Nat :=
   (graph.rows node).length + children.sum
 
+open Mettapedia.Algebra
+
+/-- Local equation occurrences plus the independent dependency values.
+The second coordinate is source dependency depth. It becomes an execution
+span only under a separately established independence/realization contract. -/
+def Graph.sourceCombine (graph : Graph) (node : Nat) (children : List WorkSpan) : WorkSpan :=
+  WorkSpan.sequential
+    ⟨(graph.rows node).length, if (graph.rows node).isEmpty then 0 else 1⟩
+    (WorkSpan.parallelAll children)
+
+/-- Scalar depth interpretation, independent of the paired fold. Empty
+nodes have depth zero; every applicable equation contributes one layer. -/
+def Graph.depthCombine (graph : Graph) (node : Nat) (children : List Nat) : Nat :=
+  (if (graph.rows node).isEmpty then 0 else 1) + children.foldr max 0
+
+/-- Interpret the existing occurrence catalogue once in the work/depth algebra. -/
+def Graph.sourceValuation (graph : Graph) (acyclic : graph.catalogue.Acyclic) : Nat → WorkSpan :=
+  graph.catalogue.depFold acyclic graph.sourceCombine
+
+def Graph.dependencyDepth (graph : Graph) (acyclic : graph.catalogue.Acyclic) : Nat → Nat :=
+  graph.catalogue.depFold acyclic graph.depthCombine
+
+@[simp] theorem Graph.sourceCombine_work (graph : Graph) (node : Nat) (children : List WorkSpan) :
+    (graph.sourceCombine node children).work = graph.combine node (children.map WorkSpan.work) := by
+  simp only [sourceCombine, WorkSpan.sequential, WorkSpan.parallelAll_work, combine]
+
+@[simp] theorem Graph.sourceCombine_depth (graph : Graph) (node : Nat) (children : List WorkSpan) :
+    (graph.sourceCombine node children).span = graph.depthCombine node (children.map WorkSpan.span) := by
+  simp only [sourceCombine, WorkSpan.sequential, WorkSpan.parallelAll_span, depthCombine]
+
+/-- The paired interpretation counts every referring occurrence, even when
+an analyzer memoizes a shared successor. -/
+theorem Graph.sourceValuation_work (graph : Graph) (acyclic : graph.catalogue.Acyclic) (node : Nat) :
+    (graph.sourceValuation acyclic node).work =
+      graph.catalogue.unfoldingWork acyclic (fun item => (graph.rows item).length) node := by
+  exact graph.catalogue.depFold_map acyclic graph.sourceCombine graph.combine WorkSpan.work
+    (fun item values => graph.sourceCombine_work item values) node
+
+theorem Graph.sourceValuation_depth (graph : Graph) (acyclic : graph.catalogue.Acyclic) (node : Nat) :
+    (graph.sourceValuation acyclic node).span = graph.dependencyDepth acyclic node := by
+  exact graph.catalogue.depFold_map acyclic graph.sourceCombine graph.depthCombine WorkSpan.span
+    (fun item values => graph.sourceCombine_depth item values) node
+
+theorem Graph.sourceValuation_eq (graph : Graph) (acyclic : graph.catalogue.Acyclic) (node : Nat)
+    (admitted : node ∈ graph.catalogue.items) :
+    graph.sourceValuation acyclic node = graph.sourceCombine node
+      ((graph.catalogue.deps node).map (graph.sourceValuation acyclic)) := by
+  change graph.catalogue.depFold acyclic graph.sourceCombine node =
+    graph.sourceCombine node ((graph.catalogue.deps node).map
+      (graph.catalogue.depFold acyclic graph.sourceCombine))
+  rw [graph.catalogue.depFold_eq, if_pos admitted]
+
+theorem Graph.dependencyDepth_eq (graph : Graph) (acyclic : graph.catalogue.Acyclic) (node : Nat)
+    (admitted : node ∈ graph.catalogue.items) :
+    graph.dependencyDepth acyclic node = graph.depthCombine node
+      ((graph.catalogue.deps node).map (graph.dependencyDepth acyclic)) := by
+  change graph.catalogue.depFold acyclic graph.depthCombine node =
+    graph.depthCombine node ((graph.catalogue.deps node).map
+      (graph.catalogue.depFold acyclic graph.depthCombine))
+  rw [graph.catalogue.depFold_eq, if_pos admitted]
+
+/-- A closed source catalogue independently derives the paired result;
+the computed cache is not an assumption of this judgment. -/
+theorem Graph.sourceValuation_derives (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (closed : graph.catalogue.DependencyClosed) (node : Nat)
+    (admitted : node ∈ graph.catalogue.items) :
+    graph.catalogue.FoldDerivation graph.sourceCombine node (graph.sourceValuation acyclic node) :=
+  graph.catalogue.depFold_has_derivation acyclic graph.sourceCombine closed node admitted
+
+private theorem parallelAll_depth_le_work (children : List WorkSpan)
+    (within : ∀ child ∈ children, child.span ≤ child.work) :
+    (WorkSpan.parallelAll children).span ≤ (WorkSpan.parallelAll children).work := by
+  induction children with
+  | nil => exact Nat.le_refl _
+  | cons head tail ih =>
+      change max head.span (WorkSpan.parallelAll tail).span ≤
+        head.work + (WorkSpan.parallelAll tail).work
+      apply max_le
+      · exact (within head List.mem_cons_self).trans (Nat.le_add_right _ _)
+      · exact (ih (fun child member => within child (List.mem_cons_of_mem _ member))).trans
+          (Nat.le_add_left _ _)
+
+theorem Graph.sourceCombine_depth_le_work (graph : Graph) (node : Nat) (children : List WorkSpan)
+    (within : ∀ child ∈ children, child.span ≤ child.work) :
+    (graph.sourceCombine node children).span ≤ (graph.sourceCombine node children).work := by
+  have localBound : (if (graph.rows node).isEmpty then 0 else 1) ≤ (graph.rows node).length := by
+    cases rows : graph.rows node <;> simp
+  exact Nat.add_le_add localBound (parallelAll_depth_le_work children within)
+
+theorem Graph.dependencyDepth_le_unfoldingWork (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (node : Nat) : graph.dependencyDepth acyclic node ≤
+      graph.catalogue.unfoldingWork acyclic (fun item => (graph.rows item).length) node := by
+  have bound := graph.catalogue.depFold_preserves acyclic graph.sourceCombine
+    (fun value => value.span ≤ value.work)
+    (fun item values within => graph.sourceCombine_depth_le_work item values within) node
+  change (graph.sourceValuation acyclic node).span ≤
+    (graph.sourceValuation acyclic node).work at bound
+  rw [graph.sourceValuation_depth, graph.sourceValuation_work] at bound
+  exact bound
+
+/-- One physical occurrence row. A terminal row is the unit `⟨1, 1⟩`. A
+successor occurrence sequences that unit before the child valuation.
+Duplicate successors stay in order; they are not deduplicated. -/
+def Row.workDepth (row : Row) : Option WorkSpan → WorkSpan
+  | none => ⟨1, 1⟩
+  | some value =>
+    match row.successor with
+    | none => ⟨1, 1⟩
+    | some _ => WorkSpan.sequential ⟨1, 1⟩ value
+
+/-- Consume successor valuations in row order. A terminal row takes none. -/
+def rowAccounts : List Row → List WorkSpan → List WorkSpan
+  | [], _ => []
+  | row :: rows, children =>
+    match row.successor with
+    | none => row.workDepth none :: rowAccounts rows children
+    | some _ =>
+      match children with
+      | [] => row.workDepth none :: rowAccounts rows []
+      | child :: rest => row.workDepth (some child) :: rowAccounts rows rest
+
+/-- The number of successor occurrences, with multiplicity. -/
+def successorCount (rows : List Row) : Nat :=
+  (rows.filterMap Row.successor).length
+
+/-- Ordered row aggregate. Its `span` is source dependency depth of these
+rows, not a live worker schedule. `WorkSpan.parallelAll` combines the
+alternative occurrence rows. -/
+def prefixFold (rows : List Row) (children : List WorkSpan) : WorkSpan :=
+  WorkSpan.parallelAll (rowAccounts rows children)
+
+private theorem max_add_left (a b c : Nat) : max (a + b) (a + c) = a + max b c := by
+  rcases Nat.le_total b c with h | h
+  · rw [Nat.max_eq_right h, Nat.max_eq_right (Nat.add_le_add_left h a)]
+  · rw [Nat.max_eq_left h, Nat.max_eq_left (Nat.add_le_add_left h a)]
+
+private theorem rowAccounts_work (rows : List Row) (children : List WorkSpan) :
+    ((rowAccounts rows children).map WorkSpan.work).sum =
+      rows.length + ((children.take (successorCount rows)).map WorkSpan.work).sum := by
+  induction rows generalizing children with
+  | nil => simp [rowAccounts, successorCount]
+  | cons row rows ih =>
+    cases row with
+    | mk _ successor =>
+      cases successor with
+      | none =>
+        simp only [rowAccounts, Row.workDepth, successorCount, List.filterMap_cons,
+          List.map_cons, List.sum_cons, List.length_cons, ih]
+        omega
+      | some _ =>
+        cases children with
+        | nil =>
+          simp only [rowAccounts, Row.workDepth, successorCount, List.filterMap_cons,
+            List.map_cons, List.sum_cons, List.length_cons, List.take_nil, List.map_nil,
+            List.sum_nil, ih]
+          omega
+        | cons child children =>
+          simp only [rowAccounts, Row.workDepth, WorkSpan.sequential, successorCount,
+            List.filterMap_cons, List.map_cons, List.sum_cons, List.length_cons,
+            List.take_succ_cons, ih]
+          omega
+
+private theorem rowAccounts_terminal (physical : Nat) (rows : List Row)
+    (children : List WorkSpan) :
+    rowAccounts (⟨physical, none⟩ :: rows) children = ⟨1, 1⟩ :: rowAccounts rows children := rfl
+
+private theorem rowAccounts_linked (physical index : Nat) (rows : List Row)
+    (child : WorkSpan) (children : List WorkSpan) :
+    rowAccounts (⟨physical, some index⟩ :: rows) (child :: children) =
+      WorkSpan.sequential ⟨1, 1⟩ child :: rowAccounts rows children := rfl
+
+private theorem successorCount_terminal (physical : Nat) (rows : List Row) :
+    successorCount (⟨physical, none⟩ :: rows) = successorCount rows := by
+  simp [successorCount]
+
+private theorem successorCount_linked (physical index : Nat) (rows : List Row) :
+    successorCount (⟨physical, some index⟩ :: rows) = successorCount rows + 1 := by
+  simp [successorCount, List.length_cons]
+
+private theorem layer_nil : (if ([] : List Row).isEmpty then (0 : Nat) else 1) = 0 := by
+  rw [List.isEmpty_nil]; rfl
+
+private theorem layer_cons (row : Row) (rows : List Row) :
+    (if (row :: rows).isEmpty then (0 : Nat) else 1) = 1 := by
+  rw [List.isEmpty_cons]; rfl
+
+private theorem rowAccounts_span (rows : List Row) (children : List WorkSpan)
+    (aligned : children.length = successorCount rows) :
+    ((rowAccounts rows children).map WorkSpan.span).foldr max 0 =
+      (if rows.isEmpty then 0 else 1) +
+        ((children.map WorkSpan.span).foldr max 0) := by
+  induction rows generalizing children with
+  | nil =>
+    rw [layer_nil, rowAccounts]
+    cases children with
+    | nil => simp
+    | cons _ _ => simp [successorCount, List.length_cons] at aligned
+  | cons row rows ih =>
+    rw [layer_cons]
+    cases row with
+    | mk physical successor =>
+      cases successor with
+      | none =>
+        have alignedTail : children.length = successorCount rows := by
+          simpa only [successorCount_terminal] using aligned
+        rw [rowAccounts_terminal, List.map_cons, List.foldr_cons, ih children alignedTail]
+        cases rows with
+        | nil =>
+          rw [layer_nil]
+          cases children with
+          | nil =>
+            simp only [List.map_nil, List.foldr_nil]
+            rw [Nat.max_eq_left (Nat.zero_le _)]
+          | cons _ _ => simp [successorCount] at alignedTail
+        | cons _ _ =>
+          rw [layer_cons, Nat.max_eq_right (Nat.le_add_right 1 _)]
+      | some index =>
+        cases children with
+        | nil =>
+          simp only [successorCount_linked, List.length_nil] at aligned
+          omega
+        | cons child children =>
+          have alignedTail : children.length = successorCount rows := by
+            simpa only [successorCount_linked, List.length_cons, Nat.succ_inj] using aligned
+          rw [rowAccounts_linked, List.map_cons, List.foldr_cons, ih children alignedTail]
+          change max (1 + child.span)
+            ((if rows.isEmpty then 0 else 1) +
+              (List.map WorkSpan.span children).foldr max 0) =
+            1 + (List.map WorkSpan.span (child :: children)).foldr max 0
+          cases rows with
+          | nil =>
+            rw [layer_nil]
+            cases children with
+            | nil =>
+              simp only [List.map_cons, List.map_nil, List.foldr_cons, List.foldr_nil]
+              rw [Nat.max_eq_left (Nat.zero_le _), Nat.max_eq_left (Nat.zero_le _)]
+            | cons _ _ => simp [successorCount, List.length_cons] at alignedTail
+          | cons _ _ =>
+            rw [layer_cons, List.map_cons, List.foldr_cons, max_add_left]
+
+/-- A complete node’s ordered row accounts are the paired source combine.
+Successor multiplicity is retained: `children` has one entry per successor
+occurrence, not one entry per distinct child. -/
+theorem prefixFold_eq_sourceCombine (graph : Graph) (node : Nat) (children : List WorkSpan)
+    (aligned : children.length = successorCount (graph.rows node)) :
+    prefixFold (graph.rows node) children = graph.sourceCombine node children := by
+  ext
+  · rw [prefixFold, WorkSpan.parallelAll_work, rowAccounts_work, ← aligned, List.take_length,
+      Graph.sourceCombine_work, Graph.combine]
+  · rw [prefixFold, WorkSpan.parallelAll_span,
+      rowAccounts_span (graph.rows node) children aligned, Graph.sourceCombine_depth,
+      Graph.depthCombine]
+
+/-- The same row aggregate is the independent source valuation. Its work is
+`unfoldingWork` and its span is `dependencyDepth`, because those are the
+projections of `sourceValuation`. -/
+theorem prefixFold_sourceValuation (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (node : Nat) (admitted : node ∈ graph.catalogue.items) :
+    prefixFold (graph.rows node)
+        ((graph.catalogue.deps node).map (graph.sourceValuation acyclic)) =
+      graph.sourceValuation acyclic node := by
+  have aligned :
+      ((graph.catalogue.deps node).map (graph.sourceValuation acyclic)).length =
+        successorCount (graph.rows node) := by
+    simp only [Graph.catalogue, successorCount, List.length_map]
+  rw [prefixFold_eq_sourceCombine graph node _ aligned]
+  exact (graph.sourceValuation_eq acyclic node admitted).symm
+
+/-- Retained readout. `.unfolding` is the scalar runner's work sum.
+`.depth` is source dependency depth alone. `.pair` keeps both coordinates
+of one `WorkSpan` aggregate. -/
+inductive Metric where
+  | unfolding
+  | depth
+  | pair
+  deriving DecidableEq, Repr
+
+/-- One occurrence account joined into the retained cursor.
+`.unfolding` adds work and leaves the depth cursor unchanged, which is the
+scalar addition. `.pair` is `WorkSpan.parallel` with that account.
+`.depth` keeps the running source-depth maximum in the work coordinate.
+A finished node is still `prefixFold`, read by `prefixFold_sourceValuation`. -/
+@[reducible] def metricCombine (metric : Metric) (accumulated account : WorkSpan) : WorkSpan :=
+  match metric with
+  | .unfolding => ⟨accumulated.work + account.work, accumulated.span⟩
+  | .depth => ⟨max accumulated.work account.span, accumulated.span⟩
+  | .pair => ⟨accumulated.work + account.work, max accumulated.span account.span⟩
+
+theorem metricCombine_unfolding (accumulated account : WorkSpan) :
+    metricCombine .unfolding accumulated account =
+      ⟨accumulated.work + account.work, accumulated.span⟩ := rfl
+
+theorem metricCombine_depth (accumulated account : WorkSpan) :
+    metricCombine .depth accumulated account =
+      ⟨max accumulated.work account.span, accumulated.span⟩ := rfl
+
+theorem metricCombine_pair (accumulated account : WorkSpan) :
+    metricCombine .pair accumulated account =
+      ⟨accumulated.work + account.work, max accumulated.span account.span⟩ := rfl
+
+/-- Appending one occurrence account is `WorkSpan.parallel`. The unfolding
+projection adds that account's work and does not read its span. -/
+theorem metricCombine_oneRow (accounts : List WorkSpan) (account : WorkSpan) :
+    metricCombine .pair (WorkSpan.parallelAll accounts) account =
+      WorkSpan.parallelAll (accounts ++ [account]) ∧
+      (metricCombine .unfolding (WorkSpan.parallelAll accounts) account).work =
+        (WorkSpan.parallelAll (accounts ++ [account])).work := by
+  have extended :
+      WorkSpan.parallelAll (accounts ++ [account]) =
+        WorkSpan.parallel (WorkSpan.parallelAll accounts) account := by
+    rw [WorkSpan.parallelAll_append, WorkSpan.parallelAll_cons, WorkSpan.parallelAll_nil,
+      WorkSpan.parallel_zero_right]
+  refine ⟨?_, ?_⟩
+  · rw [extended]
+    ext <;> simp [WorkSpan.parallel]
+  · rw [extended, metricCombine_unfolding]
+    simp [WorkSpan.parallel]
+
+/-- The retained cursor advances one account of a `prefixFold` aggregate.
+The finished aggregate is the `prefixFold_sourceValuation` specification. -/
+theorem metricCombine_prefixFold (rows : List Row) (children : List WorkSpan)
+    (account : WorkSpan) :
+    metricCombine .pair (prefixFold rows children) account =
+      WorkSpan.parallelAll (rowAccounts rows children ++ [account]) ∧
+      (metricCombine .unfolding (prefixFold rows children) account).work =
+        (prefixFold rows children).work + account.work := by
+  have one := metricCombine_oneRow (rowAccounts rows children) account
+  refine ⟨?_, ?_⟩
+  · rw [prefixFold]
+    exact one.1
+  · rw [metricCombine_unfolding]
+
 abbrev Graph.Derived (graph : Graph) : Nat → Nat → Prop :=
   graph.catalogue.FoldDerivation graph.combine
 
@@ -988,7 +1358,46 @@ structure Frame where
   node : Nat
   row : Nat := 0
   total : Nat := 0
+  depth : Nat := 0
   deriving DecidableEq, Repr
+
+/-- Work and source-depth coordinates carried by one unfinished frame. -/
+def Frame.cursor (frame : Frame) : WorkSpan :=
+  ⟨frame.total, frame.depth⟩
+
+/-- Accept one occurrence account. `.unfolding` is the scalar row step. -/
+def Frame.advanceBy (frame : Frame) (metric : Metric) (account : WorkSpan) : Frame :=
+  let joined := metricCombine metric frame.cursor account
+  { frame with row := frame.row + 1, total := joined.work, depth := joined.span }
+
+theorem Frame.advanceBy_unfolding (frame : Frame) (account : WorkSpan) :
+    frame.advanceBy .unfolding account =
+      { frame with row := frame.row + 1, total := frame.total + account.work } := rfl
+
+theorem Frame.cursor_advanceBy (frame : Frame) (metric : Metric) (account : WorkSpan) :
+    (frame.advanceBy metric account).cursor = metricCombine metric frame.cursor account := rfl
+
+theorem Frame.advanceBy_prefixFold (frame : Frame) (rows : List Row) (children : List WorkSpan)
+    (account : WorkSpan) (aligned : frame.cursor = prefixFold rows children) :
+    (frame.advanceBy .pair account).cursor =
+      WorkSpan.parallelAll (rowAccounts rows children ++ [account]) := by
+  rw [Frame.cursor_advanceBy, aligned]
+  exact (metricCombine_prefixFold rows children account).1
+
+/-- A fresh frame has an empty cursor. Push and initialization use it. -/
+@[reducible] def freshFrame (node : Nat) : Frame := { node := node }
+
+theorem freshFrame_cursor (node : Nat) : (freshFrame node).cursor = ⟨0, 0⟩ := rfl
+
+theorem Frame.advanceBy_node (frame : Frame) (metric : Metric) (account : WorkSpan) :
+    (frame.advanceBy metric account).node = frame.node := rfl
+
+/-- Source-depth coordinate of one linked row. `.unfolding` ignores it. -/
+@[reducible] def rowSpan (metric : Metric) (childDepth : Nat) : Nat :=
+  match metric with
+  | .unfolding => 1
+  | .depth => 1
+  | .pair => 1 + childDepth
 
 inductive Color where
   | fresh | active | done
@@ -1007,13 +1416,14 @@ structure State where
   ticks : Nat := 0
   indexVisits : Nat := 0
   status : Status := .pending
+  depthMemo : Nat → Nat := fun _ => 0
 
 def init (graph : Graph) (root : Nat) : Option State :=
   if root < graph.nodes.length then
     some {
       root := root
       capacity := graph.nodes.length
-      stack := [⟨root, 0, 0⟩]
+      stack := [freshFrame root]
       colors := Function.update (fun _ => .fresh) root .active
       memo := fun _ => 0 }
   else none
@@ -1026,11 +1436,12 @@ def finish (state : State) (frame : Frame) (rest : List Frame) : State :=
     stack := rest
     colors := Function.update state.colors frame.node .done
     memo := Function.update state.memo frame.node frame.total
+    depthMemo := Function.update state.depthMemo frame.node frame.depth
     status := if rest.isEmpty then .bound else .pending }
 
 def push (state : State) (child : Nat) : State :=
   { state with
-    stack := ⟨child, 0, 0⟩ :: state.stack
+    stack := freshFrame child :: state.stack
     colors := Function.update state.colors child .active }
 
 def advance (state : State) (frame : Frame) (rest : List Frame)
@@ -1038,14 +1449,46 @@ def advance (state : State) (frame : Frame) (rest : List Frame)
   { state with
     stack := { frame with row := frame.row + 1, total := frame.total + contribution } :: rest }
 
+theorem advance_unfolding (state : State) (frame : Frame) (rest : List Frame)
+    (account : WorkSpan) :
+    advance state frame rest account.work =
+      { state with stack := frame.advanceBy .unfolding account :: rest } := rfl
+
+/-- `.unfolding` is definitionally `maximum < total + contribution`. -/
+@[reducible] def rowOverflow (metric : Metric) (maximum : Nat) (frame : Frame)
+    (contribution span : Nat) : Prop :=
+  match metric with
+  | .unfolding => maximum < frame.total + contribution
+  | .depth => maximum < max frame.total contribution
+  | .pair => maximum < frame.total + contribution ∨ maximum < max frame.depth span
+
+instance (metric : Metric) (maximum : Nat) (frame : Frame) (contribution span : Nat) :
+    Decidable (rowOverflow metric maximum frame contribution span) := by
+  unfold rowOverflow
+  cases metric <;> infer_instance
+
+/-- `.unfolding` is definitionally `advance` by the work contribution. -/
+@[reducible] def commitRow (metric : Metric) (state : State) (frame : Frame) (rest : List Frame)
+    (contribution span : Nat) : State :=
+  match metric with
+  | .unfolding => advance state frame rest contribution
+  | .depth =>
+      { state with stack := frame.advanceBy .depth ⟨contribution, contribution⟩ :: rest }
+  | .pair =>
+      { state with stack := frame.advanceBy .pair ⟨contribution, span⟩ :: rest }
+
+/-- One row. `.unfolding` keeps the scalar overflow test and `advance`.
+`.depth` keeps the running maximum. `.pair` joins both coordinates. -/
 def addRow (maximum : Nat) (state : State) (frame : Frame) (rest : List Frame)
-    (contribution : Nat) : State :=
-  if maximum < frame.total + contribution then fail state .overflow
-  else advance state frame rest contribution
+    (contribution : Nat) (metric : Metric := .unfolding) (span : Nat := 1) : State :=
+  if rowOverflow metric maximum frame contribution span then fail state .overflow
+  else commitRow metric state frame rest contribution span
 
 /-- The scalar control order of the native graph service. Array access and
-counter charging have their own memory and account interpretations. -/
-def step (graph : Graph) (maximum : Nat) (state : State) : State :=
+counter charging have their own memory and account interpretations.
+`metric` defaults to `.unfolding`, the existing work sum. -/
+def step (graph : Graph) (maximum : Nat) (state : State)
+    (metric : Metric := .unfolding) : State :=
   if state.status ≠ .pending then state
   else if state.capacity ≠ graph.nodes.length ∨ state.stack = [] ∨ state.ticks = maximum then
     fail state .invalid
@@ -1068,7 +1511,7 @@ def step (graph : Graph) (maximum : Nat) (state : State) : State :=
           | none =>
             let scanned := { paid with indexVisits := paid.indexVisits + frame.row }
             match row.successor with
-            | none => addRow maximum scanned frame rest 1
+            | none => addRow maximum scanned frame rest 1 metric
             | some child =>
               match state.colors child with
               | .active => fail scanned .cycle
@@ -1077,15 +1520,30 @@ def step (graph : Graph) (maximum : Nat) (state : State) : State :=
                 else push scanned child
               | .done =>
                 if state.memo child = maximum then fail scanned .overflow
-                else addRow maximum scanned frame rest (1 + state.memo child)
+                else addRow maximum scanned frame rest (1 + state.memo child) metric
+                  (rowSpan metric (state.depthMemo child))
 
-/-- A bounded call retains the full DFS stack, memo and accounting cursor. -/
-def run (graph : Graph) (maximum : Nat) : Nat → State → State
-  | 0, state => state
-  | fuel + 1, state => run graph maximum fuel (step graph maximum state)
+/-- A bounded call retains the full DFS stack, memo and accounting cursor.
+The metric is last so `run graph maximum fuel state` stays the scalar runner. -/
+def run (graph : Graph) (maximum fuel : Nat) (state : State)
+    (metric : Metric := .unfolding) : State :=
+  match fuel with
+  | 0 => state
+  | fuel + 1 => run graph maximum fuel (step graph maximum state metric) metric
+
+theorem run_zero (graph : Graph) (maximum : Nat) (state : State) (metric : Metric) :
+    run graph maximum 0 state metric = state := rfl
+
+theorem run_split (graph : Graph) (maximum fuel : Nat) (state : State) (metric : Metric) :
+    run graph maximum (fuel + 1) state metric =
+      run graph maximum fuel (step graph maximum state metric) metric := rfl
 
 def bound? (state : State) : Option Nat :=
   if state.status = .bound then some (state.memo state.root) else none
+
+/-- Both coordinates after `finish` has stored the root cursor. -/
+def boundPair? (state : State) : Option WorkSpan :=
+  if state.status = .bound then some ⟨state.memo state.root, state.depthMemo state.root⟩ else none
 
 def Rooted (root : Nat) : List Frame → Prop
   | [] => True
@@ -1108,7 +1566,7 @@ structure Valid (graph : Graph) (maximum : Nat) (state : State) : Prop where
 
 theorem frame_zero (graph : Graph) (maximum node : Nat)
     (admitted : node < graph.nodes.length) :
-    graph.FrameDerived maximum ⟨node, 0, 0⟩ := by
+    graph.FrameDerived maximum { node := node } := by
   exact ⟨admitted, Nat.zero_le _, Nat.zero_le _, [], by simp, rfl⟩
 
 theorem frame_complete (graph : Graph) (maximum : Nat) (frame : Frame)
@@ -1140,8 +1598,8 @@ theorem run_add (graph : Graph) (maximum first second : Nat) (state : State) :
     run graph maximum (first + second) state =
       run graph maximum second (run graph maximum first state) := by
   induction first generalizing state with
-  | zero => simp only [Nat.zero_add, run]
-  | succ first ih => simpa only [Nat.succ_add, run] using ih (step graph maximum state)
+  | zero => simp only [Nat.zero_add, run_zero]
+  | succ first ih => simpa only [Nat.succ_add, run_split] using ih (step graph maximum state)
 
 theorem Valid.withCounters {graph : Graph} {maximum : Nat} {state : State}
     (valid : Valid graph maximum state) (ticks visits : Nat) (within : ticks ≤ maximum) :
@@ -1169,7 +1627,7 @@ theorem init_valid (graph : Graph) (maximum root : Nat) (state : State)
     cases issued
     refine ⟨?_, Nat.zero_le _, ?_, rfl, ?_⟩
     · intro frame member
-      have equal : frame = ⟨root, 0, 0⟩ := List.mem_singleton.1 member
+      have equal : frame = { node := root } := List.mem_singleton.1 member
       subst frame
       exact frame_zero graph maximum root admitted
     · intro node done
@@ -1253,6 +1711,7 @@ theorem Valid.addRow {graph : Graph} {maximum : Nat} {state : State}
     (derived : RowValue graph (graph.rows frame.node)[frame.row] contribution) :
     Valid graph maximum (OccurrenceGraph.addRow maximum state frame rest contribution) := by
   unfold OccurrenceGraph.addRow
+  dsimp only [rowOverflow, commitRow]
   split
   · exact valid.fail .overflow (by decide)
   · rename_i within
@@ -1424,7 +1883,7 @@ theorem step_root (graph : Graph) (maximum : Nat) (memory : State) :
               | none =>
                 simp only
                 cases successor : row.successor with
-                | none => simp only; unfold addRow; split <;> rfl
+                | none => simp only; unfold addRow; dsimp only [rowOverflow, commitRow]; split <;> rfl
                 | some child =>
                   simp only
                   cases color : memory.colors child with
@@ -1434,12 +1893,12 @@ theorem step_root (graph : Graph) (maximum : Nat) (memory : State) :
                     simp only
                     split
                     · rfl
-                    · unfold addRow; split <;> rfl
+                    · unfold addRow; dsimp only [rowOverflow, commitRow]; split <;> rfl
 theorem run_root (graph : Graph) (maximum fuel : Nat) (state : State) :
     (run graph maximum fuel state).root = state.root := by
   induction fuel generalizing state with
   | zero => rfl
-  | succ fuel ih => rw [run, ih, step_root]
+  | succ fuel ih => rw [run_split, ih, step_root]
 
 theorem initialized_run_bound (graph : Graph) (maximum root fuel : Nat) (state : State)
     (issued : init graph root = some state) (value : Nat) (acyclic : graph.catalogue.Acyclic)
@@ -1454,6 +1913,1848 @@ theorem initialized_run_bound (graph : Graph) (maximum root fuel : Nat) (state :
   have result := bound_unfoldingWork graph maximum (run graph maximum fuel state) value
     acyclic (run_valid graph maximum fuel state (init_valid graph maximum root state issued)) reported
   simpa only [run_root, rooted] using result
+
+theorem addRow_unfolding (maximum : Nat) (state : State) (frame : Frame) (rest : List Frame)
+    (contribution span : Nat) :
+    addRow maximum state frame rest contribution .unfolding span =
+      (if maximum < frame.total + contribution then fail state .overflow
+        else advance state frame rest contribution) := by
+  unfold addRow
+  rfl
+
+/-- Left-to-right pair steps are `parallelAll`, by the one-row law. -/
+theorem foldl_pair_cursor (frame : Frame) (done accounts : List WorkSpan)
+    (base : frame.cursor = WorkSpan.parallelAll done) :
+    (accounts.foldl (fun frame account => frame.advanceBy .pair account) frame).cursor =
+      WorkSpan.parallelAll (done ++ accounts) := by
+  induction accounts generalizing frame done with
+  | nil =>
+    rw [List.foldl_nil, List.append_nil]
+    exact base
+  | cons account accounts ih =>
+    rw [List.foldl_cons, ← List.singleton_append, ← List.append_assoc]
+    refine ih (frame.advanceBy .pair account) (done ++ [account]) ?_
+    rw [Frame.cursor_advanceBy, base]
+    exact (metricCombine_oneRow done account).1
+
+theorem foldl_pair_node (frame : Frame) (accounts : List WorkSpan) :
+    (accounts.foldl (fun frame account => frame.advanceBy .pair account) frame).node =
+      frame.node := by
+  induction accounts generalizing frame with
+  | nil => rfl
+  | cons account accounts ih =>
+    rw [List.foldl_cons, ih, Frame.advanceBy_node]
+
+theorem fresh_prefixFold (node : Nat) (rows : List Row) (children : List WorkSpan) :
+    ((rowAccounts rows children).foldl (fun frame account => frame.advanceBy .pair account)
+        (freshFrame node)).cursor =
+      prefixFold rows children := by
+  have base : (freshFrame node).cursor = WorkSpan.parallelAll ([] : List WorkSpan) := by
+    rw [freshFrame_cursor, WorkSpan.parallelAll_nil]
+    ext <;> simp [WorkSpan.zero_work, WorkSpan.zero_span]
+  have folded := foldl_pair_cursor (freshFrame node) [] (rowAccounts rows children) base
+  rw [List.nil_append] at folded
+  rw [prefixFold, folded]
+
+theorem boundPair_finish (state : State) (frame : Frame) (same : frame.node = state.root) :
+    boundPair? (finish state frame []) = some frame.cursor := by
+  simp [boundPair?, finish, Frame.cursor, Function.update_self, same, List.isEmpty_nil]
+
+theorem step_bound_stuck (graph : Graph) (maximum : Nat) (state : State) (metric : Metric)
+    (bound : state.status = .bound) :
+    step graph maximum state metric = state := by
+  unfold step
+  simp [bound]
+
+theorem run_bound_stable (graph : Graph) (maximum fuel : Nat) (state : State) (metric : Metric)
+    (bound : state.status = .bound) :
+    run graph maximum fuel state metric = state := by
+  induction fuel generalizing state with
+  | zero => rw [run_zero]
+  | succ fuel ih =>
+    rw [run_split, step_bound_stuck graph maximum state metric bound]
+    exact ih state bound
+
+/-- Pair row steps from a fresh frame finish at `prefixFold`. Further fuel
+does not change a bound state. The complete successor list is
+`sourceValuation` by `prefixFold_sourceValuation`. -/
+theorem finished_run_sourceValuation (graph : Graph) (maximum fuel : Nat)
+    (acyclic : graph.catalogue.Acyclic) (node : Nat)
+    (admitted : node ∈ graph.catalogue.items) (state : State)
+    (rootEq : state.root = node) :
+    let accounts := rowAccounts (graph.rows node)
+      ((graph.catalogue.deps node).map (graph.sourceValuation acyclic))
+    let frame := accounts.foldl (fun frame account => frame.advanceBy .pair account)
+      (freshFrame node)
+    boundPair? (run graph maximum fuel (finish state frame []) .pair) =
+      some (graph.sourceValuation acyclic node) := by
+  intro accounts frame
+  have cursor : frame.cursor = prefixFold (graph.rows node)
+      ((graph.catalogue.deps node).map (graph.sourceValuation acyclic)) :=
+    fresh_prefixFold node (graph.rows node)
+      ((graph.catalogue.deps node).map (graph.sourceValuation acyclic))
+  have same : frame.node = state.root := by
+    rw [foldl_pair_node, freshFrame, rootEq]
+  have stored : boundPair? (finish state frame []) = some frame.cursor :=
+    boundPair_finish state frame same
+  have stable := run_bound_stable graph maximum fuel (finish state frame []) .pair
+    (by simp [finish, List.isEmpty_nil])
+  rw [stable, stored, cursor, prefixFold_sourceValuation graph acyclic node admitted]
+
+/-- One physical row in the pair cursor. A linked row sequences the unit
+before the cached child valuation. Duplicate successors are not collapsed. -/
+inductive RowPair (graph : Graph) : Row → WorkSpan → Prop where
+  | terminal (physical : Nat) : RowPair graph ⟨physical, none⟩ ⟨1, 1⟩
+  | linked (physical child : Nat) (value : WorkSpan)
+      (derived : graph.catalogue.FoldDerivation graph.sourceCombine child value) :
+      RowPair graph ⟨physical, some child⟩ (WorkSpan.sequential ⟨1, 1⟩ value)
+
+theorem RowPair.of_terminal (graph : Graph) (row : Row) (terminal : row.successor = none) :
+    RowPair graph row ⟨1, 1⟩ := by
+  cases row with
+  | mk physical successor =>
+    cases successor with
+    | none => exact RowPair.terminal physical
+    | some _ => cases terminal
+
+theorem RowPair.of_linked (graph : Graph) (row : Row) (child : Nat) (value : WorkSpan)
+    (linked : row.successor = some child)
+    (derived : graph.catalogue.FoldDerivation graph.sourceCombine child value) :
+    RowPair graph row (WorkSpan.sequential ⟨1, 1⟩ value) := by
+  cases row with
+  | mk physical successor =>
+    cases successor with
+    | none => cases linked
+    | some index =>
+      cases linked
+      exact RowPair.linked physical child value derived
+
+/-- The ordered accounts are exactly `rowAccounts`, so `parallelAll` is `prefixFold`. -/
+theorem rows_pair (graph : Graph) {rows : List Row} {values : List WorkSpan}
+    (derived : List.Forall₂ (RowPair graph) rows values) :
+    ∃ children,
+      List.Forall₂ (graph.catalogue.FoldDerivation graph.sourceCombine)
+        (rows.filterMap Row.successor) children ∧
+      children.length = successorCount rows ∧
+      values = rowAccounts rows children := by
+  induction derived with
+  | nil => exact ⟨[], .nil, rfl, rfl⟩
+  | @cons row value rows values rowDerived remaining ih =>
+    obtain ⟨children, childDerived, aligned, accounts⟩ := ih
+    cases rowDerived with
+    | terminal physical =>
+      refine ⟨children, ?_, ?_, ?_⟩
+      · simpa only [List.filterMap_cons, Row.successor] using childDerived
+      · rw [successorCount_terminal]
+        exact aligned
+      · rw [accounts, rowAccounts_terminal]
+    | linked physical child childValue derivedChild =>
+      refine ⟨childValue :: children, ?_, ?_, ?_⟩
+      · simpa only [List.filterMap_cons, Row.successor] using
+          List.Forall₂.cons derivedChild childDerived
+      · rw [successorCount_linked, List.length_cons, aligned]
+      · rw [accounts, rowAccounts_linked]
+
+/-- Unfinished pair frame: the cursor is the parallel aggregate of the rows
+already accepted, and that aggregate is the `prefixFold` specification. -/
+def Graph.FramePaired (graph : Graph) (maximum : Nat) (frame : Frame) : Prop :=
+  frame.node < graph.nodes.length ∧ frame.row ≤ (graph.rows frame.node).length ∧
+    frame.total ≤ maximum ∧ frame.depth ≤ frame.total ∧
+      ∃ values, List.Forall₂ (RowPair graph) ((graph.rows frame.node).take frame.row) values ∧
+        frame.cursor = WorkSpan.parallelAll values
+
+theorem frame_pair_zero (graph : Graph) (maximum node : Nat)
+    (admitted : node < graph.nodes.length) :
+    graph.FramePaired maximum (freshFrame node) := by
+  exact ⟨admitted, Nat.zero_le _, Nat.zero_le _, Nat.le_refl _, [], by simp, by
+    rw [freshFrame_cursor, WorkSpan.parallelAll_nil]
+    ext <;> simp [WorkSpan.zero_work, WorkSpan.zero_span]⟩
+
+theorem frame_pair_complete (graph : Graph) (maximum : Nat) (frame : Frame)
+    (valid : graph.FramePaired maximum frame)
+    (finished : frame.row = (graph.rows frame.node).length) :
+    graph.catalogue.FoldDerivation graph.sourceCombine frame.node frame.cursor ∧
+      frame.depth ≤ frame.total ∧ frame.total ≤ maximum := by
+  obtain ⟨admitted, _, within, depthLe, values, paired, cursor⟩ := valid
+  rw [finished, List.take_length] at paired
+  obtain ⟨children, derived, aligned, accounts⟩ := rows_pair graph paired
+  have spec : frame.cursor = graph.sourceCombine frame.node children := by
+    rw [cursor, accounts]
+    change prefixFold (graph.rows frame.node) children = graph.sourceCombine frame.node children
+    exact prefixFold_eq_sourceCombine graph frame.node children aligned
+  refine ⟨?_, depthLe, within⟩
+  rw [spec]
+  exact Catalogue.FoldDerivation.node (by simpa [Graph.catalogue] using admitted) derived
+
+theorem frame_pair_advance (graph : Graph) (maximum : Nat) (frame : Frame)
+    (valid : graph.FramePaired maximum frame)
+    (available : frame.row < (graph.rows frame.node).length) (contribution span : Nat)
+    (derived : RowPair graph (graph.rows frame.node)[frame.row] ⟨contribution, span⟩)
+    (spanLe : span ≤ contribution) (within : frame.total + contribution ≤ maximum) :
+    graph.FramePaired maximum (frame.advanceBy .pair ⟨contribution, span⟩) := by
+  obtain ⟨admitted, _, _, depthLe, values, paired, cursor⟩ := valid
+  refine ⟨admitted, ?_, ?_, ?_, values ++ [⟨contribution, span⟩], ?_, ?_⟩
+  · have rowEq : (frame.advanceBy .pair ⟨contribution, span⟩).row = frame.row + 1 := rfl
+    rw [rowEq, Frame.advanceBy_node]
+    omega
+  · have totalEq : (frame.advanceBy .pair ⟨contribution, span⟩).total =
+        frame.total + contribution := by
+      simp [Frame.advanceBy, Frame.cursor]
+    rw [totalEq]
+    exact within
+  · have totalEq : (frame.advanceBy .pair ⟨contribution, span⟩).total =
+        frame.total + contribution := by
+      simp [Frame.advanceBy, Frame.cursor]
+    have depthEq : (frame.advanceBy .pair ⟨contribution, span⟩).depth = max frame.depth span := by
+      simp [Frame.advanceBy, Frame.cursor]
+    rw [depthEq, totalEq]
+    exact max_le (depthLe.trans (Nat.le_add_right _ _)) (spanLe.trans (Nat.le_add_left _ _))
+  · have rowEq : (frame.advanceBy .pair ⟨contribution, span⟩).row = frame.row + 1 := rfl
+    rw [rowEq, Frame.advanceBy_node, List.take_succ_eq_append_getElem available]
+    exact List.rel_append paired (.cons derived .nil)
+  · rw [Frame.cursor_advanceBy, cursor]
+    exact (metricCombine_oneRow values ⟨contribution, span⟩).1
+
+structure PairValid (graph : Graph) (maximum : Nat) (state : State) : Prop where
+  frames : ∀ frame ∈ state.stack, graph.FramePaired maximum frame
+  ticksWithin : state.ticks ≤ maximum
+  cached : ∀ node, state.colors node = .done →
+    graph.catalogue.FoldDerivation graph.sourceCombine node
+        ⟨state.memo node, state.depthMemo node⟩ ∧
+      state.memo node ≤ maximum ∧ state.depthMemo node ≤ state.memo node
+  rooted : Rooted state.root state.stack
+  completed : state.status = .bound → state.colors state.root = .done
+
+theorem PairValid.withCounters {graph : Graph} {maximum : Nat} {state : State}
+    (valid : PairValid graph maximum state) (ticks visits : Nat) (within : ticks ≤ maximum) :
+    PairValid graph maximum { state with ticks := ticks, indexVisits := visits } :=
+  ⟨valid.frames, within, valid.cached, valid.rooted, valid.completed⟩
+
+theorem PairValid.fail {graph : Graph} {maximum : Nat} {state : State}
+    (valid : PairValid graph maximum state) (status : Status) (notBound : status ≠ .bound) :
+    PairValid graph maximum (fail state status) := by
+  refine ⟨valid.frames, valid.ticksWithin, valid.cached, valid.rooted, ?_⟩
+  intro completed
+  exact False.elim (notBound completed)
+
+theorem init_pairValid (graph : Graph) (maximum root : Nat) (state : State)
+    (issued : init graph root = some state) : PairValid graph maximum state := by
+  unfold init at issued
+  split at issued
+  · rename_i admitted
+    cases issued
+    refine ⟨?_, Nat.zero_le _, ?_, rfl, ?_⟩
+    · intro frame member
+      have equal : frame = freshFrame root := List.mem_singleton.1 member
+      subst frame
+      exact frame_pair_zero graph maximum root admitted
+    · intro node done
+      simp only [Function.update_apply] at done
+      split at done <;> contradiction
+    · intro completed
+      cases completed
+  · contradiction
+
+theorem PairValid.finish {graph : Graph} {maximum : Nat} {state : State}
+    (valid : PairValid graph maximum state) (frame : Frame) (rest : List Frame)
+    (stack : state.stack = frame :: rest)
+    (finished : frame.row = (graph.rows frame.node).length) :
+    PairValid graph maximum (OccurrenceGraph.finish state frame rest) := by
+  have frameValid := valid.frames frame (by simp [stack])
+  have complete := frame_pair_complete graph maximum frame frameValid finished
+  refine ⟨?_, valid.ticksWithin, ?_, ?_, ?_⟩
+  · intro other member
+    exact valid.frames other (by simp only [stack, List.mem_cons]; exact Or.inr member)
+  · intro node done
+    by_cases equal : node = frame.node
+    · subst node
+      have memoEq : (OccurrenceGraph.finish state frame rest).memo frame.node = frame.total := by
+        simp [OccurrenceGraph.finish, Function.update_self]
+      have depthEq : (OccurrenceGraph.finish state frame rest).depthMemo frame.node =
+          frame.depth := by
+        simp [OccurrenceGraph.finish, Function.update_self]
+      rw [memoEq, depthEq]
+      exact ⟨complete.1, complete.2.2, complete.2.1⟩
+    · have previous : state.colors node = .done := by
+        simpa only [OccurrenceGraph.finish, Function.update_of_ne equal] using done
+      simpa only [OccurrenceGraph.finish, Function.update_of_ne equal] using
+        valid.cached node previous
+  · exact Rooted.tail state.root frame rest (by simpa only [stack] using valid.rooted)
+  · intro completed
+    cases rest with
+    | nil =>
+      have root : frame.node = state.root := by
+        simpa only [stack, Rooted] using valid.rooted
+      simp only [OccurrenceGraph.finish, ← root, Function.update_self]
+    | cons second rest => simp [OccurrenceGraph.finish] at completed
+
+theorem PairValid.push {graph : Graph} {maximum : Nat} {state : State}
+    (valid : PairValid graph maximum state) (child : Nat)
+    (admitted : child < graph.nodes.length) (nonempty : state.stack ≠ [])
+    (pending : state.status = .pending) :
+    PairValid graph maximum (OccurrenceGraph.push state child) := by
+  refine ⟨?_, valid.ticksWithin, ?_, ?_, ?_⟩
+  · intro frame member
+    rcases List.mem_cons.1 member with equal | member
+    · subst frame
+      exact frame_pair_zero graph maximum child admitted
+    · exact valid.frames frame member
+  · intro node done
+    by_cases equal : node = child
+    · subst node
+      simp [OccurrenceGraph.push] at done
+    · have previous : state.colors node = .done := by
+        simpa only [OccurrenceGraph.push, Function.update_of_ne equal] using done
+      exact valid.cached node previous
+  · cases stack : state.stack with
+    | nil => exact False.elim (nonempty stack)
+    | cons frame rest => simpa only [OccurrenceGraph.push, stack, Rooted] using valid.rooted
+  · intro completed
+    simp [OccurrenceGraph.push, pending] at completed
+
+theorem PairValid.commit {graph : Graph} {maximum : Nat} {state : State}
+    (valid : PairValid graph maximum state) (frame : Frame) (rest : List Frame)
+    (stack : state.stack = frame :: rest)
+    (available : frame.row < (graph.rows frame.node).length) (contribution span : Nat)
+    (spanLe : span ≤ contribution)
+    (derived : RowPair graph (graph.rows frame.node)[frame.row] ⟨contribution, span⟩)
+    (within : frame.total + contribution ≤ maximum) :
+    PairValid graph maximum
+      { state with stack := frame.advanceBy .pair ⟨contribution, span⟩ :: rest } := by
+  refine ⟨?_, valid.ticksWithin, valid.cached, ?_, valid.completed⟩
+  · intro other member
+    rcases List.mem_cons.1 member with equal | member
+    · subst other
+      exact frame_pair_advance graph maximum frame (valid.frames frame (by simp [stack]))
+        available contribution span derived spanLe within
+    · exact valid.frames other (by simp only [stack, List.mem_cons]; exact Or.inr member)
+  · cases rest with
+    | nil =>
+      have rooted : frame.node = state.root := by
+        simpa only [stack, Rooted] using valid.rooted
+      simp [Frame.advanceBy, Rooted, rooted]
+    | cons second tail =>
+      simpa [Frame.advanceBy, stack, Rooted] using valid.rooted
+
+theorem PairValid.addRow {graph : Graph} {maximum : Nat} {state : State}
+    (valid : PairValid graph maximum state) (frame : Frame) (rest : List Frame)
+    (stack : state.stack = frame :: rest)
+    (available : frame.row < (graph.rows frame.node).length) (contribution span : Nat)
+    (spanLe : span ≤ contribution)
+    (derived : RowPair graph (graph.rows frame.node)[frame.row] ⟨contribution, span⟩) :
+    PairValid graph maximum (addRow maximum state frame rest contribution .pair span) := by
+  unfold OccurrenceGraph.addRow
+  dsimp only [rowOverflow, commitRow]
+  split
+  · exact valid.fail .overflow (by decide)
+  · rename_i safe
+    have within : frame.total + contribution ≤ maximum := by
+      have notWork : ¬ maximum < frame.total + contribution := fun exceeded =>
+        safe (Or.inl exceeded)
+      omega
+    exact valid.commit frame rest stack available contribution span spanLe derived within
+
+theorem step_root_metric (graph : Graph) (maximum : Nat) (memory : State) (metric : Metric) :
+    (step graph maximum memory metric).root = memory.root := by
+  unfold step
+  split
+  · rfl
+  · split
+    · rfl
+    · dsimp only
+      cases stack : memory.stack with
+      | nil => rfl
+      | cons frame rest =>
+        simp only
+        split
+        · rfl
+        · cases found : (graph.rows frame.node)[frame.row]? with
+          | none => rfl
+          | some row =>
+            simp only
+            split
+            · rfl
+            · cases visited : ((graph.rows frame.node).take frame.row).findIdx?
+                  (fun earlier => earlier.physical == row.physical) with
+              | some index => rfl
+              | none =>
+                simp only
+                cases successor : row.successor with
+                | none =>
+                  simp only
+                  cases metric <;>
+                    unfold addRow <;>
+                    dsimp only [rowOverflow, commitRow] <;>
+                    split <;> rfl
+                | some child =>
+                  simp only
+                  cases color : memory.colors child with
+                  | active => rfl
+                  | fresh => simp only; split <;> rfl
+                  | done =>
+                    simp only
+                    split
+                    · rfl
+                    · cases metric <;>
+                        unfold addRow <;>
+                        dsimp only [rowOverflow, commitRow] <;>
+                        split <;> rfl
+
+theorem step_root_pair (graph : Graph) (maximum : Nat) (memory : State) :
+    (step graph maximum memory .pair).root = memory.root :=
+  step_root_metric graph maximum memory .pair
+
+/-- Metric-independent DFS control. Pair and depth supply only the row commit. -/
+theorem step_preserve (graph : Graph) (maximum : Nat) (metric : Metric) (V : State → Prop)
+    (preserveFail : ∀ state status, status ≠ .bound → V state → V (fail state status))
+    (ticksWithin : ∀ state, V state → state.ticks ≤ maximum)
+    (preserveCounters : ∀ state ticks visits, ticks ≤ maximum → V state →
+      V { state with ticks := ticks, indexVisits := visits })
+    (preserveFinish : ∀ state frame rest, state.stack = frame :: rest →
+      frame.row = (graph.rows frame.node).length → V state → V (finish state frame rest))
+    (preservePush : ∀ state child, child < graph.nodes.length → state.stack ≠ [] →
+      state.status = .pending → V state → V (push state child))
+    (preserveTerminal : ∀ (state : State) (frame : Frame) (rest : List Frame) (row : Row)
+      (_stack : state.stack = frame :: rest)
+      (available : frame.row < (graph.rows frame.node).length),
+      (graph.rows frame.node)[frame.row] = row → row.successor = none → V state →
+      V (addRow maximum state frame rest 1 metric))
+    (preserveLinked : ∀ (state : State) (frame : Frame) (rest : List Frame) (row : Row)
+      (child : Nat) (_stack : state.stack = frame :: rest)
+      (available : frame.row < (graph.rows frame.node).length),
+      (graph.rows frame.node)[frame.row] = row → row.successor = some child →
+      state.colors child = .done → state.memo child ≠ maximum → V state →
+      V (addRow maximum state frame rest (1 + state.memo child) metric
+        (rowSpan metric (state.depthMemo child))))
+    (state : State) (valid : V state) : V (step graph maximum state metric) := by
+  unfold step
+  split
+  · exact valid
+  · rename_i isPending
+    have pending : state.status = .pending := by
+      by_cases equal : state.status = .pending
+      · exact equal
+      · exact False.elim (isPending equal)
+    split
+    · exact preserveFail state .invalid (by decide) valid
+    · rename_i admitted
+      have beforeLimit : state.ticks ≠ maximum := fun equal =>
+        admitted (Or.inr (Or.inr equal))
+      let paid : State := { state with ticks := state.ticks + 1 }
+      have paidValid : V paid :=
+        preserveCounters state (state.ticks + 1) state.indexVisits (by
+          have := ticksWithin state valid
+          omega) valid
+      cases stack : state.stack with
+      | nil =>
+        simp only
+        simpa only [paid, stack] using preserveFail paid .invalid (by decide) paidValid
+      | cons frame rest =>
+        simp only
+        split
+        · rename_i finished
+          exact preserveFinish paid frame rest stack finished paidValid
+        · cases found : (graph.rows frame.node)[frame.row]? with
+          | none =>
+            simp only
+            simpa only [paid, stack] using preserveFail paid .invalid (by decide) paidValid
+          | some row =>
+            simp only
+            obtain ⟨available, rowEqual⟩ := List.getElem?_eq_some_iff.1 found
+            split
+            · simpa only [paid, stack] using preserveFail paid .invalid (by decide) paidValid
+            · rename_i rowValid
+              cases visited : ((graph.rows frame.node).take frame.row).findIdx?
+                  (fun earlier => earlier.physical == row.physical) with
+              | some index =>
+                simp only
+                simpa only [paid, stack] using
+                  preserveFail { paid with indexVisits := paid.indexVisits + index + 1 } .invalid
+                    (by decide)
+                    (preserveCounters paid paid.ticks (paid.indexVisits + index + 1)
+                      (ticksWithin paid paidValid) paidValid)
+              | none =>
+                simp only
+                let scanned : State := { paid with indexVisits := paid.indexVisits + frame.row }
+                have scannedValid : V scanned :=
+                  preserveCounters paid paid.ticks (paid.indexVisits + frame.row)
+                    (ticksWithin paid paidValid) paidValid
+                cases successor : row.successor with
+                | none =>
+                  simp only
+                  simpa only [scanned, paid, stack] using
+                    preserveTerminal scanned frame rest row stack available rowEqual successor
+                      scannedValid
+                | some child =>
+                  simp only
+                  have childAdmitted : child < graph.nodes.length := by
+                    have excluded : ¬ graph.nodes.length ≤ child := by
+                      intro outside
+                      apply rowValid
+                      exact Or.inr (by simp [successor, outside])
+                    omega
+                  cases color : state.colors child with
+                  | active =>
+                    simp only
+                    simpa only [scanned, paid, stack] using
+                      preserveFail scanned .cycle (by decide) scannedValid
+                  | fresh =>
+                    simp only
+                    split
+                    · simpa only [scanned, paid, stack] using
+                        preserveFail scanned .invalid (by decide) scannedValid
+                    · simpa only [scanned, paid, stack] using
+                        preservePush scanned child childAdmitted
+                          (by simp [scanned, paid, stack]) pending scannedValid
+                  | done =>
+                    simp only
+                    split
+                    · simpa only [scanned, paid, stack] using
+                        preserveFail scanned .overflow (by decide) scannedValid
+                    · rename_i notMaximum
+                      simpa only [scanned, paid, stack] using
+                        preserveLinked scanned frame rest row child stack available rowEqual
+                          successor color notMaximum scannedValid
+
+/-- Each pair transition preserves the prefix cursor and the finished
+`sourceCombine` memo. The scalar runner is the default metric, untouched. -/
+theorem step_pairValid (graph : Graph) (maximum : Nat) (state : State)
+    (valid : PairValid graph maximum state) :
+    PairValid graph maximum (step graph maximum state .pair) := by
+  refine step_preserve graph maximum .pair (PairValid graph maximum)
+    ?_ ?_ ?_ ?_ ?_ ?_ ?_ state valid
+  · intro state status notBound valid
+    exact valid.fail status notBound
+  · intro state valid
+    exact valid.ticksWithin
+  · intro state ticks visits within valid
+    exact valid.withCounters ticks visits within
+  · intro state frame rest stack finished valid
+    exact valid.finish frame rest stack finished
+  · intro state child admitted nonempty pending valid
+    exact valid.push child admitted nonempty pending
+  · intro state frame rest row stack available rowEqual terminal valid
+    have derived : RowPair graph (graph.rows frame.node)[frame.row] ⟨1, 1⟩ := by
+      rw [rowEqual]
+      exact RowPair.of_terminal graph row terminal
+    exact valid.addRow frame rest stack available 1 1 (Nat.le_refl _) derived
+  · intro state frame rest row child stack available rowEqual linked color _notMaximum valid
+    have cached := valid.cached child color
+    have derived : RowPair graph (graph.rows frame.node)[frame.row]
+        ⟨1 + state.memo child, 1 + state.depthMemo child⟩ := by
+      rw [rowEqual]
+      exact RowPair.of_linked graph row child ⟨state.memo child, state.depthMemo child⟩
+        linked cached.1
+    exact valid.addRow frame rest stack available (1 + state.memo child)
+      (1 + state.depthMemo child) (Nat.add_le_add_left cached.2.2 1) derived
+
+theorem run_pairValid (graph : Graph) (maximum fuel : Nat) (state : State)
+    (valid : PairValid graph maximum state) :
+    PairValid graph maximum (run graph maximum fuel state .pair) := by
+  induction fuel generalizing state with
+  | zero => exact valid
+  | succ fuel ih =>
+    exact ih (step graph maximum state .pair) (step_pairValid graph maximum state valid)
+
+theorem run_root_pair (graph : Graph) (maximum fuel : Nat) (state : State) :
+    (run graph maximum fuel state .pair).root = state.root := by
+  induction fuel generalizing state with
+  | zero => rfl
+  | succ fuel ih => rw [run_split, ih, step_root_pair]
+
+/-- A bound pair run is the independent source valuation. The cache is a
+consequence of the preserved prefix invariant, not an assumed final fold. -/
+theorem bound_sourceValuation (graph : Graph) (maximum : Nat) (state : State) (value : WorkSpan)
+    (acyclic : graph.catalogue.Acyclic) (valid : PairValid graph maximum state)
+    (reported : boundPair? state = some value) :
+    value = graph.sourceValuation acyclic state.root ∧
+      value.span ≤ value.work ∧ value.work ≤ maximum := by
+  unfold boundPair? at reported
+  split at reported
+  · rename_i completed
+    cases reported
+    obtain ⟨derived, within, depthLe⟩ :=
+      valid.cached state.root (valid.completed completed)
+    have eq := Catalogue.FoldDerivation.value_eq_depFold graph.catalogue acyclic
+      graph.sourceCombine state.root ⟨state.memo state.root, state.depthMemo state.root⟩ derived
+    refine ⟨?_, depthLe, within⟩
+    have spec : graph.sourceValuation acyclic state.root =
+        graph.catalogue.depFold acyclic graph.sourceCombine state.root := rfl
+    rw [spec]
+    exact eq
+  · contradiction
+
+theorem initialized_run_sourceValuation (graph : Graph) (maximum root fuel : Nat) (state : State)
+    (issued : init graph root = some state) (value : WorkSpan) (acyclic : graph.catalogue.Acyclic)
+    (reported : boundPair? (run graph maximum fuel state .pair) = some value) :
+    value = graph.sourceValuation acyclic root ∧
+      value.span ≤ value.work ∧ value.work ≤ maximum := by
+  have rootEq : state.root = root := by
+    unfold init at issued
+    split at issued
+    · cases issued
+      rfl
+    · contradiction
+  have result := bound_sourceValuation graph maximum (run graph maximum fuel state .pair) value
+    acyclic (run_pairValid graph maximum fuel state (init_pairValid graph maximum root state issued))
+    reported
+  simpa only [run_root_pair, rootEq] using result
+
+/-- Source dependency depth is the span projection of that same bound pair. -/
+theorem initialized_run_dependencyDepth (graph : Graph) (maximum root fuel : Nat) (state : State)
+    (issued : init graph root = some state) (value : WorkSpan) (acyclic : graph.catalogue.Acyclic)
+    (reported : boundPair? (run graph maximum fuel state .pair) = some value) :
+    value.span = graph.dependencyDepth acyclic root ∧
+      value = graph.sourceValuation acyclic root ∧
+      value.span ≤ value.work ∧ value.work ≤ maximum := by
+  obtain ⟨eq, spanLe, within⟩ :=
+    initialized_run_sourceValuation graph maximum root fuel state issued value acyclic reported
+  refine ⟨?_, eq, spanLe, within⟩
+  rw [eq]
+  exact graph.sourceValuation_depth acyclic root
+
+private theorem span_of_depth (children : List Nat) :
+    ((children.map (fun n => (⟨0, n⟩ : WorkSpan))).map WorkSpan.span) = children := by
+  induction children with
+  | nil => rfl
+  | cons head tail ih =>
+    rw [List.map_cons, List.map_cons, ih]
+
+/-- Span aggregate of the shared row accounts. This is `depthCombine` once the
+child list is aligned with the successor occurrences. -/
+theorem depthAccounts_fold (rows : List Row) (children : List Nat)
+    (aligned : children.length = successorCount rows) :
+    ((rowAccounts rows (children.map (fun n => (⟨0, n⟩ : WorkSpan)))).map WorkSpan.span).foldr
+        max 0 =
+      (if rows.isEmpty then 0 else 1) + children.foldr max 0 := by
+  have packed : (children.map (fun n => (⟨0, n⟩ : WorkSpan))).length =
+      successorCount rows := by
+    rw [List.length_map, aligned]
+  rw [rowAccounts_span rows (children.map (fun n => (⟨0, n⟩ : WorkSpan))) packed,
+    span_of_depth]
+
+private theorem foldr_max_snoc (values : List Nat) (contribution : Nat) :
+    (values ++ [contribution]).foldr max 0 = max (values.foldr max 0) contribution := by
+  induction values with
+  | nil =>
+    rw [List.nil_append, List.foldr_cons, List.foldr_nil]
+    exact Nat.max_comm contribution 0
+  | cons head tail ih =>
+    rw [List.cons_append, List.foldr_cons, ih, List.foldr_cons]
+    exact (Nat.max_assoc head (tail.foldr max 0) contribution).symm
+
+/-- One depth contribution. A terminal occurrence is one layer. A linked
+occurrence is one layer beyond the cached child depth. Duplicate successors
+stay distinct. -/
+inductive RowDepth (graph : Graph) : Row → Nat → Prop where
+  | terminal (physical : Nat) : RowDepth graph ⟨physical, none⟩ 1
+  | linked (physical child depth : Nat)
+      (derived : graph.catalogue.FoldDerivation graph.depthCombine child depth) :
+      RowDepth graph ⟨physical, some child⟩ (1 + depth)
+
+theorem RowDepth.of_terminal (graph : Graph) (row : Row) (terminal : row.successor = none) :
+    RowDepth graph row 1 := by
+  cases row with
+  | mk physical successor =>
+    cases successor with
+    | none => exact RowDepth.terminal physical
+    | some _ => cases terminal
+
+theorem RowDepth.of_linked (graph : Graph) (row : Row) (child depth : Nat)
+    (linked : row.successor = some child)
+    (derived : graph.catalogue.FoldDerivation graph.depthCombine child depth) :
+    RowDepth graph row (1 + depth) := by
+  cases row with
+  | mk physical successor =>
+    cases successor with
+    | none => cases linked
+    | some index =>
+      cases linked
+      exact RowDepth.linked physical child depth derived
+
+/-- Accepted depth contributions are the spans of the shared row accounts. -/
+theorem rows_depth (graph : Graph) {rows : List Row} {values : List Nat}
+    (derived : List.Forall₂ (RowDepth graph) rows values) :
+    ∃ children,
+      List.Forall₂ (graph.catalogue.FoldDerivation graph.depthCombine)
+        (rows.filterMap Row.successor) children ∧
+      children.length = successorCount rows ∧
+      values = (rowAccounts rows (children.map (fun n => (⟨0, n⟩ : WorkSpan)))).map
+        WorkSpan.span := by
+  induction derived with
+  | nil => exact ⟨[], .nil, rfl, rfl⟩
+  | @cons row value rows values rowDerived remaining ih =>
+    obtain ⟨children, childDerived, aligned, accounts⟩ := ih
+    cases rowDerived with
+    | terminal physical =>
+      refine ⟨children, ?_, ?_, ?_⟩
+      · simpa only [List.filterMap_cons, Row.successor] using childDerived
+      · rw [successorCount_terminal]
+        exact aligned
+      · rw [accounts, rowAccounts_terminal]
+        rfl
+    | linked physical child depth derivedChild =>
+      refine ⟨depth :: children, ?_, ?_, ?_⟩
+      · simpa only [List.filterMap_cons, Row.successor] using
+          List.Forall₂.cons derivedChild childDerived
+      · rw [successorCount_linked, List.length_cons, aligned]
+      · rw [List.map_cons, accounts, rowAccounts_linked]
+        rfl
+
+/-- The depth cursor stores the running maximum of the accepted row spans.
+It is not the paired work sum, so it can stay inside a ceiling that rejects
+that sum. -/
+def Graph.FrameDepth (graph : Graph) (maximum : Nat) (frame : Frame) : Prop :=
+  frame.node < graph.nodes.length ∧ frame.row ≤ (graph.rows frame.node).length ∧
+    frame.total ≤ maximum ∧
+      ∃ values, List.Forall₂ (RowDepth graph) ((graph.rows frame.node).take frame.row) values ∧
+        frame.total = values.foldr max 0
+
+theorem frame_depth_zero (graph : Graph) (maximum node : Nat)
+    (admitted : node < graph.nodes.length) :
+    graph.FrameDepth maximum (freshFrame node) := by
+  exact ⟨admitted, Nat.zero_le _, Nat.zero_le _, [], by simp, rfl⟩
+
+theorem frame_depth_complete (graph : Graph) (maximum : Nat) (frame : Frame)
+    (valid : graph.FrameDepth maximum frame)
+    (finished : frame.row = (graph.rows frame.node).length) :
+    graph.catalogue.FoldDerivation graph.depthCombine frame.node frame.total ∧
+      frame.total ≤ maximum := by
+  obtain ⟨admitted, _, within, values, paired, aggregated⟩ := valid
+  rw [finished, List.take_length] at paired
+  obtain ⟨children, derived, aligned, accounts⟩ := rows_depth graph paired
+  have combined : frame.total = graph.depthCombine frame.node children := by
+    rw [aggregated, accounts]
+    exact depthAccounts_fold (graph.rows frame.node) children aligned
+  refine ⟨?_, within⟩
+  rw [combined]
+  exact Catalogue.FoldDerivation.node (by simpa [Graph.catalogue] using admitted) derived
+
+theorem frame_depth_advance (graph : Graph) (maximum : Nat) (frame : Frame)
+    (valid : graph.FrameDepth maximum frame)
+    (available : frame.row < (graph.rows frame.node).length) (contribution : Nat)
+    (derived : RowDepth graph (graph.rows frame.node)[frame.row] contribution)
+    (within : max frame.total contribution ≤ maximum) :
+    graph.FrameDepth maximum (frame.advanceBy .depth ⟨contribution, contribution⟩) := by
+  obtain ⟨admitted, _, _, values, paired, aggregated⟩ := valid
+  have rowEq : (frame.advanceBy .depth ⟨contribution, contribution⟩).row = frame.row + 1 := rfl
+  have totalEq : (frame.advanceBy .depth ⟨contribution, contribution⟩).total =
+      max frame.total contribution := by
+    simp [Frame.advanceBy, Frame.cursor]
+  refine ⟨admitted, ?_, ?_, values ++ [contribution], ?_, ?_⟩
+  · rw [rowEq, Frame.advanceBy_node]
+    omega
+  · rw [totalEq]
+    exact within
+  · rw [rowEq, Frame.advanceBy_node, List.take_succ_eq_append_getElem available]
+    exact List.rel_append paired (.cons derived .nil)
+  · rw [totalEq, aggregated]
+    exact (foldr_max_snoc values contribution).symm
+
+structure DepthValid (graph : Graph) (maximum : Nat) (state : State) : Prop where
+  frames : ∀ frame ∈ state.stack, graph.FrameDepth maximum frame
+  ticksWithin : state.ticks ≤ maximum
+  cached : ∀ node, state.colors node = .done →
+    graph.catalogue.FoldDerivation graph.depthCombine node (state.memo node) ∧
+      state.memo node ≤ maximum
+  rooted : Rooted state.root state.stack
+  completed : state.status = .bound → state.colors state.root = .done
+
+theorem DepthValid.withCounters {graph : Graph} {maximum : Nat} {state : State}
+    (valid : DepthValid graph maximum state) (ticks visits : Nat) (within : ticks ≤ maximum) :
+    DepthValid graph maximum { state with ticks := ticks, indexVisits := visits } :=
+  ⟨valid.frames, within, valid.cached, valid.rooted, valid.completed⟩
+
+theorem DepthValid.fail {graph : Graph} {maximum : Nat} {state : State}
+    (valid : DepthValid graph maximum state) (status : Status) (notBound : status ≠ .bound) :
+    DepthValid graph maximum (fail state status) := by
+  refine ⟨valid.frames, valid.ticksWithin, valid.cached, valid.rooted, ?_⟩
+  intro completed
+  exact False.elim (notBound completed)
+
+theorem init_depthValid (graph : Graph) (maximum root : Nat) (state : State)
+    (issued : init graph root = some state) : DepthValid graph maximum state := by
+  unfold init at issued
+  split at issued
+  · rename_i admitted
+    cases issued
+    refine ⟨?_, Nat.zero_le _, ?_, rfl, ?_⟩
+    · intro frame member
+      have equal : frame = freshFrame root := List.mem_singleton.1 member
+      subst frame
+      exact frame_depth_zero graph maximum root admitted
+    · intro node done
+      simp only [Function.update_apply] at done
+      split at done <;> contradiction
+    · intro completed
+      cases completed
+  · contradiction
+
+theorem DepthValid.finish {graph : Graph} {maximum : Nat} {state : State}
+    (valid : DepthValid graph maximum state) (frame : Frame) (rest : List Frame)
+    (stack : state.stack = frame :: rest)
+    (finished : frame.row = (graph.rows frame.node).length) :
+    DepthValid graph maximum (OccurrenceGraph.finish state frame rest) := by
+  have frameValid := valid.frames frame (by simp [stack])
+  have complete := frame_depth_complete graph maximum frame frameValid finished
+  refine ⟨?_, valid.ticksWithin, ?_, ?_, ?_⟩
+  · intro other member
+    exact valid.frames other (by simp only [stack, List.mem_cons]; exact Or.inr member)
+  · intro node done
+    by_cases equal : node = frame.node
+    · subst node
+      have memoEq : (OccurrenceGraph.finish state frame rest).memo frame.node = frame.total := by
+        simp [OccurrenceGraph.finish, Function.update_self]
+      rw [memoEq]
+      exact ⟨complete.1, complete.2⟩
+    · have previous : state.colors node = .done := by
+        simpa only [OccurrenceGraph.finish, Function.update_of_ne equal] using done
+      simpa only [OccurrenceGraph.finish, Function.update_of_ne equal] using
+        valid.cached node previous
+  · exact Rooted.tail state.root frame rest (by simpa only [stack] using valid.rooted)
+  · intro completed
+    cases rest with
+    | nil =>
+      have root : frame.node = state.root := by
+        simpa only [stack, Rooted] using valid.rooted
+      simp only [OccurrenceGraph.finish, ← root, Function.update_self]
+    | cons second rest => simp [OccurrenceGraph.finish] at completed
+
+theorem DepthValid.push {graph : Graph} {maximum : Nat} {state : State}
+    (valid : DepthValid graph maximum state) (child : Nat)
+    (admitted : child < graph.nodes.length) (nonempty : state.stack ≠ [])
+    (pending : state.status = .pending) :
+    DepthValid graph maximum (OccurrenceGraph.push state child) := by
+  refine ⟨?_, valid.ticksWithin, ?_, ?_, ?_⟩
+  · intro frame member
+    rcases List.mem_cons.1 member with equal | member
+    · subst frame
+      exact frame_depth_zero graph maximum child admitted
+    · exact valid.frames frame member
+  · intro node done
+    by_cases equal : node = child
+    · subst node
+      simp [OccurrenceGraph.push] at done
+    · have previous : state.colors node = .done := by
+        simpa only [OccurrenceGraph.push, Function.update_of_ne equal] using done
+      exact valid.cached node previous
+  · cases stack : state.stack with
+    | nil => exact False.elim (nonempty stack)
+    | cons frame rest => simpa only [OccurrenceGraph.push, stack, Rooted] using valid.rooted
+  · intro completed
+    simp [OccurrenceGraph.push, pending] at completed
+
+theorem DepthValid.commit {graph : Graph} {maximum : Nat} {state : State}
+    (valid : DepthValid graph maximum state) (frame : Frame) (rest : List Frame)
+    (stack : state.stack = frame :: rest)
+    (available : frame.row < (graph.rows frame.node).length) (contribution : Nat)
+    (derived : RowDepth graph (graph.rows frame.node)[frame.row] contribution)
+    (within : max frame.total contribution ≤ maximum) :
+    DepthValid graph maximum
+      { state with stack := frame.advanceBy .depth ⟨contribution, contribution⟩ :: rest } := by
+  refine ⟨?_, valid.ticksWithin, valid.cached, ?_, valid.completed⟩
+  · intro other member
+    rcases List.mem_cons.1 member with equal | member
+    · subst other
+      exact frame_depth_advance graph maximum frame (valid.frames frame (by simp [stack]))
+        available contribution derived within
+    · exact valid.frames other (by simp only [stack, List.mem_cons]; exact Or.inr member)
+  · cases rest with
+    | nil =>
+      have rooted : frame.node = state.root := by
+        simpa only [stack, Rooted] using valid.rooted
+      simp [Frame.advanceBy, Rooted, rooted]
+    | cons second tail =>
+      simpa [Frame.advanceBy, stack, Rooted] using valid.rooted
+
+theorem DepthValid.addRow {graph : Graph} {maximum : Nat} {state : State}
+    (valid : DepthValid graph maximum state) (frame : Frame) (rest : List Frame)
+    (stack : state.stack = frame :: rest)
+    (available : frame.row < (graph.rows frame.node).length) (contribution _span : Nat)
+    (derived : RowDepth graph (graph.rows frame.node)[frame.row] contribution) :
+    DepthValid graph maximum
+      (addRow maximum state frame rest contribution .depth _span) := by
+  unfold OccurrenceGraph.addRow
+  dsimp only [rowOverflow, commitRow]
+  split
+  · exact valid.fail .overflow (by decide)
+  · rename_i safe
+    have within : max frame.total contribution ≤ maximum := by omega
+    exact valid.commit frame rest stack available contribution derived within
+
+theorem step_depthValid (graph : Graph) (maximum : Nat) (state : State)
+    (valid : DepthValid graph maximum state) :
+    DepthValid graph maximum (step graph maximum state .depth) := by
+  refine step_preserve graph maximum .depth (DepthValid graph maximum)
+    ?_ ?_ ?_ ?_ ?_ ?_ ?_ state valid
+  · intro state status notBound valid
+    exact valid.fail status notBound
+  · intro state valid
+    exact valid.ticksWithin
+  · intro state ticks visits within valid
+    exact valid.withCounters ticks visits within
+  · intro state frame rest stack finished valid
+    exact valid.finish frame rest stack finished
+  · intro state child admitted nonempty pending valid
+    exact valid.push child admitted nonempty pending
+  · intro state frame rest row stack available rowEqual terminal valid
+    have derived : RowDepth graph (graph.rows frame.node)[frame.row] 1 := by
+      rw [rowEqual]
+      exact RowDepth.of_terminal graph row terminal
+    exact valid.addRow frame rest stack available 1 1 derived
+  · intro state frame rest row child stack available rowEqual linked color _notMaximum valid
+    have cached := valid.cached child color
+    have derived : RowDepth graph (graph.rows frame.node)[frame.row]
+        (1 + state.memo child) := by
+      rw [rowEqual]
+      exact RowDepth.of_linked graph row child (state.memo child) linked cached.1
+    exact valid.addRow frame rest stack available (1 + state.memo child)
+      (rowSpan .depth (state.depthMemo child)) derived
+
+theorem run_depthValid (graph : Graph) (maximum fuel : Nat) (state : State)
+    (valid : DepthValid graph maximum state) :
+    DepthValid graph maximum (run graph maximum fuel state .depth) := by
+  induction fuel generalizing state with
+  | zero => exact valid
+  | succ fuel ih =>
+    exact ih (step graph maximum state .depth) (step_depthValid graph maximum state valid)
+
+theorem run_root_metric (graph : Graph) (maximum fuel : Nat) (state : State) (metric : Metric) :
+    (run graph maximum fuel state metric).root = state.root := by
+  induction fuel generalizing state with
+  | zero => rfl
+  | succ fuel ih => rw [run_split, ih, step_root_metric]
+
+/-- A bound depth run is `dependencyDepth`. The memo is the preserved running
+maximum, not the span of a paired run that may have overflowed. -/
+theorem bound_dependencyDepth (graph : Graph) (maximum : Nat) (state : State) (value : Nat)
+    (acyclic : graph.catalogue.Acyclic) (valid : DepthValid graph maximum state)
+    (reported : bound? state = some value) :
+    value = graph.dependencyDepth acyclic state.root ∧ value ≤ maximum := by
+  unfold bound? at reported
+  split at reported
+  · rename_i completed
+    cases reported
+    obtain ⟨derived, within⟩ := valid.cached state.root (valid.completed completed)
+    have eq := Catalogue.FoldDerivation.value_eq_depFold graph.catalogue acyclic
+      graph.depthCombine state.root (state.memo state.root) derived
+    refine ⟨?_, within⟩
+    have spec : graph.dependencyDepth acyclic state.root =
+        graph.catalogue.depFold acyclic graph.depthCombine state.root := rfl
+    rw [spec]
+    exact eq
+  · contradiction
+
+theorem initialized_run_depth (graph : Graph) (maximum root fuel : Nat) (state : State)
+    (issued : init graph root = some state) (value : Nat) (acyclic : graph.catalogue.Acyclic)
+    (reported : bound? (run graph maximum fuel state .depth) = some value) :
+    value = graph.dependencyDepth acyclic root ∧ value ≤ maximum := by
+  have rootEq : state.root = root := by
+    unfold init at issued
+    split at issued
+    · cases issued
+      rfl
+    · contradiction
+  have result := bound_dependencyDepth graph maximum (run graph maximum fuel state .depth) value
+    acyclic (run_depthValid graph maximum fuel state (init_depthValid graph maximum root state issued))
+    reported
+  rw [run_root_metric graph maximum fuel state .depth, rootEq] at result
+  exact result
+
+/-! Concrete depth-only runs. The ceiling is also the step allowance, so the
+separating example needs several successor rows: each adds the child work in
+one step, while depth keeps the maximum layer. -/
+
+def depthChainGraph : Graph :=
+  ⟨[[⟨1, some 1⟩], [⟨1, none⟩]]⟩
+
+def depthChainInitial : State :=
+  (init depthChainGraph 0).get (by decide)
+
+def depthChainCertificate : depthChainGraph.catalogue.Acyclic :=
+  depthChainGraph.catalogue.acyclic?.get (by decide)
+
+private theorem depthChain_dependencyDepth :
+    depthChainGraph.dependencyDepth depthChainCertificate 0 = 2 := by
+  have leaf : depthChainGraph.dependencyDepth depthChainCertificate 1 = 1 := by
+    rw [Graph.dependencyDepth_eq depthChainGraph depthChainCertificate 1 (by decide)]
+    rfl
+  rw [Graph.dependencyDepth_eq depthChainGraph depthChainCertificate 0 (by decide)]
+  change depthChainGraph.depthCombine 0
+      [depthChainGraph.dependencyDepth depthChainCertificate 1] = 2
+  simp only [leaf]
+  rfl
+
+/-- A successor chain binds depth two through the depth runner. -/
+theorem depth_chain_reports_dependencyDepth :
+    bound? (run depthChainGraph 5 5 depthChainInitial .depth) =
+      some (depthChainGraph.dependencyDepth depthChainCertificate 0) ∧
+    depthChainGraph.dependencyDepth depthChainCertificate 0 = 2 := by
+  have reported : bound? (run depthChainGraph 5 5 depthChainInitial .depth) = some 2 := by decide
+  have sound := initialized_run_depth depthChainGraph 5 0 5 depthChainInitial (by rfl) 2
+    depthChainCertificate reported
+  refine ⟨?_, depthChain_dependencyDepth⟩
+  rw [← sound.1]
+  exact reported
+
+def depthFanGraph : Graph :=
+  ⟨[[⟨1, some 1⟩, ⟨2, some 1⟩, ⟨3, some 1⟩, ⟨4, some 1⟩, ⟨5, some 1⟩],
+    [⟨1, none⟩]]⟩
+
+def depthFanInitial : State :=
+  (init depthFanGraph 0).get (by decide)
+
+def depthFanCertificate : depthFanGraph.catalogue.Acyclic :=
+  depthFanGraph.catalogue.acyclic?.get (by decide)
+
+private theorem depthFan_dependencyDepth :
+    depthFanGraph.dependencyDepth depthFanCertificate 0 = 2 := by
+  have leaf : depthFanGraph.dependencyDepth depthFanCertificate 1 = 1 := by
+    rw [Graph.dependencyDepth_eq depthFanGraph depthFanCertificate 1 (by decide)]
+    rfl
+  rw [Graph.dependencyDepth_eq depthFanGraph depthFanCertificate 0 (by decide)]
+  change depthFanGraph.depthCombine 0
+      [depthFanGraph.dependencyDepth depthFanCertificate 1,
+       depthFanGraph.dependencyDepth depthFanCertificate 1,
+       depthFanGraph.dependencyDepth depthFanCertificate 1,
+       depthFanGraph.dependencyDepth depthFanCertificate 1,
+       depthFanGraph.dependencyDepth depthFanCertificate 1] = 2
+  simp only [leaf]
+  rfl
+
+/-- Five referring rows make activation work overflow at ceiling nine.
+The depth runner still binds dependency depth two. Pair overflows on the
+same work sum. -/
+theorem depth_fan_binds_when_work_overflows :
+    bound? (run depthFanGraph 9 9 depthFanInitial .depth) =
+      some (depthFanGraph.dependencyDepth depthFanCertificate 0) ∧
+    depthFanGraph.dependencyDepth depthFanCertificate 0 = 2 ∧
+    (run depthFanGraph 9 9 depthFanInitial .unfolding).status = .overflow ∧
+    bound? (run depthFanGraph 9 9 depthFanInitial .unfolding) = none ∧
+    (run depthFanGraph 9 9 depthFanInitial .pair).status = .overflow ∧
+    bound? (run depthFanGraph 9 9 depthFanInitial .pair) = none := by
+  have reported : bound? (run depthFanGraph 9 9 depthFanInitial .depth) = some 2 := by decide
+  have sound := initialized_run_depth depthFanGraph 9 0 9 depthFanInitial (by rfl) 2
+    depthFanCertificate reported
+  refine ⟨?_, depthFan_dependencyDepth, by decide, by decide, by decide, by decide⟩
+  rw [← sound.1]
+  exact reported
+
+/-! ## Admission valuation and source frontier
+
+`admissionValuation` interprets admitted rows by the existing dependency
+fold. It does not execute them. The source frontier does: a pending list
+of graph nodes and the number of matched rows already paid. Expanding the
+head node adds that node's row count once, including a row whose answer
+list is empty, and appends every linked successor occurrence. Repeated
+child nodes stay repeated. The frontier stores the number, not an
+admission log. Resumption is iteration of expansion, and an empty
+pending list is a fixed point. `recorded` is the optional `List.iterate`
+word of that same expansion; it is not frontier state. The native
+compiled correspondence is a separate service boundary; this frontier
+does not measure a worker schedule, and dependency depth is not that
+span. -/
+
+/-- One retained matched occurrence. `answers` is the returned collection. -/
+structure MatchedAdmission where
+  physical : Nat
+  successor : Option Nat
+  answers : List Nat
+  deriving DecidableEq, Repr
+
+def MatchedAdmission.occurrence (admission : MatchedAdmission) : Row :=
+  ⟨admission.physical, admission.successor⟩
+
+def rowAdmission (answersAt : Row → List Nat) (row : Row) : MatchedAdmission where
+  physical := row.physical
+  successor := row.successor
+  answers := answersAt row
+
+def rowAdmissions (rows : List Row) (answersAt : Row → List Nat) : List MatchedAdmission :=
+  rows.map (rowAdmission answersAt)
+
+theorem rowAdmissions_occurrence (rows : List Row) (answersAt : Row → List Nat) :
+    (rowAdmissions rows answersAt).map MatchedAdmission.occurrence = rows := by
+  rw [rowAdmissions, List.map_map]
+  change rows.map id = rows
+  exact List.map_id rows
+
+/-- Returned answers, counted separately from admission work. -/
+def returnedAnswerCount (admissions : List MatchedAdmission) : Nat :=
+  (admissions.map (fun admission => admission.answers.length)).sum
+
+/-- Row-aggregate reading of admitted occurrences. This is not a frontier step. -/
+def admissionAggregate (admissions : List MatchedAdmission) (children : List WorkSpan) : WorkSpan :=
+  prefixFold (admissions.map MatchedAdmission.occurrence) children
+
+def Graph.admittedRows (graph : Graph) (answersAt : Row → List Nat) (node : Nat) :
+    List MatchedAdmission :=
+  rowAdmissions (graph.rows node) answersAt
+
+def Graph.admissionCombine (graph : Graph) (answersAt : Row → List Nat)
+    (node : Nat) (children : List WorkSpan) : WorkSpan :=
+  admissionAggregate (graph.admittedRows answersAt node) children
+
+/-- Dependency-fold reading of admitted rows. The answer annotation is an
+input, not a summand. This is a valuation, not a frontier execution. -/
+def Graph.admissionValuation (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (answersAt : Row → List Nat) : Nat → WorkSpan :=
+  graph.catalogue.depFold acyclic (graph.admissionCombine answersAt)
+
+theorem Graph.admissionCombine_eq_sourceCombine (graph : Graph) (answersAt : Row → List Nat)
+    (node : Nat) (children : List WorkSpan)
+    (aligned : children.length = successorCount (graph.rows node)) :
+    graph.admissionCombine answersAt node children = graph.sourceCombine node children := by
+  unfold Graph.admissionCombine admissionAggregate Graph.admittedRows
+  rw [rowAdmissions_occurrence]
+  exact prefixFold_eq_sourceCombine graph node children aligned
+
+theorem Graph.admissionValuation_eq_sourceValuation (graph : Graph)
+    (acyclic : graph.catalogue.Acyclic) (answersAt : Row → List Nat) (node : Nat) :
+    graph.admissionValuation acyclic answersAt node = graph.sourceValuation acyclic node := by
+  induction acc_of_accCode (acyclic.accCode node) with
+  | intro node _ ih =>
+    unfold Graph.admissionValuation Graph.sourceValuation
+    rw [graph.catalogue.depFold_eq acyclic (graph.admissionCombine answersAt) node,
+      graph.catalogue.depFold_eq acyclic graph.sourceCombine node]
+    by_cases admitted : node ∈ graph.catalogue.items
+    · rw [if_pos admitted, if_pos admitted]
+      have children :
+          (graph.catalogue.deps node).map
+              (graph.catalogue.depFold acyclic (graph.admissionCombine answersAt)) =
+            (graph.catalogue.deps node).map
+              (graph.catalogue.depFold acyclic graph.sourceCombine) :=
+        List.map_congr_left fun child member => by
+          have step := ih child ⟨admitted, member⟩
+          unfold Graph.admissionValuation Graph.sourceValuation at step
+          exact step
+      rw [children]
+      have aligned :
+          ((graph.catalogue.deps node).map
+              (graph.catalogue.depFold acyclic graph.sourceCombine)).length =
+            successorCount (graph.rows node) := by
+        simp only [Graph.catalogue, successorCount, List.length_map]
+      exact graph.admissionCombine_eq_sourceCombine answersAt node
+        ((graph.catalogue.deps node).map
+          (graph.catalogue.depFold acyclic graph.sourceCombine)) aligned
+    · rw [if_neg admitted, if_neg admitted]
+      have emptyRows : graph.rows node = [] := by
+        unfold Graph.rows
+        cases found : graph.nodes[node]? with
+        | none => rfl
+        | some rows =>
+          obtain ⟨inside, _⟩ := List.getElem?_eq_some_iff.mp found
+          have member : node ∈ graph.catalogue.items := by
+            simp only [Graph.catalogue, List.mem_range]
+            exact inside
+          exact False.elim (admitted member)
+      have aligned : ([] : List WorkSpan).length = successorCount (graph.rows node) := by
+        rw [emptyRows]
+        rfl
+      exact graph.admissionCombine_eq_sourceCombine answersAt node [] aligned
+
+theorem Graph.admissionValuation_work (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (answersAt : Row → List Nat) (node : Nat) :
+    (graph.admissionValuation acyclic answersAt node).work =
+      graph.catalogue.unfoldingWork acyclic (fun item => (graph.rows item).length) node := by
+  rw [graph.admissionValuation_eq_sourceValuation acyclic answersAt node,
+    graph.sourceValuation_work]
+
+theorem Graph.admissionValuation_ignores_answers (graph : Graph)
+    (acyclic : graph.catalogue.Acyclic) (first second : Row → List Nat) (node : Nat) :
+    graph.admissionValuation acyclic first node = graph.admissionValuation acyclic second node := by
+  rw [graph.admissionValuation_eq_sourceValuation acyclic first node,
+    graph.admissionValuation_eq_sourceValuation acyclic second node]
+
+/-- Sum of unfolding work over a pending node list. Multiplicity is kept. -/
+def pendingWork (graph : Graph) (acyclic : graph.catalogue.Acyclic) (pending : List Nat) : Nat :=
+  (pending.map (graph.catalogue.unfoldingWork acyclic
+    (fun item => (graph.rows item).length))).sum
+
+private theorem pendingWork_cons (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (node : Nat) (rest : List Nat) :
+    pendingWork graph acyclic (node :: rest) =
+      graph.catalogue.unfoldingWork acyclic (fun item => (graph.rows item).length) node +
+        pendingWork graph acyclic rest := by
+  simp [pendingWork, List.map_cons, List.sum_cons]
+
+private theorem pendingWork_append (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (left right : List Nat) :
+    pendingWork graph acyclic (left ++ right) =
+      pendingWork graph acyclic left + pendingWork graph acyclic right := by
+  induction left with
+  | nil => simp [pendingWork]
+  | cons head tail ih =>
+    rw [List.cons_append, pendingWork_cons, pendingWork_cons, ih]
+    omega
+
+private theorem rows_of_outside (graph : Graph) {node : Nat}
+    (outside : node ∉ graph.catalogue.items) : graph.rows node = [] := by
+  unfold Graph.rows
+  cases found : graph.nodes[node]? with
+  | none => rfl
+  | some rows =>
+    obtain ⟨inside, _⟩ := List.getElem?_eq_some_iff.mp found
+    have member : node ∈ graph.catalogue.items := by
+      simp only [Graph.catalogue, List.mem_range]
+      exact inside
+    exact False.elim (outside member)
+
+private theorem unfoldingWork_outside (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    {node : Nat} (outside : node ∉ graph.catalogue.items) :
+    graph.catalogue.unfoldingWork acyclic (fun item => (graph.rows item).length) node = 0 := by
+  have rows := rows_of_outside graph outside
+  have eq := graph.catalogue.depFold_eq acyclic
+    (fun item childWork => (graph.rows item).length + childWork.sum) node
+  rw [if_neg outside] at eq
+  simp [rows] at eq
+  exact eq
+
+private theorem deps_of_outside (graph : Graph) {node : Nat}
+    (outside : node ∉ graph.catalogue.items) : graph.catalogue.deps node = [] := by
+  simp [Graph.catalogue, rows_of_outside graph outside]
+
+/-- Charging one node's matched rows and queueing its successor occurrences
+is that node's unfolding work. -/
+theorem pendingCharge_eq_unfolding (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (node : Nat) :
+    (graph.rows node).length + pendingWork graph acyclic (graph.catalogue.deps node) =
+      graph.catalogue.unfoldingWork acyclic (fun item => (graph.rows item).length) node := by
+  by_cases admitted : node ∈ graph.catalogue.items
+  · rw [graph.catalogue.unfoldingWork_eq acyclic (fun item => (graph.rows item).length)
+      node admitted]
+    simp [pendingWork]
+  · rw [rows_of_outside graph admitted, deps_of_outside graph admitted,
+      unfoldingWork_outside graph acyclic admitted]
+    simp [pendingWork]
+
+/-- Pending graph nodes and the number of matched rows already paid.
+This is the source algorithm: it stores a count, not an admission log. -/
+structure SourceFrontier where
+  paid : Nat
+  pending : List Nat
+  deriving DecidableEq, Repr
+
+namespace SourceFrontier
+
+def start (root : Nat) : SourceFrontier where
+  paid := 0
+  pending := [root]
+
+/-- Expand the first pending node. Each matched row is charged once, by
+row count. Every linked successor occurrence is retained, including a
+repeated child. The count does not read returned answers. -/
+def expand (graph : Graph) (frontier : SourceFrontier) : SourceFrontier :=
+  match frontier.pending with
+  | [] => frontier
+  | node :: rest =>
+    { paid := frontier.paid + (graph.rows node).length
+      pending := rest ++ graph.catalogue.deps node }
+
+def resume (graph : Graph) (fuel : Nat) (frontier : SourceFrontier) : SourceFrontier :=
+  match fuel with
+  | 0 => frontier
+  | fuel + 1 =>
+    if frontier.pending.isEmpty then frontier
+    else (frontier.expand graph).resume graph fuel
+
+def accounts (frontier : SourceFrontier) (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (source : Nat) : Prop :=
+  frontier.paid + pendingWork graph acyclic frontier.pending = source
+
+theorem start_accounts (graph : Graph) (acyclic : graph.catalogue.Acyclic) (root : Nat) :
+    (start root).accounts graph acyclic
+      (graph.catalogue.unfoldingWork acyclic (fun item => (graph.rows item).length) root) := by
+  simp [start, accounts, pendingWork, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+
+theorem expand_accounts (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (source : Nat) (frontier : SourceFrontier)
+    (balanced : frontier.accounts graph acyclic source) :
+    (frontier.expand graph).accounts graph acyclic source := by
+  unfold expand accounts
+  unfold accounts at balanced
+  cases pending : frontier.pending with
+  | nil => exact balanced
+  | cons node rest =>
+    rw [pending, pendingWork_cons] at balanced
+    dsimp
+    rw [pendingWork_append]
+    have charge := pendingCharge_eq_unfolding graph acyclic node
+    omega
+
+theorem resume_accounts (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (source fuel : Nat) (frontier : SourceFrontier)
+    (balanced : frontier.accounts graph acyclic source) :
+    (frontier.resume graph fuel).accounts graph acyclic source := by
+  induction fuel generalizing frontier with
+  | zero =>
+    unfold resume
+    exact balanced
+  | succ fuel ih =>
+    unfold resume
+    split
+    · exact balanced
+    · exact ih (frontier.expand graph)
+        (frontier.expand_accounts graph acyclic source balanced)
+
+theorem completed_paid (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (source fuel : Nat) (frontier : SourceFrontier)
+    (balanced : frontier.accounts graph acyclic source)
+    (done : (frontier.resume graph fuel).pending = []) :
+    (frontier.resume graph fuel).paid = source := by
+  have kept := frontier.resume_accounts graph acyclic source fuel balanced
+  rw [accounts, done, pendingWork, List.map_nil, List.sum_nil, Nat.add_zero] at kept
+  exact kept
+
+/-- How a source-metric budget client stopped. `paused` means the caller
+supplied no further steps while pending work remains. `finished` means that
+pending list is empty. `insufficient` means the next matched-row charge
+exceeds the remaining budget. Insufficiency keeps the ordinary frontier.
+It is not an empty answer, and it is not the analysis runner's `.overflow`
+status. -/
+inductive BudgetStop where
+  | paused
+  | finished
+  | insufficient
+  deriving DecidableEq, Repr
+
+/-- Ordinary frontier after a budgeted continuation, with the unspent source
+budget and the number of admitted expansions. -/
+structure BudgetRun where
+  stop : BudgetStop
+  frontier : SourceFrontier
+  remaining : Nat
+  steps : Nat
+  deriving DecidableEq, Repr
+
+/-- Admit expansions while each matched-row charge fits the remaining source
+budget. The charge is `(graph.rows node).length`, the same charge as
+`expand`, including a repeated successor. Refusal returns the current
+frontier and the current budget. The metric is the finite acyclic catalogue's
+unfolding work. It is not a budget for an arbitrary higher-order Prime
+program. -/
+def continueWithin (graph : Graph) (budget fuel : Nat) (frontier : SourceFrontier) : BudgetRun :=
+  match fuel with
+  | 0 =>
+    if frontier.pending.isEmpty then
+      { stop := .finished, frontier, remaining := budget, steps := 0 }
+    else
+      { stop := .paused, frontier, remaining := budget, steps := 0 }
+  | fuel + 1 =>
+    match frontier.pending with
+    | [] => { stop := .finished, frontier, remaining := budget, steps := 0 }
+    | node :: _ =>
+      let charge := (graph.rows node).length
+      if charge ≤ budget then
+        let next := continueWithin graph (budget - charge) fuel (frontier.expand graph)
+        { next with steps := next.steps + 1 }
+      else
+        { stop := .insufficient, frontier, remaining := budget, steps := 0 }
+
+theorem continueWithin_resume (graph : Graph) (budget fuel : Nat) (frontier : SourceFrontier) :
+    (continueWithin graph budget fuel frontier).frontier =
+      frontier.resume graph (continueWithin graph budget fuel frontier).steps := by
+  induction fuel generalizing frontier budget with
+  | zero =>
+    unfold continueWithin resume
+    split <;> rfl
+  | succ fuel ih =>
+    cases pending : frontier.pending with
+    | nil =>
+      simp only [continueWithin, pending, resume]
+    | cons node rest =>
+      by_cases fits : (graph.rows node).length ≤ budget
+      · have ihv := ih (budget - (graph.rows node).length) (frontier.expand graph)
+        simp only [continueWithin, pending, fits, ↓reduceIte, resume, List.isEmpty_cons]
+        exact ihv
+      · simp only [continueWithin, pending, fits, ↓reduceIte, resume]
+
+theorem continueWithin_spent (graph : Graph) (budget fuel : Nat) (frontier : SourceFrontier) :
+    let ran := continueWithin graph budget fuel frontier
+    ran.remaining ≤ budget ∧
+      ran.frontier.paid = frontier.paid + (budget - ran.remaining) := by
+  induction fuel generalizing frontier budget with
+  | zero =>
+    unfold continueWithin
+    constructor
+    · split <;> exact Nat.le_refl _
+    · split <;> (dsimp; omega)
+  | succ fuel ih =>
+    cases pending : frontier.pending with
+    | nil =>
+      simp only [continueWithin, pending]
+      omega
+    | cons node rest =>
+      by_cases fits : (graph.rows node).length ≤ budget
+      · have stepped : (frontier.expand graph).paid =
+            frontier.paid + (graph.rows node).length := by
+          unfold expand
+          rw [pending]
+        have ihv := ih (budget - (graph.rows node).length) (frontier.expand graph)
+        simp only [continueWithin, pending, fits, ↓reduceIte] at ihv ⊢
+        obtain ⟨left, paid⟩ := ihv
+        refine ⟨Nat.le_trans left (Nat.sub_le _ _), ?_⟩
+        rw [paid, stepped]
+        omega
+      · simp only [continueWithin, pending, fits, ↓reduceIte]
+        omega
+
+theorem continueWithin_accounts (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (source budget fuel : Nat) (frontier : SourceFrontier)
+    (balanced : frontier.accounts graph acyclic source) :
+    (continueWithin graph budget fuel frontier).frontier.accounts graph acyclic source := by
+  induction fuel generalizing frontier budget with
+  | zero =>
+    unfold continueWithin
+    split <;> exact balanced
+  | succ fuel ih =>
+    cases pending : frontier.pending with
+    | nil =>
+      simp only [continueWithin, pending]
+      exact balanced
+    | cons node rest =>
+      by_cases fits : (graph.rows node).length ≤ budget
+      · simp only [continueWithin, pending, fits, ↓reduceIte]
+        exact ih (budget - (graph.rows node).length) (frontier.expand graph)
+          (frontier.expand_accounts graph acyclic source balanced)
+      · simp only [continueWithin, pending, fits, ↓reduceIte]
+        exact balanced
+
+theorem continueWithin_paid_eq_pending_drop (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (source budget fuel : Nat) (frontier : SourceFrontier)
+    (balanced : frontier.accounts graph acyclic source) :
+    let ran := continueWithin graph budget fuel frontier
+    ran.frontier.paid - frontier.paid =
+      pendingWork graph acyclic frontier.pending -
+        pendingWork graph acyclic ran.frontier.pending := by
+  have kept := continueWithin_accounts graph acyclic source budget fuel frontier balanced
+  have spent := continueWithin_spent graph budget fuel frontier
+  rw [accounts] at balanced kept
+  omega
+
+theorem continueWithin_finished_pending (graph : Graph) (budget fuel : Nat)
+    (frontier : SourceFrontier)
+    (done : (continueWithin graph budget fuel frontier).stop = .finished) :
+    (continueWithin graph budget fuel frontier).frontier.pending = [] := by
+  induction fuel generalizing frontier budget with
+  | zero =>
+    unfold continueWithin at done ⊢
+    cases empty : frontier.pending.isEmpty with
+    | true =>
+      rw [List.isEmpty_iff] at empty
+      exact empty
+    | false =>
+      simp only [empty] at done
+      cases done
+  | succ fuel ih =>
+    cases pending : frontier.pending with
+    | nil =>
+      simp only [continueWithin, pending]
+    | cons node rest =>
+      by_cases fits : (graph.rows node).length ≤ budget
+      · simp only [continueWithin, pending, fits, ↓reduceIte] at done ⊢
+        exact ih (budget - (graph.rows node).length) (frontier.expand graph) done
+      · simp only [continueWithin, pending, fits, ↓reduceIte] at done
+        cases done
+
+theorem continueWithin_finished_paid (graph : Graph) (acyclic : graph.catalogue.Acyclic)
+    (source budget fuel : Nat) (frontier : SourceFrontier)
+    (balanced : frontier.accounts graph acyclic source)
+    (done : (continueWithin graph budget fuel frontier).stop = .finished) :
+    (continueWithin graph budget fuel frontier).frontier.paid = source := by
+  have pending := continueWithin_finished_pending graph budget fuel frontier done
+  have kept := continueWithin_accounts graph acyclic source budget fuel frontier balanced
+  rw [accounts, pending, pendingWork, List.map_nil, List.sum_nil, Nat.add_zero] at kept
+  exact kept
+
+theorem continueWithin_paused_pending (graph : Graph) (budget fuel : Nat)
+    (frontier : SourceFrontier)
+    (paused : (continueWithin graph budget fuel frontier).stop = .paused) :
+    (continueWithin graph budget fuel frontier).frontier.pending ≠ [] := by
+  induction fuel generalizing frontier budget with
+  | zero =>
+    by_cases gone : frontier.pending = []
+    · have flag : frontier.pending.isEmpty = true := by
+        rw [List.isEmpty_iff]
+        exact gone
+      unfold continueWithin at paused
+      rw [flag] at paused
+      cases paused
+    · have flag : frontier.pending.isEmpty = false := by
+        cases mark : frontier.pending.isEmpty
+        · rfl
+        · rw [List.isEmpty_iff] at mark
+          exact absurd mark gone
+      unfold continueWithin at paused ⊢
+      rw [flag]
+      exact gone
+  | succ fuel ih =>
+    cases pending : frontier.pending with
+    | nil =>
+      simp only [continueWithin, pending] at paused
+      cases paused
+    | cons node rest =>
+      by_cases fits : (graph.rows node).length ≤ budget
+      · simp only [continueWithin, pending, fits, ↓reduceIte] at paused ⊢
+        exact ih (budget - (graph.rows node).length) (frontier.expand graph) paused
+      · simp only [continueWithin, pending, fits, ↓reduceIte] at paused
+        cases paused
+
+theorem continueWithin_insufficient (graph : Graph) (budget fuel : Nat)
+    (frontier : SourceFrontier)
+    (refused : (continueWithin graph budget fuel frontier).stop = .insufficient) :
+    ∃ node rest,
+      (continueWithin graph budget fuel frontier).frontier.pending = node :: rest ∧
+        (continueWithin graph budget fuel frontier).remaining < (graph.rows node).length ∧
+        (continueWithin graph budget fuel frontier).frontier =
+          frontier.resume graph (continueWithin graph budget fuel frontier).steps := by
+  induction fuel generalizing frontier budget with
+  | zero =>
+    unfold continueWithin at refused
+    split at refused <;> cases refused
+  | succ fuel ih =>
+    cases pending : frontier.pending with
+    | nil =>
+      simp only [continueWithin, pending] at refused
+      cases refused
+    | cons node rest =>
+      by_cases fits : (graph.rows node).length ≤ budget
+      · simp only [continueWithin, pending, fits, ↓reduceIte] at refused ⊢
+        obtain ⟨node', rest', pending', short, resumed⟩ :=
+          ih (budget - (graph.rows node).length) (frontier.expand graph) refused
+        refine ⟨node', rest', pending', short, ?_⟩
+        rw [resume, pending, List.isEmpty_cons]
+        exact resumed
+      · simp only [continueWithin, pending, fits, ↓reduceIte] at refused ⊢
+        refine ⟨node, rest, rfl, ?_, by unfold resume; rfl⟩
+        omega
+
+/-- One admitted step is `expand`. Linked successors stay in order, including
+duplicates. `catalogue.deps` is not deduplicated. -/
+theorem continueWithin_one_keeps_dependencies (graph : Graph) (budget : Nat)
+    (frontier : SourceFrontier) {node : Nat} {rest : List Nat}
+    (pending : frontier.pending = node :: rest)
+    (fits : (graph.rows node).length ≤ budget) :
+    (continueWithin graph budget 1 frontier).frontier.pending =
+      rest ++ graph.catalogue.deps node := by
+  have expanded : (frontier.expand graph).pending = rest ++ graph.catalogue.deps node := by
+    unfold expand
+    rw [pending]
+  simp only [continueWithin, pending, fits, ↓reduceIte]
+  split <;> exact expanded
+
+/-- A refused step stays refused on a later attempt with the same remaining
+budget. The frontier is unchanged. -/
+theorem continueWithin_insufficient_retry (graph : Graph) (budget fuel more : Nat)
+    (frontier : SourceFrontier)
+    (refused : (continueWithin graph budget fuel frontier).stop = .insufficient) :
+    let ran := continueWithin graph budget fuel frontier
+    continueWithin graph ran.remaining (more + 1) ran.frontier =
+      { stop := .insufficient, frontier := ran.frontier, remaining := ran.remaining, steps := 0 } := by
+  obtain ⟨node, rest, pending, short, _⟩ :=
+    continueWithin_insufficient graph budget fuel frontier refused
+  simp only [continueWithin, pending, Nat.not_le_of_gt short, ↓reduceIte]
+
+theorem expand_fixed (graph : Graph) (frontier : SourceFrontier)
+    (done : frontier.pending = []) : frontier.expand graph = frontier := by
+  unfold expand
+  rw [done]
+
+theorem resume_iterate (graph : Graph) (fuel : Nat) (frontier : SourceFrontier) :
+    frontier.resume graph fuel = (expand graph)^[fuel] frontier := by
+  induction fuel generalizing frontier with
+  | zero => rfl
+  | succ fuel ih =>
+    rw [Function.iterate_succ_apply]
+    cases pending : frontier.pending with
+    | nil =>
+      have fixed := expand_fixed graph frontier pending
+      rw [fixed]
+      unfold resume
+      rw [pending]
+      simp [List.isEmpty_nil]
+      exact (Function.iterate_fixed fixed fuel).symm
+    | cons _ _ =>
+      unfold resume
+      rw [pending]
+      simp [List.isEmpty_cons]
+      exact ih (frontier.expand graph)
+
+theorem resume_add (graph : Graph) (first second : Nat) (frontier : SourceFrontier) :
+    frontier.resume graph (first + second) =
+      (frontier.resume graph first).resume graph second := by
+  rw [resume_iterate, resume_iterate, resume_iterate, Nat.add_comm first second]
+  exact Function.iterate_add_apply (expand graph) second first frontier
+
+theorem resume_fixed (graph : Graph) (fuel : Nat) (frontier : SourceFrontier)
+    (done : frontier.pending = []) : frontier.resume graph fuel = frontier := by
+  rw [resume_iterate]
+  exact Function.iterate_fixed (expand_fixed graph frontier done) fuel
+
+/-- Optional recorded word of the same expansion. This is not the source
+algorithm: the frontier keeps `paid` and `pending` only. -/
+def recorded (graph : Graph) (fuel : Nat) (frontier : SourceFrontier) : List SourceFrontier :=
+  List.iterate (expand graph) frontier fuel
+
+theorem recorded_prefix_states (graph : Graph) (fuel : Nat) (frontier : SourceFrontier) :
+    (List.range fuel).map (fun i => frontier.resume graph i) = frontier.recorded graph fuel := by
+  rw [recorded, ← List.range_map_iterate]
+  refine List.map_congr_left fun _ _ => ?_
+  rw [resume_iterate]
+
+theorem recorded_prefix (graph : Graph) (first second : Nat) (frontier : SourceFrontier) :
+    frontier.recorded graph (first + second) =
+      frontier.recorded graph first ++
+        (frontier.resume graph first).recorded graph second := by
+  rw [recorded, recorded, recorded, List.iterate_add, resume_iterate]
+
+theorem recorded_take (graph : Graph) (shorter longer : Nat) (frontier : SourceFrontier) :
+    List.take shorter (frontier.recorded graph longer) =
+      frontier.recorded graph (min shorter longer) := by
+  simp only [recorded, List.take_iterate]
+
+end SourceFrontier
+
+/-! Two referring rows name the same successor, and one local row returns
+nothing. The frontier charges every row. -/
+
+def repeatedBranchGraph : Graph :=
+  ⟨[[⟨1, some 1⟩, ⟨2, some 1⟩, ⟨3, none⟩], [⟨4, none⟩]]⟩
+
+def repeatedBranchCertificate : repeatedBranchGraph.catalogue.Acyclic :=
+  repeatedBranchGraph.catalogue.acyclic?.get (by decide)
+
+def repeatedBranchAnswers : Row → List Nat := fun _ => []
+
+private theorem repeatedBranch_leaf :
+    repeatedBranchGraph.sourceValuation repeatedBranchCertificate 1 = ⟨1, 1⟩ := by
+  rw [Graph.sourceValuation_eq repeatedBranchGraph repeatedBranchCertificate 1 (by decide)]
+  rfl
+
+private theorem repeatedBranch_root :
+    repeatedBranchGraph.sourceValuation repeatedBranchCertificate 0 = ⟨5, 2⟩ := by
+  rw [Graph.sourceValuation_eq repeatedBranchGraph repeatedBranchCertificate 0 (by decide)]
+  change repeatedBranchGraph.sourceCombine 0
+      [repeatedBranchGraph.sourceValuation repeatedBranchCertificate 1,
+       repeatedBranchGraph.sourceValuation repeatedBranchCertificate 1] = ⟨5, 2⟩
+  simp only [repeatedBranch_leaf]
+  rfl
+
+def repeatedBranchExpanded : SourceFrontier :=
+  (SourceFrontier.start 0).expand repeatedBranchGraph
+
+def repeatedBranchDone : SourceFrontier :=
+  (SourceFrontier.start 0).resume repeatedBranchGraph 3
+
+/-- Rows the depth-fan frontier charges: the root once and the one successor
+five times. This list is a control reading, not frontier state. -/
+def depthFanOccurrenceRows : List Row :=
+  depthFanGraph.rows 0 ++ depthFanGraph.rows 1 ++ depthFanGraph.rows 1 ++
+    depthFanGraph.rows 1 ++ depthFanGraph.rows 1 ++ depthFanGraph.rows 1
+
+/-- Budget 10 admits the whole depth fan. The paid number is the quoted
+unfolding work. Dependency depth, the transition count, and either answer
+annotation are different numbers. The same quotation ignores the annotation.
+This finite catalogue is not an arbitrary higher-order Prime analyzer. -/
+theorem depth_fan_source_budget_completes :
+    SourceFrontier.continueWithin depthFanGraph 10 6 (SourceFrontier.start 0) =
+      { stop := .finished, frontier := { paid := 10, pending := [] },
+        remaining := 0, steps := 6 } ∧
+    (SourceFrontier.continueWithin depthFanGraph 10 6 (SourceFrontier.start 0)).frontier.paid =
+      (depthFanGraph.sourceValuation depthFanCertificate 0).work ∧
+    (depthFanGraph.admissionValuation depthFanCertificate (fun _ => [0, 0]) 0).work =
+      (depthFanGraph.sourceValuation depthFanCertificate 0).work ∧
+    depthFanGraph.dependencyDepth depthFanCertificate 0 = 2 ∧
+    returnedAnswerCount (rowAdmissions depthFanOccurrenceRows fun _ => []) = 0 ∧
+    returnedAnswerCount (rowAdmissions depthFanOccurrenceRows fun _ => [0, 0]) = 20 ∧
+    (SourceFrontier.continueWithin depthFanGraph 10 6 (SourceFrontier.start 0)).frontier.paid ≠
+      depthFanGraph.dependencyDepth depthFanCertificate 0 ∧
+    (SourceFrontier.continueWithin depthFanGraph 10 6 (SourceFrontier.start 0)).frontier.paid ≠
+      (SourceFrontier.continueWithin depthFanGraph 10 6 (SourceFrontier.start 0)).steps ∧
+    (SourceFrontier.continueWithin depthFanGraph 10 6 (SourceFrontier.start 0)).frontier.paid ≠
+      returnedAnswerCount (rowAdmissions depthFanOccurrenceRows fun _ => []) ∧
+    (SourceFrontier.continueWithin depthFanGraph 10 6 (SourceFrontier.start 0)).frontier.paid ≠
+      returnedAnswerCount (rowAdmissions depthFanOccurrenceRows fun _ => [0, 0]) := by
+  have shape : SourceFrontier.continueWithin depthFanGraph 10 6 (SourceFrontier.start 0) =
+      { stop := .finished, frontier := { paid := 10, pending := [] },
+        remaining := 0, steps := 6 } := by
+    decide
+  have finished : (SourceFrontier.continueWithin depthFanGraph 10 6
+      (SourceFrontier.start 0)).stop = .finished := by
+    rw [shape]
+  have paidSource := SourceFrontier.continueWithin_finished_paid depthFanGraph
+    depthFanCertificate
+    (depthFanGraph.catalogue.unfoldingWork depthFanCertificate
+      (fun node => (depthFanGraph.rows node).length) 0)
+    10 6 (SourceFrontier.start 0)
+    (SourceFrontier.start_accounts depthFanGraph depthFanCertificate 0) finished
+  have quoted : (depthFanGraph.sourceValuation depthFanCertificate 0).work =
+      depthFanGraph.catalogue.unfoldingWork depthFanCertificate
+        (fun node => (depthFanGraph.rows node).length) 0 := by
+    rw [depthFanGraph.sourceValuation_work]
+  have ignoredWork : (depthFanGraph.admissionValuation depthFanCertificate
+      (fun _ => [0, 0]) 0).work =
+      (depthFanGraph.sourceValuation depthFanCertificate 0).work := by
+    rw [depthFanGraph.admissionValuation_ignores_answers depthFanCertificate
+        (fun _ => [0, 0]) (fun _ => []) 0,
+      depthFanGraph.admissionValuation_eq_sourceValuation]
+  have depth := (depth_fan_binds_when_work_overflows).2.1
+  have emptyAnswers : returnedAnswerCount (rowAdmissions depthFanOccurrenceRows fun _ => []) = 0 := by
+    decide
+  have doubledAnswers : returnedAnswerCount
+      (rowAdmissions depthFanOccurrenceRows fun _ => [0, 0]) = 20 := by
+    decide
+  rw [shape] at paidSource
+  have paidQuoted : (10 : Nat) = (depthFanGraph.sourceValuation depthFanCertificate 0).work := by
+    rw [quoted]
+    exact paidSource.symm
+  refine ⟨shape, ?_, ignoredWork, depth, emptyAnswers, doubledAnswers, ?_, ?_, ?_, ?_⟩
+  · rw [shape]
+    exact paidQuoted
+  · rw [shape, depth]
+    decide
+  · rw [shape]
+    decide
+  · rw [shape, emptyAnswers]
+    decide
+  · rw [shape, doubledAnswers]
+    decide
+
+/-- Budget 9 admits the root and four successor occurrences, then refuses the
+last successor. Pending work stays `[1]`. The refusal is not a finished
+frontier. The analysis runner's unfolding readout at ceiling 9 is a different
+machine: that status is overflow and its bound is none. -/
+theorem depth_fan_insufficient_budget_keeps_pending :
+    SourceFrontier.continueWithin depthFanGraph 9 6 (SourceFrontier.start 0) =
+      { stop := .insufficient, frontier := { paid := 9, pending := [1] },
+        remaining := 0, steps := 5 } ∧
+    (SourceFrontier.continueWithin depthFanGraph 9 6 (SourceFrontier.start 0)).frontier.pending ≠
+      [] ∧
+    (run depthFanGraph 9 9 depthFanInitial .unfolding).status = .overflow ∧
+    bound? (run depthFanGraph 9 9 depthFanInitial .unfolding) = none := by
+  have shape : SourceFrontier.continueWithin depthFanGraph 9 6 (SourceFrontier.start 0) =
+      { stop := .insufficient, frontier := { paid := 9, pending := [1] },
+        remaining := 0, steps := 5 } := by
+    decide
+  refine ⟨shape, ?_, depth_fan_binds_when_work_overflows.2.2.1,
+    depth_fan_binds_when_work_overflows.2.2.2.1⟩
+  rw [shape]
+  decide
+
+/-- One budgeted expansion of the repeated branch keeps both successor
+occurrences. The dependency list is not deduplicated. -/
+theorem repeated_branch_budget_keeps_duplicate_successors :
+    (SourceFrontier.continueWithin repeatedBranchGraph 3 1 (SourceFrontier.start 0)).frontier.pending =
+      [1, 1] := by
+  have pending : (SourceFrontier.start 0).pending = 0 :: ([] : List Nat) := rfl
+  have fits : (repeatedBranchGraph.rows 0).length ≤ 3 := by decide
+  have kept := SourceFrontier.continueWithin_one_keeps_dependencies repeatedBranchGraph 3
+    (SourceFrontier.start 0) pending fits
+  have deps : repeatedBranchGraph.catalogue.deps 0 = [1, 1] := by decide
+  rw [deps, List.nil_append] at kept
+  exact kept
+
+/-- Rows the numerical frontier charges: the root once and the successor
+twice. This list is a control reading, not frontier state. -/
+private def repeatedBranchChargedRows : List MatchedAdmission :=
+  repeatedBranchGraph.admittedRows repeatedBranchAnswers 0
+    ++ repeatedBranchGraph.admittedRows repeatedBranchAnswers 1
+    ++ repeatedBranchGraph.admittedRows repeatedBranchAnswers 1
+
+/-- One expansion charges the three root rows and keeps both successor
+occurrences. The completed frontier pays five, the unfolding work. -/
+theorem repeated_successor_frontier_pays :
+    repeatedBranchExpanded.pending = [1, 1] ∧
+    repeatedBranchExpanded.paid = 3 ∧
+    repeatedBranchDone.pending = [] ∧
+    repeatedBranchDone.paid = 5 ∧
+    repeatedBranchDone.paid =
+      repeatedBranchGraph.catalogue.unfoldingWork repeatedBranchCertificate
+        (fun node => (repeatedBranchGraph.rows node).length) 0 := by
+  have shape : repeatedBranchExpanded.pending = [1, 1] ∧
+      repeatedBranchExpanded.paid = 3 ∧
+      repeatedBranchDone.pending = [] ∧
+      repeatedBranchDone.paid = 5 := by
+    decide
+  refine ⟨shape.1, shape.2.1, shape.2.2.1, shape.2.2.2, ?_⟩
+  exact SourceFrontier.completed_paid repeatedBranchGraph repeatedBranchCertificate
+    (repeatedBranchGraph.catalogue.unfoldingWork repeatedBranchCertificate
+      (fun node => (repeatedBranchGraph.rows node).length) 0)
+    3 (SourceFrontier.start 0)
+    (SourceFrontier.start_accounts repeatedBranchGraph repeatedBranchCertificate 0)
+    shape.2.2.1
+
+/-- The same charged rows return no answers. Dependency depth is two.
+Neither equals the numerical cost, and depth is not a native worker span. -/
+theorem empty_answers_are_not_frontier_cost :
+    returnedAnswerCount repeatedBranchChargedRows = 0 ∧
+    repeatedBranchGraph.dependencyDepth repeatedBranchCertificate 0 = 2 ∧
+    repeatedBranchDone.paid ≠ returnedAnswerCount repeatedBranchChargedRows ∧
+    repeatedBranchDone.paid ≠
+      repeatedBranchGraph.dependencyDepth repeatedBranchCertificate 0 := by
+  have answers : returnedAnswerCount repeatedBranchChargedRows = 0 := by decide
+  have depth : repeatedBranchGraph.dependencyDepth repeatedBranchCertificate 0 = 2 := by
+    rw [← repeatedBranchGraph.sourceValuation_depth, repeatedBranch_root]
+  obtain ⟨_, _, _, five, _⟩ := repeated_successor_frontier_pays
+  refine ⟨answers, depth, ?_, ?_⟩
+  · rw [answers, five]
+    decide
+  · rw [depth, five]
+    decide
+
+/-- The repeated successor stays in the pending list across a split
+resumption. The optional trace's first step is a prefix of the combined
+trace, and that trace is not the paid count. -/
+theorem repeated_successor_resumption_splits :
+    (SourceFrontier.start 0).resume repeatedBranchGraph 3 =
+      ((SourceFrontier.start 0).resume repeatedBranchGraph 1).resume repeatedBranchGraph 2 ∧
+    (SourceFrontier.start 0).recorded repeatedBranchGraph 3 =
+      (SourceFrontier.start 0).recorded repeatedBranchGraph 1 ++
+        ((SourceFrontier.start 0).resume repeatedBranchGraph 1).recorded
+          repeatedBranchGraph 2 ∧
+    List.take 1 ((SourceFrontier.start 0).recorded repeatedBranchGraph 3) =
+      (SourceFrontier.start 0).recorded repeatedBranchGraph 1 ∧
+    (SourceFrontier.start 0).recorded repeatedBranchGraph 2 =
+      [SourceFrontier.start 0, repeatedBranchExpanded] ∧
+    repeatedBranchExpanded.pending = [1, 1] ∧
+    ((SourceFrontier.start 0).recorded repeatedBranchGraph 3).length = 3 ∧
+    repeatedBranchDone.paid = 5 := by
+  obtain ⟨pending, _, _, five, _⟩ := repeated_successor_frontier_pays
+  refine ⟨SourceFrontier.resume_add repeatedBranchGraph 1 2 (SourceFrontier.start 0),
+    SourceFrontier.recorded_prefix repeatedBranchGraph 1 2 (SourceFrontier.start 0), ?_, ?_,
+    pending, ?_, five⟩
+  · have shorter : min 1 3 = 1 := by decide
+    rw [← shorter]
+    exact SourceFrontier.recorded_take repeatedBranchGraph 1 3 (SourceFrontier.start 0)
+  · rw [← SourceFrontier.recorded_prefix_states]
+    have range : List.range 2 = [0, 1] := by decide
+    rw [range, List.map_cons, List.map_cons, List.map_nil, SourceFrontier.resume_iterate,
+      SourceFrontier.resume_iterate, Function.iterate_zero_apply, Function.iterate_one]
+    rfl
+  · rw [SourceFrontier.recorded, List.length_iterate]
+
+/-- Dropping one repeated successor keeps the paid number and leaves the
+iteration. The optional trace is not required to see the loss. -/
+def repeatedBranchDropped : SourceFrontier where
+  paid := repeatedBranchExpanded.paid
+  pending := [1]
+
+theorem dropped_occurrence_breaks_iteration :
+    repeatedBranchDropped.paid = repeatedBranchExpanded.paid ∧
+    repeatedBranchDropped.pending = [1] ∧
+    repeatedBranchExpanded.pending = [1, 1] ∧
+    repeatedBranchDropped.resume repeatedBranchGraph 1 ≠
+      (SourceFrontier.start 0).resume repeatedBranchGraph 2 := by
+  obtain ⟨pending, _, _, _, _⟩ := repeated_successor_frontier_pays
+  refine ⟨rfl, rfl, pending, ?_⟩
+  have one : (SourceFrontier.start 0).resume repeatedBranchGraph 1 =
+      repeatedBranchExpanded := by
+    rw [SourceFrontier.resume_iterate, Function.iterate_one]
+    rfl
+  have split := SourceFrontier.resume_add repeatedBranchGraph 1 1 (SourceFrontier.start 0)
+  rw [one, show (1 + 1) = 2 from rfl] at split
+  rw [split, SourceFrontier.resume_iterate, Function.iterate_one]
+  decide
 
 end OccurrenceGraph
 

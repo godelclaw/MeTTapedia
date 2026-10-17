@@ -496,7 +496,7 @@ mutual
   alignment when each exact source occurrence supplies the leaf certificate
   selected by its quote path.  The callback is occurrence-indexed: neither
   its name nor its regime can vary independently of the token. -/
-  noncomputable def renameFVars
+  theorem renameFVars
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
       {smallAssignment largeAssignment : ContextSupport.Assignment}
@@ -591,7 +591,7 @@ mutual
   termination_by 3 * sizeOf pattern + 2
 
   /-- Positional list companion of occurrence-indexed structural renaming. -/
-  noncomputable def renameFVarsList
+  theorem renameFVarsList
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile}
       {smallSupport largeSupport : ContextSupport.Support}
       {smallAssignment largeAssignment : ContextSupport.Assignment}

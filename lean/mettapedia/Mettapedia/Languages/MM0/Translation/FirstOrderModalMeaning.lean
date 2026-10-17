@@ -37,7 +37,9 @@ open Mettapedia.GSLT.LanguageDef.SortedFirstOrderRules
 open Mettapedia.GSLT.LanguageDef.ModalHilbert
 open Kernel FirstOrderSyntax FirstOrderTyping FirstOrderRules
 open LO LO.Modal
+open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhoodCompleteness
+open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open Mettapedia.PLN.WorldModel.PLNWorldModel
 
 /-- A classical modal logic given by its extra axioms, with the admission of
@@ -126,7 +128,7 @@ evidence strength of the antecedent is at most that of the consequent. -/
 theorem accepted_imp_iff_evidence (L : ModalLogic) {A : Axiom ℕ} (same : axioms L.extra = A)
     (C : Neighborhood.FrameClass) [Sound (Hilbert.WithRE A) C] [Complete (Hilbert.WithRE A) C]
     {count : ℕ} {φ ψ : ModalFormula} (below : AtomsBelow count (φ ➝ ψ)) :
-    Accepted L count (φ ➝ ψ) ↔ singletonStrengthLEOn C φ ψ :=
+    Accepted L count (φ ➝ ψ) ↔ singletonStrengthLEOn PointedNeighborhood.satisfies (inClass C) φ ψ :=
   (accepted_iff_provable L same below).trans
     (provable_imp_iff_singletonStrengthLEOn (S := LO.Modal.Logic ℕ) (𝓢 := Hilbert.WithRE A))
 
@@ -138,9 +140,9 @@ theorem evidence_le_of_accepted (L : ModalLogic) {A : Axiom ℕ} (same : axioms 
     (accepted : Accepted L count (φ ➝ ψ))
     {W : Multiset PointedNeighborhood} (inClass : ∀ pn ∈ W, pn.model.toFrame ∈ C) :
     BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood)
-        (Query := ModalQuery) W φ ≤
+        (Query := LO.Modal.Formula ℕ) W φ ≤
       BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood)
-        (Query := ModalQuery) W ψ :=
+        (Query := LO.Modal.Formula ℕ) W ψ :=
   multiset_strength_le_of_provable_imp (S := LO.Modal.Logic ℕ) (𝓢 := Hilbert.WithRE A) inClass
     ((accepted_iff_provable L same below).mp accepted)
 
@@ -194,19 +196,22 @@ theorem accepted_iff_EMN {count : ℕ} {φ : ModalFormula} (below : AtomsBelow c
 /-- `E`, read as evidence. -/
 theorem accepted_imp_iff_evidence_E {count : ℕ} {φ ψ : ModalFormula}
     (below : AtomsBelow count (φ ➝ ψ)) :
-    Accepted E count (φ ➝ ψ) ↔ singletonStrengthLEOn Neighborhood.FrameClass.E φ ψ :=
+    Accepted E count (φ ➝ ψ) ↔ singletonStrengthLEOn PointedNeighborhood.satisfies
+      (inClass Neighborhood.FrameClass.E) φ ψ :=
   accepted_imp_iff_evidence E axioms_E Neighborhood.FrameClass.E below
 
 /-- `EMN`, read as evidence. -/
 theorem accepted_imp_iff_evidence_EMN {count : ℕ} {φ ψ : ModalFormula}
     (below : AtomsBelow count (φ ➝ ψ)) :
-    Accepted EMN count (φ ➝ ψ) ↔ singletonStrengthLEOn Neighborhood.FrameClass.EMN φ ψ :=
+    Accepted EMN count (φ ➝ ψ) ↔ singletonStrengthLEOn PointedNeighborhood.satisfies
+      (inClass Neighborhood.FrameClass.EMN) φ ψ :=
   accepted_imp_iff_evidence EMN axioms_EMN Neighborhood.FrameClass.EMN below
 
 /-- `EMT`, read as evidence. -/
 theorem accepted_imp_iff_evidence_EMT {count : ℕ} {φ ψ : ModalFormula}
     (below : AtomsBelow count (φ ➝ ψ)) :
-    Accepted EMT count (φ ➝ ψ) ↔ singletonStrengthLEOn Neighborhood.FrameClass.EMT φ ψ :=
+    Accepted EMT count (φ ➝ ψ) ↔ singletonStrengthLEOn PointedNeighborhood.satisfies
+      (inClass Neighborhood.FrameClass.EMT) φ ψ :=
   accepted_imp_iff_evidence EMT axioms_EMT Neighborhood.FrameClass.EMT below
 
 /-! ## Controls -/

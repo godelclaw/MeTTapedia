@@ -51,10 +51,10 @@ structure ContextGuardOSLFDescentBridgeProfile where
     (⊢q[{demoEvidence}] demoEvidence ⇓ observed ↦ demoEvidence) ∧
       BinaryWorldModel.WMITVJudgmentCtx
         (State := BinaryEvidence) (Query := ContextDemoQuery)
-        ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+        ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
         {demoEvidence} demoEvidence observed
         (ITVSemantics.walleyIDMPredictive.eval
-          IDMPredictiveContext.default demoEvidence) ∧
+          Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default demoEvidence) ∧
       (∀ q : Pattern,
         ¬ Mettapedia.OSLF.Framework.TypeSynthesis.langReduces
           Mettapedia.OSLF.MeTTaIL.Syntax.rhoCalc
@@ -85,10 +85,10 @@ theorem contextCompleteWM_coexistsWithOSLFSetDescentPolicyBoundary :
     (⊢q[{demoEvidence}] demoEvidence ⇓ observed ↦ demoEvidence) ∧
       BinaryWorldModel.WMITVJudgmentCtx
         (State := BinaryEvidence) (Query := ContextDemoQuery)
-        ITVSemantics.walleyIDMPredictive IDMPredictiveContext.default
+        ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
         {demoEvidence} demoEvidence observed
         (ITVSemantics.walleyIDMPredictive.eval
-          IDMPredictiveContext.default demoEvidence) ∧
+          Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default demoEvidence) ∧
       (∀ q : Pattern,
         ¬ Mettapedia.OSLF.Framework.TypeSynthesis.langReduces
           Mettapedia.OSLF.MeTTaIL.Syntax.rhoCalc

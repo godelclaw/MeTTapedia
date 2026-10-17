@@ -12,7 +12,7 @@ authority.
 key fibres.  Hot execution needs the stronger proof-carrying datum
 `ObservationRealization`,
 which retains the keyed function together with its factorization law.  A
-`PolicyKeyAdmission` stores one such realization for every requested policy
+`Admission` stores one such realization for every requested policy
 and, when requested, an exact decoder.  Current activation exposes only those
 retained functions; no checker is an argument of the runner.
 
@@ -58,7 +58,7 @@ structure PolicyRequest (State : Type uState) where
 not a semantic authority: it is a displayed capability over semantic state.
 Every runnable function is retained as data, and exact replay is present only
 when the request explicitly requires it. -/
-structure PolicyKeyAdmission
+structure Admission
     (dependencies : DependencySystem) (revision : dependencies.Revision)
     {State : Type uState} (request : PolicyRequest State)
     {Key : Type uKey} (key : State → Key) where
@@ -66,46 +66,46 @@ structure PolicyKeyAdmission
     ObservationRealization key (request.observe policy)
   replay : request.requiresExactReplay → ReplayRealization key
 
-namespace PolicyKeyAdmission
+namespace Admission
 
 variable {dependencies : DependencySystem}
 variable {revision currentRevision : dependencies.Revision}
 variable {State : Type uState} {request : PolicyRequest State}
 variable {Key : Type uKey} {key : State → Key}
 
-theorem supports (admission : PolicyKeyAdmission dependencies revision request key)
+theorem supports (admission : Admission dependencies revision request key)
     (policy : request.Policy) :
     ReplayKey.Supports key (request.observe policy) :=
   (admission.realize policy).supports
 
 theorem isExact
-    (admission : PolicyKeyAdmission dependencies revision request key)
+    (admission : Admission dependencies revision request key)
     (required : request.requiresExactReplay) :
     ReplayKey.IsExact key :=
   (admission.replay required).isExact
 
 /-- Currentness guards activation exactly as in SemanticService's execution admissions. -/
 structure Active
-    (_admission : PolicyKeyAdmission dependencies revision request key)
+    (_admission : Admission dependencies revision request key)
     (currentRevision : dependencies.Revision) : Prop where
   current : dependencies.SameDependencies revision currentRevision
 
 theorem activate
-    (admission : PolicyKeyAdmission dependencies revision request key)
+    (admission : Admission dependencies revision request key)
     (current : dependencies.SameDependencies revision currentRevision) :
     admission.Active currentRevision :=
   ⟨current⟩
 
 /-- Hot execution is the keyed function retained at admission. -/
 def Active.runKey
-    {admission : PolicyKeyAdmission dependencies revision request key}
+    {admission : Admission dependencies revision request key}
     (_active : admission.Active currentRevision) (policy : request.Policy) :
     Key → request.Value policy :=
   (admission.realize policy).run
 
 /-- Running an admitted keyed policy agrees with its semantic observation. -/
 @[simp] theorem Active.runKey_encode
-    {admission : PolicyKeyAdmission dependencies revision request key}
+    {admission : Admission dependencies revision request key}
     (active : admission.Active currentRevision) (policy : request.Policy)
     (state : State) :
     active.runKey policy (key state) = request.observe policy state :=
@@ -114,38 +114,38 @@ def Active.runKey
 /-- Preparation retains the semantic state independently of its potentially
 lossy policy key, preserving deoptimization. -/
 structure PreparedState
-    (_admission : PolicyKeyAdmission dependencies revision request key) where
+    (_admission : Admission dependencies revision request key) where
   state : State
   encoded : Key
   encoded_adequate : encoded = key state
 
 def prepare
-    (admission : PolicyKeyAdmission dependencies revision request key)
+    (admission : Admission dependencies revision request key)
     (state : State) : admission.PreparedState where
   state := state
   encoded := key state
   encoded_adequate := rfl
 
 def PreparedState.fallback
-    {admission : PolicyKeyAdmission dependencies revision request key}
+    {admission : Admission dependencies revision request key}
     (prepared : admission.PreparedState) : State :=
   prepared.state
 
 @[simp] theorem PreparedState.fallback_eq
-    {admission : PolicyKeyAdmission dependencies revision request key}
+    {admission : Admission dependencies revision request key}
     (prepared : admission.PreparedState) :
     prepared.fallback = prepared.state :=
   rfl
 
 def Active.runPrepared
-    {admission : PolicyKeyAdmission dependencies revision request key}
+    {admission : Admission dependencies revision request key}
     (active : admission.Active currentRevision)
     (prepared : admission.PreparedState) (policy : request.Policy) :
     request.Value policy :=
   active.runKey policy prepared.encoded
 
 @[simp] theorem Active.runPrepared_eq
-    {admission : PolicyKeyAdmission dependencies revision request key}
+    {admission : Admission dependencies revision request key}
     (active : admission.Active currentRevision)
     (prepared : admission.PreparedState) (policy : request.Policy) :
     active.runPrepared prepared policy = request.observe policy prepared.state := by
@@ -154,12 +154,12 @@ def Active.runPrepared
   exact (admission.realize policy).run_key prepared.state
 
 def StaleAt
-    (_admission : PolicyKeyAdmission dependencies revision request key)
+    (_admission : Admission dependencies revision request key)
     (candidateRevision : dependencies.Revision) : Prop :=
   ¬ dependencies.SameDependencies revision candidateRevision
 
 theorem stale_prevents_activation
-    (admission : PolicyKeyAdmission dependencies revision request key)
+    (admission : Admission dependencies revision request key)
     {candidateRevision : dependencies.Revision}
     (stale : admission.StaleAt candidateRevision) :
     ¬ admission.Active candidateRevision := by
@@ -167,7 +167,7 @@ theorem stale_prevents_activation
   exact stale current
 
 theorem stale_preserves_fallback
-    (admission : PolicyKeyAdmission dependencies revision request key)
+    (admission : Admission dependencies revision request key)
     {candidateRevision : dependencies.Revision}
     (_stale : admission.StaleAt candidateRevision)
     (prepared : admission.PreparedState) :
@@ -179,9 +179,9 @@ refinement.  This is the executable form of policy-safety monotonicity. -/
 def pullback
     {Coarse : Type uCoarse} {coarse : State → Coarse}
     (coarseAdmission :
-      PolicyKeyAdmission dependencies revision request coarse)
+      Admission dependencies revision request coarse)
     (refinement : KeyRefinement key coarse) :
-    PolicyKeyAdmission dependencies revision request key where
+    Admission dependencies revision request key where
   realize := fun policy =>
     { run := (coarseAdmission.realize policy).run ∘ refinement.forget
       agrees := by
@@ -208,7 +208,7 @@ def pullback
         rw [← coarseEq]
         exact (coarseAdmission.replay required).recovers state }
 
-end PolicyKeyAdmission
+end Admission
 
 /-! ## Display over the existing SemanticService execution model -/
 
@@ -223,7 +223,7 @@ structure AdmittedReceiptView
     (model : AdmittedExecutionModel dependencies revision source target)
     (request : PolicyRequest (ExecutionTrace target.operational))
     {Key : Type uKey} (key : ExecutionTrace target.operational → Key) where
-  receiptAdmission : PolicyKeyAdmission dependencies revision request key
+  receiptAdmission : Admission dependencies revision request key
 
 namespace AdmittedReceiptView
 
@@ -290,7 +290,7 @@ def policyVectorAdmission
     (dependencies : DependencySystem) (revision : dependencies.Revision)
     {State : Type uState} (request : PolicyRequest State)
     (policyOnly : ¬ request.requiresExactReplay) :
-    PolicyKeyAdmission dependencies revision request (policyVectorKey request) where
+    Admission dependencies revision request (policyVectorKey request) where
   realize := fun policy =>
     { run := fun values => values policy
       agrees := by funext state; rfl }
@@ -303,7 +303,7 @@ def admissionRefinesPolicyVector
     {dependencies : DependencySystem} {revision : dependencies.Revision}
     {State : Type uState} {request : PolicyRequest State}
     {Key : Type uKey} {key : State → Key}
-    (admission : PolicyKeyAdmission dependencies revision request key) :
+    (admission : Admission dependencies revision request key) :
     KeyRefinement key (policyVectorKey request) where
   forget := fun encoded policy => (admission.realize policy).run encoded
   commutes := by
@@ -315,7 +315,7 @@ theorem every_admitted_key_refines_policyVector
     {dependencies : DependencySystem} {revision : dependencies.Revision}
     {State : Type uState} {request : PolicyRequest State}
     {Key : Type uKey} {key : State → Key}
-    (admission : PolicyKeyAdmission dependencies revision request key) :
+    (admission : Admission dependencies revision request key) :
     ReplayKey.Refines key (policyVectorKey request) :=
   (admissionRefinesPolicyVector admission).refines
 
@@ -323,7 +323,7 @@ theorem every_admitted_key_refines_policyVector
 def identityKeyAdmission
     (dependencies : DependencySystem) (revision : dependencies.Revision)
     {State : Type uState} (request : PolicyRequest State) :
-    PolicyKeyAdmission dependencies revision request (id : State → State) where
+    Admission dependencies revision request (id : State → State) where
   realize := fun policy =>
     { run := request.observe policy
       agrees := by funext state; rfl }
@@ -337,7 +337,7 @@ theorem exactRequest_admittedKey_mutuallyRefines_identity
     {dependencies : DependencySystem} {revision : dependencies.Revision}
     {State : Type uState} {request : PolicyRequest State}
     {Key : Type uKey} {key : State → Key}
-    (admission : PolicyKeyAdmission dependencies revision request key)
+    (admission : Admission dependencies revision request key)
     (required : request.requiresExactReplay) :
     ReplayKey.Refines key (id : State → State) ∧
       ReplayKey.Refines (id : State → State) key := by
@@ -368,7 +368,7 @@ def dependencies : DependencySystem where
 def request : PolicyRequest Bool :=
   singlePolicyRequest (fun value => !value) False
 
-def admission : PolicyKeyAdmission dependencies (false, false) request
+def admission : Admission dependencies (false, false) request
     (id : Bool → Bool) :=
   identityKeyAdmission dependencies (false, false) request
 
@@ -399,8 +399,8 @@ end RevisionCanary
 
 #print axioms ObservationRealization.run_key
 #print axioms KeyRefinement.trans
-#print axioms PolicyKeyAdmission.Active.runPrepared_eq
-#print axioms PolicyKeyAdmission.pullback
+#print axioms Admission.Active.runPrepared_eq
+#print axioms Admission.pullback
 #print axioms AdmittedReceiptView.evaluate_eq
 #print axioms AdmittedReceiptView.stale_prevents_view_and_preserves_fallback
 #print axioms every_admitted_key_refines_policyVector

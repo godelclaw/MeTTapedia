@@ -20,7 +20,9 @@ liveness field on the same execution.
 The negative control is load-bearing: a locally valid loop with no accepting
 state has every finite operational prefix, but is not recurrent.  Finite
 prefix productivity therefore cannot be used as a substitute for fairness,
-recurrence, stream productivity, or complete closure.
+recurrence, stream productivity, or complete closure.  A record produced by
+`runIndexed` is one such finite prefix.  Completing that prefix, and Büchi
+acceptance of the yielding phase monitor, do not admit every client identity.
 -/
 
 set_option autoImplicit false
@@ -280,7 +282,403 @@ theorem operational_prefixes_and_recurrence
 
 end AuditedRecurrentExecution
 
+/-! ## Records produced by the indexed run
+
+`runIndexed` is the route's existing `runSelected` adapter.  A presented
+record is compared with `retainedFinitePrefix`, whose execution spine is
+`namedRevisionPrefix` for the original `stepAuthority`.  The record is not
+an authority and it is not a second recorder.  Completion, truncation, and a
+late suffix are different views of that same checked prefix.
+-/
+
+section ProducedRecord
+
+open Mettapedia.GSLT.Core.InferenceControl.Recording
+
+omit [DecidableEq theory.Term] in
+/-- Occurrence indices are the demanded epochs, in order. -/
+theorem occurrencePrefix_indices
+    (execution : ControlledExecution claim.controller claim.root)
+    (fuel : Nat) :
+    (occurrencePrefix stepAuthority claim execution fuel).map
+        (fun occurrence => occurrence.index) =
+      List.range fuel := by
+  induction fuel with
+  | zero =>
+      rw [occurrencePrefix, List.map_nil, List.range_zero]
+  | succ fuel inductionHypothesis =>
+      rw [occurrencePrefix, List.map_append, List.map_singleton,
+        inductionHypothesis, List.range_succ]
+      unfold occurrenceAt
+      rfl
+
+omit [DecidableEq theory.Term] in
+/-- Actions emitted by the trace-free prefix are the checked revision prefix. -/
+theorem recordedPrefix_actions_eq_revisionPrefix
+    (execution : ControlledExecution claim.controller claim.root)
+    (fuel : Nat) :
+    (recordedPrefix claim.controller claim.root fuel).map
+        (fun record => record.action) =
+      revisionPrefix stepAuthority claim execution fuel := by
+  rw [revisionPrefix_eq_advancedActions stepAuthority claim execution fuel]
+  unfold recordedPrefix
+  rw [List.map_map]
+  unfold recordedStep
+  rfl
+
+/-- A capacity that covers the run presents the checked source prefix: its
+actions, its occurrence indices, and its endpoint.  The execution spine stays
+the named prefix built from `stepAuthority`. -/
+theorem runIndexed_complete_reflects_retainedPrefix
+    (locallyValid : claim.controller.LocallyValid
+      (auditedLabeledSystem stepAuthority accepting) claim.root)
+    (execution : ControlledExecution claim.controller claim.root)
+    (fuel capacity : Nat) (fits : fuel ≤ capacity) :
+    ((runIndexed claim.controller claim.root fuel (some capacity)).memory.2).bind
+        Prefix.complete? =
+      some (recordedPrefix claim.controller claim.root fuel) ∧
+      (((runIndexed claim.controller claim.root fuel (some capacity)).memory.2).bind
+          Prefix.complete?).map (List.map fun record => record.action) =
+        some (retainedFinitePrefix stepAuthority accepting claim locallyValid
+          execution fuel).revisions ∧
+      (((runIndexed claim.controller claim.root fuel (some capacity)).memory.2).bind
+          Prefix.complete?).map (List.map fun record => record.index) =
+        some ((retainedFinitePrefix stepAuthority accepting claim locallyValid
+            execution fuel).occurrences.map fun occurrence => occurrence.index) ∧
+      (runIndexed claim.controller claim.root fuel (some capacity)).search.frontier =
+        [{ index := fuel,
+           phase := (retainedFinitePrefix stepAuthority accepting claim
+             locallyValid execution fuel).target }] ∧
+      (retainedFinitePrefix stepAuthority accepting claim locallyValid execution
+          fuel).execution =
+        namedRevisionPrefix stepAuthority accepting claim locallyValid execution
+          fuel ∧
+      (retainedFinitePrefix stepAuthority accepting claim locallyValid execution
+          fuel).executionPath.length = fuel := by
+  refine ⟨runIndexed_complete claim.controller claim.root fuel capacity fits,
+      ?_, ?_, ?_, rfl,
+      retainedFinitePrefix_executionPath_length stepAuthority accepting claim
+        locallyValid execution fuel⟩
+  · rw [runIndexed_complete_actions_eq_revisionPrefix stepAuthority claim
+        execution fuel capacity fits]
+    rfl
+  · rw [runIndexed_complete_eq_occurrencePrefix stepAuthority claim execution
+        fuel capacity fits, Option.map_some, List.map_map]
+    rfl
+  · rw [runIndexed_frontier_eq_advanceState claim.controller claim.root fuel
+        (some capacity),
+      advanceState_execution claim.controller execution fuel]
+    rfl
+
+/-- A short capacity does not complete.  The visible actions and indices are
+the corresponding proper prefix of the checked source, while the frontier
+endpoint remains the endpoint of the full checked prefix. -/
+theorem runIndexed_truncation_keeps_checked_endpoint
+    (locallyValid : claim.controller.LocallyValid
+      (auditedLabeledSystem stepAuthority accepting) claim.root)
+    (execution : ControlledExecution claim.controller claim.root)
+    (fuel capacity : Nat) (short : capacity < fuel) :
+    ((runIndexed claim.controller claim.root fuel (some capacity)).memory.2).bind
+        Prefix.complete? = none ∧
+      ((runIndexed claim.controller claim.root fuel (some capacity)).memory.2).map
+          (fun record => record.omitted) =
+        some (fuel - capacity) ∧
+      (((runIndexed claim.controller claim.root fuel (some capacity)).memory.2).map
+          Prefix.items).map (List.map fun record => record.action) =
+        some ((retainedFinitePrefix stepAuthority accepting claim locallyValid
+          execution fuel).revisions.take capacity) ∧
+      (((runIndexed claim.controller claim.root fuel (some capacity)).memory.2).map
+          Prefix.items).map (List.map fun record => record.index) =
+        some (((retainedFinitePrefix stepAuthority accepting claim locallyValid
+            execution fuel).occurrences.take capacity).map
+          fun occurrence => occurrence.index) ∧
+      (runIndexed claim.controller claim.root fuel (some capacity)).search.frontier =
+        [{ index := fuel,
+           phase := (retainedFinitePrefix stepAuthority accepting claim
+             locallyValid execution fuel).target }] ∧
+      (runIndexed claim.controller claim.root fuel none).search.frontier =
+        (runIndexed claim.controller claim.root fuel (some capacity)).search.frontier ∧
+      ((retainedFinitePrefix stepAuthority accepting claim locallyValid execution
+          fuel).revisions.take capacity).length = capacity ∧
+      (retainedFinitePrefix stepAuthority accepting claim locallyValid execution
+          fuel).revisions.length = fuel ∧
+      (retainedFinitePrefix stepAuthority accepting claim locallyValid execution
+          fuel).execution =
+        namedRevisionPrefix stepAuthority accepting claim locallyValid execution
+          fuel := by
+  have truncated :=
+    runIndexed_truncated claim.controller claim.root fuel capacity short
+  have revisionsLength :
+      (retainedFinitePrefix stepAuthority accepting claim locallyValid execution
+          fuel).revisions.length = fuel := by
+    rw [← (retainedFinitePrefix stepAuthority accepting claim locallyValid
+        execution fuel).aligned,
+      show (retainedFinitePrefix stepAuthority accepting claim locallyValid
+          execution fuel).occurrences =
+        occurrencePrefix stepAuthority claim execution fuel from rfl]
+    exact occurrencePrefix_length_eq_depth stepAuthority claim execution fuel
+  refine ⟨truncated.1, truncated.2.1, ?_, ?_, ?_, truncated.2.2.2.symm, ?_,
+      revisionsLength, rfl⟩
+  · rw [truncated.2.2.1, Option.map_some, List.map_take,
+      recordedPrefix_actions_eq_revisionPrefix stepAuthority claim execution fuel]
+    rfl
+  · rw [truncated.2.2.1, Option.map_some, List.map_take,
+      recordedPrefix_eq_occurrencePrefix stepAuthority claim execution fuel,
+      List.map_map, ← List.map_take]
+    rfl
+  · rw [runIndexed_frontier_eq_advanceState claim.controller claim.root fuel
+        (some capacity),
+      advanceState_execution claim.controller execution fuel]
+    rfl
+  · exact List.length_take_of_le <| by
+      rw [revisionsLength]
+      exact Nat.le_of_lt short
+
+/-- A recorder attached after an ordinary prefix stores the later checked
+actions and their original occurrence indices.  The frontier is still the
+endpoint of the whole checked prefix, and the skipped prefix is absent from
+the late record. -/
+theorem runIndexed_late_reflects_retained_suffix
+    (locallyValid : claim.controller.LocallyValid
+      (auditedLabeledSystem stepAuthority accepting) claim.root)
+    (execution : ControlledExecution claim.controller claim.root)
+    (first second capacity : Nat) (earlier : 0 < first)
+    (fits : second ≤ capacity) :
+    (runIndexedLate claim.controller claim.root first second capacity).search.frontier =
+      [{ index := first + second,
+         phase := (retainedFinitePrefix stepAuthority accepting claim locallyValid
+           execution (first + second)).target }] ∧
+      (((runIndexedLate claim.controller claim.root first second capacity).memory.2).bind
+          Prefix.complete?).map (List.map fun record => record.action) =
+        some ((retainedFinitePrefix stepAuthority accepting claim locallyValid
+          execution (first + second)).revisions.drop first) ∧
+      (((runIndexedLate claim.controller claim.root first second capacity).memory.2).bind
+          Prefix.complete?).map (List.map fun record => record.index) =
+        some (((retainedFinitePrefix stepAuthority accepting claim locallyValid
+            execution (first + second)).occurrences.drop first).map
+          fun occurrence => occurrence.index) ∧
+      ((runIndexed claim.controller claim.root (first + second)
+          (some (first + second))).memory.2).bind Prefix.complete? =
+        some (recordedPrefix claim.controller claim.root (first + second)) ∧
+      second ≠ first + second ∧
+      (retainedFinitePrefix stepAuthority accepting claim locallyValid execution
+          (first + second)).execution =
+        namedRevisionPrefix stepAuthority accepting claim locallyValid execution
+          (first + second) := by
+  have late :=
+    runIndexed_late_same_frontier_omits_prefix claim.controller claim.root
+      first second capacity earlier fits
+  have suffix :
+      (List.range (first + second)).drop first =
+        (List.range second).map (fun offset => first + offset) := by
+    rw [List.range_add, List.drop_left' (List.length_range (n := first))]
+  have actionSuffix :
+      ((List.range second).map fun offset =>
+          (recordedStep claim.controller claim.root (first + offset)).action) =
+        (revisionPrefix stepAuthority claim execution (first + second)).drop
+          first := by
+    rw [revisionPrefix_eq_advancedActions stepAuthority claim execution
+        (first + second),
+      ← List.map_drop, suffix, List.map_map]
+    unfold recordedStep
+    rfl
+  refine ⟨?_, ?_, ?_, late.2.2.1, late.2.2.2, rfl⟩
+  · rw [late.1, runIndexed_frontier_eq_advanceState claim.controller claim.root
+        (first + second) none,
+      advanceState_execution claim.controller execution (first + second)]
+    rfl
+  · rw [late.2.1, Option.map_some, List.map_map]
+    exact congrArg some actionSuffix
+  · rw [late.2.1, Option.map_some, List.map_map]
+    unfold recordedStep
+    rw [show (retainedFinitePrefix stepAuthority accepting claim locallyValid
+          execution (first + second)).occurrences =
+        occurrencePrefix stepAuthority claim execution (first + second) from rfl,
+      List.map_drop,
+      occurrencePrefix_indices stepAuthority claim execution (first + second),
+      suffix]
+    rfl
+
+end ProducedRecord
+
 end Prefix
+
+/-! ## Produced records of the existing monitor controls -/
+
+section Controls
+
+open Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor
+open Mettapedia.GSLT.Core.InferenceControl.Recording
+
+/-- The yielding controller's complete three-step record is the checked
+operational prefix of that cycle, and the frontier returns to heartbeat. -/
+theorem yielding_produced_cycle_matches_retained_prefix :
+    ((runIndexed yieldingController .heartbeat 3 (some 3)).memory.2).bind
+        Prefix.complete? =
+      some (recordedPrefix yieldingController .heartbeat 3) ∧
+      (((runIndexed yieldingController .heartbeat 3 (some 3)).memory.2).bind
+          Prefix.complete?).map (List.map fun record => record.action) =
+        some (retainedFinitePrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting yieldingClaim
+          yielding_locally_valid
+          (yieldingController.canonicalExecution yieldingClaim.root) 3).revisions ∧
+      (((runIndexed yieldingController .heartbeat 3 (some 3)).memory.2).bind
+          Prefix.complete?).map (List.map fun record => record.index) =
+        some ((retainedFinitePrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting yieldingClaim
+            yielding_locally_valid
+            (yieldingController.canonicalExecution yieldingClaim.root)
+            3).occurrences.map fun occurrence => occurrence.index) ∧
+      (runIndexed yieldingController .heartbeat 3 (some 3)).search.frontier =
+        [{ index := 3,
+           phase := (retainedFinitePrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting
+             yieldingClaim yielding_locally_valid
+             (yieldingController.canonicalExecution yieldingClaim.root) 3).target }] ∧
+      (retainedFinitePrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting yieldingClaim
+          yielding_locally_valid
+          (yieldingController.canonicalExecution yieldingClaim.root) 3).execution =
+        namedRevisionPrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting yieldingClaim
+          yielding_locally_valid
+          (yieldingController.canonicalExecution yieldingClaim.root) 3 ∧
+      (recordedStep yieldingController .heartbeat 0).source = .heartbeat ∧
+      (recordedStep yieldingController .heartbeat 0).action.evidence = .beat ∧
+      (recordedStep yieldingController .heartbeat 0).target = .waiting ∧
+      (recordedStep yieldingController .heartbeat 1).source = .waiting ∧
+      (recordedStep yieldingController .heartbeat 1).action.evidence = .yield ∧
+      (recordedStep yieldingController .heartbeat 1).target = .serving ∧
+      (recordedStep yieldingController .heartbeat 2).source = .serving ∧
+      (recordedStep yieldingController .heartbeat 2).action.evidence = .resume ∧
+      (recordedStep yieldingController .heartbeat 2).target = .heartbeat ∧
+      (retainedFinitePrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting yieldingClaim
+          yielding_locally_valid
+          (yieldingController.canonicalExecution yieldingClaim.root) 3).target =
+        .heartbeat := by
+  have reflected :=
+    runIndexed_complete_reflects_retainedPrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting
+      yieldingClaim yielding_locally_valid
+      (yieldingController.canonicalExecution yieldingClaim.root) 3 3
+      (Nat.le_refl 3)
+  have cycle := yielding_complete_cycle
+  refine ⟨cycle.1, reflected.2.1, reflected.2.2.1, reflected.2.2.2.1,
+      reflected.2.2.2.2.1, cycle.2.1, cycle.2.2.1, cycle.2.2.2.1,
+      cycle.2.2.2.2.1, cycle.2.2.2.2.2.1, cycle.2.2.2.2.2.2.1,
+      cycle.2.2.2.2.2.2.2.1, cycle.2.2.2.2.2.2.2.2.1,
+      cycle.2.2.2.2.2.2.2.2.2.1, ?_⟩
+  · have same := cycle.2.2.2.2.2.2.2.2.2.2
+    unfold yieldingClaim at reflected
+    rw [reflected.2.2.2.1] at same
+    exact congrArg (fun node => node.phase) (List.cons.inj same).1
+
+/-- The starving controller's complete record follows the checked prefix and
+then remains waiting.  That finite record is not Büchi recurrence. -/
+theorem starving_produced_record_stalls
+    (steps capacity : Nat) (fits : steps + 1 ≤ capacity) :
+    ((runIndexed starvingController .heartbeat (steps + 1) (some capacity)).memory.2).bind
+        Prefix.complete? =
+      some (recordedPrefix starvingController .heartbeat (steps + 1)) ∧
+      (((runIndexed starvingController .heartbeat (steps + 1)
+            (some capacity)).memory.2).bind Prefix.complete?).map
+          (List.map fun record => record.action) =
+        some (retainedFinitePrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting starvingClaim
+          starving_locally_valid
+          (starvingController.canonicalExecution starvingClaim.root)
+          (steps + 1)).revisions ∧
+      (((runIndexed starvingController .heartbeat (steps + 1)
+            (some capacity)).memory.2).bind Prefix.complete?).map
+          (List.map fun record => record.index) =
+        some ((retainedFinitePrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting starvingClaim
+            starving_locally_valid
+            (starvingController.canonicalExecution starvingClaim.root)
+            (steps + 1)).occurrences.map fun occurrence => occurrence.index) ∧
+      (runIndexed starvingController .heartbeat (steps + 1)
+          (some capacity)).search.frontier =
+        [{ index := steps + 1,
+           phase := (retainedFinitePrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting
+             starvingClaim starving_locally_valid
+             (starvingController.canonicalExecution starvingClaim.root)
+             (steps + 1)).target }] ∧
+      (retainedFinitePrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting starvingClaim
+          starving_locally_valid
+          (starvingController.canonicalExecution starvingClaim.root)
+          (steps + 1)).execution =
+        namedRevisionPrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting starvingClaim
+          starving_locally_valid
+          (starvingController.canonicalExecution starvingClaim.root)
+          (steps + 1) ∧
+      (recordedStep starvingController .heartbeat 0).action.evidence = .beat ∧
+      (∀ offset, offset < steps →
+        (recordedStep starvingController .heartbeat (offset + 1)).source =
+            .waiting ∧
+          (recordedStep starvingController .heartbeat (offset + 1)).target =
+            .waiting ∧
+          (recordedStep starvingController .heartbeat (offset + 1)).action.evidence =
+            .starve) ∧
+      (retainedFinitePrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting starvingClaim
+          starving_locally_valid
+          (starvingController.canonicalExecution starvingClaim.root)
+          (steps + 1)).target = .waiting ∧
+      ¬ starvingController.BuchiWinning
+          (auditedLabeledSystem Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting)
+          starvingClaim.root := by
+  have reflected :=
+    runIndexed_complete_reflects_retainedPrefix Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+          serviceAccepting
+      starvingClaim starving_locally_valid
+      (starvingController.canonicalExecution starvingClaim.root) (steps + 1)
+      capacity fits
+  have stall := starving_run_exposes_stall steps capacity fits
+  refine ⟨stall.1, reflected.2.1, reflected.2.2.1, reflected.2.2.2.1,
+      reflected.2.2.2.2.1, stall.2.1, stall.2.2.1, ?_, starving_not_recurrent⟩
+  · have same := stall.2.2.2.1
+    unfold starvingClaim at reflected
+    rw [reflected.2.2.2.1] at same
+    exact congrArg (fun node => node.phase) (List.cons.inj same).1
+
+/-- One finished yielding step, the checked three-step operational prefix, and
+Büchi acceptance of the service phase still do not serve client identity `1`.
+The finite `admit` label recurs on its own carrier. -/
+theorem finite_produced_prefix_and_recurrence_do_not_serve_client_one :
+    ((runIndexed yieldingController .heartbeat 1 (some 1)).memory.2).bind
+        Prefix.complete? =
+      some (recordedPrefix yieldingController .heartbeat 1) ∧
+    ((runIndexed yieldingController .heartbeat 3 (some 3)).memory.2).bind
+        Prefix.complete? =
+      some (recordedPrefix yieldingController .heartbeat 3) ∧
+    (retainedFinitePrefix
+        Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+        serviceAccepting yieldingClaim yielding_locally_valid
+        (yieldingController.canonicalExecution yieldingClaim.root) 3).execution =
+      namedRevisionPrefix
+        Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+        serviceAccepting yieldingClaim yielding_locally_valid
+        (yieldingController.canonicalExecution yieldingClaim.root) 3 ∧
+    yieldingController.BuchiWinning
+      (auditedLabeledSystem
+        Mettapedia.GSLT.Dynamics.RecurrentOccurrenceRoute.Monitor.stepAuthority
+        serviceAccepting)
+      yieldingClaim.root ∧
+    (∀ lower, ∃ step, lower ≤ step ∧ Scope.admissionLabel step = .admit) ∧
+    (∀ step, Scope.admissionLabel step = .admit →
+      Scope.admittedIdentity step ≠ 1) := by
+  have cycle := yielding_produced_cycle_matches_retained_prefix
+  exact ⟨runIndexed_complete yieldingController .heartbeat 1 1 (Nat.le_refl 1),
+    cycle.1, cycle.2.2.2.2.1, yielding_buchi_of_admission,
+    Scope.finite_labels_do_not_fairly_serve_unbounded_identities.1,
+    Scope.finite_labels_do_not_fairly_serve_unbounded_identities.2⟩
+
+end Controls
 
 /-! ## Negative control: finite paths are not recurrence -/
 
@@ -336,5 +734,11 @@ end Canary
 #print axioms AuditedRecurrentExecution.operational_prefixes_and_recurrence
 #print axioms Canary.nonaccepting_loop_has_every_operational_prefix
 #print axioms Canary.finite_operational_prefixes_do_not_imply_recurrence
+#print axioms runIndexed_complete_reflects_retainedPrefix
+#print axioms runIndexed_truncation_keeps_checked_endpoint
+#print axioms runIndexed_late_reflects_retained_suffix
+#print axioms yielding_produced_cycle_matches_retained_prefix
+#print axioms starving_produced_record_stalls
+#print axioms finite_produced_prefix_and_recurrence_do_not_serve_client_one
 
 end Mettapedia.GSLT.LanguageDef.GSLTIL.RecurrentRouteBridge

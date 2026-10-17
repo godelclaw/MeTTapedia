@@ -1,5 +1,5 @@
 import Mathlib.Data.Multiset.Count
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 
 /-!
 # WM Experiment Interface (Minimal Core)

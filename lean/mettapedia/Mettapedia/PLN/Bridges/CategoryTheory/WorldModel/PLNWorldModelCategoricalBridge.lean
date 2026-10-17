@@ -1,4 +1,4 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModelInstitution
+import Mettapedia.PLN.WorldModel.WorldModelInstitution
 import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine
 
 /-!

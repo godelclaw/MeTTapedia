@@ -29,6 +29,7 @@ open Mettapedia.PLN.Bridges.HOL.LogicalInductionWorldModelBridge
 open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
 open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open scoped ENNReal
 
 universe u v w
@@ -82,36 +83,6 @@ noncomputable def empiricalBeliefDay
   classical
   simp [empiricalBeliefDay, empiricalPrice]
 
-private theorem holEvidence_total_eq_card
-    (W : Multiset (HenkinModel.{u, v, w} Base Const))
-    (φ : ClosedFormulaCode Const) :
-    (holEvidence (Base := Base) (Const := Const) W (decodeClosedFormula φ)).total =
-      (W.card : ℝ≥0∞) := by
-  classical
-  have hcardNat :
-      W.card =
-        Multiset.countP
-            (fun M : HenkinModel.{u, v, w} Base Const =>
-              holSatisfies (Base := Base) (Const := Const) M (decodeClosedFormula φ)) W +
-          Multiset.countP
-            (fun M : HenkinModel.{u, v, w} Base Const =>
-              ¬ holSatisfies (Base := Base) (Const := Const) M (decodeClosedFormula φ)) W := by
-    simpa using
-      (Multiset.card_eq_countP_add_countP
-        (p := fun M : HenkinModel.{u, v, w} Base Const =>
-          holSatisfies (Base := Base) (Const := Const) M (decodeClosedFormula φ)) W)
-  have hcard :
-      (W.card : ℝ≥0∞) =
-        (Multiset.countP
-            (fun M : HenkinModel.{u, v, w} Base Const =>
-              holSatisfies (Base := Base) (Const := Const) M (decodeClosedFormula φ)) W : ℝ≥0∞) +
-          (Multiset.countP
-            (fun M : HenkinModel.{u, v, w} Base Const =>
-              ¬ holSatisfies (Base := Base) (Const := Const) M (decodeClosedFormula φ)) W : ℝ≥0∞) := by
-    exact_mod_cast hcardNat
-  unfold holEvidence BinaryEvidence.total
-  simpa using hcard.symm
-
 theorem staticQueryStrength_toReal_eq_empiricalPrice
     (W : Multiset (HenkinModel.{u, v, w} Base Const))
     (φ : ClosedFormulaCode Const) :
@@ -123,22 +94,22 @@ theorem staticQueryStrength_toReal_eq_empiricalPrice
   classical
   change
     (BinaryEvidence.toStrength
-      (holEvidence (Base := Base) (Const := Const) W (decodeClosedFormula φ))).toReal =
+      (crispEvidence holSatisfies W (decodeClosedFormula φ))).toReal =
       (((empiricalBeliefDay (Base := Base) (Const := Const) W φ : Price01) : Rat) : Real)
   by_cases hcard : W.card = 0
   · have hstrength :
         BinaryEvidence.toStrength
-          (holEvidence (Base := Base) (Const := Const) W (decodeClosedFormula φ)) = 0 := by
-      rw [BinaryEvidence.toStrength, holEvidence_total_eq_card (Base := Base) (Const := Const) W φ]
+          (crispEvidence holSatisfies W (decodeClosedFormula φ)) = 0 := by
+      rw [BinaryEvidence.toStrength, crispEvidence_total holSatisfies W _]
       simp [hcard]
     rw [hstrength]
     simp [empiricalBeliefDay, empiricalPrice, hcard]
   ·
-    rw [BinaryEvidence.toStrength, holEvidence_total_eq_card (Base := Base) (Const := Const) W φ]
+    rw [BinaryEvidence.toStrength, crispEvidence_total holSatisfies W _]
     have hcardENN : (W.card : ℝ≥0∞) ≠ 0 := by
       exact_mod_cast hcard
     rw [if_neg hcardENN, ENNReal.toReal_div]
-    simp [holEvidence, empiricalBeliefDay, empiricalPrice, hcard]
+    simp [crispEvidence, empiricalBeliefDay, empiricalPrice, hcard]
 
 theorem empiricalDayStrength_eq_staticQueryStrength
     (W : Multiset (HenkinModel.{u, v, w} Base Const))
@@ -160,7 +131,7 @@ theorem empiricalDayStrength_eq_staticQueryStrength
         W (decodeClosedFormula φ) ≤ 1 := by
     change
       BinaryEvidence.toStrength
-        (holEvidence (Base := Base) (Const := Const) W (decodeClosedFormula φ)) ≤ 1
+        (crispEvidence holSatisfies W (decodeClosedFormula φ)) ≤ 1
     exact BinaryEvidence.toStrength_le_one _
   have hright :
       BinaryWorldModel.queryStrength
@@ -199,7 +170,7 @@ theorem empiricalBeliefDay_singleton_of_satisfies
           ({M} : Multiset (HenkinModel.{u, v, w} Base Const))
           (decodeClosedFormula φ) = 1 :=
     queryStrength_singleton_of_satisfies
-      (Base := Base) (Const := Const) M (decodeClosedFormula φ) hφ
+      holSatisfies M (decodeClosedFormula φ) hφ
   have hday :
       dayQueryStrength (Const := Const)
           (empiricalBeliefDay
@@ -241,7 +212,7 @@ theorem empiricalBeliefDay_singleton_of_not_satisfies
           ({M} : Multiset (HenkinModel.{u, v, w} Base Const))
           (decodeClosedFormula φ) = 0 :=
     queryStrength_singleton_of_not_satisfies
-      (Base := Base) (Const := Const) M (decodeClosedFormula φ) hφ
+      holSatisfies M (decodeClosedFormula φ) hφ
   have hday :
       dayQueryStrength (Const := Const)
           (empiricalBeliefDay

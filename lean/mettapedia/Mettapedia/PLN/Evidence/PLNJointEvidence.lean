@@ -1,6 +1,6 @@
 import Mettapedia.PLN.Core.CompletePLN
-import Mettapedia.PLN.Evidence.EvidenceQuantale
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.Evidence.BinaryEvidence
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 /-!
 # PLN Joint BinaryEvidence Semantics (Dirichlet over Worlds)
@@ -44,7 +44,7 @@ namespace JointEvidence
 
 variable {n : ℕ}
 
-/-! ### Revision (independent evidence addition)
+/-! ### Revision (adding evidence from disjoint observations)
 
 `JointEvidence n` is a function type, so it inherits the standard pointwise additive structure.
 Revision is `+` (adding Dirichlet pseudo-counts worldwise). -/

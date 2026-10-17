@@ -217,24 +217,24 @@ def intAtom (n : Int) : Atom := .grounded (.int n)
 example :
     safeNativeNumericCall
       (.expression [.symbol "+", intAtom 2, intAtom 1]) = true := by
-  native_decide
+  decide
 
 example :
     safeNativeNumericCall
       (.expression [.symbol "+", .var "$x", intAtom 1]) = false := by
-  native_decide
+  decide
 
 example :
     safeNativeDataEquality
       (.expression [.symbol "==", .symbol "A", .symbol "A"]) = true := by
-  native_decide
+  decide
 
 example :
     safeNativeDataEquality
       (.expression [.symbol "==",
         .expression [.symbol "Predicate", .symbol "P"],
         .expression [.symbol "Predicate", .symbol "P"]]) = false := by
-  native_decide
+  decide
 
 example :
     renameReservedDataHead
@@ -242,17 +242,17 @@ example :
         .expression [.symbol "Predicate", .symbol "P"]]) =
       (.expression [.symbol "Evaluation",
         .expression [.symbol "Predicate-he", .symbol "P"]]) := by
-  native_decide
+  simp [renameReservedDataHead]
 
 example :
     sourceHeadNeedsCompat ["foo"]
       (.expression [.symbol "foo", .symbol "B"]) = true := by
-  native_decide
+  decide
 
 example :
     sourceHeadNeedsCompat ["foo"]
       (.expression [.symbol "+", intAtom 2, intAtom 1]) = false := by
-  native_decide
+  decide
 
 def b2RuleDataAnd : Atom :=
   .expression
@@ -265,25 +265,25 @@ def b2RuleDataAnd : Atom :=
 example :
     shouldDropDeadBoolAndHelper
       [b2RuleDataAnd, b2DeduceAndKernelRule, obsoleteBoolAndRule] = true := by
-  native_decide
+  decide
 
 example :
     shouldDropDeadBoolAndHelper
       [b2RuleDataAnd, b2DeduceAndKernelRule, obsoleteBoolAndRule,
         .expression [.symbol "=", .expression [.symbol "pair"],
           .expression [.symbol "And", .symbol "A", .symbol "B"]]] = false := by
-  native_decide
+  decide
 
 example :
     guardedImplicationTruthRuleShape d4GuardedImplicationTruthRule = true := by
-  native_decide
+  decide
 
 example :
     guardedImplicationTruthRuleShape d4ImplicationTruthRule = false := by
-  native_decide
+  decide
 
 example :
     guardedImplicationTruthRuleShape d4DirectTruthRule = false := by
-  native_decide
+  decide
 
 end Mettapedia.Languages.MeTTa.Translation

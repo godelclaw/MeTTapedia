@@ -253,7 +253,7 @@ This file establishes:
    - `join`: Take maximum evidence (epistemic disjunction)
    - `meet`: Take minimum evidence (epistemic conjunction)
    - `tensorCompose`: Sequential evidence composition (for deduction)
-   - `parCompose`: Independent evidence aggregation (for revision)
+   - `parCompose`: aggregation of evidence from disjoint observations (revision)
    - `cdNegate`: Swap positive/negative evidence
 
 4. **Quantale Law**: Tensor distributes over join, giving models

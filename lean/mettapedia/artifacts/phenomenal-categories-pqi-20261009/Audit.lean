@@ -1,8 +1,8 @@
 import Mettapedia.CategoryTheory.PartialSections
 import Mettapedia.Logic.Propositions.ComponentBases
-import Mettapedia.CognitiveArchitecture.Consciousness.PhenomenalContent
-import Mettapedia.CognitiveArchitecture.Consciousness.PhenomenalRealization
-import Mettapedia.CognitiveArchitecture.Consciousness.PhenomenalScrutability
+import Mettapedia.CogArch.Consciousness.PhenomenalContent
+import Mettapedia.CogArch.Consciousness.PhenomenalRealization
+import Mettapedia.CogArch.Consciousness.PhenomenalScrutability
 import Lean.Util.CollectAxioms
 import Lean.Compiler.Old
 

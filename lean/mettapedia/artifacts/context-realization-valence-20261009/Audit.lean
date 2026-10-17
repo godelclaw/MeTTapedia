@@ -1,9 +1,9 @@
 import Mettapedia.GSLT.Causality.Abstraction
 import Mettapedia.GSLT.Causality.ContextualRealization
 import Mettapedia.GSLT.Causality.ScriptedExecutionRecoding
-import Mettapedia.CognitiveArchitecture.Consciousness.Valence
-import Mettapedia.CognitiveArchitecture.Consciousness.TraceAndImplementation
-import Mettapedia.CognitiveArchitecture.GodelClaw.GlobalWorkspace
+import Mettapedia.CogArch.Consciousness.Valence
+import Mettapedia.CogArch.Consciousness.TraceAndImplementation
+import Mettapedia.CogArch.GodelClaw.GlobalWorkspace
 import Lean.Util.CollectAxioms
 import Lean.Compiler.Old
 

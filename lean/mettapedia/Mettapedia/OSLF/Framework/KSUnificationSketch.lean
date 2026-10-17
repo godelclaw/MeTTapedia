@@ -2,9 +2,9 @@ import Mettapedia.OSLF.Formula
 import Mettapedia.OSLF.Framework.CategoryBridge
 import Mettapedia.OSLF.Framework.TypeSynthesis
 import Mettapedia.OSLF.PresheafNativeType.PresheafSemantics
-import Mettapedia.PLN.Evidence.EvidenceQuantale
-import Mettapedia.PLN.WorldModel.PLNWorldModel
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.Evidence.BinaryEvidence
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 import Mettapedia.PLN.Evidence.PLN_KS_Bridge
 import KnuthSkilling.Core.HeytingBounds
 import KnuthSkilling.Core.TotalityImprecision

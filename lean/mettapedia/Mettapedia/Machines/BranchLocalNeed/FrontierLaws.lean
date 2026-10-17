@@ -109,4 +109,36 @@ theorem runFrontier_eq_flatMap (fuel : Nat) (machines :
       · rw [ih]
         simp only [frontier, List.flatMap_assoc]
 
+/-- A one-step invariant also covers the runner's retained halted state. -/
+theorem advance_preserves
+    (invariant : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect → Prop)
+    (oneStep : ∀ {machine next}, invariant machine → next ∈ step spec machine → invariant next)
+    {machine next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (valid : invariant machine) (member : next ∈ advance spec machine) : invariant next := by
+  unfold advance at member
+  cases stepped : step spec machine with
+  | nil => simp only [stepped, List.mem_singleton] at member; subst next; exact valid
+  | cons first rest => exact oneStep valid (by simpa only [stepped] using member)
+
+/-- The actual batch frontier lifts any proved one-step invariant, including
+unfinished states and the early stop when every branch has halted. -/
+theorem runFrontier_preserves
+    (invariant : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect → Prop)
+    (oneStep : ∀ {machine next}, invariant machine → next ∈ step spec machine → invariant next)
+    (fuel : Nat)
+    {states : List (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)}
+    (valid : ∀ machine ∈ states, invariant machine)
+    {next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect}
+    (member : next ∈ runFrontier spec fuel states) : invariant next := by
+  induction fuel generalizing states with
+  | zero => exact valid next member
+  | succ fuel ih =>
+      simp only [runFrontier] at member
+      split at member
+      · exact valid next member
+      · apply ih (states := states.flatMap (advance spec)) (member := member)
+        intro candidate found
+        rcases List.mem_flatMap.mp found with ⟨parent, selected, stepped⟩
+        exact advance_preserves spec invariant oneStep (valid parent selected) stepped
+
 end Mettapedia.Machines.BranchLocalNeed.NeedFrontierLaws

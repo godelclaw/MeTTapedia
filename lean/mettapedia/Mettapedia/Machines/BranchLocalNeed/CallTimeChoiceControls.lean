@@ -1,5 +1,6 @@
 import Mettapedia.Machines.BranchLocalNeed.CallTimeChoiceOrdered
 import Mettapedia.Machines.BranchLocalNeed.CallTimeChoiceWitnesses
+import Mettapedia.Machines.Cursor.Fold
 
 /-!
 # Controls for call-time choice
@@ -155,6 +156,90 @@ theorem keep_ancestor_world :
       (keepWith ancestorForward fSp2).map List.length = some 9 ∧
       (keepWith ancestorForward fSp3).map List.length = some 7 := by
   decide +kernel
+
+/-! ## Complete returned worlds at a fold boundary
+
+The producer forces one shared choice, then returns the same ordinary value
+in both branches. The subsequent reader still observes that branch's cached
+choice. The common owned sequencer retains these worlds without merging them.
+-/
+
+section FoldWorlds
+
+set_option maxRecDepth 4096
+set_option maxHeartbeats 1000000
+
+open Mettapedia.Machines.Cursor.Fold.OwnedSequence
+
+private def foldReturned (result : Result) : Returned Outcome Store :=
+  ⟨result.1, result.2, .completed, []⟩
+
+private def foldChoice : Option (List (Returned Outcome Store)) :=
+  (run (observed program) 200
+    (.eval oneCell [.need 0]
+      (.seq (.force (.var 0)) (.ret (.sym 999))))).map (List.map foldReturned)
+
+private def foldLeft : Returned Outcome Store :=
+  ⟨.ok (.sym 999), readyCell, .completed, []⟩
+
+private def foldRight : Returned Outcome Store :=
+  ⟨.ok (.sym 999), oneCell.setMemo 0 (.done vB), .completed, []⟩
+
+private def readFoldWorld (returned : Returned Outcome Store) :
+    Option (List (Val Nat)) :=
+  (run (observed program) 200
+    (.eval returned.environment [.need 0] (.force (.var 0)))).map values
+
+/-- Equal payloads and equal return roles can still retain different source
+worlds. The distinction was produced by the existing evaluator. -/
+theorem fold_equal_returns_keep_their_source_worlds :
+    foldChoice = some [foldLeft, foldRight] ∧
+      foldLeft.payload = foldRight.payload ∧
+      foldLeft.form = foldRight.form ∧
+      readFoldWorld foldLeft = some [vA] ∧
+      readFoldWorld foldRight = some [vB] := by
+  decide +kernel
+
+/-- The actual owned fold client preserves both branch-sensitive reads,
+including the ordered repeated payload. It does not join the two stores. -/
+theorem owned_fold_preserves_the_source_world_reads :
+    foldChoice.map (fun returns =>
+      (sequence (fun accumulated returned => some (accumulated ++ [returned]))
+        (returns.length + 1) ⟨returns, none, [], 0, 0⟩).2.accumulator.map readFoldWorld) =
+      some [some [vA], some [vB]] := by
+  rw [fold_equal_returns_keep_their_source_worlds.1]
+  simp only [Option.map_some, whole_return_delivery]
+  exact congrArg some (congrArg₂ List.cons
+    fold_equal_returns_keep_their_source_worlds.2.2.2.1
+    (congrArg (fun result => [result])
+      fold_equal_returns_keep_their_source_worlds.2.2.2.2))
+
+/-- Replacing every captured store with the first store changes a later
+observation, even though both visible payloads and their roles agree. -/
+theorem first_world_fold_mutant_changes_the_observation :
+    foldChoice.map (fun returns => returns.map
+      (fun returned => readFoldWorld { returned with environment := readyCell })) =
+      some [some [vA], some [vA]] ∧
+      (some [some [vA], some [vA]] : Option (List (Option (List (Val Nat))))) ≠
+        some [some [vA], some [vB]] := by
+  constructor <;> decide +kernel
+
+/-- Payload and provenance together still do not determine a complete
+returned occurrence's contextual observation. -/
+theorem payload_and_role_do_not_recover_fold_world :
+    ¬ ∃ inspect : Outcome → ReturnForm → Option (List (Val Nat)),
+      ∀ returned ∈ [foldLeft, foldRight],
+        inspect returned.payload returned.form = readFoldWorld returned := by
+  rintro ⟨inspect, correct⟩
+  have left := correct foldLeft (by simp)
+  have right := correct foldRight (by simp)
+  rw [fold_equal_returns_keep_their_source_worlds.2.2.2.1] at left
+  rw [fold_equal_returns_keep_their_source_worlds.2.2.2.2] at right
+  have same : (some [vA] : Option (List (Val Nat))) = some [vB] :=
+    left.symm.trans right
+  exact (by decide : (some [vA] : Option (List (Val Nat))) ≠ some [vB]) same
+
+end FoldWorlds
 
 
 /-! ## A ready container may retain pending fields -/
@@ -687,6 +772,11 @@ theorem capturedPause_frontier :
     NeedReference.runFrontier (machineSpec program) 6 [initialMachine capturedSequence] =
       [capturedPause] := rfl
 
+theorem capturedPause_member :
+    capturedPause ∈ NeedReference.runFrontier (machineSpec program) 6 [initialMachine capturedSequence] := by
+  rw [capturedPause_frontier]
+  exact List.mem_singleton_self _
+
 /-- The active value is plain data; the only operational reference in this
 returned control is inside the saved continuation's environment. -/
 theorem capturedPause_control :
@@ -700,9 +790,7 @@ theorem paused_continuation_requires_refined_heap :
     ¬ (machineReferenceDiscipline program).control
       (NeedCacheLaws.heapLive initialWorld.heap) capturedPause.control := by
   constructor
-  · apply runFrontier_referencesClosed program capturedSequence 6
-    rw [capturedPause_frontier]
-    exact List.mem_singleton_self _
+  · exact runFrontier_referencesClosed program capturedSequence 6 capturedPause_member
   · rw [capturedPause_control]
     intro valid
     have saved := ((machineReferenceDiscipline program).stack_cons.mp valid.2).1
@@ -715,5 +803,184 @@ world and commits the emission once. -/
 theorem captured_continuation_commits_once :
     sharedObservations program 600 capturedSequence = some [(.value mA, [91])] := by
   decide +kernel
+
+/-- The paused operational census retains the captured producer and excludes
+the completed private sequence cell. Receipt-archive retention is separate. -/
+theorem paused_control_census :
+    let heap := frontierResourceHeap program capturedSequence 6 capturedPause capturedPause_member
+      (fun _ => 1)
+    heap.allocated.card = 2 ∧
+    Mettapedia.Machines.ResourceOwnership.census heap
+      ((machineReferenceInventory program).controlRoots (0 : Nat) capturedPause.control) =
+        {capturedCell} := by
+  constructor <;> decide +kernel
+
+/-- Full heap inspection at the same pause retains both cells. Operational
+roots alone cannot preserve that stronger observation contract. -/
+theorem paused_inspection_requires_more_roots :
+    let heap := frontierResourceHeap program capturedSequence 6 capturedPause capturedPause_member
+      (fun _ => 1)
+    let roots := (machineReferenceInventory program).controlRoots (0 : Nat) capturedPause.control
+    (Mettapedia.Machines.ResourceOwnership.census heap (heap.snapshotRoots (0 : Nat))).card = 2 ∧
+      (Mettapedia.Machines.ResourceOwnership.collect heap roots).lookup ≠ heap.lookup ∧
+      (Mettapedia.Machines.ResourceOwnership.collect heap (heap.snapshotRoots (0 : Nat))).lookup =
+        heap.lookup := by
+  let heap := frontierResourceHeap program capturedSequence 6 capturedPause capturedPause_member
+    (fun _ => 1)
+  let roots := (machineReferenceInventory program).controlRoots (0 : Nat) capturedPause.control
+  change (Mettapedia.Machines.ResourceOwnership.census heap (heap.snapshotRoots (0 : Nat))).card = 2 ∧
+    (Mettapedia.Machines.ResourceOwnership.collect heap roots).lookup ≠ heap.lookup ∧
+    (Mettapedia.Machines.ResourceOwnership.collect heap (heap.snapshotRoots (0 : Nat))).lookup =
+      heap.lookup
+  have allocated : heap.allocated.card = 2 := paused_control_census.1
+  have operational := paused_control_census.2
+  have valid := frontier_controlRoots_valid (0 : Nat) program capturedSequence 6
+    capturedPause capturedPause_member (fun _ => 1)
+  refine ⟨?_, ?_, ?_⟩
+  · simpa using allocated
+  · intro same
+    have retained := (Mettapedia.Machines.ResourceOwnership.collect_preserves_all_lookups_iff
+      heap roots valid).mp same
+    have cardinality := congrArg Finset.card retained
+    rw [operational, Finset.card_singleton, allocated] at cardinality
+    omega
+  · funext address
+    exact Mettapedia.Machines.ResourceOwnership.lookup_collect_snapshotRoots heap 0 address
+
+/-- Attaching an inspector retains both cells; releasing its distinct owner
+restores the operational census without cancelling the computation's roots. -/
+theorem paused_inspection_release :
+    let heap := frontierResourceHeap program capturedSequence 6 capturedPause capturedPause_member
+      (fun _ => 1)
+    let roots := (machineReferenceInventory program).controlRoots (0 : Nat) capturedPause.control
+    let held := roots ∪ heap.snapshotRoots (1 : Nat)
+    (Mettapedia.Machines.ResourceOwnership.census heap held).card = 2 ∧
+      Mettapedia.Machines.ResourceOwnership.census heap
+        (Mettapedia.Machines.ResourceOwnership.release held 1) = {capturedCell} := by
+  let heap := frontierResourceHeap program capturedSequence 6 capturedPause capturedPause_member
+    (fun _ => 1)
+  let roots := (machineReferenceInventory program).controlRoots (0 : Nat) capturedPause.control
+  let held := roots ∪ heap.snapshotRoots (1 : Nat)
+  change (Mettapedia.Machines.ResourceOwnership.census heap held).card = 2 ∧
+    Mettapedia.Machines.ResourceOwnership.census heap
+      (Mettapedia.Machines.ResourceOwnership.release held 1) = {capturedCell}
+  have valid := frontier_controlRoots_valid (0 : Nat) program capturedSequence 6
+    capturedPause capturedPause_member (fun _ => 1)
+  have included := (Mettapedia.Machines.ResourceOwnership.rootAddresses_subset_iff_validRoots
+    heap roots).mpr valid
+  have addresses : Mettapedia.Machines.ResourceOwnership.rootAddresses held = heap.allocated := by
+    unfold held Mettapedia.Machines.ResourceOwnership.rootAddresses
+    rw [Finset.image_union]
+    change Mettapedia.Machines.ResourceOwnership.rootAddresses roots ∪
+      Mettapedia.Machines.ResourceOwnership.rootAddresses (heap.snapshotRoots (1 : Nat)) = _
+    rw [Mettapedia.Machines.ResourceOwnership.rootAddresses_snapshotRoots,
+      Finset.union_eq_right.mpr included]
+  have released : Mettapedia.Machines.ResourceOwnership.release roots 1 = roots := by
+    ext pair
+    rw [Mettapedia.Machines.ResourceOwnership.mem_release]
+    constructor
+    · exact And.left
+    · intro member
+      refine ⟨member, ?_⟩
+      obtain ⟨cell, _, rfl⟩ := Finset.mem_image.mp member
+      change (0 : Nat) ≠ 1
+      decide
+  constructor
+  · have same := Mettapedia.Machines.ResourceOwnership.census_congr_rootAddresses heap held
+      (heap.snapshotRoots (1 : Nat)) (by simpa using addresses)
+    simpa only [same, Mettapedia.Machines.ResourceOwnership.census_snapshotRoots] using
+      paused_control_census.1
+  · change Mettapedia.Machines.ResourceOwnership.census heap
+      (Mettapedia.Machines.ResourceOwnership.release (roots ∪ heap.snapshotRoots (1 : Nat)) 1) = _
+    rw [Mettapedia.Machines.ResourceOwnership.release_inspection, released]
+    exact paused_control_census.2
+
+/-- The actual allocation receipts pin both cells at this pause, even though
+the active continuation's census contains only the captured producer. -/
+theorem paused_allocation_archive_census :
+    let heap := frontierResourceHeap program capturedSequence 6 capturedPause capturedPause_member
+      (fun _ => 1)
+    (Mettapedia.Machines.ResourceOwnership.census heap
+      (capturedPause.world.receipts.allocationRoots (1 : Nat))).card = 2 := by
+  dsimp only
+  rw [frontier_allocation_census]
+  exact paused_control_census.1
+
+/-- Dropping archive pins loses a lookup which an actual allocation receipt
+names. Receipt data still exists; the stronger dereferencing view is lost. -/
+theorem paused_archive_target_lost_under_operational_roots :
+    let heap := frontierResourceHeap program capturedSequence 6 capturedPause capturedPause_member
+      (fun _ => 1)
+    let roots := (machineReferenceInventory program).controlRoots (0 : Nat) capturedPause.control
+    ∃ cell ∈ capturedPause.world.receipts.allocationCells,
+      (Mettapedia.Machines.ResourceOwnership.collect heap roots).lookup cell ≠ heap.lookup cell := by
+  classical
+  let heap := frontierResourceHeap program capturedSequence 6 capturedPause capturedPause_member
+    (fun _ => 1)
+  let roots := (machineReferenceInventory program).controlRoots (0 : Nat) capturedPause.control
+  have changed : (Mettapedia.Machines.ResourceOwnership.collect heap roots).lookup ≠ heap.lookup :=
+    paused_inspection_requires_more_roots.2.1
+  have lost : ∃ cell,
+      (Mettapedia.Machines.ResourceOwnership.collect heap roots).lookup cell ≠ heap.lookup cell := by
+    by_contra absent
+    apply changed
+    funext cell
+    by_contra different
+    exact absent ⟨cell, different⟩
+  obtain ⟨cell, different⟩ := lost
+  refine ⟨cell, ?_, different⟩
+  have allocated : cell ∈ heap.allocated := by
+    by_contra absent
+    exact different (Mettapedia.Machines.ResourceOwnership.lookup_collect_of_unallocated heap roots absent)
+  change cell ∈ capturedPause.world.receipts.allocationCells
+  rw [← runFrontier_allocationReceiptsExact program capturedSequence 6 capturedPause_member]
+  exact allocated
+
+def capturedCollectedPause : MMachine :=
+  collectedFrontierMachine (0 : Nat) program capturedSequence 6 capturedPause capturedPause_member
+    (fun _ => 1)
+
+/-- The source collector physically removes the completed private cell from
+both lookup and history, while the captured producer remains usable. -/
+theorem captured_collected_heap :
+    capturedCollectedPause.world.heap.allocated.card = 1 ∧
+      capturedCollectedPause.world.heap.Recorded ∧
+      (machineReferenceDiscipline program).machineClosed capturedCollectedPause ∧
+      NeedAllocationBound.SlotBound capturedCollectedPause.world := by
+  refine ⟨?_, collectedFrontierMachine_valid (0 : Nat) program capturedSequence 6
+    capturedPause capturedPause_member (fun _ => 1)⟩
+  decide +kernel
+
+/-- This captured continuation resumes after actual source collection and
+commits its producer's effect once, through the general resumption theorem. -/
+theorem captured_collection_resumes_once :
+    (runFrontier (machineSpec program) 600 [capturedCollectedPause]).map haltedObservation =
+      [some (.value mA, [91])] := by
+  unfold capturedCollectedPause
+  rw [← collectedFrontierMachine_resume_eq (0 : Nat) program capturedSequence 6
+    capturedPause capturedPause_member (fun _ => 1) 600]
+  decide +kernel
+
+/-- Keeping allocator and branch metadata while losing the captured cell
+cannot establish the heap-relative agreement needed for resumption. -/
+theorem missing_producer_breaks_worldAgreement :
+    ¬ NeedAllocationBound.WorldAgreement (fun cell => cell = capturedCell)
+      capturedPause.world { capturedPause.world with heap := Heap.empty } := by
+  intro same
+  have lookup := same.lookup capturedCell rfl
+  change capturedPause.world.heap.lookup capturedCell = none at lookup
+  have present : (capturedPause.world.heap.lookup capturedCell).isSome = true := by
+    decide +kernel
+  rw [lookup] at present
+  cases present
+
+/-- An address support is for tracing, not for interpreting suspension roles.
+Equal supports cannot license changing a memoized demand into opaque code. -/
+theorem equal_support_does_not_identify_roles :
+    (Val.need capturedCell).referenceSet = (Val.code capturedCell).referenceSet ∧
+      forceLocal (.need capturedCell) ≠ forceLocal (.code capturedCell) := by
+  constructor
+  · rfl
+  · decide +kernel
 
 end Mettapedia.Machines.BranchLocalNeed.CallTimeChoice.Controls

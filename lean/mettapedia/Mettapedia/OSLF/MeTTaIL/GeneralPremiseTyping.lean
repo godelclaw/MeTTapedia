@@ -74,6 +74,7 @@ theorem TracedQuery.final_typed {environment : Environment} {context : Context}
     TypedAssignment environment context final := by
   cases held with
   | row _ _ _ _ typed => exact typed
+  | dynamicRow _ _ _ _ _ _ _ typed => exact typed
 
 mutual
  theorem PremiseHolds.typed {environment : Environment} {context : Context}

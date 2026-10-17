@@ -79,7 +79,7 @@ theorem CostStaticTypeThinning.embedIndexAt_eq_of_eq_heq
 
 /-- Two same-colour reached plans which canonically expose the same bound
 variable have an exact apex in every enclosing semantic cospan. -/
-noncomputable def rho_reachedPlanPairCommonApex_of_sameColorBVar
+theorem rho_reachedPlanPairCommonApex_of_sameColorBVar
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -204,7 +204,7 @@ noncomputable def rho_reachedPlanPairCommonApex_of_sameColorBVar
 
 /-- Two same-colour reached plans which canonically expose the same authored
 free variable meet at the corresponding common semantic atom. -/
-noncomputable def rho_reachedPlanPairCommonApex_of_sameColorFVar
+theorem rho_reachedPlanPairCommonApex_of_sameColorFVar
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -330,7 +330,7 @@ admit the exact parent-cospan apex at arbitrary canonicalization, scope, and
 restoration depths.  The premise concerns the surviving canonical result, so
 it also covers quotation and parallel shells whose noncontributing positions
 collapse to units. -/
-noncomputable def rho_reachedPlanPairCommonApex_of_sameColorVariable
+theorem rho_reachedPlanPairCommonApex_of_sameColorVariable
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern

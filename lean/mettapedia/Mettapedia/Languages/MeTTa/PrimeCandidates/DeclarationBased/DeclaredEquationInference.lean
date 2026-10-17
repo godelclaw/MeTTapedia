@@ -38,7 +38,7 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased
 namespace DeclaredEquationInference
 
 open AuthoredDeclarationSignature
-open DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open DeclarationAwareTypedConversion
 open Mettapedia.GSLT.LanguageDef.CanonicalPremiseClosure
 open Mettapedia.GSLT.LanguageDef.InferenceChecker

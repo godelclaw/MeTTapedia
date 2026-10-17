@@ -40,7 +40,7 @@ open Mettapedia.GSLT.LanguageDef.LF (Srt)
 open Mettapedia.GSLT.LanguageDef.WellSorted
 open Mettapedia.GSLT.Dedukti (Theory)
 open Mettapedia.OSLF.MeTTaIL.Syntax
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 
 /-! ## The reducts of a λΠ term -/
 

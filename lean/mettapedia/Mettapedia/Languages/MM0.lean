@@ -1,8 +1,11 @@
 import Mettapedia.Languages.MM0.SyntaxSpec
+import Mettapedia.Languages.MM0.SealedInference
+import Mettapedia.Languages.MM0.CheckingDiscipline
 import Mettapedia.Languages.MM0.ArtifactBundle
 import Mettapedia.Languages.MM0.MeTTa
 import Mettapedia.Languages.MM0.Kernel.DefinitionFreeConversion
 import Mettapedia.Languages.MM0.Kernel.VacuousDummies
+import Mettapedia.Languages.MM0.Kernel.SubstitutionStability
 import Mettapedia.Languages.MM0.Translation.FirstOrderTyping
 import Mettapedia.Languages.MM0.Translation.FirstOrderConversion
 import Mettapedia.Languages.MM0.Translation.FirstOrderRules

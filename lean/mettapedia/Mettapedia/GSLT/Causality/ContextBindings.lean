@@ -1,6 +1,6 @@
 import Mettapedia.GSLT.Causality.ContextOperators
 import Mettapedia.GSLT.Dynamics.DemandAgreement
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary
+import Mettapedia.Machines.DemandBoundary
 
 /-!
 # Interventions by binding: explicit `do` against `do` derived from binding override
@@ -11,7 +11,7 @@ An intervention `do(x := v)` is a context.  It can be written in two ways.
   assignment of values to keys, composed by letting the outer assignment win
   (`override`), and plugged by one simultaneous override.
 * **Derived `do`** (`OverrideAction.derivedRules`): a context is a chain of
-  bindings, Prime's first-class context (`DemandBoundary.Context`, the Lean
+  bindings in a persistent first-class context (`DemandBoundary.Context`, the Lean
   model of `ctx:bind`, newest binding first), composed by grafting one chain on
   another (`graft`), and plugged one binding at a time, oldest first.
 
@@ -35,7 +35,7 @@ class of contexts (`regionDerived`, `regionExplicit`), monotone in the region
 
 ## When the binding is a computation the choice is the demand choice
 
-Prime's `ctx:bind` binds any expression, lazily, in one Need cell shared by
+The modeled `ctx:bind` operation binds any expression, lazily, in one Need cell shared by
 every read.  An explicit `do` takes a value, so a computation given to it is
 evaluated where the intervention is made.  Over contexts that bind
 computations (bags of answers) and a body that reads keys, three semantics
@@ -163,10 +163,10 @@ section Bindings
 
 variable {Key : Type uK} {Value : Type uV}
 
-/-- **Binding chains** are Prime's first-class contexts, newest binding
+/-- **Binding chains** are persistent first-class contexts, newest binding
 outermost (`DemandBoundary.Context`). -/
 abbrev Bindings (Key : Type uK) (Value : Type uV) :=
-  Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary.Context Key Value
+  Mettapedia.Machines.DemandBoundary.Context Key Value
 
 /-- Graft one chain on another: the outer chain's bindings are newer. -/
 def graft : Bindings Key Value → Bindings Key Value → Bindings Key Value
@@ -214,9 +214,9 @@ theorem lookupValue_bind (parent : Bindings Key Value) (key : Key) (value : Valu
   by_cases same : other = key
   · subst same
     simp [lookupValue, single,
-      Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary.Context.lookup]
+      Mettapedia.Machines.DemandBoundary.Context.lookup]
   · simp [lookupValue, single, same,
-      Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary.Context.lookup]
+      Mettapedia.Machines.DemandBoundary.Context.lookup]
 
 /-- **The lookup of a graft is the override of the lookups.** -/
 theorem lookupValue_graft : ∀ outer inner : Bindings Key Value,
@@ -232,10 +232,10 @@ theorem mem_keysOf_of_lookupValue : ∀ {bindings : Bindings Key Value} {key : K
   | .bind parent bound value, key, found => by
       rw [lookupValue_bind] at found
       by_cases same : key = bound
-      · simp [keysOf, same, Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary.Context.entries]
+      · simp [keysOf, same, Mettapedia.Machines.DemandBoundary.Context.entries]
       · simp only [override_apply, single, same, if_false, Option.none_or] at found
         have := mem_keysOf_of_lookupValue found
-        simp only [keysOf, Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary.Context.entries,
+        simp only [keysOf, Mettapedia.Machines.DemandBoundary.Context.entries,
           List.map_cons, List.mem_cons] at this ⊢
         exact Or.inr this
 
@@ -279,7 +279,7 @@ omit [DecidableEq Key] in
 theorem keysOf_bindingsOf (assignment : Key → Option Value) :
     ∀ (keys : List Key) {key : Key}, key ∈ keysOf (bindingsOf assignment keys) → key ∈ keys
   | [], key, member => by simp [bindingsOf, keysOf,
-      Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary.Context.entries] at member
+      Mettapedia.Machines.DemandBoundary.Context.entries] at member
   | first :: rest, key, member => by
       cases assigned : assignment first with
       | none =>
@@ -287,7 +287,7 @@ theorem keysOf_bindingsOf (assignment : Key → Option Value) :
           exact List.mem_cons_of_mem _ (keysOf_bindingsOf assignment rest member)
       | some value =>
           simp only [bindingsOf, assigned, keysOf,
-            Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary.Context.entries,
+            Mettapedia.Machines.DemandBoundary.Context.entries,
             List.map_cons, List.mem_cons] at member
           rcases member with same | inner
           · exact same ▸ List.mem_cons_self
@@ -417,7 +417,7 @@ def regionDerived (region : Set Key) : AdmissibleClass O.derivedRules where
   identity_mem := by
     intro key member
     change key ∈ keysOf (.empty : Bindings Key Value) at member
-    simp [keysOf, Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary.Context.entries] at member
+    simp [keysOf, Mettapedia.Machines.DemandBoundary.Context.entries] at member
   compose_mem := by
     intro outer inner outerIn innerIn key member
     have split : key ∈ keysOf outer ++ keysOf inner :=
@@ -557,7 +557,7 @@ theorem commute_of_disjoint {first second : Bindings Key Value}
 theorem do_commute_of_ne {key key' : Key} (different : key ≠ key') (value : Value) (value' : Value) :
     ContextOperators.Commute (rules := O.derivedRules) (doBinding key value) (doBinding key' value') :=
   O.commute_of_disjoint fun other member member' => by
-    simp only [doBinding, keysOf, Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary.Context.entries,
+    simp only [doBinding, keysOf, Mettapedia.Machines.DemandBoundary.Context.entries,
       List.map_cons, List.map_nil, List.mem_singleton] at member member'
     exact different (member.symm.trans member')
 

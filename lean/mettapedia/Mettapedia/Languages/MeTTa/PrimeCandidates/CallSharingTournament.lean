@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DemandBoundary
+import Mettapedia.Machines.DemandBoundary
 import Mettapedia.Machines.BranchLocalNeed.Worlds
 import Mathlib.Data.Finset.Card
 
@@ -210,7 +210,7 @@ theorem perUse_in_perCandidate
     {Call Argument Origin Cell Candidate Use : Type*}
     (implicitOrigin : Call → Argument → Origin)
     (cellOrigin : Cell → Origin) :
-    PrimeCandidates.DemandBoundary.RelationIncluded
+    Mettapedia.Machines.DemandBoundary.RelationIncluded
       (Shares (Candidate := Candidate) (Use := Use)
         implicitOrigin cellOrigin .perUse)
       (Shares (Candidate := Candidate) (Use := Use)
@@ -223,7 +223,7 @@ theorem perCandidate_in_perSource
     {Call Argument Origin Cell Candidate Use : Type*}
     (implicitOrigin : Call → Argument → Origin)
     (cellOrigin : Cell → Origin) :
-    PrimeCandidates.DemandBoundary.RelationIncluded
+    Mettapedia.Machines.DemandBoundary.RelationIncluded
       (Shares (Candidate := Candidate) (Use := Use)
         implicitOrigin cellOrigin .perCandidate)
       (Shares (Candidate := Candidate) (Use := Use)
@@ -236,7 +236,7 @@ theorem perSource_in_perOrigin
     {Call Argument Origin Cell Candidate Use : Type*}
     (implicitOrigin : Call → Argument → Origin)
     (cellOrigin : Cell → Origin) :
-    PrimeCandidates.DemandBoundary.RelationIncluded
+    Mettapedia.Machines.DemandBoundary.RelationIncluded
       (Shares (Candidate := Candidate) (Use := Use)
         implicitOrigin cellOrigin .perSource)
       (Shares (Candidate := Candidate) (Use := Use)
@@ -269,7 +269,7 @@ def demoOtherCall : DemoSite :=
   { source := .implicit 1 0, candidate := 0, use := 0 }
 
 theorem demo_perUse_strictly_finer_perCandidate :
-    PrimeCandidates.DemandBoundary.StrictlyFiner
+    Mettapedia.Machines.DemandBoundary.StrictlyFiner
       (DemoShares .perUse) (DemoShares .perCandidate) := by
   constructor
   · exact perUse_in_perCandidate _ _
@@ -277,7 +277,7 @@ theorem demo_perUse_strictly_finer_perCandidate :
       simp [DemoShares, Shares, sharingKey, demoUseZero, demoUseOne]
 
 theorem demo_perCandidate_strictly_finer_perSource :
-    PrimeCandidates.DemandBoundary.StrictlyFiner
+    Mettapedia.Machines.DemandBoundary.StrictlyFiner
       (DemoShares .perCandidate) (DemoShares .perSource) := by
   constructor
   · exact perCandidate_in_perSource _ _
@@ -285,7 +285,7 @@ theorem demo_perCandidate_strictly_finer_perSource :
       simp [DemoShares, Shares, sharingKey, demoUseZero, demoCandidateOne]
 
 theorem demo_perSource_strictly_finer_perOrigin :
-    PrimeCandidates.DemandBoundary.StrictlyFiner
+    Mettapedia.Machines.DemandBoundary.StrictlyFiner
       (DemoShares .perSource) (DemoShares .perOrigin) := by
   constructor
   · exact perSource_in_perOrigin _ _

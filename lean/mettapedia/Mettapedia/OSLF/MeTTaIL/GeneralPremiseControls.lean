@@ -2,6 +2,9 @@ import Mettapedia.OSLF.MeTTaIL.GeneralPremiseExecutionTermination
 import Mettapedia.OSLF.MeTTaIL.GeneralRuleBindingInference
 import Mettapedia.OSLF.MeTTaIL.GeneralPremiseSchemaTyping
 import Mettapedia.OSLF.MeTTaIL.GeneralPremiseFlow
+import Mettapedia.OSLF.MeTTaIL.GeneralPremiseStaticFlow
+import Mettapedia.OSLF.MeTTaIL.GeneralPremiseQueryTotality
+import Mettapedia.OSLF.MeTTaIL.GeneralPremiseQueryOrder
 
 /-!
 # Executed structural queries, freshness, quantification and scoped children
@@ -145,4 +148,242 @@ theorem unfinished_not_complete :
       complete environment (goal [zero, zero]) (start environment (goal [zero, zero])) = false := by
   decide +kernel
 
+namespace Dynamic
+
+/-- This source table specification is independent of the service dispatcher. -/
+inductive Rows : String → List Pattern → List (List Pattern) → Prop where
+  | seen : Rows "seen" [zero] [[zero], [zero]]
+  | absent (value : Pattern) : value ≠ zero → Rows "seen" [value] []
+  | mirror (value hole : Pattern) : Rows "mirror" [value, hole] [[value, value], [value, value]]
+  | empty : Rows "empty" [] []
+
+def nativeRows (relation : String) (arguments : List Pattern) : Option (List (List Pattern)) :=
+  if relation = "seen" then
+    match arguments with
+    | [value] => some (if value == zero then [[value], [value]] else [])
+    | _ => none
+  else if relation = "mirror" then
+    match arguments with
+    | [value, _] => some [[value, value], [value, value]]
+    | _ => none
+  else if relation = "empty" then
+    if arguments.isEmpty then some [] else none
+  else none
+
+theorem nativeRows_complete {relation : String} {arguments : List Pattern}
+    {rows : List (List Pattern)} (source : Rows relation arguments rows) :
+    nativeRows relation arguments = some rows := by
+  cases source with
+  | seen => simp [nativeRows]
+  | absent value different => simp [nativeRows, different]
+  | mirror value hole => simp [nativeRows]
+  | empty => simp [nativeRows]
+
+theorem nativeRows_sound {relation : String} {arguments : List Pattern}
+    {rows : List (List Pattern)} (computed : nativeRows relation arguments = some rows) :
+    Rows relation arguments rows := by
+  unfold nativeRows at computed
+  split at computed
+  · rename_i selected
+    subst relation
+    cases arguments with
+    | nil => simp at computed
+    | cons value rest =>
+      cases rest with
+      | nil =>
+        by_cases present : value = zero
+        · subst value
+          simp only [beq_self_eq_true, ↓reduceIte, Option.some.injEq] at computed
+          subst rows
+          exact .seen
+        · have result : rows = [] := by simpa [present] using computed.symm
+          rw [result]
+          exact .absent value present
+      | cons _ _ => simp at computed
+  · split at computed
+    · rename_i selected
+      subst relation
+      cases arguments with
+      | nil => simp at computed
+      | cons value rest =>
+        cases rest with
+        | nil => simp at computed
+        | cons hole tail =>
+          cases tail with
+          | nil =>
+            have result : rows = [[value, value], [value, value]] := Option.some.inj computed.symm
+            subst rows
+            exact .mirror value hole
+          | cons _ _ => simp at computed
+    · split at computed
+      · rename_i selected
+        subst relation
+        cases arguments with
+        | nil =>
+            have result : rows = [] := by simpa using computed.symm
+            subst rows
+            exact .empty
+        | cons _ _ => simp at computed
+      · contradiction
+
+def service : DynamicProvider where
+  Source := Rows
+  rows? := nativeRows
+  rows_exact := fun _ _ _ => ⟨nativeRows_sound, nativeRows_complete⟩
+
+def guardedChild : RewriteRule := { child with premises := [.relationQuery "seen" [.fvar "X"]] }
+def dynamicLanguage : LanguageDef := { language with rewrites := [guardedChild, parent] }
+def dynamicProvider : ProviderSnapshot where
+  signatures := [⟨"seen", [term], [.input]⟩, ⟨"mirror", [term, term], [.input, .output]⟩,
+    ⟨"empty", [], []⟩, ⟨"unavailable", [], []⟩]
+  rows := [⟨"mirror", [zero, zero]⟩]
+  dynamicRelations := ["seen", "mirror", "empty", "unavailable"]
+def dynamicEnvironment : Environment where
+  language := dynamicLanguage
+  provider := dynamicProvider
+  dynamic := service
+  free := environment.free
+  specifications := [(0, GeneralRuleBindingInference.inferredSpec guardedChild),
+    (1, GeneralRuleBindingInference.inferredSpec parent)]
+def initial : Assignment := [("X", localValue [] zero)]
+def mirrorRule : RewriteRule :=
+  { parent with premises := [.relationQuery "mirror" [.fvar "X", .fvar "Y"]] }
+def context : Context := ⟨1, mirrorRule, GeneralRuleBindingInference.inferredSpec mirrorRule, [], 0, 0⟩
+def mirrorRequest : Query.Request := ⟨context, "mirror", [.fvar "X", .fvar "Y"], initial⟩
+def queryState := Query.run dynamicEnvironment mirrorRequest 120 (Query.start dynamicEnvironment mirrorRequest)
+def queryReadout (answer : Query.Answer dynamicEnvironment mirrorRequest) :=
+  (answer.rowIndex, (lookup answer.assignment "Y").map ContextualValue.body)
+
+#guard queryState.answers.length == 3
+#guard queryState.answers.map queryReadout == [(0, some zero), (1, some zero), (2, some zero)]
+#guard queryState.unresolved.isEmpty
+#guard Query.complete dynamicEnvironment mirrorRequest queryState
+#guard (Query.run dynamicEnvironment mirrorRequest 17 (Query.start dynamicEnvironment mirrorRequest)).agenda.length > 0
+#guard (Query.run dynamicEnvironment mirrorRequest 103
+  (Query.run dynamicEnvironment mirrorRequest 17 (Query.start dynamicEnvironment mirrorRequest))).answers.length == 3
+
+private def emptyRequest : Query.Request := ⟨context, "empty", [], initial⟩
+private def emptyState := Query.run dynamicEnvironment emptyRequest 40 (Query.start dynamicEnvironment emptyRequest)
+private def unknownRequest : Query.Request := ⟨context, "unavailable", [], initial⟩
+private def unknownState := Query.run dynamicEnvironment unknownRequest 40 (Query.start dynamicEnvironment unknownRequest)
+#guard emptyState.answers.isEmpty
+#guard Query.complete dynamicEnvironment emptyRequest emptyState
+#guard unknownState.answers.isEmpty
+#guard !(Query.complete dynamicEnvironment unknownRequest unknownState)
+#guard unknownState.unresolved == [.dynamicUnavailable "unavailable"]
+
+private def rootState := Execution.run dynamicEnvironment (goal [zero, zero]) 1800
+  (Execution.start dynamicEnvironment (goal [zero, zero]))
+private def rootTargets : Result dynamicEnvironment (goal [zero, zero]) → Pattern
+  | .root _ _ _ _ target _ => target
+private def rootKinds : Result dynamicEnvironment (goal [zero, zero]) → List Nat
+  | .root _ _ _ history _ _ => history.map eventKind
+private def nestedQueries : Event → List Nat
+  | .child _ _ _ _ _ _ _ _ _ _ history => history.filterMap fun event =>
+      match event with | .query _ _ index _ => some index | _ => none
+  | _ => []
+private def childQueries : Result dynamicEnvironment (goal [zero, zero]) → List Nat
+  | .root _ _ _ history _ _ => history.flatMap nestedQueries
+
+#guard rootState.answers.length == 16
+#guard rootState.answers.all fun answer => rootTargets answer == .apply "Accept" [zero]
+#guard rootState.answers.all fun answer => rootKinds answer == [0, 1, 2, 3]
+#guard rootState.answers.all fun answer => (childQueries answer).length == 1
+#guard rootState.unresolved.isEmpty
+#guard Execution.complete dynamicEnvironment (goal [zero, zero]) rootState
+#guard !(Static.checkProviderRepresentation dynamicProvider "mirror" 0 (fun _ => true))
+
+private def unregisteredEnvironment : Environment :=
+  { dynamicEnvironment with provider := { dynamicProvider with dynamicRelations := [] } }
+private def unregisteredState := Query.run unregisteredEnvironment mirrorRequest 120
+  (Query.start unregisteredEnvironment mirrorRequest)
+private def wrongContext : Context :=
+  ⟨1, parent, GeneralRuleBindingInference.inferredSpec parent, [], 0, 0⟩
+private def wrongRequest : Query.Request := ⟨wrongContext, "mirror", [.fvar "X", .fvar "Y"], initial⟩
+private def wrongState := Query.run dynamicEnvironment wrongRequest 120
+  (Query.start dynamicEnvironment wrongRequest)
+private def rootQuantifiers : Result dynamicEnvironment (goal [zero, zero]) → List Nat
+  | .root _ _ _ history _ _ => history.flatMap quantifiedIndices
+private def resumedQuery := Query.run dynamicEnvironment mirrorRequest 103
+  (Query.run dynamicEnvironment mirrorRequest 17 (Query.start dynamicEnvironment mirrorRequest))
+
+#guard unregisteredState.answers.length == 1
+#guard unregisteredState.unresolved.isEmpty
+#guard wrongState.answers.isEmpty
+#guard !(Query.complete dynamicEnvironment wrongRequest wrongState)
+#guard resumedQuery.answers.map queryReadout == queryState.answers.map queryReadout
+#guard resumedQuery.unresolved == queryState.unresolved
+#guard rootState.answers.all fun answer => rootQuantifiers answer == [0, 1]
+#guard rootState.answers.countP (fun answer => childQueries answer == [1]) == 8
+#guard rootState.answers.countP (fun answer => childQueries answer == [2]) == 8
+
+theorem mirror_resume_exact :
+    Query.run dynamicEnvironment mirrorRequest 120 (Query.start dynamicEnvironment mirrorRequest) =
+      Query.run dynamicEnvironment mirrorRequest 103
+        (Query.run dynamicEnvironment mirrorRequest 17 (Query.start dynamicEnvironment mirrorRequest)) :=
+  Query.run_add dynamicEnvironment mirrorRequest 17 103 _
+
+#print axioms nativeRows_sound
+#print axioms nativeRows_complete
+#print axioms mirror_resume_exact
+
+end Dynamic
+
+
 end Mettapedia.OSLF.MeTTaIL.GeneralPremise.Controls
+
+namespace Mettapedia.OSLF.MeTTaIL.GeneralPremise.Controls.Dynamic
+
+open Syntax RuleBinding ScopedRuleMatching Execution
+open Mettapedia.GSLT.LanguageDef.WellSorted
+
+/-- Actual source object sorts still govern every native row. -/
+private def wrongSortRequest : Query.Request :=
+  { mirrorRequest with initial := [("X", localValue [] (.fvar "a"))] }
+private def wrongSortState := Query.run dynamicEnvironment wrongSortRequest 120
+  (Query.start dynamicEnvironment wrongSortRequest)
+
+#guard wrongSortState.answers.isEmpty
+#guard wrongSortState.unresolved.isEmpty
+#guard Query.complete dynamicEnvironment wrongSortRequest wrongSortState
+
+/-- The closed-result primitive profile retains the existing service code and
+independent source relation, while registering only its closed-result methods. -/
+def closedEnvironment : Environment :=
+  { dynamicEnvironment with provider :=
+    { dynamicProvider with dynamicRelations := ["seen", "empty", "unavailable"] } }
+
+theorem closed_output_support : Query.DynamicOutputsFreeWithin [] closedEnvironment := by
+  intro relation registered resolved rows source
+  cases source with
+  | seen =>
+      intro values member
+      simp only [List.mem_cons, List.not_mem_nil, or_false, or_self] at member
+      subst values
+      intro value present objectName occurs
+      simp only [List.mem_singleton] at present
+      subst value
+      simp [zero, Pattern.freeFvarNames] at occurs
+  | absent => intro values impossible; cases impossible
+  | mirror value hole => simp [closedEnvironment, dynamicProvider] at registered
+  | empty => intro values impossible; cases impossible
+
+/-- A service that copies arbitrary object values cannot promise an empty
+object footprint merely because its output schemas are holes. -/
+theorem mirror_requires_input_support : ¬ Query.DynamicOutputsFreeWithin [] dynamicEnvironment := by
+  intro covered
+  have values := covered "mirror" (by decide) [.fvar "object", .fvar "Y"]
+    [[.fvar "object", .fvar "object"], [.fvar "object", .fvar "object"]]
+    (.mirror (.fvar "object") (.fvar "Y"))
+    [.fvar "object", .fvar "object"] (by simp)
+  have impossible := values (.fvar "object") (by simp) "object" (by simp [Pattern.freeFvarNames])
+  cases impossible
+
+example : Query.DynamicOutputsFreeWithin []
+    { dynamicEnvironment with dynamic := DynamicProvider.empty } :=
+  Query.DynamicOutputsFreeWithin.of_empty _ _ rfl
+
+#print axioms closed_output_support
+#print axioms mirror_requires_input_support
+
+end Mettapedia.OSLF.MeTTaIL.GeneralPremise.Controls.Dynamic

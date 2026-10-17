@@ -179,3 +179,114 @@ theorem certification_does_not_preserve_ordered_first :
 end Controls
 
 end Mettapedia.Machines.SearchPruningAdmission
+
+namespace Mettapedia.Machines.SearchPruningAdmission.CandidateSelection
+
+universe u v
+variable {A : Type u} {State : Type v} [DecidableEq A]
+
+/-- Structural inspection is pure. An equation in `free` imposes no
+constraint at this path and survives regardless of the inspected value. -/
+structure Test (A : Type u) (State : Type v) where
+  free : Finset A
+  inspect : State → Finset A
+
+structure Selection (A : Type u) where
+  candidates : Finset A
+  inspections : Nat
+
+def admitted (test : Test A State) (state : State) : Finset A :=
+  test.free ∪ test.inspect state
+
+/-- The reference inspects every path, including paths unable to remove
+any remaining equation and paths reached after all candidates are gone. -/
+def reference (state : State) (candidates : Finset A) :
+    List (Test A State) → Selection A
+  | [] => ⟨candidates, 0⟩
+  | test :: rest =>
+      let next := reference state (candidates ∩ admitted test state) rest
+      ⟨next.candidates, next.inspections + 1⟩
+
+/-- The optimized evaluator stops on an empty frontier and skips a test
+only when its unconditional survivors contain every remaining candidate. -/
+def selective (state : State) (candidates : Finset A) :
+    List (Test A State) → Selection A
+  | [] => ⟨candidates, 0⟩
+  | test :: rest =>
+      if candidates = ∅ then ⟨∅, 0⟩
+      else if candidates ⊆ test.free then selective state candidates rest
+      else
+        let next := selective state (candidates ∩ admitted test state) rest
+        ⟨next.candidates, next.inspections + 1⟩
+
+theorem free_admitted (test : Test A State) (state : State) :
+    test.free ⊆ admitted test state := Finset.subset_union_left
+
+theorem reference_empty (state : State) (tests : List (Test A State)) :
+    (reference state ∅ tests).candidates = ∅ := by
+  induction tests with
+  | nil => rfl
+  | cons test rest ih => simpa [reference] using ih
+
+theorem selective_candidates (state : State) (tests : List (Test A State))
+    (candidates : Finset A) :
+    (selective state candidates tests).candidates =
+      (reference state candidates tests).candidates := by
+  induction tests generalizing candidates with
+  | nil => rfl
+  | cons test rest ih =>
+      by_cases empty : candidates = ∅
+      · subst candidates
+        simp [selective, reference_empty]
+      · by_cases free : candidates ⊆ test.free
+        · have unchanged : candidates ∩ admitted test state = candidates :=
+            Finset.inter_eq_left.mpr (Finset.Subset.trans free (free_admitted test state))
+          simp [selective, empty, free, reference, unchanged, ih]
+        · simpa [selective, empty, free, reference] using
+            ih (candidates ∩ admitted test state)
+
+theorem reference_inspections (state : State) (tests : List (Test A State))
+    (candidates : Finset A) :
+    (reference state candidates tests).inspections = tests.length := by
+  induction tests generalizing candidates with
+  | nil => rfl
+  | cons test rest ih => simp [reference, ih]
+
+theorem selective_inspections_le (state : State) (tests : List (Test A State))
+    (candidates : Finset A) :
+    (selective state candidates tests).inspections ≤ tests.length := by
+  induction tests generalizing candidates with
+  | nil => simp [selective]
+  | cons test rest ih =>
+      by_cases empty : candidates = ∅
+      · simp [selective, empty]
+      · by_cases free : candidates ⊆ test.free
+        · simpa [selective, empty, free] using Nat.le_succ_of_le (ih candidates)
+        · simpa [selective, empty, free] using
+            Nat.add_le_add_right (ih (candidates ∩ admitted test state)) 1
+
+/-- Filtering the original sequence preserves both order and repeated
+occurrences; equality of candidate masks does not quotient the sequence. -/
+theorem ordered_occurrences (state : State) (tests : List (Test A State))
+    (candidates : Finset A) (occurrences : List A) :
+    occurrences.filter (fun item => decide (item ∈ (selective state candidates tests).candidates)) =
+      occurrences.filter (fun item => decide (item ∈ (reference state candidates tests).candidates)) := by
+  rw [selective_candidates]
+
+private def freeZero : Test Nat Unit := ⟨{0}, fun _ => {1}⟩
+private def refuteZero : Test Nat Unit := ⟨∅, fun _ => {1}⟩
+
+example : (selective () {0} [freeZero]).inspections = 0 ∧
+    (reference () {0} [freeZero]).inspections = 1 := by decide
+
+example : ([0, 0, 1].filter
+    (fun item => decide (item ∈ (selective () {0} [freeZero]).candidates))) = [0, 0] := by decide
+
+/-- A singleton candidate alone does not license skipping its constraint. -/
+example : (selective () {0} [refuteZero]).candidates ≠ {0} := by decide
+
+/-- Equal masks do not justify removing an observable inspection effect.
+Such inspections are deliberately outside `Test`'s pure interface. -/
+example : (({0} : Finset Nat), ["inspection"]) ≠ ({0}, []) := by decide
+
+end Mettapedia.Machines.SearchPruningAdmission.CandidateSelection

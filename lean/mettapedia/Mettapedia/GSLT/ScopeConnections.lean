@@ -1,9 +1,5 @@
 import Mettapedia.GSLT.Scope.WorldModel
 import Mettapedia.GSLT.Scope.Simulation
-import Mettapedia.GSLT.Scope.SimpleFragment
-import Mettapedia.GSLT.Scope.SimpleFragmentExecutable
-import Mettapedia.GSLT.Scope.SimpleFragmentBeckChevalley
-import Mettapedia.GSLT.Scope.SimpleFragmentObjectCompleteness
 import Mettapedia.GSLT.Scope.RevisionWorkflow
 import Mettapedia.GSLT.Scope.Provenance
 import Mettapedia.Cybernetics.MindWorldBisimulation

@@ -32,7 +32,7 @@ open scoped ProgramQuotation
 
 def binarySource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/mmb.metta"
+    "../../../../../../../../metta/mm0/mmb.metta"
     sha256 "832e4e0da71881fd16752f99d79455b2b41eda0321bd4acea32e4b147f799aaa"
 
 def program : Program := MMUResolution.program.append binarySource.program

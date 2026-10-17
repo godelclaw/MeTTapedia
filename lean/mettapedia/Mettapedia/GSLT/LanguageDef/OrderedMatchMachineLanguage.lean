@@ -27,8 +27,10 @@ and constructions on encoded terms (constructor key, unfolding a subject
 into its children, list append, binding lookup, bound-variable and
 application construction).
 
-The typed reference machine below is a proof device for the exactness
-theorem of the next module; no downstream theorem consumes it directly.
+The typed machine below also supplies retained ordered frontier execution.
+Its erased successor list is proved equal to the declared language executor.
+Receipt annotations retain the source occurrence, captured bindings and query
+row choices at the operations that produce them; finished states publish once.
 -/
 
 set_option autoImplicit false
@@ -41,7 +43,8 @@ open Mettapedia.GSLT.LanguageDef.TotalGSLT
 open Mettapedia.GSLT.LanguageDef.EquationSemantics
 open Mettapedia.GSLT.LanguageDef.IRPass
 open Mettapedia.GSLT.LanguageDef.PatternPlanBindingDecisionCompilation
-open Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderRuleCompilation (PatternPlan PremisePlan)
+open Mettapedia.GSLT.LanguageDef.MeTTaILFirstOrderRuleCompilation
+  (PatternPlan PremisePlan QueryRowChoice PremiseReceipt RuleEmission)
 open Mettapedia.GSLT.LanguageDef.BindingDecisionLanguage
   (encodeName decodeName? decodeName?_encodeName encodePath decodePath? encodeBindings
     decodeBindings? decodeBindings?_encodeBindings encodeDecision isBoundAt isConstructorOf
@@ -342,12 +345,12 @@ def decodeNames? : Pattern → Option (List String)
       simp [encodeNames, decodeNames?, encodeName, decodeName?, decodeNames?_encodeNames names]
 
 def encodeQuery (query : PremisePlan) : Pattern :=
-  .apply "mm-query" [encodeName query.relation, encodeNames query.arguments]
+  .apply "mm-query" [encodeName query.relation, encodeTemplates query.arguments]
 
 def decodeQuery? : Pattern → Option PremisePlan
   | .apply "mm-query" [relation, arguments] => do
       let decodedRelation ← decodeName? relation
-      let decodedArguments ← decodeNames? arguments
+      let decodedArguments ← decodeTemplates? arguments
       some ⟨decodedRelation, decodedArguments⟩
   | _ => none
 
@@ -473,7 +476,7 @@ def machineStep (relations : RelationEnv) (source : LanguageDef) :
       [.prefilter patterns cursor leaf subject, .run onFailure subject cursor]
   | .run (.switch _ default) subject [] => [.run default subject []]
   | .run (.switch branches default) subject (focused :: cursor) =>
-      [.run default subject (focused :: cursor), .dispatch branches subject focused cursor]
+      [.dispatch branches subject focused cursor, .run default subject (focused :: cursor)]
   | .dispatch .nil _ _ _ => []
   | .dispatch (.cons key program rest) subject focused cursor =>
       if subjectKey focused = key then
@@ -531,6 +534,139 @@ def machineStep (relations : RelationEnv) (source : LanguageDef) :
       [.instantiateArguments constructor (value :: accumulated) templates bindings kont]
   | .instantiated value _ [] => [.done value]
   | .done _ => []
+
+/-! ## Retained firing receipts and ordered execution -/
+
+/-- Provenance accumulated by the operations of one candidate firing. -/
+structure FiringContext where
+  origin : Option Nat := none
+  initialBindings : Option Bindings := none
+  bindings : Bindings := []
+  choices : List QueryRowChoice := []
+
+/-- The same machine state with the firing provenance that its old result
+observation erases.  The control remains the existing decision machine. -/
+structure ReceiptState where
+  state : MachineState
+  context : FiringContext := {}
+
+/-- Capture the leaf at the actual entry to matching and the initial bindings
+at the actual return from matching. -/
+def retainFiringContext (state : MachineState) (context : FiringContext) : FiringContext :=
+  match state with
+  | .prefilter [] [] leaf _ => { origin := some leaf.occurrence }
+  | .bdRet bindings _ (.afterMatch _ _ :: _) =>
+      { context with initialBindings := some bindings, bindings }
+  | .premises [] _ bindings => { context with bindings }
+  | _ => context
+
+/-- Advance the existing machine, retaining the row selected by each actual
+query operation.  Other steps only carry the provenance through. -/
+def annotatedStep (relations : RelationEnv) (source : LanguageDef)
+    (current : ReceiptState) : List ReceiptState :=
+  match current.state with
+  | .premises (query :: queries) template bindings =>
+      (query.runReceipts relations source bindings).map fun result =>
+        ⟨.premises queries template result.bindings,
+          { current.context with
+            bindings := result.bindings
+            choices := current.context.choices ++ result.choices }⟩
+  | state =>
+      (machineStep relations source state).map fun next =>
+        ⟨next, retainFiringContext state current.context⟩
+
+/-- Annotation neither adds, removes, deduplicates nor reorders successors. -/
+theorem annotatedStep_erase (relations : RelationEnv) (source : LanguageDef)
+    (current : ReceiptState) :
+    (annotatedStep relations source current).map ReceiptState.state =
+      machineStep relations source current.state := by
+  cases current with
+  | mk state context =>
+      cases state <;> try simp [annotatedStep, List.map_map, Function.comp_def]
+      rename_i queries template bindings
+      cases queries with
+      | nil => simp [List.map_map, Function.comp_def]
+      | cons query queries =>
+          simp only [List.map_map, Function.comp_def, machineStep]
+          rw [← query.runReceipts_bindings relations source bindings, List.map_map]
+          rfl
+
+/-- A receipt is published only at an actual finished result.  Its origin and
+bindings come from the retained firing, never from an answer-list position. -/
+def ReceiptState.emission? (current : ReceiptState) : Option (RuleEmission Nat) := do
+  let origin ← current.context.origin
+  let initial ← current.context.initialBindings
+  match current.state with
+  | .done target =>
+      some ⟨origin, initial, current.context.bindings, current.context.choices, target⟩
+  | _ => none
+
+/-- A machine slice retains precisely the ordered pending control states. -/
+structure OrderedCut where
+  emissions : List (RuleEmission Nat)
+  pending : List ReceiptState
+
+/-- Consume one pending state.  A finished state publishes once; a live state
+is replaced by its actual ordered successors before the remaining frontier. -/
+def frontierStep (relations : RelationEnv) (source : LanguageDef) :
+    List ReceiptState → OrderedCut
+  | [] => ⟨[], []⟩
+  | current :: rest =>
+      match current.state with
+      | .done _ => ⟨current.emission?.toList, rest⟩
+      | _ => ⟨[], annotatedStep relations source current ++ rest⟩
+
+/-- Bounded execution advances real pending operations.  Fuel zero retains
+all work, even when that work has no eventual successful firing. -/
+def runFrontier (relations : RelationEnv) (source : LanguageDef) :
+    Nat → List ReceiptState → OrderedCut
+  | 0, pending => ⟨[], pending⟩
+  | fuel + 1, pending =>
+      let first := frontierStep relations source pending
+      let rest := runFrontier relations source fuel first.pending
+      ⟨first.emissions ++ rest.emissions, rest.pending⟩
+
+/-- Enter the compiled decision program without computing its answers. -/
+def startFrontier (program : Program) (subject : Pattern) : List ReceiptState :=
+  [⟨.run program subject [subject], {}⟩]
+
+/-- Splitting a budget preserves both the complete ordered published prefix
+and the exact remaining machine frontier. -/
+theorem runFrontier_split (relations : RelationEnv) (source : LanguageDef)
+    (firstFuel restFuel : Nat) (pending : List ReceiptState) :
+    runFrontier relations source (firstFuel + restFuel) pending =
+      let first := runFrontier relations source firstFuel pending
+      let rest := runFrontier relations source restFuel first.pending
+      OrderedCut.mk (first.emissions ++ rest.emissions) rest.pending := by
+  induction firstFuel generalizing pending with
+  | zero => simp [runFrontier]
+  | succ firstFuel ih =>
+      simp only [Nat.succ_add, runFrontier, ih]
+      simp [List.append_assoc]
+
+@[simp] theorem runFrontier_empty (relations : RelationEnv) (source : LanguageDef)
+    (fuel : Nat) : runFrontier relations source fuel [] = ⟨[], []⟩ := by
+  induction fuel with
+  | zero => rfl
+  | succ fuel ih => simp [runFrontier, frontierStep, ih]
+
+theorem emission?_target (current : ReceiptState) (emission : RuleEmission Nat)
+    (published : current.emission? = some emission) :
+    current.state = .done emission.target := by
+  unfold ReceiptState.emission? at published
+  cases origin : current.context.origin <;> simp [origin] at published
+  rename_i origin
+  cases initial : current.context.initialBindings <;> simp [initial] at published
+  rename_i initial
+  cases state : current.state <;> simp [state] at published
+  rename_i target
+  subst emission
+  rfl
+
+#print axioms annotatedStep_erase
+#print axioms runFrontier_split
+#print axioms runFrontier_empty
+#print axioms emission?_target
 
 /-! ## Authored syntax -/
 
@@ -631,7 +767,7 @@ def nnilConstructor : GrammarRule := constructor "mm-nnil" "Names" []
 def nconsConstructor : GrammarRule :=
   constructor "mm-ncons" "Names" [("name", .base "Name"), ("names", .base "Names")]
 def queryConstructor : GrammarRule :=
-  constructor "mm-query" "Query" [("relation", .base "Name"), ("arguments", .base "Names")]
+  constructor "mm-query" "Query" [("relation", .base "Name"), ("arguments", .base "Templates")]
 def qnilConstructor : GrammarRule := constructor "mm-qnil" "Queries" []
 def qconsConstructor : GrammarRule :=
   constructor "mm-qcons" "Queries" [("query", .base "Query"), ("queries", .base "Queries")]
@@ -893,7 +1029,7 @@ def afterMatchRewrite : RewriteRule :=
 def premiseRewrite : RewriteRule :=
   { name := "mm-premise"
     typeContext :=
-      [("relation", .base "Name"), ("arguments", .base "Names"), ("queries", .base "Queries"),
+      [("relation", .base "Name"), ("arguments", .base "Templates"), ("queries", .base "Queries"),
         ("template", .base "Template"), ("bindings", .base "Bindings"), ("extended", .base "Bindings")]
     premises :=
       [.relationQuery sourceQueryRelation
@@ -1031,7 +1167,7 @@ def language : LanguageDef :=
     rewrites :=
       [succeedRewrite, captureRewrite, checkBoundRewrite, checkConstructorRewrite, joinRewrite,
         joinRightRewrite, joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite,
-        tryNextRewrite, switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite,
+        tryNextRewrite, switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite,
         dispatchMissRewrite, prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite,
         afterMatchRewrite, premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite,
         instAppRewrite, instargsDoneRewrite, instargsNextRewrite, iretArgRewrite,
@@ -1068,9 +1204,9 @@ def relationEnv (relations : RelationEnv) (source : LanguageDef) : RelationEnv w
     else if relation = sourceQueryRelation then
       match arguments with
       | [relationName, argumentNames, bindings, .fvar _] =>
-          match decodeName? relationName, decodeNames? argumentNames, decodeBindings? bindings with
+          match decodeName? relationName, decodeTemplates? argumentNames, decodeBindings? bindings with
           | some name, some names, some current =>
-              (relationQueryStep relations source current name (names.map Pattern.fvar)).map
+              (relationQueryStep relations source current name (MeTTaILFirstOrderRuleCompilation.erasePatterns names)).map
                 fun extended => [relationName, argumentNames, bindings, encodeBindings extended]
           | _, _, _ => []
       | _ => []
@@ -1120,7 +1256,7 @@ private theorem succeed_validate : LanguageDef.validateRewrite language succeedR
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1172,7 +1308,7 @@ private theorem capture_validate : LanguageDef.validateRewrite language captureR
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1227,7 +1363,7 @@ private theorem checkBound_validate : LanguageDef.validateRewrite language check
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1282,7 +1418,7 @@ private theorem checkConstructor_validate : LanguageDef.validateRewrite language
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1337,7 +1473,7 @@ private theorem join_validate : LanguageDef.validateRewrite language joinRewrite
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1389,7 +1525,7 @@ private theorem joinRight_validate : LanguageDef.validateRewrite language joinRi
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1441,7 +1577,7 @@ private theorem joinMerge_validate : LanguageDef.validateRewrite language joinMe
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1496,7 +1632,7 @@ private theorem finish_validate : LanguageDef.validateRewrite language finishRew
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1548,7 +1684,7 @@ private theorem drop_validate : LanguageDef.validateRewrite language dropRewrite
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1600,7 +1736,7 @@ private theorem tryLeaf_validate : LanguageDef.validateRewrite language tryLeafR
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1652,7 +1788,7 @@ private theorem tryNext_validate : LanguageDef.validateRewrite language tryNextR
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1704,7 +1840,7 @@ private theorem switchDefault_validate : LanguageDef.validateRewrite language sw
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1756,7 +1892,7 @@ private theorem switchDispatch_validate : LanguageDef.validateRewrite language s
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1808,7 +1944,7 @@ private theorem dispatchHit_validate : LanguageDef.validateRewrite language disp
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1863,7 +1999,7 @@ private theorem dispatchMiss_validate : LanguageDef.validateRewrite language dis
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1918,7 +2054,7 @@ private theorem prefilterDone_validate : LanguageDef.validateRewrite language pr
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -1970,7 +2106,7 @@ private theorem prefilterWild_validate : LanguageDef.validateRewrite language pr
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -2022,7 +2158,7 @@ private theorem prefilterNode_validate : LanguageDef.validateRewrite language pr
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -2077,7 +2213,7 @@ private theorem afterMatch_validate : LanguageDef.validateRewrite language after
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -2129,7 +2265,7 @@ private theorem premise_validate : LanguageDef.validateRewrite language premiseR
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -2184,7 +2320,7 @@ private theorem premisesDone_validate : LanguageDef.validateRewrite language pre
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -2236,7 +2372,7 @@ private theorem instVar_validate : LanguageDef.validateRewrite language instVarR
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -2291,7 +2427,7 @@ private theorem instBvar_validate : LanguageDef.validateRewrite language instBva
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -2346,7 +2482,7 @@ private theorem instApp_validate : LanguageDef.validateRewrite language instAppR
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -2398,7 +2534,7 @@ private theorem instargsDone_validate : LanguageDef.validateRewrite language ins
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -2453,7 +2589,7 @@ private theorem instargsNext_validate : LanguageDef.validateRewrite language ins
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -2505,7 +2641,7 @@ private theorem iretArg_validate : LanguageDef.validateRewrite language iretArgR
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -2557,7 +2693,7 @@ private theorem iretDone_validate : LanguageDef.validateRewrite language iretDon
       RewriteValidationCertificate.constructorLabels, language, succeedRewrite, captureRewrite,
       checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite,
       joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite,
-      switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite,
+      switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite,
       prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite,
       premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite,
       instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite, runPattern,
@@ -2598,7 +2734,7 @@ private theorem rewrites_validate :
     ∀ rewrite ∈ language.rewrites, LanguageDef.validateRewrite language rewrite = [] := by
   intro rewrite rewriteMember
   change rewrite ∈
-    [succeedRewrite, captureRewrite, checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite, joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite, switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite, prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite, premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite, instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite] at rewriteMember
+    [succeedRewrite, captureRewrite, checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite, joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite, switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite, prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite, premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite, instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite] at rewriteMember
   simp only [List.mem_cons, List.mem_nil_iff, or_false] at rewriteMember
   rcases rewriteMember with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
 
@@ -2613,8 +2749,8 @@ private theorem rewrites_validate :
   · exact drop_validate
   · exact tryLeaf_validate
   · exact tryNext_validate
-  · exact switchDefault_validate
   · exact switchDispatch_validate
+  · exact switchDefault_validate
   · exact dispatchHit_validate
   · exact dispatchMiss_validate
   · exact prefilterDone_validate
@@ -2649,7 +2785,7 @@ private theorem rules_noncontextual :
     ∀ rule, rule ∈ language.rewrites → NoncontextualPremises rule.premises := by
   intro rule ruleMember
   change rule ∈
-    [succeedRewrite, captureRewrite, checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite, joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite, switchDefaultRewrite, switchDispatchRewrite, dispatchHitRewrite, dispatchMissRewrite, prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite, premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite, instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite] at ruleMember
+    [succeedRewrite, captureRewrite, checkBoundRewrite, checkConstructorRewrite, joinRewrite, joinRightRewrite, joinMergeRewrite, finishRewrite, dropRewrite, tryLeafRewrite, tryNextRewrite, switchDispatchRewrite, switchDefaultRewrite, dispatchHitRewrite, dispatchMissRewrite, prefilterDoneRewrite, prefilterWildRewrite, prefilterNodeRewrite, afterMatchRewrite, premiseRewrite, premisesDoneRewrite, instVarRewrite, instBvarRewrite, instAppRewrite, instargsDoneRewrite, instargsNextRewrite, iretArgRewrite, iretDoneRewrite] at ruleMember
   simp only [List.mem_cons, List.mem_nil_iff, or_false] at ruleMember
   rcases ruleMember with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
   all_goals

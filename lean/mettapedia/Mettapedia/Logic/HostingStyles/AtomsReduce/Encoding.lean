@@ -41,7 +41,7 @@ open Mettapedia.OSLF.MeTTaIL.Substitution (liftBVars liftBVarsList liftBVars_zer
   instantiateBVar)
 open Mettapedia.Languages.MeTTa
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.ContextReadings (tokens tokensList)
 
 /-! ## The reading -/

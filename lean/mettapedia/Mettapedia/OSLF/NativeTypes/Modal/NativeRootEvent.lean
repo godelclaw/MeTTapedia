@@ -69,7 +69,8 @@ theorem primitive_valid (answer : Answer schema (source := source))
   have sorted := source_sorted schema answer
   refine ⟨⟨schema.declared, .here enabled sorted.2.2.1 sorted.1⟩, ?_, rfl, rfl,
     target_sorted schema answer⟩
-  simpa only [primitive, SiteData.here, ordinal] using answer.valid
+  simpa only [primitive, SiteData.here, ordinal,
+    GeneralPlanEnvironment.environmentWith_empty] using answer.valid
 
 /-- Only computed root metadata and the emitted answer's actual declaration
 index are needed. Matching, premises and typing come from original evidence. -/

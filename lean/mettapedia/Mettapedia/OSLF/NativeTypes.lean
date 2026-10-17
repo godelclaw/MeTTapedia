@@ -1,3 +1,4 @@
+import Mettapedia.OSLF.NativeTypes.Certificates.Controls
 import Mettapedia.OSLF.MeTTaIL.GeneralEquationJobs
 import Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission
 import Mettapedia.OSLF.MeTTaIL.GeneralOccurrenceCertificate
@@ -14,6 +15,8 @@ import Mettapedia.OSLF.NativeTypes.Decision.Structural.MatchingControls
 import Mettapedia.OSLF.NativeTypes.Generation
 import Mettapedia.OSLF.NativeTypes.Instances.Lambda.DriverAdmission
 import Mettapedia.OSLF.NativeTypes.Instances.Lambda.ScheduledControls
+import Mettapedia.OSLF.NativeTypes.Instances.MeTTaFamily.Census
+import Mettapedia.OSLF.NativeTypes.Instances.MeTTaFamily.EquationSite
 import Mettapedia.OSLF.NativeTypes.Instances.Partrec.FormulaControls
 import Mettapedia.OSLF.NativeTypes.Instances.Partrec.MachineFormulaControls
 import Mettapedia.OSLF.NativeTypes.Instances.Rho.BindingAdmission
@@ -25,6 +28,7 @@ import Mettapedia.OSLF.NativeTypes.Runtime.EvidenceControls
 import Mettapedia.OSLF.NativeTypes.Runtime.Examples
 import Mettapedia.OSLF.NativeTypes.Runtime.ModalInstanceControls
 import Mettapedia.OSLF.NativeTypes.Semantics
+import Mettapedia.OSLF.NativeTypes.SortProfiles.SourceComparison
 
 /-!
 # Generated native types and executable judgments

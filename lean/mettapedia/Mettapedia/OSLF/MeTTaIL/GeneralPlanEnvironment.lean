@@ -71,6 +71,36 @@ theorem selected_specification (plan : Plan) {ordinal : Nat} {rule : RulePlan}
     (fun entry => entry.1 == ordinal) (ordinal, rule.binding.spec) mapped (beq_self_eq_true _) unique
   simp only [GeneralPremise.specification?, found, Option.map_some]
 
+/-- Install the independently specified primitive service for this plan. The
+selected declarations, source occurrence indices and typing context are retained. -/
+def environmentWith (plan : Plan) (dynamic : GeneralPremise.DynamicProvider) : GeneralPremise.Environment :=
+  {environment plan with dynamic := dynamic}
+
+@[simp] theorem environmentWith_empty (plan : Plan) :
+    environmentWith plan GeneralPremise.DynamicProvider.empty = environment plan := rfl
+
+@[simp] theorem environmentWith_language (plan : Plan) (dynamic : GeneralPremise.DynamicProvider) :
+    (environmentWith plan dynamic).language = (environment plan).language := rfl
+
+@[simp] theorem environmentWith_free (plan : Plan) (dynamic : GeneralPremise.DynamicProvider) :
+    (environmentWith plan dynamic).free = plan.snapshot.free := rfl
+
+@[simp] theorem environmentWith_provider (plan : Plan) (dynamic : GeneralPremise.DynamicProvider) :
+    (environmentWith plan dynamic).provider = plan.snapshot.provider := rfl
+
+@[simp] theorem environmentWith_dynamic (plan : Plan) (dynamic : GeneralPremise.DynamicProvider) :
+    (environmentWith plan dynamic).dynamic = dynamic := rfl
+
+theorem selected_rule_with (plan : Plan) (dynamic : GeneralPremise.DynamicProvider)
+    {ordinal : Nat} {rule : RulePlan} (position : plan.rules[ordinal]? = some rule) :
+    (environmentWith plan dynamic).language.rewrites[ordinal]? = some rule.rule :=
+  selected_rule plan position
+
+theorem selected_specification_with (plan : Plan) (dynamic : GeneralPremise.DynamicProvider)
+    {ordinal : Nat} {rule : RulePlan} (position : plan.rules[ordinal]? = some rule) :
+    GeneralPremise.specification? (environmentWith plan dynamic) ordinal = some rule.binding.spec :=
+  selected_specification plan position
+
 theorem compiled_environment (snapshot : Snapshot) (permissions : Permissions) :
     (environment (compile snapshot permissions)).language = executionLanguage snapshot permissions := rfl
 

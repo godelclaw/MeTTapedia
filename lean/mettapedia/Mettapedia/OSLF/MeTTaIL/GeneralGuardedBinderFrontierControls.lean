@@ -832,6 +832,7 @@ theorem disabled_provider_has_no_query (choice : Choice) (bound : List TypeExpr)
   | row selected _ _ _ _ =>
       change ([] : List GeneralPremise.ProviderRow)[row]? = some _ at selected
       simp at selected
+  | dynamicRow dynamic _ _ _ _ _ _ _ => exact absurd dynamic (by decide +kernel)
 
 def pendingMatcher {query : GeneralOccurrenceFrontier.Request} : GeneralOccurrenceFrontier.Task query → Bool
   | .rule frame => frame.state.agenda.any fun

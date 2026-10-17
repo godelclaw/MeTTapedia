@@ -1,5 +1,5 @@
 import Mettapedia.PLN.Evidence.EvidenceClass
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # PLN World Models (Posterior-State Interface)
@@ -17,6 +17,12 @@ This is the “WM judgment + query judgment” split:
 
 - build/revise posterior states in `State`;
 - answer queries by extracting evidence from the state.
+
+What this module is not: it fixes no semantics for states.  Concrete world
+models instantiate the interface (counting satisfiers of a crisp semantics in
+`PLNWorldModelCrispSpecialization`, additive carriers in
+`PLNWorldModelGeneric`, Bayesian networks in `WorldModel/BayesNet`), and the
+rules that act on queries are in `WorldModelCalculus`.
 -/
 
 namespace Mettapedia.PLN.WorldModel.PLNWorldModel

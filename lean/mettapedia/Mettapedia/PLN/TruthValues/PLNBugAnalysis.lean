@@ -2,6 +2,7 @@ import Mathlib.Tactic
 import Mathlib.Data.Real.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions
+import Mettapedia.PLN.TruthValues.PLNWeightTV
 
 /-!
 # PLN Bug Analysis: Formal Proofs and Corrections
@@ -51,19 +52,16 @@ section DoubleDampingBug
 /-- Confidence to weight: c/(1-c). Defined for c < 1. -/
 noncomputable def c2w' (c : ℝ) : ℝ := c / (1 - c)
 
-/-- Weight to confidence: w/(w+1). Always defined for w ≥ 0. -/
-noncomputable def w2c' (w : ℝ) : ℝ := w / (w + 1)
-
 /-- Round-trip: w2c(c2w(c)) = c for c ∈ [0,1). -/
-theorem w2c'_c2w' (c : ℝ) (_hc : 0 ≤ c) (hc1 : c < 1) : w2c' (c2w' c) = c := by
-  unfold w2c' c2w'
+theorem w2c_c2w' (c : ℝ) (_hc : 0 ≤ c) (hc1 : c < 1) : Mettapedia.PLN.TruthValues.PLNWeightTV.w2c (c2w' c) = c := by
+  unfold Mettapedia.PLN.TruthValues.PLNWeightTV.w2c c2w'
   have h : (1 : ℝ) - c ≠ 0 := by linarith
   field_simp
   ring
 
 /-- Round-trip: c2w(w2c(w)) = w for w ≥ 0. -/
-theorem c2w'_w2c' (w : ℝ) (hw : 0 ≤ w) : c2w' (w2c' w) = w := by
-  unfold c2w' w2c'
+theorem c2w'_w2c (w : ℝ) (hw : 0 ≤ w) : c2w' (Mettapedia.PLN.TruthValues.PLNWeightTV.w2c w) = w := by
+  unfold c2w' Mettapedia.PLN.TruthValues.PLNWeightTV.w2c
   have h : (0 : ℝ) < w + 1 := by linarith
   have h' : w + 1 ≠ 0 := ne_of_gt h
   field_simp
@@ -71,11 +69,11 @@ theorem c2w'_w2c' (w : ℝ) (hw : 0 ≤ w) : c2w' (w2c' w) = w := by
 
 /-- CURRENT (buggy): applies w2c to confidence directly -/
 noncomputable def inductionConfBuggy (c1 c2 : ℝ) : ℝ :=
-  w2c' (min c1 c2)
+  Mettapedia.PLN.TruthValues.PLNWeightTV.w2c (min c1 c2)
 
 /-- CORRECT: convert to weights, take min, convert back -/
 noncomputable def inductionConfCorrect (c1 c2 : ℝ) : ℝ :=
-  w2c' (min (c2w' c1) (c2w' c2))
+  Mettapedia.PLN.TruthValues.PLNWeightTV.w2c (min (c2w' c1) (c2w' c2))
 
 /-- **Bug Proof**: The buggy formula systematically underestimates confidence
     when one premise has higher confidence than the other.
@@ -87,7 +85,7 @@ theorem double_damping_underestimates (c1 c2 : ℝ)
     (hc1 : 0 < c1) (hc2 : 0 < c2) (hc1_lt1 : c1 < 1) (hc2_lt1 : c2 < 1)
     (h12 : c2 ≤ c1) :
     inductionConfBuggy c1 c2 < inductionConfCorrect c1 c2 := by
-  unfold inductionConfBuggy inductionConfCorrect c2w' w2c'
+  unfold inductionConfBuggy inductionConfCorrect c2w' Mettapedia.PLN.TruthValues.PLNWeightTV.w2c
   -- min c1 c2 = c2 (since c2 ≤ c1)
   simp only [min_eq_right h12]
   -- min (c1/(1-c1)) (c2/(1-c2)) = c2/(1-c2) (since c2 ≤ c1 implies c2/(1-c2) ≤ c1/(1-c1))
@@ -115,7 +113,7 @@ theorem double_damping_underestimates (c1 c2 : ℝ)
 /-- **Quantitative bound**: The buggy formula underestimates by factor (c+1) -/
 theorem double_damping_ratio (c : ℝ) (hc : 0 < c) (hc1 : c < 1) :
     inductionConfBuggy c c / inductionConfCorrect c c = 1 / (c + 1) := by
-  unfold inductionConfBuggy inductionConfCorrect c2w' w2c'
+  unfold inductionConfBuggy inductionConfCorrect c2w' Mettapedia.PLN.TruthValues.PLNWeightTV.w2c
   simp only [min_self]
   have h1 : 1 - c ≠ 0 := by linarith
   have h2 : c / (1 - c) + 1 = 1 / (1 - c) := by field_simp; ring
@@ -132,12 +130,12 @@ theorem double_damping_ratio (c : ℝ) (hc : 0 < c) (hc1 : c < 1) :
     Correct: 0.9 (identity!)
     Error: 47% underestimate -/
 example : inductionConfBuggy 0.9 0.9 = 0.9 / 1.9 := by
-  unfold inductionConfBuggy w2c'
+  unfold inductionConfBuggy Mettapedia.PLN.TruthValues.PLNWeightTV.w2c
   simp only [min_self]
   ring
 
 example : inductionConfCorrect 0.9 0.9 = 0.9 := by
-  unfold inductionConfCorrect c2w' w2c'
+  unfold inductionConfCorrect c2w' Mettapedia.PLN.TruthValues.PLNWeightTV.w2c
   simp only [min_self]
   -- 0.9 / (1 - 0.9) = 9, and 9 / (9 + 1) = 0.9
   norm_num
@@ -170,7 +168,7 @@ noncomputable def revisionStrength (s1 c1 s2 c2 : ℝ) : ℝ :=
 noncomputable def revisionConfEvidence (c1 c2 : ℝ) : ℝ :=
   let w1 := c2w' c1
   let w2 := c2w' c2
-  w2c' (w1 + w2)
+  Mettapedia.PLN.TruthValues.PLNWeightTV.w2c (w1 + w2)
 
 /-- MeTTa revision confidence (with floor clamp) -/
 noncomputable def revisionConfMetta (c1 c2 : ℝ) : ℝ :=
@@ -184,7 +182,7 @@ theorem evidence_conf_ge_inputs (c1 c2 : ℝ)
     (hc1 : 0 < c1) (hc1_lt1 : c1 < 1)
     (hc2 : 0 < c2) (hc2_lt1 : c2 < 1) :
     c1 ≤ revisionConfEvidence c1 c2 ∧ c2 ≤ revisionConfEvidence c1 c2 := by
-  unfold revisionConfEvidence c2w' w2c'
+  unfold revisionConfEvidence c2w' Mettapedia.PLN.TruthValues.PLNWeightTV.w2c
   have h1 : 0 < 1 - c1 := by linarith
   have h2 : 0 < 1 - c2 := by linarith
   have hw1_pos : 0 < c1 / (1 - c1) := div_pos hc1 h1
@@ -291,9 +289,6 @@ theorem c2w_discontinuous_at_one :
         field_simp
       rw [key]
       linarith
-
-/-- **The Fix**: Cap confidence at MAX_CONF < 1 -/
-def MAX_CONF : ℝ := 0.9999
 
 /-- Safe c2w with capping -/
 noncomputable def c2w_safe (c : ℝ) : ℝ :=

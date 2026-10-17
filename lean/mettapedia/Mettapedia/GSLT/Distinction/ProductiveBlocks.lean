@@ -1,5 +1,6 @@
 import Mettapedia.GSLT.Distinction.BlockTransport
 import Mettapedia.GSLT.Dynamics.OrderedDemand
+import Mettapedia.Coalgebra.CoherentPrefixTower
 
 /-!
 # Productive blocks, exact residuals and relation-level transport
@@ -302,39 +303,89 @@ theorem run_succ_call {fuel : ℕ} {state saved : State} {request : Request}
     machine.run (fuel + 1) state = ([], .suspended request saved) := by
   simp only [run, stepped]
 
-/-- Reaching a stuck outcome exposes the exact trace and residual immediately
-before the unsuccessful transition lookup. -/
-theorem run_stuck_prefix {fuel : Nat} {state stopped : State} {events : List Event}
-    (ran : machine.run fuel state = (events, .stuck stopped)) :
-    ∃ count < fuel, machine.run count state = (events, .exhausted stopped) ∧
-      machine.step stopped = none := by
+/-- Every non-exhausted run has an exact exhausted earlier and one boundary
+transition. Final failure events belong to that transition; earlier receipts
+remain in the earlier. This includes success, failure, interaction and stuckness. -/
+theorem run_boundary_prefix (machine : Machine State Event Verdict Request)
+    {fuel : Nat} {state : State} {events : List Event} {outcome : Outcome State Verdict Request}
+    (ran : machine.run fuel state = (events, outcome))
+    (boundary : ∀ saved, outcome ≠ .exhausted saved) :
+    ∃ count < fuel, ∃ saved earlier final,
+      machine.run count state = (earlier, .exhausted saved) ∧
+      machine.run 1 saved = (final, outcome) ∧ events = earlier ++ final := by
   induction fuel generalizing state events with
-  | zero => simp only [run, Prod.mk.injEq, reduceCtorEq, and_false] at ran
+  | zero =>
+      have same := congrArg Prod.snd ran
+      exact False.elim (boundary state same.symm)
   | succ fuel ih =>
       cases found : machine.step state with
       | none =>
-          simp only [run, found, Prod.mk.injEq, Outcome.stuck.injEq] at ran
-          obtain ⟨rfl, rfl⟩ := ran
-          exact ⟨0, Nat.zero_lt_succ _, rfl, found⟩
+          exact ⟨0, Nat.zero_lt_succ _, state, [], events, rfl,
+            by simpa only [run, found] using ran, rfl⟩
       | some transition =>
           cases transition with
+          | finish verdict | fail faults | call request saved =>
+              exact ⟨0, Nat.zero_lt_succ _, state, [], events, rfl,
+                by simpa only [run, found] using ran, rfl⟩
           | silent next =>
-              rw [machine.run_succ_silent found] at ran
-              obtain ⟨count, bound, paused, blocked⟩ := ih ran
-              exact ⟨count + 1, Nat.succ_lt_succ bound,
-                (machine.run_succ_silent found).trans paused, blocked⟩
+              have following : machine.run fuel next = (events, outcome) := by
+                simpa only [run, found] using ran
+              obtain ⟨count, bound, saved, earlier, final, reached, stopped, emissions⟩ := ih following
+              exact ⟨count + 1, Nat.succ_lt_succ bound, saved, earlier, final,
+                (machine.run_succ_silent found).trans reached, stopped, emissions⟩
           | publish published next =>
-              rw [machine.run_succ_publish found] at ran
+              rcases child : machine.run fuel next with ⟨remaining, result⟩
+              rw [machine.run_succ_publish found, child] at ran
               have same := Prod.mk.inj ran
-              have later : machine.run fuel next =
-                  ((machine.run fuel next).1, .stuck stopped) := Prod.ext rfl same.2
-              obtain ⟨count, bound, paused, blocked⟩ := ih later
-              refine ⟨count + 1, Nat.succ_lt_succ bound, ?_, blocked⟩
-              rw [machine.run_succ_publish found, paused]
-              exact Prod.ext same.1 rfl
-          | finish verdict => simp only [run, found, Prod.mk.injEq, reduceCtorEq, and_false] at ran
-          | fail faults => simp only [run, found, Prod.mk.injEq, reduceCtorEq, and_false] at ran
-          | call request saved => simp only [run, found, Prod.mk.injEq, reduceCtorEq, and_false] at ran
+              have following : machine.run fuel next = (remaining, outcome) := child.trans (Prod.ext rfl same.2)
+              obtain ⟨count, bound, saved, earlier, final, reached, stopped, emissions⟩ := ih following
+              refine ⟨count + 1, Nat.succ_lt_succ bound, saved, published ++ earlier, final, ?_, stopped, ?_⟩
+              · rw [machine.run_succ_publish found, reached]
+              · rw [← same.1, emissions, List.append_assoc]
+
+/-- A one-tick successful boundary is the actual finishing transition. -/
+theorem run_one_finished_iff (machine : Machine State Event Verdict Request)
+    (state : State) (events : List Event) (verdict : Verdict) :
+    machine.run 1 state = (events, .finished verdict) ↔
+      events = [] ∧ machine.step state = some (.finish verdict) := by
+  cases found : machine.step state with
+  | none => simp only [run, found, Prod.mk.injEq, reduceCtorEq, and_false]
+  | some transition =>
+      cases transition <;> simp [run, found, Prod.mk.injEq, eq_comm]
+
+/-- An interaction boundary retains the exact requested saved state. -/
+theorem run_one_suspended_iff (machine : Machine State Event Verdict Request)
+    (state : State) (events : List Event) (request : Request) (saved : State) :
+    machine.run 1 state = (events, .suspended request saved) ↔
+      events = [] ∧ machine.step state = some (.call request saved) := by
+  cases found : machine.step state with
+  | none => simp only [run, found, Prod.mk.injEq, reduceCtorEq, and_false]
+  | some transition =>
+      cases transition <;> simp [run, found, Prod.mk.injEq, eq_comm]
+
+/-- A one-tick missing-transition boundary retains its input unchanged. -/
+theorem run_one_stuck_iff (machine : Machine State Event Verdict Request)
+    (state stopped : State) (events : List Event) :
+    machine.run 1 state = (events, .stuck stopped) ↔
+      events = [] ∧ state = stopped ∧ machine.step state = none := by
+  cases found : machine.step state with
+  | none => simp [run, found, Prod.mk.injEq, eq_comm]
+  | some transition =>
+      cases transition <;> simp [run, found, Prod.mk.injEq]
+
+/-- Reaching a stuck outcome exposes the exact trace and residual immediately
+before the unsuccessful transition lookup. -/
+theorem run_stuck_prefix (machine : Machine State Event Verdict Request)
+    {fuel : Nat} {state stopped : State} {events : List Event}
+    (ran : machine.run fuel state = (events, .stuck stopped)) :
+    ∃ count < fuel, machine.run count state = (events, .exhausted stopped) ∧
+      machine.step stopped = none := by
+  obtain ⟨count, bound, saved, earlier, final, paused, stoppedAt, emissions⟩ :=
+    machine.run_boundary_prefix ran (by intro saved same; cases same)
+  obtain ⟨rfl, rfl, missing⟩ := (machine.run_one_stuck_iff saved stopped final).mp stoppedAt
+  simp only [List.append_nil] at emissions
+  subst events
+  exact ⟨count, bound, paused, missing⟩
 
 /-- Total transition classification excludes stuck outcomes, independently of
 termination and independently of any administrative rank. -/
@@ -381,6 +432,63 @@ theorem run_add (first second : ℕ) (state : State) :
           | finish verdict => simp [run, found, continueRun]
           | fail events => simp [run, found, continueRun]
           | call request saved => simp [run, found, continueRun]
+
+/-- Zero additional budget leaves every retained outcome unchanged. -/
+@[simp]
+theorem continueRun_zero (result : List Event × Outcome State Verdict Request) :
+    machine.continueRun 0 result = result := by
+  rcases result with ⟨events, outcome⟩
+  cases outcome <;> simp [continueRun, run]
+
+/-- Budget composition applies to an already retained run, including its
+published events and terminal or suspended outcome. -/
+theorem continueRun_add (first second : Nat)
+    (result : List Event × Outcome State Verdict Request) :
+    machine.continueRun (first + second) result =
+      machine.continueRun second (machine.continueRun first result) := by
+  rcases result with ⟨events, outcome⟩
+  cases outcome with
+  | exhausted residual =>
+      rw [continueRun, run_add]
+      exact (machine.continueRun_prepend second events (machine.run first residual)).symm
+  | _ => rfl
+
+/-- The common retained trajectory includes publication and outcome, not
+only the working configuration. Requests await an explicit response operation;
+additional fuel alone cannot answer them. -/
+def retainedTrajectory (result : List Event × Outcome State Verdict Request) :
+    Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory
+      machine.continueRun result :=
+  Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory.canonical
+    machine.continueRun result machine.continueRun_zero machine.continueRun_add
+
+/-- Starting a trajectory does not inspect or execute the loaded state. -/
+def trajectory (state : State) :
+    Mettapedia.Coalgebra.CoherentPrefixTower.ResumableTrajectory
+      machine.continueRun ([], .exhausted state) :=
+  machine.retainedTrajectory ([], .exhausted state)
+
+@[simp]
+theorem trajectory_observation (state : State) (fuel : Nat) :
+    (machine.trajectory state).observation fuel = machine.run fuel state := by
+  simp [trajectory, retainedTrajectory, continueRun]
+
+/-- Continuing a saved execution retains each already published occurrence. -/
+theorem continueRun_events_prefix (fuel : Nat)
+    (result : List Event × Outcome State Verdict Request) :
+    result.1.IsPrefix (machine.continueRun fuel result).1 := by
+  rcases result with ⟨events, outcome⟩
+  cases outcome with
+  | exhausted residual => exact List.prefix_append _ _
+  | _ => exact ⟨[], List.append_nil _⟩
+
+/-- Every event-machine trajectory uses the shared prefix law, including
+fault receipts and repeated equal events. -/
+theorem trajectory_events_prefix (state : State) (first extra : Nat) :
+    ((machine.trajectory state).observation first).1.IsPrefix
+      ((machine.trajectory state).observation (first + extra)).1 :=
+  (machine.trajectory state).observer_prefix_after_resume Prod.fst
+    machine.continueRun_events_prefix first extra
 
 /-- **A finite prefix keeps its established events, and its residual keeps
 exactly the pending ones.** -/
@@ -1751,6 +1859,236 @@ theorem close_handle_matchesStuck
   have absent : machine.step state = none := by simpa [close] using blocked
   refine ⟨1, by omega, .running state, ?_, rfl⟩
   simp [run, handle, absent]
+
+end Machine
+
+/-! ## Partial state representations
+
+Serialization changes every retained state, including a saved foreign call.
+The event, verdict and request labels remain independent of that state map;
+the existing relabeling operation can change those labels separately.
+-/
+
+namespace Transition
+
+/-- Map all continuing states without changing the kind or labels of a step. -/
+def mapState {State Data Event Verdict Request : Type} (encode : State → Data) :
+    Transition State Event Verdict Request → Transition Data Event Verdict Request
+  | .silent next => .silent (encode next)
+  | .publish events next => .publish events (encode next)
+  | .finish verdict => .finish verdict
+  | .fail events => .fail events
+  | .call request saved => .call request (encode saved)
+
+@[simp] theorem mapState_id {State Event Verdict Request : Type}
+    (transition : Transition State Event Verdict Request) :
+    transition.mapState id = transition := by cases transition <;> rfl
+
+theorem mapState_comp {State Data Data' Event Verdict Request : Type}
+    (first : State → Data) (second : Data → Data')
+    (transition : Transition State Event Verdict Request) :
+    (transition.mapState first).mapState second = transition.mapState (second ∘ first) := by
+  cases transition <;> rfl
+
+end Transition
+
+namespace Outcome
+
+/-- Preserve each outcome while representing its retained state. -/
+def mapState {State Data Verdict Request : Type} (encode : State → Data) :
+    Outcome State Verdict Request → Outcome Data Verdict Request
+  | .finished verdict => .finished verdict
+  | .faulted => .faulted
+  | .suspended request saved => .suspended request (encode saved)
+  | .stuck saved => .stuck (encode saved)
+  | .exhausted saved => .exhausted (encode saved)
+
+@[simp] theorem mapState_id {State Verdict Request : Type}
+    (outcome : Outcome State Verdict Request) : outcome.mapState id = outcome := by
+  cases outcome <;> rfl
+
+theorem mapState_comp {State Data Data' Verdict Request : Type}
+    (first : State → Data) (second : Data → Data') (outcome : Outcome State Verdict Request) :
+    (outcome.mapState first).mapState second = outcome.mapState (second ∘ first) := by
+  cases outcome <;> rfl
+
+end Outcome
+
+namespace Machine
+
+variable {State Data Event Verdict Request : Type} (machine : Machine State Event Verdict Request)
+
+/-- Decode the actual input on each advance, then represent all saved states.
+Malformed input has no transition; it cannot become an accepted completion. -/
+def represent (encode : State → Data) (decode : Data → Option State) :
+    Machine Data Event Verdict Request where
+  step input := do
+    let state ← decode input
+    return (← machine.step state).mapState encode
+
+/-- Identity state representation leaves the executable step unchanged. -/
+theorem represent_id : machine.represent id some = machine := by
+  cases machine with
+  | mk step =>
+      apply congrArg (fun following => (⟨following⟩ : Machine State Event Verdict Request))
+      funext state
+      cases found : step state <;> simp [found]
+
+/-- Successive partial readers compose on the actual input, including refusal.
+These laws concern logical transitions rather than physical decoding cost. -/
+theorem represent_comp {Data' : Type} (encode : State → Data) (decode : Data → Option State)
+    (encode' : Data → Data') (decode' : Data' → Option Data) :
+    (machine.represent encode decode).represent encode' decode' =
+      machine.represent (encode' ∘ encode) (fun data => (decode' data).bind decode) := by
+  apply congrArg (fun following => (⟨following⟩ : Machine Data' Event Verdict Request))
+  funext input
+  cases outer : decode' input with
+  | none => simp [represent,outer]
+  | some data =>
+      cases inner : decode data with
+      | none => simp [represent,outer,inner]
+      | some state =>
+          cases found : machine.step state with
+          | none => simp [represent,outer,inner,found]
+          | some transition => simp [represent,outer,inner,found,Transition.mapState_comp]
+
+theorem represent_step (encode : State → Data) (decode : Data → Option State)
+    (roundtrip : ∀ state, decode (encode state) = some state) (state : State) :
+    (machine.represent encode decode).step (encode state) =
+      (machine.step state).map (Transition.mapState encode) := by
+  cases found : machine.step state <;> simp [represent, roundtrip, found]
+
+theorem represent_rejects (encode : State → Data) (decode : Data → Option State)
+    (input : Data) (malformed : decode input = none) :
+    (machine.represent encode decode).step input = none := by
+  simp [represent, malformed]
+
+/-- A finite represented run retains exactly the original events and outcome,
+including suspended requests and their complete saved states. -/
+theorem run_represent (encode : State → Data) (decode : Data → Option State)
+    (roundtrip : ∀ state, decode (encode state) = some state) (fuel : Nat) (state : State) :
+    (machine.represent encode decode).run fuel (encode state) =
+      ((machine.run fuel state).1, (machine.run fuel state).2.mapState encode) := by
+  induction fuel generalizing state with
+  | zero => rfl
+  | succ fuel ih =>
+      simp only [run, represent_step machine encode decode roundtrip]
+      cases found : machine.step state with
+      | none => rfl
+      | some transition =>
+          cases transition with
+          | silent next => simpa only [Option.map_some, Transition.mapState] using ih next
+          | publish events next => simp only [Option.map_some, Transition.mapState, ih]
+          | finish verdict => rfl
+          | fail events => rfl
+          | call request saved => rfl
+
+/-- Resuming a serialized checkpoint never replaces it by the initial input. -/
+theorem continueRun_represent (encode : State → Data) (decode : Data → Option State)
+    (roundtrip : ∀ state, decode (encode state) = some state) (fuel : Nat)
+    (result : List Event × Outcome State Verdict Request) :
+    (machine.represent encode decode).continueRun fuel
+        (result.1, result.2.mapState encode) =
+      ((machine.continueRun fuel result).1,
+        (machine.continueRun fuel result).2.mapState encode) := by
+  rcases result with ⟨events, outcome⟩
+  cases outcome <;> simp only [continueRun, Outcome.mapState,
+    run_represent machine encode decode roundtrip]
+
+/-- A represented stuck state is exactly an original stuck state on the
+encoding image. Arbitrary malformed data is separately rejected. -/
+theorem represent_stuck_iff (encode : State → Data) (decode : Data → Option State)
+    (roundtrip : ∀ state, decode (encode state) = some state) (state : State) :
+    (machine.represent encode decode).step (encode state) = none ↔
+      machine.step state = none := by
+  rw [represent_step machine encode decode roundtrip]
+  exact Option.map_eq_none_iff
+
+/-- The state representation preserves the complete finite public observation.
+Encoding and decoding work is outside the machine's transition counter. -/
+theorem observe_represent (encode : State → Data) (decode : Data → Option State)
+    (roundtrip : ∀ state, decode (encode state) = some state) (fuel : Nat) (state : State) :
+    (machine.represent encode decode).observe fuel (encode state) = machine.observe fuel state := by
+  simp only [observe, run_represent machine encode decode roundtrip]
+  rcases machine.run fuel state with ⟨events, outcome⟩
+  cases outcome <;> rfl
+
+/-- Exact residual representation also preserves divergence inside the current
+interaction region. Equal incomplete status bits alone would not prove this. -/
+theorem represent_divergesWithin_iff (encode : State → Data) (decode : Data → Option State)
+    (roundtrip : ∀ state, decode (encode state) = some state) (state : State) :
+    (machine.represent encode decode).DivergesWithin (encode state) ↔
+      machine.DivergesWithin state := by
+  constructor
+  · intro represented fuel
+    obtain ⟨residual, pending⟩ := represented fuel
+    rw [run_represent machine encode decode roundtrip] at pending
+    cases actual : (machine.run fuel state).2 <;>
+      simp only [actual, Outcome.mapState, reduceCtorEq] at pending
+    exact ⟨_, rfl⟩
+  · intro original fuel
+    obtain ⟨residual, pending⟩ := original fuel
+    refine ⟨encode residual, ?_⟩
+    rw [run_represent machine encode decode roundtrip]
+    simp only [pending, Outcome.mapState]
+
+/-- A declared logical account transports when the prices agree on encoded
+states. This does not price the physical serializer or the decoder. -/
+theorem spent_represent (encode : State → Data) (decode : Data → Option State)
+    (roundtrip : ∀ state, decode (encode state) = some state)
+    (price : State → Nat) (dataPrice : Data → Nat)
+    (agrees : ∀ state, dataPrice (encode state) = price state) (fuel : Nat) (state : State) :
+    (machine.represent encode decode).spent dataPrice fuel (encode state) =
+      machine.spent price fuel state := by
+  induction fuel generalizing state with
+  | zero => rfl
+  | succ fuel ih =>
+      simp only [spent, represent_step machine encode decode roundtrip]
+      cases actual : machine.step state with
+      | none => rfl
+      | some transition =>
+          cases transition <;> simp only [Option.map_some, Transition.mapState, agrees, ih]
+
+theorem represent_costSimulation (encode : State → Data) (decode : Data → Option State)
+    (roundtrip : ∀ state, decode (encode state) = some state) :
+    CostSimulation machine (machine.represent encode decode)
+      (fun state data => data = encode state) 1 where
+  silent := by
+    rintro state _ next rfl stepped
+    refine ⟨1, le_rfl, encode next, ?_, rfl⟩
+    rw [run_represent machine encode decode roundtrip]
+    simp only [run, stepped, Outcome.mapState]
+  publish := by
+    rintro state _ events next rfl stepped
+    refine ⟨1, le_rfl, encode next, ?_, rfl⟩
+    rw [run_represent machine encode decode roundtrip]
+    simp only [run, stepped, List.append_nil, Outcome.mapState]
+  finish := by
+    rintro state _ verdict rfl stepped
+    refine ⟨1, le_rfl, ?_⟩
+    rw [run_represent machine encode decode roundtrip]
+    simp only [run, stepped, Outcome.mapState]
+  fail := by
+    rintro state _ events rfl stepped
+    refine ⟨1, le_rfl, ?_⟩
+    rw [run_represent machine encode decode roundtrip]
+    simp only [run, stepped, Outcome.mapState]
+  call := by
+    rintro state _ request saved rfl stepped
+    refine ⟨1, le_rfl, encode saved, ?_, rfl⟩
+    rw [run_represent machine encode decode roundtrip]
+    simp only [run, stepped, Outcome.mapState]
+
+/-- Absent transitions remain absent on the encoding image, including their
+actual stuck endpoint. -/
+theorem represent_matchesStuck (encode : State → Data) (decode : Data → Option State)
+    (roundtrip : ∀ state, decode (encode state) = some state) :
+    MatchesStuck machine (machine.represent encode decode)
+      (fun state data => data = encode state) 1 := by
+  rintro state _ rfl blocked
+  refine ⟨1, le_rfl, encode state, ?_, rfl⟩
+  rw [run_represent machine encode decode roundtrip]
+  simp only [run, blocked, Outcome.mapState]
 
 end Machine
 

@@ -254,7 +254,7 @@ theorem unequal_support_bvar_assignment_not_restoresTogether
 mutual
   /-- A structural semantic-leaf alignment whose selected leaves restore
   together itself restores together at every depth. -/
-  def PatternLeafAligned.toRestoresTogether
+  theorem PatternLeafAligned.toRestoresTogether
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile} {support : ContextSupport.Support}
       {assignment : ContextSupport.Assignment} :
       ∀ {left right : Pattern},
@@ -282,7 +282,7 @@ mutual
           (PatternLeafAlignedList.toRestoresTogether elements)
 
   /-- Listwise companion of `PatternLeafAligned.toRestoresTogether`. -/
-  def PatternLeafAlignedList.toRestoresTogether
+  theorem PatternLeafAlignedList.toRestoresTogether
       {profile : Mettapedia.OSLF.MeTTaIL.Reflection.ReflectionProfile} {support : ContextSupport.Support}
       {assignment : ContextSupport.Assignment} :
       ∀ {left right : List Pattern},
@@ -827,7 +827,7 @@ theorem leaf_of_key_eq
       (keysEqual currentDepth)))
 
 /-- Pointwise reflexive evidence for an occurrence list. -/
-def reflList
+theorem reflList
     {source : CIGSLT} {leftCount rightCount : Nat}
     {leftKey : Fin leftCount → CostStaticAtomKey}
     {rightKey : Fin rightCount → CostStaticAtomKey}
@@ -841,7 +841,7 @@ def reflList
         (reflList cospan declaration depth patterns)
 
 /-- Concatenate two pointwise apex lists without changing occurrence order. -/
-def appendList
+theorem appendList
     {source : CIGSLT} {leftCount rightCount : Nat}
     {leftKey : Fin leftCount → CostStaticAtomKey}
     {rightKey : Fin rightCount → CostStaticAtomKey}
@@ -954,7 +954,7 @@ inductive Context
 namespace Context
 
 /-- A context is aligned with itself at exactly its computed hole depth. -/
-def refl
+theorem refl
     {source : CIGSLT} {leftCount rightCount : Nat}
     {leftKey : Fin leftCount → CostStaticAtomKey}
     {rightKey : Fin rightCount → CostStaticAtomKey}
@@ -991,7 +991,7 @@ def refl
         (CommonRestorationApex.reflList cospan declaration depth after)
 
 /-- Fill two aligned contexts with one apex at their common hole depth. -/
-def fill
+theorem fill
     {source : CIGSLT} {leftCount rightCount : Nat}
     {leftKey : Fin leftCount → CostStaticAtomKey}
     {rightKey : Fin rightCount → CostStaticAtomKey}
@@ -1049,7 +1049,7 @@ The hole evidence is required at the context-computed depth.  The result is
 therefore valid through arbitrary ordinary binders, reflective quote resets,
 substitution positions, and collection/application spines without adding a
 new semantic equality premise. -/
-noncomputable def throughContext
+theorem throughContext
     {source : CIGSLT} {leftCount rightCount : Nat}
     {leftKey : Fin leftCount → CostStaticAtomKey}
     {rightKey : Fin rightCount → CostStaticAtomKey}
@@ -1092,7 +1092,7 @@ noncomputable def throughContext
         (.cons middle (reflList cospan declaration depth after))
       exact .collection collectionType rest elements
 
-private def commonRestorationApexList_toForall₂
+private theorem commonRestorationApexList_toForall₂
     {source : CIGSLT} {leftCount rightCount : Nat}
     {leftKey : Fin leftCount → CostStaticAtomKey}
     {rightKey : Fin rightCount → CostStaticAtomKey}
@@ -1108,7 +1108,7 @@ private def commonRestorationApexList_toForall₂
   | .cons head tail =>
       .cons head (commonRestorationApexList_toForall₂ tail)
 
-private def commonRestorationApexList_ofForall₂
+private theorem commonRestorationApexList_ofForall₂
     {source : CIGSLT} {leftCount rightCount : Nat}
     {leftKey : Fin leftCount → CostStaticAtomKey}
     {rightKey : Fin rightCount → CostStaticAtomKey}
@@ -1126,7 +1126,7 @@ private def commonRestorationApexList_ofForall₂
 mutual
   /-- Reverse a common restoration apex.  The parallel terminal reverses its
   finite permutation; every other constructor reverses recursively. -/
-  noncomputable def symm
+  theorem symm
       {source : CIGSLT} {leftCount rightCount : Nat}
       {leftKey : Fin leftCount → CostStaticAtomKey}
       {rightKey : Fin rightCount → CostStaticAtomKey}
@@ -1158,7 +1158,7 @@ mutual
           reverseSpec.2
 
   /-- Listwise companion of `CommonRestorationApex.symm`. -/
-  noncomputable def symmList
+  theorem symmList
       {source : CIGSLT} {leftCount rightCount : Nat}
       {leftKey : Fin leftCount → CostStaticAtomKey}
       {rightKey : Fin rightCount → CostStaticAtomKey}
@@ -1221,7 +1221,7 @@ The leaf case consumes `PatternLeafAligned`; the parallel case consumes the
 permutation terminal; all remaining cases are genuine structural congruence.
 -/
 mutual
-  def restored_eq
+  theorem restored_eq
       {source : CIGSLT} {leftCount rightCount : Nat}
       {leftKey : Fin leftCount → CostStaticAtomKey}
       {rightKey : Fin rightCount → CostStaticAtomKey}
@@ -1267,7 +1267,7 @@ mutual
           depth declaration restoredPermutation
 
   /-- Listwise elimination for rigid congruence constructors. -/
-  def restoredList_eq
+  theorem restoredList_eq
       {source : CIGSLT} {leftCount rightCount : Nat}
       {leftKey : Fin leftCount → CostStaticAtomKey}
       {rightKey : Fin rightCount → CostStaticAtomKey}

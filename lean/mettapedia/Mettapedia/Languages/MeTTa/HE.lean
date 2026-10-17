@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.HE.Types
+import Mettapedia.Languages.MeTTa.HE.BindingResolutionReadCache
 import Mettapedia.Languages.MeTTa.HE.Space
 import Mettapedia.Languages.MeTTa.HE.ModuleSpace
 import Mettapedia.Languages.MeTTa.HE.ModuleInvalidation
@@ -38,6 +39,7 @@ import Mettapedia.Languages.MeTTa.HE.TypedApplyDataExecutionControls
 import Mettapedia.Languages.MeTTa.HE.RecursiveDataExecution
 import Mettapedia.Languages.MeTTa.HE.RecursiveSemanticSoundness
 import Mettapedia.Languages.MeTTa.HE.RecursiveControls
+import Mettapedia.Languages.MeTTa.HE.RecursiveService
 import Mettapedia.Languages.MeTTa.HE.ScopedEquationQuery
 import Mettapedia.Languages.MeTTa.HE.EquationScopeControls
 import Mettapedia.Languages.MeTTa.HE.LeaTTaScopedQuery
@@ -75,7 +77,7 @@ Authoritative Lean 4 formalization of the HE MeTTa evaluation specification.
 - `ArgumentResultCorrectness` — Tagged argument success and arbitrary raw-list
                                preservation, distinct from full native refinement
 - `RetainedArgumentSpecification` — Constructed successful and failing argument
-                                    histories with exact binding endpoints
+                                    histories with exact binding endpoints and retained pending syntax
 - `NativeSelectedTypeScan` — First-success replay of visited service replies;
                             native applicability correspondence remains open
 - `NativeArgumentProjection` — Lossless ITERATE/AFTER_ITER_CHILD snapshots and
@@ -110,6 +112,10 @@ Authoritative Lean 4 formalization of the HE MeTTa evaluation specification.
                              the fuelled read-only evaluator, with ordered data
                              execution and constructed progress; native and
                              effectful correspondence remain separate
+- `RecursiveService` — The retained evaluator as a host's service machine: its
+                       covered results are published and one readable occurrence is
+                       the reply; insufficient depth remains suspended, while
+                       completed none or several fail, independent of order
 - `ScopedEquationQuery` — Total freshening against incoming and retained names,
                           with independent query derivations and preserved
                           native binding records for every returned occurrence

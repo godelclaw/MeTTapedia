@@ -1,6 +1,6 @@
-import Mettapedia.CognitiveArchitecture.GodelClaw
-import Mettapedia.CognitiveArchitecture.Agent
-import Mettapedia.CognitiveArchitecture.Consciousness.TraceAndImplementation
+import Mettapedia.CogArch.GodelClaw
+import Mettapedia.CogArch.Agent
+import Mettapedia.CogArch.Consciousness.TraceAndImplementation
 import Lean.Util.CollectAxioms
 import Lean.Compiler.Old
 

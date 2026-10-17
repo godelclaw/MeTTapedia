@@ -46,38 +46,46 @@ structure Decoding where
 
 mutual
 
-/-- One expression of a unify stream. -/
-def decodeExpr (arity : Nat → Option Nat) (arguments : Nat) :
-    Nat → Decoding → List UnifyCmd → Option (Preterm × Decoding × List UnifyCmd)
+/-- One expression of a unify stream. Term and sort positions resolve through
+the supplied tables; the default maps retain already-resolved command IDs. -/
+def decodeExpr (arity : Nat → Option Nat) (arguments fuel : Nat) (state : Decoding) (commands : List UnifyCmd)
+    (termId : Nat → Option Nat := some) (sortId : Nat → Option Nat := some) :
+    Option (Preterm × Decoding × List UnifyCmd) := match fuel, state, commands with
   | 0, _, _ => none
   | fuel + 1, state, .term t :: rest => do
+      let id ← termId t
       let count ← arity t
-      let (args, state, rest) ← decodeExprs arity arguments fuel count state rest
-      pure (Preterm.applyArgs (.term t) args, state, rest)
+      let (args, state, rest) ← decodeExprs arity arguments fuel count state rest termId sortId
+      pure (Preterm.applyArgs (.term id) args, state, rest)
   | fuel + 1, state, .termSave t :: rest => do
+      let id ← termId t
       let count ← arity t
       let slot := state.slots.length
       let (args, state, rest) ←
-        decodeExprs arity arguments fuel count { state with slots := state.slots ++ [none] } rest
-      let e := Preterm.applyArgs (.term t) args
+        decodeExprs arity arguments fuel count { state with slots := state.slots ++ [none] } rest termId sortId
+      let e := Preterm.applyArgs (.term id) args
       pure (e, { state with slots := state.slots.set slot (some e) }, rest)
   | _ + 1, state, .ref index :: rest => do
       let e ← (state.slots[index]?).bind id
       pure (e, state, rest)
-  | _ + 1, state, .dummy sort :: rest =>
+  | _ + 1, state, .dummy sort :: rest => do
+      let id ← sortId sort
       let e := Preterm.var (arguments + state.dummies.length)
-      some (e, ⟨state.slots ++ [some e], state.dummies ++ [sort]⟩, rest)
+      some (e, ⟨state.slots ++ [some e], state.dummies ++ [id]⟩, rest)
   | _ + 1, _, _ => none
+termination_by structural fuel
 
 /-- A number of consecutive expressions. -/
-def decodeExprs (arity : Nat → Option Nat) (arguments : Nat) :
-    Nat → Nat → Decoding → List UnifyCmd → Option (List Preterm × Decoding × List UnifyCmd)
+def decodeExprs (arity : Nat → Option Nat) (arguments fuel count : Nat) (state : Decoding) (commands : List UnifyCmd)
+    (termId : Nat → Option Nat := some) (sortId : Nat → Option Nat := some) :
+    Option (List Preterm × Decoding × List UnifyCmd) := match fuel, count, state, commands with
   | _, 0, state, cmds => some ([], state, cmds)
   | 0, _ + 1, _, _ => none
   | fuel + 1, count + 1, state, cmds => do
-      let (first, state, cmds) ← decodeExpr arity arguments fuel state cmds
-      let (rest, state, cmds) ← decodeExprs arity arguments fuel count state cmds
+      let (first, state, cmds) ← decodeExpr arity arguments fuel state cmds termId sortId
+      let (rest, state, cmds) ← decodeExprs arity arguments fuel count state cmds termId sortId
       pure (first :: rest, state, cmds)
+termination_by structural fuel
 
 end
 
@@ -88,16 +96,19 @@ def initial (arguments : Nat) : Decoding :=
   ⟨(List.range arguments).map fun position => some (Preterm.var position), []⟩
 
 /-- The hypotheses after the conclusion, each after a `UHyp`, read from the
-last to the first. -/
-def decodeHyps (arity : Nat → Option Nat) (arguments : Nat) :
-    Nat → Decoding → List UnifyCmd → Option (List Preterm)
+last to the first. Every hypothesis must leave the dummy list empty. -/
+def decodeHyps (arity : Nat → Option Nat) (arguments fuel : Nat) (state : Decoding) (commands : List UnifyCmd)
+    (termId : Nat → Option Nat := some) (sortId : Nat → Option Nat := some) :
+    Option (List Preterm) := match fuel, state, commands with
   | _, _, [] => some []
   | 0, _, _ :: _ => none
   | fuel + 1, state, .hyp :: rest => do
-      let (hypothesis, state, rest) ← decodeExpr arity arguments fuel state rest
-      let earlier ← decodeHyps arity arguments fuel state rest
+      let (hypothesis, state, rest) ← decodeExpr arity arguments fuel state rest termId sortId
+      if state.dummies ≠ [] then none else
+      let earlier ← decodeHyps arity arguments fuel state rest termId sortId
       pure (earlier ++ [hypothesis])
   | _ + 1, _, _ :: _ => none
+termination_by structural fuel
 
 /-- **A theorem table entry as a kernel theorem declaration.** -/
 def theoremDecl (terms : List TermEntry) (entry : ThmEntry) : Option TheoremDecl := do
@@ -124,5 +135,6 @@ def termDecl (terms : List TermEntry) (entry : TermEntry) :
         decodeExpr (arityOf terms) arguments (2 * value.length + 2) (initial arguments) value
       if rest ≠ [] then none else
       pure (declaration, some ⟨state.dummies, expression⟩)
+
 
 end Mettapedia.Languages.MM0.Formats.MMB.Statements

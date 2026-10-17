@@ -95,7 +95,7 @@ variable {theory : Theory} {backend : ParallelBackend theory}
 
 /-- Exact backend admission projects to observer-relative commutation and
 resource compatibility by the backend's declared soundness law. -/
-def projection : admission.checker.AuthorityProjection
+theorem projection : admission.checker.AuthorityProjection
     (Admitted backend)
     (fun claim =>
       SelectedObservationPreserved claim ∧
@@ -239,7 +239,7 @@ theorem certified_implies_meaning
 
 /-- The combined checker is an exact authority for admitted articles and a
 sound projection into their observer-relative semantics. -/
-def authorityProjection
+theorem authorityProjection
     (admission : AdmissionAuthority.{uCertificate} backend) :
     (replayChecker admission).AuthorityProjection
       (Certified (theory := theory) (Backend := Backend)

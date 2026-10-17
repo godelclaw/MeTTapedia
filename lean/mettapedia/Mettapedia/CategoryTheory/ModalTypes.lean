@@ -1,7 +1,7 @@
 import Mettapedia.CategoryTheory.LambdaTheory
 import Mettapedia.CategoryTheory.PLNInstance
 import Mettapedia.CategoryTheory.PLNTerms
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # Modal Types: Predicate-First Semantics

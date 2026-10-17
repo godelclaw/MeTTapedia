@@ -1,5 +1,5 @@
-import Mettapedia.Logic.HostingStyles.PrimeCandidate.ProbeStatics
-import Mettapedia.Logic.HostingStyles.PrimeCandidate.ReductionRank
+import Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles.ProbeStatics
+import Mettapedia.Logic.HostingStyles.ReductionRank
 import Mettapedia.GSLT.LanguageDef.WellSortedChecker
 
 /-!
@@ -35,7 +35,9 @@ six rules, for every evaluator of the premises.
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -546,4 +548,4 @@ theorem probe_steps_three :
 #print axioms probe_closed_transition
 #print axioms probe_demand_branches
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

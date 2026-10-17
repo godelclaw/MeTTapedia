@@ -24,14 +24,16 @@ open LeaTTaBridge
 open LeaTTaSpecConformance
 open LeaTTaTypeConformance
 
-/-- A normal finite spec presentation and a repaired reachable LeaTTa
-binding state with the same complete solution theory present every declared
-type up to alpha-renaming. -/
-theorem observedTypeAlpha_of_solutionTheory
+/-- A normal finite presentation of any spec binding theory agrees with the
+actual reachable runtime materialization up to residual-variable renaming.
+The presentation is syntax over HE atoms and does not choose runtime equality
+representatives or decode arbitrary native payloads back into source values. -/
+theorem observedTypeAlpha_of_bindingTheory
     {substitution : TypeSubst} (normal : substitution.Normal)
-    {bindings : Metta.Bindings}
-    (theory : LeaBindingSolutionTheoryEquiv
-      (typeSubstAsBindings substitution) bindings)
+    {spec : Bindings} {bindings : Metta.Bindings}
+    (presentation : ∀ valuation,
+      TypeSubstSatisfied valuation substitution ↔ TypeBindingSatisfied valuation spec)
+    (theory : LeaBindingSolutionTheoryEquiv spec bindings)
     (runtime : LeaRuntimeBindingInvariant bindings)
     (declared : Atom) :
     ObservedTypeAlphaRel
@@ -43,13 +45,11 @@ theorem observedTypeAlpha_of_solutionTheory
     fun name => fromLeaTTaAtom (leaModel name)
   have nativeModelSatisfied :
       TypeSubstSatisfied nativeModel substitution := by
-    have specModel : HEBindingSatisfied leaModel
-        (typeSubstAsBindings substitution) :=
+    have specModel : HEBindingSatisfied leaModel spec :=
       (theory leaModel).mpr runtime.canonical.1
     have nativeSpecModel :=
       specTypeBindingSatisfied_of_heBindingSatisfied specModel
-    exact (typeBindingSatisfied_asBindings_iff
-      nativeModel substitution).mp nativeSpecModel
+    exact (presentation nativeModel).mpr nativeSpecModel
   have presentationRefinesModel :
       ∃ post : String → Atom, ∀ name,
         presentedValuation substitution name =
@@ -60,12 +60,9 @@ theorem observedTypeAlpha_of_solutionTheory
     have presentationSatisfied :
         TypeSubstSatisfied presentationModel substitution :=
       normal_presentedValuation_satisfied normal
-    have specPresentationSatisfied : TypeBindingSatisfied
-        presentationModel (typeSubstAsBindings substitution) :=
-      (typeBindingSatisfied_asBindings_iff
-        presentationModel substitution).mpr presentationSatisfied
-    have heaPresentationSatisfied : HEBindingSatisfied
-        leaPresentationModel (typeSubstAsBindings substitution) :=
+    have specPresentationSatisfied : TypeBindingSatisfied presentationModel spec :=
+      (presentation presentationModel).mp presentationSatisfied
+    have heaPresentationSatisfied : HEBindingSatisfied leaPresentationModel spec :=
       heBindingSatisfied_of_specTypeBindingSatisfied
         specPresentationSatisfied
     have leaPresentationSatisfied :
@@ -83,6 +80,22 @@ theorem observedTypeAlpha_of_solutionTheory
     nativeModelSatisfied presentationRefinesModel declared
   simpa [nativeModel, leaModel, ← fromLeaTTaAtom_applyClassSolution,
     applyClassSolution_lea_eq_instantiate] using alpha
+
+/-- The assignment-only presentation API specializes the general binding
+presentation theorem; its existing guarantee and callers are unchanged. -/
+theorem observedTypeAlpha_of_solutionTheory
+    {substitution : TypeSubst} (normal : substitution.Normal)
+    {bindings : Metta.Bindings}
+    (theory : LeaBindingSolutionTheoryEquiv
+      (typeSubstAsBindings substitution) bindings)
+    (runtime : LeaRuntimeBindingInvariant bindings)
+    (declared : Atom) :
+    ObservedTypeAlphaRel
+      (substitution.apply declared)
+      (fromLeaTTaAtom (Metta.instantiate bindings (toLeaTTaAtom declared))) :=
+  observedTypeAlpha_of_bindingTheory normal
+    (fun valuation => (typeBindingSatisfied_asBindings_iff valuation substitution).symm)
+    theory runtime declared
 
 /-! ## Boundary examples -/
 

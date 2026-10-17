@@ -32,7 +32,7 @@ open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.CalculusLanguageExtension
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareDataLanguage
-open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open Mettapedia.OSLF.MeTTaIL.Syntax
 
 /-! ## Canonical first-order surface -/

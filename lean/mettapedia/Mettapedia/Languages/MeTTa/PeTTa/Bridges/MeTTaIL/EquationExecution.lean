@@ -26,7 +26,7 @@ open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
 open Effects (State)
 open Eval EquationExecutionProgram
 open MatchAutomataBindingExecution (bindingsTerm bindingsOptionTerm)
-open RelationPremiseExecution (providerEnv providerRowsTerm premisesTerm bindingResultsTerm namesTerm)
+open RelationPremiseExecution (providerEnv providerRowsTerm premisesTerm bindingResultsTerm namesTerm VariableRuleView variableRuleView)
 
 def pathTerm (path : List Nat) : Term := encodeList .natural path
 def traceTerm (trace : List Nat × Bindings) : Term :=
@@ -60,6 +60,44 @@ private abbrev rowsValue (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.Pro
   encoded (providerRowsTerm rows)
 private abbrev premisesValue (plans : List PremisePlan) : Atom := encoded (premisesTerm plans)
 private abbrev resultsValue (results : List Bindings) : Atom := encoded (bindingResultsTerm results)
+
+private abbrev variablePremisesValue (plans : List VariablePremisePlan) : Atom :=
+  encoded (RelationPremiseExecution.variablePremisesTerm plans)
+
+/-- A source-shape specialization of the existing canonical trace fold. -/
+def variablePremiseTraces (relations : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (language : LanguageDef) (plans : List VariablePremisePlan) : Bindings → List (List Nat × Bindings) :=
+  premiseTraces relations language (plans.map VariablePremisePlan.toPlan)
+
+@[simp] theorem variablePremiseTraces_nil (relations : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (language : LanguageDef) (seed : Bindings) : variablePremiseTraces relations language [] seed = [([], seed)] := rfl
+
+@[simp] theorem variablePremiseTraces_cons (relations : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (language : LanguageDef) (plan : VariablePremisePlan) (plans : List VariablePremisePlan) (seed : Bindings) :
+    variablePremiseTraces relations language (plan :: plans) seed =
+      traceBranches 0 (plan.run relations language seed) (variablePremiseTraces relations language plans) := by
+  simp only [variablePremiseTraces, List.map_cons, premiseTraces, VariablePremisePlan.toPlan_run]
+
+/-- Replay uses the same general checker after exact variable-source retraction. -/
+def replayVariablePremises? (relations : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (language : LanguageDef) (plans : List VariablePremisePlan) : Bindings → List Nat → Option Bindings :=
+  replayPremises? relations language (plans.map VariablePremisePlan.toPlan)
+
+@[simp] theorem replayVariablePremises?_nil (relations : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (language : LanguageDef) (seed : Bindings) (path : List Nat) :
+    replayVariablePremises? relations language [] seed path = (match path with | [] => some seed | _ => none) := by
+  cases path <;> rfl
+
+@[simp] theorem replayVariablePremises?_cons (relations : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv)
+    (language : LanguageDef) (plan : VariablePremisePlan) (plans : List VariablePremisePlan)
+    (seed : Bindings) (path : List Nat) :
+    replayVariablePremises? relations language (plan :: plans) seed path =
+      (match path with
+       | [] => none
+       | index :: rest => (plan.run relations language seed)[index]?.bind
+           (fun next => replayVariablePremises? relations language plans next rest)) := by
+  cases path <;> simp only [replayVariablePremises?, List.map_cons, replayPremises?,
+    VariablePremisePlan.toPlan_run, Option.bind_eq_bind]
 
 private inductive Helper where
   | prefix | premises | branches | replay | instances | sides | row | rootAt | root | validate | validateSides
@@ -266,17 +304,17 @@ private theorem branches_shape : (equation .branches).body =
   decide +kernel
 
 private theorem branches_body_returns (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan)
-    (continued : ∀ seed, PureReturns program (environment .premises [premisesValue plans, rowsValue rows, bindingsValue seed])
-      state (equation .premises).body state (tracesValue (premiseTraces (providerEnv rows) language plans seed)))
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan)
+    (continued : ∀ seed, PureReturns program (environment .premises [variablePremisesValue plans, rowsValue rows, bindingsValue seed])
+      state (equation .premises).body state (tracesValue (variablePremiseTraces (providerEnv rows) language plans seed)))
     (choices : List Bindings) (index : Nat) :
-    PureReturns program (environment .branches [premisesValue plans, rowsValue rows, resultsValue choices, number index])
+    PureReturns program (environment .branches [variablePremisesValue plans, rowsValue rows, resultsValue choices, number index])
       state (equation .branches).body state
-      (tracesValue (traceBranches index choices (premiseTraces (providerEnv rows) language plans))) := by
+      (tracesValue (traceBranches index choices (variablePremiseTraces (providerEnv rows) language plans))) := by
   induction choices generalizing index with
   | nil =>
       rw [branches_shape]
-      let caller := environment .branches [premisesValue plans, rowsValue rows, resultsValue [], number index]
+      let caller := environment .branches [variablePremisesValue plans, rowsValue rows, resultsValue [], number index]
       apply case_returns program caller caller state state state (v "choices") (.symbol "LNil")
         (.symbol "LNil") (.symbol "LNil") _ branchesCases (read_cases_encoded _) _ _ _
       · simpa [caller, environment, Helper.names, resultsValue, bindingResultsTerm, encodeList,
@@ -284,17 +322,17 @@ private theorem branches_body_returns (state : State) (language : LanguageDef)
       · simp [branchesCases, SpaceSemantics.selectCase, SpaceSemantics.matchValue, matchAtom]
       · exact symbol_returns program caller state "LNil"
   | cons seed choices ih =>
-      let caller := environment .branches [premisesValue plans, rowsValue rows, resultsValue (seed :: choices), number index]
+      let caller := environment .branches [variablePremisesValue plans, rowsValue rows, resultsValue (seed :: choices), number index]
       let selected := ("rest", resultsValue choices) :: ("seed", bindingsValue seed) :: caller
-      let headTraces := premiseTraces (providerEnv rows) language plans seed
+      let headTraces := variablePremiseTraces (providerEnv rows) language plans seed
       let prefixed := headTraces.map fun trace => (index :: trace.1, trace.2)
-      let later := traceBranches (index + 1) choices (premiseTraces (providerEnv rows) language plans)
+      let later := traceBranches (index + 1) choices (variablePremiseTraces (providerEnv rows) language plans)
       let continuedBound := ("continued", tracesValue headTraces) :: selected
       let headBound := ("head", tracesValue prefixed) :: continuedBound
       let nextBound := ("next", number (index + 1)) :: headBound
       let tailBound := ("tail", tracesValue later) :: nextBound
       have headReturned := helper_call .premises selected state
-        [premisesValue plans, rowsValue rows, bindingsValue seed] [v "premises", v "rows", v "seed"] _ rfl
+        [variablePremisesValue plans, rowsValue rows, bindingsValue seed] [v "premises", v "rows", v "seed"] _ rfl
         (by simp [selected, caller, environment, Helper.names, applySubst, Subst.lookup]) (continued seed)
       have prefixReturned := trace_prefix_captured_returns continuedBound state index headTraces
         (v "index") (v "continued")
@@ -302,7 +340,7 @@ private theorem branches_body_returns (state : State) (language : LanguageDef)
       have nextReturned := successor_returns headBound state index
         (by simp [headBound, continuedBound, selected, caller, environment, Helper.names, applySubst, Subst.lookup])
       have tailReturned := helper_call .branches nextBound state
-        [premisesValue plans, rowsValue rows, resultsValue choices, number (index + 1)]
+        [variablePremisesValue plans, rowsValue rows, resultsValue choices, number (index + 1)]
         [v "premises", v "rows", v "rest", v "next"] _ rfl
         (by simp [nextBound, headBound, continuedBound, selected, caller, environment, Helper.names,
           applySubst, Subst.lookup]) (ih (index + 1))
@@ -359,25 +397,25 @@ private theorem premises_nil_template : PureData.Template program
   · exact .symbol _
 
 private theorem premises_body_returns (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan) (seed : Bindings) :
-    PureReturns program (environment .premises [premisesValue plans, rowsValue rows, bindingsValue seed])
-      state (equation .premises).body state (tracesValue (premiseTraces (providerEnv rows) language plans seed)) := by
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan) (seed : Bindings) :
+    PureReturns program (environment .premises [variablePremisesValue plans, rowsValue rows, bindingsValue seed])
+      state (equation .premises).body state (tracesValue (variablePremiseTraces (providerEnv rows) language plans seed)) := by
   induction plans generalizing seed with
   | nil =>
-      let caller := environment .premises [premisesValue [], rowsValue rows, bindingsValue seed]
+      let caller := environment .premises [variablePremisesValue [], rowsValue rows, bindingsValue seed]
       rw [premises_shape]
       apply case_returns program caller caller state state state (v "premises") (.symbol "LNil")
         (a "LCons" [a "EqPremises" [.symbol "LNil", v "seed"], .symbol "LNil"]) _ _
         premisesCases (read_cases_encoded _) _ _ _
-      · simpa [caller, environment, Helper.names, premisesValue, premisesTerm, encodeList,
+      · simpa [caller, environment, Helper.names, variablePremisesValue, RelationPremiseExecution.variablePremisesTerm, encodeList,
           CettaWireAtom.encode, applySubst, Subst.lookup] using variable_returns program caller state "premises"
       · simp [premisesCases, SpaceSemantics.selectCase, SpaceSemantics.matchValue, matchAtom]
-      · simpa [caller, environment, Helper.names, premiseTraces, tracesValue, tracesTerm, traceTerm, pathTerm,
+      · simpa [caller, environment, Helper.names, variablePremiseTraces_nil, tracesValue, tracesTerm, traceTerm, pathTerm,
           encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany, applySubst,
           applySubst.applySubstList, Subst.lookup] using PureData.template_return program caller state _ premises_nil_template
   | cons plan plans ih =>
-      let caller := environment .premises [premisesValue (plan :: plans), rowsValue rows, bindingsValue seed]
-      let selected := ("rest", premisesValue plans) ::
+      let caller := environment .premises [variablePremisesValue (plan :: plans), rowsValue rows, bindingsValue seed]
+      let selected := ("rest", variablePremisesValue plans) ::
         ("arguments", encoded (InferenceCettaWire.encodePatterns (plan.arguments.map Pattern.fvar))) ::
         ("relation", encoded (.string plan.relation)) :: caller
       let namesBound := ("names", encoded (namesTerm plan.arguments)) :: selected
@@ -400,29 +438,29 @@ private theorem premises_body_returns (state : State) (language : LanguageDef)
         · simp [SpaceSemantics.matchValue, matchAtom, Subst.lookup, choicesBound, namesBound, selected, caller, environment, Helper.names]
         exact .nil _ _
       rw [premises_shape]
-      apply case_returns program caller selected state state state (v "premises") (premisesValue (plan :: plans))
+      apply case_returns program caller selected state state state (v "premises") (variablePremisesValue (plan :: plans))
         premisesCons _ _ premisesCases (read_cases_encoded _) _ _ _
       · simpa [caller, environment, Helper.names, applySubst, Subst.lookup] using variable_returns program caller state "premises"
-      · simp [premisesCases, premisesValue, premisesTerm, RelationPremiseExecution.premiseTerm, encodeList,
+      · simp [premisesCases, variablePremisesValue, RelationPremiseExecution.variablePremisesTerm, RelationPremiseExecution.variablePremiseTerm, encodeList,
           CettaWireAtom.encode, CettaWireAtom.encodeMany, SpaceSemantics.selectCase, SpaceSemantics.matchValue,
           SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup, selected, caller, environment, Helper.names]
       · unfold premisesCons
         apply PureData.let_bindings_return computed
-        simpa only [premiseTraces, choices, Helper.head] using helper_call .branches choicesBound state
-          [premisesValue plans, rowsValue rows, resultsValue choices, number 0]
+        simpa only [variablePremiseTraces_cons, choices, Helper.head] using helper_call .branches choicesBound state
+          [variablePremisesValue plans, rowsValue rows, resultsValue choices, number 0]
           [v "rest", v "rows", v "choices", number 0] _ rfl
           (by simp [choicesBound, namesBound, selected, caller, environment, Helper.names, applySubst, Subst.lookup])
           (branches_body_returns state language rows plans ih choices 0)
 
 /-- The actual source returns the canonical ordered premise fold decorated
 with each completed query alternative's physical ordinal. -/
-theorem premise_traces_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan) (seed : Bindings)
+theorem variable_premise_traces_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan) (seed : Bindings)
     (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
-      [premisesValue plans, rowsValue rows, bindingsValue seed]) :
+      [variablePremisesValue plans, rowsValue rows, bindingsValue seed]) :
     PureReturns program caller state (a "gslt:equation:premise-traces" [one, two, three]) state
-      (tracesValue (premiseTraces (providerEnv rows) language plans seed)) :=
+      (tracesValue (variablePremiseTraces (providerEnv rows) language plans seed)) :=
   helper_call .premises caller state _ _ _ rfl captured (premises_body_returns state language rows plans seed)
 
 private theorem results_as_list (values : List Bindings) :
@@ -467,20 +505,20 @@ private theorem replay_shape : (equation .replay).body =
 
 private theorem replay_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plans : List PremisePlan) (seed : Bindings) (path : List Nat) :
-    PureReturns program (environment .replay [premisesValue plans, rowsValue rows, bindingsValue seed, encoded (pathTerm path)])
+    (plans : List VariablePremisePlan) (seed : Bindings) (path : List Nat) :
+    PureReturns program (environment .replay [variablePremisesValue plans, rowsValue rows, bindingsValue seed, encoded (pathTerm path)])
       state (equation .replay).body state
-      (encoded (bindingsOptionTerm (replayPremises? (providerEnv rows) language plans seed path))) := by
+      (encoded (bindingsOptionTerm (replayVariablePremises? (providerEnv rows) language plans seed path))) := by
   induction plans generalizing seed path with
   | nil =>
       cases path with
       | nil =>
-          let caller := environment .replay [premisesValue [], rowsValue rows, bindingsValue seed, encoded (pathTerm [])]
+          let caller := environment .replay [variablePremisesValue [], rowsValue rows, bindingsValue seed, encoded (pathTerm [])]
           rw [replay_shape]
           apply case_returns program caller caller state state state (.expression [v "premises", v "path"])
             (.expression [.symbol "LNil", .symbol "LNil"]) (a "Some" [v "seed"])
             (encoded (bindingsOptionTerm (some seed))) _ replayCases (read_cases_encoded _) _ _ _
-          · simpa [caller, environment, Helper.names, premisesValue, premisesTerm, pathTerm, encodeList,
+          · simpa [caller, environment, Helper.names, variablePremisesValue, RelationPremiseExecution.variablePremisesTerm, pathTerm, encodeList,
               CettaWireAtom.encode, applySubst, Subst.lookup] using tuple_variables_return program caller state ["premises", "path"]
           · simp [replayCases, SpaceSemantics.selectCase, SpaceSemantics.matchValue,
               SpaceSemantics.matchValue.matchValues, matchAtom]
@@ -488,13 +526,13 @@ private theorem replay_body_returns (state : State) (language : LanguageDef)
               CettaWireAtom.encodeMany, applySubst, Subst.lookup] using
                 unary_constructor_returns program caller state "Some" "seed" (by decide +kernel) (by decide)
       | cons index path =>
-          let caller := environment .replay [premisesValue [], rowsValue rows, bindingsValue seed, encoded (pathTerm (index :: path))]
+          let caller := environment .replay [variablePremisesValue [], rowsValue rows, bindingsValue seed, encoded (pathTerm (index :: path))]
           let value : Atom := .expression [.symbol "LNil", encoded (pathTerm (index :: path))]
           let selected := ("bad", value) :: caller
           rw [replay_shape]
           apply case_returns program caller selected state state state (.expression [v "premises", v "path"])
             value (.symbol "None") (.symbol "None") _ replayCases (read_cases_encoded _) _ _ _
-          · simpa [value, caller, environment, Helper.names, premisesValue, premisesTerm, pathTerm, encodeList,
+          · simpa [value, caller, environment, Helper.names, variablePremisesValue, RelationPremiseExecution.variablePremisesTerm, pathTerm, encodeList,
               CettaWireAtom.encode, applySubst, Subst.lookup] using tuple_variables_return program caller state ["premises", "path"]
           · simp [replayCases, value, selected, caller, environment, Helper.names, pathTerm,
               encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany, SpaceSemantics.selectCase,
@@ -503,24 +541,24 @@ private theorem replay_body_returns (state : State) (language : LanguageDef)
   | cons plan plans ih =>
       cases path with
       | nil =>
-          let caller := environment .replay [premisesValue (plan :: plans), rowsValue rows, bindingsValue seed, encoded (pathTerm [])]
-          let value : Atom := .expression [premisesValue (plan :: plans), .symbol "LNil"]
+          let caller := environment .replay [variablePremisesValue (plan :: plans), rowsValue rows, bindingsValue seed, encoded (pathTerm [])]
+          let value : Atom := .expression [variablePremisesValue (plan :: plans), .symbol "LNil"]
           let selected := ("bad", value) :: caller
           rw [replay_shape]
           apply case_returns program caller selected state state state (.expression [v "premises", v "path"])
             value (.symbol "None") (.symbol "None") _ replayCases (read_cases_encoded _) _ _ _
           · simpa [value, caller, environment, Helper.names, pathTerm, encodeList,
               CettaWireAtom.encode, applySubst, Subst.lookup] using tuple_variables_return program caller state ["premises", "path"]
-          · simp [replayCases, value, selected, caller, environment, Helper.names, premisesValue, premisesTerm,
-              RelationPremiseExecution.premiseTerm, encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
+          · simp [replayCases, value, selected, caller, environment, Helper.names, variablePremisesValue, RelationPremiseExecution.variablePremisesTerm,
+              RelationPremiseExecution.variablePremiseTerm, encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
               SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
               matchAtom, Subst.lookup]
           · exact symbol_returns program selected state "None"
       | cons index path =>
-          let caller := environment .replay [premisesValue (plan :: plans), rowsValue rows, bindingsValue seed,
+          let caller := environment .replay [variablePremisesValue (plan :: plans), rowsValue rows, bindingsValue seed,
             encoded (pathTerm (index :: path))]
           let selected := ("remaining", encoded (pathTerm path)) :: ("index", number index) ::
-            ("rest", premisesValue plans) ::
+            ("rest", variablePremisesValue plans) ::
             ("arguments", encoded (InferenceCettaWire.encodePatterns (plan.arguments.map Pattern.fvar))) ::
             ("relation", encoded (.string plan.relation)) :: caller
           let namesBound := ("names", encoded (namesTerm plan.arguments)) :: selected
@@ -546,19 +584,19 @@ private theorem replay_body_returns (state : State) (language : LanguageDef)
             (by simp [choicesBound, namesBound, selected, applySubst, Subst.lookup])
           rw [replay_shape]
           apply case_returns program caller selected state state state (.expression [v "premises", v "path"])
-            (.expression [premisesValue (plan :: plans), encoded (pathTerm (index :: path))])
+            (.expression [variablePremisesValue (plan :: plans), encoded (pathTerm (index :: path))])
             replayCons _ _ replayCases (read_cases_encoded _) _ _ _
           · simpa [caller, environment, Helper.names, applySubst, Subst.lookup] using
               tuple_variables_return program caller state ["premises", "path"]
-          · simp [replayCases, selected, caller, environment, Helper.names, premisesValue, premisesTerm,
-              RelationPremiseExecution.premiseTerm, pathTerm, encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
+          · simp [replayCases, selected, caller, environment, Helper.names, variablePremisesValue, RelationPremiseExecution.variablePremisesTerm,
+              RelationPremiseExecution.variablePremiseTerm, pathTerm, encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
               SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup]
           · unfold replayCons
             apply PureData.let_bindings_return computed
             cases chosen : choices[index]? with
             | none =>
-                have outcome : replayPremises? (providerEnv rows) language (plan :: plans) seed (index :: path) = none := by
-                  simp only [replayPremises?, Option.bind_eq_bind, choices, chosen, Option.bind_none]
+                have outcome : replayVariablePremises? (providerEnv rows) language (plan :: plans) seed (index :: path) = none := by
+                  simp only [replayVariablePremises?_cons, choices, chosen, Option.bind_none]
                 rw [outcome]
                 unfold replayLookup
                 apply case_returns program choicesBound choicesBound state state state _ (.symbol "None")
@@ -568,9 +606,9 @@ private theorem replay_body_returns (state : State) (language : LanguageDef)
                 · exact symbol_returns program choicesBound state "None"
             | some next =>
                 let selectedNext := ("next", bindingsValue next) :: choicesBound
-                have outcome : replayPremises? (providerEnv rows) language (plan :: plans) seed (index :: path) =
-                    replayPremises? (providerEnv rows) language plans next path := by
-                  simp only [replayPremises?, Option.bind_eq_bind, choices, chosen, Option.bind_some]
+                have outcome : replayVariablePremises? (providerEnv rows) language (plan :: plans) seed (index :: path) =
+                    replayVariablePremises? (providerEnv rows) language plans next path := by
+                  simp only [replayVariablePremises?_cons, choices, chosen, Option.bind_some]
                 rw [outcome]
                 unfold replayLookup
                 apply case_returns program choicesBound selectedNext state state state _
@@ -582,21 +620,52 @@ private theorem replay_body_returns (state : State) (language : LanguageDef)
                     SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup,
                     choicesBound, namesBound, selected, caller, environment, Helper.names]
                 · exact helper_call .replay selectedNext state
-                    [premisesValue plans, rowsValue rows, bindingsValue next, encoded (pathTerm path)]
+                    [variablePremisesValue plans, rowsValue rows, bindingsValue next, encoded (pathTerm path)]
                     [v "rest", v "rows", v "next", v "remaining"] _ rfl
                     (by simp [selectedNext, choicesBound, namesBound, selected, caller, environment, Helper.names,
                       applySubst, Subst.lookup]) (ih next path)
 
 /-- The retained source replays each canonical query alternative, refusing
 missing, future and extra branch ordinals. -/
+theorem replay_variable_premises_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List VariablePremisePlan)
+    (seed : Bindings) (path : List Nat) (one two three four : Atom)
+    (captured : [one, two, three, four].map (applySubst caller) =
+      [variablePremisesValue plans, rowsValue rows, bindingsValue seed, encoded (pathTerm path)]) :
+    PureReturns program caller state (a "gslt:equation:replay-premises" [one, two, three, four]) state
+      (encoded (bindingsOptionTerm (replayVariablePremises? (providerEnv rows) language plans seed path))) :=
+  helper_call .replay caller state _ _ _ rfl captured (replay_body_returns state language rows plans seed path)
+
+/-- Checked general plans execute through their earned names-only source view. -/
+theorem premise_traces_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan)
+    (view : {specialized : List VariablePremisePlan // specialized.map VariablePremisePlan.toPlan = plans})
+    (seed : Bindings) (one two three : Atom)
+    (captured : [one, two, three].map (applySubst caller) =
+      [premisesValue plans, rowsValue rows, bindingsValue seed]) :
+    PureReturns program caller state (a "gslt:equation:premise-traces" [one, two, three]) state
+      (tracesValue (premiseTraces (providerEnv rows) language plans seed)) := by
+  have wire : variablePremisesValue view.val = premisesValue plans := by
+    simpa only [variablePremisesValue, premisesValue, view.property] using
+      congrArg encoded (RelationPremiseExecution.variablePremisesTerm_toPlan view.val).symm
+  have returned := variable_premise_traces_captured_returns caller state language rows view.val seed one two three
+    (by simpa only [wire] using captured)
+  simpa only [variablePremiseTraces, view.property] using returned
+
 theorem replay_premises_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plans : List PremisePlan)
+    (view : {specialized : List VariablePremisePlan // specialized.map VariablePremisePlan.toPlan = plans})
     (seed : Bindings) (path : List Nat) (one two three four : Atom)
     (captured : [one, two, three, four].map (applySubst caller) =
       [premisesValue plans, rowsValue rows, bindingsValue seed, encoded (pathTerm path)]) :
     PureReturns program caller state (a "gslt:equation:replay-premises" [one, two, three, four]) state
-      (encoded (bindingsOptionTerm (replayPremises? (providerEnv rows) language plans seed path))) :=
-  helper_call .replay caller state _ _ _ rfl captured (replay_body_returns state language rows plans seed path)
+      (encoded (bindingsOptionTerm (replayPremises? (providerEnv rows) language plans seed path))) := by
+  have wire : variablePremisesValue view.val = premisesValue plans := by
+    simpa only [variablePremisesValue, premisesValue, view.property] using
+      congrArg encoded (RelationPremiseExecution.variablePremisesTerm_toPlan view.val).symm
+  have returned := replay_variable_premises_captured_returns caller state language rows view.val seed path one two three four
+    (by simpa only [wire] using captured)
+  simpa only [replayVariablePremises?, view.property] using returned
 
 def instanceReceipts (index : Nat) (orientation : EquationOrientation) (initial : Bindings)
     (right : PatternPlan) (traces : List (List Nat × Bindings)) : List Receipt :=
@@ -713,7 +782,7 @@ private theorem sides_shape : (equation .sides).body =
 
 private theorem sides_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (index : Nat)
-    (orientation : EquationOrientation) (plan : RulePlan) (subject : PatternPlan) :
+    (orientation : EquationOrientation) (plan : RulePlan) (view : VariableRuleView plan) (subject : PatternPlan) :
     PureReturns program (environment .sides [number index, encoded (orientationTerm orientation),
       premisesValue plan.premises, encoded (InferenceCettaWire.encodePattern (orientedPlan plan orientation).left.erase),
       encoded (InferenceCettaWire.encodePattern (orientedPlan plan orientation).right.erase), rowsValue rows,
@@ -749,7 +818,7 @@ private theorem sides_body_returns (state : State) (language : LanguageDef)
       let selected := ("initial", bindingsValue initial) :: caller
       let traces := premiseTraces (providerEnv rows) language plan.premises initial
       let bound := ("traces", tracesValue traces) :: selected
-      have tracesReturned := premise_traces_captured_returns selected state language rows plan.premises initial
+      have tracesReturned := premise_traces_captured_returns selected state language rows plan.premises view initial
         (v "premises") (v "rows") (v "initial")
         (by simp [selected, caller, environment, Helper.names, applySubst, Subst.lookup])
       have instancesReturned := instance_results_captured_returns bound state index orientation initial
@@ -769,7 +838,7 @@ private theorem sides_body_returns (state : State) (language : LanguageDef)
 retains conditional witnesses and constructs the opposite authored side. -/
 theorem apply_sides_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (index : Nat)
-    (orientation : EquationOrientation) (plan : RulePlan) (subject : PatternPlan)
+    (orientation : EquationOrientation) (plan : RulePlan) (view : VariableRuleView plan) (subject : PatternPlan)
     (one two three four five six seven : Atom)
     (captured : [one, two, three, four, five, six, seven].map (applySubst caller) =
       [number index, encoded (orientationTerm orientation), premisesValue plan.premises,
@@ -778,7 +847,7 @@ theorem apply_sides_captured_returns (caller : Subst) (state : State) (language 
         rowsValue rows, encoded (InferenceCettaWire.encodePattern subject.erase)]) :
     PureReturns program caller state (a "gslt:equation:apply-sides" [one, two, three, four, five, six, seven]) state
       (encoded (receiptsTerm (rowReceipts (providerEnv rows) language index orientation plan subject.erase))) :=
-  helper_call .sides caller state _ _ _ rfl captured (sides_body_returns state language rows index orientation plan subject)
+  helper_call .sides caller state _ _ _ rfl captured (sides_body_returns state language rows index orientation plan view subject)
 
 private def rowCases : SpaceSemantics.Cases :=
   [(.expression [.symbol "EqForward", a "Equation" [v "name", v "context", v "premises", v "left", v "right"]],
@@ -794,7 +863,7 @@ private theorem row_shape : (equation .row).body =
 private theorem row_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (index : Nat)
-    (orientation : EquationOrientation) (plan : RulePlan) (subject : PatternPlan) :
+    (orientation : EquationOrientation) (plan : RulePlan) (view : VariableRuleView plan) (subject : PatternPlan) :
     PureReturns program (environment .row [number index, encoded (orientationTerm orientation),
       encoded (equationTerm contexts plan), rowsValue rows, encoded (InferenceCettaWire.encodePattern subject.erase)])
       state (equation .row).body state
@@ -816,7 +885,7 @@ private theorem row_body_returns (state : State) (language : LanguageDef)
       · simp [rowCases, orientationTerm, equationTerm, encoded, CettaWireAtom.encode, CettaWireAtom.encodeMany,
           SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
           matchAtom, Subst.lookup, selected, caller, environment, Helper.names]
-      · exact apply_sides_captured_returns selected state language rows index .forward plan subject _ _ _ _ _ _ _
+      · exact apply_sides_captured_returns selected state language rows index .forward plan view subject _ _ _ _ _ _ _
           (by simp [orientedPlan, selected, caller, environment, Helper.names, applySubst, Subst.lookup])
   | reverse =>
       apply case_returns program caller selected state state state (.expression [v "orientation", v "equation"])
@@ -828,7 +897,7 @@ private theorem row_body_returns (state : State) (language : LanguageDef)
       · simp [rowCases, orientationTerm, equationTerm, encoded, CettaWireAtom.encode, CettaWireAtom.encodeMany,
           SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
           matchAtom, Subst.lookup, selected, caller, environment, Helper.names]
-      · exact apply_sides_captured_returns selected state language rows index .reverse plan subject _ _ _ _ _ _ _
+      · exact apply_sides_captured_returns selected state language rows index .reverse plan view subject _ _ _ _ _ _ _
           (by simp [orientedPlan, selected, caller, environment, Helper.names, applySubst, Subst.lookup])
 
 /-- Physical equation identity and orientation remain explicit in the emitted
@@ -836,14 +905,14 @@ receipt; source metadata is retained independently of pattern execution. -/
 theorem apply_row_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (index : Nat)
-    (orientation : EquationOrientation) (plan : RulePlan) (subject : PatternPlan)
+    (orientation : EquationOrientation) (plan : RulePlan) (view : VariableRuleView plan) (subject : PatternPlan)
     (one two three four five : Atom)
     (captured : [one, two, three, four, five].map (applySubst caller) =
       [number index, encoded (orientationTerm orientation), encoded (equationTerm contexts plan),
         rowsValue rows, encoded (InferenceCettaWire.encodePattern subject.erase)]) :
     PureReturns program caller state (a "gslt:equation:apply-row" [one, two, three, four, five]) state
       (encoded (receiptsTerm (rowReceipts (providerEnv rows) language index orientation plan subject.erase))) :=
-  helper_call .row caller state _ _ _ rfl captured (row_body_returns state language rows contexts index orientation plan subject)
+  helper_call .row caller state _ _ _ rfl captured (row_body_returns state language rows contexts index orientation plan view subject)
 
 private def rootReceiptsAt (relations : Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv) (language : LanguageDef)
     (next : Nat) (plans : List RulePlan) (source : Pattern) : List Receipt :=
@@ -887,6 +956,7 @@ private theorem rootAt_shape : (equation .rootAt).body =
 private theorem rootAt_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true)
     (subject : PatternPlan) (index : Nat) :
     PureReturns program (environment .rootAt [encoded (equationsTerm contexts plans), rowsValue rows,
       encoded (InferenceCettaWire.encodePattern subject.erase), number index]) state (equation .rootAt).body state
@@ -903,6 +973,10 @@ private theorem rootAt_body_returns (state : State) (language : LanguageDef)
       · simp [rootCases, SpaceSemantics.selectCase, SpaceSemantics.matchValue, matchAtom]
       · exact symbol_returns program caller state "LNil"
   | cons plan plans ih =>
+      have tailViews : ∀ row ∈ plans, row.variablePremises?.isSome = true := by
+        intro row member
+        exact sourceViews row (by simp [member])
+      have view := variableRuleView plan (sourceViews plan (by simp))
       let caller := environment .rootAt [encoded (equationsTerm contexts (plan :: plans)), rowsValue rows,
         encoded (InferenceCettaWire.encodePattern subject.erase), number index]
       let selected := ("rest", encoded (equationsTerm contexts plans)) :: ("equation", encoded (equationTerm contexts plan)) :: caller
@@ -914,10 +988,10 @@ private theorem rootAt_body_returns (state : State) (language : LanguageDef)
       let headBound := ("head", encoded (receiptsTerm (forward ++ reverse))) :: reverseBound
       let nextBound := ("next", number (index + 1)) :: headBound
       let tailBound := ("tail", encoded (receiptsTerm later)) :: nextBound
-      have forwardReturned := apply_row_captured_returns selected state language rows contexts index .forward plan subject
+      have forwardReturned := apply_row_captured_returns selected state language rows contexts index .forward plan view subject
         (v "index") (.symbol "EqForward") (v "equation") (v "rows") (v "subject")
         (by simp [orientationTerm, encoded, CettaWireAtom.encode, selected, caller, environment, Helper.names, applySubst, Subst.lookup])
-      have reverseReturned := apply_row_captured_returns forwardBound state language rows contexts index .reverse plan subject
+      have reverseReturned := apply_row_captured_returns forwardBound state language rows contexts index .reverse plan view subject
         (v "index") (.symbol "EqReverse") (v "equation") (v "rows") (v "subject")
         (by simp [orientationTerm, encoded, CettaWireAtom.encode, forwardBound, selected, caller, environment, Helper.names, applySubst, Subst.lookup])
       have headReturned := append_receipts_returns reverseBound state forward reverse "forward" "reverse"
@@ -928,7 +1002,7 @@ private theorem rootAt_body_returns (state : State) (language : LanguageDef)
         [encoded (equationsTerm contexts plans), rowsValue rows, encoded (InferenceCettaWire.encodePattern subject.erase), number (index + 1)]
         [v "rest", v "rows", v "subject", v "next"] _ rfl
         (by simp [nextBound, headBound, reverseBound, forwardBound, selected, caller, environment, Helper.names,
-          applySubst, Subst.lookup]) (ih (index + 1))
+          applySubst, Subst.lookup]) (ih tailViews (index + 1))
       have computed : PureData.BindingsReturn program selected state rootPairs tailBound state := by
         apply PureData.BindingsReturn.cons (bound := forwardBound) forwardReturned
         · simp [SpaceSemantics.matchValue, matchAtom, Subst.lookup, forwardBound, selected, caller, environment, Helper.names, forward]
@@ -963,7 +1037,8 @@ private theorem root_shape : (equation .root).body =
 
 private theorem root_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan) (subject : PatternPlan) :
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true) (subject : PatternPlan) :
     PureReturns program (environment .root [encoded (equationsTerm contexts plans), rowsValue rows,
       encoded (InferenceCettaWire.encodePattern subject.erase)]) state (equation .root).body state
       (encoded (receiptsTerm (rootReceipts (providerEnv rows) language plans subject.erase))) := by
@@ -974,19 +1049,20 @@ private theorem root_body_returns (state : State) (language : LanguageDef)
     [encoded (equationsTerm contexts plans), rowsValue rows, encoded (InferenceCettaWire.encodePattern subject.erase), number 0]
     [v "equations", v "rows", v "subject", number 0] _ rfl
     (by simp [caller, environment, Helper.names, applySubst, Subst.lookup])
-    (rootAt_body_returns state language rows contexts plans subject 0)
+    (rootAt_body_returns state language rows contexts plans sourceViews subject 0)
 
 /-- Completed source execution is the complete ordered canonical authored
 instance frontier: equation order, forward/reverse order and premise witnesses. -/
 theorem root_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan) (subject : PatternPlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true) (subject : PatternPlan)
     (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
       [encoded (equationsTerm contexts plans), rowsValue rows, encoded (InferenceCettaWire.encodePattern subject.erase)]) :
     PureReturns program caller state (a "gslt:equation:root" [one, two, three]) state
       (encoded (receiptsTerm (rootReceipts (providerEnv rows) language plans subject.erase))) :=
-  helper_call .root caller state _ _ _ rfl captured (root_body_returns state language rows contexts plans subject)
+  helper_call .root caller state _ _ _ rfl captured (root_body_returns state language rows contexts plans sourceViews subject)
 
 private theorem bindings_equal_returns (caller : Subst) (state : State)
     (left right : Bindings) (first second : String)
@@ -1063,7 +1139,7 @@ private theorem validateActual_returns (caller : Subst) (state : State)
 
 private theorem validateSides_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (plan : RulePlan) (subject : PatternPlan) (initial completed : Bindings)
+    (plan : RulePlan) (view : VariableRuleView plan) (subject : PatternPlan) (initial completed : Bindings)
     (path : List Nat) (target : Pattern) :
     PureReturns program (environment .validateSides [premisesValue plan.premises,
       encoded (InferenceCettaWire.encodePattern plan.left.erase), encoded (InferenceCettaWire.encodePattern plan.right.erase),
@@ -1112,7 +1188,7 @@ private theorem validateSides_body_returns (state : State) (language : LanguageD
         by_cases same : matched = initial
         · have accepted : initial ∈ plan.left.run subject.erase := by simp [matchList, same]
           simp only [same, decide_true, beq_self_eq_true, ite_true]
-          have replayed := replay_premises_captured_returns selected state language rows plan.premises initial path
+          have replayed := replay_premises_captured_returns selected state language rows plan.premises view initial path
             (v "premises") (v "rows") (v "initial") (v "path")
             (by simp [selected, caller, environment, Helper.names, applySubst, Subst.lookup])
           unfold validateReplay
@@ -1156,7 +1232,7 @@ private theorem validateSides_body_returns (state : State) (language : LanguageD
 /-- The retained validator checks the canonical matcher, exact branch replay,
 completed binding list and instantiated target, preserving the supplied state. -/
 theorem validate_sides_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
-    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plan : RulePlan) (subject : PatternPlan)
+    (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (plan : RulePlan) (view : VariableRuleView plan) (subject : PatternPlan)
     (initial completed : Bindings) (path : List Nat) (target : Pattern)
     (one two three four five six seven eight nine : Atom)
     (captured : [one, two, three, four, five, six, seven, eight, nine].map (applySubst caller) =
@@ -1168,7 +1244,7 @@ theorem validate_sides_captured_returns (caller : Subst) (state : State) (langua
       (encoded (MatchAutomataBindingExecution.patternOptionTerm
         (validateRowReceipt? (providerEnv rows) language plan subject.erase initial path completed target))) :=
   helper_call .validateSides caller state _ _ _ rfl captured
-    (validateSides_body_returns state language rows plan subject initial completed path target)
+    (validateSides_body_returns state language rows plan view subject initial completed path target)
 
 private def equationOptionTerm (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) : Option RulePlan → Term
   | none => .symbol "None"
@@ -1222,7 +1298,7 @@ private theorem validate_shape : (equation .validate).body =
 
 private theorem validateRow_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plan : RulePlan) (subject : PatternPlan) (receipt : Receipt)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plan : RulePlan) (view : VariableRuleView plan) (subject : PatternPlan) (receipt : Receipt)
     (captured : [v "orientation", v "equation", v "rows", v "subject", v "initial", v "path", v "completed", v "target"].map
         (applySubst caller) = [encoded (orientationTerm receipt.orientation), encoded (equationTerm contexts plan),
           rowsValue rows, encoded (InferenceCettaWire.encodePattern subject.erase), bindingsValue receipt.initialBindings,
@@ -1265,7 +1341,7 @@ private theorem validateRow_returns (caller : Subst) (state : State) (language :
       · simp [validateRowCases, orientationTerm, equationTerm, encoded, CettaWireAtom.encode, CettaWireAtom.encodeMany,
           SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
           matchAtom, selected, freshName, freshContext, freshPremises, freshLeft, freshRight, Subst.lookup]
-      · simpa only [oriented, orientedPlan] using validate_sides_captured_returns selected state language rows plan subject
+      · simpa only [oriented, orientedPlan] using validate_sides_captured_returns selected state language rows plan view subject
           receipt.initialBindings receipt.finalBindings receipt.choices receipt.target
           (v "premises") (v "left") (v "right") (v "rows") (v "subject") (v "initial") (v "path") (v "completed") (v "target")
           (by simp [selected, applySubst, Subst.lookup, rowsCaptured, subjectCaptured, initialCaptured,
@@ -1282,14 +1358,16 @@ private theorem validateRow_returns (caller : Subst) (state : State) (language :
           SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
           matchAtom, selected, freshName, freshContext, freshPremises, freshLeft, freshRight, Subst.lookup]
       · simpa only [oriented, orientedPlan] using validate_sides_captured_returns selected state language rows
-          (orientedPlan plan .reverse) subject receipt.initialBindings receipt.finalBindings receipt.choices receipt.target
+          (orientedPlan plan .reverse)
+          ⟨view.val, by simpa only [orientedPlan_premises] using view.property⟩ subject receipt.initialBindings receipt.finalBindings receipt.choices receipt.target
           (v "premises") (v "right") (v "left") (v "rows") (v "subject") (v "initial") (v "path") (v "completed") (v "target")
           (by simp [orientedPlan, selected, applySubst, Subst.lookup, rowsCaptured, subjectCaptured, initialCaptured,
               pathCaptured, completedCaptured, targetCaptured])
 
 private theorem validate_body_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (receipt : Receipt) :
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true) (subject : PatternPlan) (receipt : Receipt) :
     PureReturns program (environment .validate [encoded (equationsTerm contexts plans), rowsValue rows,
       encoded (InferenceCettaWire.encodePattern subject.erase), encoded (receiptTerm receipt)])
       state (equation .validate).body state
@@ -1328,7 +1406,8 @@ private theorem validate_body_returns (state : State) (language : LanguageDef)
         · simp [validateLookupCases, declared, selected, caller, environment, Helper.names,
             SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup]
         · simpa only [validateReceipt?, chosen, Option.bind_eq_bind, Option.bind_some] using
-            validateRow_returns declared state language rows contexts plan subject receipt
+            validateRow_returns declared state language rows contexts plan
+              (variableRuleView plan (sourceViews plan (List.mem_of_getElem? chosen))) subject receipt
               (by simp [declared, selected, caller, environment, Helper.names, applySubst, Subst.lookup])
               (by intro name member; simp at member; rcases member with rfl | rfl | rfl | rfl | rfl <;>
                   simp [declared, selected, caller, environment, Helper.names, Subst.lookup])
@@ -1337,7 +1416,8 @@ private theorem validate_body_returns (state : State) (language : LanguageDef)
 orientation, initial match, complete premise replay and actual target. -/
 theorem validate_captured_returns (caller : Subst) (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan) (subject : PatternPlan) (receipt : Receipt)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true) (subject : PatternPlan) (receipt : Receipt)
     (one two three four : Atom)
     (captured : [one, two, three, four].map (applySubst caller) =
       [encoded (equationsTerm contexts plans), rowsValue rows, encoded (InferenceCettaWire.encodePattern subject.erase),
@@ -1346,7 +1426,7 @@ theorem validate_captured_returns (caller : Subst) (state : State) (language : L
       (encoded (MatchAutomataBindingExecution.patternOptionTerm
         (validateReceipt? (providerEnv rows) language plans subject.erase receipt))) :=
   helper_call .validate caller state _ _ _ rfl captured
-    (validate_body_returns state language rows contexts plans subject receipt)
+    (validate_body_returns state language rows contexts plans sourceViews subject receipt)
 
 /-- Full equation receipts remain distinguishable even when their targets agree. -/
 theorem receiptTerm_injective : Function.Injective receiptTerm := by
@@ -1383,37 +1463,41 @@ def validateQueryTerm (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Te
 
 theorem root_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan) (subject : PatternPlan) :
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true) (subject : PatternPlan) :
     PureReturns program [] state (encoded (rootQueryTerm contexts plans rows subject)) state
       (encoded (receiptsTerm (rootReceipts (providerEnv rows) language plans subject.erase))) := by
-  exact root_captured_returns [] state language rows contexts plans subject _ _ _
+  exact root_captured_returns [] state language rows contexts plans sourceViews subject _ _ _
     (by simp)
 
 theorem validate_returns (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true)
     (subject : PatternPlan) (receipt : Receipt) :
     PureReturns program [] state (encoded (validateQueryTerm contexts plans rows subject receipt)) state
       (encoded (MatchAutomataBindingExecution.patternOptionTerm
         (validateReceipt? (providerEnv rows) language plans subject.erase receipt))) := by
-  exact validate_captured_returns [] state language rows contexts plans subject receipt _ _ _ _
+  exact validate_captured_returns [] state language rows contexts plans sourceViews subject receipt _ _ _ _
     (by simp)
 
 /-- Completion is exact in the store, answers and input/output observations. -/
 theorem root_completed_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan) (subject : PatternPlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true) (subject : PatternPlan)
     (after : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel { state := state, control := .evaluate [] (encoded (rootQueryTerm contexts plans rows subject)) } =
       .complete after answers input output) ↔
       after = state ∧ answers = [encoded (receiptsTerm (rootReceipts (providerEnv rows) language plans subject.erase))] ∧
         input = [] ∧ output = [] :=
   pure_returns_completed_iff program [] state state _ _
-    (root_returns state language rows contexts plans subject) after answers input output
+    (root_returns state language rows contexts plans sourceViews subject) after answers input output
 
 theorem root_derivation_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
-    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan) (subject : PatternPlan)
+    (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true) (subject : PatternPlan)
     (after : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program
       { state := state, control := .evaluate [] (encoded (rootQueryTerm contexts plans rows subject)) }
@@ -1421,29 +1505,31 @@ theorem root_derivation_iff (state : State) (language : LanguageDef)
       after = state ∧ answers = [encoded (receiptsTerm (rootReceipts (providerEnv rows) language plans subject.erase))] ∧
         input = [] ∧ output = [] :=
   pure_returns_derivation_iff program [] state state _ _
-    (root_returns state language rows contexts plans subject) after answers input output
+    (root_returns state language rows contexts plans sourceViews subject) after answers input output
 
 theorem validate_completed_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true)
     (subject : PatternPlan) (receipt : Receipt) (after : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel { state := state, control := .evaluate [] (encoded (validateQueryTerm contexts plans rows subject receipt)) } =
       .complete after answers input output) ↔
       after = state ∧ answers = [encoded (MatchAutomataBindingExecution.patternOptionTerm
         (validateReceipt? (providerEnv rows) language plans subject.erase receipt))] ∧ input = [] ∧ output = [] :=
   pure_returns_completed_iff program [] state state _ _
-    (validate_returns state language rows contexts plans subject receipt) after answers input output
+    (validate_returns state language rows contexts plans sourceViews subject receipt) after answers input output
 
 theorem validate_derivation_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true)
     (subject : PatternPlan) (receipt : Receipt) (after : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program { state := state, control := .evaluate [] (encoded (validateQueryTerm contexts plans rows subject receipt)) }
       (.complete after answers input output) ↔
       after = state ∧ answers = [encoded (MatchAutomataBindingExecution.patternOptionTerm
         (validateReceipt? (providerEnv rows) language plans subject.erase receipt))] ∧ input = [] ∧ output = [] :=
   pure_returns_derivation_iff program [] state state _ _
-    (validate_returns state language rows contexts plans subject receipt) after answers input output
+    (validate_returns state language rows contexts plans sourceViews subject receipt) after answers input output
 
 /-- Targets observed in actual retained source runs, rather than a separately
 supplied or evaluated reference frontier. -/
@@ -1460,19 +1546,20 @@ and reflected by completed source observations. -/
 theorem observes_root_iff_instance (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (compiled : EquationProgram language.equations) (source : PatternPlan) (target : Pattern) :
+    (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true) (source : PatternPlan) (target : Pattern) :
     ObservesRootInstance state language rows contexts compiled.plans source target ↔
       EquationInstance (engineBasePremises (providerEnv rows)) language source.erase target := by
   rw [← rootReceipts_iff_instance compiled]
   constructor
   · rintro ⟨observed, executed, member⟩
-    have exactRun := (root_derivation_iff state language rows contexts compiled.plans source state _ [] []).mp executed
+    have exactRun := (root_derivation_iff state language rows contexts compiled.plans sourceViews source state _ [] []).mp executed
     have sameAtom := (List.cons.inj exactRun.2.1).1
     have sameWire := CettaWireAtom.encode_injective _ _ sameAtom
     have same := receiptsTerm_injective sameWire
     simpa only [same] using member
   · intro member
-    exact ⟨_, (root_derivation_iff state language rows contexts compiled.plans source state _ [] []).mpr
+    exact ⟨_, (root_derivation_iff state language rows contexts compiled.plans sourceViews source state _ [] []).mpr
       ⟨rfl, rfl, rfl, rfl⟩, member⟩
 
 /-- The complete receipt is accepted by actual source execution exactly when
@@ -1480,11 +1567,12 @@ it belongs to the canonical ordered authored instance frontier. -/
 theorem validates_receipt_iff (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term) (plans : List RulePlan)
+    (sourceViews : ∀ plan ∈ plans, plan.variablePremises?.isSome = true)
     (subject : PatternPlan) (receipt : Receipt) (target : Pattern) :
     DeclarativeSpec.Runs program { state := state, control := .evaluate [] (encoded (validateQueryTerm contexts plans rows subject receipt)) }
       (.complete state [encoded (.application "Some" [InferenceCettaWire.encodePattern target])] [] []) ↔
       receipt ∈ rootReceipts (providerEnv rows) language plans subject.erase ∧ target = receipt.target := by
-  rw [validate_derivation_iff]
+  rw [validate_derivation_iff state language rows contexts plans sourceViews subject receipt]
   simp only [true_and, List.cons.injEq, and_true, CettaWireAtom.encode_eq_encode]
   rw [← validateReceipt?_iff]
   cases found : validateReceipt? (providerEnv rows) language plans subject.erase receipt with
@@ -1496,10 +1584,11 @@ premise depth; source execution has its separate instruction budget. -/
 theorem observes_root_iff_instanceAt (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (compiled : EquationProgram language.equations) (source : PatternPlan) (target : Pattern) (fuel : Nat) :
+    (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true) (source : PatternPlan) (target : Pattern) (fuel : Nat) :
     ObservesRootInstance state language rows contexts compiled.plans source target ↔
       EquationInstanceAt (engineBasePremises (providerEnv rows)) language fuel source.erase target :=
-  (observes_root_iff_instance state language rows contexts compiled source target).trans
+  (observes_root_iff_instance state language rows contexts compiled sourceViews source target).trans
     ((rootReceipts_iff_instance compiled source.erase target).symm.trans
       (rootReceipts_iff_instanceAt compiled source.erase target fuel))
 
@@ -1508,14 +1597,15 @@ witness. No reduction-context permission follows from this equation law. -/
 theorem validates_context_step (state : State) (language : LanguageDef)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow)
     (contexts : Mettapedia.OSLF.MeTTaIL.Syntax.Equation → Term)
-    (compiled : EquationProgram language.equations) (source : PatternPlan) (receipt : Receipt) (target : Pattern)
+    (compiled : EquationProgram language.equations)
+    (sourceViews : ∀ plan ∈ compiled.plans, plan.variablePremises?.isSome = true) (source : PatternPlan) (receipt : Receipt) (target : Pattern)
     (context : Mettapedia.OSLF.MeTTaIL.DerivedContexts.OneHoleContext)
     (accepted : DeclarativeSpec.Runs program
       { state := state, control := .evaluate [] (encoded (validateQueryTerm contexts compiled.plans rows source receipt)) }
       (.complete state [encoded (.application "Some" [InferenceCettaWire.encodePattern target])] [] [])) :
     EquationContextStep (engineBasePremises (providerEnv rows)) language
       (context.fill source.erase) (context.fill target) := by
-  have checked := (validates_receipt_iff state language rows contexts compiled.plans source receipt target).mp accepted
+  have checked := (validates_receipt_iff state language rows contexts compiled.plans sourceViews source receipt target).mp accepted
   exact validated_context_step compiled context source.erase target receipt
     ((validateReceipt?_iff _ _ _ _ _ _).mpr checked)
 
@@ -1554,6 +1644,7 @@ theorem duplicate_declarations_returns (state : State) :
     root_returns state MeTTaILFirstOrderEquationCompilation.Controls.language rows contexts
       [MeTTaILFirstOrderEquationCompilation.Controls.conditional,
         MeTTaILFirstOrderEquationCompilation.Controls.conditional]
+      (by intro plan member; simp at member; subst plan; decide +kernel)
       (MeTTaILFirstOrderEquationCompilation.Controls.atom "a")
 
 theorem valid_receipt_returns (state : State) :
@@ -1568,6 +1659,7 @@ theorem valid_receipt_returns (state : State) :
     MeTTaILFirstOrderEquationCompilation.Controls.receipt_accepted, MatchAutomataBindingExecution.patternOptionTerm] using
     validate_returns state MeTTaILFirstOrderEquationCompilation.Controls.language rows contexts
       MeTTaILFirstOrderEquationCompilation.Controls.compiled.plans
+      (by intro plan member; simp [MeTTaILFirstOrderEquationCompilation.Controls.compiled] at member; subst plan; decide +kernel)
       (MeTTaILFirstOrderEquationCompilation.Controls.atom "a")
       (MeTTaILFirstOrderEquationCompilation.Controls.expected 0 1 "b")
 
@@ -1589,6 +1681,7 @@ theorem altered_target_refused_returns (state : State) :
     MeTTaILFirstOrderEquationCompilation.Controls.wrong_target_refused, MatchAutomataBindingExecution.patternOptionTerm] using
     validate_returns state MeTTaILFirstOrderEquationCompilation.Controls.language rows contexts
       MeTTaILFirstOrderEquationCompilation.Controls.compiled.plans
+      (by intro plan member; simp [MeTTaILFirstOrderEquationCompilation.Controls.compiled] at member; subst plan; decide +kernel)
       (MeTTaILFirstOrderEquationCompilation.Controls.atom "a")
       { MeTTaILFirstOrderEquationCompilation.Controls.expected 0 1 "b" with
         target := .apply "out" [(MeTTaILFirstOrderEquationCompilation.Controls.atom "c").erase] }

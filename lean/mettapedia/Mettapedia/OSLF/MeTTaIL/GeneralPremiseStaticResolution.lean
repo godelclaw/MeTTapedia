@@ -19,6 +19,7 @@ open Mettapedia.GSLT.LanguageDef.WellSorted
 open Execution
 
 def resolvedEvaluate (environment : Environment) (language : checkLanguage environment = true)
+    (services : DynamicAvailability environment)
     (outer goal : Goal) (admitted : GoalAdmitted environment goal)
     (tail : Continuation environment goal outer) (continued : ResolvedContinued environment outer goal tail) :
     ResolvedTree environment outer (.evaluate goal tail) := by
@@ -35,7 +36,7 @@ def resolvedEvaluate (environment : Environment) (language : checkLanguage envir
           have headChecked : (premiseFlow environment.language environment.provider context.rule context.spec
               context.premiseIndex context.quantifierDepth refinement premise).supported = true := by
             simpa only [depth] using supported.1
-          refine .cons (resolvedEvaluate environment language outer (.premise context premise initial)
+          refine .cons (resolvedEvaluate environment language services outer (.premise context premise initial)
             (.premise refinement facts zero headChecked stratum) _ ?_) (.nil _ _)
           intro result
           cases result with
@@ -43,7 +44,7 @@ def resolvedEvaluate (environment : Environment) (language : checkLanguage envir
             apply ResolvedTree.branch rfl
             have after := facts.afterPremise head
             rw [depth] at after
-            refine .cons (resolvedEvaluate environment language outer
+            refine .cons (resolvedEvaluate environment language services outer
               (.premises context.next premises middle)
               (.premises _ ⟨after.typed, after.canonical, after.represented⟩
                 zero rfl supported.2 stratum) _ ?_) (.nil _ _)
@@ -75,7 +76,7 @@ def resolvedEvaluate (environment : Environment) (language : checkLanguage envir
               (bindParameter parameter (localValue context.bound element) initial) :=
             ⟨localTyped, facts.canonical.bindParameter parameter elementsCanonical.1,
               facts.represented.bindParameter parameter _⟩
-          refine .cons (resolvedEvaluate environment language outer
+          refine .cons (resolvedEvaluate environment language services outer
             (.premise context.quantified body
               (bindParameter parameter (localValue context.bound element) initial))
             (.premise _ localFacts zero supported stratum) _ ?_) (.nil _ _)
@@ -89,7 +90,7 @@ def resolvedEvaluate (environment : Environment) (language : checkLanguage envir
                 facts.canonical.restoreParameter (head.canonical localFacts.canonical) parameter,
                 facts.represented.extension (restored_extension initial middle parameter
                   (localValue context.bound element) head.extension)⟩
-            refine .cons (resolvedEvaluate environment language outer
+            refine .cons (resolvedEvaluate environment language services outer
               (.quantified context parameter body (index + 1) elements
                 (restoreParameter parameter initial middle))
               (.quantified refinement elementType restored zero parameterType parameterDependencies
@@ -112,7 +113,9 @@ def resolvedEvaluate (environment : Environment) (language : checkLanguage envir
             let request : Query.Request := ⟨context, relation, arguments, initial⟩
             let admission : Query.InputAdmission environment request :=
               ⟨refinement.available, signature, found, zero, checked,
-                facts.typed.rootValues zero, facts.represented.1⟩
+                facts.typed.rootValues zero, facts.represented.1,
+                fun registered resolved inputs =>
+                  services.query request signature registered found facts.typed resolved inputs⟩
             exact .cons (resolvedQuery environment outer request admission
               (Query.start environment request) (Query.start_ready admission) 0 tail continued) (.nil _ _)
         | freshness condition =>
@@ -135,7 +138,7 @@ def resolvedEvaluate (environment : Environment) (language : checkLanguage envir
               rw [missing] at read
               contradiction)
           · rename_i kind elements read
-            refine .cons (resolvedEvaluate environment language outer
+            refine .cons (resolvedEvaluate environment language services outer
               (.quantified context parameter body 0 elements initial)
               (GoalAdmitted.quantifiedFromRead facts zero supported stratum read) _ ?_) (.nil _ _)
             intro result
@@ -154,7 +157,7 @@ def resolvedEvaluate (environment : Environment) (language : checkLanguage envir
                 Option.isSome_none, Bool.true_and, Bool.false_eq_true] at ready
             · rename_i type typeFound actualSource interpreted
               have sorted := step_source_typed facts zero supported typeFound interpreted
-              refine .cons (resolvedEvaluate environment language outer
+              refine .cons (resolvedEvaluate environment language services outer
                 (.steps context.bound type actualSource context.ruleIndex)
                 (.steps sorted stratum) _ ?_) (.nil _ _)
               intro result
@@ -169,7 +172,7 @@ def resolvedEvaluate (environment : Environment) (language : checkLanguage envir
             simp only [checkGoalReady, unavailable, Option.isSome_none, Bool.false_eq_true] at ready
           · rename_i actualSource interpreted
             have sorted := scoped_source_typed facts zero supported interpreted
-            refine .cons (resolvedEvaluate environment language outer
+            refine .cons (resolvedEvaluate environment language services outer
               (.steps (step.binders ++ context.bound) step.resultType actualSource context.ruleIndex)
               (.steps sorted stratum) _ ?_) (.nil _ _)
             intro result
@@ -209,7 +212,7 @@ def resolvedEvaluate (environment : Environment) (language : checkLanguage envir
                     initialRefinement_holds valid.matching⟩
                 have contract := selected.2
                 simp only [checkRule, Bool.and_eq_true] at contract
-                refine resolvedEvaluate environment language outer
+                refine resolvedEvaluate environment language services outer
                   (.premises ⟨index, rule, spec, bound, 0, 0⟩ rule.premises answer.assignment)
                   (.premises _ initialFacts contract.1.1.1 rfl contract.1.1.2 (Nat.le_of_lt within)) _ ?_
                 intro result
@@ -257,7 +260,7 @@ def resolvedEvaluate (environment : Environment) (language : checkLanguage envir
         refine .cons (resolvedScan environment outer bound type source limit 0 tail continued ?_) (.nil _ _)
         intro index earlier childTail childContinued
         have within := Nat.lt_of_lt_of_le earlier stratum
-        exact resolvedEvaluate environment language outer (.root bound type source index)
+        exact resolvedEvaluate environment language services outer (.root bound type source index)
           (.root sourceTyped within) childTail childContinued
 termination_by goal.rank
 decreasing_by
@@ -268,22 +271,25 @@ decreasing_by
   all_goals omega
 
 theorem finish_resolved {environment : Environment} {goal : Goal}
-    (language : checkLanguage environment = true) (admitted : GoalAdmitted environment goal) :
+    (language : checkLanguage environment = true)
+    (services : DynamicAvailability environment) (admitted : GoalAdmitted environment goal) :
     (finish environment goal).unresolved = [] :=
   finish_resolved_of_tree environment goal
-    (resolvedEvaluate environment language goal goal admitted (.done goal) (resolvedDone environment goal))
+    (resolvedEvaluate environment language services goal goal admitted (.done goal) (resolvedDone environment goal))
 
 theorem root_resolved {environment : Environment} {bound : List TypeExpr} {type : TypeExpr}
     {source : Pattern} {index : Nat} {rule : RewriteRule}
     (language : checkLanguage environment = true)
+    (services : DynamicAvailability environment)
     (declared : environment.language.rewrites[index]? = some rule)
     (sourceTyped : OpenPatternWellSorted environment.language environment.free bound type source) :
     (finish environment (.root bound type source index)).unresolved = [] :=
-  finish_resolved language (.root sourceTyped (List.getElem?_eq_some_iff.mp declared).1)
+  finish_resolved language services (.root sourceTyped (List.getElem?_eq_some_iff.mp declared).1)
 
 theorem premises_resolved {environment : Environment} {context : Context} {source : Pattern}
     {trace : List GeneralScopedMatchMachine.BagChoice} {captured : Assignment}
     (language : checkLanguage environment = true)
+    (services : DynamicAvailability environment)
     (ruleChecked : checkRule environment.language environment.provider context.rule context.spec = true)
     (stratum : context.ruleIndex ≤ environment.language.rewrites.length)
     (initialIndex : context.premiseIndex = 0) (initialDepth : context.quantifierDepth = 0)
@@ -296,7 +302,7 @@ theorem premises_resolved {environment : Environment} {context : Context} {sourc
     ⟨typed, matching_canonicalValues CanonicalValues.empty sourceCanonical matched.matching,
       initialRefinement_holds matched.matching⟩
   simp only [checkRule, Bool.and_eq_true] at ruleChecked
-  apply finish_resolved language
+  apply finish_resolved language services
   refine .premises _ facts ruleChecked.1.1.1 initialDepth ?_ stratum
   simpa only [initialIndex] using ruleChecked.1.1.2
 

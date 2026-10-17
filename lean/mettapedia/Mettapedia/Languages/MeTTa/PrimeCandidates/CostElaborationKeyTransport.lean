@@ -146,7 +146,7 @@ def transportedCompactPolicyAdmission
     {source target : CostElaborationBase} (morphism : source ⟶ target)
     {Value : Type uValue}
     (observe : CompactCostCarrier target.toLayer.source.toCIGSLT → Value) :
-    PolicyKeyAdmission dependencies revision
+    PolicyKeyAdmission.Admission dependencies revision
       (singlePolicyRequest
         (observe ∘ transportCompactCarrier morphism ∘
           compactCarrierKey source.toLayer.source.toCIGSLT) False)
@@ -213,9 +213,9 @@ def pullbackCompactPolicyAdmission
     {source target : CostElaborationBase} (morphism : source ⟶ target)
     {request : PolicyRequest
       (CostElaborationFiber target.toLayer.source.toCIGSLT)}
-    (targetAdmission : PolicyKeyAdmission dependencies revision request
+    (targetAdmission : PolicyKeyAdmission.Admission dependencies revision request
       (compactCarrierKey target.toLayer.source.toCIGSLT)) :
-    PolicyKeyAdmission dependencies revision
+    PolicyKeyAdmission.Admission dependencies revision
       (pullbackPolicyRequest morphism request)
       (compactCarrierKey source.toLayer.source.toCIGSLT) where
   realize := fun policy =>
@@ -241,12 +241,12 @@ def pullbackCompactPolicyAdmissionViaGeneric
     {source target : CostElaborationBase} (morphism : source ⟶ target)
     {request : PolicyRequest
       (CostElaborationFiber target.toLayer.source.toCIGSLT)}
-    (targetAdmission : PolicyKeyAdmission dependencies revision request
+    (targetAdmission : PolicyKeyAdmission.Admission dependencies revision request
       (compactCarrierKey target.toLayer.source.toCIGSLT)) :
-    PolicyKeyAdmission dependencies revision
+    PolicyKeyAdmission.Admission dependencies revision
       (pullbackPolicyRequest morphism request)
       (compactCarrierKey source.toLayer.source.toCIGSLT) :=
-  PolicyKeyAdmission.pullback
+  PolicyKeyAdmission.Admission.pullback
     (ofGenericAdmissionPolicyOnly
       (PolicyFamilyAdmittedAt.pullbackState
         (Cost.Elaboration.Total.transportFiber morphism)
@@ -261,7 +261,7 @@ executable function as the direct Cost specialization. -/
     {source target : CostElaborationBase} (morphism : source ⟶ target)
     {request : PolicyRequest
       (CostElaborationFiber target.toLayer.source.toCIGSLT)}
-    (targetAdmission : PolicyKeyAdmission dependencies revision request
+    (targetAdmission : PolicyKeyAdmission.Admission dependencies revision request
       (compactCarrierKey target.toLayer.source.toCIGSLT))
     (policy : request.Policy)
     (encoded : CompactCostCarrier source.toLayer.source.toCIGSLT) :
@@ -278,7 +278,7 @@ the target observation of the structurally transported state. -/
     {source target : CostElaborationBase} (morphism : source ⟶ target)
     {request : PolicyRequest
       (CostElaborationFiber target.toLayer.source.toCIGSLT)}
-    (targetAdmission : PolicyKeyAdmission dependencies revision request
+    (targetAdmission : PolicyKeyAdmission.Admission dependencies revision request
       (compactCarrierKey target.toLayer.source.toCIGSLT))
     (policy : request.Policy)
     (fiber : CostElaborationFiber source.toLayer.source.toCIGSLT) :
@@ -296,7 +296,7 @@ theorem pullbackCompactPolicyActive
     {source target : CostElaborationBase} (morphism : source ⟶ target)
     {request : PolicyRequest
       (CostElaborationFiber target.toLayer.source.toCIGSLT)}
-    {targetAdmission : PolicyKeyAdmission dependencies revision request
+    {targetAdmission : PolicyKeyAdmission.Admission dependencies revision request
       (compactCarrierKey target.toLayer.source.toCIGSLT)}
     (active : targetAdmission.Active currentRevision) :
     (pullbackCompactPolicyAdmission dependencies revision morphism
@@ -311,7 +311,7 @@ applied to the transported compact key. -/
     {source target : CostElaborationBase} (morphism : source ⟶ target)
     {request : PolicyRequest
       (CostElaborationFiber target.toLayer.source.toCIGSLT)}
-    {targetAdmission : PolicyKeyAdmission dependencies revision request
+    {targetAdmission : PolicyKeyAdmission.Admission dependencies revision request
       (compactCarrierKey target.toLayer.source.toCIGSLT)}
     (active : targetAdmission.Active currentRevision)
     (policy : request.Policy)
@@ -337,7 +337,7 @@ the target semantics for every policy. -/
     (earlier : first ⟶ second) (later : second ⟶ third)
     {request : PolicyRequest
       (CostElaborationFiber third.toLayer.source.toCIGSLT)}
-    (targetAdmission : PolicyKeyAdmission dependencies revision request
+    (targetAdmission : PolicyKeyAdmission.Admission dependencies revision request
       (compactCarrierKey third.toLayer.source.toCIGSLT))
     (policy : request.Policy)
     (fiber : CostElaborationFiber first.toLayer.source.toCIGSLT) :

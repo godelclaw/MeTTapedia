@@ -5,8 +5,13 @@ import Mathlib.Data.Finset.Card
 /-!
 # MORK: Space Semantics
 
-A MORK `Space` is a finite set of ground atoms (a `PathMap<()>` in the Rust
-implementation, but modelled here as `Finset Atom` for tractable formalization).
+This module is the *support model* of MM2: a space is a finite set of atoms
+(`Finset Atom`), a pattern is matched one way against stored atoms, and a
+template's sinks are finalized in their authored order.  The kernel itself is
+modelled by `Mainline` (`MM2MainlineProviders`), differentially checked against
+the MORK binary.  The kernel's space is a `PathMap<()>` of compact byte paths:
+it stores atoms with variables as well as ground ones, and identifies atoms that
+differ only in the names of their variables.
 
 ## Exec-rule firing
 
@@ -14,19 +19,27 @@ An exec rule fires in a space `s` when:
 1. Every atom in the pattern, after variable binding, is present in `s`.
 2. The template sinks add/remove atoms according to the substitution.
 
-## Warning: Specification vs. Implementation
+## Support model and kernel
 
-This formalization captures the *abstract behaviour* of MORK as documented in
-`mork_backend.rs` and the MORK design notes. The Rust implementation is
-authoritative; this file models the INTENDED semantics. Canary theorems in
-`MORKCommBridge.lean` will flag divergences when the spec changes.
+The kernel is authoritative.  On comma conjunctions with `+` and `-` sinks the
+support model fires as it does when every stored atom a pattern can reach is
+ground, every instance a sink writes is ground, and every `+` sink precedes every
+`-` sink (`MM2SupportKernelBridge.fireDirective_eq_ruleScoped_ground`); the sink
+orders differ only when a `+` sink follows a sink that removes the same instance.
+Outside that fragment they differ: the kernel
+unifies (a stored variable meets any pattern term), applies every `+` sink
+before the other sinks, writes non-ground instances, reads `==` and `!=` over
+stored atoms (`Mainline.sourceRows`), and aborts on a sink it does not know and
+on some repeated `head`/`tail` instances.
 
 ## Variable binding
 
-We use first-order (non-unification) pattern matching:
+This module uses one-way first-order matching:
 - `Atom.var v` in a pattern position binds variable `v` to the corresponding
-  ground atom found in the space.
-- Ground atoms in the pattern must match exactly.
+  atom found in the space.
+- Other pattern atoms must match exactly.
+The kernel unifies instead (`Mainline.unifyOption`); on ground stored atoms the
+two coincide.
 
 ## Computability note
 
@@ -49,13 +62,14 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 
 /-! ## Space type -/
 
-/-- A MORK space is a finite set of ground atoms.
-    (PathMap<()> in Rust, modelled as Finset for tractable reasoning.) -/
+/-- A space of the support model: a finite set of atoms.  The kernel's space is a
+`PathMap<()>` that also stores atoms with variables, identified up to the names of
+their variables. -/
 abbrev Space := Finset Atom
 
 /-! ## Variable substitution -/
 
-/-- A substitution maps variable names to ground atoms. -/
+/-- A substitution maps variable names to atoms. -/
 abbrev Subst := List (String × Atom)
 
 /-- Look up a variable in a substitution (first match wins). -/
@@ -222,8 +236,8 @@ def applySinks (s : Space) (σ : Subst) (tmpl : Template) : Space :=
 
 /-- A semantic provider for one family of authored sink declarations.
 
-MM2 creates one private state per authored sink, stages every successful match
-into that state, and finalizes each sink once.  The dependent `Stage` carrier
+The support model creates one private state per authored sink, stages every
+successful match into that state, and finalizes each sink once.  The dependent `Stage` carrier
 allows insertion, extrema, aggregation, files, solvers, and future plugins to
 use different state without putting host implementations in the language.
 `finalize` returns only the new mathematical space; authorization, faults, and
@@ -242,8 +256,10 @@ def stageAll {Operator : Type*} (provider : BatchSinkProvider Operator)
   rows.foldl (provider.stage operator) (provider.init operator)
 
 /-- Finalize authored sinks from left to right after independently staging all
-match rows for each sink.  This is the semantic batching boundary implemented
-by MORK's `transform_multi_multi_io`. -/
+match rows for each sink.  This is the support model's batching.  The kernel's
+`transform_multi_multi_io` writes the instances of every `+` sink while it
+stages, before it finalizes the other sinks in order (`Mainline.applyMainlineSinks`),
+so the two differ when a `+` sink follows a sink that removes the same instance. -/
 def run {Operator : Type*} (provider : BatchSinkProvider Operator)
     (rows : List Subst) : Space → List Operator → Space
   | space, [] => space
@@ -288,7 +304,10 @@ noncomputable def fireRule (s : Space) (r : ExecRule) : List Space :=
       against the found atom (typically binding `witness` to it).
     - `neqConstraint pat witness`: substitute current bindings into `pat`,
       REMOVE the result from the space, then match `witness` against
-      each remaining atom (inequality/exclusion filter). -/
+      each remaining atom (inequality/exclusion filter).
+
+    This is the support model's reading; the kernel reads `==` and `!=` over stored
+    atoms (see `SourceFactor`). -/
 noncomputable def matchSourceFactor (σ : Subst) (s : Space) (src : SourceFactor) :
     List (Subst × Atom) :=
   match src with

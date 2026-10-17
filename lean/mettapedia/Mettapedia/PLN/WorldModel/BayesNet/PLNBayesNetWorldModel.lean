@@ -1,4 +1,4 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 import Mettapedia.PLN.Evidence.PLNJointEvidence
 import Mettapedia.ProbabilityTheory.BayesianNetworks.DirectedGraph
 

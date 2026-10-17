@@ -37,13 +37,13 @@ instance : DecidableRel pathGraph.Adj := fun source target => by
   simp only [pathGraph, SimpleGraph.fromRel_adj]
   infer_instance
 
-def edge01 : pathGraph.Adj vertex0 vertex1 := by
+theorem edge01 : pathGraph.Adj vertex0 vertex1 := by
   simp [pathGraph, pathRelation, vertex0, vertex1]
 
-def edge12 : pathGraph.Adj vertex1 vertex2 := by
+theorem edge12 : pathGraph.Adj vertex1 vertex2 := by
   simp [pathGraph, pathRelation, vertex1, vertex2]
 
-def nonedge02 : ¬ pathGraph.Adj vertex0 vertex2 := by
+theorem nonedge02 : ¬ pathGraph.Adj vertex0 vertex2 := by
   simp [pathGraph, pathRelation, vertex0, vertex1, vertex2]
 
 def walk01 : pathGraph.Walk vertex0 vertex1 :=

@@ -41,6 +41,14 @@ the earlier audit (`ordered_inst_step`, `ordered_fallback_step`).
   substitution (`frozen_ordered_subst`).  This is the largest fragment found:
   instantiating a frozen parameter is not a substitution, and it breaks the
   step (`frozen_instantiation_breaks`).
+* **A selected rule transports only with exclusion reproved**
+  (`selected_rule_subst`).  `subst_inst` carries the positive match and the
+  body.  `NoEarlierMatch` at the instantiated source is a separate hypothesis.
+  Orthogonality re-establishes it, and the frozen fragment is that positive
+  case (`frozen_orthogonal_selected_rule_subst`), using `Step.subst`.  The
+  paper's fallback remains the negative case
+  (`ordered_not_substitution_stable`).  Priority is not the ordinary step
+  relation and not global conversion.
 
 ## Agreement with the explicit substitution of `LeanMinusExplicit`
 
@@ -527,6 +535,114 @@ theorem frozen_ordered_subst {source target : Term}
       frozenTheory_orthogonal).2
     (((orderedStep_iff_of_orthogonal (signature := frozenSig) (rules := frozenRules)
       frozenTheory_orthogonal).1 step).subst frozenTheory_orthogonal.closedBodies index replacement)
+
+/-! ## Conditional substitution of one selected rule
+
+Substitution carries the positive instance of a selected rule (`subst_inst`).
+The fact that no earlier rule matched has to be proved again of the
+instantiated source.  On an orthogonal list that fact follows, and the frozen
+fragment is the positive instance.  `ordered_not_substitution_stable` is the
+negative instance: the paper's fallback matches a variable and does not match
+its instance at `inst zero`, while the ordinary rule relation still steps.
+-/
+
+/-- **Substitution transports the positive match and body of a selected rule.**
+`again` is earlier-match exclusion at the instantiated source, not a copy of
+the exclusion that justified the rule before substitution. -/
+theorem selected_rule_subst {signature : Sig} {rules : List RewriteRule}
+    {index : Nat} {rule : RewriteRule} (assignment : Nat → Term)
+    (found : rules[index]? = some rule) (slot : Nat) (replacement : Term)
+    (again : NoEarlierMatch rules index
+      (inst (fun i => subst slot replacement (assignment i)) rule.lhs)) :
+    OrderedRoot signature rules
+      (subst slot replacement (inst assignment rule.lhs))
+      (subst slot replacement (inst assignment rule.rhs)) := by
+  rw [subst_inst assignment rule.lhs slot replacement,
+    subst_inst assignment rule.rhs slot replacement]
+  exact OrderedRoot.rule (fun i => subst slot replacement (assignment i)) found again
+
+/-- On an orthogonal rule list, a common instance after substitution means the
+two rules are the same rule, so an earlier copy would already have matched. -/
+theorem orthogonal_noEarlier_after_subst {signature : Sig} {rules : List RewriteRule}
+    (orthogonal : (Theory.ofSig signature rules).Orthogonal)
+    {index : Nat} {rule : RewriteRule} (assignment : Nat → Term)
+    (found : rules[index]? = some rule)
+    (before : NoEarlierMatch rules index (inst assignment rule.lhs))
+    (slot : Nat) (replacement : Term) :
+    NoEarlierMatch rules index
+      (inst (fun i => subst slot replacement (assignment i)) rule.lhs) := by
+  intro earlier below other atEarlier otherAssignment same
+  have equalRules : rule = other :=
+    orthogonal.rootUnique rule other (List.mem_of_getElem? found)
+      (List.mem_of_getElem? atEarlier)
+      (fun i => subst slot replacement (assignment i)) otherAssignment same
+  have missed := before earlier below other atEarlier assignment
+  rw [equalRules] at missed
+  exact missed rfl
+
+/-- **Positive case.** The frozen orthogonal fragment re-establishes exclusion,
+so the conditional law applies, and `Step.subst` gives the same substituted
+contract as an ordinary step of `frozenTheory`. -/
+theorem frozen_orthogonal_selected_rule_subst {index : Nat} {rule : RewriteRule}
+    (assignment : Nat → Term) (found : frozenRules[index]? = some rule)
+    (before : NoEarlierMatch frozenRules index (inst assignment rule.lhs))
+    (slot : Nat) (replacement : Term) :
+    OrderedRoot frozenSig frozenRules
+        (subst slot replacement (inst assignment rule.lhs))
+        (subst slot replacement (inst assignment rule.rhs)) ∧
+      Step frozenTheory
+        (subst slot replacement (inst assignment rule.lhs))
+        (subst slot replacement (inst assignment rule.rhs)) := by
+  refine ⟨selected_rule_subst assignment found slot replacement
+      (orthogonal_noEarlier_after_subst frozenTheory_orthogonal assignment found before
+        slot replacement), ?_⟩
+  exact (Step.root (RootStep.rule assignment (List.mem_of_getElem? found))).subst
+    frozenTheory_orthogonal.closedBodies slot replacement
+
+/-- The ordinary relation still contracts the instantiated fallback. Priority
+does not: `ordered_not_after_instantiation`. -/
+theorem ordinary_fallback_survives_where_priority_does_not :
+    Step leanTheory (ap "v" [instOf zero, zeroN]) (levelVariable zeroN) ∧
+      ¬ OrderedStep leanSig leanRules (ap "v" [instOf zero, zeroN]) (levelVariable zeroN) := by
+  refine ⟨variableRule_step (instOf zero) zeroN, ordered_not_after_instantiation⟩
+
+/-- **Negative case.** The positive match transports. The exclusion that the
+conditional law demands fails after `x := inst zero`, which is
+`ordered_not_substitution_stable`. -/
+theorem lean_fallback_exclusion_not_transported :
+    subst0 (instOf zero) (inst (assign [.var 0, zeroN]) variableRule.lhs) =
+        inst (fun i => subst0 (instOf zero) (assign [.var 0, zeroN] i)) variableRule.lhs ∧
+      NoEarlierMatch leanRules 51 (inst (assign [.var 0, zeroN]) variableRule.lhs) ∧
+      ¬ NoEarlierMatch leanRules 51
+        (inst (fun i => subst0 (instOf zero) (assign [.var 0, zeroN] i)) variableRule.lhs) ∧
+      ¬ OrderedStep leanSig leanRules
+        (subst0 (instOf zero) (ap "v" [.var 0, zeroN]))
+        (subst0 (instOf zero) (levelVariable zeroN)) := by
+  refine ⟨subst_inst (assign [.var 0, zeroN]) variableRule.lhs 0 (instOf zero),
+      noEarlierMatch_variable (fun level same => by cases same), ?_,
+      ordered_not_substitution_stable.2⟩
+  intro excluded
+  have transported :
+      inst (fun i => subst0 (instOf zero) (assign [.var 0, zeroN] i)) variableRule.lhs =
+        subst0 (instOf zero) (inst (assign [.var 0, zeroN]) variableRule.lhs) :=
+    (subst_inst (assign [.var 0, zeroN]) variableRule.lhs 0 (instOf zero)).symm
+  have asV : inst (assign [.var 0, zeroN]) variableRule.lhs = ap "v" [.var 0, zeroN] := by
+    rw [variableRule_closed]
+    simp [assign, ap, apT]
+  have substituted : subst0 (instOf zero) (ap "v" [.var 0, zeroN]) =
+      ap "v" [instOf zero, zeroN] := by
+    simp [ap, apT, subst0, subst, zeroN, instOf]
+  have instMatch : inst (assign [zero, zeroN]) instRule.lhs =
+      ap "v" [instOf zero, zeroN] := by
+    rw [instRule_closed]
+    simp [assign, ap, apT, instOf]
+  exact excluded 50 (by omega) instRule leanRules_inst_position (assign [zero, zeroN])
+    (by rw [transported, asV, substituted, ← instMatch])
+
+#print axioms selected_rule_subst
+#print axioms orthogonal_noEarlier_after_subst
+#print axioms frozen_orthogonal_selected_rule_subst
+#print axioms ordered_not_substitution_stable
 
 theorem frozenRules_linear : ∀ rule ∈ frozenRules, (patternVars rule.lhs).Nodup :=
   fun rule member => frozenTheory_orthogonal.leftLinear rule member

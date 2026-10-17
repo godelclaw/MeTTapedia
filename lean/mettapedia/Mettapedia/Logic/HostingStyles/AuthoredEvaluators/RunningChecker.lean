@@ -61,7 +61,7 @@ open Mettapedia.GSLT.LanguageDef.Authored
 open Mettapedia.Languages.MM0
 open Mettapedia.Languages.MM0.Presentation.Calculus
 open Mettapedia.Logic.HostingStyles.Guests
-open Mettapedia.Logic.HostingStyles.PrimeCandidate (successorTheory)
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles (successorTheory)
 
 /-! ## States and steps -/
 

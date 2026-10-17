@@ -611,7 +611,7 @@ theorem resample_demo_is_cross_product :
 
 theorem resample_fresh_cells_not_same
     {Cell : Type*} {left right : Cell} (fresh : left ≠ right) :
-    ¬ PrimeCandidates.DemandBoundary.sameSuspension left right :=
+    ¬ Mettapedia.Machines.DemandBoundary.sameSuspension left right :=
   fresh
 
 /-- Least publication is inherited directly from the shared causal world

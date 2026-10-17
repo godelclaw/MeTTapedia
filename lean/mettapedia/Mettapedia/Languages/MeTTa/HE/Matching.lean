@@ -1,4 +1,6 @@
 import Mettapedia.Languages.MeTTa.HE.SimpleMatch
+import Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge
+import Mettapedia.Machines.ReadOnlyQuery
 
 /-!
 # HE MeTTa Matching
@@ -175,6 +177,186 @@ def addVarEquality (b : Bindings) (a c : String) (fuel : Nat) : List Bindings :=
 
 end
 
+
+/-! ## Checked recursion depth
+
+These dependency programs expose one layer of the existing matcher. A coverage
+check visits every recursive call that produced the answer, including empty
+answers. Its stability theorem applies to all larger depths, so the caller can
+distinguish completed failure from a search truncated by fuel.
+-/
+
+inductive MatchRequest where
+  | atoms (left right : Atom)
+  | lists (lefts rights : List Atom) (acc : List Bindings)
+  | merge (left right : Bindings)
+  | binding (bindings : Bindings) (name : String) (value : Atom)
+  | equality (bindings : Bindings) (left right : String)
+
+def evalMatch (depth : Nat) : MatchRequest → List Bindings
+  | .atoms left right => matchAtoms left right depth
+  | .lists lefts rights acc => matchAtomsList lefts rights acc depth
+  | .merge left right => mergeBindings left right depth
+  | .binding bindings name value => addVarBinding bindings name value depth
+  | .equality bindings left right => addVarEquality bindings left right depth
+
+namespace MatchDepth
+
+private abbrev Q := Mettapedia.Machines.ReadOnlyQuery.Program MatchRequest (List Bindings)
+private abbrev read (request : MatchRequest) : Q (List Bindings) := .read request .pure
+private abbrev bind := @Mettapedia.Machines.ReadOnlyQuery.bind
+private abbrev map := @Mettapedia.Machines.ReadOnlyQuery.map
+private abbrev flatTraverse := @Mettapedia.Machines.ReadOnlyQuery.flatTraverse
+private abbrev foldQueries := @Mettapedia.Machines.ReadOnlyQuery.foldQueries
+
+/-- Matcher candidates before the actual fixed-depth cycle filter. -/
+def rawAtoms (left right : Atom) : Q (List Bindings) :=
+  let ml := getMetaType left
+  let mr := getMetaType right
+  if ml == .symbol "Symbol" && mr == .symbol "Symbol" && left == right then
+    .pure [Bindings.empty]
+  else if ml == .symbol "Variable" && mr == .symbol "Variable" then
+    match left, right with
+    | .var a, .var b => .pure [Bindings.empty.addEquality a b]
+    | _, _ => .pure []
+  else if ml == .symbol "Variable" then
+    match left with
+    | .var v => .pure [Bindings.empty.assign v right]
+    | _ => .pure []
+  else if mr == .symbol "Variable" then
+    match right with
+    | .var v => .pure [Bindings.empty.assign v left]
+    | _ => .pure []
+  else if ml == .symbol "Expression" && mr == .symbol "Expression" then
+    match left, right with
+    | .expression ls, .expression rs =>
+        if ls.length == rs.length then read (.lists ls rs [Bindings.empty])
+        else .pure []
+    | _, _ => .pure []
+  else if ml == .symbol "Grounded" && mr == .symbol "Grounded" then
+    .pure (if left == right then [Bindings.empty] else [])
+  else .pure []
+
+/-- A structural exposure of actual recursive calls, not a second matcher. -/
+def body : MatchRequest → Q (List Bindings)
+  | .atoms left right => map (List.filter fun b => !b.hasLoop) (rawAtoms left right)
+  | .lists lefts rights acc =>
+      match lefts, rights with
+      | [], [] => .pure acc
+      | l :: ls, r :: rs =>
+          bind (read (.atoms l r)) fun sub =>
+          bind (flatTraverse acc fun a =>
+            flatTraverse sub fun b => read (.merge a b)) fun next =>
+          read (.lists ls rs next)
+      | _, _ => .pure []
+  | .merge left right =>
+      bind (foldQueries right.assignments [left] fun acc (v, val) =>
+        flatTraverse acc fun b => read (.binding b v val)) fun afterAssignments =>
+      foldQueries right.equalities afterAssignments fun acc (a, b) =>
+        flatTraverse acc fun binds => read (.equality binds a b)
+  | .binding b v val =>
+      match b.classValues v with
+      | [] => .pure [b.assign v val]
+      | first :: rest =>
+          if Bindings.valuesConsistent (first :: rest) then
+            if first == val then .pure [b]
+            else bind (read (.atoms first val)) fun matched =>
+              flatTraverse matched fun mb => read (.merge b mb)
+          else
+            match first :: rest ++ [val] with
+            | [] => .pure []
+            | representative :: others =>
+                bind (read (.lists (List.replicate others.length representative) others
+                  [Bindings.empty])) fun matched =>
+                flatTraverse matched fun mb => read (.merge b mb)
+  | .equality b a c =>
+      let candidate := b.addEquality a c
+      let values := candidate.classValues a
+      if Bindings.valuesConsistent values then .pure [candidate]
+      else
+        match values with
+        | [] => .pure []
+        | first :: [second] =>
+            bind (read (.atoms first second)) fun matched =>
+            flatTraverse matched fun mb => read (.merge candidate mb)
+        | first :: rest =>
+            bind (read (.lists (List.replicate rest.length first) rest
+              [Bindings.empty])) fun matched =>
+            flatTraverse matched fun mb => read (.merge candidate mb)
+
+open Mettapedia.Machines.ReadOnlyQuery in
+/-- The exposed dependencies execute exactly one layer of the original code. -/
+theorem unfold_eval (depth : Nat) (request : MatchRequest) :
+    evalMatch (depth + 1) request = (run (evalMatch depth) (body request)).answer := by
+  cases request with
+  | atoms left right =>
+      conv_lhs => unfold evalMatch; unfold matchAtoms
+      simp only [body, rawAtoms, map, run_map]
+      split <;> try rfl
+      all_goals split <;> try rfl
+      all_goals split <;> try rfl
+      all_goals split <;> try rfl
+      all_goals split <;> try rfl
+      all_goals split <;> try rfl
+      all_goals split <;> rfl
+  | lists lefts rights acc =>
+      conv_lhs => unfold evalMatch; unfold matchAtomsList
+      cases lefts <;> cases rights <;>
+        simp [body, bind, read, flatTraverse, run_bind, run_flatTraverse, run, evalMatch]
+  | merge left right =>
+      conv_lhs => unfold evalMatch; unfold mergeBindings
+      simp [body, bind, read, foldQueries, flatTraverse, run_bind,
+        run_foldQueries, run_flatTraverse, run, evalMatch]
+  | binding bindings name value =>
+      conv_lhs => unfold evalMatch; unfold addVarBinding
+      simp only [body]
+      split <;> try rfl
+      split <;> try rfl
+      · split <;> try rfl
+        simp [bind, read, flatTraverse, run_bind, run_flatTraverse, run, evalMatch]
+      · simp [bind, read, flatTraverse, run_bind, run_flatTraverse, run, evalMatch]
+  | equality bindings left right =>
+      conv_lhs => unfold evalMatch; unfold addVarEquality
+      simp only [body]
+      split <;> try rfl
+      split <;> try rfl
+      all_goals simp [bind, read, flatTraverse, run_bind, run_flatTraverse, run, evalMatch]
+
+end MatchDepth
+
+/-- Executable evidence that no recursive matcher invocation hit depth zero. -/
+def matchCovered (depth : Nat) (request : MatchRequest) : Bool :=
+  Mettapedia.Machines.ReadOnlyQuery.depthCovered MatchDepth.body evalMatch depth request
+
+theorem matchCovered_stable (depth extra : Nat) (request : MatchRequest)
+    (covered : matchCovered depth request = true) :
+    evalMatch (depth + extra) request = evalMatch depth request :=
+  Mettapedia.Machines.ReadOnlyQuery.depthCovered_stable
+    MatchDepth.body evalMatch MatchDepth.unfold_eval depth extra request covered
+
+namespace MatchDepth.Controls
+
+/-- A completed mismatch is licensed even though its answer is empty. -/
+theorem mismatch_covered : matchCovered 1 (.atoms (.symbol "a") (.symbol "b")) = true := by
+  decide +kernel
+
+/-- The same empty answer at depth zero is not a completed mismatch. -/
+theorem exhausted_not_covered :
+    evalMatch 0 (.atoms (.symbol "a") (.symbol "a")) = [] ∧
+      matchCovered 0 (.atoms (.symbol "a") (.symbol "a")) = false := by
+  decide +kernel
+
+/-- A failed child cannot license a completed answer in its parent. -/
+theorem truncated_expression_not_covered :
+    matchCovered 1 (.atoms (.expression [.symbol "a"])
+      (.expression [.symbol "a"])) = false := by decide +kernel
+
+theorem expression_covered :
+    matchCovered 5 (.atoms (.expression [.symbol "a"])
+      (.expression [.symbol "a"])) = true := by decide +kernel
+
+end MatchDepth.Controls
+
 /-! ## Match Types
 
 Ref: metta.md lines 298-314 "Match types (match_types)".
@@ -196,25 +378,77 @@ def matchTypes (type1 type2 : Atom) (b : Bindings) (fuel : Nat := 100) : List Bi
     matched.flatMap fun mb =>
       mergeBindings b mb fuel
 
+
+
+namespace MatchDepth
+
+abbrev Query (Answer : Type) :=
+  Mettapedia.Machines.ReadOnlyQuery.Program MatchRequest (List Bindings) Answer
+
+def queryCovered {Answer : Type} (depth : Nat) (query : Query Answer) : Bool :=
+  (Mettapedia.Machines.ReadOnlyQuery.run (evalMatch depth) query).reads.all
+    fun read => matchCovered depth read.1
+
+open Mettapedia.Machines.ReadOnlyQuery in
+ theorem queryCovered_stable {Answer : Type} (depth extra : Nat) (query : Query Answer)
+    (covered : queryCovered depth query = true) :
+    run (evalMatch (depth + extra)) query = run (evalMatch depth) query := by
+  apply run_eq_of_agrees
+  intro read member
+  exact (matchCovered_stable depth extra read.1
+    (List.all_eq_true.mp covered read member)).trans
+      (run_agrees (evalMatch depth) query read member)
+
+def typesQuery (type1 type2 : Atom) (b : Bindings) : Query (List Bindings) :=
+  if type1 == Atom.undefinedType || type1 == Atom.atomType
+     || type2 == Atom.undefinedType || type2 == Atom.atomType then
+    .pure [b]
+  else .read (.atoms type1 type2) fun matched =>
+    Mettapedia.Machines.ReadOnlyQuery.flatTraverse matched fun mb =>
+      .read (.merge b mb) .pure
+
+open Mettapedia.Machines.ReadOnlyQuery in
+ theorem run_typesQuery (depth : Nat) (type1 type2 : Atom) (b : Bindings) :
+    (run (evalMatch depth) (typesQuery type1 type2 b)).answer =
+      matchTypes type1 type2 b depth := by
+  simp only [typesQuery, matchTypes]
+  split <;> simp [run, run_flatTraverse, evalMatch]
+
+end MatchDepth
+
+def matchTypesCovered (type1 type2 : Atom) (b : Bindings) (depth : Nat) : Bool :=
+  MatchDepth.queryCovered depth (MatchDepth.typesQuery type1 type2 b)
+
+theorem matchTypesCovered_stable (type1 type2 : Atom) (b : Bindings)
+    (depth extra : Nat) (covered : matchTypesCovered type1 type2 b depth = true) :
+    matchTypes type1 type2 b (depth + extra) = matchTypes type1 type2 b depth := by
+  rw [← MatchDepth.run_typesQuery, ← MatchDepth.run_typesQuery]
+  exact congrArg Mettapedia.Machines.ReadOnlyQuery.Observation.answer
+    (MatchDepth.queryCovered_stable depth extra _ covered)
+
 /-! ## Primitive `unify` result lane
 
-This is the raw success-side payload computed by upstream HE's primitive
-`unify`: structural matcher results merged with the incoming bindings, with
-loopy merged bindings filtered, and the surviving merged bindings substituted
-into the success branch.
+This model exposes bare aliases in the incoming record as equality constraints
+before structural matcher results are merged into it. The structural cycle
+filter and the ordered representative selection remain unchanged. Surviving
+merged bindings are applied structurally to the success branch. This repairs
+the crossed-alias representation obstruction without asserting literal-name
+agreement with a different implementation's representative policy.
 
 The caller is responsible for the final else-branch fallback when this list is
 empty; upstream does that after the merge/filter pass, not before. -/
 
-/-- Raw success results for the primitive `unify` lane, before the caller's
-    final else-branch fallback. -/
+open Spec.Type.Presentation.BindingTheory (aliasConstraints)
+
+/-- Success results for primitive `unify`, after alias exposure and before
+    the caller's final else-branch fallback. -/
 def unifySuccessResults
     (target pattern thenBranch : Atom) (seed : Bindings) (fuel : Nat) :
     ResultSet :=
   (matchAtoms target pattern fuel).flatMap fun matchBindings =>
-    (mergeBindings matchBindings seed fuel).filterMap fun merged =>
+    (mergeBindings matchBindings (aliasConstraints seed) fuel).filterMap fun merged =>
       if merged.hasLoop then none
-      else some (merged.applyDefault thenBranch, merged)
+      else some (merged.applyFull thenBranch (merged.resolutionFuel thenBranch), merged)
 
 /-! ## Control-form structural helpers
 
@@ -314,6 +548,98 @@ def switchMinimalResults
   else
     raw.map fun (result, rb) =>
       (if result == Atom.notReducible then Atom.empty else result, rb)
+
+
+/-! ## Coverage of control-form matching -/
+
+/-- Coverage of all matches used by primitive `unify`, before its else choice. -/
+def unifyMatchesCovered (target pattern : Atom) (seed : Bindings) (depth : Nat) : Bool :=
+  matchCovered depth (.atoms target pattern) &&
+    (matchAtoms target pattern depth).all fun mb => matchCovered depth (.merge mb (aliasConstraints seed))
+
+theorem unifyMatchesCovered_stable (target pattern thenBranch : Atom) (seed : Bindings)
+    (depth extra : Nat) (covered : unifyMatchesCovered target pattern seed depth = true) :
+    unifySuccessResults target pattern thenBranch seed (depth + extra) =
+      unifySuccessResults target pattern thenBranch seed depth := by
+  obtain ⟨matched, merged⟩ := Bool.and_eq_true_iff.mp covered
+  have hm := matchCovered_stable depth extra (.atoms target pattern) matched
+  change matchAtoms target pattern (depth + extra) = matchAtoms target pattern depth at hm
+  simp only [unifySuccessResults, hm]
+  apply List.flatMap_congr
+  intro mb member
+  have hb := matchCovered_stable depth extra (.merge mb (aliasConstraints seed))
+    (List.all_eq_true.mp merged mb member)
+  change mergeBindings mb (aliasConstraints seed) (depth + extra) =
+    mergeBindings mb (aliasConstraints seed) depth at hb
+  rw [hb]
+
+/-- Coverage includes failed earlier branches, since they determine which branch
+is selected. It does not demand unreachable later branches. -/
+def switchMatchesCovered (scrut : Atom) (branches : List Atom)
+    (seed : Bindings) (depth : Nat) : Bool :=
+  match branches with
+  | [] => true
+  | .expression [pt, template] :: rest =>
+      simpleMatchCovered pt scrut Bindings.empty depth &&
+        match simpleMatch pt scrut Bindings.empty depth with
+        | none => switchMatchesCovered scrut rest seed depth
+        | some mb =>
+            matchCovered depth (.merge mb seed) &&
+              let hits := (mergeBindings mb seed depth).filterMap fun merged =>
+                if merged.hasLoop then none else some (merged.applyDefault template, merged)
+              if hits.isEmpty then switchMatchesCovered scrut rest seed depth else true
+  | _ :: rest => switchMatchesCovered scrut rest seed depth
+
+theorem switchMatchesCovered_raw_stable (scrut : Atom) (branches : List Atom)
+    (seed : Bindings) (depth extra : Nat)
+    (covered : switchMatchesCovered scrut branches seed depth = true) :
+    switchMinimalRawResults scrut branches seed (depth + extra) =
+      switchMinimalRawResults scrut branches seed depth := by
+  induction branches with
+  | nil => rfl
+  | cons branch rest ih =>
+      cases branch with
+      | symbol _ => exact ih covered
+      | var _ => exact ih covered
+      | grounded _ => exact ih covered
+      | expression parts =>
+          cases parts with
+          | nil => exact ih covered
+          | cons pattern tail =>
+              cases tail with
+              | nil => exact ih covered
+              | cons template tail =>
+                  cases tail with
+                  | cons _ _ => exact ih covered
+                  | nil =>
+                      change (_ && _) = true at covered
+                      obtain ⟨simple, tail⟩ := Bool.and_eq_true_iff.mp covered
+                      have hs := simpleMatchCovered_stable pattern scrut Bindings.empty
+                        depth extra simple
+                      simp only [switchMinimalRawResults, hs]
+                      cases hmatch : simpleMatch pattern scrut Bindings.empty depth with
+                      | none =>
+                          simp only [hmatch] at tail ⊢
+                          exact ih tail
+                      | some mb =>
+                          simp only [hmatch] at tail ⊢
+                          obtain ⟨merge, continuation⟩ := Bool.and_eq_true_iff.mp tail
+                          have hm := matchCovered_stable depth extra (.merge mb seed) merge
+                          change mergeBindings mb seed (depth + extra) =
+                            mergeBindings mb seed depth at hm
+                          rw [hm]
+                          split <;> rename_i selected
+                          · exact ih (by simpa only [selected, ite_true] using continuation)
+                          · rfl
+
+theorem switchMatchesCovered_stable (scrut : Atom) (branches : List Atom)
+    (seed : Bindings) (depth extra : Nat)
+    (covered : switchMatchesCovered scrut branches seed depth = true) :
+    switchMinimalResults scrut branches seed (depth + extra) =
+      switchMinimalResults scrut branches seed depth := by
+  simp only [switchMinimalResults,
+    switchMatchesCovered_raw_stable scrut branches seed depth extra covered]
+
 
 /-! ## Theorems -/
 

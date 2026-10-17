@@ -1,43 +1,19 @@
 import Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSoundness
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 
 namespace Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLConsequence
 
 universe u v w
 
 open Mettapedia.Logic.HOL
+open Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore (HOLState HOLProvable HOLProvImp HOLProvEq)
+open Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLRules (HOLProvIff)
+open Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
+  (ClassicalHOLTheory ClassicalHOLQuery ClassicalHOLState derivableImpOnTheory)
 open Mettapedia.Logic.HOL.WithParams
 open Mettapedia.PLN.WorldModel.PLNWorldModel
 
 variable {Base : Type u} {Const : Ty Base → Type v}
-
-abbrev HOLQuery (Const : Ty Base → Type v) :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery (Base := Base) Const
-
-abbrev HOLState (Base : Type u) (Const : Ty Base → Type v) :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState Base Const
-
-/-- Classical higher-order theory interface for the HO WM-PLN layer. -/
-abbrev ClassicalHOLTheory :=
-  Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.ClassicalHOLTheory
-    (Base := Base) (Const := Const)
-
-/-- Classical higher-order query interface over `WithParams Const`. -/
-abbrev ClassicalHOLQuery :=
-  Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.ClassicalHOLQuery
-    (Base := Base) (Const := Const)
-
-/-- Classical higher-order state interface built from Henkin models of a theory. -/
-abbrev ClassicalHOLState :=
-  Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.ClassicalHOLState
-    (Base := Base) (Const := Const)
-
-/-- Sound finite theory-relative higher-order implication derivability. -/
-abbrev HOLDerivableImpOnTheory
-    (T : ClassicalHOLTheory (Base := Base) (Const := Const))
-    (φ ψ : ClassicalHOLQuery (Base := Base) (Const := Const)) : Prop :=
-  Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.derivableImpOnTheory
-    (Base := Base) (Const := Const) T φ ψ
 
 /-- The extensional closed-theory implication interface used by the classical HOL
 completeness development. This is stronger than the sound finite-derivation
@@ -46,17 +22,6 @@ abbrev HOLExtensionalProvImpOnTheory
     (T : ClassicalHOLTheory (Base := Base) (Const := Const))
     (φ ψ : ClassicalHOLQuery (Base := Base) (Const := Const)) : Prop :=
   ClosedTheorySet.Provable (Const := WithParams Const) T (.imp φ ψ)
-
-abbrev HOLProvImp (φ ψ : HOLQuery Const) : Prop :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLProvImp (Const := Const) φ ψ
-
-abbrev HOLProvIff (φ ψ : HOLQuery Const) : Prop :=
-  Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLRules.HOLProvIff (Base := Base) (Const := Const) φ ψ
-
-abbrev HOLWMQueryEq (φ ψ : HOLQuery Const) : Prop :=
-  WMQueryEq
-    (State := Multiset (HenkinModel.{u, v, w} Base Const))
-    (Query := HOLQuery Const) φ ψ
 
 abbrev HOLWMStrengthEq (φ ψ : HOLQuery Const) : Prop :=
   ∀ W : Multiset (HenkinModel.{u, v, w} Base Const),
@@ -77,7 +42,7 @@ theorem holProvImp_to_WMStrengthLE {φ ψ : HOLQuery Const}
 /-- Proof-backed WM query equivalence for higher-order HOL queries. -/
 theorem holProvIff_to_WMQueryEq {φ ψ : HOLQuery Const}
     (h : HOLProvIff (Const := Const) φ ψ) :
-    HOLWMQueryEq (Base := Base) (Const := Const) φ ψ :=
+    WMQueryEq (State := HOLState.{u, v, w} Base Const) (Query := HOLQuery Const) φ ψ :=
   Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSoundness.holProvIff_implies_queryEq
     (Base := Base) (Const := Const) h
 
@@ -120,10 +85,10 @@ singleton WM consequence on theory-model states. -/
 theorem holDerivableImpOnTheory_to_singletonConsequence
     {T : ClassicalHOLTheory (Base := Base) (Const := Const)}
     {φ ψ : ClassicalHOLQuery (Base := Base) (Const := Const)}
-    (h : HOLDerivableImpOnTheory (Base := Base) (Const := Const) T φ ψ) :
-    Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.singletonConsequenceOnTheory
-      (Base := Base) (Const := Const) T φ ψ :=
-  Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.derivableImpOnTheory_implies_singletonStrengthLEOnTheory
+    (h : derivableImpOnTheory (Base := Base) (Const := Const) T φ ψ) :
+    Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.singletonStrengthLEOn
+      Mettapedia.Logic.HOL.holSatisfies (Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.modelsTheory (Base := Base) (Const := Const) T) φ ψ :=
+  Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.derivableImpOnTheory_implies_singletonStrengthLEOn
     (Base := Base) (Const := Const) h
 
 /-- Package sound finite theory-relative higher-order derivability as a
@@ -131,7 +96,7 @@ state-indexed WM consequence rule. -/
 noncomputable def wmConsequenceRuleOn_of_holDerivableImpOnTheory
     {T : ClassicalHOLTheory (Base := Base) (Const := Const)}
     {φ ψ : ClassicalHOLQuery (Base := Base) (Const := Const)}
-    (h : HOLDerivableImpOnTheory (Base := Base) (Const := Const) T φ ψ) :
+    (h : derivableImpOnTheory (Base := Base) (Const := Const) T φ ψ) :
     WMConsequenceRuleOn
       (ClassicalHOLState (Base := Base) (Const := Const))
       (ClassicalHOLQuery (Base := Base) (Const := Const)) :=
@@ -148,10 +113,10 @@ theorem classical_singletonConsequenceOnTheory_to_holExtensionalProvImpOnTheory
     (hT0 : ∀ χ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hEM : ∀ χ ∈ EMSchema Const, χ ∈ T)
     (hImp0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) (.imp φ ψ))
-    (h : Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.singletonConsequenceOnTheory
-      (Base := Base) (Const := Const) T φ ψ) :
+    (h : Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.singletonStrengthLEOn
+      Mettapedia.Logic.HOL.holSatisfies (Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.modelsTheory (Base := Base) (Const := Const) T) φ ψ) :
     HOLExtensionalProvImpOnTheory (Base := Base) (Const := Const) T φ ψ :=
-  Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.provable_imp_onTheory_of_singletonConsequenceOnTheory_classical
+  Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.provable_imp_onTheory_of_singletonStrengthLEOn_classical
     (Base := Base) (Const := Const) enum henum hT0 hEM hImp0 h
 
 /-- Sound finite theory-relative derivability embeds into the stronger
@@ -167,7 +132,7 @@ theorem holDerivableImpOnTheory_to_holExtensionalProvImpOnTheory_classical
     (hEM : ∀ χ ∈ EMSchema Const, χ ∈ T)
     (hImp0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) (.imp φ ψ))
     (h :
-      HOLDerivableImpOnTheory (Base := Base) (Const := Const) T φ ψ) :
+      derivableImpOnTheory (Base := Base) (Const := Const) T φ ψ) :
     HOLExtensionalProvImpOnTheory (Base := Base) (Const := Const) T φ ψ :=
   classical_singletonConsequenceOnTheory_to_holExtensionalProvImpOnTheory
     (Base := Base)

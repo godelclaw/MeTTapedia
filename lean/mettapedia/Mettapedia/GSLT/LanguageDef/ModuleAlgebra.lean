@@ -16,3 +16,8 @@ import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.NativeAuthoring
 import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.UpstreamTheoryQuotation
 import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.UpstreamTheoryQuotationControls
 import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.SortedFirstOrderAuthoring
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.BindingDeclarationElaboration
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.NamedTokenProjection
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.SingleBinderRewrite
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.DerivedLayerTransport
+import Mettapedia.GSLT.LanguageDef.ModuleAlgebra.OrderedRealizations

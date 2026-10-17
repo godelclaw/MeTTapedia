@@ -907,7 +907,7 @@ theorem CostStaticPlanReached.exists_reachedName_of_quoteCanonicalDrop
 /-- Two reached authored Quotes have a parent-cospan apex whenever executable
 payload trees in their exact availability fibres have the same hereditary
 normal form. -/
-noncomputable def quotePlanStops_commonRestorationApex_of_payloadNormalEq
+theorem quotePlanStops_commonRestorationApex_of_payloadNormalEq
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -1026,7 +1026,7 @@ noncomputable def quotePlanStops_commonRestorationApex_of_payloadNormalEq
 
 /-- Paired reached Quotes close recursively whenever their exact availability
 fibres agree or either endpoint is sealed. -/
-noncomputable def quotePlanStops_commonRestorationApex_of_closeSmaller_supportCase
+theorem quotePlanStops_commonRestorationApex_of_closeSmaller_supportCase
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -1692,7 +1692,7 @@ theorem CostStaticPlanReached.rootClass_eq_quote_of_name_canonical_quote
 closes against a right Quote when the shared canonical Name still has a Quote
 root.  The exposed Name is sealed, so the recursive call may be transported
 to the right endpoint's ambient availability. -/
-noncomputable def quotePlanStops_commonRestorationApex_of_leftCanonicalDrop_rightCanonicalQuote
+theorem quotePlanStops_commonRestorationApex_of_leftCanonicalDrop_rightCanonicalQuote
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -1851,7 +1851,7 @@ noncomputable def quotePlanStops_commonRestorationApex_of_leftCanonicalDrop_righ
     leftEndpointEq.symm rfl recursiveApex
 
 /-- Right-oriented companion of the one-sided canonical-Drop constructor. -/
-noncomputable def quotePlanStops_commonRestorationApex_of_leftQuote_rightCanonicalDrop
+theorem quotePlanStops_commonRestorationApex_of_leftQuote_rightCanonicalDrop
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -2014,7 +2014,7 @@ noncomputable def quotePlanStops_commonRestorationApex_of_leftQuote_rightCanonic
 /-- Two reached Quotes whose process payloads both canonically expose Drops
 close by descending to the two exact sealed Name plans and reindexing the
 result through Quote/Drop absorption on both parent frames. -/
-noncomputable def quotePlanStops_commonRestorationApex_of_canonicalDrops
+theorem quotePlanStops_commonRestorationApex_of_canonicalDrops
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -2247,7 +2247,7 @@ set_option backward.isDefEq.respectTransparency false in
 their unique process arguments have the same selected-colour canonical form.
 The recursive argument apex is formed at quote depth zero and then lifted
 through the synchronized Quote finish. -/
-noncomputable def quotePlanStops_commonRestorationApex_of_argumentCanonical
+theorem quotePlanStops_commonRestorationApex_of_argumentCanonical
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -2568,7 +2568,7 @@ noncomputable def quotePlanStops_commonRestorationApex_of_argumentCanonical
 /-- Exhaustive same-colour constructor for a pair of reached authored Quotes.
 Quote/Drop absorption is handled by the sealed Name constructors, while the
 retained-Quote arm descends to the unique process arguments. -/
-noncomputable def quotePlanStops_commonRestorationApex
+theorem quotePlanStops_commonRestorationApex
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -2706,7 +2706,7 @@ noncomputable def quotePlanStops_commonRestorationApex
 endpoint budget: every paired frontier leaf is strictly smaller than the
 bare-parallel payload pair even when the payload pair itself occupies the
 whole enclosing measure. -/
-noncomputable def parallelPlanStops_commonRestorationApex_of_closeSmaller
+theorem parallelPlanStops_commonRestorationApex_of_closeSmaller
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -2937,7 +2937,7 @@ noncomputable def parallelPlanStops_commonRestorationApex_of_closeSmaller
 semantic cospan.  Strict payload pairs use ordinary reached-pair descent;
 endpoint pairs are exhausted by the boundary, parallel, Quote, and variable
 constructors. -/
-noncomputable def rho_staticPlanStopCommonApex_of_sameColor_succ
+theorem rho_staticPlanStopCommonApex_of_sameColor_succ
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern

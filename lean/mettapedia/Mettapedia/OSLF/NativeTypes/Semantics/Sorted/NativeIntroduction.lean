@@ -176,8 +176,10 @@ def introduce {generated : Generated} {model : Model generated}
       Mettapedia.OSLF.NativeTypes.Modal.Instantiation.FocusInstance schema.operation schema.declaration.rule
         schema.declaration.binding.spec schema.bound.length .left assignment [] 0
         schema.declaration.rule.left schema.position term)
-    (accepted : ∀ assignment, TypedRequest schema (relyMeaning (restrictRelyCodes model inputs.1)) anchor assignment →
-      Mettapedia.OSLF.NativeTypes.Modal.SourceIntroduction.baseIntroductions schema assignment ≠ [])
+    (choices : ∀ assignment, TypedRequest schema (relyMeaning (restrictRelyCodes model inputs.1)) anchor assignment →
+      List Mettapedia.OSLF.MeTTaIL.GeneralScopedMatchMachine.BagChoice)
+    (accepted : ∀ assignment, ∀ request : TypedRequest schema (relyMeaning (restrictRelyCodes model inputs.1)) anchor assignment,
+      Mettapedia.OSLF.NativeTypes.Modal.SourceIntroduction.baseIntroductions schema assignment (choices assignment request) ≠ [])
     (certificate : ∀ assignment,
       TypedRequest schema (relyMeaning (restrictRelyCodes model inputs.1)) anchor assignment →
       ∀ target, schema.rhs? assignment = some target →
@@ -187,7 +189,7 @@ def introduce {generated : Generated} {model : Model generated}
       (continuationMeaning (restrictContinuations model inputs.2)) term //
       (Mettapedia.OSLF.NativeTypes.Semantics.Sorted.GeneratedCodes.form model parameters computed inputs).code.meaning term} := by
   let implementation := Mettapedia.OSLF.NativeTypes.Modal.SourceIntroduction.m_intro_computed
-    (focusCode.code.bounded term focusReading) anchor anchorTyped anchorPresent focus accepted certificate
+    (focusCode.code.bounded term focusReading) anchor anchorTyped anchorPresent focus choices accepted certificate
   refine ⟨implementation, classified_code_in_model closed equations leafInterpretation focusCode focusReading, ?_⟩
   apply (Mettapedia.OSLF.NativeTypes.SortProfiles.Source.classifiedModalCode parameters computed
     (Mettapedia.OSLF.NativeTypes.SortProfiles.Source.liftModalInputs (Mettapedia.OSLF.NativeTypes.Semantics.Sorted.GeneratedCodes.restrictInputs model inputs))).meaningComparison term |>.mpr

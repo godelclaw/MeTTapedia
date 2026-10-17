@@ -32,7 +32,9 @@ theorem source_alpha : Pattern.AlphaEquiv source canonicalSource := by
 
 theorem raw_repeated_match_rejected : matchRuleAt rule spec 0 source = [] := by decide +kernel
 
-theorem canonical_repeated_match_found : matchRuleAt rule spec 0 canonicalSource ≠ [] := by decide +kernel
+theorem canonical_repeated_match_found : matchRuleAt rule spec 0 canonicalSource ≠ [] := by
+  simp only [canonicalSource, source, Pattern.eraseBinderMetadata, List.map_cons, List.map_nil]
+  decide +kernel
 
 theorem raw_matching_not_alpha_invariant :
     ¬ (∀ left right, Pattern.AlphaEquiv left right →

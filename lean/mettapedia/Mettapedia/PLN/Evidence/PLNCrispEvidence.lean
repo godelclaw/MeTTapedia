@@ -36,7 +36,7 @@ This file proves that restricting to crisp evidence does NOT recover classical
 Boolean structure.
 -/
 
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Bridges.Logic.PLNIntuitionisticBridge
 
 namespace Mettapedia.PLN.Evidence.PLNCrispEvidence

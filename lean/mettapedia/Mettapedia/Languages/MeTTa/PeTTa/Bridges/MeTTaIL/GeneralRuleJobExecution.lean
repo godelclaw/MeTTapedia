@@ -10,6 +10,8 @@ The codecs retain physical sites, typing frames, captured dependencies and
 ordered premise evidence. The authored readout realizes the original finishRoot
 operation. Receipt validity and GSLT steps are derived from the original
 source-authorized machine and its actual completed observations.
+The quoted execution claims require no registered dynamic relations; native
+primitive service execution requires its own correspondence proof.
 -/
 
 set_option autoImplicit false
@@ -1602,6 +1604,7 @@ theorem readouts_of_results_iff (state : State) (request : GeneralRuleJobExecuti
 
 theorem job_run_captured_returns (caller : Subst) (state : State)
     (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (fuel : Nat) (environmentName fuelName stateName : String)
     (inputs : [v environmentName, v fuelName, v stateName].map (applySubst caller) =
@@ -1614,12 +1617,13 @@ theorem job_run_captured_returns (caller : Subst) (state : State)
         (Execution.start request.environment request.goal))))) := by
   apply PremiseOperationsExecution.GeneralExecution.CompletedAssembly.captured_machine_run_iff caller state state environmentName fuelName stateName _ |>.mp
   exact PremiseOperationsExecution.GeneralExecution.EnvironmentExecution.Machine.run_from_start_captured_returns caller state
-    request.environment request.goal fuel (requestFootprint request)
+    request.environment finiteProvider request.goal fuel (requestFootprint request)
     (fun _ member => List.mem_append_right _ member)
     (licensed_goal_free_within request licensed) _ inputs
 
 theorem job_run_captured_completed_iff (caller : Subst) (state : State)
     (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (fuel : Nat) (environmentName fuelName stateName : String)
     (inputs : [v environmentName, v fuelName, v stateName].map (applySubst caller) =
@@ -1635,13 +1639,14 @@ theorem job_run_captured_completed_iff (caller : Subst) (state : State)
         (some (Execution.run request.environment request.goal fuel
           (Execution.start request.environment request.goal))))] ∧ input = [] ∧ output = [] :=
   pure_returns_completed_iff RuleExecutionProgram.scopedProgram caller state state _ _
-    (job_run_captured_returns caller state request licensed fuel environmentName fuelName stateName inputs)
+    (job_run_captured_returns caller state request finiteProvider licensed fuel environmentName fuelName stateName inputs)
     after answers input output
 
 /-- A completed machine observation retains the entire ordered scheduler
 state, including pending tasks, unresolved obligations and the work count. -/
 theorem observed_job_state_fields_exact (caller : Subst) (state : State)
     (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (fuel : Nat) (environmentName fuelName stateName : String)
     (inputs : [v environmentName, v fuelName, v stateName].map (applySubst caller) =
@@ -1665,7 +1670,7 @@ theorem observed_job_state_fields_exact (caller : Subst) (state : State)
           (Execution.start request.environment request.goal)).unresolved ∧
       work = (Execution.run request.environment request.goal fuel
         (Execution.start request.environment request.goal)).work := by
-  have same := ((job_run_captured_completed_iff caller state request licensed fuel
+  have same := ((job_run_captured_completed_iff caller state request finiteProvider licensed fuel
     environmentName fuelName stateName inputs state _ [] []).mp observed).2.1
   have wireSame := CettaWireAtom.encode_injective _ _ (List.cons.inj same).1
   dsimp only [encodeOption, PremiseOperationsExecution.GeneralExecution.stateTerm,
@@ -1681,6 +1686,7 @@ theorem observed_job_state_fields_exact (caller : Subst) (state : State)
 
 theorem observed_job_answers_exact (caller : Subst) (state : State)
     (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (fuel : Nat) (environmentName fuelName stateName : String)
     (inputs : [v environmentName, v fuelName, v stateName].map (applySubst caller) =
@@ -1695,7 +1701,7 @@ theorem observed_job_answers_exact (caller : Subst) (state : State)
           [agendaWire, encodeList id answerWires, unresolvedWire, .natural work]])] [] []) :
     answerWires = (Execution.run request.environment request.goal fuel
       (Execution.start request.environment request.goal)).answers.map PremiseOperationsExecution.GeneralExecution.resultTerm :=
-  (observed_job_state_fields_exact caller state request licensed fuel environmentName fuelName stateName
+  (observed_job_state_fields_exact caller state request finiteProvider licensed fuel environmentName fuelName stateName
     inputs agendaWire unresolvedWire answerWires work observed).2.1
 
 /-- Reading every physical result in its emitted order gives exactly the
@@ -1703,6 +1709,7 @@ source projection list. Refused replacements occupy their original positions;
 equal receipts and equal result values are not deduplicated. -/
 theorem observed_job_readouts_iff (caller : Subst) (state : State)
     (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (fuel : Nat) (environmentName fuelName stateName : String)
     (inputs : [v environmentName, v fuelName, v stateName].map (applySubst caller) =
@@ -1721,7 +1728,7 @@ theorem observed_job_readouts_iff (caller : Subst) (state : State)
       readouts = (Execution.run request.environment request.goal fuel
         (Execution.start request.environment request.goal)).answers.map
           (rootReadoutTerm request licensed) := by
-  rw [observed_job_answers_exact caller state request licensed fuel environmentName fuelName stateName
+  rw [observed_job_answers_exact caller state request finiteProvider licensed fuel environmentName fuelName stateName
     inputs agendaWire unresolvedWire answerWires work observed]
   exact readouts_of_results_iff state request licensed fuel _ (fun _ member => member) readouts
 
@@ -1730,6 +1737,7 @@ the complete outer cursor's receipt list, in its original order and with every
 duplicate occurrence. Only the original projection's refusals are removed. -/
 theorem observed_job_completed_receipts_exact (caller : Subst) (state : State)
     (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (environmentName fuelName stateName : String)
     (inputs : [v environmentName, v fuelName, v stateName].map (applySubst caller) =
@@ -1747,7 +1755,7 @@ theorem observed_job_completed_receipts_exact (caller : Subst) (state : State)
     (readouts : List Term) (readoutCalls : List.Forall₂ (ReadoutObserved state request) answerWires readouts) :
     readouts.filterMap successfulReadout? =
       (GeneralRuleJobExecution.finishState request licensed).answers.map (fun answer => answer.val) := by
-  have exactReadouts := (observed_job_readouts_iff caller state request licensed
+  have exactReadouts := (observed_job_readouts_iff caller state request finiteProvider licensed
     (Execution.treeStart request.environment request.goal).cost environmentName fuelName stateName
     inputs agendaWire unresolvedWire answerWires work observed readouts).mp readoutCalls
   rw [exactReadouts]
@@ -1755,6 +1763,7 @@ theorem observed_job_completed_receipts_exact (caller : Subst) (state : State)
 
 theorem observed_job_receipt_gslt (caller : Subst) (state : State)
     (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (fuel : Nat) (environmentName fuelName stateName : String)
     (runInputs : [v environmentName, v fuelName, v stateName].map (applySubst caller) =
@@ -1778,7 +1787,7 @@ theorem observed_job_receipt_gslt (caller : Subst) (state : State)
     GeneralOccurrenceSemantics.Primitive request.plan request.bound request.expected request.source receipt ∧
       (GeneralOccurrenceSemantics.gslt request.plan request.bound request.expected).Step request.source receipt.target ∧
       receipt.Valid request.plan request.bound request.expected request.source := by
-  have exactAnswers := observed_job_answers_exact caller state request licensed fuel
+  have exactAnswers := observed_job_answers_exact caller state request finiteProvider licensed fuel
     environmentName fuelName stateName runInputs agendaWire unresolvedWire answerWires work machineObserved
   apply ScopedRuleJobReadoutExecution.finish_root_observed_answer_gslt_in_extension RuleExecutionProgram.scopedProgram
     PremiseOperationsExecution.GeneralExecution.CompletedAssembly.readout_agreement caller state request licensed fuel resultWire _
@@ -1790,6 +1799,7 @@ cursor expansion. The machine observation supplies the source answer;
 replacement, target typing and every field of its receipt remain checked. -/
 theorem observed_job_cursor_receipt_iff (caller : Subst) (state : State)
     (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (fuel : Nat) (environmentName fuelName stateName : String)
     (runInputs : [v environmentName, v fuelName, v stateName].map (applySubst caller) =
@@ -1815,7 +1825,7 @@ theorem observed_job_cursor_receipt_iff (caller : Subst) (state : State)
         (.root ⟨licensed, Execution.run request.environment request.goal fuel
           (Execution.start request.environment request.goal), cursor⟩)).answers,
         answer.val = receipt := by
-  have exactAnswers := observed_job_answers_exact caller state request licensed fuel
+  have exactAnswers := observed_job_answers_exact caller state request finiteProvider licensed fuel
     environmentName fuelName stateName runInputs agendaWire unresolvedWire answerWires work machineObserved
   rw [exactAnswers, List.getElem?_map] at selected
   obtain ⟨result, atCursor, sameWire⟩ := Option.map_eq_some_iff.mp selected
@@ -1858,12 +1868,13 @@ def ObservesReceipt (state : State) (request : GeneralRuleJobExecution.Request)
         .complete state [encoded (.application "Some" [ScopedRuleJobReadoutExecution.receiptTerm receipt])] [] []
 
 theorem observes_receipt_valid (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (receipt : GeneralRuleJobs.Receipt) (observed : ObservesReceipt state request receipt) :
     receipt.Valid request.plan request.bound request.expected request.source ∧ receipt.job = request.job := by
   obtain ⟨caller, fuel, agendaWire, unresolvedWire, answerWires, work, cursor, resultWire,
     runInputs, machineObserved, selected, readoutInputs, readoutObserved⟩ := observed
-  have exactAnswers := observed_job_answers_exact caller state request licensed fuel
+  have exactAnswers := observed_job_answers_exact caller state request finiteProvider licensed fuel
     "jobEnvironment" "jobFuel" "jobState" runInputs agendaWire unresolvedWire answerWires work machineObserved
   rw [exactAnswers, List.getElem?_map] at selected
   obtain ⟨result, atCursor, sameWire⟩ := Option.map_eq_some_iff.mp selected
@@ -1885,6 +1896,7 @@ theorem observes_receipt_valid (state : State) (request : GeneralRuleJobExecutio
 index and all evidence fields. The stratification check is the original source
 admission condition used by its finite-work completeness theorem. -/
 theorem valid_receipt_observed (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (stratified : GeneralPremise.checkStepStratification request.environment.language = true)
     (receipt : GeneralRuleJobs.Receipt)
@@ -1923,7 +1935,7 @@ theorem valid_receipt_observed (state : State) (request : GeneralRuleJobExecutio
         (a "gslt:premise:machine-run" [v "jobEnvironment", v "jobFuel", v "jobState"])} =
       .complete state [encoded (encodeOption PremiseOperationsExecution.GeneralExecution.stateTerm
         (some finishedState))] [] [] :=
-    (job_run_captured_completed_iff caller state request licensed fuel
+    (job_run_captured_completed_iff caller state request finiteProvider licensed fuel
       "jobEnvironment" "jobFuel" "jobState" runInputs state _ [] []).mpr ⟨rfl, rfl, rfl, rfl⟩
   obtain ⟨answer, finished, same⟩ := GeneralRuleJobExecution.finishRoot_complete valid job
   have readoutObserved :=
@@ -1946,30 +1958,33 @@ theorem valid_receipt_observed (state : State) (request : GeneralRuleJobExecutio
 /-- Completed target observations preserve and reflect the original
 source-authorized receipts for every admitted scoped conditional rule job. -/
 theorem observes_receipt_iff_valid (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (stratified : GeneralPremise.checkStepStratification request.environment.language = true)
     (receipt : GeneralRuleJobs.Receipt) :
     ObservesReceipt state request receipt ↔
       receipt.Valid request.plan request.bound request.expected request.source ∧ receipt.job = request.job :=
-  ⟨observes_receipt_valid state request licensed receipt,
-    fun ⟨valid, job⟩ => valid_receipt_observed state request licensed stratified receipt valid job⟩
+  ⟨observes_receipt_valid state request finiteProvider licensed receipt,
+    fun ⟨valid, job⟩ => valid_receipt_observed state request finiteProvider licensed stratified receipt valid job⟩
 
 theorem observes_receipt_gslt (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (receipt : GeneralRuleJobs.Receipt) (observed : ObservesReceipt state request receipt) :
     (GeneralOccurrenceSemantics.gslt request.plan request.bound request.expected).Step
       request.source receipt.target :=
-  ⟨request.source, receipt, .refl _, (observes_receipt_valid state request licensed receipt observed).1, .refl _⟩
+  ⟨request.source, receipt, .refl _, (observes_receipt_valid state request finiteProvider licensed receipt observed).1, .refl _⟩
 
 /-- An unauthorized receipt or one naming a different physical job cannot be
 returned by these machine and readout observations. -/
 theorem observes_receipt_refused (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (receipt : GeneralRuleJobs.Receipt)
     (invalid : ¬ receipt.Valid request.plan request.bound request.expected request.source ∨
       receipt.job ≠ request.job) : ¬ ObservesReceipt state request receipt := by
   intro observed
-  have checked := observes_receipt_valid state request licensed receipt observed
+  have checked := observes_receipt_valid state request finiteProvider licensed receipt observed
   rcases invalid with invalid | wrongJob
   · exact invalid checked.1
   · exact wrongJob checked.2

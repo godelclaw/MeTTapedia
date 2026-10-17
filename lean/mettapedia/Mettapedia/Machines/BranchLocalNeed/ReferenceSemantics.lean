@@ -1,5 +1,7 @@
 import Mettapedia.Machines.TraceObservationBoundary
+import Mettapedia.Machines.ResourceOwnership
 import Mathlib.Data.List.Basic
+import Mathlib.Data.Finset.Union
 import Mathlib.Tactic
 
 /-!
@@ -105,6 +107,10 @@ inductive HeapUpdate (Origin Value StableFault : Type*) where
   | allocate (cell : CellId) (origin : Origin)
   | cache (cell : CellId) (state : Cache Value StableFault)
 deriving DecidableEq, Repr
+
+def HeapUpdate.cell {Origin Value StableFault : Type*} :
+    HeapUpdate Origin Value StableFault → CellId
+  | .allocate cell _ | .cache cell _ => cell
 
 /-- Persistent heap state.  `current` is the extensional map used by the
 machine; `spine` retains the newest-first update history needed by the later
@@ -221,6 +227,138 @@ history. Arbitrary function-valued heaps need not satisfy this invariant. -/
 def Recorded (heap : Heap Origin Value StableFault) : Prop :=
   ∀ cell, heap.lookup cell = lookupSpine heap.spine cell
 
+/-- Allocation identities in the retained history. Cache updates change a
+record but cannot add a cell to the allocation domain. -/
+def allocatedSpine : List (HeapUpdate Origin Value StableFault) → Finset CellId
+  | [] => ∅
+  | .allocate cell _ :: rest => insert cell (allocatedSpine rest)
+  | .cache _ _ :: rest => allocatedSpine rest
+
+theorem lookupSpine_isSome_iff (history : List (HeapUpdate Origin Value StableFault))
+    (cell : CellId) : (lookupSpine history cell).isSome ↔ cell ∈ allocatedSpine history := by
+  induction history with
+  | nil => simp [lookupSpine, allocatedSpine]
+  | cons update rest ih =>
+      cases update with
+      | allocate allocated origin =>
+          by_cases same : cell = allocated
+          · subst cell
+            simp [lookupSpine, allocatedSpine]
+          · simp [lookupSpine, allocatedSpine, same, ih]
+      | cache changed state =>
+          by_cases same : cell = changed
+          · subst changed
+            simp [lookupSpine, allocatedSpine, ih]
+          · simp [lookupSpine, allocatedSpine, same, ih]
+
+/-- The finite allocation census is exact for a recorded heap. Arbitrary
+function-valued heaps are not assumed to have finite support. -/
+def allocated (heap : Heap Origin Value StableFault) : Finset CellId := allocatedSpine heap.spine
+
+/-- Remove unretained current entries and their update history together.
+The allocation counter belongs to the world and is not compacted here. -/
+def restrict (heap : Heap Origin Value StableFault) (kept : Finset CellId) :
+    Heap Origin Value StableFault :=
+  let history := heap.spine.filter fun update => update.cell ∈ kept
+  { current := lookupSpine history
+    spine := history }
+
+theorem lookupSpine_filter (history : List (HeapUpdate Origin Value StableFault))
+    (kept : Finset CellId) (cell : CellId) :
+    lookupSpine (history.filter fun update => update.cell ∈ kept) cell =
+      if cell ∈ kept then lookupSpine history cell else none := by
+  induction history with
+  | nil => simp [lookupSpine]
+  | cons update rest ih =>
+    cases update with
+    | allocate address origin =>
+      by_cases retained : address ∈ kept <;> by_cases same : cell = address <;>
+        simp_all [HeapUpdate.cell, lookupSpine]
+    | cache address state =>
+      by_cases retained : address ∈ kept <;> by_cases same : cell = address <;>
+        simp_all [HeapUpdate.cell, lookupSpine]
+
+/-- A retained source record is unchanged. This equation requires the input
+lookup to be justified by its history, and the collector keeps no closure over
+that original lookup map. -/
+@[simp] theorem lookup_restrict (heap : Heap Origin Value StableFault) (kept : Finset CellId)
+    (recorded : heap.Recorded) (cell : CellId) :
+    (heap.restrict kept).lookup cell = if cell ∈ kept then heap.lookup cell else none := by
+  change lookupSpine (heap.spine.filter fun update => update.cell ∈ kept) cell = _
+  rw [lookupSpine_filter, recorded cell]
+
+/-- The rebuilt lookup and filtered finite history agree for every input.
+Faithfulness to the input lookup is established separately above. -/
+theorem restrict_recorded (heap : Heap Origin Value StableFault) (kept : Finset CellId) :
+    (heap.restrict kept).Recorded := fun _ => rfl
+
+@[simp] theorem allocated_setKnownCache (heap : Heap Origin Value StableFault)
+    (cell : CellId) (record : CellRecord Origin Value StableFault)
+    (state : Cache Value StableFault) :
+    (heap.setKnownCache cell record state).allocated = heap.allocated := rfl
+
+theorem allocate?_allocated {heap next : Heap Origin Value StableFault}
+    {cell : CellId} {origin : Origin} (success : heap.allocate? cell origin = some next) :
+    next.allocated = insert cell heap.allocated := by
+  cases found : heap.lookup cell with
+  | some record => simp [allocate?, found] at success
+  | none =>
+    simp only [allocate?, found, Option.some.injEq] at success
+    subst next
+    rfl
+
+theorem allocated_iff_lookup (heap : Heap Origin Value StableFault) (recorded : heap.Recorded)
+    (cell : CellId) : cell ∈ heap.allocated ↔ ∃ record, heap.lookup cell = some record := by
+  rw [recorded cell, ← Option.isSome_iff_exists]
+  exact (lookupSpine_isSome_iff heap.spine cell).symm
+
+theorem allocated_restrict (heap : Heap Origin Value StableFault) (kept : Finset CellId)
+    (recorded : heap.Recorded) : (heap.restrict kept).allocated = heap.allocated ∩ kept := by
+  ext cell
+  rw [allocated_iff_lookup _ (heap.restrict_recorded kept), Finset.mem_inter,
+    allocated_iff_lookup _ recorded]
+  by_cases retained : cell ∈ kept <;> simp [lookup_restrict heap kept recorded, retained]
+
+/-- Reify a recorded heap in the common finite resource model. References
+and weights are supplied by the representation; the caller proves the actual
+reference edges resolve in the source heap. No synthetic cells are added. -/
+def resourceHeap (heap : Heap Origin Value StableFault) (recorded : heap.Recorded)
+    (references : CellRecord Origin Value StableFault → Finset CellId)
+    (weight : CellRecord Origin Value StableFault → Nat)
+    (closed : ∀ cell record, heap.lookup cell = some record →
+      ∀ child ∈ references record, ∃ target, heap.lookup child = some target) :
+    Mettapedia.Machines.ResourceOwnership.Heap CellId (CellRecord Origin Value StableFault) where
+  lookup cell := (heap.lookup cell).map fun record => ⟨record, references record, weight record⟩
+  allocated := heap.allocated
+  allocated_iff := by
+    intro cell
+    rw [heap.allocated_iff_lookup recorded]
+    constructor
+    · rintro ⟨record, found⟩
+      exact ⟨⟨record, references record, weight record⟩, by simp only [found, Option.map_some]⟩
+    · rintro ⟨record, found⟩
+      obtain ⟨source, lookup, _⟩ := Option.map_eq_some_iff.mp found
+      exact ⟨source, lookup⟩
+  closed := by
+    intro cell record found child reference
+    obtain ⟨source, lookup, same⟩ := Option.map_eq_some_iff.mp found
+    cases same
+    exact (heap.allocated_iff_lookup recorded child).mpr (closed cell source lookup child reference)
+
+/-- Every resource lookup keeps the full captured origin and cache of the
+actual source cell, together with its representation's outgoing edges. -/
+theorem resourceHeap_lookup
+    (heap : Heap Origin Value StableFault) (recorded : heap.Recorded)
+    (references : CellRecord Origin Value StableFault → Finset CellId)
+    (weight : CellRecord Origin Value StableFault → Nat)
+    (closed : ∀ cell record, heap.lookup cell = some record →
+      ∀ child ∈ references record, ∃ target, heap.lookup child = some target)
+    {cell : CellId} {record : CellRecord Origin Value StableFault}
+    (found : heap.lookup cell = some record) :
+    (heap.resourceHeap recorded references weight closed).lookup cell =
+      some ⟨record, references record, weight record⟩ := by
+  simp only [resourceHeap, found, Option.map_some]
+
 theorem empty_recorded : Recorded (empty : Heap Origin Value StableFault) := by
   intro cell
   rfl
@@ -327,6 +465,14 @@ inductive ReceiptPayload
   | effect (effect : Effect)
 deriving DecidableEq, Repr
 
+/-- Only an allocation receipt introduces a cell. Other receipt cell names
+describe operations or diagnostics and do not allocate storage. -/
+def ReceiptPayload.allocationCell?
+    {Origin Rule Value StableFault RetryableFault Effect : Type*} :
+    ReceiptPayload Origin Rule Value StableFault RetryableFault Effect → Option CellId
+  | .allocate cell _ => some cell
+  | _ => none
+
 structure ReceiptNode
     (Origin Rule Value StableFault RetryableFault Effect : Type*) where
   id : ReceiptId
@@ -367,6 +513,22 @@ def effects
 @[simp] theorem effects_empty :
     (empty : ReceiptGraph Origin Rule Value StableFault RetryableFault Effect).effects = [] := rfl
 
+/-- Allocation targets recovered from the actual receipt nodes. This does
+not consult the heap or infer targets from the causal frontier alone. -/
+def allocationCells (graph : ReceiptGraph Origin Rule Value StableFault RetryableFault Effect) :
+    Finset CellId :=
+  (graph.nodes.filterMap fun node => node.payload.allocationCell?).toFinset
+
+@[simp] theorem allocationCells_empty :
+    (empty : ReceiptGraph Origin Rule Value StableFault RetryableFault Effect).allocationCells = ∅ := rfl
+
+/-- A history observer which dereferences every allocation target owns these
+roots. Merely displaying receipt data has a different retention contract. -/
+def allocationRoots {Owner : Type*} [DecidableEq Owner]
+    (graph : ReceiptGraph Origin Rule Value StableFault RetryableFault Effect) (owner : Owner) :
+    Mettapedia.Machines.ResourceOwnership.Roots Owner CellId :=
+  graph.allocationCells.image fun cell => (owner, cell)
+
 def append
     (graph :
       ReceiptGraph Origin Rule Value StableFault RetryableFault Effect)
@@ -383,6 +545,15 @@ def append
       roots := [id]
       nextSerial := graph.nextSerial + 1 },
     id )
+
+@[simp] theorem allocationCells_append
+    (graph : ReceiptGraph Origin Rule Value StableFault RetryableFault Effect)
+    (path : WorldPath) (payload : ReceiptPayload Origin Rule Value StableFault RetryableFault Effect) :
+    (graph.append path payload).1.allocationCells =
+      match payload.allocationCell? with
+      | some cell => insert cell graph.allocationCells
+      | none => graph.allocationCells := by
+  cases payload <;> simp [allocationCells, append, ReceiptPayload.allocationCell?]
 
 @[simp] theorem effects_append
     (graph : ReceiptGraph Origin Rule Value StableFault RetryableFault Effect)
@@ -536,6 +707,12 @@ def setKnownCache
     (state : Cache Value StableFault) :
     World Origin Rule Value StableFault RetryableFault Effect :=
   { world with heap := world.heap.setKnownCache cell record state }
+
+/-- The heap's allocation history and the independently stored allocation
+receipts identify exactly the same cells. -/
+def AllocationReceiptsExact
+    (world : World Origin Rule Value StableFault RetryableFault Effect) : Prop :=
+  world.heap.allocated = world.receipts.allocationCells
 
 def freshCell
     (world : World Origin Rule Value StableFault RetryableFault Effect)
@@ -732,6 +909,21 @@ theorem allocate?_lineage
     rw [← h.1]
     rfl
 
+/-- Allocation retains the branch and evaluator counter and records the
+actual allocated identity. This supplies the metadata side of heap transport. -/
+theorem allocate?_metadata
+    {world next : World Origin Rule Value StableFault RetryableFault Effect}
+    {origin : Origin} {generation : Nat} {cell : CellId}
+    (success : world.allocate? origin generation = some (next, cell)) :
+    next.path = world.path ∧ next.nextEvaluator = world.nextEvaluator ∧
+      next.receipts = (world.receipts.append world.path (.allocate cell origin)).1 := by
+  cases found : world.heap.allocate? (world.freshCell generation) origin with
+  | none => simp [allocate?, found] at success
+  | some heap =>
+    simp only [allocate?, found, Option.some.injEq, Prod.mk.injEq] at success
+    rw [← success.1, ← success.2]
+    exact ⟨rfl, rfl, rfl⟩
+
 theorem record_receipts_valid
     (world : World Origin Rule Value StableFault RetryableFault Effect)
     (valid : world.receipts.Valid)
@@ -750,6 +942,21 @@ theorem allocate?_receipts_valid
       simp only [allocate?, found, record] at allocated
       cases Option.some.inj allocated
       exact ReceiptGraph.append_valid _ valid _ _
+
+theorem allocate?_allocationReceiptsExact
+    {world next : World Origin Rule Value StableFault RetryableFault Effect}
+    (valid : world.AllocationReceiptsExact) {origin : Origin} {generation : Nat} {cell : CellId}
+    (success : world.allocate? origin generation = some (next, cell)) :
+    next.AllocationReceiptsExact := by
+  cases found : world.heap.allocate? (world.freshCell generation) origin with
+  | none => simp [allocate?, found] at success
+  | some heap =>
+    simp only [allocate?, found, record] at success
+    cases Option.some.inj success
+    change heap.allocated = _
+    rw [Heap.allocate?_allocated found, ReceiptGraph.allocationCells_append]
+    change insert _ world.heap.allocated = insert _ world.receipts.allocationCells
+    rw [valid]
 
 end World
 
@@ -1153,6 +1360,130 @@ theorem suspended_step_preserves_multiplicity
       simp only [step, hControl, hLookup, hSuspended, hRules]
       exact branchAlternatives_length _ _ _ _ _ _ _ _
 
+/-- A bound on the number of rule occurrences bounds one machine step.
+The lower bound of one includes stable faults, missing rules and all
+nonbranching administration; this is not a non-failure or termination law. -/
+theorem step_length_le
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (limit : Nat) (positive : 1 ≤ limit)
+    (bounded : ∀ origin, (spec.alternatives origin).length ≤ limit)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) :
+    (step spec machine).length ≤ limit := by
+  cases controlEq : machine.control with
+  | halted _ =>
+      simp only [step, controlEq, List.length_nil]
+      exact Nat.zero_le limit
+  | force cell stack =>
+      cases lookupEq : machine.world.heap.lookup cell with
+      | none =>
+          simp only [step, controlEq, lookupEq, List.length_singleton]
+          exact positive
+      | some record =>
+          cases cacheEq : record.cache with
+          | value _ =>
+              simp only [step, controlEq, lookupEq, cacheEq, List.length_singleton]
+              exact positive
+          | stableFault _ =>
+              simp only [step, controlEq, lookupEq, cacheEq, List.length_singleton]
+              exact positive
+          | evaluating _ =>
+              simp only [step, controlEq, lookupEq, cacheEq, List.length_singleton]
+              exact positive
+          | suspended =>
+              by_cases nonempty : spec.alternatives record.origin ≠ []
+              · rw [suspended_step_preserves_multiplicity spec machine cell stack record
+                    controlEq lookupEq cacheEq nonempty]
+                exact bounded record.origin
+              · have empty : spec.alternatives record.origin = [] := by
+                  simpa only [not_not] using nonempty
+                simp only [step, controlEq, lookupEq, cacheEq, empty,
+                  List.length_singleton]
+                exact positive
+  | run localState _ =>
+      cases actionEq : spec.action localState with
+      | done _ =>
+          simp only [step, controlEq, actionEq, List.length_singleton]
+          exact positive
+      | demand _ _ =>
+          simp only [step, controlEq, actionEq, List.length_singleton]
+          exact positive
+      | allocate origin _ =>
+          cases allocated : machine.world.allocate? origin with
+          | none =>
+              simp only [step, controlEq, actionEq, allocated, List.length_singleton]
+              exact positive
+          | some _ =>
+              simp only [step, controlEq, actionEq, allocated, List.length_singleton]
+              exact positive
+      | resample source _ =>
+          cases sourceLookup : machine.world.heap.lookup source with
+          | none =>
+              simp only [step, controlEq, actionEq, sourceLookup, List.length_singleton]
+              exact positive
+          | some sourceRecord =>
+              cases allocated : machine.world.allocate? sourceRecord.origin
+                  (source.generation + 1) with
+              | none =>
+                  simp only [step, controlEq, actionEq, sourceLookup, allocated,
+                    List.length_singleton]
+                  exact positive
+              | some _ =>
+                  simp only [step, controlEq, actionEq, sourceLookup, allocated,
+                    List.length_singleton]
+                  exact positive
+      | perform _ _ =>
+          simp only [step, controlEq, actionEq, List.length_singleton]
+          exact positive
+  | returned outcome stack =>
+      cases stack with
+      | nil =>
+          simp only [step, controlEq, List.length_singleton]
+          exact positive
+      | cons frame rest =>
+          cases frame with
+          | resume _ =>
+              simp only [step, controlEq, List.length_singleton]
+              exact positive
+          | commit cell owner =>
+              cases lookupEq : machine.world.heap.lookup cell with
+              | none =>
+                  simp only [step, controlEq, lookupEq, List.length_singleton]
+                  exact positive
+              | some record =>
+                  cases cacheEq : record.cache with
+                  | evaluating actual =>
+                      by_cases ownerEq : actual = owner
+                      · cases outcome with
+                        | value _ =>
+                            simp only [step, controlEq, lookupEq, cacheEq, ownerEq]
+                            exact positive
+                        | stableFault _ =>
+                            simp only [step, controlEq, lookupEq, cacheEq, ownerEq]
+                            exact positive
+                        | retryableFault _ =>
+                            simp only [step, controlEq, lookupEq, cacheEq, ownerEq]
+                            exact positive
+                      · simp only [step, controlEq, lookupEq, cacheEq, ownerEq]
+                        exact positive
+                  | value _ =>
+                      simp only [step, controlEq, lookupEq, cacheEq, List.length_singleton]
+                      exact positive
+                  | stableFault _ =>
+                      simp only [step, controlEq, lookupEq, cacheEq, List.length_singleton]
+                      exact positive
+                  | suspended =>
+                      simp only [step, controlEq, lookupEq, cacheEq, List.length_singleton]
+                      exact positive
+
+/-- At most one rule occurrence per origin permits at most one successor,
+including failure and administrative outcomes. -/
+theorem step_length_le_one
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (bounded : ∀ origin, (spec.alternatives origin).length ≤ 1)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect) :
+    (step spec machine).length ≤ 1 :=
+  step_length_le spec 1 (Nat.le_refl 1) bounded machine
+
 /-- Duplicate rule occurrences are not silently deduplicated. -/
 theorem duplicate_rules_have_two_successors
     (spec :
@@ -1397,6 +1728,133 @@ theorem runFrontier_eq
 
 end UniqueSteps
 
+/-- Local contracts for the world operations used by the existing machine.
+The transition theorem below checks their composition; it does not take
+whole-step preservation as a field. Allocation receipts are issued only by
+the checked allocation primitive, rather than by arbitrary recording. -/
+structure WorldInstructionInvariant
+    (holds : World Origin Rule Value StableFault RetryableFault Effect → Prop) : Prop where
+  fork : ∀ world index, holds world → holds (world.fork index)
+  nextEvaluator : ∀ world, holds world →
+    holds { world with nextEvaluator := world.nextEvaluator + 1 }
+  record : ∀ world payload, holds world → payload.allocationCell? = none →
+    holds (recorded world payload)
+  cache : ∀ world cell record state, holds world → world.heap.lookup cell = some record →
+    holds (world.setKnownCache cell record state)
+  allocate : ∀ world next origin generation cell, holds world →
+    world.allocate? origin generation = some (next, cell) → holds next
+
+theorem branchAlternatives_preserves_world
+    {holds : World Origin Rule Value StableFault RetryableFault Effect → Prop}
+    (invariant : WorldInstructionInvariant holds)
+    (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (base : World Origin Rule Value StableFault RetryableFault Effect) (valid : holds base)
+    (cell : CellId) (record : CellRecord Origin Value StableFault)
+    (found : base.heap.lookup cell = some record) (owner : EvaluatorId)
+    (stack : List (Frame Resume)) (index : Nat) (alternatives : List (Rule × Local))
+    (candidate : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (present : candidate ∈ branchAlternatives machine base cell record owner stack index alternatives) :
+    holds candidate.world := by
+  induction alternatives generalizing index with
+  | nil => simp [branchAlternatives] at present
+  | cons head tail ih =>
+    simp only [branchAlternatives, List.mem_cons] at present
+    rcases present with rfl | later
+    · apply invariant.record _ _ _ rfl
+      apply invariant.record _ _ _ rfl
+      exact invariant.cache _ _ _ _ (invariant.fork base index valid) found
+    · exact ih (index + 1) later
+
+/-- Every successor is checked against the same five world operations,
+including branching, allocation, matched commits and failed instructions. -/
+theorem step_preserves_world
+    {holds : World Origin Rule Value StableFault RetryableFault Effect → Prop}
+    (invariant : WorldInstructionInvariant holds)
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (machine next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (valid : holds machine.world) (present : next ∈ step spec machine) :
+    holds next.world := by
+  rcases machine with ⟨world, control, work⟩
+  cases control with
+  | halted outcome => simp [step] at present
+  | force cell stack =>
+    simp only [step] at present
+    split at present
+    · simp only [List.mem_singleton] at present
+      subst next
+      exact invariant.record world _ valid rfl
+    · rename_i record found
+      split at present
+      · simp only [List.mem_singleton] at present
+        subst next
+        exact invariant.record world _ valid rfl
+      · simp only [List.mem_singleton] at present
+        subst next
+        exact invariant.record world _ valid rfl
+      · simp only [List.mem_singleton] at present
+        subst next
+        exact invariant.record world _ valid rfl
+      · split at present
+        · simp only [List.mem_singleton] at present
+          subst next
+          apply invariant.record _ _ _ rfl
+          exact invariant.record _ _ (invariant.nextEvaluator world valid) rfl
+        · exact branchAlternatives_preserves_world invariant _
+            { world with nextEvaluator := world.nextEvaluator + 1 }
+            (invariant.nextEvaluator world valid) _ _ found _ _ _ _ next present
+  | run state stack =>
+    simp only [step] at present
+    split at present <;>
+      repeat' first
+        | split at present
+        | simp only [List.mem_singleton] at present
+          subst next
+          dsimp only [finished, retryMachine]
+          solve_by_elim (maxDepth := 8)
+            [invariant.record, invariant.allocate]
+  | returned outcome stack =>
+    simp only [step] at present
+    split at present <;>
+      repeat' first
+        | split at present
+        | simp only [List.mem_singleton] at present
+          subst next
+          dsimp only [finished, retryMachine]
+          solve_by_elim (maxDepth := 8)
+            [invariant.record, invariant.cache]
+
+theorem receiptWorldInvariant : WorldInstructionInvariant
+    (fun world : World Origin Rule Value StableFault RetryableFault Effect => world.receipts.Valid) := {
+  fork _ _ valid := valid
+  nextEvaluator _ valid := valid
+  record _ _ valid _ := ReceiptGraph.append_valid _ valid _ _
+  cache _ _ _ _ valid _ := valid
+  allocate world next origin generation cell valid success :=
+    World.allocate?_receipts_valid world next valid origin generation cell success
+}
+
+theorem allocationReceiptWorldInvariant : WorldInstructionInvariant
+    (fun world : World Origin Rule Value StableFault RetryableFault Effect => world.AllocationReceiptsExact) := {
+  fork _ _ valid := valid
+  nextEvaluator _ valid := valid
+  record world payload valid nonallocation := by
+    change world.heap.allocated = (world.receipts.append world.path payload).1.allocationCells
+    rw [ReceiptGraph.allocationCells_append, nonallocation]
+    exact valid
+  cache world cell record state valid _ := by
+    change (world.heap.setKnownCache cell record state).allocated = _
+    rw [Heap.allocated_setKnownCache]
+    exact valid
+  allocate _ _ _ _ _ valid success := World.allocate?_allocationReceiptsExact valid success
+}
+
+theorem step_allocationReceiptsExact
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (machine next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (valid : machine.world.AllocationReceiptsExact) (present : next ∈ step spec machine) :
+    next.world.AllocationReceiptsExact :=
+  step_preserves_world allocationReceiptWorldInvariant spec machine next valid present
+
 theorem branchAlternatives_receipts_valid
     (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
     (base : World Origin Rule Value StableFault RetryableFault Effect)
@@ -1422,51 +1880,8 @@ theorem step_receipts_valid
     (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
     (machine next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
     (valid : machine.world.receipts.Valid) (present : next ∈ step spec machine) :
-    next.world.receipts.Valid := by
-  rcases machine with ⟨world, control, work⟩
-  cases control with
-  | halted outcome => simp [step] at present
-  | force cell stack =>
-      simp only [step] at present
-      split at present
-      · simp only [List.mem_singleton] at present
-        subst next
-        exact ReceiptGraph.append_valid _ valid _ _
-      · rename_i record found
-        split at present
-        · simp only [List.mem_singleton] at present
-          subst next
-          exact ReceiptGraph.append_valid _ valid _ _
-        · simp only [List.mem_singleton] at present
-          subst next
-          exact ReceiptGraph.append_valid _ valid _ _
-        · simp only [List.mem_singleton] at present
-          subst next
-          exact ReceiptGraph.append_valid _ valid _ _
-        · split at present
-          · simp only [List.mem_singleton] at present
-            subst next
-            exact ReceiptGraph.append_valid _ (ReceiptGraph.append_valid _ valid _ _) _ _
-          · exact branchAlternatives_receipts_valid _
-              { world with nextEvaluator := world.nextEvaluator + 1 }
-              valid _ _ _ _ _ _ next present
-  | run state stack =>
-      simp only [step] at present
-      split at present <;>
-        repeat' first
-          | split at present
-          | simp only [List.mem_singleton] at present
-            subst next
-            solve_by_elim (maxDepth := 5)
-              [ReceiptGraph.append_valid, World.allocate?_receipts_valid]
-  | returned outcome stack =>
-      simp only [step] at present
-      split at present <;>
-        repeat' first
-          | split at present
-          | simp only [List.mem_singleton] at present
-            subst next
-            solve_by_elim (maxDepth := 5) [ReceiptGraph.append_valid]
+    next.world.receipts.Valid :=
+  step_preserves_world receiptWorldInvariant spec machine next valid present
 
 
 theorem Steps.receipts_valid
@@ -1520,6 +1935,16 @@ theorem World.allocate?_heap_recorded
       cases Option.some.inj allocated
       exact Heap.allocate?_recorded _ _ valid _ _ found
 
+theorem heapRecordedWorldInvariant : WorldInstructionInvariant
+    (fun world : World Origin Rule Value StableFault RetryableFault Effect => world.heap.Recorded) := {
+  fork _ _ valid := valid
+  nextEvaluator _ valid := valid
+  record _ _ valid _ := valid
+  cache _ _ _ _ valid found := Heap.setKnownCache_recorded _ valid _ _ found _
+  allocate world next origin generation cell valid success :=
+    World.allocate?_heap_recorded world next valid origin generation cell success
+}
+
 theorem branchAlternatives_heap_recorded
     (machine : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
     (base : World Origin Rule Value StableFault RetryableFault Effect)
@@ -1529,14 +1954,9 @@ theorem branchAlternatives_heap_recorded
     (stack : List (Frame Resume)) (index : Nat) (alternatives : List (Rule × Local))
     (candidate : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
     (present : candidate ∈ branchAlternatives machine base cell record owner stack index alternatives) :
-    candidate.world.heap.Recorded := by
-  induction alternatives generalizing index with
-  | nil => simp [branchAlternatives] at present
-  | cons head tail ih =>
-      simp only [branchAlternatives, List.mem_cons] at present
-      rcases present with rfl | later
-      · exact Heap.setKnownCache_recorded _ valid _ _ found _
-      · exact ih (index + 1) later
+    candidate.world.heap.Recorded :=
+  branchAlternatives_preserves_world heapRecordedWorldInvariant machine base valid
+    cell record found owner stack index alternatives candidate present
 
 /-- The finite history determines the heap after every actual instruction.
 In particular, cache replacement must use the record actually found in the
@@ -1545,52 +1965,8 @@ theorem step_heap_recorded
     (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
     (machine next : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
     (valid : machine.world.heap.Recorded) (present : next ∈ step spec machine) :
-    next.world.heap.Recorded := by
-  rcases machine with ⟨world, control, work⟩
-  cases control with
-  | halted outcome => simp [step] at present
-  | force cell stack =>
-      simp only [step] at present
-      split at present
-      · simp only [List.mem_singleton] at present
-        subst next
-        exact valid
-      · rename_i record found
-        split at present
-        · simp only [List.mem_singleton] at present
-          subst next
-          exact valid
-        · simp only [List.mem_singleton] at present
-          subst next
-          exact valid
-        · simp only [List.mem_singleton] at present
-          subst next
-          exact valid
-        · split at present
-          · simp only [List.mem_singleton] at present
-            subst next
-            exact valid
-          · exact branchAlternatives_heap_recorded _
-              { world with nextEvaluator := world.nextEvaluator + 1 }
-              valid _ _ found _ _ _ _ next present
-  | run state stack =>
-      simp only [step] at present
-      split at present <;>
-        repeat' first
-          | split at present
-          | simp only [List.mem_singleton] at present
-            subst next
-            dsimp only [finished, retryMachine, recorded, World.record, World.setKnownCache]
-            solve_by_elim (maxDepth := 5) [World.allocate?_heap_recorded]
-  | returned outcome stack =>
-      simp only [step] at present
-      split at present <;>
-        repeat' first
-          | split at present
-          | simp only [List.mem_singleton] at present
-            subst next
-            dsimp only [finished, retryMachine, recorded, World.record, World.setKnownCache]
-            solve_by_elim (maxDepth := 5) [Heap.setKnownCache_recorded]
+    next.world.heap.Recorded :=
+  step_preserves_world heapRecordedWorldInvariant spec machine next valid present
 
 theorem Steps.heap_recorded
     (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)

@@ -1,5 +1,5 @@
 import Mettapedia.OSLF.PathMap.Core
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mathlib.Data.Finset.Card
 
 /-!
@@ -44,9 +44,9 @@ Each PathMap operation corresponds to an BinaryEvidence relationship:
 - `prestrict` (prefix-filter) : partition of evidence by context
 - `psubtract` (difference): evidence-decreasing (monotone)
 
-## Relationship to `BinaryWorldModel` (PLNWorldModel.lean)
+## Relationship to `BinaryWorldModel` (BinaryWorldModel.lean)
 
-The `BinaryWorldModel` typeclass (`PLNWorldModel.lean`) requires `evidence_add` to hold for
+The `BinaryWorldModel` typeclass (`BinaryWorldModel.lean`) requires `evidence_add` to hold for
 **all** store combinations: `ev(W₁ + W₂, q) = ev(W₁, q) ⊕ ev(W₂, q)`.
 
 `PathMapWorldModel` only requires additivity for **disjoint** stores (`pmeet = .none`).

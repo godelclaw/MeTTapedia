@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 import Mathlib.Probability.ProbabilityMassFunction.Basic
 import Mathlib.Data.Real.Basic

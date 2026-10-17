@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.OpaqueRelatorScopedComputation
 import Mettapedia.GSLT.LanguageDef.ContextualEffectTreeExactness
 
@@ -93,20 +93,20 @@ variable {Head Operation : Type} {n m k : Nat}
 
 /-- The existing scalar representation supplies the native intent codec. -/
 def natCodec : PartialCodec Nat Pattern where
-  encode := DeclarationAwarePatternCodec.encodeNat
-  decode := DeclarationAwarePatternCodec.decodeNat?
-  decode_encode := DeclarationAwarePatternCodec.decodeNat?_encodeNat
+  encode := Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec.encodeNat
+  decode := Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec.decodeNat?
+  decode_encode := Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec.decodeNat?_encodeNat
 
 /-- A world with scope-checked native answers and separately encoded intents. -/
 def payloadWorld (headCodec : PartialCodec Head Pattern) (intentCodec : PartialCodec Intent Pattern) :
     WorldResult Bool (Tm Head m) Intent → WorldResult Bool Pattern Pattern :=
-  mapWorld (DeclarationAwarePatternCodec.encodeTm headCodec) intentCodec.encode
+  mapWorld (Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec.encodeTm headCodec) intentCodec.encode
 
 theorem payloadWorld_injective (headCodec : PartialCodec Head Pattern)
     (intentCodec : PartialCodec Intent Pattern) :
     Function.Injective (payloadWorld (m := m) headCodec intentCodec) :=
   mapWorld_injective _ _
-    (DeclarationAwarePatternCodec.tmCodec headCodec m).encode_injective intentCodec.encode_injective
+    (Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec.tmCodec headCodec m).encode_injective intentCodec.encode_injective
 
 /-- The backend's existing world-list encoder retains the native payload map. -/
 def encodePayloadWorlds (headCodec : PartialCodec Head Pattern)
@@ -142,7 +142,7 @@ private theorem decode_intents_encode (intentCodec : PartialCodec Intent Pattern
 def decodePayloadWorld (headCodec : PartialCodec Head Pattern)
     (intentCodec : PartialCodec Intent Pattern) (scope : Nat)
     (world : WorldResult Bool Pattern Pattern) : Option (WorldResult Bool (Tm Head scope) Intent) :=
-  match DeclarationAwarePatternCodec.decodeTm? headCodec scope world.answer with
+  match Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec.decodeTm? headCodec scope world.answer with
   | none => none
   | some answer =>
       (world.intents.mapM intentCodec.decode).map fun intents =>
@@ -153,14 +153,14 @@ def decodePayloadWorld (headCodec : PartialCodec Head Pattern)
     decodePayloadWorld headCodec intentCodec m (payloadWorld headCodec intentCodec world) = some world := by
   cases world
   simp only [decodePayloadWorld, payloadWorld, mapWorld,
-    DeclarationAwarePatternCodec.decodeTm?_encodeTm, decode_intents_encode, Option.map_some]
+    Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec.decodeTm?_encodeTm, decode_intents_encode, Option.map_some]
 
 /-- Mapping happens after the actual scoped interpreter has instantiated its
 native payloads and bound the selected answers in sequence bodies. -/
 def payloadProgram (headCodec : PartialCodec Head Pattern) (intentCodec : PartialCodec Intent Pattern)
     (implementation : ImplementationStudy.Implementation Head Operation Bool Intent m)
     (environment : Sub Head n m) (code : Code Head Operation n) : Program Bool Pattern Pattern :=
-  mapProgram (DeclarationAwarePatternCodec.encodeTm headCodec) intentCodec.encode
+  mapProgram (Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec.encodeTm headCodec) intentCodec.encode
     (Code.interpret implementation.handler environment code)
 
 /-- Qualification connects the mapped handler to independently authored
@@ -320,11 +320,11 @@ theorem qualified_step_results (headCodec : PartialCodec Head Pattern)
 /-- The native specialization keeps the full existing term grammar. -/
 def nativeProgram {n : Nat} (program : Program Bool (Tower.Tm n) Nat) :
     Program Bool Pattern Pattern :=
-  mapProgram (DeclarationAwarePatternCodec.encodeTm DeclarationAwarePatternCodec.towerHeadCodec)
-    DeclarationAwarePatternCodec.encodeNat program
+  mapProgram (Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec.encodeTm Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec.towerHeadCodec)
+    Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec.encodeNat program
 
 def nativeWorld {n : Nat} : WorldResult Bool (Tower.Tm n) Nat → WorldResult Bool Pattern Pattern :=
-  payloadWorld DeclarationAwarePatternCodec.towerHeadCodec natCodec
+  payloadWorld Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec.towerHeadCodec natCodec
 
 theorem nativeProgram_worlds {n : Nat} (program : Program Bool (Tower.Tm n) Nat)
     (state : Bool) (branch : BranchTrace) :
@@ -337,13 +337,13 @@ theorem nativeWorld_injective : Function.Injective (nativeWorld (n := n)) :=
 
 /-- Complete native world data in the backend's actual fixed alphabet. -/
 def encodeWorlds {n : Nat} (worlds : List (WorldResult Bool (Tower.Tm n) Nat)) : Pattern :=
-  encodePayloadWorlds DeclarationAwarePatternCodec.towerHeadCodec natCodec worlds
+  encodePayloadWorlds Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec.towerHeadCodec natCodec worlds
 
 theorem encodeWorlds_injective : Function.Injective (encodeWorlds (n := n)) :=
   encodePayloadWorlds_injective _ _
 
 def completion {n : Nat} (worlds : List (WorldResult Bool (Tower.Tm n) Nat)) : Pattern :=
-  payloadCompletion DeclarationAwarePatternCodec.towerHeadCodec natCodec worlds
+  payloadCompletion Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec.towerHeadCodec natCodec worlds
 
 theorem completion_injective : Function.Injective (completion (n := n)) :=
   payloadCompletion_injective _ _
@@ -390,20 +390,20 @@ theorem native_executor_no_invention (program : Program Bool (Tower.Tm n) Nat)
 def decodeWorlds? (scope : Nat) (encoded : Pattern) :
     Option (List (WorldResult Bool (Tower.Tm scope) Nat)) := do
   let worlds ← ContextualEffectTreeLanguage.decodeWorlds? encoded
-  worlds.mapM (decodePayloadWorld DeclarationAwarePatternCodec.towerHeadCodec natCodec scope)
+  worlds.mapM (decodePayloadWorld Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec.towerHeadCodec natCodec scope)
 
 @[simp] theorem decodeWorlds?_encodeWorlds (worlds : List (WorldResult Bool (Tower.Tm n) Nat)) :
     decodeWorlds? n (encodeWorlds worlds) = some worlds := by
   simp only [decodeWorlds?, encodeWorlds, encodePayloadWorlds,
     ContextualEffectTreeLanguage.decodeWorlds?_encodeWorlds]
   change (worlds.map nativeWorld).mapM
-    (decodePayloadWorld DeclarationAwarePatternCodec.towerHeadCodec natCodec n) = some worlds
+    (decodePayloadWorld Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec.towerHeadCodec natCodec n) = some worlds
   induction worlds with
   | nil => rfl
   | cons world worlds ih =>
       have decoded := decodePayloadWorld_payloadWorld
-        DeclarationAwarePatternCodec.towerHeadCodec natCodec world
-      change decodePayloadWorld DeclarationAwarePatternCodec.towerHeadCodec natCodec n
+        Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec.towerHeadCodec natCodec world
+      change decodePayloadWorld Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec.towerHeadCodec natCodec n
         (nativeWorld world) = some world at decoded
       rw [List.map_cons, List.mapM_cons, decoded, ih]
       rfl
@@ -562,7 +562,7 @@ theorem filledProgram_substitution (wire : NativeWireData.Wire) :
 not accepted as a closed term, even though it has a genuine scope-two type. -/
 theorem first_filled_world_not_closed (wire : NativeWireData.Wire) (state : Bool) (branch : BranchTrace) :
     ((filledWorlds wire state branch).head?.map nativeWorld).bind
-      (decodePayloadWorld DeclarationAwarePatternCodec.towerHeadCodec natCodec 0) = none :=
+      (decodePayloadWorld Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec.towerHeadCodec natCodec 0) = none :=
   rfl
 
 end Common

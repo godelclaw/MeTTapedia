@@ -72,6 +72,44 @@ open Mettapedia.GSLT.LanguageDef.WellSorted
   cases typed with
   | constructor declared _ argumentsTyped => exact ⟨_, declared, rfl, rfl, argumentsTyped⟩
 
+mutual
+/-- A first-order schema is also an object pattern; its metavariables become
+ordinary free names when it is checked in the authored type context. -/
+theorem FirstOrder.isObject {pattern : Pattern} (shape : FirstOrder pattern) :
+    isObjectPattern pattern = true := by
+  cases shape with
+  | metavariable name => rfl
+  | constructor label arguments shapes => exact firstOrderArguments_isObject shapes
+termination_by sizeOf pattern
+
+theorem firstOrderArguments_isObject {patterns : List Pattern}
+    (shapes : ∀ pattern ∈ patterns, FirstOrder pattern) :
+    isObjectPatternList patterns = true := by
+  cases patterns with
+  | nil => rfl
+  | cons pattern patterns =>
+    simp only [isObjectPatternList, Bool.and_eq_true]
+    exact ⟨(shapes pattern (List.mem_cons_self ..)).isObject,
+      firstOrderArguments_isObject (fun child member => shapes child (List.mem_cons_of_mem _ member))⟩
+termination_by sizeOf patterns
+end
+
+/-- First-order subjects have one result type in their fixed caller context.
+This does not assert type uniqueness for arbitrary unannotated lambdas. -/
+theorem FirstOrder.type_unique {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {pattern : Pattern} {firstType secondType : TypeExpr}
+    (shape : FirstOrder pattern) (valid : language.validate = [])
+    (first : HasType language free bound pattern firstType)
+    (second : HasType language free bound pattern secondType) : firstType = secondType := by
+  cases shape with
+  | metavariable name =>
+    cases first with
+    | fvar firstDeclared =>
+      cases second with
+      | fvar secondDeclared => exact Option.some.inj (firstDeclared.symm.trans secondDeclared)
+  | constructor label arguments _ =>
+    exact HasType.apply_type_unique_of_validate_eq_nil valid first second
+
  theorem capturesTyped_merge {language : LanguageDef} {free : FreeTypeContext}
     {bound : List TypeExpr} {context : List (String × TypeExpr)} {first second combined : Bindings}
     (firstTyped : CapturesTyped language free bound context first)

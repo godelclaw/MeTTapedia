@@ -1,6 +1,8 @@
 import Mathlib.Data.List.Forall2
 import Mathlib.Data.List.Lex
+import Mathlib.Data.List.OfFn
 import Mathlib.Data.Fintype.Prod
+import Mettapedia.Data.Fin.OptionSequence
 import Mettapedia.Machines.PeTTaLeafEquality
 import Mettapedia.TypeTheory.MaterialSets.Hypersets.Bisimulation
 
@@ -25,6 +27,10 @@ bisimilar. Certificate generation and its efficiency are separate obligations.
 Labels are a parameter: a language must separately specify variable identity,
 numeric leaf comparison, and the distinction between atoms and zero-argument
 compounds.
+
+`LayerReader` admits finite keyed inventories from a partial structural
+reader. Its direct bounded traversal agrees with the admitted graph at every
+depth, while keeping the supplied keys and all ordered child occurrences.
 
 Bisimilarity is an equivalence (`Bisimilar.refl`, `.symm`, `.trans`). A
 transport (`IsTransport`) copies a graph into another presentation, each node
@@ -295,6 +301,467 @@ theorem IsTransport.round_trip {g : Graph A Label} {h : Graph B Label}
   (hm.comp hn).bisimilar a
 
 end Transport
+
+/-! ## Finite keyed inventories
+
+Keys identify native cursor occurrences; labels are observations selected by
+the caller. Admission checks the entire inventory before constructing a graph.
+Neither equal labels nor equal unfoldings authorize collapsing distinct keys.
+-/
+
+/-- A finite cursor row retains the exact ordered child-key list. -/
+structure KeyedRow (Key : Type u) (Label : Type v) where
+  key : Key
+  label : Label
+  children : List Key
+  deriving DecidableEq
+
+/-- Every key names one row and every child names a row in this inventory. -/
+def KeyedInventoryValid {Key : Type u} {Label : Type v} (rows : List (KeyedRow Key Label)) : Prop :=
+  (rows.map KeyedRow.key).Nodup ∧
+    ∀ row ∈ rows, ∀ child ∈ row.children, child ∈ rows.map KeyedRow.key
+
+instance {Key : Type u} {Label : Type v} [DecidableEq Key]
+    (rows : List (KeyedRow Key Label)) : Decidable (KeyedInventoryValid rows) := by
+  unfold KeyedInventoryValid
+  infer_instance
+
+/-- An admitted table retains its raw inventory, including repeated edges. -/
+structure KeyedTable (Key : Type u) (Label : Type v) where
+  rows : List (KeyedRow Key Label)
+  valid : KeyedInventoryValid rows
+
+/-- Checked executable admission. Duplicate row keys and dangling children
+are refused rather than repaired or silently erased. -/
+def decodeKeyedTable? {Key : Type u} {Label : Type v} [DecidableEq Key]
+    (rows : List (KeyedRow Key Label)) : Option (KeyedTable Key Label) :=
+  if valid : KeyedInventoryValid rows then some ⟨rows, valid⟩ else none
+
+theorem decodeKeyedTable?_sound {Key : Type u} {Label : Type v} [DecidableEq Key]
+    {rows : List (KeyedRow Key Label)} {table : KeyedTable Key Label}
+    (decoded : decodeKeyedTable? rows = some table) :
+    table.rows = rows ∧ KeyedInventoryValid rows := by
+  unfold decodeKeyedTable? at decoded
+  split at decoded
+  · next valid =>
+    cases Option.some.inj decoded
+    exact ⟨rfl, valid⟩
+  · simp at decoded
+
+theorem decodeKeyedTable?_complete {Key : Type u} {Label : Type v} [DecidableEq Key]
+    (rows : List (KeyedRow Key Label)) (valid : KeyedInventoryValid rows) :
+    ∃ table, decodeKeyedTable? rows = some table := by
+  exact ⟨⟨rows, valid⟩, by simp [decodeKeyedTable?, valid]⟩
+
+theorem decodeKeyedTable?_isSome_iff {Key : Type u} {Label : Type v} [DecidableEq Key]
+    (rows : List (KeyedRow Key Label)) :
+    (decodeKeyedTable? rows).isSome = true ↔ KeyedInventoryValid rows := by
+  simp [decodeKeyedTable?]
+
+namespace KeyedTable
+
+variable {Key : Type u} {Label : Type v}
+
+/-- Nodes are actual inventory positions, without a distinguished default. -/
+abbrev Node (table : KeyedTable Key Label) := Fin table.rows.length
+
+def key (table : KeyedTable Key Label) (node : table.Node) : Key := table.rows[node.val].key
+
+theorem key_mem (table : KeyedTable Key Label) (node : table.Node) :
+    table.key node ∈ table.rows.map KeyedRow.key :=
+  List.mem_map.mpr ⟨table.rows[node.val], List.getElem_mem node.isLt, rfl⟩
+
+theorem key_injective (table : KeyedTable Key Label) : Function.Injective table.key := by
+  intro first second same
+  apply Fin.ext
+  apply (List.Nodup.getElem_inj_iff table.valid.1
+    (hi := by rw [List.length_map]; exact first.isLt)
+    (hj := by rw [List.length_map]; exact second.isLt)).mp
+  simpa [key] using same
+
+variable [DecidableEq Key]
+
+/-- The checked first position of a key. The membership proof only supplies
+the finite bound; it does not choose a node. -/
+def nodeOf (table : KeyedTable Key Label) (wanted : Key)
+    (present : wanted ∈ table.rows.map KeyedRow.key) : table.Node :=
+  ⟨(table.rows.map KeyedRow.key).idxOf wanted,
+    by simpa using List.idxOf_lt_length_of_mem present⟩
+
+theorem key_nodeOf (table : KeyedTable Key Label) (wanted : Key)
+    (present : wanted ∈ table.rows.map KeyedRow.key) :
+    table.key (table.nodeOf wanted present) = wanted := by
+  have bound := List.idxOf_lt_length_of_mem present
+  have found := List.getElem_idxOf bound
+  simp only [List.getElem_map] at found
+  exact found
+
+def node? (table : KeyedTable Key Label) (wanted : Key) : Option table.Node :=
+  if present : wanted ∈ table.rows.map KeyedRow.key then
+    some (table.nodeOf wanted present) else none
+
+theorem node?_key (table : KeyedTable Key Label) (node : table.Node) :
+    table.node? (table.key node) = some node := by
+  have same : table.nodeOf (table.key node) (table.key_mem node) = node :=
+    table.key_injective (table.key_nodeOf _ _)
+  simp only [node?, dif_pos (table.key_mem node), same]
+
+theorem node?_eq_some_iff (table : KeyedTable Key Label) (wanted : Key) (node : table.Node) :
+    table.node? wanted = some node ↔ table.key node = wanted := by
+  constructor
+  · intro found
+    unfold node? at found
+    split at found
+    · next present =>
+      cases Option.some.inj found
+      exact table.key_nodeOf wanted present
+    · simp at found
+  · intro same
+    rw [← same]
+    exact table.node?_key node
+
+theorem node?_complete (table : KeyedTable Key Label) (wanted : Key)
+    (present : wanted ∈ table.rows.map KeyedRow.key) :
+    ∃ node, table.node? wanted = some node :=
+  ⟨table.nodeOf wanted present, by simp [node?, present]⟩
+
+theorem node?_none_iff (table : KeyedTable Key Label) (wanted : Key) :
+    table.node? wanted = none ↔ wanted ∉ table.rows.map KeyedRow.key := by
+  simp [node?]
+
+/-- Each ordered child occurrence is mapped to its admitted finite node.
+Closure supplies bounds; no child is filtered out. -/
+def graph (table : KeyedTable Key Label) : Graph table.Node Label where
+  label node := table.rows[node.val].label
+  children node := table.rows[node.val].children.attach.map fun child =>
+    table.nodeOf child.val
+      (table.valid.2 table.rows[node.val] (List.getElem_mem node.isLt) child.val child.property)
+
+theorem graph_label (table : KeyedTable Key Label) (node : table.Node) :
+    table.graph.label node = table.rows[node.val].label := rfl
+
+/-- The child-key list is exact, including argument order and multiplicity. -/
+theorem graph_children_keys (table : KeyedTable Key Label) (node : table.Node) :
+    (table.graph.children node).map table.key = table.rows[node.val].children := by
+  simp [graph, List.map_map, Function.comp_def, key_nodeOf]
+
+end KeyedTable
+
+/-- Independent first-row lookup on the written keyed inventory. This does not
+use the finite-node constructor or its position search. -/
+def lookupKeyed {Key : Type u} {Label : Type v} [DecidableEq Key]
+    (rows : List (KeyedRow Key Label)) (wanted : Key) : Option (KeyedRow Key Label) :=
+  rows.find? (fun row => decide (row.key = wanted))
+
+theorem lookupKeyed_none_iff {Key : Type u} {Label : Type v} [DecidableEq Key]
+    (rows : List (KeyedRow Key Label)) (wanted : Key) :
+    lookupKeyed rows wanted = none ↔ wanted ∉ rows.map KeyedRow.key := by
+  rw [lookupKeyed, List.find?_eq_none]
+  constructor
+  · intro absent present
+    obtain ⟨row, member, same⟩ := List.mem_map.mp present
+    exact absent row member (by simp [same])
+  · intro absent row member matched
+    exact absent (List.mem_map.mpr ⟨row, member, of_decide_eq_true matched⟩)
+
+theorem lookupKeyed_some {Key : Type u} {Label : Type v} [DecidableEq Key]
+    {rows : List (KeyedRow Key Label)} {wanted : Key} {row : KeyedRow Key Label}
+    (found : lookupKeyed rows wanted = some row) : row ∈ rows ∧ row.key = wanted :=
+  ⟨List.mem_of_find?_eq_some found, of_decide_eq_true
+    (List.find?_some (p := fun item : KeyedRow Key Label => decide (item.key = wanted)) found)⟩
+
+theorem lookupKeyed_of_member {Key : Type u} {Label : Type v} [DecidableEq Key]
+    {rows : List (KeyedRow Key Label)} (unique : (rows.map KeyedRow.key).Nodup)
+    (row : KeyedRow Key Label) (member : row ∈ rows) :
+    lookupKeyed rows row.key = some row := by
+  cases found : lookupKeyed rows row.key with
+  | none =>
+    exact False.elim ((lookupKeyed_none_iff rows row.key).mp found
+      (List.mem_map.mpr ⟨row, member, rfl⟩))
+  | some first =>
+    obtain ⟨firstMember, sameKey⟩ := lookupKeyed_some found
+    have same : first = row := List.inj_on_of_nodup_map unique firstMember member sameKey
+    exact congrArg some same
+
+namespace KeyedTable
+
+variable {Key : Type u} {Label : Type v} [DecidableEq Key]
+
+theorem lookupKeyed_node (table : KeyedTable Key Label) (node : table.Node) :
+    lookupKeyed table.rows (table.key node) = some table.rows[node.val] :=
+  lookupKeyed_of_member table.valid.1 _ (List.getElem_mem node.isLt)
+
+/-- The executable position lookup returns precisely the linear oracle's row. -/
+theorem node?_readback (table : KeyedTable Key Label) (wanted : Key) (node : table.Node)
+    (found : table.node? wanted = some node) :
+    lookupKeyed table.rows wanted = some table.rows[node.val] := by
+  rw [← (table.node?_eq_some_iff wanted node).mp found]
+  exact table.lookupKeyed_node node
+
+/-- Position search and independent row search agree on success and absence. -/
+theorem node?_lookup_eq (table : KeyedTable Key Label) (wanted : Key) :
+    (table.node? wanted).map (fun node => table.rows[node.val]) =
+      lookupKeyed table.rows wanted := by
+  cases found : table.node? wanted with
+  | none =>
+    exact ((lookupKeyed_none_iff table.rows wanted).mpr
+      ((table.node?_none_iff wanted).mp found)).symm
+  | some node => exact (table.node?_readback wanted node found).symm
+
+theorem node?_graph_readback (table : KeyedTable Key Label) (wanted : Key)
+    (node : table.Node) (row : KeyedRow Key Label)
+    (found : table.node? wanted = some node) (read : lookupKeyed table.rows wanted = some row) :
+    table.graph.label node = row.label ∧
+      (table.graph.children node).map table.key = row.children := by
+  have same : table.rows[node.val] = row :=
+    Option.some.inj ((table.node?_readback wanted node found).symm.trans read)
+  rw [table.graph_label, table.graph_children_keys, same]
+  exact ⟨rfl, rfl⟩
+
+end KeyedTable
+
+/-- A partial structural observation at a key. A layer exposes its label and
+ordered child occurrences without choosing a finite graph presentation. -/
+abbrev LayerReader (Key : Type u) (Label : Type v) := Key → Option (Label × List Key)
+
+namespace LayerReader
+
+variable {Key : Type u} {Label : Type v}
+
+def readRow? (reader : LayerReader Key Label) (key : Key) : Option (KeyedRow Key Label) :=
+  (reader key).map (fun layer => ⟨key, layer.1, layer.2⟩)
+
+theorem readRow?_sound {reader : LayerReader Key Label} {key : Key}
+    {row : KeyedRow Key Label} (read : reader.readRow? key = some row) :
+    row.key = key ∧ reader key = some (row.label, row.children) := by
+  obtain ⟨⟨label, children⟩, layer, same⟩ := Option.map_eq_some_iff.mp read
+  cases same
+  exact ⟨rfl, layer⟩
+
+def readRows? (reader : LayerReader Key Label) (keys : List Key) :
+    Option (List (KeyedRow Key Label)) :=
+  (Fin.sequenceOption keys.length
+    (fun index => reader.readRow? keys[index.val])).map List.ofFn
+
+theorem readRows?_member {reader : LayerReader Key Label} {keys : List Key}
+    {rows : List (KeyedRow Key Label)} (read : reader.readRows? keys = some rows)
+    (row : KeyedRow Key Label) (member : row ∈ rows) :
+    ∃ key ∈ keys, reader.readRow? key = some row := by
+  obtain ⟨family, sequence, same⟩ := Option.map_eq_some_iff.mp read
+  subst rows
+  obtain ⟨index, rfl⟩ := List.mem_ofFn.mp member
+  exact ⟨keys[index.val], List.getElem_mem index.isLt,
+    Fin.sequenceOption_sound keys.length sequence index⟩
+
+theorem readRows?_keys {reader : LayerReader Key Label} {keys : List Key}
+    {rows : List (KeyedRow Key Label)} (read : reader.readRows? keys = some rows) :
+    rows.map KeyedRow.key = keys := by
+  obtain ⟨family, sequence, same⟩ := Option.map_eq_some_iff.mp read
+  subst rows
+  have keysEqual : (fun index => (family index).key) = (fun index => keys[index.val]) := by
+    funext index
+    exact (readRow?_sound (Fin.sequenceOption_sound keys.length sequence index)).1
+  simpa only [List.map_ofFn, Function.comp_def, keysEqual] using
+    (List.ofFn_getElem (xs := keys))
+
+/-- Read the full supplied inventory and then check unique keys and closure.
+Duplicate children are retained; duplicate row keys and dangling children fail. -/
+def readTable? [DecidableEq Key] (reader : LayerReader Key Label) (keys : List Key) :
+    Option (KeyedTable Key Label) :=
+  (reader.readRows? keys).bind decodeKeyedTable?
+
+theorem readTable?_isSome_iff [DecidableEq Key] (reader : LayerReader Key Label)
+    (keys : List Key) :
+    (reader.readTable? keys).isSome = true ↔
+      ∃ rows, reader.readRows? keys = some rows ∧ KeyedInventoryValid rows := by
+  cases read : reader.readRows? keys with
+  | none => simp [readTable?, read]
+  | some rows => simp [readTable?, read, decodeKeyedTable?_isSome_iff]
+
+/-- Admission keeps exactly the supplied key order. It neither deduplicates
+keys nor replaces their identity with equality of their observed labels. -/
+theorem readTable?_keys [DecidableEq Key] {reader : LayerReader Key Label} {keys : List Key}
+    {table : KeyedTable Key Label} (read : reader.readTable? keys = some table) :
+    table.rows.map KeyedRow.key = keys := by
+  obtain ⟨rows, reads, admitted⟩ := Option.bind_eq_some_iff.mp read
+  rw [(decodeKeyedTable?_sound admitted).1]
+  exact readRows?_keys reads
+
+/-- The commuting layer equation follows from executable row reads and
+checked admission, without assuming a graph correspondence. -/
+theorem readTable?_layer [DecidableEq Key] {reader : LayerReader Key Label} {keys : List Key}
+    {table : KeyedTable Key Label} (read : reader.readTable? keys = some table)
+    (node : table.Node) :
+    reader (table.key node) =
+      some (table.graph.label node, (table.graph.children node).map table.key) := by
+  obtain ⟨rows, reads, admitted⟩ := Option.bind_eq_some_iff.mp read
+  have same := (decodeKeyedTable?_sound admitted).1
+  have member : table.rows[node.val] ∈ rows := by
+    rw [← same]
+    exact List.getElem_mem node.isLt
+  obtain ⟨key, _, decoded⟩ := readRows?_member reads table.rows[node.val] member
+  obtain ⟨keyEqual, layer⟩ := readRow?_sound decoded
+  rw [table.graph_label, table.graph_children_keys]
+  simpa only [KeyedTable.key, keyEqual] using layer
+
+/-- Direct bounded traversal is independent of inventory admission and finite
+node construction. Even depth zero checks that its root layer is readable. -/
+def observe (reader : LayerReader Key Label) : Nat → Key → Option (Observation Label)
+  | 0, key => (reader key).map (fun _ => .cut)
+  | depth + 1, key =>
+      match reader key with
+      | none => none
+      | some (label, children) =>
+          (children.mapM (reader.observe depth)).map (Observation.node label)
+
+/-- Every finite graph observation agrees with direct structural reads, at
+arbitrary depth and with the ordered list of repeated child occurrences intact. -/
+theorem readTable?_observe [DecidableEq Key] {reader : LayerReader Key Label} {keys : List Key}
+    {table : KeyedTable Key Label} (read : reader.readTable? keys = some table)
+    (depth : Nat) (node : table.Node) :
+    reader.observe depth (table.key node) =
+      some (RationalTermGraph.observe table.graph depth node) := by
+  induction depth generalizing node with
+  | zero => simp [observe, readTable?_layer read node, RationalTermGraph.observe]
+  | succ depth ih =>
+      simp only [observe, readTable?_layer read node, RationalTermGraph.observe]
+      have children (nodes : List table.Node) :
+          (nodes.map table.key).mapM (reader.observe depth) =
+            some (nodes.map (RationalTermGraph.observe table.graph depth)) := by
+        induction nodes with
+        | nil => rfl
+        | cons first rest restIH => simp [ih first, restIH]
+      rw [children]
+      rfl
+
+/-- Two independently read presentations have the same graph unfolding
+exactly when all direct finite observations agree. Their key types may differ. -/
+theorem readTable?_bisimilar_iff {OtherKey : Type w} [DecidableEq Key] [DecidableEq OtherKey]
+    {firstReader : LayerReader Key Label} {secondReader : LayerReader OtherKey Label}
+    {firstKeys : List Key} {secondKeys : List OtherKey}
+    {first : KeyedTable Key Label} {second : KeyedTable OtherKey Label}
+    (firstRead : firstReader.readTable? firstKeys = some first)
+    (secondRead : secondReader.readTable? secondKeys = some second)
+    (left : first.Node) (right : second.Node) :
+    Bisimilar first.graph second.graph left right ↔
+      ∀ depth, firstReader.observe depth (first.key left) =
+        secondReader.observe depth (second.key right) := by
+  rw [bisimilar_iff_observe_eq]
+  simp only [readTable?_observe firstRead, readTable?_observe secondRead, Option.some.injEq]
+
+end LayerReader
+
+/-- Independently unfold the keyed inventory by linear row lookup. Missing
+roots or children give `none`, including at the depth boundary. -/
+def observeKeyed {Key : Type u} {Label : Type v} [DecidableEq Key]
+    (rows : List (KeyedRow Key Label)) : Nat → Key → Option (Observation Label) :=
+  LayerReader.observe (fun wanted =>
+    (lookupKeyed rows wanted).map (fun row => (row.label, row.children)))
+
+/-- The admitted finite graph and the independent keyed unfolding expose the
+same finite observations at every depth, including on cyclic inventories. -/
+theorem KeyedTable.observeKeyed_graph {Key : Type u} {Label : Type v} [DecidableEq Key]
+    (table : KeyedTable Key Label) (depth : Nat) (node : table.Node) :
+    observeKeyed table.rows depth (table.key node) = some (observe table.graph depth node) := by
+  induction depth generalizing node with
+  | zero => simp [observeKeyed, LayerReader.observe, table.lookupKeyed_node, observe]
+  | succ depth ih =>
+    simp only [observeKeyed, LayerReader.observe, table.lookupKeyed_node,
+      Option.map_some, observe]
+    rw [← table.graph_children_keys node]
+    have children (nodes : List table.Node) :
+        (nodes.map table.key).mapM (observeKeyed table.rows depth) =
+          some (nodes.map (observe table.graph depth)) := by
+      induction nodes with
+      | nil => rfl
+      | cons first rest restIH => simp [ih first, restIH]
+    simp only [observeKeyed] at children
+    rw [children]
+    rfl
+
+theorem observeKeyed_missing {Key : Type u} {Label : Type v} [DecidableEq Key]
+    (rows : List (KeyedRow Key Label)) (wanted : Key)
+    (missing : wanted ∉ rows.map KeyedRow.key) (depth : Nat) :
+    observeKeyed rows depth wanted = none := by
+  cases depth <;>
+    simp [observeKeyed, LayerReader.observe, (lookupKeyed_none_iff rows wanted).mpr missing]
+
+namespace KeyedControls
+
+private def cyclicRows : List (KeyedRow Nat Nat) :=
+  [⟨10, 7, [20, 20, 10]⟩, ⟨20, 8, [10]⟩]
+
+private def cyclicReader : LayerReader Nat Nat
+  | 10 => some (7, [20, 20, 10])
+  | 20 => some (8, [10])
+  | _ => none
+
+theorem layer_reader_keeps_the_inventory_and_repeated_children :
+    cyclicReader.readRows? [10, 20] = some cyclicRows ∧
+    (cyclicReader.readTable? [10, 20]).isSome = true := by decide
+
+theorem layer_reader_rejects_duplicate_dangling_and_unreadable_keys :
+    (cyclicReader.readTable? [10, 20, 10]).isSome = false ∧
+    (cyclicReader.readTable? [10]).isSome = false ∧
+    (cyclicReader.readTable? [10, 20, 999]).isSome = false := by decide
+
+theorem layer_reader_unfolds_cycles_and_checks_depth_boundary :
+    cyclicReader.observe 2 10 =
+      some (.node 7 [.node 8 [.cut], .node 8 [.cut], .node 7 [.cut, .cut, .cut]]) ∧
+    cyclicReader.observe 0 999 = none := by
+  constructor <;> rfl
+
+private def cyclicTable : KeyedTable Nat Nat :=
+  (decodeKeyedTable? cyclicRows).get (by decide)
+
+private def root : cyclicTable.Node := ⟨0, by decide⟩
+
+/-- The inventory is finite while its presentation contains both a cycle and
+two occurrences of the same child at distinct ordered positions. -/
+theorem cycles_and_repeated_children_are_admitted :
+    (decodeKeyedTable? cyclicRows).isSome = true ∧
+    cyclicTable.node? 10 = some root ∧
+    cyclicTable.graph.label root = 7 ∧
+    (cyclicTable.graph.children root).map Fin.val = [1, 1, 0] ∧
+    (cyclicTable.graph.children root).map cyclicTable.key = [20, 20, 10] := by decide
+
+theorem cyclic_unfolding_keeps_child_order_and_multiplicity :
+    observe cyclicTable.graph 2 root =
+      .node 7 [.node 8 [.cut], .node 8 [.cut], .node 7 [.cut, .cut, .cut]] ∧
+    observeKeyed cyclicRows 2 10 =
+      some (.node 7 [.node 8 [.cut], .node 8 [.cut], .node 7 [.cut, .cut, .cut]]) := by
+  constructor <;> rfl
+
+theorem duplicate_keys_and_unknown_children_are_refused :
+    (decodeKeyedTable? [⟨10, 7, []⟩, ⟨10, 8, []⟩] : Option (KeyedTable Nat Nat)) = none ∧
+    (decodeKeyedTable? [⟨10, 7, [20]⟩] : Option (KeyedTable Nat Nat)) = none ∧
+    observeKeyed ([⟨10, 7, [20]⟩] : List (KeyedRow Nat Nat)) 1 10 = none ∧
+    observeKeyed cyclicRows 0 999 = none := by decide
+
+private def worldRows : List (KeyedRow (Nat × Nat) Nat) :=
+  [⟨(7, 31), 1, []⟩, ⟨(9, 31), 2, []⟩]
+
+private def addressOnlyRows : List (KeyedRow Nat Nat) :=
+  worldRows.map fun row => ⟨row.key.2, row.label, row.children.map Prod.snd⟩
+
+/-- Equal addresses in different worlds are distinct keys. Erasing the world
+turns them into duplicate rows and cannot be an admitted representation. -/
+theorem key_collapse_is_not_admission :
+    (decodeKeyedTable? worldRows).isSome = true ∧
+    decodeKeyedTable? addressOnlyRows = none := by decide
+
+private def equalLabelRows : List (KeyedRow Nat Nat) := [⟨10, 7, []⟩, ⟨20, 7, []⟩]
+
+private def equalLabelTable : KeyedTable Nat Nat :=
+  (decodeKeyedTable? equalLabelRows).get (by decide)
+
+/-- Equal labels and unfoldings do not collapse the two actual keyed nodes. -/
+theorem equal_observations_keep_distinct_keys :
+    equalLabelTable.node? 10 ≠ equalLabelTable.node? 20 ∧
+    observeKeyed equalLabelRows 3 10 = observeKeyed equalLabelRows 3 20 := by
+  exact ⟨by decide, rfl⟩
+
+end KeyedControls
 
 section Relabel
 

@@ -72,7 +72,7 @@ theorem mettaCall_error_always (space : Space) (dispatch : GroundedDispatch)
 /-! ## Leaf Operation Properties -/
 
 /-- Empty bindings have no loop. -/
-theorem empty_bindings_no_loop : Bindings.empty.hasLoop = false := rfl
+theorem empty_bindings_no_loop : Bindings.empty.hasLoop = false := Bindings.hasLoop_empty
 
 /-- matchTypes with %Undefined% on the left always succeeds. -/
 theorem matchTypes_undefined_succeeds (t : Atom) (b : Bindings) :
@@ -90,7 +90,7 @@ theorem matchAtoms_refl_symbol (s : String) (fuel : Nat) (h : fuel > 0) :
   cases fuel with
   | zero => omega
   | succ n =>
-    simp [matchAtoms, Atom.symbolType, getMetaType, Bindings.empty, Bindings.hasLoop]
+    simp [matchAtoms, Atom.symbolType, getMetaType, Bindings.hasLoop_empty]
 
 /-! ## MinimalStep Properties -/
 

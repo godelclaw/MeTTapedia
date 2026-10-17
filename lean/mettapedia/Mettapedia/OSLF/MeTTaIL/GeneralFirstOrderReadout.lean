@@ -15,6 +15,144 @@ namespace Mettapedia.OSLF.MeTTaIL.GeneralFirstOrderProjection
 
 open Syntax RuleBinding ScopedRuleMatching GeneralScopedMatch Match MatchSpec
 
+@[simp] theorem ordinary_names (assignment : ScopedRuleMatching.Assignment) :
+    (ordinary assignment).map Prod.fst = assignment.map Prod.fst := by
+  simp only [ordinary, List.map_map, Function.comp_def]
+
+theorem scoped_lookup_none_iff_not_mem_names (assignment : ScopedRuleMatching.Assignment) (name : String) :
+    lookup assignment name = none ↔ name ∉ assignment.map Prod.fst := by
+  have ordinaryAbsent := lookup_none_iff_not_mem_names (ordinary assignment) name
+  rw [ordinary_lookup, ordinary_names] at ordinaryAbsent
+  simpa only [Option.map_eq_none_iff] using ordinaryAbsent
+
+/-- A logical agreement retains unique raw stores, their exact bound domain,
+and all lookups. Raw list equality is neither required nor manufactured. -/
+structure BindingAgreement (names : List String) (assignment : ScopedRuleMatching.Assignment)
+    (bindings : Bindings) : Prop where
+  scopedUnique : (assignment.map Prod.fst).Nodup
+  ordinaryUnique : (bindings.map Prod.fst).Nodup
+  scopedNames : ∀ name, name ∈ assignment.map Prod.fst ↔ name ∈ names
+  ordinaryNames : SameNames bindings names
+  lookups : ∀ name, (lookup assignment name).map ContextualValue.body = bindings.lookup name
+
+theorem BindingAgreement.readout {names : List String} {assignment : ScopedRuleMatching.Assignment}
+    {bindings : Bindings} (agreement : BindingAgreement names assignment bindings) (order : List String) :
+    bindingReadout order (ordinary assignment) = bindingReadout order bindings :=
+  bindingReadout_eq_of_lookups order (ordinary assignment) bindings
+    (fun name => (ordinary_lookup assignment name).trans (agreement.lookups name))
+
+theorem BindingAgreement.absent {names : List String} {assignment : ScopedRuleMatching.Assignment}
+    {bindings : Bindings} (agreement : BindingAgreement names assignment bindings) {name : String}
+    (absent : name ∉ names) : lookup assignment name = none ∧ bindings.lookup name = none :=
+  ⟨(scoped_lookup_none_iff_not_mem_names assignment name).mpr
+      (fun member => absent ((agreement.scopedNames name).mp member)),
+   (lookup_none_iff_not_mem_names bindings name).mpr
+      (fun member => absent ((agreement.ordinaryNames name).mp member))⟩
+
+/-- A successful capture adds precisely one name or retains the previous
+capture. It cannot introduce duplicates into a store whose keys are unique. -/
+theorem assign_unique_names {initial final : ScopedRuleMatching.Assignment} {name : String}
+    {value : ContextualValue} (assigned : assign initial name value = some final)
+    (unique : (initial.map Prod.fst).Nodup) :
+    (final.map Prod.fst).Nodup ∧
+      ∀ queried, queried ∈ final.map Prod.fst ↔ queried = name ∨ queried ∈ initial.map Prod.fst := by
+  unfold assign at assigned
+  cases prior : lookup initial name with
+  | none =>
+    cases Option.some.inj (by simpa only [prior] using assigned)
+    refine ⟨List.nodup_cons.mpr ⟨(scoped_lookup_none_iff_not_mem_names initial name).mp prior, unique⟩, ?_⟩
+    intro queried
+    simp only [List.map_cons, List.mem_cons]
+  | some stored =>
+    simp only [prior] at assigned
+    split at assigned
+    · cases Option.some.inj assigned
+      have present : name ∈ initial.map Prod.fst := by
+        by_contra absent
+        have empty := (scoped_lookup_none_iff_not_mem_names initial name).mpr absent
+        rw [prior] at empty
+        cases empty
+      refine ⟨unique, ?_⟩
+      intro queried
+      constructor
+      · exact Or.inr
+      · rintro (rfl | member)
+        · exact present
+        · exact member
+    · cases assigned
+
+theorem capture_unique_names {rule : RewriteRule} {spec : RuleBindingSpec} {ambient depth : Nat}
+    {site : RulePatternSite} {path : List Nat} {initial final : ScopedRuleMatching.Assignment}
+    {name : String} {target : Pattern}
+    (captured : capture? rule spec ambient depth site path initial name target = some final)
+    (unique : (initial.map Prod.fst).Nodup) :
+    (final.map Prod.fst).Nodup ∧
+      ∀ queried, queried ∈ final.map Prod.fst ↔ queried = name ∨ queried ∈ initial.map Prod.fst := by
+  simp only [capture?, Option.bind_eq_bind, Option.bind_eq_some_iff] at captured
+  obtain ⟨_, _, _, _, _, _, assigned⟩ := captured
+  exact assign_unique_names assigned unique
+
+mutual
+  theorem matching_unique_names {rule : RewriteRule} {spec : RuleBindingSpec}
+      {ambient depth : Nat} {site : RulePatternSite} {path : List Nat}
+      {initial final : ScopedRuleMatching.Assignment} {schema target : Pattern}
+      (shape : FirstOrder schema)
+      (matched : Matches rule spec ambient site path depth initial schema target final)
+      (unique : (initial.map Prod.fst).Nodup) :
+      (final.map Prod.fst).Nodup ∧ ∀ name,
+        name ∈ final.map Prod.fst ↔ name ∈ initial.map Prod.fst ∨ name ∈ schema.freeFvarNames := by
+    cases shape with
+    | metavariable name =>
+      cases matched with
+      | capture captured =>
+        obtain ⟨finalUnique, names⟩ := capture_unique_names captured unique
+        refine ⟨finalUnique, ?_⟩
+        intro queried
+        simpa only [Pattern.freeFvarNames, List.mem_singleton, or_comm] using names queried
+    | constructor label arguments shapes =>
+      cases matched with
+      | constructor children =>
+        simpa only [Pattern.freeFvarNames] using arguments_unique_names shapes children unique
+  termination_by sizeOf schema
+
+  theorem arguments_unique_names {rule : RewriteRule} {spec : RuleBindingSpec}
+      {ambient depth index : Nat} {site : RulePatternSite} {path : List Nat}
+      {initial final : ScopedRuleMatching.Assignment} {schemas targets : List Pattern}
+      (shapes : ∀ schema ∈ schemas, FirstOrder schema)
+      (matched : Arguments rule spec ambient site path depth initial index schemas targets final)
+      (unique : (initial.map Prod.fst).Nodup) :
+      (final.map Prod.fst).Nodup ∧ ∀ name,
+        name ∈ final.map Prod.fst ↔ name ∈ initial.map Prod.fst ∨ name ∈ schemas.flatMap Pattern.freeFvarNames := by
+    cases schemas with
+    | nil => cases matched; exact ⟨unique, by simp⟩
+    | cons schema schemas =>
+      cases matched with
+      | cons first rest =>
+        obtain ⟨middleUnique, firstNames⟩ := matching_unique_names (shapes schema (by simp)) first unique
+        obtain ⟨finalUnique, restNames⟩ := arguments_unique_names
+          (fun child member => shapes child (List.mem_cons_of_mem _ member)) rest middleUnique
+        refine ⟨finalUnique, ?_⟩
+        intro name
+        rw [restNames, firstNames]
+        simp only [List.flatMap_cons, List.mem_append, or_assoc]
+  termination_by sizeOf schemas
+end
+
+theorem query_arguments_unique {context : GeneralPremise.Context} {index : Nat}
+    {initial final : ScopedRuleMatching.Assignment} {schemas values : List Pattern}
+    {modes : List RelationArgMode}
+    (shapes : ∀ schema ∈ schemas, FirstOrder schema)
+    (held : GeneralPremise.ArgumentsHold context index initial schemas values modes final)
+    (unique : (initial.map Prod.fst).Nodup) : (final.map Prod.fst).Nodup := by
+  induction held with
+  | nil => exact unique
+  | cons head tail ih =>
+    have tailShapes := fun child member => shapes child (List.mem_cons_of_mem _ member)
+    cases head with
+    | input _ => exact ih tailShapes unique
+    | output matching =>
+      exact ih tailShapes (matching_unique_names (shapes _ (by simp)) matching unique).1
+
  theorem inferred_success_arguments_empty {rule : RewriteRule} {name : String}
     {site : RulePatternSite} {path : List Nat} {arguments : List Pattern}
     (read : arguments? rule (GeneralRuleBindingInference.inferredSpec rule) name site path = some arguments) :

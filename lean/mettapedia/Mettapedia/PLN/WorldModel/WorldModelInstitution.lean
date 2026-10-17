@@ -1,4 +1,4 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 /-!
 # WM Institution Layer (BinaryEvidence-Valued)

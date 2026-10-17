@@ -36,6 +36,9 @@ inductive Obligation where
   | signatureUnavailable (relation : String) (arity : Nat)
   | inputUnavailable (rowIndex argumentIndex : Nat)
   | argumentShape (rowIndex argumentIndex : Nat)
+  | dynamicInputUnavailable (argumentIndex : Nat)
+  | dynamicArgumentShape (argumentIndex : Nat)
+  | dynamicUnavailable (relation : String)
   deriving Repr, DecidableEq
 
 structure RowsFrame (environment : Environment) (request : Request) where
@@ -76,9 +79,41 @@ structure MatcherFrame (environment : Environment) (request : Request) where
     TracedQuery environment request.context request.relation request.arguments request.initial
       rowIndex final ((origins ++ [(argumentIndex, answer.trace)]) ++ traces)
 
+/-- Input resolution is retained separately from row matching. The provider
+receives concrete inputs and the original output schemas, never bindings from
+a different query occurrence. -/
+structure DynamicInputsFrame (environment : Environment) (request : Request) where
+  signature : Signature
+  signatureFound : signature? environment.provider request.relation request.arguments.length =
+    some signature
+  registered : request.relation ∈ environment.provider.dynamicRelations
+  index : Nat
+  schemas : List Pattern
+  modes : List RelationArgMode
+  resolvedRev : List Pattern
+  finish : ∀ values,
+    DynamicInputs request.context index request.initial schemas modes values →
+    DynamicInputs request.context 0 request.initial request.arguments signature.modes
+      (resolvedRev.reverse ++ values)
+
+/-- A dynamic table is obtained once and retained while each occurrence is
+matched. Its source relation is independent of the query machine. -/
+structure DynamicRowsFrame (environment : Environment) (request : Request) where
+  signature : Signature
+  signatureFound : signature? environment.provider request.relation request.arguments.length =
+    some signature
+  registered : request.relation ∈ environment.provider.dynamicRelations
+  resolved : List Pattern
+  inputs : DynamicInputs request.context 0 request.initial request.arguments signature.modes resolved
+  rows : List (List Pattern)
+  source : environment.dynamic.Source request.relation resolved rows
+  cursor : Nat
+
 inductive Task (environment : Environment) (request : Request) where
   | start
   | rows (frame : RowsFrame environment request)
+  | dynamicInputs (frame : DynamicInputsFrame environment request)
+  | dynamicRows (frame : DynamicRowsFrame environment request)
   | arguments (frame : ArgumentsFrame environment request)
   | matcher (frame : MatcherFrame environment request)
 

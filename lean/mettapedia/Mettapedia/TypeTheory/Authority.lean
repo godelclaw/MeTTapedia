@@ -32,6 +32,9 @@ universe u v w x y z k b c p
 
 /-! ## Authorities -/
 
+-- The bundled carrier joins these levels; its two evidence fields still
+-- admit independent sorts, including propositions on just one polarity.
+set_option linter.checkUnivs false in
 /-- An authority fixes a judgment's meaning and the evidence accepted for
 both polarities. -/
 structure Authority (Judgment : Type u) where
@@ -475,7 +478,7 @@ def AxisRefines
   | .budget => BudgetRefines before after
   | .authority => AuthorityRefines before after
 
-def BudgetRefinementEvidence.support
+theorem BudgetRefinementEvidence.support
     {Established : Type u} {Refuted : Type v}
     {Boundary : Type w} {Incomplete : Type x}
     {before after : Outcome Established Refuted Boundary Incomplete} :
@@ -505,7 +508,7 @@ theorem nonempty_budgetRefinementEvidence_iff
     | incompleteEstablished _ _ => exact ⟨.incompleteEstablished _ _⟩
     | incompleteRefuted _ _ => exact ⟨.incompleteRefuted _ _⟩
 
-def AuthorityRefinementEvidence.support
+theorem AuthorityRefinementEvidence.support
     {Established : Type u} {Refuted : Type v}
     {Boundary : Type w} {Incomplete : Type x}
     {before after : Outcome Established Refuted Boundary Incomplete} :
@@ -540,7 +543,7 @@ theorem nonempty_authorityRefinementEvidence_iff
 
 /-- Every proof-relevant witness has the proposition-valued support selected
 by its axis. -/
-def AxisRefinementEvidence.support
+theorem AxisRefinementEvidence.support
     {Established : Type u} {Refuted : Type v}
     {Boundary : Type w} {Incomplete : Type x}
     {axis : RefinementAxis}

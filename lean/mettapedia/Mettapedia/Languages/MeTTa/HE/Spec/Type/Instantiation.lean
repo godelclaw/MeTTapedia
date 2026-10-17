@@ -12,19 +12,15 @@ cannot present an unconstrained variable as anything but itself, which is
 the presentation law the escape counterexample demanded.
 
 Exports: determinism (functionality), coincidence with the executable-free
-`apply` function in both directions, unresolved-variable preservation, and
-the commuting bridge to the Lea-side substitution application through the
-structural translation — the form the fold-to-runtime correspondence
-consumes.
+`apply` function in both directions, and unresolved-variable preservation.
+The structural runtime bridge is maintained downstream in `LeaTTaTypeImage`.
 -/
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
-import Mettapedia.Languages.MeTTa.HE.LeaTTaTypeImage
 
 namespace Mettapedia.Languages.MeTTa.HE.Spec.Type.Instantiation
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
-open Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 
 /-! ## The relation -/
 
@@ -264,104 +260,5 @@ theorem unresolved_preservation {σ : TypeSubst} {a : Atom}
     TypeInstantiatePresentationRel σ a a :=
   (coincidence σ a a).mpr
     (apply_id_of_unresolved (sizeOf a) a le_rfl hfree)
-
-/-! ## The Lea-side bridge -/
-
-/-- Translate a spec finite type substitution to a Lea substitution. -/
-def toLeaTTaTypeSubst (σ : TypeSubst) : Metta.Subst :=
-  σ.map fun entry => (entry.1, toLeaTTaAtom entry.2)
-
-private theorem lookup_comm (σ : TypeSubst) (name : String) :
-    Metta.Subst.lookup (toLeaTTaTypeSubst σ) name =
-      (σ.lookup name).map toLeaTTaAtom := by
-  induction σ with
-  | nil => simp [toLeaTTaTypeSubst, Metta.Subst.lookup, TypeSubst.lookup]
-  | cons entry rest ih =>
-    simp only [toLeaTTaTypeSubst, List.map_cons, Metta.Subst.lookup,
-      TypeSubst.lookup]
-    by_cases hname : name = entry.1
-    · subst hname
-      simp
-    · have hbeq : (name == entry.1) = false := by
-        simpa using hname
-      simp only [hbeq, if_neg hname]
-      simp only [Bool.false_eq_true, if_false]
-      exact ih
-
-private theorem toLeaTTaAtoms_map_comm {σ : TypeSubst} :
-    ∀ {atoms : List Atom},
-      (∀ x ∈ atoms, toLeaTTaAtom (σ.apply x) =
-        Metta.Subst.apply (toLeaTTaTypeSubst σ) (toLeaTTaAtom x)) →
-      toLeaTTaAtoms (atoms.map σ.apply) =
-        (toLeaTTaAtoms atoms).map
-          (Metta.Subst.apply (toLeaTTaTypeSubst σ)) := by
-  intro atoms
-  induction atoms with
-  | nil => intro _; rfl
-  | cons x xtail ih =>
-    intro hpt
-    simp only [List.map_cons, toLeaTTaAtoms, List.cons.injEq]
-    exact ⟨hpt x List.mem_cons_self,
-      ih fun z hz => hpt z (List.mem_cons_of_mem _ hz)⟩
-
-/-- **The commuting square.**  specification one-pass application translates to
-Lea-side substitution application. -/
-theorem toLeaTTaAtom_apply_comm (σ : TypeSubst) :
-    ∀ a : Atom,
-      toLeaTTaAtom (σ.apply a) =
-        Metta.Subst.apply (toLeaTTaTypeSubst σ) (toLeaTTaAtom a) := by
-  suffices key : ∀ (n : Nat) (a : Atom), sizeOf a ≤ n →
-      toLeaTTaAtom (σ.apply a) =
-        Metta.Subst.apply (toLeaTTaTypeSubst σ) (toLeaTTaAtom a) by
-    intro a
-    exact key (sizeOf a) a le_rfl
-  intro n
-  induction n with
-  | zero =>
-    intro a hsize
-    exact absurd hsize (by have := instantiation_size_pos a; omega)
-  | succ n ihn =>
-    intro a hsize
-    cases a with
-    | symbol name =>
-      simp [TypeSubst.apply, toLeaTTaAtom, Metta.Subst.apply]
-    | grounded value =>
-      simp [TypeSubst.apply, toLeaTTaAtom, Metta.Subst.apply]
-    | var name =>
-      simp only [TypeSubst.apply, toLeaTTaAtom, Metta.Subst.apply,
-        lookup_comm]
-      cases hlookup : σ.lookup name with
-      | none => simp [toLeaTTaAtom]
-      | some value => simp
-    | expression atoms =>
-      simp only [TypeSubst.apply, toLeaTTaAtom, Metta.Subst.apply,
-        Metta.Atom.expr.injEq]
-      have hatoms : sizeOf atoms ≤ n := by
-        simp at hsize
-        omega
-      apply toLeaTTaAtoms_map_comm
-      intro x hx
-      have hxsize : sizeOf x ≤ n := by
-        have := instantiation_size_lt_of_mem hx
-        omega
-      exact ihn x hxsize
-
-/-- Relation-level bridge: every derivation translates to a Lea-side
-substitution-application equation — the form the fold-to-runtime
-correspondence consumes. -/
-theorem rel_toLeaTTa_bridge {σ : TypeSubst} {a b : Atom}
-    (h : TypeInstantiatePresentationRel σ a b) :
-    Metta.Subst.apply (toLeaTTaTypeSubst σ) (toLeaTTaAtom a) =
-      toLeaTTaAtom b := by
-  rw [agreement h]
-  exact (toLeaTTaAtom_apply_comm σ a).symm
-
-/-- Instantiation outputs of translated inputs are in the HE image. -/
-theorem rel_output_heImage {σ : TypeSubst} {a b : Atom}
-    (h : TypeInstantiatePresentationRel σ a b) :
-    LeaAtomHEImage (Metta.Subst.apply (toLeaTTaTypeSubst σ)
-      (toLeaTTaAtom a)) := by
-  rw [rel_toLeaTTa_bridge h]
-  exact leaAtomHEImage_toLeaTTaAtom b
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Type.Instantiation

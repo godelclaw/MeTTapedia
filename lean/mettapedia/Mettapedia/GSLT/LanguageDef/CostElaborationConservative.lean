@@ -79,7 +79,7 @@ theorem quoteStatic_natural {source target : CIGSLT}
   simpa only [reflectiveIsQuoteConstructor_mapCostStatic] using generated
 
 /-- Identity preserves both decomposition decisions. -/
-def id (source : CIGSLT) :
+theorem id (source : CIGSLT) :
     CostElaborationReindexLaws (CIGSLT.Morphism.id source) where
   quoteClassificationNatural := by
     intro constructor
@@ -123,7 +123,7 @@ def id (source : CIGSLT) :
     exact rejected
 
 /-- Conservative decomposition admission is closed under composition. -/
-def comp {first second third : CIGSLT}
+theorem comp {first second third : CIGSLT}
     {left : first.Morphism second} {right : second.Morphism third}
     (leftLaws : CostElaborationReindexLaws left)
     (rightLaws : CostElaborationReindexLaws right) :

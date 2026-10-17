@@ -19,9 +19,11 @@ mirroring the style of `PeTTa/DeclarativeSpec.lean`. It is simultaneously:
 ## 4-Layer HE Spec Pack (Audit View)
 
 1. **Evaluation relations** (`EvalSpec.lean`):
-   Six mutually inductive relations mapping 1:1 to the spec pseudocode:
+   Six evaluation relations and their shared raw-call return judgment:
    `EvalAtom`, `InterpretExpression`, `InterpretFunction`,
-   `InterpretArgs`, `InterpretTuple`, `MettaCall`.
+   `InterpretArgs`, `InterpretTuple`, `MettaCall`, `OrdinaryCallReturnRel`.
+   The last distinguishes a restored invocation, a stopped reply and ordinary
+   recursive evaluation; raw protocol values do not bypass that boundary.
 
 2. **Implementation-refined top-level executable boundary**
    (`ExecutableBoundary.lean`):
@@ -182,7 +184,7 @@ def equationMatchBranch (space : Space) (dispatch : GroundedDispatch)
     (atom type_ : Atom) (b : Bindings) (rhs : Atom)
     (queryBindings merged : Bindings) (result : ResultPair) (fuel : Nat) : Prop :=
   isErrorAtom atom = false ∧
-  (rhs, queryBindings) ∈ queryEquations space atom fuel ∧
+  (rhs, queryBindings) ∈ queryEquationsAvoiding (equationScope [] atom type_ b) space atom fuel ∧
   merged ∈ mergeBindings queryBindings b fuel ∧
   merged.hasLoop = false ∧
   EvalAtom space dispatch (merged.applyFull rhs fuel) type_ merged result ∧
@@ -192,7 +194,7 @@ def equationMatchBranch (space : Space) (dispatch : GroundedDispatch)
 def noMatchBranch (space : Space) (dispatch : GroundedDispatch)
     (atom type_ : Atom) (b : Bindings) (fuel : Nat) : Prop :=
   isErrorAtom atom = false ∧
-  queryEquations space atom fuel = [] ∧
+  queryEquationsAvoiding (equationScope [] atom type_ b) space atom fuel = [] ∧
   MettaCall space dispatch atom type_ b (atom, b)
 
 /-! ### Spec: Minimal MeTTa Instructions — lines 84-91
@@ -334,13 +336,19 @@ example : MettaCall
     (.expression [.symbol "f", .symbol "a"]) Atom.undefinedType emptyB
     (.symbol "result", emptyB) := by
   apply MettaCall.equation_match (fuel := 50) (rhs := .symbol "result")
-    (queryBindings := emptyB) (merged := emptyB)
+    (queryBindings := emptyB) (merged := emptyB) (avoid := [])
   case h_not_error => rfl
   case h_not_grounded => trivial
+  case h_cover =>
+    intro name h
+    simp [equationScope, atomVariables, atomListVariables, Bindings.names, emptyB, Bindings.empty, Atom.undefinedType] at h
   case h_query => decide
   case h_merge => decide
   case h_no_loop => rfl
   case h_recurse =>
+    apply OrdinaryCallReturnRel.evaluated
+    · decide
+    · rfl
     apply EvalAtom.type_cast (fuel := 50)
     · rfl
     · decide
@@ -352,9 +360,12 @@ example : MettaCall
 example : MettaCall emptySpace noDispatch
     (.expression [.symbol "f", .symbol "a"]) Atom.undefinedType emptyB
     (.expression [.symbol "f", .symbol "a"], emptyB) := by
-  apply MettaCall.no_match (fuel := 50)
+  apply MettaCall.no_match (fuel := 50) (avoid := [])
   case h_not_error => rfl
   case h_not_grounded => trivial
+  case h_cover =>
+    intro name h
+    simp [equationScope, atomVariables, atomListVariables, Bindings.names, emptyB, Bindings.empty, Atom.undefinedType] at h
   case h_no_eqs => rfl
 
 /-- Positive: cons-atom builds expression.
@@ -508,11 +519,11 @@ theorem cons_decons_roundtrip (services : Spec.Eval.Minimal.Services)
 | Constructor              | Spec Line | Description                  |
 |-------------------------|-----------|------------------------------|
 | `error_passthrough`      | 359       | error passes through          |
-| `grounded_ok`            | 365-368   | grounded dispatch, Ok result  |
+| `grounded_ok`            | 365-368   | grounded dispatch, raw result through ordinary return |
 | `grounded_runtime_error` | 369-370   | grounded dispatch, error      |
 | `grounded_no_reduce`     | 371-372   | grounded dispatch, NoReduce   |
 | `grounded_incorrect_arg` | 373-374   | grounded dispatch, bad arg    |
-| `equation_match`         | 376-382   | equation query match (applies merged bindings to RHS) |
+| `equation_match`         | 376-382   | matched RHS under merged bindings, then ordinary return |
 | `no_match`               | 383-384   | no equations match            |
 | `empty_results`          | 386-387   | all paths empty (non-grounded) |
 | `grounded_empty_results` | 386-387   | grounded dispatch returns empty list |

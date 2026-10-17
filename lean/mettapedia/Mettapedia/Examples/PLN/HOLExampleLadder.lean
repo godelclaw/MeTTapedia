@@ -4,7 +4,6 @@ import Mettapedia.Logic.HOL.WitnessedWorld
 import Mettapedia.Logic.HOL.WitnessedSaturation
 import Mettapedia.Logic.HOL.Embedding.FirstOrder
 import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore
 import Mettapedia.PLN.Bridges.HOL.Probabilistic.BenchmarkBeliefBridge
 import Mettapedia.PLN.RuleFamilies.HigherOrder.PLNProbHOLPlannerBridge
 
@@ -85,17 +84,17 @@ abbrev firstOrderEmbeddingSentenceExample :=
 /-- Positive example: truth of a closed HOL formula is equivalent to singleton
 world-model strength `1` in the pointed-Henkin world-model bridge. -/
 abbrev singletonWorldModelAdequacyExample :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.singleton_adequacy_strength_one
+  @Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.singleton_adequacy_strength_one
 
 /-- Negative example: falsity of a closed HOL formula yields singleton
 counterevidence in the world-model bridge. -/
 abbrev singletonWorldModelCounterevidenceExample :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.holEvidence_singleton_of_not_satisfies
+  @Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.crispEvidence_singleton_of_not_satisfies
 
 /-- Positive example: pointwise HOL implication is exactly singleton
 world-model consequence on pointed Henkin states. -/
 abbrev worldModelSingletonConsequenceExample :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.pointwiseImplies_iff_singletonConsequence
+  @Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.pointwiseImplies_iff_singletonStrengthLE
 
 /-- Positive example: the benchmark hierarchical query strength coincides with
 the higher-order semantic value in the probabilistic HOL bridge. -/

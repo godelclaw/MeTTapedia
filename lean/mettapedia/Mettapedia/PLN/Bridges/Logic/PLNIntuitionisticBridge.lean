@@ -27,7 +27,7 @@ claimed IPL-provable here.
 - Troelstra & van Dalen, "Constructivism in Mathematics" Vol. 1
 -/
 
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Foundation.Propositional.Heyting.Semantics
 import Foundation.Propositional.Kripke.Logic.Int
 import Foundation.Propositional.Kripke.AxiomDummett

@@ -208,3 +208,94 @@ theorem batch_exhaustion_keeps_prefix :
 
 end Controls
 end Mettapedia.Machines.IncrementalConformance.InternProbe
+
+namespace Mettapedia.Machines.IncrementalConformance.InternProbe
+variable {Key Value : Type*} [DecidableEq Key]
+
+/-- Every successful probe names an actual occurrence in its retained sequence. -/
+theorem found_mem (key : Key) (cells : Cells Key Value) (value : Value)
+    (found : (probe key cells).1 = some value) : some (key, value) ∈ cells := by
+  induction cells with
+  | nil => simp [probe] at found
+  | cons cell tail ih =>
+    cases cell with
+    | none => simp [probe] at found
+    | some pair =>
+      rcases pair with ⟨stored, old⟩
+      by_cases same : key = stored
+      · simp only [probe, same, ↓reduceIte] at found
+        cases Option.some.inj found
+        simp [same]
+      · have suffix : (probe key tail).1 = some value := by simpa [probe, same] using found
+        exact List.mem_cons_of_mem _ (ih suffix)
+
+/-- An initialized prefix with no earlier vacancy reaches its target, unless
+an earlier occurrence of the same key has already supplied that same value.
+This is an inventory condition, not a premise about the probe result. -/
+theorem finds_reachable_member (key : Key) (value : Value) (cells : Cells Key Value)
+    (index : Fin cells.length)
+    (there : cells[index.val] = some (key, value))
+    (occupied : ∀ earlier : Fin cells.length, earlier.val < index.val → cells[earlier.val] ≠ none)
+    (coherent : ∀ candidate, some (key, candidate) ∈ cells → candidate = value) :
+    (probe key cells).1 = some value := by
+  induction cells with
+  | nil => exact False.elim (Nat.not_lt_zero _ index.isLt)
+  | cons cell tail ih =>
+    cases offset : index.val with
+    | zero =>
+      have cellEq : cell = some (key, value) := by simpa [offset] using there
+      simp [cellEq, probe]
+    | succ next =>
+      have nextRange : next < tail.length := by have := index.isLt; simp only [List.length_cons] at this; omega
+      have nonempty : cell ≠ none := occupied ⟨0, by simp⟩ (by change 0 < index.val; omega)
+      cases cell with
+      | none => exact False.elim (nonempty rfl)
+      | some pair =>
+        rcases pair with ⟨stored, old⟩
+        by_cases same : key = stored
+        · have oldEq : old = value := coherent old (by simp [same])
+          simp [probe, same, oldEq]
+        · have suffixThere : tail[next] = some (key, value) := by simpa [offset] using there
+          have suffixOccupied : ∀ earlier : Fin tail.length, earlier.val < next →
+              tail[earlier.val] ≠ none := by
+            intro earlier before
+            exact occupied ⟨earlier.val + 1, by simp⟩
+              (by change earlier.val + 1 < index.val; omega)
+          have suffixCoherent : ∀ candidate, some (key, candidate) ∈ tail → candidate = value := by
+            intro candidate member
+            exact coherent candidate (List.mem_cons_of_mem _ member)
+          simpa [probe, same] using ih ⟨next, nextRange⟩ suffixThere suffixOccupied suffixCoherent
+
+/-- A finite sequence containing a vacancy cannot exhaust without either
+finding the key or retaining that vacancy. -/
+theorem stops_if_vacancy (key : Key) (cells : Cells Key Value) (vacancy : none ∈ cells) :
+    (probe key cells).1 ≠ none ∨ (probe key cells).2 ≠ none := by
+  induction cells with
+  | nil => simp at vacancy
+  | cons cell tail ih =>
+    cases cell with
+    | none => simp [probe]
+    | some pair =>
+      rcases pair with ⟨stored, value⟩
+      by_cases same : key = stored
+      · simp [probe, same]
+      · have rest := ih (by simpa using vacancy)
+        simpa [probe, same] using rest
+
+omit [DecidableEq Key] in
+/-- A cardinality bound earns an actual vacant cell; it is not a promise
+that a future lookup will stop. -/
+theorem vacancy_of_count_lt (cells : Cells Key Value)
+    (room : cells.countP Option.isSome < cells.length) : none ∈ cells := by
+  induction cells with
+  | nil => simp at room
+  | cons cell tail ih =>
+    cases cell with
+    | none => simp
+    | some pair =>
+      have fewer : tail.countP Option.isSome < tail.length := by
+        simpa only [List.countP_cons, Option.isSome_some, Bool.true_eq, ↓reduceIte,
+          List.length_cons, Nat.add_lt_add_iff_right] using room
+      exact List.mem_cons_of_mem _ (ih fewer)
+
+end Mettapedia.Machines.IncrementalConformance.InternProbe

@@ -1,5 +1,5 @@
 import Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
-import Mettapedia.PLN.WorldModel.PLNWorldModelProfiles
+import Mettapedia.PLN.WorldModel.WorldModelProfiles
 import Mettapedia.OSLF.Framework.GSLTEvidence
 import Mathlib.Analysis.Complex.Basic
 

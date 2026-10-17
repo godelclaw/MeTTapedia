@@ -20,7 +20,7 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.Declaratio
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.KernelAuthority.Checker
-open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareSubstitutionLanguage
 open Mettapedia.OSLF.MeTTaIL.Syntax
 

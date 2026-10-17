@@ -1,6 +1,7 @@
 import Mettapedia.OSLF.NativeTypes.Generation.NativeLogicFragment
 import Mettapedia.OSLF.NativeTypes.Certificates.NativeEnumeration
 import Mettapedia.OSLF.NativeTypes.Certificates.SeededSearch
+import Mettapedia.OSLF.NativeTypes.Certificates.DeferredSeededSearch
 
 /-!
 # Fair certificate search within a selected native vocabulary
@@ -168,5 +169,41 @@ theorem seeded_stable (fragment : Fragment) (seeds : List (Tree (presentation fr
     (found : (searchWithSeeds fragment seeds judgment budget).found = some tree) :
     searchWithSeeds fragment seeds judgment (budget + extra) = searchWithSeeds fragment seeds judgment budget :=
   SeededSearch.stable_conclusion seeds judgment budget extra tree found
+
+def searchWithDeferred (fragment : Fragment) (factories : DeferredSeededSearch.Prefix (presentation fragment D))
+    (judgment : Judgment S) (budget : Nat) : Search.State (presentation fragment D) :=
+  DeferredSeededSearch.search factories judgment budget
+
+def resumeWithDeferred (fragment : Fragment) (factories : DeferredSeededSearch.Prefix (presentation fragment D))
+    (judgment : Judgment S) (budget : Nat) (state : Search.State (presentation fragment D)) :
+    Search.State (presentation fragment D) :=
+  DeferredSeededSearch.run factories judgment budget state
+
+theorem deferred_sound (fragment : Fragment) (factories : DeferredSeededSearch.Prefix (presentation fragment D))
+    (judgment : Judgment S) (budget : Nat) (tree : Tree (presentation fragment D))
+    (found : (searchWithDeferred fragment factories judgment budget).found = some tree) :
+    fragment.permits judgment ∧ CertificatePermitted fragment (embed fragment tree) ∧
+      ∃ derivation : Derivation D judgment, Certificates.Refinement.erase derivation = embed fragment tree := by
+  obtain ⟨derived, erased⟩ := DeferredSeededSearch.search_sound factories judgment budget tree found
+  apply checked_tree_sound fragment judgment tree
+  simpa only [erased] using Tree.check_erase derived
+
+theorem deferred_discovery (fragment : Fragment) (factories : DeferredSeededSearch.Prefix (presentation fragment D))
+    (judgment : Judgment S) (tree : Tree (presentation fragment D)) (accepted : tree.check judgment = true) :
+    ∃ found, (searchWithDeferred fragment factories judgment
+      (DeferredSeededSearch.discoveryBound factories.length (Tree.wireSize tree))).found = some found :=
+  DeferredSeededSearch.discover_within_wire_bound factories judgment tree accepted
+
+theorem deferred_resume (fragment : Fragment) (factories : DeferredSeededSearch.Prefix (presentation fragment D))
+    (judgment : Judgment S) (first second : Nat) :
+    searchWithDeferred fragment factories judgment (first + second) =
+      resumeWithDeferred fragment factories judgment second (searchWithDeferred fragment factories judgment first) :=
+  DeferredSeededSearch.run_add factories judgment first second Search.initial
+
+theorem deferred_stable (fragment : Fragment) (factories : DeferredSeededSearch.Prefix (presentation fragment D))
+    (judgment : Judgment S) (budget extra : Nat) (tree : Tree (presentation fragment D))
+    (found : (searchWithDeferred fragment factories judgment budget).found = some tree) :
+    searchWithDeferred fragment factories judgment (budget + extra) = searchWithDeferred fragment factories judgment budget :=
+  DeferredSeededSearch.stable_conclusion factories judgment budget extra tree found
 
 end Mettapedia.OSLF.NativeTypes.Generation.NativeLogic

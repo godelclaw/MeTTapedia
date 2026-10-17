@@ -204,16 +204,16 @@ def renamedFreshnessEnv : TemplateBindings := [
 theorem specialize_lookup_score_deterministic :
     specializeRulesForRecursiveFragment scoreFacts [lookupScoreRule] =
       some expectedLookupScoreRules := by
-  native_decide
+  decide +kernel
 
 theorem specialize_lookup_score_ambiguous_rejects :
     specializeRulesForRecursiveFragment ambiguousScoreFacts [lookupScoreRule] = none := by
-  native_decide
+  decide +kernel
 
 theorem specialize_zero_match_drops_rule_but_keeps_fallback :
     specializeRulesForRecursiveFragment noScoreFacts
       [lookupScoreRule, lookupFallbackRule] = some [lookupFallbackRule] := by
-  native_decide
+  decide +kernel
 
 theorem specialize_freshness_renames_only_to_free_vars :
     partiallySpecializeNonRelationPremise freshnessPremise renamedFreshnessEnv =
@@ -221,7 +221,7 @@ theorem specialize_freshness_renames_only_to_free_vars :
         varName := "w"
         term := app "pair" [sym "5", sym "0"]
       }) := by
-  native_decide
+  decide +kernel
 
 #eval if specializeRulesForRecursiveFragment scoreFacts [lookupScoreRule] ==
     some expectedLookupScoreRules then

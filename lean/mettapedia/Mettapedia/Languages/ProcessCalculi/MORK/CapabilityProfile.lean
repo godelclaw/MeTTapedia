@@ -121,6 +121,82 @@ theorem no_faithful_bag_choice_encoding_into_support_union
   have cardEquality := congrArg Multiset.card impossible
   simp [one] at cardEquality
 
+/-- **Every encoding that turns bag addition into union factors through the
+support**: what it stores for a bag is what it stores for no element, together
+with what it stores for each distinct element. -/
+theorem preservesBagChoice_eq_biUnion {α β : Type} [DecidableEq α] [DecidableEq β]
+    {encode : Multiset α → Finset β} (preserves : PreservesBagChoice encode) (bag : Multiset α) :
+    encode bag = encode 0 ∪ bag.toFinset.biUnion fun element => encode {element} := by
+  induction bag using Multiset.induction_on with
+  | empty => simp
+  | @cons element bag inductionHypothesis =>
+      rw [show element ::ₘ bag = {element} + bag from rfl, preserves, inductionHypothesis,
+        Multiset.toFinset_add]
+      ext key
+      simp only [Finset.mem_union, Finset.mem_biUnion, Multiset.toFinset_singleton,
+        Finset.mem_singleton]
+      constructor
+      · rintro (inElement | inZero | ⟨other, otherMember, inOther⟩)
+        · exact Or.inr ⟨element, Or.inl rfl, inElement⟩
+        · exact Or.inl inZero
+        · exact Or.inr ⟨other, Or.inr otherMember, inOther⟩
+      · rintro (inZero | ⟨other, rfl | otherMember, inOther⟩)
+        · exact Or.inr (Or.inl inZero)
+        · exact Or.inl inOther
+        · exact Or.inr (Or.inr ⟨other, otherMember, inOther⟩)
+
+/-- Two bags with the same support are stored alike by such an encoding:
+multiplicity is lost. -/
+theorem preservesBagChoice_eq_of_toFinset_eq {α β : Type} [DecidableEq α] [DecidableEq β]
+    {encode : Multiset α → Finset β} (preserves : PreservesBagChoice encode)
+    {first second : Multiset α} (sameSupport : first.toFinset = second.toFinset) :
+    encode first = encode second := by
+  rw [preservesBagChoice_eq_biUnion preserves first, preservesBagChoice_eq_biUnion preserves second,
+    sameSupport]
+
+/-! ## A faithful store of occurrences needs occurrence identity in its keys -/
+
+/-- **Keys must identify occurrences.**  Store each occurrence under a key, so
+that a set of occurrences is stored as the set of their keys.  If the bag of
+payloads can be read back from what is stored, distinct occurrences have
+distinct keys. -/
+theorem occurrence_keys_injective {Occurrence Payload Key : Type} [DecidableEq Occurrence]
+    [DecidableEq Key] (payload : Occurrence → Payload) (key : Occurrence → Key)
+    (read : Finset Key → Multiset Payload)
+    (faithful : ∀ occurrences : Finset Occurrence,
+      read (occurrences.image key) = occurrences.val.map payload) :
+    Function.Injective key := by
+  intro first second sameKey
+  by_contra distinct
+  have both := faithful {first, second}
+  have one := faithful {first}
+  rw [Finset.image_insert, Finset.image_singleton, sameKey,
+    Finset.insert_eq_of_mem (Finset.mem_singleton_self (key second))] at both
+  rw [Finset.image_singleton, sameKey] at one
+  have cards := congrArg Multiset.card (one.symm.trans both)
+  rw [Multiset.card_map, Multiset.card_map, Finset.card_val, Finset.card_val, Finset.card_singleton,
+    Finset.card_pair distinct] at cards
+  exact absurd cards (by decide)
+
+/-- Consequently a key computed from the payload alone stores no repeated
+payload faithfully: two distinct occurrences must carry distinct payloads. -/
+theorem payload_keys_forbid_repeats {Occurrence Payload Key : Type} [DecidableEq Occurrence]
+    [DecidableEq Key] (payload : Occurrence → Payload) (keyOf : Payload → Key)
+    (read : Finset Key → Multiset Payload)
+    (faithful : ∀ occurrences : Finset Occurrence,
+      read (occurrences.image (keyOf ∘ payload)) = occurrences.val.map payload)
+    {first second : Occurrence} (distinct : first ≠ second) : payload first ≠ payload second :=
+  fun samePayload =>
+    distinct (occurrence_keys_injective payload (keyOf ∘ payload) read faithful
+      (by simp [samePayload]))
+
+/-- The positive side, for the record: keys that carry an owned occurrence
+trace do read back the bag (`MM2OccurrenceSupport.erase_support_bag`), and
+counted atoms distinguish every count (`explicit_count_spaces_injective`), at
+the price of a non-union update. -/
+example : Function.Injective (fun count : ℕ => ({countedAtom (.symbol "a") count} : Space)) :=
+  explicit_count_spaces_injective (.symbol "a")
+
 /-! ## Existing positive operational witnesses
 
 The work-queue theory already supplies the complementary strengths:

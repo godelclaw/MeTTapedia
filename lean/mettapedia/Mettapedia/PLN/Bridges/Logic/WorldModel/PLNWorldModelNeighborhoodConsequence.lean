@@ -35,8 +35,6 @@ open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhoodCompletene
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeConsequence
 open scoped ENNReal
 
-abbrev ModalQuery := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood.ModalQuery
-abbrev PointedNeighborhood := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood.PointedNeighborhood
 abbrev NeighborhoodState := Multiset PointedNeighborhood
 
 /-- State-indexed frame-class side condition for neighborhood WM states. -/
@@ -52,13 +50,13 @@ theorem inFrameClass.to_mem
 
 /-- Rule-level refinement: provable implication yields a WM consequence rule. -/
 def wmConsequenceRule_of_provable_imp
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Neighborhood.FrameClass}
     [Sound 𝓢 C]
-    (φ ψ : ModalQuery)
+    (φ ψ : (LO.Modal.Formula ℕ))
     (hprov : 𝓢 ⊢ (φ ➝ ψ)) :
-    WMConsequenceRuleOn NeighborhoodState ModalQuery where
+    WMConsequenceRuleOn NeighborhoodState (LO.Modal.Formula ℕ) where
   side := inFrameClass C
   premise := φ
   conclusion := ψ
@@ -72,35 +70,35 @@ def wmConsequenceRule_of_provable_imp
 
 /-- Modal family wrapper: from `⊢ □φ ➝ □ψ` to a WM consequence rule. -/
 def wmBoxConsequenceRule_of_provable_imp
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Neighborhood.FrameClass}
     [Sound 𝓢 C]
-    (φ ψ : ModalQuery)
+    (φ ψ : (LO.Modal.Formula ℕ))
     (hprov : 𝓢 ⊢ (□φ ➝ □ψ)) :
-    WMConsequenceRuleOn NeighborhoodState ModalQuery :=
+    WMConsequenceRuleOn NeighborhoodState (LO.Modal.Formula ℕ) :=
   wmConsequenceRule_of_provable_imp
     (S := S) (𝓢 := 𝓢) (C := C) (φ := □φ) (ψ := □ψ) hprov
 
 /-- Modal family wrapper: from `⊢ ◇φ ➝ ◇ψ` to a WM consequence rule. -/
 def wmDiaConsequenceRule_of_provable_imp
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Neighborhood.FrameClass}
     [Sound 𝓢 C]
-    (φ ψ : ModalQuery)
+    (φ ψ : (LO.Modal.Formula ℕ))
     (hprov : 𝓢 ⊢ (◇φ ➝ ◇ψ)) :
-    WMConsequenceRuleOn NeighborhoodState ModalQuery :=
+    WMConsequenceRuleOn NeighborhoodState (LO.Modal.Formula ℕ) :=
   wmConsequenceRule_of_provable_imp
     (S := S) (𝓢 := 𝓢) (C := C) (φ := ◇φ) (ψ := ◇ψ) hprov
 
 /-- Governance-style neighborhood lift parallel to Kripke `rexist_reflexive_bridge`:
 `□φ ⪯ φ` under EMT frame-class side assumptions. -/
 theorem wm_rexist_reflexive_strength_le_EMT
-    (W : NeighborhoodState) (φ : ModalQuery)
+    (W : NeighborhoodState) (φ : (LO.Modal.Formula ℕ))
     (hW : ∀ pn ∈ W, pn.model.toFrame ∈ Neighborhood.FrameClass.EMT) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□φ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W φ := by
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□φ) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W φ := by
   have hprov : Modal.EMT ⊢ (□φ ➝ φ) := by
     exact (axiomT! (𝓢 := Modal.EMT) (φ := φ))
   exact
@@ -111,10 +109,10 @@ theorem wm_rexist_reflexive_strength_le_EMT
 /-- Governance-style neighborhood lift parallel to Kripke `dts_ob_pe_modal`:
 `□φ ⪯ ◇φ` under ED frame-class side assumptions. -/
 theorem wm_ob_pe_strength_le_ED
-    (W : NeighborhoodState) (φ : ModalQuery)
+    (W : NeighborhoodState) (φ : (LO.Modal.Formula ℕ))
     (hW : ∀ pn ∈ W, pn.model.toFrame ∈ Neighborhood.FrameClass.ED) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□φ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (◇φ) := by
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□φ) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (◇φ) := by
   have hprov : Modal.ED ⊢ (□φ ➝ ◇φ) := by
     exact (axiomD! (𝓢 := Modal.ED) (φ := φ))
   exact
@@ -123,15 +121,15 @@ theorem wm_ob_pe_strength_le_ED
       (W := W) (φ := □φ) (ψ := ◇φ) hW hprov
 
 /-- Rule packaging for the reflexive-style neighborhood bridge `□φ ⪯ φ`. -/
-def wmRexistReflexiveConsequenceRuleNeighborhood (φ : ModalQuery) :
-    WMConsequenceRuleOn NeighborhoodState ModalQuery :=
+def wmRexistReflexiveConsequenceRuleNeighborhood (φ : (LO.Modal.Formula ℕ)) :
+    WMConsequenceRuleOn NeighborhoodState (LO.Modal.Formula ℕ) :=
   wmConsequenceRule_of_provable_imp
     (S := Logic ℕ) (𝓢 := Modal.EMT) (C := Neighborhood.FrameClass.EMT)
     (φ := □φ) (ψ := φ) (by exact (axiomT! (𝓢 := Modal.EMT) (φ := φ)))
 
 /-- Rule packaging for the obligation/permission-style neighborhood bridge `□φ ⪯ ◇φ`. -/
-def wmDtsObPeConsequenceRuleNeighborhood (φ : ModalQuery) :
-    WMConsequenceRuleOn NeighborhoodState ModalQuery :=
+def wmDtsObPeConsequenceRuleNeighborhood (φ : (LO.Modal.Formula ℕ)) :
+    WMConsequenceRuleOn NeighborhoodState (LO.Modal.Formula ℕ) :=
   wmConsequenceRule_of_provable_imp
     (S := Logic ℕ) (𝓢 := Modal.ED) (C := Neighborhood.FrameClass.ED)
     (φ := □φ) (ψ := ◇φ) (by exact (axiomD! (𝓢 := Modal.ED) (φ := φ)))
@@ -141,15 +139,15 @@ def wmDtsObPeConsequenceRuleNeighborhood (φ : ModalQuery) :
 /-- K-family WM endpoint (curried form): from a provable K-implication in a sound
 frame class, obtain the corresponding multiset strength inequality. -/
 theorem wm_k_curried_strength_le_of_provable
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Neighborhood.FrameClass}
     [Sound 𝓢 C]
-    (W : NeighborhoodState) (φ ψ : ModalQuery)
+    (W : NeighborhoodState) (φ ψ : (LO.Modal.Formula ℕ))
     (hW : inFrameClass C W)
     (hprov : 𝓢 ⊢ (□(φ ➝ ψ) ➝ (□φ ➝ □ψ))) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□(φ ➝ ψ)) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□φ ➝ □ψ) := by
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□(φ ➝ ψ)) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□φ ➝ □ψ) := by
   exact
     multiset_strength_le_of_provable_imp
       (S := S) (𝓢 := 𝓢) (C := C)
@@ -158,15 +156,15 @@ theorem wm_k_curried_strength_le_of_provable
 
 /-- C-family WM endpoint: `(□φ ⋏ □ψ) ⪯ □(φ ⋏ ψ)` from provable C-implication. -/
 theorem wm_c_strength_le_of_provable
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Neighborhood.FrameClass}
     [Sound 𝓢 C]
-    (W : NeighborhoodState) (φ ψ : ModalQuery)
+    (W : NeighborhoodState) (φ ψ : (LO.Modal.Formula ℕ))
     (hW : inFrameClass C W)
     (hprov : 𝓢 ⊢ ((□φ ⋏ □ψ) ➝ □(φ ⋏ ψ))) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□φ ⋏ □ψ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□(φ ⋏ ψ)) := by
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□φ ⋏ □ψ) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□(φ ⋏ ψ)) := by
   exact
     multiset_strength_le_of_provable_imp
       (S := S) (𝓢 := 𝓢) (C := C)
@@ -175,15 +173,15 @@ theorem wm_c_strength_le_of_provable
 
 /-- McK-family WM endpoint: `□◇φ ⪯ ◇□φ` from provable McKinsey implication. -/
 theorem wm_mck_strength_le_of_provable
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Neighborhood.FrameClass}
     [Sound 𝓢 C]
-    (W : NeighborhoodState) (φ : ModalQuery)
+    (W : NeighborhoodState) (φ : (LO.Modal.Formula ℕ))
     (hW : inFrameClass C W)
     (hprov : 𝓢 ⊢ (□◇φ ➝ ◇□φ)) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□◇φ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (◇□φ) := by
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□◇φ) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (◇□φ) := by
   exact
     multiset_strength_le_of_provable_imp
       (S := S) (𝓢 := 𝓢) (C := C)
@@ -192,15 +190,15 @@ theorem wm_mck_strength_le_of_provable
 
 /-- Mk-family WM endpoint: `(□φ ⋏ ψ) ⪯ ◇(□□φ ⋏ ◇ψ)` from provable Mk implication. -/
 theorem wm_mk_strength_le_of_provable
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Neighborhood.FrameClass}
     [Sound 𝓢 C]
-    (W : NeighborhoodState) (φ ψ : ModalQuery)
+    (W : NeighborhoodState) (φ ψ : (LO.Modal.Formula ℕ))
     (hW : inFrameClass C W)
     (hprov : 𝓢 ⊢ (□φ ⋏ ψ ➝ ◇(□□φ ⋏ ◇ψ))) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□φ ⋏ ψ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (◇(□□φ ⋏ ◇ψ)) := by
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□φ ⋏ ψ) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (◇(□□φ ⋏ ◇ψ)) := by
   exact
     multiset_strength_le_of_provable_imp
       (S := S) (𝓢 := 𝓢) (C := C)
@@ -209,15 +207,15 @@ theorem wm_mk_strength_le_of_provable
 
 /-- McK-family WM endpoint from an explicit McKinsey axiom assumption. -/
 theorem wm_mck_strength_le_of_axiomMcK
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Neighborhood.FrameClass}
     [Sound 𝓢 C]
     [HasAxiomMcK 𝓢]
-    (W : NeighborhoodState) (φ : ModalQuery)
+    (W : NeighborhoodState) (φ : (LO.Modal.Formula ℕ))
     (hW : inFrameClass C W) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□◇φ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (◇□φ) := by
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□◇φ) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (◇□φ) := by
   exact
     wm_mck_strength_le_of_provable
       (S := S) (𝓢 := 𝓢) (C := C)
@@ -226,15 +224,15 @@ theorem wm_mck_strength_le_of_axiomMcK
 
 /-- Mk-family WM endpoint from an explicit Makinson axiom assumption. -/
 theorem wm_mk_strength_le_of_axiomMk
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Neighborhood.FrameClass}
     [Sound 𝓢 C]
     [HasAxiomMk 𝓢]
-    (W : NeighborhoodState) (φ ψ : ModalQuery)
+    (W : NeighborhoodState) (φ ψ : (LO.Modal.Formula ℕ))
     (hW : inFrameClass C W) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□φ ⋏ ψ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (◇(□□φ ⋏ ◇ψ)) := by
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□φ ⋏ ψ) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (◇(□□φ ⋏ ◇ψ)) := by
   exact
     wm_mk_strength_le_of_provable
       (S := S) (𝓢 := 𝓢) (C := C)
@@ -243,13 +241,13 @@ theorem wm_mk_strength_le_of_axiomMk
 
 /-- McK-family consequence rule from an explicit McKinsey axiom assumption. -/
 def wmMcKConsequenceRule_of_axiom
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Neighborhood.FrameClass}
     [Sound 𝓢 C]
     [HasAxiomMcK 𝓢]
-    (φ : ModalQuery) :
-    WMConsequenceRuleOn NeighborhoodState ModalQuery :=
+    (φ : (LO.Modal.Formula ℕ)) :
+    WMConsequenceRuleOn NeighborhoodState (LO.Modal.Formula ℕ) :=
   wmConsequenceRule_of_provable_imp
     (S := S) (𝓢 := 𝓢) (C := C)
     (φ := □◇φ) (ψ := ◇□φ)
@@ -257,13 +255,13 @@ def wmMcKConsequenceRule_of_axiom
 
 /-- Mk-family consequence rule from an explicit Makinson axiom assumption. -/
 def wmMkConsequenceRule_of_axiom
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Neighborhood.FrameClass}
     [Sound 𝓢 C]
     [HasAxiomMk 𝓢]
-    (φ ψ : ModalQuery) :
-    WMConsequenceRuleOn NeighborhoodState ModalQuery :=
+    (φ ψ : (LO.Modal.Formula ℕ)) :
+    WMConsequenceRuleOn NeighborhoodState (LO.Modal.Formula ℕ) :=
   wmConsequenceRule_of_provable_imp
     (S := S) (𝓢 := 𝓢) (C := C)
     (φ := (□φ ⋏ ψ)) (ψ := ◇(□□φ ⋏ ◇ψ))
@@ -272,10 +270,10 @@ def wmMkConsequenceRule_of_axiom
 /-! ### Concrete neighborhood instantiations for K/C families -/
 
 theorem wm_k_curried_strength_le_EK
-    (W : NeighborhoodState) (φ ψ : ModalQuery)
+    (W : NeighborhoodState) (φ ψ : (LO.Modal.Formula ℕ))
     (hW : inFrameClass Neighborhood.FrameClass.EK W) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□(φ ➝ ψ)) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□φ ➝ □ψ) := by
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□(φ ➝ ψ)) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□φ ➝ □ψ) := by
   exact
     wm_k_curried_strength_le_of_provable
       (S := Logic ℕ) (𝓢 := Modal.EK) (C := Neighborhood.FrameClass.EK)
@@ -283,10 +281,10 @@ theorem wm_k_curried_strength_le_EK
       (by exact (axiomK! (𝓢 := Modal.EK) (φ := φ) (ψ := ψ)))
 
 theorem wm_k_curried_strength_le_EMK
-    (W : NeighborhoodState) (φ ψ : ModalQuery)
+    (W : NeighborhoodState) (φ ψ : (LO.Modal.Formula ℕ))
     (hW : inFrameClass Neighborhood.FrameClass.EMK W) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□(φ ➝ ψ)) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□φ ➝ □ψ) := by
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□(φ ➝ ψ)) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□φ ➝ □ψ) := by
   exact
     wm_k_curried_strength_le_of_provable
       (S := Logic ℕ) (𝓢 := Modal.EMK) (C := Neighborhood.FrameClass.EMK)
@@ -294,10 +292,10 @@ theorem wm_k_curried_strength_le_EMK
       (by exact (axiomK! (𝓢 := Modal.EMK) (φ := φ) (ψ := ψ)))
 
 theorem wm_c_strength_le_EC
-    (W : NeighborhoodState) (φ ψ : ModalQuery)
+    (W : NeighborhoodState) (φ ψ : (LO.Modal.Formula ℕ))
     (hW : inFrameClass Neighborhood.FrameClass.EC W) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□φ ⋏ □ψ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□(φ ⋏ ψ)) := by
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□φ ⋏ □ψ) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□(φ ⋏ ψ)) := by
   exact
     wm_c_strength_le_of_provable
       (S := Logic ℕ) (𝓢 := Modal.EC) (C := Neighborhood.FrameClass.EC)
@@ -305,10 +303,10 @@ theorem wm_c_strength_le_EC
       (by exact (axiomC! (𝓢 := Modal.EC) (φ := φ) (ψ := ψ)))
 
 theorem wm_c_strength_le_EMC
-    (W : NeighborhoodState) (φ ψ : ModalQuery)
+    (W : NeighborhoodState) (φ ψ : (LO.Modal.Formula ℕ))
     (hW : inFrameClass Neighborhood.FrameClass.EMC W) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□φ ⋏ □ψ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W (□(φ ⋏ ψ)) := by
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□φ ⋏ □ψ) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W (□(φ ⋏ ψ)) := by
   exact
     wm_c_strength_le_of_provable
       (S := Logic ℕ) (𝓢 := Modal.EMC) (C := Neighborhood.FrameClass.EMC)
@@ -318,7 +316,7 @@ theorem wm_c_strength_le_EMC
 /-! ## Governance-operator translation to neighborhood queries -/
 
 /-- Translation of governance modalities into neighborhood modal formulas. -/
-def governanceModalityToNeighborhood (m : DeonticModality) (φ : ModalQuery) : ModalQuery :=
+def governanceModalityToNeighborhood (m : DeonticModality) (φ : (LO.Modal.Formula ℕ)) : (LO.Modal.Formula ℕ) :=
   match m with
   | .rexist => □φ
   | .obligatory => □φ
@@ -326,44 +324,44 @@ def governanceModalityToNeighborhood (m : DeonticModality) (φ : ModalQuery) : M
   | .forbidden => □(∼φ)
   | .optional => (◇φ ⋏ ◇(∼φ))
 
-@[simp] theorem governanceModalityToNeighborhood_rexist (φ : ModalQuery) :
+@[simp] theorem governanceModalityToNeighborhood_rexist (φ : (LO.Modal.Formula ℕ)) :
     governanceModalityToNeighborhood .rexist φ = □φ := rfl
 
-@[simp] theorem governanceModalityToNeighborhood_obligatory (φ : ModalQuery) :
+@[simp] theorem governanceModalityToNeighborhood_obligatory (φ : (LO.Modal.Formula ℕ)) :
     governanceModalityToNeighborhood .obligatory φ = □φ := rfl
 
-@[simp] theorem governanceModalityToNeighborhood_permitted (φ : ModalQuery) :
+@[simp] theorem governanceModalityToNeighborhood_permitted (φ : (LO.Modal.Formula ℕ)) :
     governanceModalityToNeighborhood .permitted φ = ◇φ := rfl
 
 /-- Collapse governance action labels on box operators to neighborhood box. -/
-def governanceBoxActionToNeighborhood (a : DeonticAct) (φ : ModalQuery) : ModalQuery :=
+def governanceBoxActionToNeighborhood (a : DeonticAct) (φ : (LO.Modal.Formula ℕ)) : (LO.Modal.Formula ℕ) :=
   match a with
   | .rexist | .obligatory | .permitted | .forbidden | .optional => □φ
 
-@[simp] theorem governanceBoxActionToNeighborhood_rexist (φ : ModalQuery) :
+@[simp] theorem governanceBoxActionToNeighborhood_rexist (φ : (LO.Modal.Formula ℕ)) :
     governanceBoxActionToNeighborhood .rexist φ = □φ := rfl
 
-@[simp] theorem governanceBoxActionToNeighborhood_obligatory (φ : ModalQuery) :
+@[simp] theorem governanceBoxActionToNeighborhood_obligatory (φ : (LO.Modal.Formula ℕ)) :
     governanceBoxActionToNeighborhood .obligatory φ = □φ := rfl
 
-@[simp] theorem governanceBoxActionToNeighborhood_forbidden (φ : ModalQuery) :
+@[simp] theorem governanceBoxActionToNeighborhood_forbidden (φ : (LO.Modal.Formula ℕ)) :
     governanceBoxActionToNeighborhood .forbidden φ = □φ := rfl
 
 /-- Collapse governance action labels on diamond operators to neighborhood diamond. -/
-def governanceDiamondActionToNeighborhood (a : DeonticAct) (φ : ModalQuery) : ModalQuery :=
+def governanceDiamondActionToNeighborhood (a : DeonticAct) (φ : (LO.Modal.Formula ℕ)) : (LO.Modal.Formula ℕ) :=
   match a with
   | .rexist | .obligatory | .permitted | .forbidden | .optional => ◇φ
 
-@[simp] theorem governanceDiamondActionToNeighborhood_permitted (φ : ModalQuery) :
+@[simp] theorem governanceDiamondActionToNeighborhood_permitted (φ : (LO.Modal.Formula ℕ)) :
     governanceDiamondActionToNeighborhood .permitted φ = ◇φ := rfl
 
-@[simp] theorem governanceDiamondActionToNeighborhood_optional (φ : ModalQuery) :
+@[simp] theorem governanceDiamondActionToNeighborhood_optional (φ : (LO.Modal.Formula ℕ)) :
     governanceDiamondActionToNeighborhood .optional φ = ◇φ := rfl
 
 /-- Recursive translation from governance modal formulas to neighborhood formulas.
 Mu/nu formulas are outside the current Chapter-8 bridge and map to `none`. -/
 def translateGovernanceFormulaToNeighborhood :
-    Formula DeonticAct 0 → Option ModalQuery
+    Formula DeonticAct 0 → Option (LO.Modal.Formula ℕ)
   | .tt => some ⊤
   | .ff => some ⊥
   | .neg φ =>
@@ -446,73 +444,73 @@ def translateGovernanceFormulaToNeighborhood :
     simp [translateGovernanceFormulaToNeighborhood, htr]
 
 theorem wm_governance_rexist_strength_le
-    (W : NeighborhoodState) (φ : ModalQuery)
+    (W : NeighborhoodState) (φ : (LO.Modal.Formula ℕ))
     (hW : inFrameClass Neighborhood.FrameClass.EMT W) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .rexist φ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W φ := by
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W φ := by
   simpa [governanceModalityToNeighborhood] using
     (wm_rexist_reflexive_strength_le_EMT (W := W) (φ := φ) hW)
 
 theorem wm_governance_ob_pe_strength_le
-    (W : NeighborhoodState) (φ : ModalQuery)
+    (W : NeighborhoodState) (φ : (LO.Modal.Formula ℕ))
     (hW : inFrameClass Neighborhood.FrameClass.ED W) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .obligatory φ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .permitted φ) := by
   simpa [governanceModalityToNeighborhood] using
     (wm_ob_pe_strength_le_ED (W := W) (φ := φ) hW)
 
 theorem wm_governance_rexist_strength_le_of_translation
-    (W : NeighborhoodState) (φ : Formula DeonticAct 0) (φn : ModalQuery)
+    (W : NeighborhoodState) (φ : Formula DeonticAct 0) (φn : (LO.Modal.Formula ℕ))
     (_htr : translateGovernanceFormulaToNeighborhood φ = some φn)
     (hW : inFrameClass Neighborhood.FrameClass.EMT W) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .rexist φn) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W φn := by
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W φn := by
   exact wm_governance_rexist_strength_le (W := W) (φ := φn) hW
 
 theorem wm_governance_ob_pe_strength_le_of_translation
-    (W : NeighborhoodState) (φ : Formula DeonticAct 0) (φn : ModalQuery)
+    (W : NeighborhoodState) (φ : Formula DeonticAct 0) (φn : (LO.Modal.Formula ℕ))
     (_htr : translateGovernanceFormulaToNeighborhood φ = some φn)
     (hW : inFrameClass Neighborhood.FrameClass.ED W) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .obligatory φn) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .permitted φn) := by
   exact wm_governance_ob_pe_strength_le (W := W) (φ := φn) hW
 
 theorem wm_governance_forbidden_shape_of_translation
-    (W : NeighborhoodState) (φ : Formula DeonticAct 0) (φn : ModalQuery)
+    (W : NeighborhoodState) (φ : Formula DeonticAct 0) (φn : (LO.Modal.Formula ℕ))
     (_htr : translateGovernanceFormulaToNeighborhood φ = some φn) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .forbidden φn) =
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .obligatory (∼φn)) := by
   simp [governanceModalityToNeighborhood]
 
 theorem wm_governance_optional_shape_of_translation
-    (W : NeighborhoodState) (φ : Formula DeonticAct 0) (φn : ModalQuery)
+    (W : NeighborhoodState) (φ : Formula DeonticAct 0) (φn : (LO.Modal.Formula ℕ))
     (_htr : translateGovernanceFormulaToNeighborhood φ = some φn) :
-    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+    BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .optional φn) =
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W ((governanceModalityToNeighborhood .permitted φn) ⋏
           (governanceModalityToNeighborhood .permitted (∼φn))) := by
   simp [governanceModalityToNeighborhood]
 
 /-- Single theorem block exposing translated governance endpoints over neighborhood WM states. -/
 theorem governance_translation_endpoint_block
-    (W : NeighborhoodState) (φ : ModalQuery)
+    (W : NeighborhoodState) (φ : (LO.Modal.Formula ℕ))
     (hEMT : inFrameClass Neighborhood.FrameClass.EMT W)
     (hED : inFrameClass Neighborhood.FrameClass.ED W) :
-    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .rexist φ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W φ) ∧
-    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W φ) ∧
+    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .obligatory φ) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .permitted φ)) := by
   constructor
   · exact wm_governance_rexist_strength_le (W := W) (φ := φ) hEMT
@@ -520,39 +518,39 @@ theorem governance_translation_endpoint_block
 
 /-- Formula-level governance endpoint block via recursive translation output. -/
 theorem governance_translation_endpoint_block_of_formula
-    (W : NeighborhoodState) (φ : Formula DeonticAct 0) (φn : ModalQuery)
+    (W : NeighborhoodState) (φ : Formula DeonticAct 0) (φn : (LO.Modal.Formula ℕ))
     (_htr : translateGovernanceFormulaToNeighborhood φ = some φn)
     (hEMT : inFrameClass Neighborhood.FrameClass.EMT W)
     (hED : inFrameClass Neighborhood.FrameClass.ED W) :
-    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .rexist φn) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W φn) ∧
-    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W φn) ∧
+    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .obligatory φn) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .permitted φn)) := by
   exact governance_translation_endpoint_block (W := W) (φ := φn) hEMT hED
 
 /-- Formula-level governance endpoint block extended with forbidden/optional shape preservation. -/
 theorem governance_translation_endpoint_block_of_formula_extended
-    (W : NeighborhoodState) (φ : Formula DeonticAct 0) (φn : ModalQuery)
+    (W : NeighborhoodState) (φ : Formula DeonticAct 0) (φn : (LO.Modal.Formula ℕ))
     (htr : translateGovernanceFormulaToNeighborhood φ = some φn)
     (hEMT : inFrameClass Neighborhood.FrameClass.EMT W)
     (hED : inFrameClass Neighborhood.FrameClass.ED W) :
-    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .rexist φn) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) W φn) ∧
-    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) W φn) ∧
+    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .obligatory φn) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .permitted φn)) ∧
-    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .forbidden φn) =
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .obligatory (∼φn))) ∧
-    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W (governanceModalityToNeighborhood .optional φn) =
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ))
         W ((governanceModalityToNeighborhood .permitted φn) ⋏
           (governanceModalityToNeighborhood .permitted (∼φn)))) := by
   refine ⟨?_, ?_, ?_, ?_⟩
@@ -573,7 +571,7 @@ variable {S : Type*}
 theorem kripke_neighborhood_rexist_parallel
     (Wk : Multiset (PointedDeonticKripke S))
     (Wn : NeighborhoodState)
-    (φk : Formula DeonticAct 0) (φn : ModalQuery)
+    (φk : Formula DeonticAct 0) (φn : (LO.Modal.Formula ℕ))
     (hrefl : ∀ pk : PointedDeonticKripke S, ∀ s, pk.lts.trans s .rexist s)
     (hWn : ∀ pn ∈ Wn, pn.model.toFrame ∈ Neighborhood.FrameClass.EMT) :
     (BinaryWorldModel.queryStrength
@@ -582,8 +580,8 @@ theorem kripke_neighborhood_rexist_parallel
       BinaryWorldModel.queryStrength
         (State := Multiset (PointedDeonticKripke S)) (Query := Formula DeonticAct 0)
         Wk φk) ∧
-    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) Wn (□φn) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) Wn φn) := by
+    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) Wn (□φn) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) Wn φn) := by
   constructor
   · exact wm_rexist_reflexive_strength_le (W := Wk) (φ := φk) hrefl
   · exact wm_rexist_reflexive_strength_le_EMT (W := Wn) (φ := φn) hWn
@@ -592,7 +590,7 @@ theorem kripke_neighborhood_rexist_parallel
 theorem kripke_neighborhood_ob_pe_parallel
     (Wk : Multiset (PointedDeonticKripke S))
     (Wn : NeighborhoodState)
-    (φk : Formula DeonticAct 0) (φn : ModalQuery)
+    (φk : Formula DeonticAct 0) (φn : (LO.Modal.Formula ℕ))
     (hser : ∀ pk : PointedDeonticKripke S, DeonticSeriality pk.lts)
     (htotal : ∀ pk : PointedDeonticKripke S, ∀ s, ∃ s', pk.lts.trans s .obligatory s')
     (hWn : ∀ pn ∈ Wn, pn.model.toFrame ∈ Neighborhood.FrameClass.ED) :
@@ -602,8 +600,8 @@ theorem kripke_neighborhood_ob_pe_parallel
       BinaryWorldModel.queryStrength
         (State := Multiset (PointedDeonticKripke S)) (Query := Formula DeonticAct 0)
         Wk (peFormula φk)) ∧
-    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) Wn (□φn) ≤
-      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := ModalQuery) Wn (◇φn)) := by
+    (BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) Wn (□φn) ≤
+      BinaryWorldModel.queryStrength (State := NeighborhoodState) (Query := (LO.Modal.Formula ℕ)) Wn (◇φn)) := by
   constructor
   · exact wm_dts_ob_pe_strength_le (W := Wk) (φ := φk) hser htotal
   · exact wm_ob_pe_strength_le_ED (W := Wn) (φ := φn) hWn

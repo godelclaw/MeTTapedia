@@ -41,6 +41,46 @@ def derivationSeeds : List (Σ judgment, Derivation installed.signature judgment
      ⟨_, deriveList (.truthFormation .nil) (.cons empty .nil)⟩,
      ⟨_, deriveList (.falsehoodFormation .nil) (.cons empty .nil)⟩]
 
+/-- Certificate construction is deferred until its search position is visited.
+The empty context and three logical certificates precede the generated
+declaration certificates. Every original candidate and occurrence is retained. -/
+def derivationSeedFactories : List (Unit → Σ judgment, Derivation installed.signature judgment) :=
+  let empty := NativeModalSignature.emptyFormed (plan installed.generated) installed.declarations installed.modal
+  [fun _ => ⟨_, empty⟩] ++
+    [fun _ => ⟨_, deriveList (.truthIntroduction .nil) (.cons empty .nil)⟩,
+     fun _ => ⟨_, deriveList (.truthFormation .nil) (.cons empty .nil)⟩,
+     fun _ => ⟨_, deriveList (.falsehoodFormation .nil) (.cons empty .nil)⟩] ++
+    (List.finRange installed.declarations.headers.length).flatMap (fun constructor =>
+      [fun _ => ⟨_, installed.formation.termHeader (.inl constructor)⟩,
+       fun _ => ⟨_, installed.formation.termResult (.inl constructor)⟩]) ++
+    (List.finRange installed.modal.length).flatMap (fun index =>
+      [fun _ => ⟨_, installed.formation.typeHeader (.inr (.input index))⟩,
+       fun _ => ⟨_, installed.formation.typeHeader (.inr (.event index))⟩,
+       fun _ => ⟨_, NativeModalSignature.eventFormed (plan installed.generated) installed.declarations installed.modal index⟩]) ++
+    (NativeModalSignature.projections (plan installed.generated) installed.modal).flatMap (fun projection =>
+      [fun _ => ⟨_, installed.formation.termResult (.inr projection)⟩,
+       fun _ => ⟨_, NativeModalSignature.projectionFormation (plan installed.generated)
+         installed.declarations installed.modal projection⟩])
+
+private theorem logicalPriority_perm {α : Type _}
+    (initial logical constructors modalities projections : List α) :
+    List.Perm (initial ++ logical ++ constructors ++ modalities ++ projections)
+      (initial ++ constructors ++ modalities ++ projections ++ logical) := by
+  simpa only [List.append_assoc] using
+    List.Perm.append_left initial
+      (List.perm_append_comm (l₁ := logical) (l₂ := constructors ++ modalities ++ projections))
+
+theorem derivationSeedFactories_perm :
+    List.Perm (installed.derivationSeedFactories.map (fun factory => factory ()))
+      installed.derivationSeeds := by
+  simp only [derivationSeedFactories, derivationSeeds, List.map_append, List.map_flatMap,
+    List.map_cons, List.map_nil]
+  exact logicalPriority_perm _ _ _ _ _
+
+theorem derivationSeedFactories_length :
+    installed.derivationSeedFactories.length = installed.derivationSeeds.length := by
+  simpa only [List.length_map] using (installed.derivationSeedFactories_perm).length_eq
+
 def rawSeeds : List (Certificates.Refinement.Certificate installed.signature) :=
   installed.derivationSeeds.map fun named => Certificates.Refinement.erase named.2
 

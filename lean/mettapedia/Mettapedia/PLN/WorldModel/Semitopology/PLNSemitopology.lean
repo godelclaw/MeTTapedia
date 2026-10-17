@@ -1,7 +1,7 @@
 import Mathlib.Data.Fin.Basic
 import Mathlib.Data.Set.Lattice
 import Mathlib.Tactic
-import Mettapedia.PLN.WorldModel.PLNWorldModelOverlap
+import Mettapedia.PLN.WorldModel.WorldModelOverlap
 import Mettapedia.PLN.WorldModel.PLNWorldModelSupportForgetting
 
 /-!

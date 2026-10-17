@@ -41,36 +41,38 @@ theorem consume_continuation (space : Space) (dispatch : GroundedDispatch)
   Relation.ReflTransGen.single rfl
 
 theorem raw_atom (space : Space) (dispatch : GroundedDispatch) (value : Atom)
-    (bindings : Bindings) (fuel : Nat) (stack : List Frame) (emitted : ResultSet) :
-    SilentPath dispatch ⟨space, .work (.atom value Atom.atomType bindings (fuel + 1)), stack, emitted⟩
+    (bindings : Bindings) (fuel : Nat) (live : List Atom) (stack : List Frame)
+    (emitted : ResultSet) :
+    SilentPath dispatch ⟨space, .work (.atom value Atom.atomType bindings (fuel + 1) live), stack,
+      emitted⟩
       ⟨space, .returning [(value, bindings)], stack, emitted⟩ := by
   have expanded : FirstSuccessRecursiveStrategy.enter space dispatch
-      (.atom value Atom.atomType bindings (fuel + 1)) = (.returning [(value, bindings)], []) := by
+      (.atom value Atom.atomType bindings (fuel + 1) live) = (.returning [(value, bindings)], []) := by
     by_cases failed : isEmptyOrError value = true
     · simp [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter, failed]
     · have clean : isEmptyOrError value = false := by
         cases found : isEmptyOrError value <;> simp_all
       simp [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter, clean]
   simpa only [expanded, List.nil_append] using
-    enter_request space dispatch (.atom value Atom.atomType bindings (fuel + 1)) stack emitted
+    enter_request space dispatch (.atom value Atom.atomType bindings (fuel + 1) live) stack emitted
 
 /-- Arbitrary raw argument lists are replayed under their retained surrounding
 stack. Each original head is used once and survives raw error/quotation data. -/
 theorem raw_arguments (space : Space) (dispatch : GroundedDispatch) (values : List Atom)
-    (bindings : Bindings) (fuel : Nat) (enough : values.length < fuel)
+    (bindings : Bindings) (fuel : Nat) (enough : values.length < fuel) (live : List Atom)
     (stack : List Frame) (emitted : ResultSet) :
     SilentPath dispatch
-      ⟨space, .work (.args values (List.replicate values.length Atom.atomType) bindings fuel),
+      ⟨space, .work (.args values (List.replicate values.length Atom.atomType) bindings fuel live),
         stack, emitted⟩
       ⟨space, .returning [(argumentPacket values, bindings)], stack, emitted⟩ := by
-  induction values generalizing fuel stack with
+  induction values generalizing fuel stack live with
   | nil =>
       cases fuel with
       | zero => simp at enough
       | succ fuel =>
           simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
             List.length_nil, List.replicate_zero, List.nil_append] using
-            enter_request space dispatch (.args [] [] bindings (fuel + 1)) stack emitted
+            enter_request space dispatch (.args [] [] bindings (fuel + 1) live) stack emitted
   | cons value values ih =>
       cases fuel with
       | zero => simp at enough
@@ -83,38 +85,42 @@ theorem raw_arguments (space : Space) (dispatch : GroundedDispatch) (values : Li
                 omega
               let pending := Frame.append
                 (.argumentHeads value values (List.replicate values.length Atom.atomType)
-                  (fuel + 1) [])
+                  (fuel + 1) [] live)
               have first : SilentPath dispatch
                   ⟨space, .work (.args (value :: values)
                     (List.replicate (value :: values).length Atom.atomType)
-                    bindings (fuel + 1 + 1)), stack, emitted⟩
-                  ⟨space, .work (.atom value Atom.atomType bindings (fuel + 1)),
+                    bindings (fuel + 1 + 1) live), stack, emitted⟩
+                  ⟨space, .work (.atom value Atom.atomType bindings (fuel + 1)
+                      (values ++ List.replicate values.length Atom.atomType ++ live)),
                     .argumentHeads value values (List.replicate values.length Atom.atomType)
-                      (fuel + 1) :: stack, emitted⟩ := by
+                      (fuel + 1) live :: stack, emitted⟩ := by
                 simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
                   List.length_cons, List.replicate_succ, List.cons_append, List.nil_append] using
                   enter_request space dispatch (.args (value :: values)
                     (List.replicate (value :: values).length Atom.atomType)
-                    bindings (fuel + 1 + 1)) stack emitted
+                    bindings (fuel + 1 + 1) live) stack emitted
               have second := raw_atom space dispatch value bindings fuel
+                (values ++ List.replicate values.length Atom.atomType ++ live)
                 (.argumentHeads value values (List.replicate values.length Atom.atomType)
-                  (fuel + 1) :: stack) emitted
+                  (fuel + 1) live :: stack) emitted
               have third := consume_continuation space dispatch
-                (.argumentHeads value values (List.replicate values.length Atom.atomType) (fuel + 1))
+                (.argumentHeads value values (List.replicate values.length Atom.atomType) (fuel + 1)
+                  live)
                 [(value, bindings)] stack emitted
               have fourth : SilentPath dispatch
                   ⟨space, .work (.argumentHeads value values
-                    (List.replicate values.length Atom.atomType) (fuel + 1) [(value, bindings)]),
+                    (List.replicate values.length Atom.atomType) (fuel + 1) [(value, bindings)] live),
                     stack, emitted⟩
                   ⟨space, .work (.args values (List.replicate values.length Atom.atomType)
-                    bindings (fuel + 1)), .argumentTail value :: pending :: stack, emitted⟩ := by
+                    bindings (fuel + 1) (value :: live)), .argumentTail value :: pending :: stack,
+                    emitted⟩ := by
                 simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
                   bne_self_eq_false, Bool.false_and, Bool.false_eq_true, if_false,
                   List.cons_append, List.nil_append] using
                   enter_request space dispatch (.argumentHeads value values
-                    (List.replicate values.length Atom.atomType) (fuel + 1) [(value, bindings)])
+                    (List.replicate values.length Atom.atomType) (fuel + 1) [(value, bindings)] live)
                     stack emitted
-              have tail := ih (fuel + 1) tailEnough (.argumentTail value :: pending :: stack)
+              have tail := ih (fuel + 1) tailEnough (value :: live) (.argumentTail value :: pending :: stack)
               have fifth : SilentPath dispatch
                   ⟨space, .returning [(argumentPacket values, bindings)],
                     .argumentTail value :: pending :: stack, emitted⟩
@@ -127,7 +133,7 @@ theorem raw_arguments (space : Space) (dispatch : GroundedDispatch) (values : Li
                 [(argumentPacket (value :: values), bindings)] stack emitted
               have seventh := enter_request space dispatch
                 (.argumentHeads value values (List.replicate values.length Atom.atomType)
-                  (fuel + 1) [])
+                  (fuel + 1) [] live)
                 (.prepend [(argumentPacket (value :: values), bindings)] :: stack) emitted
               have eighth := consume_continuation space dispatch
                 (.prepend [(argumentPacket (value :: values), bindings)]) [] stack emitted
@@ -150,14 +156,16 @@ theorem source_specification_join (space : Space) (source : GroundedDispatch)
       values (List.replicate values.length Atom.atomType)
       bindings (argumentPacket values, bindings) ∧
     ∃ budget, ∀ later, (machine source).run (budget + later)
-      ⟨space, .work (.args values (List.replicate values.length Atom.atomType) bindings fuel),
+      ⟨space, .work (.args values (List.replicate values.length Atom.atomType) bindings fuel []),
         stack, emitted⟩ =
       (machine source).run later
         ⟨space, .returning [(argumentPacket values, bindings)], stack, emitted⟩ := by
   refine ⟨interpretArgs_raw space source values bindings fuel enough, ?_, ?_⟩
   · exact (FirstSuccessSourceReplies.source_raw_arguments_iff space source semantic live typing
-      values bindings fuel enough _).mp (by rw [interpretArgs_raw space source values bindings fuel enough]; simp)
-  · exact (machine source).silent_run (raw_arguments space source values bindings fuel enough stack emitted)
+      values bindings fuel enough (argumentPacket values, bindings)).mp
+      (by rw [interpretArgs_raw space source values bindings fuel enough]; simp)
+  · exact (machine source).silent_run
+      (raw_arguments space source values bindings fuel enough [] stack emitted)
 
 /-- Completion publishes the packet once and retains all prior observations
 in the complete verdict. Inspection of raw syntax commits no effects. -/
@@ -166,12 +174,12 @@ theorem completed_raw_arguments (space : Space) (source : GroundedDispatch)
     (enough : values.length < fuel) (emitted : ResultSet) :
     ∃ administrative, ∀ later,
       (machine source).run (administrative + 2 + later)
-        ⟨space, .work (.args values (List.replicate values.length Atom.atomType) bindings fuel),
+        ⟨space, .work (.args values (List.replicate values.length Atom.atomType) bindings fuel []),
           [], emitted⟩ =
       ([(argumentPacket values, bindings)], .finished
         ⟨space, .returning [], [], emitted ++ [(argumentPacket values, bindings)]⟩) := by
   obtain ⟨administrative, realized⟩ := (machine source).silent_run
-    (raw_arguments space source values bindings fuel enough [] emitted)
+    (raw_arguments space source values bindings fuel enough [] [] emitted)
   refine ⟨administrative, fun later => ?_⟩
   rw [show administrative + 2 + later = administrative + (later + 1 + 1) by omega,
     realized (later + 1 + 1)]
@@ -185,7 +193,7 @@ theorem represented_completed_raw_arguments (space : Space) (source : GroundedDi
     ∃ administrative, ∀ later,
       (dataMachine source).run (administrative + 2 + later)
         (RecursiveEncoding.configurationData
-          ⟨space, .work (.args values (List.replicate values.length Atom.atomType) bindings fuel),
+          ⟨space, .work (.args values (List.replicate values.length Atom.atomType) bindings fuel []),
             [], emitted⟩) =
       ([(argumentPacket values, bindings)], .finished
         ⟨space, .returning [], [], emitted ++ [(argumentPacket values, bindings)]⟩) := by

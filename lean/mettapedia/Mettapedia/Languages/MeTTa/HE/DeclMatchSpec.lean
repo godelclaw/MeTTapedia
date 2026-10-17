@@ -1,6 +1,7 @@
 import Mettapedia.Languages.MeTTa.HE.Types
 import Mettapedia.Languages.MeTTa.HE.Matching
 import Mettapedia.Languages.MeTTa.HE.BindingComposition
+import Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge
 
 /-!
 # Declarative HE match specification (Phase 1b/1c)
@@ -34,6 +35,9 @@ namespace Mettapedia.Languages.MeTTa.HE.DeclMatchSpec
 
 open Mettapedia.Languages.MeTTa.HE
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge (AtomOccurs SemanticLoopFree semanticLoopFree_of_assignments_nil
+  semanticLoopFree_single_assignment hasLoop_eq_false_iff_semanticLoopFree
+  hasLoop_single_assignment_eq_false_iff)
 
 /-- Is the atom a variable leaf? (guard for the one-variable match cases). -/
 def Atom.isVarB : Atom → Bool
@@ -58,18 +62,21 @@ inductive MatchRel : Atom → Atom → Bindings → Prop where
   | symSym (s : String) : MatchRel (.symbol s) (.symbol s) ⟨[], []⟩
   /-- Two variables produce an **equality** relation `$a = $b` (NOT an oriented assignment). `[:412]` -/
   | varVar (a b : String) : MatchRel (.var a) (.var b) ⟨[], [(a, b)]⟩
-  /-- A variable against a non-variable assigns the non-variable to it. `[:414]` -/
+  /-- A variable against a non-variable assigns the non-variable to it, provided
+  the final loop filter's occurs check succeeds. `[:414, 616]` -/
   | varNonVar {v : String} {t : Atom} :
-      Atom.isVarB t = false → MatchRel (.var v) t ⟨[(v, t)], []⟩
-  /-- A non-variable against a variable assigns to the **right** variable (two-sided). `[:416]` -/
+      Atom.isVarB t = false → ¬AtomOccurs t v → MatchRel (.var v) t ⟨[(v, t)], []⟩
+  /-- A non-variable against a variable assigns to the right variable, with the
+  same independent occurs check. `[:416, 616]` -/
   | nonVarVar {s : Atom} {v : String} :
-      Atom.isVarB s = false → MatchRel s (.var v) ⟨[(v, s)], []⟩
+      Atom.isVarB s = false → ¬AtomOccurs s v → MatchRel s (.var v) ⟨[(v, s)], []⟩
   /-- Grounded atoms: structural equality (implementation behavior; the published `[{}]` fallback at
       `:430-431` is unreachable because grounded atoms carry custom matchers — see `Matching.lean`). -/
   | grounded (g : GroundedValue) : MatchRel (.grounded g) (.grounded g) ⟨[], []⟩
-  /-- Expressions match pointwise with merge threaded after each position. `[:418-425]` -/
+  /-- Expressions match pointwise with merge threaded after each position.
+  The final accumulated graph must be acyclic. `[:418-425, 616]` -/
   | expr {ls rs : List Atom} {b : Bindings} :
-      MatchListAccRel ls rs Bindings.empty b →
+      MatchListAccRel ls rs Bindings.empty b → SemanticLoopFree b →
       MatchRel (.expression ls) (.expression rs) b
 
 /-- Accumulator-threaded list match relation, mirroring `matchAtomsList`.
@@ -97,8 +104,8 @@ theorem matchRel_varVar_inv {a b : String} {bb : Bindings}
     (h : MatchRel (.var a) (.var b) bb) : bb = ⟨[], [(a, b)]⟩ := by
   cases h with
   | varVar => rfl
-  | varNonVar hnv => simp [Atom.isVarB] at hnv
-  | nonVarVar hnv => simp [Atom.isVarB] at hnv
+  | varNonVar hnv _ => simp [Atom.isVarB] at hnv
+  | nonVarVar hnv _ => simp [Atom.isVarB] at hnv
 
 /-- Matching two symbols forces them equal, with empty bindings. `[:410]` -/
 theorem matchRel_symSym_inv {a c : String} {bb : Bindings}
@@ -111,8 +118,8 @@ theorem matchRel_symSym_inv {a c : String} {bb : Bindings}
 example : MatchRel (.symbol "f") (.symbol "f") Bindings.empty := .symSym "f"
 /-- var/var ⇒ equality `$x = $y`. -/
 example : MatchRel (.var "x") (.var "y") (Bindings.empty.addEquality "x" "y") := .varVar "x" "y"
-example : MatchRel (.var "x") (.symbol "a") (Bindings.empty.assign "x" (.symbol "a")) := .varNonVar rfl
-example : MatchRel (.symbol "a") (.var "x") (Bindings.empty.assign "x" (.symbol "a")) := .nonVarVar rfl
+example : MatchRel (.var "x") (.symbol "a") (Bindings.empty.assign "x" (.symbol "a")) := .varNonVar rfl (by intro occurs; cases occurs)
+example : MatchRel (.symbol "a") (.var "x") (Bindings.empty.assign "x" (.symbol "a")) := .nonVarVar rfl (by intro occurs; cases occurs)
 example (g : GroundedValue) : MatchRel (.grounded g) (.grounded g) Bindings.empty := .grounded g
 
 /-! ## §4  Negative witnesses (1c) — non-matches the faithful spec rejects
@@ -211,6 +218,8 @@ private theorem matchSoundPair :
       rcases matchSoundPair fuel with ⟨ihAtoms, ihLists⟩
       constructor
       · intro l r b h
+        have checked : b.hasLoop = false := by
+          simpa only [Bool.not_eq_true'] using (List.mem_filter.mp h).2
         cases l with
         | symbol s =>
             cases r with
@@ -228,7 +237,7 @@ private theorem matchSoundPair :
                 have hb : b = Bindings.empty.assign v (.symbol s) := by
                   simpa using h.1
                 subst b
-                exact .nonVarVar rfl
+                exact .nonVarVar rfl (hasLoop_single_assignment_eq_false_iff.mp checked)
             | grounded g =>
                 simp [matchAtoms, getMetaType, Atom.symbolType, Atom.groundedType] at h
             | expression es =>
@@ -240,7 +249,7 @@ private theorem matchSoundPair :
                 have hb : b = Bindings.empty.assign v (.symbol s) := by
                   simpa using h.1
                 subst b
-                exact .varNonVar rfl
+                exact .varNonVar rfl (hasLoop_single_assignment_eq_false_iff.mp checked)
             | var w =>
                 simp [matchAtoms, getMetaType, Atom.variableType] at h
                 have hb : b = Bindings.empty.addEquality v w := by
@@ -252,13 +261,13 @@ private theorem matchSoundPair :
                 have hb : b = Bindings.empty.assign v (.grounded g) := by
                   simpa using h.1
                 subst b
-                exact .varNonVar rfl
+                exact .varNonVar rfl (hasLoop_single_assignment_eq_false_iff.mp checked)
             | expression es =>
                 simp [matchAtoms, getMetaType, Atom.variableType, Atom.expressionType] at h
                 have hb : b = Bindings.empty.assign v (.expression es) := by
                   simpa using h.1
                 subst b
-                exact .varNonVar rfl
+                exact .varNonVar rfl (hasLoop_single_assignment_eq_false_iff.mp checked)
         | grounded g =>
             cases r with
             | symbol s =>
@@ -268,7 +277,7 @@ private theorem matchSoundPair :
                 have hb : b = Bindings.empty.assign v (.grounded g) := by
                   simpa using h.1
                 subst b
-                exact .nonVarVar rfl
+                exact .nonVarVar rfl (hasLoop_single_assignment_eq_false_iff.mp checked)
             | grounded hG =>
                 by_cases hg : g = hG
                 · subst hg
@@ -289,7 +298,7 @@ private theorem matchSoundPair :
                 have hb : b = Bindings.empty.assign v (.expression ls) := by
                   simpa using h.1
                 subst b
-                exact .nonVarVar rfl
+                exact .nonVarVar rfl (hasLoop_single_assignment_eq_false_iff.mp checked)
             | grounded g =>
                 simp [matchAtoms, getMetaType] at h
             | expression rs =>
@@ -299,7 +308,7 @@ private theorem matchSoundPair :
                   rcases ihLists hList with ⟨seed, hseed, hrel⟩
                   simp at hseed
                   subst seed
-                  exact .expr hrel
+                  exact .expr hrel ((hasLoop_eq_false_iff_semanticLoopFree b).mp checked)
                 · simp [matchAtoms, getMetaType, Atom.expressionType, hlen] at h
       · intro ls rs acc b h
         cases ls <;> cases rs <;> simp [matchAtomsList] at h
@@ -324,6 +333,30 @@ theorem matchAtomsList_sound {ls rs : List Atom} {acc : List Bindings}
     (h : b ∈ matchAtomsList ls rs acc fuel) :
     ∃ seed, seed ∈ acc ∧ MatchListAccRel ls rs seed b :=
   (matchSoundPair fuel).2 h
+
+/-- A variable cannot be matched with a compound value containing itself. -/
+theorem recursive_compound_not_matchRel (name : String) (bindings : Bindings) :
+    ¬MatchRel (.var name) (.expression [.symbol "f", .var name]) bindings := by
+  intro matched
+  cases matched with
+  | varNonVar _ noOccurrence =>
+      exact noOccurrence (.expression (by simp) (.var name))
+
+/-- The actual executable filter rejects the recursive assignment at every budget. -/
+theorem recursive_compound_matchAtoms_empty (name : String) (fuel : Nat) :
+    matchAtoms (.var name) (.expression [.symbol "f", .var name]) fuel = [] := by
+  apply List.eq_nil_iff_forall_not_mem.mpr
+  intro bindings member
+  exact recursive_compound_not_matchRel name bindings (matchAtoms_sound member)
+
+#guard (matchAtoms (.var "x") (.expression [.symbol "f", .var "y"]) 3).length == 1
+#guard (matchAtoms
+  (.expression [.var "x", .var "y"])
+  (.expression [.expression [.symbol "f", .var "y"],
+    .expression [.symbol "g", .var "x"]]) 20).isEmpty
+#guard (matchAtoms
+  (.expression [.var "x", .var "x"])
+  (.expression [.expression [.symbol "f", .var "y"], .var "y"]) 20).isEmpty
 
 /-! ## §6  Fuel monotonicity and seeded reassembly
 
@@ -608,13 +641,12 @@ private theorem matchAtomsList_cons_of_head_tail
   refine ⟨fuel + 1, ?_⟩
   simpa [matchAtomsList] using hseeded
 
-/-! ## §7  No-variable-values implies no loop
+/-! ## §7  Stored-value shape and semantic cycle admission
 
-This isolates the semantic shape of the remaining completeness crux.  The top
-level `matchAtoms` interface filters out looped bindings, so any future
-`MatchRel -> hasLoop = false` theorem will naturally factor through the more
-structural statement that successful bindings never map a variable directly to
-another variable. -/
+Successful matcher bindings store variable-variable relations as equalities.
+This shape invariant is distinct from cycle freedom: a compound assignment can
+refer back to its owner. Completeness uses the independent graph admission
+carried by the declarative match constructors. -/
 
 /-- Strong structural invariant: every assigned value in the binding list is
     visibly non-variable. This is easier to preserve through the executable
@@ -1152,6 +1184,39 @@ private theorem mergeBindings_assignmentsNonVar
     AssignmentValuesNonVar out :=
   (matcherAssignmentsNonVar fuel).2.2.1 h hleft hright
 
+/-- The actual matcher records variable-variable relations as equality edges,
+so every returned assignment payload is a non-variable atom. -/
+theorem matchAtoms_assignmentValue_isVarB_false
+    {left right : Atom} {out : Bindings} {fuel : Nat}
+    (member : out ∈ matchAtoms left right fuel)
+    {key : String} {value : Atom} (stored : (key,value) ∈ out.assignments) :
+    Atom.isVarB value = false :=
+  matchAtoms_assignmentsNonVar member stored
+
+/-- Every returned list-match assignment has the same shape when each actual
+incoming seed does. This includes transient reconciliation frontiers. -/
+theorem matchAtomsList_assignmentValue_isVarB_false
+    {left right : List Atom} {seeds : List Bindings} {out : Bindings} {fuel : Nat}
+    (member : out ∈ matchAtomsList left right seeds fuel)
+    (seedShape : ∀ seed ∈ seeds, ∀ key value,
+      (key,value) ∈ seed.assignments → Atom.isVarB value = false)
+    {key : String} {value : Atom} (stored : (key,value) ∈ out.assignments) :
+    Atom.isVarB value = false :=
+  matchAtomsList_assignmentsNonVar member
+    (fun seed selected => fun {_ _} row => seedShape seed selected _ _ row) stored
+
+/-- Actual merge preserves non-variable assignment payloads from both inputs,
+including through recursive conflict matching and replay. -/
+theorem mergeBindings_assignmentValue_isVarB_false
+    {left right out : Bindings} {fuel : Nat}
+    (member : out ∈ mergeBindings left right fuel)
+    (leftShape : ∀ key value, (key,value) ∈ left.assignments → Atom.isVarB value = false)
+    (rightShape : ∀ key value, (key,value) ∈ right.assignments → Atom.isVarB value = false)
+    {key : String} {value : Atom} (stored : (key,value) ∈ out.assignments) :
+    Atom.isVarB value = false :=
+  mergeBindings_assignmentsNonVar member
+    (fun {_ _} row => leftShape _ _ row) (fun {_ _} row => rightShape _ _ row) stored
+
 /-- Assignment-key uniqueness is preserved by the same executable HE matcher
     family. This is independent of groundness and of LeaTTa's binding order. -/
 private theorem matcherAssignmentsNodup :
@@ -1450,7 +1515,7 @@ private theorem MatchRel.assignmentsNonVar
       exact AssignmentValuesNonVar.empty
   | varVar =>
       exact AssignmentValuesNonVar.empty
-  | @varNonVar v r hnv =>
+  | @varNonVar v r hnv _ =>
       cases r with
       | symbol s =>
           exact assignmentValuesNonVar_of_singleton_assign rfl
@@ -1460,7 +1525,7 @@ private theorem MatchRel.assignmentsNonVar
           exact assignmentValuesNonVar_of_singleton_assign rfl
       | var w =>
           simp [Atom.isVarB] at hnv
-  | @nonVarVar l v hnv =>
+  | @nonVarVar l v hnv _ =>
       cases l with
       | symbol sym =>
           exact assignmentValuesNonVar_of_singleton_assign rfl
@@ -1472,7 +1537,7 @@ private theorem MatchRel.assignmentsNonVar
           simp [Atom.isVarB] at hnv
   | grounded =>
       exact AssignmentValuesNonVar.empty
-  | expr hlist =>
+  | expr hlist _ =>
       exact MatchListAccRel.assignmentsNonVar hlist AssignmentValuesNonVar.empty
 
 private theorem MatchListAccRel.assignmentsNonVar
@@ -1516,35 +1581,22 @@ theorem matchListRel_assignmentValue_isVarB_false
     Atom.isVarB value = false :=
   MatchListAccRel.assignmentsNonVar h AssignmentValuesNonVar.empty hmem
 
-/-- On the no-variable-values fragment, HE bindings are loop-free: every
-    successful lookup terminates immediately at a non-variable payload, so
-    `hasLoopFrom` can never follow an edge. -/
-private theorem NoVarAssignmentValues.hasLoop_false {b : Bindings}
-    (hno : NoVarAssignmentValues b) :
-    b.hasLoop = false := by
-  unfold Mettapedia.Languages.MeTTa.HE.Bindings.hasLoop
-  rw [List.any_eq_false]
-  intro p hp
-  rcases p with ⟨v, val⟩
-  simp
-  rcases lookup_some_of_mem_assignment hp with ⟨a', hlookup⟩
-  cases a' with
-  | var w =>
-      exact False.elim (hno hlookup)
-  | symbol s =>
-      unfold Mettapedia.Languages.MeTTa.HE.Bindings.hasLoop.hasLoopFrom
-      simp [Bindings.lookup, hlookup]
-  | grounded g =>
-      unfold Mettapedia.Languages.MeTTa.HE.Bindings.hasLoop.hasLoopFrom
-      simp [Bindings.lookup, hlookup]
-  | expression es =>
-      unfold Mettapedia.Languages.MeTTa.HE.Bindings.hasLoop.hasLoopFrom
-      simp [Bindings.lookup, hlookup]
+/-- Every accepted declarative match has an acyclic class-and-value graph.
+The occurs guards protect variable cases; expression matching retains the
+independent graph admission after all local merges. -/
+theorem MatchRel.semanticLoopFree {left right : Atom} {bindings : Bindings}
+    (matched : MatchRel left right bindings) : SemanticLoopFree bindings := by
+  cases matched with
+  | symSym => exact semanticLoopFree_of_assignments_nil rfl
+  | varVar => exact semanticLoopFree_of_assignments_nil rfl
+  | varNonVar _ noOccurrence => exact semanticLoopFree_single_assignment noOccurrence
+  | nonVarVar _ noOccurrence => exact semanticLoopFree_single_assignment noOccurrence
+  | grounded => exact semanticLoopFree_of_assignments_nil rfl
+  | expr _ acyclic => exact acyclic
 
-private theorem AssignmentValuesNonVar.hasLoop_false {b : Bindings}
-    (hvals : AssignmentValuesNonVar b) :
-    b.hasLoop = false :=
-  NoVarAssignmentValues.hasLoop_false (AssignmentValuesNonVar.noVar hvals)
+theorem MatchRel.hasLoop_false {left right : Atom} {bindings : Bindings}
+    (matched : MatchRel left right bindings) : bindings.hasLoop = false :=
+  (hasLoop_eq_false_iff_semanticLoopFree bindings).mpr matched.semanticLoopFree
 
 private theorem matchAtomsList_length_eq_of_mem
     {ls rs : List Atom} {acc : List Bindings} {b : Bindings} {fuel : Nat}
@@ -1573,101 +1625,57 @@ private theorem matchRel_completeWitness
     {l r : Atom} {b : Bindings}
     (h : MatchRel l r b) :
     ∃ fuel, b ∈ matchAtoms l r fuel := by
+  have hloop := h.hasLoop_false
   cases h with
   | symSym s =>
-      have hloop : Bindings.empty.hasLoop = false :=
-        AssignmentValuesNonVar.hasLoop_false AssignmentValuesNonVar.empty
       refine ⟨1, ?_⟩
-      simpa [matchAtoms, getMetaType, Atom.symbolType, hloop, Bindings.empty]
+      simp [matchAtoms, getMetaType, Atom.symbolType, hloop, Bindings.empty]
   | varVar a c =>
-      have hvals :
-          AssignmentValuesNonVar (Bindings.empty.addEquality a c) :=
-        AssignmentValuesNonVar.addEquality AssignmentValuesNonVar.empty a c
-      have hloop : (Bindings.empty.addEquality a c).hasLoop = false :=
-        AssignmentValuesNonVar.hasLoop_false hvals
       refine ⟨1, ?_⟩
-      simpa [matchAtoms, getMetaType, Atom.variableType, hloop,
+      simp [matchAtoms, getMetaType, Atom.variableType, hloop,
         Bindings.empty, Bindings.addEquality]
-  | @varNonVar v r hnv =>
+  | @varNonVar v r hnv _ =>
       cases r with
       | symbol s =>
-          have hvals :
-              AssignmentValuesNonVar (Bindings.empty.assign v (.symbol s)) :=
-            assignmentValuesNonVar_of_singleton_assign rfl
-          have hloop : (Bindings.empty.assign v (.symbol s)).hasLoop = false :=
-            AssignmentValuesNonVar.hasLoop_false hvals
           refine ⟨1, ?_⟩
-          simpa [matchAtoms, getMetaType, Atom.variableType, Atom.symbolType,
+          simp [matchAtoms, getMetaType, Atom.variableType, Atom.symbolType,
             hloop, Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup]
       | grounded g =>
-          have hvals :
-              AssignmentValuesNonVar (Bindings.empty.assign v (.grounded g)) :=
-            assignmentValuesNonVar_of_singleton_assign rfl
-          have hloop : (Bindings.empty.assign v (.grounded g)).hasLoop = false :=
-            AssignmentValuesNonVar.hasLoop_false hvals
           refine ⟨1, ?_⟩
-          simpa [matchAtoms, getMetaType, Atom.variableType, Atom.groundedType,
+          simp [matchAtoms, getMetaType, Atom.variableType, Atom.groundedType,
             hloop, Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup]
       | expression es =>
-          have hvals :
-              AssignmentValuesNonVar (Bindings.empty.assign v (.expression es)) :=
-            assignmentValuesNonVar_of_singleton_assign rfl
-          have hloop : (Bindings.empty.assign v (.expression es)).hasLoop = false :=
-            AssignmentValuesNonVar.hasLoop_false hvals
           refine ⟨1, ?_⟩
-          simpa [matchAtoms, getMetaType, Atom.variableType, Atom.expressionType,
+          simp [matchAtoms, getMetaType, Atom.variableType, Atom.expressionType,
             hloop, Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup]
-      | var w =>
-          simp [Atom.isVarB] at hnv
-  | @nonVarVar l v hnv =>
+      | var w => simp [Atom.isVarB] at hnv
+  | @nonVarVar l v hnv _ =>
       cases l with
       | symbol sym =>
-          have hvals :
-              AssignmentValuesNonVar (Bindings.empty.assign v (.symbol sym)) :=
-            assignmentValuesNonVar_of_singleton_assign rfl
-          have hloop : (Bindings.empty.assign v (.symbol sym)).hasLoop = false :=
-            AssignmentValuesNonVar.hasLoop_false hvals
           refine ⟨1, ?_⟩
-          simpa [matchAtoms, getMetaType, Atom.variableType, Atom.symbolType,
+          simp [matchAtoms, getMetaType, Atom.variableType, Atom.symbolType,
             hloop, Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup]
       | grounded g =>
-          have hvals :
-              AssignmentValuesNonVar (Bindings.empty.assign v (.grounded g)) :=
-            assignmentValuesNonVar_of_singleton_assign rfl
-          have hloop : (Bindings.empty.assign v (.grounded g)).hasLoop = false :=
-            AssignmentValuesNonVar.hasLoop_false hvals
           refine ⟨1, ?_⟩
-          simpa [matchAtoms, getMetaType, Atom.variableType, Atom.groundedType,
+          simp [matchAtoms, getMetaType, Atom.variableType, Atom.groundedType,
             hloop, Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup]
       | expression es =>
-          have hvals :
-              AssignmentValuesNonVar (Bindings.empty.assign v (.expression es)) :=
-            assignmentValuesNonVar_of_singleton_assign rfl
-          have hloop : (Bindings.empty.assign v (.expression es)).hasLoop = false :=
-            AssignmentValuesNonVar.hasLoop_false hvals
           refine ⟨1, ?_⟩
-          simpa [matchAtoms, getMetaType, Atom.variableType, Atom.expressionType,
+          simp [matchAtoms, getMetaType, Atom.variableType, Atom.expressionType,
             hloop, Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup]
-      | var w =>
-          simp [Atom.isVarB] at hnv
+      | var w => simp [Atom.isVarB] at hnv
   | grounded g =>
-      have hloop : Bindings.empty.hasLoop = false :=
-        AssignmentValuesNonVar.hasLoop_false AssignmentValuesNonVar.empty
       refine ⟨1, ?_⟩
-      simpa [matchAtoms, getMetaType, Atom.groundedType, hloop, Bindings.empty]
-  | @expr ls rs b hlist =>
+      simp [matchAtoms, getMetaType, Atom.groundedType, hloop, Bindings.empty]
+  | @expr ls rs b hlist _ =>
       obtain ⟨fuel, hmem⟩ :=
         matchListAcc_completeWitness hlist AssignmentValuesNonVar.empty
-      have hlen : ls.length = rs.length :=
-        matchAtomsList_length_eq_of_mem hmem
-      have hloop : b.hasLoop = false :=
-        MatchListAccRel.noVar hlist AssignmentValuesNonVar.empty
-        |> NoVarAssignmentValues.hasLoop_false
+      have hlen : ls.length = rs.length := matchAtomsList_length_eq_of_mem hmem
       refine ⟨fuel + 1, ?_⟩
       have hmemFilter :
           b ∈ (matchAtomsList ls rs [Bindings.empty] fuel).filter
-            (fun b => !b.hasLoop) := by
-        exact List.mem_filter.mpr ⟨hmem, by simp [hloop]⟩
+            (fun b => !b.hasLoop) :=
+        List.mem_filter.mpr ⟨hmem, by simp [hloop]⟩
       simpa [matchAtoms, getMetaType, Atom.expressionType, hlen] using hmemFilter
 
 private theorem matchListAcc_completeWitness

@@ -12,3 +12,10 @@ README
 
 # Block all markdown files (negations in parent .gitignore)
 *.md
+
+# Generated TPTP problems (megalodon -fof/-th0 writes them into the working directory);
+# hammer/regenerate.sh rebuilds the sets that used to be committed
+*.fof.p
+*.th0.p
+hammer/out/
+tests/dedukti_bridge/triangle_split/tri_*

@@ -45,94 +45,28 @@ theorem specMatch_leaMatch_congruence_of_structural
 
 /-! ## Leaf fragment: declarative completeness -/
 
-private theorem mem_toLeaTTaAtoms_of_mem {atoms : List Atom} {atom : Atom}
-    (hmem : atom ∈ atoms) :
-    toLeaTTaAtom atom ∈ toLeaTTaAtoms atoms := by
-  induction atoms with
-  | nil => cases hmem
-  | cons head tail ih =>
-      simp only [toLeaTTaAtoms, List.mem_cons] at hmem ⊢
-      exact hmem.elim (fun heq => Or.inl (congrArg toLeaTTaAtom heq))
-        (fun htail => Or.inr (ih htail))
-
 /-- The neutral occurrence relation agrees with variable membership after the
 structural HE-to-LeaTTa atom translation. -/
 theorem mem_translated_vars_of_atomOccurs {atom : Atom} {name : String}
     (hoccurs : Spec.Match.Merge.AtomOccurs atom name) :
-    name ∈ (toLeaTTaAtom atom).vars := by
-  induction hoccurs with
-  | var => simp [toLeaTTaAtom, Metta.Atom.vars]
-  | @expression atoms atom name hmem _ ih =>
-      simp only [toLeaTTaAtom, Metta.Atom.vars, List.mem_flatten]
-      refine ⟨(toLeaTTaAtom atom).vars, ?_, ih⟩
-      exact List.mem_map.mpr
-        ⟨toLeaTTaAtom atom, mem_toLeaTTaAtoms_of_mem hmem, rfl⟩
+    name ∈ (toLeaTTaAtom atom).vars :=
+  mem_toLeaTTaAtom_vars_iff_atomOccurs.mpr hoccurs
 
 /-- Variable support of the translated atom is exactly the neutral occurrence
-relation used by the spec specification.  The reverse direction is needed
-to turn the semantic loop filter into the ordinary occurs-check condition. -/
+relation used by the spec specification. -/
 theorem atomOccurs_of_mem_translated_vars {atom : Atom} {name : String}
     (hmem : name ∈ (toLeaTTaAtom atom).vars) :
-    Spec.Match.Merge.AtomOccurs atom name := by
-  let AtomGoal : Atom → Prop := fun candidate => ∀ name',
-    name' ∈ (toLeaTTaAtom candidate).vars →
-      Spec.Match.Merge.AtomOccurs candidate name'
-  let ListGoal : List Atom → Prop := fun candidates => ∀ name',
-    name' ∈ ((toLeaTTaAtoms candidates).map Metta.Atom.vars).flatten →
-      ∃ candidate ∈ candidates,
-        Spec.Match.Merge.AtomOccurs candidate name'
-  have hrec : ∀ candidate, AtomGoal candidate := by
-    apply Atom.rec (motive_1 := AtomGoal) (motive_2 := ListGoal)
-    · intro symbol name' h
-      simp [toLeaTTaAtom, Metta.Atom.vars] at h
-    · intro candidate name' h
-      have heq : name' = candidate := by
-        simpa [toLeaTTaAtom, Metta.Atom.vars] using h
-      subst name'
-      exact .var candidate
-    · intro grounded name' h
-      simp [toLeaTTaAtom, Metta.Atom.vars] at h
-    · intro candidates ih name' h
-      obtain ⟨candidate, hcandidate, hoccurs⟩ := ih name' (by
-        simpa [toLeaTTaAtom, Metta.Atom.vars] using h)
-      exact .expression hcandidate hoccurs
-    · intro name' h
-      simp [toLeaTTaAtoms] at h
-    · intro candidate candidates ihCandidate ihCandidates name' h
-      simp only [toLeaTTaAtoms, List.map_cons, List.flatten_cons,
-        List.mem_append] at h
-      rcases h with hhead | htail
-      · exact ⟨candidate, by simp, ihCandidate name' hhead⟩
-      · obtain ⟨found, hfound, hoccurs⟩ :=
-          ihCandidates name' htail
-        exact ⟨found, by simp [hfound], hoccurs⟩
-  exact hrec atom name hmem
+    Spec.Match.Merge.AtomOccurs atom name :=
+  mem_toLeaTTaAtom_vars_iff_atomOccurs.mp hmem
 
-/-- A non-variable singleton assignment admitted by the spec loop policy
-cannot contain its own key.  Otherwise that assignment itself is a one-edge
-cycle in the class dependency graph. -/
+/-- An admitted singleton assignment cannot contain its own key. -/
 theorem not_atomOccurs_self_of_single_assignment_semanticLoopFree
     {key : String} {value : Atom}
     (hloopFree : Spec.Match.Merge.SemanticLoopFree
       (Bindings.empty.assign key value)) :
-    ¬Spec.Match.Merge.AtomOccurs value key := by
-  intro hoccurs
-  have hnonalias : ¬(value = .var key ∧ key ≠ key ∧
-      key ∈ (Bindings.empty.assign key value).eqClass key) := by
-    intro h
-    exact h.2.1 rfl
-  have hdepends : Spec.Match.Merge.ClassDepends
-      (Bindings.empty.assign key value) key key := by
-    refine ⟨key, value, key, ?_, ?_, hoccurs, ?_, hnonalias⟩
-    · simp [Bindings.empty, Bindings.assign, Bindings.isBound,
-        Bindings.lookup]
-    · simp [Bindings.empty, Bindings.assign, Bindings.isBound,
-        Bindings.lookup, Bindings.eqClass, Bindings.eqClassAux,
-          Bindings.eqStep]
-    · simp [Bindings.empty, Bindings.assign, Bindings.isBound,
-        Bindings.lookup, Bindings.eqClass, Bindings.eqClassAux,
-          Bindings.eqStep]
-  exact hloopFree key (.single hdepends)
+    ¬Spec.Match.Merge.AtomOccurs value key :=
+  hloopFree.not_atomOccurs_of_assignment (by
+    simp [Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup])
 
 private theorem applyClassSolution_update_of_not_mem_vars_direct
     (valuation : String → Metta.Atom) (key : String)
@@ -343,16 +277,18 @@ theorem specLeaf_to_declMatchRel
   cases hmatch with
   | symSym symbol _ => exact .symSym symbol
   | varVar left right _ => exact .varVar left right
-  | varNonVar hnonvar _ =>
+  | varNonVar hnonvar hadmissible =>
       exact .varNonVar (by
         cases pattern <;>
           simp_all [Spec.Match.Merge.isVariableB,
             DeclMatchSpec.Atom.isVarB])
-  | nonVarVar hnonvar _ =>
+        (not_atomOccurs_self_of_single_assignment_semanticLoopFree hadmissible)
+  | nonVarVar hnonvar hadmissible =>
       exact .nonVarVar (by
         cases query <;>
           simp_all [Spec.Match.Merge.isVariableB,
             DeclMatchSpec.Atom.isVarB])
+        (not_atomOccurs_self_of_single_assignment_semanticLoopFree hadmissible)
   | @expression left right out hitems _ =>
       exact (hleaf ⟨left, right, rfl, rfl⟩).elim
   | groundedLeftCustom _ _ hcustom _ =>
@@ -536,43 +472,67 @@ theorem specMerge_empty_right_complete
   subst specOut
   exact ⟨leaLeft, by simp [Metta.Bindings.merge, Metta.Bindings.empty], hleft⟩
 
-/-- specification matcher results never store a bare variable as a value assignment;
-variable/variable constraints remain equality edges throughout recursive
-merge-back.  This is proved on the executable-independent mutual relation. -/
-theorem specMatch_assignmentsNonVariable
-    {query pattern : Atom} {out : Bindings}
-    (hmatch : Spec.Match.Merge.MatchRel
-      Spec.Match.Merge.equalityGroundedSemantic query pattern out) :
-    HEAssignmentsNonVariable out := by
-  apply Spec.Match.Merge.MatchRel.rec
-    (motive_1 := fun _ _ out _ => HEAssignmentsNonVariable out)
-    (motive_2 := fun _ _ seed out _ =>
-      HEAssignmentsNonVariable seed → HEAssignmentsNonVariable out)
-    (motive_3 := fun seed _ value out _ =>
-      HEAssignmentsNonVariable seed →
-        DeclMatchSpec.Atom.isVarB value = false →
-          HEAssignmentsNonVariable out)
-    (motive_4 := fun seed _ _ out _ =>
-      HEAssignmentsNonVariable seed → HEAssignmentsNonVariable out)
-    (motive_5 := fun seed constraints out _ =>
-      HEAssignmentsNonVariable seed →
-        (∀ key value,
-          Spec.Match.Merge.Constraint.value key value ∈ constraints →
-            DeclMatchSpec.Atom.isVarB value = false) →
-          HEAssignmentsNonVariable out)
-    (motive_6 := fun left right out _ =>
-      HEAssignmentsNonVariable left →
-        HEAssignmentsNonVariable right →
-          HEAssignmentsNonVariable out)
-    (t := hmatch)
-  next =>
-      intro symbol hadmissible key target hmem
+/-! The shared six-relation induction exposes both matcher and merger roots. -/
+private theorem specNonvariablePack :
+    (∀ {query pattern : Atom} {out : Bindings},
+      Spec.Match.Merge.MatchRel Spec.Match.Merge.equalityGroundedSemantic query pattern out →
+        HEAssignmentsNonVariable out) ∧
+    (∀ {left right out : Bindings},
+      Spec.Match.Merge.MergeRel Spec.Match.Merge.equalityGroundedSemantic left right out →
+        HEAssignmentsNonVariable left → HEAssignmentsNonVariable right → HEAssignmentsNonVariable out) := by
+  constructor
+  case' left =>
+    intro query pattern out hmatch
+    apply Spec.Match.Merge.MatchRel.rec
+        (motive_1 := fun _ _ out _ => HEAssignmentsNonVariable out)
+        (motive_2 := fun _ _ seed out _ =>
+          HEAssignmentsNonVariable seed → HEAssignmentsNonVariable out)
+        (motive_3 := fun seed _ value out _ =>
+          HEAssignmentsNonVariable seed →
+            DeclMatchSpec.Atom.isVarB value = false →
+              HEAssignmentsNonVariable out)
+        (motive_4 := fun seed _ _ out _ =>
+          HEAssignmentsNonVariable seed → HEAssignmentsNonVariable out)
+        (motive_5 := fun seed constraints out _ =>
+          HEAssignmentsNonVariable seed →
+            (∀ key value,
+              Spec.Match.Merge.Constraint.value key value ∈ constraints →
+                DeclMatchSpec.Atom.isVarB value = false) →
+              HEAssignmentsNonVariable out)
+        (motive_6 := fun left right out _ =>
+          HEAssignmentsNonVariable left →
+            HEAssignmentsNonVariable right →
+              HEAssignmentsNonVariable out)
+      (t := hmatch)
+  case' right =>
+    intro left right out merging
+    apply Spec.Match.Merge.MergeRel.rec
+        (motive_1 := fun _ _ out _ => HEAssignmentsNonVariable out)
+        (motive_2 := fun _ _ seed out _ =>
+          HEAssignmentsNonVariable seed → HEAssignmentsNonVariable out)
+        (motive_3 := fun seed _ value out _ =>
+          HEAssignmentsNonVariable seed →
+            DeclMatchSpec.Atom.isVarB value = false →
+              HEAssignmentsNonVariable out)
+        (motive_4 := fun seed _ _ out _ =>
+          HEAssignmentsNonVariable seed → HEAssignmentsNonVariable out)
+        (motive_5 := fun seed constraints out _ =>
+          HEAssignmentsNonVariable seed →
+            (∀ key value,
+              Spec.Match.Merge.Constraint.value key value ∈ constraints →
+                DeclMatchSpec.Atom.isVarB value = false) →
+              HEAssignmentsNonVariable out)
+        (motive_6 := fun left right out _ =>
+          HEAssignmentsNonVariable left →
+            HEAssignmentsNonVariable right →
+              HEAssignmentsNonVariable out)
+      (t := merging)
+  all_goals solve
+    | intro symbol hadmissible key target hmem
       simp [Bindings.empty] at hmem
-  next =>
-      intro left right hadmissible key target hmem
+    | intro left right hadmissible key target hmem
       simp [Bindings.empty, Bindings.addEquality] at hmem
-  next =>
-      intro varName value hnonvar hadmissible
+    | intro varName value hnonvar hadmissible
       have hvalue : DeclMatchSpec.Atom.isVarB value = false := by
         cases value <;>
           simp_all [Spec.Match.Merge.isVariableB,
@@ -580,8 +540,7 @@ theorem specMatch_assignmentsNonVariable
       exact (show HEAssignmentsNonVariable Bindings.empty by
         intro key target hmem
         simp [Bindings.empty] at hmem).assign hvalue
-  next =>
-      intro value varName hnonvar hadmissible
+    | intro value varName hnonvar hadmissible
       have hvalue : DeclMatchSpec.Atom.isVarB value = false := by
         cases value <;>
           simp_all [Spec.Match.Merge.isVariableB,
@@ -589,67 +548,53 @@ theorem specMatch_assignmentsNonVariable
       exact (show HEAssignmentsNonVariable Bindings.empty by
         intro key target hmem
         simp [Bindings.empty] at hmem).assign hvalue
-  next =>
-      intro queries patterns out hitems hadmissible ih
+    | intro queries patterns out hitems hadmissible ih
       exact ih (by
         intro key target hmem
         simp [Bindings.empty] at hmem)
-  next =>
-      intro grounded right out hright hcustom hground hadmissible
+    | intro grounded right out hright hcustom hground hadmissible
       rcases hground with ⟨hrightEq, hout⟩
       subst right
       subst out
       intro key target hmem
       simp [Bindings.empty] at hmem
-  next =>
-      intro left grounded out hleft hleftNoCustom hcustom hground hadmissible
+    | intro left grounded out hleft hleftNoCustom hcustom hground hadmissible
       rcases hground with ⟨hleftEq, hout⟩
       subst left
       subst out
       intro key target hmem
       simp [Bindings.empty] at hmem
-  next =>
-      intro left right hleft hright hadmissible key target hmem
+    | intro left right hleft hright hadmissible key target hmem
       simp [Bindings.empty] at hmem
-  next =>
-      intro seed hseed
+    | intro seed hseed
       exact hseed
-  next =>
-      intro query pattern queries patterns seed matched next out
+    | intro query pattern queries patterns seed matched next out
         hhead hmerge htail ihHead ihMerge ihTail hseed
       exact ihTail (ihMerge hseed ihHead)
-  next =>
-      intro seed varName value hvalues hseed hvalue
+    | intro seed varName value hvalues hseed hvalue
       exact hseed.assign hvalue
-  next =>
-      intro seed varName value first rest hvalues hagree hsame hseed hvalue
+    | intro seed varName value first rest hvalues hagree hsame hseed hvalue
       exact hseed
-  next =>
-      intro seed varName value first rest matched out hvalues hagree hne
+    | intro seed varName value first rest matched out hvalues hagree hne
         hmatch hmerge ihMatch ihMerge hseed hvalue
       exact ihMerge hseed ihMatch
-  next =>
-      intro seed varName value first rest matched out hvalues hnotAgree
+    | intro seed varName value first rest matched out hvalues hnotAgree
         hlist hmerge ihList ihMerge hseed hvalue
       have hempty : HEAssignmentsNonVariable Bindings.empty := by
         intro key target hmem
         simp [Bindings.empty] at hmem
       exact ihMerge hseed (ihList hempty)
-  next =>
-      intro seed left right values hvalues hagree hseed
+    | intro seed left right values hvalues hagree hseed
       exact hseed.addEquality left right
-  next =>
-      intro seed left right first rest matched out hvalues hnotAgree
+    | intro seed left right first rest matched out hvalues hnotAgree
         hlist hmerge ihList ihMerge hseed
       have hempty : HEAssignmentsNonVariable Bindings.empty := by
         intro key target hmem
         simp [Bindings.empty] at hmem
       exact ihMerge (hseed.addEquality left right) (ihList hempty)
-  next =>
-      intro seed hseed hvalues
+    | intro seed hseed hvalues
       exact hseed
-  next =>
-      intro seed next out key value rest hadd htail ihAdd ihTail hseed hvalues
+    | intro seed next out key value rest hadd htail ihAdd ihTail hseed hvalues
       have hvalue := hvalues key value (by simp)
       have hrest : ∀ restKey restValue,
           Spec.Match.Merge.Constraint.value restKey restValue ∈ rest →
@@ -657,16 +602,14 @@ theorem specMatch_assignmentsNonVariable
         intro restKey restValue hmem
         exact hvalues restKey restValue (by simp [hmem])
       exact ihTail (ihAdd hseed hvalue) hrest
-  next =>
-      intro seed next out left right rest hadd htail ihAdd ihTail hseed hvalues
+    | intro seed next out left right rest hadd htail ihAdd ihTail hseed hvalues
       have hrest : ∀ restKey restValue,
           Spec.Match.Merge.Constraint.value restKey restValue ∈ rest →
             DeclMatchSpec.Atom.isVarB restValue = false := by
         intro restKey restValue hmem
         exact hvalues restKey restValue (by simp [hmem])
       exact ihTail (ihAdd hseed) hrest
-  next =>
-      intro left right out order horder hfold ihFold hleft hright
+    | intro left right out order horder hfold ihFold hleft hright
       apply ihFold hleft
       intro key value hmem
       have hconstraint :
@@ -675,6 +618,15 @@ theorem specMatch_assignmentsNonVariable
         (List.Perm.mem_iff horder).mp hmem
       exact hright.isVarB_eq_false_of_assignment
         (Spec.Match.SolutionTheory.value_mem_constraints_iff.mp hconstraint)
+/-- Default spec matching never stores variables as assignment values. -/
+theorem specMatch_assignmentsNonVariable {query pattern : Atom} {out : Bindings}
+    (matching : Spec.Match.Merge.MatchRel Spec.Match.Merge.equalityGroundedSemantic query pattern out) :
+    HEAssignmentsNonVariable out := specNonvariablePack.1 matching
+/-- Independent merging preserves nonvariable assignment values from both inputs. -/
+theorem specMerge_assignmentsNonVariable {left right out : Bindings}
+    (merging : Spec.Match.Merge.MergeRel Spec.Match.Merge.equalityGroundedSemantic left right out)
+    (first : HEAssignmentsNonVariable left) (second : HEAssignmentsNonVariable right) :
+    HEAssignmentsNonVariable out := specNonvariablePack.2 merging first second
 
 /-- The matcher-output invariant in the direct conformance development is the
 non-variable assignment predicate consumed by the canonical spec model. -/
@@ -902,13 +854,46 @@ theorem specMatch_complete_of_directMerge
 
 /-! ## Observational completeness through one common valuation -/
 
+/-- A legal leaf can share a variable only through the reflexive
+variable/variable case. A nonvariable self-occurrence is excluded by the
+independent matcher's semantic loop premise. -/
+private theorem specLeaf_disjoint_or_reflexive_variable
+    {query pattern : Atom} {specOut : Bindings}
+    (hmatch : Spec.Match.Merge.MatchRel
+      Spec.Match.Merge.equalityGroundedSemantic query pattern specOut)
+    (hleaf : ¬BothExpressions query pattern) :
+    VarsDisjoint query pattern ∨ ∃ name, query = .var name ∧ pattern = .var name := by
+  cases hmatch with
+  | symSym => exact Or.inl (by simp [VarsDisjoint, toLeaTTaAtom, Metta.Atom.vars])
+  | varVar left right _ =>
+      by_cases same : left = right
+      · exact Or.inr ⟨left, rfl, by rw [same]⟩
+      · exact Or.inl (by simpa [VarsDisjoint, toLeaTTaAtom, Metta.Atom.vars] using same)
+  | @varNonVar name value nonvariable admissible =>
+      apply Or.inl
+      intro candidate left right
+      have same : candidate = name := by simpa [toLeaTTaAtom, Metta.Atom.vars] using left
+      subst candidate
+      exact not_atomOccurs_self_of_single_assignment_semanticLoopFree admissible
+        (atomOccurs_of_mem_translated_vars right)
+  | @nonVarVar value name nonvariable admissible =>
+      apply Or.inl
+      intro candidate left right
+      have same : candidate = name := by simpa [toLeaTTaAtom, Metta.Atom.vars] using right
+      subst candidate
+      exact not_atomOccurs_self_of_single_assignment_semanticLoopFree admissible
+        (atomOccurs_of_mem_translated_vars left)
+  | expression => exact (hleaf ⟨_, _, rfl, rfl⟩).elim
+  | groundedLeftCustom => exact Or.inl (by simp [VarsDisjoint, toLeaTTaAtom, Metta.Atom.vars])
+  | groundedRightCustom => exact Or.inl (by simp [VarsDisjoint, toLeaTTaAtom, Metta.Atom.vars])
+  | groundedFallback => exact Or.inl (by simp [VarsDisjoint, toLeaTTaAtom, Metta.Atom.vars])
+
 private theorem specLeafMatch_complete_satisfied
     {valuation : String → Metta.Atom}
     {query pattern : Atom} {specOut : Bindings}
     (hmatch : Spec.Match.Merge.MatchRel
       Spec.Match.Merge.equalityGroundedSemantic
       query pattern specOut)
-    (hdisjoint : VarsDisjoint query pattern)
     (hleaf : ¬BothExpressions query pattern)
     (hsatisfied : MettaEquationSatisfied valuation
       (toLeaTTaAtom query, toLeaTTaAtom pattern)) :
@@ -917,40 +902,31 @@ private theorem specLeafMatch_complete_satisfied
           (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
         LeaBindingSatisfied valuation leaOut ∧
           LeaBindingsNoFloat leaOut := by
-  obtain ⟨leaOut, hlea, _hcongruence⟩ :=
-    specLeafMatch_complete hmatch hdisjoint hleaf
-  refine ⟨leaOut, hlea, ?_,
-    leaMatchAtoms_result_noFloat
+  rcases specLeaf_disjoint_or_reflexive_variable hmatch hleaf with disjoint | ⟨name, rfl, rfl⟩
+  · obtain ⟨leaOut, hlea, _hcongruence⟩ :=
+      specLeafMatch_complete hmatch disjoint hleaf
+    refine ⟨leaOut, hlea, ?_,
+      leaMatchAtoms_result_noFloat
+        (toLeaTTaAtom_noFloat pattern)
+        (toLeaTTaAtom_noFloat query) hlea⟩
+    apply (leaMatchAtoms_solution_iff valuation
       (toLeaTTaAtom_noFloat pattern)
-      (toLeaTTaAtom_noFloat query) hlea⟩
-  apply (leaMatchAtoms_solution_iff valuation
-    (toLeaTTaAtom_noFloat pattern)
-    (toLeaTTaAtom_noFloat query) hlea).mpr
-  simpa [MettaEquationSatisfied] using hsatisfied.symm
+      (toLeaTTaAtom_noFloat query) hlea).mpr
+    simpa [MettaEquationSatisfied] using hsatisfied.symm
+  · exact ⟨[], by simp [toLeaTTaAtom, Metta.matchAtoms, Metta.matchAtomsWith,
+        Metta.Bindings.hasLoop, Metta.Bindings.vars],
+      by simp [LeaBindingSatisfied], by simp [LeaBindingsNoFloat]⟩
 
-/-- A satisfiable spec match derivation is realized directly by repaired
-LeaTTa once raw semantic admissibility is supplied.  The proof follows the
-spec mutual relation, but each live merge is constructed solely from the
-common valuation by `merge_exists_of_satisfied`.  No executable HE matcher or
-merger appears in the statement or proof.
-
-This theorem isolates the two remaining boundary questions for full
-extensional completeness: every admitted spec match equation must have a
-satisfying valuation, and every satisfying raw LeaTTa match candidate must
-pass LeaTTa's public loop check. -/
-theorem specMatch_complete_of_satisfied
+/-- Any satisfiable spec match equation is realized directly by the default
+repaired matcher, including shared variables and reflexive variable leaves.
+The same mutual construction uses a common valuation for every actual merge;
+its raw outputs pass the already-proved runtime loop filter. -/
+theorem specMatch_complete_of_equation
     {query pattern : Atom} {specOut : Bindings}
     (hmatch : Spec.Match.Merge.MatchRel
       Spec.Match.Merge.equalityGroundedSemantic
       query pattern specOut)
-    (hdisjoint : VarsDisjoint query pattern)
     {valuation : String → Metta.Atom}
-    (hrawAcyclic : ∀ {patterns queries : List Metta.Atom}
-        {out : Metta.Bindings},
-      out ∈ Metta.matchAll none [Metta.Bindings.empty]
-          patterns queries →
-        LeaBindingSatisfied valuation out →
-          out.hasLoop = false)
     (hsatisfied : MettaEquationSatisfied valuation
       (toLeaTTaAtom query, toLeaTTaAtom pattern)) :
     ∃ leaOut,
@@ -958,10 +934,9 @@ theorem specMatch_complete_of_satisfied
           (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
         LeaBindingSatisfied valuation leaOut ∧
           LeaBindingsNoFloat leaOut := by
-  revert hdisjoint hsatisfied
+  revert hsatisfied
   apply Spec.Match.Merge.MatchRel.rec
     (motive_1 := fun query pattern _ _ =>
-      VarsDisjoint query pattern →
         MettaEquationSatisfied valuation
             (toLeaTTaAtom query, toLeaTTaAtom pattern) →
           ∃ leaOut,
@@ -970,7 +945,6 @@ theorem specMatch_complete_of_satisfied
               LeaBindingSatisfied valuation leaOut ∧
                 LeaBindingsNoFloat leaOut)
     (motive_2 := fun queries patterns _ _ _ =>
-      AtomListsVarsDisjoint queries patterns →
         MettaAtomListsSatisfied valuation
           (toLeaTTaAtoms queries) (toLeaTTaAtoms patterns) →
         ∀ {leaSeed : Metta.Bindings},
@@ -987,35 +961,35 @@ theorem specMatch_complete_of_satisfied
     (motive_6 := fun _ _ _ _ => True)
     (t := hmatch)
   next =>
-      intro symbol hadmissible hdisjoint hsatisfied
+      intro symbol hadmissible hsatisfied
       exact specLeafMatch_complete_satisfied
-        (.symSym symbol hadmissible) hdisjoint
+        (.symSym symbol hadmissible)
         (by simp [BothExpressions]) hsatisfied
   next =>
-      intro left right hadmissible hdisjoint hsatisfied
+      intro left right hadmissible hsatisfied
       exact specLeafMatch_complete_satisfied
-        (.varVar left right hadmissible) hdisjoint
+        (.varVar left right hadmissible)
         (by simp [BothExpressions]) hsatisfied
   next =>
-      intro varName value hnonvar hadmissible hdisjoint hsatisfied
+      intro varName value hnonvar hadmissible hsatisfied
       exact specLeafMatch_complete_satisfied
-        (.varNonVar hnonvar hadmissible) hdisjoint
+        (.varNonVar hnonvar hadmissible)
         (by simp [BothExpressions]) hsatisfied
   next =>
-      intro value varName hnonvar hadmissible hdisjoint hsatisfied
+      intro value varName hnonvar hadmissible hsatisfied
       exact specLeafMatch_complete_satisfied
-        (.nonVarVar hnonvar hadmissible) hdisjoint
+        (.nonVarVar hnonvar hadmissible)
         (by simp [BothExpressions]) hsatisfied
   next =>
       intro queries patterns specOut hitems hadmissible ih
-        hdisjoint hsatisfied
+        hsatisfied
       have hlists : MettaAtomListsSatisfied valuation
           (toLeaTTaAtoms queries) (toLeaTTaAtoms patterns) := by
         simpa [MettaAtomListsSatisfied, MettaEquationSatisfied,
           applyClassSolution,
           toLeaTTaAtom] using hsatisfied
       obtain ⟨leaOut, hlea, hleaSatisfied, hleaNoFloat⟩ :=
-        ih (varsDisjoint_expression_iff.mp hdisjoint) hlists
+        ih hlists
           (leaSeed := Metta.Bindings.empty)
           (by simp [LeaBindingSatisfied, Metta.Bindings.empty])
           (by simp [LeaBindingsNoFloat, Metta.Bindings.empty])
@@ -1025,33 +999,33 @@ theorem specMatch_complete_of_satisfied
           (toLeaTTaAtom (.expression queries)) := by
         simpa [Metta.matchAtomsWith, toLeaTTaAtom,
           Metta.Bindings.empty] using hlea
-      have hloop := hrawAcyclic hlea hleaSatisfied
+      have hloop := leaMatchAll_empty_hasLoop_false_of_satisfied hlea hleaSatisfied
       simpa [Metta.matchAtoms] using And.intro hraw hloop
   next =>
       intro grounded right out hright hcustom hground hadmissible
-        hdisjoint hsatisfied
+        hsatisfied
       exact specLeafMatch_complete_satisfied
         (.groundedLeftCustom hright hcustom hground hadmissible)
-        hdisjoint (by simp [BothExpressions]) hsatisfied
+        (by simp [BothExpressions]) hsatisfied
   next =>
       intro left grounded out hleft hleftNoCustom hcustom hground
-        hadmissible hdisjoint hsatisfied
+        hadmissible hsatisfied
       exact specLeafMatch_complete_satisfied
         (.groundedRightCustom hleft hleftNoCustom hcustom hground hadmissible)
-        hdisjoint (by simp [BothExpressions]) hsatisfied
+        (by simp [BothExpressions]) hsatisfied
   next =>
-      intro left right hleft hright hadmissible hdisjoint hsatisfied
+      intro left right hleft hright hadmissible hsatisfied
       exact specLeafMatch_complete_satisfied
         (.groundedFallback hleft hright hadmissible)
-        hdisjoint (by simp [BothExpressions]) hsatisfied
+        (by simp [BothExpressions]) hsatisfied
   next =>
-      intro specSeed hdisjoint hlists leaSeed hseedSatisfied hseedNoFloat
+      intro specSeed hlists leaSeed hseedSatisfied hseedNoFloat
       exact ⟨leaSeed, by simp [Metta.matchAll],
         hseedSatisfied, hseedNoFloat⟩
   next =>
       intro query pattern queries patterns specSeed specMatched specNext
         specOut hhead hmergeRel htail ihHead ihMerge ihTail
-        hdisjoint hlists leaSeed hseedSatisfied hseedNoFloat
+        hlists leaSeed hseedSatisfied hseedNoFloat
       have hlistParts :
           MettaEquationSatisfied valuation
               (toLeaTTaAtom query, toLeaTTaAtom pattern) ∧
@@ -1060,12 +1034,12 @@ theorem specMatch_complete_of_satisfied
         simpa [MettaAtomListsSatisfied, MettaEquationSatisfied] using hlists
       obtain ⟨leaMatched, hleaMatched, hmatchedSatisfied,
           hmatchedNoFloat⟩ :=
-        ihHead hdisjoint.head hlistParts.1
+        ihHead hlistParts.1
       obtain ⟨leaNext, hleaNext, hnextSatisfied, hnextNoFloat⟩ :=
         merge_exists_of_satisfied hseedNoFloat hmatchedNoFloat
           hseedSatisfied hmatchedSatisfied
       obtain ⟨leaOut, hleaOut, houtSatisfied, houtNoFloat⟩ :=
-        ihTail hdisjoint.tail hlistParts.2 hnextSatisfied hnextNoFloat
+        ihTail hlistParts.2 hnextSatisfied hnextNoFloat
       refine ⟨leaOut, ?_, houtSatisfied, houtNoFloat⟩
       have hnextAccumulator : leaNext ∈
           [leaSeed].flatMap (fun current =>
@@ -1088,6 +1062,30 @@ theorem specMatch_complete_of_satisfied
   next => intros; trivial
   next => intros; trivial
   next => intros; trivial
+
+/-- The former standardized-apart API follows from unrestricted semantic
+completeness. Its historical local loop contract remains source compatible. -/
+theorem specMatch_complete_of_satisfied
+    {query pattern : Atom} {specOut : Bindings}
+    (hmatch : Spec.Match.Merge.MatchRel
+      Spec.Match.Merge.equalityGroundedSemantic
+      query pattern specOut)
+    (_hdisjoint : VarsDisjoint query pattern)
+    {valuation : String → Metta.Atom}
+    (_hrawAcyclic : ∀ {patterns queries : List Metta.Atom}
+        {out : Metta.Bindings},
+      out ∈ Metta.matchAll none [Metta.Bindings.empty]
+          patterns queries →
+        LeaBindingSatisfied valuation out →
+          out.hasLoop = false)
+    (hsatisfied : MettaEquationSatisfied valuation
+      (toLeaTTaAtom query, toLeaTTaAtom pattern)) :
+    ∃ leaOut,
+      leaOut ∈ Metta.matchAtoms
+          (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
+        LeaBindingSatisfied valuation leaOut ∧
+          LeaBindingsNoFloat leaOut := by
+  exact specMatch_complete_of_equation hmatch hsatisfied
 
 /-- Extensional completeness of repaired LeaTTa for every satisfiable spec
 match derivation.  The comparison is exactly equality of binding solution
@@ -1151,12 +1149,12 @@ theorem specMatch_observational_complete_of_classCoherent
 spec matcher relation.  Reconciliation provenance is discharged internally:
 every successful spec derivation has the canonical model constructed by
 `Spec.Match.StructuralModel.specMatch_has_model`. -/
-theorem specMatch_observational_complete
+theorem specMatch_observational_complete_unrestricted
     {query pattern : Atom} {specOut : Bindings}
     (hmatch : Spec.Match.Merge.MatchRel
       Spec.Match.Merge.equalityGroundedSemantic
       query pattern specOut)
-    (hdisjoint : VarsDisjoint query pattern) :
+    :
     ∃ leaOut,
       leaOut ∈ Metta.matchAtoms
           (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
@@ -1169,8 +1167,22 @@ theorem specMatch_observational_complete
       (toLeaTTaAtom query, toLeaTTaAtom pattern) :=
     (Spec.Match.SolutionTheory.matchRel_solution_iff
       hmatch valuation).mp hbindings
-  exact specMatch_observational_complete_of_satisfiable
-    hmatch hdisjoint ⟨valuation, hequation⟩
+  obtain ⟨leaOut, member, _, _⟩ := specMatch_complete_of_equation hmatch hequation
+  exact ⟨leaOut, member, Spec.Match.SolutionTheory.specMatch_leaMatch_solutionTheoryEquiv
+    hmatch member⟩
+
+/-- Preserve the standardized-apart API as a projection of the general law. -/
+theorem specMatch_observational_complete
+    {query pattern : Atom} {specOut : Bindings}
+    (hmatch : Spec.Match.Merge.MatchRel
+      Spec.Match.Merge.equalityGroundedSemantic
+      query pattern specOut)
+    (_hdisjoint : VarsDisjoint query pattern) :
+    ∃ leaOut,
+      leaOut ∈ Metta.matchAtoms
+          (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
+        LeaBindingSolutionTheoryEquiv specOut leaOut := by
+  exact specMatch_observational_complete_unrestricted hmatch
 
 /-- A derivation-produced rooted reconciliation certificate is the direct
 syntactic premise for spec-to-LeaTTa completeness.  Unlike bare

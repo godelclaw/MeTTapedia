@@ -29,7 +29,8 @@ def term : TypeExpr := .base "Term"
 
 def language : LanguageDef := {lambdaScoped with rewrites := [betaRule]}
 
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot :=
+  ⟨language, [], {signatures := [], rows := [], dynamicRelations := []}⟩
 
 def fragment : Mettapedia.OSLF.NativeTypes.Generation.LanguageFragment := {}
 

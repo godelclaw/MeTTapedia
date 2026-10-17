@@ -37,7 +37,7 @@ open Mettapedia.GSLT.LanguageDef.CanonicalPremiseClosure
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
 open Mettapedia.GSLT.LanguageDef.InferenceCheckedNativeWaist
 open Mettapedia.GSLT.LanguageDef.InferenceProofRelevantSemanticExtension
-open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.Declaration
 open Mettapedia.OSLF.MeTTaIL.Syntax
@@ -147,8 +147,7 @@ private theorem legacyGroundRule_validV1 :
     Pattern.isWellScoped, Pattern.isWellScopedAt,
     Pattern.isWellScopedListAt, Pattern.hasCanonicalBinderMetadata,
     Pattern.hasCanonicalBinderMetadataList, legacyGroundRule,
-    hasTypePattern, tmHeadPattern, encodeTowerHead, LevelTower.zero,
-    encodeLevel, encodeNat]
+    hasTypePattern, tmHeadPattern, encodeTowerHead, LevelTower.zero, encodeNat]
   decide
 
 private theorem sortRule_validV1 :
@@ -199,8 +198,7 @@ private theorem legacyGroundRule_validIn :
     RuleSchema.patterns, legacyGroundRule, hasTypePattern, tmHeadPattern,
     CalculusLanguageDef.judgmentSchemaValid, hasTypingJudgment,
     fixedConstructorListsValid, fixedConstructorsValid,
-    definition_language_eq_data,
-    DeclarationAwareDataLanguage.fixed_encodeTowerHead]
+    definition_language_eq_data]
 
 private theorem sortRule_validIn :
     RuleSchema.isValidIn definition sortRule = true := by
@@ -303,7 +301,7 @@ inductive StructuralTyping : {n : Nat} →
 
 /-- Structural evidence is genuine evidence in the common cumulative cumulative-tower candidate
 typing spine; it is not defined by checker acceptance. -/
-def StructuralTyping.toHasType :
+theorem StructuralTyping.toHasType :
     {n : Nat} → {context : Tower.Ctx n} →
     {term type : Tower.Tm n} →
     (evidence : StructuralTyping context term type) →
@@ -376,7 +374,7 @@ theorem surface_injective : Function.Injective surface := by
 /-- A universe-typed domain extends the retained formed world exactly once.
 Dependent premises may then be checked or constructed in this new world
 without replaying context formation inside the eventual hot artifact. -/
-def extendContext (formed : FormedTypingClaim)
+theorem extendContext (formed : FormedTypingClaim)
     {domain : Tower.Tm formed.claim.arity} {level : LevelExpr Nat}
     (domainEvidence :
       StructuralTyping formed.claim.context domain (.head (.sort level))) :
@@ -399,7 +397,7 @@ private def legacyConclusion_reflects
           (tmHeadPattern (encodeTowerHead .legacyGround))
           (tmHeadPattern (encodeTowerHead (.sort Tower.zero)))) :
     StructuralTyping intrinsicContext subject type := by
-  simp only [claimPattern, encodeTypingClaim, hasTypePattern,
+  simp only [claimPattern, encodeTypingClaim, WithScalars.encodeTypingClaim, hasTypePattern,
     Pattern.apply.injEq, List.cons.injEq, and_true, true_and] at equality
   have subjectEquality : subject = .head .legacyGround :=
     (tmCodec towerHeadCodec n).encode_injective (by
@@ -423,7 +421,7 @@ private def sortConclusion_reflects
           (tmHeadPattern (headSortPattern
             (levelSuccPattern levelPattern)))) :
     StructuralTyping intrinsicContext subject type := by
-  simp only [claimPattern, encodeTypingClaim, hasTypePattern,
+  simp only [claimPattern, encodeTypingClaim, WithScalars.encodeTypingClaim, hasTypePattern,
     Pattern.apply.injEq, List.cons.injEq, and_true, true_and] at equality
   have decodedSubject :
       decodeTm? towerHeadCodec n
@@ -432,12 +430,11 @@ private def sortConclusion_reflects
     exact decodeTm?_encodeTm towerHeadCodec subject
   cases decodedLevel : decodeLevel? levelPattern with
   | none =>
-      simp [tmHeadPattern, headSortPattern, decodeTm?, towerHeadCodec,
-        decodeTowerHead?, decodedLevel] at decodedSubject
+      simp [tmHeadPattern, headSortPattern, decodeTm?, towerHeadCodec, WithScalars.decodeTowerHead?, decodedLevel] at decodedSubject
   | some level =>
       have subjectEquality : subject = .head (.sort level) := by
         simpa [tmHeadPattern, headSortPattern, decodeTm?, towerHeadCodec,
-          decodeTowerHead?, decodedLevel] using decodedSubject.symm
+          decodeTowerHead?, WithScalars.decodeTowerHead?, decodedLevel] using decodedSubject.symm
       have decodedType :
           decodeTm? towerHeadCodec n
               (tmHeadPattern
@@ -447,7 +444,7 @@ private def sortConclusion_reflects
         exact decodeTm?_encodeTm towerHeadCodec type
       have typeEquality : type = .head (.sort (.succ level)) := by
         simpa [tmHeadPattern, headSortPattern, levelSuccPattern, decodeTm?,
-          towerHeadCodec, decodeTowerHead?, decodeLevel?, decodedLevel] using
+          towerHeadCodec, decodeTowerHead?, WithScalars.decodeTowerHead?, decodeLevel?, decodedLevel] using
           decodedType.symm
       subst subject
       subst type
@@ -465,7 +462,7 @@ private def reflConclusion_reflects
         hasTypePattern arity context (tmReflPattern termPattern)
           (tmIdPattern typePattern termPattern termPattern)) :
     StructuralTyping intrinsicContext subject type := by
-  simp only [claimPattern, encodeTypingClaim, hasTypePattern,
+  simp only [claimPattern, encodeTypingClaim, WithScalars.encodeTypingClaim, hasTypePattern,
     Pattern.apply.injEq, List.cons.injEq, and_true, true_and] at equality
   have decodedSubject :
       decodeTm? towerHeadCodec n (tmReflPattern termPattern) = some subject := by
@@ -516,7 +513,7 @@ private def reflConclusion_reflects
                         subject := term
                         type := premiseType } =
                     hasTypePattern arity context termPattern typePattern
-                simp only [encodeTypingClaim, hasTypePattern,
+                simp only [encodeTypingClaim, WithScalars.encodeTypingClaim, hasTypePattern,
                   Pattern.apply.injEq, List.cons.injEq, and_true, true_and]
                 exact ⟨equality.1, equality.2.1, termPatternEquality,
                   typePatternEquality⟩)
@@ -546,7 +543,7 @@ private def piConclusion_reflects
             (headSortPattern
               (levelMaxPattern domainLevelPattern bodyLevelPattern)))) :
     StructuralTyping intrinsicContext subject type := by
-  simp only [claimPattern, encodeTypingClaim, hasTypePattern,
+  simp only [claimPattern, encodeTypingClaim, WithScalars.encodeTypingClaim, hasTypePattern,
     Pattern.apply.injEq, List.cons.injEq, and_true, true_and] at equality
   have decodedSubject :
       decodeTm? towerHeadCodec n
@@ -576,19 +573,19 @@ private def piConclusion_reflects
           cases decodedDomainLevel : decodeLevel? domainLevelPattern with
           | none =>
               simp [tmHeadPattern, headSortPattern, levelMaxPattern,
-                decodeTm?, towerHeadCodec, decodeTowerHead?, decodeLevel?,
+                decodeTm?, towerHeadCodec, WithScalars.decodeTowerHead?,
                 decodedDomainLevel] at decodedResult
           | some domainLevel =>
               cases decodedBodyLevel : decodeLevel? bodyLevelPattern with
               | none =>
                   simp [tmHeadPattern, headSortPattern, levelMaxPattern,
-                    decodeTm?, towerHeadCodec, decodeTowerHead?, decodeLevel?,
+                    decodeTm?, towerHeadCodec, WithScalars.decodeTowerHead?,
                     decodedDomainLevel, decodedBodyLevel] at decodedResult
               | some bodyLevel =>
                   have typeEquality :
                       type = .head (.sort (.max domainLevel bodyLevel)) := by
                     simpa [tmHeadPattern, headSortPattern, levelMaxPattern,
-                      decodeTm?, towerHeadCodec, decodeTowerHead?,
+                      decodeTm?, towerHeadCodec, decodeTowerHead?, WithScalars.decodeTowerHead?,
                       decodeLevel?, decodedDomainLevel, decodedBodyLevel] using
                       decodedResult.symm
                   have subjectPatterns :
@@ -610,13 +607,13 @@ private def piConclusion_reflects
                           (.head (.sort domainLevel) : Tower.Tm n) =
                         tmHeadPattern
                           (headSortPattern domainLevelPattern) := by
-                    simp [encodeTm, towerHeadCodec, encodeTowerHead,
+                    simp [encodeTm, towerHeadCodec,
                       tmHeadPattern, headSortPattern, levelPatterns.1]
                   have bodyTypePattern :
                       encodeTm towerHeadCodec
                           (.head (.sort bodyLevel) : Tower.Tm (n + 1)) =
                         tmHeadPattern (headSortPattern bodyLevelPattern) := by
-                    simp [encodeTm, towerHeadCodec, encodeTowerHead,
+                    simp [encodeTm, towerHeadCodec,
                       tmHeadPattern, headSortPattern, levelPatterns.2]
                   have domainEvidence :
                       StructuralTyping intrinsicContext domain
@@ -636,7 +633,7 @@ private def piConclusion_reflects
                             hasTypePattern arity context domainPattern
                               (tmHeadPattern
                                 (headSortPattern domainLevelPattern))
-                        simp only [encodeTypingClaim, hasTypePattern,
+                        simp only [encodeTypingClaim, WithScalars.encodeTypingClaim, hasTypePattern,
                           Pattern.apply.injEq, List.cons.injEq, and_true,
                           true_and]
                         exact ⟨equality.1, equality.2.1,
@@ -673,7 +670,7 @@ private def piConclusion_reflects
                               bodyPattern
                               (tmHeadPattern
                                 (headSortPattern bodyLevelPattern))
-                        simp only [encodeTypingClaim, hasTypePattern,
+                        simp only [encodeTypingClaim, WithScalars.encodeTypingClaim, hasTypePattern,
                           Pattern.apply.injEq, List.cons.injEq, and_true,
                           true_and]
                         exact ⟨successorArity, extendedContext,
@@ -719,7 +716,7 @@ def structuralSemantics :
                         instantiateSchema?, instantiateSchemaAt?,
                         instantiateSchemas?, instantiateSchemasAt?,
                         lookupArgumentAt?, hasTypePattern, tmHeadPattern,
-                        encodeTowerHead, encodeLevel, encodeNat,
+                        encodeTowerHead, encodeNat,
                         LevelTower.zero] at instantiated
                       rcases instantiated with ⟨_, rfl, rfl⟩
                       intro claim equality
@@ -1022,7 +1019,7 @@ private theorem instantiateLegacyPattern
     RuleSchema.sideConditionsHold, instantiateSchemas?,
     instantiateSchemasAt?, instantiateSchema?, instantiateSchemaAt?,
     lookupArgumentAt?, hasTypePattern, tmHeadPattern, LevelTower.zero,
-    encodeTowerHead, encodeLevel, encodeNat]
+    encodeTowerHead, encodeNat]
 
 private theorem instantiateSortPattern
     (arity context level : Pattern)
@@ -1101,8 +1098,8 @@ private theorem legacyGround_accepted {n : Nat} (context : Tower.Ctx n) :
   rw [instantiateLegacyPattern (encodeNat n)
     (encodeCtx towerHeadCodec context) (encodeNat_argumentValid n)
     (encodeTowerCtx_argumentValid context)]
-  simp [claimPattern, encodeTypingClaim, encodeTm, towerHeadCodec,
-    encodeTowerHead, LevelTower.zero, encodeLevel, hasTypePattern,
+  simp [claimPattern, encodeTypingClaim, WithScalars.encodeTypingClaim, towerHeadCodec,
+    encodeTowerHead, LevelTower.zero, hasTypePattern,
     tmHeadPattern, checkRawChildren]
 
 private theorem sort_accepted {n : Nat} (context : Tower.Ctx n)
@@ -1116,8 +1113,7 @@ private theorem sort_accepted {n : Nat} (context : Tower.Ctx n)
     (encodeCtx towerHeadCodec context) (encodeLevel level)
     (encodeNat_argumentValid n) (encodeTowerCtx_argumentValid context)
     (encodeLevel_argumentValid level)]
-  simp [claimPattern, encodeTypingClaim, encodeTm, towerHeadCodec,
-    encodeTowerHead, encodeLevel, hasTypePattern, tmHeadPattern,
+  simp [claimPattern, encodeTypingClaim, WithScalars.encodeTypingClaim, towerHeadCodec, encodeLevel, hasTypePattern, tmHeadPattern,
     headSortPattern, levelSuccPattern, checkRawChildren]
 
 private theorem refl_accepted {n : Nat} (context : Tower.Ctx n)
@@ -1133,7 +1129,7 @@ private theorem refl_accepted {n : Nat} (context : Tower.Ctx n)
     (encodeTm towerHeadCodec type) (encodeNat_argumentValid n)
     (encodeTowerCtx_argumentValid context) (encodeTowerTm_argumentValid term)
     (encodeTowerTm_argumentValid type)]
-  simpa [checkRawChildren, claimPattern, encodeTypingClaim, encodeTm,
+  simpa [checkRawChildren, claimPattern, encodeTypingClaim, WithScalars.encodeTypingClaim, encodeTm,
     hasTypePattern, tmReflPattern, tmIdPattern] using premiseAccepted
 
 private theorem piForm_accepted {n : Nat} (context : Tower.Ctx n)
@@ -1162,7 +1158,7 @@ private theorem piForm_accepted {n : Nat} (context : Tower.Ctx n)
     (encodeTowerTm_argumentValid domain) (encodeTowerTm_argumentValid body)
     (encodeLevel_argumentValid domainLevel)
     (encodeLevel_argumentValid bodyLevel)]
-  simpa [checkRawChildren, claimPattern, encodeTypingClaim, encodeTm,
+  simpa [checkRawChildren, claimPattern, encodeTypingClaim, WithScalars.encodeTypingClaim, encodeTm,
     encodeCtx, encodeNat, towerHeadCodec, encodeTowerHead, encodeLevel,
     hasTypePattern, tmHeadPattern, tmPiPattern, headSortPattern,
     levelMaxPattern, natSuccPattern, ctxSnocPattern] using
@@ -1336,8 +1332,8 @@ theorem StructuralTyping.canonicalTreeRaw_accepted
       rw [instantiateLegacyPattern (encodeNat _)
         (encodeCtx towerHeadCodec context) (encodeNat_argumentValid _)
         (encodeTowerCtx_argumentValid context)]
-      simp [claimPattern, encodeTypingClaim, encodeTm, towerHeadCodec,
-        encodeTowerHead, LevelTower.zero, encodeLevel, hasTypePattern,
+      simp [claimPattern, encodeTypingClaim, WithScalars.encodeTypingClaim, towerHeadCodec,
+        encodeTowerHead, LevelTower.zero, hasTypePattern,
         tmHeadPattern,
         Mettapedia.GSLT.LanguageDef.CanonicalInferenceDerivation.checkCanonicalRawChildren]
   | sort context level =>
@@ -1349,8 +1345,7 @@ theorem StructuralTyping.canonicalTreeRaw_accepted
         (encodeCtx towerHeadCodec context) (encodeLevel level)
         (encodeNat_argumentValid _) (encodeTowerCtx_argumentValid context)
         (encodeLevel_argumentValid level)]
-      simp [claimPattern, encodeTypingClaim, encodeTm, towerHeadCodec,
-        encodeTowerHead, encodeLevel, hasTypePattern, tmHeadPattern,
+      simp [claimPattern, encodeTypingClaim, WithScalars.encodeTypingClaim, towerHeadCodec, encodeLevel, hasTypePattern, tmHeadPattern,
         headSortPattern, levelSuccPattern,
         Mettapedia.GSLT.LanguageDef.CanonicalInferenceDerivation.checkCanonicalRawChildren]
   | @reflIntro n context term type premise inductionHypothesis =>
@@ -1366,7 +1361,7 @@ theorem StructuralTyping.canonicalTreeRaw_accepted
         (encodeTowerTm_argumentValid type)]
       simpa [checkCanonicalRaw,
         Mettapedia.GSLT.LanguageDef.CanonicalInferenceDerivation.checkCanonicalRawChildren,
-        claimPattern, encodeTypingClaim, encodeTm, hasTypePattern,
+        claimPattern, encodeTypingClaim, WithScalars.encodeTypingClaim, encodeTm, hasTypePattern,
         tmReflPattern, tmIdPattern] using inductionHypothesis
   | @piForm n context domain body domainLevel bodyLevel domainPremise
       bodyPremise domainIH bodyIH =>
@@ -1385,7 +1380,7 @@ theorem StructuralTyping.canonicalTreeRaw_accepted
         (encodeLevel_argumentValid bodyLevel)]
       simpa [checkCanonicalRaw,
         Mettapedia.GSLT.LanguageDef.CanonicalInferenceDerivation.checkCanonicalRawChildren,
-        claimPattern, encodeTypingClaim, encodeTm, encodeCtx, encodeNat,
+        claimPattern, encodeTypingClaim, WithScalars.encodeTypingClaim, encodeTm, encodeCtx, encodeNat,
         towerHeadCodec, encodeTowerHead, encodeLevel, hasTypePattern,
         tmHeadPattern, tmPiPattern, headSortPattern, levelMaxPattern,
         natSuccPattern, ctxSnocPattern] using And.intro domainIH bodyIH
@@ -1453,12 +1448,7 @@ def malformedLegacyProof : RawProof :=
       [encodeNat 0, malformedZeroContext]) []
 
 private theorem malformedZeroContext_argumentValid :
-    argumentValidAt 0 malformedZeroContext = true := by
-  simp [malformedZeroContext, argumentValidAt, Pattern.isGroundAt,
-    Pattern.isGroundListAt, Pattern.hasCanonicalBinderMetadata,
-    Pattern.hasCanonicalBinderMetadataList,
-    encodeTm_ground towerHeadCodec encodeTowerHead_ground,
-    encodeTm_canonical towerHeadCodec encodeTowerHead_canonical]
+    argumentValidAt 0 malformedZeroContext = true := by rfl
 
 /-- Schema replay alone sees ground constructor data and accepts it.  This is
 not yet a typed cumulative-tower candidate judgment because the context and arity disagree. -/

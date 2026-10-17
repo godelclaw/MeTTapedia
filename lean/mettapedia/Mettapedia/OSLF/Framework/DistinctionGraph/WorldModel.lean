@@ -1,5 +1,5 @@
 import Mettapedia.OSLF.Framework.DistinctionGraph.Weighted
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 import Mettapedia.OSLF.Framework.KSUnificationSketch
 
 /-!

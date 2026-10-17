@@ -28,13 +28,16 @@ it.
                 proofs transport terms      conversion elimination
 ```
 
-A third tier is *deliberately absent*: theories whose conversion is
-decidable and which expect the checker to **recompute** it (the αβη
-conversion of HOL-family kernels) cannot be expressed, because the checker
+A third tier is *deliberately absent*: theories which expect the checker
+to **recompute** a declared conversion cannot express that operation through
+this interface, because the checker
 has no primitive that computes a conversion rather than replaying a proof of
 one.  Adding it means adding to the trusted generic vocabulary, which is a
 decision with its own semantics, wire encoding, and native-refinement
 obligation — not a definition that can be slipped in here.
+HOL Light's explicit beta and equality inferences do not require such an
+implicit conversion primitive. The classification concerns the chosen
+checking discipline, rather than higher-order syntax by itself.
 
 ## What the present checker actually does
 

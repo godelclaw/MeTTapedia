@@ -18,7 +18,7 @@ This matches the Rust split between `try_make_map` / `make_map` and the newer
 
 namespace Mettapedia.OSLF.PathMap.Trie
 
-open FTrie
+open _root_.Mettapedia.OSLF.PathMap.Trie.FTrie
 
 universe u
 

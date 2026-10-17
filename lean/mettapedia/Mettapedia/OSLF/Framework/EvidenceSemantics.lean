@@ -1,7 +1,7 @@
 import Mettapedia.OSLF.Formula
 import Mettapedia.GSLT.LanguageDef.CanonicalSection
-import Mettapedia.PLN.Evidence.EvidenceQuantale
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.Evidence.BinaryEvidence
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 import Mathlib.Order.ConditionallyCompleteLattice.Finset
 
 /-!

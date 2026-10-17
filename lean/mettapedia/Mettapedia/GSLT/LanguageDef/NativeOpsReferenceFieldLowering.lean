@@ -719,6 +719,170 @@ theorem field_equal_code_exact {World : Type} {interface : Interface}
     (field_read_code_exact read bounded fresh loaded record root)]
   exact target_run_temporary_exact (temporary_bound_fresh middleBound (by omega)) compared root out
 
+/-- A positional field of an already evaluated record is read by value. The
+comparison needs no field address, memory load, or reference guard. -/
+def valueFieldEqualCode (base : Atom) (record : String)
+    (index first : Nat) (constant : BitVec 64) : List Instruction :=
+  [.temporary first .word (.fieldValue base record index),
+   .temporary (first + 1) .bool
+     (.binary (.compare .eq) (.temporary first .word) (.word constant))]
+
+def valueFieldEqualFrame (frame : TargetFrame) (first : Nat)
+    (value constant : BitVec 64) : TargetFrame :=
+  targetDeclareTemporary (targetDeclareTemporary frame first (.word value))
+    (first + 1) (.bool (value == constant))
+
+theorem value_field_equal_frame_bound {frame : TargetFrame} {lower first : Nat}
+    (bounded : TemporaryNamesBound frame lower) (fresh : lower < first)
+    (value constant : BitVec 64) :
+    TemporaryNamesBound (valueFieldEqualFrame frame first value constant) (first + 1) :=
+  declared_temporary_bound
+    (declared_temporary_bound bounded (by omega) (Nat.le_refl first) _)
+    (by omega) (Nat.le_refl _) _
+
+theorem value_field_equal_frame_protects {lower first : Nat} (frame : TargetFrame)
+    (fresh : lower < first) (value constant : BitVec 64) :
+    TemporaryProtection lower frame (valueFieldEqualFrame frame first value constant) :=
+  temporary_protection_trans (declare_temporary_protects frame _ fresh)
+    (declare_temporary_protects _ _ (by omega))
+
+theorem value_field_equal_frame_scoped {frame : TargetFrame} (hscope : TemporariesScoped frame)
+    (first : Nat) (value constant : BitVec 64) :
+    TemporariesScoped (valueFieldEqualFrame frame first value constant) :=
+  declared_temporaries_completeNames (declared_temporaries_completeNames hscope _ _) _ _
+
+theorem value_field_equal_frame_extent (frame : TargetFrame) (first : Nat)
+    (value constant : BitVec 64) :
+    (valueFieldEqualFrame frame first value constant).storage = frame.storage ∧
+    (valueFieldEqualFrame frame first value constant).nextLocal = frame.nextLocal ∧
+    (valueFieldEqualFrame frame first value constant).bindings = frame.bindings :=
+  ⟨rfl, rfl, rfl⟩
+
+theorem value_field_equal_frame_result {World : Type} (interface : Interface)
+    (frame : TargetFrame) (state : TargetState World) (first : Nat) (value constant : BitVec 64) :
+    TargetAtomEval interface (valueFieldEqualFrame frame first value constant) state
+      (.temporary (first + 1) .bool) (.bool (value == constant)) :=
+  declared_temporary_atom interface _ state (first + 1) _ _
+
+/-- The by-value field read and comparison have exactly one normal result.
+Actual record evaluation and positional selection supply the two pure steps. -/
+theorem value_field_equal_code_exact {World : Type} {interface : Interface}
+    {heap : TargetHeapSemantics World} {calls : TargetCalls World} {result : NativeType}
+    {frame : TargetFrame} {state : TargetState World} {base : Atom}
+    {record : String} {fields : List TargetValue} {lower first index : Nat}
+    (read : TargetAtomEval interface frame state base (.record record fields))
+    (bounded : TemporaryNamesBound frame lower) (fresh : lower < first)
+    (value constant : BitVec 64) (selected : fields[index]? = some (.word value))
+    (root : List Instruction) (out : TargetBlockOutcome World) :
+    TargetRun interface heap calls result root
+      (valueFieldEqualCode base record index first constant) frame state out ↔
+      out = ⟨.normal, valueFieldEqualFrame frame first value constant, state⟩ := by
+  let middle := targetDeclareTemporary frame first (.word value)
+  have extracted : TargetPureEval interface frame state
+      (.fieldValue base record index) (.word value) := .fieldValue read selected
+  have readValue : TargetAtomEval interface middle state
+      (.temporary first .word) (.word value) :=
+    declared_temporary_atom interface frame state first _ _
+  have middleBound : TemporaryNamesBound middle first :=
+    declared_temporary_bound bounded (by omega) (Nat.le_refl _) _
+  have compared : TargetPureEval interface middle state
+      (.binary (.compare .eq) (.temporary first .word) (.word constant))
+      (.bool (value == constant)) := .binary readValue (.word constant) rfl
+  unfold valueFieldEqualCode
+  rw [target_normal_then_exact
+    (target_temporary_instruction_exact (temporary_bound_fresh bounded fresh) extracted)]
+  exact target_run_temporary_exact (temporary_bound_fresh middleBound (by omega)) compared root out
+
+/-- Closing the two fresh private cells restores the entire caller frame and
+state. No storage extent or caller-visible binding was allocated or changed. -/
+theorem value_field_equal_frame_leave_scope {World : Type} {frame : TargetFrame}
+    {lower first : Nat} (bounded : TemporaryNamesBound frame lower) (fresh : lower < first)
+    (hscope : TemporariesScoped frame) (state : TargetState World) (value constant : BitVec 64) :
+    targetLeaveScope frame (valueFieldEqualFrame frame first value constant) state =
+      (frame, state) := by
+  have protection := value_field_equal_frame_protects frame fresh value constant
+  have values : (fun identity => if frame.temporaryNames.contains identity then
+      (valueFieldEqualFrame frame first value constant).temporaries identity else none) =
+      frame.temporaries := by
+    funext identity
+    cases live : frame.temporaryNames.contains identity with
+    | false => simp [hscope identity live]
+    | true => simp [protection.values identity (bounded identity live)]
+  change ({ frame with temporaries := fun identity =>
+      if frame.temporaryNames.contains identity then
+        (valueFieldEqualFrame frame first value constant).temporaries identity else none },
+    { state with memory :=
+        targetDropLocals state.memory frame.storage frame.nextLocal frame.nextLocal }) =
+      (frame, state)
+  rw [values, targetDropLocals_empty]
+
+/-- An absent positional field cannot be supplied by a zero or a false
+comparison. The first instruction has no evaluation in that case. -/
+theorem value_field_equal_code_missing {World : Type} {interface : Interface}
+    {heap : TargetHeapSemantics World} {calls : TargetCalls World} {result : NativeType}
+    {frame : TargetFrame} {state : TargetState World} {base : Atom}
+    {record : String} {fields : List TargetValue} {index first lower : Nat}
+    (read : TargetAtomEval interface frame state base (.record record fields))
+    (bounded : TemporaryNamesBound frame lower) (fresh : lower < first)
+    (missing : fields[index]? = none) (constant : BitVec 64)
+    (root : List Instruction) (out : TargetBlockOutcome World) :
+    ¬ TargetRun interface heap calls result root
+      (valueFieldEqualCode base record index first constant) frame state out := by
+  unfold valueFieldEqualCode
+  rw [target_pure_temporary_then_iff (temporary_bound_fresh bounded fresh)]
+  rintro ⟨value, computed, _⟩
+  cases computed with
+  | fieldValue otherRead selected =>
+      cases target_atom_unique read otherRead
+      rw [missing] at selected
+      contradiction
+
+namespace ValueFieldEqualControls
+
+private def frame (value : BitVec 64) : TargetFrame :=
+  targetDeclareTemporary ⟨3, 0, [], [], fun _ => none⟩ 0 (.record "R" [.word value])
+
+private theorem frame_bound (value : BitVec 64) : TemporaryNamesBound (frame value) 0 := by
+  intro identity live
+  simp [frame, targetDeclareTemporary] at live
+  omega
+
+private def code : List Instruction :=
+  valueFieldEqualCode (.temporary 0 (.named "R")) "R" 0 1 2
+
+/-- Equal and unequal fields take the same two instructions, yielding their
+respective Boolean values without changing the supplied external state. -/
+theorem matching_and_distinct_fields_run {World : Type} (interface : Interface)
+    (heap : TargetHeapSemantics World) (calls : TargetCalls World) (result : NativeType)
+    (state : TargetState World) :
+    TargetRun interface heap calls result code code (frame 2) state
+      ⟨.normal, valueFieldEqualFrame (frame 2) 1 2 2, state⟩ ∧
+    TargetRun interface heap calls result code code (frame 1) state
+      ⟨.normal, valueFieldEqualFrame (frame 1) 1 1 2, state⟩ := by
+  constructor
+  · exact (value_field_equal_code_exact
+      (declared_temporary_atom interface _ state 0 (.named "R") (.record "R" [.word 2]))
+      (frame_bound 2) (by decide) 2 2 rfl code _).mpr rfl
+  · exact (value_field_equal_code_exact
+      (declared_temporary_atom interface _ state 0 (.named "R") (.record "R" [.word 1]))
+      (frame_bound 1) (by decide) 1 2 rfl code _).mpr rfl
+
+theorem distinct_field_cannot_produce_true {World : Type} (interface : Interface)
+    (heap : TargetHeapSemantics World) (calls : TargetCalls World) (result : NativeType)
+    (state : TargetState World) (out : TargetBlockOutcome World)
+    (ran : TargetRun interface heap calls result code code (frame 1) state out) :
+    ¬ TargetAtomEval interface out.frame out.state (.temporary 2 .bool) (.bool true) := by
+  have exactRun := (value_field_equal_code_exact
+    (declared_temporary_atom interface _ state 0 (.named "R") (.record "R" [.word 1]))
+    (frame_bound 1) (by decide) 1 2 rfl code out).mp ran
+  subst out
+  intro wrong
+  have same := target_atom_unique
+    (value_field_equal_frame_result interface (frame 1) state 1 1 2) wrong
+  contradiction
+
+end ValueFieldEqualControls
+
 def wordFieldWriteCode (base : NativeIR.Atom) (record : String)
     (index identity : Nat) (value : BitVec 64) : List Instruction :=
   [.temporary identity (.ref .word) (.fieldAddress base record index),

@@ -1,7 +1,7 @@
 import Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 import Mettapedia.PLN.WorldModel.Provenance.PLNProvenanceInference
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # Classic PLN Truth Functions Linked to BinaryEvidence Algebra

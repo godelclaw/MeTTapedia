@@ -1,43 +1,41 @@
-import Mettapedia.Languages.MeTTa.HE.TypeGrounding.SimpleAgreement
-import Mettapedia.Languages.MeTTa.HE.Spec.Type.RuntimeRefinement
+import Mettapedia.Languages.MeTTa.HE.TypeGrounding.Tuples
+import Mettapedia.Languages.MeTTa.HE.TypeGrounding.Schematic
 import Mettapedia.Logic.HOL.Syntax.ClosedElaboration
 
 /-!
 # The HOL contract of HE type declarations
 
-HE's type declarations `(: name type)` mean a fixed theory of Church-style
-higher-order logic, the *contract*.  It does not depend on any particular
-implementation of MeTTa's type system.
+HE's type declarations `(: name type)` mean a fixed theory of Church-style higher-order logic,
+the *contract*.  It does not depend on any particular implementation of MeTTa's type system.
+The contract is HE's theory of first-order prenex schemes hosted in HOL, without identifying
+any two HE types.
 
-**Types.**  An HE type reads as the HOL type `toTy`: an arrow
-`(-> A₁ … Aₙ R)` is the curried function type, and every other atom is a base
-type.  A compound non-arrow type `(T₀ T₁ … Tₙ)` is the base type of tuples
-whose components have the types `Tᵢ`; the models of the contract interpret it
-as the product of the component types (`HOLContract.Products`).  The atoms
-that read *faithfully* (`Faithful`) mention no `%Undefined%` and use the arrow
-symbol only as the head of an arrow with at least one argument and a
-non-arrow return, at every depth.  On them the reading is injective
-(`toTy_injective_of_faithful`): `(-> A (-> B C))` and `(-> A B C)` share one
-curried reading but have different HE arities, so neither nested curried
-arrows nor `%Undefined%` are contract types.  The contract types
-(`ContractType`) are the faithful atoms that are not a reserved type name at
-the top.
+**Types.**  Every HE type is the HOL base type of the atom itself.  The contract types
+(`ContractType`) are the type atoms (`TypeAtom`) that are not a reserved name: `%Undefined%` and
+the arrow symbol never occur as a leaf, and the components of an arrow are not reserved names.
+An arrow `(-> P₁ … Pₙ R)` is the base type of that atom, so arrows of different arities are
+different types and an arrow returning an arrow is not an arrow of another arity.  A compound
+non-arrow type `(T₀ T₁ … Tₙ)` is the base type of tuples; the models of the contract interpret
+it as the product of the component types (`HOLContract.Products`).
 
-**Constants.**  A symbol or literal whose only declared type is `D` is a HOL
-constant at every contract-type instance of `D` that substitutes faithful
-types for its type variables (`Instance`): a type variable of a declaration is
-a type variable of a polymorphic constant, and an occurrence of the constant
-carries the instance it takes.  The product types
-have their pairing, projections and unit (`Name.pair`, `Name.fst`,
-`Name.snd`, `Name.one`).
+**Constants.**  Every declaration is its own constant, `Name.declared constant occurrence
+instance`: the `occurrence`-th declared type of an atom, at each instance that substitutes atoms
+for its type variables and is a contract type (`Instance`).  A symbol declared twice has two
+constants, and an annotated expression `(: expr type)` is a constant too.  The application
+constant `Name.apply [P₁, …, Pₙ] R` has type `(-> P₁ … Pₙ R) ⇒ P₁ ⇒ … ⇒ Pₙ ⇒ R`.  The product
+types have their pairing, projections and unit.
 
-**Terms.**  An expression `(f a₁ … aₙ)` whose head is a symbol reads as the
-curried application of the constant `f`; an expression whose head has a
-non-arrow type reads as a tuple, the pairing
-`x₀, (x₁, … (xₙ, one))` of its elements (`tupleTerm`).  `Annotates e t` says
-that `t` is a HOL term of `e` with one instance at every constant occurrence
-and one component list at every tuple node; `Typed space e T` says that some
-such term elaborates at the HOL type of `T`.
+**Terms.**  A declared atom is one of its constants; an expression `(f a₁ … aₙ)` is the
+application constant of an n-ary arrow applied to `f` and the arguments, so a partial or an
+over-application has no type; an expression whose head has a non-arrow type is the pairing
+`x₀, (x₁, … (xₙ, one))` of its elements.  `Annotates e t` says that `t` is such a term of `e`,
+and `Typed space e T` says that some such term elaborates at the base type `T`.
+
+**HE's first-order rule.**  `FirstOrderType` is HE's typing rule without `%Undefined%`,
+meta-types or subtypes: a declared atom has every instance of each of its declarations, an
+application of an arrow to exactly as many arguments as it has parameters has the arrow's return
+type, and an expression whose head has a non-arrow type has the tuple of its elements' types.
+`typed_iff_firstOrder`: the contract types an expression at a type exactly when that rule does.
 -/
 
 set_option autoImplicit false
@@ -52,270 +50,197 @@ open Mettapedia.Logic.HOL.NamedElaboration
 open Spec.Type
 open Spec.Type.Presentation
 open Spec.Type.RuntimeRefinement
+open Spec.Bindings.ScopeObservation
 
-/-! ## Faithful types -/
+/-- A valuation fixes a variable-free atom. -/
+theorem applyTypeValuation_of_ground (valuation : String → Atom) {atom : Atom}
+    (ground : TypeSubst.typeVars atom = []) : applyTypeValuation valuation atom = atom :=
+  (applyTypeValuation_congr_of_typeVars (right := fun name => .var name) atom
+    (fun name member => by simp [ground] at member)).trans
+    (Theory.applyTypeValuation_var_identity atom)
 
-/-- Atoms whose HOL reading is faithful.  A leaf is a type variable, a
-literal, or a symbol other than the arrow and `%Undefined%`; an arrow has at
-least one argument, faithful argument and return types that are not reserved
-type names, and a non-arrow return; any other expression is a product of
-faithful elements. -/
-inductive Faithful : Atom → Prop where
-  | symbol {name : String} : name ≠ "->" → name ≠ "%Undefined%" → Faithful (.symbol name)
-  | var (name : String) : Faithful (.var name)
-  | grounded (value : GroundedValue) : Faithful (.grounded value)
-  | arrow {type returnType : Atom} {argumentTypes : List Atom} :
-      FunctionTypeRel type argumentTypes returnType → argumentTypes ≠ [] →
-      (∀ argumentType ∈ argumentTypes, Faithful argumentType) →
-      (∀ argumentType ∈ argumentTypes, ¬TopReserved argumentType) →
-      ¬ArrowShaped returnType → ¬TopReserved returnType → Faithful returnType →
-      Faithful type
-  | product {elements : List Atom} :
-      ¬ArrowShaped (.expression elements) → (∀ element ∈ elements, Faithful element) →
-      Faithful (.expression elements)
+/-! ## Contract types -/
 
-/-- The types of the contract: faithful atoms that are not a reserved type
-name at the top. -/
+/-- Atoms that are types of the contract or components of one.  A leaf is a type variable,
+a literal, or a symbol other than the arrow and `%Undefined%`; an arrow has at least its
+return type, and its components are type atoms other than the reserved names; any other
+expression has type atoms as elements. -/
+inductive TypeAtom : Atom → Prop where
+  | symbol {name : String} : name ≠ "->" → name ≠ "%Undefined%" → TypeAtom (.symbol name)
+  | var (name : String) : TypeAtom (.var name)
+  | grounded (value : GroundedValue) : TypeAtom (.grounded value)
+  | arrow {components : List Atom} : components ≠ [] →
+      (∀ component ∈ components, TypeAtom component) →
+      (∀ component ∈ components, ¬TopReserved component) →
+      TypeAtom (.expression (.symbol "->" :: components))
+  | compound {elements : List Atom} : ¬ArrowShaped (.expression elements) →
+      (∀ element ∈ elements, TypeAtom element) → TypeAtom (.expression elements)
+
+/-- The types of the contract: type atoms that are not a reserved name. -/
 def ContractType (type : Atom) : Prop :=
-  Faithful type ∧ ¬TopReserved type
+  TypeAtom type ∧ ¬TopReserved type
 
-/-- `%Undefined%` reads faithfully nowhere. -/
-theorem Faithful.undefinedFree {type : Atom} (faithful : Faithful type) :
-    UndefinedFree type := by
-  induction faithful with
-  | symbol _ notUndefined =>
-      intro occurs
-      have equal := occurs.symbol_eq
-      simp only [Atom.undefinedType, Atom.symbol.injEq] at equal
-      exact notUndefined equal.symm
-  | var name =>
-      intro occurs
-      cases occurs
-  | grounded value =>
-      intro occurs
-      cases occurs
-  | @arrow type returnType argumentTypes function _ _ _ _ _ _ argumentIH returnIH =>
-      rw [FunctionTypeRel] at function
-      subst function
-      intro occurs
-      rcases occurs.expression_cases with equal | ⟨child, member, inner⟩
-      · cases equal
-      · simp only [List.mem_cons, List.mem_append, List.not_mem_nil, or_false] at member
-        rcases member with rfl | member | rfl
-        · have equal := inner.symbol_eq
-          simp [Atom.undefinedType] at equal
-        · exact argumentIH child member inner
-        · exact returnIH inner
-  | product _ _ elementIH =>
-      intro occurs
-      rcases occurs.expression_cases with equal | ⟨child, member, inner⟩
-      · cases equal
-      · exact elementIH child member inner
+theorem TypeAtom.not_arrow_symbol {type : Atom} (atomic : TypeAtom type) :
+    type ≠ .symbol "->" := by
+  rintro rfl
+  cases atomic with
+  | symbol notArrow _ => exact notArrow rfl
 
-private theorem spineTy_ne_base {argumentTypes : List Atom} {returnType base : Atom}
-    (nonempty : argumentTypes ≠ []) :
-    spineTy argumentTypes returnType ≠ .base base := by
-  obtain ⟨first, rest, rfl⟩ := List.exists_cons_of_ne_nil nonempty
-  simp
+theorem contractType_symbol {name : String} (notReserved : name ∉ reservedTypeNames) :
+    ContractType (.symbol name) := by
+  refine ⟨.symbol ?_ ?_, ?_⟩
+  · rintro rfl
+    exact notReserved (by simp [reservedTypeNames])
+  · rintro rfl
+    exact notReserved (by simp [reservedTypeNames])
+  · rintro ⟨reserved, member, equal⟩
+    rw [Atom.symbol.injEq] at equal
+    subst equal
+    exact notReserved member
 
-private theorem faithful_spine_injective :
-    ∀ {argumentTypes rightArguments : List Atom} {returnType rightReturn : Atom},
-      (∀ argumentType ∈ argumentTypes, ∀ {right : Atom}, Faithful right →
-        toTy argumentType = toTy right → argumentType = right) →
-      (∀ argumentType ∈ rightArguments, Faithful argumentType) →
-      ¬ArrowShaped returnType → ¬ArrowShaped rightReturn →
-      spineTy argumentTypes returnType = spineTy rightArguments rightReturn →
-      argumentTypes = rightArguments ∧ returnType = rightReturn
-  | [], [], _, _, _, _, notArrow, rightNotArrow, equal => by
-      simp only [spineTy_nil] at equal
-      rw [toTy_of_not_arrowShaped notArrow, toTy_of_not_arrowShaped rightNotArrow] at equal
-      exact ⟨rfl, Ty.base.inj equal⟩
-  | [], _ :: _, _, _, _, _, notArrow, _, equal => by
-      simp only [spineTy_nil, spineTy_cons] at equal
-      rw [toTy_of_not_arrowShaped notArrow] at equal
-      cases equal
-  | _ :: _, [], _, _, _, _, _, rightNotArrow, equal => by
-      simp only [spineTy_nil, spineTy_cons] at equal
-      rw [toTy_of_not_arrowShaped rightNotArrow] at equal
-      cases equal
-  | first :: rest, rightFirst :: rightRest, _, _, argumentIH, rightFaithful,
-      notArrow, rightNotArrow, equal => by
-      simp only [spineTy_cons] at equal
-      obtain ⟨firstEqual, restEqual⟩ := Ty.arr.inj equal
-      have heads : first = rightFirst :=
-        argumentIH first (by simp) (rightFaithful rightFirst (by simp)) firstEqual
-      have tails := faithful_spine_injective
-        (fun argumentType member => argumentIH argumentType
-          (List.mem_cons_of_mem _ member))
-        (fun argumentType member => rightFaithful argumentType
-          (List.mem_cons_of_mem _ member))
-        notArrow rightNotArrow restEqual
-      exact ⟨by rw [heads, tails.1], tails.2⟩
+/-! ## Arrows and their application constants -/
 
-/-- **The contract reads faithful atoms injectively.** -/
-theorem toTy_injective_of_faithful {left right : Atom} (leftFaithful : Faithful left)
-    (rightFaithful : Faithful right) (equal : toTy left = toTy right) : left = right := by
-  have baseCase : ∀ {left right : Atom}, ¬ArrowShaped left → Faithful right →
-      toTy left = toTy right → left = right := by
-    intro left right notArrow rightFaithful equal
-    rw [toTy_of_not_arrowShaped notArrow] at equal
-    cases rightFaithful with
-    | arrow function nonempty _ _ _ _ _ =>
-        rw [toTy_of_functionType function nonempty] at equal
-        exact absurd equal.symm (spineTy_ne_base nonempty)
-    | symbol _ _ => exact Ty.base.inj (by simpa [toTy] using equal)
-    | var name => exact Ty.base.inj (by simpa [toTy] using equal)
-    | grounded value => exact Ty.base.inj (by simpa [toTy] using equal)
-    | product rightNotArrow _ =>
-        rw [toTy_of_not_arrowShaped rightNotArrow] at equal
-        exact Ty.base.inj equal
-  induction leftFaithful generalizing right with
-  | symbol notArrowName _ =>
-      exact baseCase (by rintro ⟨_, equal⟩; cases equal) rightFaithful equal
-  | var name =>
-      exact baseCase (by rintro ⟨_, equal⟩; cases equal) rightFaithful equal
-  | grounded value =>
-      exact baseCase (by rintro ⟨_, equal⟩; cases equal) rightFaithful equal
-  | product notArrow _ _ =>
-      exact baseCase notArrow rightFaithful equal
-  | arrow function nonempty argumentsFaithful argumentsNotReserved returnNotArrow
-      returnNotReserved returnFaithful argumentIH _ =>
-      have leftFaithful : Faithful _ :=
-        Faithful.arrow function nonempty argumentsFaithful argumentsNotReserved
-          returnNotArrow returnNotReserved returnFaithful
-      cases rightFaithful with
-      | arrow rightFunction rightNonempty rightArguments _ rightReturnNotArrow _ _ =>
-          rw [toTy_of_functionType function nonempty,
-            toTy_of_functionType rightFunction rightNonempty] at equal
-          obtain ⟨arguments, returns⟩ := faithful_spine_injective
-            (fun argumentType member {right} rightFaithful equal =>
-              argumentIH argumentType member rightFaithful equal)
-            rightArguments returnNotArrow rightReturnNotArrow equal
-          rw [FunctionTypeRel] at function rightFunction
-          rw [function, rightFunction, arguments, returns]
-      | symbol _ _ =>
-          exact (baseCase (by rintro ⟨_, equal⟩; cases equal) leftFaithful equal.symm).symm
-      | var name =>
-          exact (baseCase (by rintro ⟨_, equal⟩; cases equal) leftFaithful equal.symm).symm
-      | grounded value =>
-          exact (baseCase (by rintro ⟨_, equal⟩; cases equal) leftFaithful equal.symm).symm
-      | product rightNotArrow _ =>
-          exact (baseCase rightNotArrow leftFaithful equal.symm).symm
+/-- The arrow `(-> P₁ … Pₙ R)`. -/
+def arrowAtom (parameters : List Atom) (result : Atom) : Atom :=
+  .expression (.symbol "->" :: (parameters ++ [result]))
 
-/-- The list of an expression has the shape of an arrow with at least one
-argument. -/
-def ArrowForm (atoms : List Atom) : Prop :=
-  ∃ first second rest, atoms = .symbol "->" :: first :: second :: rest
+theorem arrowAtom_injective {parameters parameters' : List Atom} {result result' : Atom}
+    (equal : arrowAtom parameters result = arrowAtom parameters' result') :
+    parameters = parameters' ∧ result = result' := by
+  simp only [arrowAtom, Atom.expression.injEq, List.cons.injEq, true_and] at equal
+  exact List.append_inj' equal rfl |>.imp id (fun singleton => by simpa using singleton)
 
-/-- An expression without the shape of an arrow reads as its own base type. -/
-theorem expressionTy_of_not_arrowForm {atoms : List Atom} (notArrow : ¬ArrowForm atoms) :
-    expressionTy atoms = .base (.expression atoms) := by
-  unfold expressionTy
-  split
-  · exact absurd ⟨_, _, _, rfl⟩ notArrow
-  · rfl
+theorem arrowAtom_arrowShaped (parameters : List Atom) (result : Atom) :
+    ArrowShaped (arrowAtom parameters result) :=
+  ⟨_, rfl⟩
 
-/-- The components of a faithful arrow. -/
-theorem Faithful.of_functionType {type returnType : Atom} {argumentTypes : List Atom}
-    (faithful : Faithful type) (function : FunctionTypeRel type argumentTypes returnType) :
-    argumentTypes ≠ [] ∧ (∀ argumentType ∈ argumentTypes, Faithful argumentType) ∧
-      (∀ argumentType ∈ argumentTypes, ¬TopReserved argumentType) ∧
-      ¬ArrowShaped returnType ∧ ¬TopReserved returnType ∧ Faithful returnType := by
-  cases faithful with
-  | arrow function' nonempty arguments argumentsNotReserved returnNotArrow
-      returnNotReserved returnFaithful =>
-      obtain ⟨rfl, rfl⟩ := FunctionTypeRel.unique function function'
-      exact ⟨nonempty, arguments, argumentsNotReserved, returnNotArrow, returnNotReserved,
-        returnFaithful⟩
-  | product notArrow _ => exact absurd (ArrowShaped.of_functionType function) notArrow
-  | symbol _ _ => simp [FunctionTypeRel] at function
-  | var _ => simp [FunctionTypeRel] at function
-  | grounded _ => simp [FunctionTypeRel] at function
+theorem arrowAtom_of_functionType {type result : Atom} {parameters : List Atom}
+    (function : FunctionTypeRel type parameters result) : type = arrowAtom parameters result :=
+  function
 
-/-- A variable-free contract type is a static type of the arrow fragment. -/
-theorem ContractType.static {type : Atom} (contract : ContractType type)
-    (ground : TypeSubst.typeVars type = []) : StaticType type := by
-  obtain ⟨faithful, notReserved⟩ := contract
-  induction faithful with
-  | symbol notArrow notUndefined =>
-      exact .base (by rintro ⟨_, equal⟩; cases equal) notReserved
-        (Faithful.symbol notArrow notUndefined).undefinedFree ground
-  | var name => simp [TypeSubst.typeVars] at ground
-  | grounded value =>
-      exact .base (by rintro ⟨_, equal⟩; cases equal) notReserved
-        (Faithful.grounded value).undefinedFree ground
-  | @arrow type returnType argumentTypes function nonempty _
-      argumentsNotReserved returnNotArrow returnNotReserved _ argumentIH returnIH =>
-      have components : ∀ atom ∈ argumentTypes ++ [returnType],
-          TypeSubst.typeVars atom = [] := by
-        rw [FunctionTypeRel] at function
-        subst function
-        simp only [TypeSubst.typeVars] at ground
-        rw [typeVarsList_eq_nil_iff] at ground
-        intro atom member
-        exact ground atom (List.mem_cons_of_mem _ member)
-      refine .arrow function nonempty ?_ returnNotArrow
-        (returnIH (components returnType (by simp)) returnNotReserved)
-      intro argumentType member
-      exact argumentIH argumentType member (components argumentType (by simp [member]))
-        (argumentsNotReserved argumentType member)
-  | @product elements notArrow elementsFaithful _ =>
-      exact .base notArrow notReserved (Faithful.product notArrow elementsFaithful).undefinedFree
-        ground
+/-- The components of an arrow are contract types. -/
+theorem TypeAtom.arrowAtom_components {parameters : List Atom} {result : Atom}
+    (atomic : TypeAtom (arrowAtom parameters result)) :
+    ∀ component ∈ parameters ++ [result], ContractType component := by
+  cases atomic with
+  | arrow _ components notReserved =>
+      exact fun component member => ⟨components component member, notReserved component member⟩
+  | compound notArrow _ => exact absurd ⟨_, rfl⟩ notArrow
 
-/-! ## The contract signature -/
+theorem contractType_arrowAtom {parameters : List Atom} {result : Atom}
+    (all : ∀ component ∈ parameters ++ [result], ContractType component) :
+    ContractType (arrowAtom parameters result) := by
+  refine ⟨.arrow (by simp) (fun component member => (all component member).1)
+    (fun component member => (all component member).2), ?_⟩
+  rintro ⟨_, _, equal⟩
+  cases equal
 
-/-- Constant names of the contract: a declared symbol or literal at one
-instance of its declared type, and the pairing, projections and unit of the
-product types.  The component list `T₀ :: Ts` names the product of `T₀` and
-the product of `Ts`. -/
+/-- The HOL type `P₁ ⇒ … ⇒ Pₙ ⇒ R` of base types. -/
+def applyTy (parameters : List Atom) (result : Atom) : Ty Atom :=
+  parameters.foldr (fun parameter rest => .arr (.base parameter) rest) (.base result)
+
+theorem applyTy_eq_foldr (parameters : List Atom) (result : Atom) :
+    applyTy parameters result = (parameters.map Ty.base).foldr Ty.arr (.base result) := by
+  simp [applyTy, List.foldr_map]
+
+/-- A spine of argument types ending in a base type determines its arguments and its
+return. -/
+theorem foldr_eq_applyTy :
+    ∀ {argumentTypes : List (Ty Atom)} {parameters : List Atom} {type result : Atom},
+      argumentTypes.foldr Ty.arr (.base type) = applyTy parameters result →
+        argumentTypes = parameters.map Ty.base ∧ type = result
+  | [], [], _, _, equal => by
+      simp only [List.foldr_nil, applyTy, Ty.base.injEq] at equal
+      exact ⟨rfl, equal⟩
+  | [], _ :: _, _, _, equal => by simp [applyTy] at equal
+  | _ :: _, [], _, _, equal => by simp [applyTy] at equal
+  | first :: rest, parameter :: parameters, _, _, equal => by
+      simp only [List.foldr_cons, applyTy] at equal
+      obtain ⟨firstEq, restEq⟩ := Ty.arr.inj equal
+      obtain ⟨restArguments, typeEq⟩ := foldr_eq_applyTy (argumentTypes := rest)
+        (parameters := parameters) restEq
+      exact ⟨by rw [firstEq, restArguments]; rfl, typeEq⟩
+
+/-! ## Declarations and their instances -/
+
+/-- The declared types of an atom, in declaration order: the intrinsic type of a literal, and
+every `(: atom type)` of a symbol or of a nonempty expression. -/
+def declarations (space : Space) : Atom → List Atom
+  | .grounded value => [getGroundedType value]
+  | .var _ => []
+  | .symbol name => getAnnotatedTypes space (.symbol name)
+  | .expression [] => []
+  | .expression (head :: rest) => getAnnotatedTypes space (.expression (head :: rest))
+
+/-- A unique declaration is the only one. -/
+theorem declarations_of_declared {space : Space} {atom type : Atom}
+    (declared : declaredType? space atom = some type) : declarations space atom = [type] := by
+  rcases Tuples.declaredType?_symbol_or_grounded declared with ⟨name, rfl⟩ | ⟨value, rfl⟩
+  · exact getAnnotatedTypes_of_declared_symbol declared
+  · simp only [declaredType?, Option.some.injEq] at declared
+    simp [declarations, declared]
+
+/-- `type` is an instance of `scheme`: a contract type that substitutes type atoms for the
+scheme's type variables. -/
+def TypeInstance (scheme type : Atom) : Prop :=
+  ContractType type ∧ ∃ valuation : String → Atom, (∀ name, TypeAtom (valuation name)) ∧
+    applyTypeValuation valuation scheme = type
+
+/-- `type` is an instance of the declaration of `constant` at position `occurrence`. -/
+def Instance (space : Space) (constant : Atom) (occurrence : Nat) (type : Atom) : Prop :=
+  ∃ scheme, (declarations space constant)[occurrence]? = some scheme ∧ TypeInstance scheme type
+
+/-- A variable-free scheme has itself as its only instance. -/
+theorem typeInstance_of_ground {scheme type : Atom} (ground : TypeSubst.typeVars scheme = [])
+    (instance' : TypeInstance scheme type) : type = scheme := by
+  obtain ⟨_, valuation, _, equal⟩ := instance'
+  rw [← equal, applyTypeValuation_of_ground valuation ground]
+
+theorem typeInstance_self {scheme : Atom} (contract : ContractType scheme) :
+    TypeInstance scheme scheme :=
+  ⟨contract, fun name => .var name, fun name => .var name,
+    Theory.applyTypeValuation_var_identity scheme⟩
+
+/-! ## The signature -/
+
+/-- Constant names of the contract: a declaration of an atom at one instance, the application
+constant of an arrow, and the pairing, projections and unit of tuples. -/
 inductive Name where
-  | declared (constant instanceType : Atom)
+  | declared (constant : Atom) (occurrence : Nat) (instanceType : Atom)
+  | apply (parameters : List Atom) (result : Atom)
   | pair (components : List Atom)
   | fst (components : List Atom)
   | snd (components : List Atom)
   | one
   deriving DecidableEq
 
-/-- The HOL type of the product of the given component types: the base type
-of the expression of the components. -/
-def productTy (components : List Atom) : Ty Atom := .base (.expression components)
-
-/-- A compound non-arrow type reads as the product of its components. -/
-theorem toTy_eq_productTy {components : List Atom}
-    (notArrow : ¬ArrowShaped (.expression components)) :
-    toTy (.expression components) = productTy components :=
-  toTy_of_not_arrowShaped notArrow
-
-/-- `instanceType` is a contract-type instance of the single declared type of
-`constant`: it substitutes faithful types for the type variables. -/
-def Instance (space : Space) (constant instanceType : Atom) : Prop :=
-  ContractType instanceType ∧
-    ∃ scheme, declaredType? space constant = some scheme ∧
-      ∃ valuation : String → Atom, (∀ name, Faithful (valuation name)) ∧
-        applyTypeValuation valuation scheme = instanceType
-
 open Classical in
 /-- The HOL type of a constant name. -/
 noncomputable def nameType (space : Space) : Name → Option (Ty Atom)
-  | .declared constant instanceType =>
-      if Instance space constant instanceType then some (toTy instanceType) else none
+  | .declared constant occurrence instanceType =>
+      if Instance space constant occurrence instanceType then
+        some (.base instanceType)
+      else none
+  | .apply parameters result =>
+      if TypeAtom (arrowAtom parameters result) then
+        some (.arr (.base (arrowAtom parameters result)) (applyTy parameters result))
+      else none
   | .pair [] => none
   | .pair (component :: components) =>
-      some (.arr (toTy component)
-        (.arr (productTy components) (productTy (component :: components))))
+      some (.arr (.base component)
+        (.arr (.base (.expression components)) (.base (.expression (component :: components)))))
   | .fst [] => none
   | .fst (component :: components) =>
-      some (.arr (productTy (component :: components)) (toTy component))
+      some (.arr (.base (.expression (component :: components))) (.base component))
   | .snd [] => none
   | .snd (component :: components) =>
-      some (.arr (productTy (component :: components)) (productTy components))
-  | .one => some (productTy [])
+      some (.arr (.base (.expression (component :: components))) (.base (.expression components)))
+  | .one => some (.base (.expression []))
 
 theorem nameType_declared_eq_some_iff {space : Space} {constant instanceType : Atom}
-    {type : Ty Atom} :
-    nameType space (.declared constant instanceType) = some type ↔
-      Instance space constant instanceType ∧ type = toTy instanceType := by
+    {occurrence : Nat} {type : Ty Atom} :
+    nameType space (.declared constant occurrence instanceType) = some type ↔
+      Instance space constant occurrence instanceType ∧ type = .base instanceType := by
   simp only [nameType]
   split
   · next isInstance =>
@@ -324,6 +249,20 @@ theorem nameType_declared_eq_some_iff {space : Space} {constant instanceType : A
   · next notInstance =>
       simp only [reduceCtorEq, false_iff]
       exact fun both => notInstance both.1
+
+theorem nameType_apply_eq_some_iff {space : Space} {parameters : List Atom} {result : Atom}
+    {type : Ty Atom} :
+    nameType space (.apply parameters result) = some type ↔
+      TypeAtom (arrowAtom parameters result) ∧
+        type = .arr (.base (arrowAtom parameters result)) (applyTy parameters result) := by
+  simp only [nameType]
+  split
+  · next atomic =>
+      simp only [Option.some.injEq]
+      exact ⟨fun equal => ⟨atomic, equal.symm⟩, fun both => both.2.symm⟩
+  · next notAtomic =>
+      simp only [reduceCtorEq, false_iff]
+      exact fun both => notAtomic both.1
 
 /-- HOL constants of the contract, indexed by their HOL type. -/
 def Const (space : Space) (type : Ty Atom) : Type :=
@@ -343,26 +282,6 @@ theorem signatureType_signature (space : Space) (name : Name) :
   · next type lookup => simp [lookup]
   · next lookup => simp [lookup]
 
-/-- The pairing constant of a product. -/
-def pairConst (space : Space) (component : Atom) (components : List Atom) :
-    Const space (.arr (toTy component)
-      (.arr (productTy components) (productTy (component :: components)))) :=
-  ⟨.pair (component :: components), rfl⟩
-
-/-- The first projection of a product. -/
-def fstConst (space : Space) (component : Atom) (components : List Atom) :
-    Const space (.arr (productTy (component :: components)) (toTy component)) :=
-  ⟨.fst (component :: components), rfl⟩
-
-/-- The second projection of a product: the product of the remaining
-components. -/
-def sndConst (space : Space) (component : Atom) (components : List Atom) :
-    Const space (.arr (productTy (component :: components)) (productTy components)) :=
-  ⟨.snd (component :: components), rfl⟩
-
-/-- The element of the empty product. -/
-def oneConst (space : Space) : Const space (productTy []) := ⟨.one, rfl⟩
-
 /-! ## Terms -/
 
 /-- Named HOL terms over the contract's constant names. -/
@@ -376,36 +295,23 @@ def tupleTerm : List Atom → List ContractTerm → ContractTerm
       .app (.app (.constant (.pair (component :: components))) term)
         (tupleTerm components terms)
 
-/-- The projection of the component at `index` from a term of the product of
-the given component types. -/
-def projectTerm : List Atom → Nat → ContractTerm → ContractTerm
-  | component :: components, 0, term => .app (.constant (.fst (component :: components))) term
-  | component :: components, index + 1, term =>
-      projectTerm components index (.app (.constant (.snd (component :: components))) term)
-  | [], _, term => term
-
 mutual
 
-/-- `term` is a HOL term of `expression`: every constant occurrence carries
-an instance type, an application of a symbol is a curried application, and a
-tuple, whose head type is not an arrow, is the pairing of its elements at
-faithful component types. -/
+/-- `term` is a HOL term of `expression`: a declared atom is one of its declaration constants
+at an instance, an application applies the application constant of an arrow to the head and
+the arguments, and a tuple, whose head type is not an arrow, is the pairing of its elements. -/
 inductive Annotates : Atom → ContractTerm → Prop where
-  | symbol (name : String) (instanceType : Atom) :
-      Annotates (.symbol name) (.constant (.declared (.symbol name) instanceType))
-  | grounded (value : GroundedValue) (instanceType : Atom) :
-      Annotates (.grounded value) (.constant (.declared (.grounded value) instanceType))
-  | application {name : String} {instanceType : Atom} {arguments : List Atom}
-      {terms : List ContractTerm} :
-      AnnotatesList arguments terms →
-      Annotates (.expression (.symbol name :: arguments))
-        (terms.foldl .app (.constant (.declared (.symbol name) instanceType)))
+  | declared (atom : Atom) (occurrence : Nat) (instanceType : Atom) :
+      Annotates atom (.constant (.declared atom occurrence instanceType))
+  | application {head result : Atom} {arguments parameters : List Atom}
+      {headTerm : ContractTerm} {terms : List ContractTerm} :
+      Annotates head headTerm → AnnotatesList arguments terms →
+      Annotates (.expression (head :: arguments))
+        (terms.foldl .app (.app (.constant (.apply parameters result)) headTerm))
   | tuple {head headType : Atom} {arguments argumentTypes : List Atom}
       {headTerm : ContractTerm} {terms : List ContractTerm} :
-      ¬ArrowShaped headType → Faithful headType →
-      (∀ argumentType ∈ argumentTypes, Faithful argumentType) →
+      ¬ArrowShaped headType → argumentTypes.length = arguments.length →
       Annotates head headTerm → AnnotatesList arguments terms →
-      argumentTypes.length = arguments.length →
       Annotates (.expression (head :: arguments))
         (tupleTerm (headType :: argumentTypes) (headTerm :: terms))
 
@@ -433,12 +339,14 @@ theorem annotatesList_iff_forall₂ :
         cases all with
         | cons head tail => exact .cons head (annotatesList_iff_forall₂.mpr tail)
 
-/-- HE typing in the contract: some HOL term of the expression elaborates at
-the HOL type of `type`. -/
-def Typed (space : Space) (expression type : Atom) : Prop :=
-  ∃ term, Annotates expression term ∧ Elaborates (signature space) term (toTy type)
+theorem annotatesList_length {arguments : List Atom} {terms : List ContractTerm}
+    (annotated : AnnotatesList arguments terms) : terms.length = arguments.length :=
+  (annotatesList_iff_forall₂.mp annotated).length_eq.symm
 
-/-! ## Applicative typing of contract terms -/
+/-- HE typing in the contract: some HOL term of the expression elaborates at the base type of
+`type`. -/
+def Typed (space : Space) (expression type : Atom) : Prop :=
+  ∃ term, Annotates expression term ∧ Elaborates (signature space) term (.base type)
 
 theorem applicative_tupleTerm :
     ∀ (components : List Atom) {terms : List ContractTerm},
@@ -453,12 +361,13 @@ theorem applicative_tupleTerm :
 mutual
 
 theorem Annotates.applicative :
-    {expression : Atom} → {term : ContractTerm} → Annotates expression term → Applicative term
-  | _, _, .symbol _ _ => .constant _
-  | _, _, .grounded _ _ => .constant _
-  | _, _, .application arguments =>
-      Applicative.foldl (.constant _) (AnnotatesList.applicative arguments)
-  | _, _, .tuple _ _ _ head arguments _ => by
+    {expression : Atom} → {term : ContractTerm} → Annotates expression term →
+      Applicative term
+  | _, _, .declared _ _ _ => .constant _
+  | _, _, .application head arguments =>
+      Applicative.foldl (.app (.constant _) head.applicative)
+        (AnnotatesList.applicative arguments)
+  | _, _, .tuple _ _ head arguments => by
       apply applicative_tupleTerm
       intro term member
       rcases List.mem_cons.mp member with rfl | member
@@ -477,12 +386,11 @@ theorem AnnotatesList.applicative :
 
 end
 
-/-- Contract typing, read as applicative typing over the contract's name
-types. -/
+/-- Contract typing, read as applicative typing over the contract's name types. -/
 theorem typed_iff (space : Space) (expression type : Atom) :
     Typed space expression type ↔
       ∃ term, Annotates expression term ∧
-        ApplicativeTyped (nameType space) term (toTy type) := by
+        ApplicativeTyped (nameType space) term (.base type) := by
   have typeOf : signatureType (signature space) = nameType space :=
     funext (signatureType_signature space)
   constructor
@@ -495,26 +403,15 @@ theorem typed_iff (space : Space) (expression type : Atom) :
     rw [← typeOf] at typed
     exact (elaborates_iff_applicativeTyped annotates.applicative).mpr typed
 
-theorem applicativeTyped_declared_iff {space : Space} {constant instanceType : Atom}
-    {type : Ty Atom} :
-    ApplicativeTyped (nameType space) (.constant (.declared constant instanceType)) type ↔
-      Instance space constant instanceType ∧ type = toTy instanceType := by
-  constructor
-  · intro typed
-    cases typed with
-    | constant lookup => exact nameType_declared_eq_some_iff.mp lookup
-  · intro both
-    exact .constant (nameType_declared_eq_some_iff.mpr both)
-
-/-- A tuple has the product type of its components exactly when each element
-has its component type. -/
+/-- A tuple has the base type of its component list exactly when each element has its
+component type. -/
 theorem applicativeTyped_tupleTerm_iff {space : Space} :
     ∀ {components : List Atom} {terms : List ContractTerm}, components.length = terms.length →
       ∀ {type : Ty Atom},
         ApplicativeTyped (nameType space) (tupleTerm components terms) type ↔
-          type = productTy components ∧
+          type = .base (.expression components) ∧
             List.Forall₂ (fun term component =>
-              ApplicativeTyped (nameType space) term (toTy component)) terms components
+              ApplicativeTyped (nameType space) term (.base component)) terms components
   | [], [], _, type => by
       constructor
       · intro typed
@@ -551,14 +448,277 @@ theorem applicativeTyped_tupleTerm_iff {space : Space} :
             exact .app (.app (.constant rfl) termTyped)
               ((applicativeTyped_tupleTerm_iff restLengths).mpr ⟨rfl, restAll⟩)
 
-/-- A projection of a term of a product type has the type of its
-component. -/
+/-- An application of an application constant to a head and arguments. -/
+theorem applicativeTyped_apply_iff {space : Space} {parameters : List Atom} {result : Atom}
+    {headTerm : ContractTerm} {terms : List ContractTerm} {type : Atom} :
+    ApplicativeTyped (nameType space)
+        (terms.foldl .app (.app (.constant (.apply parameters result)) headTerm)) (.base type) ↔
+      TypeAtom (arrowAtom parameters result) ∧ type = result ∧
+        ApplicativeTyped (nameType space) headTerm (.base (arrowAtom parameters result)) ∧
+        List.Forall₂ (fun term parameter =>
+          ApplicativeTyped (nameType space) term (.base parameter)) terms parameters := by
+  rw [applicativeTyped_foldl_iff]
+  constructor
+  · rintro ⟨argumentTypes, applied, all⟩
+    cases applied with
+    | app constantTyped headTyped =>
+        cases constantTyped with
+        | constant lookup =>
+            obtain ⟨atomic, typeEq⟩ := nameType_apply_eq_some_iff.mp lookup
+            obtain ⟨domainEq, spineEq⟩ := Ty.arr.inj typeEq
+            obtain ⟨argumentsEq, resultEq⟩ := foldr_eq_applyTy spineEq
+            subst domainEq argumentsEq
+            refine ⟨atomic, resultEq, headTyped, ?_⟩
+            rw [List.forall₂_map_right_iff] at all
+            exact all
+  · rintro ⟨atomic, rfl, headTyped, all⟩
+    refine ⟨parameters.map Ty.base, ?_, ?_⟩
+    · refine .app (.constant ?_) headTyped
+      rw [nameType_apply_eq_some_iff, applyTy_eq_foldr]
+      exact ⟨atomic, rfl⟩
+    · rw [List.forall₂_map_right_iff]
+      exact all
+
+/-! ## HE's first-order rule -/
+
+mutual
+
+/-- HE's first-order typing rule: a declared atom has every instance of each of its
+declarations; an application of an arrow to exactly as many arguments as it has parameters
+has the arrow's return type; an expression whose head has a non-arrow type has the tuple of
+its elements' types. -/
+inductive FirstOrderType (space : Space) : Atom → Atom → Prop where
+  | declared {atom type : Atom} {occurrence : Nat} :
+      Instance space atom occurrence type → FirstOrderType space atom type
+  | application {head result : Atom} {arguments parameters : List Atom} :
+      FirstOrderType space head (arrowAtom parameters result) →
+      FirstOrderTypes space arguments parameters →
+      FirstOrderType space (.expression (head :: arguments)) result
+  | tuple {head headType : Atom} {arguments argumentTypes : List Atom} :
+      FirstOrderType space head headType → ¬ArrowShaped headType →
+      FirstOrderTypes space arguments argumentTypes →
+      FirstOrderType space (.expression (head :: arguments))
+        (.expression (headType :: argumentTypes))
+
+/-- Pointwise first-order typing of a list of expressions. -/
+inductive FirstOrderTypes (space : Space) : List Atom → List Atom → Prop where
+  | nil : FirstOrderTypes space [] []
+  | cons {argument type : Atom} {arguments types : List Atom} :
+      FirstOrderType space argument type → FirstOrderTypes space arguments types →
+      FirstOrderTypes space (argument :: arguments) (type :: types)
+
+end
+
+theorem firstOrderTypes_iff_forall₂ {space : Space} :
+    ∀ {arguments types : List Atom},
+      FirstOrderTypes space arguments types ↔
+        List.Forall₂ (FirstOrderType space) arguments types
+  | [], [] => ⟨fun _ => .nil, fun _ => .nil⟩
+  | [], _ :: _ => ⟨fun typed => (by cases typed), fun all => (by cases all)⟩
+  | _ :: _, [] => ⟨fun typed => (by cases typed), fun all => (by cases all)⟩
+  | _ :: _, _ :: _ => by
+      constructor
+      · intro typed
+        cases typed with
+        | cons head tail => exact .cons head (firstOrderTypes_iff_forall₂.mp tail)
+      · intro all
+        cases all with
+        | cons head tail => exact .cons head (firstOrderTypes_iff_forall₂.mpr tail)
+
+mutual
+
+/-- Every first-order type is a contract type. -/
+theorem FirstOrderType.contractType {space : Space} :
+    {expression type : Atom} → FirstOrderType space expression type → ContractType type
+  | _, _, .declared ⟨_, _, instance'⟩ => instance'.1
+  | _, _, @FirstOrderType.application _ _ result _ parameters head _ =>
+      (FirstOrderType.contractType head).1.arrowAtom_components result (by simp)
+  | _, _, @FirstOrderType.tuple _ _ headType _ argumentTypes head headNotArrow arguments => by
+      have headContract := FirstOrderType.contractType head
+      refine ⟨.compound ?_ ?_, ?_⟩
+      · rintro ⟨components, equal⟩
+        simp only [Atom.expression.injEq, List.cons.injEq] at equal
+        exact headContract.1.not_arrow_symbol equal.1
+      · intro element member
+        rcases List.mem_cons.mp member with rfl | member
+        · exact headContract.1
+        · exact (FirstOrderTypes.contractType arguments element member).1
+      · rintro ⟨_, _, equal⟩
+        cases equal
+
+theorem FirstOrderTypes.contractType {space : Space} :
+    {arguments types : List Atom} → FirstOrderTypes space arguments types →
+      ∀ type ∈ types, ContractType type
+  | _, _, .nil => by simp
+  | _, _, .cons head tail => by
+      intro type member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact FirstOrderType.contractType head
+      · exact FirstOrderTypes.contractType tail type member
+
+end
+
+/-! ## The contract is HE's first-order rule -/
+
+mutual
+
+theorem firstOrder_of_annotated {space : Space} :
+    {expression : Atom} → {term : ContractTerm} → Annotates expression term →
+      ∀ {type : Atom}, ApplicativeTyped (nameType space) term (.base type) →
+        FirstOrderType space expression type
+  | _, _, .declared atom occurrence instanceType, _, typed => by
+      cases typed with
+      | constant lookup =>
+          obtain ⟨isInstance, typeEq⟩ := nameType_declared_eq_some_iff.mp lookup
+          cases typeEq
+          exact .declared isInstance
+  | _, _, .application head arguments, _, typed => by
+      obtain ⟨_, rfl, headTyped, all⟩ := applicativeTyped_apply_iff.mp typed
+      exact .application (firstOrder_of_annotated head headTyped)
+        (firstOrderList_of_annotated arguments all)
+  | _, _, @Annotates.tuple _ headType _ argumentTypes headTerm terms headNotArrow lengths
+      head arguments, _, typed => by
+      have termLengths : (headType :: argumentTypes).length = (headTerm :: terms).length := by
+        simp [annotatesList_length arguments, lengths]
+      obtain ⟨typeEq, all⟩ := (applicativeTyped_tupleTerm_iff termLengths).mp typed
+      cases typeEq
+      cases all with
+      | cons headTyped rest =>
+          exact .tuple (firstOrder_of_annotated head headTyped) headNotArrow
+            (firstOrderList_of_annotated arguments rest)
+
+theorem firstOrderList_of_annotated {space : Space} :
+    {arguments : List Atom} → {terms : List ContractTerm} → AnnotatesList arguments terms →
+      ∀ {types : List Atom},
+        List.Forall₂ (fun term type =>
+          ApplicativeTyped (nameType space) term (.base type)) terms types →
+        FirstOrderTypes space arguments types
+  | _, _, .nil, _, all => by
+      cases all
+      exact .nil
+  | _, _, .cons head tail, _, all => by
+      cases all with
+      | cons headTyped rest =>
+          exact .cons (firstOrder_of_annotated head headTyped)
+            (firstOrderList_of_annotated tail rest)
+
+end
+
+mutual
+
+theorem annotated_of_firstOrder {space : Space} :
+    {expression type : Atom} → FirstOrderType space expression type →
+      ∃ term, Annotates expression term ∧
+        ApplicativeTyped (nameType space) term (.base type)
+  | _, _, @FirstOrderType.declared _ atom type occurrence isInstance =>
+      ⟨_, .declared atom occurrence type,
+        .constant (nameType_declared_eq_some_iff.mpr ⟨isInstance, rfl⟩)⟩
+  | _, _, @FirstOrderType.application _ _ result _ parameters head arguments => by
+      obtain ⟨headTerm, headAnnotates, headTyped⟩ := annotated_of_firstOrder head
+      obtain ⟨terms, termsAnnotate, all⟩ := annotatedList_of_firstOrder arguments
+      exact ⟨_, .application (result := result) (parameters := parameters) headAnnotates
+        termsAnnotate, applicativeTyped_apply_iff.mpr
+          ⟨(FirstOrderType.contractType head).1, rfl, headTyped, all⟩⟩
+  | _, _, @FirstOrderType.tuple _ _ headType _ argumentTypes head headNotArrow arguments => by
+      obtain ⟨headTerm, headAnnotates, headTyped⟩ := annotated_of_firstOrder head
+      obtain ⟨terms, termsAnnotate, all⟩ := annotatedList_of_firstOrder arguments
+      have lengths : argumentTypes.length = _ :=
+        ((firstOrderTypes_iff_forall₂.mp arguments).length_eq).symm
+      have termLengths : (headType :: argumentTypes).length = (headTerm :: terms).length := by
+        simp [all.length_eq]
+      exact ⟨_, .tuple headNotArrow lengths headAnnotates termsAnnotate,
+        (applicativeTyped_tupleTerm_iff termLengths).mpr ⟨rfl, .cons headTyped all⟩⟩
+
+theorem annotatedList_of_firstOrder {space : Space} :
+    {arguments types : List Atom} → FirstOrderTypes space arguments types →
+      ∃ terms, AnnotatesList arguments terms ∧
+        List.Forall₂ (fun term type =>
+          ApplicativeTyped (nameType space) term (.base type)) terms types
+  | _, _, .nil => ⟨[], .nil, .nil⟩
+  | _, _, .cons head tail => by
+      obtain ⟨term, annotates, typed⟩ := annotated_of_firstOrder head
+      obtain ⟨terms, annotateTail, all⟩ := annotatedList_of_firstOrder tail
+      exact ⟨term :: terms, .cons annotates annotateTail, .cons typed all⟩
+
+end
+
+/-- **The contract is HE's first-order rule.**  An expression has a contract term at the base
+type of `type` exactly when HE's first-order rule gives it `type`. -/
+theorem typed_iff_firstOrder {space : Space} {expression type : Atom} :
+    Typed space expression type ↔ FirstOrderType space expression type := by
+  rw [typed_iff]
+  constructor
+  · rintro ⟨term, annotates, typed⟩
+    exact firstOrder_of_annotated annotates typed
+  · exact annotated_of_firstOrder
+
+/-- A declared atom of a variable-free declaration has only that type. -/
+theorem firstOrder_declared_eq {space : Space} {atom declared type : Atom}
+    (unique : declaredType? space atom = some declared)
+    (ground : TypeSubst.typeVars declared = []) (typed : FirstOrderType space atom type) :
+    type = declared := by
+  rcases Tuples.declaredType?_symbol_or_grounded unique with ⟨name, rfl⟩ | ⟨value, rfl⟩ <;>
+  · cases typed with
+    | @declared _ _ occurrence isInstance =>
+        obtain ⟨scheme, found, instance'⟩ := isInstance
+        rw [declarations_of_declared unique] at found
+        cases occurrence with
+        | zero =>
+            simp only [List.getElem?_cons_zero, Option.some.injEq] at found
+            subst found
+            exact typeInstance_of_ground ground instance'
+        | succ index => simp at found
+
+/-- The first-order typings of a symbol are instances of its declarations. -/
+theorem firstOrder_symbol {space : Space} {name : String} {type : Atom}
+    (typed : FirstOrderType space (.symbol name) type) :
+    ∃ (occurrence : Nat) (scheme : Atom),
+      (declarations space (.symbol name))[occurrence]? = some scheme ∧
+        TypeInstance scheme type := by
+  cases typed with
+  | @declared _ _ occurrence isInstance =>
+      obtain ⟨scheme, found, instance'⟩ := isInstance
+      exact ⟨occurrence, scheme, found, instance'⟩
+
+/-! ## Projections and declared constants -/
+
+/-- The HOL type of the product of the given component types: the base type of the
+expression of the components. -/
+def productTy (components : List Atom) : Ty Atom := .base (.expression components)
+
+/-- The pairing constant of a product. -/
+def pairConst (space : Space) (component : Atom) (components : List Atom) :
+    Const space (.arr (.base component)
+      (.arr (productTy components) (productTy (component :: components)))) :=
+  ⟨.pair (component :: components), rfl⟩
+
+/-- The first projection of a product. -/
+def fstConst (space : Space) (component : Atom) (components : List Atom) :
+    Const space (.arr (productTy (component :: components)) (.base component)) :=
+  ⟨.fst (component :: components), rfl⟩
+
+/-- The second projection of a product: the product of the remaining components. -/
+def sndConst (space : Space) (component : Atom) (components : List Atom) :
+    Const space (.arr (productTy (component :: components)) (productTy components)) :=
+  ⟨.snd (component :: components), rfl⟩
+
+/-- The element of the empty product. -/
+def oneConst (space : Space) : Const space (productTy []) := ⟨.one, rfl⟩
+
+/-- The projection of the component at `index` from a term of the product of the given
+component types. -/
+def projectTerm : List Atom → Nat → ContractTerm → ContractTerm
+  | component :: components, 0, term => .app (.constant (.fst (component :: components))) term
+  | component :: components, index + 1, term =>
+      projectTerm components index (.app (.constant (.snd (component :: components))) term)
+  | [], _, term => term
+
+/-- A projection of a term of a product type has the type of its component. -/
 theorem applicativeTyped_projectTerm {space : Space} :
     ∀ {components : List Atom} {index : Nat} {component : Atom} {term : ContractTerm},
       components[index]? = some component →
       ApplicativeTyped (nameType space) term (productTy components) →
-        ApplicativeTyped (nameType space) (projectTerm components index term)
-          (toTy component)
+        ApplicativeTyped (nameType space) (projectTerm components index term) (.base component)
   | [], _, _, _, found, _ => by simp at found
   | first :: rest, 0, component, term, found, typed => by
       simp only [List.getElem?_cons_zero, Option.some.injEq] at found
@@ -573,8 +733,20 @@ theorem applicativeTyped_projectTerm {space : Space} :
         (.app (ApplicativeTyped.constant (typeOf := nameType space)
           (name := .snd (first :: rest)) rfl) typed)
 
-#print axioms toTy_injective_of_faithful
+theorem applicativeTyped_declared_iff {space : Space} {constant instanceType : Atom}
+    {occurrence : Nat} {type : Ty Atom} :
+    ApplicativeTyped (nameType space) (.constant (.declared constant occurrence instanceType)) type ↔
+      Instance space constant occurrence instanceType ∧ type = .base instanceType := by
+  constructor
+  · intro typed
+    cases typed with
+    | constant lookup => exact nameType_declared_eq_some_iff.mp lookup
+  · intro both
+    exact .constant (nameType_declared_eq_some_iff.mpr both)
+
 #print axioms typed_iff
+#print axioms typed_iff_firstOrder
 #print axioms applicativeTyped_tupleTerm_iff
+#print axioms applicativeTyped_apply_iff
 
 end Mettapedia.Languages.MeTTa.HE.HOLContract

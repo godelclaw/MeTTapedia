@@ -1,4 +1,6 @@
+import Mettapedia.Languages.MeTTa.MeTTaSupportIndexedABTWire
 import Mettapedia.Languages.MeTTa.MeTTaZeroLanguageAdequacy
+import Mettapedia.Languages.MeTTa.MeTTaZeroStagedAdequacy
 import Mettapedia.Languages.MeTTa.PeTTa.Eval
 import Mettapedia.Languages.MeTTa.PeTTa.SpaceCoreFragment
 import Mettapedia.Languages.MeTTa.PeTTa.PatternRewrite.Space
@@ -387,5 +389,212 @@ theorem zero_any_atom_query_to_mm2_support
   exact
     Mettapedia.Languages.MeTTa.PeTTa.SpaceCoreFragment.anyFactMatch_toComputableSourceQuery
       storedMember templateTranslatable instantiates workspaceMember
+
+
+/-! ## Exact native rule enumeration at the shared pure boundary -/
+
+/-- Apply a visible equation atom using the existing source matcher. -/
+def applyStoredEquation (subject candidate : Pattern) : List Pattern :=
+  match MeTTaZero.viewEquation? candidate with
+  | none => []
+  | some (left, right) =>
+      (matchPattern left subject).map fun bindings => applyBindings bindings right
+
+/-- Native enumeration of the actual premise-free PeTTa rule occurrences.
+This computes matcher results and instantiated right sides rather than
+accepting an externally supplied reduction trace. -/
+def premiseFreeRuleResults (space : PeTTaSpace) (subject : Pattern) : List Pattern :=
+  space.rules.flatMap fun rule =>
+    if rule.premises = [] then
+      (matchPattern rule.left subject).map fun bindings => applyBindings bindings rule.right
+    else []
+
+/-- Ordinary facts must not also be equations when comparing PeTTa's separate
+rule table with Zero's unified reflective equation medium. -/
+def NoFactEquations (space : PeTTaSpace) : Prop :=
+  ∀ fact ∈ space.facts, MeTTaZero.viewEquation? fact = none
+
+/-- Direct characterization against the independently existing rule-app
+premises; no Zero evaluator occurs on the right side. -/
+theorem mem_premiseFreeRuleResults (space : PeTTaSpace) (subject result : Pattern) :
+    result ∈ premiseFreeRuleResults space subject ↔
+      ∃ rule ∈ space.rules, rule.premises = [] ∧
+        ∃ bindings ∈ matchPattern rule.left subject,
+          applyBindings bindings rule.right = result := by
+  simp only [premiseFreeRuleResults, List.mem_flatMap]
+  constructor
+  · rintro ⟨rule, member, resultMember⟩
+    split at resultMember
+    · exact ⟨rule, member, by assumption, List.mem_map.mp resultMember⟩
+    · simp at resultMember
+  · rintro ⟨rule, member, premiseFree, bindings, bindingMember, instantiates⟩
+    refine ⟨rule, member, ?_⟩
+    simp only [premiseFree, ↓reduceIte]
+    exact List.mem_map.mpr ⟨bindings, bindingMember, instantiates⟩
+
+/-- The native enumerator produces only actual selected-rule evaluations.
+It is a one-step rule service, not a whole-program answer evaluator. -/
+theorem premiseFreeRuleResults_sound (space : PeTTaSpace) (subject result : Pattern)
+    (member : result ∈ premiseFreeRuleResults space subject) :
+    PeTTaEval space subject [result] := by
+  obtain ⟨rule, ruleMember, premiseFree, bindings, bindingMember, instantiates⟩ :=
+    (mem_premiseFreeRuleResults space subject result).mp member
+  exact PeTTaEval.ruleApp rule bindings subject result ruleMember premiseFree
+    bindingMember instantiates
+
+private theorem equationResults_stored (groundApply : Pattern → Multiset Pattern)
+    (space : PeTTaSpace) (subject : Pattern) :
+    MeTTaZero.equationResults (model groundApply) space subject =
+      (space.storedAtoms.flatMap (applyStoredEquation subject) : Multiset Pattern) := by
+  unfold MeTTaZero.equationResults
+  rw [queryAll_eq_storedAtoms]
+  trans ((space.storedAtoms : Multiset Pattern).bind fun candidate =>
+    (applyStoredEquation subject candidate : Multiset Pattern))
+  · apply Multiset.bind_congr
+    intro candidate _
+    cases equation : MeTTaZero.viewEquation? candidate with
+    | none => simp [equation, applyStoredEquation]
+    | some pair =>
+        rcases pair with ⟨left, right⟩
+        simp [equation, applyStoredEquation]
+  · exact Multiset.coe_bind _ _
+
+private theorem fact_equations_empty (space : PeTTaSpace) (subject : Pattern)
+    (onlyFacts : NoFactEquations space) :
+    space.facts.flatMap (applyStoredEquation subject) = [] := by
+  apply List.flatMap_eq_nil_iff.mpr
+  intro fact member
+  simp [applyStoredEquation, onlyFacts fact member]
+
+private theorem storedRuleResults (rules : List RewriteRule) (subject : Pattern) :
+    (rules.filterMap PeTTaSpace.storedRuleAtom?).flatMap (applyStoredEquation subject) =
+      rules.flatMap (fun rule =>
+        if rule.premises = [] then
+          (matchPattern rule.left subject).map fun bindings => applyBindings bindings rule.right
+        else []) := by
+  induction rules with
+  | nil => rfl
+  | cons rule rules ih =>
+      cases premises : rule.premises with
+      | nil =>
+          simp [PeTTaSpace.storedRuleAtom?, premises, applyStoredEquation,
+            MeTTaZero.viewEquation?, ih]
+      | cons premise rest =>
+          simp [PeTTaSpace.storedRuleAtom?, premises, ih]
+
+/-- The exact bag equality preserves every rule and matcher occurrence. Only
+PeTTa's enumeration order is forgotten. No grounding or fact equation is
+silently added to the selected-rule boundary. -/
+theorem equationResults_eq_premiseFreeRuleResults
+    (groundApply : Pattern → Multiset Pattern) (space : PeTTaSpace)
+    (subject : Pattern) (onlyFacts : NoFactEquations space) :
+    MeTTaZero.equationResults (model groundApply) space subject =
+      (premiseFreeRuleResults space subject : Multiset Pattern) := by
+  rw [equationResults_stored]
+  unfold PeTTaSpace.storedAtoms PeTTaSpace.storedRuleAtoms
+  rw [List.flatMap_append, fact_equations_empty space subject onlyFacts,
+    List.nil_append, storedRuleResults]
+  rfl
+
+/-- Native positive Zero articles are complete for the actual selected PeTTa
+rule-app premises on this shared pure boundary. -/
+theorem accepted_positive_iff_rule_application
+    (space : PeTTaSpace) (subject result : Pattern) (onlyFacts : NoFactEquations space) :
+    (∃ proof : MeTTaZeroStagedAdequacy.ProductionProof,
+      MeTTaZeroStagedAdequacy.checkProductionProof (model (fun _ => 0))
+        (.evaluate space subject) result proof = true) ↔
+      ∃ rule ∈ space.rules, rule.premises = [] ∧
+        ∃ bindings ∈ matchPattern rule.left subject,
+          applyBindings bindings rule.right = result := by
+  simp only [MeTTaZeroStagedAdequacy.checkProductionProof_exact]
+  rw [← MeTTaZeroStagedAdequacy.production_mem_iff_exists_valid,
+    MeTTaZeroStagedAdequacy.produce_evaluate_results]
+  change result ∈ MeTTaZero.equationResults (model (fun _ => 0)) space subject + 0 ↔ _
+  rw [add_zero, equationResults_eq_premiseFreeRuleResults _ space subject onlyFacts]
+  simpa using mem_premiseFreeRuleResults space subject result
+
+
+namespace NativeControls
+
+def a : Pattern := .apply "a" []
+def b : Pattern := .apply "b" []
+def rule : RewriteRule := { name := "a-to-b", left := a, right := b, typeContext := [], premises := [] }
+def ordinaryFact : Pattern := .apply "fact" []
+def duplicateRules : PeTTaSpace := { facts := [ordinaryFact], rules := [rule, rule] }
+def factEquationOnly : PeTTaSpace := { facts := [.apply "=" [a, b]], rules := [] }
+
+theorem duplicateRules_noFactEquations : NoFactEquations duplicateRules := by
+  simp [NoFactEquations, duplicateRules, ordinaryFact, MeTTaZero.viewEquation?]
+
+/-- Rule multiplicity is retained by the actual native enumerator. -/
+theorem duplicate_rule_outputs : premiseFreeRuleResults duplicateRules a = [b, b] := by
+  simp [premiseFreeRuleResults, duplicateRules, rule, a, b, matchPattern, matchArgs, applyBindings]
+
+/-- The no-fact-equations restriction is substantive: Zero uses a reflected
+fact equation even when PeTTa's selected-rule table is empty. -/
+theorem fact_equation_is_not_selected_rule :
+    MeTTaZero.equationResults (model (fun _ => 0)) factEquationOnly a = {b} ∧
+    premiseFreeRuleResults factEquationOnly a = [] := by
+  rw [equationResults_stored]
+  simp [factEquationOnly, PeTTaSpace.storedAtoms, PeTTaSpace.storedRuleAtoms,
+    premiseFreeRuleResults, applyStoredEquation, MeTTaZero.viewEquation?,
+    a, b, matchPattern, matchArgs, applyBindings]
+
+end NativeControls
+
+end Mettapedia.Languages.MeTTa.PeTTa.MeTTaZeroExtension
+
+
+/-! ## Actual Atom quotation with incoming ambient binding -/
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.MeTTaZeroExtension
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+
+open Mettapedia.OSLF.MeTTaIL.Match
+open Mettapedia.Languages.ProcessCalculi
+open Mettapedia.Languages.MeTTa.MeTTaSupportIndexedABTWire.AmbientBinding
+
+private theorem translatableList_of_forall (patterns : List Pattern)
+    (all : ∀ pattern ∈ patterns, MORK.morkTranslatable pattern = true) :
+    MORK.morkTranslatableList patterns = true := by
+  induction patterns with
+  | nil => rfl
+  | cons first rest ih =>
+    simp only [MORK.morkTranslatableList, Bool.and_eq_true]
+    exact ⟨all first (by simp), ih (fun p hp => all p (by simp [hp]))⟩
+
+theorem morkTranslatable_of_matchCorrect (pattern : Pattern)
+    (plain : isMatchCorrectAux pattern = true) :
+    MORK.morkTranslatable pattern = true := by
+  induction pattern using Pattern.inductionOn with
+  | hbvar _ | hfvar _ => rfl
+  | happly constructor arguments ih =>
+    simp only [MORK.morkTranslatable]
+    apply translatableList_of_forall
+    intro argument member
+    exact ih argument member
+      ((Mettapedia.OSLF.MeTTaIL.MatchSpec.isMatchCorrectListAux_iff_forall _).mp plain _ member)
+  | hlambda name body _ => simp [isMatchCorrectAux] at plain
+  | hmultiLambda arity names body _ => simp [isMatchCorrectAux] at plain
+  | hsubst body replacement _ _ => simp [isMatchCorrectAux] at plain
+  | hcollection kind elements rest _ => simp [isMatchCorrectAux] at plain
+
+/-- The actual Atom evaluator performs incoming binding before returning
+quoted syntax. This is a finite source execution, not the older Pattern-rule
+wrapper. The named translation remains explicit; no reader adequacy follows. -/
+theorem petta_quote_ambient_preparation
+    (program : SpaceSemantics.Program) (incoming : Bindings)
+    (state : Effects.State) (payload : Pattern)
+    (wellScoped : payload.isWellScopedAt 0 = true)
+    (plain : isMatchCorrectAux payload = true) :
+    Eval.PureReturns program (MORK.translateBindings incoming) state
+      (.expression [.symbol "quote", MORK.morkPatternToAtom payload]) state
+      (MORK.morkPatternToAtom (reopen incoming 0 (prepare incoming 0 payload))) := by
+  have success := Eval.quote_returns program (MORK.translateBindings incoming) state
+    (MORK.morkPatternToAtom payload)
+  simpa only [reopen_prepare_applyBindings incoming payload wellScoped plain,
+    MORK.applySubst_commutes incoming payload (morkTranslatable_of_matchCorrect payload plain)]
+    using success
 
 end Mettapedia.Languages.MeTTa.PeTTa.MeTTaZeroExtension

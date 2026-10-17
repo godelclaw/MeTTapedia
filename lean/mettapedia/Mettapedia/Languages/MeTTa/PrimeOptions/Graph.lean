@@ -5,7 +5,7 @@ import Mettapedia.Languages.MeTTa.PrimeOptions.CarveOutSites
 import Mettapedia.Languages.MeTTa.PrimeOptions.CarveOutSheaves
 import Mettapedia.Languages.MeTTa.PrimeOptions.CarveOutSheafPowers
 import Mettapedia.Languages.MeTTa.PrimeOptions.ReplayPins
-import Mettapedia.Languages.MeTTa.PrimeOptions.WeightAlgebras
+import Mettapedia.Languages.MeTTa.PrimeComparisons.Weights.WeightAlgebras
 import Mettapedia.Languages.MeTTa.PrimeOptions.OpenTower
 import Mettapedia.Languages.MeTTa.PrimeOptions.ReviewDigest
 import Mettapedia.Languages.MeTTa.PrimeOptions.FrontierMap
@@ -49,6 +49,7 @@ namespace Mettapedia.Languages.MeTTa.PrimeOptions
 
 open Lean (Name)
 open Mettapedia.GSLT.Distinction.OptionGraph
+open Mettapedia.Languages.MeTTa.PrimeComparisons.Weights
 
 /-! ## Documents -/
 
@@ -199,7 +200,7 @@ def setProfileNodes : List Node := [
             "a weaker set theory could host this bubble cleanly, so it could be valuable to \
             preserve some of it in some obviously-not-default location."
             "quarantine-brief-20261004",
-          .fixture "prime" "theory_profiles/isolation" ["[hol]", "[megalodon-hotg]", "[set:of]"],
+          .fixture "prime" "theory_profiles/isolation" ["[base]", "[megalodon-hotg]", "[set:of]"],
           cites [`Mettapedia.TypeTheory.MaterialSets.Hypersets.HSet.wellFoundedPartEquivZFSet,
             `Mettapedia.SetTheory.Profiles.wellFoundedPart_memInduction]] }] },
   { id := "hyperset-family"
@@ -805,7 +806,7 @@ def setProfileWitnesses : List Witness := [
         .argument "bare-theory-module" "The institution has no membership vocabulary"
           "The bare profile's institution has no membership vocabulary; the Megalodon and \
           hyperset principle sets are not sentences of it.",
-        .fixture "prime" "theory_profiles/isolation" ["[hol]", "[set:of]", "[set:known-proposition]"]] } },
+        .fixture "prime" "theory_profiles/isolation" ["[base]", "[hol:of]", "[hol:known-proposition]"]] } },
   { id := "quine-atom-hyperset-bare", observer := "quine-atom"
     left := "hyperset-family", right := "bare-logic"
     case := "The statement x = {x}, that some set equals its own singleton."
@@ -821,7 +822,7 @@ def setProfileWitnesses : List Witness := [
         .argument "bare-theory-module" "The institution has no membership vocabulary"
           "The bare profile's institution has no membership vocabulary; the Megalodon and \
           hyperset principle sets are not sentences of it.",
-        .fixture "prime" "theory_profiles/isolation" ["[hol]", "[set:of]", "[set:known-proposition]"]] } },
+        .fixture "prime" "theory_profiles/isolation" ["[base]", "[hol:of]", "[hol:known-proposition]"]] } },
   { id := "pairing-replacement", observer := "pairs-without-choice"
     left := "megalodon-hotg", right := "hyperset-family"
     case := "The pair {a, b} as the image of the separated power set of the power set of the \

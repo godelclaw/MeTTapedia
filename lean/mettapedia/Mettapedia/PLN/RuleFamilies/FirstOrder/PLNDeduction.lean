@@ -105,6 +105,53 @@ def conditionalProbabilityConsistency (pA pB sAB : ℝ) : Prop :=
   smallestIntersectionProbability pA pB ≤ sAB ∧
   sAB ≤ largestIntersectionProbability pA pB
 
+/-- If sAB ≤ largestIntersectionProbability pA pB, then pA * sAB ≤ pB.
+
+This shows that the upper bound from consistency implies the intersection
+doesn't exceed the marginal probability. -/
+theorem bounded_conditional_implies_bounded_intersection
+    (pA pB sAB : ℝ)
+    (hpA_pos : 0 < pA)
+    (_hpB_nonneg : 0 ≤ pB)
+    (_hsAB_nonneg : 0 ≤ sAB)
+    (h_upper : sAB ≤ largestIntersectionProbability pA pB) :
+    pA * sAB ≤ pB := by
+  unfold largestIntersectionProbability at h_upper
+  have h_ratio : sAB ≤ pB / pA := h_upper.trans (min_le_right _ _)
+  -- Multiply both sides by pA (positive)
+  calc pA * sAB ≤ pA * (pB / pA) := by nlinarith
+       _ = pB := by field_simp
+
+/-- If `sBC` satisfies the lower Fréchet conditional bound, then
+`pC - pB * sBC ≤ 1 - pB`.
+
+The upper bound alone is not enough: e.g. `pB = pC = 0.9`, `sBC = 0` satisfies
+`sBC ≤ largestIntersectionProbability pB pC` but violates this conclusion.
+The needed information is the lower Fréchet side of conditional-probability
+consistency. -/
+theorem bounded_conditional_implies_complement_bound
+    (pB pC sBC : ℝ)
+    (hpB_bounds : 0 < pB ∧ pB ≤ 1)
+    (_hpC_bounds : 0 ≤ pC ∧ pC ≤ 1)
+    (hsBC_nonneg : 0 ≤ sBC)
+    (h_lower : max 0 ((pB + pC - 1) / pB) ≤ sBC) :
+    pC - pB * sBC ≤ 1 - pB := by
+  suffices pC + pB * (1 - sBC) ≤ 1 by nlinarith
+  by_cases h_case : pB + pC ≤ 1
+  · nlinarith [hsBC_nonneg]
+  · push Not at h_case
+    have h_ratio_pos : 0 < (pB + pC - 1) / pB := by
+      exact div_pos (by linarith) hpB_bounds.1
+    have h_ratio_le : (pB + pC - 1) / pB ≤ sBC := by
+      calc
+        (pB + pC - 1) / pB =
+            max 0 ((pB + pC - 1) / pB) := by
+              rw [max_eq_right (le_of_lt h_ratio_pos)]
+        _ ≤ sBC := h_lower
+    have h_mul : pB * ((pB + pC - 1) / pB) = pB + pC - 1 := by
+      field_simp [hpB_bounds.1.ne']
+    nlinarith [mul_le_mul_of_nonneg_left h_ratio_le (le_of_lt hpB_bounds.1), h_mul]
+
 /-! ## The Deduction Formula -/
 
 /-- The PLN simple deduction strength formula.

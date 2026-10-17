@@ -114,7 +114,7 @@ theorem boundaryVariable_key_eq
 
 /-- Equal endpoint semantic keys give a common-restoration apex for their
 canonical internal atom names. -/
-noncomputable def atomNames_commonRestorationApex_of_key_eq
+theorem atomNames_commonRestorationApex_of_key_eq
     {source : CIGSLT} {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     {leftOccurrences rightOccurrences : List CostRegionOccurrence}

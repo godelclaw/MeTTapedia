@@ -1,5 +1,5 @@
 import Mettapedia.Examples.PLN.BioHypothesisGeneration
-import Mettapedia.PLN.WorldModel.WorldModel
+import Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 import Mettapedia.Hyperseed.Basic
 
 /-!

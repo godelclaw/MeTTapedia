@@ -202,7 +202,7 @@ theorem toSpendEvent_rawSpend (event : CostedEvent Ground) :
 
 /-- A local event fires in any disjoint multiset frame using the original
 interleaving semantics. -/
-def toCostStepIn (event : CostedEvent Ground) (frame : CostConfig Ground) :
+theorem toCostStepIn (event : CostedEvent Ground) (frame : CostConfig Ground) :
     CostStep (frame + event.consumed) event.location event.spend
       (frame + event.produced) := by
   cases event with

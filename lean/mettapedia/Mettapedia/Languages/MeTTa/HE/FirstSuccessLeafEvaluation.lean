@@ -48,7 +48,7 @@ theorem leaf_gate (value expected : Atom) :
 
 theorem leaf_evidence (space : Space) (dispatch : Spec.Eval.GroundedDispatch)
     (live : List Atom) (typing : EvalTypeService) (scope : List String)
-    (value expected : Atom) (bindings : Bindings) (leaf : LeafRel value expected) :
+    (value expected : Atom) (bindings : BindingFrame) (leaf : LeafRel value expected) :
     EvalAtomRawRel space dispatch live (protectedScope := scope) (typing := typing)
       value expected bindings (value, bindings) := by
   by_cases failed : IsEmptyOrErrorRel value
@@ -59,14 +59,14 @@ theorem leaf_evidence (space : Space) (dispatch : Spec.Eval.GroundedDispatch)
 
 theorem leaf_unique {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
     {live : List Atom} {typing : EvalTypeService} {scope : List String}
-    {value expected : Atom} {bindings : Bindings} {result : ResultPair}
+    {value expected : Atom} {bindings : BindingFrame} {result : FrameResult}
     (leaf : LeafRel value expected)
     (earned : EvalAtomRawRel space dispatch live (protectedScope := scope) (typing := typing)
       value expected bindings result) : result = (value, bindings) := by
   cases earned with
   | emptyOrError => rfl
   | typePass => rfl
-  | cast _ _ metaType _ _ clean intrinsic rejects _ _ =>
+  | cast _ _ metaType _ _ clean intrinsic rejects _ _ _ =>
       rcases leaf with failure | ⟨otherType, otherIntrinsic, passed⟩
       · exact (clean failure).elim
       · rw [MetaTypeRel.eq otherIntrinsic intrinsic] at passed
@@ -101,21 +101,23 @@ theorem source_leaf_iff (space : Space) (source : HE.GroundedDispatch)
   constructor
   · rintro rfl
     exact leaf_evidence space dispatch live typing scope value expected bindings leaf
-  · exact leaf_unique leaf
+  · intro derived
+    exact congrArg BindingFrame.rawResult (leaf_unique leaf derived)
 
 theorem retained_leaf (space : Space) (source : HE.GroundedDispatch)
     (value expected : Atom) (bindings : Bindings) (fuel : Nat)
-    (leaf : LeafRel value expected) (stack : List RecursiveTasks.Frame) (emitted : ResultSet) :
-    SilentPath source ⟨space, .work (.atom value expected bindings (fuel + 1)), stack, emitted⟩
+    (leaf : LeafRel value expected) (live : List Atom) (stack : List RecursiveTasks.Frame)
+    (emitted : ResultSet) :
+    SilentPath source ⟨space, .work (.atom value expected bindings (fuel + 1) live), stack, emitted⟩
       ⟨space, .returning [(value, bindings)], stack, emitted⟩ := by
   have expanded : FirstSuccessRecursiveStrategy.enter space source
-      (.atom value expected bindings (fuel + 1)) = (.returning [(value, bindings)], []) := by
+      (.atom value expected bindings (fuel + 1) live) = (.returning [(value, bindings)], []) := by
     rcases (leaf_gate value expected).mp leaf with failed | passed
     · simp only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter, failed, if_true]
     · simp only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
         passed, if_true, ite_self]
   simpa only [expanded, List.nil_append] using
-    enter_request space source (.atom value expected bindings (fuel + 1)) stack emitted
+    enter_request space source (.atom value expected bindings (fuel + 1) live) stack emitted
 
 /-- Preparation constructs the resolved endpoint; actual source evaluation
 earns its singleton independently of the external serial checker. -/

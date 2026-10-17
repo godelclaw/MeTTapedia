@@ -8,6 +8,11 @@ compact-key support contains the conclusion once. A generated activation
 then consumes the actual emitted source atom with its already captured
 variables. These are properties of the existing source executor; native
 programme replays are separate evidence for the corresponding fixtures.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  Rows are matched one way and sinks are finalized in
+their authored order, as in the support model (`Space`); the kernel (`Mainline`)
+unifies patterns with stored atoms and writes the instances of every `+` sink first.
 -/
 
 set_option autoImplicit false

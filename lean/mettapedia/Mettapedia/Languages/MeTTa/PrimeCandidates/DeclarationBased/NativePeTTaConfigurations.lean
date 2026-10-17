@@ -1,6 +1,10 @@
+import Mettapedia.Languages.MeTTa.MeTTaFiniteRevisionedKernel
 import Mettapedia.Languages.MeTTa.PeTTa.ConfigurationEncoding
+import Mettapedia.Languages.GuardedAtomRule.Services
 import Mettapedia.GSLT.LanguageDef.InferenceCettaWireFormat
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeWireDataDenotation
+
+open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
 
 /-!
 # Actual PeTTa configurations in the native dependent Data fragment
@@ -177,3 +181,269 @@ theorem distinct_configurations_distinct_encodings
     firstVacant secondVacant firstCovers secondCovers same)
 
 end Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativePeTTaConfigurations
+
+
+
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId
+
+set_option autoImplicit false
+
+namespace Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativePeTTaConfigurations.AtomServices
+
+open Mettapedia.GSLT.LanguageDef
+open Mettapedia.OSLF.MeTTaIL.Syntax (Pattern)
+open Mettapedia.Languages.MeTTa.MeTTaFiniteRevisionedKernel.AuthoredActivation
+open MatchedIndexDependentTransport (nativePattern)
+open Presentation
+open SemanticEvidence SemanticService
+
+/-- Canonical admission composes the existing native Data and Pattern
+readers. The equality guard requires the original physical representation. -/
+def readPattern (term : NativeTerm) : Option Pattern := do
+  let wire ← NativeWireData.decode term
+  let pattern ← InferenceCettaWire.decodePattern wire
+  if nativePattern pattern = term then some pattern else none
+
+@[simp] theorem readPattern_nativePattern (pattern : Pattern) :
+    readPattern (nativePattern pattern) = some pattern := by
+  simp only [readPattern, nativePattern, NativeWireData.decode_encode,
+    InferenceCettaWire.decodePattern_encodePattern, bind, Option.bind, ↓reduceIte]
+
+@[simp] theorem readPattern_exact (term : NativeTerm) (pattern : Pattern) :
+    readPattern term = some pattern ↔ term = nativePattern pattern := by
+  constructor
+  · intro read
+    simp only [readPattern, Option.bind_eq_bind, Option.bind_eq_some_iff] at read
+    obtain ⟨wire, _, actual, _, final⟩ := read
+    split at final
+    next same => cases Option.some.inj final; exact same.symm
+    next => contradiction
+  · rintro rfl
+    exact readPattern_nativePattern pattern
+
+def readPatterns (terms : List NativeTerm) : Option (List Pattern) := terms.mapM readPattern
+
+@[simp] theorem readPatterns_exact (terms : List NativeTerm) (patterns : List Pattern) :
+    readPatterns terms = some patterns ↔ terms = patterns.map (nativePattern (n := 0)) := by
+  induction terms generalizing patterns with
+  | nil => cases patterns <;> simp [readPatterns]
+  | cons term terms ih =>
+      cases patterns with
+      | nil => simp [readPatterns, List.mapM_cons, Option.bind_eq_some_iff]
+      | cons pattern patterns =>
+          simp only [readPatterns, List.mapM_cons, Option.bind_eq_bind, Option.bind_eq_some_iff]
+          constructor
+          · rintro ⟨head, readHead, tail, readTail, same⟩
+            have image := congrArg₂ List.cons ((readPattern_exact _ _).mp readHead)
+              ((ih tail).mp readTail)
+            rw [← List.map_cons, Option.some.inj same] at image
+            exact image
+          · intro same
+            have fields := List.cons.inj same
+            refine ⟨pattern, (readPattern_exact _ _).mpr fields.1,
+              patterns, (ih patterns).mpr fields.2, rfl⟩
+
+structure Request where
+  relation : String
+  arguments : List NativeTerm
+
+def encodeRows (rows : List (List Pattern)) : List (List NativeTerm) :=
+  rows.map (List.map (nativePattern (n := 0)))
+
+/-- The target observation retains original native inputs, independent
+source primitive authority and every resulting row occurrence. -/
+def RowsMeaning (request : Request) (outputs : List (List NativeTerm)) : Prop :=
+  ∃ arguments rows,
+    request.arguments = arguments.map (nativePattern (n := 0)) ∧
+    MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.Source
+      request.relation arguments rows ∧ outputs = encodeRows rows
+
+/-- This executes the original Atom primitive after canonical native reading
+and the actual declared carrier check. It is separate from native conversion. -/
+def run (request : Request) : Option (List (List NativeTerm)) := do
+  let arguments ← readPatterns request.arguments
+  if (MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.inputPatterns
+      request.relation arguments).all
+      MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.checkSourceCarrier then do
+    let rows ← MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.rows?
+      request.relation arguments
+    return encodeRows rows
+  else none
+
+@[simp] theorem run_exact (request : Request) (outputs : List (List NativeTerm)) :
+    run request = some outputs ↔ RowsMeaning request outputs := by
+  constructor
+  · intro computed
+    simp only [run, Option.bind_eq_bind, Option.bind_eq_some_iff] at computed
+    obtain ⟨arguments, decoded, computed⟩ := computed
+    split at computed
+    next =>
+      simp only [Option.bind_eq_some_iff] at computed
+      obtain ⟨rows, computed, same⟩ := computed
+      exact ⟨arguments, rows, (readPatterns_exact _ _).mp decoded,
+        (MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.rows_exact _ _ _).mp computed,
+        (Option.some.inj same).symm⟩
+    next => contradiction
+  · rintro ⟨arguments, rows, decoded, source, rfl⟩
+    have carrier :=
+      MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.source_inputs_carrier source
+    have computed :=
+      (MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.rows_exact _ _ _).mpr source
+    simp only [run, (readPatterns_exact _ _).mpr decoded, carrier, if_true, computed,
+      bind, Option.bind, pure]
+
+/-- Missing native admission or a missing primitive response is unknown;
+a completed source no-match remains a successful empty native row table. -/
+theorem run_unknown_exact (request : Request) :
+    run request = none ↔ ∀ outputs, ¬ RowsMeaning request outputs := by
+  constructor
+  · intro absent outputs source
+    have computed := (run_exact _ _).mpr source
+    rw [absent] at computed
+    contradiction
+  · intro absent
+    cases computed : run request with
+    | none => rfl
+    | some outputs => exact (absent outputs ((run_exact _ _).mp computed)).elim
+
+theorem nativePattern_formed (pattern : Pattern) :
+    FormationSensitive.Judgment NativeWireData.rules .nil
+      (nativePattern pattern) NativeWireData.dataType :=
+  NativeWireData.encode_judgment .nil _
+
+theorem nativePattern_denotes (pattern : Pattern) :
+    NativeWireDataDenotation.Denotes .nil
+      (fun index (_ : PeTTa.Effects.State) => Fin.elim0 index)
+      (nativePattern pattern)
+      (fun _ => NativeWireDataDenotation.ofWire (InferenceCettaWire.encodePattern pattern)) :=
+  NativeWireDataDenotation.encode_denotes .nil _ _
+
+theorem run_inputs_formed {request : Request} {outputs : List (List NativeTerm)}
+    (computed : run request = some outputs) :
+    ∀ term ∈ request.arguments,
+      FormationSensitive.Judgment NativeWireData.rules .nil term NativeWireData.dataType := by
+  obtain ⟨arguments, _, image, _, _⟩ := (run_exact _ _).mp computed
+  intro term member
+  rw [image] at member
+  obtain ⟨pattern, _, rfl⟩ := List.mem_map.mp member
+  exact nativePattern_formed pattern
+
+theorem run_outputs_formed {request : Request} {outputs : List (List NativeTerm)}
+    (computed : run request = some outputs) :
+    ∀ row ∈ outputs, ∀ term ∈ row,
+      FormationSensitive.Judgment NativeWireData.rules .nil term NativeWireData.dataType := by
+  obtain ⟨_, rows, _, _, rfl⟩ := (run_exact _ _).mp computed
+  intro row member term selected
+  obtain ⟨patterns, _, rfl⟩ := List.mem_map.mp member
+  obtain ⟨pattern, _, rfl⟩ := List.mem_map.mp selected
+  exact nativePattern_formed pattern
+
+/-- Admission uses source input syntax and the original substitution wire.
+It assumes neither a successful guard nor a supplied primitive response. -/
+def Request.Meaning (request : Request) : Prop :=
+  ∃ arguments,
+    request.arguments = arguments.map (nativePattern (n := 0)) ∧
+    MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.Inputs
+      request.relation arguments
+
+theorem request_meaning_iff_response (request : Request) :
+    request.Meaning ↔ ∃ outputs, RowsMeaning request outputs := by
+  constructor
+  · rintro ⟨arguments, image, admitted⟩
+    obtain ⟨rows, source⟩ :=
+      MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.inputs_have_source admitted
+    exact ⟨encodeRows rows, arguments, rows, image, source, rfl⟩
+  · rintro ⟨_, arguments, _, image, source, _⟩
+    exact ⟨arguments, image,
+      MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.source_inputs source⟩
+
+/-- The native request is unknown exactly outside the independently admitted
+source input forms. Admitted false decisions still return an empty table. -/
+theorem run_unknown_iff_not_admitted (request : Request) :
+    run request = none ↔ ¬ request.Meaning := by
+  rw [run_unknown_exact, request_meaning_iff_response]
+  exact not_exists.symm
+
+structure Result where
+  request : Request
+  outputs : Option (List (List NativeTerm))
+
+def Result.Meaning (result : Result) : Prop :=
+  ∃ outputs, result.outputs = some outputs ∧ RowsMeaning result.request outputs
+
+def operation : AdmissionHom (⟨Request, Request.Meaning⟩ : AdmissionObject)
+    (⟨Result, Result.Meaning⟩ : AdmissionObject) where
+  run request := ⟨request, run request⟩
+  preserves request admitted := by
+    obtain ⟨arguments, image, admitted⟩ := admitted
+    obtain ⟨rows, source⟩ :=
+      MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.inputs_have_source admitted
+    have meaning : RowsMeaning request (encodeRows rows) := ⟨arguments, rows, image, source, rfl⟩
+    exact ⟨encodeRows rows, (run_exact _ _).mpr meaning, meaning⟩
+
+def nativeService : Service.{0, 0} (⟨Result, Result.Meaning⟩ : AdmissionObject) :=
+  .nativeOperation (⟨Request, Request.Meaning⟩ : AdmissionObject) operation
+
+/-- Compiling original packet arguments and executing natively agrees with
+the original primitive response, including unknown and complete empty tables. -/
+theorem run_encoded (relation : String) (arguments : List Pattern) :
+    run ⟨relation, arguments.map (nativePattern (n := 0))⟩ =
+      (MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.rows? relation arguments).map encodeRows := by
+  cases response : MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.rows? relation arguments with
+  | none =>
+      simp only [run, (readPatterns_exact _ _).mpr rfl, bind, Option.bind, response, Option.map_none]
+      split <;> rfl
+  | some rows =>
+      have source :=
+        (MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.rows_exact _ _ _).mp response
+      exact (run_exact _ _).mpr ⟨arguments, rows, rfl, source, rfl⟩
+
+/-- Original guard inputs are resolved with the source first-match lookup and
+single simultaneous substitution before becoming native Data packets. -/
+def sourceFreshnessRequest (substitution : Mettapedia.Languages.ProcessCalculi.MORK.Subst)
+    (name : String) (subject : Mettapedia.Languages.MeTTa.OSLFCore.Atom) : Request :=
+  ⟨"metta-atom-fresh-v1", [OSLFCore.Bridge.GroundData.encode
+      ((substitution.lookup name).getD (.var name)),
+    OSLFCore.Bridge.GroundData.encode
+      (Mettapedia.Languages.ProcessCalculi.MORK.applySubst substitution subject)].map
+        (nativePattern (n := 0))⟩
+
+theorem sourceFreshnessRequest_admitted
+    (substitution : Mettapedia.Languages.ProcessCalculi.MORK.Subst)
+    (name : String) (subject : Mettapedia.Languages.MeTTa.OSLFCore.Atom) :
+    (sourceFreshnessRequest substitution name subject).Meaning :=
+  ⟨_, rfl, .freshness _ _⟩
+
+/-- Native execution agrees with the actual source guard for every binding
+environment, including captured names and failed non-name values. -/
+theorem run_source_guard (substitution : Mettapedia.Languages.ProcessCalculi.MORK.Subst)
+    (name : String) (subject : Mettapedia.Languages.MeTTa.OSLFCore.Atom) :
+    run (sourceFreshnessRequest substitution name subject) = some
+      (if Mettapedia.Languages.ProcessCalculi.MORK.matchSourceGuard substitution
+          (.freshness name subject) then
+        [(sourceFreshnessRequest substitution name subject).arguments] else []) := by
+  simp only [sourceFreshnessRequest, run_encoded,
+    MeTTaFiniteRevisionedKernel.AuthoredActivation.AtomServices.rows?, ↓reduceIte,
+    AtomFreshness.queryRows, AtomFreshness.query_source_guard, Option.map_some]
+  cases Mettapedia.Languages.ProcessCalculi.MORK.matchSourceGuard substitution
+    (.freshness name subject) <;> rfl
+
+end Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativePeTTaConfigurations.AtomServices
+
+namespace Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativePeTTaConfigurations.AtomServices
+open MatchedIndexDependentTransport (nativePattern)
+
+/-- This downstream adapter maps an independently specified source request to
+native Data packets. The source handler does not depend on this adapter. -/
+def fromSource (request : Mettapedia.Languages.GuardedAtomRule.Services.Primitive.Request) : Request :=
+  ⟨request.relation, request.arguments.map (nativePattern (n := 0))⟩
+
+/-- Native packet execution agrees with the original source service, including
+unavailable responses and completed empty row tables. -/
+theorem run_fromSource (request : Mettapedia.Languages.GuardedAtomRule.Services.Primitive.Request) :
+    run (fromSource request) =
+      (Mettapedia.Languages.GuardedAtomRule.Services.Primitive.run request).map encodeRows := by
+  rw [fromSource, run_encoded,
+    Mettapedia.Languages.GuardedAtomRule.Services.Primitive.run_rows]
+
+end Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativePeTTaConfigurations.AtomServices

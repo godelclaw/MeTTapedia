@@ -24,6 +24,45 @@ def SameNames (bindings : Bindings) (names : List String) : Prop :=
 def Defined (environment : Bindings) (names : List String) : Prop :=
   ∀ name ∈ names, ∃ value, environment.lookup name = some value
 
+/-- Observe bindings in a declared name order, retaining missing entries.
+This reads the original store; it neither sorts nor deduplicates that store. -/
+def bindingReadout (names : List String) (bindings : Bindings) : List (String × Option Pattern) :=
+  names.map fun name => (name, bindings.lookup name)
+
+theorem bindingReadout_eq_of_lookups (names : List String) (first second : Bindings)
+    (same : ∀ name, first.lookup name = second.lookup name) :
+    bindingReadout names first = bindingReadout names second := by
+  apply List.map_congr_left
+  intro name _
+  rw [same name]
+
+theorem lookup_none_iff_not_mem_names (bindings : Bindings) (name : String) :
+    bindings.lookup name = none ↔ name ∉ bindings.map Prod.fst := by
+  induction bindings with
+  | nil => simp [Bindings.lookup]
+  | cons entry bindings ih =>
+    rcases entry with ⟨key, value⟩
+    by_cases same : key = name
+    · subst key
+      simp [Bindings.lookup]
+    · have test : (key == name) = false := by simp [same]
+      simpa only [Bindings.lookup, List.find?_cons, test, Bool.false_eq_true, if_false,
+        List.map_cons, List.mem_cons, not_or, ne_eq, Ne.symm same, false_or,
+        true_and] using ih
+
+theorem lookup_some_iff_mem_names (bindings : Bindings) (name : String) :
+    (∃ value, bindings.lookup name = some value) ↔ name ∈ bindings.map Prod.fst := by
+  constructor
+  · rintro ⟨value, found⟩
+    by_contra absent
+    have empty := (lookup_none_iff_not_mem_names bindings name).mpr absent
+    rw [found] at empty
+    cases empty
+  · intro present
+    cases found : bindings.lookup name with
+    | none => exact False.elim ((lookup_none_iff_not_mem_names bindings name).mp found present)
+    | some value => exact ⟨value, rfl⟩
+
 theorem apply_variable (environment : Bindings) (name : String) :
     applyBindings environment (.fvar name) = (environment.lookup name).getD (.fvar name) := by
   cases found : environment.find? (fun entry => entry.1 == name) <;>
@@ -148,6 +187,25 @@ theorem compatible_lookup {environment bindings : Bindings}
       (List.find?_some (p := fun entry : String × Pattern => entry.1 == name) found)
     simp only [Bindings.lookup, found, Option.map_some]
     exact (key ▸ compatible entry inList).symm
+
+/-- Compatibility with the exact same domain determines all lookups,
+including missing names outside the domain. -/
+theorem compatible_lookup_all {environment bindings : Bindings}
+    (compatible : Compatible environment bindings)
+    (names : SameNames bindings (environment.map Prod.fst)) :
+    ∀ name, bindings.lookup name = environment.lookup name := by
+  intro name
+  by_cases present : name ∈ bindings.map Prod.fst
+  · exact compatible_lookup compatible present
+  · have absent : name ∉ environment.map Prod.fst := fun member => present ((names name).mpr member)
+    rw [(lookup_none_iff_not_mem_names bindings name).mpr present,
+      (lookup_none_iff_not_mem_names environment name).mpr absent]
+
+theorem compatible_bindingReadout {environment bindings : Bindings}
+    (compatible : Compatible environment bindings)
+    (names : SameNames bindings (environment.map Prod.fst)) (order : List String) :
+    bindingReadout order bindings = bindingReadout order environment :=
+  bindingReadout_eq_of_lookups order bindings environment (compatible_lookup_all compatible names)
 
 theorem apply_eq_of_same_lookups {first second : Bindings} {schema : Pattern}
     (shape : FirstOrder schema)

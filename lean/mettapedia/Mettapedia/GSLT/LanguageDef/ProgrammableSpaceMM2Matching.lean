@@ -13,6 +13,11 @@ MM2 resource profile. The original directive and its input spelling remain
 available to reflective consumers. The batch is atomic with respect to other
 workspace mutations: a private snapshot is not a licence to commit against an
 independently changed store.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  Rows are matched one way and sinks are finalized in
+their authored order, as in the support model (`Space`); the kernel (`Mainline`)
+unifies patterns with stored atoms and writes the instances of every `+` sink first.
 -/
 
 set_option autoImplicit false

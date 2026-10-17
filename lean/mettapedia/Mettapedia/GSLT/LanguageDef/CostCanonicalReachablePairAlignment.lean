@@ -776,7 +776,7 @@ theorem CostCanonicalPairElaboration.nonempty_of_pattern_eq
 /-- Well-founded paired elaboration from one syntax-directed static-root step.
 The symmetric endpoint measure permits a collapsing static shell on either
 side to expose and recursively align a proper child. -/
-noncomputable def
+theorem
     CostCanonicalPairElaboration.nonempty_of_canonical_inDomain_of_staticStep
     {source : CIGSLT} {kernel : CostStaticNormalizationKernel source}
     {targetFree : FreeTypeContext}

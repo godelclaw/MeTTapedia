@@ -765,6 +765,11 @@ theorem decodeHyps_statement_images (signature : TermSignature) (context : Conte
           | hyp =>
               obtain ⟨value, first, remainingRead⟩ := Option.bind_eq_some_iff.mp decoded
               rcases value with ⟨source, middleSource, remaining⟩
+              dsimp only at remainingRead
+              have noDummies : middleSource.dummies = [] := by
+                by_contra nonempty
+                simp [nonempty] at remainingRead
+              rw [if_neg (not_not.mpr noDummies)] at remainingRead
               obtain ⟨earlier, others, sameSources⟩ := Option.bind_eq_some_iff.mp remainingRead
               have ordered : earlier ++ [source] = sources := Option.some.inj sameSources
               subst sources

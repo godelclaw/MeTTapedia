@@ -1,5 +1,5 @@
 import Mathlib.Probability.ProbabilityMassFunction.Constructions
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 import Mettapedia.ProbabilityTheory.MarkovCategory
 
 /-!

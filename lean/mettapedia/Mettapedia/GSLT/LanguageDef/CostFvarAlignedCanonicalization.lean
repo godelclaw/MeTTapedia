@@ -53,14 +53,14 @@ theorem patternLeafAligned_canonicalizeByDepths_not_unconditional
 namespace FvarAlignedList
 
 /-- Forget the project-specific list wrapper to `List.Forall₂`. -/
-def toForall₂ {relation : String → String → Prop} :
+theorem toForall₂ {relation : String → String → Prop} :
     ∀ {left right : List Pattern}, FvarAlignedList relation left right →
       List.Forall₂ (FvarAligned relation) left right
   | _, _, .nil => .nil
   | _, _, .cons head tail => .cons head (toForall₂ tail)
 
 /-- Rebuild the project-specific list wrapper from `List.Forall₂`. -/
-def ofForall₂ {relation : String → String → Prop} :
+theorem ofForall₂ {relation : String → String → Prop} :
     ∀ {left right : List Pattern},
       List.Forall₂ (FvarAligned relation) left right →
         FvarAlignedList relation left right
@@ -80,7 +80,7 @@ namespace FvarAligned
 mutual
   /-- Mapping one presentation on both endpoints preserves free-variable
   alignment; presentation maps leave free-variable spellings unchanged. -/
-  def mapPattern (symbols : LanguageDefSymbolMap)
+  theorem mapPattern (symbols : LanguageDefSymbolMap)
       {relation : String → String → Prop} :
       ∀ {left right}, FvarAligned relation left right →
         FvarAligned relation
@@ -101,7 +101,7 @@ mutual
           (FvarAlignedList.mapPattern symbols elements)
 
   /-- Listwise companion of `FvarAligned.mapPattern`. -/
-  def FvarAlignedList.mapPattern (symbols : LanguageDefSymbolMap)
+  theorem FvarAlignedList.mapPattern (symbols : LanguageDefSymbolMap)
       {relation : String → String → Prop} :
       ∀ {left right}, FvarAlignedList relation left right →
         FvarAlignedList relation (mapPatternList symbols left)
@@ -115,7 +115,7 @@ end
 mutual
   /-- Restoring ambient bound-variable positions with one thinning preserves
   free-variable alignment. -/
-  def thickenAmbientBVars
+  theorem thickenAmbientBVars
       {source : CIGSLT} {color : CostStaticColor}
       {sourceBound targetBound : List TypeExpr}
       (thinning : CostStaticBinderThinning source color sourceBound targetBound)
@@ -154,7 +154,7 @@ mutual
             (FvarAlignedList.thickenAmbientBVars thinning depth elements))
 
   /-- Listwise companion of `FvarAligned.thickenAmbientBVars`. -/
-  def FvarAlignedList.thickenAmbientBVars
+  theorem FvarAlignedList.thickenAmbientBVars
       {source : CIGSLT} {color : CostStaticColor}
       {sourceBound targetBound : List TypeExpr}
       (thinning : CostStaticBinderThinning source color sourceBound targetBound)
@@ -482,7 +482,7 @@ end FvarAlignedList
 mutual
   /-- Two-depth keyed canonicalization preserves exact structural alignment
   when every aligned subterm receives equal endpoint-local keys. -/
-  def FvarAligned.canonicalizeByDepths
+  theorem FvarAligned.canonicalizeByDepths
       {Key : Type} [LinearOrder Key]
       {relation : String → String → Prop}
       (leftKey rightKey : Nat → Nat → Pattern → Key)
@@ -550,7 +550,7 @@ mutual
                 (FvarAligned.collection collectionType none normalizedElements)
 
   /-- Listwise companion of `FvarAligned.canonicalizeByDepths`. -/
-  def FvarAlignedList.canonicalizeByDepths
+  theorem FvarAlignedList.canonicalizeByDepths
       {Key : Type} [LinearOrder Key]
       {relation : String → String → Prop}
       (leftKey rightKey : Nat → Nat → Pattern → Key)

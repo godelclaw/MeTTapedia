@@ -280,7 +280,7 @@ noncomputable def rhoHereditaryCostLayer_ofExposureRestorationObligations
 
 /-- The rho cost layer object laws over the target-rebased cross-colour
 restoration obligations. -/
-noncomputable def rhoHereditaryCompactOpenNormalizerLaws_ofExposureRestorationObligations
+theorem rhoHereditaryCompactOpenNormalizerLaws_ofExposureRestorationObligations
     (alignedApex : ∀ color, RhoAlignedPlanStops.HaveCommonRestoration color)
     (collapsingApex :
       ∀ color, RhoCollapsingPlanStops.HaveCommonRestoration color)

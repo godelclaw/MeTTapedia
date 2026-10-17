@@ -21,6 +21,7 @@ open LO.FirstOrder.SetTheory
 open Mettapedia.Logic.HOL
 open Mettapedia.PLN.WorldModel.PLNWorldModel
 open Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLSetBridge
+open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open scoped ENNReal
 
 /-- The distinguished individual type for the direct set-based HOL grounding. -/
@@ -119,8 +120,8 @@ theorem hol_native_higherOrderRefl_singleton_fixture
         (φ := holNativeHigherOrderRefl) holNativeHigherOrderRefl_provable
         (M := Mettapedia.Logic.HOL.Semantics.SetBased.ofPointed S))
   exact
-    queryStrength_singleton_of_satisfies
-      (S := S) (φ := holNativeHigherOrderRefl) hsatisfies
+    queryStrength_singleton_of_satisfies setHolSatisfies
+      S holNativeHigherOrderRefl hsatisfies
 
 /-- Positive fixture:
 the HOL-native eta-equality query for the identity endofunction is valid on
@@ -138,8 +139,8 @@ theorem hol_native_eta_id_singleton_fixture
         (φ := holNativeEtaIdEq) holNativeEtaIdEq_provable
         (M := Mettapedia.Logic.HOL.Semantics.SetBased.ofPointed S))
   exact
-    queryStrength_singleton_of_satisfies
-      (S := S) (φ := holNativeEtaIdEq) hsatisfies
+    queryStrength_singleton_of_satisfies setHolSatisfies
+      S holNativeEtaIdEq hsatisfies
 
 /-- Positive fixture:
 quantified predicate self-implication is valid on every directly grounded
@@ -157,8 +158,8 @@ theorem hol_native_pred_self_imp_singleton_fixture
         (φ := holNativePredSelfImp) holNativePredSelfImp_provable
         (M := Mettapedia.Logic.HOL.Semantics.SetBased.ofPointed S))
   exact
-    queryStrength_singleton_of_satisfies
-      (S := S) (φ := holNativePredSelfImp) hsatisfies
+    queryStrength_singleton_of_satisfies setHolSatisfies
+      S holNativePredSelfImp hsatisfies
 
 /-- Positive fixture:
 eta-equality for the predicate identity endofunction is valid on every directly
@@ -176,8 +177,8 @@ theorem hol_native_pred_eta_id_singleton_fixture
         (φ := holNativePredEtaIdEq) holNativePredEtaIdEq_provable
         (M := Mettapedia.Logic.HOL.Semantics.SetBased.ofPointed S))
   exact
-    queryStrength_singleton_of_satisfies
-      (S := S) (φ := holNativePredEtaIdEq) hsatisfies
+    queryStrength_singleton_of_satisfies setHolSatisfies
+      S holNativePredEtaIdEq hsatisfies
 
 /-- Positive fixture:
 the higher-order commutativity rule for conjunction transports directly through
@@ -321,10 +322,9 @@ theorem hol_native_and_left_multiset_fixture
           holNativeHigherOrderRefl
     exact hpoint
   exact
-    queryStrength_le_of_pointwise
-      (W := W)
-      (φ := .and holNativeHigherOrderRefl (.top : SetHOLQuery))
-      (ψ := holNativeHigherOrderRefl)
+    queryStrength_le_of_pointwise setHolSatisfies W
+      (q₁ := .and holNativeHigherOrderRefl (.top : SetHOLQuery))
+      (q₂ := holNativeHigherOrderRefl)
       himp
 
 /-- Positive fixture:
@@ -359,10 +359,9 @@ theorem hol_native_pred_and_left_multiset_fixture
           holNativePredSelfImp
     exact hpoint
   exact
-    queryStrength_le_of_pointwise
-      (W := W)
-      (φ := .and holNativePredSelfImp (.top : SetHOLQuery))
-      (ψ := holNativePredSelfImp)
+    queryStrength_le_of_pointwise setHolSatisfies W
+      (q₁ := .and holNativePredSelfImp (.top : SetHOLQuery))
+      (q₂ := holNativePredSelfImp)
       himp
 
 /-- Positive fixture:
@@ -397,10 +396,9 @@ theorem hol_native_or_intro_left_multiset_fixture
           (.or holNativeHigherOrderRefl (.top : SetHOLQuery))
     exact hpoint
   exact
-    queryStrength_le_of_pointwise
-      (W := W)
-      (φ := holNativeHigherOrderRefl)
-      (ψ := .or holNativeHigherOrderRefl (.top : SetHOLQuery))
+    queryStrength_le_of_pointwise setHolSatisfies W
+      (q₁ := holNativeHigherOrderRefl)
+      (q₂ := .or holNativeHigherOrderRefl (.top : SetHOLQuery))
       himp
 
 /-- Positive fixture:
@@ -435,10 +433,9 @@ theorem hol_native_pred_or_intro_left_multiset_fixture
           (.or holNativePredSelfImp (.top : SetHOLQuery))
     exact hpoint
   exact
-    queryStrength_le_of_pointwise
-      (W := W)
-      (φ := holNativePredSelfImp)
-      (ψ := .or holNativePredSelfImp (.top : SetHOLQuery))
+    queryStrength_le_of_pointwise setHolSatisfies W
+      (q₁ := holNativePredSelfImp)
+      (q₂ := .or holNativePredSelfImp (.top : SetHOLQuery))
       himp
 
 local instance : LO.SetStructure Bool := ⟨fun _ _ => False⟩
@@ -464,9 +461,8 @@ theorem bool_flat_every_endo_fixes_every_point_singleton_zero :
     BinaryWorldModel.queryStrength (State := SetState) (Query := SetHOLQuery)
         ({boolFlatPointed} : SetState) holNativeEveryEndoFixesEveryPoint = 0 := by
   exact
-    queryStrength_singleton_of_not_satisfies
-      (S := boolFlatPointed)
-      (φ := holNativeEveryEndoFixesEveryPoint)
+    queryStrength_singleton_of_not_satisfies setHolSatisfies
+      boolFlatPointed holNativeEveryEndoFixesEveryPoint
       bool_flat_not_every_endo_fixes_every_point
 
 /-- Negative fixture:
@@ -487,9 +483,8 @@ theorem bool_flat_every_pred_holds_everywhere_singleton_zero :
     BinaryWorldModel.queryStrength (State := SetState) (Query := SetHOLQuery)
         ({boolFlatPointed} : SetState) holNativeEveryPredHoldsEverywhere = 0 := by
   exact
-    queryStrength_singleton_of_not_satisfies
-      (S := boolFlatPointed)
-      (φ := holNativeEveryPredHoldsEverywhere)
+    queryStrength_singleton_of_not_satisfies setHolSatisfies
+      boolFlatPointed holNativeEveryPredHoldsEverywhere
       bool_flat_not_every_pred_holds_everywhere
 
 end Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLSetBridgeRegression

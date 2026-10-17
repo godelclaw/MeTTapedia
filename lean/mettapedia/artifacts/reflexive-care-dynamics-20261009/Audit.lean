@@ -4,8 +4,8 @@ import Mettapedia.Cybernetics.ReflexiveValenceDynamics
 import Mettapedia.Cybernetics.IntentionCoherence
 import Mettapedia.Ethics.RecipientCenteredCare
 import Mettapedia.Ethics.CareScopeDynamics
-import Mettapedia.CognitiveArchitecture.Consciousness.Valence
-import Mettapedia.CognitiveArchitecture.Consciousness.TraceAndImplementation
+import Mettapedia.CogArch.Consciousness.Valence
+import Mettapedia.CogArch.Consciousness.TraceAndImplementation
 import Lean.Util.CollectAxioms
 import Lean.Compiler.Old
 

@@ -5,45 +5,42 @@ import Mettapedia.Languages.HOLLight.MeTTa.TermJudgment
 /-!
 # The hosted HOL Light checker decides the contract
 
-The runtime checks a contract judgment with the hosted HOL Light checker.
-It translates the judgment into the checker's source syntax, which is HOL
-Light's: an HE leaf type is a nullary type operator, an arrow the curried
-function type, a compound non-arrow type the right-nested pair type ending in
-the unit type, a declared constant a constant of its translated declared
-type, a tuple the pairing of its elements, and an application `Comb`.
+The runtime checks a contract judgment with the hosted HOL Light checker.  It translates the
+judgment into the checker's source syntax, which is HOL Light's: an HE leaf type is a nullary
+type operator, an arrow `(-> P₁ … Pₙ R)` the (n+1)-ary type operator `he-arrow:n` applied to
+the translations of its components, a compound non-arrow type the right-nested pair type ending
+in the unit type, a declared constant the constant of its declaration (named with the
+declaration's occurrence) at the translation of its declared type, the application constant of
+arity n the polymorphic constant `he-apply:n` of type `he-arrow:n A A' … B → A → A' → … → B`, a
+tuple the pairing of its elements, and an application `Comb`.
 
-`guestTyped_iff`: on contract terms whose constants are well named, the
-checker's typing of the translation (the source term is resolved, its
-annotations are formed in the checker's signature, and its type is computed)
-is exactly contract typing at the translated type.  The translation of types
-is injective on faithful readings (`guestTy_injective`), so the type the
-checker computes identifies the contract type.
+`guestTyped_iff`: on contract terms whose constants are well named, the checker's typing of the
+translation (the source term is resolved, its annotations are formed in the checker's
+signature, and its type is computed) is exactly contract typing at the translated type.  The
+translation of types is injective on the readings of type atoms (`guestTy_injective`), so the
+type the checker computes identifies the contract type.
 
-The checker library is modelled in `Languages.HOLLight.MeTTa`: its reader
-returns the positional elaboration of every resolved, formed, well-typed
-source term, and its type judgment returns that term's type.  Composed with
-`guestTyped_iff`, every contract typing is one that the modelled checker
-reads and types at the translated type (`checker_reads_contract_typing`,
+The checker library is modelled in `Languages.HOLLight.MeTTa`: its reader returns the
+positional elaboration of every resolved, formed, well-typed source term, and its type judgment
+returns that term's type.  Composed with `guestTyped_iff`, every contract typing is one that
+the modelled checker reads and types at the translated type (`checker_reads_contract_typing`,
 `checker_types_contract_typing`).
 
-A refusal is a refutation: the modelled checker computes one answer, so a
-reader or type judgment that returns anything else than the contract typing's
-answer shows that there is no such typing (`reader_refusal_refutes`,
-`type_refusal_refutes`).
+A refusal is a refutation: the modelled checker computes one answer, so a reader or type
+judgment that returns anything else than the contract typing's answer shows that there is no
+such typing (`reader_refusal_refutes`, `type_refusal_refutes`).
 
 What is not proved here is explicit:
 
-* `ReaderSound` states that the modelled reader returns a term only for a
-  resolved, formed and typed source term.  The model proves the converse;
-  `checker_acceptance_is_contract_typing` takes this statement as a
-  hypothesis.
-* The checker signature (`CheckerSignature`) is a hypothesis on the theory the
-  declaration commands build: the model has no theorem for the execution of
-  the type declarations.
-* `Naming` records that the runtime's printed names separate the atoms they
-  name, which the runtime's printer is not proved to do.
-* The runtime evaluates the Prime spelling of the checker library; that this
-  evaluation returns what the modelled library returns is not stated in Lean.
+* `ReaderSound` states that the modelled reader returns a term only for a resolved, formed and
+  typed source term.  The model proves the converse; `checker_acceptance_is_contract_typing`
+  takes this statement as a hypothesis.
+* The checker signature (`CheckerSignature`) is a hypothesis on the theory the declaration
+  commands build: the model has no theorem for the execution of the type declarations.
+* `Naming` records that the runtime's printed names separate the atoms they name, which the
+  runtime's printer is not proved to do.
+* The runtime evaluates the Prime spelling of the checker library; that this evaluation returns
+  what the modelled library returns is not stated in Lean.
 -/
 
 set_option autoImplicit false
@@ -66,13 +63,14 @@ abbrev CheckerTypeOp := Mettapedia.Languages.OpenTheory.TypeOp
 abbrev CheckerConst := Mettapedia.Languages.OpenTheory.Const
 abbrev CheckerTerm := Mettapedia.Languages.OpenTheory.SourceTerm
 
-/-- How the runtime names leaves, constants and type variables in the
-checker: a leaf by its printed form, a type variable by its spelling.  Both
-must separate what they name. -/
+/-- How the runtime names leaves, declaration constants and type variables in the checker: a
+leaf by its printed form, a declaration by its constant and occurrence, a type variable by its
+spelling.  Leaves and type variables must be separated by their names. -/
 structure Naming where
   leaf : Atom → String
+  constant : Atom → Nat → String
   typeVariable : String → String
-  leaf_injective : ∀ {left right : Atom}, Faithful left → Faithful right →
+  leaf_injective : ∀ {left right : Atom}, TypeAtom left → TypeAtom right →
     (∀ atoms, left ≠ .expression atoms) → (∀ atoms, right ≠ .expression atoms) →
     (∀ name, left ≠ .var name) → (∀ name, right ≠ .var name) →
     leaf left = leaf right → left = right
@@ -90,107 +88,82 @@ def leafOperator (leaf : Atom) : CheckerTypeOp := typeOperator ("he:" ++ naming.
 def prodOperator : CheckerTypeOp := typeOperator "prod"
 def unitOperator : CheckerTypeOp := typeOperator "1"
 
+/-- The type operator of the arrows with `arity` parameters. -/
+def arrowOperator (arity : Nat) : CheckerTypeOp := typeOperator ("he-arrow:" ++ toString arity)
+
 mutual
 
-/-- The checker type of the HOL reading of an atom. -/
+/-- The checker type of an HE type. -/
 def readingType : Atom → CheckerTy
   | .symbol name => .op (leafOperator naming (.symbol name)) []
   | .grounded value => .op (leafOperator naming (.grounded value)) []
   | .var name => .var (.mk [] (naming.typeVariable name))
   | .expression atoms => expressionType atoms
 
-/-- `readingType` of an expression. -/
+/-- `readingType` of an expression: an arrow operator, or a product. -/
 def expressionType : List Atom → CheckerTy
-  | .symbol "->" :: first :: second :: rest => spineType (first :: second :: rest)
+  | .symbol "->" :: first :: rest =>
+      .op (arrowOperator rest.length) (readingType first :: readingList rest)
   | [] => .op unitOperator []
   | atom :: atoms => .op prodOperator [readingType atom, productType atoms]
 
-/-- The curried function type of the components of an arrow. -/
-def spineType : List Atom → CheckerTy
-  | [] => .op prodOperator [.op (leafOperator naming (.symbol "->")) [], .op unitOperator []]
-  | [last] => readingType last
-  | first :: second :: rest =>
-      Mettapedia.Languages.OpenTheory.Ty.function (readingType first)
-        (spineType (second :: rest))
+/-- The readings of a list of types. -/
+def readingList : List Atom → List CheckerTy
+  | [] => []
+  | atom :: atoms => readingType atom :: readingList atoms
 
-/-- The right-nested pair type of a list of types, ending in the unit
-type. -/
+/-- The right-nested pair type of a list of types, ending in the unit type. -/
 def productType : List Atom → CheckerTy
   | [] => .op unitOperator []
   | atom :: atoms => .op prodOperator [readingType atom, productType atoms]
 
 end
 
-/-- The checker type of a base type of the contract. -/
-def baseType : Atom → CheckerTy
-  | .expression atoms => productType naming atoms
-  | .symbol name => .op (leafOperator naming (.symbol name)) []
-  | .grounded value => .op (leafOperator naming (.grounded value)) []
-  | .var name => .var (.mk [] (naming.typeVariable name))
-
 /-- The checker type of a HOL type of the contract. -/
 def guestTy : Ty Atom → CheckerTy
   | .prop => Mettapedia.Languages.OpenTheory.Ty.bool
-  | .base atom => baseType naming atom
+  | .base atom => readingType naming atom
   | .arr domain codomain =>
       Mettapedia.Languages.OpenTheory.Ty.function (guestTy domain) (guestTy codomain)
 
 /-! ## The translation of types -/
 
-theorem guestTy_componentsSpine :
-    ∀ (components : List Atom),
-      (∀ atom ∈ components, guestTy naming (toTy atom) = readingType naming atom) →
-        guestTy naming (componentsSpine components) = spineType naming components
-  | [], _ => by
-      simp only [componentsSpine, spineType, guestTy, baseType, productType, readingType]
-  | [last], all => by
-      simp only [componentsSpine, spineType]
-      exact all last (by simp)
-  | first :: second :: rest, all => by
-      simp only [componentsSpine, spineType, guestTy]
-      rw [all first (by simp),
-        guestTy_componentsSpine (second :: rest)
-          (fun atom member => all atom (List.mem_cons_of_mem _ member))]
+theorem readingList_eq_map : ∀ atoms : List Atom, readingList naming atoms = atoms.map (readingType naming)
+  | [] => rfl
+  | atom :: atoms => by simp [readingList, readingList_eq_map atoms]
 
-/-- The checker type of the reading of an atom is the atom's checker type. -/
-theorem guestTy_toTy (atom : Atom) : guestTy naming (toTy atom) = readingType naming atom := by
-  induction atom using Atom.rec (motive_2 := fun atoms => ∀ atom ∈ atoms,
-      guestTy naming (toTy atom) = readingType naming atom) with
-  | symbol name => simp only [toTy, guestTy, baseType, readingType]
-  | var name => simp only [toTy, guestTy, baseType, readingType]
-  | grounded value => simp only [toTy, guestTy, baseType, readingType]
-  | expression atoms ih =>
-      simp only [toTy, readingType]
-      by_cases arrowForm : ∃ first second rest, atoms = .symbol "->" :: first :: second :: rest
-      · obtain ⟨first, second, rest, rfl⟩ := arrowForm
-        simp only [expressionTy, expressionType]
-        exact guestTy_componentsSpine naming (first :: second :: rest)
-          (fun atom member => ih atom (List.mem_cons_of_mem _ member))
-      · have tyEq : expressionTy atoms = .base (.expression atoms) := by
-          unfold expressionTy
-          split
-          · exact absurd ⟨_, _, _, rfl⟩ arrowForm
-          · rfl
-        have typeEq : expressionType naming atoms = productType naming atoms := by
-          unfold expressionType
-          split
-          · exact absurd ⟨_, _, _, rfl⟩ arrowForm
-          · simp only [productType]
-          · simp only [productType]
-        rw [tyEq, typeEq]
-        simp only [guestTy, baseType]
-  | nil => rename_i member; cases member
-  | cons head tail headIH tailIH =>
-      rename_i atom member
-      rcases List.mem_cons.mp member with rfl | member
-      · exact headIH
-      · exact tailIH atom member
+/-- The curried function type of argument types ending in a return type. -/
+def functionChain (arguments : List CheckerTy) (result : CheckerTy) : CheckerTy :=
+  arguments.foldr Mettapedia.Languages.OpenTheory.Ty.function result
 
-/-! ## The translation separates faithful types -/
+theorem readingType_arrowAtom (parameters : List Atom) (result : Atom) :
+    readingType naming (arrowAtom parameters result) =
+      .op (arrowOperator parameters.length) ((parameters ++ [result]).map (readingType naming)) := by
+  cases parameters with
+  | nil => simp [arrowAtom, readingType, expressionType, readingList]
+  | cons first rest =>
+      simp [arrowAtom, readingType, expressionType, readingList_eq_map]
 
-private theorem leafName_ne {name other : String}
-    (different : ∀ suffix, "he:" ++ suffix ≠ other) : "he:" ++ name ≠ other :=
-  different name
+theorem readingType_product {elements : List Atom}
+    (notArrow : ¬ArrowShaped (.expression elements)) :
+    readingType naming (.expression elements) = productType naming elements := by
+  simp only [readingType]
+  unfold expressionType
+  split
+  · exact absurd ⟨_, rfl⟩ notArrow
+  · simp only [productType]
+  · simp only [productType]
+
+theorem guestTy_applyTy (parameters : List Atom) (result : Atom) :
+    guestTy naming (applyTy parameters result) =
+      functionChain (parameters.map (readingType naming)) (readingType naming result) := by
+  induction parameters with
+  | nil => rfl
+  | cons first rest ih =>
+      simp only [applyTy, List.foldr_cons, guestTy, List.map_cons, functionChain] at ih ⊢
+      rw [ih]
+
+/-! ## The translation separates type atoms -/
 
 private theorem he_ne_function (name : String) : "he:" ++ name ≠ "->" := by
   intro equal
@@ -207,7 +180,22 @@ private theorem he_ne_unit (name : String) : "he:" ++ name ≠ "1" := by
   have := congrArg String.toList equal
   simp at this
 
-private theorem he_ne_bool (name : String) : "he:" ++ name ≠ "bool" := by
+private theorem he_ne_arrow (name other : String) : "he:" ++ name ≠ "he-arrow:" ++ other := by
+  intro equal
+  have := congrArg String.toList equal
+  simp at this
+
+private theorem arrow_ne_function (name : String) : "he-arrow:" ++ name ≠ "->" := by
+  intro equal
+  have := congrArg String.toList equal
+  simp at this
+
+private theorem arrow_ne_prod (name : String) : "he-arrow:" ++ name ≠ "prod" := by
+  intro equal
+  have := congrArg String.toList equal
+  simp at this
+
+private theorem arrow_ne_unit (name : String) : "he-arrow:" ++ name ≠ "1" := by
   intro equal
   have := congrArg String.toList equal
   simp at this
@@ -227,16 +215,11 @@ theorem headName_function (domain codomain : CheckerTy) :
     headName (Mettapedia.Languages.OpenTheory.Ty.function domain codomain) =
       some (.mk [] "->") := rfl
 
-theorem headName_leaf (leaf : Atom) :
-    headName (.op (leafOperator naming leaf) []) = some (.mk [] ("he:" ++ naming.leaf leaf)) :=
-  rfl
-
-/-- A faithful non-arrow atom reads as a leaf operator, a type variable, the
-pair type or the unit type: never a function type. -/
-theorem readingType_not_function {atom : Atom} (faithful : Faithful atom)
-    (notArrow : ¬ArrowShaped atom) :
+/-- A type atom never reads as a function type: it reads as a leaf operator, a type variable,
+an arrow operator, the pair type or the unit type. -/
+theorem readingType_not_function {atom : Atom} (atomic : TypeAtom atom) :
     headName (readingType naming atom) ≠ some (.mk [] "->") := by
-  cases faithful with
+  cases atomic with
   | symbol _ _ =>
       intro equal
       simp only [readingType, headName, leafOperator, typeOperator, Option.some.injEq] at equal
@@ -246,74 +229,20 @@ theorem readingType_not_function {atom : Atom} (faithful : Faithful atom)
       intro equal
       simp only [readingType, headName, leafOperator, typeOperator, Option.some.injEq] at equal
       exact he_ne_function _ (Mettapedia.Languages.OpenTheory.Name.mk.inj equal).2
-  | arrow function _ _ _ _ _ _ => exact absurd (ArrowShaped.of_functionType function) notArrow
-  | @product elements productNotArrow _ =>
-      have typeEq : expressionType naming elements = productType naming elements := by
-        unfold expressionType
-        split
-        · exact absurd ⟨_, rfl⟩ productNotArrow
-        · simp only [productType]
-        · simp only [productType]
-      simp only [readingType, typeEq]
+  | @arrow components nonempty _ _ =>
+      obtain ⟨parameters, result, rfl⟩ : ∃ parameters result, components = parameters ++ [result] :=
+        ⟨components.dropLast, components.getLast nonempty, (List.dropLast_append_getLast nonempty).symm⟩
+      intro equal
+      have equal' := equal
+      rw [show Atom.expression (.symbol "->" :: (parameters ++ [result])) =
+        arrowAtom parameters result from rfl, readingType_arrowAtom] at equal'
+      simp only [headName, arrowOperator, typeOperator, Option.some.injEq] at equal'
+      exact arrow_ne_function _ (Mettapedia.Languages.OpenTheory.Name.mk.inj equal').2
+  | @compound elements notArrow _ =>
+      rw [readingType_product naming notArrow]
       cases elements with
       | nil => simp [productType, headName, unitOperator, typeOperator]
       | cons _ _ => simp [productType, headName, prodOperator, typeOperator]
-
-theorem readingType_product {elements : List Atom}
-    (notArrow : ¬ArrowShaped (.expression elements)) :
-    readingType naming (.expression elements) = productType naming elements := by
-  simp only [readingType]
-  unfold expressionType
-  split
-  · exact absurd ⟨_, rfl⟩ notArrow
-  · simp only [productType]
-  · simp only [productType]
-
-/-- The curried function type of argument types ending in a return type. -/
-def functionChain (arguments : List CheckerTy) (result : CheckerTy) : CheckerTy :=
-  arguments.foldr Mettapedia.Languages.OpenTheory.Ty.function result
-
-theorem spineType_append :
-    ∀ (argumentTypes : List Atom) (returnType : Atom), argumentTypes ≠ [] →
-      spineType naming (argumentTypes ++ [returnType]) =
-        functionChain (argumentTypes.map (readingType naming)) (readingType naming returnType)
-  | [], _, nonempty => absurd rfl nonempty
-  | [first], returnType, _ => by
-      simp [spineType, functionChain]
-  | first :: second :: rest, returnType, _ => by
-      have tail := spineType_append (second :: rest) returnType (by simp)
-      simp only [List.cons_append] at tail ⊢
-      rw [spineType, tail]
-      simp [functionChain]
-
-theorem readingType_arrow {type returnType : Atom} {argumentTypes : List Atom}
-    (function : FunctionTypeRel type argumentTypes returnType) (nonempty : argumentTypes ≠ []) :
-    readingType naming type =
-      functionChain (argumentTypes.map (readingType naming)) (readingType naming returnType) := by
-  rw [FunctionTypeRel] at function
-  subst function
-  obtain ⟨first, rest, rfl⟩ := List.exists_cons_of_ne_nil nonempty
-  obtain ⟨second, tail, split⟩ : ∃ second tail, rest ++ [returnType] = second :: tail := by
-    cases rest with
-    | nil => exact ⟨returnType, [], rfl⟩
-    | cons head rest => exact ⟨head, rest ++ [returnType], rfl⟩
-  have spine := spineType_append naming (first :: rest) returnType (by simp)
-  simp only [List.cons_append, split] at spine ⊢
-  simp only [readingType, expressionType]
-  exact spine
-
-/-- A function chain with at least one argument has the function head. -/
-private theorem headName_functionChain {arguments : List CheckerTy} {result : CheckerTy}
-    (nonempty : arguments ≠ []) :
-    headName (functionChain arguments result) = some (.mk [] "->") := by
-  obtain ⟨first, rest, rfl⟩ := List.exists_cons_of_ne_nil nonempty
-  rfl
-
-private theorem headName_productType_ne_function (elements : List Atom) :
-    headName (productType naming elements) ≠ some (.mk [] "->") := by
-  cases elements with
-  | nil => simp [productType, headName, unitOperator, typeOperator]
-  | cons _ _ => simp [productType, headName, prodOperator, typeOperator]
 
 private theorem productType_ne_leaf (elements : List Atom) (leaf : Atom) :
     productType naming elements ≠ .op (leafOperator naming leaf) [] := by
@@ -328,89 +257,90 @@ private theorem productType_ne_leaf (elements : List Atom) (leaf : Atom) :
       have nameEq := (Mettapedia.Languages.OpenTheory.TypeOp.mk.inj operatorEq).1
       exact he_ne_prod _ (Mettapedia.Languages.OpenTheory.Name.mk.inj nameEq).2.symm
 
+private theorem productType_ne_arrow (elements : List Atom) (arity : Nat)
+    (arguments : List CheckerTy) :
+    productType naming elements ≠ .op (arrowOperator arity) arguments := by
+  intro equal
+  cases elements with
+  | nil =>
+      have operatorEq := (Mettapedia.Languages.OpenTheory.Ty.op.inj equal).1
+      have nameEq := (Mettapedia.Languages.OpenTheory.TypeOp.mk.inj operatorEq).1
+      exact arrow_ne_unit _ (Mettapedia.Languages.OpenTheory.Name.mk.inj nameEq).2.symm
+  | cons _ _ =>
+      have operatorEq := (Mettapedia.Languages.OpenTheory.Ty.op.inj equal).1
+      have nameEq := (Mettapedia.Languages.OpenTheory.TypeOp.mk.inj operatorEq).1
+      exact arrow_ne_prod _ (Mettapedia.Languages.OpenTheory.Name.mk.inj nameEq).2.symm
+
+private theorem leaf_ne_arrow (leaf : Atom) (arity : Nat) (arguments : List CheckerTy) :
+    (.op (leafOperator naming leaf) [] : CheckerTy) ≠ .op (arrowOperator arity) arguments := by
+  intro equal
+  have operatorEq := (Mettapedia.Languages.OpenTheory.Ty.op.inj equal).1
+  have nameEq := (Mettapedia.Languages.OpenTheory.TypeOp.mk.inj operatorEq).1
+  exact he_ne_arrow _ _ (Mettapedia.Languages.OpenTheory.Name.mk.inj nameEq).2
+
 private theorem productType_injective_of :
     ∀ {left right : List Atom},
-      (∀ element ∈ left, ∀ {other : Atom}, Faithful other →
+      (∀ element ∈ left, ∀ {other : Atom}, TypeAtom other →
         readingType naming element = readingType naming other → element = other) →
-      (∀ element ∈ right, Faithful element) →
+      (∀ element ∈ right, TypeAtom element) →
       productType naming left = productType naming right → left = right
   | [], [], _, _, _ => rfl
   | [], _ :: _, _, _, equal => by
       simp [productType, unitOperator, prodOperator, typeOperator] at equal
   | _ :: _, [], _, _, equal => by
       simp [productType, unitOperator, prodOperator, typeOperator] at equal
-  | first :: rest, rightFirst :: rightRest, ih, rightFaithful, equal => by
+  | first :: rest, rightFirst :: rightRest, ih, rightAtomic, equal => by
       simp only [productType, Mettapedia.Languages.OpenTheory.Ty.op.injEq, List.cons.injEq,
         true_and] at equal
       obtain ⟨heads, tails, -⟩ := equal
-      rw [ih first (by simp) (rightFaithful rightFirst (by simp)) heads,
+      rw [ih first (by simp) (rightAtomic rightFirst (by simp)) heads,
         productType_injective_of
-          (fun element member {other} otherFaithful equal =>
-            ih element (List.mem_cons_of_mem _ member) otherFaithful equal)
-          (fun element member => rightFaithful element (List.mem_cons_of_mem _ member)) tails]
-
-/-- Function chains whose results are not function types are equal only
-componentwise. -/
-private theorem functionChain_injective :
-    ∀ {left right : List CheckerTy} {leftResult rightResult : CheckerTy},
-      headName leftResult ≠ some (.mk [] "->") → headName rightResult ≠ some (.mk [] "->") →
-      functionChain left leftResult = functionChain right rightResult →
-      left = right ∧ leftResult = rightResult
-  | [], [], _, _, _, _, equal => ⟨rfl, equal⟩
-  | [], first :: rest, leftResult, rightResult, leftNot, _, equal => by
-      exfalso
-      apply leftNot
-      have resultEq : leftResult = functionChain (first :: rest) rightResult := equal
-      rw [resultEq]
-      exact headName_functionChain (by simp)
-  | first :: rest, [], leftResult, rightResult, _, rightNot, equal => by
-      exfalso
-      apply rightNot
-      have resultEq : rightResult = functionChain (first :: rest) leftResult := equal.symm
-      rw [resultEq]
-      exact headName_functionChain (by simp)
-  | leftHead :: leftTail, rightHead :: rightTail, _, _, leftNot, rightNot, equal => by
-      simp only [functionChain, List.foldr_cons, Mettapedia.Languages.OpenTheory.Ty.function,
-        Mettapedia.Languages.OpenTheory.Ty.op.injEq, List.cons.injEq, true_and] at equal
-      obtain ⟨heads, tails, -⟩ := equal
-      obtain ⟨tailsEqual, results⟩ := functionChain_injective leftNot rightNot tails
-      exact ⟨by rw [heads, tailsEqual], results⟩
+          (fun element member {other} otherAtomic equal =>
+            ih element (List.mem_cons_of_mem _ member) otherAtomic equal)
+          (fun element member => rightAtomic element (List.mem_cons_of_mem _ member)) tails]
 
 private theorem map_readingType_injective :
     ∀ {left right : List Atom},
-      (∀ element ∈ left, ∀ {other : Atom}, Faithful other →
+      (∀ element ∈ left, ∀ {other : Atom}, TypeAtom other →
         readingType naming element = readingType naming other → element = other) →
-      (∀ element ∈ right, Faithful element) →
+      (∀ element ∈ right, TypeAtom element) →
       left.map (readingType naming) = right.map (readingType naming) → left = right
   | [], [], _, _, _ => rfl
   | [], _ :: _, _, _, equal => by simp at equal
   | _ :: _, [], _, _, equal => by simp at equal
-  | first :: rest, rightFirst :: rightRest, ih, rightFaithful, equal => by
+  | first :: rest, rightFirst :: rightRest, ih, rightAtomic, equal => by
       simp only [List.map_cons, List.cons.injEq] at equal
-      rw [ih first (by simp) (rightFaithful rightFirst (by simp)) equal.1,
+      rw [ih first (by simp) (rightAtomic rightFirst (by simp)) equal.1,
         map_readingType_injective
-          (fun element member {other} otherFaithful equal =>
-            ih element (List.mem_cons_of_mem _ member) otherFaithful equal)
-          (fun element member => rightFaithful element (List.mem_cons_of_mem _ member)) equal.2]
+          (fun element member {other} otherAtomic equal =>
+            ih element (List.mem_cons_of_mem _ member) otherAtomic equal)
+          (fun element member => rightAtomic element (List.mem_cons_of_mem _ member)) equal.2]
 
 /-- Is the atom a leaf symbol or literal? -/
 private def IsLeaf (atom : Atom) : Prop :=
   (∀ atoms, atom ≠ .expression atoms) ∧ ∀ name, atom ≠ .var name
 
-/-- **The checker reads faithful atoms injectively.** -/
-theorem readingType_injective {left right : Atom} (leftFaithful : Faithful left)
-    (rightFaithful : Faithful right)
+/-- The reading of an arrow type atom, by its components. -/
+private theorem readingType_arrow_components {components : List Atom} (nonempty : components ≠ []) :
+    readingType naming (.expression (.symbol "->" :: components)) =
+      .op (arrowOperator (components.length - 1)) (components.map (readingType naming)) := by
+  obtain ⟨first, rest, rfl⟩ := List.exists_cons_of_ne_nil nonempty
+  simp [readingType, expressionType, readingList_eq_map]
+
+/-- **The checker reads type atoms injectively.** -/
+theorem readingType_injective {left right : Atom} (leftAtomic : TypeAtom left)
+    (rightAtomic : TypeAtom right)
     (equal : readingType naming left = readingType naming right) : left = right := by
-  have leafCase : ∀ {leaf other : Atom}, Faithful leaf → IsLeaf leaf → Faithful other →
+  have leafCase : ∀ {leaf other : Atom}, TypeAtom leaf → IsLeaf leaf → TypeAtom other →
       .op (leafOperator naming leaf) [] = readingType naming other → leaf = other := by
-    intro leaf other leafFaithful leafIsLeaf otherFaithful equal
-    cases otherFaithful with
+    intro leaf other leafAtomic leafIsLeaf otherAtomic equal
+    cases otherAtomic with
     | symbol notArrow notUndefined =>
         simp only [readingType, leafOperator, typeOperator,
           Mettapedia.Languages.OpenTheory.Ty.op.injEq,
           Mettapedia.Languages.OpenTheory.TypeOp.mk.injEq,
           Mettapedia.Languages.OpenTheory.Name.mk.injEq, true_and, and_true] at equal
-        exact naming.leaf_injective leafFaithful (.symbol notArrow notUndefined)
+        exact naming.leaf_injective leafAtomic (.symbol notArrow notUndefined)
           leafIsLeaf.1 (fun _ equal => (by cases equal)) leafIsLeaf.2 (fun _ equal => (by cases equal))
           (he_cancel equal)
     | grounded value =>
@@ -418,49 +348,29 @@ theorem readingType_injective {left right : Atom} (leftFaithful : Faithful left)
           Mettapedia.Languages.OpenTheory.Ty.op.injEq,
           Mettapedia.Languages.OpenTheory.TypeOp.mk.injEq,
           Mettapedia.Languages.OpenTheory.Name.mk.injEq, true_and, and_true] at equal
-        exact naming.leaf_injective leafFaithful (.grounded value)
+        exact naming.leaf_injective leafAtomic (.grounded value)
           leafIsLeaf.1 (fun _ equal => (by cases equal)) leafIsLeaf.2 (fun _ equal => (by cases equal))
           (he_cancel equal)
     | var name => simp [readingType] at equal
-    | arrow function nonempty _ _ _ _ _ =>
-        rw [readingType_arrow naming function nonempty] at equal
-        have heads := congrArg headName equal
-        rw [headName_functionChain (by simpa using nonempty), headName_leaf] at heads
-        simp only [Option.some.injEq, Mettapedia.Languages.OpenTheory.Name.mk.injEq,
-          true_and] at heads
-        exact absurd heads (he_ne_function _)
-    | product notArrow _ =>
+    | arrow nonempty _ _ =>
+        rw [readingType_arrow_components naming nonempty] at equal
+        exact absurd equal (leaf_ne_arrow naming leaf _ _)
+    | compound notArrow _ =>
         rw [readingType_product naming notArrow] at equal
         exact absurd equal.symm (productType_ne_leaf naming _ leaf)
-  have arrowVar : ∀ {type returnType : Atom} {argumentTypes : List Atom} {name : String},
-      FunctionTypeRel type argumentTypes returnType → argumentTypes ≠ [] →
-      readingType naming type ≠ readingType naming (.var name) := by
-    intro type returnType argumentTypes name function nonempty equal
-    rw [readingType_arrow naming function nonempty] at equal
-    obtain ⟨first, rest, rfl⟩ := List.exists_cons_of_ne_nil nonempty
-    simp [readingType, functionChain, Mettapedia.Languages.OpenTheory.Ty.function] at equal
-  have arrowProduct : ∀ {type returnType : Atom} {argumentTypes elements : List Atom},
-      FunctionTypeRel type argumentTypes returnType → argumentTypes ≠ [] →
-      ¬ArrowShaped (.expression elements) →
-      readingType naming type ≠ readingType naming (.expression elements) := by
-    intro type returnType argumentTypes elements function nonempty notArrow equal
-    rw [readingType_arrow naming function nonempty, readingType_product naming notArrow] at equal
-    have heads := congrArg headName equal
-    rw [headName_functionChain (by simpa using nonempty)] at heads
-    exact headName_productType_ne_function naming elements heads.symm
   have productVar : ∀ {elements : List Atom} {name : String},
       productType naming elements ≠ readingType naming (.var name) := by
     intro elements name equal
     cases elements <;> simp [readingType, productType] at equal
-  induction leftFaithful generalizing right with
+  induction leftAtomic generalizing right with
   | symbol notArrow notUndefined =>
       exact leafCase (.symbol notArrow notUndefined)
-        ⟨fun _ equal => (by cases equal), fun _ equal => (by cases equal)⟩ rightFaithful equal
+        ⟨fun _ equal => (by cases equal), fun _ equal => (by cases equal)⟩ rightAtomic equal
   | grounded value =>
       exact leafCase (.grounded value)
-        ⟨fun _ equal => (by cases equal), fun _ equal => (by cases equal)⟩ rightFaithful equal
+        ⟨fun _ equal => (by cases equal), fun _ equal => (by cases equal)⟩ rightAtomic equal
   | var name =>
-      cases rightFaithful with
+      cases rightAtomic with
       | var other =>
           simp only [readingType, Mettapedia.Languages.OpenTheory.Ty.var.injEq,
             Mettapedia.Languages.OpenTheory.Name.mk.injEq, true_and] at equal
@@ -473,149 +383,103 @@ theorem readingType_injective {left right : Atom} (leftFaithful : Faithful left)
           exact (leafCase (.grounded value)
             ⟨fun _ equal => (by cases equal), fun _ equal => (by cases equal)⟩ (.var name)
             equal.symm).symm
-      | arrow function nonempty _ _ _ _ _ => exact absurd equal.symm (arrowVar function nonempty)
-      | product notArrow _ =>
+      | arrow nonempty _ _ =>
+          rw [readingType_arrow_components naming nonempty] at equal
+          simp [readingType] at equal
+      | compound notArrow _ =>
           rw [readingType_product naming notArrow] at equal
           exact absurd equal.symm productVar
-  | @arrow type returnType argumentTypes function nonempty argumentsFaithful argumentsNotReserved
-      returnNotArrow returnNotReserved returnFaithful argumentIH returnIH =>
-      have leftFaithful : Faithful type :=
-        .arrow function nonempty argumentsFaithful argumentsNotReserved returnNotArrow
-          returnNotReserved returnFaithful
-      cases rightFaithful with
-      | @arrow rightType rightReturn rightArguments rightFunction rightNonempty
-          rightArgumentsFaithful _ rightReturnNotArrow _ rightReturnFaithful =>
-          rw [readingType_arrow naming function nonempty,
-            readingType_arrow naming rightFunction rightNonempty] at equal
-          obtain ⟨argumentsEqual, returnsEqual⟩ := functionChain_injective
-            (readingType_not_function naming returnFaithful returnNotArrow)
-            (readingType_not_function naming rightReturnFaithful rightReturnNotArrow) equal
-          have returnEq := returnIH rightReturnFaithful returnsEqual
-          have argumentsEq := map_readingType_injective naming
-            (fun element member {other} otherFaithful equal =>
-              argumentIH element member otherFaithful equal)
-            rightArgumentsFaithful argumentsEqual
-          rw [FunctionTypeRel] at function rightFunction
-          rw [function, rightFunction, argumentsEq, returnEq]
+  | @arrow components nonempty componentsAtomic componentsNotReserved componentIH =>
+      have leftAtomic : TypeAtom (.expression (.symbol "->" :: components)) :=
+        .arrow nonempty componentsAtomic componentsNotReserved
+      rw [readingType_arrow_components naming nonempty] at equal
+      cases rightAtomic with
+      | @arrow rightComponents rightNonempty rightAtomic _ =>
+          rw [readingType_arrow_components naming rightNonempty] at equal
+          simp only [Mettapedia.Languages.OpenTheory.Ty.op.injEq] at equal
+          rw [map_readingType_injective naming
+            (fun element member {other} otherAtomic equal =>
+              componentIH element member otherAtomic equal)
+            rightAtomic equal.2]
       | symbol notArrow notUndefined =>
-          exact (leafCase (.symbol notArrow notUndefined)
-            ⟨fun _ equal => (by cases equal), fun _ equal => (by cases equal)⟩ leftFaithful
-            equal.symm).symm
+          exact absurd equal.symm (leaf_ne_arrow naming _ _ _)
       | grounded value =>
-          exact (leafCase (.grounded value)
-            ⟨fun _ equal => (by cases equal), fun _ equal => (by cases equal)⟩ leftFaithful
-            equal.symm).symm
-      | var name => exact absurd equal (arrowVar function nonempty)
-      | product notArrow _ => exact absurd equal (arrowProduct function nonempty notArrow)
-  | @product elements notArrow elementsFaithful elementIH =>
-      have leftFaithful : Faithful (.expression elements) := .product notArrow elementsFaithful
+          exact absurd equal.symm (leaf_ne_arrow naming _ _ _)
+      | var name => simp [readingType] at equal
+      | compound notArrow _ =>
+          rw [readingType_product naming notArrow] at equal
+          exact absurd equal.symm (productType_ne_arrow naming _ _ _)
+  | @compound elements notArrow elementsAtomic elementIH =>
       rw [readingType_product naming notArrow] at equal
-      cases rightFaithful with
-      | product rightNotArrow rightElementsFaithful =>
+      cases rightAtomic with
+      | compound rightNotArrow rightElementsAtomic =>
           rw [readingType_product naming rightNotArrow] at equal
           rw [productType_injective_of naming
-            (fun element member {other} otherFaithful equal =>
-              elementIH element member otherFaithful equal)
-            rightElementsFaithful equal]
+            (fun element member {other} otherAtomic equal =>
+              elementIH element member otherAtomic equal)
+            rightElementsAtomic equal]
       | symbol notArrowName notUndefined =>
           exact absurd equal (productType_ne_leaf naming _ _)
       | grounded value => exact absurd equal (productType_ne_leaf naming _ _)
       | var name => exact absurd equal productVar
-      | arrow function nonempty _ _ _ _ _ =>
-          rw [← readingType_product naming notArrow] at equal
-          exact absurd equal.symm (arrowProduct function nonempty notArrow)
+      | arrow nonempty _ _ =>
+          rw [readingType_arrow_components naming nonempty] at equal
+          exact absurd equal (productType_ne_arrow naming _ _ _)
 
-/-! ## Faithful readings -/
+/-! ## Contract readings -/
 
-/-- HOL types of the contract that the checker reads faithfully: arrows of
-such types and base types of faithful non-arrow atoms.  The proposition type
-is not the reading of any HE type. -/
-inductive FaithfulReading : Ty Atom → Prop where
-  | base {atom : Atom} : Faithful atom → ¬ArrowShaped atom → FaithfulReading (.base atom)
-  | arr {domain codomain : Ty Atom} : FaithfulReading domain → FaithfulReading codomain →
-      FaithfulReading (.arr domain codomain)
+/-- HOL types of the contract that the checker reads faithfully: base types of type atoms and
+arrows of such types.  The proposition type is not the reading of any HE type. -/
+inductive ContractReading : Ty Atom → Prop where
+  | base {atom : Atom} : TypeAtom atom → ContractReading (.base atom)
+  | arr {domain codomain : Ty Atom} : ContractReading domain → ContractReading codomain →
+      ContractReading (.arr domain codomain)
 
-theorem guestTy_base {atom : Atom} (notArrow : ¬ArrowShaped atom) :
-    guestTy naming (.base atom) = readingType naming atom := by
-  cases atom with
-  | symbol name => rfl
-  | var name => rfl
-  | grounded value => rfl
-  | expression atoms =>
-      simp only [guestTy, baseType]
-      exact (readingType_product naming notArrow).symm
+theorem ContractReading.applyTy {parameters : List Atom} {result : Atom}
+    (parametersAtomic : ∀ parameter ∈ parameters, TypeAtom parameter) (resultAtomic : TypeAtom result) :
+    ContractReading (Mettapedia.Languages.MeTTa.HE.HOLContract.applyTy parameters result) := by
+  induction parameters with
+  | nil => exact .base resultAtomic
+  | cons first rest ih =>
+      exact .arr (.base (parametersAtomic first (by simp)))
+        (ih (fun parameter member => parametersAtomic parameter (List.mem_cons_of_mem _ member)))
 
-theorem FaithfulReading.foldr :
-    ∀ (types : List (Ty Atom)) {result : Ty Atom},
-      (∀ type ∈ types, FaithfulReading type) → FaithfulReading result →
-        FaithfulReading (types.foldr Ty.arr result)
-  | [], _, _, result => result
-  | first :: rest, _, all, result =>
-      .arr (all first (by simp))
-        (FaithfulReading.foldr rest (fun other member => all other (List.mem_cons_of_mem _ member))
-          result)
-
-/-- The reading of a faithful atom reads faithfully. -/
-theorem FaithfulReading.of_toTy {atom : Atom} (faithful : Faithful atom) :
-    FaithfulReading (toTy atom) := by
-  induction faithful with
-  | symbol notArrow notUndefined =>
-      rw [toTy_of_not_arrowShaped (by rintro ⟨_, equal⟩; cases equal)]
-      exact .base (.symbol notArrow notUndefined) (by rintro ⟨_, equal⟩; cases equal)
-  | var name =>
-      rw [toTy_of_not_arrowShaped (by rintro ⟨_, equal⟩; cases equal)]
-      exact .base (.var name) (by rintro ⟨_, equal⟩; cases equal)
-  | grounded value =>
-      rw [toTy_of_not_arrowShaped (by rintro ⟨_, equal⟩; cases equal)]
-      exact .base (.grounded value) (by rintro ⟨_, equal⟩; cases equal)
-  | @arrow type returnType argumentTypes function nonempty _ _ _ _ _ argumentIH returnIH =>
-      rw [toTy_of_functionType function nonempty, spineTy_eq_foldr]
-      refine FaithfulReading.foldr _ ?_ returnIH
-      intro reading member
-      obtain ⟨argumentType, argumentMember, rfl⟩ := List.mem_map.mp member
-      exact argumentIH argumentType argumentMember
-  | product notArrow elementsFaithful _ =>
-      rw [toTy_of_not_arrowShaped notArrow]
-      exact .base (.product notArrow elementsFaithful) notArrow
-
-theorem guestTy_ne_function_of_base {atom : Atom} (faithful : Faithful atom)
-    (notArrow : ¬ArrowShaped atom) (domain codomain : CheckerTy) :
+theorem guestTy_ne_function_of_base {atom : Atom} (atomic : TypeAtom atom) (domain codomain : CheckerTy) :
     guestTy naming (.base atom) ≠ Mettapedia.Languages.OpenTheory.Ty.function domain codomain := by
   intro equal
   have heads := congrArg headName equal
-  rw [guestTy_base naming notArrow, headName_function] at heads
-  exact readingType_not_function naming faithful notArrow heads
+  rw [headName_function] at heads
+  exact readingType_not_function naming atomic heads
 
-/-- **The checker separates faithful readings.** -/
-theorem guestTy_injective {left right : Ty Atom} (leftReading : FaithfulReading left)
-    (rightReading : FaithfulReading right) (equal : guestTy naming left = guestTy naming right) :
+/-- **The checker separates contract readings.** -/
+theorem guestTy_injective {left right : Ty Atom} (leftReading : ContractReading left)
+    (rightReading : ContractReading right) (equal : guestTy naming left = guestTy naming right) :
     left = right := by
   induction leftReading generalizing right with
-  | @base atom faithful notArrow =>
+  | @base atom atomic =>
       cases rightReading with
-      | @base other otherFaithful otherNotArrow =>
-          rw [guestTy_base naming notArrow, guestTy_base naming otherNotArrow] at equal
-          rw [readingType_injective naming faithful otherFaithful equal]
+      | @base other otherAtomic =>
+          rw [readingType_injective naming atomic otherAtomic equal]
       | arr _ _ =>
-          exact absurd equal (guestTy_ne_function_of_base naming faithful notArrow _ _)
+          exact absurd equal (guestTy_ne_function_of_base naming atomic _ _)
   | arr _ _ domainIH codomainIH =>
       cases rightReading with
-      | @base other otherFaithful otherNotArrow =>
-          exact absurd equal.symm (guestTy_ne_function_of_base naming otherFaithful otherNotArrow _ _)
+      | @base other otherAtomic =>
+          exact absurd equal.symm (guestTy_ne_function_of_base naming otherAtomic _ _)
       | arr rightDomain rightCodomain =>
           simp only [guestTy, Mettapedia.Languages.OpenTheory.Ty.function,
             Mettapedia.Languages.OpenTheory.Ty.op.injEq, List.cons.injEq, true_and] at equal
           rw [domainIH rightDomain equal.1, codomainIH rightCodomain equal.2.1]
 
-/-- A checker function type is the reading of an arrow. -/
-theorem guestTy_eq_function {type : Ty Atom} (reading : FaithfulReading type)
+/-- A checker function type is the reading of an arrow of HOL types. -/
+theorem guestTy_eq_function {type : Ty Atom} (reading : ContractReading type)
     {domain codomain : CheckerTy}
     (equal : guestTy naming type = Mettapedia.Languages.OpenTheory.Ty.function domain codomain) :
     ∃ typeDomain typeCodomain, type = .arr typeDomain typeCodomain ∧
       guestTy naming typeDomain = domain ∧ guestTy naming typeCodomain = codomain := by
   cases reading with
-  | @base atom faithful notArrow =>
-      exact absurd equal (guestTy_ne_function_of_base naming faithful notArrow _ _)
+  | @base atom atomic =>
+      exact absurd equal (guestTy_ne_function_of_base naming atomic _ _)
   | @arr typeDomain typeCodomain _ _ =>
       simp only [guestTy, Mettapedia.Languages.OpenTheory.Ty.function,
         Mettapedia.Languages.OpenTheory.Ty.op.injEq, List.cons.injEq, true_and] at equal
@@ -623,15 +487,21 @@ theorem guestTy_eq_function {type : Ty Atom} (reading : FaithfulReading type)
 
 /-! ## Leaves -/
 
-/-- Every symbol and literal occurring in the atom is among `leaves`. -/
-def LeavesWithin (leaves : Atom → Prop) (atom : Atom) : Prop :=
-  ∀ leaf, Subatom leaf atom → (∀ atoms, leaf ≠ .expression atoms) → (∀ name, leaf ≠ .var name) →
-    leaves leaf
+/-- `leaf` is a leaf the checker reads as a type operator in `atom`: a symbol or literal of the
+atom other than the head of an arrow. -/
+inductive ReadLeaf : Atom → Atom → Prop where
+  | symbol (name : String) : ReadLeaf (.symbol name) (.symbol name)
+  | grounded (value : GroundedValue) : ReadLeaf (.grounded value) (.grounded value)
+  | arrowComponent {leaf component : Atom} {components : List Atom} :
+      component ∈ components → ReadLeaf leaf component →
+      ReadLeaf leaf (.expression (.symbol "->" :: components))
+  | element {leaf element : Atom} {elements : List Atom} :
+      ¬ArrowShaped (.expression elements) → element ∈ elements → ReadLeaf leaf element →
+      ReadLeaf leaf (.expression elements)
 
-theorem LeavesWithin.of_child {leaves : Atom → Prop} {atom : Atom} {atoms : List Atom}
-    (within : LeavesWithin leaves (.expression atoms)) (member : atom ∈ atoms) :
-    LeavesWithin leaves atom :=
-  fun leaf occurs => within leaf (.child member occurs)
+/-- Every leaf the checker reads in the atom is among `leaves`. -/
+def LeavesWithin (leaves : Atom → Prop) (atom : Atom) : Prop :=
+  ∀ leaf, ReadLeaf leaf atom → leaves leaf
 
 /-- Every base type of a HOL type has its leaves among `leaves`. -/
 def TyLeavesWithin (leaves : Atom → Prop) : Ty Atom → Prop
@@ -644,9 +514,13 @@ def TyLeavesWithin (leaves : Atom → Prop) : Ty Atom → Prop
 /-- A constant of the checker without definition. -/
 def constOf (name : String) : CheckerConst := .mk (.mk [] name) .undefined
 
+/-- The name of the application constant of arrows with `arity` parameters. -/
+def applyName (arity : Nat) : String := "he-apply:" ++ toString arity
+
 /-- The checker constant of a contract name. -/
 def nameConst : Name → CheckerConst
-  | .declared constant _ => constOf ("he:" ++ naming.leaf constant)
+  | .declared constant occurrence _ => constOf ("he:" ++ naming.constant constant occurrence)
+  | .apply parameters _ => constOf (applyName parameters.length)
   | .pair _ => constOf ","
   | .fst _ => constOf "FST"
   | .snd _ => constOf "SND"
@@ -654,10 +528,12 @@ def nameConst : Name → CheckerConst
 
 /-- The contract type a name is read at, whatever the space. -/
 def nameReading : Name → Ty Atom
-  | .declared _ instanceType => toTy instanceType
+  | .declared _ _ instanceType => .base instanceType
+  | .apply parameters result =>
+      .arr (.base (arrowAtom parameters result)) (applyTy parameters result)
   | .pair (component :: components) =>
-      .arr (toTy component) (.arr (productTy components) (productTy (component :: components)))
-  | .fst (component :: components) => .arr (productTy (component :: components)) (toTy component)
+      .arr (.base component) (.arr (productTy components) (productTy (component :: components)))
+  | .fst (component :: components) => .arr (productTy (component :: components)) (.base component)
   | .snd (component :: components) =>
       .arr (productTy (component :: components)) (productTy components)
   | .one => productTy []
@@ -666,8 +542,10 @@ def nameReading : Name → Ty Atom
 theorem nameType_eq_nameReading {space : Space} {name : Name} {type : Ty Atom}
     (lookup : nameType space name = some type) : type = nameReading name := by
   cases name with
-  | declared constant instanceType =>
+  | declared constant occurrence instanceType =>
       exact (nameType_declared_eq_some_iff.mp lookup).2
+  | apply parameters result =>
+      exact (nameType_apply_eq_some_iff.mp lookup).2
   | pair components =>
       cases components with
       | nil => simp [nameType] at lookup
@@ -690,18 +568,25 @@ theorem nameType_eq_nameReading {space : Space} {name : Name} {type : Ty Atom}
       simp only [nameType, Option.some.injEq] at lookup
       exact lookup.symm
 
-/-- The checker's source term of a contract term: every constant occurrence
-carries the checker type of its contract type. -/
+/-- The checker's source term of a contract term: every constant occurrence carries the checker
+type of its contract type. -/
 def guestTerm : ContractTerm → CheckerTerm
   | .constant name => .const (nameConst naming name) (guestTy naming (nameReading name))
   | .app function argument => .app (guestTerm function) (guestTerm argument)
   | _ => .const (constOf "") (.op unitOperator [])
 
-/-- Every constant of a contract term has a contract type that reads
+/-- A product constant whose first component is not the arrow symbol: its components read as
+a product.  Every constant of a tuple is one. -/
+def NameReadable : Name → Prop
+  | .pair (component :: _) | .fst (component :: _) | .snd (component :: _) =>
+      component ≠ .symbol "->"
+  | _ => True
+
+/-- Every constant of a contract term is readable and has a contract type that the checker reads
 faithfully, with its leaves among `leaves`. -/
 def WellNamed (space : Space) (leaves : Atom → Prop) : ContractTerm → Prop
-  | .constant name => ∃ type, nameType space name = some type ∧ FaithfulReading type ∧
-      TyLeavesWithin leaves type
+  | .constant name => NameReadable name ∧ ∃ type, nameType space name = some type ∧
+      ContractReading type ∧ TyLeavesWithin leaves type
   | .app function argument => WellNamed space leaves function ∧ WellNamed space leaves argument
   | _ => False
 
@@ -710,10 +595,35 @@ def WellNamed (space : Space) (leaves : Atom → Prop) : ContractTerm → Prop
 /-- A checker type variable. -/
 def tyvar (name : String) : CheckerTy := .var (.mk [] name)
 
-/-- A checker signature for a set of leaves declares those leaf type
-operators, the pair and unit types and the function type at their arities,
-every declared constant of the space at the reading of its declared type, and
-the pair signature. -/
+/-- The type variables of the parameters of the application constants: `A`, `A'`, `A''`, …. -/
+def applyVariable (index : Nat) : String := String.ofList ('A' :: List.replicate index '\'')
+
+theorem applyVariable_injective : Function.Injective applyVariable := by
+  intro left right equal
+  have := congrArg (fun name => name.toList.length) equal
+  simpa [applyVariable] using this
+
+theorem applyVariable_ne_result (index : Nat) : applyVariable index ≠ "B" := by
+  intro equal
+  have := congrArg String.toList equal
+  simp [applyVariable] at this
+
+/-- The parameter variables from position `start`. -/
+def applyParameters : Nat → Nat → List CheckerTy
+  | _, 0 => []
+  | start, count + 1 => tyvar (applyVariable start) :: applyParameters (start + 1) count
+
+/-- The type of the application constant of arrows with `arity` parameters:
+`he-arrow:n A A' … B → A → A' → … → B`. -/
+def applySchema (arity : Nat) : CheckerTy :=
+  Mettapedia.Languages.OpenTheory.Ty.function
+    (.op (arrowOperator arity) (applyParameters 0 arity ++ [tyvar "B"]))
+    (functionChain (applyParameters 0 arity) (tyvar "B"))
+
+/-- A checker signature for a set of leaves declares those leaf type operators, the pair and
+unit types, the function type and the arrow operators at their arities, every declaration of
+the space at the reading of its declared type, the application constants and the pair
+signature. -/
 structure CheckerSignature (space : Space) (leaves : Atom → Prop)
     (signature : Mettapedia.Languages.OpenTheory.SignatureFormation.Signature) : Prop where
   leafArity : ∀ leaf, leaves leaf → signature.typeOperators (leafOperator naming leaf) = some 0
@@ -721,9 +631,12 @@ structure CheckerSignature (space : Space) (leaves : Atom → Prop)
   unitArity : signature.typeOperators unitOperator = some 0
   functionArity :
     signature.typeOperators Mettapedia.Languages.OpenTheory.TypeOp.function = some 2
-  declared : ∀ constant scheme, declaredType? space constant = some scheme →
-    signature.constants (constOf ("he:" ++ naming.leaf constant)) =
-      some (readingType naming scheme)
+  arrowArity : ∀ arity, signature.typeOperators (arrowOperator arity) = some (arity + 1)
+  declared : ∀ constant occurrence scheme,
+    (declarations space constant)[occurrence]? = some scheme →
+      signature.constants (constOf ("he:" ++ naming.constant constant occurrence)) =
+        some (readingType naming scheme)
+  applySchema : ∀ arity, signature.constants (constOf (applyName arity)) = some (applySchema arity)
   pairSchema : signature.constants (constOf ",") =
     some (Mettapedia.Languages.OpenTheory.Ty.function (tyvar "A")
       (Mettapedia.Languages.OpenTheory.Ty.function (tyvar "B")
@@ -788,76 +701,41 @@ private theorem formed_product :
       · exact all atom (by simp)
       · exact formed_product atoms (fun other member => all other (List.mem_cons_of_mem _ member))
 
-private theorem formed_spine :
-    ∀ (components : List Atom), components ≠ [] → (∀ atom ∈ components,
-      TypeFormed signature (readingType naming atom) ∧ Resolved signature (readingType naming atom)) →
-      TypeFormed signature (spineType naming components) ∧
-        Resolved signature (spineType naming components)
-  | [], nonempty, _ => absurd rfl nonempty
-  | [last], _, all => by
-      simp only [spineType]
-      exact all last (by simp)
-  | first :: second :: rest, _, all => by
-      simp only [spineType]
-      exact formed_function checker (all first (by simp))
-        (formed_spine (second :: rest) (by simp)
-          (fun other member => all other (List.mem_cons_of_mem _ member)))
-
-/-- The checker type of an atom whose leaves are declared is resolved and
-formed. -/
-theorem readingType_formed (atom : Atom) (within : LeavesWithin leaves atom) :
+/-- The checker type of a type atom whose leaves are declared is resolved and formed. -/
+theorem readingType_formed {atom : Atom} (atomic : TypeAtom atom) (within : LeavesWithin leaves atom) :
     TypeFormed signature (readingType naming atom) ∧ Resolved signature (readingType naming atom) := by
-  induction atom using Atom.rec (motive_2 := fun atoms => ∀ atom ∈ atoms,
-      LeavesWithin leaves atom →
-        TypeFormed signature (readingType naming atom) ∧
-          Resolved signature (readingType naming atom)) with
-  | symbol name =>
+  induction atomic with
+  | @symbol name _ _ =>
       simp only [readingType]
-      exact formed_op (checker.leafArity _ (within _ .refl (fun _ equal => by cases equal)
-        (fun _ equal => by cases equal))) (by simp)
+      exact formed_op (checker.leafArity _ (within _ (.symbol name))) (by simp)
   | grounded value =>
       simp only [readingType]
-      exact formed_op (checker.leafArity _ (within _ .refl (fun _ equal => by cases equal)
-        (fun _ equal => by cases equal))) (by simp)
+      exact formed_op (checker.leafArity _ (within _ (.grounded value))) (by simp)
   | var name =>
       simp only [readingType]
       constructor
       · rw [TypeFormed]; trivial
       · rw [Resolved]
-  | expression atoms ih =>
-      have children : ∀ atom ∈ atoms, TypeFormed signature (readingType naming atom) ∧
-          Resolved signature (readingType naming atom) :=
-        fun atom member => ih atom member (within.of_child member)
-      simp only [readingType]
-      by_cases arrowForm : ∃ first second rest, atoms = .symbol "->" :: first :: second :: rest
-      · obtain ⟨first, second, rest, rfl⟩ := arrowForm
-        simp only [expressionType]
-        exact formed_spine checker (first :: second :: rest) (by simp)
-          (fun other member => children other (List.mem_cons_of_mem _ member))
-      · have typeEq : expressionType naming atoms = productType naming atoms := by
-          unfold expressionType
-          split
-          · exact absurd ⟨_, _, _, rfl⟩ arrowForm
-          · simp only [productType]
-          · simp only [productType]
-        rw [typeEq]
-        exact formed_product checker atoms children
-  | nil => rename_i member _; cases member
-  | cons head tail headIH tailIH =>
-      rename_i atom member within'
-      rcases List.mem_cons.mp member with rfl | member
-      · exact headIH within'
-      · exact tailIH atom member within'
+  | @arrow components nonempty _ _ componentIH =>
+      rw [readingType_arrow_components naming nonempty]
+      refine formed_op (by
+        rw [checker.arrowArity, List.length_map, Nat.sub_add_cancel
+          (Nat.one_le_iff_ne_zero.mpr (by simpa using nonempty))]) ?_
+      intro argument member
+      obtain ⟨component, componentMember, rfl⟩ := List.mem_map.mp member
+      exact componentIH component componentMember
+        (fun leaf read => within leaf (.arrowComponent componentMember read))
+  | @compound elements notArrow _ elementIH =>
+      rw [readingType_product naming notArrow]
+      exact formed_product checker elements (fun element member =>
+        elementIH element member (fun leaf read => within leaf (.element notArrow member read)))
 
-/-- The checker type of a faithful reading with declared leaves is resolved
-and formed. -/
-theorem guestTy_formed {type : Ty Atom} (reading : FaithfulReading type)
+/-- The checker type of a contract reading with declared leaves is resolved and formed. -/
+theorem guestTy_formed {type : Ty Atom} (reading : ContractReading type)
     (within : TyLeavesWithin leaves type) :
     TypeFormed signature (guestTy naming type) ∧ Resolved signature (guestTy naming type) := by
   induction reading with
-  | @base atom _ notArrow =>
-      rw [guestTy_base naming notArrow]
-      exact readingType_formed checker atom within
+  | @base atom atomic => exact readingType_formed checker atomic within
   | arr _ _ domainIH codomainIH =>
       exact formed_function checker (domainIH within.1) (codomainIH within.2)
 
@@ -893,25 +771,6 @@ private theorem lookup_checkerSubst (valuation : String → Atom) :
           List.map_cons, List.lookup, different] at restLookup ⊢
         exact restLookup
 
-private theorem spine_applyTypeValuation (valuation : String → Atom) (names : List String) :
-    ∀ (components : List Atom),
-      (∀ atom ∈ components, (checkerSubst naming valuation names).apply (readingType naming atom) =
-        readingType naming (applyTypeValuation valuation atom)) →
-      (checkerSubst naming valuation names).apply (spineType naming components) =
-        spineType naming (components.map (applyTypeValuation valuation))
-  | [], _ => by simp [spineType, leafOperator]
-  | [last], all => by
-      simp only [spineType, List.map_cons, List.map_nil]
-      exact all last (by simp)
-  | first :: second :: rest, all => by
-      simp only [spineType, List.map_cons,
-        Mettapedia.Languages.OpenTheory.TypeSubst.apply_function]
-      rw [all first (by simp)]
-      have restEq := spine_applyTypeValuation valuation names (second :: rest)
-        (fun atom member => all atom (List.mem_cons_of_mem _ member))
-      simp only [List.map_cons] at restEq
-      rw [restEq]
-
 private theorem product_applyTypeValuation (valuation : String → Atom) (names : List String) :
     ∀ (atoms : List Atom),
       (∀ atom ∈ atoms, (checkerSubst naming valuation names).apply (readingType naming atom) =
@@ -926,19 +785,26 @@ private theorem product_applyTypeValuation (valuation : String → Atom) (names 
         product_applyTypeValuation valuation names atoms
           (fun other member => all other (List.mem_cons_of_mem _ member))]
 
-private theorem readingType_arrowForm (first second : Atom) (rest : List Atom) :
-    readingType naming (.expression (.symbol "->" :: first :: second :: rest)) =
-      spineType naming (first :: second :: rest) := by
-  simp only [readingType, expressionType]
-
 private theorem applyTypeValuation_expression (valuation : String → Atom) (atoms : List Atom) :
     applyTypeValuation valuation (.expression atoms) =
       .expression (atoms.map (applyTypeValuation valuation)) := by
   simp [applyTypeValuation]
 
-/-- **The checker reads an instance as the substituted reading.**  When no
-type variable takes the arrow symbol as its value, applying a valuation and
-reading commute with the checker's substitution of the valued variables. -/
+/-- The checker reading of an expression that is not an arrow with components is its
+product. -/
+private theorem readingType_of_not_arrowForm {atoms : List Atom}
+    (notForm : ¬∃ first rest, atoms = .symbol "->" :: first :: rest) :
+    readingType naming (.expression atoms) = productType naming atoms := by
+  simp only [readingType]
+  unfold expressionType
+  split
+  · exact absurd ⟨_, _, rfl⟩ notForm
+  · simp only [productType]
+  · simp only [productType]
+
+/-- **The checker reads an instance as the substituted reading.**  When no type variable takes
+the arrow symbol as its value, applying a valuation and reading commute with the checker's
+substitution of the valued variables. -/
 theorem readingType_applyTypeValuation (valuation : String → Atom)
     (notArrow : ∀ name, valuation name ≠ .symbol "->") (names : List String) :
     ∀ (atom : Atom), (∀ name ∈ TypeSubst.typeVars atom, name ∈ names) →
@@ -961,27 +827,28 @@ theorem readingType_applyTypeValuation (valuation : String → Atom)
       intro covered
       have all := ih (by simpa [TypeSubst.typeVars] using covered)
       rw [applyTypeValuation_expression]
-      by_cases arrowForm : ∃ first second rest, atoms = .symbol "->" :: first :: second :: rest
-      · obtain ⟨first, second, rest, rfl⟩ := arrowForm
+      by_cases arrowForm : ∃ first rest, atoms = .symbol "->" :: first :: rest
+      · obtain ⟨first, rest, rfl⟩ := arrowForm
         have headEq : applyTypeValuation valuation (.symbol "->") = .symbol "->" := by
           simp [applyTypeValuation]
         simp only [List.map_cons, headEq]
-        rw [readingType_arrowForm, readingType_arrowForm]
-        have componentsEq := spine_applyTypeValuation naming valuation names
-          (first :: second :: rest) (fun atom member => all atom (List.mem_cons_of_mem _ member))
-        simp only [List.map_cons] at componentsEq
-        exact componentsEq
-      · have notArrowMapped : ¬∃ first second rest,
-            atoms.map (applyTypeValuation valuation) = .symbol "->" :: first :: second :: rest := by
-          rintro ⟨first, second, rest, mapped⟩
+        rw [readingType_arrow_components naming (by simp),
+          readingType_arrow_components naming (by simp)]
+        simp only [Mettapedia.Languages.OpenTheory.TypeSubst.apply_op, List.length_cons,
+          List.length_map, List.map_cons, List.map_map, Mettapedia.Languages.OpenTheory.Ty.op.injEq,
+          List.cons.injEq, true_and]
+        refine ⟨all first (by simp), List.map_congr_left (fun atom member => ?_)⟩
+        exact all atom (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ member))
+      · have notArrowMapped : ¬∃ first rest,
+            atoms.map (applyTypeValuation valuation) = .symbol "->" :: first :: rest := by
+          rintro ⟨first, rest, mapped⟩
           apply arrowForm
           match atoms, mapped with
           | [], mapped => simp at mapped
           | [_], mapped => simp at mapped
-          | [_, _], mapped => simp at mapped
-          | head :: atom₁ :: atom₂ :: tail, mapped =>
+          | head :: atom₁ :: tail, mapped =>
               simp only [List.map_cons, List.cons.injEq] at mapped
-              refine ⟨atom₁, atom₂, tail, ?_⟩
+              refine ⟨atom₁, tail, ?_⟩
               cases head with
               | symbol name =>
                   simp only [applyTypeValuation, Atom.symbol.injEq] at mapped
@@ -991,17 +858,8 @@ theorem readingType_applyTypeValuation (valuation : String → Atom)
                   exact absurd mapped.1 (notArrow name)
               | grounded value => simp [applyTypeValuation] at mapped
               | expression inner => simp [applyTypeValuation] at mapped
-        have typeEq : ∀ list : List Atom,
-            (¬∃ first second rest, list = .symbol "->" :: first :: second :: rest) →
-              readingType naming (.expression list) = productType naming list := by
-          intro list notForm
-          simp only [readingType]
-          unfold expressionType
-          split
-          · exact absurd ⟨_, _, _, rfl⟩ notForm
-          · simp only [productType]
-          · simp only [productType]
-        rw [typeEq atoms arrowForm, typeEq _ notArrowMapped]
+        rw [readingType_of_not_arrowForm naming arrowForm,
+          readingType_of_not_arrowForm naming notArrowMapped]
         exact product_applyTypeValuation naming valuation names atoms all
   | nil => rename_i member; cases member
   | cons head tail headIH tailIH =>
@@ -1011,13 +869,128 @@ theorem readingType_applyTypeValuation (valuation : String → Atom)
       · exact headIH (fun name inHead => covered name (Or.inl inHead))
       · exact tailIH (fun name inTail => covered name (Or.inr inTail)) atom member
 
+/-! ## The application constants -/
+
+/-- The bindings of an application instance from parameter position `start`. -/
+def applyInstanceBindings : Nat → List Atom → List (CheckerName × CheckerTy)
+  | _, [] => []
+  | start, parameter :: parameters =>
+      (.mk [] (applyVariable start), readingType naming parameter) ::
+        applyInstanceBindings (start + 1) parameters
+
+/-- The checker substitution of an application instance. -/
+def applyInstanceSubst (parameters : List Atom) (result : Atom) :
+    Mettapedia.Languages.OpenTheory.TypeSubst :=
+  ⟨applyInstanceBindings naming 0 parameters ++ [(.mk [] "B", readingType naming result)]⟩
+
+private theorem lookup_applyBindings_result (result : CheckerTy) :
+    ∀ (start : Nat) (parameters : List Atom),
+      List.lookup (Mettapedia.Languages.OpenTheory.Name.mk [] "B")
+          (applyInstanceBindings naming start parameters ++ [(.mk [] "B", result)]) = some result
+  | _, [] => by simp [applyInstanceBindings]
+  | start, parameter :: parameters => by
+      have different : (Mettapedia.Languages.OpenTheory.Name.mk [] "B" ==
+          .mk [] (applyVariable start)) = false := by
+        simp only [beq_eq_false_iff_ne, ne_eq,
+          Mettapedia.Languages.OpenTheory.Name.mk.injEq, true_and]
+        exact fun equal => applyVariable_ne_result start equal.symm
+      simp only [applyInstanceBindings, List.cons_append, List.lookup, different]
+      exact lookup_applyBindings_result result (start + 1) parameters
+
+private theorem lookup_applyBindings_parameter (tail : List (CheckerName × CheckerTy)) :
+    ∀ (start : Nat) (parameters : List Atom) (offset : Nat) (inRange : offset < parameters.length),
+      List.lookup (Mettapedia.Languages.OpenTheory.Name.mk [] (applyVariable (start + offset)))
+          (applyInstanceBindings naming start parameters ++ tail) =
+        some (readingType naming parameters[offset])
+  | _, [], _, inRange => by simp at inRange
+  | start, parameter :: parameters, 0, _ => by
+      simp [applyInstanceBindings]
+  | start, parameter :: parameters, offset + 1, inRange => by
+      have different : (Mettapedia.Languages.OpenTheory.Name.mk [] (applyVariable (start + (offset + 1))) ==
+          .mk [] (applyVariable start)) = false := by
+        simp only [beq_eq_false_iff_ne, ne_eq,
+          Mettapedia.Languages.OpenTheory.Name.mk.injEq, true_and]
+        intro equal
+        have := applyVariable_injective equal
+        omega
+      simp only [applyInstanceBindings, List.cons_append, List.lookup, different]
+      have rest := lookup_applyBindings_parameter tail (start + 1) parameters offset
+        (by simpa using inRange)
+      rw [show start + 1 + offset = start + (offset + 1) by omega] at rest
+      simpa using rest
+
+private theorem applySubst_parameters (parameters : List Atom) (result : Atom) :
+    ∀ (start : Nat) (suffix : List Atom), (∀ offset (inRange : offset < suffix.length),
+      (applyInstanceSubst naming parameters result).lookup
+          (.mk [] (applyVariable (start + offset))) = some (readingType naming suffix[offset])) →
+      (applyParameters start suffix.length).map (applyInstanceSubst naming parameters result).apply =
+        suffix.map (readingType naming)
+  | _, [], _ => rfl
+  | start, first :: rest, found => by
+      simp only [List.length_cons, applyParameters, List.map_cons, tyvar,
+        Mettapedia.Languages.OpenTheory.TypeSubst.apply_var]
+      have headFound := found 0 (by simp)
+      simp only [Nat.add_zero, List.getElem_cons_zero] at headFound
+      rw [headFound, Option.getD_some,
+        applySubst_parameters parameters result (start + 1) rest (fun offset inRange => by
+          have := found (offset + 1) (by simpa using inRange)
+          rw [show start + (offset + 1) = start + 1 + offset by omega] at this
+          simpa using this)]
+
+private theorem apply_functionChain (substitution : Mettapedia.Languages.OpenTheory.TypeSubst) :
+    ∀ (arguments : List CheckerTy) (result : CheckerTy),
+      substitution.apply (functionChain arguments result) =
+        functionChain (arguments.map substitution.apply) (substitution.apply result)
+  | [], _ => rfl
+  | first :: rest, result => by
+      simp only [functionChain, List.foldr_cons, List.map_cons,
+        Mettapedia.Languages.OpenTheory.TypeSubst.apply_function] at apply_functionChain ⊢
+      rw [apply_functionChain substitution rest result]
+
+/-- The application constant's type at an instance is the reading of the instance. -/
+theorem applySchema_instance (parameters : List Atom) (result : Atom) :
+    (applyInstanceSubst naming parameters result).apply (applySchema parameters.length) =
+      guestTy naming (.arr (.base (arrowAtom parameters result)) (applyTy parameters result)) := by
+  have parametersEq : (applyParameters 0 parameters.length).map
+      (applyInstanceSubst naming parameters result).apply = parameters.map (readingType naming) :=
+    applySubst_parameters naming parameters result 0 parameters (fun offset inRange => by
+      simpa [applyInstanceSubst, Mettapedia.Languages.OpenTheory.TypeSubst.lookup] using
+        lookup_applyBindings_parameter naming [(.mk [] "B", readingType naming result)] 0
+          parameters offset inRange)
+  have resultEq : (applyInstanceSubst naming parameters result).apply (tyvar "B") =
+      readingType naming result := by
+    simp only [tyvar, Mettapedia.Languages.OpenTheory.TypeSubst.apply_var, applyInstanceSubst,
+      Mettapedia.Languages.OpenTheory.TypeSubst.lookup,
+      lookup_applyBindings_result naming (readingType naming result) 0 parameters, Option.getD_some]
+  simp only [applySchema, Mettapedia.Languages.OpenTheory.TypeSubst.apply_function,
+    Mettapedia.Languages.OpenTheory.TypeSubst.apply_op, List.map_append, List.map_cons,
+    List.map_nil, apply_functionChain, parametersEq, resultEq, guestTy, readingType_arrowAtom,
+    guestTy_applyTy]
+
+/-- An expression whose elements are type atoms reads as the product of its elements. -/
+theorem readingType_expression_of_elements {elements : List Atom}
+    (all : ∀ element ∈ elements, TypeAtom element) :
+    readingType naming (.expression elements) = productType naming elements := by
+  refine readingType_of_not_arrowForm naming ?_
+  rintro ⟨first, rest, rfl⟩
+  exact (all _ (by simp)).not_arrow_symbol rfl
+
+/-- The components of a product type atom whose first component is not the arrow symbol are
+type atoms. -/
+theorem product_elements {component : Atom} {components : List Atom}
+    (notArrow : component ≠ .symbol "->") (atomic : TypeAtom (.expression (component :: components))) :
+    ∀ element ∈ component :: components, TypeAtom element := by
+  cases atomic with
+  | arrow _ _ _ => exact absurd rfl notArrow
+  | compound _ all => exact all
+
 /-! ## The checker's typing is contract typing -/
 
 open Mettapedia.Languages.OpenTheory.SignatureFormation (AnnotationsFormed ConstantInstance)
 open Mettapedia.Languages.HOLLight.MeTTa.TermReading (SourceResolved)
 
-/-- The checker's typing of a closed source term: it is resolved, its
-annotations are formed, and its type is the given one. -/
+/-- The checker's typing of a closed source term: it is resolved, its annotations are formed,
+and its type is the given one. -/
 def GuestTyped (signature : Mettapedia.Languages.OpenTheory.SignatureFormation.Signature)
     (source : CheckerTerm) (type : CheckerTy) : Prop :=
   SourceResolved signature source ∧ AnnotationsFormed signature (source.toDB []) ∧
@@ -1049,12 +1022,12 @@ theorem inferType_guestTerm_complete :
 theorem inferType_guestTerm_sound {term : ContractTerm} (applicative : Applicative term) :
     WellNamed space leaves term → ∀ {inferred : CheckerTy},
       (guestTerm naming term).inferType = some inferred →
-        ∃ type, FaithfulReading type ∧ inferred = guestTy naming type ∧
+        ∃ type, ContractReading type ∧ inferred = guestTy naming type ∧
           ApplicativeTyped (nameType space) term type := by
   induction applicative with
   | constant name =>
       intro wellNamed inferred computed
-      obtain ⟨type, lookup, reading, _⟩ := wellNamed
+      obtain ⟨_, type, lookup, reading, _⟩ := wellNamed
       have typeEq := nameType_eq_nameReading lookup
       subst typeEq
       simp only [guestTerm, Mettapedia.Languages.OpenTheory.SourceTerm.inferType.eq_1,
@@ -1124,64 +1097,96 @@ private theorem tyvar_lookup (first second : CheckerTy) :
   · simp [tyvar, Mettapedia.Languages.OpenTheory.TypeSubst.lookup, List.lookup]
   · simp [tyvar, Mettapedia.Languages.OpenTheory.TypeSubst.lookup, List.lookup, different]
 
-/-- The checker admits every contract name at its contract type. -/
+/-- The checker admits every contract name read at a contract reading at its contract type. -/
 theorem constantInstance_nameConst {name : Name} {type : Ty Atom}
-    (lookup : nameType space name = some type) :
+    (lookup : nameType space name = some type) (readable : NameReadable name)
+    (reading : ContractReading type) :
     ConstantInstance signature (nameConst naming name) (guestTy naming (nameReading name)) := by
+  have typeEq := nameType_eq_nameReading lookup
+  subst typeEq
   cases name with
-  | declared constant instanceType =>
-      obtain ⟨⟨contract, scheme, declared, valuation, valuesFaithful, instanceEq⟩, _⟩ :=
+  | declared constant occurrence instanceType =>
+      obtain ⟨⟨scheme, declared, _, valuation, valuesAtomic, instanceEq⟩, _⟩ :=
         nameType_declared_eq_some_iff.mp lookup
       refine ⟨readingType naming scheme, checkerSubst naming valuation (TypeSubst.typeVars scheme),
-        checker.declared constant scheme declared, ?_⟩
+        checker.declared constant occurrence scheme declared, ?_⟩
       rw [readingType_applyTypeValuation naming valuation
-          (fun name equal => by
-            have faithful := valuesFaithful name
-            rw [equal] at faithful
-            cases faithful with
-            | symbol notArrow _ => exact notArrow rfl
-            | arrow function => simp [FunctionTypeRel] at function)
+          (fun name => (valuesAtomic name).not_arrow_symbol)
           (TypeSubst.typeVars scheme) scheme (fun _ member => member),
         instanceEq]
-      exact (guestTy_toTy naming instanceType).symm
+      rfl
+  | apply parameters result =>
+      exact ⟨_, applyInstanceSubst naming parameters result, checker.applySchema parameters.length,
+        applySchema_instance naming parameters result⟩
   | pair components =>
       cases components with
       | nil => simp [nameType] at lookup
       | cons component components =>
-          refine ⟨_, ⟨[(.mk [] "A", readingType naming component),
-            (.mk [] "B", productType naming components)]⟩, checker.pairSchema, ?_⟩
-          obtain ⟨first, second⟩ := tyvar_lookup (readingType naming component)
-            (productType naming components)
-          simp only [Mettapedia.Languages.OpenTheory.TypeSubst.apply_function,
-            Mettapedia.Languages.OpenTheory.TypeSubst.apply_op, List.map_cons, List.map_nil,
-            first, second, nameReading, guestTy, baseType, productTy, productType,
-            guestTy_toTy]
+          cases reading with
+          | arr componentReading restReading =>
+              cases componentReading with
+              | base componentAtomic =>
+                  cases restReading with
+                  | arr tailReading productReading =>
+                      cases tailReading with
+                      | base tailAtomic =>
+                          cases productReading with
+                          | base productAtomic =>
+                              have all := product_elements readable productAtomic
+                              refine ⟨_, ⟨[(.mk [] "A", readingType naming component),
+                                (.mk [] "B", productType naming components)]⟩, checker.pairSchema, ?_⟩
+                              obtain ⟨first, second⟩ := tyvar_lookup (readingType naming component)
+                                (productType naming components)
+                              simp only [Mettapedia.Languages.OpenTheory.TypeSubst.apply_function,
+                                Mettapedia.Languages.OpenTheory.TypeSubst.apply_op, List.map_cons,
+                                List.map_nil, first, second, nameReading, guestTy, productTy]
+                              rw [readingType_expression_of_elements naming all,
+                                readingType_expression_of_elements naming
+                                  (fun element member => all element (List.mem_cons_of_mem _ member))]
+                              rfl
   | fst components =>
       cases components with
       | nil => simp [nameType] at lookup
       | cons component components =>
-          refine ⟨_, ⟨[(.mk [] "A", readingType naming component),
-            (.mk [] "B", productType naming components)]⟩, checker.fstSchema, ?_⟩
-          obtain ⟨first, second⟩ := tyvar_lookup (readingType naming component)
-            (productType naming components)
-          simp only [Mettapedia.Languages.OpenTheory.TypeSubst.apply_function,
-            Mettapedia.Languages.OpenTheory.TypeSubst.apply_op, List.map_cons, List.map_nil,
-            first, second, nameReading, guestTy, baseType, productTy, productType,
-            guestTy_toTy]
+          cases reading with
+          | arr productReading componentReading =>
+              cases productReading with
+              | base productAtomic =>
+                  cases componentReading with
+                  | base componentAtomic =>
+                      have all := product_elements readable productAtomic
+                      refine ⟨_, ⟨[(.mk [] "A", readingType naming component),
+                        (.mk [] "B", productType naming components)]⟩, checker.fstSchema, ?_⟩
+                      obtain ⟨first, second⟩ := tyvar_lookup (readingType naming component)
+                        (productType naming components)
+                      simp only [Mettapedia.Languages.OpenTheory.TypeSubst.apply_function,
+                        Mettapedia.Languages.OpenTheory.TypeSubst.apply_op, List.map_cons,
+                        List.map_nil, first, second, nameReading, guestTy, productTy]
+                      rw [readingType_expression_of_elements naming all]
+                      rfl
   | snd components =>
       cases components with
       | nil => simp [nameType] at lookup
       | cons component components =>
-          refine ⟨_, ⟨[(.mk [] "A", readingType naming component),
-            (.mk [] "B", productType naming components)]⟩, checker.sndSchema, ?_⟩
-          obtain ⟨first, second⟩ := tyvar_lookup (readingType naming component)
-            (productType naming components)
-          simp only [Mettapedia.Languages.OpenTheory.TypeSubst.apply_function,
-            Mettapedia.Languages.OpenTheory.TypeSubst.apply_op, List.map_cons, List.map_nil,
-            first, second, nameReading, guestTy, baseType, productTy, productType]
+          cases reading with
+          | arr productReading tailReading =>
+              cases productReading with
+              | base productAtomic =>
+                  have all := product_elements readable productAtomic
+                  refine ⟨_, ⟨[(.mk [] "A", readingType naming component),
+                    (.mk [] "B", productType naming components)]⟩, checker.sndSchema, ?_⟩
+                  obtain ⟨first, second⟩ := tyvar_lookup (readingType naming component)
+                    (productType naming components)
+                  simp only [Mettapedia.Languages.OpenTheory.TypeSubst.apply_function,
+                    Mettapedia.Languages.OpenTheory.TypeSubst.apply_op, List.map_cons,
+                    List.map_nil, first, second, nameReading, guestTy, productTy]
+                  rw [readingType_expression_of_elements naming all,
+                    readingType_expression_of_elements naming
+                      (fun element member => all element (List.mem_cons_of_mem _ member))]
+                  rfl
   | one =>
       refine ⟨_, Mettapedia.Languages.OpenTheory.TypeSubst.empty, checker.oneSchema, ?_⟩
-      simp [nameReading, guestTy, baseType, productTy, productType]
+      simp [nameReading, guestTy, productTy, readingType, expressionType]
 
 /-- Every well-named contract typing is resolved and formed in the checker. -/
 theorem guestTerm_formed :
@@ -1189,7 +1194,7 @@ theorem guestTerm_formed :
       ApplicativeTyped (nameType space) term type → WellNamed space leaves term →
         SourceResolved signature (guestTerm naming term) ∧
           AnnotationsFormed signature ((guestTerm naming term).toDB [])
-  | _, _, .constant lookup, ⟨type, lookup', reading, within⟩ => by
+  | _, _, .constant lookup, ⟨readable, type, lookup', reading, within⟩ => by
       rw [lookup] at lookup'
       cases lookup'
       have typeEq := nameType_eq_nameReading lookup
@@ -1199,7 +1204,7 @@ theorem guestTerm_formed :
         rw [SourceResolved]
         exact formed.2
       · simp only [guestTerm, Mettapedia.Languages.OpenTheory.SourceTerm.toDB.eq_1]
-        exact .constant formed.1 (constantInstance_nameConst checker lookup)
+        exact .constant formed.1 (constantInstance_nameConst checker lookup readable reading)
   | _, _, .app functionTyped argumentTyped, ⟨functionNamed, argumentNamed⟩ => by
       obtain ⟨functionResolved, functionFormed⟩ := guestTerm_formed functionTyped functionNamed
       obtain ⟨argumentResolved, argumentFormed⟩ := guestTerm_formed argumentTyped argumentNamed
@@ -1210,11 +1215,10 @@ theorem guestTerm_formed :
       · simp only [guestTerm, Mettapedia.Languages.OpenTheory.SourceTerm.toDB.eq_3]
         exact .app functionFormed argumentFormed
 
-/-- **The checker decides contract typing.**  For a well-named contract term
-and a faithfully read type, the checker's typing of the translation at the
-translated type is contract typing. -/
+/-- **The checker decides contract typing.**  For a well-named contract term and a contract
+reading, the checker's typing of the translation at the translated type is contract typing. -/
 theorem guestTyped_iff {term : ContractTerm} (applicative : Applicative term)
-    (wellNamed : WellNamed space leaves term) {type : Ty Atom} (reading : FaithfulReading type) :
+    (wellNamed : WellNamed space leaves term) {type : Ty Atom} (reading : ContractReading type) :
     ApplicativeTyped (nameType space) term type ↔
       GuestTyped signature (guestTerm naming term) (guestTy naming type) := by
   constructor
@@ -1256,7 +1260,7 @@ def readAnswer (source : CheckerTerm) : Atom :=
 /-- **The modelled reader reads every contract typing.**  Called on the
 tables of a theory whose signature is a checker signature of the space, the
 checker library's reader returns the positional elaboration of the
-translation of every well-named contract typing at a faithful reading. -/
+translation of every well-named contract typing at a contract reading. -/
 theorem checker_reads_contract_typing
     (checker : CheckerSignature naming space leaves world.signature)
     {term : ContractTerm} {type : Ty Atom}
@@ -1311,7 +1315,7 @@ theorem pureReturns_unique {bindings : Subst} {before after after' : Effects.Sta
 
 /-- **A refusal by the modelled reader refutes.**  If the reader returns
 anything but the elaboration, then the well-named contract term has no
-contract typing at any faithful reading. -/
+contract typing at any contract reading. -/
 theorem reader_refusal_refutes
     (checker : CheckerSignature naming space leaves world.signature)
     {term : ContractTerm} (wellNamed : WellNamed space leaves term)
@@ -1379,7 +1383,7 @@ reader and type judgment at the translated type is a contract typing. -/
 theorem checker_acceptance_is_contract_typing (sound : ReaderSound world table origins constants)
     (checker : CheckerSignature naming space leaves world.signature)
     {term : ContractTerm} (applicative : Applicative term)
-    (wellNamed : WellNamed space leaves term) {type : Ty Atom} (reading : FaithfulReading type)
+    (wellNamed : WellNamed space leaves term) {type : Ty Atom} (reading : ContractReading type)
     (typeWithin : TyLeavesWithin leaves type)
     (bindings : Subst) (state after : Effects.State)
     (operatorsKey constantsKey contextKey sourceKey termKey : String)

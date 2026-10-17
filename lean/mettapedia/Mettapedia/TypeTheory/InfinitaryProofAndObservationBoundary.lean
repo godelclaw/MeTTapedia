@@ -359,22 +359,24 @@ end Observation
 
 namespace WorldModel
 
+open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLInfinitary
+open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 
 /-- Satisfaction of the first `depth` members of a countable formula family. -/
 def SatisfiesPrefix {L : LO.FirstOrder.Language.{u}}
     (model : PointedFOL L) (formulas : Nat → FOLInfQuery L)
     (depth : Nat) : Prop :=
-  ∀ index, index < depth → SatisfiesInf model (formulas index)
+  ∀ index, index < depth → SatisfiesInf folSatisfies model (formulas index)
 
 /-- Countable conjunction semantics is the coherent limit of all finite
 conjunction-prefix obligations. -/
 theorem satisfiesInf_iAnd_iff_every_finite_prefix
     {L : LO.FirstOrder.Language.{u}}
     (model : PointedFOL L) (formulas : Nat → FOLInfQuery L) :
-    SatisfiesInf model (.iAnd formulas) ↔
+    SatisfiesInf folSatisfies model (.iAnd formulas) ↔
       ∀ depth, SatisfiesPrefix model formulas depth := by
-  rw [satisfiesInf_iAnd_iff]
+  rw [satisfiesInf_iAnd_iff folSatisfies]
   constructor
   · intro everyFormula depth index _bounded
     exact everyFormula index
@@ -386,10 +388,10 @@ component already appears in some finite prefix. -/
 theorem satisfiesInf_iOr_iff_some_finite_prefix
     {L : LO.FirstOrder.Language.{u}}
     (model : PointedFOL L) (formulas : Nat → FOLInfQuery L) :
-    SatisfiesInf model (.iOr formulas) ↔
+    SatisfiesInf folSatisfies model (.iOr formulas) ↔
       ∃ depth, ∃ index, index < depth ∧
-        SatisfiesInf model (formulas index) := by
-  rw [satisfiesInf_iOr_iff]
+        SatisfiesInf folSatisfies model (formulas index) := by
+  rw [satisfiesInf_iOr_iff folSatisfies]
   constructor
   · rintro ⟨index, satisfied⟩
     exact ⟨index + 1, index, Nat.lt_succ_self index, satisfied⟩

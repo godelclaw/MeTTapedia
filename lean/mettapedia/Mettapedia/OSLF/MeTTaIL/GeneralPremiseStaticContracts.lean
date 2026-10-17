@@ -16,6 +16,25 @@ namespace Mettapedia.OSLF.MeTTaIL.GeneralPremise.Static
 open Syntax RuleBinding ScopedRuleMatching
 open Mettapedia.GSLT.LanguageDef.WellSorted
 
+/-- Availability is a property of a registered primitive on typed caller
+inputs, independently of the continuation machine. A false response is an
+available empty table; an unavailable response cannot establish resolution. -/
+structure DynamicAvailability (environment : Environment) : Prop where
+  query : ∀ (request : Query.Request) (signature : Signature),
+    request.relation ∈ environment.provider.dynamicRelations →
+    signature? environment.provider request.relation request.arguments.length = some signature →
+    TypedAssignment environment request.context request.initial →
+    ∀ resolved, DynamicInputs request.context 0 request.initial request.arguments signature.modes resolved →
+      ∃ rows, environment.dynamic.Source request.relation resolved rows
+
+/-- An ordinary finite provider does not need a native availability promise. -/
+theorem DynamicAvailability.of_empty {environment : Environment}
+    (empty : environment.provider.dynamicRelations = []) : DynamicAvailability environment := by
+  constructor
+  intro request signature registered
+  simp only [empty, List.not_mem_nil] at registered
+
+
 structure InputFacts (environment : Environment) (context : Context)
     (refinement : Refinement) (assignment : Assignment) : Prop where
   typed : TypedAssignment environment context assignment

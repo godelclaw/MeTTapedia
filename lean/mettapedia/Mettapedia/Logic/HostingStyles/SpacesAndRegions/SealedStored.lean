@@ -41,7 +41,7 @@ open Mettapedia.Languages.MM0.Presentation.ComputationalAdmission
 open Mettapedia.Languages.MM0.Presentation.ComputationalSpecification
   (encodeEntries encodeProofDeclarations)
 open Mettapedia.OSLF.MeTTaIL.Syntax (Pattern)
-open Mettapedia.Logic.HostingStyles.PrimeCandidate (contract runPattern)
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles (contract runPattern)
 open Mettapedia.Logic.HostingStyles.AtomsReduce
   (ruleSpace closedAtom atomAt contract_ruleSpace contract_atomAt programTheory)
 open Mettapedia.Logic.HostingStyles.AmbientRegions

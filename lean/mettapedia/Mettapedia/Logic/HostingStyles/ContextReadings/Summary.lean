@@ -58,7 +58,7 @@ open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.Contexts (contextTheory)
 open Mettapedia.GSLT.Dedukti (tableEvaluator Tabled)
 open Mettapedia.OSLF.MeTTaIL.ContextualStep (BasePremiseEvaluator)
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Framework
 
 /-- **Where the three readings discard.** -/

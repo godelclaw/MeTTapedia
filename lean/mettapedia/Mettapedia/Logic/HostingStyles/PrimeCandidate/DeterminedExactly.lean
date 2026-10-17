@@ -31,7 +31,9 @@ theories given by a table those are, by the syntax of the table.
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -379,4 +381,4 @@ theorem freeRule_unbound : Mentions 0 0 freeRule.rhs ∧ ¬ Mentions 0 0 freeRul
 #print axioms exists_respecting_hostOf_iff_determinedTabular
 #print axioms freeRule_unbound
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

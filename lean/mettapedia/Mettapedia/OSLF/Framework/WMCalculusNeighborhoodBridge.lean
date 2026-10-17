@@ -5,7 +5,7 @@ import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood
 # WM Calculus ↔ Neighborhood Semantics OSLF Bridge
 
 This module connects the OSLF LanguageDef modal operators (◇, □, ◇ ⊣ □) to the
-concrete `BinaryWorldModel (Multiset PointedNeighborhood) ModalQuery` instance from
+concrete `BinaryWorldModel (Multiset PointedNeighborhood) (LO.Modal.Formula ℕ)` instance from
 neighborhood semantics.
 
 ## Architecture — Valuation Fibers
@@ -18,7 +18,7 @@ WM calculus LanguageDef.
 The bridge proves:
 - **BinaryEvidence-add correspondence**: the LanguageDef reduction
   `Extract(Revise(W₁,W₂), q) → Combine(Extract(W₁,q), Extract(W₂,q))`
-  is the syntactic shadow of `neighborhoodEvidence (W₁+W₂) φ = neighborhoodEvidence W₁ φ + neighborhoodEvidence W₂ φ`.
+  is the syntactic shadow of `crispEvidence PointedNeighborhood.satisfies (W₁+W₂) φ = crispEvidence PointedNeighborhood.satisfies W₁ φ + crispEvidence PointedNeighborhood.satisfies W₂ φ`.
 - **Diamond interpretation**: ◇(isCombined) at decomposable terms means evidence
   can be decomposed into per-source neighborhood satisfaction counts.
 - **Singleton adequacy**: pointed-model satisfaction ↔ strength = 1 lifts through
@@ -29,7 +29,7 @@ The bridge proves:
 ## References
 
 - `WMCalculusOSLFBridge.lean` — generic bridge (WMTermEncodes, isCombined, diamond theorems)
-- `PLNWorldModelNeighborhood.lean` — `BinaryWorldModel (Multiset PointedNeighborhood) ModalQuery`
+- `PLNWorldModelNeighborhood.lean` — `BinaryWorldModel (Multiset PointedNeighborhood) (LO.Modal.Formula ℕ)`
 - `TypeSynthesis.lean` — `langDiamond`, `langBox`, `langGalois`
 -/
 
@@ -41,6 +41,7 @@ open Mettapedia.OSLF.Framework.WMCalculusLanguageDef
 open Mettapedia.OSLF.Framework.WMCalculusOSLFBridge
 open Mettapedia.OSLF.Framework.PLNWMHypercubeBasis
 open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.Evidence.EvidenceQuantale
@@ -56,7 +57,7 @@ structure NeighborhoodValuation where
   /-- Maps state names to multisets of pointed neighborhood models. -/
   stateVal : String → Multiset PointedNeighborhood
   /-- Maps query names to modal formulas. -/
-  queryVal : String → ModalQuery
+  queryVal : String → (LO.Modal.Formula ℕ)
 
 /-! ## Section 2: BinaryEvidence-Add Correspondence
 
@@ -65,7 +66,7 @@ are the same fact expressed in two formalisms. -/
 
 /-- The syntactic evidence-add reduction and the semantic evidence additivity
     are corresponding facts: one is a LanguageDef rewrite step, the other is
-    the `neighborhoodEvidence_add` theorem.  Both express that evidence
+    the `crispEvidence_add` theorem.  Both express that evidence
     extraction distributes over state composition. -/
 theorem neighborhood_evidence_add_correspondence
     (v : WMExtVertex) (val : NeighborhoodValuation) (s₁ s₂ q : String) :
@@ -74,12 +75,12 @@ theorem neighborhood_evidence_add_correspondence
       (pExtract (pRevise (.fvar s₁) (.fvar s₂)) (.fvar q))
       (pCombine (pExtract (.fvar s₁) (.fvar q)) (pExtract (.fvar s₂) (.fvar q))) ∧
     -- Semantic side: evidence additivity holds on the valued neighborhood states
-    neighborhoodEvidence (val.stateVal s₁ + val.stateVal s₂) (val.queryVal q) =
-      neighborhoodEvidence (val.stateVal s₁) (val.queryVal q) +
-        neighborhoodEvidence (val.stateVal s₂) (val.queryVal q) :=
+    crispEvidence PointedNeighborhood.satisfies (val.stateVal s₁ + val.stateVal s₂) (val.queryVal q) =
+      crispEvidence PointedNeighborhood.satisfies (val.stateVal s₁) (val.queryVal q) +
+        crispEvidence PointedNeighborhood.satisfies (val.stateVal s₂) (val.queryVal q) :=
   ⟨langReduces_to_semantic _
       (wmLangReduces_evidenceAdd v (.fvar s₁) (.fvar s₂) (.fvar q)),
-   neighborhoodEvidence_add (val.stateVal s₁) (val.stateVal s₂) (val.queryVal q)⟩
+   crispEvidence_add PointedNeighborhood.satisfies (val.stateVal s₁) (val.stateVal s₂) (val.queryVal q)⟩
 
 /-- Full-vertex version of evidence-add correspondence. -/
 theorem neighborhood_evidence_add_correspondence_full
@@ -87,12 +88,12 @@ theorem neighborhood_evidence_add_correspondence_full
     langSemanticReduces (wmFullVertexLanguageDef v)
       (pExtract (pRevise (.fvar s₁) (.fvar s₂)) (.fvar q))
       (pCombine (pExtract (.fvar s₁) (.fvar q)) (pExtract (.fvar s₂) (.fvar q))) ∧
-    neighborhoodEvidence (val.stateVal s₁ + val.stateVal s₂) (val.queryVal q) =
-      neighborhoodEvidence (val.stateVal s₁) (val.queryVal q) +
-        neighborhoodEvidence (val.stateVal s₂) (val.queryVal q) :=
+    crispEvidence PointedNeighborhood.satisfies (val.stateVal s₁ + val.stateVal s₂) (val.queryVal q) =
+      crispEvidence PointedNeighborhood.satisfies (val.stateVal s₁) (val.queryVal q) +
+        crispEvidence PointedNeighborhood.satisfies (val.stateVal s₂) (val.queryVal q) :=
   ⟨langReduces_to_semantic _
       (wmFullLangReduces_evidenceAdd v (.fvar s₁) (.fvar s₂) (.fvar q)),
-   neighborhoodEvidence_add (val.stateVal s₁) (val.stateVal s₂) (val.queryVal q)⟩
+   crispEvidence_add PointedNeighborhood.satisfies (val.stateVal s₁) (val.stateVal s₂) (val.queryVal q)⟩
 
 /-! ## Section 3: Diamond Interpretation
 
@@ -109,14 +110,14 @@ theorem neighborhood_diamond_evidence_decomposition
       (pExtract (pRevise (.fvar s₁) (.fvar s₂)) (.fvar q)) ∧
     -- Semantic: evidence decomposes into per-source components
     ∃ e₁ e₂ : BinaryEvidence,
-      e₁ = neighborhoodEvidence (val.stateVal s₁) (val.queryVal q) ∧
-      e₂ = neighborhoodEvidence (val.stateVal s₂) (val.queryVal q) ∧
-      neighborhoodEvidence (val.stateVal s₁ + val.stateVal s₂) (val.queryVal q) = e₁ + e₂ :=
+      e₁ = crispEvidence PointedNeighborhood.satisfies (val.stateVal s₁) (val.queryVal q) ∧
+      e₂ = crispEvidence PointedNeighborhood.satisfies (val.stateVal s₂) (val.queryVal q) ∧
+      crispEvidence PointedNeighborhood.satisfies (val.stateVal s₁ + val.stateVal s₂) (val.queryVal q) = e₁ + e₂ :=
   ⟨diamond_isCombined_at_decomposable v (.fvar s₁) (.fvar s₂) (.fvar q),
-   ⟨neighborhoodEvidence (val.stateVal s₁) (val.queryVal q),
-    neighborhoodEvidence (val.stateVal s₂) (val.queryVal q),
+   ⟨crispEvidence PointedNeighborhood.satisfies (val.stateVal s₁) (val.queryVal q),
+    crispEvidence PointedNeighborhood.satisfies (val.stateVal s₂) (val.queryVal q),
     rfl, rfl,
-    neighborhoodEvidence_add (val.stateVal s₁) (val.stateVal s₂) (val.queryVal q)⟩⟩
+    crispEvidence_add PointedNeighborhood.satisfies (val.stateVal s₁) (val.stateVal s₂) (val.queryVal q)⟩⟩
 
 /-- Revision commutativity: the syntactic diamond for commutativity corresponds
     to the semantic fact that multiset addition is commutative. -/
@@ -136,14 +137,14 @@ Pointed-model satisfaction ↔ strength = 1 lifts through the valuation. -/
     iff the WM query strength at the singleton state equals 1, lifted through
     the valuation. -/
 theorem neighborhood_singleton_adequacy_lift
-    (val : NeighborhoodValuation) (pn : PointedNeighborhood) (φ : ModalQuery)
+    (val : NeighborhoodValuation) (pn : PointedNeighborhood) (φ : (LO.Modal.Formula ℕ))
     (s : String) (hs : val.stateVal s = {pn}) :
     pn.satisfies φ ↔
       BinaryWorldModel.queryStrength
-        (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+        (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (val.stateVal s) φ = 1 := by
   rw [hs]
-  exact singleton_adequacy_strength_one pn φ
+  exact singleton_adequacy_strength_one PointedNeighborhood.satisfies pn φ
 
 /-! ## Section 5: BinaryEvidence Barb (Process-Algebraic Observable)
 
@@ -169,11 +170,11 @@ the evidence is non-zero. -/
 /-- If a pointed neighborhood model in the multiset satisfies the query,
     the positive evidence count is at least 1. -/
 theorem neighborhood_nonzero_evidence_of_satisfying_model
-    (W : Multiset PointedNeighborhood) (φ : ModalQuery)
+    (W : Multiset PointedNeighborhood) (φ : (LO.Modal.Formula ℕ))
     (pn : PointedNeighborhood) (hmem : pn ∈ W) (hsat : pn.satisfies φ) :
-    (neighborhoodEvidence W φ).pos ≥ 1 := by
+    (crispEvidence PointedNeighborhood.satisfies W φ).pos ≥ 1 := by
   classical
-  simp only [neighborhoodEvidence]
+  simp only [crispEvidence]
   have hpos : 0 < Multiset.countP (fun pn => pn.satisfies φ) W :=
     Multiset.countP_pos.mpr ⟨pn, hmem, hsat⟩
   exact_mod_cast hpos
@@ -181,9 +182,9 @@ theorem neighborhood_nonzero_evidence_of_satisfying_model
 /-- Valued version: if the valuation maps a state name to a multiset containing
     a model satisfying the query, then evidence is non-zero. -/
 theorem neighborhood_nonzero_evidence_of_satisfying_model_val
-    (val : NeighborhoodValuation) (s : String) (φ : ModalQuery)
+    (val : NeighborhoodValuation) (s : String) (φ : (LO.Modal.Formula ℕ))
     (pn : PointedNeighborhood) (hmem : pn ∈ val.stateVal s) (hsat : pn.satisfies φ) :
-    (neighborhoodEvidence (val.stateVal s) φ).pos ≥ 1 :=
+    (crispEvidence PointedNeighborhood.satisfies (val.stateVal s) φ).pos ≥ 1 :=
   neighborhood_nonzero_evidence_of_satisfying_model (val.stateVal s) φ pn hmem hsat
 
 /-! ## Section 7: Consequence Lifting Through OSLF
@@ -195,14 +196,14 @@ ordering on multiset states. -/
     if every pointed model satisfying φ also satisfies ψ, then the WM query
     strength of φ is at most that of ψ at any multiset state. -/
 theorem neighborhood_consequence_lifts
-    (φ ψ : ModalQuery)
+    (φ ψ : (LO.Modal.Formula ℕ))
     (himp : ∀ pn : PointedNeighborhood, pn.satisfies φ → pn.satisfies ψ)
     (W : Multiset PointedNeighborhood) :
     BinaryWorldModel.queryStrength
-      (State := Multiset PointedNeighborhood) (Query := ModalQuery) W φ ≤
+      (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ)) W φ ≤
     BinaryWorldModel.queryStrength
-      (State := Multiset PointedNeighborhood) (Query := ModalQuery) W ψ :=
-  queryStrength_le_of_pointwise W φ ψ himp
+      (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ)) W ψ :=
+  queryStrength_le_of_pointwise PointedNeighborhood.satisfies W φ ψ himp
 
 /-! ## Section 8: Galois Corollary with Neighborhood Reading
 

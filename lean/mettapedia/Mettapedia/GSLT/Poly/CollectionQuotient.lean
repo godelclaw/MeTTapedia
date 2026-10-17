@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.WellSorted
+import Mettapedia.GSLT.Poly.CollectionIndexedQuotient
 import Mettapedia.GSLT.Poly.CollectionLanguage
 import Mathlib.Data.Multiset.Basic
 import Mathlib.Data.QPF.Univariate.Basic
@@ -20,6 +21,8 @@ namespace Mettapedia.GSLT.Poly.CollectionQuotient
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.WellSorted
+open Mettapedia.GSLT.Poly.CollectionIndexed
+open Mettapedia.GSLT.Poly.CollectionIndexedEquiv
 open Mettapedia.GSLT.Poly.CollectionLanguage
 
 /-- Nullary atoms and one hash bag of the same sort. -/
@@ -330,19 +333,434 @@ def encodeSetoid : Setoid ClosedBag where
 noncomputable def closedOfTree (tree : QPF.Fix CollShape) : ClosedBag :=
   ⟨bagToPattern tree, bagToPattern_hasType tree, bagToPattern_isObject tree⟩
 
-/-- Bag trees are the closed object patterns modulo permutation of bag elements. -/
-noncomputable def bagClosedEquiv :
-    QPF.Fix CollShape ≃ Quotient encodeSetoid where
-  toFun tree := Quotient.mk _ (closedOfTree tree)
-  invFun := Quotient.lift (fun pattern => encodePattern pattern.1) fun _ _ equal => equal
-  left_inv tree := by
-    change encodePattern (bagToPattern tree) = tree
-    exact encode_bagToPattern tree
-  right_inv pattern := by
-    refine Quotient.inductionOn pattern ?_
-    intro closed
-    apply Quotient.sound
-    exact encode_bagToPattern (encodePattern closed.1)
+/-- A pattern that is not an atom and not a bare hash bag reads as the atom `U`. -/
+theorem encodeFuel_succ_fallback (pattern : Pattern) (bound : Nat)
+    (notU : pattern ≠ .apply "U" [])
+    (notW : pattern ≠ .apply "W" [])
+    (notBag : ∀ elements, pattern ≠ .collection .hashBag elements none) :
+    encodeFuel (bound + 1) pattern = atomTree .u := by
+  unfold encodeFuel
+  rw [if_neg notU, if_neg notW]
+  cases pattern with
+  | bvar _ => rfl
+  | fvar _ => rfl
+  | lambda _ _ => rfl
+  | multiLambda _ _ _ => rfl
+  | subst _ _ => rfl
+  | apply _ _ => rfl
+  | collection kind elements rest =>
+      cases kind with
+      | vec => rfl
+      | hashSet => rfl
+      | hashBag =>
+          cases rest with
+          | some _ => rfl
+          | none => exact (notBag elements rfl).elim
+
+theorem encodePattern_atom (pattern : Pattern)
+    (notU : pattern ≠ .apply "U" [])
+    (notW : pattern ≠ .apply "W" [])
+    (notBag : ∀ elements, pattern ≠ .collection .hashBag elements none) :
+    encodePattern pattern = atomTree .u := by
+  unfold encodePattern
+  exact encodeFuel_succ_fallback pattern (sizeOf pattern) notU notW notBag
+
+theorem apply_nonempty_not_nullary (label atom : String) (before : List Pattern)
+    (argument : Pattern) (after : List Pattern) :
+    Pattern.apply label (before ++ argument :: after) ≠ Pattern.apply atom [] := by
+  intro same
+  injection same with _ args
+  have lengths := congrArg List.length args
+  simp only [List.length_append, List.length_cons, List.length_nil] at lengths
+  omega
+
+/-- Bag permutation, and every other pattern step, preserves the multiset reading. -/
+theorem encode_patternCong {left right : Pattern} (related : PatternCong left right) :
+    encodePattern left = encodePattern right := by
+  induction related with
+  | refl _ => rfl
+  | symm _ inductionHypothesis => exact inductionHypothesis.symm
+  | trans _ _ inductionHypothesis inductionHypothesis' =>
+      exact inductionHypothesis.trans inductionHypothesis'
+  | @bagPerm elements swapped perm => exact encode_list_perm perm
+  | @setPerm elements swapped _perm =>
+      exact (encodePattern_atom (.collection .hashSet elements none)
+        (by intro same; cases same) (by intro same; cases same)
+        (by intro _ same; cases same)).trans
+        (encodePattern_atom (.collection .hashSet swapped none)
+          (by intro same; cases same) (by intro same; cases same)
+          (by intro _ same; cases same)).symm
+  | @setDup before element after =>
+      exact (encodePattern_atom
+          (.collection .hashSet (before ++ element :: element :: after) none)
+          (by intro same; cases same) (by intro same; cases same)
+          (by intro _ same; cases same)).trans
+        (encodePattern_atom (.collection .hashSet (before ++ element :: after) none)
+          (by intro same; cases same) (by intro same; cases same)
+          (by intro _ same; cases same)).symm
+  | @applyAt label before leftPattern rightPattern after _related _ih =>
+      exact (encodePattern_atom (.apply label (before ++ leftPattern :: after))
+        (apply_nonempty_not_nullary label "U" before leftPattern after)
+        (apply_nonempty_not_nullary label "W" before leftPattern after)
+        (by intro _ same; cases same)).trans
+        (encodePattern_atom (.apply label (before ++ rightPattern :: after))
+          (apply_nonempty_not_nullary label "U" before rightPattern after)
+          (apply_nonempty_not_nullary label "W" before rightPattern after)
+          (by intro _ same; cases same)).symm
+  | @lambdaAt binder leftBody rightBody _related _ih =>
+      exact (encodePattern_atom (.lambda binder leftBody)
+        (by intro same; cases same) (by intro same; cases same)
+        (by intro _ same; cases same)).trans
+        (encodePattern_atom (.lambda binder rightBody)
+          (by intro same; cases same) (by intro same; cases same)
+          (by intro _ same; cases same)).symm
+  | @multiLambdaAt arity binders leftBody rightBody _related _ih =>
+      exact (encodePattern_atom (.multiLambda arity binders leftBody)
+        (by intro same; cases same) (by intro same; cases same)
+        (by intro _ same; cases same)).trans
+        (encodePattern_atom (.multiLambda arity binders rightBody)
+          (by intro same; cases same) (by intro same; cases same)
+          (by intro _ same; cases same)).symm
+  | @collectionAt kind before leftPattern rightPattern after rest
+      inductionHypothesis _ih =>
+      cases kind with
+      | hashBag =>
+          cases rest with
+          | none =>
+              rw [encodePattern_bag, encodePattern_bag]
+              apply congrArg bagTree
+              apply congrArg (Multiset.ofList (α := QPF.Fix CollShape))
+              simp only [List.map_append, List.map_cons, _ih]
+          | some name =>
+              exact (encodePattern_atom
+                  (.collection .hashBag (before ++ leftPattern :: after) (some name))
+                  (by intro same; cases same) (by intro same; cases same)
+                  (by intro _ same; cases same)).trans
+                (encodePattern_atom
+                  (.collection .hashBag (before ++ rightPattern :: after) (some name))
+                  (by intro same; cases same) (by intro same; cases same)
+                  (by intro _ same; cases same)).symm
+      | hashSet =>
+          exact (encodePattern_atom
+              (.collection .hashSet (before ++ leftPattern :: after) rest)
+              (by intro same; cases same) (by intro same; cases same)
+              (by intro _ same; cases same)).trans
+            (encodePattern_atom
+              (.collection .hashSet (before ++ rightPattern :: after) rest)
+              (by intro same; cases same) (by intro same; cases same)
+              (by intro _ same; cases same)).symm
+      | vec =>
+          exact (encodePattern_atom
+              (.collection .vec (before ++ leftPattern :: after) rest)
+              (by intro same; cases same) (by intro same; cases same)
+              (by intro _ same; cases same)).trans
+            (encodePattern_atom
+              (.collection .vec (before ++ rightPattern :: after) rest)
+              (by intro same; cases same) (by intro same; cases same)
+              (by intro _ same; cases same)).symm
+
+theorem elementsHaveType_of_mem {language : LanguageDef} {free : FreeTypeContext}
+    {bound : List TypeExpr} {elements : List Pattern} {elementType : TypeExpr}
+    {element : Pattern}
+    (typed : ElementsHaveType language free bound elements elementType)
+    (member : element ∈ elements) :
+    HasType language free bound element elementType :=
+  match typed with
+  | .nil _ _ => by cases member
+  | .cons headTyped tailTyped => by
+      cases member with
+      | head => exact headTyped
+      | tail _ member => exact elementsHaveType_of_mem tailTyped member
+
+theorem object_of_mem {element : Pattern} {elements : List Pattern}
+    (objects : isObjectPatternList elements = true) (member : element ∈ elements) :
+    isObjectPattern element = true := by
+  induction elements with
+  | nil => cases member
+  | cons head tail inductionHypothesis =>
+      simp only [isObjectPatternList, Bool.and_eq_true] at objects
+      cases member with
+      | head => exact objects.1
+      | tail _ member => exact inductionHypothesis objects.2 member
+
+/-- An application node is typed by one ordinary constructor rule. -/
+theorem apply_rule_of_hasType
+    {language : LanguageDef} {free : FreeTypeContext} {bound : List TypeExpr}
+    {label : String} {arguments : List Pattern} {type : TypeExpr}
+    (typed : HasType language free bound (.apply label arguments) type) :
+    ∃ rule ∈ language.terms,
+      ¬ UsesBareCollection rule ∧
+      rule.label = label ∧
+      type = .base rule.category ∧
+      ArgumentsHaveTypes language free bound arguments rule.params := by
+  cases typed with
+  | constructor membership notBare argumentsTyped =>
+      exact ⟨_, membership, notBare, rfl, rfl, argumentsTyped⟩
+
+/-- A collection node is a collection type or one bare collection rule. -/
+theorem collection_rule_of_hasType
+    {language : LanguageDef} {free : FreeTypeContext} {bound : List TypeExpr}
+    {kind : CollType} {elements : List Pattern} {rest : Option String}
+    {type : TypeExpr}
+    (typed : HasType language free bound (.collection kind elements rest) type) :
+    (∃ elementType,
+        type = .collection kind elementType ∧
+          ElementsHaveType language free bound elements elementType) ∨
+      (∃ rule ∈ language.terms, ∃ parameterName elementType,
+        rule.params =
+            [.simple parameterName (.collection kind elementType)] ∧
+          type = .base rule.category ∧
+          ElementsHaveType language free bound elements elementType) := by
+  cases typed with
+  | collection elementsTyped =>
+      exact Or.inl ⟨_, rfl, elementsTyped⟩
+  | collectionConstructor membership shape elementsTyped =>
+      exact Or.inr ⟨_, membership, _, _, shape, rfl, elementsTyped⟩
+
+/-- A closed bag pattern is an atom `U`, an atom `W`, or a hash bag of closed bag patterns. -/
+theorem bag_closed_shape (pattern : Pattern)
+    (typed : HasType bagLanguage FreeTypeContext.empty [] pattern (.base "A"))
+    (object : isObjectPattern pattern = true) :
+    pattern = .apply "U" [] ∨ pattern = .apply "W" [] ∨
+      ∃ elements : List Pattern,
+        pattern = .collection .hashBag elements none ∧
+          ∀ element ∈ elements,
+            HasType bagLanguage FreeTypeContext.empty [] element (.base "A") ∧
+              isObjectPattern element = true := by
+  cases pattern with
+  | bvar _ => exact (bvar_not_typed_in_empty typed).elim
+  | fvar _ => exact (fvar_not_typed_in_empty typed).elim
+  | lambda _ _ =>
+      generalize typeEq : TypeExpr.base "A" = result at typed
+      cases typed
+      cases typeEq
+  | multiLambda _ _ _ =>
+      generalize typeEq : TypeExpr.base "A" = result at typed
+      cases typed
+      cases typeEq
+  | subst _ _ => simp [isObjectPattern] at object
+  | apply label arguments =>
+      rcases apply_rule_of_hasType typed with
+        ⟨rule, membership, notBare, labelEq, _typeEq, argumentsTyped⟩
+      simp only [bagLanguage, atomURule, atomWRule, hashBagRule, List.mem_cons,
+        List.mem_nil_iff, or_false] at membership
+      rcases membership with rfl | rfl | rfl
+      · have lengthZero := ArgumentsHaveTypes.length_eq argumentsTyped
+        simp only [List.length_nil] at lengthZero
+        have argumentsNil : arguments = [] := List.length_eq_zero_iff.mp lengthZero
+        subst argumentsNil
+        cases labelEq
+        exact Or.inl rfl
+      · have lengthZero := ArgumentsHaveTypes.length_eq argumentsTyped
+        simp only [List.length_nil] at lengthZero
+        have argumentsNil : arguments = [] := List.length_eq_zero_iff.mp lengthZero
+        subst argumentsNil
+        cases labelEq
+        exact Or.inr (Or.inl rfl)
+      · exact (notBare ⟨"xs", .hashBag, .base "A", rfl⟩).elim
+  | collection kind elements rest =>
+      cases rest with
+      | some _ => simp [isObjectPattern] at object
+      | none =>
+          rcases collection_rule_of_hasType typed with
+            ⟨_elementType, typeEq, _elementsTyped⟩ |
+            ⟨rule, membership, _parameterName, _elementType, paramsEq, _typeEq,
+              elementsTyped⟩
+          · cases typeEq
+          · simp only [bagLanguage, atomURule, atomWRule, hashBagRule, List.mem_cons,
+              List.mem_nil_iff, or_false] at membership
+            rcases membership with rfl | rfl | rfl
+            · cases paramsEq
+            · cases paramsEq
+            · injection paramsEq with headEq _tailEq
+              injection headEq with _nameEq collEq
+              injection collEq with kindEq elementEq
+              subst kindEq
+              subst elementEq
+              simp only [isObjectPattern, Bool.and_eq_true] at object
+              refine Or.inr (Or.inr ⟨elements, rfl, ?_⟩)
+              intro element member
+              exact ⟨elementsHaveType_of_mem elementsTyped member,
+                object_of_mem object.2 member⟩
+
+theorem encode_u_ne_w :
+    encodePattern (.apply "U" []) ≠ encodePattern (.apply "W" []) := by
+  rw [encodePattern_u, encodePattern_w]
+  intro same
+  have destEqual := congrArg QPF.Fix.dest same
+  unfold atomTree at destEqual
+  rw [QPF.Fix.dest_mk, QPF.Fix.dest_mk] at destEqual
+  cases destEqual
+
+theorem encode_u_ne_bag (elements : List Pattern) :
+    encodePattern (.apply "U" []) ≠
+      encodePattern (.collection .hashBag elements none) := by
+  rw [encodePattern_u, encodePattern_bag]
+  intro same
+  have destEqual := congrArg QPF.Fix.dest same
+  unfold atomTree bagTree at destEqual
+  rw [QPF.Fix.dest_mk, QPF.Fix.dest_mk] at destEqual
+  cases destEqual
+
+theorem encode_w_ne_bag (elements : List Pattern) :
+    encodePattern (.apply "W" []) ≠
+      encodePattern (.collection .hashBag elements none) := by
+  rw [encodePattern_w, encodePattern_bag]
+  intro same
+  have destEqual := congrArg QPF.Fix.dest same
+  unfold atomTree bagTree at destEqual
+  rw [QPF.Fix.dest_mk, QPF.Fix.dest_mk] at destEqual
+  cases destEqual
+
+theorem bag_child_smaller {elements : List Pattern} {element : Pattern}
+    (member : element ∈ elements) :
+    sizeOf element < sizeOf (Pattern.collection .hashBag elements none) := by
+  have listSmall := List.sizeOf_lt_of_mem member
+  simp only [Pattern.collection.sizeOf_spec]
+  omega
+
+/-- Replacing children one by one sends a pointwise congruence to the bag. -/
+theorem patternCong_bag_forall2_aux (before : List Pattern) {left right : List Pattern} :
+    List.Forall₂ PatternCong left right →
+      PatternCong (.collection .hashBag (before ++ left) none)
+        (.collection .hashBag (before ++ right) none)
+  | .nil => by
+      exact PatternCong.refl _
+  | .cons (b := rightHead) (l₁ := leftTail) headRelated tailRelated => by
+      apply PatternCong.trans
+      · exact PatternCong.collectionAt (kind := .hashBag) (before := before)
+          (after := leftTail) (rest := none) headRelated
+      · have step :=
+          patternCong_bag_forall2_aux (before ++ [rightHead]) tailRelated
+        simpa [List.append_assoc, List.singleton_append] using step
+
+theorem patternCong_bag_forall2 {left right : List Pattern}
+    (related : List.Forall₂ PatternCong left right) :
+    PatternCong (.collection .hashBag left none) (.collection .hashBag right none) :=
+  patternCong_bag_forall2_aux [] related
+
+theorem exists_forall2_of_map_perm {α β : Type} (f : α → β) :
+    ∀ {left right : List α}, (left.map f).Perm (right.map f) →
+      ∃ middle, left.Perm middle ∧ List.Forall₂ (fun a b => f a = f b) middle right := by
+  intro left right
+  induction right generalizing left with
+  | nil =>
+      intro perm
+      have leftNil : left = [] := by
+        have lengthEq := List.Perm.length_eq perm
+        simp only [List.length_map, List.length_nil, List.length_eq_zero_iff] at lengthEq
+        exact lengthEq
+      subst leftNil
+      exact ⟨[], List.Perm.nil, List.Forall₂.nil⟩
+  | cons head tail inductionHypothesis =>
+      intro perm
+      have headMem : f head ∈ (head :: tail).map f :=
+        List.mem_map.mpr ⟨head, List.mem_cons_self, rfl⟩
+      have mem : f head ∈ left.map f := (perm.mem_iff).mpr headMem
+      obtain ⟨element, elementMem, encoded⟩ := List.mem_map.mp mem
+      obtain ⟨before, after, rfl⟩ := List.append_of_mem elementMem
+      have moved :
+          ((before.map f) ++ f element :: after.map f).Perm
+            (f element :: (before ++ after).map f) := by
+        simp [List.map_append]
+      have headPerm :
+          (f element :: (before ++ after).map f).Perm (f head :: tail.map f) := by
+        have rewriteMaps :
+            (before ++ element :: after).map f =
+              before.map f ++ f element :: after.map f := by
+          simp [List.map_append, List.map_cons]
+        rw [← rewriteMaps] at moved
+        exact moved.symm.trans perm
+      rw [encoded] at headPerm
+      have tailPerm : ((before ++ after).map f).Perm (tail.map f) := headPerm.cons_inv
+      obtain ⟨middleRest, restPerm, zipped⟩ :=
+        inductionHypothesis (left := before ++ after) tailPerm
+      refine ⟨element :: middleRest, ?_, List.Forall₂.cons encoded zipped⟩
+      exact (@List.perm_middle _ element before after).trans (restPerm.cons element)
+
+mutual
+
+/-- Equal multiset readings of closed bag patterns are the pattern congruence. -/
+theorem patternCong_of_encode_fuel :
+    (fuel : Nat) → (left right : Pattern) →
+    sizeOf left < fuel → sizeOf right < fuel →
+    HasType bagLanguage FreeTypeContext.empty [] left (.base "A") →
+    HasType bagLanguage FreeTypeContext.empty [] right (.base "A") →
+    isObjectPattern left = true → isObjectPattern right = true →
+    encodePattern left = encodePattern right →
+    PatternCong left right
+  | 0, _, _, small, _, _, _, _, _, _ => absurd small (Nat.not_lt_zero _)
+  | fuel + 1, left, right, leftSmall, rightSmall, typedLeft, typedRight,
+      objectLeft, objectRight, same => by
+      rcases bag_closed_shape left typedLeft objectLeft with rfl | rfl | ⟨elements, rfl, eachLeft⟩
+      · rcases bag_closed_shape right typedRight objectRight with
+          rfl | rfl | ⟨elementsRight, rfl, _⟩
+        · exact PatternCong.refl _
+        · exact absurd same encode_u_ne_w
+        · exact absurd same (encode_u_ne_bag elementsRight)
+      · rcases bag_closed_shape right typedRight objectRight with
+          rfl | rfl | ⟨elementsRight, rfl, _⟩
+        · exact absurd same encode_u_ne_w.symm
+        · exact PatternCong.refl _
+        · exact absurd same (encode_w_ne_bag elementsRight)
+      · rcases bag_closed_shape right typedRight objectRight with
+          rfl | rfl | ⟨elementsRight, rfl, eachRight⟩
+        · exact absurd same (encode_u_ne_bag elements).symm
+        · exact absurd same (encode_w_ne_bag elements).symm
+        · rw [encode_bag_eq_iff] at same
+          obtain ⟨middle, perm, zipped⟩ := exists_forall2_of_map_perm encodePattern same
+          exact PatternCong.trans (PatternCong.bagPerm perm)
+            (patternCong_bag_forall2
+              (forall2_patternCong_fuel fuel
+                (fun element member => (perm.mem_iff).mpr member) eachLeft eachRight
+                (fun element member => by
+                  have source := (perm.mem_iff).mpr member
+                  have smaller := bag_child_smaller source
+                  exact Nat.lt_of_lt_of_le smaller (Nat.le_of_lt_succ leftSmall))
+                (fun element member => by
+                  have smaller := bag_child_smaller member
+                  exact Nat.lt_of_lt_of_le smaller (Nat.le_of_lt_succ rightSmall))
+                zipped))
+termination_by fuel _ _ _ _ _ _ _ _ _ => (fuel, 0)
+
+/-- Pointwise equal readings of smaller closed patterns are the pattern congruence. -/
+theorem forall2_patternCong_fuel (fuel : Nat) {middle right source : List Pattern}
+    (inSource : ∀ element ∈ middle, element ∈ source)
+    (eachSource : ∀ element ∈ source,
+      HasType bagLanguage FreeTypeContext.empty [] element (.base "A") ∧
+        isObjectPattern element = true)
+    (eachRight : ∀ element ∈ right,
+      HasType bagLanguage FreeTypeContext.empty [] element (.base "A") ∧
+        isObjectPattern element = true)
+    (sizeMiddle : ∀ element ∈ middle, sizeOf element < fuel)
+    (sizeRight : ∀ element ∈ right, sizeOf element < fuel)
+    (zipped : List.Forall₂ (fun a b => encodePattern a = encodePattern b) middle right) :
+    List.Forall₂ PatternCong middle right :=
+  match zipped with
+  | .nil => List.Forall₂.nil
+  | .cons (a := leftHead) (b := rightHead) (l₁ := leftTail) (l₂ := rightTail)
+      sameEncode tail =>
+      List.Forall₂.cons
+        (patternCong_of_encode_fuel fuel leftHead rightHead
+          (sizeMiddle leftHead (@List.mem_cons_self _ leftHead leftTail))
+          (sizeRight rightHead (@List.mem_cons_self _ rightHead rightTail))
+          (eachSource leftHead
+            (inSource leftHead (@List.mem_cons_self _ leftHead leftTail))).1
+          (eachRight rightHead (@List.mem_cons_self _ rightHead rightTail)).1
+          (eachSource leftHead
+            (inSource leftHead (@List.mem_cons_self _ leftHead leftTail))).2
+          (eachRight rightHead (@List.mem_cons_self _ rightHead rightTail)).2
+          sameEncode)
+        (forall2_patternCong_fuel fuel
+          (fun element member => inSource element (List.mem_cons_of_mem leftHead member))
+          eachSource
+          (fun element member => eachRight element (List.mem_cons_of_mem rightHead member))
+          (fun element member => sizeMiddle element (List.mem_cons_of_mem leftHead member))
+          (fun element member => sizeRight element (List.mem_cons_of_mem rightHead member))
+          tail)
+termination_by (fuel, middle.length + 1)
+
+end
 
 /-- A nested bag is not the bag of its element. Flattening is not this reading. -/
 theorem nested_encode_ne :
@@ -367,5 +785,119 @@ theorem singleton_encode_ne_empty :
   have lengths := List.Perm.length_eq same
   simp only [List.length_map, List.length_cons, List.length_nil] at lengths
   cases lengths
+
+/-- Every rule is a nullary atom or one hash bag of the base sort. -/
+theorem bagLanguage_fragment : ∀ rule ∈ bagLanguage.terms, FragmentRule rule := by
+  intro rule member
+  simp only [bagLanguage, atomURule, atomWRule, hashBagRule, List.mem_cons, List.mem_nil_iff,
+    or_false] at member
+  rcases member with rfl | rfl | rfl
+  · intro parameter member
+    simp at member
+  · intro parameter member
+    simp at member
+  · intro parameter member
+    simp only [List.mem_singleton] at member
+    subst member
+    simp [baseCollection?]
+
+theorem bagLanguage_labels : (bagLanguage.terms.map (·.label)).Nodup := by
+  decide
+
+theorem bagLanguage_uniqueBare : UniqueBare bagLanguage := by
+  intro rule₁ rule₂ kind element₁ element₂ mem₁ mem₂ _category bare₁ bare₂
+  simp only [bagLanguage, atomURule, atomWRule, hashBagRule, List.mem_cons, List.mem_nil_iff,
+    or_false] at mem₁ mem₂
+  rcases mem₁ with rfl | rfl | rfl
+  · simp [bareCollection?] at bare₁
+  · simp [bareCollection?] at bare₁
+  · rcases mem₂ with rfl | rfl | rfl
+    · simp [bareCollection?] at bare₂
+    · simp [bareCollection?] at bare₂
+    · rfl
+
+/-- The pattern congruence and the multiset reading are the same relation
+on closed bag patterns. -/
+noncomputable def encodeQuotientEquiv :
+    Quotient (patternSetoid (language := bagLanguage) "A") ≃ Quotient encodeSetoid :=
+  Quotient.congr (Equiv.refl ClosedBag) fun left right =>
+    ⟨fun related => encode_patternCong related,
+      fun related =>
+        patternCong_of_encode_fuel (max (sizeOf left.1) (sizeOf right.1) + 1) left.1 right.1
+          (Nat.lt_succ_of_le (Nat.le_max_left (sizeOf left.1) (sizeOf right.1)))
+          (Nat.lt_succ_of_le (Nat.le_max_right (sizeOf left.1) (sizeOf right.1)))
+          left.2.1 right.2.1 left.2.2 right.2.2 related⟩
+
+/-- Indexed trees at the bag sort are the closed bag patterns. -/
+noncomputable def bagTreeEquivObject :
+    Tree bagLanguage ([], "A") ≃ ClosedBag :=
+  closedIndexedEquiv bagLanguage_fragment bagLanguage_labels bagLanguage_uniqueBare "A"
+
+/-- The indexed tree printed as one list representative of a bag tree. -/
+noncomputable def indexedOfClosed (pattern : ClosedBag) : Tree bagLanguage ([], "A") :=
+  bagTreeEquivObject.symm pattern
+
+/-- The indexed equivalence prints a tree by `toPattern`. -/
+theorem bagTreeEquivObject_val (tree : Tree bagLanguage ([], "A")) :
+    (bagTreeEquivObject tree).1 = toPattern tree := by
+  unfold bagTreeEquivObject closedIndexedEquiv
+  rfl
+
+/-- Reading the pattern of an indexed tree recovers that pattern. -/
+theorem toPattern_indexedOfClosed (pattern : ClosedBag) :
+    toPattern (indexedOfClosed pattern) = pattern.1 := by
+  have back := congrArg Subtype.val (bagTreeEquivObject.apply_symm_apply pattern)
+  unfold indexedOfClosed at back ⊢
+  rw [bagTreeEquivObject_val] at back
+  exact back
+
+/-- A bag tree is an indexed tree modulo permutation of one bag parameter. -/
+noncomputable def qpfTreeEquiv :
+    QPF.Fix CollShape ≃ Quotient (treeSetoid (language := bagLanguage) "A") where
+  toFun tree := Quotient.mk _ (indexedOfClosed (closedOfTree tree))
+  invFun :=
+    Quotient.lift (fun tree => encodePattern (toPattern tree))
+      fun _ _ related => encode_patternCong (treeCong_pattern related)
+  left_inv tree := by
+    rw [Quotient.lift_mk]
+    rw [toPattern_indexedOfClosed]
+    exact encode_bagToPattern tree
+  right_inv quotient := by
+    refine Quotient.inductionOn quotient ?_
+    intro tree
+    rw [Quotient.lift_mk]
+    suffices related : TreeCong bagLanguage tree
+        (indexedOfClosed (closedOfTree (encodePattern (toPattern tree)))) by
+      exact (Quotient.sound related).symm
+    refine pattern_treeCong bagLanguage_labels bagLanguage_uniqueBare tree
+      (indexedOfClosed (closedOfTree (encodePattern (toPattern tree)))) ?_
+    rw [toPattern_indexedOfClosed]
+    refine patternCong_of_encode_fuel
+      (max (sizeOf (toPattern tree))
+        (sizeOf (bagToPattern (encodePattern (toPattern tree)))) + 1)
+      (toPattern tree) (bagToPattern (encodePattern (toPattern tree)))
+      (Nat.lt_succ_of_le (Nat.le_max_left _ _))
+      (Nat.lt_succ_of_le (Nat.le_max_right _ _))
+      ?_ ?_ ?_ ?_ ?_
+    · simpa [Mettapedia.GSLT.Poly.BindingLanguage.typeContext] using toPattern_hasType tree
+    · exact bagToPattern_hasType _
+    · exact toPattern_isObject tree
+    · exact bagToPattern_isObject _
+    · exact (encode_bagToPattern _).symm
+
+/-- The univariate bag carrier is the indexed quotient, transported along the
+multiset reading. Permutation of children is the tree congruence. -/
+noncomputable def bagClosedEquiv :
+    QPF.Fix CollShape ≃ Quotient encodeSetoid :=
+  qpfTreeEquiv.trans
+    ((collectionQuotientEquiv bagLanguage_fragment bagLanguage_labels
+      bagLanguage_uniqueBare "A").trans encodeQuotientEquiv)
+
+/-- Closed bag patterns modulo permutation are the indexed trees modulo the
+tree congruence, by the general quotient at this language and sort. -/
+noncomputable def bagIndexedQuotient :
+    Quotient (treeSetoid (language := bagLanguage) "A") ≃
+      Quotient (patternSetoid (language := bagLanguage) "A") :=
+  collectionQuotientEquiv bagLanguage_fragment bagLanguage_labels bagLanguage_uniqueBare "A"
 
 end Mettapedia.GSLT.Poly.CollectionQuotient

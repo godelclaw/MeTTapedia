@@ -1,6 +1,6 @@
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost.UnitPolicy
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost.Path
-import Mettapedia.Languages.ProcessCalculi.RhoCalculus.TypedCommunicationVerticalBraid
+import Mettapedia.Languages.MeTTa.PrimeComparisons.Rho.TypedCommunicationVerticalBraid
 
 /-!
 # Authored communication and executable unit-policy controls
@@ -24,7 +24,7 @@ namespace Mettapedia.Languages.ProcessCalculi.RhoCalculus.Cost.UnitPolicyControl
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefGSLT
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.DependentReflectiveCommunicationCell
-open Mettapedia.Languages.ProcessCalculi.RhoCalculus.TypedCommunicationVerticalBraid
+open Mettapedia.Languages.MeTTa.PrimeComparisons.Rho.TypedCommunicationVerticalBraid
 
 /-- The actual authored COMM reduces, while its unfunded wrapper is blocked. -/
 theorem authored_comm_unfunded_wrapper_blocked :

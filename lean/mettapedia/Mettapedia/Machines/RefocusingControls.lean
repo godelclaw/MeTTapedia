@@ -1,4 +1,5 @@
 import Mettapedia.Machines.Refocusing
+import Mettapedia.GSLT.Contracts.AdministrationJoins
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.DerivedContextualStep
 
 /-!
@@ -9,6 +10,15 @@ correspondence covers every term in this arithmetic instance, including
 arbitrarily nested sums. A looping contraction and an invalid term separate
 divergence from stuckness. This instance makes no claim about MeTTa's choices,
 effects, binders or scheduling.
+
+The ordered branching controls reuse the same traversal and credits with
+ordered candidate rules: rejected candidates leave no occurrence, equal
+answers from different candidates are both kept, a fault produced before an
+answer stays first, and the reduction semantics' outcomes equal the saturated
+machine's at the computed fuels. Negative controls show that the first
+terminal need not be the first success, that treating a blocked term as
+administration erases a fault, that refocusing completeness rejects a wrong
+decomposition, and that merging equal contracta loses an occurrence.
 -/
 
 set_option autoImplicit false
@@ -73,7 +83,7 @@ def frameWork : Frame → Nat
   | .left right => termWork right + 2
   | .right _ => 1
 
-def credits : SearchCredits strategy where
+def credits : SearchCredits strategy.toTraversal where
   term _ := termWork
   frame := frameWork
   inspect_value := by
@@ -597,7 +607,8 @@ def strategy : Strategy signature where
   inspect_correct _ _ := rfl
   resume_correct _ _ := rfl
 
-theorem local_correctness_does_not_supply_search_credits : ¬ Nonempty (SearchCredits strategy) := by
+theorem local_correctness_does_not_supply_search_credits :
+    ¬ Nonempty (SearchCredits strategy.toTraversal) := by
   rintro ⟨credits⟩
   have impossible := credits.inspect_descend () (0 : Nat) () (0 : Nat) () rfl
   omega
@@ -643,5 +654,445 @@ theorem silent_divergence_has_no_complete_event_prefixes :
   cases length
 
 end Unproductive
+
+/-! ## Ordered branching controls
+
+The arithmetic traversal with ordered candidate rules at every redex. At an
+addition, the candidates are tried in this order: a fault rule applying only
+when the right operand is zero, a left-unit rule applying only when the left
+operand is zero, and the sum. Each rule either rejects the redex or yields one
+instantiation. The reduction semantics decomposes left to right, independently
+of the traversal.
+-/
+
+namespace Branching
+
+inductive Rule where
+  | fault
+  | leftUnit
+  | sum
+  | loop
+deriving DecidableEq, Repr
+
+def candidates : Redex → List Rule
+  | .add _ _ => [.fault, .leftUnit, .sum]
+  | .spin => [.loop]
+
+def attempt : Redex → Rule → List Expr
+  | .add _ right, .fault => if right = 0 then [.invalid] else []
+  | .add left right, .leftUnit => if left = 0 then [.number right] else []
+  | .add left right, .sum => [.number (left + right)]
+  | .spin, .loop => [.spin]
+  | _, _ => []
+
+def strategy : BranchingStrategy signature Rule where
+  toTraversal := RefocusingControls.strategy.toTraversal
+  candidates := candidates
+  attempt := attempt
+
+/-- The branching strategy shares the arithmetic traversal, hence its search
+credits. -/
+def credits : SearchCredits strategy.toTraversal := RefocusingControls.credits
+
+/-- One frame as a context. -/
+def single (frame : signature.Frame () ()) : Context signature () () :=
+  Quiver.Path.nil.cons frame
+
+/-- Left-to-right decomposition, by structural recursion on terms. -/
+def decompose : Expr → Decomposition signature ()
+  | .number value => .value value
+  | .spin => .redex .nil .spin
+  | .invalid => .blocked .nil .invalid
+  | .add left right =>
+      match decompose left with
+      | .value a =>
+          match decompose right with
+          | .value b => .redex .nil (.add a b)
+          | .redex context redex => .redex ((single (.right a)).comp context) redex
+          | .blocked context term => .blocked ((single (.right a)).comp context) term
+      | .redex context redex => .redex ((single (.left right)).comp context) redex
+      | .blocked context term => .blocked ((single (.left right)).comp context) term
+
+theorem single_comp {middle : signature.Kind} (rest : Context signature () middle)
+    (frame : signature.Frame () ()) {inner : signature.Kind}
+    (context : Context signature () inner) :
+    rest.comp ((single frame).comp context) = (rest.cons frame).comp context :=
+  (Quiver.Path.comp_assoc rest (single frame) context).symm
+
+theorem decompose_plug_redex {outer : signature.Kind} (context : Context signature () outer)
+    {term : Expr} {inner : signature.Kind} {focus : Context signature outer inner}
+    {redex : signature.Redex inner} (decomposed : decompose term = .redex focus redex) :
+    decompose (context.plug term) = .redex (context.comp focus) redex := by
+  induction context generalizing term with
+  | nil =>
+      exact decomposed.trans
+        (congrArg (fun focus => Decomposition.redex focus redex) (Quiver.Path.nil_comp focus).symm)
+  | cons rest frame ih =>
+      cases frame with
+      | left right =>
+          have layer : decompose (.add term right) =
+              .redex ((single (.left right)).comp focus) redex := by
+            simp only [decompose, decomposed]
+          exact (ih layer).trans
+            (congrArg (fun focus : Context signature () inner => Decomposition.redex focus redex)
+              (single_comp rest _ focus))
+      | right left =>
+          have layer : decompose (.add (.number left) term) =
+              .redex ((single (.right left)).comp focus) redex := by
+            simp only [decompose, decomposed]
+          exact (ih layer).trans
+            (congrArg (fun focus : Context signature () inner => Decomposition.redex focus redex)
+              (single_comp rest _ focus))
+
+theorem decompose_plug_blocked {outer : signature.Kind} (context : Context signature () outer)
+    {term stuck : Expr} {inner : signature.Kind} {focus : Context signature outer inner}
+    (decomposed : decompose term = .blocked focus stuck) :
+    decompose (context.plug term) = .blocked (context.comp focus) stuck := by
+  induction context generalizing term with
+  | nil =>
+      exact decomposed.trans
+        (congrArg (fun focus => Decomposition.blocked focus stuck) (Quiver.Path.nil_comp focus).symm)
+  | cons rest frame ih =>
+      cases frame with
+      | left right =>
+          have layer : decompose (.add term right) =
+              .blocked ((single (.left right)).comp focus) stuck := by
+            simp only [decompose, decomposed]
+          exact (ih layer).trans
+            (congrArg (fun focus : Context signature () inner => Decomposition.blocked focus stuck)
+              (single_comp rest _ focus))
+      | right left =>
+          have layer : decompose (.add (.number left) term) =
+              .blocked ((single (.right left)).comp focus) stuck := by
+            simp only [decompose, decomposed]
+          exact (ih layer).trans
+            (congrArg (fun focus : Context signature () inner => Decomposition.blocked focus stuck)
+              (single_comp rest _ focus))
+
+/-- Left-to-right decomposition is unique for the arithmetic traversal. -/
+theorem unique : strategy.toTraversal.UniqueDecomposition decompose where
+  value _ := rfl
+  redex := by
+    intro kind context redex
+    have base : decompose (signature.redexTerm redex) = .redex .nil redex := by
+      cases redex <;> rfl
+    exact decompose_plug_redex context base
+  inspect_blocked := by
+    intro kind context term stuck inspected
+    cases term <;> simp [strategy, RefocusingControls.strategy, inspect] at inspected
+    cases inspected
+    exact decompose_plug_blocked context (focus := .nil) (stuck := .invalid) rfl
+  resume_blocked := by
+    intro outer inner context frame value stuck resumed
+    cases frame <;> simp [strategy, RefocusingControls.strategy, resume] at resumed
+
+theorem complete : strategy.RefocusingComplete decompose :=
+  BranchingStrategy.refocusingComplete credits unique
+
+/-- Source outcomes of a term after `fuel` ordered macro-steps. -/
+def sourceOutcomes (fuel : Nat) (term : Expr) : List (BranchingStrategy.Outcome signature ()) :=
+  ((strategy.source decompose).runFrontier fuel [term]).filterMap
+    (strategy.sourceOutcome decompose)
+
+/-- The saturated machine's outcomes, from the loaded configuration. -/
+def machineOutcomes (fuel : Nat) (term : Expr) : List (BranchingStrategy.Outcome signature ()) :=
+  ((strategy.saturated credits ()).runFrontier fuel (strategy.entry credits () term)).filterMap
+    strategy.outcome
+
+theorem outcomes_agree (fuel : Nat) (term : Expr) :
+    sourceOutcomes fuel term = machineOutcomes fuel term :=
+  BranchingStrategy.outcomes credits unique fuel term
+
+/-- The deterministic arithmetic strategy, read as a single-candidate ordered
+strategy over the same decomposition, steps exactly as the independent
+structural reducer. -/
+theorem deterministic_source_iff_reduce (term next : Expr) :
+    next ∈ (RefocusingControls.strategy.branching.source decompose).step term ↔
+      reduce term = some next :=
+  (Strategy.branching_source_iff RefocusingControls.strategy credits unique term next).trans
+    ⟨reduce_of_source_step, source_step_of_reduce () term next⟩
+
+/-! ### Positive controls -/
+
+/-- Two rejected candidates are empty blocks: only the sum answers. -/
+theorem rejected_candidates :
+    sourceOutcomes 2 (.add (.number 1) (.number 2)) = [.value (3 : Nat)] ∧
+      machineOutcomes 2 (.add (.number 1) (.number 2)) = [.value (3 : Nat)] := ⟨rfl, rfl⟩
+
+/-- Two candidates yield equal answers; both occurrences are kept. -/
+theorem multiplicity_kept :
+    sourceOutcomes 2 (.add (.number 0) (.number 1)) = [.value (1 : Nat), .value (1 : Nat)] ∧
+      machineOutcomes 2 (.add (.number 0) (.number 1)) = [.value (1 : Nat), .value (1 : Nat)] :=
+  ⟨rfl, rfl⟩
+
+/-- The fault comes first, in candidate order, and is kept beside the answer. -/
+theorem fault_kept_in_order :
+    sourceOutcomes 2 (.add (.number 2) (.number 0)) = [.blocked .invalid, .value (2 : Nat)] ∧
+      machineOutcomes 2 (.add (.number 2) (.number 0)) = [.blocked .invalid, .value (2 : Nat)] :=
+  ⟨rfl, rfl⟩
+
+/-- Refocusing below a frame: the inner redex branches, and the outer sum is
+completed once per branch. -/
+theorem nested_branching :
+    machineOutcomes 3 (.add (.add (.number 0) (.number 1)) (.number 5)) =
+      [.value (6 : Nat), .value (6 : Nat)] := rfl
+
+/-- A blocked term under a frame is an observable fault, not an erased branch. -/
+theorem nested_fault :
+    machineOutcomes 1 (.add (.number 1) .invalid) =
+      [.blocked (.add (.number 1) .invalid)] := rfl
+
+/-- Pending occurrences: after one macro-step the frontier holds the fault and
+the unfinished sum, in candidate order. -/
+theorem pending_frontier :
+    (strategy.source decompose).runFrontier 1 [.add (.add (.number 3) (.number 0)) (.number 1)] =
+      [.add .invalid (.number 1), .add (.number 3) (.number 1)] := rfl
+
+/-! ### Negative controls -/
+
+/-- The first terminal is a fault although a later occurrence succeeds. -/
+theorem first_terminal_not_first_success :
+    (machineOutcomes 2 (.add (.number 2) (.number 0))).head? = some (.blocked .invalid) ∧
+      (machineOutcomes 2 (.add (.number 2) (.number 0))).find?
+        (fun outcome => match outcome with | .value _ => true | _ => false) =
+        some (.value (2 : Nat)) := ⟨rfl, rfl⟩
+
+open Mettapedia.GSLT.Contracts.Joins in
+/-- Pruning the saturated frontier after its first answer keeps that answer at
+every fuel. An early stop is licensed after a success, not after a fault. -/
+theorem first_success_prune (fuel : Nat) (before after : List (Configuration signature Rule ()))
+    {answer : Configuration signature Rule ()} (succeeds : strategy.succeeded answer = true) :
+    firstSuccess strategy.succeeded
+        ((strategy.saturated credits ()).runFrontier fuel (before ++ answer :: after)) =
+      firstSuccess strategy.succeeded
+        ((strategy.saturated credits ()).runFrontier fuel (before ++ [answer])) :=
+  firstSuccess_prune (BranchingStrategy.saturate_halted_inert credits ())
+    (fun _ success => BranchingStrategy.succeeded_halts success) fuel before after succeeds
+
+/-- Treating blocked terms as administration would erase an observable fault:
+settling a blocked configuration with every configuration administrative
+leaves nothing, while its outcome is a fault. -/
+theorem administrative_fault_is_erased :
+    (strategy.machine ()).settle (fun _ => false) 1
+        (.blocked .nil .invalid : Configuration signature Rule ()) = [] ∧
+      strategy.outcome (.blocked .nil .invalid : Configuration signature Rule ()) =
+        some (.blocked .invalid) := ⟨rfl, rfl⟩
+
+/-- Refocusing completeness is not vacuous: a decomposition that declares every
+term blocked is not the one the traversal finds. -/
+theorem everything_blocked_not_complete :
+    ¬ strategy.RefocusingComplete (root := ()) (fun term => .blocked .nil term) := by
+  intro complete
+  have searches := complete .nil (.number 1)
+  cases searches with
+  | step stepped next =>
+      cases stepped
+      cases next.answer_eq
+
+/-- Merging equal contracta would lose an occurrence that the reduction
+semantics keeps. -/
+theorem merging_loses_occurrence :
+    ((strategy.source decompose).step (.add (.number 0) (.number 1))).length = 2 ∧
+      (@List.dedup Expr _
+        ((strategy.source decompose).step (.add (.number 0) (.number 1)))).length =
+        1 := ⟨rfl, rfl⟩
+
+/-! ### A root scan
+
+A rewriting system on numbers presented as an ordered candidate scan: below
+two, an increment rule applies; a rule that never matches is tried second;
+from zero, a third rule also yields one. Normal forms are unmatched terms. -/
+
+namespace RootScan
+
+inductive Rule where
+  | increment
+  | never
+  | fromZero
+deriving DecidableEq, Repr
+
+def attempt (term : Nat) : Rule → List Nat
+  | .increment => if term < 2 then [term + 1] else []
+  | .never => []
+  | .fromZero => if term = 0 then [1] else []
+
+def strategy : BranchingStrategy (rootSignature Nat) Rule :=
+  BranchingStrategy.root (fun _ => [.increment, .never, .fromZero]) attempt
+
+def machineOutcomes (fuel term : Nat) : List (BranchingStrategy.Outcome (rootSignature Nat) ()) :=
+  ((strategy.saturated (rootCredits Nat) ()).runFrontier fuel
+    (strategy.entry (rootCredits Nat) () term)).filterMap strategy.outcome
+
+/-- Both derivations of the normal form are kept, and the never-matching rule
+leaves no occurrence. -/
+theorem both_derivations_kept :
+    (strategy.source rootDecompose).runFrontier 3 [(0 : Nat)] = [(2 : Nat), (2 : Nat)] ∧
+      machineOutcomes 3 0 = [.unmatched (2 : Nat), .unmatched (2 : Nat)] := ⟨rfl, rfl⟩
+
+theorem outcomes_agree (fuel term : Nat) :
+    ((strategy.source rootDecompose).runFrontier fuel [term]).filterMap
+        (strategy.sourceOutcome rootDecompose) = machineOutcomes fuel term :=
+  BranchingStrategy.outcomes (strategy := strategy) (root := ()) (decompose := rootDecompose)
+    (rootCredits Nat) (rootUnique Nat) fuel term
+
+end RootScan
+
+end Branching
+
+namespace QueryStage
+
+structure Packet where
+  rhs : Expr
+  receipt : Nat
+  deriving DecidableEq, Repr
+
+inductive Rule where
+  | fault | rejected | emit | duplicate | laterReceipt
+  deriving DecidableEq, Repr
+
+def packet (query : Nat) (receipt : Nat) : Packet :=
+  ⟨.add (.number query) (.number 1), receipt⟩
+
+def faultPacket : Packet := ⟨.invalid, 17⟩
+
+def candidates (_ : Nat) : List Rule := [.fault, .rejected, .emit, .duplicate, .laterReceipt]
+
+def attempt (query : Nat) : Rule → List Packet
+  | .fault => [faultPacket]
+  | .rejected => []
+  | .emit | .duplicate => [packet query 21]
+  | .laterReceipt => [packet query 22]
+
+def failure (result : Packet) : Option String :=
+  match result.rhs with | .invalid => some "declared-fault" | _ => none
+
+def evaluated (result : Packet) : Bool :=
+  match result.rhs with | .number _ => true | _ => false
+
+def strategy : BranchingStrategy (QueryEmission.signature Nat Packet String) Rule :=
+  QueryEmission.strategy candidates attempt failure
+
+def frontier (fuel query : Nat) :=
+  (strategy.saturated QueryEmission.credits ()).runFrontier fuel
+    (strategy.entry QueryEmission.credits () (.pending query))
+
+def firstResult : Configuration (QueryEmission.signature Nat Packet String) Rule () :=
+  .search (.ret (packet 2 21) .nil)
+
+def declaredFault : Configuration (QueryEmission.signature Nat Packet String) Rule () :=
+  .blocked .nil (.failed faultPacket "declared-fault")
+
+theorem ordered_results_and_receipts :
+    (QueryEmission.source candidates attempt failure).step (.pending 2) =
+      [.failed faultPacket "declared-fault", .emitted (packet 2 21),
+       .emitted (packet 2 21), .emitted (packet 2 22)] := rfl
+
+theorem rejected_candidate_is_empty :
+    (strategy.machine ()).step (.attempt .nil (2 : Nat) .rejected) = [] := rfl
+
+theorem outcomes_agree (fuel query : Nat) :
+    ((QueryEmission.source candidates attempt failure).runFrontier fuel [.pending query]).filterMap
+        (strategy.sourceOutcome QueryEmission.decompose) =
+      (frontier fuel query).filterMap strategy.outcome :=
+  QueryEmission.outcomes candidates attempt failure fuel (.pending query)
+
+/-- The result still has a real source contraction, while this query is complete. -/
+theorem query_success_before_evaluation :
+    QueryEmission.querySuccess candidates attempt failure firstResult = true ∧
+      QueryEmission.evaluatedSuccess candidates attempt failure evaluated firstResult = false ∧
+      reduce (packet 2 21).rhs = some (.number 3) := ⟨rfl, rfl, rfl⟩
+
+theorem pending_and_focus_are_not_success :
+    QueryEmission.querySuccess candidates attempt failure
+        (Configuration.load (.pending 2)) = false ∧
+      QueryEmission.querySuccess candidates attempt failure (.focus .nil (2 : Nat)) = false := ⟨rfl, rfl⟩
+
+theorem failure_before_query_success :
+    (frontier 1 2).head? = some declaredFault ∧
+      Mettapedia.GSLT.Contracts.Joins.firstSuccess
+        (QueryEmission.querySuccess candidates attempt failure) (frontier 1 2) = some firstResult ∧
+      Mettapedia.GSLT.Contracts.Joins.firstSuccess
+        (QueryEmission.evaluatedSuccess candidates attempt failure evaluated) (frontier 1 2) = none :=
+  ⟨rfl, rfl, rfl⟩
+
+theorem meaningful_query_prune (fuel : Nat) :
+    Mettapedia.GSLT.Contracts.Joins.firstSuccess
+        (QueryEmission.querySuccess candidates attempt failure)
+        ((strategy.saturated QueryEmission.credits ()).runFrontier fuel
+          [declaredFault, firstResult, firstResult,
+           .search (.ret (packet 2 22) .nil)]) =
+      Mettapedia.GSLT.Contracts.Joins.firstSuccess
+        (QueryEmission.querySuccess candidates attempt failure)
+        ((strategy.saturated QueryEmission.credits ()).runFrontier fuel
+          [declaredFault, firstResult]) :=
+  QueryEmission.first_success_prune candidates attempt failure fuel [declaredFault]
+    [firstResult, .search (.ret (packet 2 22) .nil)] rfl
+
+theorem pruning_after_failure_loses_query_result :
+    Mettapedia.GSLT.Contracts.Joins.firstSuccess
+        (QueryEmission.querySuccess candidates attempt failure) [declaredFault] = none ∧
+      Mettapedia.GSLT.Contracts.Joins.firstSuccess
+        (QueryEmission.querySuccess candidates attempt failure) (frontier 1 2) = some firstResult :=
+  ⟨rfl, rfl⟩
+
+namespace AuthoredLayer
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.ContextualStep
+
+def query : Pattern := .apply "Query" []
+def fault : Pattern := .apply "Fault" []
+def work : Pattern := .apply "Work" []
+def done : Pattern := .apply "Done" []
+
+def rule (name : String) (left right : Pattern) : RewriteRule :=
+  { name := name, typeContext := [], premises := [], left := left, right := right }
+
+def language : LanguageDef where
+  name := "QueryEmission"
+  types := ["Term"]
+  terms := ["Query", "Fault", "Work", "Done", "Absent"].map fun name =>
+    { label := name, category := "Term", params := [], syntaxPattern := [.terminal name] }
+  equations := []
+  rewrites := [rule "rejected" (.apply "Absent" []) done,
+    rule "fault" query fault, rule "emit-first" query work,
+    rule "emit-again" query work, rule "evaluate-work" work done]
+
+def base : BasePremiseEvaluator :=
+  engineBasePremises Mettapedia.OSLF.MeTTaIL.Engine.RelationEnv.empty
+
+def failure (result : Pattern) : Option String :=
+  if result == fault then some "declared-fault" else none
+
+def strategy := Authored.queryEmission base language 0 failure
+
+theorem actual_engine_layer_and_remaining_evaluation :
+    rewriteAt base language 1 query = [fault, work, work] ∧
+      rewriteAt base language 1 work = [done] := by decide +kernel
+
+/-- Two authored rules emit the same non-normal RHS as two distinct occurrences. -/
+theorem actual_authored_query_terminals :
+    (strategy.source QueryEmission.decompose).step (.pending query) =
+      [.failed fault "declared-fault", .emitted work, .emitted work] := by
+  unfold strategy
+  rw [Authored.queryEmission_source]
+  change (rewriteAt base language 1 query).map
+      (QueryEmission.classify (Query := Pattern) failure) =
+    [.failed fault "declared-fault", .emitted work, .emitted work]
+  rw [actual_engine_layer_and_remaining_evaluation.1]
+  decide +kernel
+
+theorem actual_authored_simulation :
+    Mettapedia.GSLT.Distinction.OrderedSimulation
+      (QueryEmission.source (fun _ => language.rewrites)
+        (fun term rule => applyRuleUsing base language (rewriteAt base language 0) rule term) failure)
+      (strategy.saturated QueryEmission.credits ())
+      (Mettapedia.GSLT.Distinction.BlockSimulation.StableRelated Configuration.stable
+        (strategy.Block QueryEmission.decompose)) :=
+  Authored.queryEmission_simulation base language 0 failure
+
+end AuthoredLayer
+
+end QueryStage
 
 end Mettapedia.Machines.RefocusingControls

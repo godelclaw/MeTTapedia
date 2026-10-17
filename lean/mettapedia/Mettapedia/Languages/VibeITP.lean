@@ -37,6 +37,8 @@ import Mettapedia.Languages.VibeITP.Presentation.CompleteDefinitions
 import Mettapedia.Languages.VibeITP.Presentation.DerivedTermShape
 import Mettapedia.Languages.VibeITP.Presentation.CompleteCorrespondence
 import Mettapedia.Languages.VibeITP.Presentation.KernelControls
+import Mettapedia.Languages.VibeITP.Presentation.OSLFBridge
+import Mettapedia.Languages.VibeITP.CheckingMachine
 
 /-!
 # Vibe-ITP

@@ -1208,7 +1208,7 @@ info: refused: the ledger proof Mettapedia.SetTheory.CarveOuts.Sheaves.cantor_sh
 #prime_option_graph_hypothesis_control
 
 /--
-info: prime option graph: 44 questions, 122 options, 80 arrows, 52 observers, 110 witnesses (85 kernel-checked), 674 declarations checked, 28 frontier pairs, 11 exact equivalences, 17 external checker evidence items; arrows by kind: 15 restriction, 22 observational quotient, 1 booleanization, 24 interpretation, 13 equivalence, 5 unclassified; 80 contracts with 98 entries citing theorems, 46 citing counterexamples, 46 unknown; applicability: 9 entries elaborated at the instance, 135 validity only; 14 fixtures pinned; 28 frontier targets
+info: prime option graph: 44 questions, 122 options, 80 arrows, 52 observers, 110 witnesses (85 kernel-checked), 686 declarations checked, 28 frontier pairs, 11 exact equivalences, 17 external checker evidence items; arrows by kind: 15 restriction, 22 observational quotient, 1 booleanization, 24 interpretation, 13 equivalence, 5 unclassified; 80 contracts with 98 entries citing theorems, 46 citing counterexamples, 46 unknown; applicability: 9 entries elaborated at the instance, 135 validity only; 14 fixtures pinned; 28 frontier targets
 -/
 #guard_msgs in
 #prime_option_graph_controls

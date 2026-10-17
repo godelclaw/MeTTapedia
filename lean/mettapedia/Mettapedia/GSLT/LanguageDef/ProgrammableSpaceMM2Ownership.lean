@@ -11,6 +11,11 @@ the logical support exactly when its key was present before selection.
 Consequently private logical stuttering does not imply unchanged physical
 live storage. These are explicit observations of the source checkpoint,
 not a verification of the native selection/capture/retry implementation.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  Rows are matched one way and sinks are finalized in
+their authored order, as in the support model (`Space`); the kernel (`Mainline`)
+unifies patterns with stored atoms and writes the instances of every `+` sink first.
 -/
 
 set_option autoImplicit false

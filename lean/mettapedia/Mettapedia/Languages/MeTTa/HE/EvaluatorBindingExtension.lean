@@ -63,9 +63,9 @@ structure EvalTypeServiceBindingLaws (typing : EvalTypeService) : Prop where
   typeCast : ∀ {protectedScope space atom expectedType input result},
     typing.typeCast protectedScope space atom expectedType input result →
       BindingTheoryExtends input result.2
-  candidateScanSuccess : ∀ {space expression expectedType input candidates
+  candidateScanSuccess : ∀ {scope space expression expectedType input candidates
       policy output},
-    typing.candidateScan space expression expectedType input candidates
+    typing.candidateScan scope space expression expectedType input candidates
         (.success policy output) →
       BindingTheoryExtends input output
 
@@ -97,6 +97,16 @@ theorem mergeRel_extends_right {left right output : Bindings}
       ((specTypeBindingSatisfied_iff_heBindingSatisfied_translated
         valuation output).mp outputSatisfied)).2
 
+/-- Every surviving primitive candidate contains the incoming constraint
+theory, independently of the syntax selected by its materializer. -/
+theorem unifyCandidateRel_bindingTheoryExtends
+    {target pattern : Atom} {input output : Bindings}
+    (candidate : UnifyCandidateRel target pattern input output) :
+    BindingTheoryExtends input output := by
+  rcases candidate with ⟨_matched, _matching, merged⟩
+  intro valuation satisfied
+  exact ((merged.solutions valuation).mp satisfied).2
+
 /-- Primitive `unify` either retains the incoming record or selects a merged
 record containing it. -/
 theorem unifyStep_bindingTheoryExtends
@@ -106,8 +116,7 @@ theorem unifyStep_bindingTheoryExtends
     BindingTheoryExtends input output := by
   cases step with
   | success success =>
-      rcases success.1 with ⟨matched, _matched, merged, _loopFree, _model⟩
-      exact mergeRel_extends_right merged
+      exact unifyCandidateRel_bindingTheoryExtends success.1
   | noMatch => exact BindingTheoryExtends.refl input
 
 /-- A selected switch branch has the same binding-extension property as its
@@ -124,8 +133,7 @@ theorem switchRawRel_bindingTheoryExtends_selected
   | malformed _ tail ih => exact ih outcomeEquation
   | hit success =>
       cases outcomeEquation
-      rcases success.1 with ⟨matched, _matched, merged, _loopFree, _model⟩
-      exact mergeRel_extends_right merged
+      exact unifyCandidateRel_bindingTheoryExtends success.1
   | miss _ tail ih => exact ih outcomeEquation
 
 /-- `switch-minimal` either keeps its input or returns the selected unify
@@ -151,9 +159,9 @@ theorem equationQueryCandidateRel_bindingTheoryExtends
       space live query input emitted output) :
     BindingTheoryExtends input output := by
   rcases candidate with
-    ⟨_freshPattern, _freshRhs, matched, _rule, merged, _loopFree,
-      _model, _observation⟩
-  exact mergeRel_extends_left merged
+    ⟨_freshPattern, _freshRhs, _matched, _rule, merged, _observation⟩
+  intro valuation satisfied
+  exact ((merged.solutions valuation).mp satisfied).2
 
 /-- A successful core-plus-R2 match exposes the incoming theory as the first
 conjunct of its exact solution characterization. -/
@@ -233,7 +241,7 @@ theorem preparedPackageTypeService_bindingLaws
   constructor
   · intro protectedScope space atom expectedType input result cast
     exact preparedTypeCastRel_bindingTheoryExtends cast
-  · intro space expression expectedType input candidates policy output scan
+  · intro _ space expression expectedType input candidates policy output scan
     exact recoveredPackageCandidateScanRel_bindingTheoryExtends scan
 
 /-! ## Mutual evaluator preservation -/
@@ -242,50 +250,53 @@ theorem preparedPackageTypeService_bindingLaws
 binding refinement. Both held values and cast results extend the input. -/
 theorem completedNativeReturnRel_bindingTheoryExtends
     {space : Space} {typing : EvalTypeService} {value expectedType : Atom}
-    {input : Bindings} {result : ResultPair}
+    {input : BindingFrame} {result : FrameResult} {protectedScope : List String}
     (laws : EvalTypeServiceBindingLaws typing)
-    (returned : CompletedNativeReturnRel space typing value expectedType input result) :
+    (returned : CompletedNativeReturnRel space typing value expectedType input result
+      (protectedScope := protectedScope)) :
     BindingTheoryExtends input result.2 := by
   cases returned with
   | keep => exact BindingTheoryExtends.refl _
-  | cast _ cast => exact laws.typeCast cast
+  | cast _ cast _ => exact laws.typeCast cast
 
 /-- Every raw evaluator derivation extends its input binding theory. The
 mutual induction also covers minimal invocation, function completion, and
 continuations, so a full call cannot forget constraints in its emitted body. -/
 theorem evalAtomRawRel_bindingTheoryExtends
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
-    {live : List Atom}
-    {atom expectedType : Atom} {input : Bindings} {result : ResultPair}
+    {live : List Atom} {protectedScope : List String}
+    {atom expectedType : Atom} {input : BindingFrame} {result : FrameResult}
     {typing : EvalTypeService}
     (laws : EvalTypeServiceBindingLaws typing)
     (derivation : EvalAtomRawRel space dispatch live (typing := typing)
-      atom expectedType input result) :
+      (protectedScope := protectedScope) atom expectedType input result) :
     BindingTheoryExtends input result.2 := by
   have generalized : typing = typing →
       BindingTheoryExtends input result.2 := by
     apply EvalAtomRawRel.rec
       (motive_1 := fun _space _dispatch _live _ _ input result _protectedScope currentTyping _ =>
         currentTyping = typing → BindingTheoryExtends input result.2)
-      (motive_2 := fun _space _dispatch _live _ _ input result currentTyping _ =>
+      (motive_2 := fun _space _dispatch _live _ _ input result _protectedScope currentTyping _ =>
         currentTyping = typing → BindingTheoryExtends input result.2)
-      (motive_3 := fun _space _dispatch _live _ _ _ input result currentTyping _ =>
+      (motive_3 := fun _space _dispatch _live _ _ _ input result _protectedScope currentTyping _ =>
         currentTyping = typing → BindingTheoryExtends input result.2)
-      (motive_4 := fun _space _dispatch _live _ _ input result currentTyping _ =>
+      (motive_4 := fun _space _dispatch _live _ _ input result _protectedScope currentTyping _ =>
         currentTyping = typing → BindingTheoryExtends input result.2)
-      (motive_5 := fun _space _dispatch _live _ input result currentTyping _ =>
+      (motive_5 := fun _space _dispatch _live _ input result _protectedScope currentTyping _ =>
         currentTyping = typing → BindingTheoryExtends input result.2)
-      (motive_6 := fun _space _dispatch _live _ _ input result currentTyping _ =>
+      (motive_6 := fun _space _dispatch _live _ _ _ input result _protectedScope currentTyping _ =>
         currentTyping = typing → BindingTheoryExtends input result.2)
-      (motive_7 := fun _space _dispatch _live _ input result currentTyping _ =>
+      (motive_7 := fun _space _dispatch _live _ _ input result _protectedScope currentTyping _ =>
         currentTyping = typing → BindingTheoryExtends input result.2)
-      (motive_8 := fun _space _dispatch _live _ input result currentTyping _ =>
+      (motive_8 := fun _space _dispatch _live _ input result _protectedScope currentTyping _caller _ =>
         currentTyping = typing → BindingTheoryExtends input result.2)
-      (motive_9 := fun _space _dispatch _live _ input result currentTyping _ =>
+      (motive_9 := fun _space _dispatch _live _ input result _protectedScope currentTyping _caller _ =>
         currentTyping = typing → BindingTheoryExtends input result.2)
-      (motive_10 := fun _space _dispatch _live _ input result currentTyping _ =>
+      (motive_10 := fun _space _dispatch _live _ input result _protectedScope currentTyping _caller _ =>
         currentTyping = typing → BindingTheoryExtends input result.2)
-      (motive_11 := fun _space _dispatch _live _ input result currentTyping _ =>
+      (motive_11 := fun _space _dispatch _live _ input result _protectedScope currentTyping _caller _ =>
+        currentTyping = typing → BindingTheoryExtends input result.2)
+      (motive_12 := fun _space _dispatch _live _ input result _protectedScope currentTyping _caller _ =>
         currentTyping = typing → BindingTheoryExtends input result.2)
       (t := derivation)
     all_goals
@@ -294,6 +305,7 @@ theorem evalAtomRawRel_bindingTheoryExtends
       first
         | exact BindingTheoryExtends.refl _
         | exact laws.typeCast (by assumption)
+        | exact unifyCandidateRel_bindingTheoryExtends (by assumption)
         | exact unifyStep_bindingTheoryExtends (by assumption)
         | exact switchStep_bindingTheoryExtends (by assumption)
         | exact mergeRel_extends_right (by assumption)
@@ -317,13 +329,28 @@ theorem evalAtomRawRel_bindingTheoryExtends
             (by solve_by_elim [rfl]) (by solve_by_elim [rfl])
   exact generalized rfl
 
+/-- Ordinary return handling preserves the reached binding theory, whether
+it restores an invocation, stops, or resumes typed evaluation. -/
+theorem callReturnRel_bindingTheoryExtends
+    {space : Space} {dispatch : Spec.Eval.GroundedDispatch} {live : List Atom}
+    {original expectedType value : Atom} {input : BindingFrame} {result : FrameResult}
+    {typing : EvalTypeService}
+    (laws : EvalTypeServiceBindingLaws typing)
+    (returned : CallReturnRel space dispatch live original expectedType value input result
+      (typing := typing)) :
+    BindingTheoryExtends input result.2 := by
+  cases returned <;>
+    first
+    | exact BindingTheoryExtends.refl _
+    | exact evalAtomRawRel_bindingTheoryExtends laws (by assumption)
+
 /-- The repaired evaluator service therefore preserves every incoming
 binding constraint across the shared full/minimal semantic judgments. -/
 theorem prepared_evalAtomRawRel_bindingTheoryExtends
     {oracle : TypePreparationOracle}
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
     {live : List Atom}
-    {atom expectedType : Atom} {input : Bindings} {result : ResultPair}
+    {atom expectedType : Atom} {input : BindingFrame} {result : FrameResult}
     (derivation : EvalAtomRawRel space dispatch live
       (typing := preparedPackageTypeService oracle)
       atom expectedType input result) :
@@ -352,5 +379,53 @@ example : ¬BindingTheoryExtends forgottenBinding Bindings.empty := by
   have equation := forgottenSatisfied.1 "x" (.symbol "A") (by
     simp [forgottenBinding])
   simp [valuation, applyTypeValuation] at equation
+
+end Mettapedia.Languages.MeTTa.HE.EvaluatorBindingExtension
+
+namespace Mettapedia.Languages.MeTTa.HE.EvaluatorBindingExtension
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type Spec.Eval
+
+theorem published_typeMatch_bindingTheoryExtends {left right : Atom} {input output : Bindings}
+    (matched : TypeMatchRel left right input output) : BindingTheoryExtends input output := by
+  cases matched <;> first
+    | exact BindingTheoryExtends.refl _
+    | exact mergeRel_extends_left (by assumption)
+
+theorem published_argumentsApplicable_bindingTheoryExtends
+    {space : Space} {arguments domains : List Atom} {input output : Bindings}
+    {lookup : TypeLookupRel}
+    (applicable : ArgumentsApplicableRel space (lookup := lookup) arguments domains input output) :
+    BindingTheoryExtends input output := by
+  induction applicable with
+  | nil => exact BindingTheoryExtends.refl _
+  | cons _ matched _ tail =>
+      exact (published_typeMatch_bindingTheoryExtends matched).trans tail
+
+theorem published_applicationSuccess_bindingTheoryExtends
+    {space : Space} {expression functionType expectedType : Atom} {input output : Bindings}
+    {lookup : TypeLookupRel}
+    (applicable : ApplicationSuccessRel space (lookup := lookup) expression functionType expectedType
+      input output) :
+    BindingTheoryExtends input output := by
+  cases applicable with
+  | mk _ _ arguments result =>
+      exact (published_argumentsApplicable_bindingTheoryExtends arguments).trans
+        (published_typeMatch_bindingTheoryExtends result)
+
+/-- The ordinary published service earns the two local extension obligations
+from its actual type-match/merge and ordered candidate-scan derivations. -/
+theorem publishedTypeService_bindingLaws : EvalTypeServiceBindingLaws publishedTypeService := by
+  constructor
+  · intro scope space atom expected input result cast
+    cases cast with
+    | success _ _ _ matched => exact published_typeMatch_bindingTheoryExtends matched
+    | failure => exact BindingTheoryExtends.refl _
+  · intro _ space expression expected input candidates policy output scan
+    obtain ⟨candidate, _member, applicable⟩ := scan.success_candidate
+    cases applicable with
+    | success _ applicable =>
+      cases applicable with
+      | success path => exact published_applicationSuccess_bindingTheoryExtends path
 
 end Mettapedia.Languages.MeTTa.HE.EvaluatorBindingExtension

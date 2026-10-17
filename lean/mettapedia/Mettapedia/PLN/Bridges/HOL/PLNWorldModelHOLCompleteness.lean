@@ -1,21 +1,24 @@
 import Mathlib.Data.Multiset.Count
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore
+import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
 import Mettapedia.Logic.HOL.TermModel.HenkinCompleteness
 import Mettapedia.Logic.HOL.Soundness
 
 /-!
-# HOL WM Consequence-Closure Wrappers
+# Classical HOL theories over the Henkin world model
 
-Public PLN-facing aliases for the real Church-style HOL consequence bridge.
-
-Despite the legacy filename, "completeness" here means WM-side
-consequence closure/transport, not a separate HOL metatheoretic completeness
-theorem.
+Theory-relative consequence for the Henkin world model
+(`PLNWorldModelHOLCore`): pointwise implication on the models of a classical
+HOL theory is singleton-strength consequence there, finite derivability
+transports to it, and classical Henkin completeness turns it back into
+provability and supplies singleton states of consistent theories.  The
+theory-free consequence theorems are the generic ones of
+`PLNWorldModelCrispSpecialization` at `holSatisfies`.
 -/
 
 namespace Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
 
 open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.WithParams
 open scoped ENNReal
@@ -23,84 +26,6 @@ open scoped ENNReal
 universe u v w
 
 variable {Base : Type u} {Const : Ty Base → Type v}
-
-/-- Public HOL query alias. -/
-abbrev HOLQuery := @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.HOLQuery
-
-/-- Public pointed HOL model alias. -/
-abbrev PointedHOL := @Mettapedia.Logic.HOL.HenkinModel
-
-/-- Public HOL state alias. -/
-abbrev HOLState := @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.HOLState
-
-/-- Public pointwise implication relation for closed HOL formulas. -/
-abbrev pointwiseImplies (φ ψ : HOLQuery (Base := Base) Const) : Prop :=
-  ∀ M : Mettapedia.Logic.HOL.HenkinModel.{u, v, w} Base Const,
-    Mettapedia.Logic.HOL.holSatisfies (Base := Base) (Const := Const) M φ →
-      Mettapedia.Logic.HOL.holSatisfies (Base := Base) (Const := Const) M ψ
-
-/-- Public singleton-strength relation for closed HOL formulas. -/
-abbrev singletonStrengthLE (φ ψ : HOLQuery (Base := Base) Const) : Prop :=
-  ∀ M : Mettapedia.Logic.HOL.HenkinModel.{u, v, w} Base Const,
-    BinaryWorldModel.queryStrength
-        (State := HOLState (Base := Base) Const)
-        (Query := HOLQuery (Base := Base) Const)
-        ({M} : HOLState (Base := Base) Const) φ ≤
-      BinaryWorldModel.queryStrength
-        (State := HOLState (Base := Base) Const)
-        (Query := HOLQuery (Base := Base) Const)
-        ({M} : HOLState (Base := Base) Const) ψ
-
-/-- Naming alias for the singleton-strength consequence relation. -/
-abbrev singletonConsequence (φ ψ : HOLQuery (Base := Base) Const) : Prop :=
-  ∀ M : Mettapedia.Logic.HOL.HenkinModel.{u, v, w} Base Const,
-    BinaryWorldModel.queryStrength
-        (State := HOLState (Base := Base) Const)
-        (Query := HOLQuery (Base := Base) Const)
-        ({M} : HOLState (Base := Base) Const) φ ≤
-      BinaryWorldModel.queryStrength
-        (State := HOLState (Base := Base) Const)
-        (Query := HOLQuery (Base := Base) Const)
-        ({M} : HOLState (Base := Base) Const) ψ
-
-abbrev pointwiseImplies_iff_singletonStrengthLE :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.pointwiseImplies_iff_singletonStrengthLE
-
-abbrev pointwiseImplies_iff_singletonConsequence :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.pointwiseImplies_iff_singletonConsequence
-
-abbrev pointwiseIff_iff_queryEq :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.pointwiseIff_iff_queryEq
-
-abbrev multiset_strength_le_of_pointwise :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_strength_le_of_pointwise
-
-abbrev multiset_consequence_of_pointwise :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_consequence_of_pointwise
-
-abbrev multiset_strength_le_of_singletonStrengthLE :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_strength_le_of_singletonStrengthLE
-
-abbrev multiset_consequence_of_singletonConsequence :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_consequence_of_singletonConsequence
-
-abbrev externalImplication_iff_singletonConsequence_of_sound_complete :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.externalImplication_iff_singletonConsequence_of_sound_complete
-
-abbrev multiset_consequence_of_externalImplication_sound :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.multiset_consequence_of_externalImplication_sound
-
-abbrev wmConsequenceRule_of_pointwise :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRule_of_pointwise
-
-abbrev wmConsequenceRule_of_singletonStrengthLE :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRule_of_singletonStrengthLE
-
-noncomputable abbrev wmConsequenceRuleOn_of_pointwise :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRuleOn_of_pointwise
-
-noncomputable abbrev wmConsequenceRuleOn_of_singletonStrengthLE :=
-  @Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompletenessCore.wmConsequenceRuleOn_of_singletonStrengthLE
 
 /-!
 ## Classical theory-model states for HO WM-PLN
@@ -133,114 +58,16 @@ abbrev ClassicalHOLPointed := Mettapedia.Logic.HOL.HenkinModel.{u, v, v} Base (W
 /-- WM states built from classical Henkin models of a higher-order theory. -/
 abbrev ClassicalHOLState := Multiset (Mettapedia.Logic.HOL.HenkinModel.{u, v, v} Base (WithParams Const))
 
+/-- A pointed Henkin model is a model of a classical theory. -/
+def modelsTheory (T : ClosedTheorySet (WithParams Const))
+    (M : ClassicalHOLPointed (Base := Base) (Const := Const)) : Prop :=
+  ∀ χ ∈ T, HenkinModel.models M χ
+
 /-- State-side condition: every pointed Henkin model in `W` satisfies `T`. -/
 def stateModelsTheory
     (T : ClosedTheorySet (WithParams Const))
     (W : ClassicalHOLState (Base := Base) (Const := Const)) : Prop :=
   ∀ M ∈ W, ∀ ψ ∈ T, HenkinModel.models M ψ
-
-/-- Pointwise HOL implication restricted to pointed models of a classical theory. -/
-def pointwiseImpliesOnTheory
-    (T : ClosedTheorySet (WithParams Const))
-    (φ ψ : HOLQuery (Base := Base) (WithParams Const)) : Prop :=
-  ∀ M : ClassicalHOLPointed (Base := Base) (Const := Const),
-    (∀ χ ∈ T, HenkinModel.models M χ) →
-      HenkinModel.models M φ →
-        HenkinModel.models M ψ
-
-/-- Singleton-strength consequence restricted to pointed models of a classical theory. -/
-def singletonStrengthLEOnTheory
-    (T : ClosedTheorySet (WithParams Const))
-    (φ ψ : HOLQuery (Base := Base) (WithParams Const)) : Prop :=
-  ∀ M : ClassicalHOLPointed (Base := Base) (Const := Const),
-    (∀ χ ∈ T, HenkinModel.models M χ) →
-      BinaryWorldModel.queryStrength
-          (State := ClassicalHOLState (Base := Base) (Const := Const))
-          (Query := HOLQuery (Base := Base) (WithParams Const))
-          ({M} : ClassicalHOLState (Base := Base) (Const := Const)) φ ≤
-        BinaryWorldModel.queryStrength
-          (State := ClassicalHOLState (Base := Base) (Const := Const))
-          (Query := HOLQuery (Base := Base) (WithParams Const))
-          ({M} : ClassicalHOLState (Base := Base) (Const := Const)) ψ
-
-/-- Fixed-structure singleton WM consequence is equivalent to semantic implication there. -/
-theorem singletonStrengthLE_singleton_iff_imp
-    (M : ClassicalHOLPointed (Base := Base) (Const := Const))
-    (φ ψ : HOLQuery (Base := Base) (WithParams Const)) :
-    (BinaryWorldModel.queryStrength
-        (State := ClassicalHOLState (Base := Base) (Const := Const))
-        (Query := HOLQuery (Base := Base) (WithParams Const))
-        ({M} : ClassicalHOLState (Base := Base) (Const := Const)) φ ≤
-      BinaryWorldModel.queryStrength
-        (State := ClassicalHOLState (Base := Base) (Const := Const))
-        (Query := HOLQuery (Base := Base) (WithParams Const))
-        ({M} : ClassicalHOLState (Base := Base) (Const := Const)) ψ) ↔
-      (HenkinModel.models M φ → HenkinModel.models M ψ) := by
-  constructor
-  · intro hle hφ
-    by_contra hψ
-    have h1 :
-        BinaryWorldModel.queryStrength
-            (State := ClassicalHOLState (Base := Base) (Const := Const))
-            (Query := HOLQuery (Base := Base) (WithParams Const))
-            ({M} : ClassicalHOLState (Base := Base) (Const := Const)) φ = 1 :=
-      Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.queryStrength_singleton_of_satisfies
-        (Base := Base) (Const := WithParams Const) M φ hφ
-    have h0 :
-        BinaryWorldModel.queryStrength
-            (State := ClassicalHOLState (Base := Base) (Const := Const))
-            (Query := HOLQuery (Base := Base) (WithParams Const))
-            ({M} : ClassicalHOLState (Base := Base) (Const := Const)) ψ = 0 :=
-      Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.queryStrength_singleton_of_not_satisfies
-        (Base := Base) (Const := WithParams Const) M ψ hψ
-    have h10 : (1 : ℝ≥0∞) ≤ 0 := by
-      have h10' := hle
-      rw [h1, h0] at h10'
-      exact h10'
-    exact (not_le_of_gt (by simp : (0 : ℝ≥0∞) < 1)) h10
-  · intro himp
-    by_cases hφ : HenkinModel.models M φ
-    · have hψ : HenkinModel.models M ψ := himp hφ
-      rw [Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.queryStrength_singleton_of_satisfies
-            (Base := Base) (Const := WithParams Const) M φ hφ]
-      rw [Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.queryStrength_singleton_of_satisfies
-            (Base := Base) (Const := WithParams Const) M ψ hψ]
-    · rw [Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.queryStrength_singleton_of_not_satisfies
-            (Base := Base) (Const := WithParams Const) M φ hφ]
-      exact zero_le
-
-/-- Naming alias: singleton consequence on models of a classical HOL theory. -/
-abbrev singletonConsequenceOnTheory
-    (T : ClosedTheorySet (WithParams Const))
-    (φ ψ : HOLQuery (Base := Base) (WithParams Const)) : Prop :=
-  singletonStrengthLEOnTheory T φ ψ
-
-/-- Model-restricted pointwise implication iff model-restricted singleton WM consequence. -/
-theorem pointwiseImpliesOnTheory_iff_singletonStrengthLEOnTheory
-    (T : ClosedTheorySet (WithParams Const))
-    (φ ψ : HOLQuery (Base := Base) (WithParams Const)) :
-    pointwiseImpliesOnTheory T φ ψ ↔
-      singletonStrengthLEOnTheory T φ ψ := by
-  constructor
-  · intro himp M hT
-    exact
-      (singletonStrengthLE_singleton_iff_imp
-        (Base := Base) (Const := Const) (M := M) (φ := φ) (ψ := ψ)).2
-        (himp M hT)
-  · intro hsing M hT hφ
-    exact
-      (singletonStrengthLE_singleton_iff_imp
-        (Base := Base) (Const := Const) (M := M) (φ := φ) (ψ := ψ)).1
-        (hsing M hT) hφ
-
-/-- Naming alias for the same bridge with `singletonConsequence` terminology. -/
-theorem pointwiseImpliesOnTheory_iff_singletonConsequenceOnTheory
-    (T : ClosedTheorySet (WithParams Const))
-    (φ ψ : HOLQuery (Base := Base) (WithParams Const)) :
-    pointwiseImpliesOnTheory T φ ψ ↔
-      singletonConsequenceOnTheory T φ ψ :=
-  pointwiseImpliesOnTheory_iff_singletonStrengthLEOnTheory
-    T φ ψ
 
 /-- Sound theory-relative implication interface for HO WM-PLN:
 a finite higher-order derivation of `φ → ψ` from assumptions drawn from `T`. -/
@@ -253,11 +80,11 @@ def derivableImpOnTheory
 
 /-- Finite theory-relative HOL derivability transports to pointwise implication
 on classical theory-model states. -/
-theorem derivableImpOnTheory_implies_pointwiseImpliesOnTheory
+theorem derivableImpOnTheory_implies_pointwiseImpliesOn
     {T : ClosedTheorySet (WithParams Const)}
     {φ ψ : HOLQuery (Base := Base) (WithParams Const)}
     (hprov : derivableImpOnTheory (Base := Base) (Const := Const) T φ ψ) :
-    pointwiseImpliesOnTheory T φ ψ := by
+    pointwiseImpliesOn holSatisfies (modelsTheory T) φ ψ := by
   rcases hprov with ⟨Γ, hΓ, d⟩
   intro M hT hφ
   have hImp : HenkinModel.models M (.imp φ ψ) := by
@@ -275,14 +102,13 @@ theorem derivableImpOnTheory_implies_pointwiseImpliesOnTheory
 
 /-- Finite theory-relative HOL derivability transports directly to singleton WM
 consequence on classical theory-model states. -/
-theorem derivableImpOnTheory_implies_singletonStrengthLEOnTheory
+theorem derivableImpOnTheory_implies_singletonStrengthLEOn
     {T : ClosedTheorySet (WithParams Const)}
     {φ ψ : HOLQuery (Base := Base) (WithParams Const)}
     (hprov : derivableImpOnTheory (Base := Base) (Const := Const) T φ ψ) :
-    singletonStrengthLEOnTheory T φ ψ :=
-  (pointwiseImpliesOnTheory_iff_singletonStrengthLEOnTheory
-    (Base := Base) (Const := Const) T φ ψ).mp
-    (derivableImpOnTheory_implies_pointwiseImpliesOnTheory
+    singletonStrengthLEOn holSatisfies (modelsTheory T) φ ψ :=
+  (pointwiseImpliesOn_iff_singletonStrengthLEOn holSatisfies (modelsTheory T) φ ψ).mp
+    (derivableImpOnTheory_implies_pointwiseImpliesOn
       (Base := Base) (Const := Const) hprov)
 
 private theorem provable_of_provable_notnot_closed_em
@@ -501,7 +327,7 @@ theorem exists_extensional_model_models_of_not_provable_not_classical
 
 /-- Classical completeness closes the theory-relative higher-order
 provability/consequence bridge for implication queries over `T`-models. -/
-theorem provable_imp_onTheory_of_pointwiseImpliesOnTheory_classical
+theorem provable_imp_onTheory_of_pointwiseImpliesOn_classical
     {T : ClosedTheorySet (WithParams Const)}
     {φ ψ : HOLQuery (Base := Base) (WithParams Const)}
     (enum : Nat → Body Const)
@@ -509,7 +335,7 @@ theorem provable_imp_onTheory_of_pointwiseImpliesOnTheory_classical
     (hT0 : ∀ χ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hEM : ∀ χ ∈ EMSchema Const, χ ∈ T)
     (hImp0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) (.imp φ ψ))
-    (himp : pointwiseImpliesOnTheory T φ ψ) :
+    (himp : pointwiseImpliesOn holSatisfies (modelsTheory T) φ ψ) :
     ClosedTheorySet.Provable (Const := WithParams Const) T (.imp φ ψ) := by
   by_cases hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T
   · by_contra hNotProv
@@ -563,7 +389,7 @@ theorem provable_imp_onTheory_of_pointwiseImpliesOnTheory_classical
 
 /-- Classical completeness closes the semantic-to-proof direction for the
 extensional closed-theory proof relation used by HOL completeness. -/
-theorem provable_imp_onTheory_of_singletonStrengthLEOnTheory_classical
+theorem provable_imp_onTheory_of_singletonStrengthLEOn_classical
     {T : ClosedTheorySet (WithParams Const)}
     {φ ψ : HOLQuery (Base := Base) (WithParams Const)}
     (enum : Nat → Body Const)
@@ -571,11 +397,11 @@ theorem provable_imp_onTheory_of_singletonStrengthLEOnTheory_classical
     (hT0 : ∀ χ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hEM : ∀ χ ∈ EMSchema Const, χ ∈ T)
     (hImp0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) (.imp φ ψ)) :
-    singletonStrengthLEOnTheory T φ ψ →
+    singletonStrengthLEOn holSatisfies (modelsTheory T) φ ψ →
       ClosedTheorySet.Provable (Const := WithParams Const) T (.imp φ ψ) := by
   intro hsing
   exact
-    provable_imp_onTheory_of_pointwiseImpliesOnTheory_classical
+    provable_imp_onTheory_of_pointwiseImpliesOn_classical
       (Base := Base)
       (Const := Const)
       enum
@@ -583,165 +409,7 @@ theorem provable_imp_onTheory_of_singletonStrengthLEOnTheory_classical
       hT0
       hEM
       hImp0
-      ((pointwiseImpliesOnTheory_iff_singletonStrengthLEOnTheory
-        (Base := Base)
-        (Const := Const)
-        T
-        φ
-        ψ).mpr hsing)
-
-/-- Naming alias: classical singleton consequence implies provability in the
-extensional closed-theory proof relation used by HOL completeness. -/
-theorem provable_imp_onTheory_of_singletonConsequenceOnTheory_classical
-    {T : ClosedTheorySet (WithParams Const)}
-    {φ ψ : HOLQuery (Base := Base) (WithParams Const)}
-    (enum : Nat → Body Const)
-    (henum : ∀ b : Body Const, ∃ n, enum n = b)
-    (hT0 : ∀ χ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
-    (hEM : ∀ χ ∈ EMSchema Const, χ ∈ T)
-    (hImp0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) (.imp φ ψ)) :
-    singletonConsequenceOnTheory T φ ψ →
-      ClosedTheorySet.Provable (Const := WithParams Const) T (.imp φ ψ) :=
-  provable_imp_onTheory_of_singletonStrengthLEOnTheory_classical
-    (Base := Base)
-    (Const := Const)
-    enum
-    henum
-    hT0
-    hEM
-    hImp0
-
-private theorem countP_le_countP_of_imp_on
-    (W : HOLState (Base := Base) (WithParams Const))
-    {p q : HenkinModel Base (WithParams Const) → Prop}
-    [DecidablePred p] [DecidablePred q]
-    (himp : ∀ M ∈ W, p M → q M) :
-    Multiset.countP p W ≤ Multiset.countP q W := by
-  induction W using Multiset.induction_on with
-  | empty =>
-      simp
-  | @cons a W ih =>
-      have himp_tail : ∀ M ∈ W, p M → q M := by
-        intro M hmem hp
-        exact himp M (by simp [hmem]) hp
-      by_cases hp : p a
-      · have hq : q a := himp a (by simp) hp
-        simpa [Multiset.countP_cons_of_pos, hp, hq] using Nat.succ_le_succ (ih himp_tail)
-      · by_cases hq : q a
-        · have hstep : Multiset.countP p W ≤ Multiset.countP q W + 1 :=
-            le_trans (ih himp_tail) (Nat.le_succ _)
-          simpa [Multiset.countP_cons_of_neg, hp, Multiset.countP_cons_of_pos, hq]
-            using hstep
-        · simpa [Multiset.countP_cons_of_neg, hp, hq] using ih himp_tail
-
-private theorem holEvidence_total
-    (W : ClassicalHOLState (Base := Base) (Const := Const))
-    (φ : HOLQuery (Base := Base) (WithParams Const)) :
-    (Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.holEvidence
-      (Base := Base) (Const := WithParams Const) W φ).total = (W.card : ℝ≥0∞) := by
-  classical
-  have hcardNat :
-      W.card =
-        Multiset.countP
-            (fun M : HenkinModel Base (WithParams Const) =>
-              Mettapedia.Logic.HOL.holSatisfies
-                (Base := Base) (Const := WithParams Const) M φ) W +
-          Multiset.countP
-            (fun M : HenkinModel Base (WithParams Const) =>
-              ¬ Mettapedia.Logic.HOL.holSatisfies
-                (Base := Base) (Const := WithParams Const) M φ) W := by
-    simpa using
-      (Multiset.card_eq_countP_add_countP
-        (p := fun M : HenkinModel Base (WithParams Const) =>
-          Mettapedia.Logic.HOL.holSatisfies
-            (Base := Base) (Const := WithParams Const) M φ) W)
-  have hcard :
-      (W.card : ℝ≥0∞) =
-        (Multiset.countP
-            (fun M : HenkinModel Base (WithParams Const) =>
-              Mettapedia.Logic.HOL.holSatisfies
-                (Base := Base) (Const := WithParams Const) M φ) W : ℝ≥0∞) +
-          (Multiset.countP
-            (fun M : HenkinModel Base (WithParams Const) =>
-              ¬ Mettapedia.Logic.HOL.holSatisfies
-                (Base := Base) (Const := WithParams Const) M φ) W : ℝ≥0∞) := by
-    exact_mod_cast hcardNat
-  unfold Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.holEvidence
-  unfold Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.total
-  simpa using hcard.symm
-
-/-- Multiset WM strength inequality from pointwise implication on models of a classical theory. -/
-theorem queryStrength_le_of_pointwise_onTheory
-    (T : ClosedTheorySet (WithParams Const))
-    (W : ClassicalHOLState (Base := Base) (Const := Const))
-    (φ ψ : HOLQuery (Base := Base) (WithParams Const))
-    (hW : stateModelsTheory T W)
-    (himp : pointwiseImpliesOnTheory T φ ψ) :
-    BinaryWorldModel.queryStrength
-        (State := ClassicalHOLState (Base := Base) (Const := Const))
-        (Query := HOLQuery (Base := Base) (WithParams Const))
-        W φ ≤
-      BinaryWorldModel.queryStrength
-        (State := ClassicalHOLState (Base := Base) (Const := Const))
-        (Query := HOLQuery (Base := Base) (WithParams Const))
-        W ψ := by
-  let pφ : HenkinModel Base (WithParams Const) → Prop :=
-    fun M => Mettapedia.Logic.HOL.holSatisfies
-      (Base := Base) (Const := WithParams Const) M φ
-  let pψ : HenkinModel Base (WithParams Const) → Prop :=
-    fun M => Mettapedia.Logic.HOL.holSatisfies
-      (Base := Base) (Const := WithParams Const) M ψ
-  let : DecidablePred pφ := Classical.decPred pφ
-  let : DecidablePred pψ := Classical.decPred pψ
-  have hφ :
-      BinaryWorldModel.queryStrength
-          (State := ClassicalHOLState (Base := Base) (Const := Const))
-          (Query := HOLQuery (Base := Base) (WithParams Const))
-          W φ =
-        if (W.card : ℝ≥0∞) = 0 then 0 else (Multiset.countP pφ W : ℝ≥0∞) / (W.card : ℝ≥0∞) := by
-    unfold BinaryWorldModel.queryStrength
-    unfold Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength
-    change (if (Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.holEvidence
-        (Base := Base) (Const := WithParams Const) W φ).total = 0 then 0
-      else (Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.holEvidence
-        (Base := Base) (Const := WithParams Const) W φ).pos /
-        (Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.holEvidence
-          (Base := Base) (Const := WithParams Const) W φ).total) =
-        if (W.card : ℝ≥0∞) = 0 then 0 else (Multiset.countP pφ W : ℝ≥0∞) / (W.card : ℝ≥0∞)
-    rw [holEvidence_total (W := W) (φ := φ)]
-    simp [Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.holEvidence, pφ]
-  have hψ :
-      BinaryWorldModel.queryStrength
-          (State := ClassicalHOLState (Base := Base) (Const := Const))
-          (Query := HOLQuery (Base := Base) (WithParams Const))
-          W ψ =
-        if (W.card : ℝ≥0∞) = 0 then 0 else (Multiset.countP pψ W : ℝ≥0∞) / (W.card : ℝ≥0∞) := by
-    unfold BinaryWorldModel.queryStrength
-    unfold Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength
-    change (if (Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.holEvidence
-        (Base := Base) (Const := WithParams Const) W ψ).total = 0 then 0
-      else (Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.holEvidence
-        (Base := Base) (Const := WithParams Const) W ψ).pos /
-        (Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.holEvidence
-          (Base := Base) (Const := WithParams Const) W ψ).total) =
-        if (W.card : ℝ≥0∞) = 0 then 0 else (Multiset.countP pψ W : ℝ≥0∞) / (W.card : ℝ≥0∞)
-    rw [holEvidence_total (W := W) (φ := ψ)]
-    simp [Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.holEvidence, pψ]
-  by_cases hcard : (W.card : ℝ≥0∞) = 0
-  · rw [hφ, hψ, hcard]
-    simp
-  · rw [hφ, hψ]
-    simp [hcard]
-    have hcountNat :
-        Multiset.countP pφ W ≤ Multiset.countP pψ W :=
-      countP_le_countP_of_imp_on (W := W) (p := pφ) (q := pψ) (by
-        intro M hmem hp
-        exact himp M (hW M hmem) hp)
-    have hcount :
-        (Multiset.countP pφ W : ℝ≥0∞) ≤
-          (Multiset.countP pψ W : ℝ≥0∞) := by
-      exact_mod_cast hcountNat
-    exact ENNReal.div_le_div_right hcount (W.card : ℝ≥0∞)
+      ((pointwiseImpliesOn_iff_singletonStrengthLEOn holSatisfies (modelsTheory T) φ ψ).mpr hsing)
 
 /-- Package sound finite theory-relative HOL derivability as a state-indexed WM
 consequence rule on classical theory-model states. -/
@@ -758,29 +426,11 @@ def wmConsequenceRuleOn_of_derivableImpOnTheory
   sound := by
     intro W hW
     exact
-      queryStrength_le_of_pointwise_onTheory
-        T W φ ψ hW
-        (derivableImpOnTheory_implies_pointwiseImpliesOnTheory
+      queryStrength_le_of_pointwise_on holSatisfies (modelsTheory T) W φ ψ hW
+        (derivableImpOnTheory_implies_pointwiseImpliesOn
           (Base := Base)
           (Const := Const)
           hprov)
-
-/-- Package theory-restricted semantic implication as a state-indexed WM consequence rule. -/
-def wmConsequenceRuleOn_of_pointwiseOnTheory
-    (T : ClosedTheorySet (WithParams Const))
-    (φ ψ : HOLQuery (Base := Base) (WithParams Const))
-    (himp : pointwiseImpliesOnTheory T φ ψ) :
-    WMConsequenceRuleOn
-      (ClassicalHOLState (Base := Base) (Const := Const))
-      (HOLQuery (Base := Base) (WithParams Const)) where
-  side := stateModelsTheory T
-  premise := φ
-  conclusion := ψ
-  sound := by
-    intro W hW
-    exact
-      queryStrength_le_of_pointwise_onTheory
-        T W φ ψ hW himp
 
 /-- Classical Henkin completeness yields a concrete pointed model of `T`. -/
 theorem exists_model_of_consistent_classicalTheory
@@ -856,7 +506,6 @@ theorem exists_singletonState_with_member_strength_one_of_consistent_classicalTh
     subst hNM
     exact hM ψ hψ
   · exact
-      Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore.queryStrength_singleton_of_satisfies
-        (Base := Base) (Const := WithParams Const) M φ (hM φ hφ)
+      queryStrength_singleton_of_satisfies holSatisfies M φ (hM φ hφ)
 
 end Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness

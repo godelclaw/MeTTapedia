@@ -3,7 +3,7 @@ import Mathlib.Order.CompleteLattice.Basic
 import Mathlib.Order.CompleteBooleanAlgebra
 import Mathlib.Data.ENNReal.Basic
 import Mettapedia.CategoryTheory.LambdaTheory
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 open scoped ENNReal
 open Mettapedia.PLN.Evidence.EvidenceQuantale (BinaryEvidence)
@@ -42,7 +42,7 @@ which decomposes into:
 
 - Stay & Wells, "Generating Hypercubes of Type Systems"
 - Meredith & Stay, "Operational Semantics in Logical Form"
-- EvidenceQuantale.lean for BinaryEvidence-based formulation
+- BinaryEvidence.lean for BinaryEvidence-based formulation
 -/
 
 namespace Mettapedia.CategoryTheory.PLNInstance
@@ -167,7 +167,7 @@ theorem pln_quantale_law (a : PLNLambdaTheory.SubPr) (S : Set PLNLambdaTheory.Su
 
 /-! ## Connection to BinaryEvidence
 
-The BinaryEvidence type from EvidenceQuantale.lean provides a richer structure:
+The BinaryEvidence type from BinaryEvidence.lean provides a richer structure:
 - BinaryEvidence = (n⁺, n⁻) with tensor product
 - Maps to truth value via toStrength
 
@@ -240,7 +240,7 @@ The key insight is that:
 
 ✅ **COMPLETE**: We now have the full "richer formalization" with numerical
 truth values (BinaryEvidence) instead of Boolean (Prop)! The Frame structure is
-proven, not assumed. This connects the algebraic formulation in EvidenceQuantale.lean
+proven, not assumed. This connects the algebraic formulation in BinaryEvidence.lean
 to the categorical foundations in LambdaTheory.lean.
 -/
 

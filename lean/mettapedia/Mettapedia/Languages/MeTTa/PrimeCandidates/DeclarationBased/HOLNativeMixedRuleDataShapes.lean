@@ -22,7 +22,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.MatchSpec
 open Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical
-open DeclarationAwarePatternCodec DeclarationAwareSubstitutionLanguage
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec DeclarationAwareSubstitutionLanguage
 open Presentation NativeIndexedFamilies
 
 theorem encoded_injective (n : Nat) : Function.Injective (@encoded n) :=

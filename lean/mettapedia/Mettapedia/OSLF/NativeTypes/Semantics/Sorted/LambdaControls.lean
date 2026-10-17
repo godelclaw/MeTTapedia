@@ -221,14 +221,14 @@ theorem compatible_rhs {assignment : Assignment}
 theorem compatible_introductions {assignment : Assignment}
     (reads : lookup assignment "A" = some ⟨[], 0, argument⟩ ∧
       lookup assignment "B" = some ⟨[term], 0, body⟩) :
-    Mettapedia.OSLF.NativeTypes.Modal.SourceIntroduction.baseIntroductions schema assignment =
-      Mettapedia.OSLF.NativeTypes.Modal.SourceIntroduction.baseIntroductions schema supplied := by
+    Mettapedia.OSLF.NativeTypes.Modal.SourceIntroduction.baseIntroductions schema assignment [] =
+      Mettapedia.OSLF.NativeTypes.Modal.SourceIntroduction.baseIntroductions schema supplied [] := by
   unfold Mettapedia.OSLF.NativeTypes.Modal.SourceIntroduction.baseIntroductions
   rw [compatible_source_instance reads, compatible_rhs reads,
     compatible_source_instance (assignment := supplied) ⟨rfl, rfl⟩, actual_rhs]
 
 theorem actual_introduction_nonempty :
-    Mettapedia.OSLF.NativeTypes.Modal.SourceIntroduction.baseIntroductions schema supplied ≠ [] := by
+    Mettapedia.OSLF.NativeTypes.Modal.SourceIntroduction.baseIntroductions schema supplied [] ≠ [] := by
   cbv
   simp
 
@@ -244,6 +244,7 @@ def introduction : {_implementation : Evidence schema
     (fun assignment request => by
       rw [computed_schema_shape.1]
       exact .here (compatible_source_instance (compatible_reads request)))
+    (fun _ _ => [])
     (fun assignment request => by
       rw [compatible_introductions (compatible_reads request)]
       exact actual_introduction_nonempty)

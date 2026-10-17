@@ -3,10 +3,9 @@ import Mettapedia.Languages.ProcessCalculi.MORK.Space
 /-!
 # MORK Conformance Tests
 
-Kernel-checked conformance tests for the MORK formalization.  Each fixture
+Kernel-checked conformance tests for the support model.  Each fixture
 documents the `.mm2` source, the `mork run` output (ground truth), and a
-Lean theorem proving that the computable reference evaluator produces the
-same result.
+Lean theorem about the computable reference evaluator.
 
 ## Computable Reference Evaluator
 
@@ -20,8 +19,14 @@ semantics over `List Atom` for kernel-checked `rfl` tests.
 
 ## MORK Ground Truth
 
-All expected outputs are verified against `mork run` (MORK CLI).
-The `.mm2` source for each test is included in the fixture's docstring.
+The `.mm2` source for each test is included in the fixture's docstring, with the
+final space `mork run` prints.  All sixteen programs were rerun on the current
+kernel: every recorded output reproduces, and `Mainline` agrees with the binary on
+all of them.  The evaluator here is not the kernel's firing: `cfireRule` returns one
+successor per match row, while the kernel fires an executable once on all of its
+rows, so a theorem below states the kernel's output only when the rule has a single
+row or when its successors are compared after the last row.  Test S6 differs from
+the kernel (see there).
 -/
 
 namespace Mettapedia.Languages.ProcessCalculi.MORK.Conformance
@@ -128,9 +133,10 @@ def cfireRule (s : CSpace) (r : ExecRule) : List CSpace :=
   (cmatchPattern [] s r.pat).map fun (σ, _consumed) =>
     capplySinks s σ r.tmpl
 
-/-- Fire a rule to fixpoint: keep applying until no matches remain.
-    Uses fuel to guarantee termination.  MORK's `mork run` executes
-    a rule exhaustively within a priority step; this mirrors that. -/
+/-- Fire a rule to fixpoint: keep applying one row at a time until no matches
+    remain.  Uses fuel to guarantee termination.  This is not the kernel's firing:
+    the kernel fires each executable once, on all of its rows, and consumes it; a
+    rule that should fire again must write itself back. -/
 def cfireToFixpoint (fuel : Nat) (s : CSpace) (r : ExecRule) : CSpace :=
   match fuel with
   | 0 => s
@@ -1397,7 +1403,7 @@ theorem conformance_head_idempotent :
 | Conjunctive match (shared var) | Test 4 | `mork run` |
 | Nested expressions | Test 7 | `mork run` |
 | Pattern mismatch (negative) | Tests 6, 9 | `mork run` |
-| Multi-step fixpoint | Test 8 | `mork run` |
+| Multi-step fixpoint | Test 8 | final space as `mork run` (the kernel fires once on all rows) |
 | Flat symbol matching | Approach B | spec-level |
 | `applySinks` (Finset) | `applySinks_flat_template` | spec-level |
 | Fold aggregators (count/sum/first) | 3 tests | `sinks.rs finalize()` |
@@ -1419,8 +1425,9 @@ Forward soundness chain: `cmatchPattern_toFinset_sound` + `capplySinks_toFinset_
 
 /-! ## Source-aware conformance tests
 
-These test the `cfireSourceRule` function against `mork run` ground truth.
-Each fixture documents the `.mm2` source and expected output. -/
+These test the `cfireSourceRule` function, the support model's per-row reading
+of explicit sources.  Each fixture documents the `.mm2` source and the kernel's
+output; S6 and S8 fire on several rows, which the kernel batches. -/
 
 section SourceConformance
 
@@ -1586,9 +1593,12 @@ theorem source_test5_eq_shared :
   (I (BTM (exclude $x)) (!= (item $x) $other))
   (O (+ (keep $other)) (- $other) (- (exclude $x))))
 ```
-Expected: binds `x=a`, removes `(item a)` from candidates, matches `(item b)` as `$other`.
-Output: `(keep (item b))`.
-Verified: mirrors Rust `CmpSource` with `cmp=1`. -/
+The support model binds `x=a`, removes `(item a)` from the candidates and matches
+`$other` against each remaining atom, one successor per row.
+The kernel's `!=` pairs `(item a)` with every other stored atom of the read copy,
+including `(exclude a)` and the executable itself, and fires on all rows at once:
+`mork run` prints `(item a)`, `(keep (item b))`, `(keep (exclude a))` and
+`(keep (exec (0 neq-test) …))`. -/
 
 private def source_test6_space : CSpace :=
   [.expression [.symbol "item", .symbol "a"],
@@ -1657,7 +1667,9 @@ theorem source_test7_neq_nomatch :
   (I (BTM (exclude $x)) (!= (item $x) (item $y)))
   (O (+ (found $y)) (- (item $y))))
 ```
-Expected: binds `x=a`, removes `(item a)`, matches `(item b)` AND `(item c)`. -/
+Expected: binds `x=a`, removes `(item a)`, matches `(item b)` AND `(item c)`.
+The kernel fires on both rows at once: `mork run` prints `(item a)`, `(found b)`,
+`(found c)` and `(exclude a)`. -/
 
 private def source_test8_space : CSpace :=
   [.expression [.symbol "item", .symbol "a"],

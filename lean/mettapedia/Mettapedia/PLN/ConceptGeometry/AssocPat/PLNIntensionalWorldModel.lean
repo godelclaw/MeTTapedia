@@ -1,4 +1,4 @@
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 /-!
 # PLN Intensional World-Model Query Layer

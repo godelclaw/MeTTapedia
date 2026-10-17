@@ -1,6 +1,6 @@
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 import Mettapedia.PLN.TruthValues.PLNDistributional
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # BinaryEvidence/STV Bridge

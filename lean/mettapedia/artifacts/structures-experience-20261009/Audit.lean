@@ -4,8 +4,8 @@ import Mettapedia.GSLT.LanguageDef.BindingSignatureEquationPresentation
 import Mettapedia.GSLT.LanguageDef.BindingSignatureNotation
 import Mettapedia.GSLT.LanguageDef.BindingSignatureReificationControls
 import Mettapedia.CategoryTheory.LocalSections
-import Mettapedia.CognitiveArchitecture.Consciousness.TraceAndImplementation
-import Mettapedia.CognitiveArchitecture.GodelClaw.GlobalWorkspace
+import Mettapedia.CogArch.Consciousness.TraceAndImplementation
+import Mettapedia.CogArch.GodelClaw.GlobalWorkspace
 import Lean.Util.CollectAxioms
 import Lean.Compiler.Old
 

@@ -734,6 +734,540 @@ theorem reset_between_cohorts_loses_dependency_span :
 end ScheduledControls
 end ScheduledDependencies
 
+/-- One occurrence and its predecessor set. This chosen readout forgets
+predecessor-slot order and repetition while retaining the occurrence itself. -/
+def dependencyNode [DecidableEq Event] (event : CausalEvent Event) : Event × Finset Event :=
+  (event.event, event.directCauses.toFinset)
+
+/-- A causal graph observation forgets chronology, retaining every vertex
+occurrence and every root occurrence, together with their dependency sets. -/
+def dependencyView [DecidableEq Event] (receipt : CausalReceipt Event) :
+    Multiset Event × Multiset (Event × Finset Event) :=
+  (receipt.roots, receipt.events.map dependencyNode)
+
+theorem dependencyView_of_perm [DecidableEq Event] (left right : CausalReceipt Event)
+    (roots : left.roots.Perm right.roots)
+    (nodes : (left.events.map dependencyNode).Perm (right.events.map dependencyNode)) :
+    left.dependencyView = right.dependencyView := by
+  exact Prod.ext (Multiset.coe_eq_coe.mpr roots) (Multiset.coe_eq_coe.mpr nodes)
+
+/-- Matching graph observations retain a node with its actual identity and
+predecessor set, independently of chronology or repeated predecessor slots. -/
+theorem dependencyView_node [DecidableEq Event] (left right : CausalReceipt Event)
+    (same : left.dependencyView = right.dependencyView)
+    (node : CausalEvent Event) (member : node ∈ left.events) :
+    ∃ other ∈ right.events, other.event = node.event ∧
+      other.directCauses.toFinset = node.directCauses.toFinset := by
+  have rows := congrArg Prod.snd same
+  change (left.events.map dependencyNode : Multiset (Event × Finset Event)) =
+    (right.events.map dependencyNode : Multiset (Event × Finset Event)) at rows
+  have present : dependencyNode node ∈ (left.events.map dependencyNode : Multiset (Event × Finset Event)) :=
+    List.mem_map.mpr ⟨node, member, rfl⟩
+  rw [rows] at present
+  obtain ⟨other, otherMember, sameNode⟩ := List.mem_map.mp present
+  exact ⟨other, otherMember, congrArg Prod.fst sameNode, congrArg Prod.snd sameNode⟩
+
+/-- Equality of this causal readout retains every actual dependency. Equal
+vertex support without the predecessor relation is insufficient. -/
+theorem dependencyView_direct [DecidableEq Event] (left right : CausalReceipt Event)
+    (same : left.dependencyView = right.dependencyView) (cause effect : Event) :
+    left.Direct cause effect ↔ right.Direct cause effect := by
+  have forward : ∀ first second : CausalReceipt Event,
+      first.dependencyView = second.dependencyView → first.Direct cause effect → second.Direct cause effect := by
+    intro first second equal related
+    rcases related with ⟨node, member, target, predecessor⟩
+    obtain ⟨other, otherMember, sameTarget, sameParents⟩ := dependencyView_node first second equal node member
+    refine ⟨other, otherMember, sameTarget.trans target, ?_⟩
+    apply List.mem_toFinset.mp
+    rw [sameParents]
+    exact List.mem_toFinset.mpr predecessor
+  exact ⟨forward left right same, forward right left same.symm⟩
+
+/-- Vertex multiplicities survive the chosen graph observation. -/
+theorem dependencyView_support_perm [DecidableEq Event] (left right : CausalReceipt Event)
+    (same : left.dependencyView = right.dependencyView) :
+    left.flattenedSupport.Perm right.flattenedSupport := by
+  have rows := congrArg (fun view => view.2.map Prod.fst) same
+  apply Multiset.coe_eq_coe.mp
+  simpa [dependencyView, dependencyNode, flattenedSupport, List.map_map, Function.comp_def] using rows
+
+/-- Maximum predecessor finish depends on membership, not slot repetition. -/
+theorem predecessorPeak_le_iff (times : Event → Nat) (causes : List Event) (bound : Nat) :
+    predecessorPeak times causes ≤ bound ↔ ∀ cause ∈ causes, times cause ≤ bound := by
+  induction causes with
+  | nil => simp [predecessorPeak]
+  | cons cause rest ih =>
+      change max (times cause) (predecessorPeak times rest) ≤ bound ↔ _
+      simp only [max_le_iff, ih, List.forall_mem_cons]
+
+theorem predecessorPeak_of_members (times : Event → Nat) (first second : List Event)
+    (same : ∀ event, event ∈ first ↔ event ∈ second) :
+    predecessorPeak times first = predecessorPeak times second := by
+  apply Nat.le_antisymm
+  · rw [predecessorPeak_le_iff]
+    intro event present
+    exact (predecessorPeak_le_iff times second _).mp le_rfl event ((same event).mp present)
+  · rw [predecessorPeak_le_iff]
+    intro event present
+    exact (predecessorPeak_le_iff times first _).mp le_rfl event ((same event).mpr present)
+
+/-- Feasibility is a property of the actual graph observation. -/
+theorem feasibleFinishes_of_dependencyView [DecidableEq Event]
+    (left right : CausalReceipt Event) (same : left.dependencyView = right.dependencyView)
+    (duration times : Event → Nat) (feasible : FeasibleFinishes duration times right.events) :
+    FeasibleFinishes duration times left.events := by
+  intro node member
+  obtain ⟨other, otherMember, sameEvent, sameParents⟩ := dependencyView_node left right same node member
+  have samePeak : predecessorPeak times node.directCauses = predecessorPeak times other.directCauses := by
+    apply predecessorPeak_of_members
+    intro event
+    exact List.mem_toFinset.symm.trans ((congrArg (event ∈ ·) sameParents).symm ▸ List.mem_toFinset)
+  rw [samePeak, ← sameEvent]
+  exact feasible other otherMember
+
+/-- Earliest finishes agree on every identity for two valid topological
+readings of the same occurrence graph. The least-feasible comparison supplies
+both inequalities; equal event bags alone do not suffice. -/
+theorem finishTimes_of_dependencyView [DecidableEq Event]
+    (left right : CausalReceipt Event) (same : left.dependencyView = right.dependencyView)
+    (leftOrdered : Ordered [] left.events) (rightOrdered : Ordered [] right.events)
+    (duration : Event → Nat) :
+    finishTimes duration (fun _ => 0) left.events =
+      finishTimes duration (fun _ => 0) right.events := by
+  funext event
+  apply Nat.le_antisymm
+  · apply finishTimes_le_feasible duration (fun _ => 0)
+      (finishTimes duration (fun _ => 0) right.events) left.events
+      (fun _ => Nat.zero_le _)
+    exact feasibleFinishes_of_dependencyView left right same duration _
+      (finishTimes_feasible duration (fun _ => 0) [] right.events rightOrdered)
+  · apply finishTimes_le_feasible duration (fun _ => 0)
+      (finishTimes duration (fun _ => 0) left.events) right.events
+      (fun _ => Nat.zero_le _)
+    exact feasibleFinishes_of_dependencyView right left same.symm duration _
+      (finishTimes_feasible duration (fun _ => 0) [] left.events leftOrdered)
+
+/-- Source work and dependency span factor through the selected causal view.
+This is not a statement about elapsed time, scheduling overhead or permission. -/
+theorem dependencyReadout_of_dependencyView [DecidableEq Event]
+    (left right : CausalReceipt Event) (same : left.dependencyView = right.dependencyView)
+    (leftOrdered : Ordered [] left.events) (rightOrdered : Ordered [] right.events)
+    (cost : Event → Mettapedia.Algebra.WorkSpan) :
+    left.dependencyReadout cost = right.dependencyReadout cost := by
+  have support := dependencyView_support_perm left right same
+  have times := finishTimes_of_dependencyView left right same leftOrdered rightOrdered
+    (fun event => (cost event).span)
+  apply Mettapedia.Algebra.WorkSpan.ext
+  · exact (support.map (fun event => (cost event).work)).sum_eq
+  · change predecessorPeak _ left.flattenedSupport = predecessorPeak _ right.flattenedSupport
+    rw [times]
+    exact predecessorPeak_of_members _ _ _ (fun event => support.mem_iff)
+
+namespace DependencyViewControls
+
+/-- Equal occurrence counts distinguish a parallel pair from a causal chain. -/
+theorem counts_do_not_determine_span :
+    check [] independentReceipt = true ∧ check [] dependentReceipt = true ∧
+    dependencyReadout independentReceipt (fun _ => ⟨1, 1⟩) = ⟨2, 1⟩ ∧
+    dependencyReadout dependentReceipt (fun _ => ⟨1, 1⟩) = ⟨2, 2⟩ := by decide
+
+/-- Reordering independent vertices and repeating predecessor slots preserve
+this observer, while both physical producer occurrences still contribute. -/
+theorem reordered_slots_keep_source_cost :
+    let first : CausalReceipt Nat := ⟨[3], [⟨1, []⟩, ⟨2, []⟩, ⟨3, [1, 2]⟩]⟩
+    let second : CausalReceipt Nat := ⟨[3], [⟨2, []⟩, ⟨1, []⟩, ⟨3, [2, 1, 2]⟩]⟩
+    first.dependencyView = second.dependencyView ∧
+      check [] first = true ∧ check [] second = true ∧
+      dependencyReadout first (fun _ => ⟨1, 1⟩) = ⟨3, 2⟩ ∧
+      dependencyReadout second (fun _ => ⟨1, 1⟩) = ⟨3, 2⟩ := by decide
+
+end DependencyViewControls
+
+/-! ## Resource frontiers
+
+A requested history reader derives producer and read-before-consume edges
+from the supplied finite resource incidences. This builder uses the existing
+causal receipt. It neither checks resource availability nor grants execution.
+The resource-word checker supplies that separate operational judgment.
+-/
+
+namespace ResourceFrontier
+
+variable {Resource Identity Action : Type*}
+
+/-- The last producer of a physical resource and its outstanding readers.
+Consumed resources drop both entries; newly produced resources get their
+actual producing occurrence. -/
+structure State (Resource Identity : Type*) where
+  producer : Resource → Option Identity
+  readers : Resource → List Identity
+
+/-- Initial resources have no producer in the requested recording interval. -/
+def empty : State Resource Identity := ⟨fun _ => none, fun _ => []⟩
+
+/-- All producer dependencies and all reads that a consume must follow.
+Predecessor slots remain explicit; consumers may separately forget repeats. -/
+def parents (state : State Resource Identity) (consumed read : List Resource) : List Identity :=
+  (consumed ++ read).filterMap state.producer ++ consumed.flatMap state.readers
+
+/-- Update the two frontiers once, using the same physical resource keys as
+the selected operation. This carries no execution or scheduling decision. -/
+def advance [DecidableEq Resource] (state : State Resource Identity) (identity : Identity)
+    (consumed read produced : List Resource) : State Resource Identity where
+  producer := fun resource =>
+    if resource ∈ produced then some identity
+    else if resource ∈ consumed then none else state.producer resource
+  readers := fun resource =>
+    let previous := if resource ∈ consumed then [] else state.readers resource
+    if resource ∈ read then identity :: previous else previous
+
+/-- Every retained frontier reference names a captured or earlier occurrence. -/
+def References (state : State Resource Identity) (available : List Identity) : Prop :=
+  (∀ resource identity, state.producer resource = some identity → identity ∈ available) ∧
+  (∀ resource identity, identity ∈ state.readers resource → identity ∈ available)
+
+theorem empty_references (available : List Identity) :
+    References (empty : State Resource Identity) available := by
+  constructor
+  · intro resource identity present
+    cases present
+  · intro resource identity present
+    cases present
+
+theorem mem_parents (state : State Resource Identity) (consumed read : List Resource)
+    (identity : Identity) :
+    identity ∈ parents state consumed read ↔
+      (∃ resource ∈ consumed ++ read, state.producer resource = some identity) ∨
+      (∃ resource ∈ consumed, identity ∈ state.readers resource) := by
+  simp only [parents, List.mem_append, List.mem_filterMap, List.mem_flatMap]
+
+theorem parents_referenced (state : State Resource Identity) (available : List Identity)
+    (valid : References state available) (consumed read : List Resource) :
+    ∀ identity ∈ parents state consumed read, identity ∈ available := by
+  intro identity present
+  rcases (mem_parents state consumed read identity).mp present with
+    ⟨resource, _, producer⟩ | ⟨resource, _, reader⟩
+  · exact valid.1 resource identity producer
+  · exact valid.2 resource identity reader
+
+theorem advance_references [DecidableEq Resource] (state : State Resource Identity)
+    (available : List Identity) (valid : References state available) (identity : Identity)
+    (consumed read produced : List Resource) :
+    References (advance state identity consumed read produced) (available ++ [identity]) := by
+  constructor
+  · intro resource candidate present
+    dsimp only [advance] at present
+    split at present
+    · cases present
+      exact List.mem_append_right _ List.mem_cons_self
+    · split at present
+      · cases present
+      · exact List.mem_append_left _ (valid.1 resource candidate present)
+  · intro resource candidate present
+    dsimp only [advance] at present
+    split at present
+    · rcases List.mem_cons.mp present with same | prior
+      · rw [same]
+        exact List.mem_append_right _ List.mem_cons_self
+      · split at prior
+        · cases prior
+        · exact List.mem_append_left _ (valid.2 resource candidate prior)
+    · split at present
+      · cases present
+      · exact List.mem_append_left _ (valid.2 resource candidate present)
+
+/-- A finite word is read once. Its event identities come from the source
+occurrences, independently of equal payloads or equal footprints. -/
+def run [DecidableEq Resource] (identity : Action → Identity)
+    (consume read produce : Action → List Resource) :
+    List Action → State Resource Identity → List (CausalEvent Identity) × State Resource Identity
+  | [], state => ([], state)
+  | action :: rest, state =>
+      let node := CausalEvent.mk (identity action) (parents state (consume action) (read action))
+      let next := advance state (identity action) (consume action) (read action) (produce action)
+      let suffix := run identity consume read produce rest next
+      (node :: suffix.1, suffix.2)
+
+theorem run_identities [DecidableEq Resource] (identity : Action → Identity)
+    (consume read produce : Action → List Resource) (word : List Action)
+    (state : State Resource Identity) :
+    ((run identity consume read produce word state).1).map CausalEvent.event = word.map identity := by
+  induction word generalizing state with
+  | nil => rfl
+  | cons action rest ih =>
+      change identity action :: _ = identity action :: _
+      exact congrArg (identity action :: ·) (ih _)
+
+/-- A suspended reader resumes with its actual producer and reader frontiers,
+so split reading equals reading the concatenated word. -/
+theorem run_append [DecidableEq Resource] (identity : Action → Identity)
+    (consume read produce : Action → List Resource) (first second : List Action)
+    (state : State Resource Identity) :
+    run identity consume read produce (first ++ second) state =
+      let left := run identity consume read produce first state
+      let right := run identity consume read produce second left.2
+      (left.1 ++ right.1, right.2) := by
+  induction first generalizing state with
+  | nil => rfl
+  | cons action rest ih =>
+      simp only [List.cons_append, run, ih, List.cons_append]
+
+theorem run_ordered [DecidableEq Resource] (identity : Action → Identity)
+    (consume read produce : Action → List Resource) (word : List Action)
+    (state : State Resource Identity) (available : List Identity)
+    (valid : References state available) (fresh : (available ++ word.map identity).Nodup) :
+    CausalReceipt.Ordered available (run identity consume read produce word state).1 := by
+  induction word generalizing state available with
+  | nil => trivial
+  | cons action rest ih =>
+      have distinct : (available ++ identity action :: rest.map identity).Nodup := fresh
+      have absent : identity action ∉ available := by
+        have disjoint := List.disjoint_of_nodup_append distinct
+        exact fun member => (List.disjoint_left.mp disjoint) member List.mem_cons_self
+      refine ⟨absent, parents_referenced state available valid _ _, ?_⟩
+      apply ih _ (available ++ [identity action])
+        (advance_references state available valid _ _ _ _)
+      simpa only [List.map_cons, List.append_assoc, List.singleton_append] using fresh
+
+/-- The full requested history retains every occurrence as a selected root. -/
+def receipt [DecidableEq Resource] (identity : Action → Identity)
+    (consume read produce : Action → List Resource) (word : List Action) : CausalReceipt Identity :=
+  let events := (run identity consume read produce word empty).1
+  ⟨events.map CausalEvent.event, events⟩
+
+theorem receipt_wellFormed [DecidableEq Resource] (identity : Action → Identity)
+    (consume read produce : Action → List Resource) (word : List Action)
+    (fresh : (word.map identity).Nodup) :
+    CausalReceipt.WellFormed [] (receipt identity consume read produce word) := by
+  refine ⟨by simp, ?_, ?_⟩
+  · exact run_ordered identity consume read produce word empty [] (empty_references []) fresh
+  · intro root present
+    exact present
+
+/-- Repeated source identities refuse instead of being merged as equal events. -/
+def receipt? [DecidableEq Resource] [DecidableEq Identity] (identity : Action → Identity)
+    (consume read produce : Action → List Resource) (word : List Action) :
+    Option (CausalReceipt Identity) :=
+  if (word.map identity).Nodup then some (receipt identity consume read produce word) else none
+
+theorem receipt?_sound [DecidableEq Resource] [DecidableEq Identity]
+    (identity : Action → Identity) (consume read produce : Action → List Resource)
+    (word : List Action) (result : CausalReceipt Identity)
+    (accepted : receipt? identity consume read produce word = some result) :
+    CausalReceipt.WellFormed [] result ∧ result.flattenedSupport = word.map identity := by
+  unfold receipt? at accepted
+  split at accepted
+  · next fresh =>
+      cases Option.some.inj accepted
+      exact ⟨receipt_wellFormed identity consume read produce word fresh,
+        run_identities identity consume read produce word empty⟩
+  · cases accepted
+
+/-- Frontiers may retain readers in different orders. Their producer
+identities and reader occurrences still agree. -/
+def Equivalent (left right : State Resource Identity) : Prop :=
+  left.producer = right.producer ∧ ∀ resource, (left.readers resource).Perm (right.readers resource)
+
+theorem advance_equivalent [DecidableEq Resource] {left right : State Resource Identity}
+    (same : Equivalent left right) (identity : Identity) (consumed read produced : List Resource) :
+    Equivalent (advance left identity consumed read produced)
+      (advance right identity consumed read produced) := by
+  constructor
+  · funext resource
+    simp only [advance, same.1]
+  · intro resource
+    by_cases taken : resource ∈ consumed <;> by_cases inspected : resource ∈ read
+    · simp [advance, taken, inspected]
+    · simp [advance, taken, inspected]
+    · simpa only [advance, if_neg taken, if_pos inspected] using
+        (same.2 resource).cons identity
+    · simpa only [advance, if_neg taken, if_neg inspected] using same.2 resource
+
+theorem parents_equivalent {left right : State Resource Identity}
+    (same : Equivalent left right) (consumed read : List Resource) :
+    (parents left consumed read).Perm (parents right consumed read) := by
+  unfold parents
+  rw [same.1]
+  exact (List.Perm.refl _).append (List.Perm.flatMap_left consumed (fun resource _ => same.2 resource))
+
+theorem run_equivalent [DecidableEq Resource] [DecidableEq Identity]
+    (identity : Action → Identity) (consume read produce : Action → List Resource)
+    (word : List Action) {left right : State Resource Identity} (same : Equivalent left right) :
+    ((run identity consume read produce word left).1.map dependencyNode =
+      (run identity consume read produce word right).1.map dependencyNode) ∧
+      Equivalent (run identity consume read produce word left).2
+        (run identity consume read produce word right).2 := by
+  induction word generalizing left right with
+  | nil => exact ⟨rfl, same⟩
+  | cons action rest ih =>
+      have next := advance_equivalent same (identity action) (consume action) (read action) (produce action)
+      obtain ⟨tail, final⟩ := ih next
+      refine ⟨?_, final⟩
+      change (identity action, (parents left (consume action) (read action)).toFinset) :: _ =
+        (identity action, (parents right (consume action) (read action)).toFinset) :: _
+      rw [List.toFinset_eq_of_perm _ _ (parents_equivalent same (consume action) (read action)), tail]
+
+/-- Every written resource of either operation is absent from all accesses
+of the other. Persistent reads may overlap. -/
+def Independent (leftConsume leftRead leftProduce rightConsume rightRead rightProduce : List Resource) : Prop :=
+  List.Disjoint (leftConsume ++ leftProduce) (rightConsume ++ rightRead ++ rightProduce) ∧
+  List.Disjoint (rightConsume ++ rightProduce) (leftConsume ++ leftRead ++ leftProduce)
+
+theorem Independent.symm {lc lr lp rc rr rp : List Resource} (separate : Independent lc lr lp rc rr rp) :
+    Independent rc rr rp lc lr lp := ⟨separate.2, separate.1⟩
+
+private theorem independent_left {lc lr lp rc rr rp : List Resource}
+    (separate : Independent lc lr lp rc rr rp) (resource : Resource)
+    (written : resource ∈ lc ∨ resource ∈ lp) :
+    resource ∉ rc ∧ resource ∉ rr ∧ resource ∉ rp := by
+  have left : resource ∈ lc ++ lp := List.mem_append.mpr written
+  have away := (List.disjoint_left.mp separate.1) left
+  simpa only [List.mem_append, not_or, and_assoc] using away
+
+/-- Independent updates commute on producer identities and reader occurrences.
+Reader ordering remains available in each original ordered history. -/
+theorem advance_commutes [DecidableEq Resource] (state : State Resource Identity)
+    (left right : Identity) (lc lr lp rc rr rp : List Resource)
+    (separate : Independent lc lr lp rc rr rp) :
+    Equivalent (advance (advance state left lc lr lp) right rc rr rp)
+      (advance (advance state right rc rr rp) left lc lr lp) := by
+  constructor
+  · funext resource
+    have awayL := independent_left separate resource
+    have awayR := independent_left separate.symm resource
+    by_cases pl : resource ∈ lp <;> by_cases pr : resource ∈ rp <;>
+      by_cases cl : resource ∈ lc <;> by_cases cr : resource ∈ rc <;>
+      simp_all [advance]
+  · intro resource
+    by_cases cl : resource ∈ lc
+    · have away := independent_left separate resource (Or.inl cl)
+      simp only [advance, if_pos cl, if_neg away.1, if_neg away.2.1]
+      exact List.Perm.refl _
+    · by_cases cr : resource ∈ rc
+      · have away := independent_left separate.symm resource (Or.inl cr)
+        simp only [advance, if_neg cl, if_pos cr, if_neg away.2.1]
+        exact List.Perm.refl _
+      · by_cases rl : resource ∈ lr
+        · by_cases rr' : resource ∈ rr
+          · simpa only [advance, if_neg cl, if_neg cr, if_pos rl, if_pos rr'] using
+              List.Perm.swap left right (state.readers resource)
+          · simp only [advance, if_neg cl, if_neg cr, if_pos rl, if_neg rr']
+            exact List.Perm.refl _
+        · by_cases rr' : resource ∈ rr
+          · simp only [advance, if_neg cl, if_neg cr, if_neg rl, if_pos rr']
+            exact List.Perm.refl _
+          · simp only [advance, if_neg cl, if_neg cr, if_neg rl, if_neg rr']
+            exact List.Perm.refl _
+
+/-- Advancing an independent operation cannot change a selected operation's
+producer or read-before-consume dependencies. -/
+theorem parents_after_independent [DecidableEq Resource] (state : State Resource Identity)
+    (right : Identity) (lc lr lp rc rr rp : List Resource)
+    (separate : Independent lc lr lp rc rr rp) :
+    parents (advance state right rc rr rp) lc lr = parents state lc lr := by
+  apply congrArg₂ (· ++ ·)
+  · apply List.filterMap_congr
+    intro resource present
+    have noProduce : resource ∉ rp := by
+      intro written
+      have away := independent_left separate.symm resource (Or.inr written)
+      rcases List.mem_append.mp present with taken | read
+      · exact away.1 taken
+      · exact away.2.1 read
+    have noConsume : resource ∉ rc := by
+      intro written
+      have away := independent_left separate.symm resource (Or.inl written)
+      rcases List.mem_append.mp present with taken | read
+      · exact away.1 taken
+      · exact away.2.1 read
+    simp only [advance, if_neg noProduce, if_neg noConsume]
+  · apply List.flatMap_congr
+    intro resource present
+    have away := independent_left separate resource (Or.inl present)
+    simp only [advance, if_neg away.1, if_neg away.2.1]
+
+/-- Independent operations keep the same two dependency vertices and the
+same remaining reader state. Only the original chronology is exchanged. -/
+theorem run_swap [DecidableEq Resource] [DecidableEq Identity]
+    (identity : Action → Identity) (consume read produce : Action → List Resource)
+    (left right : Action) (suffix : List Action) (state : State Resource Identity)
+    (separate : Independent (consume left) (read left) (produce left)
+      (consume right) (read right) (produce right)) :
+    ((run identity consume read produce (left :: right :: suffix) state).1.map dependencyNode).Perm
+      ((run identity consume read produce (right :: left :: suffix) state).1.map dependencyNode) ∧
+      Equivalent (run identity consume read produce (left :: right :: suffix) state).2
+        (run identity consume read produce (right :: left :: suffix) state).2 := by
+  have swapped := advance_commutes state (identity left) (identity right)
+    (consume left) (read left) (produce left) (consume right) (read right) (produce right) separate
+  obtain ⟨rest, final⟩ := run_equivalent identity consume read produce suffix swapped
+  constructor
+  · simp only [run, List.map_cons]
+    rw [parents_after_independent state (identity left) _ _ _ _ _ _ separate.symm,
+      parents_after_independent state (identity right) _ _ _ _ _ _ separate, rest]
+    exact List.Perm.swap _ _ _
+  · exact final
+
+/-- A causal observation of the whole requested word is invariant under an
+independent tile inside arbitrary prefixes and suffixes. Ordered words are
+still available separately, and the observer retains all vertex identities. -/
+theorem receipt_view_swap [DecidableEq Resource] [DecidableEq Identity]
+    (identity : Action → Identity) (consume read produce : Action → List Resource)
+    (earlier suffix : List Action) (left right : Action)
+    (separate : Independent (consume left) (read left) (produce left)
+      (consume right) (read right) (produce right)) :
+    (receipt identity consume read produce (earlier ++ left :: right :: suffix)).dependencyView =
+      (receipt identity consume read produce (earlier ++ right :: left :: suffix)).dependencyView := by
+  apply dependencyView_of_perm
+  · simp only [receipt, run_identities, List.map_append, List.map_cons]
+    exact (List.Perm.refl _).append (List.Perm.swap _ _ _)
+  · have swapped := (run_swap identity consume read produce left right suffix
+        (run identity consume read produce earlier empty).2 separate).1
+    simpa only [receipt, run_append, List.map_append] using
+      (List.Perm.refl ((run identity consume read produce earlier empty).1.map dependencyNode)).append swapped
+
+namespace Controls
+
+private def consumes : Nat → List Nat
+  | 1 => [4]
+  | 10 => [1]
+  | 20 => [2]
+  | 30 => [3, 0]
+  | _ => []
+
+private def reads : Nat → List Nat
+  | 10 | 20 => [0]
+  | _ => []
+
+private def produces : Nat → List Nat
+  | 1 => [0, 1, 2, 3]
+  | _ => []
+
+/-- One production supports two separate read occurrences. -/
+theorem shared_producer_two_reads :
+    (receipt id consumes reads produces [1, 10, 20]).dependencyView =
+      (receipt id consumes reads produces [1, 20, 10]).dependencyView ∧
+      (receipt id consumes reads produces [1, 10, 20]).Direct 1 10 ∧
+      (receipt id consumes reads produces [1, 10, 20]).Direct 1 20 := by
+  unfold Direct
+  decide
+
+/-- A later consume retains both reads it must follow. Those are edges,
+not just membership in the flattened event support. -/
+theorem consume_keeps_both_readers :
+    (receipt id consumes reads produces [1, 10, 20, 30]).Direct 10 30 ∧
+      (receipt id consumes reads produces [1, 10, 20, 30]).Direct 20 30 ∧
+      ¬ (receipt id consumes reads produces [1, 30, 10, 20]).Direct 10 30 := by
+  unfold Direct
+  decide
+
+/-- Equal-looking uses cannot reuse one supplied occurrence identity. -/
+theorem duplicate_occurrence_refused :
+    receipt? id consumes reads produces [1, 10, 10] = none := by decide
+
+end Controls
+
+end ResourceFrontier
+
 end CausalReceipt
 
 /-! ## Demand annotations -/

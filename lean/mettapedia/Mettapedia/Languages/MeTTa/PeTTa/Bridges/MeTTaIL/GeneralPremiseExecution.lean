@@ -2820,7 +2820,8 @@ theorem expand_scan_returns (state : State) (environment : Environment) (outer :
     (v "declarations") (v "free") (v "task") (by
       simp [scanCaller, taskCaller, environmentCaller, callee, Helper.names, applySubst, Subst.lookup])
 
-theorem expand_within_returns (state : State) (environment : Environment) (outer : Execution.Goal)
+theorem expand_within_returns (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (outer : Execution.Goal)
     (task : Execution.Task environment outer) (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (covered : Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.taskFreeWithin footprint task) :
@@ -2832,13 +2833,14 @@ theorem expand_within_returns (state : State) (environment : Environment) (outer
   | deliver result tail => exact expand_deliver_returns state environment outer _ result tail footprint covered
   | query request machine cursor tail =>
       exact QueryFrame.expand_query_within_returns RuleExecutionProgram.scopedMachineProgram AdmissionLower.Assembly.agreement ControlAssembly.query_agreement
-        ControlAssembly.scheduler_agreement QueryLower.operations state environment outer request machine cursor tail footprint provider covered.2.1
+        ControlAssembly.scheduler_agreement QueryLower.operations state environment outer request machine cursor tail (by simp [finiteProvider]) footprint provider covered.2.1
   | rootMatch frame => exact expand_root_returns state environment outer frame footprint covered
   | targetMatch frame => exact expand_target_returns state environment outer frame footprint covered
   | scanChildren bound type source limit cursor tail =>
       exact expand_scan_returns state environment outer bound type source limit cursor tail (environment.free.entriesOn footprint)
 
-theorem expand_captured_within_returns (caller : Subst) (state : State) (environment : Environment) (outer : Execution.Goal)
+theorem expand_captured_within_returns (caller : Subst) (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (outer : Execution.Goal)
     (task : Execution.Task environment outer) (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (covered : Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.taskFreeWithin footprint task) (one two : Atom)
@@ -2848,9 +2850,10 @@ theorem expand_captured_within_returns (caller : Subst) (state : State) (environ
       (expansionValue (Execution.expand environment outer task)) :=
   helper_capture RuleExecutionProgram.scopedMachineProgram AdmissionLower.Assembly.agreement .expand caller state [one, two]
     [environmentValue environment (environment.free.entriesOn footprint), taskValue task] _ rfl captured
-    (expand_within_returns state environment outer task footprint provider covered)
+    (expand_within_returns state environment finiteProvider outer task footprint provider covered)
 
-theorem expand_captured_completed_iff (caller : Subst) (state : State) (environment : Environment) (outer : Execution.Goal)
+theorem expand_captured_completed_iff (caller : Subst) (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (outer : Execution.Goal)
     (task : Execution.Task environment outer) (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (covered : Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.taskFreeWithin footprint task) (one two : Atom)
@@ -2861,7 +2864,7 @@ theorem expand_captured_completed_iff (caller : Subst) (state : State) (environm
       .complete after answers input output) ↔
       after = state ∧ answers = [expansionValue (Execution.expand environment outer task)] ∧ input = [] ∧ output = [] :=
   pure_returns_completed_iff RuleExecutionProgram.scopedMachineProgram caller state state _ _
-    (expand_captured_within_returns caller state environment outer task footprint provider covered one two captured)
+    (expand_captured_within_returns caller state environment finiteProvider outer task footprint provider covered one two captured)
     after answers input output
 
 
@@ -2920,7 +2923,8 @@ theorem start_returns (state : State) (environment : Environment) (goal : Execut
       (encoded (encodeOption stateTerm (some (Execution.start environment goal)))) :=
   PremiseMachineRunExecution.start_returns RuleExecutionProgram.scopedMachineProgram CompletedAssembly.run_agreement state environment goal
 
-theorem tick_within_returns (state : State) (environment : Environment) (goal : Execution.Goal)
+theorem tick_within_returns (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (goal : Execution.Goal)
     (machine : Execution.State environment goal) (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (covered : Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.stateFreeWithin footprint environment goal machine) :
@@ -2931,10 +2935,11 @@ theorem tick_within_returns (state : State) (environment : Environment) (goal : 
     (environmentTerm environment (environment.free.entriesOn footprint)) taskTerm resultTerm obligationTerm
     (Execution.expand environment goal) machine
   intro current member caller captured
-  exact Tasks.expand_captured_within_returns caller state environment goal current footprint provider (covered.1 current member)
+  exact Tasks.expand_captured_within_returns caller state environment finiteProvider goal current footprint provider (covered.1 current member)
     (v "environment") (v "task") captured
 
-theorem run_state_within_returns (state : State) (environment : Environment) (goal : Execution.Goal)
+theorem run_state_within_returns (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (goal : Execution.Goal)
     (fuel : Nat) (machine : Execution.State environment goal) (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (covered : Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.stateFreeWithin footprint environment goal machine) :
@@ -2947,11 +2952,13 @@ theorem run_state_within_returns (state : State) (environment : Environment) (go
     (environmentTerm environment (environment.free.entriesOn footprint)) taskTerm resultTerm obligationTerm
     (Execution.expand environment goal) fuel machine
   intro elapsedTicks bounded current member caller captured
-  exact Tasks.expand_captured_within_returns caller state environment goal current footprint provider
-    ((Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.run_free_within footprint environment goal rows elapsedTicks machine covered).1 current member)
+  exact Tasks.expand_captured_within_returns caller state environment finiteProvider goal current footprint provider
+    ((Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.run_free_within footprint environment goal rows
+      (Query.DynamicOutputsFreeWithin.of_unregistered footprint environment finiteProvider) elapsedTicks machine covered).1 current member)
     (v "environment") (v "task") captured
 
-theorem run_from_start_returns (state : State) (environment : Environment) (goal : Execution.Goal)
+theorem run_from_start_returns (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (goal : Execution.Goal)
     (fuel : Nat) (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (initial : Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.goalFreeWithin footprint goal) :
@@ -2959,10 +2966,11 @@ theorem run_from_start_returns (state : State) (environment : Environment) (goal
       [environmentValue environment (environment.free.entriesOn footprint), number fuel,
         encoded (stateTerm (Execution.start environment goal))]) state
       (encoded (encodeOption stateTerm (some (Execution.run environment goal fuel (Execution.start environment goal))))) :=
-  run_state_within_returns state environment goal fuel _ footprint provider
+  run_state_within_returns state environment finiteProvider goal fuel _ footprint provider
     (Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.start_free_within footprint environment goal initial)
 
-theorem run_state_captured_within_returns (caller : Subst) (state : State) (environment : Environment) (goal : Execution.Goal)
+theorem run_state_captured_within_returns (caller : Subst) (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (goal : Execution.Goal)
     (fuel : Nat) (machine : Execution.State environment goal) (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (covered : Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.stateFreeWithin footprint environment goal machine) (arguments : List Atom)
@@ -2976,11 +2984,13 @@ theorem run_state_captured_within_returns (caller : Subst) (state : State) (envi
     (environmentTerm environment (environment.free.entriesOn footprint)) taskTerm resultTerm obligationTerm
     (Execution.expand environment goal) fuel machine arguments captured
   intro elapsedTicks bounded current member callee capturedTask
-  exact Tasks.expand_captured_within_returns callee state environment goal current footprint provider
-    ((Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.run_free_within footprint environment goal rows elapsedTicks machine covered).1 current member)
+  exact Tasks.expand_captured_within_returns callee state environment finiteProvider goal current footprint provider
+    ((Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.run_free_within footprint environment goal rows
+      (Query.DynamicOutputsFreeWithin.of_unregistered footprint environment finiteProvider) elapsedTicks machine covered).1 current member)
     (v "environment") (v "task") capturedTask
 
-theorem run_from_start_captured_returns (caller : Subst) (state : State) (environment : Environment) (goal : Execution.Goal)
+theorem run_from_start_captured_returns (caller : Subst) (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (goal : Execution.Goal)
     (fuel : Nat) (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (initial : Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.goalFreeWithin footprint goal) (arguments : List Atom)
@@ -2989,10 +2999,11 @@ theorem run_from_start_captured_returns (caller : Subst) (state : State) (enviro
         encoded (stateTerm (Execution.start environment goal))]) :
     PureReturns RuleExecutionProgram.scopedMachineProgram caller state (a "gslt:premise:machine-run" arguments) state
       (encoded (encodeOption stateTerm (some (Execution.run environment goal fuel (Execution.start environment goal))))) :=
-  run_state_captured_within_returns caller state environment goal fuel _ footprint provider
+  run_state_captured_within_returns caller state environment finiteProvider goal fuel _ footprint provider
     (Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.start_free_within footprint environment goal initial) arguments captured
 
-theorem run_state_captured_completed_iff (caller : Subst) (state : State) (environment : Environment) (goal : Execution.Goal)
+theorem run_state_captured_completed_iff (caller : Subst) (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (goal : Execution.Goal)
     (fuel : Nat) (machine : Execution.State environment goal) (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (covered : Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.stateFreeWithin footprint environment goal machine) (arguments : List Atom)
@@ -3004,10 +3015,11 @@ theorem run_state_captured_completed_iff (caller : Subst) (state : State) (envir
       after = state ∧ answers = [encoded (encodeOption stateTerm (some (Execution.run environment goal fuel machine)))] ∧
         input = [] ∧ output = [] :=
   pure_returns_completed_iff RuleExecutionProgram.scopedMachineProgram caller state state _ _
-    (run_state_captured_within_returns caller state environment goal fuel machine footprint provider covered arguments captured)
+    (run_state_captured_within_returns caller state environment finiteProvider goal fuel machine footprint provider covered arguments captured)
     after answers input output
 
-theorem run_from_start_captured_completed_iff (caller : Subst) (state : State) (environment : Environment) (goal : Execution.Goal)
+theorem run_from_start_captured_completed_iff (caller : Subst) (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = []) (goal : Execution.Goal)
     (fuel : Nat) (footprint : List String)
     (provider : ∀ name ∈ providerFreeNames environment.provider, name ∈ footprint)
     (initial : Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.goalFreeWithin footprint goal) (arguments : List Atom)
@@ -3019,7 +3031,7 @@ theorem run_from_start_captured_completed_iff (caller : Subst) (state : State) (
       .complete after answers input output) ↔
       after = state ∧ answers = [encoded (encodeOption stateTerm
         (some (Execution.run environment goal fuel (Execution.start environment goal))))] ∧ input = [] ∧ output = [] :=
-  run_state_captured_completed_iff caller state environment goal fuel _ footprint provider
+  run_state_captured_completed_iff caller state environment finiteProvider goal fuel _ footprint provider
     (Mettapedia.OSLF.MeTTaIL.GeneralPremise.Execution.start_free_within footprint environment goal initial) arguments captured after answers input output
 
 
@@ -3042,6 +3054,7 @@ open Effects (State)
 open Eval
 
 theorem root_run_captured_returns (caller : Subst) (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = [])
     (bound : List TypeExpr) (type : TypeExpr) (source : Pattern) (index fuel : Nat) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) =
       [environmentValue environment (environment.free.entriesOn (source.freeFvarNames ++ providerFreeNames environment.provider)),
@@ -3049,11 +3062,12 @@ theorem root_run_captured_returns (caller : Subst) (state : State) (environment 
     PureReturns RuleExecutionProgram.scopedMachineProgram caller state (a "gslt:premise:machine-run" arguments) state
       (encoded (encodeOption stateTerm (some (Execution.run environment (.root bound type source index) fuel
         (Execution.start environment (.root bound type source index)))))) :=
-  run_from_start_captured_returns caller state environment (.root bound type source index) fuel _
+  run_from_start_captured_returns caller state environment finiteProvider (.root bound type source index) fuel _
     (fun _ member => List.mem_append_right _ member)
     (fun _ member => List.mem_append_left _ member) arguments captured
 
 theorem steps_run_captured_returns (caller : Subst) (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = [])
     (bound : List TypeExpr) (type : TypeExpr) (source : Pattern) (limit fuel : Nat) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) =
       [environmentValue environment (environment.free.entriesOn (source.freeFvarNames ++ providerFreeNames environment.provider)),
@@ -3061,11 +3075,12 @@ theorem steps_run_captured_returns (caller : Subst) (state : State) (environment
     PureReturns RuleExecutionProgram.scopedMachineProgram caller state (a "gslt:premise:machine-run" arguments) state
       (encoded (encodeOption stateTerm (some (Execution.run environment (.steps bound type source limit) fuel
         (Execution.start environment (.steps bound type source limit)))))) :=
-  run_from_start_captured_returns caller state environment (.steps bound type source limit) fuel _
+  run_from_start_captured_returns caller state environment finiteProvider (.steps bound type source limit) fuel _
     (fun _ member => List.mem_append_right _ member)
     (fun _ member => List.mem_append_left _ member) arguments captured
 
 theorem premises_run_captured_returns (caller : Subst) (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = [])
     (context : Context) (premises : List Premise) (initial : Assignment) (fuel : Nat)
     (admitted : admittedFor context.rule context.spec = true) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) =
@@ -3075,12 +3090,13 @@ theorem premises_run_captured_returns (caller : Subst) (state : State) (environm
     PureReturns RuleExecutionProgram.scopedMachineProgram caller state (a "gslt:premise:machine-run" arguments) state
       (encoded (encodeOption stateTerm (some (Execution.run environment (.premises context premises initial) fuel
         (Execution.start environment (.premises context premises initial)))))) := by
-  apply run_from_start_captured_returns caller state environment (.premises context premises initial) fuel _
+  apply run_from_start_captured_returns caller state environment finiteProvider (.premises context premises initial) fuel _
     (fun _ member => List.mem_append_right _ member) _ arguments captured
   exact ⟨admitted, Mettapedia.OSLF.MeTTaIL.ConditionalEquationExecution.assignment_coverage_mono _ _ initial
     (fun _ member => List.mem_append_left _ member) (Mettapedia.OSLF.MeTTaIL.ConditionalEquationExecution.assignment_covered_by_own_names initial)⟩
 
 theorem premise_run_captured_returns (caller : Subst) (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = [])
     (context : Context) (premise : Premise) (initial : Assignment) (fuel : Nat)
     (admitted : admittedFor context.rule context.spec = true) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) =
@@ -3090,12 +3106,13 @@ theorem premise_run_captured_returns (caller : Subst) (state : State) (environme
     PureReturns RuleExecutionProgram.scopedMachineProgram caller state (a "gslt:premise:machine-run" arguments) state
       (encoded (encodeOption stateTerm (some (Execution.run environment (.premise context premise initial) fuel
         (Execution.start environment (.premise context premise initial)))))) := by
-  apply run_from_start_captured_returns caller state environment (.premise context premise initial) fuel _
+  apply run_from_start_captured_returns caller state environment finiteProvider (.premise context premise initial) fuel _
     (fun _ member => List.mem_append_right _ member) _ arguments captured
   exact ⟨admitted, Mettapedia.OSLF.MeTTaIL.ConditionalEquationExecution.assignment_coverage_mono _ _ initial
     (fun _ member => List.mem_append_left _ member) (Mettapedia.OSLF.MeTTaIL.ConditionalEquationExecution.assignment_covered_by_own_names initial)⟩
 
 theorem quantified_run_captured_returns (caller : Subst) (state : State) (environment : Environment)
+    (finiteProvider : environment.provider.dynamicRelations = [])
     (context : Context) (parameter : String) (body : Premise) (index : Nat) (elements : List Pattern)
     (initial : Assignment) (fuel : Nat) (admitted : admittedFor context.rule context.spec = true) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) =
@@ -3105,7 +3122,7 @@ theorem quantified_run_captured_returns (caller : Subst) (state : State) (enviro
     PureReturns RuleExecutionProgram.scopedMachineProgram caller state (a "gslt:premise:machine-run" arguments) state
       (encoded (encodeOption stateTerm (some (Execution.run environment (.quantified context parameter body index elements initial) fuel
         (Execution.start environment (.quantified context parameter body index elements initial)))))) := by
-  apply run_from_start_captured_returns caller state environment (.quantified context parameter body index elements initial) fuel _
+  apply run_from_start_captured_returns caller state environment finiteProvider (.quantified context parameter body index elements initial) fuel _
     (fun _ member => List.mem_append_right _ member) _ arguments captured
   refine ⟨admitted, ?_, ?_⟩
   · exact Mettapedia.OSLF.MeTTaIL.ConditionalEquationExecution.assignment_coverage_mono _ _ initial

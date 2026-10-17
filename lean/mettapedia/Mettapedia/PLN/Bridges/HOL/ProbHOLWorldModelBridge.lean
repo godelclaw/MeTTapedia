@@ -1,6 +1,6 @@
 import Mettapedia.Logic.HOL.Probabilistic.Semantics
-import Mettapedia.PLN.Evidence.EvidenceQuantale
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.Evidence.BinaryEvidence
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 /-!
 # Thin WM-Facing Bridge for Probabilistic HOL Semantics

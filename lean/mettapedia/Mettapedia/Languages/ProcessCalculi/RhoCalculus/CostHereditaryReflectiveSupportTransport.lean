@@ -305,7 +305,7 @@ theorem rhoHereditaryReflectiveSupportPreserving_of
 the local static-node reflective-support law alone.  The whole-tree and
 supported-executor layers of the support obligation are discharged by the
 structural theorem and the context transport above. -/
-def rhoHereditaryCompactOpenNormalizerLaws_ofStaticLaw
+theorem rhoHereditaryCompactOpenNormalizerLaws_ofStaticLaw
     (alignable : CostOpenGeneratorTreeAlignable rhoCIGSLT
       rhoHereditaryNormalizationKernel)
     (staticPreserves :

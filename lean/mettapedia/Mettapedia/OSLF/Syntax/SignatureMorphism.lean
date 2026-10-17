@@ -838,3 +838,301 @@ theorem onTerm_not_injective :
 end ConstantMerge
 
 end Mettapedia.OSLF.Binding
+
+
+set_option autoImplicit false
+
+namespace Mettapedia.OSLF.Binding
+
+theorem mapArity_injective {A B : Type} {f : A → B} (injective : Function.Injective f) :
+    Function.Injective (mapArity f) := by
+  rintro ⟨bound, result⟩ ⟨otherBound, otherResult⟩ same
+  have results : result = otherResult := injective (congrArg Prod.snd same)
+  have binders : bound = otherBound :=
+    List.map_injective_iff.mpr injective (congrArg Prod.fst same)
+  cases results
+  cases binders
+  rfl
+
+theorem mapArities_injective {A B : Type} {f : A → B} (injective : Function.Injective f) :
+    Function.Injective (mapArities f) :=
+  List.map_injective_iff.mpr (mapArity_injective injective)
+
+/-- Reindexing retains the original operator together with its actual
+binding arity over the selected source sorts. Operators whose arities cannot
+be lifted are absent. -/
+structure ReindexedOperator (S : Signature) {A : Type} (sorts : A → S.Srt) (result : A) where
+  original : S.Op (sorts result)
+  arity : List (List A × A)
+  projects : S.arity original = mapArities sorts arity
+
+def Signature.reindexSorts (S : Signature) {A : Type} (sorts : A → S.Srt) : Signature where
+  Srt := A
+  Op := ReindexedOperator S sorts
+  arity operator := operator.arity
+
+def Signature.reindexProjection (S : Signature) {A : Type} (sorts : A → S.Srt) :
+    SigMor (S.reindexSorts sorts) S where
+  sortMap := sorts
+  opMap := ReindexedOperator.original
+  carriesArity := ReindexedOperator.projects
+
+theorem ReindexedOperator.original_injective {S : Signature} {A : Type}
+    {sorts : A → S.Srt} (injective : Function.Injective sorts) {result : A} :
+    Function.Injective (ReindexedOperator.original (S := S) (sorts := sorts) (result := result)) := by
+  rintro ⟨operator, arity, projects⟩ ⟨other, otherArity, otherProjects⟩ same
+  cases same
+  have arities : arity = otherArity :=
+    mapArities_injective injective (projects.symm.trans otherProjects)
+  cases arities
+  rfl
+
+namespace SortArityDecoder
+
+variable {A B : Type}
+
+def decodeArity (decode : B → Option A) (arity : List B × B) : Option (List A × A) := do
+  let bound ← arity.1.mapM decode
+  let result ← decode arity.2
+  pure (bound, result)
+
+theorem mapM_sound (sorts : A → B) (decode : B → Option A)
+    (sound : ∀ source target, decode source = some target → sorts target = source) :
+    ∀ (source : List B) (target : List A), source.mapM decode = some target →
+      target.map sorts = source
+  | [], target, accepted => by cases accepted; rfl
+  | source :: rest, target, accepted => by
+      cases first : decode source with
+      | none => simp [List.mapM_cons, first] at accepted
+      | some value =>
+          cases later : rest.mapM decode with
+          | none => simp [List.mapM_cons, first, later] at accepted
+          | some values =>
+              have same : value :: values = target := by
+                simpa [List.mapM_cons, first, later] using accepted
+              subst target
+              simp only [List.map_cons, sound _ _ first, mapM_sound sorts decode sound rest values later]
+
+theorem decodeArity_sound (sorts : A → B) (decode : B → Option A)
+    (sound : ∀ source target, decode source = some target → sorts target = source)
+    (source : List B × B) (target : List A × A)
+    (accepted : decodeArity decode source = some target) : mapArity sorts target = source := by
+  rcases source with ⟨bound, result⟩
+  cases bounds : bound.mapM decode with
+  | none => simp [decodeArity, bounds] at accepted
+  | some translated =>
+      cases value : decode result with
+      | none => simp [decodeArity, bounds, value] at accepted
+      | some newResult =>
+          have same : (translated, newResult) = target := by
+            simpa [decodeArity, bounds, value] using accepted
+          subst target
+          exact congrArg₂ Prod.mk (mapM_sound sorts decode sound _ _ bounds) (sound _ _ value)
+
+theorem decodeArities_sound (sorts : A → B) (decode : B → Option A)
+    (sound : ∀ source target, decode source = some target → sorts target = source) :
+    ∀ (source : List (List B × B)) (target : List (List A × A)),
+      source.mapM (decodeArity decode) = some target → mapArities sorts target = source :=
+  mapM_sound (mapArity sorts) (decodeArity decode) (decodeArity_sound sorts decode sound)
+
+theorem mapM_roundtrip (sorts : A → B) (decode : B → Option A)
+    (roundtrip : ∀ target, decode (sorts target) = some target) (target : List A) :
+    (target.map sorts).mapM decode = some target := by
+  induction target with
+  | nil => rfl
+  | cons first rest ih => simp [List.map_cons, List.mapM_cons, roundtrip, ih]
+
+theorem decodeArity_roundtrip (sorts : A → B) (decode : B → Option A)
+    (roundtrip : ∀ target, decode (sorts target) = some target) (target : List A × A) :
+    decodeArity decode (mapArity sorts target) = some target := by
+  simp [decodeArity, mapArity, mapM_roundtrip sorts decode roundtrip, roundtrip]
+
+end SortArityDecoder
+
+def Signature.reindexOperator? (S : Signature) {A : Type} (sorts : A → S.Srt)
+    (decode : S.Srt → Option A)
+    (sound : ∀ source target, decode source = some target → sorts target = source)
+    {result : A} (operator : S.Op (sorts result)) :
+    Option ((S.reindexSorts sorts).Op result) :=
+  match translated : (S.arity operator).mapM (SortArityDecoder.decodeArity decode) with
+  | none => none
+  | some arity => some ⟨operator, arity,
+      (SortArityDecoder.decodeArities_sound sorts decode sound _ _ translated).symm⟩
+
+theorem Signature.reindexOperator?_original (S : Signature) {A : Type} (sorts : A → S.Srt)
+    (decode : S.Srt → Option A)
+    (sound : ∀ source target, decode source = some target → sorts target = source)
+    {result : A} (operator : S.Op (sorts result))
+    (lifted : (S.reindexSorts sorts).Op result)
+    (accepted : S.reindexOperator? sorts decode sound operator = some lifted) :
+    lifted.original = operator := by
+  unfold reindexOperator? at accepted
+  split at accepted
+  · cases accepted
+  · cases accepted
+    rfl
+
+theorem Signature.reindexOperator?_roundtrip (S : Signature) {A : Type} (sorts : A → S.Srt)
+    (decode : S.Srt → Option A)
+    (sound : ∀ source target, decode source = some target → sorts target = source)
+    (roundtrip : ∀ target, decode (sorts target) = some target)
+    {result : A} (operator : (S.reindexSorts sorts).Op result) :
+    S.reindexOperator? sorts decode sound operator.original = some operator := by
+  rcases operator with ⟨original, arity, projects⟩
+  have decoded : (S.arity original).mapM (SortArityDecoder.decodeArity decode) = some arity := by
+    rw [projects]
+    exact SortArityDecoder.mapM_roundtrip (mapArity sorts)
+      (SortArityDecoder.decodeArity decode)
+      (SortArityDecoder.decodeArity_roundtrip sorts decode roundtrip) arity
+  unfold reindexOperator?
+  split
+  · rename_i absent
+    rw [absent] at decoded
+    cases decoded
+  · rename_i selected found
+    have same := Option.some.inj (found.symm.trans decoded)
+    subst selected
+    rfl
+
+#print axioms ReindexedOperator.original_injective
+#print axioms Signature.reindexOperator?
+
+end Mettapedia.OSLF.Binding
+
+
+
+set_option autoImplicit false
+namespace Mettapedia.OSLF.Binding.SortArityDecoder
+variable {A B : Type}
+
+/-- A finite interface reconstructed by the actual sort/arity decoder. Its
+positions are the original declaration positions, including unused rows. -/
+structure Interface (decode : B → Option A) (original : List (List B × B)) where
+  entries : List (List A × A)
+  decoded : original.mapM (decodeArity decode) = some entries
+
+def decodeInterface? (decode : B → Option A) (original : List (List B × B)) :
+    Option (Interface decode original) :=
+  match found : original.mapM (decodeArity decode) with
+  | none => none
+  | some entries => some ⟨entries, found⟩
+
+theorem Interface.projects {decode : B → Option A} {original : List (List B × B)}
+    (interface : Interface decode original) (sorts : A → B)
+    (sound : ∀ source target, decode source = some target → sorts target = source) :
+    mapArities sorts interface.entries = original :=
+  decodeArities_sound sorts decode sound _ _ interface.decoded
+
+theorem Interface.length {decode : B → Option A} {original : List (List B × B)}
+    (interface : Interface decode original) (sorts : A → B)
+    (sound : ∀ source target, decode source = some target → sorts target = source) :
+    interface.entries.length = original.length := by
+  have same := congrArg List.length (interface.projects sorts sound)
+  simpa only [mapArities, List.length_map] using same
+
+def Interface.sourceIndex {decode : B → Option A} {original : List (List B × B)}
+    (interface : Interface decode original) (sorts : A → B)
+    (sound : ∀ source target, decode source = some target → sorts target = source)
+    (index : Fin interface.entries.length) : Fin original.length :=
+  ⟨index.val, by simpa only [← interface.length sorts sound] using index.isLt⟩
+
+theorem Interface.row {decode : B → Option A} {original : List (List B × B)}
+    (interface : Interface decode original) (sorts : A → B)
+    (sound : ∀ source target, decode source = some target → sorts target = source)
+    (index : Fin interface.entries.length) :
+    mapArity sorts (interface.entries.get index) =
+      original.get (interface.sourceIndex sorts sound index) := by
+  have same := congrArg (fun rows => rows[index.val]?) (interface.projects sorts sound)
+  have sourceBound : index.val < original.length := (interface.sourceIndex sorts sound index).isLt
+  have originalRow : original[index.val]? = some (original.get (interface.sourceIndex sorts sound index)) :=
+    List.getElem?_eq_getElem sourceBound
+  rw [mapArities, List.getElem?_map, List.getElem?_eq_getElem index.isLt, Option.map_some, originalRow] at same
+  exact Option.some.inj same
+
+theorem Interface.entries_unique {decode : B → Option A} {original : List (List B × B)}
+    (first second : Interface decode original) : first.entries = second.entries :=
+  Option.some.inj (first.decoded.symm.trans second.decoded)
+
+theorem mapM_exists_iff {X Y : Type} (decode : X → Option Y) :
+    ∀ source : List X, (∃ target, source.mapM decode = some target) ↔
+      ∀ entry ∈ source, ∃ value, decode entry = some value
+  | [] => by simp
+  | head :: tail => by
+      constructor
+      · rintro ⟨target, accepted⟩
+        cases first : decode head with
+        | none => simp only [List.mapM_cons, first, Bind.bind, Option.bind] at accepted; cases accepted
+        | some value =>
+            cases later : tail.mapM decode with
+            | none => simp only [List.mapM_cons, first, later, Bind.bind, Option.bind] at accepted; cases accepted
+            | some values =>
+                intro entry member
+                rcases List.mem_cons.mp member with rfl | member
+                · exact ⟨value, first⟩
+                · exact (mapM_exists_iff decode tail).mp ⟨values, later⟩ entry member
+      · intro available
+        obtain ⟨headValue, first⟩ := available head List.mem_cons_self
+        obtain ⟨tailValues, later⟩ := (mapM_exists_iff decode tail).mpr
+          (fun entry member => available entry (List.mem_cons_of_mem head member))
+        exact ⟨headValue :: tailValues, by simp only [List.mapM_cons, first, later, Bind.bind, Option.bind, pure]⟩
+
+theorem decodeArity_exists_iff (decode : B → Option A) (arity : List B × B) :
+    (∃ translated, decodeArity decode arity = some translated) ↔
+      (∀ type ∈ arity.1, ∃ value, decode type = some value) ∧
+        ∃ value, decode arity.2 = some value := by
+  rcases arity with ⟨dependencies, result⟩
+  constructor
+  · rintro ⟨translated, accepted⟩
+    cases bounds : dependencies.mapM decode with
+    | none => simp only [decodeArity, bounds, Bind.bind, Option.bind] at accepted; cases accepted
+    | some bound =>
+        cases last : decode result with
+        | none => simp only [decodeArity, bounds, last, Bind.bind, Option.bind] at accepted; cases accepted
+        | some value => exact ⟨(mapM_exists_iff decode dependencies).mp ⟨bound, bounds⟩, value, rfl⟩
+  · rintro ⟨dependenciesAvailable, resultValue, resultRead⟩
+    obtain ⟨values, valuesRead⟩ := (mapM_exists_iff decode dependencies).mpr dependenciesAvailable
+    exact ⟨(values, resultValue), by simp only [decodeArity, valuesRead, resultRead, Bind.bind, Option.bind, pure]⟩
+
+theorem decodeInterface?_complete {decode : B → Option A} {original : List (List B × B)}
+    (available : ∀ entry ∈ original,
+      (∀ type ∈ entry.1, ∃ value, decode type = some value) ∧
+        ∃ value, decode entry.2 = some value) :
+    ∃ interface, decodeInterface? decode original = some interface := by
+  obtain ⟨entries, found⟩ := (mapM_exists_iff (decodeArity decode) original).mpr
+    (fun entry member => (decodeArity_exists_iff decode entry).mpr (available entry member))
+  unfold decodeInterface?
+  split
+  · rename_i missing
+    rw [found] at missing
+    cases missing
+  · exact ⟨_, rfl⟩
+
+theorem decodeInterface?_available {decode : B → Option A} {original : List (List B × B)}
+    (interface : Interface decode original) :
+    ∀ entry ∈ original,
+      (∀ type ∈ entry.1, ∃ value, decode type = some value) ∧
+        ∃ value, decode entry.2 = some value := by
+  intro entry member
+  exact (decodeArity_exists_iff decode entry).mp
+    ((mapM_exists_iff (decodeArity decode) original).mp ⟨interface.entries, interface.decoded⟩ entry member)
+
+
+theorem decodeInterface?_exact {decode : B → Option A} {original : List (List B × B)} :
+    (∃ interface, decodeInterface? decode original = some interface) ↔
+      ∀ entry ∈ original,
+        (∀ type ∈ entry.1, ∃ value, decode type = some value) ∧
+          ∃ value, decode entry.2 = some value :=
+  ⟨fun ⟨interface, _⟩ => decodeInterface?_available interface, decodeInterface?_complete⟩
+
+theorem decodeInterface?_roundtrip {decode : B → Option A} {original : List (List B × B)}
+    (interface : Interface decode original) : decodeInterface? decode original = some interface := by
+  unfold decodeInterface?
+  split
+  · rename_i missing
+    rw [interface.decoded] at missing
+    cases missing
+  · rename_i entries found
+    have same : entries = interface.entries := Option.some.inj (found.symm.trans interface.decoded)
+    cases same
+    rfl
+end Mettapedia.OSLF.Binding.SortArityDecoder

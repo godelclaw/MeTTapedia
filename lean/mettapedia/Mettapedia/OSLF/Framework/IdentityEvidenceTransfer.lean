@@ -1,6 +1,6 @@
 import Mettapedia.OSLF.Formula
 import Mettapedia.OSLF.Framework.TypeSynthesis
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 import Mettapedia.PLN.Evidence.IdentityEvidence
 
 /-!

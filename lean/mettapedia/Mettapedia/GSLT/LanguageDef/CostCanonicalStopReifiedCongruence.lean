@@ -22,7 +22,7 @@ mutual
   /-- Reify a stopped structural alignment and pass it through two keyed
   canonicalizers in one traversal.  Every source free variable is delegated
   to `mapFvar`, even when its two local reified spellings happen to agree. -/
-  def CanonicalStopAligned.environmentReifyCanonicalizeByDepths
+  theorem CanonicalStopAligned.environmentReifyCanonicalizeByDepths
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -135,7 +135,7 @@ mutual
 
   /-- Listwise companion of
   `CanonicalStopAligned.environmentReifyCanonicalizeByDepths`. -/
-  def CanonicalStopAlignedList.environmentReifyCanonicalizeByDepths
+  theorem CanonicalStopAlignedList.environmentReifyCanonicalizeByDepths
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -203,7 +203,7 @@ mutual
   apex depth are independent indices.  In particular, a reflected Quote from
   another presentation resets the apex depth even though it is not the Quote
   selected by `declaration`. -/
-  def CanonicalStopAligned.environmentMapThickenCanonicalizeCommonApexByDepths
+  theorem CanonicalStopAligned.environmentMapThickenCanonicalizeCommonApexByDepths
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -399,7 +399,7 @@ mutual
 
   /-- Listwise companion of
   `CanonicalStopAligned.environmentMapThickenCanonicalizeCommonApexByDepths`. -/
-  def CanonicalStopAlignedList.environmentMapThickenCanonicalizeCommonApexByDepths
+  theorem CanonicalStopAlignedList.environmentMapThickenCanonicalizeCommonApexByDepths
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -552,7 +552,7 @@ mutual
   apex depth are independent indices.  In particular, a reflected Quote from
   another presentation resets the apex depth even though it is not the Quote
   selected by `declaration`. -/
-  def CanonicalStopAligned.environmentMapThickenTwoDepthApexByDepths
+  theorem CanonicalStopAligned.environmentMapThickenTwoDepthApexByDepths
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -753,7 +753,7 @@ mutual
 
   /-- Listwise companion of
   `CanonicalStopAligned.environmentMapThickenTwoDepthApexByDepths`. -/
-  def CanonicalStopAlignedList.environmentMapThickenTwoDepthApexByDepths
+  theorem CanonicalStopAlignedList.environmentMapThickenTwoDepthApexByDepths
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {leftOccurrences rightOccurrences : List CostRegionOccurrence}

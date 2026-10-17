@@ -1,5 +1,7 @@
 import Mettapedia.OSLF.MeTTaIL.GeneralRuleJobs
 import Mettapedia.OSLF.MeTTaIL.GeneralPremiseExecution
+import Mettapedia.OSLF.MeTTaIL.GeneralPremiseExecutionCoverage
+import Mettapedia.OSLF.MeTTaIL.GeneralPremiseOrderedAdmission
 
 /-!
 # Resumable execution of a typed rule occurrence
@@ -208,5 +210,111 @@ theorem pending_not_complete {request : Request} (state : State request) (pendin
 
 theorem unresolved_not_complete {request : Request} (state : State request) (pending : state.unresolved ≠ []) :
     complete state = false := GeneralPremise.Scheduler.unresolved_not_complete state pending
+
+/-- The service argument changes query execution while retaining the actual
+selected declarations and complete occurrence request. -/
+def Request.environmentWith (request : Request) (dynamic : GeneralPremise.DynamicProvider) :
+    GeneralPremise.Environment :=
+  GeneralPlanEnvironment.environmentWith request.plan dynamic
+
+abbrev AnswerWith (request : Request) (dynamic : GeneralPremise.DynamicProvider) :=
+  {receipt : Receipt // receipt.ValidWith dynamic request.plan request.bound request.expected request.source}
+
+/-- Read one physical root occurrence. The shared finish routine rechecks the
+actual replacement, scoped reduct and source/target typing. -/
+def readoutWith (request : Request) (dynamic : GeneralPremise.DynamicProvider)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (result : GeneralPremise.Execution.Result (request.environmentWith dynamic) request.goal) :
+    Option (AnswerWith request dynamic) :=
+  match result with
+  | .root trace captured completed history _localTarget valid =>
+    match emitted : finishWith? dynamic request.plan request.bound request.expected request.job
+        trace captured completed history with
+    | none => none
+    | some receipt =>
+      some ⟨receipt, finishWith_root_sound licensed valid emitted⟩
+
+def answersWith (request : Request) (dynamic : GeneralPremise.DynamicProvider)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (state : GeneralPremise.Execution.State (request.environmentWith dynamic) request.goal) :
+    List (AnswerWith request dynamic) :=
+  state.answers.filterMap (readoutWith request dynamic licensed)
+
+def runWith (request : Request) (dynamic : GeneralPremise.DynamicProvider) (fuel : Nat)
+    (state : GeneralPremise.Execution.State (request.environmentWith dynamic) request.goal) :
+    GeneralPremise.Execution.State (request.environmentWith dynamic) request.goal :=
+  GeneralPremise.Execution.run (request.environmentWith dynamic) request.goal fuel state
+
+def startWith (request : Request) (dynamic : GeneralPremise.DynamicProvider) :
+    GeneralPremise.Execution.State (request.environmentWith dynamic) request.goal :=
+  GeneralPremise.Execution.start (request.environmentWith dynamic) request.goal
+
+theorem runWith_add (request : Request) (dynamic : GeneralPremise.DynamicProvider)
+    (first second : Nat)
+    (state : GeneralPremise.Execution.State (request.environmentWith dynamic) request.goal) :
+    runWith request dynamic (first + second) state =
+      runWith request dynamic second (runWith request dynamic first state) :=
+  GeneralPremise.Execution.run_add _ _ _ _ _
+
+theorem answersWith_sound {request : Request} {dynamic : GeneralPremise.DynamicProvider}
+    {licensed : request.job.Valid request.plan request.bound request.expected request.source}
+    {state : GeneralPremise.Execution.State (request.environmentWith dynamic) request.goal}
+    {receipt : Receipt}
+    (emitted : receipt ∈ (answersWith request dynamic licensed state).map Subtype.val) :
+    receipt.ValidWith dynamic request.plan request.bound request.expected request.source := by
+  obtain ⟨answer, _, same⟩ := List.mem_map.mp emitted
+  subst receipt
+  exact answer.property
+
+theorem readoutWith_complete {request : Request} {dynamic : GeneralPremise.DynamicProvider}
+    {receipt : Receipt}
+    (valid : receipt.ValidWith dynamic request.plan request.bound request.expected request.source)
+    (job : receipt.job = request.job)
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source) :
+    ∃ answer, readoutWith request dynamic licensed
+      (.root receipt.matcherTrace receipt.captured receipt.completed receipt.premiseHistory
+        receipt.localTarget (job ▸ valid.2.1)) = some answer ∧ answer.val = receipt := by
+  have emitted := finishWith_complete valid
+  rw [job] at emitted
+  simp only [readoutWith]
+  split
+  · rename_i missing
+    rw [emitted] at missing
+    cases missing
+  · rename_i actual selected
+    have same : actual = receipt := Option.some.inj (selected.symm.trans emitted)
+    subst actual
+    exact ⟨_, rfl, rfl⟩
+
+/-- Every independently justified receipt for this occurrence appears at a
+finite budget. The declaration-order condition governs recursive child search;
+no total-availability assumption is imposed on unrelated native requests. -/
+theorem runWith_receipt_complete {request : Request} {dynamic : GeneralPremise.DynamicProvider}
+    (licensed : request.job.Valid request.plan request.bound request.expected request.source)
+    (checked : GeneralPremise.checkStepStratification (request.environmentWith dynamic).language = true)
+    {receipt : Receipt}
+    (valid : receipt.ValidWith dynamic request.plan request.bound request.expected request.source)
+    (job : receipt.job = request.job) :
+    ∃ fuel, receipt ∈ (answersWith request dynamic licensed
+      (runWith request dynamic fuel (startWith request dynamic))).map Subtype.val := by
+  let wanted : GeneralPremise.Execution.Result (request.environmentWith dynamic) request.goal :=
+    .root receipt.matcherTrace receipt.captured receipt.completed receipt.premiseHistory receipt.localTarget
+      (job ▸ valid.2.1)
+  have ordered : wanted.ordered = true := (job ▸ valid.2.1).ordered checked
+  have member := GeneralPremise.Execution.finish_contains (request.environmentWith dynamic)
+    request.goal wanted ordered
+  obtain ⟨answer, projected, same⟩ := readoutWith_complete valid job licensed
+  exact ⟨(GeneralPremise.Execution.treeStart (request.environmentWith dynamic) request.goal).cost,
+    List.mem_map.mpr ⟨answer, List.mem_filterMap.mpr ⟨wanted, member, projected⟩, same⟩⟩
+
+/-- A complete empty response and an unavailable request remain distinct in
+this execution; pending work or unresolved requests cannot certify exhaustion. -/
+theorem runWith_complete_iff (request : Request) (dynamic : GeneralPremise.DynamicProvider)
+    (fuel : Nat) :
+    GeneralPremise.Execution.complete (request.environmentWith dynamic) request.goal
+      (runWith request dynamic fuel (startWith request dynamic)) = true ↔
+      (runWith request dynamic fuel (startWith request dynamic)).agenda = [] ∧
+      (runWith request dynamic fuel (startWith request dynamic)).unresolved = [] :=
+  GeneralPremise.Scheduler.complete_iff _
 
 end Mettapedia.OSLF.MeTTaIL.GeneralRuleJobExecution

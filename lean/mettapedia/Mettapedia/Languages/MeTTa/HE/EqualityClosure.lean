@@ -445,4 +445,137 @@ theorem classValues_eq_of_reachable {b : HE.Bindings} {left right : String}
   unfold HE.Bindings.classValues
   rw [eqClassOrdered_eq_of_reachable hreach]
 
+/-- Edge-list layout and repeated edges do not alter the presented graph. -/
+theorem edgeGraph_eq_of_membership_iff {left right : List (String × String)}
+    (members : ∀ edge, edge ∈ left ↔ edge ∈ right) :
+    edgeGraph left = edgeGraph right := by
+  ext x y
+  simp only [edgeGraph_adj_iff, members]
+
+/-- Equality-class membership depends on the presented edges rather than their
+list order. The class's enumeration order remains a separate observation. -/
+theorem eqClass_membership_iff_of_equalities_membership_iff
+    {left right : HE.Bindings}
+    (members : ∀ edge, edge ∈ left.equalities ↔ edge ∈ right.equalities)
+    (root name : String) :
+    name ∈ left.eqClass root ↔ name ∈ right.eqClass root := by
+  rw [mem_eqClass_iff_reachable, mem_eqClass_iff_reachable,
+    edgeGraph_eq_of_membership_iff members]
+
+
+/-- A later edge whose endpoints have already appeared does not change their
+first-appearance order. The edge may still join two different classes. -/
+theorem eqVarsInOrder_addEquality_of_seen {bindings : Bindings} {left right : String}
+    (leftSeen : left ∈ bindings.eqVarsInOrder)
+    (rightSeen : right ∈ bindings.eqVarsInOrder) :
+    (bindings.addEquality left right).eqVarsInOrder = bindings.eqVarsInOrder := by
+  change (bindings.equalities ++ [(left, right)]).foldl
+    (fun acc p =>
+      let acc := if acc.contains p.1 then acc else acc ++ [p.1]
+      if acc.contains p.2 then acc else acc ++ [p.2]) [] = _
+  rw [List.foldl_append]
+  change (if (if bindings.eqVarsInOrder.contains left then bindings.eqVarsInOrder
+      else bindings.eqVarsInOrder ++ [left]).contains right
+    then (if bindings.eqVarsInOrder.contains left then bindings.eqVarsInOrder
+      else bindings.eqVarsInOrder ++ [left])
+    else (if bindings.eqVarsInOrder.contains left then bindings.eqVarsInOrder
+      else bindings.eqVarsInOrder ++ [left]) ++ [right]) = _
+  simp [leftSeen, rightSeen]
+
+/-- Repeating an existing edge preserves the representative-selection order. -/
+theorem eqVarsInOrder_addEquality_of_mem {bindings : Bindings} {left right : String}
+    (stored : (left, right) ∈ bindings.equalities) :
+    (bindings.addEquality left right).eqVarsInOrder = bindings.eqVarsInOrder :=
+  eqVarsInOrder_addEquality_of_seen
+    (mem_eqVarsInOrder_iff.mpr (left_mem_edgeNodes stored))
+    (mem_eqVarsInOrder_iff.mpr (right_mem_edgeNodes stored))
+
+/-- A repeated edge preserves the complete ordered class, not only reachability. -/
+theorem eqClassOrdered_addEquality_of_mem {bindings : Bindings} {left right : String}
+    (stored : (left, right) ∈ bindings.equalities) (root : String) :
+    (bindings.addEquality left right).eqClassOrdered root = bindings.eqClassOrdered root := by
+  have membership (edge : String × String) :
+      edge ∈ (bindings.addEquality left right).equalities ↔ edge ∈ bindings.equalities := by
+    simp only [Bindings.addEquality, List.mem_append, List.mem_singleton]
+    exact or_iff_left_of_imp (by rintro rfl; exact stored)
+  have contains (name : String) :
+      ((bindings.addEquality left right).eqClass root).contains name =
+        (bindings.eqClass root).contains name := by
+    rw [Bool.eq_iff_iff, List.contains_iff_mem, List.contains_iff_mem]
+    exact eqClass_membership_iff_of_equalities_membership_iff membership root name
+  unfold Bindings.eqClassOrdered
+  rw [eqVarsInOrder_addEquality_of_mem stored]
+  have filtered : bindings.eqVarsInOrder.filter
+        (fun name => ((bindings.addEquality left right).eqClass root).contains name) =
+      bindings.eqVarsInOrder.filter (fun name => (bindings.eqClass root).contains name) := by
+    apply List.filter_congr
+    intro name _
+    exact contains name
+  rw [filtered]
+
+/-- Duplicate reconciliation edges retain the same residual name. -/
+theorem eqRepresentative_addEquality_of_mem {bindings : Bindings} {left right : String}
+    (stored : (left, right) ∈ bindings.equalities) (root : String) :
+    (bindings.addEquality left right).eqRepresentative root = bindings.eqRepresentative root := by
+  unfold Bindings.eqRepresentative
+  rw [eqClassOrdered_addEquality_of_mem stored]
+
+/-- Direct class values retain their order and every repeated payload. -/
+theorem classValues_addEquality_of_mem {bindings : Bindings} {left right : String}
+    (stored : (left, right) ∈ bindings.equalities) (root : String) :
+    (bindings.addEquality left right).classValues root = bindings.classValues root := by
+  unfold Bindings.classValues
+  rw [eqClassOrdered_addEquality_of_mem stored]
+  rfl
+
+namespace OrderedEdgeControls
+
+def repeated : Bindings := ⟨[], [("a", "b"), ("c", "d")]⟩
+
+/-- Repeating an edge is safe for the representative, without losing its
+physical relation occurrence from the actual record. -/
+theorem duplicate_keeps_representative_and_occurrence :
+    (repeated.addEquality "a" "b").eqRepresentative "b" = "a" ∧
+      (repeated.addEquality "a" "b").equalities.length = repeated.equalities.length + 1 := by
+  constructor
+  · rw [eqRepresentative_addEquality_of_mem (by decide : ("a", "b") ∈ repeated.equalities)]
+    decide +kernel
+  · rfl
+
+/-- Equal edge membership does not authorize arbitrary order changes. -/
+theorem same_edges_can_choose_different_representatives :
+    let earlierLeft : Bindings := ⟨[], [("a", "b"), ("c", "b")]⟩
+    let earlierRight : Bindings := ⟨[], [("c", "b"), ("a", "b")]⟩
+    List.Perm earlierLeft.equalities earlierRight.equalities ∧
+      earlierLeft.eqRepresentative "b" = "a" ∧
+      earlierRight.eqRepresentative "b" = "c" := by
+  refine ⟨List.Perm.swap _ _ [], ?_, ?_⟩ <;> decide +kernel
+
+end OrderedEdgeControls
+
 end Mettapedia.Languages.MeTTa.HE.EqualityClosure
+
+namespace Mettapedia.Languages.MeTTa.HE
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+namespace LeaTTaBridge
+
+theorem isBound_eq_false_of_classValues_nil {b : Bindings} {v : String}
+    (h : b.classValues v = []) : b.isBound v = false := by
+  by_contra habs
+  have hbound : b.isBound v = true := by simpa using habs
+  rw [Bindings.isBound, Option.isSome_iff_exists] at hbound
+  rcases hbound with ⟨a, ha⟩
+  have hself : v ∈ b.eqClassOrdered v :=
+    EqualityClosure.mem_eqClassOrdered_iff.mpr
+      (EqualityClosure.mem_eqClass_iff_reachable.mpr .rfl)
+  have hmem : a ∈ b.classValues v := by
+    unfold Bindings.classValues
+    exact List.mem_filterMap.mpr ⟨v, hself, ha⟩
+  rw [h] at hmem
+  simp at hmem
+
+end LeaTTaBridge
+
+end Mettapedia.Languages.MeTTa.HE

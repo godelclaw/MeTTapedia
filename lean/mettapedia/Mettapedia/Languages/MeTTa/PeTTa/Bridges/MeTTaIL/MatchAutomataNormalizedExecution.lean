@@ -3924,7 +3924,7 @@ theorem language_top_derivation_iff (state : State) (language : LanguageDef)
 
 
 open MeTTaILFirstOrderRuleCompilation (RuleProgram)
-open RelationPremiseExecution (providerEnv providerRowsTerm)
+open RelationPremiseExecution (providerEnv providerRowsTerm VariableSourceProgram)
 open MatchAutomataBindingExecution (matchesTerm)
 open Mettapedia.OSLF.MeTTaIL.Engine (rewriteStepWithPremisesUsing)
 
@@ -3988,7 +3988,7 @@ private theorem languageRoot_clause (language : LanguageDef) (types terms : Term
 
 private theorem languageRoot_body_returns (state : State)
     (language : LanguageDef) (types terms : Term) (contexts : RewriteRule → Term)
-    (compiled : RuleProgram language.rewrites)
+    (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan) :
     PureReturns program (languageRootEnvironment language types terms contexts compiled rows subject) state
       (rawEquation .languageRoot).body state
@@ -4011,10 +4011,10 @@ private theorem languageRoot_body_returns (state : State)
     ("matches", encoded (matchesTerm observations)) :: bound
   have matched : PureReturns program selected state
       (a "gslt:normalized:language-top" [v "language", v "subject"]) state matchValue := by
-    have checked := language_top_compiled_returns selected state language types terms contexts compiled subject
+    have checked := language_top_compiled_returns selected state language types terms contexts compiled.val subject
       [v "language", v "subject"]
       (by simp [selected, caller, languageRootEnvironment, applySubst, Subst.lookup])
-    simpa only [topRunTerm, compiled_patterns, patterns, observations, reads, dispatches, matchValue] using checked
+    simpa only [topRunTerm, VariableSourceProgram.plans, compiled_patterns, patterns, observations, reads, dispatches, matchValue] using checked
   rw [languageRoot_shape]
   apply case_returns program caller selected state state state (v "language")
     (encoded (RootRuleExecution.Conditional.languageTerm language types terms contexts compiled))
@@ -4023,7 +4023,7 @@ private theorem languageRoot_body_returns (state : State)
       variable_returns program caller state "language"
   · simp [languageRootCases, RootRuleExecution.Conditional.languageTerm, CettaWireAtom.encode,
       CettaWireAtom.encodeMany, SpaceSemantics.selectCase, SpaceSemantics.matchValue,
-      SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup, selected, caller, languageRootEnvironment]
+      SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup, selected, caller, languageRootEnvironment, VariableSourceProgram.plans]
   · unfold languageRootMatchBody
     apply let_returns program selected bound state state state (v "matched") _ _ _ _ matched _ _
     · simp [SpaceSemantics.matchBinding, SpaceSemantics.matchValue, matchAtom, Subst.lookup, bound,
@@ -4037,7 +4037,7 @@ private theorem languageRoot_body_returns (state : State)
           CettaWireAtom.encode, CettaWireAtom.encodeMany, SpaceSemantics.selectCase,
           SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup,
           matchBound, bound, number, selected, caller, languageRootEnvironment]
-      · rw [← RootRuleExecution.Matched.run_reference_eq_frontier rows language compiled subject]
+      · rw [← RootRuleExecution.Matched.run_reference_eq_frontier rows language compiled.val subject]
         apply rule_captured_returns (by decide +kernel)
         apply RootRuleExecution.Matched.matched_root_captured_returns matchBound state language contexts rows
           compiled observations (v "rewrites") (v "rows") (v "matches")
@@ -4051,7 +4051,7 @@ continuation. The first-order row erasure and equation-free language entry
 are explicit admissions; this law does not establish declaration typing. -/
 theorem language_root_captured_returns (caller : Subst) (state : State)
     (language : LanguageDef) (types terms : Term) (contexts : RewriteRule → Term)
-    (compiled : RuleProgram language.rewrites)
+    (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan)
     (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
@@ -4070,7 +4070,7 @@ as the normalized matcher. Its continuation is the original guarded-row
 executor, not a new reduction semantics. -/
 theorem normalized_dispatch_captured_returns (caller : Subst) (state : State)
     (language : LanguageDef) (types terms : Term) (contexts : RewriteRule → Term)
-    (compiled : RuleProgram language.rewrites)
+    (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan)
     (one two three : Atom)
     (captured : [one, two, three].map (applySubst caller) =
@@ -4078,7 +4078,7 @@ theorem normalized_dispatch_captured_returns (caller : Subst) (state : State)
        encoded (providerRowsTerm rows), encoded (InferenceCettaWire.encodePattern subject.erase)]) :
     PureReturns program caller state (a "gslt:normalized:language-root-reducts" [one, two, three]) state
       (encoded (InferenceCettaWire.encodePatterns
-        (RootRuleExecution.Matched.runMatches rows language compiled
+        (RootRuleExecution.Matched.runMatches rows language compiled.val
           (MeTTaILSubtermMatchAutomata.normalizedTopDown
             (MeTTaILSubtermMatchAutomata.languagePatterns language) subject)))) := by
   simpa only [MeTTaILSubtermMatchAutomata.normalizedTopDown_eq_reference,
@@ -4097,7 +4097,7 @@ def languageRootQueryTerm (language : LanguageDef) (types terms : Term) (context
 
 theorem language_root_returns (state : State)
     (language : LanguageDef) (types terms : Term) (contexts : RewriteRule → Term)
-    (compiled : RuleProgram language.rewrites)
+    (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan) :
     PureReturns program [] state
       (encoded (languageRootQueryTerm language types terms contexts compiled rows subject)) state
@@ -4107,7 +4107,7 @@ theorem language_root_returns (state : State)
 
 theorem language_root_completed_iff (state : State)
     (language : LanguageDef) (types terms : Term) (contexts : RewriteRule → Term)
-    (compiled : RuleProgram language.rewrites)
+    (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan)
     (after : State) (answers input output : List Atom) :
     (∃ fuel, run program fuel
@@ -4121,7 +4121,7 @@ theorem language_root_completed_iff (state : State)
 
 theorem language_root_derivation_iff (state : State)
     (language : LanguageDef) (types terms : Term) (contexts : RewriteRule → Term)
-    (compiled : RuleProgram language.rewrites)
+    (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan)
     (after : State) (answers input output : List Atom) :
     DeclarativeSpec.Runs program
@@ -4147,7 +4147,7 @@ abbrev ObservesRootReduct (state : State) (language : LanguageDef) (types terms 
 structural candidate relation or a quotient that forgets duplicate matches. -/
 theorem observes_root_iff_gslt_step (state : State)
     (language : LanguageDef) (types terms : Term) (contexts : RewriteRule → Term)
-    (compiled : RuleProgram language.rewrites)
+    (compiled : VariableSourceProgram language.rewrites)
     (rows : List Mettapedia.OSLF.MeTTaIL.GeneralPremise.ProviderRow) (subject : PatternPlan)
     (equationFree : language.isEquationFree = true) (target : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern) :
     ObservesRootReduct state language types terms contexts compiled rows subject target ↔
@@ -4171,24 +4171,26 @@ def queryTerm (fixture : RootRuleExecution.Conditional.Controls.Fixture) : Term 
     (fun _ => .symbol "LNil") fixture.compiled fixture.rows fixture.subject
 
 /-- The same canonical guarded-row corpus tests this different source schedule. -/
-theorem fixture_returns (fixture : RootRuleExecution.Conditional.Controls.Fixture) (state : State) :
+theorem fixture_returns (fixture : RootRuleExecution.Conditional.Controls.Fixture)
+    (admitted : fixture.plans.all (fun plan => plan.variablePremises?.isSome) = true) (state : State) :
     PureReturns program [] state (encoded (queryTerm fixture)) state (encoded fixture.expectedTerm) :=
   language_root_returns state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows fixture.subject
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled admitted) fixture.rows fixture.subject
 
 theorem incorrect_observation_refused (fixture : RootRuleExecution.Conditional.Controls.Fixture)
+    (admitted : fixture.plans.all (fun plan => plan.variablePremises?.isSome) = true)
     (incorrect : List Mettapedia.OSLF.MeTTaIL.Syntax.Pattern) (state : State)
     (different : incorrect ≠ fixture.results) :
     ¬ DeclarativeSpec.Runs program
       { state, control := .evaluate [] (encoded (queryTerm fixture)) }
       (.complete state [encoded (InferenceCettaWire.encodePatterns incorrect)] [] []) := by
   intro executed
-  apply RootRuleExecution.Conditional.Controls.Fixture.refuses_incorrect fixture state incorrect different
+  apply RootRuleExecution.Conditional.Controls.Fixture.refuses_incorrect fixture admitted state incorrect different
   apply (RootRuleExecution.Conditional.language_root_derivation_iff state fixture.language
-    (.symbol "LNil") (.symbol "LNil") (fun _ => .symbol "LNil") fixture.compiled fixture.rows
+    (.symbol "LNil") (.symbol "LNil") (fun _ => .symbol "LNil") (fixture.sourceCompiled admitted) fixture.rows
     fixture.subject state _ [] []).mpr
   exact (language_root_derivation_iff state fixture.language (.symbol "LNil") (.symbol "LNil")
-    (fun _ => .symbol "LNil") fixture.compiled fixture.rows fixture.subject state _ [] []).mp executed
+    (fun _ => .symbol "LNil") (fixture.sourceCompiled admitted) fixture.rows fixture.subject state _ [] []).mp executed
 
 theorem incorrect_observations_refused (state : State) :
     ∀ control ∈ RootRuleExecution.Conditional.Controls.incorrectResults,
@@ -4201,7 +4203,8 @@ theorem incorrect_observations_refused (state : State) :
   rcases member with rfl | rfl | rfl
   all_goals
     apply incorrect_observation_refused
-    decide +kernel
+    · decide +kernel
+    · decide +kernel
 
 /-- Three equal query rows remain three successful physical witnesses. -/
 theorem duplicate_query_witnesses_returned (state : State) :
@@ -4213,7 +4216,7 @@ theorem duplicate_query_witnesses_returned (state : State) :
       InferenceCettaWire.encodePatterns [.apply "done" [], .apply "done" [], .apply "done" []] := by
     decide +kernel
   rw [← expected]
-  exact fixture_returns _ state
+  exact fixture_returns _ (by decide +kernel) state
 
 theorem child_match_does_not_authorize_root (state : State) :
     PureReturns program [] state
@@ -4221,7 +4224,7 @@ theorem child_match_does_not_authorize_root (state : State) :
   have expected : RootRuleExecution.Conditional.Controls.childFixture.expectedTerm = .symbol "LNil" := by
     decide +kernel
   simpa only [expected, CettaWireAtom.encode] using fixture_returns
-    RootRuleExecution.Conditional.Controls.childFixture state
+    RootRuleExecution.Conditional.Controls.childFixture (by decide +kernel) state
 
 end DispatchControls
 

@@ -80,7 +80,7 @@ open Mettapedia.OSLF.NativeTypes.Instances.Partrec.Backend
   obtain ⟨specified, _, shape, _, _⟩ := row_properties declared
   have firing : GeneralPremise.RootFiring environment bound (.base "Cfg") source receipt.job.ordinal
       receipt.matcherTrace receipt.captured receipt.completed receipt.premiseHistory receipt.localTarget := by
-    simpa only [site, SiteData.here, environment] using valid.2.1
+    simpa only [site, SiteData.here, environment, GeneralPlanEnvironment.environmentWith_empty] using valid.2.1
   obtain ⟨bindings, matched, endpoint⟩ := rootFiring_readout declared specified shape firing
   have same : receipt.target = receipt.localTarget := by
     simpa only [site, SiteData.here, DerivedContexts.OneHoleContext.fill] using valid.2.2.2.1

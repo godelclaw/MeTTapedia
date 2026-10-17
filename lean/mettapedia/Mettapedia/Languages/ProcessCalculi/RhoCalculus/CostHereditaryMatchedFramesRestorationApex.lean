@@ -29,7 +29,7 @@ The source leaf premise is indexed by the local binder depth.  Constructor
 mapping preserves that certificate structurally, and the two static views'
 common target context makes ambient-binder reinsertion the same operation on
 both endpoints. -/
-noncomputable def ofSourceCanonicalAlignment
+theorem ofSourceCanonicalAlignment
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -193,7 +193,7 @@ namespace RhoMatchedStaticFramesApex
 /-- Endpoint-frame restoration alignment supplies the exact common semantic
 apex.  The only index transport is the established naturality of keyed
 canonicalization under each leg of the semantic-key cospan. -/
-noncomputable def ofRestorationAligned
+theorem ofRestorationAligned
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern

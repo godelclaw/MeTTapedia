@@ -26,7 +26,7 @@ open Mettapedia.OSLF.MeTTaIL.Engine
 open Mettapedia.OSLF.MeTTaIL
 open Mettapedia.GSLT.LanguageDef
 open DeclarationAwareSubstitutionLanguage
-open DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open DeclarationAwareSubstitutionSemantics
 open DeclarationAwareSubstitutionCompiler
 

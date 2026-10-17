@@ -329,7 +329,7 @@ theorem targetScopeMismatch_rejected :
     decodeSubstitution? 0 targetScopeMismatch = none := by
   have rejected :
       decodeRawTerm? 0 (encodeRawTerm openVariable) = none :=
-    Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec.outOfScopeVariable_rejected
+    Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec.outOfScopeVariable_rejected
   simp [targetScopeMismatch, decodeSubstitution?, rejected]
 
 /-- The same mismatch prevents term application; failure does not produce a

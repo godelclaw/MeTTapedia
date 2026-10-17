@@ -1,4 +1,4 @@
-import Mettapedia.GSLT.LanguageDef.BootstrapCell.ReplayCalculusCalibration
+import Mettapedia.GSLT.LanguageDef.BootstrapCell.ReplayCalculus
 import Mettapedia.Logic.TheoryModel.Weakness
 
 /-!
@@ -30,11 +30,8 @@ weakness is soundness.
 * For validated calculi, the replay kernel is the generic inference checker
   (`checkRawKernel_isWeakestAdmissible`).
 
-**Controls**, on the modus ponens package.
-* A kernel that also accepts one non-derivable fact is admissible but not
-  weakest (`tooStrong_admissible`, `tooStrong_not_weakest`).
-* A kernel that rejects everything is not admissible
-  (`rejectAll_not_admissible`).
+Concrete admissibility and rejection controls for a selected checking package
+are supplied separately in `PrimeComparisons.BootstrapCell.ReplayCalculusCalibration`.
 -/
 
 set_option autoImplicit false
@@ -169,79 +166,6 @@ theorem checkRawKernel_isWeakestAdmissible :
   rw [checkRawKernel_eq_replayKernel]
   exact replayKernel_isWeakestAdmissible
 
-/-! ## Controls on the modus ponens package -/
 
-section Controls
-
-open Mettapedia.Languages.MeTTa.PrimeCandidates.MinimalCheckingPackage
-open Mettapedia.GSLT.LanguageDef.BootstrapCell.Calibration
-
-/-- The one-calculus family of the modus ponens package. -/
-abbrev modusPonens : Unit → ReplaySignature.{0} := fun _ => calculusReplaySignature mpValidated
-
-/-- A kernel that also accepts the wrong goal `P(A)` for every certificate. -/
-def tooStrong : Kernel modusPonens :=
-  fun _ goal certificate =>
-    checkRaw mpValidated goal certificate || decide (@Eq Pattern goal mpWrongGoal)
-
-/-- A kernel that rejects everything. -/
-def rejectAll : Kernel modusPonens := fun _ _ _ => false
-
-theorem mpProofB_derivable :
-    (⟨(), mpBGoal, mpProofB⟩ : CheckingFact modusPonens) ∈ Derivable modusPonens := by
-  have accepted : (calculusReplaySignature mpValidated).replay mpBGoal mpProofB = true := by
-    rw [← checkRaw_eq_replay]
-    exact mp_proof_b_accepted
-  exact (ReplaySignature.replay_iff (σ := calculusReplaySignature mpValidated) mpBGoal mpProofB).mp
-    accepted
-
-theorem wrongGoal_not_derivable :
-    (⟨(), mpWrongGoal, mpProofB⟩ : CheckingFact modusPonens) ∉ Derivable modusPonens := by
-  intro derivable
-  have accepted := (ReplaySignature.replay_iff (σ := calculusReplaySignature mpValidated)
-    mpWrongGoal mpProofB).mpr derivable
-  rw [← checkRaw_eq_replay, mpWrongGoal_rejected] at accepted
-  exact Bool.false_ne_true accepted
-
-/-- The too-strong kernel is complete, so its theory is admissible. -/
-theorem tooStrong_admissible :
-    models (Accepts modusPonens) (acceptedFacts modusPonens tooStrong) ∈
-      Admissible modusPonens := by
-  intro model modelAccepts fact derivable
-  apply modelAccepts
-  obtain ⟨derivation, erased⟩ := derivable
-  have accepted : checkRaw mpValidated fact.goal fact.certificate = true := by
-    rw [checkRaw_eq_replay, ← erased]
-    exact derivation.replay_erase
-  show (checkRaw mpValidated fact.goal fact.certificate ||
-    decide (@Eq Pattern fact.goal mpWrongGoal)) = true
-  rw [accepted, Bool.true_or]
-
-/-- **Negative control.**  Accepting one more fact breaks weakest
-admissibility. -/
-theorem tooStrong_not_weakest :
-    ¬ IsWeakestAdmissible (Accepts modusPonens) (Admissible modusPonens)
-      (acceptedFacts modusPonens tooStrong) := by
-  intro weakest
-  have faithful := (isWeakestAdmissible_iff_faithful tooStrong).mp weakest
-  apply wrongGoal_not_derivable
-  apply (faithful _).mp
-  simp only [Accepts, tooStrong, decide_true, Bool.or_true]
-
-/-- **Negative control.**  Rejecting a derivable fact breaks admissibility. -/
-theorem rejectAll_not_admissible :
-    models (Accepts modusPonens) (acceptedFacts modusPonens rejectAll) ∉
-      Admissible modusPonens := by
-  intro admissible
-  have accepted := admissible (fun _ member => member) mpProofB_derivable
-  exact Bool.false_ne_true accepted
-
-/-- The positive control: the package's own checker is weakest admissible. -/
-theorem modusPonens_kernel_isWeakestAdmissible :
-    IsWeakestAdmissible (Accepts modusPonens) (Admissible modusPonens)
-      (acceptedFacts modusPonens (replayKernel modusPonens)) :=
-  replayKernel_isWeakestAdmissible
-
-end Controls
 
 end Mettapedia.GSLT.LanguageDef.BootstrapCell.CheckingWeakness

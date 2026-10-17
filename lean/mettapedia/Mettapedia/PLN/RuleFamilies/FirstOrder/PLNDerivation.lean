@@ -1,32 +1,34 @@
-/-
-# PLN Formula Derivations from Probability Axioms
-
-Formal derivation of Probabilistic Logic Networks (PLN) truth value formulas
-from standard probability theory + specific independence assumptions.
-
-The key insight: PLN formulas are NOT arbitrary heuristics - they are theorems
-that follow from probability axioms under specific structural assumptions.
-
-## Main Results
-
-1. `pln_deduction_independence` - The independence-based deduction formula
-   s_AC = s_AB · s_BC + (1 - s_AB) · (s_C - s_B · s_BC) / (1 - s_B)
-   follows from the Law of Total Probability + conditional independence.
-
-2. `pln_deduction_high_uncertainty` - Under high term probability uncertainty,
-   s_AC ≈ s_AB · s_BC (the simplified form).
-
-## References
-
-- Goertzel et al., "Probabilistic Logic Networks" (Springer, 2008)
-- Goertzel, "PLN and NARS Often Yield Similar strength × confidence" (arXiv:2412.19524)
--/
-
 import Mettapedia.ProbabilityTheory.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.MeasureTheory.Measure.MeasureSpace
 import Mathlib.Probability.ConditionalProbability
 
+/-!
+# PLN strength formulas derived from probability
+
+The strength formulas of first-order PLN, each derived from the probability
+axioms under a stated assumption.
+
+- **Deduction** (`pln_deduction_from_total_probability`): under screening off,
+  `P(C | A ∩ B) = P(C | B)` and `P(C | A ∩ Bᶜ) = P(C | Bᶜ)` (`posIndep`,
+  `negIndep`), the conditional `P(C | A)` equals `plnDeductionStrength`; the
+  proof is the law of total probability.  Without screening off the formula
+  fails (`Mettapedia.PLN.WorldModel.EvidenceContracts.Controls.deduction_fails_without_screening`).
+- **Induction and abduction** are Bayes inversion followed by deduction
+  (`plnInduction_eq_bayes_deduction`, `plnAbduction_eq_bayes_deduction`).
+- **Simplified forms** (`plnDeductionSimplified` and its induction and abduction
+  analogues) agree with the full forms for uniform term probabilities
+  (`pln_deduction_uniform_simplifies`, `pln_triad_uniform`).
+
+What this module is not: it derives strengths only.  `plnDeductionConfidence`
+(the product of premise confidences) is a posited chart, not a derivation;
+conclusion confidence is derived through credal intervals in
+`Mettapedia.PLN.WorldModel.EvidenceContracts` (`deduction_confidence_route`).
+
+## References
+
+- Goertzel, Iklé, Goertzel and Heljakka, *Probabilistic Logic Networks* (2009).
+-/
 
 noncomputable section
 
@@ -700,18 +702,6 @@ theorem plnInduction_nonneg
   · exact h_sB
   · exact h_constraint
 
-/-! ### SourceRule Aliases (for Induction)
-
-B is the common *source* - arrows fan out: B → A, B → C.
-Completing the cospan to A → C.
--/
-
-/-- SourceRule = Induction: B → A, B → C ⊢ A → C (B is the common source) -/
-abbrev plnSourceRuleStrength := plnInductionStrength
-
-/-- SourceRule simplified formula -/
-abbrev plnSourceRuleSimplified := plnInductionSimplified
-
 /-! ## PLN Abduction (a.k.a. SinkRule, Span Completion)
 
 **Abduction** infers A → C from A → B and C → B.
@@ -902,18 +892,6 @@ theorem plnInductionAbduction_asymmetric_canary :
   norm_num [plnInductionStrength, plnAbductionStrength,
     plnDeductionStrength, bayesInversion]
 
-/-! ### SinkRule Aliases (for Abduction)
-
-B is the common *sink* - arrows fan in: A → B, C → B.
-Completing the span to A → C.
--/
-
-/-- SinkRule = Abduction: A → B, C → B ⊢ A → C (B is the common sink) -/
-abbrev plnSinkRuleStrength := plnAbductionStrength
-
-/-- SinkRule simplified formula -/
-abbrev plnSinkRuleSimplified := plnAbductionSimplified
-
 /-! ## The PLN Inference Triad
 
 The three fundamental PLN inference rules are:
@@ -1010,8 +988,9 @@ theorem plnConfidence_nonneg (n k : ℝ) (hn : 0 ≤ n) (hk : 0 < k) :
   apply div_nonneg hn
   linarith
 
-/-- Simplified confidence propagation for deduction.
-    Under independence: c_AC ≈ c_AB · c_BC -/
+/-- Posited confidence chart for deduction: the product of the premise
+    confidences.  It is not derived from the premises' evidence; see
+    `Mettapedia.PLN.WorldModel.EvidenceContracts.deduction_confidence_route`. -/
 def plnDeductionConfidence (c_AB c_BC : ℝ) : ℝ := c_AB * c_BC
 
 /-- Deduction confidence preserves bounds. -/
@@ -1022,42 +1001,5 @@ theorem plnDeductionConfidence_bounded (c_AB c_BC : ℝ)
   constructor
   · nlinarith [h1.1, h2.1]
   · nlinarith [h1.1, h1.2, h2.1, h2.2]
-
-/-! ## Comparison: PLN vs NARS
-
-The arXiv paper (2412.19524) shows that under high term probability uncertainty,
-PLN and NARS give similar "power" (s × c) values.
-
-Key insight: The "power" metric s × c captures what both systems agree on,
-even when they disagree on individual s and c values.
--/
-
-/-- NARS deduction frequency formula -/
-def narsDeductionFrequency (f1 f2 : ℝ) : ℝ :=
-  f1 * f2 / (f1 + f2 - f1 * f2)
-
-/-- NARS deduction confidence formula -/
-def narsDeductionConfidence (f1 f2 c1 c2 : ℝ) : ℝ :=
-  c1 * c2 * (f1 + f2 - f1 * f2)
-
-/-- NARS deduction "power" = f × c -/
-def narsDeductionPower (f1 f2 c1 c2 : ℝ) : ℝ :=
-  narsDeductionFrequency f1 f2 * narsDeductionConfidence f1 f2 c1 c2
-
-/-- **Key Result**: NARS power simplifies to f1 * f2 * c1 * c2.
-    This matches PLN's simplified deduction under high uncertainty! -/
-theorem nars_power_eq (f1 f2 c1 c2 : ℝ) (h : f1 + f2 - f1 * f2 ≠ 0) :
-    narsDeductionPower f1 f2 c1 c2 = f1 * f2 * c1 * c2 := by
-  unfold narsDeductionPower narsDeductionFrequency narsDeductionConfidence
-  field_simp [h]
-
-/-- Under equal strength/frequency and confidence, PLN and NARS give the same power. -/
-theorem pln_nars_power_agreement (s c : ℝ) (h : s + s - s*s ≠ 0) :
-    -- PLN power (simplified): s * s * c * c
-    plnDeductionSimplified s s * c * c =
-    -- NARS power: also s * s * c * c
-    narsDeductionPower s s c c := by
-  unfold plnDeductionSimplified
-  rw [nars_power_eq s s c c h]
 
 end Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation

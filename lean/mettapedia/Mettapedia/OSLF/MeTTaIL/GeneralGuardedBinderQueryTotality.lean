@@ -28,6 +28,12 @@ theorem query_signature (allowed : List Token) (choice : Choice) (bound : List T
     GeneralPremise.signature? (environment allowed).provider (query choice bound initial).relation
       (query choice bound initial).arguments.length = some allowSignature := rfl
 
+theorem query_unregistered (allowed : List Token) (choice : Choice) (bound : List TypeExpr)
+    (initial : Assignment) : (query choice bound initial).relation ∉
+      (environment allowed).provider.dynamicRelations := by
+  change "allow" ∉ ([] : List String)
+  simp only [List.not_mem_nil, not_false_eq_true]
+
 theorem provider_row_values {allowed : List Token} {index : Nat} {row : GeneralPremise.ProviderRow}
     (found : (environment allowed).provider.rows[index]? = some row) :
     ∃ token, row.values = [guard token] := by
@@ -45,7 +51,7 @@ def QueryTaskSafe (allowed : List Token) (choice : Choice) (bound : List TypeExp
       ((frame.schemas = [] ∧ frame.values = [] ∧ frame.modes = []) ∨
         (frame.index = 0 ∧ frame.schemas = [.fvar "Q"] ∧ frame.modes = [.input] ∧
           ∃ token, frame.values = [guard token]))
-  | .matcher _ => False
+  | .matcher _ | .dynamicInputs _ | .dynamicRows _ => False
 
 theorem query_task_ready {allowed : List Token} {choice : Choice} {bound : List TypeExpr} {initial : Assignment}
     (typed : GeneralPremise.TypedAssignment (environment allowed) (choice.context bound) initial)
@@ -68,6 +74,8 @@ theorem query_task_ready {allowed : List Token} {choice : Choice} {bound : List 
         rw [same, index, projected]
         rfl
   | matcher frame => exact False.elim safe
+  | dynamicInputs frame => exact False.elim safe
+  | dynamicRows frame => exact False.elim safe
 
 theorem query_expand_safe {allowed : List Token} {choice : Choice} {bound : List TypeExpr} {initial : Assignment}
     (typed : GeneralPremise.TypedAssignment (environment allowed) (choice.context bound) initial)
@@ -79,7 +87,8 @@ theorem query_expand_safe {allowed : List Token} {choice : Choice} {bound : List
     QueryTaskSafe allowed choice bound initial next := by
   cases task with
   | start =>
-      simp only [GeneralPremise.Query.expand, query_signature, List.mem_singleton] at member
+      simp only [GeneralPremise.Query.expand, query_signature,
+        dif_neg (query_unregistered allowed choice bound initial), List.mem_singleton] at member
       subst next
       rfl
   | rows frame =>
@@ -125,6 +134,8 @@ theorem query_expand_safe {allowed : List Token} {choice : Choice} {bound : List
             exact ⟨rfl, Or.inl ⟨rfl, rfl, rfl⟩⟩
           · simp at member
   | matcher frame => exact False.elim safe
+  | dynamicInputs frame => exact False.elim safe
+  | dynamicRows frame => exact False.elim safe
 
 def QuerySafe (allowed : List Token) (choice : Choice) (bound : List TypeExpr) (initial : Assignment)
     (state : GeneralPremise.Query.State (environment allowed) (query choice bound initial)) : Prop :=

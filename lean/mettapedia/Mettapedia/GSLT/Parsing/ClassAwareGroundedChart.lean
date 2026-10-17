@@ -778,7 +778,7 @@ theorem rootParserComplete_of_covers
 
 /-- Exact native self-representation plus independent root-relative chart
 coverage supplies the full ParserPack backward lift. -/
-def ParserCompleteRepresentation.ofReferenceCoverage
+theorem ParserCompleteRepresentation.ofReferenceCoverage
     {view : ForestView} {inventory : Inventory}
     {profile : ParserProfileLayer} {plan : CompiledParserPackPlan}
     {target : Forest}

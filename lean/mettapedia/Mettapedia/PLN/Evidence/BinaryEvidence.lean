@@ -13,39 +13,34 @@ import Mettapedia.Algebra.QuantaleWeakness
 open scoped NNReal
 
 /-!
-# BinaryEvidence Quantale (BinaryEvidence Counts)
+# Binary evidence: the count carrier of PLN
 
-This file implements the **canonical quantale carrier** for evidence counts.
+A body of binary evidence about one proposition is a count pair
+`(n⁺, n⁻) ∈ ℝ≥0∞ × ℝ≥0∞`: observations supporting it and observations refuting
+it.  This module owns the carrier, its order, its two combinations and its
+readouts.
 
-## The Key Insight (from GPT-5 Pro review)
+- **Revision** `+` (`hplus`) adds counts.  It is exact for disjoint sets of
+  observations; overlapping observations are counted twice
+  (`Mettapedia.PLN.WorldModel.EvidenceContracts`).
+- **Tensor** `*` multiplies counts coordinatewise.  As likelihood evidence it
+  fuses conditionally independent reports about one proposition; it is neither
+  conjunction nor the deduction step.
+- The carrier is a complete lattice under the coordinatewise order and a
+  commutative quantale under `*`.
+- **Readouts** are views of the counts: strength `n⁺ / (n⁺ + n⁻)`, undetermined
+  at zero evidence, and confidence `w / (w + κ)` for total `w = n⁺ + n⁻` and a
+  declared prior size `κ`.  Confidence is the width complement of the credal
+  interval (`Mettapedia.PLN.TruthValues.PLNConfidenceWeight`).
 
-Instead of trying to use `[0,1]` as the foundational carrier (where aggregating independent
-evidence additively can exceed 1), we use **evidence counts**
-`(n⁺, n⁻) ∈ ℝ≥0∞ × ℝ≥0∞` as the carrier:
-
-- `n⁺` = positive evidence (supports the proposition)
-- `n⁻` = negative evidence (refutes the proposition)
-
-This IS a proper quantale:
-- Complete lattice: coordinatewise ≤ with sup/inf
-- Monoid ⊗: coordinatewise multiplication
-- Quantale law: ⊗ distributes over ⨆
-
-Then `SimpleTruthValue (s, c)` becomes a **view** via the standard mapping:
-- `s = n⁺ / (n⁺ + n⁻)`           (strength)
-- `c = (n⁺ + n⁻) / (n⁺ + n⁻ + κ)` (confidence, with prior κ)
-
-## Main Definitions
-
-- `BinaryEvidence` : The evidence counts type
-- `BinaryEvidence.tensor` : Quantale multiplication (sequential composition)
-- `BinaryEvidence.hplus` : Parallel aggregation (independent evidence combination)
-- `toSTV` / `ofSTV` : View functions to/from SimpleTruthValue
+What this module is not: it does not decide which combination is sound for a
+given body of observations (that is the observation contract), and a count
+pair is not a truth value; `toSTV` and `ofSTV` are charts to and from the
+strength/confidence view.
 
 ## References
 
-- Goertzel et al., "Probabilistic Logic Networks" (2009), Chapter on truth-value formulas
-- GPT-5 Pro review document (2025-12-09)
+- Goertzel, Iklé, Goertzel and Heljakka, *Probabilistic Logic Networks* (2009).
 -/
 
 namespace Mettapedia.PLN.Evidence.EvidenceQuantale
@@ -113,17 +108,25 @@ instance : Bot BinaryEvidence where
 instance : Top BinaryEvidence where
   top := ⟨⊤, ⊤⟩
 
-/-! ### Quantale Multiplication (Sequential Composition)
+/-! ### Quantale Multiplication
 
-When evidence flows through a chain A → B → C, the evidence compounds multiplicatively.
-This is the ⊗ operation in the quantale.
+The ⊗ operation of the quantale is the coordinatewise product.  Its derived
+meaning is fusion of likelihood evidence: if each pair holds the masses of a
+hypothesis and of its negation jointly with a report, the product is the
+evidence of two reports conditionally independent given the hypothesis, under
+a uniform prior (`Mettapedia.PLN.WorldModel.EvidenceContracts.testimony_fuse_uniform`).
+It is not sequential composition along a deduction chain: the direct-path
+strength `s_AB · s_BC` is the strength of the paired product
+(`Mettapedia.PLN.WorldModel.EvidenceSpaces.Evidence.strength_mul`), and the
+tensor's strength differs from it
+(`Mettapedia.PLN.WorldModel.EvidenceContracts.Controls.fuse_not_direct_path`).
 -/
 
-/-- Tensor product: sequential composition of evidence
-    (n⁺₁, n⁻₁) ⊗ (n⁺₂, n⁻₂) = (n⁺₁ * n⁺₂, n⁻₁ * n⁻₂)
+/-- Tensor product: the coordinatewise product
+    (n⁺₁, n⁻₁) ⊗ (n⁺₂, n⁻₂) = (n⁺₁ * n⁺₂, n⁻₁ * n⁻₂).
 
-    Interpretation: If A→B has evidence (n⁺₁, n⁻₁) and B→C has evidence (n⁺₂, n⁻₂),
-    then the "direct path" A→B→C has evidence that compounds multiplicatively.
+    Read as likelihood evidence, it fuses two conditionally independent reports
+    about one hypothesis; it is not the evidence of a deduction chain.
 -/
 noncomputable def tensor (x y : BinaryEvidence) : BinaryEvidence :=
   ⟨x.pos * y.pos, x.neg * y.neg⟩
@@ -201,7 +204,7 @@ instance : Zero BinaryEvidence := ⟨zero⟩
 
 /-! ### EvidenceType / AddCommMonoid (Revision Algebra)
 
-PLN revision combines independent evidence additively:
+PLN revision adds the counts of evidence from disjoint observations:
 `(n⁺₁,n⁻₁) ⊕ (n⁺₂,n⁻₂) = (n⁺₁+n⁺₂, n⁻₁+n⁻₂)`.
 
 Register this as an `AddCommMonoid` instance so it can be used uniformly via
@@ -969,8 +972,9 @@ theorem toStrength_hplus (x y : BinaryEvidence)
   rw [h1, h2, ← ENNReal.add_div]
 
 /-- The tensor product strength is at least the product of strengths.
-    This shows that sequential composition preserves more positive evidence than
-    the naive product formula would suggest.
+    So the tensor's strength is at least the direct-path strength `s_AB · s_BC`,
+    which is the strength of the paired product; the tensor's strength is the
+    logarithmic pool of the two strengths.
 
     Mathematically: (x⁺y⁺)/(x⁺y⁺ + x⁻y⁻) ≥ (x⁺/(x⁺+x⁻)) * (y⁺/(y⁺+y⁻))
 -/
@@ -1062,8 +1066,9 @@ def id [DecidableEq α] : QRel α α where
     The PLN deduction formula computes the strength of A→C given A→B and B→C.
     In the Q-weighted relations view, this is just composition.
 
-    The key insight: the "direct path" term `sAB * sBC` comes from the tensor product,
-    while the "indirect path via ¬B" term comes from considering the complement.
+    The composition takes a supremum of path tensors; the PLN deduction formula's
+    direct-path term `sAB * sBC` is the strength of the paired product, not of
+    the tensor.
 -/
 theorem comp_is_deduction [Fintype β] (R : QRel α β) (S : QRel β γ) (a : α) (c : γ) :
     -- The composition gives at least the direct path contribution
@@ -1085,8 +1090,9 @@ end QRel
 
 Following the OSLF (Operational Semantics in Logical Form) framework, the PLN deduction
 formula decomposes into two parts:
-1. **Direct path**: A → B → C via tensor composition (⊗)
-2. **Indirect path**: A → ¬B → C via residuation (⇒)
+1. **Direct path**: A → B → C, with strength `s_AB · s_BC` (the strength of the
+   paired product of sample evidence, not of the tensor ⊗)
+2. **Indirect path**: A → ¬B → C via the complement conditional
 
 The full formula is: P(C|A) = P(B|A)·P(C|B) + P(¬B|A)·P(C|¬B)
 
@@ -1163,8 +1169,8 @@ P(C|A) = P(B|A) · P(C|B) + (1 - P(B|A)) · P(C|¬B)
 ```
 
 In evidence terms:
-- Direct path: tensor(E_AB, E_BC) contributes sAB · sBC
-- Indirect path: residuate(E_B, E_C) gives evidence for C|¬B
+- Direct path: strength sAB · sBC (computed below on strengths)
+- Indirect path: the complement conditional gives the strength of C|¬B
 
 The full formula requires:
 1. Marginals P(A), P(B), P(C) as context
@@ -1222,8 +1228,8 @@ Can be decomposed into:
   sAC = [direct path contribution] + [indirect path contribution]
 
 Where:
-- Direct path: A → B → C via tensor (gives sAB * sBC term)
-- Indirect path: A → ¬B → C via residuation (gives the (1-sAB) * P(C|¬B) term)
+- Direct path: A → B → C (the sAB * sBC term)
+- Indirect path: A → ¬B → C (the (1-sAB) * P(C|¬B) term)
 -/
 
 /-- The direct path strength: sAB * sBC
@@ -1371,8 +1377,8 @@ The deduction rule A → B → C can be typed as:
 
 Where `↠` is the evidence-weighted implication type.
 
-The tensor product `E_AB ⊗ E_BC` gives the "direct path" evidence,
-and residuation gives the "indirect path" contribution.
+The direct-path term has the strength of the paired product of sample
+evidence; the tensor `E_AB ⊗ E_BC` fuses likelihood evidence instead.
 
 This categorical structure (NT(CCC) in OSLF terminology) provides:
 1. A topos structure with complete Heyting algebra homs
@@ -1397,9 +1403,13 @@ We now have:
 6. `BinaryEvidence.deductionEvidence` : Full deduction formula in evidence terms
 
 The deduction formula emerges as:
-- **Direct path**: tensor product E_AB ⊗ E_BC (proven lower bound via `toStrength_tensor_ge`)
-- **Indirect path**: via `complementStrength` and `residuate`
-- **Full formula**: `deductionEvidence` combines both paths
+- **Direct path**: strength `sAB * sBC`; the tensor's strength is at least this
+  (`toStrength_tensor_ge`) and is not equal to it in general
+- **Indirect path**: via `complementStrength`
+- **Full formula**: `deductionEvidence` combines both paths in strength; its total,
+  the sum of the premise totals, is posited, and the derived confidence of a
+  deduction goes through credal intervals
+  (`Mettapedia.PLN.WorldModel.EvidenceContracts.deduction_confidence_route`)
 
 ## Connection to OSLF/Native Type Theory
 

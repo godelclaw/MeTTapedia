@@ -14,6 +14,8 @@ implementations use opposite insertion conventions.
 namespace Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 
 open Mettapedia.Languages.MeTTa.HE.DeclMatchSpec
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge
+  (AtomOccurs ClassDepends SemanticLoopFree hasLoop_eq_false_iff_semanticLoopFree)
 open Mettapedia.Languages.MeTTa.HE.CanonAbsorbsFreshening
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
 open Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge
@@ -161,25 +163,6 @@ relations or MGUs, but equality of the valuations satisfying their equations.
 The resolver-facing global-permutation invariant below is the observable layer
 that will be derived from this theory for successful acyclic matcher outputs.
 -/
-
-/-- Apply an extensional class-solution map throughout an atom.  This is the
-fuel-independent semantic substitution layer shared by both engines. -/
-def applyClassSolution
-    (solution : String → Metta.Atom) : Metta.Atom → Metta.Atom
-  | .sym s => .sym s
-  | .var v => solution v
-  | .gnd g => .gnd g
-  | .expr atoms => .expr (atoms.map (applyClassSolution solution))
-
-/-- A valuation satisfies the value and equality equations presented by one HE
-binding record.  `applyClassSolution` is the homomorphic extension of the
-valuation to atoms. -/
-def HEBindingSatisfied
-    (valuation : String → Metta.Atom) (b : Bindings) : Prop :=
-  (∀ x value, (x, value) ∈ b.assignments →
-      valuation x =
-        applyClassSolution valuation (toLeaTTaAtom value)) ∧
-  (∀ x y, (x, y) ∈ b.equalities → valuation x = valuation y)
 
 /-- A valuation satisfies the equations presented by one repaired-LeaTTa
 binding list.  Relation order and equality orientation are immaterial. -/
@@ -2902,6 +2885,439 @@ theorem wholeBindingReconciliation_result_mem_iff_eliminationTrace
     exact unifyRounds_eliminationTrace_mem_result
       (by simp [UnifyStateFresh, mettaSubstKeys]) hrun htrace
 
+/-- Singleton substitution can only retain variables from the source atom or
+introduce variables from the replacement. -/
+private theorem mem_vars_apply_singleton
+    {key : String} {replacement : Metta.Atom} :
+    ∀ (atom : Metta.Atom) {name : String},
+      name ∈ (Metta.Subst.apply [(key, replacement)] atom).vars →
+        name ∈ atom.vars ∨ name ∈ replacement.vars := by
+  refine Metta.Atom.recAux ?_ ?_ ?_ ?_
+  · intro symbol name hmem
+    simp [Metta.Subst.apply, Metta.Atom.vars] at hmem
+  · intro sourceVar name hmem
+    by_cases hvariable : sourceVar = key
+    · subst sourceVar
+      exact Or.inr (by
+        simpa [Metta.Subst.apply, Metta.Subst.lookup] using hmem)
+    · have hbeq : (sourceVar == key) = false := by simp [hvariable]
+      left
+      simpa [Metta.Subst.apply, Metta.Subst.lookup, hbeq,
+        Metta.Atom.vars] using hmem
+  · intro ground name hmem
+    simp [Metta.Subst.apply, Metta.Atom.vars] at hmem
+  · intro atoms ih name hmem
+    simp only [Metta.Subst.apply, Metta.Atom.vars,
+      List.mem_flatten] at hmem
+    obtain ⟨appliedVars, happliedVars, hname⟩ := hmem
+    obtain ⟨applied, happlied, rfl⟩ := List.mem_map.mp happliedVars
+    obtain ⟨atom, hatom, rfl⟩ := List.mem_map.mp happlied
+    rcases ih atom hatom hname with hsource | hreplacement
+    · left
+      simp only [Metta.Atom.vars, List.mem_flatten]
+      exact ⟨atom.vars, List.mem_map.mpr ⟨atom, hatom, rfl⟩,
+        hsource⟩
+    · exact Or.inr hreplacement
+
+/-- The substituted worklist of one Robinson round mentions only variables
+already present in the decomposed source worklist. -/
+private theorem remainingEquationVars_subset_source
+    {equations : List (Metta.Atom × Metta.Atom)}
+    {key : String} {term : Metta.Atom}
+    {rest : List (String × Metta.Atom)}
+    (hdecompose :
+      Metta.Unify.decomposeAll equations = some ((key, term) :: rest)) :
+    let remaining := rest.map fun constraint =>
+      (Metta.Subst.apply [(key, term)] (.var constraint.1),
+        Metta.Subst.apply [(key, term)] constraint.2)
+    ∀ name ∈ mettaEquationVars remaining,
+      name ∈ mettaEquationVars equations := by
+  dsimp only
+  intro name hname
+  simp only [mettaEquationVars, List.mem_flatMap] at hname
+  obtain ⟨equation, hequation, hname⟩ := hname
+  obtain ⟨constraint, hconstraint, rfl⟩ := List.mem_map.mp hequation
+  have htermSource : ∀ sourceVar ∈ term.vars,
+      sourceVar ∈ mettaEquationVars equations := by
+    intro sourceVar hvariable
+    apply decomposeAll_constraintVars_subset hdecompose sourceVar
+    simp [mettaConstraintVars, hvariable]
+  have hconstraintSource :
+      ∀ sourceVar ∈ constraint.1 :: constraint.2.vars,
+        sourceVar ∈ mettaEquationVars equations := by
+    intro sourceVar hvariable
+    apply decomposeAll_constraintVars_subset hdecompose sourceVar
+    unfold mettaConstraintVars
+    apply List.mem_flatMap.mpr
+    exact ⟨constraint, by simp [hconstraint], hvariable⟩
+  simp only [List.mem_append] at hname
+  rcases hname with hleft | hright
+  · rcases mem_vars_apply_singleton (.var constraint.1) hleft with
+      hsource | hreplacement
+    · have hnameEq : name = constraint.1 := by
+        simpa [Metta.Atom.vars] using hsource
+      exact hconstraintSource name (by simp [hnameEq])
+    · exact htermSource name hreplacement
+  · rcases mem_vars_apply_singleton constraint.2 hright with
+      hsource | hreplacement
+    · exact hconstraintSource name (List.mem_cons.mpr (Or.inr hsource))
+    · exact htermSource name hreplacement
+
+/-- Every variable occurring in the selected solve trace came from the
+worklist on which that trace started. -/
+theorem unificationEliminationTrace_constraintVars_subset
+    (fuel : Nat) (equations : List (Metta.Atom × Metta.Atom)) :
+    ∀ name ∈ mettaConstraintVars
+        (unificationEliminationTrace fuel equations),
+      name ∈ mettaEquationVars equations := by
+  induction fuel generalizing equations with
+  | zero => simp [unificationEliminationTrace, mettaConstraintVars]
+  | succ fuel ih =>
+      cases hdecompose : Metta.Unify.decomposeAll equations with
+      | none =>
+          simp [unificationEliminationTrace, hdecompose,
+            mettaConstraintVars]
+      | some constraints =>
+          cases constraints with
+          | nil =>
+              simp [unificationEliminationTrace, hdecompose,
+                mettaConstraintVars]
+          | cons constraint rest =>
+              rcases constraint with ⟨key, term⟩
+              cases hoccurs : Metta.Subst.occurs key term with
+              | true =>
+                  simp [unificationEliminationTrace, hdecompose, hoccurs,
+                    mettaConstraintVars]
+              | false =>
+                  let remaining := rest.map fun constraint =>
+                    (Metta.Subst.apply [(key, term)] (.var constraint.1),
+                      Metta.Subst.apply [(key, term)] constraint.2)
+                  simp only [unificationEliminationTrace, hdecompose,
+                    hoccurs]
+                  intro name hname
+                  change name ∈
+                    (key :: term.vars) ++
+                      mettaConstraintVars
+                        (unificationEliminationTrace fuel remaining) at hname
+                  rw [List.mem_append] at hname
+                  rcases hname with hhead | htail
+                  · apply decomposeAll_constraintVars_subset hdecompose name
+                    simp only [mettaConstraintVars, List.flatMap_cons,
+                      List.mem_append]
+                    exact Or.inl hhead
+                  · apply remainingEquationVars_subset_source hdecompose name
+                    exact ih remaining name htail
+
+/-- A solve trace is triangular when each eliminated key is absent from every
+later key and term.  This is an operational invariant of the successful
+Robinson loop, not a representative-order convention. -/
+def EliminationTraceTriangular :
+    List (String × Metta.Atom) → Prop
+  | [] => True
+  | binding :: trace =>
+      binding.1 ∉ mettaConstraintVars trace ∧
+        EliminationTraceTriangular trace
+
+/-- Triangularity is inherited by every left prefix. -/
+theorem EliminationTraceTriangular.left_of_append
+    {frontTrace suffix : List (String × Metta.Atom)}
+    (h : EliminationTraceTriangular (frontTrace ++ suffix)) :
+    EliminationTraceTriangular frontTrace := by
+  induction frontTrace with
+  | nil => simp [EliminationTraceTriangular]
+  | cons binding frontTrace ih =>
+      simp only [List.cons_append, EliminationTraceTriangular] at h ⊢
+      refine ⟨?_, ih h.2⟩
+      intro hmem
+      apply h.1
+      simpa [mettaConstraintVars] using
+        (List.mem_append_left (mettaConstraintVars suffix) hmem)
+
+/-- A triangular trace has distinct eliminated keys. -/
+theorem EliminationTraceTriangular.keys_nodup
+    {trace : List (String × Metta.Atom)}
+    (h : EliminationTraceTriangular trace) :
+    (trace.map Prod.fst).Nodup := by
+  induction trace with
+  | nil => simp
+  | cons binding trace ih =>
+      simp only [EliminationTraceTriangular] at h
+      simp only [List.map_cons, List.nodup_cons]
+      refine ⟨?_, ih h.2⟩
+      intro hkey
+      obtain ⟨tailBinding, htail, heq⟩ := List.mem_map.mp hkey
+      apply h.1
+      unfold mettaConstraintVars
+      apply List.mem_flatMap.mpr
+      exact ⟨tailBinding, htail, by simp [heq]⟩
+
+/-- Every successful fresh-state Robinson run produces a triangular solve
+trace.  In particular, replaying the trace from tail to head always introduces
+an isolated key. -/
+theorem unificationEliminationTrace_triangular_of_success
+    {fuel : Nat} {equations : List (Metta.Atom × Metta.Atom)}
+    {subst result : Metta.Subst}
+    (hfresh : UnifyStateFresh equations subst)
+    (hrun : Metta.Unify.unifyRounds fuel equations subst = some result) :
+    EliminationTraceTriangular
+      (unificationEliminationTrace fuel equations) := by
+  induction fuel generalizing equations subst result with
+  | zero =>
+      simp [unificationEliminationTrace, EliminationTraceTriangular]
+  | succ fuel ih =>
+      cases hdecompose : Metta.Unify.decomposeAll equations with
+      | none =>
+          simp [Metta.Unify.unifyRounds, hdecompose] at hrun
+      | some constraints =>
+          cases constraints with
+          | nil =>
+              simp [unificationEliminationTrace, hdecompose,
+                EliminationTraceTriangular]
+          | cons constraint rest =>
+              rcases constraint with ⟨key, term⟩
+              cases hoccurs : Metta.Subst.occurs key term with
+              | true =>
+                  simp [Metta.Unify.unifyRounds, hdecompose, hoccurs] at hrun
+              | false =>
+                  let remaining := rest.map fun constraint =>
+                    (Metta.Subst.apply [(key, term)] (.var constraint.1),
+                      Metta.Subst.apply [(key, term)] constraint.2)
+                  have hrun' :
+                      Metta.Unify.unifyRounds fuel remaining
+                          (Metta.Subst.extend subst key term) = some result := by
+                    simpa [Metta.Unify.unifyRounds, hdecompose, hoccurs,
+                      remaining] using hrun
+                  have hfresh' :
+                      UnifyStateFresh remaining
+                        (Metta.Subst.extend subst key term) := by
+                    simpa [remaining] using
+                      (unifyRound_preserves_freshness
+                        hdecompose hoccurs hfresh)
+                  have hkeyRecorded :
+                      key ∈ mettaSubstKeys
+                        (Metta.Subst.extend subst key term) := by
+                    simp [Metta.Subst.extend, mettaSubstKeys]
+                  have hkeyAbsent : key ∉
+                      mettaConstraintVars
+                        (unificationEliminationTrace fuel remaining) := by
+                    intro hkey
+                    exact hfresh' key hkeyRecorded
+                      (unificationEliminationTrace_constraintVars_subset
+                        fuel remaining key hkey)
+                  have htraceEq :
+                      unificationEliminationTrace (fuel + 1) equations =
+                        (key, term) ::
+                          unificationEliminationTrace fuel remaining := by
+                    simp [unificationEliminationTrace, hdecompose, hoccurs,
+                      remaining]
+                  rw [htraceEq]
+                  simp only [EliminationTraceTriangular]
+                  exact ⟨hkeyAbsent, ih hfresh' hrun'⟩
+
+/-- Whole-binding reconciliation inherits triangularity because it runs the
+Robinson loop from the empty substitution. -/
+theorem wholeBindingReconciliation_eliminationTrace_triangular
+    {bindings : Metta.Bindings}
+    {extra : List (Metta.Atom × Metta.Atom)} {result : Metta.Subst}
+    (hreconcile : wholeBindingReconciliation bindings extra = some result) :
+    EliminationTraceTriangular
+      (unificationEliminationTrace
+        (Metta.Bindings.equationFuel
+          (Metta.Bindings.equations bindings ++ extra))
+        (Metta.Bindings.equations bindings ++ extra)) := by
+  have hrun :
+      Metta.Unify.unifyRounds
+          (Metta.Bindings.equationFuel
+            (Metta.Bindings.equations bindings ++ extra))
+          (Metta.Bindings.equations bindings ++ extra) [] = some result := by
+    simpa [wholeBindingReconciliation, Metta.Bindings.reconcileAll] using
+      hreconcile
+  exact unificationEliminationTrace_triangular_of_success
+    (by simp [UnifyStateFresh, mettaSubstKeys]) hrun
+
+/-- Every selected elimination key passes the occurs check against its own
+term.  Unlike triangularity, this fact needs no successful final run: a failed
+occurs check contributes no trace entry. -/
+theorem unificationEliminationTrace_key_not_mem_value_vars
+    (fuel : Nat) (equations : List (Metta.Atom × Metta.Atom)) :
+    ∀ key value,
+      (key, value) ∈ unificationEliminationTrace fuel equations →
+        key ∉ value.vars := by
+  induction fuel generalizing equations with
+  | zero =>
+      simp [unificationEliminationTrace]
+  | succ fuel ih =>
+      cases hdecompose : Metta.Unify.decomposeAll equations with
+      | none => simp [unificationEliminationTrace, hdecompose]
+      | some constraints =>
+          cases constraints with
+          | nil => simp [unificationEliminationTrace, hdecompose]
+          | cons constraint rest =>
+              rcases constraint with ⟨selectedKey, selectedValue⟩
+              cases hoccurs : Metta.Subst.occurs selectedKey selectedValue with
+              | true =>
+                  simp [unificationEliminationTrace, hdecompose, hoccurs]
+              | false =>
+                  let remaining := rest.map fun constraint =>
+                    (Metta.Subst.apply [(selectedKey, selectedValue)]
+                        (.var constraint.1),
+                      Metta.Subst.apply [(selectedKey, selectedValue)]
+                        constraint.2)
+                  have htraceEq :
+                      unificationEliminationTrace (fuel + 1) equations =
+                        (selectedKey, selectedValue) ::
+                          unificationEliminationTrace fuel remaining := by
+                    simp [unificationEliminationTrace, hdecompose, hoccurs,
+                      remaining]
+                  intro key value hmem
+                  rw [htraceEq] at hmem
+                  simp only [List.mem_cons, Prod.mk.injEq] at hmem
+                  rcases hmem with hhead | htail
+                  · rcases hhead with ⟨rfl, rfl⟩
+                    exact not_mem_vars_of_occurs_eq_false _ _ hoccurs
+                  · exact ih remaining key value htail
+
+/-- Updating a valuation outside an atom's variable support leaves that
+atom's solution image unchanged. -/
+private theorem applyClassSolution_update_of_not_mem_vars
+    (valuation : String → Metta.Atom) (key : String)
+    (replacement : Metta.Atom) :
+    ∀ atom : Metta.Atom, key ∉ atom.vars →
+      applyClassSolution (Function.update valuation key replacement) atom =
+        applyClassSolution valuation atom := by
+  refine Metta.Atom.recAux ?_ ?_ ?_ ?_
+  · intro name hnot
+    simp [applyClassSolution]
+  · intro name hnot
+    have hne : name ≠ key := by
+      intro heq
+      subst name
+      exact hnot (by simp [Metta.Atom.vars])
+    simp [applyClassSolution, Function.update, hne]
+  · intro ground hnot
+    simp [applyClassSolution]
+  · intro atoms ih hnot
+    simp only [applyClassSolution]
+    apply congrArg Metta.Atom.expr
+    apply List.map_congr_left
+    intro atom hatom
+    apply ih atom hatom
+    intro hkey
+    apply hnot
+    simp only [Metta.Atom.vars, List.mem_flatten]
+    exact ⟨atom.vars,
+      List.mem_map.mpr ⟨atom, hatom, rfl⟩, hkey⟩
+
+/-- A concrete valuation for a triangular elimination trace.  Tail constraints
+are interpreted first; the selected key is then assigned the interpreted head
+term. -/
+def eliminationTraceValuation :
+    List (String × Metta.Atom) → String → Metta.Atom
+  | [] => fun name => .var name
+  | (key, value) :: trace =>
+      let tailValuation := eliminationTraceValuation trace
+      Function.update tailValuation key
+        (applyClassSolution tailValuation value)
+
+private theorem not_mem_constraintVars_of_mem
+    {trace : List (String × Metta.Atom)} {key : String}
+    {constraint : String × Metta.Atom}
+    (hfresh : key ∉ mettaConstraintVars trace)
+    (hmem : constraint ∈ trace) :
+    key ≠ constraint.1 ∧ key ∉ constraint.2.vars := by
+  constructor
+  · intro heq
+    apply hfresh
+    unfold mettaConstraintVars
+    apply List.mem_flatMap.mpr
+    exact ⟨constraint, hmem, by simp [heq]⟩
+  · intro hkey
+    apply hfresh
+    unfold mettaConstraintVars
+    apply List.mem_flatMap.mpr
+    exact ⟨constraint, hmem, by simp [hkey]⟩
+
+/-- The recursively constructed valuation satisfies every triangular,
+occurs-check-clean solve trace. -/
+theorem eliminationTraceValuation_satisfies
+    (trace : List (String × Metta.Atom))
+    (htriangular : EliminationTraceTriangular trace)
+    (hoccurs : ∀ key value, (key, value) ∈ trace → key ∉ value.vars) :
+    MettaConstraintsSatisfied (eliminationTraceValuation trace) trace := by
+  induction trace with
+  | nil =>
+      simp [MettaConstraintsSatisfied]
+  | cons binding trace ih =>
+      rcases binding with ⟨key, value⟩
+      have htriangular' :
+          key ∉ mettaConstraintVars trace ∧
+            EliminationTraceTriangular trace := by
+        simpa [EliminationTraceTriangular] using htriangular
+      have hoccursHead : key ∉ value.vars :=
+        hoccurs key value (by simp)
+      have hoccursTail : ∀ tailKey tailValue,
+          (tailKey, tailValue) ∈ trace → tailKey ∉ tailValue.vars := by
+        intro tailKey tailValue hmem
+        exact hoccurs tailKey tailValue (by simp [hmem])
+      have htail := ih htriangular'.2 hoccursTail
+      intro constraint hmem
+      simp only [List.mem_cons] at hmem
+      rcases hmem with hhead | htailMem
+      · subst constraint
+        change
+          Function.update (eliminationTraceValuation trace) key
+              (applyClassSolution (eliminationTraceValuation trace) value) key =
+            applyClassSolution
+              (Function.update (eliminationTraceValuation trace) key
+                (applyClassSolution (eliminationTraceValuation trace) value))
+              value
+        rw [applyClassSolution_update_of_not_mem_vars
+          _ _ _ value hoccursHead]
+        simp
+      · obtain ⟨hkeyNe, hvalueFresh⟩ :=
+          not_mem_constraintVars_of_mem htriangular'.1 htailMem
+        have hkeyNe' : constraint.1 ≠ key := Ne.symm hkeyNe
+        change
+          Function.update (eliminationTraceValuation trace) key
+              (applyClassSolution (eliminationTraceValuation trace) value)
+              constraint.1 =
+            applyClassSolution
+              (Function.update (eliminationTraceValuation trace) key
+                (applyClassSolution (eliminationTraceValuation trace) value))
+              constraint.2
+        rw [applyClassSolution_update_of_not_mem_vars
+          _ _ _ constraint.2 hvalueFresh]
+        simpa [Function.update, hkeyNe'] using htail constraint htailMem
+
+/-- A successful float-free Robinson run constructs a concrete satisfying
+valuation for its complete input equation worklist. -/
+theorem exists_unifyRounds_equations_satisfied_of_noFloat
+    {fuel : Nat} {equations : List (Metta.Atom × Metta.Atom)}
+    {result : Metta.Subst}
+    (hnoFloat : ∀ equation ∈ equations,
+      MettaAtomNoFloat equation.1 ∧ MettaAtomNoFloat equation.2)
+    (hrun : Metta.Unify.unifyRounds fuel equations [] = some result) :
+    ∃ valuation : String → Metta.Atom,
+      MettaEquationsSatisfied valuation equations := by
+  let trace := unificationEliminationTrace fuel equations
+  let valuation := eliminationTraceValuation trace
+  have hfresh : UnifyStateFresh equations [] := by
+    simp [UnifyStateFresh, mettaSubstKeys]
+  have htraceSatisfied : MettaConstraintsSatisfied valuation trace :=
+    eliminationTraceValuation_satisfies trace
+      (by simpa [trace] using
+        unificationEliminationTrace_triangular_of_success hfresh hrun)
+      (by intro key value hmem
+          exact unificationEliminationTrace_key_not_mem_value_vars _ _
+            key value (by simpa [trace] using hmem))
+  have hresultEq : result = trace.reverse := by
+    simpa [trace] using
+      (unifyRounds_result_eq_eliminationTrace_reverse_append hfresh hrun)
+  have hresultSatisfied : MettaConstraintsSatisfied valuation result := by
+    simpa [hresultEq, MettaConstraintsSatisfied] using htraceSatisfied
+  exact ⟨valuation,
+    ((unifyRounds_solution_iff valuation hnoFloat hfresh hrun).mp hresultSatisfied).1⟩
+
 /-- A successful whole-binding reconciliation presents exactly the conjunction
 of all pre-existing binding constraints and all requested new equations. -/
 theorem wholeBindingReconciliation_solution_iff
@@ -3511,6 +3927,346 @@ theorem val_mem_rebuildFromReconciliation_iff
   simp only [Metta.Bindings.rebuildFromSubst, List.mem_append,
     val_not_mem_leaEqualitySkeleton, false_or]
   exact val_mem_ofSubst_iff
+
+/-! ## Variable support of reconciliation and native merge -/
+
+theorem aliasConstraints_endpoint_support
+    (constraints : List (String × Metta.Atom))
+    {edge : String × String}
+    (member : edge ∈ Metta.Unify.aliasConstraints constraints) :
+    edge.1 ∈ mettaConstraintVars constraints ∧
+      edge.2 ∈ mettaConstraintVars constraints := by
+  induction constraints with
+  | nil => simp [Metta.Unify.aliasConstraints] at member
+  | cons constraint rest ih =>
+      rcases constraint with ⟨key, value⟩
+      cases value with
+      | var other =>
+          simp only [Metta.Unify.aliasConstraints, List.mem_cons] at member
+          rcases member with rfl | tail
+          · simp [mettaConstraintVars, Metta.Atom.vars]
+          · obtain ⟨left, right⟩ := ih tail
+            constructor
+            · exact List.mem_append_right _ left
+            · exact List.mem_append_right _ right
+      | sym symbol | gnd value | expr children =>
+          have tail : edge ∈ Metta.Unify.aliasConstraints rest := member
+          obtain ⟨left, right⟩ := ih tail
+          constructor
+          · exact List.mem_append_right _ left
+          · exact List.mem_append_right _ right
+
+theorem aliasTrace_endpoint_support
+    (fuel : Nat) (equations : List (Metta.Atom × Metta.Atom))
+    {edge : String × String}
+    (member : edge ∈ Metta.Unify.aliasTrace fuel equations) :
+    edge.1 ∈ mettaEquationVars equations ∧
+      edge.2 ∈ mettaEquationVars equations := by
+  induction fuel generalizing equations with
+  | zero =>
+      cases decomposed : Metta.Unify.decomposeAll equations with
+      | none => simp [Metta.Unify.aliasTrace, decomposed] at member
+      | some constraints =>
+          obtain ⟨left, right⟩ := aliasConstraints_endpoint_support constraints
+            (by simpa [Metta.Unify.aliasTrace, decomposed] using member)
+          exact ⟨decomposeAll_constraintVars_subset decomposed _ left,
+            decomposeAll_constraintVars_subset decomposed _ right⟩
+  | succ fuel ih =>
+      cases decomposed : Metta.Unify.decomposeAll equations with
+      | none => simp [Metta.Unify.aliasTrace, decomposed] at member
+      | some constraints =>
+          cases constraints with
+          | nil => simp [Metta.Unify.aliasTrace, decomposed] at member
+          | cons constraint rest =>
+              rcases constraint with ⟨key, value⟩
+              have here (h : edge ∈ Metta.Unify.aliasConstraints ((key, value) :: rest)) :
+                  edge.1 ∈ mettaEquationVars equations ∧
+                    edge.2 ∈ mettaEquationVars equations := by
+                obtain ⟨left, right⟩ := aliasConstraints_endpoint_support _ h
+                exact ⟨decomposeAll_constraintVars_subset decomposed _ left,
+                  decomposeAll_constraintVars_subset decomposed _ right⟩
+              by_cases occurs : Metta.Subst.occurs key value = true
+              · exact here (by simpa [Metta.Unify.aliasTrace, decomposed, occurs] using member)
+              · simp only [Metta.Unify.aliasTrace, decomposed, occurs, Bool.false_eq_true,
+                  ↓reduceIte, List.mem_append] at member
+                rcases member with current | later
+                · exact here current
+                · obtain ⟨left, right⟩ := ih _ later
+                  exact ⟨remainingEquationVars_subset_source decomposed _ left,
+                    remainingEquationVars_subset_source decomposed _ right⟩
+
+theorem mettaEquationVars_bindings_equations
+    (bindings : Metta.Bindings) (name : String) :
+    name ∈ mettaEquationVars (Metta.Bindings.equations bindings) ↔
+      name ∈ bindings.vars := by
+  simp only [mettaEquationVars, Metta.Bindings.equations,
+    Metta.Bindings.vars, List.mem_eraseDups, List.mem_flatMap, List.mem_map]
+  constructor
+  · rintro ⟨equation, ⟨relation, present, rfl⟩, mentioned⟩
+    refine ⟨relation, present, ?_⟩
+    cases relation <;>
+      simpa [Metta.Bindings.relationEquation, Metta.Atom.vars] using mentioned
+  · rintro ⟨relation, present, mentioned⟩
+    refine ⟨Metta.Bindings.relationEquation relation, ⟨relation, present, rfl⟩, ?_⟩
+    cases relation <;>
+      simpa [Metta.Bindings.relationEquation, Metta.Atom.vars] using mentioned
+
+theorem wholeBindingReconciliation_constraint_support
+    {bindings : Metta.Bindings}
+    {extra : List (Metta.Atom × Metta.Atom)} {result : Metta.Subst}
+    (reconciled : wholeBindingReconciliation bindings extra = some result)
+    {name : String} (member : name ∈ mettaConstraintVars result) :
+    name ∈ bindings.vars ∨ name ∈ mettaEquationVars extra := by
+  obtain ⟨constraint, present, mentioned⟩ := List.mem_flatMap.mp member
+  have trace := wholeBindingReconciliation_result_mem_eliminationTrace reconciled present
+  have source := unificationEliminationTrace_constraintVars_subset _ _ name
+    (List.mem_flatMap.mpr ⟨constraint, trace, mentioned⟩)
+  simpa only [mettaEquationVars, List.flatMap_append, List.mem_append,
+    ← mettaEquationVars_bindings_equations] using source
+
+theorem reconciliationAliases_endpoint_support
+    (bindings : Metta.Bindings)
+    (extra : List (Metta.Atom × Metta.Atom)) (result : Metta.Subst)
+    {edge : String × String}
+    (member : edge ∈ Metta.Bindings.reconciliationAliases bindings extra result) :
+    (edge.1 ∈ bindings.vars ∨ edge.1 ∈ mettaEquationVars extra) ∧
+      (edge.2 ∈ bindings.vars ∨ edge.2 ∈ mettaEquationVars extra) := by
+  simp only [Metta.Bindings.reconciliationAliases, List.mem_append] at member
+  rcases member with primary | collision
+  · obtain ⟨left, right⟩ := aliasTrace_endpoint_support _ _ primary
+    constructor
+    · simpa only [mettaEquationVars, List.flatMap_append, List.mem_append,
+        ← mettaEquationVars_bindings_equations] using left
+    · simpa only [mettaEquationVars, List.flatMap_append, List.mem_append,
+        ← mettaEquationVars_bindings_equations] using right
+  · obtain ⟨left, right⟩ := aliasTrace_endpoint_support _ _ collision
+    constructor
+    · simpa only [mettaEquationVars, List.flatMap_append, List.mem_append,
+        ← mettaEquationVars_bindings_equations, or_comm] using left
+    · simpa only [mettaEquationVars, List.flatMap_append, List.mem_append,
+        ← mettaEquationVars_bindings_equations, or_comm] using right
+
+
+
+theorem bindingRelation_vars_subset {bindings : Metta.Bindings}
+    {relation : Metta.BindingRel} (present : relation ∈ bindings)
+    {name : String} (mentioned : name ∈ Metta.Bindings.vars [relation]) :
+    name ∈ bindings.vars := by
+  simp only [Metta.Bindings.vars, List.flatMap_cons, List.flatMap_nil,
+    List.append_nil, List.mem_eraseDups] at mentioned
+  simp only [Metta.Bindings.vars, List.mem_eraseDups, List.mem_flatMap]
+  exact ⟨relation, present, mentioned⟩
+
+theorem bindings_vars_append_iff (left right : Metta.Bindings) (name : String) :
+    name ∈ Metta.Bindings.vars (left ++ right) ↔
+      name ∈ left.vars ∨ name ∈ right.vars := by
+  simp only [Metta.Bindings.vars, List.flatMap_append, List.mem_eraseDups,
+    List.mem_append]
+
+theorem rebuildFromReconciliation_vars_subset
+    {candidate source : Metta.Bindings}
+    {extra : List (Metta.Atom × Metta.Atom)} {result : Metta.Subst}
+    (reconciled : wholeBindingReconciliation source extra = some result)
+    {name : String}
+    (member : name ∈ Metta.Bindings.vars
+      (Metta.Bindings.rebuildFromReconciliation candidate source extra result)) :
+    name ∈ candidate.vars ∨ name ∈ source.vars ∨ name ∈ mettaEquationVars extra := by
+  simp only [Metta.Bindings.vars, List.mem_eraseDups, List.mem_flatMap] at member
+  obtain ⟨relation, present, mentioned⟩ := member
+  cases relation with
+  | val key value =>
+      obtain ⟨entry, _⟩ := val_mem_rebuildFromReconciliation_iff.mp present
+      apply Or.inr
+      apply wholeBindingReconciliation_constraint_support reconciled
+      apply List.mem_flatMap.mpr
+      exact ⟨(key, value), entry, mentioned⟩
+  | eq left right =>
+      have edge := rebuildFromReconciliation_edge_source reconciled
+        (mem_leaEqualityEdges_iff.mpr present)
+      rcases edge with old | added
+      · exact Or.inl (bindingRelation_vars_subset
+          (mem_leaEqualityEdges_iff.mp old)
+          (by simpa [Metta.Bindings.vars] using mentioned))
+      · obtain ⟨hleft, hright⟩ := reconciliationAliases_endpoint_support source extra result added
+        simp only [List.mem_cons, List.not_mem_nil, or_false] at mentioned
+        rcases mentioned with rfl | rfl
+        · exact Or.inr hleft
+        · exact Or.inr hright
+
+theorem addEqRaw_vars_subset (bindings : Metta.Bindings) (left right : String)
+    {name : String} (member : name ∈ (Metta.Bindings.addEqRaw bindings left right).vars) :
+    name ∈ bindings.vars ∨ name = left ∨ name = right := by
+  unfold Metta.Bindings.addEqRaw at member
+  split at member
+  · exact Or.inl member
+  · simp only [Metta.Bindings.vars, List.flatMap_cons, List.mem_eraseDups,
+      List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at member
+    rcases member with head | tail
+    · exact Or.inr head
+    · exact Or.inl (by simpa only [Metta.Bindings.vars, List.mem_eraseDups] using tail)
+
+theorem addValRaw_vars_subset (bindings : Metta.Bindings) (key : String) (value : Metta.Atom)
+    {name : String} (member : name ∈ (Metta.Bindings.addValRaw bindings key value).vars) :
+    name ∈ bindings.vars ∨ name = key ∨ name ∈ value.vars := by
+  simp only [Metta.Bindings.addValRaw, Metta.Bindings.vars, List.flatMap_cons,
+    List.mem_eraseDups, List.mem_append] at member
+  rcases member with head | tail
+  · exact Or.inr (by simpa using head)
+  · simp only [List.mem_flatMap] at tail
+    obtain ⟨relation, present, mentioned⟩ := tail
+    exact Or.inl (bindingRelation_vars_subset
+      (List.mem_of_mem_filter present) (by simpa [Metta.Bindings.vars] using mentioned))
+
+theorem addVarEquality_vars_subset
+    {bindings result : Metta.Bindings} {left right name : String}
+    (produced : result ∈ Metta.Bindings.addVarEquality bindings left right)
+    (member : name ∈ result.vars) :
+    name ∈ bindings.vars ∨ name = left ∨ name = right := by
+  cases unified : Metta.Bindings.unifyValues
+      ((Metta.Bindings.addEqRaw bindings left right).classValues left) with
+  | none => simp [Metta.Bindings.addVarEquality, unified] at produced
+  | some subst =>
+    cases subst with
+    | nil =>
+        simp only [Metta.Bindings.addVarEquality, unified, List.mem_singleton] at produced
+        subst result
+        exact addEqRaw_vars_subset bindings left right member
+    | cons entry rest =>
+        cases reconciled : Metta.Bindings.reconcileAll bindings
+            [(.var left, .var right)] with
+        | none => simp [Metta.Bindings.addVarEquality, unified, reconciled] at produced
+        | some solution =>
+          simp only [Metta.Bindings.addVarEquality, unified, reconciled,
+            List.mem_singleton] at produced
+          subst result
+          have supported := rebuildFromReconciliation_vars_subset reconciled member
+          rcases supported with candidate | source | extra
+          · exact addEqRaw_vars_subset bindings left right candidate
+          · exact Or.inl source
+          · exact Or.inr (by simpa [mettaEquationVars, Metta.Atom.vars] using extra)
+
+private theorem addVarBinding_nonvariable_vars_subset
+    {bindings result : Metta.Bindings} {key name : String} {value : Metta.Atom}
+    (nonvariable : ∀ other, value ≠ .var other)
+    (produced : result ∈ Metta.Bindings.addVarBinding bindings key value)
+    (member : name ∈ result.vars) :
+    name ∈ bindings.vars ∨ name = key ∨ name ∈ value.vars := by
+  have expanded : Metta.Bindings.addVarBinding bindings key value =
+      match bindings.classValues key with
+      | [] => [Metta.Bindings.addValRaw bindings key value]
+      | first :: others =>
+          match Metta.Bindings.unifyValues (first :: (others ++ [value])) with
+          | none => []
+          | some [] => [bindings]
+          | some (_ :: _) =>
+              match Metta.Bindings.reconcileAll bindings [(.var key, value)] with
+              | none => []
+              | some solution =>
+                  [Metta.Bindings.rebuildFromReconciliation bindings bindings
+                    [(.var key, value)] solution] := by
+    cases value with
+    | var other => exact (nonvariable other rfl).elim
+    | sym symbol | gnd ground | expr children =>
+        cases hvalues : bindings.classValues key <;>
+          simp [Metta.Bindings.addVarBinding, hvalues]
+        all_goals rfl
+  rw [expanded] at produced
+  cases values : bindings.classValues key with
+  | nil =>
+      simp only [values, List.mem_singleton] at produced
+      subst result
+      exact addValRaw_vars_subset _ _ _ member
+  | cons first others =>
+    simp only [values] at produced
+    cases unified : Metta.Bindings.unifyValues (first :: (others ++ [value])) with
+    | none => simp [unified] at produced
+    | some subst =>
+      cases subst with
+      | nil =>
+          simp only [unified, List.mem_singleton] at produced
+          subst result
+          exact Or.inl member
+      | cons entry rest =>
+          simp only [unified] at produced
+          cases reconciled : Metta.Bindings.reconcileAll bindings [(.var key, value)] with
+          | none => simp [reconciled] at produced
+          | some solution =>
+            simp only [reconciled, List.mem_singleton] at produced
+            subst result
+            have supported := rebuildFromReconciliation_vars_subset reconciled member
+            rcases supported with source | source | extra
+            · exact Or.inl source
+            · exact Or.inl source
+            · exact Or.inr (by simpa [mettaEquationVars, Metta.Atom.vars] using extra)
+
+theorem addVarBinding_vars_subset
+    {bindings result : Metta.Bindings} {key name : String} {value : Metta.Atom}
+    (produced : result ∈ Metta.Bindings.addVarBinding bindings key value)
+    (member : name ∈ result.vars) :
+    name ∈ bindings.vars ∨ name = key ∨ name ∈ value.vars := by
+  cases value with
+  | var other =>
+      simpa [Metta.Atom.vars] using addVarEquality_vars_subset produced member
+  | sym symbol | gnd ground | expr children =>
+      exact addVarBinding_nonvariable_vars_subset (by intro other h; cases h) produced member
+
+
+theorem mergeOne_vars_subset
+    {frontier : List Metta.Bindings} {relation : Metta.BindingRel}
+    {result : Metta.Bindings} {name : String}
+    (produced : result ∈ Metta.Bindings.mergeOne frontier relation)
+    (member : name ∈ result.vars) :
+    ∃ previous ∈ frontier,
+      name ∈ previous.vars ∨ name ∈ Metta.Bindings.vars [relation] := by
+  obtain ⟨previous, present, advanced⟩ := List.mem_flatMap.mp produced
+  refine ⟨previous, present, ?_⟩
+  cases relation with
+  | val key value =>
+      simpa [Metta.Bindings.vars] using addVarBinding_vars_subset advanced member
+  | eq left right =>
+      simpa [Metta.Bindings.vars] using addVarEquality_vars_subset advanced member
+
+private theorem merge_fold_vars_subset
+    (relations : Metta.Bindings) (frontier : List Metta.Bindings)
+    {result : Metta.Bindings} {name : String}
+    (produced : result ∈ relations.foldl Metta.Bindings.mergeOne frontier)
+    (member : name ∈ result.vars) :
+    (∃ previous ∈ frontier, name ∈ previous.vars) ∨ name ∈ relations.vars := by
+  induction relations generalizing frontier with
+  | nil => exact Or.inl ⟨result, produced, member⟩
+  | cons relation rest ih =>
+      rcases ih _ produced with prior | remaining
+      · obtain ⟨previous, present, mentioned⟩ := prior
+        obtain ⟨initial, initialPresent, fromInitial | fromRelation⟩ :=
+          mergeOne_vars_subset present mentioned
+        · exact Or.inl ⟨initial, initialPresent, fromInitial⟩
+        · exact Or.inr (bindingRelation_vars_subset (by simp) fromRelation)
+      · exact Or.inr (by
+          simpa only [show relation :: rest = [relation] ++ rest from rfl,
+            bindings_vars_append_iff] using Or.inr remaining)
+
+/-- Native merge can retain or remove variable names, but cannot invent one.
+This includes compound-value reconciliation and restored equality aliases. -/
+theorem merge_vars_subset
+    {left right result : Metta.Bindings} {name : String}
+    (produced : result ∈ Metta.Bindings.merge left right)
+    (member : name ∈ result.vars) :
+    name ∈ left.vars ∨ name ∈ right.vars := by
+  rcases merge_fold_vars_subset right [left] produced member with initial | right
+  · obtain ⟨previous, present, mentioned⟩ := initial
+    simp only [List.mem_singleton] at present
+    subst previous
+    exact Or.inl mentioned
+  · exact Or.inr right
+
+theorem merge_preserves_outside
+    {left right result : Metta.Bindings} {name : String}
+    (produced : result ∈ Metta.Bindings.merge left right)
+    (outsideLeft : name ∉ left.vars) (outsideRight : name ∉ right.vars) :
+    name ∉ result.vars := by
+  intro member
+  exact (merge_vars_subset produced member).elim outsideLeft outsideRight
+
 
 theorem rebuildBindingsFromUnifier_noFloat
     {bindings : Metta.Bindings} {subst : Metta.Subst}
@@ -4948,7 +5704,7 @@ theorem matchRel_leaf_transport
           (LeaBindingTransport.canonical
             (b := (⟨[], [(queryVar, patternVar)]⟩ : Bindings))
             (by simp [NoBareVarAssignments]))
-  | varNonVar hnonvar =>
+  | varNonVar hnonvar _hoccurs =>
       rename_i v
       cases pattern with
       | var w => simp [Atom.isVarB] at hnonvar
@@ -4992,7 +5748,7 @@ theorem matchRel_leaf_transport
               (LeaBindingTransport.canonical
                 (b := (⟨[(v, .expression es)], []⟩ : Bindings))
                 (by simp [NoBareVarAssignments]))
-  | nonVarVar hnonvar =>
+  | nonVarVar hnonvar _hoccurs =>
       rename_i v
       have hdisj' : VarsDisjoint (.var v) query := hdisj.symm
       cases query with
@@ -5044,7 +5800,7 @@ theorem matchRel_leaf_transport
             (.gnd (toLeaTTaGround g)) = true := by
         simpa [toLeaTTaAtom] using toLeaTTaAtom_grounded_equiv_self g
       simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hself]
-  | @expr ls rs b hlist =>
+  | @expr ls rs b hlist _ =>
       exact (hleaf ⟨ls, rs, rfl, rfl⟩).elim
 
 /-- Executable leaf matcher transport follows immediately from HE matcher
@@ -5671,43 +6427,118 @@ repaired-LeaTTa bindings. -/
 def LeaSemanticLoopFree (bindings : Metta.Bindings) : Prop :=
   ∀ name, ¬Relation.TransGen (LeaClassDepends bindings) name name
 
-/-- Under any valuation, a variable's image is no larger than the image of an
-atom in which the variable occurs.  This is a general fact about the shared
-homomorphic semantic substitution, independent of any unification engine. -/
-theorem size_applyClassSolution_ge_of_mem_vars
-    (valuation : String → Metta.Atom) (name : String) :
-    ∀ atom : Metta.Atom, name ∈ atom.vars →
-      (valuation name).size ≤
-        (applyClassSolution valuation atom).size := by
-  intro atom
-  refine Metta.Atom.recAux ?_ ?_ ?_ ?_ atom
-  · intro symbol hmem
-    simp [Metta.Atom.vars] at hmem
-  · intro varName hmem
-    simp only [Metta.Atom.vars, List.mem_singleton] at hmem
-    subst varName
-    simp [applyClassSolution]
-  · intro grounded hmem
-    simp [Metta.Atom.vars] at hmem
-  · intro atoms ih hmem
-    simp only [Metta.Atom.vars, List.mem_flatten,
-      List.mem_map] at hmem
-    obtain ⟨varsList, ⟨child, hchild, rfl⟩, hname⟩ := hmem
-    have hle := ih child hchild hname
-    have hmember :
-        (applyClassSolution valuation child).size ∈
-          ((atoms.map (applyClassSolution valuation)).map
-            Metta.Atom.size) := by
-      exact List.mem_map.mpr
-        ⟨applyClassSolution valuation child,
-          List.mem_map.mpr ⟨child, hchild, rfl⟩, rfl⟩
-    have hsum :
-        (applyClassSolution valuation child).size ≤
-          ((atoms.map (applyClassSolution valuation)).map
-            Metta.Atom.size).sum :=
-      List.single_le_sum (by intro _ _; omega) _ hmember
-    simp only [applyClassSolution, Metta.Atom.size]
-    omega
+/-- Class-relative value representation preserves every variable occurrence,
+possibly changing its spelling within the same equality class. -/
+theorem HELeaAtomClassRel.occurrence
+    {b : Bindings} {value : Atom} {leaValue : Metta.Atom} {name : String}
+    (hrel : HELeaAtomClassRel b value leaValue) (hoccurs : AtomOccurs value name) :
+    ∃ leaName, leaName ∈ leaValue.vars ∧ leaName ∈ b.eqClass name := by
+  induction hoccurs generalizing leaValue with
+  | var name =>
+      cases hrel with
+      | «variable» hclass => exact ⟨_, by simp [Metta.Atom.vars], hclass⟩
+  | @expression atoms atom name hmem hoccurs ih =>
+      cases hrel with
+      | @expression _ leaAtoms hrels =>
+          have hchild : ∃ leaChild ∈ leaAtoms, HELeaAtomClassRel b atom leaChild := by
+            induction hrels with
+            | nil => simp at hmem
+            | @cons head leaHead tail leaTail hhead htail ihtail =>
+                rcases List.mem_cons.mp hmem with heq | hmem
+                · subst atom
+                  exact ⟨leaHead, by simp, hhead⟩
+                · obtain ⟨child, hmember, hrel⟩ := ihtail hmem
+                  exact ⟨child, by simp [hmember], hrel⟩
+          obtain ⟨leaChild, hchild, hrel⟩ := hchild
+          obtain ⟨leaName, hname, hclass⟩ := ih hrel
+          refine ⟨leaName, ?_, hclass⟩
+          simp only [Metta.Atom.vars, List.mem_flatten, List.mem_map]
+          exact ⟨leaChild.vars, ⟨leaChild, hchild, rfl⟩, hname⟩
+
+/-- Class-value congruence transports proper HE dependencies into LeaTTa's
+independent dependency graph. -/
+theorem LeaBindingCongruence.leaClassDepends_of_he
+    {b : Bindings} {lb : Metta.Bindings} (h : LeaBindingCongruence b lb)
+    {source target : String} (hdep : ClassDepends b source target) :
+    LeaClassDepends lb source target := by
+  obtain ⟨key, value, dependency, hstored, hsource, hoccurs, htarget, _⟩ := hdep
+  obtain ⟨leaKey, leaValue, hleaStored, hkey, hvalue⟩ := h.classValues.1 key value hstored
+  obtain ⟨leaDependency, hleaOccurs, hdepClass⟩ := hvalue.occurrence hoccurs
+  refine ⟨leaKey, leaValue, leaDependency, hleaStored, ?_, hleaOccurs, ?_⟩
+  · apply (h.semantic.classes leaKey source).mp
+    exact (EqualityClosure.eqClass_mem_iff_of_reachable
+      (EqualityClosure.mem_eqClass_iff_reachable.mp hkey)).mp hsource
+  · apply (h.semantic.classes leaDependency target).mp
+    exact (EqualityClosure.eqClass_mem_iff_of_reachable
+      (EqualityClosure.mem_eqClass_iff_reachable.mp hdepClass)).mp htarget
+
+/-- Semantic acyclicity transports from LeaTTa to HE without requiring an
+agreement between the engines' concrete resolution algorithms. -/
+theorem LeaBindingCongruence.heSemanticLoopFree
+    {b : Bindings} {lb : Metta.Bindings} (h : LeaBindingCongruence b lb)
+    (hfree : LeaSemanticLoopFree lb) : SemanticLoopFree b := by
+  intro name hcycle
+  apply hfree name
+  exact Relation.TransGen.mono (fun _ _ hstep => h.leaClassDepends_of_he hstep)
+    name name hcycle
+
+theorem LeaBindingCongruence.heHasLoop_false
+    {b : Bindings} {lb : Metta.Bindings} (h : LeaBindingCongruence b lb)
+    (hfree : LeaSemanticLoopFree lb) : b.hasLoop = false :=
+  (hasLoop_eq_false_iff_semanticLoopFree b).mpr (h.heSemanticLoopFree hfree)
+
+namespace ClassDependencyControls
+
+/-- A raw class can carry a cyclic value hidden behind its first, harmless
+value. Distinct assignment keys and normalized constructors do not exclude
+this inconsistency. -/
+def ignoredClassValue : Metta.Bindings :=
+  [.val "x" (.sym "a"), .val "y" (.expr [.sym "f", .var "y"]), .eq "y" "x"]
+
+theorem ignoredClassValue_nonvariable : LeaAssignmentsNonVariable ignoredClassValue := by
+  intro key target hmem
+  simp [ignoredClassValue] at hmem
+
+theorem ignoredClassValue_irreflexive : LeaEqualitiesIrreflexive ignoredClassValue := by
+  intro key hmem
+  simp [ignoredClassValue] at hmem
+  obtain ⟨rfl, hfalse⟩ := hmem
+  exact (by decide : ("y" : String) ≠ "x") hfalse
+
+theorem ignoredClassValue_unique_keys :
+    (ignoredClassValue.filterMap fun relation => match relation with
+      | .val key _ => some key
+      | .eq _ _ => none).Nodup := by decide
+
+theorem ignoredClassValue_no_runtime_loop : ignoredClassValue.hasLoop = false := by
+  apply Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge.Bindings.hasLoop_false_of_resolveAtomAux_some
+  · rfl
+  · intro key hkey
+    have hvars : Metta.Bindings.vars ignoredClassValue = ["x", "y"] := by
+      simp [ignoredClassValue, Metta.Bindings.vars, Metta.Atom.vars, List.eraseDups_cons]
+    rw [hvars] at hkey
+    have hfuel (name : String) :
+        Metta.Bindings.resolutionFuel ignoredClassValue (.var name) = 9 := by
+      simp [ignoredClassValue, Metta.Bindings.resolutionFuel,
+        Metta.Bindings.relationResolutionFuel, Metta.Atom.size]
+    rcases List.mem_cons.mp hkey with rfl | hkey
+    · exact ⟨.sym "a", by rw [hfuel]; rfl⟩
+    · have heq : key = "y" := List.mem_singleton.mp hkey
+      subst key
+      exact ⟨.sym "a", by rw [hfuel]; rfl⟩
+
+theorem ignoredClassValue_semantic_cycle : ¬LeaSemanticLoopFree ignoredClassValue := by
+  intro hfree
+  apply hfree "y"
+  apply Relation.TransGen.single
+  refine ⟨"y", .expr [.sym "f", .var "y"], "y", ?_, ?_, ?_, ?_⟩
+  · simp [ignoredClassValue]
+  · decide
+  · simp [Metta.Atom.vars]
+  · decide
+
+
+end ClassDependencyControls
 
 /-- A variable occurring in a genuine non-variable LeaTTa atom is strictly
 smaller than the interpreted whole atom under every valuation. -/
@@ -6965,127 +7796,6 @@ theorem leaMatchAtomsWith_directLoop_false
     (leaMatchAtomsWith_result_assignmentsNonVariable hout)
     (leaMatchAtomsWith_result_equalitiesIrreflexive hout)
 
-/-- Once recursive binding resolution succeeds, adding fuel preserves both
-success and the resolved atom.  Fuel is only a cutoff; it does not otherwise
-steer equality-class or value selection. -/
-theorem leaResolveAtomAux_some_add_fuel
-    {bindings : Metta.Bindings} {visited : List String}
-    {atom resolved : Metta.Atom} {fuel : Nat}
-    (extra : Nat)
-    (hresolve :
-      Metta.Bindings.resolveAtomAux bindings fuel visited atom =
-        some resolved) :
-    Metta.Bindings.resolveAtomAux bindings (fuel + extra) visited atom =
-      some resolved := by
-  induction fuel generalizing visited atom resolved with
-  | zero =>
-      simp [Metta.Bindings.resolveAtomAux] at hresolve
-  | succ fuel ih =>
-      cases atom with
-      | sym symbol =>
-          simpa [Metta.Bindings.resolveAtomAux, Nat.succ_add] using hresolve
-      | gnd ground =>
-          simpa [Metta.Bindings.resolveAtomAux, Nat.succ_add] using hresolve
-      | var key =>
-          simp only [Metta.Bindings.resolveAtomAux, Nat.succ_add] at hresolve ⊢
-          cases hoverlap :
-              (Metta.Bindings.eqClassOrdered bindings key).any visited.contains with
-          | true =>
-              simp only [hoverlap, ↓reduceIte] at hresolve ⊢
-              contradiction
-          | false =>
-              cases hvalues : Metta.Bindings.classValues bindings key with
-              | nil =>
-                  simpa only [hoverlap, Bool.false_eq_true, ↓reduceIte,
-                    hvalues] using hresolve
-              | cons value rest =>
-                  simp only [hoverlap, Bool.false_eq_true, ↓reduceIte,
-                    hvalues] at hresolve ⊢
-                  cases value with
-                  | var target =>
-                      change
-                        (if (Metta.Bindings.eqClassOrdered bindings key).contains
-                              target = true then
-                          if (Metta.Bindings.eqClassOrdered bindings key).length == 1
-                              then none
-                          else some (Metta.Atom.var
-                            (Metta.Bindings.eqRepresentative bindings key))
-                        else Metta.Bindings.resolveAtomAux bindings fuel
-                          (Metta.Bindings.eqClassOrdered bindings key ++ visited)
-                          (.var target)) = some resolved at hresolve
-                      change
-                        (if (Metta.Bindings.eqClassOrdered bindings key).contains
-                              target = true then
-                          if (Metta.Bindings.eqClassOrdered bindings key).length == 1
-                              then none
-                          else some (Metta.Atom.var
-                            (Metta.Bindings.eqRepresentative bindings key))
-                        else Metta.Bindings.resolveAtomAux bindings (fuel + extra)
-                          (Metta.Bindings.eqClassOrdered bindings key ++ visited)
-                          (.var target)) = some resolved
-                      cases hclass :
-                          (Metta.Bindings.eqClassOrdered bindings key).contains target with
-                      | true =>
-                          simp only [hclass, ↓reduceIte] at hresolve ⊢
-                          cases hlength :
-                              (Metta.Bindings.eqClassOrdered bindings key).length == 1 with
-                          | true =>
-                              simp only [hlength, ↓reduceIte] at hresolve ⊢
-                              contradiction
-                          | false =>
-                              simpa only [hlength,
-                                Bool.false_eq_true] using hresolve
-                      | false =>
-                          simp only [hclass, Bool.false_eq_true,
-                            ↓reduceIte] at hresolve ⊢
-                          exact ih hresolve
-                  | sym symbol => exact ih hresolve
-                  | gnd ground => exact ih hresolve
-                  | expr atoms => exact ih hresolve
-      | expr atoms =>
-          simp only [Metta.Bindings.resolveAtomAux, Nat.succ_add] at hresolve ⊢
-          cases hmap : atoms.mapM
-              (Metta.Bindings.resolveAtomAux bindings fuel visited) with
-          | none => simp [hmap] at hresolve
-          | some resolvedAtoms =>
-              have hmapMono : atoms.mapM
-                  (Metta.Bindings.resolveAtomAux bindings (fuel + extra)
-                    visited) = some resolvedAtoms := by
-                clear hresolve
-                induction atoms generalizing resolvedAtoms with
-                | nil =>
-                    simp at hmap
-                    subst resolvedAtoms
-                    simp
-                | cons head tail tailIH =>
-                    simp only [List.mapM_cons] at hmap ⊢
-                    cases hhead : Metta.Bindings.resolveAtomAux bindings fuel
-                        visited head with
-                    | none => simp [hhead] at hmap
-                    | some resolvedHead =>
-                        cases htail : tail.mapM
-                            (Metta.Bindings.resolveAtomAux bindings fuel visited) with
-                        | none => simp [hhead, htail] at hmap
-                        | some resolvedTail =>
-                            simp [hhead, htail] at hmap
-                            subst resolvedAtoms
-                            rw [ih hhead, tailIH resolvedTail htail]
-                            rfl
-              simpa [hmap, hmapMono] using hresolve
-
-/-- Pointwise fuel monotonicity in order form. -/
-theorem leaResolveAtomAux_some_mono
-    {bindings : Metta.Bindings} {visited : List String}
-    {atom resolved : Metta.Atom} {small large : Nat}
-    (hresolve :
-      Metta.Bindings.resolveAtomAux bindings small visited atom =
-        some resolved)
-    (hle : small ≤ large) :
-    Metta.Bindings.resolveAtomAux bindings large visited atom =
-      some resolved := by
-  obtain ⟨extra, rfl⟩ := Nat.exists_eq_add_of_le hle
-  exact leaResolveAtomAux_some_add_fuel extra hresolve
-
 /-- Remaining static resolver charge.  A value relation is charged until its
 key's equality class has been visited; equality edges remain as harmless
 constant slack. -/
@@ -7403,7 +8113,7 @@ theorem leaResolveAtomAux_some_at_budget
                         Metta.Bindings.resolveAtomAux bindings fuel
                             (Metta.Bindings.eqClassOrdered bindings key ++ visited)
                             value = some resolved :=
-                      leaResolveAtomAux_some_mono hresolved
+                      Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge.Bindings.resolveAtomAux_some_mono hresolved
                         (Nat.le_of_lt_succ hnextLt)
                     cases value with
                     | var target => exact (hvalueNonvariable target rfl).elim
@@ -7436,7 +8146,7 @@ theorem leaResolveAtomAux_some_at_budget
                       hnextLt visited child rfl
                       (hbelow.of_expr_mem hchild)
                   exact ⟨resolved,
-                    leaResolveAtomAux_some_mono hresolved
+                    Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge.Bindings.resolveAtomAux_some_mono hresolved
                       (Nat.le_of_lt_succ hnextLt)⟩
                 have hmap : ∃ resolvedAtoms,
                     atoms.mapM
@@ -7882,6 +8592,1621 @@ theorem leaMatchAtoms_result_noFloat
   exact (leaMatchSemanticPack left).resultNoFloat
     hleftNoFloat hrightNoFloat hraw
 
+/-! ### Actual native matcher models and dependency admission -/
+
+/-- A valuation respects equality classes and a selected value in each nonempty class. The choice may vary
+across classes and need not follow any list order. -/
+def LeaClassChoiceSatisfied (valuation : String → Metta.Atom)
+    (bindings : Metta.Bindings) : Prop :=
+  (∀ source target, target ∈ Metta.Bindings.eqClass bindings source →
+    valuation source = valuation target) ∧
+  (∀ key, Metta.Bindings.classValues bindings key ≠ [] →
+    ∃ value ∈ Metta.Bindings.classValues bindings key,
+      valuation key = applyClassSolution valuation value)
+
+/-- Any choice of one value equation per nonempty class generates the full
+stored theory. Native insertion and reconciliation preserve this invariant;
+cycle admission remains a separate final check. -/
+def LeaClassChoiceBasis (bindings : Metta.Bindings) : Prop :=
+  ∀ valuation, LeaClassChoiceSatisfied valuation bindings →
+    LeaBindingSatisfied valuation bindings
+
+/-- Homomorphic substitution depends only on the variables occurring in its
+argument. -/
+theorem applyClassSolution_congr_support
+    {left right : String → Metta.Atom} (atom : Metta.Atom)
+    (hagrees : ∀ name ∈ atom.vars, left name = right name) :
+    applyClassSolution left atom = applyClassSolution right atom := by
+  induction atom using Metta.Atom.recAux with
+  | sym name => simp [applyClassSolution]
+  | var name => simpa only [applyClassSolution] using hagrees name (by simp [Metta.Atom.vars])
+  | gnd ground => simp [applyClassSolution]
+  | expr atoms ih =>
+      simp only [applyClassSolution]
+      congr 1
+      apply List.map_congr_left
+      intro atom hmem
+      apply ih atom hmem
+      intro name hname
+      apply hagrees name
+      simp only [Metta.Atom.vars, List.mem_flatten, List.mem_map]
+      exact ⟨atom.vars, ⟨atom, hmem, rfl⟩, hname⟩
+
+/-- Interpreting an already interpreted term composes its valuations. -/
+theorem applyClassSolution_comp
+    (outer inner : String → Metta.Atom) (atom : Metta.Atom) :
+    applyClassSolution outer (applyClassSolution inner atom) =
+      applyClassSolution (fun name => applyClassSolution outer (inner name)) atom := by
+  induction atom using Metta.Atom.recAux with
+  | sym name => simp [applyClassSolution]
+  | var name => simp [applyClassSolution]
+  | gnd ground => simp [applyClassSolution]
+  | expr atoms ih =>
+      simp only [applyClassSolution, List.map_map]
+      congr 1
+      exact List.map_congr_left ih
+
+/-- Any substitution into a binding model is again a binding model. -/
+theorem LeaBindingSatisfied.postcompose
+    {model : String → Metta.Atom} {bindings : Metta.Bindings}
+    (hmodel : LeaBindingSatisfied model bindings) (outer : String → Metta.Atom) :
+    LeaBindingSatisfied (fun name => applyClassSolution outer (model name)) bindings := by
+  constructor
+  · intro key value hmem
+    change applyClassSolution outer (model key) = _
+    rw [hmodel.1 key value hmem, applyClassSolution_comp]
+  · intro left right hmem
+    exact congrArg (applyClassSolution outer) (hmodel.2 left right hmem)
+
+/-- With the free classes fixed, selected equations have at most one finite
+model whenever all stored constraints have a non-variable finite model. -/
+theorem LeaClassChoiceSatisfied.eq_of_model
+    {bindings : Metta.Bindings} {selected model : String → Metta.Atom}
+    (hnonvariable : LeaAssignmentsNonVariable bindings)
+    (hselected : LeaClassChoiceSatisfied selected bindings)
+    (hmodel : LeaBindingSatisfied model bindings)
+    (hfree : ∀ key, Metta.Bindings.classValues bindings key = [] →
+      selected key = model key) : selected = model := by
+  have hkeys : ∀ bound key, (model key).size = bound → selected key = model key := by
+    intro bound
+    induction bound using Nat.strong_induction_on with
+    | h bound ih =>
+        intro key hsize
+        cases hvalues : Metta.Bindings.classValues bindings key with
+        | nil => exact hfree key hvalues
+        | cons first rest =>
+            obtain ⟨value, hvalue, hselectedKey⟩ :=
+              hselected.2 key (by simp [hvalues])
+            have hmodelKey := leaBindingSatisfied_classValue hmodel hvalue
+            rw [hselectedKey, hmodelKey]
+            apply applyClassSolution_congr_support
+            intro dependency hdependency
+            have hlt := size_valuation_lt_apply_of_mem_vars_nonvariable model
+              (leaClassValue_nonvariable hnonvariable hvalue) hdependency
+            rw [← hmodelKey, hsize] at hlt
+            exact ih (model dependency).size hlt dependency rfl
+  funext key
+  exact hkeys (model key).size key rfl
+
+/-- A model whose free-class images remain variables of those same classes
+makes the selected equations a complete basis. -/
+theorem leaClassChoiceBasis_of_model_free_classes
+    {bindings : Metta.Bindings} {model : String → Metta.Atom}
+    (hnonvariable : LeaAssignmentsNonVariable bindings)
+    (hmodel : LeaBindingSatisfied model bindings)
+    (hfree : ∀ key, Metta.Bindings.classValues bindings key = [] →
+      ∃ representative, model key = .var representative ∧
+        representative ∈ Metta.Bindings.eqClass bindings key) :
+    LeaClassChoiceBasis bindings := by
+  intro valuation hselected
+  have hcomposed := hmodel.postcompose valuation
+  have hagreement : valuation =
+      fun name => applyClassSolution valuation (model name) := by
+    apply hselected.eq_of_model hnonvariable hcomposed
+    intro key hkey
+    obtain ⟨representative, hmodelKey, hclass⟩ := hfree key hkey
+    rw [hmodelKey]
+    simpa only [applyClassSolution] using hselected.1 key representative hclass
+  exact hagreement.symm ▸ hcomposed
+/-- Empty value support is a property of an equality class, independently of
+which member is used to query it. -/
+theorem leaClassValues_nil_of_mem_class
+    {bindings : Metta.Bindings} {key member : String}
+    (hclass : member ∈ Metta.Bindings.eqClass bindings key)
+    (hempty : Metta.Bindings.classValues bindings key = []) :
+    Metta.Bindings.classValues bindings member = [] := by
+  unfold Metta.Bindings.classValues at hempty ⊢
+  apply List.filterMap_eq_nil_iff.mpr
+  intro name hvariable
+  apply List.filterMap_eq_nil_iff.mp hempty name
+  apply mem_leaEqClassOrdered_iff.mpr
+  rw [mem_leaEqClass_iff_reachable] at hclass ⊢
+  exact hclass.trans (mem_leaEqClass_iff_reachable.mp
+    (mem_leaEqClassOrdered_iff.mp hvariable))
+
+/-- A trace whose free-class entries are class-internal aliases leaves those
+free classes represented by their own variables. -/
+theorem eliminationTraceValuation_free_class
+    (trace : List (String × Metta.Atom)) (bindings : Metta.Bindings)
+    (hentries : ∀ key value, (key, value) ∈ trace →
+      Metta.Bindings.classValues bindings key = [] →
+        ∃ target, value = .var target ∧
+          target ∈ Metta.Bindings.eqClass bindings key) :
+    ∀ key, Metta.Bindings.classValues bindings key = [] →
+      ∃ representative, eliminationTraceValuation trace key = .var representative ∧
+        representative ∈ Metta.Bindings.eqClass bindings key := by
+  induction trace with
+  | nil =>
+      intro key _
+      refine ⟨key, rfl, ?_⟩
+      rw [mem_leaEqClass_iff_reachable]
+  | cons binding trace ih =>
+      obtain ⟨headKey, headValue⟩ := binding
+      have htail : ∀ key value, (key, value) ∈ trace →
+          Metta.Bindings.classValues bindings key = [] →
+          ∃ target, value = .var target ∧
+            target ∈ Metta.Bindings.eqClass bindings key := by
+        intro key value hmem
+        exact hentries key value (by simp [hmem])
+      intro key hempty
+      by_cases hkey : key = headKey
+      · subst headKey
+        obtain ⟨target, rfl, hclass⟩ :=
+          hentries key headValue (by simp) hempty
+        obtain ⟨representative, hvalue, hrepresentative⟩ :=
+          ih htail target (leaClassValues_nil_of_mem_class hclass hempty)
+        refine ⟨representative, ?_, ?_⟩
+        · simpa [eliminationTraceValuation, applyClassSolution] using hvalue
+        · rw [mem_leaEqClass_iff_reachable] at hclass hrepresentative ⊢
+          exact hclass.trans hrepresentative
+      · obtain ⟨representative, hvalue, hrepresentative⟩ := ih htail key hempty
+        refine ⟨representative, ?_, hrepresentative⟩
+        simpa [eliminationTraceValuation, Function.update, hkey] using hvalue
+
+/-- Rebuilding a successful reconciliation leaves no non-variable trace entry
+in a class with no stored value. -/
+theorem reconciliation_trace_free_entries
+    {candidate source : Metta.Bindings}
+    {extra : List (Metta.Atom × Metta.Atom)} {result : Metta.Subst}
+    (hrun : wholeBindingReconciliation source extra = some result) :
+    ∀ key value, (key, value) ∈ result →
+      Metta.Bindings.classValues
+        (Metta.Bindings.rebuildFromReconciliation candidate source extra result) key = [] →
+      ∃ target, value = .var target ∧ target ∈ Metta.Bindings.eqClass
+        (Metta.Bindings.rebuildFromReconciliation candidate source extra result) key := by
+  intro key value hmem hempty
+  cases value with
+  | var target =>
+      exact ⟨target, rfl, rebuildFromReconciliation_connects_alias
+        candidate source extra result
+        (wholeBindingReconciliation_result_alias_mem hrun hmem)⟩
+  | sym name | gnd name | expr name =>
+      exact (no_leaValue_of_lookupVal_eq_none
+        (leaLookupVal_eq_none_of_classValues_eq_nil hempty) _
+          (val_mem_rebuildFromReconciliation_iff.mpr
+            ⟨hmem, by intro target h; cases h⟩)).elim
+
+/-- The concrete triangular valuation models the exact successful reconciliation
+result, including all entries that are not selected by class lookup. -/
+theorem reconciliation_trace_valuation_satisfies
+    {source : Metta.Bindings} {extra : List (Metta.Atom × Metta.Atom)}
+    {result : Metta.Subst}
+    (hrun : wholeBindingReconciliation source extra = some result) :
+    MettaConstraintsSatisfied
+      (eliminationTraceValuation (unificationEliminationTrace
+        (Metta.Bindings.equationFuel (Metta.Bindings.equations source ++ extra))
+        (Metta.Bindings.equations source ++ extra))) result := by
+  have htrace := eliminationTraceValuation_satisfies
+    (unificationEliminationTrace
+      (Metta.Bindings.equationFuel (Metta.Bindings.equations source ++ extra))
+      (Metta.Bindings.equations source ++ extra))
+    (wholeBindingReconciliation_eliminationTrace_triangular hrun)
+    (unificationEliminationTrace_key_not_mem_value_vars _ _)
+  simpa only [wholeBindingReconciliation_result_eq_eliminationTrace_reverse hrun,
+    MettaConstraintsSatisfied, List.mem_reverse] using htrace
+
+/-- Whole-system reconciliation establishes the complete selected-equation
+basis. Candidate equalities must follow from the equations actually reconciled;
+this is discharged by each native operation constructing the candidate. -/
+theorem rebuildFromReconciliation_classChoiceBasis
+    {candidate source : Metta.Bindings}
+    {extra : List (Metta.Atom × Metta.Atom)} {result : Metta.Subst}
+    (hsourceNoFloat : LeaBindingsNoFloat source)
+    (hextraNoFloat : ∀ equation ∈ extra,
+      MettaAtomNoFloat equation.1 ∧ MettaAtomNoFloat equation.2)
+    (hrun : wholeBindingReconciliation source extra = some result)
+    (hcandidate : ∀ valuation, LeaBindingSatisfied valuation source →
+      MettaEquationsSatisfied valuation extra → LeaEqualitySatisfied valuation candidate) :
+    LeaClassChoiceBasis
+      (Metta.Bindings.rebuildFromReconciliation candidate source extra result) := by
+  let trace := unificationEliminationTrace
+    (Metta.Bindings.equationFuel (Metta.Bindings.equations source ++ extra))
+    (Metta.Bindings.equations source ++ extra)
+  let model := eliminationTraceValuation trace
+  have hresult : MettaConstraintsSatisfied model result :=
+    reconciliation_trace_valuation_satisfies hrun
+  have hsource := (wholeBindingReconciliation_solution_iff model
+    hsourceNoFloat hextraNoFloat hrun).mp hresult
+  have hequalities := hcandidate model hsource.1 hsource.2
+  have hbase : LeaBindingSatisfied model (rebuildBindingsFromUnifier candidate result) := by
+    apply (leaBindingSatisfied_append_iff model
+      (leaEqualitySkeleton candidate) (Metta.Bindings.ofSubst result)).mpr
+    constructor
+    · constructor
+      · intro key value hmem
+        exact (val_not_mem_leaEqualitySkeleton hmem).elim
+      · intro left right hmem
+        exact hequalities left right (eq_mem_leaEqualitySkeleton_iff.mp hmem)
+    · exact (leaOfSubst_solution_iff model result).mpr hresult
+  have hmodel := (rebuildFromReconciliation_solution_iff model
+    hsourceNoFloat hextraNoFloat hrun).mpr hbase
+  apply leaClassChoiceBasis_of_model_free_classes
+    (rebuildFromReconciliation_assignmentsNonVariable candidate source extra result) hmodel
+  apply eliminationTraceValuation_free_class
+  intro key value hmem hempty
+  apply reconciliation_trace_free_entries hrun key value ?_ hempty
+  rw [wholeBindingReconciliation_result_eq_eliminationTrace_reverse hrun]
+  simpa only [List.mem_reverse] using hmem
+
+/-- Class-value membership records the selected lookup at a connected key. -/
+theorem leaClassValue_mem_iff
+    {bindings : Metta.Bindings} {key : String} {value : Metta.Atom} :
+    value ∈ Metta.Bindings.classValues bindings key ↔
+      ∃ member, member ∈ Metta.Bindings.eqClass bindings key ∧
+        Metta.Bindings.lookupVal bindings member = some value := by
+  simp only [Metta.Bindings.classValues, List.mem_filterMap]
+  constructor
+  · rintro ⟨member, hclass, hlookup⟩
+    exact ⟨member, mem_leaEqClassOrdered_iff.mp hclass, hlookup⟩
+  · rintro ⟨member, hclass, hlookup⟩
+    exact ⟨member, mem_leaEqClassOrdered_iff.mpr hclass, hlookup⟩
+
+/-- The variables of a selected class value are part of the whole stored support. -/
+theorem leaClassValue_vars_subset
+    {bindings : Metta.Bindings} {key : String} {value : Metta.Atom}
+    (member : value ∈ Metta.Bindings.classValues bindings key) :
+    value.vars ⊆ bindings.vars := by
+  intro name mentioned
+  obtain ⟨owner, _, lookup⟩ := leaClassValue_mem_iff.mp member
+  exact bindingRelation_vars_subset (lookupVal_some_val_mem lookup)
+    (by simp [Metta.Bindings.vars,mentioned])
+
+/-! ## Disjoint binding components -/
+
+private theorem leaEdge_endpoint_vars {bindings : Metta.Bindings} {left right : String}
+    (edge : (left,right) ∈ leaEqualityEdges bindings) :
+    left ∈ bindings.vars ∧ right ∈ bindings.vars := by
+  have present := mem_leaEqualityEdges_iff.mp edge
+  constructor <;> apply bindingRelation_vars_subset present <;> simp [Metta.Bindings.vars]
+
+/-- Equality walks originating outside the frame cannot enter that frame
+when the complete supports of the two components are disjoint. -/
+theorem leaEqualityReachable_append_frame
+    {front frame : Metta.Bindings} (disjoint : List.Disjoint front.vars frame.vars)
+    {start finish : String} (outside : start ∉ frame.vars)
+    (reachable : (EqualityClosure.edgeGraph (leaEqualityEdges (front ++ frame))).Reachable start finish) :
+    (EqualityClosure.edgeGraph (leaEqualityEdges front)).Reachable start finish ∧
+      finish ∉ frame.vars := by
+  obtain ⟨walk⟩ := reachable
+  induction walk with
+  | nil => exact ⟨.rfl,outside⟩
+  | @cons first next last edge tail ih =>
+    have localEdge : (EqualityClosure.edgeGraph (leaEqualityEdges front)).Adj first next := by
+      rw [EqualityClosure.edgeGraph_adj_iff] at edge ⊢
+      refine ⟨edge.1,?_⟩
+      rw [leaEqualityEdges_append] at edge
+      rcases edge.2 with forward | backward
+      · rcases List.mem_append.mp forward with localEdge | frameEdge
+        · exact Or.inl localEdge
+        · exact (outside (leaEdge_endpoint_vars frameEdge).1).elim
+      · rcases List.mem_append.mp backward with localEdge | frameEdge
+        · exact Or.inr localEdge
+        · exact (outside (leaEdge_endpoint_vars frameEdge).2).elim
+    have nextIn : next ∈ front.vars := by
+      rcases (EqualityClosure.edgeGraph_adj_iff.mp localEdge).2 with forward | backward
+      · exact (leaEdge_endpoint_vars forward).2
+      · exact (leaEdge_endpoint_vars backward).1
+    obtain ⟨restReachable,lastOutside⟩ := ih (List.disjoint_left.mp disjoint nextIn)
+    exact ⟨localEdge.reachable.trans restReachable,lastOutside⟩
+
+theorem mem_leaEqClass_append_frame_iff
+    {front frame : Metta.Bindings} (disjoint : List.Disjoint front.vars frame.vars)
+    {start finish : String} (outside : start ∉ frame.vars) :
+    finish ∈ Metta.Bindings.eqClass (front ++ frame) start ↔
+      finish ∈ Metta.Bindings.eqClass front start := by
+  rw [mem_leaEqClass_iff_reachable,mem_leaEqClass_iff_reachable]
+  constructor
+  · intro reachable
+    exact (leaEqualityReachable_append_frame disjoint outside reachable).1
+  · intro reachable
+    apply reachable.mono
+    intro x y edge
+    rw [EqualityClosure.edgeGraph_adj_iff] at edge ⊢
+    refine ⟨edge.1,?_⟩
+    rw [leaEqualityEdges_append]
+    rcases edge.2 with forward | backward
+    · exact Or.inl (List.mem_append_left _ forward)
+    · exact Or.inr (List.mem_append_left _ backward)
+
+private theorem filter_insertLast (predicate : String → Bool) (names : List String) (name : String) :
+    (if names.contains name then names else names ++ [name]).filter predicate =
+      if predicate name then
+        if (names.filter predicate).contains name then names.filter predicate
+        else names.filter predicate ++ [name]
+      else names.filter predicate := by
+  cases selected : predicate name <;>
+    by_cases present : name ∈ names <;> simp [selected,present,List.filter_append]
+
+theorem leaEqVarsInOrder_cons_val (front : Metta.Bindings) (name : String) (value : Metta.Atom) :
+    Metta.Bindings.eqVarsInOrder (.val name value::front)=Metta.Bindings.eqVarsInOrder front := by
+  simp [Metta.Bindings.eqVarsInOrder,List.foldl_append]
+
+theorem leaEqVarsInOrder_cons_eq (front : Metta.Bindings) (left right : String) :
+    Metta.Bindings.eqVarsInOrder (.eq left right::front) =
+      (let names := Metta.Bindings.eqVarsInOrder front
+       let names := if names.contains right then names else names ++ [right]
+       if names.contains left then names else names ++ [left]) := by
+  simp [Metta.Bindings.eqVarsInOrder,List.foldl_append]
+
+/-- Filtering the representative chronology erases every entirely foreign
+frame entry, even though that frame precedes the local edges chronologically. -/
+theorem filter_leaEqVarsInOrder_append_frame
+    (front frame : Metta.Bindings) (predicate : String → Bool)
+    (frameFalse : ∀ name ∈ frame.vars,predicate name=false) :
+    (Metta.Bindings.eqVarsInOrder (front++frame)).filter predicate =
+      (Metta.Bindings.eqVarsInOrder front).filter predicate := by
+  induction front with
+  | nil =>
+    apply List.filter_eq_nil_iff.mpr
+    intro name present
+    have endpoint := mem_leaEqVarsInOrder_iff.mp present
+    simp only [EqualityClosure.edgeNodes,List.mem_flatMap] at endpoint
+    obtain ⟨⟨left,right⟩,edge,inEdge⟩ := endpoint
+    have endpoints := leaEdge_endpoint_vars edge
+    have named : name=left ∨ name=right := by simpa using inEdge
+    rcases named with rfl | rfl
+    · exact Bool.eq_false_iff.mp (frameFalse _ endpoints.1)
+    · exact Bool.eq_false_iff.mp (frameFalse _ endpoints.2)
+  | cons relation rest ih =>
+    cases relation with
+    | val name value => simpa only [List.cons_append,leaEqVarsInOrder_cons_val] using ih
+    | eq left right =>
+      simp only [List.cons_append,leaEqVarsInOrder_cons_eq]
+      rw [filter_insertLast,filter_insertLast,filter_insertLast,filter_insertLast,ih]
+
+/-- Both equality membership and its stable representative order stay local. -/
+theorem leaEqClassOrdered_append_frame
+    {front frame : Metta.Bindings} (disjoint : List.Disjoint front.vars frame.vars)
+    {key : String} (outside : key ∉ frame.vars) :
+    Metta.Bindings.eqClassOrdered (front++frame) key = Metta.Bindings.eqClassOrdered front key := by
+  have predicates : (fun name => (Metta.Bindings.eqClass (front++frame) key).contains name) =
+      (fun name => (Metta.Bindings.eqClass front key).contains name) := by
+    funext name
+    apply Bool.eq_iff_iff.mpr
+    simp only [List.contains_iff_mem]
+    exact mem_leaEqClass_append_frame_iff disjoint outside
+  have frameFalse : ∀ name ∈ frame.vars,(Metta.Bindings.eqClass front key).contains name=false := by
+    intro name present
+    apply Bool.eq_false_iff.mpr
+    intro member
+    have inLocal : name ∈ Metta.Bindings.eqClass front key := List.contains_iff_mem.mp member
+    have inFull := (mem_leaEqClass_append_frame_iff disjoint outside).mpr inLocal
+    exact (leaEqualityReachable_append_frame disjoint outside
+      (mem_leaEqClass_iff_reachable.mp inFull)).2 present
+  unfold Metta.Bindings.eqClassOrdered
+  rw [predicates,filter_leaEqVarsInOrder_append_frame front frame _ frameFalse]
+
+/-- The frame supplies no value for a local or otherwise fresh name. -/
+theorem leaLookupVal_append_frame (front frame : Metta.Bindings) {key : String}
+    (outside : key ∉ frame.vars) :
+    Metta.Bindings.lookupVal (front++frame) key = Metta.Bindings.lookupVal front key := by
+  have noLookup := lookupVal_none_of_not_mem_keys (fun member => outside (bindingValueKey_mem_vars member))
+  rw [lookupVal_append,noLookup]
+  cases Metta.Bindings.lookupVal front key <;> rfl
+
+/-- Every selected value of an isolated local class is exactly the original
+value, retaining the native class order and first-value policy. -/
+theorem leaClassValues_append_frame
+    {front frame : Metta.Bindings} (disjoint : List.Disjoint front.vars frame.vars)
+    {key : String} (outside : key ∉ frame.vars) :
+    Metta.Bindings.classValues (front++frame) key = Metta.Bindings.classValues front key := by
+  unfold Metta.Bindings.classValues
+  rw [leaEqClassOrdered_append_frame disjoint outside]
+  apply List.filterMap_congr
+  intro name member
+  apply leaLookupVal_append_frame
+  have inFull := (mem_leaEqClass_append_frame_iff disjoint outside).mpr
+    (mem_leaEqClassOrdered_iff.mp member)
+  exact (leaEqualityReachable_append_frame disjoint outside
+    (mem_leaEqClass_iff_reachable.mp inFull)).2
+
+theorem leaEqRepresentative_append_frame
+    {front frame : Metta.Bindings} (disjoint : List.Disjoint front.vars frame.vars)
+    {key : String} (outside : key ∉ frame.vars) :
+    Metta.Bindings.eqRepresentative (front ++ frame) key =
+      Metta.Bindings.eqRepresentative front key := by
+  unfold Metta.Bindings.eqRepresentative
+  rw [leaEqClassOrdered_append_frame disjoint outside]
+
+private theorem leaEqualityGraph_append_comm (front frame : Metta.Bindings) :
+    EqualityClosure.edgeGraph (leaEqualityEdges (front ++ frame)) =
+      EqualityClosure.edgeGraph (leaEqualityEdges (frame ++ front)) := by
+  ext x y
+  simp only [EqualityClosure.edgeGraph_adj_iff,leaEqualityEdges_append,List.mem_append]
+  tauto
+
+theorem leaEqualityReachable_append_left_frame
+    {front frame : Metta.Bindings} (disjoint : List.Disjoint front.vars frame.vars)
+    {start finish : String} (outside : start ∉ front.vars)
+    (reachable : (EqualityClosure.edgeGraph (leaEqualityEdges (front ++ frame))).Reachable start finish) :
+    (EqualityClosure.edgeGraph (leaEqualityEdges frame)).Reachable start finish ∧
+      finish ∉ front.vars := by
+  rw [leaEqualityGraph_append_comm] at reachable
+  exact leaEqualityReachable_append_frame disjoint.symm outside reachable
+
+theorem mem_leaEqClass_append_left_frame_iff
+    {front frame : Metta.Bindings} (disjoint : List.Disjoint front.vars frame.vars)
+    {start finish : String} (outside : start ∉ front.vars) :
+    finish ∈ Metta.Bindings.eqClass (front ++ frame) start ↔
+      finish ∈ Metta.Bindings.eqClass frame start := by
+  rw [mem_leaEqClass_iff_reachable,leaEqualityGraph_append_comm,
+    ← mem_leaEqClass_iff_reachable]
+  exact mem_leaEqClass_append_frame_iff disjoint.symm outside
+
+/-- Foreign prefix entries disappear from representative chronology when its
+predicate selects only the other binding component. -/
+theorem filter_leaEqVarsInOrder_append_left_frame
+    (front frame : Metta.Bindings) (predicate : String → Bool)
+    (frontFalse : ∀ name ∈ front.vars,predicate name=false) :
+    (Metta.Bindings.eqVarsInOrder (front++frame)).filter predicate =
+      (Metta.Bindings.eqVarsInOrder frame).filter predicate := by
+  induction front with
+  | nil => rfl
+  | cons relation rest ih =>
+    have restFalse : ∀ name ∈ Metta.Bindings.vars rest,predicate name=false := by
+      intro name present
+      apply frontFalse name
+      simp only [Metta.Bindings.vars,List.flatMap_cons,List.mem_eraseDups,List.mem_append] at present ⊢
+      exact Or.inr present
+    cases relation with
+    | val name value =>
+      simpa only [List.cons_append,leaEqVarsInOrder_cons_val] using ih restFalse
+    | eq left right =>
+      have leftFalse := frontFalse left (by simp [Metta.Bindings.vars])
+      have rightFalse := frontFalse right (by simp [Metta.Bindings.vars])
+      simp only [List.cons_append,leaEqVarsInOrder_cons_eq]
+      rw [filter_insertLast,leftFalse]
+      simp only [Bool.false_eq_true,↓reduceIte]
+      rw [filter_insertLast,rightFalse]
+      simp only [Bool.false_eq_true,↓reduceIte]
+      exact ih restFalse
+
+theorem leaEqClassOrdered_append_left_frame
+    {front frame : Metta.Bindings} (disjoint : List.Disjoint front.vars frame.vars)
+    {key : String} (outside : key ∉ front.vars) :
+    Metta.Bindings.eqClassOrdered (front++frame) key = Metta.Bindings.eqClassOrdered frame key := by
+  have predicates : (fun name => (Metta.Bindings.eqClass (front++frame) key).contains name) =
+      (fun name => (Metta.Bindings.eqClass frame key).contains name) := by
+    funext name
+    apply Bool.eq_iff_iff.mpr
+    simp only [List.contains_iff_mem]
+    exact mem_leaEqClass_append_left_frame_iff disjoint outside
+  have frontFalse : ∀ name ∈ front.vars,(Metta.Bindings.eqClass frame key).contains name=false := by
+    intro name present
+    apply Bool.eq_false_iff.mpr
+    intro member
+    have inLocal : name ∈ Metta.Bindings.eqClass frame key := List.contains_iff_mem.mp member
+    have inFull := (mem_leaEqClass_append_left_frame_iff disjoint outside).mpr inLocal
+    exact (leaEqualityReachable_append_left_frame disjoint outside
+      (mem_leaEqClass_iff_reachable.mp inFull)).2 present
+  unfold Metta.Bindings.eqClassOrdered
+  rw [predicates,filter_leaEqVarsInOrder_append_left_frame front frame _ frontFalse]
+
+theorem leaLookupVal_append_left_frame (front frame : Metta.Bindings) {key : String}
+    (outside : key ∉ front.vars) :
+    Metta.Bindings.lookupVal (front++frame) key = Metta.Bindings.lookupVal frame key := by
+  have noLookup := lookupVal_none_of_not_mem_keys (fun member => outside (bindingValueKey_mem_vars member))
+  rw [lookupVal_append,noLookup]
+  rfl
+
+theorem leaClassValues_append_left_frame
+    {front frame : Metta.Bindings} (disjoint : List.Disjoint front.vars frame.vars)
+    {key : String} (outside : key ∉ front.vars) :
+    Metta.Bindings.classValues (front++frame) key = Metta.Bindings.classValues frame key := by
+  unfold Metta.Bindings.classValues
+  rw [leaEqClassOrdered_append_left_frame disjoint outside]
+  apply List.filterMap_congr
+  intro name member
+  apply leaLookupVal_append_left_frame
+  have inFull := (mem_leaEqClass_append_left_frame_iff disjoint outside).mpr
+    (mem_leaEqClassOrdered_iff.mp member)
+  exact (leaEqualityReachable_append_left_frame disjoint outside
+    (mem_leaEqClass_iff_reachable.mp inFull)).2
+
+/-- Recursive resolution only inspects the selected ordered classes and values
+reachable from its query. Agreement on a closed variable region therefore
+preserves successes, visited-set cycle refusals, and explicit cutoffs. -/
+theorem leaResolveAtomAux_congr_on_region
+    (left right : Metta.Bindings) (region : String → Prop)
+    (classesAgree : ∀ key,region key →
+      Metta.Bindings.eqClassOrdered left key=Metta.Bindings.eqClassOrdered right key)
+    (valuesAgree : ∀ key,region key →
+      Metta.Bindings.classValues left key=Metta.Bindings.classValues right key)
+    (valueClosed : ∀ key,region key → ∀ value ∈ Metta.Bindings.classValues right key,
+      ∀ name ∈ value.vars,region name)
+    (fuel : Nat) (visited : List String) (atom : Metta.Atom)
+    (inside : ∀ key ∈ atom.vars,region key) :
+    Metta.Bindings.resolveAtomAux left fuel visited atom =
+      Metta.Bindings.resolveAtomAux right fuel visited atom := by
+  induction fuel generalizing visited atom with
+  | zero => rfl
+  | succ fuel ih =>
+    cases atom with
+    | sym symbol | gnd ground => rfl
+    | var key =>
+      have keyInside := inside key (by simp [Metta.Atom.vars])
+      have representatives : Metta.Bindings.eqRepresentative left key =
+          Metta.Bindings.eqRepresentative right key := by
+        unfold Metta.Bindings.eqRepresentative
+        rw [classesAgree key keyInside]
+      simp only [Metta.Bindings.resolveAtomAux,classesAgree key keyInside,
+        valuesAgree key keyInside,representatives]
+      split
+      · rfl
+      · cases values : Metta.Bindings.classValues right key with
+        | nil => rfl
+        | cons value rest =>
+          have valueInside := valueClosed key keyInside value
+            (show value ∈ Metta.Bindings.classValues right key by rw [values]; simp)
+          cases value with
+          | var other =>
+            simp only
+            split
+            · rfl
+            · exact ih _ _ valueInside
+          | sym symbol | gnd ground | expr children => exact ih _ _ valueInside
+    | expr children =>
+      have equalMap : children.mapM (Metta.Bindings.resolveAtomAux left fuel visited) =
+          children.mapM (Metta.Bindings.resolveAtomAux right fuel visited) := by
+        induction children with
+        | nil => rfl
+        | cons child rest restIH =>
+          simp only [List.mapM_cons]
+          rw [ih _ child (fun key present => inside key (by
+            simp only [Metta.Atom.vars,List.map_cons,List.flatten_cons,List.mem_append]
+            exact Or.inl present))]
+          rw [restIH (fun key present => inside key (by
+            simp only [Metta.Atom.vars,List.map_cons,List.flatten_cons,List.mem_append] at present ⊢
+            exact Or.inr present))]
+      simp only [Metta.Bindings.resolveAtomAux,equalMap]
+
+/-- Appending a separate binding component cannot change local resolution,
+including its cycle refusals and explicit fuel cutoff. -/
+theorem leaResolveAtomAux_append_frame
+    {front frame : Metta.Bindings} (disjoint : List.Disjoint front.vars frame.vars)
+    (fuel : Nat) (visited : List String) (atom : Metta.Atom)
+    (outside : ∀ key ∈ atom.vars, key ∉ frame.vars) :
+    Metta.Bindings.resolveAtomAux (front ++ frame) fuel visited atom =
+      Metta.Bindings.resolveAtomAux front fuel visited atom := by
+  apply leaResolveAtomAux_congr_on_region (front++frame) front (fun key => key ∉ frame.vars)
+    (fun _ => leaEqClassOrdered_append_frame disjoint)
+    (fun _ => leaClassValues_append_frame disjoint)
+    ?_ fuel visited atom outside
+  intro key _ value member name mentioned inFrame
+  exact List.disjoint_left.mp disjoint (leaClassValue_vars_subset member mentioned) inFrame
+
+/-- An isolated prefix cannot change resolution inside the suffix. -/
+theorem leaResolveAtomAux_append_left_frame
+    {front frame : Metta.Bindings} (disjoint : List.Disjoint front.vars frame.vars)
+    (fuel : Nat) (visited : List String) (atom : Metta.Atom)
+    (outside : ∀ key ∈ atom.vars,key ∉ front.vars) :
+    Metta.Bindings.resolveAtomAux (front++frame) fuel visited atom =
+      Metta.Bindings.resolveAtomAux frame fuel visited atom := by
+  apply leaResolveAtomAux_congr_on_region (front++frame) frame (fun key => key ∉ front.vars)
+    (fun _ => leaEqClassOrdered_append_left_frame disjoint)
+    (fun _ => leaClassValues_append_left_frame disjoint)
+    ?_ fuel visited atom outside
+  intro key _ value member name mentioned inFront
+  exact List.disjoint_left.mp disjoint inFront (leaClassValue_vars_subset member mentioned)
+
+/-- Two fresh non-variable values followed by a separate valueless equality
+are inserted without reconciling or normalizing the unrelated caller. The
+native caller-cycle refusal remains a separate boundary. -/
+theorem merge_fresh_two_values_one_equality
+    (caller : Metta.Bindings) (templateKey payloadKey patternKey binder : String)
+    (template payload : Metta.Atom)
+    (disjoint : List.Disjoint
+      (Metta.Bindings.vars [.val templateKey template, .val payloadKey payload, .eq patternKey binder])
+      caller.vars)
+    (templateNonvar : ∀ key, template ≠ .var key)
+    (payloadNonvar : ∀ key, payload ≠ .var key)
+    (keys : payloadKey ≠ templateKey)
+    (patternBinder : patternKey ≠ binder)
+    (patternPayload : patternKey ≠ payloadKey)
+    (patternTemplate : patternKey ≠ templateKey)
+    (binderPayload : binder ≠ payloadKey)
+    (binderTemplate : binder ≠ templateKey) :
+    Metta.Bindings.merge caller
+        [.val templateKey template, .val payloadKey payload, .eq patternKey binder] =
+      [[.eq patternKey binder, .val payloadKey payload, .val templateKey template] ++ caller] := by
+  let matched : Metta.Bindings :=
+    [.val templateKey template, .val payloadKey payload, .eq patternKey binder]
+  have pieceSeparated (piece : Metta.Bindings) (included : piece ⊆ matched) :
+      List.Disjoint piece.vars caller.vars := by
+    apply List.disjoint_left.mpr
+    intro name present
+    apply List.disjoint_left.mp disjoint
+    simp only [Metta.Bindings.vars, List.mem_eraseDups, List.mem_flatMap] at present ⊢
+    obtain ⟨relation, inPiece, mentioned⟩ := present
+    exact ⟨relation,included inPiece,mentioned⟩
+  have templateFresh : templateKey ∉ caller.vars :=
+    List.disjoint_left.mp disjoint
+      (bindingRelation_vars_subset (by simp [matched] : .val templateKey template ∈ matched)
+        (by simp [Metta.Bindings.vars]))
+  have payloadFresh : payloadKey ∉ caller.vars :=
+    List.disjoint_left.mp disjoint
+      (bindingRelation_vars_subset (by simp [matched] : .val payloadKey payload ∈ matched)
+        (by simp [Metta.Bindings.vars]))
+  have patternFresh : patternKey ∉ caller.vars :=
+    List.disjoint_left.mp disjoint
+      (bindingRelation_vars_subset (by simp [matched] : .eq patternKey binder ∈ matched)
+        (by simp [Metta.Bindings.vars]))
+  have templateStep : Metta.Bindings.merge caller [.val templateKey template] =
+      [[.val templateKey template] ++ caller] :=
+    merge_singleton_val_eq_of_fresh_class (Bindings.outside_class templateFresh).2
+      templateNonvar (fun member => templateFresh (bindingValueKey_mem_vars member))
+  have payloadClass : Metta.Bindings.classValues (.val templateKey template :: caller) payloadKey = [] := by
+    change Metta.Bindings.classValues ([.val templateKey template] ++ caller) payloadKey = []
+    rw [leaClassValues_append_frame (pieceSeparated _ (by simp [matched])) payloadFresh]
+    exact (ValueBindings.classValues_lookupVal (.val .nil) payloadKey).1
+      (by simp [Metta.Bindings.lookupVal,keys])
+  have payloadStep : Metta.Bindings.merge (.val templateKey template :: caller)
+      [.val payloadKey payload] = [[.val payloadKey payload, .val templateKey template] ++ caller] := by
+    apply merge_singleton_val_eq_of_fresh_class payloadClass payloadNonvar
+    simp only [bindingValueKeys, List.mem_cons, not_or]
+    exact ⟨keys, fun member => payloadFresh (bindingValueKey_mem_vars member)⟩
+  have equalityClass : Metta.Bindings.classValues
+      (.eq patternKey binder :: .val payloadKey payload :: .val templateKey template :: caller)
+      patternKey = [] := by
+    change Metta.Bindings.classValues
+      ([.eq patternKey binder, .val payloadKey payload, .val templateKey template] ++ caller)
+      patternKey = []
+    rw [leaClassValues_append_frame (pieceSeparated _ (by
+      intro relation present
+      simpa [matched,or_comm,or_left_comm,or_assoc] using present)) patternFresh]
+    exact Bindings.classValues_one_eq_two_vals_left_eq_nil
+      patternKey binder payloadKey templateKey payload template patternBinder
+      patternPayload patternTemplate binderPayload binderTemplate
+  have equalityStep : Metta.Bindings.merge
+      (.val payloadKey payload :: .val templateKey template :: caller)
+      [.eq patternKey binder] =
+      [[.eq patternKey binder, .val payloadKey payload, .val templateKey template] ++ caller] :=
+    merge_singleton_eq_eq_of_valueless_class patternBinder equalityClass
+  change Metta.Bindings.mergeOne
+    (Metta.Bindings.mergeOne
+      (Metta.Bindings.mergeOne [caller] (.val templateKey template)) (.val payloadKey payload))
+    (.eq patternKey binder) = _
+  change Metta.Bindings.mergeOne [caller] (.val templateKey template) = _ at templateStep
+  rw [templateStep]
+  simp only [List.singleton_append]
+  change Metta.Bindings.mergeOne [(.val templateKey template :: caller)] (.val payloadKey payload) = _ at payloadStep
+  rw [payloadStep]
+  exact equalityStep
+
+/-! ## Variable support of recursive resolution -/
+
+theorem eqRepresentative_ne_of_outside
+    {bindings : Metta.Bindings} {fresh key : String}
+    (outside : fresh ∉ bindings.vars) (different : key ≠ fresh) :
+    Metta.Bindings.eqRepresentative bindings key ≠ fresh := by
+  have classAvoids : ∀ name ∈ Metta.Bindings.eqClassOrdered bindings key, name ≠ fresh := by
+    intro name present equal
+    subst name
+    have symmetric := (mem_leaEqClass_iff_reachable.mp
+      (mem_leaEqClassOrdered_iff.mp present)).symm
+    have back : key ∈ Metta.Bindings.eqClassOrdered bindings fresh :=
+      mem_leaEqClassOrdered_iff.mpr (mem_leaEqClass_iff_reachable.mpr symmetric)
+    rw [(Bindings.outside_class outside).1] at back
+    exact different (List.mem_singleton.mp back)
+  unfold Metta.Bindings.eqRepresentative
+  cases ordered : Metta.Bindings.eqClassOrdered bindings key with
+  | nil => exact different
+  | cons first rest =>
+      exact classAvoids first (by rw [ordered]; simp)
+
+theorem classValue_preserves_outside
+    {bindings : Metta.Bindings} {fresh key : String} {value : Metta.Atom}
+    (outside : fresh ∉ bindings.vars)
+    (member : value ∈ Metta.Bindings.classValues bindings key) :
+    fresh ∉ value.vars := by
+  intro mentioned
+  exact outside (leaClassValue_vars_subset member mentioned)
+
+theorem resolveAtomAux_preserves_outside
+    {bindings : Metta.Bindings} {fresh : String}
+    (outside : fresh ∉ bindings.vars) (fuel : Nat)
+    (visited : List String) (atom result : Metta.Atom)
+    (atomAvoids : fresh ∉ atom.vars)
+    (resolved : Metta.Bindings.resolveAtomAux bindings fuel visited atom = some result) :
+    fresh ∉ result.vars := by
+  induction fuel generalizing visited atom result with
+  | zero => simp [Metta.Bindings.resolveAtomAux] at resolved
+  | succ fuel ih =>
+    cases atom with
+    | sym symbol | gnd ground =>
+        simp only [Metta.Bindings.resolveAtomAux, Option.some.injEq] at resolved
+        subst result
+        exact atomAvoids
+    | var key =>
+        have different : key ≠ fresh := by simpa [Metta.Atom.vars, eq_comm] using atomAvoids
+        have representativeAvoids : fresh ∉ (Metta.Atom.var
+            (Metta.Bindings.eqRepresentative bindings key)).vars := by
+          simpa [Metta.Atom.vars, eq_comm] using eqRepresentative_ne_of_outside outside different
+        cases checked : (Metta.Bindings.eqClassOrdered bindings key).any visited.contains with
+        | true => simp [Metta.Bindings.resolveAtomAux, checked] at resolved
+        | false =>
+          cases values : Metta.Bindings.classValues bindings key with
+          | nil =>
+              simp only [Metta.Bindings.resolveAtomAux, checked, Bool.false_eq_true,
+                ↓reduceIte, values, Option.some.injEq] at resolved
+              subst result
+              exact representativeAvoids
+          | cons value rest =>
+              have valueAvoids := classValue_preserves_outside outside
+                (by rw [values]; exact List.mem_cons_self)
+              cases value with
+              | sym symbol | gnd ground | expr children =>
+                  apply ih _ _ _ valueAvoids
+                  simpa only [Metta.Bindings.resolveAtomAux, checked,
+                    Bool.false_eq_true, ↓reduceIte, values] using resolved
+              | var other =>
+                  by_cases internal : (Metta.Bindings.eqClassOrdered bindings key).contains other = true
+                  · by_cases singleton : (Metta.Bindings.eqClassOrdered bindings key).length == 1
+                    · simp only [Metta.Bindings.resolveAtomAux, checked, Bool.false_eq_true,
+                        ↓reduceIte, values, internal, singleton] at resolved
+                      cases resolved
+                    · simp only [Metta.Bindings.resolveAtomAux, checked, Bool.false_eq_true,
+                        ↓reduceIte, values, internal, singleton, Option.some.injEq] at resolved
+                      subst result
+                      exact representativeAvoids
+                  · apply ih _ _ _ valueAvoids
+                    simpa only [Metta.Bindings.resolveAtomAux, checked,
+                      Bool.false_eq_true, ↓reduceIte, values, internal] using resolved
+    | expr children =>
+        have listAvoids : ∀ (source target : List Metta.Atom),
+            (∀ child ∈ source, fresh ∉ child.vars) →
+            source.mapM (Metta.Bindings.resolveAtomAux bindings fuel visited) = some target →
+            ∀ child ∈ target, fresh ∉ child.vars := by
+          intro source
+          induction source with
+          | nil =>
+              intro target _ mapped
+              simp at mapped
+              subst target
+              simp
+          | cons head tail tailIH =>
+              intro target avoids mapped
+              cases headResult : Metta.Bindings.resolveAtomAux bindings fuel visited head with
+              | none => simp [List.mapM_cons, headResult] at mapped
+              | some headValue =>
+                cases tailResult : tail.mapM (Metta.Bindings.resolveAtomAux bindings fuel visited) with
+                | none => simp [List.mapM_cons, headResult, tailResult] at mapped
+                | some tailValues =>
+                    simp [List.mapM_cons, headResult, tailResult] at mapped
+                    subst target
+                    intro child present
+                    rcases List.mem_cons.mp present with equal | later
+                    · rw [equal]
+                      exact ih visited head headValue (avoids head (by simp)) headResult
+                    · exact tailIH tailValues (fun item present => avoids item (by simp [present]))
+                        tailResult child later
+        cases mapped : children.mapM (Metta.Bindings.resolveAtomAux bindings fuel visited) with
+        | none => simp [Metta.Bindings.resolveAtomAux, mapped] at resolved
+        | some outputs =>
+          simp only [Metta.Bindings.resolveAtomAux, mapped, Option.some.injEq] at resolved
+          subst result
+          intro member
+          simp only [Metta.Atom.vars, List.mem_flatten, List.mem_map] at member
+          obtain ⟨_, ⟨child, present, rfl⟩, mentioned⟩ := member
+          exact listAvoids children outputs (by
+            intro item present mentioned
+            exact atomAvoids (by
+              simp only [Metta.Atom.vars, List.mem_flatten, List.mem_map]
+              exact ⟨item.vars, ⟨item, present, rfl⟩, mentioned⟩)) mapped child present mentioned
+
+
+theorem resolve_preserves_outside
+    {bindings : Metta.Bindings} {fresh key : String} {result : Metta.Atom}
+    (outside : fresh ∉ bindings.vars) (different : key ≠ fresh)
+    (resolved : Metta.Bindings.resolve bindings key = some result) :
+    fresh ∉ result.vars := by
+  unfold Metta.Bindings.resolve at resolved
+  dsimp only at resolved
+  split at resolved
+  · cases resolved
+  · exact resolveAtomAux_preserves_outside outside _ [] (.var key) result
+      (by simpa [Metta.Atom.vars, eq_comm] using different) resolved
+
+/-- Resolution through arbitrary stored aliases and open values introduces no
+name absent from both the input atom and the complete binding record. -/
+theorem instantiate_preserves_outside
+    {bindings : Metta.Bindings} {fresh : String}
+    (outside : fresh ∉ bindings.vars) (atom : Metta.Atom)
+    (atomAvoids : fresh ∉ atom.vars) :
+    fresh ∉ (Metta.instantiate bindings atom).vars := by
+  induction atom with
+  | sym symbol | gnd ground =>
+      simp [Metta.instantiate, Metta.Bindings.resolveAtom, Metta.Atom.vars]
+  | var key =>
+      cases resolved : Metta.Bindings.resolve bindings key with
+      | none => simpa only [Metta.instantiate, Metta.Bindings.resolveAtom, resolved,
+          Option.getD_none] using atomAvoids
+      | some result =>
+          simpa only [Metta.instantiate, Metta.Bindings.resolveAtom, resolved,
+            Option.getD_some] using resolve_preserves_outside outside
+              (by simpa [Metta.Atom.vars, eq_comm] using atomAvoids) resolved
+  | expr children ih =>
+      intro mentioned
+      simp only [Metta.instantiate, Metta.Bindings.resolveAtom, Metta.Atom.vars,
+        List.mem_flatten, List.mem_map] at mentioned
+      obtain ⟨_, ⟨child, ⟨original, present, rfl⟩, rfl⟩, member⟩ := mentioned
+      exact ih original present (by
+        intro originalMember
+        apply atomAvoids
+        simp only [Metta.Atom.vars, List.mem_flatten, List.mem_map]
+        exact ⟨original.vars, ⟨original, present, rfl⟩, originalMember⟩) member
+
+
+/-- Connected class queries carry the same values, without fixing list order. -/
+theorem leaClassValue_mem_of_class
+    {bindings : Metta.Bindings} {key other : String} {value : Metta.Atom}
+    (hclass : other ∈ Metta.Bindings.eqClass bindings key)
+    (hvalue : value ∈ Metta.Bindings.classValues bindings other) :
+    value ∈ Metta.Bindings.classValues bindings key := by
+  obtain ⟨member, hmember, hlookup⟩ := leaClassValue_mem_iff.mp hvalue
+  apply leaClassValue_mem_iff.mpr
+  refine ⟨member, ?_, hlookup⟩
+  rw [mem_leaEqClass_iff_reachable] at hclass hmember ⊢
+  exact hclass.trans hmember
+
+/-- A new value relation does not alter equality connectivity. -/
+theorem leaClass_cons_val_iff (bindings : Metta.Bindings)
+    (key : String) (value : Metta.Atom) (start finish : String) :
+    finish ∈ Metta.Bindings.eqClass (.val key value :: bindings) start ↔
+      finish ∈ Metta.Bindings.eqClass bindings start := by
+  rw [mem_leaEqClass_iff_reachable, mem_leaEqClass_iff_reachable]
+  rfl
+
+/-- At a free class, adding a direct value preserves every old class-value
+occurrence and adds exactly the new value to that class. -/
+theorem leaClassValue_cons_fresh_iff
+    {bindings : Metta.Bindings} {key : String} {value : Metta.Atom}
+    (hfree : Metta.Bindings.classValues bindings key = [])
+    (start : String) (stored : Metta.Atom) :
+    stored ∈ Metta.Bindings.classValues (.val key value :: bindings) start ↔
+      stored ∈ Metta.Bindings.classValues bindings start ∨
+        (stored = value ∧ key ∈ Metta.Bindings.eqClass bindings start) := by
+  rw [leaClassValue_mem_iff]
+  constructor
+  · rintro ⟨member, hclass, hlookup⟩
+    have holdClass := (leaClass_cons_val_iff bindings key value start member).mp hclass
+    by_cases hkey : member = key
+    · subst member
+      simp only [Metta.Bindings.lookupVal, beq_self_eq_true, if_true,
+        Option.some.injEq] at hlookup
+      exact Or.inr ⟨hlookup.symm, holdClass⟩
+    · left
+      apply leaClassValue_mem_iff.mpr
+      exact ⟨member, holdClass, by simpa [Metta.Bindings.lookupVal, hkey] using hlookup⟩
+  · rintro (hold | ⟨rfl, hclass⟩)
+    · obtain ⟨member, hmember, hlookup⟩ := leaClassValue_mem_iff.mp hold
+      have hne : member ≠ key := by
+        intro heq
+        subst member
+        rw [leaLookupVal_eq_none_of_classValues_eq_nil hfree] at hlookup
+        cases hlookup
+      exact ⟨member, (leaClass_cons_val_iff bindings key value start member).mpr hmember,
+        by simpa [Metta.Bindings.lookupVal, hne] using hlookup⟩
+    · exact ⟨key, (leaClass_cons_val_iff bindings key stored start key).mpr hclass,
+        by simp [Metta.Bindings.lookupVal]⟩
+
+/-- Fresh value insertion preserves the complete chosen-equation basis even
+when the inserted value later creates a cycle. Final admission checks cycles. -/
+theorem leaClassChoiceBasis_cons_fresh
+    {bindings : Metta.Bindings} {key : String} {value : Metta.Atom}
+    (hbasis : LeaClassChoiceBasis bindings)
+    (hfree : Metta.Bindings.classValues bindings key = []) :
+    LeaClassChoiceBasis (.val key value :: bindings) := by
+  intro valuation hselected
+  have hold : LeaClassChoiceSatisfied valuation bindings := by
+    constructor
+    · intro start finish hclass
+      exact hselected.1 start finish
+        ((leaClass_cons_val_iff bindings key value start finish).mpr hclass)
+    · intro start hnonempty
+      have hnewNonempty : Metta.Bindings.classValues (.val key value :: bindings) start ≠ [] := by
+        intro hempty
+        obtain ⟨stored, hstored⟩ := List.exists_mem_of_ne_nil _ hnonempty
+        have hnew := (leaClassValue_cons_fresh_iff (value := value) hfree start stored).mpr (Or.inl hstored)
+        simp [hempty] at hnew
+      obtain ⟨stored, hstored, hequation⟩ := hselected.2 start hnewNonempty
+      rcases (leaClassValue_cons_fresh_iff (value := value) hfree start stored).mp hstored with hold | ⟨rfl, hclass⟩
+      · exact ⟨stored, hold, hequation⟩
+      · exfalso
+        apply hnonempty
+        apply leaClassValues_nil_of_mem_class (key := key) ?_ hfree
+        rw [mem_leaEqClass_iff_reachable] at hclass ⊢
+        exact hclass.symm
+  have hfull := hbasis valuation hold
+  have hnewValue : valuation key = applyClassSolution valuation value := by
+    have hnewNonempty : Metta.Bindings.classValues (.val key value :: bindings) key ≠ [] := by
+      intro hempty
+      have hnew := (leaClassValue_cons_fresh_iff hfree key value).mpr
+        (Or.inr ⟨rfl, by rw [mem_leaEqClass_iff_reachable]⟩)
+      simp [hempty] at hnew
+    obtain ⟨stored, hstored, hequation⟩ := hselected.2 key hnewNonempty
+    rcases (leaClassValue_cons_fresh_iff hfree key stored).mp hstored with hold | ⟨rfl, _⟩
+    · simp [hfree] at hold
+    · exact hequation
+  constructor
+  · intro name stored hmem
+    simp only [List.mem_cons, Metta.BindingRel.val.injEq] at hmem
+    rcases hmem with ⟨rfl, rfl⟩ | hmem
+    · exact hnewValue
+    · exact hfull.1 name stored hmem
+  · intro left right hmem
+    exact hfull.2 left right (by simpa using hmem)
+
+@[simp] theorem leaLookupVal_addEqRaw (bindings : Metta.Bindings)
+    (left right key : String) :
+    Metta.Bindings.lookupVal (Metta.Bindings.addEqRaw bindings left right) key =
+      Metta.Bindings.lookupVal bindings key := by
+  by_cases heq : left = right <;> simp [Metta.Bindings.addEqRaw, heq, Metta.Bindings.lookupVal]
+
+theorem leaClass_addEqRaw_mono {bindings : Metta.Bindings} (left right : String)
+    {start finish : String} (hclass : finish ∈ Metta.Bindings.eqClass bindings start) :
+    finish ∈ Metta.Bindings.eqClass (Metta.Bindings.addEqRaw bindings left right) start := by
+  apply leaEqClass_mono_of_edge_subset (hclass := hclass)
+  intro edge hedge
+  by_cases heq : left = right <;> simp [Metta.Bindings.addEqRaw, heq, leaEqualityEdges, hedge]
+
+theorem leaClassValue_addEqRaw_mono {bindings : Metta.Bindings} (left right : String)
+    {key : String} {value : Metta.Atom}
+    (hvalue : value ∈ Metta.Bindings.classValues bindings key) :
+    value ∈ Metta.Bindings.classValues (Metta.Bindings.addEqRaw bindings left right) key := by
+  obtain ⟨member, hclass, hlookup⟩ := leaClassValue_mem_iff.mp hvalue
+  exact leaClassValue_mem_iff.mpr ⟨member, leaClass_addEqRaw_mono left right hclass,
+    by simpa using hlookup⟩
+
+/-- A new connection either existed before insertion or enters the newly
+joined component. -/
+theorem leaClass_addEqRaw_old_or_joined
+    {bindings : Metta.Bindings} {left right start finish : String}
+    (hclass : finish ∈ Metta.Bindings.eqClass (Metta.Bindings.addEqRaw bindings left right) start) :
+    finish ∈ Metta.Bindings.eqClass bindings start ∨
+      left ∈ Metta.Bindings.eqClass (Metta.Bindings.addEqRaw bindings left right) start := by
+  by_cases heq : left = right
+  · exact Or.inl (by simpa [Metta.Bindings.addEqRaw, heq] using hclass)
+  rw [mem_leaEqClass_iff_reachable] at hclass ⊢
+  rw [mem_leaEqClass_iff_reachable]
+  obtain ⟨walk⟩ := hclass
+  induction walk with
+  | nil => exact Or.inl .rfl
+  | @cons a b c edge path ih =>
+      have hnewReach := edge.reachable
+      rw [EqualityClosure.edgeGraph_adj_iff] at edge
+      have hedge : (a, b) ∈ leaEqualityEdges bindings ∨ (b, a) ∈ leaEqualityEdges bindings ∨
+          (a = left ∧ b = right) ∨ (a = right ∧ b = left) := by
+        have h := edge.2
+        simp only [Metta.Bindings.addEqRaw, beq_iff_eq, heq, if_false,
+          leaEqualityEdges, List.mem_cons, Prod.mk.injEq] at h
+        rcases h with (⟨rfl, rfl⟩ | hold) | (⟨rfl, rfl⟩ | hold)
+        · exact Or.inr (Or.inr (Or.inl ⟨rfl, rfl⟩))
+        · exact Or.inl hold
+        · exact Or.inr (Or.inr (Or.inr ⟨rfl, rfl⟩))
+        · exact Or.inr (Or.inl hold)
+      rcases hedge with hold | hold | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+      · rcases ih with holdPath | hjoined
+        · exact Or.inl ((SimpleGraph.Adj.reachable
+            ((EqualityClosure.edgeGraph_adj_iff).mpr ⟨edge.1, Or.inl hold⟩)).trans holdPath)
+        · exact Or.inr (hnewReach.trans hjoined)
+      · rcases ih with holdPath | hjoined
+        · exact Or.inl ((SimpleGraph.Adj.reachable
+            ((EqualityClosure.edgeGraph_adj_iff).mpr ⟨edge.1, Or.inr hold⟩)).trans holdPath)
+        · exact Or.inr (hnewReach.trans hjoined)
+      · exact Or.inr .rfl
+      · exact Or.inr hnewReach
+
+/-- A class reconciled without emitting constraints already has equal images
+under every valuation. -/
+theorem unifyValues_empty_images_equal
+    {values : List Metta.Atom}
+    (hnoFloat : ∀ value ∈ values, MettaAtomNoFloat value)
+    (hrun : Metta.Bindings.unifyValues values = some [])
+    (valuation : String → Metta.Atom)
+    {left right : Metta.Atom} (hleft : left ∈ values) (hright : right ∈ values) :
+    applyClassSolution valuation left = applyClassSolution valuation right := by
+  have htheory := (unifyValues_solution_iff valuation hnoFloat hrun).mp
+    (by simp [MettaConstraintsSatisfied])
+  cases values with
+  | nil => simp at hleft
+  | cons first rest =>
+      have hfirst : ∀ value ∈ first :: rest,
+          applyClassSolution valuation first = applyClassSolution valuation value := by
+        intro value hmem
+        rcases List.mem_cons.mp hmem with rfl | hmem
+        · rfl
+        · exact htheory (first, value) (by simp [mettaClassValueEquations, hmem])
+      exact (hfirst left hleft).symm.trans (hfirst right hright)
+
+/-- Inserting an alias without a nontrivial reconciliation preserves the
+chosen-equation basis; all values in the joined class have already agreed. -/
+theorem leaClassChoiceBasis_addEqRaw_of_trivial
+    {bindings : Metta.Bindings} {left right : String}
+    (hbasis : LeaClassChoiceBasis bindings)
+    (hnoFloat : LeaBindingsNoFloat bindings)
+    (hrun : Metta.Bindings.unifyValues
+      (Metta.Bindings.classValues (Metta.Bindings.addEqRaw bindings left right) left) = some []) :
+    LeaClassChoiceBasis (Metta.Bindings.addEqRaw bindings left right) := by
+  let candidate := Metta.Bindings.addEqRaw bindings left right
+  have hcandNoFloat : LeaBindingsNoFloat candidate := leaBindingsNoFloat_addEqRaw hnoFloat
+  intro valuation hselected
+  have hold : LeaClassChoiceSatisfied valuation bindings := by
+    constructor
+    · intro start finish hclass
+      exact hselected.1 start finish (leaClass_addEqRaw_mono left right hclass)
+    · intro key hnonempty
+      obtain ⟨oldValue, holdValue⟩ := List.exists_mem_of_ne_nil _ hnonempty
+      have hnewValue := leaClassValue_addEqRaw_mono left right holdValue
+      have hnewNonempty : Metta.Bindings.classValues candidate key ≠ [] := by
+        intro hempty
+        simp only [candidate] at hempty
+        rw [hempty] at hnewValue
+        exact List.not_mem_nil hnewValue
+      obtain ⟨newValue, hchosen, hequation⟩ := hselected.2 key hnewNonempty
+      obtain ⟨member, hmember, hlookup⟩ := leaClassValue_mem_iff.mp hchosen
+      rcases leaClass_addEqRaw_old_or_joined hmember with holdClass | hjoined
+      · exact ⟨newValue, leaClassValue_mem_iff.mpr
+          ⟨member, holdClass, by simpa [candidate] using hlookup⟩, hequation⟩
+      · have hreverse : key ∈ Metta.Bindings.eqClass candidate left := by
+          rw [mem_leaEqClass_iff_reachable] at hjoined ⊢
+          exact hjoined.symm
+        have hchosenJoined := leaClassValue_mem_of_class hreverse hchosen
+        have holdJoined := leaClassValue_mem_of_class hreverse hnewValue
+        have hsame := unifyValues_empty_images_equal
+          (fun value hvalue => leaClassValue_noFloat hcandNoFloat hvalue)
+          hrun valuation hchosenJoined holdJoined
+        exact ⟨oldValue, holdValue, hequation.trans hsame⟩
+  apply (leaBindingSatisfied_addEqRaw_iff valuation bindings left right).mpr
+  refine ⟨hbasis valuation hold, hselected.1 left right ?_⟩
+  by_cases heq : left = right
+  · subst right
+    rw [mem_leaEqClass_iff_reachable]
+  · rw [mem_leaEqClass_iff_reachable]
+    apply SimpleGraph.Adj.reachable
+    rw [EqualityClosure.edgeGraph_adj_iff]
+    exact ⟨heq, Or.inl (by simp [Metta.Bindings.addEqRaw, heq, leaEqualityEdges])⟩
+
+/-- Every successful native alias insertion preserves a complete chosen-equation
+basis. Its nontrivial branch uses the actual whole-system reconciliation. -/
+theorem leaAddVarEquality_result_classChoiceBasis
+    {bindings out : Metta.Bindings} {left right : String}
+    (hbasis : LeaClassChoiceBasis bindings)
+    (hnoFloat : LeaBindingsNoFloat bindings)
+    (hout : out ∈ Metta.Bindings.addVarEquality bindings left right) :
+    LeaClassChoiceBasis out := by
+  cases hunify : Metta.Bindings.unifyValues
+      (Metta.Bindings.classValues (Metta.Bindings.addEqRaw bindings left right) left) with
+  | none => simp [Metta.Bindings.addVarEquality, hunify] at hout
+  | some subst =>
+      cases subst with
+      | nil =>
+          simp [Metta.Bindings.addVarEquality, hunify] at hout
+          subst out
+          exact leaClassChoiceBasis_addEqRaw_of_trivial hbasis hnoFloat hunify
+      | cons head rest =>
+          cases hrun : wholeBindingReconciliation bindings [(.var left, .var right)] with
+          | none => simp [Metta.Bindings.addVarEquality, hunify, hrun] at hout
+          | some result =>
+              simp [Metta.Bindings.addVarEquality, hunify, hrun] at hout
+              subst out
+              refine rebuildFromReconciliation_classChoiceBasis hnoFloat ?_ hrun ?_
+              · intro equation hmem
+                simp only [List.mem_singleton] at hmem
+                subst equation
+                simp [MettaAtomNoFloat]
+              · intro valuation hmodel hextra x y hmem
+                have hjoined := (leaBindingSatisfied_addEqRaw_iff valuation bindings left right).mpr
+                  ⟨hmodel, by simpa [MettaEquationsSatisfied, MettaEquationSatisfied,
+                    applyClassSolution] using hextra⟩
+                exact hjoined.2 x y hmem
+
+private theorem leaAddVarBinding_nonVar_result_classChoiceBasis
+    {bindings out : Metta.Bindings} {key : String} {value : Metta.Atom}
+    (hnonvar : ∀ target, value ≠ .var target)
+    (hbasis : LeaClassChoiceBasis bindings)
+    (hnoFloat : LeaBindingsNoFloat bindings)
+    (hvalueNoFloat : MettaAtomNoFloat value)
+    (hout : out ∈ Metta.Bindings.addVarBinding bindings key value) :
+    LeaClassChoiceBasis out := by
+  have hopen : Metta.Bindings.addVarBinding bindings key value =
+      match Metta.Bindings.classValues bindings key with
+      | [] => [Metta.Bindings.addValRaw bindings key value]
+      | values =>
+          match Metta.Bindings.unifyValues (values ++ [value]) with
+          | none => []
+          | some [] => [bindings]
+          | some (_ :: _) =>
+              match wholeBindingReconciliation bindings [(.var key, value)] with
+              | none => []
+              | some result => [Metta.Bindings.rebuildFromReconciliation bindings bindings
+                  [(.var key, value)] result] := by
+    cases value <;> try rfl
+    exact (hnonvar _ rfl).elim
+  rw [hopen] at hout
+  cases hvalues : Metta.Bindings.classValues bindings key with
+  | nil =>
+      simp only [hvalues, List.mem_singleton] at hout
+      subst out
+      rw [show Metta.Bindings.addValRaw bindings key value = .val key value :: bindings by
+        simp [Metta.Bindings.addValRaw, removeVal_eq_self_of_lookupVal_eq_none
+          (leaLookupVal_eq_none_of_classValues_eq_nil hvalues)]]
+      exact leaClassChoiceBasis_cons_fresh hbasis hvalues
+  | cons first rest =>
+      rw [hvalues] at hout
+      change out ∈ (match Metta.Bindings.unifyValues ((first :: rest) ++ [value]) with
+        | none => []
+        | some [] => [bindings]
+        | some (_ :: _) =>
+            match wholeBindingReconciliation bindings [(.var key, value)] with
+            | none => []
+            | some result => [Metta.Bindings.rebuildFromReconciliation bindings bindings
+                [(.var key, value)] result]) at hout
+      cases hunify : Metta.Bindings.unifyValues ((first :: rest) ++ [value]) with
+      | none => rw [hunify] at hout; simp at hout
+      | some subst =>
+          cases subst with
+          | nil =>
+              rw [hunify] at hout
+              simp only [List.mem_singleton] at hout
+              subst out
+              exact hbasis
+          | cons entry tail =>
+              rw [hunify] at hout
+              cases hrun : wholeBindingReconciliation bindings [(.var key, value)] with
+              | none => simp [hrun] at hout
+              | some result =>
+                  simp [hrun] at hout
+                  subst out
+                  refine rebuildFromReconciliation_classChoiceBasis hnoFloat ?_ hrun ?_
+                  · intro equation hmem
+                    simp only [List.mem_singleton] at hmem
+                    subst equation
+                    exact ⟨by simp [MettaAtomNoFloat], hvalueNoFloat⟩
+                  · intro valuation hmodel _
+                    exact hmodel.2
+
+/-- Native value insertion preserves the basis on all branches, including
+fresh assignments that require a later cycle filter. -/
+theorem leaAddVarBinding_result_classChoiceBasis
+    {bindings out : Metta.Bindings} {key : String} {value : Metta.Atom}
+    (hbasis : LeaClassChoiceBasis bindings)
+    (hnoFloat : LeaBindingsNoFloat bindings)
+    (hvalueNoFloat : MettaAtomNoFloat value)
+    (hout : out ∈ Metta.Bindings.addVarBinding bindings key value) :
+    LeaClassChoiceBasis out := by
+  cases value with
+  | var target =>
+      exact leaAddVarEquality_result_classChoiceBasis hbasis hnoFloat
+        (by simpa [Metta.Bindings.addVarBinding] using hout)
+  | sym name | gnd name | expr name =>
+      exact leaAddVarBinding_nonVar_result_classChoiceBasis
+        (by intro target h; cases h) hbasis hnoFloat hvalueNoFloat hout
+
+@[simp] theorem leaClassChoiceBasis_empty : LeaClassChoiceBasis [] := by
+  intro valuation _
+  simp [LeaBindingSatisfied]
+
+theorem leaClassChoiceBasis_singleton_value (key : String) (value : Metta.Atom) :
+    LeaClassChoiceBasis [.val key value] :=
+  leaClassChoiceBasis_cons_fresh leaClassChoiceBasis_empty (by simp)
+
+theorem leaClassChoiceBasis_singleton_equality (left right : String) :
+    LeaClassChoiceBasis [.eq left right] := by
+  intro valuation hselected
+  constructor
+  · simp
+  · intro first second hmem
+    simp only [List.mem_singleton, Metta.BindingRel.eq.injEq] at hmem
+    obtain ⟨rfl, rfl⟩ := hmem
+    apply hselected.1 first second
+    rw [mem_leaEqClass_iff_reachable]
+    by_cases heq : first = second
+    · subst second
+      exact .rfl
+    · apply SimpleGraph.Adj.reachable
+      rw [EqualityClosure.edgeGraph_adj_iff]
+      exact ⟨heq, Or.inl (by simp [leaEqualityEdges])⟩
+
+private theorem leaMergeOne_result_classChoiceBasis
+    {seeds : List Metta.Bindings} {relation : Metta.BindingRel} {out : Metta.Bindings}
+    (hseeds : ∀ seed ∈ seeds, LeaClassChoiceBasis seed)
+    (hseedsNoFloat : ∀ seed ∈ seeds, LeaBindingsNoFloat seed)
+    (hrelation : LeaBindingsNoFloat [relation])
+    (hout : out ∈ Metta.Bindings.mergeOne seeds relation) :
+    LeaClassChoiceBasis out := by
+  obtain ⟨seed, hseed, hout⟩ := List.mem_flatMap.mp hout
+  cases relation with
+  | val key value =>
+      exact leaAddVarBinding_result_classChoiceBasis
+        (hseeds seed hseed) (hseedsNoFloat seed hseed)
+        (hrelation key value (by simp)) hout
+  | eq left right =>
+      exact leaAddVarEquality_result_classChoiceBasis
+        (hseeds seed hseed) (hseedsNoFloat seed hseed) hout
+
+private theorem leaMergeFold_result_classChoiceBasis
+    {relations : Metta.Bindings} {seeds : List Metta.Bindings} {out : Metta.Bindings}
+    (hseeds : ∀ seed ∈ seeds, LeaClassChoiceBasis seed)
+    (hseedsNoFloat : ∀ seed ∈ seeds, LeaBindingsNoFloat seed)
+    (hrelations : LeaBindingsNoFloat relations)
+    (hout : out ∈ relations.foldl Metta.Bindings.mergeOne seeds) :
+    LeaClassChoiceBasis out := by
+  induction relations generalizing seeds out with
+  | nil => exact hseeds out hout
+  | cons relation rest ih =>
+      have hhead : LeaBindingsNoFloat [relation] := by
+        intro key value hmem
+        exact hrelations key value (List.mem_cons.mpr (Or.inl (List.mem_singleton.mp hmem)))
+      have hrest : LeaBindingsNoFloat rest := by
+        intro key value hmem
+        exact hrelations key value (List.mem_cons_of_mem _ hmem)
+      exact ih
+        (fun next hnext => leaMergeOne_result_classChoiceBasis hseeds hseedsNoFloat hhead hnext)
+        (fun next hnext => leaMergeOne_result_noFloat hseedsNoFloat hhead hnext)
+        hrest hout
+
+/-- Actual merge preserves the basis of its accumulator. Incoming relations
+need only be in the float-free fragment; their own basis is not assumed. -/
+theorem leaMerge_result_classChoiceBasis
+    {left right out : Metta.Bindings}
+    (hleft : LeaClassChoiceBasis left)
+    (hleftNoFloat : LeaBindingsNoFloat left)
+    (hrightNoFloat : LeaBindingsNoFloat right)
+    (hout : out ∈ Metta.Bindings.merge left right) :
+    LeaClassChoiceBasis out := by
+  exact leaMergeFold_result_classChoiceBasis
+    (seeds := [left]) (relations := right)
+    (by simpa using hleft) (by simpa using hleftNoFloat) hrightNoFloat hout
+
+/-- Pointwise matching preserves the accumulator basis even across nested
+expression matches and temporary cyclic candidates. -/
+theorem leaMatchAll_result_classChoiceBasis
+    {lefts rights : List Metta.Atom} {seeds : List Metta.Bindings} {out : Metta.Bindings}
+    (hlefts : ∀ atom ∈ lefts, MettaAtomNoFloat atom)
+    (hrights : ∀ atom ∈ rights, MettaAtomNoFloat atom)
+    (hseeds : ∀ seed ∈ seeds, LeaClassChoiceBasis seed)
+    (hseedsNoFloat : ∀ seed ∈ seeds, LeaBindingsNoFloat seed)
+    (hout : out ∈ Metta.matchAll none seeds lefts rights) :
+    LeaClassChoiceBasis out := by
+  induction lefts generalizing rights seeds out with
+  | nil =>
+      cases rights with
+      | nil => exact hseeds out hout
+      | cons head tail => simp [Metta.matchAll] at hout
+  | cons left lefts ih =>
+      cases rights with
+      | nil => simp [Metta.matchAll] at hout
+      | cons right rights =>
+          let next := seeds.flatMap fun seed => (Metta.matchAtoms left right).flatMap
+            fun matched => Metta.Bindings.merge seed matched
+          have htail : out ∈ Metta.matchAll none next lefts rights := by
+            simpa [Metta.matchAll, Metta.matchAtoms, next] using hout
+          have hmatched : ∀ matched ∈ Metta.matchAtoms left right,
+              LeaBindingsNoFloat matched :=
+            fun _ hmem => leaMatchAtoms_result_noFloat
+              (hlefts left (by simp)) (hrights right (by simp)) hmem
+          apply ih (rights := rights) (seeds := next)
+            (fun atom hmem => hlefts atom (by simp [hmem]))
+            (fun atom hmem => hrights atom (by simp [hmem])) ?_ ?_ htail
+          · intro candidate hcandidate
+            obtain ⟨seed, hseed, hcandidate⟩ := List.mem_flatMap.mp hcandidate
+            obtain ⟨matched, hmatch, hmerge⟩ := List.mem_flatMap.mp hcandidate
+            exact leaMerge_result_classChoiceBasis (hseeds seed hseed)
+              (hseedsNoFloat seed hseed) (hmatched matched hmatch) hmerge
+          · intro candidate hcandidate
+            obtain ⟨seed, hseed, hcandidate⟩ := List.mem_flatMap.mp hcandidate
+            obtain ⟨matched, hmatch, hmerge⟩ := List.mem_flatMap.mp hcandidate
+            exact leaMerge_result_noFloat (hseedsNoFloat seed hseed)
+              (hmatched matched hmatch) hmerge
+
+/-- The complete default matcher builds the class-choice invariant before its
+final cycle filter. This theorem follows actual insertion and reconciliation. -/
+theorem leaMatchAtomsWith_result_classChoiceBasis
+    {left right : Metta.Atom} {out : Metta.Bindings}
+    (hleft : MettaAtomNoFloat left) (hright : MettaAtomNoFloat right)
+    (hout : out ∈ Metta.matchAtomsWith none left right) :
+    LeaClassChoiceBasis out := by
+  cases left <;> cases right
+  all_goals first
+    | exact leaMatchAll_result_classChoiceBasis
+        (by simpa [MettaAtomNoFloat] using hleft)
+        (by simpa [MettaAtomNoFloat] using hright)
+        (by simp) (by simp [LeaBindingsNoFloat]) hout
+    | (simp only [Metta.matchAtomsWith] at hout
+       split at hout <;> simp only [List.mem_singleton, List.not_mem_nil] at hout
+       all_goals first
+         | contradiction
+         | (subst out; exact leaClassChoiceBasis_empty)
+         | (subst out; exact leaClassChoiceBasis_singleton_value _ _)
+         | (subst out; exact leaClassChoiceBasis_singleton_equality _ _))
+
+/-- All queries to one LeaTTa equality class use the same stable ordering. -/
+theorem leaEqClassOrdered_eq_of_mem_class
+    {bindings : Metta.Bindings} {left right : String}
+    (hclass : right ∈ Metta.Bindings.eqClass bindings left) :
+    Metta.Bindings.eqClassOrdered bindings left =
+      Metta.Bindings.eqClassOrdered bindings right := by
+  have hreach := mem_leaEqClass_iff_reachable.mp hclass
+  have hfilter :
+      (Metta.Bindings.eqVarsInOrder bindings).filter
+          (fun name => (Metta.Bindings.eqClass bindings left).contains name) =
+      (Metta.Bindings.eqVarsInOrder bindings).filter
+          (fun name => (Metta.Bindings.eqClass bindings right).contains name) := by
+    apply List.filter_congr
+    intro name _
+    rw [Bool.eq_iff_iff, List.contains_iff_mem, List.contains_iff_mem,
+      mem_leaEqClass_iff_reachable, mem_leaEqClass_iff_reachable]
+    exact ⟨fun h => hreach.symm.trans h, fun h => hreach.trans h⟩
+  unfold Metta.Bindings.eqClassOrdered
+  rw [hfilter]
+  generalize hfiltered :
+    (Metta.Bindings.eqVarsInOrder bindings).filter
+      (fun name => (Metta.Bindings.eqClass bindings right).contains name) = filtered
+  cases filtered with
+  | cons first rest => rfl
+  | nil =>
+      by_cases heq : left = right
+      · simp [heq]
+      · exfalso
+        have hleftOrder := mem_leaEqVarsInOrder_iff.mpr
+          (reachable_ne_endpoints_mem_edgeNodes_lea heq hreach).1
+        have hleftClass : left ∈ Metta.Bindings.eqClass bindings right :=
+          mem_leaEqClass_iff_reachable.mpr hreach.symm
+        have hleftFilter := List.mem_filter.mpr
+          ⟨hleftOrder, (List.contains_iff_mem).mpr hleftClass⟩
+        rw [hfiltered] at hleftFilter
+        exact List.not_mem_nil hleftFilter
+
+/-- A successful resolution already fixes its result under the same accepted
+native binding record. The proof uses selected class values and does not
+assume that every stored class value has a common semantic solution. -/
+theorem resolveAtomAux_result_fixed_of_hasLoop_false
+    {bindings : Metta.Bindings} (admitted : Metta.Bindings.hasLoop bindings=false)
+    (fuel : Nat) (visited : List String) (atom result : Metta.Atom)
+    (resolved : Metta.Bindings.resolveAtomAux bindings fuel visited atom=some result) :
+    Metta.instantiate bindings result=result := by
+  induction fuel generalizing visited atom result with
+  | zero => simp [Metta.Bindings.resolveAtomAux] at resolved
+  | succ fuel ih =>
+    cases atom with
+    | sym symbol | gnd ground =>
+      simp only [Metta.Bindings.resolveAtomAux,Option.some.injEq] at resolved
+      subst result
+      simp only [Metta.instantiate,Metta.Bindings.resolveAtom]
+    | var key =>
+      have representativeIn : Metta.Bindings.eqRepresentative bindings key ∈
+          Metta.Bindings.eqClass bindings key := by
+        apply mem_leaEqClassOrdered_iff.mp
+        have nonempty := Bindings.eqClassOrdered_ne_nil bindings key
+        unfold Metta.Bindings.eqRepresentative
+        cases ordered : Metta.Bindings.eqClassOrdered bindings key with
+        | nil => exact (nonempty ordered).elim
+        | cons head rest => simp
+      have representativeFixed
+          (returned : result=.var (Metta.Bindings.eqRepresentative bindings key)) :
+          Metta.instantiate bindings result=result := by
+        rw [returned]
+        calc
+          Metta.instantiate bindings (.var (Metta.Bindings.eqRepresentative bindings key)) =
+              Metta.instantiate bindings (.var key) :=
+            (Bindings.instantiate_var_eq_of_eqClassOrdered_eq admitted
+              (leaEqClassOrdered_eq_of_mem_class representativeIn)).symm
+          _ = result := (Bindings.resolveAtomAux_some_eq_instantiate admitted _ resolved).symm
+          _ = .var (Metta.Bindings.eqRepresentative bindings key) := returned
+      cases checked : (Metta.Bindings.eqClassOrdered bindings key).any visited.contains with
+      | true => simp [Metta.Bindings.resolveAtomAux,checked] at resolved
+      | false =>
+        cases values : Metta.Bindings.classValues bindings key with
+        | nil =>
+          apply representativeFixed
+          simpa only [Metta.Bindings.resolveAtomAux,checked,Bool.false_eq_true,
+            ↓reduceIte,values,Option.some.injEq] using resolved.symm
+        | cons value rest =>
+          cases value with
+          | sym symbol | gnd ground | expr children =>
+            apply ih _ _ _
+            simpa only [Metta.Bindings.resolveAtomAux,checked,Bool.false_eq_true,
+              ↓reduceIte,values] using resolved
+          | var other =>
+            by_cases internal : (Metta.Bindings.eqClassOrdered bindings key).contains other=true
+            · by_cases singleton : (Metta.Bindings.eqClassOrdered bindings key).length == 1
+              · simp only [Metta.Bindings.resolveAtomAux,checked,Bool.false_eq_true,
+                  ↓reduceIte,values,internal,singleton] at resolved
+                cases resolved
+              · apply representativeFixed
+                simpa only [Metta.Bindings.resolveAtomAux,checked,Bool.false_eq_true,
+                  ↓reduceIte,values,internal,singleton,Option.some.injEq] using resolved.symm
+            · apply ih _ _ _
+              simpa only [Metta.Bindings.resolveAtomAux,checked,Bool.false_eq_true,
+                ↓reduceIte,values,internal] using resolved
+    | expr children =>
+      have listFixed : ∀ source target,
+          List.mapM (Metta.Bindings.resolveAtomAux bindings fuel visited) source=some target →
+          List.map (Metta.instantiate bindings) target=target := by
+        intro source
+        induction source with
+        | nil =>
+          intro target mapped
+          simp at mapped
+          subst target
+          rfl
+        | cons head tail tailIH =>
+          intro target mapped
+          cases headResult : Metta.Bindings.resolveAtomAux bindings fuel visited head with
+          | none => simp [List.mapM_cons,headResult] at mapped
+          | some headValue =>
+            cases tailResult : List.mapM (Metta.Bindings.resolveAtomAux bindings fuel visited) tail with
+            | none => simp [List.mapM_cons,headResult,tailResult] at mapped
+            | some tailValues =>
+              simp [List.mapM_cons,headResult,tailResult] at mapped
+              subst target
+              simp only [List.map_cons,ih visited head headValue headResult,
+                tailIH tailValues tailResult]
+      cases mapped : children.mapM (Metta.Bindings.resolveAtomAux bindings fuel visited) with
+      | none => simp [Metta.Bindings.resolveAtomAux,mapped] at resolved
+      | some outputs =>
+        simp only [Metta.Bindings.resolveAtomAux,mapped,Option.some.injEq] at resolved
+        subst result
+        simp only [Metta.instantiate,Metta.Bindings.resolveAtom]
+        change Metta.Atom.expr (outputs.map (Metta.instantiate bindings))=Metta.Atom.expr outputs
+        rw [listFixed children outputs mapped]
+
+/-- The native loop filter suffices for idempotent instantiation, even on raw
+records whose unselected class values are mutually inconsistent. -/
+theorem instantiate_idempotent_of_hasLoop_false
+    {bindings : Metta.Bindings} (admitted : Metta.Bindings.hasLoop bindings=false)
+    (atom : Metta.Atom) :
+    Metta.instantiate bindings (Metta.instantiate bindings atom)=Metta.instantiate bindings atom := by
+  induction atom using Metta.Atom.recAux with
+  | sym name => simp only [Metta.instantiate,Metta.Bindings.resolveAtom]
+  | gnd ground => simp only [Metta.instantiate,Metta.Bindings.resolveAtom]
+  | var key =>
+    obtain ⟨value,resolved⟩ := Bindings.resolveAtomAux_some_of_hasLoop_false admitted key
+    rw [Bindings.instantiate_var_of_resolveAtomAux_some resolved]
+    exact resolveAtomAux_result_fixed_of_hasLoop_false admitted _ _ _ _ resolved
+  | expr children ih =>
+    simp only [Metta.instantiate,Metta.Bindings.resolveAtom]
+    change Metta.Atom.expr ((children.map (Metta.instantiate bindings)).map (Metta.instantiate bindings)) =
+      Metta.Atom.expr (children.map (Metta.instantiate bindings))
+    rw [List.map_map]
+    congr 1
+    apply List.map_congr_left
+    intro child member
+    exact ih child member
+
+/-- The actual native resolver produces a chosen-equation model whenever its
+own complete loop check succeeds on normalized assignments. -/
+theorem leaClassSolution_classChoiceSatisfied
+    {bindings : Metta.Bindings}
+    (hnonvariable : LeaAssignmentsNonVariable bindings)
+    (hloop : Metta.Bindings.hasLoop bindings = false) :
+    LeaClassChoiceSatisfied (leaClassSolution bindings) bindings := by
+  constructor
+  · intro left right hclass
+    simpa only [leaClassSolution, Metta.instantiate, Metta.Bindings.resolveAtom] using
+      (Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge.Bindings.instantiate_var_eq_of_eqClassOrdered_eq
+        hloop (leaEqClassOrdered_eq_of_mem_class hclass))
+  · intro key hnonempty
+    cases hvalues : Metta.Bindings.classValues bindings key with
+    | nil => exact (hnonempty hvalues).elim
+    | cons value rest =>
+        have hvalue : value ∈ Metta.Bindings.classValues bindings key := by simp [hvalues]
+        refine ⟨value, by simp, ?_⟩
+        rw [applyClassSolution_lea_eq_instantiate]
+        simpa only [leaClassSolution, Metta.instantiate, Metta.Bindings.resolveAtom] using
+          (Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge.Bindings.instantiate_first_class_value
+            hloop hvalues (leaClassValue_nonvariable hnonvariable hvalue))
+
+/-- Every successful default matcher output's actual native instantiation is a
+model of every stored relation, including values hidden behind class selection. -/
+theorem leaMatchAtoms_classSolution_satisfies
+    {left right : Metta.Atom} {out : Metta.Bindings}
+    (hleft : MettaAtomNoFloat left) (hright : MettaAtomNoFloat right)
+    (hout : out ∈ Metta.matchAtoms left right) :
+    LeaBindingSatisfied (leaClassSolution out) out := by
+  obtain ⟨hraw, hloop⟩ : out ∈ Metta.matchAtomsWith none left right ∧ out.hasLoop = false := by
+    simpa [Metta.matchAtoms] using hout
+  exact leaMatchAtomsWith_result_classChoiceBasis hleft hright hraw
+    (leaClassSolution out)
+    (leaClassSolution_classChoiceSatisfied
+      (leaMatchAtomsWith_result_assignmentsNonVariable hraw) hloop)
+
+/-- Successful default matching constructs a finite satisfying valuation. -/
+theorem leaMatchAtoms_exists_satisfied
+    {left right : Metta.Atom} {out : Metta.Bindings}
+    (hleft : MettaAtomNoFloat left) (hright : MettaAtomNoFloat right)
+    (hout : out ∈ Metta.matchAtoms left right) :
+    ∃ valuation, LeaBindingSatisfied valuation out :=
+  ⟨leaClassSolution out, leaMatchAtoms_classSolution_satisfies hleft hright hout⟩
+
+/-- Native successful matching excludes cycles in the full independent
+class/compound dependency graph, rather than merely its selected-value graph. -/
+theorem leaMatchAtoms_semanticLoopFree
+    {left right : Metta.Atom} {out : Metta.Bindings}
+    (hleft : MettaAtomNoFloat left) (hright : MettaAtomNoFloat right)
+    (hout : out ∈ Metta.matchAtoms left right) :
+    LeaSemanticLoopFree out :=
+  leaSemanticLoopFree_of_satisfied_nonvariable
+    (leaMatchAtoms_classSolution_satisfies hleft hright hout)
+    (leaMatchAtoms_result_assignmentsNonVariable hout)
+
+
+/-- Successful matching makes its input atoms equal under the actual native
+instantiation, not just under an abstract existential valuation. -/
+theorem leaMatchAtoms_instantiate_eq
+    {left right : Metta.Atom} {out : Metta.Bindings}
+    (hleft : MettaAtomNoFloat left) (hright : MettaAtomNoFloat right)
+    (hout : out ∈ Metta.matchAtoms left right) :
+    Metta.instantiate out left = Metta.instantiate out right := by
+  have hmodel := leaMatchAtoms_classSolution_satisfies hleft hright hout
+  have hequation := (leaMatchAtoms_solution_iff (leaClassSolution out)
+    hleft hright hout).mp hmodel
+  simpa only [MettaEquationSatisfied, applyClassSolution_lea_eq_instantiate] using hequation
+
+namespace ClassDependencyControls
+
+/-- A Boolean pass on a hand-built record does not establish the invariant
+proved for actual matcher outputs. -/
+theorem ignoredClassValue_not_classChoiceBasis :
+    ¬LeaClassChoiceBasis ignoredClassValue := by
+  intro hbasis
+  exact ignoredClassValue_semantic_cycle
+    (leaSemanticLoopFree_of_satisfied_nonvariable
+      (hbasis (leaClassSolution ignoredClassValue)
+        (leaClassSolution_classChoiceSatisfied
+          ignoredClassValue_nonvariable ignoredClassValue_no_runtime_loop))
+      ignoredClassValue_nonvariable)
+
+/-- The hidden-cycle raw record cannot be returned by successful default
+matching anywhere in the float-free fragment. -/
+theorem ignoredClassValue_not_match_output
+    {left right : Metta.Atom}
+    (hleft : MettaAtomNoFloat left) (hright : MettaAtomNoFloat right) :
+    ignoredClassValue ∉ Metta.matchAtoms left right := by
+  intro hout
+  exact ignoredClassValue_semantic_cycle (leaMatchAtoms_semanticLoopFree hleft hright hout)
+
+/-- Two different stored occurrences may agree in one equality class. -/
+def coherentClassValues : Metta.Bindings :=
+  [.eq "y" "x", .val "y" (.sym "a"), .val "x" (.sym "a")]
+
+theorem coherentClassValues_classChoiceBasis : LeaClassChoiceBasis coherentClassValues := by
+  have hseed : LeaClassChoiceBasis [.val "y" (.sym "a"), .val "x" (.sym "a")] :=
+    leaClassChoiceBasis_cons_fresh
+      (leaClassChoiceBasis_singleton_value "x" (.sym "a")) (by rfl)
+  exact leaClassChoiceBasis_addEqRaw_of_trivial (left := "y") (right := "x") hseed
+    (by intro key value hmem
+        simp only [List.mem_cons, List.not_mem_nil, or_false, Metta.BindingRel.val.injEq] at hmem
+        rcases hmem with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> simp [MettaAtomNoFloat])
+    (by
+      change Metta.Bindings.unifyValues [.sym "a", .sym "a"] = some []
+      simp [Metta.Bindings.unifyValues, Metta.Unify.unifyRounds,
+        Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
+        Metta.Atom.size])
+
+end ClassDependencyControls
+
 private theorem heAssignment_mem_of_lookup_eq_some
     {assignments : List (String × Atom)} {x : String} {value : Atom}
     (hlookup : List.lookup x assignments = some value) :
@@ -7944,22 +10269,6 @@ private theorem heLookup_eq_none_of_classValues_eq_nil
   apply List.filterMap_eq_nil_iff.mp hvalues v
   rw [EqualityClosure.mem_eqClassOrdered_iff,
     EqualityClosure.mem_eqClass_iff_reachable]
-
-/-- Extensional valuation equation presented by matching two HE atoms. -/
-def HEAtomEquationSatisfied
-    (valuation : String → Metta.Atom) (left right : Atom) : Prop :=
-  applyClassSolution valuation (toLeaTTaAtom left) =
-    applyClassSolution valuation (toLeaTTaAtom right)
-
-/-- Pointwise equation theory for HE's list matcher. Length mismatch is
-unsatisfiable, matching the executable failure branch. -/
-def HEAtomListEquationsSatisfied
-    (valuation : String → Metta.Atom) : List Atom → List Atom → Prop
-  | [], [] => True
-  | left :: lefts, right :: rights =>
-      HEAtomEquationSatisfied valuation left right ∧
-        HEAtomListEquationsSatisfied valuation lefts rights
-  | _, _ => False
 
 /-- Simultaneous solution-theory contract for the five mutually recursive HE
 matcher/merge operations at one executable fuel. -/
@@ -9973,7 +12282,7 @@ theorem matchRel_leaf_semantic_transport
               (b := (⟨[], [(queryVar, patternVar)]⟩ : Bindings))
               (by simp [NoBareVarAssignments]))
         exact htransport.semantic_of_noAssignments rfl scope solutionFuel hfuel
-  | varNonVar hnonvar =>
+  | varNonVar hnonvar _hoccurs =>
       rename_i v
       cases pattern with
       | var w => simp [DeclMatchSpec.Atom.isVarB] at hnonvar
@@ -10005,7 +12314,7 @@ theorem matchRel_leaf_semantic_transport
             simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hoccurs, hloop]
           · exact singletonAssignment_semantic hnonvar hfresh
               scope solutionFuel hfuel
-  | nonVarVar hnonvar =>
+  | nonVarVar hnonvar _hoccurs =>
       rename_i v
       have hdisj' : VarsDisjoint (.var v) query := hdisj.symm
       cases query with
@@ -10045,7 +12354,7 @@ theorem matchRel_leaf_semantic_transport
             (.gnd (toLeaTTaGround g)) = true := by
         simpa [toLeaTTaAtom] using toLeaTTaAtom_grounded_equiv_self g
       simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hself]
-  | @expr ls rs b hlist =>
+  | @expr ls rs b hlist _ =>
       exact (hleaf ⟨ls, rs, rfl, rfl⟩).elim
 
 /-- Executable leaf matching inherits semantic transport from its declarative
@@ -10636,4 +12945,636 @@ theorem valueProvenanceProbe_output_not_solution_equiv :
     decide
   exact this hxzLea
 
+end Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
+
+/-! ## Isolated solved frames through whole-system reconciliation -/
+
+namespace Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
+open Metta
+
+/-- Successful decomposition of a reflexive equation creates no constraints.
+This allows non-reflexive grounded equality to reject without inventing a
+constraint on an otherwise unconstrained variable. -/
+theorem decomposeEq_self_success_empty :
+    ∀ (atom : Metta.Atom) {constraints : List (String × Metta.Atom)},
+      Metta.Unify.decomposeEq atom atom = some constraints → constraints = [] := by
+  refine Metta.Atom.recAux ?_ ?_ ?_ ?_
+  · intro symbol constraints step
+    simpa [Metta.Unify.decomposeEq] using step.symm
+  · intro key constraints step
+    simpa [Metta.Unify.decomposeEq] using step.symm
+  · intro ground constraints step
+    simp only [Metta.Unify.decomposeEq] at step
+    split at step
+    · exact Option.some.inj step.symm
+    · contradiction
+  · intro atoms ih constraints step
+    change Metta.Unify.decomposeList atoms atoms = some constraints at step
+    induction atoms generalizing constraints with
+    | nil => simpa [Metta.Unify.decomposeList] using step.symm
+    | cons head tail tailIH =>
+      cases first : Metta.Unify.decomposeEq head head with
+      | none => simp [Metta.Unify.decomposeList,first] at step
+      | some front =>
+        have frontEmpty := ih head (by simp) first
+        cases rest : Metta.Unify.decomposeList tail tail with
+        | none => simp [Metta.Unify.decomposeList,first,rest] at step
+        | some back =>
+          have backEmpty := tailIH (fun atom member => ih atom (by simp [member])) rest
+          simp [Metta.Unify.decomposeList,first,rest,frontEmpty,backEmpty] at step
+          exact step
+
+theorem decomposeEq_var_of_ne_self (key : String) (term : Metta.Atom)
+    (different : term ≠ .var key) :
+    Metta.Unify.decomposeEq (.var key) term=some [(key,term)] := by
+  cases term with
+  | var other =>
+    have distinct : key ≠ other := fun equal => different (by rw [equal])
+    simp [Metta.Unify.decomposeEq,distinct]
+  | sym symbol | gnd ground | expr children => rfl
+
+/-- A solved frame stores private keys with fixed values. Its values may
+contain public holes, but never another private frame key. -/
+structure IsolatedSolveFrame where
+  privateKey : String → Prop
+  value : String → Metta.Atom
+  caller : String → Prop
+  private_not_caller : ∀ key, privateKey key → ¬caller key
+  value_no_private : ∀ key,privateKey key → ∀ name ∈ (value key).vars,¬privateKey name
+  value_no_caller : ∀ key,privateKey key → ∀ name ∈ (value key).vars,¬caller name
+
+namespace IsolatedSolveFrame
+
+def InsideCaller (frame : IsolatedSolveFrame) (atom : Metta.Atom) : Prop :=
+  ∀ key ∈ atom.vars,frame.caller key
+
+def Constraint (frame : IsolatedSolveFrame) (key : String) (term : Metta.Atom) : Prop :=
+  (frame.privateKey key ∧ term=frame.value key) ∨
+    (frame.caller key ∧ frame.InsideCaller term)
+
+/-- The caller's equations and a solved private frame can be interleaved.
+Reflexive equations account for repeated copies of an eliminated frame row. -/
+def Equation (frame : IsolatedSolveFrame) (left right : Metta.Atom) : Prop :=
+  left=right ∨
+    (∃ key,frame.privateKey key ∧ left=.var key ∧ right=frame.value key) ∨
+    (frame.InsideCaller left ∧ frame.InsideCaller right)
+
+theorem decompose_constraint (frame : IsolatedSolveFrame)
+    {left right : Metta.Atom} {constraints : List (String × Metta.Atom)}
+    (legal : frame.Equation left right)
+    (step : Metta.Unify.decomposeEq left right=some constraints)
+    {key : String} {term : Metta.Atom} (present : (key,term)∈constraints) :
+    frame.Constraint key term := by
+  rcases legal with same | ⟨source,privateSource,rfl,rfl⟩ | ⟨leftInside,rightInside⟩
+  · subst right
+    rw [decomposeEq_self_success_empty left step] at present
+    contradiction
+  · have different : frame.value source ≠ .var source := by
+      intro same
+      exact frame.value_no_private source privateSource source
+        (by rw [same]; simp [Metta.Atom.vars]) privateSource
+    rw [decomposeEq_var_of_ne_self source (frame.value source) different] at step
+    have shape : constraints=[(source,frame.value source)] := Option.some.inj step.symm
+    rw [shape,List.mem_singleton,Prod.mk.injEq] at present
+    rcases present with ⟨rfl,rfl⟩
+    exact Or.inl ⟨privateSource,rfl⟩
+  · right
+    have support := decomposeEq_constraintVars_subset left right constraints step
+    have source : key∈mettaConstraintVars constraints := by
+      apply List.mem_flatMap.mpr
+      exact ⟨(key,term),present,by simp⟩
+    have keyInside := (List.mem_append.mp (support key source)).elim
+      (leftInside key) (rightInside key)
+    refine ⟨keyInside,?_⟩
+    intro name mentioned
+    have source : name∈mettaConstraintVars constraints := by
+      apply List.mem_flatMap.mpr
+      exact ⟨(key,term),present,by simp [mentioned]⟩
+    exact (List.mem_append.mp (support name source)).elim
+      (leftInside name) (rightInside name)
+
+theorem decomposeAll_constraints (frame : IsolatedSolveFrame)
+    {equations : List (Metta.Atom × Metta.Atom)}
+    {constraints : List (String × Metta.Atom)}
+    (legal : ∀ equation ∈ equations,frame.Equation equation.1 equation.2)
+    (step : Metta.Unify.decomposeAll equations=some constraints) :
+    ∀ entry ∈ constraints,frame.Constraint entry.1 entry.2 := by
+  induction equations generalizing constraints with
+  | nil => simp [Metta.Unify.decomposeAll] at step; subst constraints; simp
+  | cons equation rest ih =>
+    cases first : Metta.Unify.decomposeEq equation.1 equation.2 with
+    | none => simp [Metta.Unify.decomposeAll,first] at step
+    | some front =>
+      cases remaining : Metta.Unify.decomposeAll rest with
+      | none => simp [Metta.Unify.decomposeAll,first,remaining] at step
+      | some back =>
+        have shape : constraints=front++back := by
+          simpa [Metta.Unify.decomposeAll,first,remaining] using step.symm
+        subst constraints
+        intro entry present
+        rcases List.mem_append.mp present with inFront | inBack
+        · exact frame.decompose_constraint (legal equation (by simp)) first inFront
+        · exact ih (fun e member => legal e (by simp [member])) remaining entry inBack
+
+theorem apply_singleton_outside (key : String) (value : Metta.Atom) :
+    ∀ (atom : Metta.Atom),key ∉ atom.vars →
+      Metta.Subst.apply [(key,value)] atom=atom := by
+  refine Metta.Atom.recAux ?_ ?_ ?_ ?_
+  · intro symbol _; simp [Metta.Subst.apply]
+  · intro other outside
+    have different : other ≠ key := by
+      intro equal
+      exact outside (by simp [Metta.Atom.vars,equal])
+    simp [Metta.Subst.apply,Metta.Subst.lookup,different]
+  · intro ground _; simp [Metta.Subst.apply]
+  · intro atoms ih outside
+    simp only [Metta.Subst.apply]
+    apply congrArg Metta.Atom.expr
+    calc
+      atoms.map (Metta.Subst.apply [(key,value)]) = atoms.map id := by
+        apply List.map_congr_left
+        intro atom present
+        apply ih atom present
+        intro mentioned
+        apply outside
+        simp only [Metta.Atom.vars,List.mem_flatten,List.mem_map]
+        exact ⟨atom.vars,⟨atom,present,rfl⟩,mentioned⟩
+      _ = atoms := List.map_id atoms
+
+theorem caller_apply (frame : IsolatedSolveFrame)
+    {key : String} {value atom : Metta.Atom}
+    (valueInside : frame.InsideCaller value) (atomInside : frame.InsideCaller atom) :
+    frame.InsideCaller (Metta.Subst.apply [(key,value)] atom) := by
+  intro name mentioned
+  exact (mem_vars_apply_singleton atom mentioned).elim
+    (atomInside name) (valueInside name)
+
+theorem constraint_substituted (frame : IsolatedSolveFrame)
+    {key other : String} {value term : Metta.Atom}
+    (selected : frame.Constraint key value) (remaining : frame.Constraint other term) :
+    frame.Equation (Metta.Subst.apply [(key,value)] (.var other))
+      (Metta.Subst.apply [(key,value)] term) := by
+  rcases selected with ⟨privateKey,rfl⟩ | ⟨callerKey,valueInside⟩
+  · rcases remaining with ⟨privateOther,rfl⟩ | ⟨callerOther,termInside⟩
+    · have rightFixed : Metta.Subst.apply [(key,frame.value key)] (frame.value other)=
+          frame.value other := apply_singleton_outside key (frame.value key)
+            (frame.value other) (fun present =>
+              frame.value_no_private other privateOther key present privateKey)
+      rw [rightFixed]
+      by_cases same : other=key
+      · subst other
+        exact Or.inl (by simp [Metta.Subst.apply,Metta.Subst.lookup])
+      · right; left
+        refine ⟨other,privateOther,?_,rfl⟩
+        simp [Metta.Subst.apply,Metta.Subst.lookup,same]
+    · have outsideKey : key ∉ term.vars := fun mentioned =>
+        frame.private_not_caller key privateKey (termInside key mentioned)
+      have different : other≠key := fun same =>
+        frame.private_not_caller key privateKey (same ▸ callerOther)
+      rw [apply_singleton_outside key (frame.value key) term outsideKey]
+      right; right
+      refine ⟨?_,termInside⟩
+      simpa [Metta.Subst.apply,Metta.Subst.lookup,different,InsideCaller,Metta.Atom.vars]
+        using callerOther
+  · rcases remaining with ⟨privateOther,rfl⟩ | ⟨callerOther,termInside⟩
+    · have different : other≠key := fun same =>
+        frame.private_not_caller other privateOther (same.symm ▸ callerKey)
+      have outsideKey : key ∉ (frame.value other).vars := fun mentioned =>
+        frame.value_no_caller other privateOther key mentioned callerKey
+      right; left
+      refine ⟨other,privateOther,?_,?_⟩
+      · simp [Metta.Subst.apply,Metta.Subst.lookup,different]
+      · exact apply_singleton_outside key value (frame.value other) outsideKey
+    · right; right
+      exact ⟨frame.caller_apply valueInside (by
+        intro name mentioned
+        have same : name=other := by simpa [Metta.Atom.vars] using mentioned
+        exact same ▸ callerOther),frame.caller_apply valueInside termInside⟩
+
+/-- Robinson elimination cannot turn a public hole into a private assignment
+or let a caller constraint acquire an isolated frame's variables. -/
+theorem unifyRounds_constraints (frame : IsolatedSolveFrame)
+    {fuel : Nat} {equations : List (Metta.Atom × Metta.Atom)}
+    {seed result : Metta.Subst}
+    (legal : ∀ equation ∈ equations,frame.Equation equation.1 equation.2)
+    (seedLegal : ∀ entry ∈ seed,frame.Constraint entry.1 entry.2)
+    (step : Metta.Unify.unifyRounds fuel equations seed=some result) :
+    ∀ entry ∈ result,frame.Constraint entry.1 entry.2 := by
+  induction fuel generalizing equations seed result with
+  | zero =>
+    cases decomposed : Metta.Unify.decomposeAll equations with
+    | none => simp [Metta.Unify.unifyRounds,decomposed] at step
+    | some constraints =>
+      cases constraints with
+      | nil =>
+        have same : seed=result := by simpa [Metta.Unify.unifyRounds,decomposed] using step
+        exact same ▸ seedLegal
+      | cons first rest => simp [Metta.Unify.unifyRounds,decomposed] at step
+  | succ fuel ih =>
+    cases decomposed : Metta.Unify.decomposeAll equations with
+    | none => simp [Metta.Unify.unifyRounds,decomposed] at step
+    | some constraints =>
+      cases constraints with
+      | nil =>
+        have same : seed=result := by simpa [Metta.Unify.unifyRounds,decomposed] using step
+        exact same ▸ seedLegal
+      | cons first rest =>
+        rcases first with ⟨key,value⟩
+        have constraintsLegal := frame.decomposeAll_constraints legal decomposed
+        have selected := constraintsLegal (key,value) (by simp)
+        cases occurs : Metta.Subst.occurs key value with
+        | true => simp [Metta.Unify.unifyRounds,decomposed,occurs] at step
+        | false =>
+          apply ih (equations := rest.map fun entry =>
+            (Metta.Subst.apply [(key,value)] (.var entry.1),
+             Metta.Subst.apply [(key,value)] entry.2))
+              (seed := Metta.Subst.extend seed key value) ?_ ?_ ?_
+          · intro equation present
+            obtain ⟨entry,member,rfl⟩ := List.mem_map.mp present
+            exact frame.constraint_substituted selected
+              (constraintsLegal entry (by simp [member]))
+          · intro entry present
+            simp only [Metta.Subst.extend,List.mem_cons,Metta.Subst.erase] at present
+            rcases present with rfl | old
+            · exact selected
+            · exact seedLegal entry (List.mem_of_mem_filter old)
+          · simpa only [Metta.Unify.unifyRounds,decomposed,occurs,Bool.false_eq_true,
+              ↓reduceIte] using step
+
+theorem aliasConstraints_legal (frame : IsolatedSolveFrame)
+    {constraints : List (String × Metta.Atom)}
+    (legal : ∀ entry ∈ constraints,frame.Constraint entry.1 entry.2)
+    {edge : String × String} (present : edge∈Metta.Unify.aliasConstraints constraints) :
+    frame.Constraint edge.1 (.var edge.2) := by
+  induction constraints with
+  | nil => simp [Metta.Unify.aliasConstraints] at present
+  | cons entry rest ih =>
+    rcases entry with ⟨key,term⟩
+    cases term with
+    | var other =>
+      simp only [Metta.Unify.aliasConstraints,List.mem_cons] at present
+      rcases present with rfl | tail
+      · exact legal (key,.var other) (by simp)
+      · exact ih (fun entry member => legal entry (by simp [member])) tail
+    | sym symbol | gnd ground | expr children =>
+      exact ih (fun entry member => legal entry (by simp [member])) present
+
+/-- Alias discovery respects the same frame even before success is known.
+The trace cannot connect a caller name to a private slot or public hole. -/
+theorem aliasTrace_constraints (frame : IsolatedSolveFrame)
+    (fuel : Nat) {equations : List (Metta.Atom × Metta.Atom)}
+    (legal : ∀ equation ∈ equations,frame.Equation equation.1 equation.2) :
+    ∀ edge ∈ Metta.Unify.aliasTrace fuel equations,frame.Constraint edge.1 (.var edge.2) := by
+  induction fuel generalizing equations with
+  | zero =>
+    cases decomposed : Metta.Unify.decomposeAll equations with
+    | none => simp [Metta.Unify.aliasTrace,decomposed]
+    | some constraints =>
+      simpa only [Metta.Unify.aliasTrace,decomposed] using
+        fun edge present => frame.aliasConstraints_legal
+          (frame.decomposeAll_constraints legal decomposed) (edge := edge) present
+  | succ fuel ih =>
+    cases decomposed : Metta.Unify.decomposeAll equations with
+    | none => simp [Metta.Unify.aliasTrace,decomposed]
+    | some constraints =>
+      cases constraints with
+      | nil => simp [Metta.Unify.aliasTrace,decomposed]
+      | cons first rest =>
+        rcases first with ⟨key,value⟩
+        have constraintsLegal := frame.decomposeAll_constraints legal decomposed
+        have here := fun edge present => frame.aliasConstraints_legal constraintsLegal
+          (edge := edge) present
+        cases occurs : Metta.Subst.occurs key value with
+        | true => simpa only [Metta.Unify.aliasTrace,decomposed,occurs,↓reduceIte] using here
+        | false =>
+          simp only [Metta.Unify.aliasTrace,decomposed,occurs,Bool.false_eq_true,↓reduceIte]
+          intro edge present
+          rcases List.mem_append.mp present with current | later
+          · exact here edge current
+          · apply ih ?_ edge later
+            intro equation member
+            obtain ⟨entry,entryPresent,rfl⟩ := List.mem_map.mp member
+            exact frame.constraint_substituted (constraintsLegal (key,value) (by simp))
+              (constraintsLegal entry (by simp [entryPresent]))
+
+def Relation (frame : IsolatedSolveFrame) : Metta.BindingRel → Prop
+  | .val key value => frame.Constraint key value
+  | .eq left right => frame.Constraint left (.var right)
+
+def BindingsLegal (frame : IsolatedSolveFrame) (bindings : Metta.Bindings) : Prop :=
+  ∀ relation ∈ bindings,frame.Relation relation
+
+theorem constraint_equation (frame : IsolatedSolveFrame)
+    {key : String} {value : Metta.Atom} (legal : frame.Constraint key value) :
+    frame.Equation (.var key) value := by
+  rcases legal with ⟨privateKey,rfl⟩ | ⟨callerKey,valueInside⟩
+  · exact Or.inr (Or.inl ⟨key,privateKey,rfl,rfl⟩)
+  · exact Or.inr (Or.inr ⟨by simpa [InsideCaller,Metta.Atom.vars] using callerKey,valueInside⟩)
+
+theorem binding_equations (frame : IsolatedSolveFrame)
+    {bindings : Metta.Bindings} (legal : frame.BindingsLegal bindings) :
+    ∀ equation ∈ bindings.equations,frame.Equation equation.1 equation.2 := by
+  intro equation present
+  obtain ⟨relation,member,rfl⟩ := List.mem_map.mp present
+  have good := legal relation member
+  cases relation with
+  | val key value | eq key value => exact frame.constraint_equation good
+
+theorem reconcileAll_constraints (frame : IsolatedSolveFrame)
+    {bindings : Metta.Bindings} {extra : List (Metta.Atom × Metta.Atom)}
+    {result : Metta.Subst}
+    (legal : frame.BindingsLegal bindings)
+    (extraLegal : ∀ equation ∈ extra,frame.Equation equation.1 equation.2)
+    (step : Metta.Bindings.reconcileAll bindings extra=some result) :
+    ∀ entry ∈ result,frame.Constraint entry.1 entry.2 := by
+  apply frame.unifyRounds_constraints ?_ (by simp) step
+  intro equation present
+  exact (List.mem_append.mp present).elim
+    (frame.binding_equations legal equation) (extraLegal equation)
+
+theorem reconciliationAliases_constraints (frame : IsolatedSolveFrame)
+    {bindings : Metta.Bindings} (extra : List (Metta.Atom × Metta.Atom)) (result : Metta.Subst)
+    (legal : frame.BindingsLegal bindings)
+    (extraLegal : ∀ equation ∈ extra,frame.Equation equation.1 equation.2) :
+    ∀ edge ∈ Metta.Bindings.reconciliationAliases bindings extra result,
+      frame.Constraint edge.1 (.var edge.2) := by
+  intro edge present
+  rcases List.mem_append.mp present with primary | collisionFirst
+  · apply frame.aliasTrace_constraints _ ?_ edge primary
+    intro equation member
+    exact (List.mem_append.mp member).elim
+      (frame.binding_equations legal equation) (extraLegal equation)
+  · apply frame.aliasTrace_constraints _ ?_ edge collisionFirst
+    intro equation member
+    exact (List.mem_append.mp member).elim
+      (extraLegal equation) (frame.binding_equations legal equation)
+
+theorem addEqRaw_legal (frame : IsolatedSolveFrame)
+    {bindings : Metta.Bindings} {left right : String}
+    (legal : frame.BindingsLegal bindings) (edge : frame.Constraint left (.var right)) :
+    frame.BindingsLegal (bindings.addEqRaw left right) := by
+  unfold Metta.Bindings.addEqRaw
+  split
+  · exact legal
+  · intro relation present
+    rcases List.mem_cons.mp present with rfl | old
+    · exact edge
+    · exact legal relation old
+
+theorem addValRaw_legal (frame : IsolatedSolveFrame)
+    {bindings : Metta.Bindings} {key : String} {value : Metta.Atom}
+    (legal : frame.BindingsLegal bindings) (entry : frame.Constraint key value) :
+    frame.BindingsLegal (bindings.addValRaw key value) := by
+  intro relation present
+  rcases List.mem_cons.mp present with rfl | old
+  · exact entry
+  · exact legal relation (List.mem_of_mem_filter old)
+
+theorem restoreAlias_legal (frame : IsolatedSolveFrame)
+    {bindings : Metta.Bindings} {edge : String × String}
+    (legal : frame.BindingsLegal bindings) (entry : frame.Constraint edge.1 (.var edge.2)) :
+    frame.BindingsLegal (bindings.restoreAlias edge) := by
+  unfold Metta.Bindings.restoreAlias
+  split
+  · exact legal
+  · exact frame.addEqRaw_legal legal entry
+
+theorem equalitySkeleton_legal (frame : IsolatedSolveFrame)
+    {bindings : Metta.Bindings} (legal : frame.BindingsLegal bindings) :
+    frame.BindingsLegal bindings.equalitySkeleton := by
+  induction bindings with
+  | nil => simp [Metta.Bindings.equalitySkeleton,BindingsLegal]
+  | cons head rest ih =>
+    have tail := ih (fun relation member => legal relation (by simp [member]))
+    cases head with
+    | val key value => exact tail
+    | eq left right =>
+      intro relation present
+      rcases List.mem_cons.mp present with rfl | old
+      · exact legal (.eq left right) (by simp)
+      · exact tail relation old
+
+theorem restoreAliases_legal (frame : IsolatedSolveFrame)
+    (edges : List (String × String)) (bindings : Metta.Bindings)
+    (legal : frame.BindingsLegal bindings)
+    (rows : ∀ edge∈edges,frame.Constraint edge.1 (.var edge.2)) :
+    frame.BindingsLegal (edges.foldl Metta.Bindings.restoreAlias bindings) := by
+  induction edges generalizing bindings with
+  | nil => exact legal
+  | cons edge tail ih =>
+    exact ih _ (frame.restoreAlias_legal legal (rows edge (by simp)))
+      (fun entry member => rows entry (by simp [member]))
+
+theorem rebuild_legal (frame : IsolatedSolveFrame)
+    {candidate source : Metta.Bindings} {extra : List (Metta.Atom × Metta.Atom)}
+    {result : Metta.Subst}
+    (candidateLegal : frame.BindingsLegal candidate)
+    (sourceLegal : frame.BindingsLegal source)
+    (extraLegal : ∀ equation ∈ extra,frame.Equation equation.1 equation.2)
+    (step : Metta.Bindings.reconcileAll source extra=some result) :
+    frame.BindingsLegal (Metta.Bindings.rebuildFromReconciliation candidate source extra result) := by
+  have solution := frame.reconcileAll_constraints sourceLegal extraLegal step
+  have aliases := frame.reconciliationAliases_constraints extra result sourceLegal extraLegal
+  have core : frame.BindingsLegal (Metta.Bindings.rebuildFromSubst candidate result) := by
+    intro relation present
+    rcases List.mem_append.mp present with old | substituted
+    · exact frame.equalitySkeleton_legal candidateLegal relation old
+    · obtain ⟨entry,member,rfl⟩ := List.mem_map.mp substituted
+      have good := solution entry member
+      rcases entry with ⟨key,value⟩
+      cases value <;> exact good
+  exact frame.restoreAliases_legal _ _ core aliases
+
+theorem addVarEquality_legal (frame : IsolatedSolveFrame)
+    {bindings result : Metta.Bindings} {left right : String}
+    (legal : frame.BindingsLegal bindings) (edge : frame.Constraint left (.var right))
+    (produced : result∈Metta.Bindings.addVarEquality bindings left right) :
+    frame.BindingsLegal result := by
+  cases unified : Metta.Bindings.unifyValues
+      ((bindings.addEqRaw left right).classValues left) with
+  | none => simp [Metta.Bindings.addVarEquality,unified] at produced
+  | some solution =>
+    cases solution with
+    | nil =>
+      have same : result=bindings.addEqRaw left right := by
+        simpa only [Metta.Bindings.addVarEquality,unified,List.mem_singleton] using produced
+      rw [same]
+      exact frame.addEqRaw_legal legal edge
+    | cons first rest =>
+      cases reconciled : Metta.Bindings.reconcileAll bindings [(.var left,.var right)] with
+      | none => simp [Metta.Bindings.addVarEquality,unified,reconciled] at produced
+      | some all =>
+        have same : result=Metta.Bindings.rebuildFromReconciliation
+            (bindings.addEqRaw left right) bindings [(.var left,.var right)] all := by
+          simpa only [Metta.Bindings.addVarEquality,unified,reconciled,List.mem_singleton] using produced
+        rw [same]
+        exact frame.rebuild_legal (frame.addEqRaw_legal legal edge) legal
+          (by intro equation member; rw [List.mem_singleton.mp member]
+              exact frame.constraint_equation edge) reconciled
+
+private theorem addVarBinding_nonvar_legal (frame : IsolatedSolveFrame)
+    {bindings result : Metta.Bindings} {key : String} {value : Metta.Atom}
+    (nonvariable : ∀ other,value≠.var other)
+    (legal : frame.BindingsLegal bindings) (entry : frame.Constraint key value)
+    (produced : result∈Metta.Bindings.addVarBinding bindings key value) :
+    frame.BindingsLegal result := by
+  have expanded : Metta.Bindings.addVarBinding bindings key value=
+      match bindings.classValues key with
+      | [] => [bindings.addValRaw key value]
+      | first::rest =>
+        match Metta.Bindings.unifyValues (first::(rest++[value])) with
+        | none => []
+        | some [] => [bindings]
+        | some (_::_) =>
+          match Metta.Bindings.reconcileAll bindings [(.var key,value)] with
+          | none => []
+          | some all => [Metta.Bindings.rebuildFromReconciliation bindings bindings
+              [(.var key,value)] all] := by
+    cases value with
+    | var other => exact (nonvariable other rfl).elim
+    | sym name | gnd name | expr name =>
+      cases values : bindings.classValues key <;>
+        simp only [Metta.Bindings.addVarBinding,values,List.cons_append]
+      all_goals rfl
+  rw [expanded] at produced
+  cases values : bindings.classValues key with
+  | nil =>
+    have same : result=bindings.addValRaw key value := by
+      simpa only [values,List.mem_singleton] using produced
+    rw [same]
+    exact frame.addValRaw_legal legal entry
+  | cons first rest =>
+    simp only [values] at produced
+    cases unified : Metta.Bindings.unifyValues (first::(rest++[value])) with
+    | none => simp [unified] at produced
+    | some solution =>
+      cases solution with
+      | nil =>
+        have same : result=bindings := by simpa only [unified,List.mem_singleton] using produced
+        exact same ▸ legal
+      | cons head tail =>
+        simp only [unified] at produced
+        cases reconciled : Metta.Bindings.reconcileAll bindings [(.var key,value)] with
+        | none => simp [reconciled] at produced
+        | some all =>
+          have same : result=Metta.Bindings.rebuildFromReconciliation bindings bindings
+              [(.var key,value)] all := by
+            simpa only [reconciled,List.mem_singleton] using produced
+          rw [same]
+          exact frame.rebuild_legal legal legal
+            (by intro equation member; rw [List.mem_singleton.mp member]
+                exact frame.constraint_equation entry) reconciled
+
+theorem addVarBinding_legal (frame : IsolatedSolveFrame)
+    {bindings result : Metta.Bindings} {key : String} {value : Metta.Atom}
+    (legal : frame.BindingsLegal bindings) (entry : frame.Constraint key value)
+    (produced : result∈Metta.Bindings.addVarBinding bindings key value) :
+    frame.BindingsLegal result := by
+  cases value with
+  | var other => exact frame.addVarEquality_legal legal entry produced
+  | sym name | gnd name | expr name =>
+    exact frame.addVarBinding_nonvar_legal (by intro other same; cases same) legal entry produced
+
+theorem mergeOne_legal (frame : IsolatedSolveFrame)
+    {seeds : List Metta.Bindings} {relation : Metta.BindingRel} {result : Metta.Bindings}
+    (seedLegal : ∀ bindings∈seeds,frame.BindingsLegal bindings)
+    (relationLegal : frame.Relation relation)
+    (produced : result∈Metta.Bindings.mergeOne seeds relation) :
+    frame.BindingsLegal result := by
+  obtain ⟨bindings,member,advanced⟩ := List.mem_flatMap.mp produced
+  cases relation with
+  | val key value => exact frame.addVarBinding_legal (seedLegal bindings member) relationLegal advanced
+  | eq left right => exact frame.addVarEquality_legal (seedLegal bindings member) relationLegal advanced
+
+theorem mergeFold_legal (frame : IsolatedSolveFrame)
+    (relations : Metta.Bindings) (seeds : List Metta.Bindings)
+    (seedLegal : ∀ bindings∈seeds,frame.BindingsLegal bindings)
+    (relationsLegal : frame.BindingsLegal relations) :
+    ∀ result∈relations.foldl Metta.Bindings.mergeOne seeds,frame.BindingsLegal result := by
+  induction relations generalizing seeds with
+  | nil => exact seedLegal
+  | cons relation rest ih =>
+    apply ih
+    · intro result member
+      exact frame.mergeOne_legal seedLegal (relationsLegal relation (by simp)) member
+    · intro row member
+      exact relationsLegal row (by simp [member])
+
+/-- The complete native merge respects interleaved fixed private slots and
+the caller region. This includes every reconciliation and alias-restoration
+branch, without requiring consistent or normalized raw caller records. -/
+theorem merge_legal (frame : IsolatedSolveFrame)
+    {left right result : Metta.Bindings}
+    (leftLegal : frame.BindingsLegal left) (rightLegal : frame.BindingsLegal right)
+    (produced : result∈Metta.Bindings.merge left right) :
+    frame.BindingsLegal result := by
+  exact frame.mergeFold_legal right [left] (by simpa using leftLegal) rightLegal result produced
+
+theorem merge_head_fallback_legal (frame : IsolatedSolveFrame)
+    {left right fallback : Metta.Bindings}
+    (leftLegal : frame.BindingsLegal left) (rightLegal : frame.BindingsLegal right)
+    (fallbackLegal : frame.BindingsLegal fallback) :
+    frame.BindingsLegal ((Metta.Bindings.merge left right).head?.getD fallback) := by
+  cases merged : Metta.Bindings.merge left right with
+  | nil => simpa only [merged,List.head?_nil,Option.getD_none] using fallbackLegal
+  | cons result rest =>
+    simpa only [merged,List.head?_cons,Option.getD_some] using
+      frame.merge_legal leftLegal rightLegal (result := result) (by rw [merged]; simp)
+
+namespace Controls
+
+def openFrame : IsolatedSolveFrame where
+  privateKey key := key="pattern" ∨ key="atom" ∨ key="template"
+  value key := if key="pattern" then .var "x"
+    else if key="atom" then .sym "A" else .expr [.sym "pair",.var "x",.var "y"]
+  caller key := key="c" ∨ key="d"
+  private_not_caller := by intro key privateKey; rcases privateKey with rfl | rfl | rfl <;> decide
+  value_no_private := by
+    intro key privateKey
+    rcases privateKey with rfl | rfl | rfl <;> simp [Metta.Atom.vars]
+  value_no_caller := by
+    intro key privateKey
+    rcases privateKey with rfl | rfl | rfl <;> simp [Metta.Atom.vars]
+
+def incoming : Metta.Bindings :=
+  [.val "c" (.expr [.sym "pair",.var "d"]),.val "d" (.sym "A")]
+
+def localRows : Metta.Bindings :=
+  [.eq "pattern" "x",.val "atom" (.sym "A"),
+    .val "template" (.expr [.sym "pair",.var "x",.var "y"])]
+
+theorem incoming_legal : openFrame.BindingsLegal incoming := by
+  simp [BindingsLegal,incoming,Relation,Constraint,InsideCaller,openFrame,Metta.Atom.vars]
+
+theorem local_legal : openFrame.BindingsLegal localRows := by
+  simp [BindingsLegal,localRows,Relation,Constraint,InsideCaller,openFrame,Metta.Atom.vars]
+
+theorem actual_merge_legal (result : Metta.Bindings)
+    (produced : result∈Metta.Bindings.merge incoming (localRows++incoming)) :
+    openFrame.BindingsLegal result :=
+  openFrame.merge_legal incoming_legal
+    (by intro relation member
+        exact (List.mem_append.mp member).elim (local_legal relation) (incoming_legal relation)) produced
+
+def actualRetained : Metta.Bindings :=
+  Metta.Minimal.restrictBnd ["x","y","c","d"]
+    ((Metta.Bindings.merge incoming (localRows++incoming)).head?.getD (localRows++incoming))
+
+#guard !(Metta.Bindings.merge incoming (localRows++incoming)).isEmpty
+#guard Metta.instantiate actualRetained (.var "x") == .var "x"
+#guard Metta.instantiate actualRetained (.var "y") == .var "y"
+#guard Metta.instantiate actualRetained (.var "c") == .expr [.sym "pair",.sym "A"]
+
+/-- A caller that assigns a public hole violates the isolated-frame contract;
+its different readout is visible, rather than removed by an equality quotient. -/
+theorem public_hole_capture_not_legal : ¬openFrame.Relation (.val "x" (.sym "captured")) := by
+  simp [Relation,Constraint,InsideCaller,openFrame]
+
+#guard Metta.instantiate
+  ((Metta.Bindings.merge [.val "x" (.sym "captured")] localRows).head?.getD []) (.var "x")
+    == .sym "captured"
+
+end Controls
+
+end IsolatedSolveFrame
 end Mettapedia.Languages.MeTTa.HE.LeaTTaBridge

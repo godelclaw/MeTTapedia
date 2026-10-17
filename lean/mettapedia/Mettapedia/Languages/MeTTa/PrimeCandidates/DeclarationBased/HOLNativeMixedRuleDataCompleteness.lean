@@ -21,7 +21,7 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.HOLNativeM
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.MeTTaIL.Engine
-open DeclarationAwarePatternCodec DeclarationAwareSubstitutionLanguage
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec DeclarationAwareSubstitutionLanguage
 open Presentation NativeIndexedFamilies
 
 def Computes (source target : Pattern) : Prop :=

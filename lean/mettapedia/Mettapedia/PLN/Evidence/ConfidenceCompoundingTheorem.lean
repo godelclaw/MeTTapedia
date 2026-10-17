@@ -1,45 +1,40 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 import Mettapedia.PLN.Evidence.HeytingValuationOnEvidence
 
 /-!
-# Confidence Compounding Theorem
+# Algebra of the binary-evidence tensor
 
-This file proves that the PLN tensor operation (times) corresponds to **confidence
-compounding** from the Beta-Bernoulli perspective.
+This file records algebraic facts about PLN's coordinatewise tensor
+`(n₁⁺, n₁⁻) * (n₂⁺, n₂⁻) = (n₁⁺ n₂⁺, n₁⁻ n₂⁻)`: it is commutative and
+associative with unit `(1, 1)`, its total is `n₁⁺ n₂⁺ + n₁⁻ n₂⁻` (not the product
+of the totals), and it multiplies the odds `n⁺ / n⁻`.
 
-## The Key Insight
+## What the tensor means
 
-For independent evidence sources:
-- BinaryEvidence E1 = (n1+, n1-) with confidence c1
-- BinaryEvidence E2 = (n2+, n2-) with confidence c2
+* Read as **likelihood evidence**, the pair of masses of a hypothesis and of its
+  negation jointly with a report, the tensor is the evidence of two reports
+  that are conditionally independent given the hypothesis, under a uniform
+  prior; its strength is the posterior probability, the logarithmic opinion
+  pool (`Mettapedia.PLN.WorldModel.EvidenceContracts.testimony_fuse_uniform`,
+  `strength_fuse_uniform`, `strength_fuse`).  Fusing two posteriors that each
+  contain a non-uniform prior counts the prior twice.
+* Read as **counts of samples**, it is not likelihood combination: the
+  Bernoulli likelihoods `θ^k (1-θ)^m` of independent samples multiply by
+  *adding* the counts, which is revision.  Pairing samples gives the paired
+  product of `Mettapedia.PLN.WorldModel.EvidenceSpaces.ofSamples_product`, not
+  the tensor.
+* It is not the direct path of PLN deduction: on two half-strength premises its
+  strength is `1/2`, while `s_AB · s_BC = 1/4` is the strength of the paired
+  product (`Mettapedia.PLN.WorldModel.EvidenceContracts.Controls.fuse_not_direct_path`).
 
-The tensor product E1 * E2 = (n1+ * n2+, n1- * n2-) captures:
-1. **Multiplicative combination** of likelihood ratios
-2. **Confidence compounding** for independent sources
-
-## Main Theorems
-
-* `tensor_total_evidence_eq` : Total evidence of tensor is product of totals
-* `tensor_likelihood_ratio_mul` : Tensor multiplies likelihood ratios
-* `confidence_compounding_interpretation` : Confidence compounds multiplicatively
-* `sequential_independent_inference` : Sequential inference = tensor for independent sources
-
-## Connection to Beta Distribution
-
-For Beta-Bernoulli inference:
-- Likelihood ratio for theta given evidence (k, m) is theta^k * (1-theta)^m
-- Combining independent evidence: multiply likelihood ratios
-- This is exactly what tensor does: (k1, m1) * (k2, m2) = (k1*k2, m1*m2)
-
-The tensor operation is thus the natural algebraic structure for combining
-independent Bayesian evidence.
+The theorems below are the algebraic facts only; none of them derives a
+confidence for a conclusion.
 
 ## References
 
-- PLN tensor product (EvidenceQuantale.lean)
+- PLN tensor product (BinaryEvidence.lean)
 - BinaryEvidence-Beta connection (EvidenceBeta.lean)
-- Bayesian independence and likelihood combination
 -/
 
 namespace Mettapedia.PLN.Evidence.ConfidenceCompoundingTheorem
@@ -52,13 +47,8 @@ open Mettapedia.PLN.Evidence.HeytingValuationOnEvidence
 
 section TensorTotalEvidence
 
-/-- Total evidence of a tensor product equals the product of total evidences.
-
-    totalEvidence(E1 * E2) = (n1+ * n2+) + (n1- * n2-)
-
-    Note: This is NOT equal to totalEvidence(E1) * totalEvidence(E2) in general,
-    but it reflects the multiplicative nature of the tensor operation.
--/
+/-- The total of a tensor product: `n1+ * n2+ + n1- * n2-`, which is not the
+    product of the totals in general. -/
 theorem tensor_total_evidence_eq (e1 e2 : BinaryEvidence) :
     totalEvidence (e1 * e2) = e1.pos * e2.pos + e1.neg * e2.neg := by
   simp only [totalEvidence, BinaryEvidence.tensor_def]
@@ -80,43 +70,27 @@ theorem tensor_uniform_scaling (n : ENNReal) (e : BinaryEvidence) :
 
 end TensorTotalEvidence
 
-/-! ## Likelihood Ratios and Tensor
+/-! ## Coordinatewise products
 
-The tensor operation corresponds to multiplying likelihood ratios.
-For Bernoulli observations, the likelihood ratio is theta^(n+) * (1-theta)^(n-).
+The tensor multiplies the two coordinates separately.  For Bernoulli samples the
+likelihood `theta^(n+) * (1-theta)^(n-)` of independent samples multiplies by
+adding counts, so these products are not likelihood combination of counts.
 -/
 
 section LikelihoodRatios
 
-/-- The likelihood contribution from evidence counts.
-
-    For a Bernoulli(theta) model, observing n+ successes and n- failures
-    gives likelihood theta^(n+) * (1-theta)^(n-).
-
-    We represent this abstractly using the evidence counts directly.
--/
+/-- The two counts as a pair. -/
 noncomputable def likelihoodExponent (e : BinaryEvidence) : ENNReal × ENNReal :=
   (e.pos, e.neg)
 
-/-- Tensor multiplies likelihood exponents componentwise.
-
-    (n1+, n1-) * (n2+, n2-) gives exponents (n1+ * n2+, n1- * n2-)
-
-    This corresponds to: theta^(n1+*n2+) * (1-theta)^(n1-*n2-)
--/
+/-- The tensor multiplies the two counts componentwise. -/
 theorem tensor_likelihood_exponent_mul (e1 e2 : BinaryEvidence) :
     likelihoodExponent (e1 * e2) =
       (e1.pos * e2.pos, e1.neg * e2.neg) := by
   unfold likelihoodExponent
   simp only [BinaryEvidence.tensor_def]
 
-/-- The additive version: log-likelihood adds under tensor.
-
-    If we think of evidence as log-likelihood contributions:
-    log L(theta | E) proportional to n+ * log theta + n- * log(1-theta)
-
-    Then tensor corresponds to adding log-likelihoods (multiplying likelihoods).
--/
+/-- The tensor multiplies the two counts componentwise (restated). -/
 theorem tensor_log_likelihood_additive (e1 e2 : BinaryEvidence) :
     -- The evidence counts add logarithmically
     (e1 * e2).pos = e1.pos * e2.pos ∧
@@ -125,11 +99,7 @@ theorem tensor_log_likelihood_additive (e1 e2 : BinaryEvidence) :
 
 end LikelihoodRatios
 
-/-! ## Confidence Compounding
-
-When combining independent evidence sources, confidence should compound
-appropriately. The tensor operation achieves this.
--/
+/-! ## Positivity of products -/
 
 section ConfidenceCompounding
 
@@ -162,27 +132,14 @@ theorem tensor_neg_ne_zero (e1 e2 : BinaryEvidence)
 
 end ConfidenceCompounding
 
-/-! ## Sequential Inference and Tensor
-
-For independent evidence sources, sequential Bayesian updating
-corresponds to the tensor operation.
--/
+/-! ## Algebraic laws -/
 
 section SequentialInference
 
-/-- Sequential independent inference theorem.
-
-    When E1 and E2 represent evidence from independent observations,
-    combining them sequentially (Bayesian update) is captured by:
-
-    1. hplus (+) for the SAME underlying phenomenon (counts add)
-    2. tensor (*) for DIFFERENT/INDEPENDENT phenomena (counts multiply)
-
-    The tensor is appropriate when:
-    - Combining odds ratios from independent experiments
-    - Composing conditional probabilities (P(A|B) * P(B|C))
-    - Chaining inference steps in PLN deduction
--/
+/-- The tensor is associative and commutative with unit `(1, 1)`.  Its derived
+    meaning is fusion of conditionally independent likelihood evidence; it is
+    not the composition of conditional probabilities `P(B|A) · P(C|B)`, whose
+    strength is that of the paired product. -/
 theorem sequential_independent_inference :
     -- Tensor is associative (can chain multiple steps)
     (∀ e1 e2 e3 : BinaryEvidence, (e1 * e2) * e3 = e1 * (e2 * e3)) ∧
@@ -192,21 +149,10 @@ theorem sequential_independent_inference :
     (∀ e : BinaryEvidence, e * BinaryEvidence.one = e) := by
   exact ⟨BinaryEvidence.tensor_assoc, BinaryEvidence.tensor_comm, BinaryEvidence.tensor_one⟩
 
-/-- The tensor operation captures likelihood combination.
-
-    For independent Bernoulli observations:
-    - P(data1 | theta) = theta^k1 * (1-theta)^m1
-    - P(data2 | theta) = theta^k2 * (1-theta)^m2
-
-    Combined (independent):
-    - P(data1, data2 | theta) = theta^(k1+k2) * (1-theta)^(m1+m2)  [additive in counts]
-
-    But for COMPOSING conditional relationships (odds ratios):
-    - OR1 = (k1/m1), OR2 = (k2/m2)
-    - Combined OR = OR1 * OR2 = (k1*k2)/(m1*m2)  [multiplicative]
-
-    Tensor captures the multiplicative composition.
--/
+/-- The tensor multiplies the odds `pos / neg`.  For likelihood evidence these
+    are likelihood ratios, which multiply for conditionally independent
+    reports; for counts of independent samples, likelihoods combine by adding
+    counts instead. -/
 theorem tensor_captures_odds_composition (e1 e2 : BinaryEvidence)
     (h1_neg : e1.neg ≠ 0) (h2_neg : e2.neg ≠ 0) :
     -- If we define odds ratio as pos/neg (when neg is nonzero)
@@ -225,22 +171,11 @@ theorem tensor_captures_odds_composition (e1 e2 : BinaryEvidence)
 
 end SequentialInference
 
-/-! ## Beta Distribution Connection
-
-The tensor operation has a natural interpretation in terms of
-Beta distribution parameters and posterior updates.
--/
+/-! ## Contrast with revision -/
 
 section BetaConnection
 
-/-- For Beta-Bernoulli conjugacy, tensor corresponds to combining
-    independent sufficient statistics multiplicatively.
-
-    This is relevant when:
-    1. We have multiple independent Beta priors
-    2. We want to combine their "evidence weights"
-    3. The combination should respect independence
--/
+/-- The tensor multiplies the two counts componentwise (restated). -/
 theorem tensor_independent_beta_interpretation (e1 e2 : BinaryEvidence) :
     -- The tensor of two evidence values combines their "votes" multiplicatively
     -- This is appropriate for combining ODDS, not raw counts
@@ -248,19 +183,8 @@ theorem tensor_independent_beta_interpretation (e1 e2 : BinaryEvidence) :
     (e1 * e2).neg = e1.neg * e2.neg := by
   simp only [BinaryEvidence.tensor_def, and_self]
 
-/-- Contrast: hplus (+) vs tensor (*) for evidence combination.
-
-    - hplus: Adds counts (for more observations of SAME phenomenon)
-             (k1, m1) + (k2, m2) = (k1+k2, m1+m2)
-             Beta posterior: Beta(alpha + k1 + k2, beta + m1 + m2)
-
-    - tensor: Multiplies counts (for INDEPENDENT phenomena)
-              (k1, m1) * (k2, m2) = (k1*k2, m1*m2)
-              Combines odds ratios multiplicatively
-
-    PLN uses tensor for deduction (composing conditional relationships)
-    and hplus for revision (combining evidence about same proposition).
--/
+/-- Revision adds counts, the Beta posterior update for more samples of the same
+    proposition; the tensor multiplies them componentwise. -/
 theorem hplus_vs_tensor_contrast (e1 e2 : BinaryEvidence) :
     -- hplus is additive
     ((e1 + e2).pos = e1.pos + e2.pos ∧ (e1 + e2).neg = e1.neg + e2.neg) ∧
@@ -278,21 +202,8 @@ end BetaConnection
 
 section MainTheorem
 
-/-- **Main Theorem**: The tensor operation correctly compounds confidence
-    for independent evidence sources.
-
-    Given:
-    - E1 = (n1+, n1-) from independent source 1
-    - E2 = (n2+, n2-) from independent source 2
-
-    Then E1 * E2 = (n1+*n2+, n1-*n2-) correctly represents:
-    1. Multiplicative combination of likelihood ratios
-    2. Odds ratio composition
-    3. Confidence compounding for independent sources
-
-    This justifies the use of tensor in PLN deduction for chaining
-    conditional relationships: P(A|B) composed with P(B|C).
--/
+/-- The algebraic laws of the tensor: commutative, associative, unital, and
+    componentwise.  These laws do not derive a confidence for a conclusion. -/
 theorem confidence_compounding_main :
     -- Tensor is the correct operation for independent evidence
     (∀ e1 e2 : BinaryEvidence,
@@ -321,20 +232,17 @@ end MainTheorem
 
 /-! ## Summary
 
-This file establishes:
+This file establishes the algebra of the tensor: componentwise products, the
+total `n1+ * n2+ + n1- * n2-`, multiplication of odds, commutativity,
+associativity and the unit `(1, 1)`.
 
-1. **Tensor Total BinaryEvidence**: The tensor product combines evidence multiplicatively
-2. **Likelihood Ratios**: Tensor multiplies likelihood exponents
-3. **Confidence Compounding**: For independent sources, confidence compounds correctly
-4. **Sequential Inference**: Tensor captures sequential independent inference
-5. **Beta Connection**: Tensor is the right operation for combining odds (not counts)
+- **hplus (+)**: adds counts, the Bayesian update for more samples of the same
+  proposition, exact for disjoint samples.
+- **tensor (*)**: multiplies coordinates, the fusion of conditionally
+  independent likelihood evidence about one hypothesis.
 
-The key distinction:
-- **hplus (+)**: Add counts -> same phenomenon, Bayesian conjugate update
-- **tensor (*)**: Multiply counts -> independent phenomena, odds composition
-
-This justifies PLN's use of tensor in deduction rules where conditional
-relationships are composed (A->B and B->C to get A->C).
+Neither law derives the confidence of a deduction; composing `A → B` and
+`B → C` along a direct path has the strength of the paired product.
 -/
 
 end Mettapedia.PLN.Evidence.ConfidenceCompoundingTheorem

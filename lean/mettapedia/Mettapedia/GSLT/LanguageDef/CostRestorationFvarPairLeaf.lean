@@ -351,33 +351,6 @@ where
           rightResolve names head,
           reifyWithList_eq cospan leftResolve rightResolve names tail⟩
 
-/-- **A non-quote application head survives keyed canonicalization.**
-
-`canonicalizeByDepths` rewrites an application only through
-`finishNormalizeReflectiveApply`, which acts at the quote constructor; every
-other head is returned intact over canonicalized arguments.
-
-This is the structural half of source-frame alignment: `CanonicalRootAligned`
-carries `ne : constructor ≠ declaration.quoteConstructor` on its `apply` arm,
-so two root-aligned patterns keep their shared constructor through
-canonicalization and `PatternLeafAligned.apply` can fire.  The collapsing arms
-are exactly the cases this excludes. -/
-theorem Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeByDepths_apply_of_ne_quote {Key : Type} [LinearOrder Key]
-    (key : Nat → Nat → Pattern → Key)
-    (declaration : ReflectivePresentationDecl)
-    (availableDepth scopeDepth : Nat) (constructor : String)
-    (arguments : List Pattern)
-    (notQuote : constructor ≠ declaration.quoteConstructor) :
-    Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeByDepths key declaration availableDepth scopeDepth
-        (.apply constructor arguments) =
-      .apply constructor
-        (Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeListByDepths key declaration availableDepth scopeDepth
-          arguments) := by
-  unfold Mettapedia.OSLF.MeTTaIL.ReflectiveCanonical.canonicalizeByDepths
-  simp only [beq_iff_eq, notQuote, if_false]
-  unfold Mettapedia.OSLF.MeTTaIL.ReflectiveSubstitution.finishNormalizeReflectiveApply
-  simp [notQuote]
-
 namespace CostStaticAtomEnvironment
 
 /-- **Joint absence closes the matched-fvar apex by reflexivity.**  A name

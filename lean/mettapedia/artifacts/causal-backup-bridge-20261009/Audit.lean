@@ -1,5 +1,5 @@
 import Mettapedia.GSLT.Causality.ScriptedExecution
-import Mettapedia.CognitiveArchitecture.Consciousness.TraceAndImplementation
+import Mettapedia.CogArch.Consciousness.TraceAndImplementation
 import Lean.Util.CollectAxioms
 import Lean.Compiler.Old
 

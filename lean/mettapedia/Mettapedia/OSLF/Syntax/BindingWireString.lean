@@ -114,5 +114,32 @@ def byte : Codec UInt8 :=
 
 def string : Codec String := (list byte).mapped Utf8.bytes Utf8.read Utf8.read_bytes
 
+/-- Retain the components of a declaration name directly. In particular, a
+textual label is UTF-8 data rather than a repeatedly paired natural number. -/
+def putName : Lean.Name → Data
+  | .anonymous => .atom 0
+  | .str parent label => .pair (.atom 1) (.pair (putName parent) (string.put label))
+  | .num parent index => .pair (.atom 2) (.pair (putName parent) (.atom index))
+
+def getName : Data → Option Lean.Name
+  | .atom 0 => some .anonymous
+  | .pair (.atom 1) (.pair parent label) => do
+      return .str (← getName parent) (← string.get label)
+  | .pair (.atom 2) (.pair parent (.atom index)) => do
+      return .num (← getName parent) index
+  | _ => none
+
+theorem get_putName : ∀ value, getName (putName value) = some value
+  | .anonymous => rfl
+  | .str parent label => by
+      simp only [putName, getName, get_putName parent, string.get_put,
+        Bind.bind, Option.bind]
+      rfl
+  | .num parent index => by
+      simp only [putName, getName, get_putName parent, Bind.bind, Option.bind]
+      rfl
+
+def name : Codec Lean.Name := ⟨putName, getName, get_putName⟩
+
 end Codec
 end Mettapedia.OSLF.Binding.WireCodec

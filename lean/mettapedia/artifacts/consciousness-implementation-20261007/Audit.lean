@@ -1,4 +1,4 @@
-import Mettapedia.CognitiveArchitecture.Consciousness.TraceAndImplementation
+import Mettapedia.CogArch.Consciousness.TraceAndImplementation
 import Lean.Util.CollectAxioms
 
 open Lean Elab Command

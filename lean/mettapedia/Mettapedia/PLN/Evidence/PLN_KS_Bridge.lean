@@ -1,5 +1,6 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Evidence.KnuthSkillingCompatibility
+import KnuthSkilling.Core.TotalityImprecision
 
 /-!
 # PLN BinaryEvidence vs Scalar Order Reflection

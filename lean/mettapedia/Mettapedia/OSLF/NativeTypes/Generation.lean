@@ -1,5 +1,13 @@
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.RuntimeBatches.LambdaFormation
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.RuntimeBatches.LetCaseFormation
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.RuntimeBatches.MachineFormation
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.RuntimeBatches.Policies
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.RuntimeBatches.Receipts
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.RuntimeBatches.SharedFormation
 import Mettapedia.OSLF.NativeTypes.SortProfiles.Binding.CenterStability
 import Mettapedia.OSLF.NativeTypes.Generation.Authored
+import Mettapedia.OSLF.NativeTypes.Generation.AuthoredNativeRuntimeControls
 import Mettapedia.OSLF.NativeTypes.SortProfiles.Binding.EmptyAmbient
 import Mettapedia.OSLF.NativeTypes.SortProfiles.Binding.ValueRepresentation
 import Mettapedia.OSLF.NativeTypes.SortProfiles.Laws.ActiveSystem
@@ -56,6 +64,7 @@ import Mettapedia.OSLF.NativeTypes.Generation.StructuralCodes
 import Mettapedia.OSLF.NativeTypes.Generation.Core
 import Mettapedia.OSLF.NativeTypes.Generation.BindingCenter
 import Mettapedia.OSLF.NativeTypes.Generation.BindingControls
+import Mettapedia.OSLF.NativeTypes.Generation.BindingEquationControls
 import Mettapedia.OSLF.NativeTypes.Generation.BindingStability
 import Mettapedia.OSLF.NativeTypes.Generation.BindingStabilityControls
 import Mettapedia.OSLF.NativeTypes.Generation.BudgetControls
@@ -116,6 +125,8 @@ import Mettapedia.OSLF.NativeTypes.Semantics.Sorted.NativeIntroduction
 import Mettapedia.OSLF.NativeTypes.Semantics.Sorted.NativeTransport
 import Mettapedia.OSLF.NativeTypes.Semantics.Sorted.PropositionalCodes
 import Mettapedia.OSLF.NativeTypes.SortProfiles.Slots
+import Mettapedia.OSLF.NativeTypes.SortProfiles.SiteInterfaces
+import Mettapedia.OSLF.NativeTypes.SortProfiles.Inhabitation
 import Mettapedia.OSLF.NativeTypes.Generation.ObservationBoundary
 import Mettapedia.OSLF.NativeTypes.SortProfiles.Source.AdmissionControls
 import Mettapedia.OSLF.NativeTypes.SortProfiles.Source.Codes

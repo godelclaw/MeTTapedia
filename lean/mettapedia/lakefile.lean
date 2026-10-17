@@ -162,6 +162,62 @@ lean_lib GSLTProgramDriverQuotation where
   roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramDriverExecution]
   needs := #[`@/gsltProgramDriverSource]
 
+input_file gsltProgramResumptionSource where
+  path := "../../metta/gslt/lib/gslt_program_resumption.metta"
+  text := false
+
+lean_lib GSLTProgramResumptionQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralProgramResumptionExecution]
+  needs := #[`@/gsltProgramResumptionSource]
+
+input_file gsltRhoLexCanonicalSource where
+  path := "../../metta/gslt/lib/gslt_rho_lex_canonical.metta"
+  text := false
+
+lean_lib GSLTRhoLexCanonicalQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RhoLexCanonicalExecution]
+  needs := #[`@/gsltRhoLexCanonicalSource]
+
+input_file gsltRhoRunnerSource where
+  path := "../../metta/gslt/lib/gslt_rho_runner.metta"
+  text := false
+
+lean_lib GSLTRhoRunnerQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RhoRunnerExecution]
+  needs := #[`@/gsltRhoRunnerSource]
+
+input_file gsltLiveRunnerSource where
+  path := "../../metta/gslt/lib/gslt_live_runner.metta"
+  text := false
+
+lean_lib GSLTLiveRunnerQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralLiveRunnerExecution]
+  needs := #[`@/gsltLiveRunnerSource]
+
+input_file gsltDescentExecutionSource where
+  path := "../../metta/gslt/lib/gslt_descent_execution.metta"
+  text := false
+
+input_file gsltCompleteSource where
+  path := "../../metta/gslt/lib/gslt_complete.metta"
+  text := false
+
+lean_lib GSLTCompleteQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Source]
+  needs := #[`@/gsltDescentExecutionSource, `@/gsltCompleteSource]
+
+input_file gsltCollectionLawsSource where
+  path := "../../metta/gslt/lib/gslt_collection_laws.metta"
+  text := false
+
+input_file gsltRunnerSource where
+  path := "../../metta/gslt/lib/gslt_runner.metta"
+  text := false
+
+lean_lib GSLTRunnerQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.RunnerSource]
+  needs := #[`@/gsltCollectionLawsSource, `@/gsltRunnerSource]
+
 -- Concrete MM2 execution examples are an explicit proof audit, not a
 -- dependency of the routine language umbrellas or the default library.
 lean_lib MetamathProofRegression where
@@ -170,31 +226,31 @@ lean_lib MetamathProofRegression where
 -- Each quotation depends on its own retained source files. Editing an
 -- unquoted frontend module does not invalidate the kernel quotation.
 input_file mm0MeTTaDataSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/data.metta"
+  path := "../../metta/mm0/data.metta"
   text := true
 
 input_file mm0MeTTaKernelSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/kernel.generated.metta"
+  path := "../../metta/mm0/kernel.generated.metta"
   text := true
 
 input_file mm0MeTTaServiceSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/service.metta"
+  path := "../../metta/mm0/service.metta"
   text := true
 
 input_file mm0MeTTaStreamSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/stream.metta"
+  path := "../../metta/mm0/stream.metta"
   text := true
 
 input_file mm0MeTTaTextualSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/textual.metta"
+  path := "../../metta/mm0/textual.metta"
   text := true
 
 input_file mm0MeTTaMMUSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/mmu.metta"
+  path := "../../metta/mm0/mmu.metta"
   text := true
 
 input_file mm0MeTTaMMBSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/mmb.metta"
+  path := "../../metta/mm0/mmb.metta"
   text := true
 
 lean_lib MM0MeTTaQuotation where
@@ -213,47 +269,47 @@ lean_lib MM0MMUQuotation where
 -- The authored frontend quotation owns these exact inputs. Its proof
 -- importers inherit changes through the ordinary module graph.
 input_file mm0AuthoredGroundSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/experiments/gslt2parse_foundation/presentations/shared/ground_relations_v1.metta"
+  path := "../../metta/mm0/syntax/shared/ground_relations_v1.metta"
   text := true
 
 input_file mm0AuthoredPeTTaGroundSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/experiments/gslt2parse_foundation/presentations/shared/cetta_petta_ground_relations_v1.metta"
+  path := "../../metta/mm0/syntax/shared/cetta_petta_ground_relations_v1.metta"
   text := true
 
 input_file mm0AuthoredFoldSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/source_fold_v1.metta"
+  path := "../../metta/mm0/syntax/source_fold_v1.metta"
   text := true
 
 input_file mm0AuthoredSortSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/sort_environment_v1.metta"
+  path := "../../metta/mm0/syntax/sort_environment_v1.metta"
   text := true
 
 input_file mm0AuthoredTermSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/term_environment_v1.metta"
+  path := "../../metta/mm0/syntax/term_environment_v1.metta"
   text := true
 
 input_file mm0AuthoredLexerSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/secondary_lexer_v1.metta"
+  path := "../../metta/mm0/syntax/secondary_lexer_v1.metta"
   text := true
 
 input_file mm0AuthoredNotationSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/notation_environment_v1.metta"
+  path := "../../metta/mm0/syntax/notation_environment_v1.metta"
   text := true
 
 input_file mm0AuthoredPrattSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/langdef/common/dynamic_pratt_v1.metta"
+  path := "../../metta/mm0/syntax/common/dynamic_pratt_v1.metta"
   text := true
 
 input_file mm0AuthoredMathSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/math_parser_v1.metta"
+  path := "../../metta/mm0/syntax/math_parser_v1.metta"
   text := true
 
 input_file mm0AuthoredExpressionSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/expression_environment_v1.metta"
+  path := "../../metta/mm0/syntax/expression_environment_v1.metta"
   text := true
 
 input_file mm0AuthoredAssertionSource where
-  path := "../../../hyperon/cetta-mm0-metta-20261004/langdef/mm0/assertion_environment_v1.metta"
+  path := "../../metta/mm0/syntax/assertion_environment_v1.metta"
   text := true
 
 lean_lib MM0TextualAuthoredQuotation where
@@ -270,6 +326,18 @@ lean_lib MM0TextualAuthoredQuotation where
     `@/mm0AuthoredMathSource,
     `@/mm0AuthoredExpressionSource,
     `@/mm0AuthoredAssertionSource]
+
+input_file mm0AuthoredSyntaxSource where
+  path := "../../metta/mm0/syntax/syntax_v1.metta"
+  text := true
+
+input_file mm0AuthoredParserPackSource where
+  path := "../../metta/mm0/syntax/generated/parser_pack_v1.abi"
+  text := true
+
+lean_lib MM0ParserLinkageQuotation where
+  roots := #[`Mettapedia.Languages.MM0.MeTTa.Formats.Textual.TextualParserLinkage]
+  needs := #[`@/mm0AuthoredSyntaxSource, `@/mm0AuthoredParserPackSource]
 
 lean_lib MM0MMBQuotation where
   roots := #[`Mettapedia.Languages.MM0.MeTTa.Formats.MMB.MMBExecution]
@@ -291,3 +359,36 @@ lean_exe pettaRun where
 
 lean_exe holLightExportReplay where
   root := `scripts.check_hol_light_export
+
+lean_exe rhoNativeCheck where
+  root := `Mettapedia.Languages.ProcessCalculi.RhoCalculus.CheckNativeEvidence
+
+lean_exe gsltNativeCheck where
+  root := `Mettapedia.GSLT.LanguageDef.CheckGSLTILNative
+
+lean_exe gsltRewriteCheck where
+  root := `Mettapedia.GSLT.Tools.CheckRewriteRecipe
+
+lean_exe gsltResourceHistoryCheck where
+  root := `scripts.check_resource_history
+
+lean_exe nativeInferenceCheck where
+  root := `Mettapedia.Logic.CheckNativeInference
+
+lean_exe guardedAtomRuleCheck where
+  root := `Mettapedia.Languages.GuardedAtomRule.CheckEvidence
+
+lean_exe rhoNativeServices where
+  root := `Mettapedia.Languages.ProcessCalculi.RhoCalculus.CheckScopedNativeServices
+
+lean_exe authoredBindingEquations where
+  root := `Mettapedia.GSLT.LanguageDef.CheckAuthoredBindingEquations
+
+lean_exe authoredPremises where
+  root := `Mettapedia.OSLF.MeTTaIL.CheckAuthoredPremises
+
+lean_exe candidateBindingEquations where
+  root := `Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.CheckCandidateBindingEquations
+
+lean_exe rhoCandidateServices where
+  root := `Mettapedia.Languages.MeTTa.PrimeComparisons.Rho.CheckCandidateServices

@@ -1,5 +1,5 @@
 import Mettapedia.Logic.HOL.Probabilistic.Flattening
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # Hierarchical ProbHOL Strength Bridge

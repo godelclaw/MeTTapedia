@@ -136,12 +136,18 @@ mutual
           (fun result => result.bind (fun value => some (Pattern.multiLambda arity display value))) same
     | subst body replacement => simp only [checkSide, Bool.false_eq_true] at ready
     | collection kind elements rest =>
+        simp only [checkSide, Bool.and_eq_true] at ready
         cases rest with
-        | some name => simp only [checkSide, Option.isNone_some, Bool.false_and, Bool.false_eq_true] at ready
-        | none =>
-            simp only [checkSide, Option.isNone_none, Bool.true_and] at ready
+        | some name =>
             have same := instantiateArguments_lookup_congr rule spec ambient site path depth initial final
-              0 elements ready (by intro name member; exact agree name (by simpa only [Pattern.freeFvarNames, Option.toList_none, List.append_nil] using member))
+              0 elements ready.2 (by
+                intro other member
+                exact agree other (by simp only [Pattern.freeFvarNames, List.mem_append]; exact Or.inl member))
+            have restSame := agree name (by simp [Pattern.freeFvarNames])
+            simp only [instantiateAt?, instantiateWith?, same, restSame]
+        | none =>
+            have same := instantiateArguments_lookup_congr rule spec ambient site path depth initial final
+              0 elements ready.2 (by intro name member; exact agree name (by simpa only [Pattern.freeFvarNames, Option.toList_none, List.append_nil] using member))
             simpa only [instantiateAt?, instantiateWith?, Option.bind_eq_bind] using congrArg
               (fun result => result.bind (fun values => some (Pattern.collection kind values none))) same
   termination_by sizeOf pattern
@@ -177,7 +183,7 @@ theorem balanced_reduct_supported {alphabet : Alphabet} {rule : RewriteRule} {sp
   have captures := matched_captures (matchRuleAt_iff.mp matched)
   have balance : constantContribution rule.left = constantContribution rule.right ∧
       rule.left.freeFvarNames.Perm rule.right.freeFvarNames := by
-    simpa only [balanced, Bool.and_eq_true, beq_iff_eq, decide_eq_true_eq] using ready.2.2.2
+    simpa only [balanced, Bool.and_eq_true, beq_iff_eq, decide_eq_true_eq] using balancedSides_balanced ready.2.2.2
   have permutation := balance.2
   have agree : ∀ name ∈ rule.right.freeFvarNames, lookup captured name = lookup completed name := by
     intro name member

@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.Algebra.QuantaleWeakness
 import Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.SatisfyingSet
 

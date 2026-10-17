@@ -22,6 +22,8 @@ open Mettapedia.Logic Mettapedia.Logic.DerivationGraph
 open Mettapedia.Languages.OpenTheory
 open ProofExecution (Receipt Origin)
 
+universe u v w
+
 /-- A local graph is checked with its ordered premise vector as the initial
 cache. This reuses the actual HOL rule-witness replay judgment. -/
 def BlockChecked (policy : AxiomPolicy) [DecidablePred policy]
@@ -37,8 +39,9 @@ def address (premiseRoots : List Nat) (base index : Nat) : Nat :=
 
 /-- A block keeps its rule requests and origins; only parent and root addresses
 are relocated. -/
-def expandBlock (premiseRoots : List Nat) (base : Nat) (block : ProofSystem.Certificate) :
-    ProofSystem.Certificate :=
+def expandBlock {J : Type u} {W : Type v} {O : Type w}
+    (premiseRoots : List Nat) (base : Nat) (block : List (Node J W O) × Nat) :
+    List (Node J W O) × Nat :=
   (block.1.map (Node.relocate (address premiseRoots base)), address premiseRoots base block.2)
 
 /-- Selecting the premise vector establishes exact physical lookup agreement,
@@ -138,7 +141,7 @@ def primitiveBlock (request : RuleRequest) (conclusion : Theorem) (origin : Orig
     ProofSystem.Certificate :=
   ([⟨conclusion, request, List.range request.premises.length, origin⟩], request.premises.length)
 
-private theorem lookupPremises_range (premises : List Theorem) :
+theorem lookupPremises_range (premises : List Theorem) :
     lookupPremises premises.toArray (List.range premises.length) = some premises := by
   have collect : ∀ (offset : Nat), lookupPremises premises.toArray
       (List.range' offset (premises.length - offset)) = some (premises.drop offset) := by
@@ -180,13 +183,100 @@ abbrev BlockRequest := Node Theorem ProofSystem.Certificate Origin
 
 /-- The compiler resolves source references, relocates a local block, and
 records one physical root for its output. It does not run a second checker. -/
-def expandFrom : List Receipt → Array Nat → List BlockRequest →
-    Option (List Receipt × Array Nat)
-  | earlierNodes, roots, [] => some (earlierNodes, roots)
-  | earlierNodes, roots, request :: rest => do
-      let selected ← lookupPremises roots request.parents
-      let expanded := expandBlock selected earlierNodes.length request.witness
-      expandFrom (earlierNodes ++ expanded.1) (roots.push expanded.2) rest
+def expandFrom {J : Type u} {W : Type v} {O : Type w}
+    (earlierNodes : List (Node J W O)) (roots : Array Nat)
+    (requests : List (Node J (List (Node J W O) × Nat) O)) (externalCount : Nat := 0) :
+    Option (List (Node J W O) × Array Nat) :=
+  match requests with
+  | [] => some (earlierNodes, roots)
+  | request :: rest =>
+      match lookupPremises roots request.parents with
+      | none => none
+      | some selected =>
+          let expanded := expandBlock selected (earlierNodes.length + externalCount) request.witness
+          expandFrom (earlierNodes ++ expanded.1) (roots.push expanded.2) rest externalCount
+
+/-- Transforming local payloads commutes with the original physical block
+relocation. Parent order and the selected root are unchanged. -/
+theorem expandBlock_map {J J' : Type u} {W W' : Type v} {O O' : Type w}
+    (conclusion : J → J') (witness : W → W') (origin : O → O')
+    (roots : List Nat) (base : Nat) (block : List (Node J W O) × Nat) :
+    expandBlock roots base (block.1.map (Node.map conclusion witness origin), block.2) =
+      ((expandBlock roots base block).1.map (Node.map conclusion witness origin),
+        (expandBlock roots base block).2) := by
+  simp only [expandBlock, List.map_map]
+  rfl
+
+/-- The same chronological assembler can lower payload representations
+before or after assembly. Refusal, selected roots, occurrence order and all
+reference sharing agree in both paths. -/
+theorem expandFrom_map {J J' : Type u} {W W' : Type v} {O O' : Type w}
+    (conclusion : J → J') (witness : W → W') (origin : O → O')
+    (earlier : List (Node J W O)) (roots : Array Nat)
+    (requests : List (Node J (List (Node J W O) × Nat) O)) (externalCount : Nat := 0) :
+    expandFrom (earlier.map (Node.map conclusion witness origin)) roots
+      (requests.map (Node.map conclusion
+        (fun block => (block.1.map (Node.map conclusion witness origin), block.2)) origin)) externalCount =
+      match expandFrom earlier roots requests externalCount with
+      | none => none
+      | some (nodes, finalRoots) =>
+          some (nodes.map (Node.map conclusion witness origin), finalRoots) := by
+  induction requests generalizing earlier roots with
+  | nil => rfl
+  | cons request rest ih =>
+      cases selected : lookupPremises roots request.parents with
+      | none => simp [expandFrom, Node.map, selected]
+      | some selectedRoots =>
+          simpa only [List.map_cons, Node.map, expandFrom, selected, expandBlock_map,
+            List.map_append, List.length_map] using
+            ih (earlier ++ (expandBlock selectedRoots (earlier.length + externalCount) request.witness).1)
+              (roots.push (expandBlock selectedRoots (earlier.length + externalCount) request.witness).2)
+
+/-- Selecting an output of the original chronological assembler commutes
+with payload transport. The monadic form matches executable certificate
+constructors without unfolding their request lists. -/
+theorem expandFrom_selected_bind_map {J J' W W' O O' : Type}
+    (conclusion : J → J') (witness : W → W') (origin : O → O')
+    (roots : Array Nat) (requests : List (Node J (List (Node J W O) × Nat) O))
+    (index externalCount : Nat) :
+    (do let (nodes,finalRoots) ← expandFrom [] roots
+          (requests.map (Node.map conclusion
+            (fun (block : List (Node J W O) × Nat) => (block.1.map (Node.map conclusion witness origin),block.2)) origin)) externalCount
+        let root ← finalRoots[index]?
+        pure (nodes,root)) =
+      (do let (nodes,finalRoots) ← expandFrom [] roots requests externalCount
+          let root ← finalRoots[index]?
+          pure (nodes,root)).map
+        (fun (block : List (Node J W O) × Nat) => (block.1.map (Node.map conclusion witness origin),block.2)) := by
+  have transport := expandFrom_map conclusion witness origin [] roots requests externalCount
+  simp only [List.map_nil] at transport
+  rw [transport]
+  cases assembled : expandFrom [] roots requests externalCount with
+  | none => rfl
+  | some result =>
+      rcases result with ⟨nodes,finalRoots⟩
+      cases selected : finalRoots[index]? <;> simp [selected]
+
+/-- A lowered local-request list may be supplied symbolically to the
+monadic payload transport law. -/
+theorem expandFrom_selected_bind_map_of_eq {J J' W W' O O' : Type}
+    (conclusion : J → J') (witness : W → W') (origin : O → O')
+    (roots : Array Nat) (requests : List (Node J (List (Node J W O) × Nat) O))
+    (lowered : List (Node J' (List (Node J' W' O') × Nat) O'))
+    (index externalCount : Nat) (output : List (Node J' W' O') × Nat)
+    (requestsExact : requests.map (Node.map conclusion
+      (fun (block : List (Node J W O) × Nat) => (block.1.map (Node.map conclusion witness origin),block.2)) origin) = lowered)
+    (computed : (do
+      let (nodes,finalRoots) ← expandFrom [] roots lowered externalCount
+      let root ← finalRoots[index]?
+      pure (nodes,root)) = some output) :
+    (do let (nodes,finalRoots) ← expandFrom [] roots requests externalCount
+        let root ← finalRoots[index]?
+        pure (nodes,root)).map
+      (fun (block : List (Node J W O) × Nat) => (block.1.map (Node.map conclusion witness origin),block.2)) = some output := by
+  have comparison := expandFrom_selected_bind_map conclusion witness origin roots requests index externalCount
+  rw [requestsExact] at comparison
+  exact comparison.symm.trans computed
 
 /-- Local block obligations refer to actual HOL replay from precisely the
 selected earlier outputs. Every authored request is retained. -/
@@ -441,6 +531,36 @@ def parentOccurrences (nodes : List Receipt) : Nat :=
 def parentAddressBits (nodes : List Receipt) : Nat :=
   (nodes.map (fun node => (node.parents.map Nat.size).sum)).sum
 
+/-- Each actual primitive HOL request uses at most two ordered premises.
+This bound includes axiom requests, which have no premises. -/
+theorem primitive_premise_count (request : RuleRequest) :
+    request.premises.length ≤ 2 := by
+  cases request with
+  | «axiom» _ => simp [RuleRequest.premises]
+  | inference request =>
+      cases request <;> simp [RuleRequest.premises, InferenceRequest.premises]
+
+/-- Successful replay checks every stored parent occurrence against the
+primitive request's actual premise vector. Repeated uses count twice. -/
+theorem checked_parentOccurrences_bound {policy : AxiomPolicy} [DecidablePred policy]
+    {nodes : List Receipt} {initial result : Array Theorem}
+    (accepted : replayFrom (ruleWitness policy) initial nodes = some result) :
+    parentOccurrences nodes ≤ 2 * nodes.length := by
+  induction nodes generalizing initial with
+  | nil => simp [parentOccurrences]
+  | cons node rest ih =>
+      cases first : node.replay (ruleWitness policy) initial with
+      | none => simp [replayFrom, first] at accepted
+      | some next =>
+          have later : replayFrom (ruleWitness policy) next rest = some result := by
+            simpa [replayFrom, first] using accepted
+          obtain ⟨found, _, _⟩ := (ProofSystem.node_replay_iff policy initial next node).mp first
+          have lengths := lookupPremises_length initial found
+          have arity := primitive_premise_count node.witness
+          have tail := ih later
+          change node.parents.length + parentOccurrences rest ≤ 2 * (rest.length + 1)
+          omega
+
 private theorem addressBits_bound (limit : Nat) (parents : List Nat)
     (bounded : ∀ index ∈ parents, index < limit) :
     (parents.map Nat.size).sum ≤ parents.length * Nat.size limit := by
@@ -477,6 +597,15 @@ theorem checked_parentAddressBits_bound {policy : AxiomPolicy} [DecidablePred po
         simpa only [parentAddressBits, parentOccurrences, List.map_cons, List.sum_cons, Nat.add_mul] using joined
   rw [counted] at bounded
   exact total nodes bounded
+
+/-- Binary physical addresses contribute at most two references per node,
+each bounded by the binary size of the completed physical graph. -/
+theorem checked_parentAddressBits_node_bound {policy : AxiomPolicy} [DecidablePred policy]
+    {nodes : List Receipt} {cache : Array Theorem}
+    (accepted : replay (ruleWitness policy) nodes = some cache) :
+    parentAddressBits nodes ≤ 2 * nodes.length * Nat.size nodes.length :=
+  (checked_parentAddressBits_bound accepted).trans
+    (Nat.mul_le_mul_right _ (checked_parentOccurrences_bound accepted))
 
 /-- Every compiled output root selects a physical theorem in the emitted
 graph, including roots that reuse an earlier block's proof. -/
@@ -773,6 +902,392 @@ theorem emitBlock_future_refused (policy : AxiomPolicy) [DecidablePred policy]
     {index : Nat} (member : index ∈ roots) (future : state.cache.size ≤ index) :
     emitBlock policy roots block state = none := by
   simp [emitBlock, lookupPremises_none_of_future member future]
+
+/-- Successful emission adds exactly the block's physical nodes to both
+its replay cache and the serialized receipt sequence. -/
+theorem emitBlock_size {policy : AxiomPolicy} [DecidablePred policy]
+    {roots : List Nat} {block : ProofSystem.Certificate}
+    {state result : ProofExecution.State} {root : Nat}
+    (emitted : emitBlock policy roots block state = some (result, root)) :
+    result.cache.size = state.cache.size + block.1.length ∧
+      result.receipts.size = state.receipts.size + block.1.length := by
+  cases selected : lookupPremises state.cache roots with
+  | none => simp [emitBlock, selected] at emitted
+  | some externalPremises =>
+      let expanded := expandBlock roots state.cache.size block
+      cases accepted : replayFrom (ruleWitness policy) state.cache expanded.1 with
+      | none => simp [emitBlock, selected, expanded, accepted] at emitted
+      | some cache =>
+          cases found : cache[expanded.2]? with
+          | none => simp [emitBlock, selected, expanded, accepted, found] at emitted
+          | some conclusion =>
+              have same : (⟨cache, state.receipts ++ expanded.1.toArray⟩, expanded.2) = (result, root) := by
+                simpa [emitBlock, selected, expanded, accepted, found] using emitted
+              cases same
+              constructor
+              · have count : cache.size = state.cache.size + expanded.1.length :=
+                  replayFrom_size (ruleWitness policy) (cache := state.cache) (nodes := expanded.1) accepted
+                have sameLength : expanded.1.length = block.1.length := by simp [expanded, expandBlock]
+                rw [sameLength] at count
+                exact count
+              · simp [expanded, expandBlock]
+
+/-- Successful emission charges the complete appended payload and every
+premise occurrence, without expanding earlier referenced proofs. -/
+theorem emitBlock_weight (payload : Theorem → RuleRequest → Origin → Nat)
+    {policy : AxiomPolicy} [DecidablePred policy]
+    {roots : List Nat} {block : ProofSystem.Certificate}
+    {state result : ProofExecution.State} {root : Nat}
+    (emitted : emitBlock policy roots block state = some (result, root)) :
+    graphWeight payload result.receipts.toList =
+      graphWeight payload state.receipts.toList + graphWeight payload block.1 := by
+  cases selected : lookupPremises state.cache roots with
+  | none => simp [emitBlock, selected] at emitted
+  | some externalPremises =>
+      let expanded := expandBlock roots state.cache.size block
+      cases accepted : replayFrom (ruleWitness policy) state.cache expanded.1 with
+      | none => simp [emitBlock, selected, expanded, accepted] at emitted
+      | some cache =>
+          cases found : cache[expanded.2]? with
+          | none => simp [emitBlock, selected, expanded, accepted, found] at emitted
+          | some conclusion =>
+              have same : (⟨cache, state.receipts ++ expanded.1.toArray⟩, expanded.2) = (result, root) := by
+                simpa [emitBlock, selected, expanded, accepted, found] using emitted
+              cases same
+              simp only [Array.toList_append]
+              rw [graphWeight_append, expandBlock_weight]
+
+/-- Successful emission preserves each primitive request and origin in order. -/
+theorem emitBlock_witnesses {policy : AxiomPolicy} [DecidablePred policy]
+    {roots : List Nat} {block : ProofSystem.Certificate}
+    {state result : ProofExecution.State} {root : Nat}
+    (emitted : emitBlock policy roots block state = some (result, root)) :
+    result.receipts.toList.map (fun node => (node.witness, node.origin)) =
+      state.receipts.toList.map (fun node => (node.witness, node.origin)) ++
+        block.1.map (fun node => (node.witness, node.origin)) := by
+  cases selected : lookupPremises state.cache roots with
+  | none => simp [emitBlock, selected] at emitted
+  | some externalPremises =>
+      let expanded := expandBlock roots state.cache.size block
+      cases accepted : replayFrom (ruleWitness policy) state.cache expanded.1 with
+      | none => simp [emitBlock, selected, expanded, accepted] at emitted
+      | some cache =>
+          cases found : cache[expanded.2]? with
+          | none => simp [emitBlock, selected, expanded, accepted, found] at emitted
+          | some conclusion =>
+              have same : (⟨cache, state.receipts ++ expanded.1.toArray⟩, expanded.2) = (result, root) := by
+                simpa [emitBlock, selected, expanded, accepted, found] using emitted
+              cases same
+              simp only [Array.toList_append, List.map_append]
+              rw [show expanded.1.map (fun node => (node.witness, node.origin)) =
+                block.1.map (fun node => (node.witness, node.origin)) from expandBlock_witnesses _ _ _]
+
+/-- Emit a finite chronological plan of checked local blocks. Source-output
+addresses remain separate from the expanded physical graph addresses. -/
+def emitPlan (policy : AxiomPolicy) [DecidablePred policy] :
+    ProofExecution.State → Array Nat → List BlockRequest →
+      Option (ProofExecution.State × Array Nat)
+  | state, roots, [] => some (state, roots)
+  | state, roots, request :: rest => do
+      let selected ← lookupPremises roots request.parents
+      let (result, root) ← emitBlock policy selected request.witness state
+      emitPlan policy result (roots.push root) rest
+
+private theorem lookupPremises_of_preserved {before after : Array Theorem}
+    (preserved : ∀ (index : Nat) (fact : Theorem),
+      before[index]? = some fact → after[index]? = some fact)
+    {roots : List Nat} {premises : List Theorem}
+    (found : lookupPremises before roots = some premises) :
+    lookupPremises after roots = some premises := by
+  induction roots generalizing premises with
+  | nil => simpa [lookupPremises] using found
+  | cons index rest ih =>
+      cases first : before[index]? with
+      | none => simp [lookupPremises, first] at found
+      | some premise =>
+          cases tail : lookupPremises before rest with
+          | none => simp [lookupPremises, first, tail] at found
+          | some remaining =>
+              have same : premise :: remaining = premises := by
+                simpa [lookupPremises, first, tail] using found
+              subst premises
+              simp [lookupPremises, preserved index premise first, ih tail]
+
+/-- Successful block replay emits the original relocated physical nodes and
+root exactly, retaining the entire earlier receipt prefix. -/
+theorem emitBlock_expanded {policy : AxiomPolicy} [DecidablePred policy]
+    {roots : List Nat} {block : ProofSystem.Certificate}
+    {state result : ProofExecution.State} {root : Nat}
+    (emitted : emitBlock policy roots block state = some (result, root)) :
+    result.receipts.toList = state.receipts.toList ++
+      (expandBlock roots state.cache.size block).1 ∧
+      root = (expandBlock roots state.cache.size block).2 := by
+  cases selected : lookupPremises state.cache roots with
+  | none => simp [emitBlock, selected] at emitted
+  | some externalPremises =>
+      let expanded := expandBlock roots state.cache.size block
+      cases accepted : replayFrom (ruleWitness policy) state.cache expanded.1 with
+      | none => simp [emitBlock, selected, expanded, accepted] at emitted
+      | some cache =>
+          cases found : cache[expanded.2]? with
+          | none => simp [emitBlock, selected, expanded, accepted, found] at emitted
+          | some conclusion =>
+              have same : (⟨cache, state.receipts ++ expanded.1.toArray⟩, expanded.2) = (result, root) := by
+                simpa [emitBlock, selected, expanded, accepted, found] using emitted
+              cases same
+              simp [expanded]
+
+
+/-- Successful checked execution and the original chronological assembler
+emit the same graph, including its external cache prefix. -/
+theorem emitPlan_expanded {policy : AxiomPolicy} [DecidablePred policy]
+    {premises : List Theorem} {state result : ProofExecution.State}
+    {roots finalRoots : Array Nat} {requests : List BlockRequest}
+    (earlier : BuildChecked policy premises state)
+    (emitted : emitPlan policy state roots requests = some (result, finalRoots)) :
+    expandFrom state.receipts.toList roots requests premises.length =
+      some (result.receipts.toList, finalRoots) := by
+  induction requests generalizing state roots with
+  | nil =>
+      have same : (state, roots) = (result, finalRoots) := by simpa [emitPlan] using emitted
+      cases same
+      rfl
+  | cons request rest ih =>
+      cases selected : lookupPremises roots request.parents with
+      | none => simp [emitPlan, selected] at emitted
+      | some parents =>
+          cases expanded : emitBlock policy parents request.witness state with
+          | none => simp [emitPlan, selected, expanded] at emitted
+          | some next =>
+              have tail : emitPlan policy next.1 (roots.push next.2) rest = some (result, finalRoots) := by
+                simpa [emitPlan, selected, expanded] using emitted
+              have nextChecked := (emitBlock_preserves_checked earlier expanded).1
+              have nextSame := emitBlock_expanded expanded
+              have counted : state.cache.size = state.receipts.toList.length + premises.length := by
+                have accepted : replayFrom (ruleWitness policy) premises.toArray state.receipts.toList =
+                    some state.cache := earlier
+                have count := replayFrom_size (ruleWitness policy) accepted
+                dsimp only [ruleWitness] at count
+                simpa only [List.size_toArray, Nat.add_comm] using count
+              have compiled := ih nextChecked tail
+              rw [nextSame.1, nextSame.2] at compiled
+              simpa only [expandFrom, selected, ← counted] using compiled
+
+
+/-- A source-authorized block plan computes a real target graph, retaining
+every chronological output and all external premise references. -/
+theorem emitPlan_checked {policy : AxiomPolicy} [DecidablePred policy]
+    {premises : List Theorem} {outputs : Array Theorem}
+    {state : ProofExecution.State} {roots : Array Nat} {requests : List BlockRequest}
+    (earlier : BuildChecked policy premises state)
+    (aligned : RootAlignment outputs state.cache roots)
+    (localChecks : LocallyChecked policy outputs requests) :
+    ∃ result finalRoots,
+      emitPlan policy state roots requests = some (result, finalRoots) ∧
+      BuildChecked policy premises result ∧
+      lookupPremises result.cache finalRoots.toList =
+        some (outputs.toList ++ requests.map (·.conclusion)) := by
+  induction localChecks generalizing state roots with
+  | nil outputs => exact ⟨state, roots, rfl, earlier, by simpa [RootAlignment] using aligned⟩
+  | @cons outputs request rest blockPremises found blockChecked tail ih =>
+      obtain ⟨selected, selectedFound, actualFound⟩ := select_roots aligned found
+      obtain ⟨next, root, emitted, nextChecked, rootFound, _, preserved⟩ :=
+        emitBlock_checked earlier actualFound blockChecked
+      have old := lookupPremises_of_preserved preserved aligned
+      have nextAligned : RootAlignment (outputs.push request.conclusion) next.cache (roots.push root) := by
+        unfold RootAlignment
+        simp only [Array.toList_push]
+        rw [lookupPremises_append, old]
+        simp [lookupPremises, rootFound]
+      obtain ⟨result, finalRoots, computed, checked, finalAlignment⟩ := ih nextChecked nextAligned
+      refine ⟨result, finalRoots, ?_, checked, ?_⟩
+      · simpa [emitPlan, selectedFound, emitted] using computed
+      · simpa only [Array.toList_push, List.map_cons, List.append_assoc,
+          List.singleton_append] using finalAlignment
+
+/-- Actual plan emission adds the sum of its local primitive-node counts.
+External premises remain shared references, independent of their proof size. -/
+theorem emitPlan_size {policy : AxiomPolicy} [DecidablePred policy]
+    {state result : ProofExecution.State} {roots finalRoots : Array Nat}
+    {requests : List BlockRequest}
+    (emitted : emitPlan policy state roots requests = some (result, finalRoots)) :
+    result.receipts.size = state.receipts.size +
+      (requests.map (fun request => request.witness.1.length)).sum ∧
+      finalRoots.size = roots.size + requests.length := by
+  induction requests generalizing state roots with
+  | nil =>
+      cases Option.some.inj emitted
+      simp
+  | cons request rest ih =>
+      cases selected : lookupPremises roots request.parents with
+      | none => simp [emitPlan, selected] at emitted
+      | some physicalRoots =>
+          cases expanded : emitBlock policy physicalRoots request.witness state with
+          | none => simp [emitPlan, selected, expanded] at emitted
+          | some next =>
+              have tail : emitPlan policy next.1 (roots.push next.2) rest = some (result, finalRoots) := by
+                simpa [emitPlan, selected, expanded] using emitted
+              obtain ⟨receiptCount, rootCount⟩ := ih tail
+              have added := (emitBlock_size expanded).2
+              constructor
+              · simpa [List.map_cons, List.sum_cons, added, Nat.add_assoc] using receiptCount
+              · simpa [Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using rootCount
+
+/-- The complete stored payload is additive over the blocks actually emitted
+by the chronological plan. Numeric address widths are accounted separately. -/
+theorem emitPlan_weight (payload : Theorem → RuleRequest → Origin → Nat)
+    {policy : AxiomPolicy} [DecidablePred policy]
+    {state result : ProofExecution.State} {roots finalRoots : Array Nat}
+    {requests : List BlockRequest}
+    (emitted : emitPlan policy state roots requests = some (result, finalRoots)) :
+    graphWeight payload result.receipts.toList = graphWeight payload state.receipts.toList +
+      (requests.map (fun request => graphWeight payload request.witness.1)).sum := by
+  induction requests generalizing state roots with
+  | nil => cases Option.some.inj emitted; simp
+  | cons request rest ih =>
+      cases selected : lookupPremises roots request.parents with
+      | none => simp [emitPlan, selected] at emitted
+      | some physicalRoots =>
+          cases expanded : emitBlock policy physicalRoots request.witness state with
+          | none => simp [emitPlan, selected, expanded] at emitted
+          | some next =>
+              have tail : emitPlan policy next.1 (roots.push next.2) rest = some (result, finalRoots) := by
+                simpa [emitPlan, selected, expanded] using emitted
+              have charged := ih tail
+              rw [emitBlock_weight payload expanded] at charged
+              simpa [List.map_cons, List.sum_cons, Nat.add_assoc] using charged
+
+/-- Actual plan emission retains local primitive occurrences and their
+origins, even when distinct premise slots share a physical proof. -/
+theorem emitPlan_witnesses {policy : AxiomPolicy} [DecidablePred policy]
+    {state result : ProofExecution.State} {roots finalRoots : Array Nat}
+    {requests : List BlockRequest}
+    (emitted : emitPlan policy state roots requests = some (result, finalRoots)) :
+    result.receipts.toList.map (fun node => (node.witness, node.origin)) =
+      state.receipts.toList.map (fun node => (node.witness, node.origin)) ++
+      requests.flatMap (fun request => request.witness.1.map (fun node => (node.witness, node.origin))) := by
+  induction requests generalizing state roots with
+  | nil =>
+      cases Option.some.inj emitted
+      simp
+  | cons request rest ih =>
+      cases selected : lookupPremises roots request.parents with
+      | none => simp [emitPlan, selected] at emitted
+      | some physicalRoots =>
+          cases expanded : emitBlock policy physicalRoots request.witness state with
+          | none => simp [emitPlan, selected, expanded] at emitted
+          | some next =>
+              have tail : emitPlan policy next.1 (roots.push next.2) rest = some (result, finalRoots) := by
+                simpa [emitPlan, selected, expanded] using emitted
+              have preserved := ih tail
+              rw [emitBlock_witnesses expanded] at preserved
+              simpa [List.flatMap_cons, List.append_assoc] using preserved
+
+/-- Select one chronological source output from a concrete block plan. -/
+def finishPlan (policy : AxiomPolicy) [DecidablePred policy]
+    (state : ProofExecution.State) (roots : Array Nat) (requests : List BlockRequest)
+    (index : Nat) : Option ProofSystem.Certificate := do
+  let (result, finalRoots) ← emitPlan policy state roots requests
+  let root ← finalRoots[index]?
+  pure (finish result root)
+
+/-- The selected plan output is an actual checked local HOL graph with the
+same external premise vector. -/
+theorem finishPlan_checked {policy : AxiomPolicy} [DecidablePred policy]
+    {premises : List Theorem} {outputs : Array Theorem}
+    {state : ProofExecution.State} {roots : Array Nat} {requests : List BlockRequest}
+    {index : Nat} {conclusion : Theorem}
+    (earlier : BuildChecked policy premises state)
+    (aligned : RootAlignment outputs state.cache roots)
+    (localChecks : LocallyChecked policy outputs requests)
+    (selected : (outputs.toList ++ requests.map (·.conclusion))[index]? = some conclusion) :
+    ∃ block, finishPlan policy state roots requests index = some block ∧
+      BlockChecked policy premises conclusion block := by
+  obtain ⟨result, finalRoots, computed, checked, finalAlignment⟩ :=
+    emitPlan_checked earlier aligned localChecks
+  have lengths := lookupPremises_length result.cache finalAlignment
+  have inside := (List.getElem?_eq_some_iff.mp selected).1
+  have rootInside : index < finalRoots.size := by simpa using
+    (show index < finalRoots.toList.length from by omega)
+  have found := lookupPremises_at finalAlignment index (by simpa using rootInside)
+  have actualFound : result.cache[finalRoots[index]]? = some conclusion := by
+    simpa using found.trans selected
+  refine ⟨finish result finalRoots[index], ?_, finish_checked checked actualFound⟩
+  simp [finishPlan, computed, Array.getElem?_eq_getElem rootInside]
+
+/-- The selected checked plan is the certificate constructed by the original
+physical assembler; no checker-dependent rewriting changes its bytes. -/
+theorem finishPlan_expanded {policy : AxiomPolicy} [DecidablePred policy]
+    {premises : List Theorem} {state : ProofExecution.State}
+    {roots : Array Nat} {requests : List BlockRequest} {index : Nat}
+    {block : ProofSystem.Certificate}
+    (earlier : BuildChecked policy premises state)
+    (finished : finishPlan policy state roots requests index = some block) :
+    (do let (nodes, finalRoots) ← expandFrom state.receipts.toList roots requests premises.length
+        let root ← finalRoots[index]?
+        pure (nodes, root)) = some block := by
+  cases emitted : emitPlan policy state roots requests with
+  | none => simp [finishPlan, emitted] at finished
+  | some next =>
+      rw [emitPlan_expanded earlier emitted]
+      simpa [finishPlan, emitted, finish] using finished
+
+/-- The selected certificate contains exactly the emitted plan's physical
+nodes plus the builder's existing receipts. -/
+theorem finishPlan_size {policy : AxiomPolicy} [DecidablePred policy]
+    {state : ProofExecution.State} {roots : Array Nat} {requests : List BlockRequest}
+    {index : Nat} {block : ProofSystem.Certificate}
+    (finished : finishPlan policy state roots requests index = some block) :
+    block.1.length = state.receipts.size +
+      (requests.map (fun request => request.witness.1.length)).sum := by
+  cases emitted : emitPlan policy state roots requests with
+  | none => simp [finishPlan, emitted] at finished
+  | some result =>
+      cases selected : result.2[index]? with
+      | none => simp [finishPlan, emitted, selected] at finished
+      | some root =>
+          have same : finish result.1 root = block := by
+            simpa [finishPlan, emitted, selected] using finished
+          rw [← same]
+          simpa [finish] using (emitPlan_size emitted).1
+
+/-- Selecting a root retains exactly the payload emitted by the plan. -/
+theorem finishPlan_weight (payload : Theorem → RuleRequest → Origin → Nat)
+    {policy : AxiomPolicy} [DecidablePred policy]
+    {state : ProofExecution.State} {roots : Array Nat} {requests : List BlockRequest}
+    {index : Nat} {block : ProofSystem.Certificate}
+    (finished : finishPlan policy state roots requests index = some block) :
+    graphWeight payload block.1 = graphWeight payload state.receipts.toList +
+      (requests.map (fun request => graphWeight payload request.witness.1)).sum := by
+  cases emitted : emitPlan policy state roots requests with
+  | none => simp [finishPlan, emitted] at finished
+  | some result =>
+      cases selected : result.2[index]? with
+      | none => simp [finishPlan, emitted, selected] at finished
+      | some root =>
+          have same : finish result.1 root = block := by
+            simpa [finishPlan, emitted, selected] using finished
+          rw [← same]
+          exact emitPlan_weight payload emitted
+
+/-- Selecting a plan root does not alter its stored primitive requests. -/
+theorem finishPlan_witnesses {policy : AxiomPolicy} [DecidablePred policy]
+    {state : ProofExecution.State} {roots : Array Nat} {requests : List BlockRequest}
+    {index : Nat} {block : ProofSystem.Certificate}
+    (finished : finishPlan policy state roots requests index = some block) :
+    block.1.map (fun node => (node.witness, node.origin)) =
+      state.receipts.toList.map (fun node => (node.witness, node.origin)) ++
+      requests.flatMap (fun request => request.witness.1.map (fun node => (node.witness, node.origin))) := by
+  cases emitted : emitPlan policy state roots requests with
+  | none => simp [finishPlan, emitted] at finished
+  | some result =>
+      cases selected : result.2[index]? with
+      | none => simp [finishPlan, emitted, selected] at finished
+      | some root =>
+          have same : finish result.1 root = block := by
+            simpa [finishPlan, emitted, selected] using finished
+          rw [← same]
+          exact emitPlan_witnesses emitted
 
 namespace Controls
 

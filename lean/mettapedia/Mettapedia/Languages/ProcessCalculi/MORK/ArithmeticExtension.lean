@@ -4,15 +4,19 @@ import Mettapedia.Languages.ProcessCalculi.MORK.ThreePhaseRefinement
 /-!
 # MORK Arithmetic / Comparison Extension Interface
 
-Packages the currently live arithmetic sink and comparison-source extension lane
-around the existing core MORK formalization.
+Packages an arithmetic sink and comparison-source extension lane around the existing
+core MORK formalization.
 
 ## What this file IS
 
-- A theorem-backed interface for the current Rust extension heads:
+- A theorem-backed interface for extension heads that exist on an unmerged MORK
+  feature branch, not in the mainline kernel (whose arithmetic is the `pure` sink and
+  the aggregate sinks; see `MM2MainlineProviders`):
   - integer sinks: `i+`, `i-`, `i*`, `ieq`
   - float sinks: `f+`, `f-`, `f*`, `f/`, `fgt`, `flt`, `feq`
-  - comparison sources: `==`, `!=`
+  - comparison sources: `==`, `!=`, packaged with the core factor semantics, which
+    differs from the kernel's when nothing stored matches the left side
+    (`Mainline.neq_requires_stored_left`)
 - An honest lowering story:
   - arithmetic sinks are extension operators which, after decoding/evaluating
     their numeric arguments, lower to a single core `.add` sink

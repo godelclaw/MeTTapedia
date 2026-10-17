@@ -20,8 +20,8 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Type Spec.Eval FirstSuccessSourceApplicability
 
 theorem applicable_lengths {space : Space} {arguments domains : List Atom}
-    {incoming outgoing : Bindings}
-    (applicable : ArgumentsApplicableRel space arguments domains incoming outgoing) :
+    {incoming outgoing : Bindings} {lookup : TypeLookupRel}
+    (applicable : ArgumentsApplicableRel space (lookup := lookup) arguments domains incoming outgoing) :
     arguments.length = domains.length := by
   induction applicable with
   | nil => rfl
@@ -208,7 +208,7 @@ theorem raw_selected_replay (space : Space) (operator returned : Atom)
       FirstSuccessRecursiveStrategy.select space (.expression (operator :: arguments))
         Atom.undefinedType incoming (fuel + 1)
         (policy.functionType :: suffix) =
-          .selected policy (List.replicate (pathCount space arguments) incoming) ∧
+          .selected policy [incoming] ∧
       NativeSelectedTypeScan.RepliesRel PublishedCandidateApplicabilityRel
         space (.expression (operator :: arguments)) Atom.undefinedType incoming
         (⟨policy.functionType, .success policy incoming⟩ :: NativeSelectedTypeScan.unresolved suffix)
@@ -220,8 +220,9 @@ theorem raw_selected_replay (space : Space) (operator returned : Atom)
       (show FunctionTypeRel candidate (List.replicate arguments.length Atom.atomType) returned from rfl)
   refine ⟨policy, domains, returnType, ?_, ?_⟩
   · rw [sameCandidate]
-    simp only [FirstSuccessRecursiveStrategy.select, parsed, candidate,
-      source_raw_applicability]
+    exact FirstSuccessRecursiveStrategy.select_success_replicate suffix parsed
+      (source_raw_applicability space operator returned arguments incoming fuel)
+      (pathCount_positive space arguments)
   · have application : ApplicationSuccessRel space (.expression (operator :: arguments))
         policy.functionType Atom.undefinedType incoming incoming := by
       rw [sameCandidate]
@@ -235,7 +236,7 @@ theorem raw_selected_replay (space : Space) (operator returned : Atom)
     exact .selected policy.isFunction published
 
 /-- An arbitrary earned rejection prefix and unvisited suffix connect the
-actual source callback's complete binding occurrence list to the independent
+actual source callback's first successful binding to the independent
 first-success scan. Nothing inspects the suffix after the selected arrow. -/
 theorem raw_prefix_selected
     {space : Space} {fuel : Nat}
@@ -248,7 +249,7 @@ theorem raw_prefix_selected
       FirstSuccessRecursiveStrategy.select space (.expression (operator :: arguments))
         Atom.undefinedType incoming (fuel + 1)
         (candidates ++ policy.functionType :: suffix) =
-          .selected policy (List.replicate (pathCount space arguments) incoming) ∧
+          .selected policy [incoming] ∧
       FunctionCandidateScanRel PublishedCandidateApplicabilityRel
         space (.expression (operator :: arguments)) Atom.undefinedType incoming
         (candidates ++ policy.functionType :: suffix) (.success policy incoming) := by
@@ -276,7 +277,7 @@ theorem raw_prefix_selected
 
 /-- Checked argument domains and a closed return projection select
 one coherent arrow after an independently rejected prefix. The callback's
-complete occurrence list and the independent scan remain distinct outputs. -/
+first successful binding and the independent scan remain distinct outputs. -/
 theorem checked_prefix_selected
     {space : Space} {fuel : Nat}
     {operator expected : Atom} {arguments candidates : List Atom}
@@ -293,7 +294,7 @@ theorem checked_prefix_selected
     ∃ policy, policy.argumentTypes = domains ∧ policy.returnType = returned ∧
       FirstSuccessRecursiveStrategy.select space (.expression (operator :: arguments))
         expected incoming (fuel + 1) (candidates ++ policy.functionType :: suffix) =
-          .selected policy (List.replicate (admittedPathCount space arguments domains) incoming) ∧
+          .selected policy [incoming] ∧
       FunctionCandidateScanRel PublishedCandidateApplicabilityRel
         space (.expression (operator :: arguments)) expected incoming
         (candidates ++ policy.functionType :: suffix) (.success policy incoming) := by
@@ -302,11 +303,11 @@ theorem checked_prefix_selected
     FirstSuccessRecursiveStrategy.readPolicy_complete (show FunctionTypeRel candidate domains returned from rfl)
   have selected : FirstSuccessRecursiveStrategy.select space (.expression (operator :: arguments))
       expected incoming (fuel + 1) (policy.functionType :: suffix) =
-        .selected policy (List.replicate (admittedPathCount space arguments domains) incoming) := by
+        .selected policy [incoming] := by
     rw [sameCandidate]
-    simp only [FirstSuccessRecursiveStrategy.select, parsed, candidate,
-      checked_applicability_success space operator expected returned arguments domains incoming fuel
-        checked positive expectedClosed returnedClosed fits enough]
+    exact FirstSuccessRecursiveStrategy.select_success_replicate suffix parsed
+      (checked_applicability_success space operator expected returned arguments domains incoming fuel
+        checked positive expectedClosed returnedClosed fits enough) positive
   have application : ApplicationSuccessRel space (.expression (operator :: arguments))
       policy.functionType expected incoming incoming := by
     rw [sameCandidate]
@@ -331,8 +332,8 @@ theorem checked_prefix_selected
   exact ⟨policy, argumentTypes, returnType,
     rejected_prefix_retains_selected visited incoming _ _ _ selected, scan⟩
 
-/-- Wildcard domains are the specialization that retains every actual-type
-occurrence. Their scan uses the same checked-domain correspondence. -/
+/-- Wildcard domains use the same first-binding selection after their complete
+actual-type callback has been checked. -/
 theorem wildcard_prefix_selected
     {space : Space} {fuel : Nat}
     {operator expected : Atom} {arguments candidates : List Atom}
@@ -347,7 +348,7 @@ theorem wildcard_prefix_selected
     ∃ policy, policy.argumentTypes = domains ∧ policy.returnType = returned ∧
       FirstSuccessRecursiveStrategy.select space (.expression (operator :: arguments))
         expected incoming (fuel + 1) (candidates ++ policy.functionType :: suffix) =
-          .selected policy (List.replicate (pathCount space arguments) incoming) ∧
+          .selected policy [incoming] ∧
       FunctionCandidateScanRel PublishedCandidateApplicabilityRel
         space (.expression (operator :: arguments)) expected incoming
         (candidates ++ policy.functionType :: suffix) (.success policy incoming) := by
@@ -355,6 +356,6 @@ theorem wildcard_prefix_selected
   have selected := checked_prefix_selected visited returned domains incoming suffix
     (wildcard_arguments_evidence space arguments domains fuel wildcards)
     (sameCount ▸ pathCount_positive space arguments) expectedClosed returnedClosed fits enough
-  simpa only [sameCount] using selected
+  exact selected
 
 end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceScan

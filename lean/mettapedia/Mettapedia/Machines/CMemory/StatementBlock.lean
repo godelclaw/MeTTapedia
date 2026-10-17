@@ -1,3 +1,4 @@
+import Mettapedia.GSLT.LanguageDef.NativeOpsCStatement
 import Mettapedia.Machines.CMemory.ReadBlock
 import Mettapedia.Machines.CMemory.Array
 import Mettapedia.Machines.CMemory.ScalarBytes
@@ -270,6 +271,7 @@ theorem field_assignment_retains_actual_operands (read : Reader) (layout : Layou
 must separately establish expression, declaration, effect and automatic-storage
 contracts. The default retains the existing read-only fragment. -/
 structure Services where
+  pointeeConst : Bool := false
   read : Reader := expression
   initialValue : CType → CVal → CProg CVal CVal := declaredValue
   effect : Effect := fun _ _ _ => CProg.undefined
@@ -285,6 +287,10 @@ bindings without putting a record address in the scalar-value environment.
 Declaration providers retain entry, continuation, exit and scope restoration;
 they do not gain permission to reorder any of these operations. -/
 structure ScopedServices (Context : Type) where
+  /-- A finite iteration allowance admits physical pre-test loops. The
+  default retains the existing flat-loop profile. -/
+  physicalWhile : Bool := false
+  pointeeConst : Bool := false
   read : Layout → Context → CExpr → CProg CVal CVal
   declaration : Layout → Context → CType → Name → Option CExpr →
     (Context → CProg CVal (Result Context)) → CProg CVal (Result Context)
@@ -334,6 +340,10 @@ theorem switch_exhaustion_remains_incomplete {Context : Type}
     (continuation : Context → CProg CVal (Result Context)) :
     resumeSwitch continuation .exhausted = pure .exhausted := rfl
 
+/-- Pointee-const pointer declarations retain the same initialized object and
+lexical lifetime as their unqualified runtime representation. The parser
+admits one pointer level; source typing must separately justify qualifier-safe
+uses. This does not turn read permission into write permission. -/
 def executeScopedWith {Context : Type} (services : ScopedServices Context)
     (layout : Layout) (loopFuel fuel : Nat) (environment : Context)
     (body : List CStatement) : CProg CVal (Result Context) :=
@@ -346,6 +356,11 @@ def executeScopedWith {Context : Type} (services : ScopedServices Context)
       | .declare type name rhs =>
           services.declaration layout environment type name (some rhs)
             (fun updated => executeScopedWith services layout loopFuel fuel updated rest)
+      | .declarePointeeConst type name rhs =>
+          if services.pointeeConst = true ∧ type.pointers = 1 then
+            services.declaration layout environment type name (some rhs)
+              (fun updated => executeScopedWith services layout loopFuel fuel updated rest)
+          else CProg.undefined
       | .declareCleanup type name initial cleanup =>
           services.declarationCleanup layout environment type name initial cleanup
             (fun updated => executeScopedWith services layout loopFuel fuel updated rest)
@@ -375,6 +390,14 @@ def executeScopedWith {Context : Type} (services : ScopedServices Context)
           let selected ← services.selectSwitch layout environment selector cases otherwise
           let result ← executeScopedWith services layout loopFuel fuel environment selected
           resumeSwitch (fun updated => executeScopedWith services layout loopFuel fuel updated rest) result
+      | .whileLoop condition body =>
+          if services.physicalWhile then do
+            let result ← ReadBlock.whileWith
+              (fun current => services.read layout current condition >>= truth)
+              (fun current => executeScopedWith services layout loopFuel fuel current body)
+              loopFuel environment
+            resume (fun updated => executeScopedWith services layout loopFuel fuel updated rest) result
+          else CProg.undefined
       | .forLoop _ _ _ _ _ _ => do
           let result ← services.counted layout loopFuel environment statement
           resume (fun updated => executeScopedWith services layout loopFuel fuel updated rest) result
@@ -384,6 +407,30 @@ def executeScopedWith {Context : Type} (services : ScopedServices Context)
           let actual ← services.read layout environment rhs
           pure (.finished (.returned environment (some actual)))
       | _ => CProg.undefined
+
+/-- The source while node uses the actual expression reader and supplied
+body at every reached context. It owns break, while return and exhaustion
+bypass the subsequent statements. -/
+theorem scoped_while_keeps_guard_body_and_continuation {Context : Type}
+    (services : ScopedServices Context) (layout : Layout) (loopFuel fuel : Nat)
+    (context : Context) (condition : CExpr) (body rest : List CStatement)
+    (admitted : services.physicalWhile = true) :
+    executeScopedWith services layout loopFuel (fuel + 1) context (.whileLoop condition body :: rest) =
+      (ReadBlock.whileWith (fun current => services.read layout current condition >>= truth)
+        (fun current => executeScopedWith services layout loopFuel fuel current body)
+        loopFuel context >>= resume
+          (fun updated => executeScopedWith services layout loopFuel fuel updated rest)) := by
+  rw [executeScopedWith]
+  simp only [admitted, ↓reduceIte]
+
+theorem unadmitted_while_is_not_skipped {Context : Type}
+    (services : ScopedServices Context) (layout : Layout) (loopFuel fuel : Nat)
+    (context : Context) (condition : CExpr) (body rest : List CStatement)
+    (outside : services.physicalWhile = false) :
+    executeScopedWith services layout loopFuel (fuel + 1) context (.whileLoop condition body :: rest) =
+      CProg.undefined := by
+  rw [executeScopedWith]
+  simp only [outside, Bool.false_eq_true, ↓reduceIte]
 
 /-- A scalar assignment composes with its remaining statements without
 expanding the continuation or duplicating its operation tree. -/
@@ -558,9 +605,8 @@ def places (context : Context) (outside : Name → Option Ptr) : Name → Option
 /-- A by-value record call returns all its typed cells, not a borrowed
 address or a scalar pointer masquerading as the record. The service must
 justify its declared result type, field values, effects and dependencies. -/
-structure RecordCall where
+structure RecordCall extends ArgumentCall (List CVal) where
   resultType : CType
-  invoke : List CVal → CProg CVal (List CVal)
 
 /-- Native byte extents and logical cell extents are separate inputs. The
 profile does not infer one from the other or assume a null-pointer encoding. -/
@@ -577,6 +623,29 @@ structure Profile where
   caseConstants : ScalarRead.Environment Ptr := fun _ => none
   recordCalls : Name → Option RecordCall := fun _ => none
   scalarAliases : CType → Option CType := fun _ => none
+  /-- The source profile explicitly admits its by-value record types. -/
+  recordTypes : List CType := []
+  argumentCalls : Name → Option (ArgumentCall CVal) := fun _ => none
+
+/-- Only declared records use aggregate copying. Element extents also describe
+scalars and pointers, so an extent alone does not classify a value. -/
+def Profile.recordExtent (profile : Profile) (type : CType) : Option Nat :=
+  if type ∈ profile.recordTypes then profile.cellExtent type else none
+
+@[simp] theorem Profile.recordExtent_of_not_mem (profile : Profile) (type : CType)
+    (outside : type ∉ profile.recordTypes) : profile.recordExtent type = none := by
+  simp only [Profile.recordExtent, outside, if_false]
+
+@[simp] theorem Profile.recordExtent_of_mem (profile : Profile) (type : CType)
+    (declared : type ∈ profile.recordTypes) :
+    profile.recordExtent type = profile.cellExtent type := by
+  simp only [Profile.recordExtent, declared, if_true]
+
+theorem Profile.recordExtent_eq_some_iff (profile : Profile) (type : CType) (extent : Nat) :
+    profile.recordExtent type = some extent ↔
+      type ∈ profile.recordTypes ∧ profile.cellExtent type = some extent := by
+  simp only [Profile.recordExtent]
+  split <;> simp_all
 
 /-- Static field descriptors are indexed by the retained owner type. Arrow
 removes its one pointer level; dot keeps its object type. No field offset is
@@ -606,6 +675,16 @@ def objects (profile : Profile) (context : Context) : ObjectReads where
   place := some (places context profile.outsidePlaces)
   size := size profile context
   fields := profile.recordFields.map (fieldLayouts profile context)
+  indexStride := fun array => do
+    let type ← ScalarBytes.typeOf? (types context profile.outsideTypes) array profile.fieldTypes
+    match type.pointers with
+    | 0 => none
+    | depth + 1 => profile.cellExtent ⟨type.name, depth⟩
+  record := fun operand => do
+    let type ← ScalarBytes.typeOf? (types context profile.outsideTypes) operand profile.fieldTypes
+    let extent ← profile.recordExtent type
+    some (type, extent)
+  argumentCalls := profile.argumentCalls
 
 def read (profile : Profile) (layout : Layout) (context : Context) (operand : CExpr) :
     CProg CVal CVal :=
@@ -643,7 +722,7 @@ def initializeRecord (profile : Profile) (layout : Layout) (context : Context)
         if service.resultType = type then do
           let actual ← argumentsWithNames
             (localOrLocated (values context) (declared context) profile.locations)
-            profile.values layout arguments (objects profile context)
+            profile.values layout arguments (objects profile context) service.mode
           let fields ← service.invoke actual
           if fields.length = extent then CProg.initializeCells address fields
           else CProg.undefined
@@ -660,7 +739,7 @@ def declaration (profile : Profile) (region : AutomaticRegion Context)
     (layout : Layout) (context : Context) (type : CType) (name : Name)
     (initial : Option CExpr) (continuation : Context → CProg CVal (Result Context)) :
     CProg CVal (Result Context) := do
-  let result ← match profile.cellExtent type with
+  let result ← match profile.recordExtent type with
     | some extent => match initial with
         | none => region name extent (fun address =>
             continuation (Function.update context name (some (.object type address))))
@@ -709,7 +788,7 @@ theorem local_uninitialized_scalar_shields_outer (profile : Profile) (layout : L
 theorem declared_record_keeps_entry_and_continuation (profile : Profile)
     (region : AutomaticRegion Context) (layout : Layout) (context : Context)
     (type : CType) (name : Name) (extent : Nat)
-    (record : profile.cellExtent type = some extent)
+    (record : profile.recordExtent type = some extent)
     (continuation : Context → CProg CVal (Result Context)) :
     declaration profile region layout context type name none continuation =
       (region name extent (fun address =>
@@ -723,7 +802,7 @@ source-before-destination ordering; it does not clone reachable objects. -/
 theorem initialized_record_keeps_scope_and_complete_copy (profile : Profile)
     (region : AutomaticRegion Context) (layout : Layout) (context : Context)
     (type : CType) (name : Name) (extent : Nat) (operand : CExpr)
-    (record : profile.cellExtent type = some extent)
+    (record : profile.recordExtent type = some extent)
     (sourceType : ∀ address, ScalarBytes.typeOf?
       (types (Function.update context name (some (.object type address))) profile.outsideTypes)
       operand profile.fieldTypes = some type)
@@ -747,7 +826,7 @@ body execution; this is not a fabricated normal refusal or a cleanup promise. -/
 theorem incompatible_record_initializer_retains_undefined (profile : Profile)
     (region : AutomaticRegion Context) (layout : Layout) (context : Context)
     (type : CType) (name : Name) (extent : Nat) (operand : CExpr)
-    (record : profile.cellExtent type = some extent)
+    (record : profile.recordExtent type = some extent)
     (sourceType : ∀ address, ScalarBytes.typeOf?
       (types (Function.update context name (some (.object type address))) profile.outsideTypes)
       operand profile.fieldTypes ≠ some type)
@@ -787,7 +866,7 @@ theorem record_call_keeps_arguments_and_complete_return (profile : Profile)
     initializeRecord profile layout context type extent address (.call name arguments) =
       (argumentsWithNames
         (localOrLocated (values context) (declared context) profile.locations)
-        profile.values layout arguments (objects profile context) >>= fun actual =>
+        profile.values layout arguments (objects profile context) service.mode >>= fun actual =>
         service.invoke actual >>= fun fields =>
           if fields.length = extent then CProg.initializeCells address fields else CProg.undefined) := by
   have noType : (none : Option CType) ≠ some type := by intro impossible; cases impossible
@@ -821,7 +900,7 @@ def declarationCleanup (profile : Profile) (region : AutomaticRegion Context)
     (layout : Layout) (context : Context) (type : CType) (name : Name)
     (initial : Option CExpr) (callback : Name)
     (continuation : Context → CProg CVal (Result Context)) : CProg CVal (Result Context) :=
-  match profile.cellExtent type with
+  match profile.recordExtent type with
   | none => CProg.undefined
   | some _ => declaration profile
       (AutomaticRegion.withCleanup region (fun _ address _ flow => cleanup callback address flow))
@@ -831,7 +910,7 @@ theorem cleanup_declaration_keeps_region_and_callback (profile : Profile)
     (region : AutomaticRegion Context)
     (cleanup : Name → Ptr → Flow Context → CProg CVal Unit)
     (layout : Layout) (context : Context) (type : CType) (name callback : Name)
-    (initial : Option CExpr) (extent : Nat) (record : profile.cellExtent type = some extent)
+    (initial : Option CExpr) (extent : Nat) (record : profile.recordExtent type = some extent)
     (continuation : Context → CProg CVal (Result Context)) :
     declarationCleanup profile region cleanup layout context type name initial callback continuation =
       declaration profile
@@ -843,7 +922,7 @@ theorem unsupported_cleanup_storage_is_not_silent (profile : Profile)
     (region : AutomaticRegion Context)
     (cleanup : Name → Ptr → Flow Context → CProg CVal Unit)
     (layout : Layout) (context : Context) (type : CType) (name callback : Name)
-    (initial : Option CExpr) (outside : profile.cellExtent type = none)
+    (initial : Option CExpr) (outside : profile.recordExtent type = none)
     (continuation : Context → CProg CVal (Result Context)) :
     declarationCleanup profile region cleanup layout context type name initial callback continuation =
       CProg.undefined := by simp only [declarationCleanup, outside]
@@ -893,7 +972,7 @@ def assignment (profile : Profile) (layout : Layout) (context : Context) :
   | .assign target operand => do
       let type ← resolved (ScalarBytes.typeOf? (types context profile.outsideTypes)
         target profile.fieldTypes)
-      match profile.cellExtent type with
+      match profile.recordExtent type with
       | some extent =>
           if ScalarBytes.typeOf? (types context profile.outsideTypes)
               operand profile.fieldTypes = some type then do
@@ -924,6 +1003,7 @@ def services (profile : Profile) (region : AutomaticRegion Context)
     (effect : Layout → Context → CExpr → CProg CVal Unit)
     (cleanup : Name → Ptr → Flow Context → CProg CVal Unit := fun _ _ _ => CProg.undefined) :
     ScopedServices Context where
+  pointeeConst := true
   read := read profile
   declaration := declaration profile region
   declarationCleanup := declarationCleanup profile region cleanup
@@ -975,7 +1055,7 @@ theorem record_assignment_retains_snapshot (profile : Profile) (layout : Layout)
       target profile.fieldTypes = some type)
     (sourceType : ScalarBytes.typeOf? (types context profile.outsideTypes)
       operand profile.fieldTypes = some type)
-    (record : profile.cellExtent type = some extent) :
+    (record : profile.recordExtent type = some extent) :
     assignment profile layout context (.assign target operand) =
       (place profile layout context target >>= fun destination =>
         place profile layout context operand >>= fun source =>
@@ -983,13 +1063,26 @@ theorem record_assignment_retains_snapshot (profile : Profile) (layout : Layout)
   simp only [assignment, targetType, resolved, Prog.bind_eq, Prog.pure_eq,
     Prog.ret_bind, record, sourceType, ↓reduceIte]
 
+/-- A scalar assignment uses its actual operand and conversion even when
+its type has an admitted array-element extent. -/
+theorem scalar_assignment_retains_read_and_conversion (profile : Profile) (layout : Layout)
+    (context : Context) (target operand : CExpr) (type : CType)
+    (targetType : ScalarBytes.typeOf? (types context profile.outsideTypes)
+      target profile.fieldTypes = some type)
+    (scalar : profile.recordExtent type = none) :
+    assignment profile layout context (.assign target operand) =
+      (read profile layout context operand >>= fun value =>
+        writeValue profile layout context target value) := by
+  simp only [assignment, targetType, resolved, Prog.bind_eq, Prog.pure_eq,
+    Prog.ret_bind, scalar]
+
 theorem incompatible_record_assignment_rejected (profile : Profile) (layout : Layout)
     (context : Context) (target operand : CExpr) (type : CType) (extent : Nat)
     (targetType : ScalarBytes.typeOf? (types context profile.outsideTypes)
       target profile.fieldTypes = some type)
     (sourceType : ScalarBytes.typeOf? (types context profile.outsideTypes)
       operand profile.fieldTypes ≠ some type)
-    (record : profile.cellExtent type = some extent) :
+    (record : profile.recordExtent type = some extent) :
     assignment profile layout context (.assign target operand) = CProg.undefined := by
   simp only [assignment, targetType, resolved, Prog.bind_eq, Prog.pure_eq,
     Prog.ret_bind, record, sourceType, ↓reduceIte]
@@ -1068,7 +1161,7 @@ complete continuation and restoration of the previous local binding. -/
 theorem initialized_scalar_keeps_read_conversion_and_flow (profile : Profile)
     (region : AutomaticRegion Context) (layout : Layout) (context : Context)
     (type : CType) (name : Name) (operand : CExpr)
-    (scalar : profile.cellExtent type = none)
+    (scalar : profile.recordExtent type = none)
     (continuation : Context → CProg CVal (Result Context)) :
     declaration profile region layout context type name (some operand) continuation =
       (read profile layout context operand >>= fun actual =>
@@ -1082,7 +1175,7 @@ new object's context and the region's own inspection of every returned flow. -/
 theorem initialized_record_keeps_initializer_region_and_flow (profile : Profile)
     (region : AutomaticRegion Context) (layout : Layout) (context : Context)
     (type : CType) (name : Name) (extent : Nat) (operand : CExpr)
-    (record : profile.cellExtent type = some extent)
+    (record : profile.recordExtent type = some extent)
     (continuation : Context → CProg CVal (Result Context)) :
     declaration profile region layout context type name (some operand) continuation =
       (region name extent (fun address =>
@@ -1093,10 +1186,119 @@ theorem initialized_record_keeps_initializer_region_and_flow (profile : Profile)
 
 end ObjectBindings
 
+namespace ObjectBindings.Controls.RecordExtent
+
+open Mettapedia.Machines.CMemory
+open Mettapedia.Machines.CMemory.ReadExpressions
+open Mettapedia.Machines.CMemory.StatementBlock
+open Mettapedia.GSLT.LanguageDef.NativeOps.NativeC
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+
+def pointerType : CType := ⟨"Node".toList, 1⟩
+def tableType : CType := ⟨"Node".toList, 2⟩
+def recordType : CType := ⟨"Node".toList, 0⟩
+def wordType : CType := ⟨"uint32_t".toList, 0⟩
+
+def profile : ObjectBindings.Profile where
+  values := ReadExpressions.noCalls
+  locations := fun _ => none
+  outsideTypes := fun _ => none
+  outsidePlaces := fun _ => none
+  fieldTypes := fun _ _ => none
+  cellExtent := fun type =>
+    if type = pointerType ∨ type = wordType then some 1
+    else if type = recordType then some 2 else none
+  byteExtent := fun _ => none
+  sizeWidth := .bits64
+  recordTypes := [recordType]
+
+def context (base : Ptr) : ObjectBindings.Context := fun name =>
+  if name = "p".toList then some (.scalar pointerType (some (.ptr (some ⟨7, 0⟩))))
+  else if name = "q".toList then some (.scalar pointerType (some (.ptr none)))
+  else if name = "items".toList then some (.scalar tableType (some (.ptr (some base))))
+  else none
+
+def element : CExpr := .index (.identifier "items".toList) (.unsignedInteger 1)
+def assign : CStatement := .assign (.identifier "p".toList) (.identifier "q".toList)
+
+theorem pointer_extent_is_not_a_record :
+    profile.cellExtent pointerType = some 1 ∧ profile.recordExtent pointerType = none := by
+  decide +kernel
+
+theorem word_extent_is_not_a_record :
+    profile.cellExtent wordType = some 1 ∧ profile.recordExtent wordType = none := by
+  decide +kernel
+
+theorem admitted_record_retains_extent : profile.recordExtent recordType = some 2 := by
+  decide +kernel
+
+theorem pointer_array_stride (base : Ptr) :
+    (ObjectBindings.objects profile (context base)).indexStride (.identifier "items".toList) =
+      some 1 := by
+  rfl
+
+theorem array_place (base : Ptr) :
+    ObjectBindings.place profile (fun _ => none) (context base) element = pure (base + 1) := by
+  rfl
+
+theorem array_value (base : Ptr) :
+    ObjectBindings.read profile (fun _ => none) (context base) element =
+      (CProg.loadPtr (base + 1) >>= fun value => pure (.ptr value)) := by
+  rfl
+
+theorem pointer_assignment (base : Ptr) :
+    ObjectBindings.assignment profile (fun _ => none) (context base) assign =
+      pure (Function.update (context base) "p".toList
+        (some (.scalar pointerType (some (.ptr none))))) := by
+  simp [ObjectBindings.assignment, ObjectBindings.Profile.recordExtent, assign,
+    ScalarBytes.typeOf?, ObjectBindings.types, context, profile, pointerType, recordType,
+    ObjectBindings.read, expressionWithNames.eq_def, ObjectBindings.values, localOrLocated,
+    resolved, ObjectBindings.writeValue, ObjectBindings.scalarInitialValue,
+    objectInitialValue, pointer, Prog.bind_eq, Prog.pure_eq, Prog.ret_bind]
+
+theorem array_and_pointer_assignment_compose (base : Ptr) :
+    (do
+      let address ← ObjectBindings.place profile (fun _ => none) (context base) element
+      let value ← ObjectBindings.read profile (fun _ => none) (context base) element
+      let updated ← ObjectBindings.assignment profile (fun _ => none) (context base) assign
+      pure (address, value, updated)) =
+    (CProg.loadPtr (base + 1) >>= fun value => pure (base + 1, CVal.ptr value,
+      Function.update (context base) "p".toList
+        (some (.scalar pointerType (some (.ptr none)))))) := by
+  rw [array_place, array_value]
+  simp only [pointer_assignment, Prog.bind_eq, Prog.pure_eq, Prog.ret_bind, Prog.bind_assoc]
+
+def recordContext (source destination : Ptr) : ObjectBindings.Context := fun name =>
+  if name = "source".toList then some (.object recordType source)
+  else if name = "destination".toList then some (.object recordType destination) else none
+
+theorem record_assignment_keeps_complete_copy (source destination : Ptr) :
+    ObjectBindings.assignment profile (fun _ => none) (recordContext source destination)
+      (.assign (.identifier "destination".toList) (.identifier "source".toList)) =
+      (CProg.copyCells source destination 2 >>= fun _ => pure (recordContext source destination)) := by
+  rw [ObjectBindings.record_assignment_retains_snapshot profile _ _ _ _ recordType 2
+    (by rfl) (by rfl) admitted_record_retains_extent]
+  rfl
+
+theorem pointer_is_not_a_record_source (source destination : Ptr) :
+    ObjectBindings.assignment profile (fun _ => none)
+      (Function.update (recordContext source destination) "p".toList
+        (some (.scalar pointerType (some (.ptr (some source))))))
+      (.assign (.identifier "destination".toList) (.identifier "p".toList)) =
+      CProg.undefined := by
+  apply ObjectBindings.incompatible_record_assignment_rejected profile _ _ _ _ recordType 2
+  · rfl
+  · change some pointerType ≠ some recordType
+    decide +kernel
+  · exact admitted_record_retains_extent
+
+end ObjectBindings.Controls.RecordExtent
+
 /-- Existing scalar and array clients use the same context-polymorphic engine.
 An uninitialized declaration is accepted only by its declared provider. -/
 def Services.scoped (services : Services) (assign : Assignment) :
     ScopedServices Environment where
+  pointeeConst := services.pointeeConst
   read := services.read
   declaration := fun layout environment type name initial continuation =>
     match initial with
@@ -1136,6 +1338,14 @@ theorem executeWith_equation (services : Services) (assign : Assignment) (layout
               let result ← executeWith services assign layout loopFuel fuel
                 (Function.update environment name (some initial)) rest
               pure (restore name (environment name) result)
+          | .declarePointeeConst type name rhs =>
+              if services.pointeeConst = true ∧ type.pointers = 1 then do
+                let actual ← services.read layout environment rhs
+                let initial ← services.initialValue type actual
+                let result ← executeWith services assign layout loopFuel fuel
+                  (Function.update environment name (some initial)) rest
+                pure (restore name (environment name) result)
+              else CProg.undefined
           | .declareUninitialized type name =>
               services.uninitialized layout environment type name
                 (fun updated => executeWith services assign layout loopFuel fuel updated rest)
@@ -1327,6 +1537,54 @@ theorem break_never_enters_later_store_service (body : List CStatement) :
 
 end Controls
 
+namespace PointeeConstControls
+
+/-- Qualifier erasure only at runtime retains the real declaration provider,
+including initializer effects, scope entry and restoration. -/
+theorem typed_pointer_keeps_declaration_provider {Context : Type}
+    (services : ScopedServices Context) (layout : Layout) (loopFuel fuel : Nat)
+    (context : Context) (type : CType) (name : Name) (initial : CExpr)
+    (rest : List CStatement) (pointer : type.pointers = 1)
+    (admitted : services.pointeeConst = true) :
+    executeScopedWith services layout loopFuel (fuel + 1) context
+      (.declarePointeeConst type name initial :: rest) =
+    executeScopedWith services layout loopFuel (fuel + 1) context
+      (.declare type name initial :: rest) := by
+  simp only [executeScopedWith, pointer, admitted, and_self, ↓reduceIte]
+
+theorem nonpointer_const_tag_is_refused {Context : Type}
+    (services : ScopedServices Context) (layout : Layout) (loopFuel fuel : Nat)
+    (context : Context) (type : CType) (name : Name) (initial : CExpr)
+    (rest : List CStatement) (notPointer : type.pointers ≠ 1) :
+    executeScopedWith services layout loopFuel (fuel + 1) context
+      (.declarePointeeConst type name initial :: rest) = CProg.undefined := by
+  simp only [executeScopedWith, notPointer, and_false, ↓reduceIte]
+
+def pointerServices : Services := { pointeeConst := true, initialValue := objectInitialValue }
+def names : Environment := fun _ => none
+
+theorem initialized_const_pointer_returns_its_actual_value :
+    executeWith pointerServices (fieldAssignment expression) (fun _ => none) 0 2 names
+      [.declarePointeeConst ⟨"Entry".toList, 1⟩ "local".toList .null,
+       .return (some (.identifier "local".toList))] =
+    pure (.finished (.returned names (some (.ptr none)))) := by
+  simp [executeWith_equation, pointerServices, expression, expressionWith_equation,
+    objectInitialValue, pointer, resolved,
+    Prog.bind_eq, Prog.pure_eq, Prog.ret_bind, ReadBlock.returned_declaration_restores_scope]
+
+/-- This pointer-valued initializer profile refuses a nonzero integer.
+It does not yet implement the implicit conversion of every C null-pointer constant. -/
+theorem pointer_declaration_does_not_reinterpret_an_integer :
+    executeWith pointerServices (fieldAssignment expression) (fun _ => none) 0 2 names
+      [.declarePointeeConst ⟨"Entry".toList, 1⟩ "local".toList (.unsignedInteger 1),
+       .return (some (.identifier "local".toList))] = CProg.undefined := by
+  simp [executeWith_equation, pointerServices, expression, expressionWith_equation,
+    objectInitialValue, pointer, resolved,
+    Prog.bind_eq, Prog.pure_eq, Prog.ret_bind, Prog.bind_assoc]
+  exact undefined_bind _
+
+end PointeeConstControls
+
 end Mettapedia.Machines.CMemory.StatementBlock
 
 namespace Mettapedia.Machines.CMemory.StatementBlock.ObjectBindings
@@ -1437,4 +1695,373 @@ theorem local_pointer_field_keeps_address (profile : Profile) (fallback : Layout
     local_pointer_keeps_field_inventory profile fallback context layouts name typeName depth address inventory known]
   simp only [Prog.bind_eq, Prog.pure_eq, Prog.ret_bind]
 
+end Mettapedia.Machines.CMemory.StatementBlock.ObjectBindings
+
+namespace Mettapedia.Machines.CMemory.StatementBlock.PhysicalWhileControls
+open Mettapedia.GSLT.LanguageDef.NativeOps.NativeC
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+open ExecutableStorage ProductiveBlocks
+
+def counter : Ptr := ⟨41, 0⟩
+def countType : CType := ⟨"Counter".toList, 0⟩
+def unsigned : CType := ⟨"uint32_t".toList, 0⟩
+def field : CExpr := .field (.identifier "counter".toList) "value".toList true
+def condition : CExpr := .binary .lt field (.unsignedInteger 3)
+def increment : CStatement := .assign field (.binary .add field (.unsignedInteger 1))
+def body : List CStatement := [.whileLoop condition [increment], .return (some (.bool true))]
+def source : String := "{ while (counter->value < 3u) { counter->value = counter->value + 1u; } return true; }"
+
+def tokens : List Token :=
+  [.punctuation "{".toList,
+   .identifier "while".toList,
+   .punctuation "(".toList,
+   .identifier "counter".toList,
+   .punctuation "->".toList,
+   .identifier "value".toList,
+   .punctuation "<".toList,
+   .number "3u".toList,
+   .punctuation ")".toList,
+   .punctuation "{".toList,
+   .identifier "counter".toList,
+   .punctuation "->".toList,
+   .identifier "value".toList,
+   .punctuation "=".toList,
+   .identifier "counter".toList,
+   .punctuation "->".toList,
+   .identifier "value".toList,
+   .punctuation "+".toList,
+   .number "1u".toList,
+   .punctuation ";".toList,
+   .punctuation "}".toList,
+   .identifier "return".toList,
+   .identifier "true".toList,
+   .punctuation ";".toList,
+   .punctuation "}".toList]
+
+theorem source_lex : lex source.toList = .ok tokens := by
+  apply lex_of_completed
+  decide +kernel
+
+theorem actual_while_syntax_is_retained : blockText? [] source.toList = some body :=
+  block_text_of_parts _ _ tokens _ source_lex (by rfl)
+
+def layout : ReadExpressions.Layout := fun name =>
+  if name = "value".toList then some ⟨0, .word⟩ else none
+
+def profile : ObjectBindings.Profile where
+  values := ReadExpressions.noCalls
+  locations := fun _ => none
+  outsideTypes := fun _ => none
+  outsidePlaces := fun _ => none
+  fieldTypes := fun type name =>
+    if type = countType ∧ name = "value".toList then some unsigned else none
+  cellExtent := fun _ => none
+  byteExtent := fun _ => none
+  sizeWidth := .bits64
+
+def context : ObjectBindings.Context := fun name =>
+  if name = "counter".toList then
+    some (.scalar ⟨"Counter".toList, 1⟩ (some (.ptr (some counter)))) else none
+
+def services : ScopedServices ObjectBindings.Context :=
+  { ObjectBindings.services profile (fun _ _ _ => CProg.undefined)
+      (fun _ _ _ => CProg.undefined) with physicalWhile := true }
+
+def program (allowance : Nat) : CProg CVal (ReadBlock.Result ObjectBindings.Context) :=
+  executeScopedWith services layout allowance 8 context body
+
+def readCounter : CProg CVal Bool := do
+  let value ← CProg.loadU32 counter
+  pure (decide (value < 3))
+
+def incrementCounter : CProg CVal Unit := do
+  let value ← CProg.loadU32 counter
+  CProg.store counter (.u32 (value + 1))
+
+def operations (allowance : Nat) : CProg CVal (ReadBlock.Result ObjectBindings.Context) :=
+  ReadBlock.whileWith (fun _ => readCounter)
+    (fun _ => incrementCounter >>= fun _ => pure (.finished (.next context)))
+    allowance context >>= ReadBlock.resume
+      (fun updated => pure (.finished (.returned updated (some (.bool true)))))
+
+private theorem actual_field_reads_counter :
+    ObjectBindings.read profile layout context field =
+      (CProg.loadU32 counter >>= fun value => pure (.u32 value)) := by
+  rfl
+
+private theorem actual_guard_reads_counter :
+    (services.read layout context condition >>= ReadExpressions.truth) = readCounter := by
+  change ((ObjectBindings.read profile layout context field >>= fun value =>
+    ReadExpressions.binary .lt value (.u32 3)) >>= ReadExpressions.truth) = _
+  rw [actual_field_reads_counter]
+  simp only [Prog.bind_eq, Prog.bind_assoc, Prog.pure_eq, Prog.ret_bind]
+  rfl
+
+private theorem actual_body_updates_counter (allowance : Nat) :
+    executeScopedWith services layout allowance 7 context [increment] =
+      (incrementCounter >>= fun _ => pure (.finished (.next context))) := by
+  unfold increment
+  rw [show 7 = 6 + 1 from rfl, scoped_assignment_keeps_continuation]
+  have rhsRead : ObjectBindings.read profile layout context
+      (.binary .add field (.unsignedInteger 1)) =
+      (CProg.loadU32 counter >>= fun value => pure (.u32 (value + 1))) := by
+    change (ObjectBindings.read profile layout context field >>= fun value =>
+      ReadExpressions.binary .add value (.u32 1)) = _
+    rw [actual_field_reads_counter]
+    simp only [Prog.bind_eq, Prog.bind_assoc, Prog.pure_eq, Prog.ret_bind]
+    rfl
+  have assign : services.assignment layout context
+      (.assign field (.binary .add field (.unsignedInteger 1))) =
+      (incrementCounter >>= fun _ => pure context) := by
+    change (ObjectBindings.read profile layout context
+      (.binary .add field (.unsignedInteger 1)) >>= fun value =>
+        ObjectBindings.writeValue profile layout context field value) = _
+    rw [rhsRead]
+    simp only [incrementCounter, Prog.bind_eq, Prog.bind_assoc, Prog.pure_eq, Prog.ret_bind]
+    rfl
+  rw [assign]
+  simp only [Prog.bind_eq, Prog.bind_assoc, Prog.pure_eq, Prog.ret_bind]
+  rfl
+
+private theorem while_fixed_context {Context : Type}
+    (test : Context → CProg CVal Bool) (body : Context → CProg CVal (ReadBlock.Result Context))
+    (read : CProg CVal Bool) (step : CProg CVal Unit) (context : Context)
+    (testAt : test context = read)
+    (bodyAt : body context = (step >>= fun _ => pure (.finished (.next context))))
+    (fuel : Nat) :
+    ReadBlock.whileWith test body fuel context =
+      ReadBlock.whileWith (fun _ => read)
+        (fun _ => step >>= fun _ => pure (.finished (.next context))) fuel context := by
+  induction fuel with
+  | zero => rw [ReadBlock.whileWith.eq_def, ReadBlock.whileWith.eq_def, testAt]
+  | succ fuel ih =>
+      rw [ReadBlock.whileWith.eq_def, ReadBlock.whileWith.eq_def, testAt]
+      congr 1
+      funext selected
+      cases selected
+      · rfl
+      · simp only [↓reduceIte, bodyAt, Prog.bind_eq, Prog.bind_assoc,
+          Prog.pure_eq, Prog.ret_bind, ih]
+
+theorem program_uses_memory_operations (allowance : Nat) : program allowance = operations allowance := by
+  unfold program body
+  rw [scoped_while_keeps_guard_body_and_continuation _ _ _ _ _ _ _ _ (by rfl)]
+  rw [while_fixed_context _ _ readCounter incrementCounter context
+    actual_guard_reads_counter (actual_body_updates_counter allowance)]
+  rfl
+
+def storage : Storage CVal := [(41, ⟨true, [some (.u32 0)]⟩)]
+def initial : State CVal (ReadBlock.Result ObjectBindings.Context) :=
+  ⟨program 3, storage, []⟩
+
+def observation (result : Outcome (State CVal (ReadBlock.Result ObjectBindings.Context))
+    (Verdict CVal (ReadBlock.Result ObjectBindings.Context)) (AllocationRequest CVal)) :
+    Nat × Option CVal :=
+  match result with
+  | .finished (.returned final) =>
+      ((match final.answer with
+        | .finished (.returned _ (some (.bool true))) => 1
+        | .exhausted => 2
+        | _ => 3),
+       load final.storage counter)
+  | .exhausted saved => (0, load saved.storage counter)
+  | .finished (.fault saved) => (4, load saved.storage counter)
+  | _ => (5, none)
+
+theorem actual_body_reads_each_reached_counter :
+    observation ((machine.run 11 initial).2) = (1, some (.u32 3)) := by
+  simp only [initial, program_uses_memory_operations]
+  decide +kernel
+
+theorem actual_body_effect_precedes_pause :
+    observation ((machine.run 3 initial).2) = (0, some (.u32 1)) := by
+  simp only [initial, program_uses_memory_operations]
+  decide +kernel
+
+def saved : State CVal (ReadBlock.Result ObjectBindings.Context) :=
+  match (machine.run 3 initial).2 with
+  | .exhausted state => state
+  | _ => initial
+
+theorem actual_body_resume_preserves_prior_effect :
+    observation ((machine.run 8 saved).2) = (1, some (.u32 3)) ∧
+    (machine.run 8 saved).1.map (fun receipt => receipt.operation) =
+      [.load counter, .load counter, .store counter (.u32 2),
+       .load counter, .load counter, .store counter (.u32 3), .load counter] := by
+  simp only [saved, initial, program_uses_memory_operations]
+  constructor
+  · decide +kernel
+  · rfl
+
+theorem actual_loop_bound_is_distinct_from_pause :
+    observation ((machine.run 2 ⟨program 0, storage, []⟩).2) = (2, some (.u32 0)) := by
+  rw [program_uses_memory_operations]
+  decide +kernel
+
+end Mettapedia.Machines.CMemory.StatementBlock.PhysicalWhileControls
+
+namespace Mettapedia.Machines.CMemory.StatementBlock.ObjectBindings
+
+open Mettapedia.GSLT.LanguageDef.NativeOps.NativeC
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+open ReadExpressions
+open ReadBlock (Result Flow)
+
+/-- Bind an already evaluated argument. Records receive distinct automatic
+storage supplied by the region; scalars use the existing conversion. No
+callee write occurs while source arguments are still being evaluated. -/
+def parameter (profile : Profile) (region : AutomaticRegion Context)
+    (context : Context) (type : CType) (name : Name) (argument : CallArgument)
+    (continuation : Context → CProg CVal (Result Context)) :
+    CProg CVal (Result Context) := do
+  let result ← (match argument with
+    | .scalar value => match profile.recordExtent type with
+        | some _ => CProg.undefined
+        | none => do
+            let converted ← scalarInitialValue profile type value
+            continuation (Function.update context name (some (.scalar type (some converted))))
+    | .record sourceType fields =>
+        if sourceType = type then
+          match profile.recordExtent type with
+          | none => CProg.undefined
+          | some extent =>
+              if fields.length = extent then
+                region name extent fun address => do
+                  CProg.initializeCells address fields
+                  continuation (Function.update context name (some (.object type address)))
+              else CProg.undefined
+        else CProg.undefined)
+  pure (restore name (context name) result)
+
+/-- A parameter list consumes captured values only. Arity mismatch has no
+successful continuation. Lexical restoration is nested in parameter order. -/
+def parameters (profile : Profile) (region : AutomaticRegion Context)
+    (context : Context) : List CParameter → List CallArgument →
+    (Context → CProg CVal (Result Context)) → CProg CVal (Result Context)
+  | [], [], continuation => continuation context
+  | declaration :: rest, argument :: arguments, continuation =>
+      parameter profile region context declaration.type declaration.name argument
+        (fun updated => parameters profile region updated rest arguments continuation)
+  | _, _, _ => CProg.undefined
+
+/-- All argument operations precede the first parameter entry. The supplied
+reader is the expression fold; this eliminator neither re-evaluates arguments
+nor supplies a function-result oracle. -/
+def callWithArguments (profile : Profile) (region : AutomaticRegion Context)
+    (context : Context) (declarations : List CParameter)
+    (evaluate : CProg CVal (List CallArgument))
+    (body : Context → CProg CVal (Result Context)) : CProg CVal (Result Context) := do
+  let actual ← evaluate
+  parameters profile region context declarations actual body
+
+theorem parameter_record_keeps_complete_copy (profile : Profile)
+    (region : AutomaticRegion Context) (context : Context) (type : CType) (name : Name)
+    (fields : List CVal) (extent : Nat)
+    (admitted : profile.recordExtent type = some extent) (complete : fields.length = extent)
+    (body : Context → CProg CVal (Result Context)) :
+    parameter profile region context type name (.record type fields) body =
+      (region name extent (fun address => CProg.initializeCells address fields >>= fun _ =>
+        body (Function.update context name (some (.object type address)))) >>= fun result =>
+          pure (restore name (context name) result)) := by
+  simp only [parameter, if_true, admitted, complete]
+
+theorem parameter_wrong_record_type_refused (profile : Profile)
+    (region : AutomaticRegion Context) (context : Context) (type sourceType : CType)
+    (name : Name) (fields : List CVal) (different : sourceType ≠ type)
+    (body : Context → CProg CVal (Result Context)) :
+    parameter profile region context type name (.record sourceType fields) body =
+      CProg.undefined := by
+  simp only [parameter, different, if_false]
+  exact undefined_bind _
+
+theorem parameter_incomplete_record_refused (profile : Profile)
+    (region : AutomaticRegion Context) (context : Context) (type : CType)
+    (name : Name) (fields : List CVal) (extent : Nat)
+    (admitted : profile.recordExtent type = some extent) (incomplete : fields.length ≠ extent)
+    (body : Context → CProg CVal (Result Context)) :
+    parameter profile region context type name (.record type fields) body =
+      CProg.undefined := by
+  simp only [parameter, if_true, admitted, incomplete, if_false]
+  exact undefined_bind _
+
+theorem parameter_scalar_cannot_impersonate_record (profile : Profile)
+    (region : AutomaticRegion Context) (context : Context) (type : CType)
+    (name : Name) (value : CVal) (extent : Nat)
+    (admitted : profile.recordExtent type = some extent)
+    (body : Context → CProg CVal (Result Context)) :
+    parameter profile region context type name (.scalar value) body =
+      CProg.undefined := by
+  simp only [parameter, admitted]
+  exact undefined_bind _
+
+/-- Entry, all copied fields, body and exit retain their actual operation
+order. Returned data survives exit and only the lexical binding is restored. -/
+theorem parameter_bracket_order (profile : Profile) (context : Context)
+    (type : CType) (name : Name) (fields : List CVal) (extent : Nat)
+    (admitted : profile.recordExtent type = some extent) (complete : fields.length = extent)
+    (enter : Name → Nat → CProg CVal Ptr)
+    (leave : Name → Ptr → Nat → CProg CVal Unit)
+    (body : Context → CProg CVal (Result Context)) :
+    parameter profile (AutomaticRegion.bracket enter leave) context type name
+      (.record type fields) body =
+      (enter name extent >>= fun address =>
+        CProg.initializeCells address fields >>= fun _ =>
+        body (Function.update context name (some (.object type address))) >>= fun result =>
+        leave name address extent >>= fun _ =>
+        pure (restore name (context name) result)) := by
+  rw [parameter_record_keeps_complete_copy profile _ context type name fields extent admitted complete]
+  simp only [AutomaticRegion.bracket, Prog.bind_eq, Prog.bind_assoc, Prog.pure_eq, Prog.ret_bind]
+
+theorem parameter_returned_value_keeps_cleanup (profile : Profile) (context : Context)
+    (type : CType) (name : Name) (fields : List CVal) (extent : Nat)
+    (admitted : profile.recordExtent type = some extent) (complete : fields.length = extent)
+    (enter : Name → Nat → CProg CVal Ptr)
+    (leave : Name → Ptr → Nat → CProg CVal Unit) (reply : Option CVal) :
+    parameter profile (AutomaticRegion.bracket enter leave) context type name
+      (.record type fields) (fun localContext => pure (.finished (.returned localContext reply))) =
+      (enter name extent >>= fun address =>
+        CProg.initializeCells address fields >>= fun _ =>
+        leave name address extent >>= fun _ => pure (.finished (.returned context reply))) := by
+  rw [parameter_bracket_order profile context type name fields extent admitted complete]
+  simp only [Prog.bind_eq, Prog.pure_eq, Prog.ret_bind, returned_local_restores_previous_binding]
+
+theorem call_two_snapshots_before_parameter_entry (profile : Profile)
+    (region : AutomaticRegion Context) (context : Context)
+    (declarations : List CParameter) (firstType secondType : CType)
+    (firstSource secondSource : Ptr) (firstExtent secondExtent : Nat)
+    (body : Context → CProg CVal (Result Context)) :
+    callWithArguments profile region context declarations
+      (do let first ← snapshotRecord firstType firstSource firstExtent
+          let second ← snapshotRecord secondType secondSource secondExtent
+          pure [first, second]) body =
+      (CProg.loadCells firstSource firstExtent >>= fun firstFields =>
+        CProg.loadCells secondSource secondExtent >>= fun secondFields =>
+        parameters profile region context declarations
+          [.record firstType firstFields, .record secondType secondFields] body) := by
+  simp only [callWithArguments, snapshotRecord, Prog.bind_eq, Prog.pure_eq,
+    Prog.bind_assoc, Prog.ret_bind]
+
+section Ownership
+open Mettapedia.GSLT.SeparationAlgebra
+open scoped Mettapedia.GSLT.SeparationAlgebra
+open CellPermission
+universe u
+variable {L : Type u} [Zero L] [Add L] [SepAlgebra L] [CellPermission L (Option CVal)]
+
+/-- The source remains owned and unchanged, including copied pointer cells.
+The destination has independent ownership and receives the whole snapshot. -/
+theorem snapshot_then_parameter_cells (type : CType) (source destination : Ptr)
+    (fields : List CVal) (previous : List (Option CVal))
+    (complete : previous.length = fields.length) :
+    CTriple (L := L) (Cells source (fields.map some) ∗ Cells destination previous)
+      (do let argument ← snapshotRecord type source fields.length
+          match argument with
+          | .scalar _ => CProg.undefined
+          | .record _ captured => CProg.initializeCells destination captured)
+      (fun _ => Cells source (fields.map some) ∗ Cells destination (fields.map some)) := by
+  simpa only [snapshotRecord, Prog.bind_eq, Prog.pure_eq, Prog.bind_assoc, Prog.ret_bind,
+    CProg.copyCells] using (copy_cells (L := L) source destination previous fields complete)
+
+end Ownership
 end Mettapedia.Machines.CMemory.StatementBlock.ObjectBindings

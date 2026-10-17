@@ -1,7 +1,7 @@
 import Mettapedia.PLN.Evidence.EvidenceSTVBridge
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 
 /-!
@@ -30,7 +30,7 @@ PLN judgments are about **conditional probabilities**:
 ## Core Inference Rules
 
 1. **Deduction**: `A→B, B→C ⊢ A→C` with PLN deduction formula
-2. **Revision**: Combine independent evidence (two versions)
+2. **Revision**: Combine evidence from disjoint observations (two versions)
 3. **Modus Ponens**: `A→B, A ⊢ B`
 4. **Negation**: `A ⊢ ¬A` (strength complement)
 5. **Conjunction**: `A, B ⊢ A∧B` (under independence)
@@ -56,6 +56,9 @@ open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
+open Mettapedia.PLN.Evidence.EvidenceSTVBridge (DeductionSTV)
+open Mettapedia.PLN.TruthValues.PLNWeightTV (c2w w2c)
+open Mettapedia.PLN.TruthValues.PLNWeightTV.WTV (w2c_bounds c2w_nonneg)
 
 /-! ## PLN Formula Type -/
 
@@ -100,8 +103,6 @@ which has:
 - Built-in bounds proofs
 -/
 
-/-- Alias for clarity -/
-abbrev TV := Mettapedia.PLN.Evidence.EvidenceSTVBridge.DeductionSTV
 
 /-! ## Judgments and Contexts -/
 
@@ -110,7 +111,7 @@ abbrev TV := Mettapedia.PLN.Evidence.EvidenceSTVBridge.DeductionSTV
 Represents the claim that formula `φ` has truth value `tv`. -/
 structure Judgment where
   formula : PLNFormula
-  tv : TV
+  tv : DeductionSTV
 
 /-- Context: set of judgments (prior knowledge)
 
@@ -122,7 +123,8 @@ abbrev Context := Set Judgment
 
 /-! ## Independence Tracking
 
-PLN's Revision Rule requires **independent** evidence sources.
+PLN's Revision Rule is exact only for evidence from disjoint observations (PLN
+calls such sources independent).
 We provide two mechanisms for tracking this.
 -/
 
@@ -147,7 +149,7 @@ abbrev IndependentEvidence [IndependenceOracle] (Γ : Context) (φ : PLNFormula)
 /-- Negation: flip strength, keep confidence
 
 P(¬A) = 1 - P(A) -/
-def negTV (tv : TV) : TV where
+def negTV (tv : DeductionSTV) : DeductionSTV where
   strength := 1 - tv.strength
   confidence := tv.confidence
   strength_nonneg := by linarith [tv.strength_le_one]
@@ -157,38 +159,17 @@ def negTV (tv : TV) : TV where
 
 /-! ## Weight-Confidence Conversions (BinaryEvidence-based) -/
 
-/-- Confidence to weight: c/(1-c). Defined for c < 1.
-For c=1, we use a large constant to avoid division by zero. -/
-noncomputable def c2w (c : ℝ) : ℝ :=
-  if c < 1 then c / (1 - c) else 1000  -- Large weight for c=1
-
-/-- Weight to confidence: w/(w+1). Always defined for w ≥ 0. -/
-noncomputable def w2c (w : ℝ) : ℝ := w / (w + 1)
-
-/-- w2c preserves [0,1] bounds -/
-lemma w2c_bounds (w : ℝ) (hw : 0 ≤ w) : 0 ≤ w2c w ∧ w2c w ≤ 1 := by
-  unfold w2c
-  constructor
-  · apply div_nonneg hw; linarith
-  · have h1 : w ≤ w + 1 := by linarith
-    have h2 : 0 < w + 1 := by linarith
-    rw [div_le_iff₀ h2]
-    linarith
-
-/-- c2w is nonnegative when c ∈ [0,1) -/
-lemma c2w_nonneg (c : ℝ) (hc : 0 ≤ c) (hc1 : c < 1) : 0 ≤ c2w c := by
-  unfold c2w
-  simp only [hc1, ↓reduceIte]
-  apply div_nonneg hc
-  linarith
-
 /-- Conjunction (under independence): BinaryEvidence-based formula
 
 P(A ∧ B) = P(A) · P(B) when A, B independent
 
-**Corrected confidence formula**: `w2c(w_A * w_B)` where `w_i = c2w(c_i)`
-This matches the tensor product of BinaryEvidence counts. -/
-noncomputable def conjTV (tvA tvB : TV) : TV where
+Confidence chart: `w2c(w_A * w_B)` where `w_i = c2w(c_i)`, the product of
+evidence weights.  This is the paired total of the Cartesian contract, which
+overstates the evidence for a conjunction
+(`Mettapedia.PLN.WorldModel.PairedSampleDispersion.paired_variance_eq_joint_iff`);
+the derived confidence goes through intervals
+(`Mettapedia.PLN.WorldModel.EvidenceContracts`). -/
+noncomputable def conjTV (tvA tvB : DeductionSTV) : DeductionSTV where
   strength := tvA.strength * tvB.strength
   confidence := w2c (c2w tvA.confidence * c2w tvB.confidence)
   strength_nonneg := mul_nonneg tvA.strength_nonneg tvB.strength_nonneg
@@ -225,7 +206,7 @@ independent of A. We use 0 here for simplicity.
 
 **Corrected confidence formula**: `w2c(w_AB * w_A)` where `w_i = c2w(c_i)`
 This is identical to conjunction - both are tensor products in BinaryEvidence space. -/
-noncomputable def mpTV (tvAB tvA : TV) : TV where
+noncomputable def mpTV (tvAB tvA : DeductionSTV) : DeductionSTV where
   strength := clamp01 (tvAB.strength * tvA.strength)
   confidence := w2c (c2w tvAB.confidence * c2w tvA.confidence)
   strength_nonneg := clamp01_nonneg _
@@ -260,7 +241,7 @@ the combined estimate has:
 
 **Corrected confidence formula**: `w2c(w₁ + w₂)` where `wᵢ = c2w(cᵢ)`
 This matches adding BinaryEvidence counts when sources are independent. -/
-noncomputable def revisionTV (tv₁ tv₂ : TV) : TV where
+noncomputable def revisionTV (tv₁ tv₂ : DeductionSTV) : DeductionSTV where
   strength :=
     let w₁ := c2w tv₁.confidence
     let w₂ := c2w tv₂.confidence
@@ -308,7 +289,7 @@ This is KEY for the anytime property:
 - P(α|δ) ∈ [x,y] and P(α|δ) ∈ [u,v] implies P(α|δ) ∈ [max(x,u), min(y,v)]
 
 For STV, we take the more confident estimate (higher confidence). -/
-noncomputable def multipleDerivationTV (tv₁ tv₂ : TV) : TV where
+noncomputable def multipleDerivationTV (tv₁ tv₂ : DeductionSTV) : DeductionSTV where
   -- Take the estimate with higher confidence
   strength := if tv₁.confidence ≥ tv₂.confidence then tv₁.strength else tv₂.strength
   confidence := max tv₁.confidence tv₂.confidence
@@ -327,7 +308,7 @@ noncomputable def multipleDerivationTV (tv₁ tv₂ : TV) : TV where
     left; exact tv₁.confidence_nonneg
   confidence_le_one := max_le tv₁.confidence_le_one tv₂.confidence_le_one
 
-/-! ## Induction and Abduction TV Operations
+/-! ## Induction and Abduction DeductionSTV Operations
 
 The PLN inference triad:
 - **Deduction** (Composition): A→B, B→C ⊢ A→C
@@ -342,7 +323,7 @@ Induction and Abduction are both Bayes inversion + Deduction.
 P(B|A) = P(A|B) · P(B) / P(A)
 
 Requires: tvA.strength > 0 for well-definedness. -/
-noncomputable def bayesInversionSTV (tvBA tvA tvB : TV) : TV where
+noncomputable def bayesInversionSTV (tvBA tvA tvB : DeductionSTV) : DeductionSTV where
   strength := clamp01 (tvBA.strength * tvB.strength / max tvA.strength 0.001)
   confidence := min tvBA.confidence (min tvA.confidence tvB.confidence)
   strength_nonneg := clamp01_nonneg _
@@ -361,11 +342,11 @@ Strategy: Bayes invert B→A to get A→B, then apply deduction.
 
 Full formula: First compute s_{AB} = s_{BA} · s_B / s_A, then use deduction.
 -/
-noncomputable def spanTV (tvBA tvBC tvA tvB tvC : TV) : TV :=
+noncomputable def spanTV (tvBA tvBC tvA tvB tvC : DeductionSTV) : DeductionSTV :=
   let tvAB := bayesInversionSTV tvBA tvA tvB
   deductionFormulaSTV tvA tvB tvC tvAB tvBC
 
-/-- Cospan Rule TV (formerly "abduction"): A→B, C→B ⊢ A→C
+/-- Cospan Rule DeductionSTV (formerly "abduction"): A→B, C→B ⊢ A→C
 
 Given a cospan: A → B ← C (via A→B and target A→C)
 Complete it via the span leg C→B.
@@ -375,7 +356,7 @@ Strategy: Bayes invert C→B to get B→C, then apply deduction.
 
 Full formula: First compute s_{BC} = s_{CB} · s_C / s_B, then use deduction.
 -/
-noncomputable def cospanTV (tvAB tvCB tvA tvB tvC : TV) : TV :=
+noncomputable def cospanTV (tvAB tvCB tvA tvB tvC : DeductionSTV) : DeductionSTV :=
   let tvBC := bayesInversionSTV tvCB tvB tvC
   deductionFormulaSTV tvA tvB tvC tvAB tvBC
 
@@ -400,7 +381,7 @@ inductive PLNDerivation (Γ : Context) : Judgment → Type where
 
   Uses the PLN deduction formula from PLNDeduction.lean.
   Requires explicit marginal probabilities as premises. -/
-  | deduction {A B C : PLNFormula} {tvAB tvBC tvA tvB tvC : TV} :
+  | deduction {A B C : PLNFormula} {tvAB tvBC tvA tvB tvC : DeductionSTV} :
       PLNDerivation Γ ⟨A ⟹ B, tvAB⟩ →
       PLNDerivation Γ ⟨B ⟹ C, tvBC⟩ →
       PLNDerivation Γ ⟨A, tvA⟩ →
@@ -415,25 +396,25 @@ inductive PLNDerivation (Γ : Context) : Judgment → Type where
 
   Note: Version B (separate contexts) requires making Γ an index
   instead of a parameter. We keep Version A for simplicity. -/
-  | revision {φ : PLNFormula} {tv₁ tv₂ : TV} :
+  | revision {φ : PLNFormula} {tv₁ tv₂ : DeductionSTV} :
       PLNDerivation Γ ⟨φ, tv₁⟩ →
       PLNDerivation Γ ⟨φ, tv₂⟩ →
       IndependentEvidence Γ φ →
       PLNDerivation Γ ⟨φ, revisionTV tv₁ tv₂⟩
 
   /-- Modus Ponens: A→B, A ⊢ B -/
-  | modusPonens {A B : PLNFormula} {tvAB tvA : TV} :
+  | modusPonens {A B : PLNFormula} {tvAB tvA : DeductionSTV} :
       PLNDerivation Γ ⟨A ⟹ B, tvAB⟩ →
       PLNDerivation Γ ⟨A, tvA⟩ →
       PLNDerivation Γ ⟨B, mpTV tvAB tvA⟩
 
   /-- Negation: A ⊢ ¬A with complemented strength -/
-  | negation {A : PLNFormula} {tv : TV} :
+  | negation {A : PLNFormula} {tv : DeductionSTV} :
       PLNDerivation Γ ⟨A, tv⟩ →
       PLNDerivation Γ ⟨∼A, negTV tv⟩
 
   /-- Conjunction (independent): A, B ⊢ A∧B -/
-  | conjunction {A B : PLNFormula} {tvA tvB : TV} :
+  | conjunction {A B : PLNFormula} {tvA tvB : DeductionSTV} :
       PLNDerivation Γ ⟨A, tvA⟩ →
       PLNDerivation Γ ⟨B, tvB⟩ →
       PLNDerivation Γ ⟨A ⩓ B, conjTV tvA tvB⟩
@@ -448,7 +429,7 @@ inductive PLNDerivation (Γ : Context) : Judgment → Type where
   - Stopping early with partial results
   - Refining estimates as more derivations become available
   - Quasi-tight bounds (as tight as premises allow) -/
-  | multipleDerivation {φ : PLNFormula} {tv₁ tv₂ : TV} :
+  | multipleDerivation {φ : PLNFormula} {tv₁ tv₂ : DeductionSTV} :
       PLNDerivation Γ ⟨φ, tv₁⟩ →
       PLNDerivation Γ ⟨φ, tv₂⟩ →
       PLNDerivation Γ ⟨φ, multipleDerivationTV tv₁ tv₂⟩
@@ -465,7 +446,7 @@ inductive PLNDerivation (Γ : Context) : Judgment → Type where
   **Strategy**: Bayes invert B→A to get A→B, then apply deduction.
 
   Requires explicit marginal probabilities as premises. -/
-  | span {A B C : PLNFormula} {tvBA tvBC tvA tvB tvC : TV} :
+  | span {A B C : PLNFormula} {tvBA tvBC tvA tvB tvC : DeductionSTV} :
       PLNDerivation Γ ⟨B ⟹ A, tvBA⟩ →
       PLNDerivation Γ ⟨B ⟹ C, tvBC⟩ →
       PLNDerivation Γ ⟨A, tvA⟩ →
@@ -485,7 +466,7 @@ inductive PLNDerivation (Γ : Context) : Judgment → Type where
   **Strategy**: Bayes invert C→B to get B→C, then apply deduction.
 
   Requires explicit marginal probabilities as premises. -/
-  | cospan {A B C : PLNFormula} {tvAB tvCB tvA tvB tvC : TV} :
+  | cospan {A B C : PLNFormula} {tvAB tvCB tvA tvB tvC : DeductionSTV} :
       PLNDerivation Γ ⟨A ⟹ B, tvAB⟩ →
       PLNDerivation Γ ⟨C ⟹ B, tvCB⟩ →
       PLNDerivation Γ ⟨A, tvA⟩ →
@@ -765,7 +746,7 @@ These obligations isolate the currently unresolved confidence/error semantics ga
 from the structural induction proof of soundness. -/
 structure RuleSoundness [IndependenceOracle] (Γ : Context) (M : PLNModel) : Prop where
   deduction :
-    ∀ {A B C : PLNFormula} {tvAB tvBC tvA tvB tvC : TV},
+    ∀ {A B C : PLNFormula} {tvAB tvBC tvA tvB tvC : DeductionSTV},
       M.satisfies ⟨A ⟹ B, tvAB⟩ →
       M.satisfies ⟨B ⟹ C, tvBC⟩ →
       M.satisfies ⟨A, tvA⟩ →
@@ -773,23 +754,23 @@ structure RuleSoundness [IndependenceOracle] (Γ : Context) (M : PLNModel) : Pro
       M.satisfies ⟨C, tvC⟩ →
       M.satisfies ⟨A ⟹ C, deductionFormulaSTV tvA tvB tvC tvAB tvBC⟩
   revision :
-    ∀ {φ : PLNFormula} {tv₁ tv₂ : TV},
+    ∀ {φ : PLNFormula} {tv₁ tv₂ : DeductionSTV},
       IndependentEvidence Γ φ →
       M.satisfies ⟨φ, tv₁⟩ →
       M.satisfies ⟨φ, tv₂⟩ →
       M.satisfies ⟨φ, revisionTV tv₁ tv₂⟩
   modusPonens :
-    ∀ {A B : PLNFormula} {tvAB tvA : TV},
+    ∀ {A B : PLNFormula} {tvAB tvA : DeductionSTV},
       M.satisfies ⟨A ⟹ B, tvAB⟩ →
       M.satisfies ⟨A, tvA⟩ →
       M.satisfies ⟨B, mpTV tvAB tvA⟩
   conjunction :
-    ∀ {A B : PLNFormula} {tvA tvB : TV},
+    ∀ {A B : PLNFormula} {tvA tvB : DeductionSTV},
       M.satisfies ⟨A, tvA⟩ →
       M.satisfies ⟨B, tvB⟩ →
       M.satisfies ⟨A ⩓ B, conjTV tvA tvB⟩
   span :
-    ∀ {A B C : PLNFormula} {tvBA tvBC tvA tvB tvC : TV},
+    ∀ {A B C : PLNFormula} {tvBA tvBC tvA tvB tvC : DeductionSTV},
       M.satisfies ⟨B ⟹ A, tvBA⟩ →
       M.satisfies ⟨B ⟹ C, tvBC⟩ →
       M.satisfies ⟨A, tvA⟩ →
@@ -797,7 +778,7 @@ structure RuleSoundness [IndependenceOracle] (Γ : Context) (M : PLNModel) : Pro
       M.satisfies ⟨C, tvC⟩ →
       M.satisfies ⟨A ⟹ C, spanTV tvBA tvBC tvA tvB tvC⟩
   cospan :
-    ∀ {A B C : PLNFormula} {tvAB tvCB tvA tvB tvC : TV},
+    ∀ {A B C : PLNFormula} {tvAB tvCB tvA tvB tvC : DeductionSTV},
       M.satisfies ⟨A ⟹ B, tvAB⟩ →
       M.satisfies ⟨C ⟹ B, tvCB⟩ →
       M.satisfies ⟨A, tvA⟩ →
@@ -864,7 +845,7 @@ theorem soundness [IndependenceOracle] {Γ : Context} {j : Judgment}
 /-! ## Anytime Properties -/
 
 /-- Multiple derivation preserves soundness with tighter bounds -/
-theorem multipleDerivation_tighter {tv₁ tv₂ : TV} :
+theorem multipleDerivation_tighter {tv₁ tv₂ : DeductionSTV} :
     (multipleDerivationTV tv₁ tv₂).confidence ≥ tv₁.confidence ∧
     (multipleDerivationTV tv₁ tv₂).confidence ≥ tv₂.confidence := by
   constructor
@@ -872,7 +853,7 @@ theorem multipleDerivation_tighter {tv₁ tv₂ : TV} :
   · exact le_max_right _ _
 
 /-- Confidence monotonically increases with more derivations -/
-theorem confidence_monotone {tv₁ tv₂ : TV} :
+theorem confidence_monotone {tv₁ tv₂ : DeductionSTV} :
     (multipleDerivationTV tv₁ tv₂).confidence ≥ max tv₁.confidence tv₂.confidence := by
   unfold multipleDerivationTV
   simp only [ge_iff_le, le_refl]
@@ -887,7 +868,7 @@ from PLNDerivation.lean.
 
 This connects the proof calculus rule to the semantic formula.
 The formula derives from the Law of Total Probability under conditional independence. -/
-theorem deduction_strength_formula (tvA tvB tvC tvAB tvBC : TV)
+theorem deduction_strength_formula (tvA tvB tvC tvAB tvBC : DeductionSTV)
     (h_consist : conditionalProbabilityConsistency tvA.strength tvB.strength tvAB.strength ∧
                  conditionalProbabilityConsistency tvB.strength tvC.strength tvBC.strength)
     (h_bound : tvB.strength ≤ 0.9999) :
@@ -903,7 +884,7 @@ theorem deduction_strength_formula (tvA tvB tvC tvAB tvBC : TV)
   simp only [h1, h2, ite_false]
 
 /-- Deduction formula matches the algebraic definition from PLNDeduction.lean. -/
-theorem deduction_matches_pln_formula (tvA tvB tvC tvAB tvBC : TV)
+theorem deduction_matches_pln_formula (tvA tvB tvC tvAB tvBC : DeductionSTV)
     (h_consist : conditionalProbabilityConsistency tvA.strength tvB.strength tvAB.strength ∧
                  conditionalProbabilityConsistency tvB.strength tvC.strength tvBC.strength)
     (h_bound : tvB.strength ≤ 0.9999) :
@@ -921,7 +902,7 @@ theorem deduction_matches_pln_formula (tvA tvB tvC tvAB tvBC : TV)
 /-- Induction is Bayes inversion followed by deduction.
 
 This captures the semantic relationship between span and the other rules. -/
-theorem span_is_bayes_deduction (tvBA tvBC tvA tvB tvC : TV) :
+theorem span_is_bayes_deduction (tvBA tvBC tvA tvB tvC : DeductionSTV) :
     spanTV tvBA tvBC tvA tvB tvC =
       deductionFormulaSTV tvA tvB tvC (bayesInversionSTV tvBA tvA tvB) tvBC := by
   rfl
@@ -929,7 +910,7 @@ theorem span_is_bayes_deduction (tvBA tvBC tvA tvB tvC : TV) :
 /-- Cospan is Bayes inversion followed by deduction.
 
 This captures the semantic relationship between cospan and the other rules. -/
-theorem cospan_is_bayes_deduction (tvAB tvCB tvA tvB tvC : TV) :
+theorem cospan_is_bayes_deduction (tvAB tvCB tvA tvB tvC : DeductionSTV) :
     cospanTV tvAB tvCB tvA tvB tvC =
       deductionFormulaSTV tvA tvB tvC tvAB (bayesInversionSTV tvCB tvB tvC) := by
   rfl
@@ -940,7 +921,7 @@ theorem cospan_is_bayes_deduction (tvAB tvCB tvA tvB tvC : TV) :
 - Span (was "induction"): Bayes on first premise
 - Cospan (was "abduction"): Bayes on second premise
 -/
-theorem inference_triad_structure (tvAB tvBC tvBA tvCB tvA tvB tvC : TV) :
+theorem inference_triad_structure (tvAB tvBC tvBA tvCB tvA tvB tvC : DeductionSTV) :
     (h_consist : conditionalProbabilityConsistency tvA.strength tvB.strength tvAB.strength ∧
                  conditionalProbabilityConsistency tvB.strength tvC.strength tvBC.strength) →
     (h_bound : tvB.strength ≤ 0.9999) →
@@ -961,37 +942,37 @@ theorem inference_triad_structure (tvAB tvBC tvBA tvCB tvA tvB tvC : TV) :
 /-- Negation preserves strength relationship.
 
 If strength approximates P(A), then 1-strength approximates P(¬A). -/
-theorem negation_strength_complement (tv : TV) :
+theorem negation_strength_complement (tv : DeductionSTV) :
     (negTV tv).strength = 1 - tv.strength := by
   rfl
 
 /-- Negation preserves confidence exactly. -/
-theorem negation_confidence_preserved (tv : TV) :
+theorem negation_confidence_preserved (tv : DeductionSTV) :
     (negTV tv).confidence = tv.confidence := by
   rfl
 
 /-- Conjunction strength is product (under independence assumption). -/
-theorem conjunction_strength_product (tvA tvB : TV) :
+theorem conjunction_strength_product (tvA tvB : DeductionSTV) :
     (conjTV tvA tvB).strength = tvA.strength * tvB.strength := by
   rfl
 
 /-- Conjunction confidence formula (BinaryEvidence-based). -/
-theorem conjunction_confidence_formula (tvA tvB : TV) :
+theorem conjunction_confidence_formula (tvA tvB : DeductionSTV) :
     (conjTV tvA tvB).confidence = w2c (c2w tvA.confidence * c2w tvB.confidence) := by
   rfl
 
 /-- Modus ponens strength is product (simplified from full formula with background term). -/
-theorem modusPonens_strength_product (tvAB tvA : TV) :
+theorem modusPonens_strength_product (tvAB tvA : DeductionSTV) :
     (mpTV tvAB tvA).strength = clamp01 (tvAB.strength * tvA.strength) := by
   rfl
 
 /-- Modus ponens confidence formula (BinaryEvidence-based, same as conjunction). -/
-theorem modusPonens_confidence_formula (tvAB tvA : TV) :
+theorem modusPonens_confidence_formula (tvAB tvA : DeductionSTV) :
     (mpTV tvAB tvA).confidence = w2c (c2w tvAB.confidence * c2w tvA.confidence) := by
   rfl
 
 /-- Revision strength is weighted average by weights (not confidences). -/
-theorem revision_weighted_average (tv₁ tv₂ : TV)
+theorem revision_weighted_average (tv₁ tv₂ : DeductionSTV)
     (h : c2w tv₁.confidence + c2w tv₂.confidence ≠ 0) :
     (revisionTV tv₁ tv₂).strength =
       clamp01 ((c2w tv₁.confidence * tv₁.strength + c2w tv₂.confidence * tv₂.strength) /
@@ -1000,7 +981,7 @@ theorem revision_weighted_average (tv₁ tv₂ : TV)
   simp [h]
 
 /-- Revision confidence formula (BinaryEvidence-based). -/
-theorem revision_confidence_formula (tv₁ tv₂ : TV) :
+theorem revision_confidence_formula (tv₁ tv₂ : DeductionSTV) :
     (revisionTV tv₁ tv₂).confidence =
       w2c (c2w tv₁.confidence + c2w tv₂.confidence) := by
   rfl
@@ -1040,7 +1021,7 @@ theorem revision_confidence_formula (tv₁ tv₂ : TV) :
 
 | Aspect | Classical Tait | PLN Inference |
 |--------|----------------|---------------|
-| Judgment | `T ⊢ Δ` (formula list) | `Γ ⊢ φ : (s,c)` (single + TV) |
+| Judgment | `T ⊢ Δ` (formula list) | `Γ ⊢ φ : (s,c)` (single + DeductionSTV) |
 | Rules | Logical connectives | Probabilistic inference |
 | Combination | Meet/join | PLN formulas |
 | Soundness | Boolean satisfaction | Probability bounds |

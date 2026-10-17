@@ -86,7 +86,7 @@ open Mettapedia.GSLT.Dedukti.Language
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
-open Mettapedia.Logic.HostingStyles.PrimeCandidate (contract runPattern runRewrite)
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles (contract runPattern runRewrite)
 open Mettapedia.Logic.HostingStyles.AtomsReduce
   (atomsReduce atomsReduce_rewrites beta_inv appFunction_inv appArgument_inv step_appFunction
     step_appArgument exists_rule_of_stepAt releaseRule runSubjectRule runAppFunctionRule

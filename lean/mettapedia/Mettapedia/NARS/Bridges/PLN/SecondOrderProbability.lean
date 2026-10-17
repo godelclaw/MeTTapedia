@@ -1,7 +1,7 @@
 import Mathlib.Tactic
 import Mathlib.Data.ENNReal.Real
 import Mathlib.Data.ENNReal.Inv
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.NARS.TruthFunctions
 import Mettapedia.NARS.Bridges.PLN.EvidenceTranslation
 

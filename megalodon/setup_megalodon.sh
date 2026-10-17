@@ -5,6 +5,8 @@
 set -e
 
 MEGALODON_URL="http://grid01.ciirc.cvut.cz/~chad/megalodon-1.13.tgz"
+# The tarball as downloaded on 2026-10-13; hammer/regenerate.sh relies on its examples/.
+MEGALODON_SHA256="0f273a8e5481706e1f61fd9526ea24a9b58e90b4bbc19f6fa31358920dcd7240"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 echo "=== Megalodon Setup ==="
@@ -36,6 +38,10 @@ if [ ! -f "$SCRIPT_DIR/src/megalodon.ml" ]; then
     echo "Downloading Megalodon..."
     cd "$SCRIPT_DIR"
     curl -LO "$MEGALODON_URL"
+    if ! echo "$MEGALODON_SHA256  megalodon-1.13.tgz" | sha256sum --check --quiet; then
+        echo "megalodon-1.13.tgz does not match the pinned sha256; not unpacking it."
+        exit 1
+    fi
     tar xzf megalodon-1.13.tgz --strip-components=1
     rm -f megalodon-1.13.tgz
 fi

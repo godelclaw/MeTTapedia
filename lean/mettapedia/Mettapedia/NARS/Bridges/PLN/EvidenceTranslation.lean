@@ -1,5 +1,5 @@
 import Mathlib.Tactic
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.NARS.TruthFunctions
 
 namespace Mettapedia.NARS.Bridges.PLN.EvidenceTranslation

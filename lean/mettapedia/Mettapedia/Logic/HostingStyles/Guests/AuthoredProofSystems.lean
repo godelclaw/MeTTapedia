@@ -66,7 +66,7 @@ open Mettapedia.OSLF.MeTTaIL.ContextualStep (BasePremiseEvaluator)
 open Mettapedia.GSLT.LanguageDef.InferenceChecker (RuleInstance RuleApplication)
 open Mettapedia.GSLT.LanguageDef.Authored
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef (language)
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.ContextReadings
 open RuleSignature
 

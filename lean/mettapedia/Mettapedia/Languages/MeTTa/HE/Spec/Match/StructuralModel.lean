@@ -4888,6 +4888,41 @@ private theorem specMatch_evalCoherentAt
   · exact BindingSubrecord.refl out
   · exact specMatch_assignmentsNodup hmatch
 
+/-- A dependency-local replay invariant gives coherence of every selected
+class value with every stored value. The induction follows the actual semantic
+class dependencies, independently of the algorithm constructing the record. -/
+theorem canonicalClassCoherent_of_evalCoherentAt
+    {out : Bindings} (loopFree : Merge.SemanticLoopFree out)
+    (nonvariable : ModelTheory.AssignmentsNonVariable out)
+    (replay : ∀ source : DependencyNode out,
+      (∀ node : DependencyNode out, DependencyOrder out node source →
+        ∀ assignment : ClassAssignment out node.1,
+          canonicalNodeValue out loopFree nonvariable node =
+            applyClassSolution (canonicalValuation out loopFree nonvariable)
+              (toLeaTTaAtom assignment.1.2)) →
+      ClassAssignmentsEvalCoherentIn out out
+        (canonicalValuation out loopFree nonvariable) source) :
+    CanonicalClassCoherent out loopFree nonvariable := by
+  unfold CanonicalClassCoherent
+  intro source
+  apply (dependencyOrder_wellFounded loopFree).induction source
+  intro source smaller assignment
+  have coherent := replay source smaller
+  cases chosenResult : chosenClassAssignment out source.1 with
+  | none =>
+      have existsAssignment : Nonempty (ClassAssignment out source.1) := ⟨assignment⟩
+      simp [chosenClassAssignment, existsAssignment] at chosenResult
+  | some chosen =>
+      have sameClass : assignment.1.1 ∈ out.eqClass chosen.1.1 := by
+        have firstClass := chosen.2.2
+        have secondClass := assignment.2.2
+        rw [EqualityClosure.mem_eqClass_iff_reachable] at firstClass secondClass ⊢
+        exact firstClass.symm.trans secondClass
+      have same := coherent.values chosen.2.1 assignment.2.1 sameClass chosen.2.2
+      exact (canonicalNodeValue_eq_applyClassSolution_of_chosen
+        loopFree nonvariable chosen chosenResult).trans same
+
+
 /-- Every successful executable-independent spec match has coherent final
 classes in its canonical valuation.  The proof is well-founded on semantic
 class dependencies.  At each frontier, the derivation-local replay theorem
@@ -4900,28 +4935,8 @@ theorem specMatch_canonicalClassCoherent
     (hloopFree : Spec.Match.Merge.SemanticLoopFree out)
     (hnonvariable : AssignmentsNonVariable out) :
     CanonicalClassCoherent out hloopFree hnonvariable := by
-  unfold CanonicalClassCoherent
-  intro source
-  apply (dependencyOrder_wellFounded hloopFree).induction source
-  intro source hsmaller assignment
-  cases hchosen : chosenClassAssignment out source.1 with
-  | none =>
-      have hnonempty : Nonempty (ClassAssignment out source.1) :=
-        ⟨assignment⟩
-      simp [chosenClassAssignment, hnonempty] at hchosen
-  | some chosen =>
-      have hchosenToAssignment : assignment.1.1 ∈
-          out.eqClass chosen.1.1 := by
-        have hchosenClass := chosen.2.2
-        have hassignmentClass := assignment.2.2
-        rw [EqualityClosure.mem_eqClass_iff_reachable]
-          at hchosenClass hassignmentClass ⊢
-        exact hchosenClass.symm.trans hassignmentClass
-      have hagree := (specMatch_evalCoherentAt
-        hmatch hloopFree hnonvariable source hsmaller).values
-          chosen.2.1 assignment.2.1 hchosenToAssignment chosen.2.2
-      exact (canonicalNodeValue_eq_applyClassSolution_of_chosen
-        hloopFree hnonvariable chosen hchosen).trans hagree
+  apply canonicalClassCoherent_of_evalCoherentAt hloopFree hnonvariable
+  exact fun source smaller => specMatch_evalCoherentAt hmatch hloopFree hnonvariable source smaller
 
 /-- Consequently every successful executable-independent spec match has a
 concrete canonical model. -/

@@ -45,7 +45,7 @@ raw child pair closes recursively.
 The child canonical equality and strict size decrease are explicit inputs.
 Equality of the two parent semantic values would be too weak: it loses both
 the retained occurrence and the support component used by restoration. -/
-noncomputable def boundarySourceCanonicalOccurrences_commonRestorationApex_of_closeSmaller
+theorem boundarySourceCanonicalOccurrences_commonRestorationApex_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -275,7 +275,7 @@ noncomputable def boundarySourceCanonicalOccurrences_commonRestorationApex_of_cl
 /-- Symmetric positional mixed leaf: an authored source variable on the left
 and an exact stopped boundary on the right share a common-restoration apex
 once their raw child pair closes recursively. -/
-noncomputable def sourceBoundaryCanonicalOccurrences_commonRestorationApex_of_closeSmaller
+theorem sourceBoundaryCanonicalOccurrences_commonRestorationApex_of_closeSmaller
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)

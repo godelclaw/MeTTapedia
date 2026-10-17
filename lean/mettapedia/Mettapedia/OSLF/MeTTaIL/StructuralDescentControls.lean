@@ -27,7 +27,7 @@ private def term : TypeExpr := .base "Term"
 def authoredEnvironment (language : LanguageDef) : Environment where
   language := language
   free := fun _ => none
-  provider := ⟨[], []⟩
+  provider := {signatures := [], rows := []}
   specifications := language.rewrites.zipIdx.filterMap fun (rule, index) =>
     rule.bindings.map fun spec => (index, spec)
 
@@ -43,7 +43,7 @@ theorem lambda_structural_admission : checkEnvironment lambdaEnvironment = true 
     LambdaAuthoredFullRuleProfile.appCongLSpec, LambdaAuthoredFullRuleProfile.appCongRSpec,
     LambdaAuthoredFullRuleProfile.appCongLStep, LambdaAuthoredFullRuleProfile.appCongRStep,
     specification?, StructuralDescent.checkRule, checkPremises, checkPremise, checkSource,
-    checkAffine, GeneralEquationMeasures.constantContribution,
+    checkDescent, fvarCount, fvarCountList, GeneralEquationAdmission.restCount, GeneralEquationAdmission.restCountList, GeneralEquationMeasures.constantContribution,
     GeneralEquationMeasures.evaluate, GeneralEquationMeasures.evaluateList,
     Pattern.freeFvarNames, GeneralEquationAdmission.checkSide,
     GeneralEquationAdmission.checkArguments]
@@ -112,7 +112,7 @@ theorem self_cycle_rejected :
 def partrecSnapshot : GeneralExecutionAdmission.Snapshot where
   language := Mettapedia.Languages.PartrecMachine.partrecMachine
   freeTypes := []
-  provider := ⟨[], []⟩
+  provider := {signatures := [], rows := []}
 
 def rootPermissions : GeneralExecutionAdmission.Permissions where
   sites := .rootOnly
@@ -149,7 +149,7 @@ theorem structurally_admitted : checkEnvironment environment = true := by
   simp [checkEnvironment, environment, authoredEnvironment, Mettapedia.OSLF.NativeTypes.Instances.LetCase.language,
     letRule, caseRule, letInitialCongruence, letBodyCongruence, caseBodyCongruence,
     letTerm, returnValue, caseTerm, pair, specification?, StructuralDescent.checkRule,
-    checkPremises, checkPremise, checkSource, checkAffine,
+    checkPremises, checkPremise, checkSource, checkDescent, fvarCount, fvarCountList, GeneralEquationAdmission.restCount, GeneralEquationAdmission.restCountList,
     GeneralEquationMeasures.constantContribution, GeneralEquationMeasures.evaluate,
     GeneralEquationMeasures.evaluateList, Pattern.freeFvarNames,
     GeneralEquationAdmission.checkSide, GeneralEquationAdmission.checkArguments]

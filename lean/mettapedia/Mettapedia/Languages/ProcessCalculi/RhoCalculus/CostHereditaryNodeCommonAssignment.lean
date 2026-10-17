@@ -1141,7 +1141,7 @@ set_option backward.isDefEq.respectTransparency false in
 common restoration apex once every strictly smaller argument stop has one.
 The proof coordinates the only root-changing Quote/Drop case through the
 argument-spine apex itself. -/
-noncomputable def rho_quotePlanStops_commonRestorationApex_of_below
+theorem rho_quotePlanStops_commonRestorationApex_of_below
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -1448,7 +1448,7 @@ noncomputable def rho_quotePlanStops_commonRestorationApex_of_below
 while keeping available, structural, and restoration depths independent.
 The paired frontier callback handles corresponding raw leaves; all remaining
 equal-key ties are discharged from their exact retained subplans. -/
-noncomputable def
+theorem
     rho_reachedPlanPairCommonApex_of_foreignCanonical
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}

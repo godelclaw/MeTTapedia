@@ -1,6 +1,6 @@
 import Mettapedia.Languages.MeTTa.HE.Space
 import Mettapedia.Languages.MeTTa.HE.SimpleMatch
-import Mettapedia.Languages.MeTTa.HE.MatcherBridge
+import Mettapedia.Languages.MeTTa.HE.BindingComposition
 import Mettapedia.Languages.MeTTa.HE.DeclMatchSpec
 import Mettapedia.Languages.MeTTa.HE.DeclMergeSpec
 

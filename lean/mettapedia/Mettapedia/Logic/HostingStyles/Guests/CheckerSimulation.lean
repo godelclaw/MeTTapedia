@@ -42,7 +42,7 @@ open Mettapedia.Logic.Relation (IsNormal)
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef.InferenceComputedLeaves (check)
 open Mettapedia.GSLT.LanguageDef.Authored
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 
 variable {K : AuthoredCalculus}
 

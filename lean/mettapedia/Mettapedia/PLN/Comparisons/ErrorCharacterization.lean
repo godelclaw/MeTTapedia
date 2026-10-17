@@ -1,6 +1,6 @@
 import Mettapedia.PLN.Core.CompletePLN
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # Error Characterization: Fast PLN vs Complete PLN

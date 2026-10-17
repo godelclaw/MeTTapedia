@@ -4,7 +4,7 @@ import Mettapedia.Languages.GF.WorldModelSemantics
 import Mettapedia.Languages.GF.WorldModelVisibleBridge
 import Mettapedia.Languages.GF.OSLFToNTT
 import Mettapedia.Languages.GF.LinguisticInvariance
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 
 /-!
 # GF ↔ WM Connections

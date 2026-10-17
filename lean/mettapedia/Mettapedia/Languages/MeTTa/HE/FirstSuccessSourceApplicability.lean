@@ -41,7 +41,7 @@ theorem raw_argument_check (space : Space) (argument : Atom) (bindings : Binding
     (fuel : Nat) :
     checkArgumentType space argument Atom.atomType bindings fuel =
       List.replicate (getAtomTypes space argument).length (.inr bindings) := by
-  simp [checkArgumentType, matchTypes, List.flatMap_def]
+  simp [checkArgumentType, rawTypeLookup, matchTypes, List.flatMap_def]
 
 private theorem checked_successes (bindings : Bindings)
     (count : Nat) (failure : Atom → Atom)
@@ -230,7 +230,7 @@ theorem closed_match_exact (fuel : Nat) :
             | symbol other =>
                 by_cases same : name = other
                 · subst other
-                  simp [matchAtoms, getMetaType, Bindings.hasLoop, Bindings.empty]
+                  simp [matchAtoms, getMetaType, Bindings.hasLoop_empty]
                 · simp [matchAtoms, getMetaType, same]
             | grounded value => simp [matchAtoms, getMetaType]
             | expression children => simp [matchAtoms, getMetaType]
@@ -242,7 +242,7 @@ theorem closed_match_exact (fuel : Nat) :
             | grounded other =>
                 by_cases same : value = other
                 · subst other
-                  simp [matchAtoms, getMetaType, Bindings.hasLoop, Bindings.empty]
+                  simp [matchAtoms, getMetaType, Bindings.hasLoop_empty]
                 · simp [matchAtoms, getMetaType, same]
         | expression children =>
             cases right with
@@ -260,7 +260,7 @@ theorem closed_match_exact (fuel : Nat) :
                         (fun bindings => !bindings.hasLoop) := by
                     simp [matchAtoms, getMetaType, lengths]
                   rw [unfolded, checked]
-                  by_cases same : children = others <;> simp [same, Bindings.hasLoop, Bindings.empty]
+                  by_cases same : children = others <;> simp [same, Bindings.hasLoop_empty]
                 · have different : children ≠ others := fun same => lengths (same ▸ rfl)
                   simp [matchAtoms, getMetaType, lengths, different]
       · intro left right leftClosed rightClosed enough
@@ -296,6 +296,174 @@ theorem closed_match_exact (fuel : Nat) :
                   rw [ih.2 tail rest closedLeft.2 closedRight.2 enoughTail]
                   simp
                 · simp [same, match_list_empty_acc]
+
+section StructuralCoverage
+open Mettapedia.Machines.ReadOnlyQuery
+
+theorem merge_empty_covered (bindings : Bindings) (depth : Nat) :
+    matchCovered (depth + 1) (.merge bindings Bindings.empty) = true := by
+  simp [matchCovered, depthCovered, MatchDepth.body, Bindings.empty, run_bind,
+    foldQueries, run]
+
+/-- Closed structural matching earns its recursion coverage from the size
+of the two syntax trees. The accumulator may retain any incoming bindings. -/
+theorem closed_match_covered (fuel : Nat) :
+    (∀ left right : Atom, TypeSubst.typeVars left = [] → TypeSubst.typeVars right = [] →
+      sizeOf left + sizeOf right + 2 ≤ fuel →
+      matchCovered fuel (.atoms left right) = true) ∧
+    (∀ left right : List Atom, TypeSubst.typeVarsList left = [] →
+      TypeSubst.typeVarsList right = [] → sizeOf left + sizeOf right + 2 ≤ fuel →
+      ∀ acc, matchCovered fuel (.lists left right acc) = true) := by
+  induction fuel with
+  | zero => constructor <;> intro left right _ _ enough <;> omega
+  | succ fuel ih =>
+      constructor
+      · intro left right leftClosed rightClosed enough
+        cases left with
+        | var name => simp [TypeSubst.typeVars] at leftClosed
+        | symbol name =>
+            cases right with
+            | var name => simp [TypeSubst.typeVars] at rightClosed
+            | symbol other =>
+                by_cases same : name = other <;>
+                  simp [matchCovered, depthCovered, MatchDepth.body, MatchDepth.rawAtoms,
+                    getMetaType, run_map, run, same]
+            | grounded value => simp [matchCovered, depthCovered, MatchDepth.body, MatchDepth.rawAtoms,
+                getMetaType, run_map, run]
+            | expression children => simp [matchCovered, depthCovered, MatchDepth.body, MatchDepth.rawAtoms,
+                getMetaType, run_map, run]
+        | grounded value =>
+            cases right with
+            | var name => simp [TypeSubst.typeVars] at rightClosed
+            | symbol name => simp [matchCovered, depthCovered, MatchDepth.body, MatchDepth.rawAtoms,
+                getMetaType, run_map, run]
+            | expression children => simp [matchCovered, depthCovered, MatchDepth.body, MatchDepth.rawAtoms,
+                getMetaType, run_map, run]
+            | grounded other => simp [matchCovered, depthCovered, MatchDepth.body, MatchDepth.rawAtoms,
+                getMetaType, run_map, run]
+        | expression children =>
+            cases right with
+            | var name => simp [TypeSubst.typeVars] at rightClosed
+            | symbol name => simp [matchCovered, depthCovered, MatchDepth.body, MatchDepth.rawAtoms,
+                getMetaType, run_map, run]
+            | grounded value => simp [matchCovered, depthCovered, MatchDepth.body, MatchDepth.rawAtoms,
+                getMetaType, run_map, run]
+            | expression others =>
+                have enough' : sizeOf children + sizeOf others + 2 ≤ fuel := by
+                  simp only [Atom.expression.sizeOf_spec] at enough
+                  omega
+                have checked := ih.2 children others leftClosed rightClosed enough' [Bindings.empty]
+                by_cases lengths : children.length = others.length
+                · simpa [matchCovered, depthCovered, MatchDepth.body, MatchDepth.rawAtoms,
+                    getMetaType, run_map, run, lengths] using checked
+                · simp [matchCovered, depthCovered, MatchDepth.body, MatchDepth.rawAtoms,
+                    getMetaType, run_map, run, lengths]
+      · intro left right leftClosed rightClosed enough acc
+        cases left with
+        | nil => cases right <;> simp [matchCovered, depthCovered, MatchDepth.body, run]
+        | cons head tail =>
+            cases right with
+            | nil => simp [matchCovered, depthCovered, MatchDepth.body, run]
+            | cons other rest =>
+                have closedLeft : TypeSubst.typeVars head = [] ∧
+                    TypeSubst.typeVarsList tail = [] := by
+                  simpa only [TypeSubst.typeVarsList, List.append_eq_nil_iff] using leftClosed
+                have closedRight : TypeSubst.typeVars other = [] ∧
+                    TypeSubst.typeVarsList rest = [] := by
+                  simpa only [TypeSubst.typeVarsList, List.append_eq_nil_iff] using rightClosed
+                have enoughHead : sizeOf head + sizeOf other + 2 ≤ fuel := by
+                  simp only [List.cons.sizeOf_spec] at enough
+                  omega
+                have enoughTail : sizeOf tail + sizeOf rest + 2 ≤ fuel := by
+                  simp only [List.cons.sizeOf_spec] at enough
+                  omega
+                have checkedHead := ih.1 head other closedLeft.1 closedRight.1 enoughHead
+                have checkedTail := ih.2 tail rest closedLeft.2 closedRight.2 enoughTail
+                have matched := (closed_match_exact fuel).1 head other
+                  closedLeft.1 closedRight.1 enoughHead
+                have positive : 0 < fuel := by omega
+                have merged : ∀ b, mergeBindings b Bindings.empty fuel = [b] := by
+                  intro b
+                  cases fuel with
+                  | zero => omega
+                  | succ fuel => simp [mergeBindings, Bindings.empty]
+                have mergeReady : ∀ b, matchCovered fuel (.merge b Bindings.empty) = true := by
+                  intro b
+                  cases fuel with
+                  | zero => omega
+                  | succ fuel => exact merge_empty_covered b fuel
+                rw [matchCovered, depthCovered]
+                simp only [MatchDepth.body, run_bind, run, run_flatTraverse, evalMatch,
+                  matched]
+                unfold matchCovered at checkedHead checkedTail mergeReady
+                by_cases same : head = other
+                · subst other
+                  simp [checkedHead, checkedTail, merged, mergeReady, run_flatTraverse_reads,
+                    flatTraverse, run_bind, run_map, run]
+                · simp [same, checkedHead, checkedTail, run_flatTraverse_reads, flatTraverse, run]
+
+
+/-- The native cast matcher needs no arbitrary merge admission for closed
+types: every successful structural match has the empty added environment. -/
+theorem closed_matchTypes_covered (expected actual : Atom) (bindings : Bindings)
+    (fuel : Nat) (expectedClosed : TypeSubst.typeVars expected = [])
+    (actualClosed : TypeSubst.typeVars actual = [])
+    (enough : sizeOf expected + sizeOf actual + 2 ≤ fuel) :
+    matchTypesCovered expected actual bindings fuel = true := by
+  have structural := (closed_match_covered fuel).1 expected actual expectedClosed actualClosed enough
+  have matched := (closed_match_exact fuel).1 expected actual expectedClosed actualClosed enough
+  have merged : matchCovered fuel (.merge bindings Bindings.empty) = true := by
+    cases fuel with
+    | zero => omega
+    | succ fuel => exact merge_empty_covered bindings fuel
+  simp only [matchTypesCovered, MatchDepth.queryCovered, MatchDepth.typesQuery]
+  split
+  · rfl
+  · simp only [run, evalMatch, matched]
+    by_cases same : expected = actual
+    · subst actual
+      simp [run_flatTraverse_reads, run, structural, merged]
+    · simp [same, flatTraverse, run, structural]
+
+theorem closed_castLoop_covered (types : List Atom) (atom expected : Atom)
+    (bindings : Bindings) (fuel : Nat) (errors : List Atom)
+    (expectedClosed : TypeSubst.typeVars expected = [])
+    (allClosed : ∀ actual ∈ types, TypeSubst.typeVars actual = [])
+    (enough : ∀ actual ∈ types, sizeOf expected + sizeOf actual + 2 ≤ fuel) :
+    MatchDepth.queryCovered fuel
+      (TypeCheckDepth.castLoopQuery types atom expected bindings errors) = true := by
+  induction types generalizing errors with
+  | nil => rfl
+  | cons actual remaining ih =>
+      have head := closed_matchTypes_covered expected actual bindings fuel expectedClosed
+        (allClosed actual (by simp)) (enough actual (by simp))
+      have tail := fun errors => ih errors (fun t h => allClosed t (List.mem_cons_of_mem _ h))
+        (fun t h => enough t (List.mem_cons_of_mem _ h))
+      change MatchDepth.queryCovered fuel (bind (MatchDepth.typesQuery expected actual bindings)
+        (fun matched => if matched.isEmpty then
+          TypeCheckDepth.castLoopQuery remaining atom expected bindings (errors ++ [actual])
+          else .pure (matched.map fun m => (atom, m)))) = true
+      simp only [MatchDepth.queryCovered, run_bind, List.all_append, Bool.and_eq_true]
+      refine ⟨head, ?_⟩
+      split
+      · exact tail (errors ++ [actual])
+      · rfl
+
+/-- A finite syntax-size bound covers every cast lookup, including failed
+source type occurrences. Incoming bindings may be open and nonempty. -/
+theorem closed_typeCast_covered (space : Space) (atom expected : Atom)
+    (bindings : Bindings) (fuel : Nat)
+    (expectedClosed : TypeSubst.typeVars expected = [])
+    (allClosed : ∀ actual ∈ getAtomTypes space atom, TypeSubst.typeVars actual = [])
+    (enough : sizeOf expected + sizeOf (getAtomTypes space atom) + 2 ≤ fuel) :
+    typeCastCovered atom expected space bindings fuel = true := by
+  apply closed_castLoop_covered _ _ _ _ _ [] expectedClosed allClosed
+  intro actual member
+  have smaller := List.sizeOf_lt_of_mem member
+  omega
+
+
+end StructuralCoverage
 
 private theorem independent_empty_merge (bindings : Bindings) :
     Spec.Match.Merge.MergeRel Spec.Match.Merge.equalityGroundedSemantic
@@ -562,6 +730,7 @@ theorem closed_cast_reply (space : Space) (value expected : Atom) (bindings : Bi
       TypeCastRel space value expected bindings (value, bindings) := by
   constructor
   · unfold typeCast
+    simp only [rawTypeLookup]
     rw [types]
     exact cast_first_fit_source space value expected bindings fuel earlier actual later
       expectedClosed earlierClosed earlierFailed actualClosed actualFits enough []
@@ -571,6 +740,80 @@ theorem closed_cast_reply (space : Space) (value expected : Atom) (bindings : Bi
           (earlierClosed type member)).mp matched).1)
       ((closed_type_match_iff expected actual bindings bindings expectedClosed actualClosed).mpr
         ⟨actualFits, rfl⟩)
+
+/-- A completely rejected closed cast retains one error for each physical type
+occurrence. Rejection is proved semantically at every matching depth. -/
+theorem cast_all_rejected_source (value expected : Atom) (bindings : Bindings)
+    (fuel : Nat) (types failures : List Atom)
+    (expectedClosed : TypeSubst.typeVars expected = [])
+    (closed : ∀ actual ∈ types, TypeSubst.typeVars actual = [])
+    (rejected : ∀ actual ∈ types, ¬ClosedTypeFits expected actual) :
+    typeCast.typeCastLoop types value expected bindings fuel failures =
+      (failures ++ types).map (fun actual => (mkError value (.badType expected actual), bindings)) := by
+  induction types generalizing failures with
+  | nil => simp [typeCast.typeCastLoop]
+  | cons actual rest ih =>
+      rw [typeCast.typeCastLoop,
+        closed_matchTypes_failure expected actual bindings fuel expectedClosed
+          (closed actual (List.mem_cons_self)) (rejected actual (List.mem_cons_self))]
+      simp only [List.isEmpty_nil, if_true]
+      rw [ih (failures ++ [actual])
+        (fun next member => closed next (List.mem_cons_of_mem _ member))
+        (fun next member => rejected next (List.mem_cons_of_mem _ member))]
+      simp only [List.append_assoc, List.singleton_append]
+
+/-- Actual closed-type rejection supplies independent error derivations. No
+empty bounded matcher run is accepted as an independent no-match proof. -/
+theorem closed_cast_failure_reply (space : Space) (value expected : Atom) (bindings : Bindings)
+    (fuel : Nat)
+    (expectedClosed : TypeSubst.typeVars expected = [])
+    (closed : ∀ actual ∈ getAtomTypes space value, TypeSubst.typeVars actual = [])
+    (rejected : ∀ actual ∈ getAtomTypes space value, ¬ClosedTypeFits expected actual) :
+    typeCast value expected space bindings fuel =
+      (getAtomTypes space value).map (fun actual => (mkError value (.badType expected actual), bindings)) ∧
+    ∀ actual ∈ getAtomTypes space value,
+      TypeCastRel space value expected bindings (mkError value (.badType expected actual), bindings) := by
+  refine ⟨?_, ?_⟩
+  · simpa only [typeCast, rawTypeLookup, List.nil_append] using
+      cast_all_rejected_source value expected bindings fuel (getAtomTypes space value) []
+        expectedClosed closed rejected
+  · intro actual present
+    apply TypeCastRel.failure (source_types space value) present
+    intro candidate member output matched
+    exact rejected candidate member
+      ((closed_type_match_iff expected candidate bindings output expectedClosed
+        (closed candidate member)).mp matched).1
+
+
+/-- For a completely rejected closed cast, the computed list and independent
+source relation agree in both directions. The list retains multiplicity. -/
+theorem closed_cast_failure_iff (space : Space) (value expected : Atom) (bindings : Bindings)
+    (fuel : Nat)
+    (expectedClosed : TypeSubst.typeVars expected = [])
+    (closed : ∀ actual ∈ getAtomTypes space value, TypeSubst.typeVars actual = [])
+    (rejected : ∀ actual ∈ getAtomTypes space value, ¬ClosedTypeFits expected actual)
+    (result : ResultPair) :
+    result ∈ typeCast value expected space bindings fuel ↔
+      TypeCastRel space value expected bindings result := by
+  obtain ⟨computed, errors⟩ := closed_cast_failure_reply space value expected bindings fuel
+    expectedClosed closed rejected
+  rw [computed]
+  constructor
+  · intro member
+    obtain ⟨actual, present, rfl⟩ := List.mem_map.mp member
+    exact errors actual present
+  · intro source
+    cases source with
+    | @success _ types earlier later actual output inferred selected _ matched =>
+        have actualMember : actual ∈ getAtomTypes space value := by
+          rw [Conformance.typesOfRel_eq_getAtomTypes inferred, selected]
+          simp
+        exact (rejected actual actualMember
+          ((closed_type_match_iff expected actual bindings output expectedClosed
+            (closed actual actualMember)).mp matched).1).elim
+    | @failure _ types actual inferred member _ =>
+        exact List.mem_map.mpr ⟨actual,
+          (by simpa only [Conformance.typesOfRel_eq_getAtomTypes inferred] using member), rfl⟩
 
 def WildcardDomain (domain : Atom) : Prop := domain = Atom.atomType ∨ domain = Atom.undefinedType
 
@@ -813,7 +1056,7 @@ theorem arguments_applicable_iff (space : Space) (arguments domains : List Atom)
       constructor
       · intro related
         cases related with
-        | @cons _ _ actual _ _ _ next _ inferred matched tail =>
+        | @cons _ _ _ actual _ _ _ next _ inferred matched tail =>
             have member := (Conformance.typeOfRel_iff_mem_getAtomTypes space argument actual).mp inferred
             obtain ⟨fits, same⟩ := (first.match_iff actual member incoming next).mp matched
             subst next
@@ -965,7 +1208,7 @@ theorem wildcard_argument_check (space : Space) (argument domain : Atom) (bindin
     checkArgumentType space argument domain bindings fuel =
       List.replicate (getAtomTypes space argument).length (.inr bindings) := by
   unfold checkArgumentType
-  simp only [(wildcard_type_match domain _ bindings fuel wildcard).1,
+  simp only [rawTypeLookup, (wildcard_type_match domain _ bindings fuel wildcard).1,
     List.isEmpty_cons, Bool.false_eq_true, ite_false, List.map_cons, List.map_nil]
   induction getAtomTypes space argument <;> simp_all [List.replicate_succ]
 
@@ -1217,5 +1460,123 @@ theorem independent_wildcard_application (space : Space) (operator expected retu
   exact independent_checked_application space operator expected returned arguments domains bindings 0
     (wildcard_arguments_evidence space arguments domains 0 wildcards)
     (sameCount ▸ pathCount_positive space arguments) expectedClosed returnedClosed fits
+
+end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability
+
+
+
+set_option autoImplicit false
+namespace Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Machines.ReadOnlyQuery
+open Spec.Type.Presentation (TypeSubst)
+
+private theorem query_covered_bind {A B : Type} (fuel : Nat)
+    (first : MatchDepth.Query A) (next : A → MatchDepth.Query B)
+    (covered : MatchDepth.queryCovered fuel first = true)
+    (continued : ∀ value, MatchDepth.queryCovered fuel (next value) = true) :
+    MatchDepth.queryCovered fuel (bind first next) = true := by
+  simp only [MatchDepth.queryCovered, run_bind, List.all_append, Bool.and_eq_true]
+  exact ⟨covered, continued _⟩
+
+private theorem query_covered_map {A B : Type} (fuel : Nat)
+    (f : A → B) (query : MatchDepth.Query A)
+    (covered : MatchDepth.queryCovered fuel query = true) :
+    MatchDepth.queryCovered fuel (map f query) = true := by
+  simpa only [MatchDepth.queryCovered, run_map] using covered
+
+private theorem query_covered_flatTraverse {A B : Type} (fuel : Nat)
+    (values : List A) (next : A → MatchDepth.Query (List B))
+    (covered : ∀ value ∈ values, MatchDepth.queryCovered fuel (next value) = true) :
+    MatchDepth.queryCovered fuel (flatTraverse values next) = true := by
+  induction values with
+  | nil => rfl
+  | cons value values ih =>
+      apply query_covered_bind
+      · exact covered value (by simp)
+      · intro head
+        exact query_covered_map fuel _ _ (ih (fun item member => covered item (by simp [member])))
+
+private theorem query_covered_fold {A B : Type} (fuel : Nat)
+    (values : List A) (initial : B) (next : B → A → MatchDepth.Query B)
+    (covered : ∀ state, ∀ value ∈ values, MatchDepth.queryCovered fuel (next state value) = true) :
+    MatchDepth.queryCovered fuel (foldQueries values initial next) = true := by
+  induction values generalizing initial with
+  | nil => rfl
+  | cons value values ih =>
+      apply query_covered_bind
+      · exact covered initial value (by simp)
+      · intro state
+        exact ih state (fun state item member => covered state item (by simp [member]))
+
+/-- The admitted domain evidence also earns the actual bounded matcher reads.
+Wildcard domains require no structural matching; closed domains use the
+existing syntax-size coverage theorem. -/
+theorem ArgumentDomainEvidence.match_covered
+    {space : Space} {argument domain : Atom} {fuel : Nat}
+    (checked : ArgumentDomainEvidence space argument domain fuel)
+    (actual : Atom) (member : actual ∈ getAtomTypes space argument) (bindings : Bindings) :
+    matchTypesCovered domain actual bindings fuel = true := by
+  cases checked with
+  | wildcard wildcard =>
+      rcases wildcard with rfl | rfl <;>
+        simp [matchTypesCovered, MatchDepth.queryCovered, MatchDepth.typesQuery, run]
+  | closed domainClosed actualClosed enough =>
+      exact closed_matchTypes_covered domain actual bindings fuel
+        domainClosed (actualClosed actual member) (enough actual member)
+
+theorem ArgumentDomainEvidence.argument_covered
+    {space : Space} {argument domain : Atom} {fuel : Nat}
+    (checked : ArgumentDomainEvidence space argument domain fuel) (bindings : Bindings) :
+    MatchDepth.queryCovered fuel (TypeCheckDepth.argumentQuery space argument domain bindings) = true := by
+  unfold TypeCheckDepth.argumentQuery
+  apply query_covered_flatTraverse
+  intro actual member
+  exact query_covered_map fuel _ _ (checked.match_covered actual member bindings)
+
+/-- Coverage follows every reached binding alternative in the actual argument
+fold; no cardinality or unchanged-binding hypothesis is used by this law. -/
+theorem checked_arguments_covered (space : Space) (arguments domains : List Atom)
+    (expression : Atom) (fuel : Nat)
+    (checked : List.Forall₂ (fun argument domain =>
+      ArgumentDomainEvidence space argument domain fuel) arguments domains)
+    (results : List Bindings) (errors : List Atom) (index : Nat) :
+    MatchDepth.queryCovered fuel
+      (TypeCheckDepth.argumentsQuery arguments domains expression results errors space index) = true := by
+  induction checked generalizing results errors index with
+  | nil => rfl
+  | @cons argument domain arguments domains head rest ih =>
+      apply query_covered_bind
+      · apply query_covered_fold
+        intro state bindings member
+        exact query_covered_map fuel _ _ (head.argument_covered bindings)
+      · intro reached
+        exact ih reached.2 reached.1 (index + 1)
+
+/-- Existing applicability evidence earns all visited native matcher calls,
+including the final return-type check at every reached argument binding. -/
+theorem checked_applicability_covered (space : Space) (operator expected returned : Atom)
+    (arguments domains : List Atom) (bindings : Bindings) (fuel : Nat)
+    (checked : List.Forall₂ (fun argument domain =>
+      ArgumentDomainEvidence space argument domain fuel) arguments domains)
+    (expectedClosed : TypeSubst.typeVars expected = [])
+    (returnedClosed : TypeSubst.typeVars returned = [])
+    (enough : sizeOf expected + sizeOf returned + 2 ≤ fuel) :
+    functionTypeCovered (.expression (operator :: arguments))
+      (.expression (.symbol "->" :: (domains ++ [returned]))) expected space bindings (fuel + 1) = true := by
+  simp only [functionTypeCovered, TypeCheckDepth.functionQuery, arrow_arguments, arrow_return]
+  rw [show (arguments.length != domains.length) = false from by simp [List.Forall₂.length_eq checked]]
+  simp only [Bool.false_eq_true, if_false]
+  apply query_covered_bind
+  · exact checked_arguments_covered space arguments domains _ fuel checked [bindings] [] 1
+  · intro reached
+    split
+    · rfl
+    · apply query_covered_map
+      apply query_covered_fold
+      intro state bindings member
+      exact query_covered_map fuel _ _
+        (closed_matchTypes_covered expected returned bindings fuel
+          expectedClosed returnedClosed enough)
 
 end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability

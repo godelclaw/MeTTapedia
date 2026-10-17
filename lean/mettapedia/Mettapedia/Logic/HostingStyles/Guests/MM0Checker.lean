@@ -109,7 +109,7 @@ open Mettapedia.Languages.MM0.Presentation.Calculus
 open Mettapedia.Languages.MM0.Presentation.ComputationalObligations
   (obligationGSLT Resolves hypothesis_query_exact theorem_query_exact conversion_query_exact
     singleton_discharge_iff)
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.ContextReadings
 open Mettapedia.Languages.MeTTa.PrimeCandidates.Language (Model QueryFirstModel kernelGSLT)
 open Mettapedia.GSLT.LanguageDef.Contexts (contextTheory)

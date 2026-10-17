@@ -1,6 +1,8 @@
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeWireRelatorCompatibility
 import Mettapedia.Languages.MeTTa.PrimeComparisons.MegalodonProofService
 
+open Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId
+
 /-!
 # Megalodon guest admission over native dependent wire data
 

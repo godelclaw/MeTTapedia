@@ -1,23 +1,24 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 import Mettapedia.ProbabilityTheory.HigherOrderProbability.KyburgFlattening
 import Mettapedia.ProbabilityTheory.HigherOrderProbability.GiryMonad
 import Mettapedia.ProbabilityTheory.HigherOrderProbability.DeFinettiConnection
 
 /-!
-# PLN Distributional-HigherOrder (Kyburg) Reduction Bridge
+# PLN evidence and Kyburg flattening
 
-This module exposes a theorem-level bridge between:
+Binary evidence `(n⁺, n⁻)` with a prior context `(α₀, β₀)` reads out the
+posterior mean of a Beta distribution (`strengthWith_eq_beta_posterior_meanENN`),
+and revision adds counts, which is the conjugate Beta update
+(`EvidenceBeta.hplus_is_beta_aggregation`,
+`EvidenceBeta.evidence_aggregation_is_conjugate_update`).  On the higher-order
+side, a parametrized distribution flattens to its marginal
+(`HigherOrderProbability.kyburg_flattening`, `flatten_is_marginal`,
+`kyburg_no_advantage`, and the monad laws in `GiryMonad`), so a second-order
+distribution gives no decision advantage over its flattening (Kyburg,
+*Higher Order Probabilities and Intervals*).
 
-- PLN evidence/distributional semantics (`BinaryEvidence`, Beta-style updates), and
-- Kyburg higher-order flattening (`ParametrizedDistribution`, flattening/expectation laws).
-
-It is intentionally lightweight and re-exports proved theorems from:
-
-- `Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta`
-- `Mettapedia.ProbabilityTheory.HigherOrderProbability.KyburgFlattening`
-- `Mettapedia.ProbabilityTheory.HigherOrderProbability.GiryMonad`
-- `Mettapedia.ProbabilityTheory.HigherOrderProbability.DeFinettiConnection`
+`evidenceAggregation_and_kyburgFlattening` states both facts together.
 -/
 
 namespace Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction
@@ -25,11 +26,8 @@ namespace Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction
 open scoped ENNReal
 open MeasureTheory
 open Mettapedia.PLN.Evidence.EvidenceQuantale
-
-abbrev BinaryContext := Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext
-
-abbrev ParametrizedDistribution :=
-  Mettapedia.ProbabilityTheory.HigherOrderProbability.ParametrizedDistribution
+open Mettapedia.PLN.Evidence.EvidenceClass (BinaryContext)
+open Mettapedia.ProbabilityTheory.HigherOrderProbability (ParametrizedDistribution)
 
 /-! ## BinaryEvidence-side bridge lemmas -/
 
@@ -50,56 +48,6 @@ theorem evidence_encodes_beta_parameters (e : BinaryEvidence) (ctx : BinaryConte
   refine ⟨ctx.α₀ + e.pos, ctx.β₀ + e.neg, rfl, rfl, ?_⟩
   simpa [add_assoc, add_comm, add_left_comm] using
     strengthWith_eq_beta_posterior_meanENN (e := e) (ctx := ctx)
-
-/-- PLN evidence aggregation is coordinatewise count aggregation
-(Beta conjugate update at the sufficient-statistic level). -/
-abbrev hplus_is_bayesian_update :=
-  Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta.hplus_is_beta_aggregation
-
-/-- Explicit parameter-level conjugate-update identity for Beta pseudo-counts. -/
-abbrev evidence_aggregation_is_conjugate_update :=
-  Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta.evidence_aggregation_is_conjugate_update
-
-/-- Exchangeable binary PLN evidence gives the Bayes-optimal sufficient-statistic story. -/
-abbrev pln_is_bayes_optimal_for_exchangeable :=
-  Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta.pln_is_bayes_optimal_for_exchangeable
-
-/-! ## Kyburg flattening and decision-equivalence re-exports -/
-
-abbrev kyburg_flattening :=
-  @Mettapedia.ProbabilityTheory.HigherOrderProbability.kyburg_flattening
-
-abbrev flatten_is_marginal :=
-  @Mettapedia.ProbabilityTheory.HigherOrderProbability.flatten_is_marginal
-
-abbrev expectation_consistency :=
-  @Mettapedia.ProbabilityTheory.HigherOrderProbability.expectation_consistency
-
-abbrev kyburg_no_advantage :=
-  @Mettapedia.ProbabilityTheory.HigherOrderProbability.kyburg_no_advantage
-
-abbrev flatten_is_monad_multiplication :=
-  @Mettapedia.ProbabilityTheory.HigherOrderProbability.flatten_is_monad_multiplication
-
-abbrev flatten_is_bind :=
-  @Mettapedia.ProbabilityTheory.HigherOrderProbability.flatten_is_bind
-
-abbrev flatten_is_join :=
-  @Mettapedia.ProbabilityTheory.HigherOrderProbability.flatten_is_join
-
-abbrev flatten_associativity :=
-  @Mettapedia.ProbabilityTheory.HigherOrderProbability.flatten_associativity
-
-abbrev flatten_associativity_kernel :=
-  @Mettapedia.ProbabilityTheory.HigherOrderProbability.flatten_associativity_kernel
-
-abbrev kyburg_no_advantage_via_monad :=
-  @Mettapedia.ProbabilityTheory.HigherOrderProbability.kyburg_no_advantage_via_monad
-
-/-! ## Concrete De Finetti -> Kyburg flattening bridge (Bool words) -/
-
-abbrev deFinetti_flatten_apply_singleton :=
-  Mettapedia.ProbabilityTheory.HigherOrderProbability.DeFinettiConnection.flatten_apply_singleton
 
 /-! ## Concrete Chapter-7 worked fixture -/
 
@@ -130,8 +78,8 @@ theorem evidenceAggregation_and_kyburgFlattening :
             ∫⁻ θ, (pd.kernel θ) A ∂pd.mixingMeasure) := by
   constructor
   · intro e₁ e₂
-    exact hplus_is_bayesian_update e₁ e₂
+    exact Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta.hplus_is_beta_aggregation e₁ e₂
   · intro Θ X _ _ pd A hA
-    simpa using kyburg_flattening pd A hA
+    simpa using Mettapedia.ProbabilityTheory.HigherOrderProbability.kyburg_flattening pd A hA
 
 end Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction

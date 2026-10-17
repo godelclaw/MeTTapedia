@@ -1,4 +1,5 @@
 import Mettapedia.Machines.CMemory.StatementBlock
+import Mettapedia.Machines.CMemory.ProductiveBlocks
 import Mettapedia.Machines.CMemory.PostIndexWrites
 
 /-!
@@ -101,7 +102,53 @@ def withObjects (profile : StatementBlock.ObjectBindings.Profile) (effects : Cal
   | .postIncrement (.field owner name throughPointer)
   | .unary .increment (.field owner name throughPointer) =>
       incrementField profile layout context owner name throughPointer
+  | .cast type operand =>
+      if type = ⟨"void".toList, 0⟩ then do
+        let _ ← StatementBlock.ObjectBindings.read profile layout context operand
+        pure ()
+      else CProg.undefined
   | _ => CProg.undefined
+
+
+/-- An explicit void cast evaluates its value operand once and discards only
+its returned value. Physical effects, undefined operations and residual work
+remain in that same operation tree. -/
+theorem explicit_void_cast_keeps_operand
+    (profile : StatementBlock.ObjectBindings.Profile) (effects : CallService Unit)
+    (layout : Layout) (context : StatementBlock.ObjectBindings.Context) (operand : CExpr) :
+    withObjects profile effects layout context (.cast ⟨"void".toList, 0⟩ operand) =
+      (StatementBlock.ObjectBindings.read profile layout context operand >>= fun _ => pure ()) := by
+  simp only [withObjects, ↓reduceIte]
+
+theorem explicit_void_cast_keeps_effect_once
+    (profile : StatementBlock.ObjectBindings.Profile) (effects : CallService Unit)
+    (layout : Layout) (context : StatementBlock.ObjectBindings.Context) (operand : CExpr)
+    (effect : CProg CVal Unit) (value : CVal)
+    (realizes : StatementBlock.ObjectBindings.read profile layout context operand =
+      (effect >>= fun _ => pure value)) :
+    withObjects profile effects layout context (.cast ⟨"void".toList, 0⟩ operand) = effect := by
+  rw [explicit_void_cast_keeps_operand, realizes]
+  simp only [Prog.bind_eq, Prog.bind_assoc, Prog.pure_eq, Prog.ret_bind]
+  have continuation : (fun (_ : Unit) => Prog.ret ()) = (Prog.ret : Unit → CProg CVal Unit) := by
+    funext returnedUnit
+    cases returnedUnit
+    rfl
+  rw [continuation, Prog.bind_ret]
+
+theorem explicit_void_cast_keeps_undefined
+    (profile : StatementBlock.ObjectBindings.Profile) (effects : CallService Unit)
+    (layout : Layout) (context : StatementBlock.ObjectBindings.Context) (operand : CExpr)
+    (undefined : StatementBlock.ObjectBindings.read profile layout context operand = CProg.undefined) :
+    withObjects profile effects layout context (.cast ⟨"void".toList, 0⟩ operand) = CProg.undefined := by
+  rw [explicit_void_cast_keeps_operand, undefined, undefined_bind]
+
+theorem nonvoid_cast_is_not_discarded
+    (profile : StatementBlock.ObjectBindings.Profile) (effects : CallService Unit)
+    (layout : Layout) (context : StatementBlock.ObjectBindings.Context) (type : CType)
+    (operand : CExpr) (notVoid : type ≠ ⟨"void".toList, 0⟩) :
+    withObjects profile effects layout context (.cast type operand) = CProg.undefined := by
+  simp only [withObjects, if_neg notVoid]
+
 
 theorem discarded_wide_increment_resolves_place_once
     (profile : StatementBlock.ObjectBindings.Profile) (layout : Layout)
@@ -353,3 +400,84 @@ theorem noncall_effect_is_not_omitted_by_macro_inventory
     | exact False.elim (noncall _ _ rfl)
 
 end Mettapedia.Machines.CMemory.EffectStatements
+
+
+namespace Mettapedia.Machines.CMemory.EffectStatements.VoidCastControls
+open ReadExpressions StatementBlock
+open ExecutableStorage ProductiveBlocks
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+open Mettapedia.GSLT.LanguageDef.NativeOps.NativeC
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+
+private def cell : Ptr := ⟨91, 0⟩
+private def effectfulValue : CProg CVal CVal := do
+  CProg.store cell (.u32 7)
+  let actual ← CProg.loadU32 cell
+  pure (.u32 actual)
+
+private def profile : ObjectBindings.Profile where
+  values := fun _ _ => effectfulValue
+  locations := fun _ => none
+  outsideTypes := fun _ => none
+  outsidePlaces := fun _ => none
+  fieldTypes := fun _ _ => none
+  cellExtent := fun _ => none
+  byteExtent := fun _ => none
+  sizeWidth := .bits64
+
+private def source : CProg CVal Unit :=
+  withObjects profile (fun _ _ => CProg.undefined) (fun _ => none) (fun _ => none)
+    (.cast ⟨"void".toList, 0⟩ (.call "write_then_read".toList []))
+
+theorem actual_void_call_preserves_both_operations : source =
+    (CProg.store cell (.u32 7) >>= fun _ => CProg.loadU32 cell >>= fun _ => pure ()) := by
+  rw [source, explicit_void_cast_keeps_operand]
+  simp only [ObjectBindings.read, expressionWithNames.eq_def, argumentsWithNames.eq_def,
+    ObjectBindings.objects, profile, effectfulValue, Prog.bind_eq, Prog.pure_eq, Prog.ret_bind, Prog.bind_assoc]
+
+private def initial (live : Bool := true) : State CVal Unit :=
+  ⟨source, [(91, ⟨live, [some (.u32 3)]⟩)], []⟩
+
+private def kind : Outcome (State CVal Unit) (Verdict CVal Unit) (AllocationRequest CVal) → Nat
+  | .exhausted _ => 0
+  | .finished (.returned _) => 1
+  | .finished (.fault _) => 2
+  | _ => 3
+
+private def saved : State CVal Unit :=
+  match (machine.run 1 initial).2 with
+  | .exhausted state => state
+  | _ => initial
+
+theorem cast_has_no_early_completion : kind ((machine.run 1 initial).2) = 0 := by
+  unfold initial
+  rw [actual_void_call_preserves_both_operations]
+  rfl
+
+theorem paused_effect_is_already_stored : saved.storage = [(91, ⟨true, [some (.u32 7)]⟩), (91, ⟨true, [some (.u32 3)]⟩)] := by
+  unfold saved initial
+  rw [actual_void_call_preserves_both_operations]
+  decide +kernel
+
+theorem resumed_cast_does_not_replay_store :
+    (machine.run 2 saved).1.map (fun receipt => receipt.operation) = [.load cell] ∧
+    kind ((machine.run 2 saved).2) = 1 := by
+  unfold saved initial
+  rw [actual_void_call_preserves_both_operations]
+  constructor
+  · rfl
+  · decide +kernel
+
+theorem cast_does_not_hide_stale_storage_fault :
+    kind ((machine.run 3 (initial false)).2) = 2 ∧
+    (machine.run 3 (initial false)).1 = [] := by
+  unfold initial
+  rw [actual_void_call_preserves_both_operations]
+  constructor <;> rfl
+
+theorem nonvoid_cast_needs_separate_admission :
+    withObjects profile (fun _ _ => CProg.undefined) (fun _ => none) (fun _ => none)
+      (.cast ⟨"uint32_t".toList, 0⟩ (.call "write_then_read".toList [])) = CProg.undefined :=
+  nonvoid_cast_is_not_discarded _ _ _ _ _ _ (by decide)
+
+end Mettapedia.Machines.CMemory.EffectStatements.VoidCastControls

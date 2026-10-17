@@ -945,7 +945,8 @@ theorem completed_pair_fires {Event : Type}
   let schedule := [(left.dst, leftEvents.length + 2 * leftCalls + leftExtra),
     (right.dst, rightEvents.length + 2 * rightCalls + rightExtra)]
   have unique : kernel.Disjoint schedule := by
-    simp [SnapshotBatch.Kernel.Disjoint, kernel, schedule, OwnedPullDriver.paidKernel, distinct]
+    simp [SnapshotBatch.Kernel.Disjoint, kernel, schedule, OwnedPullDriver.paidKernel,
+      SnapshotBatch.Kernel.fromOwnerAction, distinct]
   have whole := kernel.partitioned_eq_run () (fun _ => ()) pool parts schedule coverage unique
   let result := kernel.partitioned () (fun _ => ()) pool parts
   have leftResult : result left.dst =
@@ -954,7 +955,7 @@ theorem completed_pair_fires {Event : Type}
     rw [whole]
     have owned := kernel.run_at_owned () (fun _ => ()) pool schedule unique
       (left.dst, leftEvents.length + 2 * leftCalls + leftExtra) (by simp [schedule])
-    simpa only [kernel, OwnedPullDriver.paidKernel, leftInitial,
+    simpa only [kernel, OwnedPullDriver.paidKernel, SnapshotBatch.Kernel.fromOwnerAction, leftInitial,
       leftRun.paidSlice leftPaid leftExtra] using owned
   have rightResult : result right.dst =
       (rightPaid + rightEvents.length + 2 * rightCalls, ⟨.done rightValue, []⟩) := by
@@ -962,7 +963,7 @@ theorem completed_pair_fires {Event : Type}
     rw [whole]
     have owned := kernel.run_at_owned () (fun _ => ()) pool schedule unique
       (right.dst, rightEvents.length + 2 * rightCalls + rightExtra) (by simp [schedule])
-    simpa only [kernel, OwnedPullDriver.paidKernel, rightInitial,
+    simpa only [kernel, OwnedPullDriver.paidKernel, SnapshotBatch.Kernel.fromOwnerAction, rightInitial,
       rightRun.paidSlice rightPaid rightExtra] using owned
   have square := ready_pair_diamond spec env pre middle post left right
     leftValue rightValue distinct leftFresh rightFresh leftReady rightReady

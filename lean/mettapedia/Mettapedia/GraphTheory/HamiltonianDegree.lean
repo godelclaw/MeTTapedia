@@ -780,7 +780,7 @@ theorem ore_theorem (hn : 3 ≤ Fintype.card V)
     (hore : ∀ u v : V, u ≠ v → ¬G.Adj u v →
       Fintype.card V ≤ G.degree u + G.degree v) :
     G.IsHamiltonian := by
-  haveI : Nonempty V := by
+  have : Nonempty V := by
     rw [← Fintype.card_pos_iff]; omega
   have hconn := connected_of_ore G hn hore
   obtain ⟨u, v, p, hp, hmax⟩ := exists_isPath_forall_isPath_length_le_length G

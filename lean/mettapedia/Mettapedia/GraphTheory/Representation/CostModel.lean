@@ -1,4 +1,5 @@
 import Mettapedia.GraphTheory.Representation.Basic
+import Mathlib.Control.Monad.Writer
 
 /-!
 # Resource algebra for graph representation choice
@@ -20,7 +21,7 @@ set_option autoImplicit false
 /-- Independently observable resource coordinates.  `peakTemporary` assumes
 temporary storage is released at the end of an operation; retained outputs are
 accounted for separately by the presentation's `storageCells`. -/
-structure Resources where
+@[ext] structure Resources where
   time : Nat := 0
   reads : Nat := 0
   writes : Nat := 0
@@ -66,10 +67,24 @@ instance : Mul Resources := ⟨seq⟩
 
 instance : One Resources := ⟨zero⟩
 
-instance : Monoid Resources where
+/-- Already measured resource vectors commute. This does not license
+reordering stateful operations, whose measured vectors may depend on order. -/
+instance : CommMonoid Resources where
+  mul := seq
+  one := zero
   mul_assoc := seq_assoc
   one_mul := zero_seq
   mul_one := seq_zero
+  mul_comm first second := by
+    change seq first second = seq second first
+    cases first
+    cases second
+    simp [seq, Nat.add_comm, max_comm]
+
+@[simp] theorem mul_eq_seq (first second : Resources) :
+    first * second = first.seq second := rfl
+
+@[simp] theorem one_eq_zero : (1 : Resources) = zero := rfl
 
 /-- Repeating one operation a known number of times. -/
 def replicate (count : Nat) (cost : Resources) : Resources where
@@ -86,6 +101,23 @@ def replicate (count : Nat) (cost : Resources) : Resources where
 @[simp] theorem replicate_one (cost : Resources) : replicate 1 cost = cost := by
   cases cost
   simp [replicate]
+
+
+/-- The closed-form repeated account agrees with the standard monoid power. -/
+theorem replicate_eq_pow (count : Nat) (cost : Resources) :
+    replicate count cost = cost ^ count := by
+  induction count with
+  | zero => exact replicate_zero cost
+  | succ count ih =>
+      rw [pow_succ, ← ih]
+      apply Resources.ext <;>
+        simp [replicate, seq, Nat.succ_mul, Nat.add_comm, mul_eq_seq]
+      split_ifs <;> simp
+
+/-- Workload concatenation is standard monoid multiplication. -/
+theorem replicate_add (first second : Nat) (cost : Resources) :
+    replicate (first + second) cost = (replicate first cost).seq (replicate second cost) := by
+  simpa only [replicate_eq_pow, mul_eq_seq] using pow_add cost first second
 
 end Resources
 
@@ -109,6 +141,36 @@ def bind {First Second : Type*} (first : Accounted First)
     bind (pure value) next = next value := by
   simp [bind, pure]
 
+
+/-- Returning an already computed value adds no resource usage. -/
+@[simp] theorem bind_pure {Result : Type*} (computation : Accounted Result) :
+    bind computation pure = computation := by
+  cases computation
+  simp [bind, pure]
+
+/-- Account accumulation has the associativity required for program bracketing. -/
+theorem bind_assoc {First Middle Last : Type*} (computation : Accounted First)
+    (next : First → Accounted Middle) (last : Middle → Accounted Last) :
+    bind (bind computation next) last = bind computation (fun value => bind (next value) last) := by
+  simp [bind, Resources.seq_assoc]
+
+/-- This account-value wrapper is the standard writer construction; both
+value and complete resource vector are retained. -/
+def writerEquiv (Result : Type) : Accounted Result ≃ Writer Resources Result where
+  toFun computation := (computation.value, computation.resources)
+  invFun pair := ⟨pair.1, pair.2⟩
+  left_inv computation := by cases computation; rfl
+  right_inv pair := by cases pair; rfl
+
+@[simp] theorem writerEquiv_pure {Result : Type} (value : Result) :
+    writerEquiv Result (pure value) = (Pure.pure value : Writer Resources Result) := rfl
+
+/-- The equivalence preserves binding, including the entire vector account. -/
+theorem writerEquiv_bind {First Second : Type} (computation : Accounted First)
+    (next : First → Accounted Second) :
+    writerEquiv Second (bind computation next) =
+      (writerEquiv First computation >>= fun value => writerEquiv Second (next value)) := rfl
+
 end Accounted
 
 /-- A refinement augmented with a resource account for constructing its actual
@@ -118,6 +180,25 @@ structure CostedRefinement {n : Nat} (source target : Presentation n)
   resources : source.Carrier → Resources
 
 namespace CostedRefinement
+
+/-- A costed conversion computes its target and retains the full account. -/
+def run {n : Nat} {source target : Presentation n}
+    (conversion : CostedRefinement source target) (graph : source.Carrier) :
+    Accounted target.Carrier :=
+  ⟨conversion.map graph, conversion.resources graph⟩
+
+@[ext] theorem ext {n : Nat} {source target : Presentation n}
+    {first second : CostedRefinement source target}
+    (maps : first.map = second.map) (accounts : first.resources = second.resources) :
+    first = second := by
+  cases first with
+  | mk first firstResources =>
+    cases second with
+    | mk second secondResources =>
+      have underlying : first = second := Refinement.ext maps
+      cases underlying
+      cases accounts
+      rfl
 
 def id {n : Nat} (presentation : Presentation n) :
     CostedRefinement presentation presentation where
@@ -139,6 +220,43 @@ def comp {n : Nat} {first middle last : Presentation n}
     rw [later.commute, earlier.commute]
   resources := fun graph =>
     (earlier.resources graph).seq (later.resources (earlier.map graph))
+
+@[simp] theorem run_id {n : Nat} (presentation : Presentation n)
+    (graph : presentation.Carrier) :
+    (id presentation).run graph = Accounted.pure graph := rfl
+
+/-- Actual intermediate values determine later resource costs, exactly as
+in the standard writer sequencing operation. -/
+theorem run_comp {n : Nat} {first middle last : Presentation n}
+    (earlier : CostedRefinement first middle) (later : CostedRefinement middle last)
+    (graph : first.Carrier) :
+    (earlier.comp later).run graph = Accounted.bind (earlier.run graph) later.run := rfl
+
+@[simp] theorem id_comp {n : Nat} {source target : Presentation n}
+    (conversion : CostedRefinement source target) :
+    (id source).comp conversion = conversion := by
+  apply ext
+  · rfl
+  · funext graph
+    exact Resources.zero_seq _
+
+@[simp] theorem comp_id {n : Nat} {source target : Presentation n}
+    (conversion : CostedRefinement source target) :
+    conversion.comp (id target) = conversion := by
+  apply ext
+  · rfl
+  · funext graph
+    exact Resources.seq_zero _
+
+/-- Rebracketing conversions preserves both output and complete accounting. -/
+theorem comp_assoc {n : Nat} {first second third last : Presentation n}
+    (one : CostedRefinement first second) (two : CostedRefinement second third)
+    (three : CostedRefinement third last) :
+    (one.comp two).comp three = one.comp (two.comp three) := by
+  apply ext
+  · rfl
+  · funext graph
+    exact Resources.seq_assoc _ _ _
 
 @[simp] theorem comp_time {n : Nat} {first middle last : Presentation n}
     (earlier : CostedRefinement first middle)
@@ -326,13 +444,25 @@ theorem persistent_fails_destructive_fits :
       FitsSpace 12 (destructivePeak 8 7 0) := by
   constructor <;> simp [FitsSpace, persistentPeak, destructivePeak]
 
+
+/-- A state-dependent account for doubling one stored natural number. -/
+def doubleAccount (state : Nat) : Accounted Nat :=
+  ⟨2 * state, { time := state }⟩
+
+/-- A reset with a state-dependent account. -/
+def resetAccount (state : Nat) : Accounted Nat :=
+  ⟨0, { time := state }⟩
+
+/-- Both schedules have the same extensional result, but their costs differ.
+Commutativity of the account monoid therefore grants no program-reorder law. -/
+theorem equal_results_different_accounts :
+    (Accounted.bind (doubleAccount 1) resetAccount).value =
+      (Accounted.bind (resetAccount 1) doubleAccount).value ∧
+    (Accounted.bind (doubleAccount 1) resetAccount).resources.time ≠
+      (Accounted.bind (resetAccount 1) doubleAccount).resources.time := by
+  decide
+
 end Canary
 
-#print axioms Resources.seq_assoc
-#print axioms CostedRefinement.comp_time
-#print axioms destructivePeak_le_persistentPeak
-#print axioms migrate_faster_iff_breakEven
-#print axioms weightedTime_mono
-#print axioms Canary.persistent_fails_destructive_fits
 
 end Mettapedia.GraphTheory.Representation

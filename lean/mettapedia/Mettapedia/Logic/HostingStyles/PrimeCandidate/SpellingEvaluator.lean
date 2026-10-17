@@ -46,7 +46,9 @@ tell apart what the static equivalence identifies.
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -561,4 +563,4 @@ theorem continuumTheory_not_enumeration : IsEmpty (StepEnumeration continuumTheo
 #print axioms spelledFan_step
 #print axioms continuumTheory_not_enumeration
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

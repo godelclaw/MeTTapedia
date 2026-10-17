@@ -49,7 +49,7 @@ open Mettapedia.OSLF.MeTTaIL.Substitution
   (liftBVars liftBVarsList liftBVarsList_eq_map instantiateBVarAt instantiateBVar)
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.Languages.MeTTa
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open Mettapedia.Logic.HostingStyles.AtomsReduce
 open Mettapedia.Logic.HostingStyles.ContextReadings (tokens tokensList tokensList_eq_zero)
 

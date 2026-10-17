@@ -170,7 +170,7 @@ theorem validateCatalogueCoverage_sound
 
 /-- Assemble full native qualification only after the independent catalogue
 coverage gate has closed. -/
-def ParserCompleteRepresentation.ofCatalogue
+theorem ParserCompleteRepresentation.ofCatalogue
     {view : ForestView} {inventory : Inventory}
     {profile : ParserProfileLayer} {plan : CompiledParserPackPlan}
     {target : Forest}

@@ -351,7 +351,7 @@ def packageRecoveringTypeService
     EvalTypeService where
   typesOf := PreparedPackagesPresent oracle
   typeCast := typeCast
-  candidateScan := RecoveredPackageCandidateScanRel oracle packageScan
+  candidateScan := fun _ => RecoveredPackageCandidateScanRel oracle packageScan
 
 /-! ## Recovery canaries -/
 

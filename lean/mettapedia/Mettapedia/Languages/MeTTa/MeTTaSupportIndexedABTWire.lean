@@ -1,3 +1,5 @@
+import Mettapedia.OSLF.MeTTaIL.MatchSpec
+import Mettapedia.GSLT.LanguageDef.ContextSupportTransport
 import Mettapedia.GSLT.LanguageDef.KernelAuthority
 import Mettapedia.GSLT.LanguageDef.CertificateGSLTWireFormat
 import Mettapedia.Languages.MeTTa.MeTTaRevisionedQueryBindEval
@@ -388,6 +390,496 @@ def executeWire (wire : WireTerm) : Option Pattern := do
 theorem executeWire_encodePacket (packet : CanonicalPacket) :
     executeWire (encodePacket packet) = executePacket packet.1 := by
   simp [executeWire, decodePacket_encodePacket]
+
+/-! ## Semantic and typed refinement of the support provider -/
+
+open MeTTaRevisionedQueryBindEval
+
+private theorem supportsAvailableIn_iff (support : ContextSupport.Support)
+    (depth : Nat) (patterns : List Pattern) :
+    supportsAvailableIn support depth patterns = true ↔
+      ∀ pattern ∈ patterns, supportsAvailableAt support depth pattern = true := by
+  induction patterns with
+  | nil => simp [supportsAvailableIn]
+  | cons pattern rest ih => simp [supportsAvailableIn, ih]
+
+private theorem substituteSupportedListAt?_of_pointwise
+    (support : ContextSupport.Support) (assignment : ContextSupport.Assignment)
+    (depth : Nat) (patterns : List Pattern)
+    (pointwise : ∀ pattern ∈ patterns,
+      substituteSupportedAt? support assignment depth pattern =
+        some (ContextSupport.substituteAt support assignment depth pattern)) :
+    substituteSupportedListAt? support assignment depth patterns =
+      some (patterns.map (ContextSupport.substituteAt support assignment depth)) := by
+  induction patterns with
+  | nil => simp [substituteSupportedListAt?]
+  | cons pattern patterns ih =>
+      have head := pointwise pattern (by simp)
+      have tail := ih (fun value member => pointwise value (by simp [member]))
+      simp [substituteSupportedListAt?, head, tail]
+
+/-- On admitted support depths, the executable partial operation implements
+the independently defined semantic support action on every rich Pattern. -/
+theorem substituteSupportedAt?_of_available
+    (support : ContextSupport.Support) (assignment : ContextSupport.Assignment)
+    (depth : Nat) (pattern : Pattern)
+    (available : supportsAvailableAt support depth pattern = true) :
+    substituteSupportedAt? support assignment depth pattern =
+      some (ContextSupport.substituteAt support assignment depth pattern) := by
+  induction pattern using Pattern.inductionOn generalizing depth with
+  | hbvar index => simp [substituteSupportedAt?, ContextSupport.substituteAt]
+  | hfvar name =>
+      have within : (support name).length ≤ depth := by
+        simpa only [supportsAvailableAt, decide_eq_true_eq] using available
+      simp [substituteSupportedAt?, ContextSupport.substituteAt,
+        transportBVars?_of_le within]
+  | happly label arguments ih =>
+      have childAvailable : ∀ value ∈ arguments,
+          supportsAvailableAt support depth value = true := by
+        simpa only [supportsAvailableAt, supportsAvailableIn_iff] using available
+      have children := substituteSupportedListAt?_of_pointwise support assignment depth arguments
+        (fun value member => ih value member depth (childAvailable value member))
+      simp [substituteSupportedAt?, ContextSupport.substituteAt, children]
+  | hlambda binder body ih =>
+      have childAvailable : supportsAvailableAt support (depth + 1) body = true := by
+        simpa only [supportsAvailableAt] using available
+      simp [substituteSupportedAt?, ContextSupport.substituteAt, ih (depth + 1) childAvailable]
+  | hmultiLambda arity binders body ih =>
+      have childAvailable : supportsAvailableAt support (depth + arity) body = true := by
+        simpa only [supportsAvailableAt] using available
+      simp [substituteSupportedAt?, ContextSupport.substituteAt, ih (depth + arity) childAvailable]
+  | hsubst body replacement ihBody ihReplacement =>
+      have children : supportsAvailableAt support (depth + 1) body = true ∧
+          supportsAvailableAt support depth replacement = true := by
+        simpa only [supportsAvailableAt, Bool.and_eq_true] using available
+      simp [substituteSupportedAt?, ContextSupport.substituteAt,
+        ihBody (depth + 1) children.1, ihReplacement depth children.2]
+  | hcollection kind elements rest ih =>
+      have childAvailable : ∀ value ∈ elements,
+          supportsAvailableAt support depth value = true := by
+        simpa only [supportsAvailableAt, supportsAvailableIn_iff] using available
+      have children := substituteSupportedListAt?_of_pointwise support assignment depth elements
+        (fun value member => ih value member depth (childAvailable value member))
+      simp [substituteSupportedAt?, ContextSupport.substituteAt, children]
+
+open WellSorted
+
+mutual
+
+/-- The independent typed support judgment supplies every local admission
+needed by the executable support action. -/
+theorem typed_supportsAvailable
+    {language : LanguageDef} {free : FreeTypeContext}
+    {support : ContextSupport.Support} {bound : List TypeExpr}
+    {pattern : Pattern} {type : TypeExpr}
+    (typed : HasType language free bound pattern type)
+    (supported : typed.RespectsSupport support) :
+    supportsAvailableAt support bound.length pattern = true := by
+  cases typed with
+  | bvar lookup => simp [supportsAvailableAt]
+  | @fvar bound name type lookup =>
+      obtain ⟨inner, shape⟩ := supported name bound (FreeVariableOccursAt.here (lookup := lookup))
+      simp [supportsAvailableAt, shape]
+  | @constructor bound rule arguments membership notBare argumentsTyped =>
+      have argumentsSupported : ∀ name occurrenceBound,
+          ArgumentsFreeVariableOccursAt argumentsTyped name occurrenceBound →
+            ∃ inner, occurrenceBound = inner ++ support name := by
+        intro name occurrenceBound occurs
+        exact supported name occurrenceBound
+          (FreeVariableOccursAt.constructor
+            (membership := membership) (notBare := notBare) occurs)
+      simpa only [supportsAvailableAt] using
+        arguments_supportsAvailable argumentsTyped argumentsSupported
+  | @lambda bound binder body domain codomain bodyTyped =>
+      have bodySupported : bodyTyped.RespectsSupport support := by
+        intro name occurrenceBound occurs
+        exact supported name occurrenceBound (FreeVariableOccursAt.lambda occurs)
+      simpa only [supportsAvailableAt, List.length_cons, Nat.add_comm] using
+        typed_supportsAvailable bodyTyped bodySupported
+  | @multiLambda bound arity binders body domain codomain bodyTyped =>
+      have bodySupported : bodyTyped.RespectsSupport support := by
+        intro name occurrenceBound occurs
+        exact supported name occurrenceBound (FreeVariableOccursAt.multiLambda occurs)
+      simpa only [supportsAvailableAt, List.length_append, List.length_replicate,
+        Nat.add_comm] using typed_supportsAvailable bodyTyped bodySupported
+  | @subst bound body replacement domain codomain bodyTyped replacementTyped =>
+      have bodySupported : bodyTyped.RespectsSupport support := by
+        intro name occurrenceBound occurs
+        exact supported name occurrenceBound
+          (FreeVariableOccursAt.substBody (replacementTyped := replacementTyped) occurs)
+      have replacementSupported : replacementTyped.RespectsSupport support := by
+        intro name occurrenceBound occurs
+        exact supported name occurrenceBound
+          (FreeVariableOccursAt.substReplacement (bodyTyped := bodyTyped) occurs)
+      simpa only [supportsAvailableAt, Bool.and_eq_true, List.length_cons,
+        Nat.add_comm] using And.intro (typed_supportsAvailable bodyTyped bodySupported)
+          (typed_supportsAvailable replacementTyped replacementSupported)
+  | @collection bound collectionType elements rest elementType elementsTyped =>
+      have elementsSupported : ∀ name occurrenceBound,
+          ElementsFreeVariableOccursAt elementsTyped name occurrenceBound →
+            ∃ inner, occurrenceBound = inner ++ support name := by
+        intro name occurrenceBound occurs
+        exact supported name occurrenceBound (FreeVariableOccursAt.collection occurs)
+      simpa only [supportsAvailableAt] using
+        elements_supportsAvailable elementsTyped elementsSupported
+  | @collectionConstructor bound rule parameterName collectionType elements rest
+      elementType membership parameterShape elementsTyped =>
+      have elementsSupported : ∀ name occurrenceBound,
+          ElementsFreeVariableOccursAt elementsTyped name occurrenceBound →
+            ∃ inner, occurrenceBound = inner ++ support name := by
+        intro name occurrenceBound occurs
+        exact supported name occurrenceBound
+          (FreeVariableOccursAt.collectionConstructor
+            (parameterName := parameterName) (membership := membership)
+            (parameterShape := parameterShape) occurs)
+      simpa only [supportsAvailableAt, supportsAvailableIn, Bool.and_true] using
+        elements_supportsAvailable elementsTyped elementsSupported
+
+theorem arguments_supportsAvailable
+    {language : LanguageDef} {free : FreeTypeContext}
+    {support : ContextSupport.Support} {bound : List TypeExpr}
+    {arguments : List Pattern} {parameters : List TermParam}
+    (typed : ArgumentsHaveTypes language free bound arguments parameters)
+    (supported : ∀ name occurrenceBound,
+      ArgumentsFreeVariableOccursAt typed name occurrenceBound →
+        ∃ inner, occurrenceBound = inner ++ support name) :
+    supportsAvailableIn support bound.length arguments = true := by
+  cases typed with
+  | nil => simp [supportsAvailableIn]
+  | cons representation parameterType argumentTyped argumentsTyped =>
+      have headSupported : argumentTyped.RespectsSupport support := by
+        intro name occurrenceBound occurs
+        exact supported name occurrenceBound
+          (ArgumentsFreeVariableOccursAt.head (representation := representation)
+            (parameterType := parameterType) (argumentsTyped := argumentsTyped) occurs)
+      have tailSupported : ∀ name occurrenceBound,
+          ArgumentsFreeVariableOccursAt argumentsTyped name occurrenceBound →
+            ∃ inner, occurrenceBound = inner ++ support name := by
+        intro name occurrenceBound occurs
+        exact supported name occurrenceBound
+          (ArgumentsFreeVariableOccursAt.tail (representation := representation)
+            (parameterType := parameterType) (argumentTyped := argumentTyped) occurs)
+      simp only [supportsAvailableIn, Bool.and_eq_true]
+      exact ⟨typed_supportsAvailable argumentTyped headSupported,
+        arguments_supportsAvailable (bound := bound) argumentsTyped tailSupported⟩
+
+theorem elements_supportsAvailable
+    {language : LanguageDef} {free : FreeTypeContext}
+    {support : ContextSupport.Support} {bound : List TypeExpr}
+    {elements : List Pattern} {elementType : TypeExpr}
+    (typed : ElementsHaveType language free bound elements elementType)
+    (supported : ∀ name occurrenceBound,
+      ElementsFreeVariableOccursAt typed name occurrenceBound →
+        ∃ inner, occurrenceBound = inner ++ support name) :
+    supportsAvailableIn support bound.length elements = true := by
+  cases typed with
+  | nil => simp [supportsAvailableIn]
+  | cons elementTyped elementsTyped =>
+      have headSupported : elementTyped.RespectsSupport support := by
+        intro name occurrenceBound occurs
+        exact supported name occurrenceBound
+          (ElementsFreeVariableOccursAt.head (elementsTyped := elementsTyped) occurs)
+      have tailSupported : ∀ name occurrenceBound,
+          ElementsFreeVariableOccursAt elementsTyped name occurrenceBound →
+            ∃ inner, occurrenceBound = inner ++ support name := by
+        intro name occurrenceBound occurs
+        exact supported name occurrenceBound
+          (ElementsFreeVariableOccursAt.tail (elementTyped := elementTyped) occurs)
+      simp only [supportsAvailableIn, Bool.and_eq_true]
+      exact ⟨typed_supportsAvailable elementTyped headSupported,
+        elements_supportsAvailable (bound := bound) elementsTyped tailSupported⟩
+
+end
+
+/-- An independently typed supported assignment executes successfully through
+the partial provider, and its actual result has the required authored type. -/
+theorem substituteSupportedAt?_typed
+    {language : LanguageDef} {source target : FreeTypeContext}
+    {support : ContextSupport.Support} {bound : List TypeExpr}
+    {pattern : Pattern} {type : TypeExpr}
+    (assignment : SupportedAssignment language source target support)
+    (typed : HasType language source bound pattern type)
+    (supported : typed.RespectsSupport support) :
+    ∃ result, substituteSupportedAt? support assignment.assignment bound.length pattern =
+        some result ∧ HasType language target bound result type := by
+  refine ⟨ContextSupport.substituteAt support assignment.assignment bound.length pattern, ?_, ?_⟩
+  · exact substituteSupportedAt?_of_available support assignment.assignment bound.length pattern
+      (typed_supportsAvailable typed supported)
+  · exact typed.substituteSupported assignment supported
+
+/-- The finite support packet implements the same typed support action after
+its use depth is matched with the authored ambient context. -/
+theorem executePacket_typed
+    (packet : SupportedSubstitutionPacket)
+    {language : LanguageDef} {source target : FreeTypeContext}
+    {bound : List TypeExpr} {type : TypeExpr}
+    (depth : packet.useDepth = bound.length)
+    (assignmentTyped : ∀ {name type}, source name = some type →
+      HasType language target (packet.supportFunction name)
+        (packet.assignmentFunction name) type)
+    (typed : HasType language source bound packet.body type)
+    (supported : typed.RespectsSupport packet.supportFunction) :
+    executePacket packet = some (ContextSupport.substituteAt packet.supportFunction
+      packet.assignmentFunction bound.length packet.body) ∧
+    HasType language target bound
+      (ContextSupport.substituteAt packet.supportFunction
+        packet.assignmentFunction bound.length packet.body) type := by
+  constructor
+  · unfold executePacket
+    rw [depth]
+    exact substituteSupportedAt?_of_available _ _ _ _
+      (typed_supportsAvailable typed supported)
+  · exact typed.substituteSupported
+      ⟨packet.assignmentFunction, assignmentTyped⟩ supported
+
+/-- Canonical versioned wire decoding preserves the executable typed support
+action; no function-world equality or untyped name replacement is assumed. -/
+theorem executeWire_typed
+    (packet : CanonicalPacket)
+    {language : LanguageDef} {source target : FreeTypeContext}
+    {bound : List TypeExpr} {type : TypeExpr}
+    (depth : packet.val.useDepth = bound.length)
+    (assignmentTyped : ∀ {name type}, source name = some type →
+      HasType language target (packet.val.supportFunction name)
+        (packet.val.assignmentFunction name) type)
+    (typed : HasType language source bound packet.val.body type)
+    (supported : typed.RespectsSupport packet.val.supportFunction) :
+    executeWire (encodePacket packet) =
+      some (ContextSupport.substituteAt packet.val.supportFunction
+        packet.val.assignmentFunction bound.length packet.val.body) ∧
+    HasType language target bound
+      (ContextSupport.substituteAt packet.val.supportFunction
+        packet.val.assignmentFunction bound.length packet.val.body) type := by
+  rw [executeWire_encodePacket]
+  exact executePacket_typed packet.val depth assignmentTyped typed supported
+
+namespace RefinementControls
+
+def typeA : TypeExpr := .base "A"
+
+def supportX : ContextSupport.Support :=
+  fun name => if name = "x" then [typeA] else []
+
+def assignmentX : ContextSupport.Assignment :=
+  fun name => if name = "x" then .bvar 0 else .fvar name
+
+theorem typed_lambda_context (language : LanguageDef) :
+    HasType language FreeTypeContext.empty [typeA]
+      (.lambda none (.bvar 1)) (.arrow typeA typeA) := by
+  exact HasType.lambda (HasType.bvar rfl)
+
+theorem lambda_available :
+    supportsAvailableAt supportX 0 (.lambda none (.fvar "x")) = true := by
+  simp [supportsAvailableAt, supportX]
+
+theorem bare_reference_unavailable :
+    supportsAvailableAt supportX 0 (.fvar "x") = false := by
+  simp [supportsAvailableAt, supportX]
+
+theorem supported_lambda_executes :
+    substituteSupportedAt? supportX assignmentX 1 (.lambda none (.fvar "x")) =
+      some (.lambda none (.bvar 1)) := by
+  simp [substituteSupportedAt?, supportX, assignmentX, transportBVars?,
+    Mettapedia.OSLF.MeTTaIL.Substitution.liftBVars]
+
+theorem unsupported_bare_capture_refused :
+    substituteSupportedAt? supportX assignmentX 0 (.fvar "x") = none := by
+  simp [substituteSupportedAt?, supportX, assignmentX, transportBVars?, lowerBVars?]
+
+end RefinementControls
+
+
+/-! ## Checked contextual matching and continuation operations -/
+
+open Mettapedia.OSLF.MeTTaIL.Match
+open Mettapedia.Languages.MeTTa.MeTTaZero
+
+/-- The finite source conditions for transporting one actual matcher filling.
+The context assignment is checked against the capture sites, not merely
+asserted by a wire support table. -/
+def BindingAdmitted (support : ContextSupport.Support) (depth : Nat)
+    (pattern body : Pattern) (bindings : Bindings) : Prop :=
+  bindings.hasUniqueNames = true ∧ depthAligned pattern 0 pattern = true ∧
+    (∀ entry ∈ bindings,
+      captureDepth entry.1 depth pattern = some (support entry.1).length ∧
+        entry.2.isWellScopedAt (support entry.1).length = true) ∧
+    supportsAvailableAt support depth body = true
+
+instance (support : ContextSupport.Support) (depth : Nat)
+    (pattern body : Pattern) (bindings : Bindings) :
+    Decidable (BindingAdmitted support depth pattern body bindings) := by
+  unfold BindingAdmitted
+  infer_instance
+
+/-- Execute the actual support provider only after the independently stated
+capture, scope, uniqueness and continuation-depth conditions pass. -/
+def instantiateBinding? (support : ContextSupport.Support) (depth : Nat)
+    (pattern body : Pattern) (bindings : Bindings) : Option Pattern :=
+  if BindingAdmitted support depth pattern body bindings then
+    substituteSupportedAt? support (bindingAssignment bindings) depth body
+  else none
+
+theorem instantiateBinding?_exact (support : ContextSupport.Support) (depth : Nat)
+    (pattern body : Pattern) (bindings : Bindings) (instantiated : Pattern) :
+    instantiateBinding? support depth pattern body bindings = some instantiated ↔
+      BindingAdmitted support depth pattern body bindings ∧
+        ContextSupport.substituteAt support (bindingAssignment bindings) depth body = instantiated := by
+  by_cases admitted : BindingAdmitted support depth pattern body bindings
+  · have physical := substituteSupportedAt?_of_available support
+      (bindingAssignment bindings) depth body admitted.2.2.2
+    simp [instantiateBinding?, admitted, physical]
+  · simp [instantiateBinding?, admitted]
+
+/-- The raw evidence contains its actual matcher occurrence.  The physical
+substitution result controls acceptance. -/
+def checkSupportedBinding (model : Model) (support : ContextSupport.Support)
+    (depth : Nat) (pattern body value instantiated : Pattern)
+    (bindings : Bindings) (occurrence : Nat) : Bool :=
+  decide (occurrence < Multiset.count bindings (model.matchAtoms pattern value)) &&
+    decide (instantiateBinding? support depth pattern body bindings = some instantiated)
+
+theorem checkSupportedBinding_exact (model : Model)
+    (support : ContextSupport.Support) (depth : Nat)
+    (pattern body value instantiated : Pattern) (bindings : Bindings) (occurrence : Nat) :
+    checkSupportedBinding model support depth pattern body value instantiated bindings occurrence = true ↔
+      occurrence < Multiset.count bindings (model.matchAtoms pattern value) ∧
+        BindingAdmitted support depth pattern body bindings ∧
+        ContextSupport.substituteAt support (bindingAssignment bindings) depth body = instantiated := by
+  simp only [checkSupportedBinding, Bool.and_eq_true, decide_eq_true_eq,
+    instantiateBinding?_exact]
+
+def supportedBindingOfChecked (model : Model)
+    {support : ContextSupport.Support} {depth : Nat}
+    {pattern body value instantiated : Pattern} {bindings : Bindings} {occurrence : Nat}
+    (checked : checkSupportedBinding model support depth pattern body value instantiated
+      bindings occurrence = true) :
+    SupportedLetBinding model support depth pattern body value instantiated := by
+  obtain ⟨matched, admitted, substituted⟩ :=
+    (checkSupportedBinding_exact model support depth pattern body value instantiated bindings occurrence).mp checked
+  exact {
+    bindings := bindings
+    occurrence := occurrence
+    occurrence_exists := matched
+    unique := admitted.1
+    capturesAligned := admitted.2.1
+    captured := admitted.2.2.1
+    available := admitted.2.2.2
+    instantiates := substituted }
+
+theorem supportedBinding_iff_checked (model : Model)
+    (support : ContextSupport.Support) (depth : Nat)
+    (pattern body value instantiated : Pattern) :
+    Nonempty (SupportedLetBinding model support depth pattern body value instantiated) ↔
+      ∃ bindings occurrence, checkSupportedBinding model support depth pattern body value instantiated
+        bindings occurrence = true := by
+  constructor
+  · rintro ⟨binding⟩
+    refine ⟨binding.bindings, binding.occurrence,
+      (checkSupportedBinding_exact model support depth pattern body value instantiated
+        binding.bindings binding.occurrence).mpr ?_⟩
+    exact ⟨binding.occurrence_exists,
+      ⟨binding.unique, binding.capturesAligned, binding.captured, binding.available⟩,
+      binding.instantiates⟩
+  · rintro ⟨bindings, occurrence, checked⟩
+    exact ⟨supportedBindingOfChecked model checked⟩
+
+/-- Compute all supported continuation instances, retaining matcher
+multiplicity and making no global result-order promise. -/
+def supportedBindingResults (model : Model) (support : ContextSupport.Support)
+    (depth : Nat) (pattern body value : Pattern) : Multiset Pattern :=
+  (model.matchAtoms pattern value).bind fun bindings =>
+    match instantiateBinding? support depth pattern body bindings with
+    | none => 0
+    | some instantiated => {instantiated}
+
+theorem mem_supportedBindingResults (model : Model) (support : ContextSupport.Support)
+    (depth : Nat) (pattern body value instantiated : Pattern) :
+    instantiated ∈ supportedBindingResults model support depth pattern body value ↔
+      Nonempty (SupportedLetBinding model support depth pattern body value instantiated) := by
+  simp only [supportedBindingResults, Multiset.mem_bind]
+  constructor
+  · rintro ⟨bindings, matched, produced⟩
+    cases physical : instantiateBinding? support depth pattern body bindings with
+    | none => simp [physical] at produced
+    | some result =>
+        have equal : instantiated = result := by simpa [physical] using produced
+        subst equal
+        apply (supportedBinding_iff_checked model support depth pattern body value instantiated).mpr
+        refine ⟨bindings, 0, ?_⟩
+        simp only [checkSupportedBinding, Bool.and_eq_true, decide_eq_true_eq]
+        exact ⟨Multiset.count_pos.mpr matched, physical⟩
+  · rintro ⟨binding⟩
+    have matched := Multiset.count_pos.mp (Nat.zero_lt_of_lt binding.occurrence_exists)
+    refine ⟨binding.bindings, matched, ?_⟩
+    have physical := (instantiateBinding?_exact support depth pattern body binding.bindings instantiated).mpr
+      ⟨⟨binding.unique, binding.capturesAligned, binding.captured, binding.available⟩,
+        binding.instantiates⟩
+    simp [physical]
+
+/-- Actual accepted binding evidence preserves an independently supplied
+authored typing contract.  Capture-depth checks alone do not infer types. -/
+theorem checkSupportedBinding_preservesTyping (model : Model)
+    {support : ContextSupport.Support} {depth : Nat}
+    {pattern body value instantiated : Pattern} {bindings : Bindings} {occurrence : Nat}
+    {language : LanguageDef} {source target : WellSorted.FreeTypeContext}
+    {bound : List TypeExpr} {type : TypeExpr}
+    (checked : checkSupportedBinding model support depth pattern body value instantiated
+      bindings occurrence = true)
+    (depthMatches : depth = bound.length)
+    (typed : WellSorted.HasType language source bound body type)
+    (supported : typed.RespectsSupport support)
+    (assignmentTyped : ∀ {name type}, source name = some type →
+      WellSorted.HasType language target (support name) (bindingAssignment bindings name) type) :
+    WellSorted.HasType language target bound instantiated type := by
+  have substituted :=
+    (checkSupportedBinding_exact model support depth pattern body value instantiated bindings occurrence).mp checked
+  rw [← substituted.2.2, depthMatches]
+  exact typed.substituteSupported ⟨bindingAssignment bindings, assignmentTyped⟩ supported
+
+namespace SupportedBindingControls
+
+def supportX : ContextSupport.Support :=
+  fun name => if name = "x" then [(.base "Value" : TypeExpr)] else []
+
+def patternX : Pattern := .lambda none (.fvar "x")
+def bodyX : Pattern := .lambda none (.lambda none (.fvar "x"))
+def valueX : Pattern := .lambda none (.bvar 0)
+def resultX : Pattern := .lambda none (.lambda none (.bvar 1))
+
+theorem contextual_binding_accepted :
+    checkSupportedBinding structuralModel supportX 0 patternX bodyX valueX resultX
+      [("x", .bvar 0)] 0 = true := by decide +kernel
+
+theorem contextual_source_receipt :
+    Nonempty (SupportedLetBinding structuralModel supportX 0 patternX bodyX valueX resultX) :=
+  ⟨supportedBindingOfChecked structuralModel contextual_binding_accepted⟩
+
+theorem absent_matcher_occurrence_rejected :
+    checkSupportedBinding structuralModel supportX 0 patternX bodyX valueX resultX
+      [("x", .bvar 0)] 1 = false := by decide +kernel
+
+theorem forged_support_rejected :
+    checkSupportedBinding structuralModel (fun _ => []) 0 patternX bodyX valueX resultX
+      [("x", .bvar 0)] 0 = false := by decide +kernel
+
+theorem capture_rejected :
+    checkSupportedBinding structuralModel supportX 0 patternX (.fvar "x") valueX (.bvar 0)
+      [("x", .bvar 0)] 0 = false := by decide +kernel
+
+theorem wrong_shift_rejected :
+    checkSupportedBinding structuralModel supportX 0 patternX bodyX valueX
+      (.lambda none (.lambda none (.bvar 0))) [("x", .bvar 0)] 0 = false := by decide +kernel
+
+theorem source_pattern_depth_disagreement_rejected :
+    instantiateBinding? supportX 0
+      (.apply "Pair" [.fvar "x", .lambda none (.fvar "x")]) bodyX [("x", .bvar 0)] = none := by
+  decide +kernel
+
+theorem actual_contextual_results :
+    supportedBindingResults structuralModel supportX 0 patternX bodyX valueX = {resultX} := by
+  decide +kernel
+
+end SupportedBindingControls
 
 /-! ## Revision-bound candidate rows
 
@@ -874,3 +1366,122 @@ theorem stale_world_candidate_is_rejected :
 end Canary
 
 end Mettapedia.Languages.MeTTa.MeTTaSupportIndexedABTWire
+
+
+/-! ## Incoming ambient assignments and fresh matcher roles -/
+
+namespace Mettapedia.Languages.MeTTa.MeTTaSupportIndexedABTWire.AmbientBinding
+
+open Mettapedia.OSLF.MeTTaIL.Syntax
+open Mettapedia.OSLF.MeTTaIL.Substitution
+open Mettapedia.GSLT.LanguageDef
+
+open Mettapedia.OSLF.MeTTaIL.Match
+open Mettapedia.OSLF.MeTTaIL.ContextSubstitution
+open Mettapedia.Languages.MeTTa.MeTTaRevisionedQueryBindEval
+
+/-- Only names already present in the incoming assignment become ambient
+slots. Other free names retain their matcher role. The original assignment's
+first matching entry controls lookup even if an external table repeats a key. -/
+def abstraction (incoming : Bindings) (name : String) : Pattern :=
+  match incoming.findIdx? (fun entry => entry.1 == name) with
+  | none => .fvar name
+  | some index => .bvar index
+
+/-- Read an incoming value by its physical table index. Out-of-table indices
+remain ambient references; the abstraction never emits such indices. -/
+def values (incoming : Bindings) :
+    Mettapedia.OSLF.MeTTaIL.ContextSubstitution.Assignment :=
+  fun index => ((incoming[index]?).map Prod.snd).getD (.bvar index)
+
+theorem reopen_abstraction (incoming : Bindings) (name : String) :
+    Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute (values incoming)
+      (abstraction incoming name) = bindingAssignment incoming name := by
+  have lookup := @List.find?_eq_bind_findIdx?_getElem? _ incoming
+    (fun entry => entry.1 == name)
+  cases indexFound : incoming.findIdx? (fun entry => entry.1 == name) with
+  | none =>
+    have absent : incoming.lookup name = none := by
+      simp only [Bindings.lookup, lookup, indexFound, Option.bind_none, Option.map_none]
+    simp [abstraction, indexFound, bindingAssignment, absent,
+      Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute]
+  | some index =>
+    have inTable : index < incoming.length :=
+      (List.findIdx?_eq_some_iff_getElem.mp indexFound).choose
+    have found : incoming.lookup name = (incoming[index]?).map Prod.snd := by
+      simp only [Bindings.lookup, lookup, indexFound, Option.bind_some]
+    simp [abstraction, indexFound, bindingAssignment, found, values,
+      Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute,
+      List.getElem?_eq_getElem inTable]
+
+/-- Prepare the same raw Pattern using existing support-aware binding syntax;
+no second program AST or matcher is introduced. -/
+def prepare (incoming : Bindings) (depth : Nat) (pattern : Pattern) : Pattern :=
+  ContextSupport.substituteAt (fun _ => []) (abstraction incoming) depth pattern
+
+/-- Reopen ambient slots without altering freshly introduced matcher names. -/
+def reopen (incoming : Bindings) (depth : Nat) (pattern : Pattern) : Pattern :=
+  Mettapedia.OSLF.MeTTaIL.ContextSubstitution.substitute
+    (Mettapedia.OSLF.MeTTaIL.ContextSubstitution.lift depth (values incoming)) pattern
+
+/-- The actual two-pass preparation agrees with the original named support
+action. In particular a pre-bound name is not silently treated as fresh. -/
+theorem reopen_prepare (incoming : Bindings) (depth : Nat) (pattern : Pattern)
+    (wellScoped : pattern.isWellScopedAt depth = true) :
+    reopen incoming depth (prepare incoming depth pattern) =
+      ContextSupport.substituteAt (fun _ => []) (bindingAssignment incoming) depth pattern := by
+  unfold reopen prepare
+  rw [ContextSupport.ambient_substitute_named _ _ _ _ wellScoped]
+  congr 1
+  funext name
+  exact reopen_abstraction incoming name
+
+@[simp] theorem fresh_name_remains_matcher (incoming : Bindings) (name : String)
+    (absent : incoming.lookup name = none) :
+    reopen incoming 0 (prepare incoming 0 (.fvar name)) = .fvar name := by
+  rw [reopen_prepare incoming 0 (.fvar name) rfl]
+  simp [ContextSupport.substituteAt, bindingAssignment, absent, liftBVars_zero]
+
+@[simp] theorem prebound_name_reopens (incoming : Bindings) (name : String) (value : Pattern)
+    (found : incoming.lookup name = some value) :
+    reopen incoming 0 (prepare incoming 0 (.fvar name)) = value := by
+  rw [reopen_prepare incoming 0 (.fvar name) rfl]
+  simp [ContextSupport.substituteAt, bindingAssignment, found, liftBVars_zero]
+
+
+/-- On the existing constructor/variable fragment the named support action
+is the actual original binding applier, including leaving unbound variables
+unresolved. Object-binder transport and executable explicit substitution
+require their separate support/normalization contracts. -/
+theorem named_support_eq_applyBindings (incoming : Bindings) (pattern : Pattern)
+    (plain : isMatchCorrectAux pattern = true) :
+    ContextSupport.substituteAt (fun _ => []) (bindingAssignment incoming) 0 pattern =
+      applyBindings incoming pattern := by
+  induction pattern using Pattern.inductionOn with
+  | hbvar index => simp only [ContextSupport.substituteAt, applyBindings]
+  | hfvar name =>
+    simp only [ContextSupport.substituteAt, List.length_nil, Nat.sub_self,
+      liftBVars_zero, bindingAssignment, Bindings.lookup, applyBindings]
+    cases incoming.find? (fun entry => entry.1 == name) <;> rfl
+  | happly constructor arguments ih =>
+    simp only [ContextSupport.substituteAt, applyBindings]
+    congr 1
+    apply List.map_congr_left
+    intro argument member
+    exact ih argument member ((Mettapedia.OSLF.MeTTaIL.MatchSpec.isMatchCorrectListAux_iff_forall _).mp plain _ member)
+  | hlambda name body _ => simp [isMatchCorrectAux] at plain
+  | hmultiLambda arity names body _ => simp [isMatchCorrectAux] at plain
+  | hsubst body replacement _ _ => simp [isMatchCorrectAux] at plain
+  | hcollection kind elements rest _ => simp [isMatchCorrectAux] at plain
+
+/-- Ambient-slot abstraction and reopening agree with original binding before
+native dispatch, while retaining every source occurrence of an unbound name. -/
+theorem reopen_prepare_applyBindings (incoming : Bindings) (pattern : Pattern)
+    (wellScoped : pattern.isWellScopedAt 0 = true)
+    (plain : isMatchCorrectAux pattern = true) :
+    reopen incoming 0 (prepare incoming 0 pattern) = applyBindings incoming pattern := by
+  rw [reopen_prepare incoming 0 pattern wellScoped,
+    named_support_eq_applyBindings incoming pattern plain]
+
+
+end Mettapedia.Languages.MeTTa.MeTTaSupportIndexedABTWire.AmbientBinding

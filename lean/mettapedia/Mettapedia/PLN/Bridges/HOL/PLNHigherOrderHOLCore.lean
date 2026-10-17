@@ -2,7 +2,7 @@ import Mettapedia.Logic.HOL.Syntax.Type
 import Mettapedia.Logic.HOL.Syntax.Term
 import Mettapedia.Logic.HOL.Syntax.Closed
 import Mettapedia.Logic.HOL.Derivation
-import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL
+import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
 
 namespace Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore
 
@@ -12,13 +12,9 @@ open Mettapedia.Logic.HOL
 
 variable {Base : Type u} {Const : Ty Base → Type v}
 
-/-- Higher-order PLN queries are closed Church-style HOL formulas. -/
-abbrev HOLQuery (Const : Ty Base → Type v) :=
-  _root_.Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL.HOLQuery (Base := Base) Const
-
 /-- Higher-order PLN states are multisets of pointed Henkin models. -/
 abbrev HOLState (Base : Type u) (Const : Ty Base → Type v) :=
-  _root_.Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL.HOLState Base Const
+  Multiset (_root_.Mettapedia.Logic.HOL.HenkinModel Base Const)
 
 /-- A HOL formula is provable when it is derivable from no assumptions. -/
 abbrev HOLProvable (φ : HOLQuery Const) : Prop :=

@@ -130,3 +130,54 @@ section Canaries
 end Canaries
 
 end Mettapedia.Languages.ProcessCalculi.MORK
+
+
+namespace Mettapedia.Languages.ProcessCalculi.MORK
+
+/-- Original source freshness observes guest variables inside captured Atom
+values. It does not use freshness of their inert ground-data representation. -/
+inductive SourceGuardHolds (substitution : Subst) : SourceGuard → Prop where
+  | unbound {name : String} {subject : MeTTa.OSLFCore.Atom}
+      (unbound : substitution.lookup name = none)
+      (fresh : name ∉ atomFreeVars (applySubst substitution subject)) :
+      SourceGuardHolds substitution (.freshness name subject)
+  | captured {name resolved : String} {subject : MeTTa.OSLFCore.Atom}
+      (captured : substitution.lookup name = some (.var resolved))
+      (fresh : resolved ∉ atomFreeVars (applySubst substitution subject)) :
+      SourceGuardHolds substitution (.freshness name subject)
+
+@[simp] theorem matchSourceGuard_exact (substitution : Subst) (guard : SourceGuard) :
+    matchSourceGuard substitution guard = true ↔ SourceGuardHolds substitution guard := by
+  constructor
+  · intro checked
+    cases guard with
+    | freshness name subject =>
+      cases selected : substitution.lookup name with
+      | none =>
+          have fresh : name ∉ atomFreeVars (applySubst substitution subject) := by
+            simpa [matchSourceGuard, selected, isAtomFresh] using checked
+          exact .unbound selected fresh
+      | some value =>
+          cases value with
+          | var resolved =>
+              have fresh : resolved ∉ atomFreeVars (applySubst substitution subject) := by
+                simpa [matchSourceGuard, selected, isAtomFresh] using checked
+              exact .captured selected fresh
+          | symbol _ | grounded _ | expression _ =>
+              simp [matchSourceGuard, selected] at checked
+  · intro held
+    cases held with
+    | unbound absent fresh => simp [matchSourceGuard, absent, isAtomFresh, fresh]
+    | captured present fresh => simp [matchSourceGuard, present, isAtomFresh, fresh]
+
+theorem matchSourceGuard_refused_exact (substitution : Subst) (guard : SourceGuard) :
+    matchSourceGuard substitution guard = false ↔ ¬ SourceGuardHolds substitution guard := by
+  rw [← matchSourceGuard_exact]
+  exact Bool.eq_false_iff
+
+@[simp] theorem matchSourceGuards_exact (substitution : Subst) (guards : List SourceGuard) :
+    matchSourceGuards substitution guards = true ↔
+      ∀ guard ∈ guards, SourceGuardHolds substitution guard := by
+  simp only [matchSourceGuards, List.all_eq_true, matchSourceGuard_exact]
+
+end Mettapedia.Languages.ProcessCalculi.MORK

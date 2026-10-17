@@ -64,7 +64,12 @@ def typeOf? (types : Types) (operand : CExpr)
         | 0 => none
         | depth + 1 => fields ⟨type.name, depth⟩ name
       else fields type name
-  | .cast type _ => some type
+  | .index array _ => do
+      let type ← typeOf? types array fields
+      match type.pointers with
+      | 0 => none
+      | depth + 1 => some ⟨type.name, depth⟩
+  | .cast type _ | .castPointeeConst type _ => some type
   | _ => none
 
 theorem field_type_does_not_read_owner (types : Types) (fields : FieldTypes)
@@ -79,6 +84,21 @@ theorem pointer_field_requires_pointer_owner (types : Types) (fields : FieldType
     (typed : typeOf? types owner fields = some ⟨typeName, 0⟩) :
     typeOf? types (.field owner name true) fields = none := by
   simp only [typeOf?, typed, bind, Option.bind_some, ↓reduceIte]
+
+/-- Array element typing uses the declared pointee type and does not execute
+its index or consult array contents. Actual index typing is checked by reading. -/
+theorem index_type_is_pointee (types : Types) (fields : FieldTypes)
+    (array index : CExpr) (type : CType)
+    (typed : typeOf? types array fields = some ⟨type.name, type.pointers + 1⟩) :
+    typeOf? types (.index array index) fields = some type := by
+  cases type
+  simp only [typeOf?, typed, bind, Option.bind_some]
+
+theorem index_type_requires_pointer (types : Types) (fields : FieldTypes)
+    (array index : CExpr) (name : Name)
+    (typed : typeOf? types array fields = some ⟨name, 0⟩) :
+    typeOf? types (.index array index) fields = none := by
+  simp only [typeOf?, typed, bind, Option.bind_some]
 
 def typeBytes? (abi : ABI) (type : CType) : Option Nat :=
   if 0 < type.pointers then some abi.pointerBytes else none
@@ -220,5 +240,16 @@ theorem dereferencing_scalar_has_no_size :
       (.unary .dereference (.identifier "p".toList)) = none := rfl
 
 end Controls
+
+end Mettapedia.Machines.CMemory.ScalarBytes
+
+namespace Mettapedia.Machines.CMemory.ScalarBytes
+open Mettapedia.GSLT.LanguageDef.NativeOps.NativeC
+
+/-- Retaining the const qualifier in syntax does not evaluate the operand or
+change the unqualified storage extent. This is not cast-admission evidence. -/
+theorem typeOf_const_pointee_cast (source : Types) (type : CType)
+    (operand : CExpr) :
+    typeOf? source (.castPointeeConst type operand) = some type := rfl
 
 end Mettapedia.Machines.CMemory.ScalarBytes

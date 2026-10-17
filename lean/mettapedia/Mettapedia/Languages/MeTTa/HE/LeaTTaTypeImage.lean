@@ -1,3 +1,4 @@
+import Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
 /-
 Exact HE-image provenance for the repaired type-matching pipeline.
 
@@ -18,6 +19,9 @@ No HE-executable matcher/merge and no `DeclMatchSpec` enter any proof; the
 structural inductions are over repaired LeaTTa's own functions only.
 -/
 import Mettapedia.Languages.MeTTa.HE.LeaTTaBindingTransport
+import Mettapedia.Languages.MeTTa.HE.Spec.Type.Instantiation
+
+attribute [simp] Mettapedia.Languages.MeTTa.HE.LeaTTaTypeConformance.toLeaTTaAtoms_eq_map
 
 namespace Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 
@@ -57,7 +61,7 @@ theorem leaAtomsHEImage_cons {x : Metta.Atom} {xs : List Metta.Atom}
     LeaAtomsHEImage (x :: xs) := by
   obtain ⟨n, hn⟩ := hx
   obtain ⟨ns, hns⟩ := hxs
-  exact ⟨n :: ns, by simp [toLeaTTaAtoms, hn, hns]⟩
+  exact ⟨n :: ns, congrArg₂ List.cons hn hns⟩
 
 theorem leaAtomsHEImage_cons_iff {x : Metta.Atom} {xs : List Metta.Atom} :
     LeaAtomsHEImage (x :: xs) ↔ LeaAtomHEImage x ∧ LeaAtomsHEImage xs := by
@@ -83,7 +87,7 @@ theorem leaAtomHEImage_expr_iff {xs : List Metta.Atom} :
       simp only [toLeaTTaAtom, Metta.Atom.expr.injEq] at hnative
       exact ⟨es, hnative⟩
   · rintro ⟨ns, hns⟩
-    exact ⟨.expression ns, by simp [toLeaTTaAtom, hns]⟩
+    exact ⟨.expression ns, congrArg Metta.Atom.expr hns⟩
 
 theorem leaAtomsHEImage_of_mem {xs : List Metta.Atom}
     (h : LeaAtomsHEImage xs) : ∀ x ∈ xs, LeaAtomHEImage x := by
@@ -1463,3 +1467,207 @@ theorem instantiate_heImage
       exact ihn z (by omega) (leaAtomHEImage_children ha z hz)
 
 end Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Type.Instantiation
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
+open Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
+
+/-! ## The Lea-side bridge -/
+
+/-- Translate a spec finite type substitution to a Lea substitution. -/
+def toLeaTTaTypeSubst (σ : TypeSubst) : Metta.Subst :=
+  σ.map fun entry => (entry.1, toLeaTTaAtom entry.2)
+
+private theorem lookup_comm (σ : TypeSubst) (name : String) :
+    Metta.Subst.lookup (toLeaTTaTypeSubst σ) name =
+      (σ.lookup name).map toLeaTTaAtom := by
+  induction σ with
+  | nil => simp [toLeaTTaTypeSubst, Metta.Subst.lookup, TypeSubst.lookup]
+  | cons entry rest ih =>
+    simp only [toLeaTTaTypeSubst, List.map_cons, Metta.Subst.lookup,
+      TypeSubst.lookup]
+    by_cases hname : name = entry.1
+    · subst hname
+      simp
+    · have hbeq : (name == entry.1) = false := by
+        simpa using hname
+      simp only [hbeq, if_neg hname]
+      simp only [Bool.false_eq_true, if_false]
+      exact ih
+
+private theorem toLeaTTaAtoms_map_comm {σ : TypeSubst} :
+    ∀ {atoms : List Atom},
+      (∀ x ∈ atoms, toLeaTTaAtom (σ.apply x) =
+        Metta.Subst.apply (toLeaTTaTypeSubst σ) (toLeaTTaAtom x)) →
+      toLeaTTaAtoms (atoms.map σ.apply) =
+        (toLeaTTaAtoms atoms).map
+          (Metta.Subst.apply (toLeaTTaTypeSubst σ)) := by
+  intro atoms
+  induction atoms with
+  | nil => intro _; rfl
+  | cons x xtail ih =>
+    intro hpt
+    simp only [List.map_cons, toLeaTTaAtoms, List.cons.injEq]
+    exact ⟨hpt x List.mem_cons_self,
+      ih fun z hz => hpt z (List.mem_cons_of_mem _ hz)⟩
+
+/-- **The commuting square.**  specification one-pass application translates to
+Lea-side substitution application. -/
+theorem toLeaTTaAtom_apply_comm (σ : TypeSubst) :
+    ∀ a : Atom,
+      toLeaTTaAtom (σ.apply a) =
+        Metta.Subst.apply (toLeaTTaTypeSubst σ) (toLeaTTaAtom a) := by
+  suffices key : ∀ (n : Nat) (a : Atom), sizeOf a ≤ n →
+      toLeaTTaAtom (σ.apply a) =
+        Metta.Subst.apply (toLeaTTaTypeSubst σ) (toLeaTTaAtom a) by
+    intro a
+    exact key (sizeOf a) a le_rfl
+  intro n
+  induction n with
+  | zero =>
+    intro a hsize
+    have positive : 0 < sizeOf a := by cases a <;> simp
+    omega
+  | succ n ihn =>
+    intro a hsize
+    cases a with
+    | symbol name =>
+      simp [TypeSubst.apply, toLeaTTaAtom, Metta.Subst.apply]
+    | grounded value =>
+      simp [TypeSubst.apply, toLeaTTaAtom, Metta.Subst.apply]
+    | var name =>
+      simp only [TypeSubst.apply, toLeaTTaAtom, Metta.Subst.apply,
+        lookup_comm]
+      cases hlookup : σ.lookup name with
+      | none => simp [toLeaTTaAtom]
+      | some value => simp
+    | expression atoms =>
+      simp only [TypeSubst.apply, toLeaTTaAtom, Metta.Subst.apply,
+        Metta.Atom.expr.injEq]
+      have hatoms : sizeOf atoms ≤ n := by
+        simp at hsize
+        omega
+      apply toLeaTTaAtoms_map_comm
+      intro x hx
+      have hxsize : sizeOf x ≤ n := by
+        have := List.sizeOf_lt_of_mem hx
+        omega
+      exact ihn x hxsize
+
+/-- Relation-level bridge: every derivation translates to a Lea-side
+substitution-application equation — the form the fold-to-runtime
+correspondence consumes. -/
+theorem rel_toLeaTTa_bridge {σ : TypeSubst} {a b : Atom}
+    (h : TypeInstantiatePresentationRel σ a b) :
+    Metta.Subst.apply (toLeaTTaTypeSubst σ) (toLeaTTaAtom a) =
+      toLeaTTaAtom b := by
+  rw [agreement h]
+  exact (toLeaTTaAtom_apply_comm σ a).symm
+
+/-- Instantiation outputs of translated inputs are in the HE image. -/
+theorem rel_output_heImage {σ : TypeSubst} {a b : Atom}
+    (h : TypeInstantiatePresentationRel σ a b) :
+    LeaAtomHEImage (Metta.Subst.apply (toLeaTTaTypeSubst σ)
+      (toLeaTTaAtom a)) := by
+  rw [rel_toLeaTTa_bridge h]
+  exact leaAtomHEImage_toLeaTTaAtom b
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Type.Instantiation
+
+namespace Mettapedia.Languages.MeTTa.HE.LeaTTaTypeConformance
+
+open Mettapedia.Languages.MeTTa.HE
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
+open LeaTTaBridge
+open Spec.Type
+open Spec.Type.RuntimeRefinement
+
+/-! ## Native/LeaTTa model-language bridge -/
+
+mutual
+
+/-- Structural Boolean equality is exact on the native translation image.
+Translated grounded payloads contain no host floats, so the non-reflexive NaN
+corner of LeaTTa's larger runtime atom domain is absent. -/
+theorem toLeaTTaAtom_beq_eq_true_iff (left right : Atom) :
+    Metta.Atom.beq (toLeaTTaAtom left) (toLeaTTaAtom right) = true ↔
+      left = right := by
+  cases left with
+  | symbol leftName =>
+      cases right <;>
+        simp [toLeaTTaAtom, Metta.Atom.beq]
+  | var leftName =>
+      cases right <;>
+        simp [toLeaTTaAtom, Metta.Atom.beq]
+  | grounded leftValue =>
+      cases right with
+      | symbol | var | expression =>
+          simp [toLeaTTaAtom, Metta.Atom.beq]
+      | grounded rightValue =>
+          simp only [toLeaTTaAtom, Metta.Atom.beq,
+            Atom.grounded.injEq]
+          cases leftValue <;> cases rightValue <;>
+            simp [toLeaTTaGround, Metta.Ground.beq]
+  | expression leftAtoms =>
+      cases right with
+      | symbol | var | grounded =>
+          simp [toLeaTTaAtom, Metta.Atom.beq]
+      | expression rightAtoms =>
+          simpa [toLeaTTaAtom, Metta.Atom.beq] using
+            (toLeaTTaAtoms_beqList_eq_true_iff leftAtoms rightAtoms)
+termination_by 2 * (sizeOf left + sizeOf right)
+
+/-- List companion of `toLeaTTaAtom_beq_eq_true_iff`. -/
+theorem toLeaTTaAtoms_beqList_eq_true_iff
+    (left right : List Atom) :
+    Metta.Atom.beqList (toLeaTTaAtoms left) (toLeaTTaAtoms right) = true ↔
+      left = right := by
+  cases left with
+  | nil =>
+      cases right <;> simp [toLeaTTaAtoms, Metta.Atom.beqList]
+  | cons leftHead leftTail =>
+      cases right with
+      | nil => simp [toLeaTTaAtoms, Metta.Atom.beqList]
+      | cons rightHead rightTail =>
+          simp only [toLeaTTaAtoms, Metta.Atom.beqList,
+            Bool.and_eq_true, List.cons.injEq]
+          rw [toLeaTTaAtom_beq_eq_true_iff,
+            toLeaTTaAtoms_beqList_eq_true_iff]
+termination_by 2 * (sizeOf left + sizeOf right) + 1
+decreasing_by
+  all_goals simp_wf
+  all_goals omega
+
+end
+
+/-- Exact image provenance supplies the inverse round trip needed at the
+native/runtime representation boundary. -/
+theorem toLeaTTaAtom_fromLeaTTaAtom_of_heImage
+    {leaAtom : Metta.Atom} (image : LeaAtomHEImage leaAtom) :
+    toLeaTTaAtom (fromLeaTTaAtom leaAtom) = leaAtom := by
+  obtain ⟨atom, rfl⟩ := image
+  simp
+
+/-- List companion of `toLeaTTaAtom_fromLeaTTaAtom_of_heImage`. -/
+theorem toLeaTTaAtoms_fromLeaTTaAtoms_of_heImage
+    {leaAtoms : List Metta.Atom} (image : LeaAtomsHEImage leaAtoms) :
+    toLeaTTaAtoms (fromLeaTTaAtoms leaAtoms) = leaAtoms := by
+  obtain ⟨atoms, rfl⟩ := image
+  simp
+
+/-- Image provenance for a nonempty expression exposes exact round trips for
+its head and tail independently. -/
+theorem heImage_expression_roundtrip_parts
+    {head : Metta.Atom} {tail : List Metta.Atom}
+    (image : LeaAtomHEImage (.expr (head :: tail))) :
+    toLeaTTaAtom (fromLeaTTaAtom head) = head ∧
+      toLeaTTaAtoms (fromLeaTTaAtoms tail) = tail := by
+  have roundtrip := toLeaTTaAtom_fromLeaTTaAtom_of_heImage image
+  simpa [fromLeaTTaAtom, toLeaTTaAtom,
+    fromLeaTTaAtoms, toLeaTTaAtoms] using
+      Metta.Atom.expr.inj roundtrip
+
+
+end Mettapedia.Languages.MeTTa.HE.LeaTTaTypeConformance

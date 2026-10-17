@@ -16,6 +16,7 @@ Uses computable (List-based) representation to enable `decide` proofs.
 * `getAtomTypes` - Get all types for an atom from space
 * `getMetaType` - Intrinsic meta-type of an atom
 * `queryEquations` - Query `(= pattern $X)` matching
+* `queryEquationsAvoiding` - The same query with rule instances fresh for a call scope
 * `GroundedResult` / `GroundedDispatch` - Grounded operation dispatch
 -/
 
@@ -803,6 +804,425 @@ theorem queryEquationsAgainstVisible_matchAtoms_witness
                           | cons extra rest4 => simp at hhit
                 · simp [hs] at hhit
 
+/-! ## Scoped equation query
+
+Rule variables are renamed apart from every name visible at the call: the
+variables of the atoms its continuation retains, of the call and its expected
+type, and of the incoming binding record. Every stored rule therefore yields a
+fresh instance at each invocation, so nested and recursive calls of one rule do
+not share variables. Without a collision the spelling is the original
+`name#(index + position)`. -/
+
+mutual
+/-- Variable occurrences of an atom in order, by structural recursion. -/
+def atomVariables : Atom → List String
+  | .var name => [name]
+  | .expression atoms => atomListVariables atoms
+  | .symbol _ => []
+  | .grounded _ => []
+/-- Variable occurrences of an atom list in order. -/
+def atomListVariables : List Atom → List String
+  | [] => []
+  | atom :: atoms => atomVariables atom ++ atomListVariables atoms
+end
+
+/-- Every variable found by a finite scan belongs to the total inventory.
+Freshness conditions therefore cover arbitrary nesting without a fixed cap. -/
+theorem collectVars_subset_atomVariables (atom : Atom) (fuel : Nat) :
+    ∀ name ∈ collectVars atom fuel, name ∈ atomVariables atom := by
+  induction fuel generalizing atom with
+  | zero => simp [collectVars]
+  | succ fuel ih =>
+      cases atom with
+      | var name => simp [collectVars,atomVariables]
+      | symbol name => simp [collectVars,atomVariables]
+      | grounded value => simp [collectVars,atomVariables]
+      | expression atoms =>
+          simp only [collectVars,atomVariables]
+          have lists : ∀ atoms : List Atom, ∀ name ∈ collectVars.collectVarsList atoms fuel,
+              name ∈ atomListVariables atoms := by
+            intro atoms
+            induction atoms with
+            | nil => simp [collectVars.collectVarsList]
+            | cons first rest more =>
+                intro name member
+                simp only [collectVars.collectVarsList,List.mem_append] at member
+                rcases member with head | tail
+                · exact List.mem_append_left _ (ih first name head)
+                · exact List.mem_append_right _ (more name tail)
+          exact lists atoms
+
+/-- Variable inventories concatenate with their retained atom lists. -/
+theorem atomListVariables_append (xs ys : List Atom) :
+    atomListVariables (xs ++ ys) = atomListVariables xs ++ atomListVariables ys := by
+  induction xs with
+  | nil => rfl
+  | cons x xs ih => simp only [List.cons_append, atomListVariables, ih, List.append_assoc]
+
+theorem atomListVariables_eq_nil_of_forall (xs : List Atom)
+    (empty : ∀ x ∈ xs, atomVariables x = []) : atomListVariables xs = [] := by
+  induction xs with
+  | nil => rfl
+  | cons x xs ih =>
+      simp only [atomListVariables, empty x (List.mem_cons_self ..), List.nil_append]
+      exact ih (fun a member => empty a (List.mem_cons_of_mem x member))
+
+mutual
+/-- Simultaneous renaming of every variable leaf, by structural recursion. -/
+def renameAtom (rename : String → String) : Atom → Atom
+  | .var name => .var (rename name)
+  | .expression atoms => .expression (renameAtomList rename atoms)
+  | .symbol name => .symbol name
+  | .grounded value => .grounded value
+/-- Simultaneous renaming of an atom list. -/
+def renameAtomList (rename : String → String) : List Atom → List Atom
+  | [] => []
+  | atom :: atoms => renameAtom rename atom :: renameAtomList rename atoms
+end
+
+theorem renameAtomList_eq_map (rename : String → String) :
+    ∀ atoms : List Atom, renameAtomList rename atoms = atoms.map (renameAtom rename)
+  | [] => rfl
+  | atom :: atoms => by simp [renameAtomList, renameAtomList_eq_map rename atoms]
+
+theorem atomListVariables_eq_flatMap :
+    ∀ atoms : List Atom, atomListVariables atoms = atoms.flatMap atomVariables
+  | [] => rfl
+  | atom :: atoms => by simp [atomListVariables, atomListVariables_eq_flatMap atoms]
+
+/-- Names occurring in a binding record: assigned keys, ruleVariables of stored
+values and both endpoints of every variable equality. -/
+def Bindings.names (bindings : Bindings) : List String :=
+  bindings.assignments.flatMap (fun entry => entry.1 :: atomVariables entry.2) ++
+    bindings.equalities.flatMap (fun edge => [edge.1, edge.2])
+
+/-- The spelling `name#index` used for equation-local variable instances. -/
+def suffixName (name : String) (index : Nat) : String := name ++ "#" ++ toString index
+
+/-- The spelling agrees with the interpolated `name#index` of the original
+freshener. -/
+theorem suffixName_eq_interpolated (name : String) (index : Nat) :
+    suffixName name index = s!"{name}#{index}" := rfl
+
+private theorem split_at_marker {marker : Char} :
+    ∀ {left right left' right' : List Char},
+      marker ∉ right → marker ∉ right' →
+      left ++ marker :: right = left' ++ marker :: right' → left = left' ∧ right = right'
+  | [], right, [], right', _, _, equal => by simpa using equal
+  | [], right, c :: left', right', notRight, _, equal => by
+      simp only [List.nil_append, List.cons_append, List.cons.injEq] at equal
+      obtain ⟨rfl, rfl⟩ := equal
+      exact absurd (by simp) notRight
+  | c :: left, right, [], right', _, notRight', equal => by
+      simp only [List.nil_append, List.cons_append, List.cons.injEq] at equal
+      obtain ⟨rfl, rfl⟩ := equal
+      exact absurd (by simp) notRight'
+  | c :: left, right, c' :: left', right', notRight, notRight', equal => by
+      simp only [List.cons_append, List.cons.injEq] at equal
+      obtain ⟨rfl, rest⟩ := equal
+      obtain ⟨rfl, rfl⟩ := split_at_marker notRight notRight' rest
+      exact ⟨rfl, rfl⟩
+
+private theorem marker_not_mem_digits (index : Nat) : '#' ∉ Nat.toDigits 10 index := by
+  intro member
+  simpa using Nat.isDigit_of_mem_toDigits (by decide) (by decide) member
+
+/-- Distinct pairs of base name and index have distinct spellings: the index is
+the digit block after the final marker. -/
+theorem suffixName_inj {name name' : String} {index index' : Nat}
+    (equal : suffixName name index = suffixName name' index') :
+    name = name' ∧ index = index' := by
+  have lists := congrArg String.toList equal
+  have marker : ("#" : String).toList = ['#'] := rfl
+  simp only [suffixName, String.toList_append, Nat.toString_eq_ofList_toDigits,
+    String.toList_ofList, marker] at lists
+  have lists' : name.toList ++ '#' :: Nat.toDigits 10 index =
+      name'.toList ++ '#' :: Nat.toDigits 10 index' := by
+    simpa [List.append_assoc] using lists
+  obtain ⟨names, digits⟩ :=
+    split_at_marker (marker_not_mem_digits index) (marker_not_mem_digits index') lists'
+  refine ⟨String.ext names, ?_⟩
+  have := congrArg (fun digits => Nat.ofDigitChars 10 digits 0) digits
+  simpa using this
+
+/-- First index from `index` whose spelling is not in `avoid`, searching at most
+`budget` further candidates. -/
+def freeSuffix (avoid : List String) (name : String) : Nat → Nat → Nat
+  | 0, index => index
+  | budget + 1, index =>
+      if suffixName name index ∈ avoid then freeSuffix avoid name budget (index + 1) else index
+
+private theorem freeSuffix_spec (avoid : List String) (name : String) :
+    ∀ (budget index : Nat),
+      suffixName name (freeSuffix avoid name budget index) ∉ avoid ∨
+        (freeSuffix avoid name budget index = index + budget ∧
+          ∀ offset < budget, suffixName name (index + offset) ∈ avoid)
+  | 0, index => Or.inr ⟨rfl, fun _ bound => absurd bound (Nat.not_lt_zero _)⟩
+  | budget + 1, index => by
+      by_cases taken : suffixName name index ∈ avoid
+      · simp only [freeSuffix, taken, if_true]
+        rcases freeSuffix_spec avoid name budget (index + 1) with fresh | ⟨result, earlier⟩
+        · exact Or.inl fresh
+        · refine Or.inr ⟨by omega, fun offset bound => ?_⟩
+          cases offset with
+          | zero => simpa using taken
+          | succ offset =>
+              have := earlier offset (by omega)
+              rwa [show index + 1 + offset = index + (offset + 1) by omega] at this
+      · left
+        simpa only [freeSuffix, taken, if_false] using taken
+
+/-- With a budget equal to the length of `avoid`, the search always succeeds:
+the candidates are pairwise distinct spellings, so they cannot all be avoided. -/
+theorem freeSuffix_not_mem (avoid : List String) (name : String) (index : Nat) :
+    suffixName name (freeSuffix avoid name avoid.length index) ∉ avoid := by
+  rcases freeSuffix_spec avoid name avoid.length index with fresh | ⟨result, earlier⟩
+  · exact fresh
+  · rw [result]
+    intro last
+    let candidates := (List.range (avoid.length + 1)).map fun offset => suffixName name (index + offset)
+    have nodup : candidates.Nodup := by
+      refine List.Nodup.map (fun first second equal => ?_) List.nodup_range
+      have := (suffixName_inj equal).2
+      omega
+    have covered : candidates ⊆ avoid := by
+      intro candidate member
+      simp only [candidates, List.mem_map, List.mem_range] at member
+      obtain ⟨offset, bound, rfl⟩ := member
+      by_cases final : offset = avoid.length
+      · subst final
+        exact last
+      · exact earlier offset (by omega)
+    have := (nodup.subperm covered).length_le
+    simp [candidates] at this
+
+/-- The instance spelling of one equation variable. Without a collision it is the
+original `name#(counter + position)` spelling; otherwise the first later index
+that avoids every visible name. -/
+def instanceName (avoid ruleVariables : List String) (counter : Nat) (name : String) : String :=
+  suffixName name (freeSuffix avoid name avoid.length (counter + ruleVariables.idxOf name))
+
+theorem instanceName_injective (avoid ruleVariables : List String) (counter : Nat) :
+    Function.Injective (instanceName avoid ruleVariables counter) :=
+  fun _ _ equal => (suffixName_inj equal).1
+
+theorem instanceName_not_mem (avoid ruleVariables : List String) (counter : Nat) (name : String) :
+    instanceName avoid ruleVariables counter name ∉ avoid :=
+  freeSuffix_not_mem avoid name _
+
+/-- One call-site type instance uses a single injective map for its complete
+signature. The caller supplies the protected logical scope. -/
+def instantiateTypeSignature (scope : List String) (position : Nat) (signature : Atom) : Atom :=
+  renameAtom (instanceName scope (atomVariables signature).eraseDups position) signature
+
+/-- Preserve the physical type list while allocating later instances apart
+from all preceding instantiated signatures and the original scope. -/
+def instantiateTypeSignatures (scope : List String) (position : Nat) : List Atom → List Atom
+  | [] => []
+  | signature :: rest =>
+      let instantiated := instantiateTypeSignature scope position signature
+      instantiated :: instantiateTypeSignatures (atomVariables instantiated ++ scope) (position + 1) rest
+
+theorem instantiateTypeSignatures_length (scope : List String) (position : Nat)
+    (signatures : List Atom) :
+    (instantiateTypeSignatures scope position signatures).length = signatures.length := by
+  induction signatures generalizing scope position with
+  | nil => rfl
+  | cons signature rest ih => simp [instantiateTypeSignatures, ih]
+
+/-- A declaration query remains raw; an invocation instantiates the resulting
+signatures against the retained scope and the actual reached local operands. -/
+def getAtomTypesScoped (scope : List String) (space : Space) (bindings : Bindings)
+    (subject expected : Atom) : List Atom :=
+  instantiateTypeSignatures
+    (scope ++ bindings.names ++ atomVariables subject ++ atomVariables expected) 0
+    (getAtomTypes space subject)
+
+mutual
+/-- Renaming leaves an atom without variable occurrences unchanged. -/
+theorem renameAtom_of_atomVariables_eq_nil (rename : String → String) :
+    ∀ atom : Atom, atomVariables atom = [] → renameAtom rename atom = atom
+  | .var _, closed => by simp [atomVariables] at closed
+  | .symbol _, _ => rfl
+  | .grounded _, _ => rfl
+  | .expression atoms, closed => by
+      simp only [atomVariables] at closed
+      simp only [renameAtom]
+      rw [renameAtomList_of_atomListVariables_eq_nil rename atoms closed]
+/-- Renaming leaves a list without variable occurrences unchanged. -/
+theorem renameAtomList_of_atomListVariables_eq_nil (rename : String → String) :
+    ∀ atoms : List Atom, atomListVariables atoms = [] → renameAtomList rename atoms = atoms
+  | [], _ => rfl
+  | atom :: atoms, closed => by
+      simp only [atomListVariables, List.append_eq_nil_iff] at closed
+      simp only [renameAtomList]
+      rw [renameAtom_of_atomVariables_eq_nil rename atom closed.1,
+        renameAtomList_of_atomListVariables_eq_nil rename atoms closed.2]
+end
+
+theorem instantiateTypeSignature_closed (scope : List String) (position : Nat) {signature : Atom}
+    (closed : atomVariables signature = []) :
+    instantiateTypeSignature scope position signature = signature :=
+  renameAtom_of_atomVariables_eq_nil _ signature closed
+
+/-- Closed signatures are returned literally and leave the avoidance scope of
+every later instance unchanged. -/
+theorem instantiateTypeSignatures_closed_append (scope : List String) (position : Nat)
+    (closedPrefix rest : List Atom)
+    (closed : ∀ signature ∈ closedPrefix, atomVariables signature = []) :
+    instantiateTypeSignatures scope position (closedPrefix ++ rest) =
+      closedPrefix ++ instantiateTypeSignatures scope (position + closedPrefix.length) rest := by
+  induction closedPrefix generalizing position with
+  | nil => simp
+  | cons signature more ih =>
+      have head := closed signature (List.mem_cons_self ..)
+      simp only [List.cons_append, instantiateTypeSignatures,
+        instantiateTypeSignature_closed scope position head, head, List.nil_append,
+        List.length_cons]
+      rw [ih (position + 1) (fun other member => closed other (List.mem_cons_of_mem _ member)),
+        show position + 1 + more.length = position + (more.length + 1) by omega]
+
+theorem instantiateTypeSignatures_closed (scope : List String) (position : Nat)
+    (signatures : List Atom) (closed : ∀ signature ∈ signatures, atomVariables signature = []) :
+    instantiateTypeSignatures scope position signatures = signatures := by
+  simpa [instantiateTypeSignatures] using
+    instantiateTypeSignatures_closed_append scope position signatures [] closed
+
+/-- A scoped invocation query agrees with the raw one on every closed prefix. -/
+theorem getAtomTypesScoped_closed_append (scope : List String) (space : Space)
+    (bindings : Bindings) (subject expected : Atom) {closedPrefix rest : List Atom}
+    (types : getAtomTypes space subject = closedPrefix ++ rest)
+    (closed : ∀ signature ∈ closedPrefix, atomVariables signature = []) :
+    ∃ instances, getAtomTypesScoped scope space bindings subject expected =
+      closedPrefix ++ instances ∧ instances.length = rest.length := by
+  refine ⟨_, by rw [getAtomTypesScoped, types,
+    instantiateTypeSignatures_closed_append _ _ _ _ closed], ?_⟩
+  exact instantiateTypeSignatures_length _ _ rest
+
+/-- Alpha-rename both sides of an equation apart from every name in `avoid`.
+The renaming has no fuel bound and is injective on all names. -/
+def freshenEquationAvoiding (avoid : List String) (counter : Nat) (lhs rhs : Atom) : Atom × Atom :=
+  let ruleVariables := (atomVariables lhs ++ atomVariables rhs).eraseDups
+  (renameAtom (instanceName avoid ruleVariables counter) lhs,
+    renameAtom (instanceName avoid ruleVariables counter) rhs)
+
+/-- Equation query whose rule instances are fresh for `avoid`: each stored
+equation is renamed apart from every name in `avoid`, matched with the official
+`matchAtoms`, and replayed through the empty seed exactly as `queryEquations`
+does. The caller merges the returned candidates with its incoming bindings once. -/
+def queryEquationsAvoiding (avoid : List String) (space : Space) (atom : Atom)
+    (fuel : Nat := 100) : List (Atom × Bindings) :=
+  match fuel with
+  | 0 => []
+  | _ =>
+    space.atoms.zipIdx.flatMap fun (eq, idx) =>
+      match eq with
+      | .expression [.symbol "=", lhs, rhs] =>
+        let (lhs', rhs') := freshenEquationAvoiding avoid idx lhs rhs
+        (matchAtoms atom lhs' fuel).flatMap fun qb =>
+          (mergeBindings qb Bindings.empty fuel).filterMap fun merged =>
+            if merged.hasLoop then none else some (rhs', merged)
+      | _ => []
+
+/-- Every hit of the scoped query comes from a stored equation at a physical
+position whose renamed left-hand side matched through `matchAtoms`. -/
+theorem queryEquationsAvoiding_matchAtoms_witness
+    {avoid : List String} {space : Space} {atom : Atom} {fuel : Nat} {rhs : Atom} {qb : Bindings}
+    (h : (rhs, qb) ∈ queryEquationsAvoiding avoid space atom fuel) :
+    ∃ lhs rhs0 idx,
+      (.expression [.symbol "=", lhs, rhs0], idx) ∈ space.atoms.zipIdx ∧
+      rhs = (freshenEquationAvoiding avoid idx lhs rhs0).2 ∧
+      qb ∈ matchAtoms atom (freshenEquationAvoiding avoid idx lhs rhs0).1 fuel ∧
+      qb.hasLoop = false := by
+  cases fuel with
+  | zero => simp [queryEquationsAvoiding] at h
+  | succ n =>
+      simp [queryEquationsAvoiding] at h
+      rcases h with ⟨eq, idx, hmem, hhit⟩
+      cases eq with
+      | symbol s => simp at hhit
+      | var v => simp at hhit
+      | grounded g => simp at hhit
+      | expression es =>
+          cases es with
+          | nil => simp at hhit
+          | cons a rest =>
+              cases a <;> try simp at hhit
+              next s =>
+                by_cases hs : s = "="
+                · subst hs
+                  cases rest with
+                  | nil => simp at hhit
+                  | cons lhs rest2 =>
+                      cases rest2 with
+                      | nil => simp at hhit
+                      | cons rhs0 rest3 =>
+                          cases rest3 with
+                          | nil =>
+                              simp at hhit
+                              rcases hhit with ⟨mb, hmb, hmerge⟩
+                              simp [mergeBindings, Bindings.empty] at hmerge
+                              rcases hmerge with ⟨rfl, hloop, hrhs⟩
+                              exact ⟨lhs, rhs0, idx, by simpa using hmem, hrhs.symm, hmb, hloop⟩
+                          | cons extra rest4 => simp at hhit
+                · simp [hs] at hhit
+
+/-- The names an equation instance must avoid at a call: variables of the
+retained continuation atoms `live`, of the call, of its expected type and of
+the incoming binding record. -/
+def equationScope (live : List Atom) (atom type_ : Atom) (bindings : Bindings) : List String :=
+  atomListVariables live ++ atomVariables atom ++ atomVariables type_ ++ bindings.names
+
+/-- Scoped query hits carry loop-free bindings. -/
+theorem queryEquationsAvoiding_hasLoop_false
+    {avoid : List String} {space : Space} {atom : Atom} {fuel : Nat} {rhs : Atom} {qb : Bindings}
+    (h : (rhs, qb) ∈ queryEquationsAvoiding avoid space atom fuel) : qb.hasLoop = false :=
+  (queryEquationsAvoiding_matchAtoms_witness h).choose_spec.choose_spec.choose_spec.2.2.2
+
+/-- An avoidance list covers a call when it contains every variable of the call
+and every name of its incoming binding record. A rule instance renamed apart from
+such a list cannot capture a caller variable. -/
+def CoversCall (avoid : List String) (atom : Atom) (bindings : Bindings) : Prop :=
+  ∀ name, name ∈ atomVariables atom ∨ name ∈ bindings.names → name ∈ avoid
+
+theorem equationScope_covers (live : List Atom) (atom type_ : Atom) (bindings : Bindings) :
+    CoversCall (equationScope live atom type_ bindings) atom bindings := by
+  rintro name (member | member) <;> simp [equationScope, member]
+
+/-- A call instance protects the complete retained computation, including the
+expected type and atoms still held by its continuation. -/
+def CoversEvaluation (avoid : List String) (live : List Atom)
+    (atom type_ : Atom) (bindings : Bindings) : Prop :=
+  ∀ name ∈ equationScope live atom type_ bindings, name ∈ avoid
+
+theorem equationScope_coversEvaluation (live : List Atom) (atom type_ : Atom)
+    (bindings : Bindings) :
+    CoversEvaluation (equationScope live atom type_ bindings) live atom type_ bindings :=
+  fun _ member => member
+
+theorem CoversEvaluation.coversCall {avoid : List String} {live : List Atom}
+    {atom type_ : Atom} {bindings : Bindings}
+    (covered : CoversEvaluation avoid live atom type_ bindings) :
+    CoversCall avoid atom bindings := by
+  intro name member
+  exact covered name (equationScope_covers live atom type_ bindings name member)
+
+/-- No stored equation matches `atom` under any freshening of the rule variables. -/
+def NoEquationMatch (space : Space) (atom : Atom) : Prop :=
+  ∀ avoid fuel, queryEquationsAvoiding avoid space atom fuel = []
+
+/-- A space without stored equations has no equation match. -/
+theorem noEquationMatch_of_no_equations {space : Space} (atom : Atom)
+    (h : ∀ lhs rhs, Atom.expression [.symbol "=", lhs, rhs] ∉ space.atoms) :
+    NoEquationMatch space atom := by
+  intro avoid fuel
+  rcases hits : queryEquationsAvoiding avoid space atom fuel with _ | ⟨⟨rhs, qb⟩, rest⟩
+  · rfl
+  · obtain ⟨lhs, rhs0, idx, member, _⟩ :=
+      queryEquationsAvoiding_matchAtoms_witness (hits ▸ List.mem_cons_self)
+    rw [List.mem_zipIdx_iff_getElem?] at member
+    exact (h lhs rhs0 (List.mem_of_getElem? member)).elim
+
 /-! ## Grounded Dispatch
 
 Ref: metta.md lines 527-536, `interpreter.rs` metta_call grounded branch.
@@ -894,5 +1314,52 @@ example : simpleMatch (.symbol "a") (.symbol "b") Bindings.empty 10 =
 example : GroundedResult.ok [] = GroundedResult.ok [] := rfl
 
 end Tests
+
+
+/-! ## Coverage of the scoped equation query -/
+
+namespace EquationDepth
+
+open Mettapedia.Machines.ReadOnlyQuery
+
+def query (avoid : List String) (space : Space) (atom : Atom) :
+    MatchDepth.Query (List (Atom × Bindings)) :=
+  flatTraverse space.atoms.zipIdx fun (eq, idx) =>
+    match eq with
+    | .expression [.symbol "=", lhs, rhs] =>
+        let (lhs', rhs') := freshenEquationAvoiding avoid idx lhs rhs
+        .read (.atoms atom lhs') fun matched =>
+          flatTraverse matched fun qb =>
+            .read (.merge qb Bindings.empty) fun merged =>
+              .pure (merged.filterMap fun bindings =>
+                if bindings.hasLoop then none else some (rhs', bindings))
+    | _ => .pure []
+
+theorem run_query (depth : Nat) (avoid : List String) (space : Space) (atom : Atom) :
+    (run (evalMatch (depth + 1)) (query avoid space atom)).answer =
+      queryEquationsAvoiding avoid space atom (depth + 1) := by
+  simp only [query, run_flatTraverse, queryEquationsAvoiding]
+  congr 1
+  funext entry
+  rcases entry with ⟨eq, idx⟩
+  split <;> simp [run, run_flatTraverse, evalMatch]
+
+end EquationDepth
+
+def queryEquationsCovered (avoid : List String) (space : Space) (atom : Atom) : Nat → Bool
+  | 0 => false
+  | depth + 1 => MatchDepth.queryCovered (depth + 1) (EquationDepth.query avoid space atom)
+
+theorem queryEquationsCovered_stable (avoid : List String) (space : Space) (atom : Atom)
+    (depth extra : Nat) (covered : queryEquationsCovered avoid space atom depth = true) :
+    queryEquationsAvoiding avoid space atom (depth + extra) =
+      queryEquationsAvoiding avoid space atom depth := by
+  cases depth with
+  | zero => simp [queryEquationsCovered] at covered
+  | succ depth =>
+      rw [Nat.succ_add, ← EquationDepth.run_query, ← EquationDepth.run_query]
+      simpa only [Nat.succ_add] using
+        congrArg Mettapedia.Machines.ReadOnlyQuery.Observation.answer
+          (MatchDepth.queryCovered_stable (depth + 1) extra _ covered)
 
 end Mettapedia.Languages.MeTTa.HE

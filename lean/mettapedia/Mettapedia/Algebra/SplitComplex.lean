@@ -25,6 +25,7 @@ Unlike complex numbers:
 
 import Mathlib.Algebra.Ring.Basic
 import Mathlib.Algebra.Algebra.Basic
+import Mathlib.Algebra.QuadraticAlgebra.Basic
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic
 
@@ -157,22 +158,64 @@ theorem algebraMap_apply (r : ℝ) : algebraMap ℝ SplitComplex r = ⟨r, 0⟩ 
   simp only [Algebra.algebraMap_eq_smul_one]
   ext <;> simp
 
+/-- The existing coordinate implementation is the standard quadratic algebra
+with defining relation `j^2 = 1`. This equivalence transfers Mathlib's
+involution, norm, and unit theory without identifying the two data types. -/
+noncomputable def equivQuadratic : SplitComplex ≃ₐ[ℝ] QuadraticAlgebra ℝ 1 0 where
+  toFun z := ⟨z.re, z.im⟩
+  invFun z := ⟨z.re, z.im⟩
+  left_inv z := by cases z; rfl
+  right_inv z := by cases z; rfl
+  map_mul' z w := by ext <;> simp
+  map_add' z w := by ext <;> rfl
+  commutes' r := by ext <;> simp
+
+@[simp] theorem equivQuadratic_re (z : SplitComplex) :
+    (equivQuadratic z).re = z.re := rfl
+
+@[simp] theorem equivQuadratic_im (z : SplitComplex) :
+    (equivQuadratic z).im = z.im := rfl
+
 /-- The split-complex "norm" (hyperbolic norm): N(a + bj) = a² - b².
 Unlike complex norm, this can be negative! -/
 def norm (z : SplitComplex) : ℝ := z.re ^ 2 - z.im ^ 2
 
 @[simp] theorem norm_def (z : SplitComplex) : norm z = z.re ^ 2 - z.im ^ 2 := rfl
 
+/-- The coordinate norm is Mathlib's multiplicative quadratic-algebra norm. -/
+theorem norm_eq_quadratic_norm (z : SplitComplex) :
+    norm z = QuadraticAlgebra.norm (equivQuadratic z) := by
+  simp [norm, QuadraticAlgebra.norm_def, pow_two]
+
 /-- Norm is multiplicative: N(zw) = N(z)N(w). -/
 theorem norm_mul (z w : SplitComplex) : norm (z * w) = norm z * norm w := by
-  simp only [norm_def, mul_re, mul_im]
-  ring
+  calc
+    norm (z * w) = QuadraticAlgebra.norm (equivQuadratic (z * w)) :=
+      norm_eq_quadratic_norm _
+    _ = QuadraticAlgebra.norm (equivQuadratic z) *
+        QuadraticAlgebra.norm (equivQuadratic w) := by rw [map_mul, map_mul]
+    _ = norm z * norm w := by rw [← norm_eq_quadratic_norm, ← norm_eq_quadratic_norm]
 
 /-- The conjugate: conj(a + bj) = a - bj. -/
 def conj (z : SplitComplex) : SplitComplex := ⟨z.re, -z.im⟩
 
 @[simp] theorem conj_re (z : SplitComplex) : (conj z).re = z.re := rfl
 @[simp] theorem conj_im (z : SplitComplex) : (conj z).im = -z.im := rfl
+
+/-- Conjugation is the standard quadratic involution under the equivalence. -/
+@[simp] theorem equivQuadratic_conj (z : SplitComplex) :
+    equivQuadratic (conj z) = star (equivQuadratic z) := by
+  ext <;> simp [conj]
+
+/-- Invertibility is exactly nonvanishing of the indefinite norm. -/
+theorem isUnit_iff_norm_ne_zero (z : SplitComplex) : IsUnit z ↔ norm z ≠ 0 := by
+  rw [← MulEquiv.isUnit_map equivQuadratic, QuadraticAlgebra.isUnit_iff_norm_isUnit,
+    ← norm_eq_quadratic_norm, isUnit_iff_ne_zero]
+
+/-- Negative control: this algebraic norm is not a nonnegative metric norm. -/
+theorem norm_j_negative : norm j < 0 := by
+  norm_num [norm, j]
+
 
 /-- z * conj(z) = norm(z). -/
 theorem mul_conj (z : SplitComplex) : z * conj z = norm z := by

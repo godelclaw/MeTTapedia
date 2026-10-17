@@ -1,8 +1,8 @@
-import Mettapedia.CognitiveArchitecture.Agent.WellbeingAssessment
-import Mettapedia.CognitiveArchitecture.Consciousness.InterpretationAssessment
-import Mettapedia.CognitiveArchitecture.Consciousness.AssessmentEvidence
-import Mettapedia.CognitiveArchitecture.Consciousness.AppraisalTrajectory
-import Mettapedia.CognitiveArchitecture.Consciousness.WorkspaceAssessment
+import Mettapedia.CogArch.Agent.WellbeingAssessment
+import Mettapedia.CogArch.Consciousness.InterpretationAssessment
+import Mettapedia.CogArch.Consciousness.AssessmentEvidence
+import Mettapedia.CogArch.Consciousness.AppraisalTrajectory
+import Mettapedia.CogArch.Consciousness.WorkspaceAssessment
 import Lean.Util.CollectAxioms
 import Lean.Compiler.Old
 

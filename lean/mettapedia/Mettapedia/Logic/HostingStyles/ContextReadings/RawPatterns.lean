@@ -44,7 +44,7 @@ open Mettapedia.GSLT.LanguageDef.Contexts (contextTheory termSetoid TermStep)
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.MeTTaIL.DerivedContexts
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 
 /-- **Patterns with their patterns with holes are a syntax with holes.** -/
 def patternSyntax : HoleSyntax Pattern where

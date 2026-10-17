@@ -23,16 +23,19 @@ def expandedDenote (space : Space) (dispatch : GroundedDispatch)
 theorem resume_denote (space : Space) (dispatch : GroundedDispatch)
     (frame : Frame) (results : ResultSet) :
     expandedDenote space dispatch (resume space frame results) = frame.denote space dispatch results := by
-  cases frame <;> rfl
+  cases frame with
+  | invocationReturn mode original fuel live => cases mode <;> rfl
+  | producerResults mode original incoming fuel live emptyReply => cases results <;> rfl
+  | _ => rfl
 
 private theorem keep_nonempty (results : ResultSet) :
     (if !results.isEmpty then results else []) = results := by
   cases results <;> rfl
 
 theorem enter_atom_denote (space : Space) (dispatch : GroundedDispatch)
-    (value expected : Atom) (bindings : Bindings) (fuel : Nat) :
-    expandedDenote space dispatch (enter space dispatch (.atom value expected bindings fuel)) =
-      (Task.atom value expected bindings fuel).denote space dispatch := by
+    (value expected : Atom) (bindings : Bindings) (fuel : Nat) (live : List Atom) :
+    expandedDenote space dispatch (enter space dispatch (.atom value expected bindings fuel live)) =
+      (Task.atom value expected bindings fuel live).denote space dispatch := by
   cases fuel with
   | zero => rfl
   | succ fuel =>
@@ -54,9 +57,9 @@ theorem enter_atom_denote (space : Space) (dispatch : GroundedDispatch)
               rfl
 
 theorem enter_expression_denote (space : Space) (dispatch : GroundedDispatch)
-    (value expected : Atom) (bindings : Bindings) (fuel : Nat) :
-    expandedDenote space dispatch (enter space dispatch (.expression value expected bindings fuel)) =
-      (Task.expression value expected bindings fuel).denote space dispatch := by
+    (value expected : Atom) (bindings : Bindings) (fuel : Nat) (live : List Atom) :
+    expandedDenote space dispatch (enter space dispatch (.expression value expected bindings fuel live)) =
+      (Task.expression value expected bindings fuel live).denote space dispatch := by
   cases fuel with
   | zero => rfl
   | succ fuel =>
@@ -70,55 +73,75 @@ theorem enter_expression_denote (space : Space) (dispatch : GroundedDispatch)
           | cons operator arguments =>
               let value := Atom.expression (operator :: arguments)
               let types := getAtomTypes space operator
-              let functions := (Task.functions value expected bindings fuel types).denote space dispatch
-              let tuples := (Task.tupleCalls value expected bindings fuel).denote space dispatch
+              let functions := (Task.functions value expected bindings fuel types live).denote space dispatch
+              let tuples := (Task.tupleCalls value expected bindings fuel live).denote space dispatch
               cases selected : (getAtomTypes space operator).any
                   (fun type => !isFunctionType type || type == Atom.undefinedType) with
               | true =>
-                  simp only [enter, Task.denote, interpretExpression, selected, Bool.not_true,
+                  simp only [enter, rawTypeLookup, Task.denote, interpretExpression, selected, Bool.not_true,
                     Bool.false_eq_true, if_false, if_true, expandedDenote, List.foldl_cons,
                     List.foldl_nil, Frame.denote, Control.denote]
                   change functions ++ tuples = (if !(functions ++ tuples).isEmpty then functions ++ tuples else [])
                   exact (keep_nonempty (functions ++ tuples)).symm
               | false =>
-                  simp only [enter, Task.denote, interpretExpression, selected, Bool.false_eq_true,
+                  simp only [enter, rawTypeLookup, Task.denote, interpretExpression, selected, Bool.false_eq_true,
                     if_false, Bool.not_false, if_true, expandedDenote, List.foldl_cons,
                     List.foldl_nil, Frame.denote, Control.denote, List.append_nil]
                   rfl
 
 theorem enter_call_denote (space : Space) (dispatch : GroundedDispatch)
-    (value expected : Atom) (bindings : Bindings) (fuel : Nat) :
-    expandedDenote space dispatch (enter space dispatch (.call value expected bindings fuel)) =
-      (Task.call value expected bindings fuel).denote space dispatch := by
+    (value expected : Atom) (bindings : Bindings) (fuel : Nat) (live : List Atom) :
+    expandedDenote space dispatch (enter space dispatch (.call value expected bindings fuel live)) =
+      (Task.call value expected bindings fuel live).denote space dispatch := by
+  rfl
+
+set_option maxHeartbeats 1200000 in
+theorem enter_invocation_denote (space : Space) (dispatch : GroundedDispatch)
+    (mode : InvocationMode) (value : Atom) (bindings : Bindings) (fuel : Nat)
+    (live : List Atom) (caller : Option Atom) :
+    expandedDenote space dispatch (enter space dispatch (.invocation mode value bindings fuel live caller)) =
+      (Task.invocation mode value bindings fuel live caller).denote space dispatch := by
   cases fuel with
   | zero => rfl
   | succ fuel =>
-      generalize expanded : enter space dispatch (.call value expected bindings (fuel + 1)) = entered
+      change expandedDenote space dispatch (enter space dispatch
+        (.invocation mode value bindings (fuel + 1) live caller)) =
+        invoke space dispatch mode value bindings (fuel + 1) live caller
+      rw [invoke]
+      generalize expanded : enter space dispatch (.invocation mode value bindings (fuel + 1) live caller) = entered
       simp only [enter] at expanded
       repeat' split at expanded
       all_goals subst entered
-      all_goals simp_all [expandedDenote, Control.denote, Task.denote, mettaCall]
+      all_goals cases mode
+      all_goals simp_all [expandedDenote, Control.denote, Frame.denote,
+        Task.denote, rawQueryResults, invocationFinish, List.flatMap_assoc]
+      all_goals simp only [List.isEmpty_iff]
+      all_goals split <;> simp_all [List.flatMap_assoc]
 
 theorem equation_candidates_denote (space : Space) (dispatch : GroundedDispatch)
-    (rhs expected : Atom) (fuel : Nat) (alternatives : List Bindings) :
+    (original rhs expected : Atom) (fuel : Nat) (live : List Atom) (alternatives : List Bindings) :
     ((alternatives.filterMap fun merged =>
       if merged.hasLoop then none else some (merged.applyFull rhs fuel, merged)).flatMap
-        fun (value, bindings) => evalAtom space dispatch value expected bindings fuel) =
+        fun (value, bindings) => ordinaryCallReturn original value bindings
+          (fun value bindings => evalAtom space dispatch value expected bindings fuel live)) =
       alternatives.flatMap (fun merged =>
-        if merged.hasLoop then [] else evalAtom space dispatch (merged.applyFull rhs fuel) expected merged fuel) := by
+        if merged.hasLoop then []
+        else ordinaryCallReturn original (merged.applyFull rhs fuel) merged
+          (fun value bindings => evalAtom space dispatch value expected bindings fuel live)) := by
   induction alternatives with
   | nil => rfl
   | cons bindings remaining ih =>
       cases loop : bindings.hasLoop <;> simp [loop, ih]
 
+set_option maxHeartbeats 1200000 in
 theorem enter_denote (space : Space) (dispatch : GroundedDispatch) (task : Task) :
     expandedDenote space dispatch (enter space dispatch task) = task.denote space dispatch := by
   cases task with
-  | atom value expected bindings fuel =>
-      exact enter_atom_denote space dispatch value expected bindings fuel
-  | expression value expected bindings fuel =>
-      exact enter_expression_denote space dispatch value expected bindings fuel
-  | func value operatorType bindings fuel =>
+  | atom value expected bindings fuel live =>
+      exact enter_atom_denote space dispatch value expected bindings fuel live
+  | expression value expected bindings fuel live =>
+      exact enter_expression_denote space dispatch value expected bindings fuel live
+  | func value operatorType bindings fuel live =>
       cases fuel with
       | zero => rfl
       | succ fuel =>
@@ -127,12 +150,12 @@ theorem enter_denote (space : Space) (dispatch : GroundedDispatch) (task : Task)
           | var name => rfl
           | grounded value => rfl
           | expression elements => cases elements <;> rfl
-  | args values types bindings fuel =>
+  | args values types bindings fuel live =>
       cases fuel with
       | zero => rfl
       | succ fuel =>
           cases values <;> cases types <;> rfl
-  | tuple value bindings fuel =>
+  | tuple value bindings fuel live =>
       cases fuel with
       | zero => rfl
       | succ fuel =>
@@ -144,18 +167,18 @@ theorem enter_denote (space : Space) (dispatch : GroundedDispatch) (task : Task)
               cases elements with
               | nil => rfl
               | cons head rest => cases rest <;> rfl
-  | call value expected bindings fuel =>
-      exact enter_call_denote space dispatch value expected bindings fuel
-  | functions value expected bindings fuel types =>
+  | call value expected bindings fuel live =>
+      exact enter_call_denote space dispatch value expected bindings fuel live
+  | functions value expected bindings fuel types live =>
       cases types with
       | nil => rfl
       | cons operatorType remaining =>
           simp only [enter]
           repeat' split
           all_goals simp_all [expandedDenote, Control.denote, Frame.denote, Task.denote]
-  | bindingAlternatives value operatorType expected fuel alternatives =>
+  | bindingAlternatives value operatorType expected fuel alternatives live =>
       cases alternatives <;> simp [expandedDenote, enter, Control.denote, Frame.denote, Task.denote]
-  | heads operatorType arguments fuel alternatives =>
+  | heads operatorType arguments fuel alternatives live =>
       cases alternatives with
       | nil => rfl
       | cons head remaining =>
@@ -163,38 +186,77 @@ theorem enter_denote (space : Space) (dispatch : GroundedDispatch) (task : Task)
           simp only [enter]
           repeat' split
           all_goals simp_all [expandedDenote, Control.denote, Frame.denote, Task.denote]
-  | argumentHeads original remaining types fuel alternatives =>
+  | argumentHeads original remaining types fuel alternatives live =>
       cases alternatives with
       | nil => rfl
       | cons head rest =>
           rcases head with ⟨value, bindings⟩
           simp only [enter]
           split <;> simp_all [expandedDenote, Control.denote, Frame.denote, Task.denote]
-  | tupleHeads tail fuel alternatives =>
+  | tupleHeads tail fuel alternatives live =>
       cases alternatives with
       | nil => rfl
       | cons head rest =>
           rcases head with ⟨value, bindings⟩
           simp only [enter]
           split <;> simp_all [expandedDenote, Control.denote, Frame.denote, Task.denote]
-  | calls expected fuel alternatives =>
+  | calls expected fuel alternatives live =>
       cases alternatives <;> simp [expandedDenote, enter, Control.denote, Frame.denote, Task.denote]
-  | atoms expected fuel alternatives =>
+  | atoms expected fuel alternatives live =>
       cases alternatives <;> simp [expandedDenote, enter, Control.denote, Frame.denote, Task.denote]
-  | equations expected incoming fuel alternatives =>
+  | returned original value expected bindings fuel live =>
+      simp only [enter]
+      repeat' split
+      all_goals simp_all [expandedDenote, Control.denote, Frame.denote, Task.denote, ordinaryCallReturn]
+  | returns original expected fuel alternatives live =>
+      cases alternatives <;> simp [expandedDenote, enter, Control.denote, Frame.denote, Task.denote]
+  | equations original expected incoming fuel alternatives live =>
+      cases alternatives <;> rfl
+  | grounded original expected incoming fuel alternatives live =>
+      cases alternatives <;> rfl
+  | tupleCalls value expected bindings fuel live => rfl
+  | invocation mode value bindings fuel live caller =>
+      exact enter_invocation_denote space dispatch mode value bindings fuel live caller
+  | produced value bindings fuel live caller provenance =>
+      cases fuel with
+      | zero => rfl
+      | succ fuel =>
+          simp only [enter, Task.denote, invocationResult]
+          repeat' split
+          all_goals simp_all [expandedDenote, Control.denote, Frame.denote, Task.denote]
+  | productions fuel alternatives live caller provenance =>
+      cases alternatives <;> simp [expandedDenote, enter, Control.denote, Frame.denote, Task.denote]
+  | minimal value bindings fuel live caller =>
+      cases fuel with
+      | zero => rfl
+      | succ fuel =>
+          simp only [enter, Task.denote, minimalRun]
+          repeat' split
+          all_goals simp_all [expandedDenote, Control.denote, Frame.denote, Task.denote]
+  | minimals fuel alternatives live caller =>
+      cases alternatives <;> simp [expandedDenote, enter, Control.denote, Frame.denote, Task.denote]
+  | primitive value bindings fuel live caller =>
+      cases fuel with
+      | zero => rfl
+      | succ fuel =>
+          simp only [enter, Task.denote, minimalStep]
+          repeat' split
+          all_goals simp_all [expandedDenote, Control.denote, Frame.denote, Task.denote]
+          all_goals
+            exfalso
+            rename_i impossible same
+            exact impossible _ _ _ _ same.symm
+  | chainRows name template fuel alternatives => cases alternatives <;> rfl
+  | functionBody value bindings fuel live caller => cases fuel <;> rfl
+  | bodyResults fuel alternatives live caller =>
       cases alternatives with
       | nil => rfl
-      | cons head rest =>
-          rcases head with ⟨value, selected⟩
-          simp only [expandedDenote, enter, Control.denote, Frame.denote, Task.denote,
-            List.foldl_cons, List.foldl_nil, List.flatMap_cons]
-          rw [equation_candidates_denote]
-  | grounded expected incoming fuel alternatives =>
-      cases alternatives with
-      | nil => rfl
-      | cons head remaining =>
-          rcases head with ⟨value, selected⟩
-          simp [expandedDenote, enter, Control.denote, Frame.denote, Task.denote, List.flatMap_map]
-  | tupleCalls value expected bindings fuel => rfl
+      | cons pair remaining =>
+          rcases pair with ⟨value, bindings⟩
+          simp only [enter]
+          split <;> simp_all [expandedDenote, Control.denote, Frame.denote, Task.denote]
+  | producerResults mode original incoming fuel live emptyReply results =>
+      cases results <;> rfl
+  | completed value expected bindings fuel => rfl
 
 end Mettapedia.Languages.MeTTa.HE.RecursiveCorrectness

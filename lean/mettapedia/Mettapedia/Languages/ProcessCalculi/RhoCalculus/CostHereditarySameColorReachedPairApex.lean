@@ -15,7 +15,7 @@ namespace ParallelFrontier
 cospan of its enclosing static roots.  The recursion follows only strict
 parallel-frontier leaves; boundary and Quote cells consume the compact
 smaller-pair callback, while variable canonical results close directly. -/
-noncomputable def sameColorReachedPair_commonRestorationApex
+theorem sameColorReachedPair_commonRestorationApex
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern
@@ -404,7 +404,7 @@ the enclosing pair and therefore restores by the reached-pair constructor.
 Boundary cells obtain strictness from their certified parent entries;
 parallel and Quote cells expose the strict raw stop selected by the canonical
 alignment. -/
-noncomputable def rho_staticPlanStopCommonApex_of_sameColor
+theorem rho_staticPlanStopCommonApex_of_sameColor
     {targetFree : FreeTypeContext} {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
     {left : CostRegionTree rhoCIGSLT targetFree available outer leftPattern

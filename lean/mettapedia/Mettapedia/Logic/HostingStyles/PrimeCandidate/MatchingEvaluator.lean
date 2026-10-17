@@ -35,7 +35,9 @@ against the equations stored in a space.  With a space that is a term
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -968,4 +970,4 @@ theorem freeInstances_not_hostedBy_matching :
 #print axioms choiceInstances_hostedBy_matching
 #print axioms freeInstances_not_hostedBy_matching
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

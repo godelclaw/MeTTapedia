@@ -11,6 +11,7 @@ laws transport these operations to larger programs with ordered row agreement.
 -/
 
 set_option autoImplicit false
+set_option Elab.async false
 set_option maxRecDepth 16384
 set_option maxHeartbeats 1200000
 

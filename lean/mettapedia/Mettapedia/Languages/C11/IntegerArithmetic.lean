@@ -238,3 +238,28 @@ theorem remainder_representable (format : IntegerFormat) (left right : IntegerVa
           omega
 
 end Mettapedia.Languages.C11
+
+namespace Mettapedia.Languages.C11
+
+/-- Unsigned remainder is justified by C's independent quotient/remainder
+judgment, including representability of the quotient. -/
+theorem unsigned_remainder_c11 (width : Nat) (positive : 0 < width)
+    (left right : IntegerValue (.unsigned width positive))
+    (nonzero : right.value ≠ 0) :
+    IntegerBinaryEvaluation (.unsigned width positive) left right .remainder
+      (.value (left.value.tmod right.value)) := by
+  have division : IntegerDivision left.value right.value
+      (left.value.tdiv right.value) (left.value.tmod right.value) :=
+    divideIntegers_sound _ _ _ _ (by simp only [divideIntegers, if_neg nonzero])
+  refine .remainder _ (.computed _ _ division
+    (unsigned_quotient_representable width positive left right) _ ?_)
+  exact .unsigned width positive _ _
+    (remainder_representable _ left right _ _ division) ⟨0, by simp⟩
+
+theorem unsigned_remainder_zero_c11 (width : Nat) (positive : 0 < width)
+    (left right : IntegerValue (.unsigned width positive)) (zero : right.value = 0) :
+    IntegerBinaryEvaluation (.unsigned width positive) left right .remainder
+      (.undefined .divisionByZero) :=
+  .remainder _ (.zeroDivisor zero)
+
+end Mettapedia.Languages.C11

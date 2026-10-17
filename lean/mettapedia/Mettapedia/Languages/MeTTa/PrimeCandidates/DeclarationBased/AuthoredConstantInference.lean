@@ -30,7 +30,7 @@ namespace AuthoredConstantInference
 
 open AuthoredDeclarationSignature
 open AuthoredConstantIngress
-open DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open DeclarationAwareCheckedContext
 open DeclarationAwareFormedTyping
 open Mettapedia.GSLT.LanguageDef.CanonicalPremiseClosure

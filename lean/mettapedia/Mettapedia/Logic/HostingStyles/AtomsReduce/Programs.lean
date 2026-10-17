@@ -69,7 +69,7 @@ open Mettapedia.GSLT.Dedukti.ConfluenceExamples (step_of_rule)
 open Mettapedia.Logic.Relation (IsNormal)
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 
 /-! ## Programs -/
 

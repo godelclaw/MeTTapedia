@@ -119,7 +119,7 @@ end
 mutual
   /-- Free-variable alignment is the special case of semantic-leaf alignment
   whose selected leaves receive an explicit semantic witness. -/
-  def FvarAligned.toPatternLeafAligned
+  theorem FvarAligned.toPatternLeafAligned
       {nameRelation : String → String → Prop}
       {leafRelation : Pattern → Pattern → Prop}
       (lift : ∀ {leftName rightName}, nameRelation leftName rightName →
@@ -142,7 +142,7 @@ mutual
           (elements.toPatternLeafAligned lift)
 
   /-- Listwise companion of `FvarAligned.toPatternLeafAligned`. -/
-  def FvarAlignedList.toPatternLeafAligned
+  theorem FvarAlignedList.toPatternLeafAligned
       {nameRelation : String → String → Prop}
       {leafRelation : Pattern → Pattern → Prop}
       (lift : ∀ {leftName rightName}, nameRelation leftName rightName →
@@ -190,7 +190,7 @@ mutual
 end
 
 /-- Concatenate two pointwise semantic-leaf alignments. -/
-def PatternLeafAlignedList.append
+theorem PatternLeafAlignedList.append
     {relation : Pattern → Pattern → Prop} :
     ∀ {leftPrefix rightPrefix leftSuffix rightSuffix : List Pattern},
       PatternLeafAlignedList relation leftPrefix rightPrefix →
@@ -278,7 +278,7 @@ def ofFvarReflexive {relation : Pattern → Pattern → Prop}
         (PatternLeafAlignedList.refl fvarReflexive after)
 
 /-- Fill a locally certified context with one aligned semantic leaf. -/
-def fill {relation : Pattern → Pattern → Prop} :
+theorem fill {relation : Pattern → Pattern → Prop} :
     ∀ {context left right}, PatternLeafAlignedContext relation context →
       PatternLeafAligned relation left right →
         PatternLeafAligned relation (context.fill left) (context.fill right)

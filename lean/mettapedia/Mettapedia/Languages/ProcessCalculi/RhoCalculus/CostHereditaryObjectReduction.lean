@@ -53,7 +53,7 @@ theorem rhoCostOpenGeneratorTreeAlignable_of_provider
         (provider color)))
 
 /-- The rho cost layer object laws over the two node-local semantic obligations. -/
-def rhoHereditaryCompactOpenNormalizerLaws_ofSemanticLaws
+theorem rhoHereditaryCompactOpenNormalizerLaws_ofSemanticLaws
     (provider : ∀ color,
       RhoCanonicalStaticPair.HasSemanticCut color)
     (staticPreserves :

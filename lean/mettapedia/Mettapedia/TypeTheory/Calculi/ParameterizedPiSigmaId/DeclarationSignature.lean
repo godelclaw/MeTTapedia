@@ -56,6 +56,26 @@ def Signature.ofList (declarations : List (DeclName × Entry Head)) :
   declarations.foldr (fun declaration signature =>
     signature.insert declaration.1 declaration.2) Signature.empty
 
+/-- An injectively named finite declaration family has its actual selected
+lookup at every original position. -/
+theorem Signature.entries_ofFn {Head : Type} {n : Nat}
+    (names : Fin n → DeclName) (entry : Fin n → Entry Head)
+    (unique : Function.Injective names) (index : Fin n) :
+    (Signature.ofList (List.ofFn (fun i => (names i, entry i)))).entries (names index) =
+      some (entry index) := by
+  induction n with
+  | zero => exact Fin.elim0 index
+  | succ n inductionHypothesis =>
+      refine Fin.cases ?_ (fun prior => ?_) index
+      · simp [List.ofFn_succ, Signature.ofList, Signature.insert]
+      · have different : names prior.succ ≠ names 0 := by
+          intro same
+          have position := unique same
+          exact Fin.succ_ne_zero prior position
+        have rest := inductionHypothesis (fun i => names i.succ) (fun i => entry i.succ)
+          (fun _ _ same => Fin.ext (Nat.succ.inj (congrArg Fin.val (unique same)))) prior
+        simpa [List.ofFn_succ, Signature.ofList, Signature.insert, different] using rest
+
 @[simp] theorem Signature.computation_ofList (declarations : List (DeclName × Entry Head)) :
     (Signature.ofList declarations).computation = RootComputation.empty := by
   induction declarations with
@@ -600,3 +620,132 @@ theorem ContextWellFormed.identitySubstitution {rules : Rules Head}
 
 end Declaration
 end Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
+
+
+set_option autoImplicit false
+namespace Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.Declaration.FiniteParameters
+
+variable {Head : Type} {count parameterCount : Nat}
+
+/-- The ordinal is part of the declaration name; equal function types do not
+merge distinct source declarations. -/
+def indexedName (namespaceTag : DeclName) (index : Fin count) : DeclName := .num namespaceTag index.val
+
+def indexedPositions (namespaceTag : DeclName) (count : Nat) : DeclName → Option (Fin count)
+  | .num stored index =>
+      if stored == namespaceTag then
+        if bound : index < count then some ⟨index, bound⟩ else none
+      else none
+  | _ => none
+
+theorem indexedPositions_name (namespaceTag : DeclName) (index : Fin count) :
+    indexedPositions namespaceTag count (indexedName namespaceTag index) = some index := by
+  simp [indexedPositions, indexedName, index.isLt]
+
+theorem indexedName_injective (namespaceTag : DeclName) :
+    Function.Injective (indexedName (count := count) namespaceTag) := by
+  intro first second same
+  apply Fin.ext
+  exact (Lean.Name.num.inj same).2
+
+theorem names_injective (names : Fin count → DeclName)
+    (positions : DeclName → Option (Fin count))
+    (readback : ∀ index, positions (names index) = some index) : Function.Injective names := by
+  intro first second same
+  have recovered := congrArg positions same
+  rw [readback first, readback second] at recovered
+  exact Option.some.inj recovered
+
+def entry (types : Fin count → Tm Head 0) (index : Fin count) : Entry Head :=
+  ⟨types index, none⟩
+
+def declarations (names : Fin count → DeclName) (types : Fin count → Tm Head 0) :
+    List (DeclName × Entry Head) := List.ofFn fun index => (names index, entry types index)
+
+def signature (original : List (DeclName × Entry Head)) (names : Fin count → DeclName)
+    (types : Fin count → Tm Head 0) : Signature Head :=
+  .ofList (declarations names types ++ original)
+
+/-- Lookup is performed in the actual finite declaration list. -/
+theorem lookup (original : List (DeclName × Entry Head)) (names : Fin count → DeclName)
+    (types : Fin count → Tm Head 0) (unique : Function.Injective names) (index : Fin count) :
+    (signature original names types).entries (names index) = some (entry types index) := by
+  rw [signature, Signature.entries_ofList_append, declarations,
+    Signature.entries_ofFn names (entry types) unique index]
+  rfl
+
+theorem missing (names : Fin count → DeclName) (types : Fin count → Tm Head 0)
+    (positions : DeclName → Option (Fin parameterCount))
+    (indices : Fin count → Fin parameterCount)
+    (readback : ∀ index, positions (names index) = some (indices index))
+    (name : DeclName) (unselected : positions name = none) :
+    (Signature.ofList (declarations names types)).entries name = none := by
+  cases found : (Signature.ofList (declarations names types)).entries name with
+  | none => rfl
+  | some value =>
+      obtain ⟨index, same⟩ := List.mem_ofFn.mp (Signature.entries_ofList_mem _ found)
+      have nameSame : names index = name := congrArg Prod.fst same
+      have recovered := readback index
+      rw [nameSame, unselected] at recovered
+      cases recovered
+
+theorem kept (original : List (DeclName × Entry Head)) (names : Fin count → DeclName)
+    (types : Fin count → Tm Head 0) (positions : DeclName → Option (Fin parameterCount))
+    (indices : Fin count → Fin parameterCount)
+    (readback : ∀ index, positions (names index) = some (indices index))
+    (name : DeclName) (unselected : positions name = none) :
+    (signature original names types).entries name = (Signature.ofList original).entries name := by
+  rw [signature, Signature.entries_ofList_append, missing names types positions indices readback name unselected]
+  rfl
+
+theorem extends_original (original : List (DeclName × Entry Head)) (names : Fin count → DeclName)
+    (types : Fin count → Tm Head 0) (positions : DeclName → Option (Fin parameterCount))
+    (indices : Fin count → Fin parameterCount)
+    (readback : ∀ index, positions (names index) = some (indices index))
+    (untouched : ∀ name value, (name, value) ∈ original → positions name = none) :
+    (Signature.ofList original).Extends (signature original names types) where
+  entries := by
+    intro name value known
+    rw [kept original names types positions indices readback name
+      (untouched name value (Signature.entries_ofList_mem original known))]
+    exact known
+  computation := by
+    intro n left right impossible
+    rw [Signature.computation_ofList] at impossible
+    exact impossible.elim
+
+/-- Selected source lookup exposes its original finite entry and exact type. -/
+theorem constant_entry (base : Rules Head)
+    (bare : ∀ name, base.constantType name = none)
+    (original : List (DeclName × Entry Head)) (names : Fin count → DeclName)
+    (types : Fin count → Tm Head 0) {name : DeclName} {type : Tm Head 0}
+    (known : (extendRules base (signature original names types)).constantType name = some type) :
+    ∃ value, (signature original names types).entries name = some value ∧ value.type = type := by
+  change combinedType base _ name = some type at known
+  rw [combinedType, bare name] at known
+  unfold Signature.typeOf? at known
+  cases selected : (signature original names types).entries name with
+  | none => simp only [selected, Option.map_none, reduceCtorEq] at known
+  | some value =>
+      exact ⟨value, rfl, by simpa only [selected, Option.map_some, Option.some.injEq] using known⟩
+
+/-- Adding opaque parameters never manufactures delta computation. Original
+transparent declarations remain visible in this premise rather than erased. -/
+theorem value_none (original : List (DeclName × Entry Head)) (names : Fin count → DeclName)
+    (types : Fin count → Tm Head 0)
+    (opaqueOriginal : ∀ name value, (name, value) ∈ original → value.value? = none)
+    (name : DeclName) : (signature original names types).valueOf? name = none := by
+  cases selected : (signature original names types).entries name with
+  | none => simp only [Signature.valueOf?, selected, Option.bind_none]
+  | some value =>
+      have member := Signature.entries_ofList_mem (declarations names types ++ original) selected
+      have empty : value.value? = none := by
+        rcases List.mem_append.mp member with added | old
+        · obtain ⟨index, same⟩ := List.mem_ofFn.mp added
+          have valueSame : entry types index = value := congrArg Prod.snd same
+          rw [← valueSame]
+          rfl
+        · exact opaqueOriginal name value old
+      simp only [Signature.valueOf?, selected, Option.bind_some, empty]
+
+end Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.Declaration.FiniteParameters

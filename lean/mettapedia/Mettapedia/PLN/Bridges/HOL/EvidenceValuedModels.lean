@@ -1,5 +1,5 @@
 import Mettapedia.Logic.HOL.Semantics.HeytingPushforward
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # Evidence-valued models and the Gödel–Dummett characterization

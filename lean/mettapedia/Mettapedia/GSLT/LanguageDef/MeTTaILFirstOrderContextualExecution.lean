@@ -35,7 +35,7 @@ open MeTTaILFirstOrderRuleCompilation
 empty-telescope scoped step is retained, rather than treated as a binder. -/
 def premiseAdmitted : Premise → Bool
   | .freshness condition => isMatchCorrectAux condition.term
-  | .relationQuery _ arguments => (compileArgumentNames? arguments).isSome
+  | .relationQuery _ arguments => (compilePatterns? arguments).isSome
   | .congruence source target => isMatchCorrectAux source && isMatchCorrectAux target
   | .scopedStep step => step.binders.isEmpty &&
       (isMatchCorrectAux step.source && isMatchCorrectAux step.target)
@@ -82,7 +82,7 @@ theorem reference_bindings_firstOrder (language : LanguageDef)
 
 /-- The relation-only compiler is contained in this contextual profile. -/
 theorem premiseAdmitted_erase (plan : PremisePlan) : premiseAdmitted plan.erase = true := by
-  simp only [premiseAdmitted, PremisePlan.erase, compileArgumentNames?_map_fvar]
+  simp only [premiseAdmitted, PremisePlan.erase, compilePatterns?_erase]
   rfl
 
 theorem ruleAdmitted_erase (plan : RulePlan) : ruleAdmitted plan.erase = true := by
@@ -123,10 +123,10 @@ theorem premiseStepUsing_bindings_firstOrder (relations : RelationEnv)
       simpa only [unchanged] using seedFirstOrder
   | forAll _ _ _ => simp [premiseAdmitted] at admitted
   | relationQuery relation arguments =>
-      cases accepted : compileArgumentNames? arguments with
+      cases accepted : compilePatterns? arguments with
       | none => simp [premiseAdmitted, accepted] at admitted
       | some names =>
-          have erased := compileArgumentNames?_erase arguments names accepted
+          have erased := erasePatterns_of_compilePatterns? arguments names accepted
           let plan : PremisePlan := ⟨relation, names⟩
           have represented : plan.erase = .relationQuery relation arguments := by
             simp only [PremisePlan.erase, plan, erased]

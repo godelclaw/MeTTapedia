@@ -176,8 +176,8 @@ private theorem aCastToA :
   · simp
   · exact ATypeMatch
 
-private theorem fRaw :
-    EvalAtomRawRel multiSignatureSpace noHostDispatch []
+private theorem fRaw {live : List Atom} {protectedScope : List String} :
+    EvalAtomRawRel multiSignatureSpace noHostDispatch live (protectedScope := protectedScope)
       (.symbol "f") arrowA Bindings.empty
       (.symbol "f", Bindings.empty) := by
   apply EvalAtomRawRel.cast
@@ -189,8 +189,8 @@ private theorem fRaw :
   · exact Or.inl ⟨"f", rfl⟩
   · exact fCastToFirstSignature
 
-private theorem aRaw :
-    EvalAtomRawRel multiSignatureSpace noHostDispatch []
+private theorem aRaw {live : List Atom} {protectedScope : List String} :
+    EvalAtomRawRel multiSignatureSpace noHostDispatch live (protectedScope := protectedScope)
       (.symbol "a") (.symbol "A") Bindings.empty
       (.symbol "a", Bindings.empty) := by
   apply EvalAtomRawRel.cast
@@ -202,8 +202,8 @@ private theorem aRaw :
   · exact Or.inl ⟨"a", rfl⟩
   · exact aCastToA
 
-private theorem interpretedArguments :
-    InterpretArgsRel multiSignatureSpace noHostDispatch []
+private theorem interpretedArguments {live : List Atom} :
+    InterpretArgsRel multiSignatureSpace noHostDispatch live
       [.symbol "a"] [.symbol "A"] Bindings.empty
       (argumentPacket [.symbol "a"], Bindings.empty) := by
   apply InterpretArgsRel.success
@@ -214,8 +214,8 @@ private theorem interpretedArguments :
   · exact InterpretArgsRel.nil Bindings.empty
   · exact ⟨[], rfl⟩
 
-private theorem interpretedFunction :
-    InterpretFunctionRel multiSignatureSpace noHostDispatch []
+private theorem interpretedFunction {live : List Atom} :
+    InterpretFunctionRel multiSignatureSpace noHostDispatch live
       application arrowA (.symbol "RA") Bindings.empty
       (application, Bindings.empty) := by
   apply InterpretFunctionRel.success

@@ -243,7 +243,7 @@ end
 
 mutual
   /-- Forget constructor-fragment evidence and recover ordinary typing. -/
-  def HasTypeWithConstructors.toHasType
+  theorem HasTypeWithConstructors.toHasType
       {language : LanguageDef} {allowed : String → Prop}
       {free : FreeTypeContext} {bound : List TypeExpr}
       {pattern : Pattern} {type : TypeExpr}
@@ -264,7 +264,7 @@ mutual
         exact .collectionConstructor membership shape
           elements.toElementsHaveType
 
-  def ArgumentsHaveTypesWithConstructors.toArgumentsHaveTypes
+  theorem ArgumentsHaveTypesWithConstructors.toArgumentsHaveTypes
       {language : LanguageDef} {allowed : String → Prop}
       {free : FreeTypeContext} {bound : List TypeExpr}
       {arguments : List Pattern} {parameters : List TermParam}
@@ -277,7 +277,7 @@ mutual
         exact .cons representation parameterType argument.toHasType
           arguments.toArgumentsHaveTypes
 
-  def ElementsHaveTypeWithConstructors.toElementsHaveType
+  theorem ElementsHaveTypeWithConstructors.toElementsHaveType
       {language : LanguageDef} {allowed : String → Prop}
       {free : FreeTypeContext} {bound : List TypeExpr}
       {elements : List Pattern} {elementType : TypeExpr}

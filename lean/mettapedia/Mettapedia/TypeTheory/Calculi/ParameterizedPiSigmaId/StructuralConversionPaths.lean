@@ -92,6 +92,17 @@ def Code.stepCount {n : Nat} : Code Head RootCode n → Nat
   | .symm code => code.stepCount
   | .trans first second => first.stepCount + second.stepCount
 
+omit [DecidableEq Head] in
+/-- Mapping each selected edge through a term context preserves the number
+of selected step occurrences. The congruence wrapper has its own storage and
+execution costs. -/
+theorem Code.stepCount_mapContext {n m : Nat}
+    (wrap : Tm Head n → Tm Head m)
+    (wrapStep : StepCode Head RootCode n → StepCode Head RootCode m)
+    (code : Code Head RootCode n) :
+    (Code.mapContext wrap wrapStep code).stepCount = code.stepCount := by
+  induction code <;> simp_all only [Code.mapContext, Code.stepCount]
+
 /-- Flattening forgets grouping but neither drops nor duplicates selected
 step occurrences, including cancellation loops at equal endpoints. -/
 theorem Code.toZigzag_length {n : Nat} (code : Code Head RootCode n) {left right : Tm Head n}

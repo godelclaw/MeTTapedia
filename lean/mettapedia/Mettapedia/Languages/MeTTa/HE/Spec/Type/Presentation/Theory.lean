@@ -203,6 +203,30 @@ theorem typeSubst_factorization
   rw [hcanonicalApply]
   exact satisfied.absorbs atom
 
+/-- A later normal presentation of a stronger theory absorbs an earlier
+presentation on a whole syntactic operand. Rendered symbols and strings remain
+opaque atoms; this is not an evaluator or contextual equivalence theorem. -/
+theorem apply_absorbs_of_solution_implication {earlier later : TypeSubst}
+    (normal : later.Normal)
+    (refines : ∀ valuation, TypeSubstSatisfied valuation later →
+      TypeSubstSatisfied valuation earlier) (atom : Atom) :
+    later.apply (earlier.apply atom) = later.apply atom := by
+  have satisfied := refines _ (normal_presentedValuation_satisfied normal)
+  simpa only [applyTypeValuation_presented_eq_apply] using satisfied.absorbs atom
+
+/-- Pending operands are transported together, retaining their physical order,
+duplicates and shared variables under the same later presentation. -/
+theorem map_apply_absorbs_of_solution_implication {earlier later : TypeSubst}
+    (normal : later.Normal)
+    (refines : ∀ valuation, TypeSubstSatisfied valuation later →
+      TypeSubstSatisfied valuation earlier) (pending : List Atom) :
+    (pending.map earlier.apply).map later.apply = pending.map later.apply := by
+  simp only [List.map_map]
+  apply List.map_congr_left
+  intro atom _
+  exact apply_absorbs_of_solution_implication normal refines atom
+
+
 /-! ## Boundary examples -/
 
 private def tToA : TypeSubst := [("t", .symbol "A")]
@@ -232,3 +256,99 @@ theorem chained_non_normal_presentation_not_model :
     Option.getD] at first
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Theory
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.TypeSubst
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type.RuntimeRefinement Spec.Type.Presentation.Theory
+
+/-- A finite readout table keeps exactly the nonidentity variable readings
+on the supplied support. Its definition performs no proof search. -/
+def finiteReadout (names : List String) (read : String → Atom) : TypeSubst :=
+  (names.filter fun name => read name != .var name).map fun name => (name,read name)
+
+theorem mem_finiteReadout {names : List String} {read : String → Atom} {name : String} {value : Atom} :
+    (name,value)∈finiteReadout names read ↔
+      name∈names ∧ read name≠.var name ∧ value=read name := by
+  simp only [finiteReadout,List.mem_map,List.mem_filter,bne_iff_ne,Prod.mk.injEq]
+  constructor
+  · rintro ⟨key,⟨member,nonidentity⟩,same,value⟩
+    subst key
+    exact ⟨member,nonidentity,value.symm⟩
+  · rintro ⟨member,nonidentity,rfl⟩
+    exact ⟨name,⟨member,nonidentity⟩,rfl,rfl⟩
+
+theorem finiteReadout_keys (names : List String) (read : String → Atom) :
+    (finiteReadout names read).keys = names.filter (fun name => read name != .var name) := by
+  simp only [finiteReadout,keys,List.map_map,Function.comp_def]
+  exact List.map_id _
+
+theorem finiteReadout_apply_var (names : List String) (read : String → Atom) (name : String) :
+    (finiteReadout names read).apply (.var name)=
+      if name∈names then read name else .var name := by
+  induction names with
+  | nil => simp [finiteReadout]
+  | cons head tail ih =>
+    by_cases self : read head=.var head
+    · have tailEq : finiteReadout (head::tail) read=finiteReadout tail read := by
+        simp [finiteReadout,self]
+      rw [tailEq,ih]
+      by_cases same : name=head
+      · subst name
+        simp [self]
+      · simp [same]
+    · have consEq : finiteReadout (head::tail) read=(head,read head)::finiteReadout tail read := by
+        simp [finiteReadout,self]
+      rw [consEq]
+      by_cases same : name=head
+      · subst name
+        simp [apply,lookup]
+      · simpa only [apply,lookup,same,↓reduceIte,List.mem_cons,false_or] using ih
+
+/-- Matching a normal substitution's variable readout earns normality of
+the finite table; an arbitrary table is not accepted as a presentation. -/
+theorem finiteReadout_normal {names : List String} {read : String → Atom}
+    {presentation : TypeSubst} (unique : names.Nodup) (normal : presentation.Normal)
+    (same : ∀ name,read name=presentation.apply (.var name)) :
+    (finiteReadout names read).Normal := by
+  have supported : ∀ name∈(finiteReadout names read).keys,name∈presentation.keys := by
+    intro name member
+    rw [finiteReadout_keys] at member
+    have different := (List.mem_filter.mp member).2
+    by_contra absent
+    have fixed : read name=.var name := by
+      rw [same]
+      simp [apply,lookup_eq_none_of_not_mem_keys absent]
+    simp [fixed] at different
+  refine ⟨?_,?_⟩
+  · rw [finiteReadout_keys]
+    exact unique.filter _
+  · intro name value member key occurs inKeys
+    obtain ⟨_,_,rfl⟩:=mem_finiteReadout.mp member
+    rw [same] at occurs
+    exact normal.apply_variable_not_key (.var name) key occurs (supported key inKeys)
+
+/-- Two normal finite presentations with the same total variable readout
+present precisely the same constraints. -/
+theorem satisfied_iff_of_same_readout {left right : TypeSubst}
+    (leftNormal : left.Normal) (rightNormal : right.Normal)
+    (same : ∀ name,left.apply (.var name)=right.apply (.var name))
+    (valuation : String → Atom) :
+    TypeSubstSatisfied valuation left ↔ TypeSubstSatisfied valuation right := by
+  have value_of_member {presentation : TypeSubst} (normal : presentation.Normal)
+      {name : String} {value : Atom} (member : (name,value)∈presentation) :
+      presentation.apply (.var name)=value := by
+    have model := normal_presentedValuation_satisfied normal name value member
+    change presentation.apply (.var name)=applyTypeValuation (presentedValuation presentation) value at model
+    rw [applyTypeValuation_presented_eq_apply] at model
+    exact model.trans (apply_eq_self_of_variables_not_keys _ _ (normal.2 name value member))
+  constructor
+  · intro satisfied name value member
+    have absorbs := satisfied.absorbs (.var name)
+    rw [same,value_of_member rightNormal member] at absorbs
+    exact (by simpa only [applyTypeValuation] using absorbs.symm)
+  · intro satisfied name value member
+    have absorbs := satisfied.absorbs (.var name)
+    rw [←same,value_of_member leftNormal member] at absorbs
+    exact (by simpa only [applyTypeValuation] using absorbs.symm)
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.TypeSubst

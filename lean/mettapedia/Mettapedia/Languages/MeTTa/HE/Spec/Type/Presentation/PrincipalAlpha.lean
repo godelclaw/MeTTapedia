@@ -353,4 +353,150 @@ theorem variable_symbol_not_alpha :
     ⟨rightRename, _rightInjective, rightEq⟩⟩
   cases source <;> simp [renameTypeVars] at leftEq rightEq
 
+
+/-! ## Residual renaming preserving a family of model valuations -/
+
+open Spec.Type.Presentation.ScopeObservation
+
+/-- A finite partial bijection that preserves a label extends inside those
+same label fibres and fixes every point outside the two finite images. -/
+theorem exists_extending_pair_preserving_label
+    {α β γ : Type} [Fintype α]
+    (f g : α → β) (hf : Function.Injective f) (hg : Function.Injective g)
+    (label : β → γ) (same : ∀ a, label (f a) = label (g a)) :
+    ∃ permutation : Equiv.Perm β,
+      (∀ a, permutation (f a) = g a) ∧
+      (∀ b, label (permutation b) = label b) ∧
+      (∀ b, (∀ a, f a ≠ b) → (∀ a, g a ≠ b) → permutation b = b) := by
+  classical
+  let support : Finset β := Finset.univ.image f ∪ Finset.univ.image g
+  let Carrier := {b : β // b ∈ support}
+  let embed : Carrier ↪ β := Function.Embedding.subtype _
+  let first : α → Carrier := fun a => ⟨f a, by simp [support]⟩
+  let second : α → Carrier := fun a => ⟨g a, by simp [support]⟩
+  let colour : Carrier → γ := fun b => label b.1
+  let Indices (c : γ) := {a : α // label (f a) = c}
+  let Fibre (c : γ) := {b : Carrier // colour b = c}
+  have fibreChoice (c : γ) :
+      ∃ permutation : Equiv.Perm (Fibre c), ∀ a : Indices c,
+        permutation ⟨first a.1, a.2⟩ =
+          ⟨second a.1, (same a.1).symm.trans a.2⟩ := by
+    let left : Indices c → Fibre c := fun a => ⟨first a.1, a.2⟩
+    let right : Indices c → Fibre c := fun a =>
+      ⟨second a.1, (same a.1).symm.trans a.2⟩
+    apply Equiv.Perm.exists_extending_pair left right
+    · intro a b equal
+      apply Subtype.ext
+      exact hf (congrArg (fun x => x.1.1) equal)
+    · intro a b equal
+      apply Subtype.ext
+      exact hg (congrArg (fun x => x.1.1) equal)
+  choose fibrePermutation extensionLaw using fibreChoice
+  let whole : Equiv.Perm Carrier := Equiv.ofFiberEquiv fibrePermutation
+  have wholeExtends (a : α) : whole (first a) = second a := by
+    change (fibrePermutation (label (f a)) ⟨first a, rfl⟩).1 = second a
+    exact congrArg Subtype.val (extensionLaw (label (f a)) ⟨a, rfl⟩)
+  let permutation := whole.viaFintypeEmbedding embed
+  refine ⟨permutation, ?_, ?_, ?_⟩
+  · intro a
+    change permutation (embed (first a)) = embed (second a)
+    simp only [permutation, Equiv.Perm.viaFintypeEmbedding_apply_image, wholeExtends]
+  · intro b
+    by_cases member : b ∈ support
+    · change label (permutation (embed ⟨b, member⟩)) = label (embed ⟨b, member⟩)
+      dsimp only [permutation]
+      rw [Equiv.Perm.viaFintypeEmbedding_apply_image]
+      exact Equiv.ofFiberEquiv_map fibrePermutation ⟨b, member⟩
+    · have outside : b ∉ Set.range embed := by
+        rintro ⟨a, equal⟩
+        exact member (equal ▸ a.2)
+      dsimp only [permutation]
+      rw [Equiv.Perm.viaFintypeEmbedding_apply_notMem_range _ _ outside]
+  · intro b noFirst noSecond
+    apply Equiv.Perm.viaFintypeEmbedding_apply_notMem_range
+    rintro ⟨a, equal⟩
+    have member : b ∈ support := equal ▸ a.2
+    simp only [support, Finset.mem_union, Finset.mem_image, Finset.mem_univ, true_and] at member
+    rcases member with ⟨a, same⟩ | ⟨a, same⟩
+    · exact noFirst a same
+    · exact noSecond a same
+
+/-- Alpha observations that agree in a family of models admit one residual
+permutation fixing every valuation in that family. No point outside the two
+observed variable supports is moved. -/
+theorem observedTypeAlpha_exists_model_fixed_permutation
+    {Model : Type} {left right : Atom} (alpha : ObservedTypeAlphaRel left right)
+    (valuation : Model → String → Atom)
+    (same : ∀ model, applyTypeValuation (valuation model) left =
+      applyTypeValuation (valuation model) right) :
+    ∃ permutation : Equiv.Perm String,
+      right = renameTypeVars permutation left ∧
+      (∀ model name, valuation model (permutation name) = valuation model name) ∧
+      (∀ name, name ∉ TypeSubst.typeVars left → name ∉ TypeSubst.typeVars right →
+        permutation name = name) := by
+  classical
+  rcases alpha with ⟨source, ⟨leftRename, leftInjective, leftEquation⟩,
+    ⟨rightRename, rightInjective, rightEquation⟩⟩
+  let Variable := {name : String // name ∈ TypeSubst.typeVars source}
+  let : Fintype Variable := Fintype.ofFinite Variable
+  let leftImage : Variable → String := fun name => leftRename name.1
+  let rightImage : Variable → String := fun name => rightRename name.1
+  let label : String → (Model → Atom) := fun name model => valuation model name
+  have labelEqual (name : Variable) : label (leftImage name) = label (rightImage name) := by
+    funext model
+    have modelEqual := same model
+    rw [leftEquation, rightEquation,
+      ApplicationEquivariance.applyTypeValuation_renameTypeVars,
+      ApplicationEquivariance.applyTypeValuation_renameTypeVars] at modelEqual
+    exact (applyTypeValuation_eq_iff_on_typeVars _ _ source).mp modelEqual name.1 name.2
+  obtain ⟨permutation, extendsImages, fixedModels, outside⟩ :=
+    exists_extending_pair_preserving_label leftImage rightImage
+      (leftInjective.comp Subtype.val_injective)
+      (rightInjective.comp Subtype.val_injective) label labelEqual
+  refine ⟨permutation, ?_, ?_, ?_⟩
+  · rw [leftEquation, rightEquation, renameTypeVars_comp]
+    apply renameTypeVars_congr_on_typeVars source
+    intro name member
+    exact (extendsImages ⟨name, member⟩).symm
+  · intro model name
+    exact congrFun (fixedModels name) model
+  · intro name noLeft noRight
+    apply outside name
+    · intro candidate equal
+      apply noLeft
+      rw [leftEquation, typeVars_renameTypeVars]
+      exact List.mem_map.mpr ⟨candidate.1, candidate.2, equal⟩
+    · intro candidate equal
+      apply noRight
+      rw [rightEquation, typeVars_renameTypeVars]
+      exact List.mem_map.mpr ⟨candidate.1, candidate.2, equal⟩
+
 end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.PrincipalAlpha
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.PrincipalAlpha.ResidualControls
+
+/-- The extension moves an admitted pair inside its label fibre while keeping
+an unrelated point fixed. -/
+theorem even_pair_extension :
+    ∃ permutation : Equiv.Perm Nat,
+      permutation 0 = 2 ∧ permutation 1 = 1 ∧
+        ∀ n, permutation n % 2 = n % 2 := by
+  obtain ⟨permutation, maps, labels, outside⟩ :=
+    exists_extending_pair_preserving_label (fun _ : Unit => 0) (fun _ : Unit => 2)
+      (fun _ _ _ => Subsingleton.elim _ _) (fun _ _ _ => Subsingleton.elim _ _)
+      (fun n => n % 2) (by intro; decide)
+  exact ⟨permutation, maps (), outside 1 (by intro; decide) (by intro; decide), labels⟩
+
+/-- Equality of one alpha readout does not constrain a permutation's action
+on an unobserved model coordinate. -/
+theorem alpha_readout_does_not_fix_unobserved_model :
+    ∃ permutation : Equiv.Perm String,
+      Spec.Type.RuntimeRefinement.renameTypeVars permutation
+          (OSLFCore.Atom.var "residual") = .var "residual" ∧
+      (if permutation "constrained" = "constrained" then (0 : Nat) else 1) ≠ 0 := by
+  refine ⟨Equiv.swap "constrained" "other", ?_, ?_⟩
+  · simp only [Spec.Type.RuntimeRefinement.renameTypeVars, OSLFCore.Atom.var.injEq]
+    exact Equiv.swap_apply_of_ne_of_ne (by decide) (by decide)
+  · simp
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.PrincipalAlpha.ResidualControls

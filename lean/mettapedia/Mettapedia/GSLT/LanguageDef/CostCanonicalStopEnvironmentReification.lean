@@ -24,7 +24,7 @@ mutual
   callback is necessary even for an exact source spelling: independently
   constructed endpoint environments need not choose the same semantic atom
   name. -/
-  def CanonicalStopAligned.environmentReify
+  theorem CanonicalStopAligned.environmentReify
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {leftOccurrences rightOccurrences : List CostRegionOccurrence}
@@ -97,7 +97,7 @@ mutual
               rightEnvironment mapStop mapFvar elements))
 
   /-- Listwise companion of `CanonicalStopAligned.environmentReify`. -/
-  def CanonicalStopAlignedList.environmentReify
+  theorem CanonicalStopAlignedList.environmentReify
       {source : CIGSLT} {color : CostStaticColor}
       {targetFree : WellSorted.FreeTypeContext}
       {leftOccurrences rightOccurrences : List CostRegionOccurrence}

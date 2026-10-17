@@ -41,7 +41,7 @@ structure Job where
 def Job.reply (job : Job) : ResultPair := (job.value, job.bindings)
 
 def Job.pending (job : Job) : Configuration :=
-  ⟨job.space, .work (.atom job.value job.expected job.bindings (job.evaluatorFuel + 1)), [], job.earned⟩
+  ⟨job.space, .work (.atom job.value job.expected job.bindings (job.evaluatorFuel + 1) []), [], job.earned⟩
 
 def Job.ready (job : Job) : Configuration :=
   ⟨job.space, .returning [job.reply], [], job.earned⟩
@@ -89,7 +89,8 @@ theorem service_step_complete {dispatch : Spec.Eval.GroundedDispatch} {live : Li
     (earned : StepRel dispatch live typing scope state action) : serviceMachine.step state = some action := by
   cases earned with
   | reply job result evaluated =>
-      have unique : result = job.reply := leaf_unique job.leaf evaluated
+      have unique : result = job.reply :=
+        BindingFrame.historicalResult_injective (leaf_unique job.leaf evaluated)
       subst result
       rfl
   | finished => rfl
@@ -103,7 +104,7 @@ theorem service_step_iff (dispatch : Spec.Eval.GroundedDispatch) (live : List At
 theorem pending_worker_step (source : HE.GroundedDispatch) (job : Job) :
     (machine source).step job.pending = some (.silent job.ready) := by
   have entered : FirstSuccessRecursiveStrategy.enter job.space source
-      (.atom job.value job.expected job.bindings (job.evaluatorFuel + 1)) =
+      (.atom job.value job.expected job.bindings (job.evaluatorFuel + 1) []) =
         (.returning [job.reply], []) := by
     rcases (leaf_gate job.value job.expected).mp job.leaf with failed | passed
     · simp only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter, failed, if_true, Job.reply]
@@ -390,23 +391,18 @@ private def selectedPolicy : SelectedTypePolicy := ⟨unaryArrow, [Atom.atomType
 theorem selected_arrow_leaves_every_suffix_unvisited (space : Space) (suffix : List Atom) :
     FirstSuccessRecursiveStrategy.select space (.expression [.symbol "hold", heldSyntax])
       Atom.undefinedType Bindings.empty 1 (unaryArrow :: suffix) =
-      .selected selectedPolicy (List.replicate
-        (FirstSuccessSourceApplicability.pathCount space [heldSyntax]) Bindings.empty) := by
-  simp only [FirstSuccessRecursiveStrategy.select,
-    show FirstSuccessRecursiveStrategy.readPolicy unaryArrow = some selectedPolicy from rfl]
-  have callback := FirstSuccessSourceApplicability.source_raw_applicability
-    space (.symbol "hold") (.symbol "Result") [heldSyntax] Bindings.empty 0
-  change checkIfFunctionTypeIsApplicable (.expression [.symbol "hold", heldSyntax])
-    unaryArrow Atom.undefinedType space Bindings.empty 1 = _ at callback
-  rw [callback]
+      .selected selectedPolicy [Bindings.empty] := by
+  exact FirstSuccessRecursiveStrategy.select_success_replicate suffix rfl
+    (FirstSuccessSourceApplicability.source_raw_applicability
+      space (.symbol "hold") (.symbol "Result") [heldSyntax] Bindings.empty 0)
+    (FirstSuccessSourceApplicability.pathCount_positive space [heldSyntax])
 
 theorem wrong_arity_prefix_still_selects_the_first_success (space : Space) (suffix : List Atom) :
     ∃ policy, policy.argumentTypes = [Atom.atomType] ∧
       policy.returnType = .symbol "Result" ∧
       FirstSuccessRecursiveStrategy.select space (.expression [.symbol "hold", heldSyntax])
         Atom.undefinedType Bindings.empty 1 (binaryArrow :: policy.functionType :: suffix) =
-        .selected policy (List.replicate
-          (FirstSuccessSourceApplicability.pathCount space [heldSyntax]) Bindings.empty) ∧
+        .selected policy [Bindings.empty] ∧
       FunctionCandidateScanRel PublishedCandidateApplicabilityRel space
         (.expression [.symbol "hold", heldSyntax]) Atom.undefinedType Bindings.empty
         (binaryArrow :: policy.functionType :: suffix) (.success policy Bindings.empty) := by
@@ -423,6 +419,58 @@ theorem repeated_type_paths_remain_two_binding_occurrences :
       Atom.undefinedType (Space.ofList [.expression [.symbol ":", heldSyntax, .symbol "First"],
         .expression [.symbol ":", heldSyntax, .symbol "Second"]]) Bindings.empty 1 =
       .inr [Bindings.empty, Bindings.empty] := rfl
+
+/-- The callback still records both type-check paths, but only its first
+binding reaches the evaluation continuation. -/
+theorem repeated_type_paths_select_one_binding :
+    FirstSuccessRecursiveStrategy.select
+      (Space.ofList [.expression [.symbol ":", heldSyntax, .symbol "First"],
+        .expression [.symbol ":", heldSyntax, .symbol "Second"]])
+      (.expression [.symbol "hold", heldSyntax]) Atom.undefinedType Bindings.empty 1
+      [unaryArrow] = .selected selectedPolicy [Bindings.empty] := rfl
+
+theorem repeated_type_paths_do_not_repeat_execution :
+    FirstSuccessRecursiveStrategy.select
+      (Space.ofList [.expression [.symbol ":", heldSyntax, .symbol "First"],
+        .expression [.symbol ":", heldSyntax, .symbol "Second"]])
+      (.expression [.symbol "hold", heldSyntax]) Atom.undefinedType Bindings.empty 1
+      [unaryArrow] ≠ .selected selectedPolicy [Bindings.empty, Bindings.empty] := by
+  rw [repeated_type_paths_select_one_binding]
+  intro impossible
+  have lists := FirstSuccessRecursiveStrategy.Selection.selected.inj impossible |>.2
+  have lengths := congrArg List.length lists
+  simp at lengths
+
+private def polymorphicArrow : Atom := .expression [.symbol "->", .var "t", .symbol "Result"]
+private def polymorphicPolicy : SelectedTypePolicy :=
+  ⟨polymorphicArrow, [.var "t"], .symbol "Result", rfl⟩
+private def firstTypeBinding : Bindings := ⟨[("t", .symbol "First")], []⟩
+private def secondTypeBinding : Bindings := ⟨[("t", .symbol "Second")], []⟩
+private def multiTypedSpace : Space := Space.ofList
+  [.expression [.symbol ":", heldSyntax, .symbol "First"],
+   .expression [.symbol ":", heldSyntax, .symbol "Second"]]
+
+theorem distinct_callback_frames_remain_ordered :
+    checkIfFunctionTypeIsApplicable (.expression [.symbol "hold", heldSyntax]) polymorphicArrow
+      Atom.undefinedType multiTypedSpace Bindings.empty 10 =
+        .inr [firstTypeBinding, secondTypeBinding] := by decide
+
+theorem first_distinct_binding_is_selected :
+    FirstSuccessRecursiveStrategy.select multiTypedSpace
+      (.expression [.symbol "hold", heldSyntax]) Atom.undefinedType Bindings.empty 10
+      [polymorphicArrow] = .selected polymorphicPolicy [firstTypeBinding] :=
+  FirstSuccessRecursiveStrategy.select_success_first [] rfl distinct_callback_frames_remain_ordered
+
+theorem later_distinct_binding_is_not_selected :
+    FirstSuccessRecursiveStrategy.select multiTypedSpace
+      (.expression [.symbol "hold", heldSyntax]) Atom.undefinedType Bindings.empty 10
+      [polymorphicArrow] ≠ .selected polymorphicPolicy [secondTypeBinding] := by
+  rw [first_distinct_binding_is_selected]
+  intro impossible
+  have lists := FirstSuccessRecursiveStrategy.Selection.selected.inj impossible |>.2
+  have first := List.cons.inj lists |>.1
+  have values := congrArg Bindings.assignments first
+  simp [firstTypeBinding, secondTypeBinding] at values
 
 theorem zero_applicability_budget_has_no_rejection_evidence :
     checkIfFunctionTypeIsApplicable (.expression [.symbol "hold", heldSyntax]) unaryArrow

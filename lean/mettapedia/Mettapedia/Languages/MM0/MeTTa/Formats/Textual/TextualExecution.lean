@@ -27,7 +27,7 @@ open scoped ProgramQuotation
 
 def textualSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/textual.metta"
+    "../../../../../../../../metta/mm0/textual.metta"
     sha256 "6589aed43bab6e19a8b73329d292428ae12ce4f0a7b3af2909b8132a69a2ac8d"
 
 def program : Program := MeTTa.program.append textualSource.program

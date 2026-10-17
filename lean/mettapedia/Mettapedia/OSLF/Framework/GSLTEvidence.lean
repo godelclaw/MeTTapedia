@@ -1,5 +1,5 @@
 import Mettapedia.OSLF.Framework.TypeSynthesis
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # GSLT BinaryEvidence Assignment: The Universal Bridge

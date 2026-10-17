@@ -39,7 +39,7 @@ READ THIS FILE. It is the single entry point for the entire formalization.
 | `WMCalculusSoundness`         |        5 | Sound calculi inherit all properties    |
 | `ComplexEvidenceCarrier`      |        8 | ℂ carrier: quantum vertex              |
 | `UniversalEnsembleWM`         |        5 | Universality: existence + uniqueness    |
-| `SourceReliability`           |        8 | Dawid-Skene reliability layer           |
+| `SourceReliability`           |       20 | Dawid-Skene reliability layer           |
 | `PLNClassicExamples`          |       15 | Deduction, raven induction, forgetting  |
 
 ## References
@@ -123,7 +123,7 @@ Source reliability (Dawid-Skene) layers on top without breaking algebra. -/
 #check @Mettapedia.PLN.Evidence.ComplexEvidenceCarrier.complex_carrier_summary
   -- tensor + commutativity + Born probability
 #check @Mettapedia.PLN.Evidence.SourceReliability.reliability_summary
-  -- perfect preserves, inverted zeroes, empirical > text
+  -- perfect preserves, inverted swaps, random contributes nothing, empirical > text
 
 /-! ## 7. Empirical Validation
 

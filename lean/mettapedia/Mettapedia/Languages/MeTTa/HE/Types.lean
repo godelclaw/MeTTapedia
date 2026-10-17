@@ -1,4 +1,8 @@
 import Mettapedia.Languages.MeTTa.OSLFCore.Bindings
+import Mettapedia.Machines.ReadOnlyQuery
+import Mathlib.Data.Finset.Card
+import Mettapedia.Languages.MeTTa.SubstitutionAlgebra
+import Mettapedia.Algorithms.WellFoundedServices.DependencyAnalysis
 
 /-!
 # HE MeTTa Types
@@ -10,7 +14,7 @@ Foundation types for the Hyperon Experimental MeTTa interpreter formalization.
 2. `hyperon-experimental/docs/metta.md` (spec prose)
 
 ## Main Definitions
-* `ErrorCode` - Structured error codes (normative from HE spec)
+* `ErrorCode` - Structured error codes from the HE spec
 * `Bindings` - Variable bindings with assignments AND equalities
 * `ResultPair` / `ResultSet` - Interpreter output types
 * `ResultEqBag` / `ResultEqOrdered` - Result equivalence relations
@@ -22,8 +26,12 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
 
 /-! ## Error Codes
 
-Normative from HE spec. Error *text* is non-normative; only these
-constructors/shapes are normative. -/
+The published specification describes these structured diagnostic shapes.
+Malformed minimal instructions can also return message symbols containing
+rendered source syntax. Although message wording is not fixed by this code
+catalogue, a program can inspect those symbols with `case` or equality.
+Comparison theorems must therefore state their diagnostic policy and observer;
+ignoring message text alone does not establish contextual equivalence. -/
 
 /-- Structured error codes from the HE interpreter.
     Ref: `metta.md` lines 125-148, `interpreter.rs` error branches. -/
@@ -108,7 +116,7 @@ def isBound (b : Bindings) (v : String) : Bool :=
   (b.lookup v).isSome
 
 /-- Structural depth sufficient for total variable scans. -/
-private def atomScanFuel : Atom → Nat
+def atomScanFuel : Atom → Nat
   | .expression es => atomListScanFuel es + 1
   | _ => 1
 where
@@ -175,13 +183,22 @@ def resolve (b : Bindings) (v : String) (fuel : Nat) : Option Atom :=
   | none => none
   | some _ => b.resolveAtomAux fuel [] (.var v)
 
-/-- Convenience wrapper for callers outside the trusted theorem boundary. -/
-def resolveDefault (b : Bindings) (v : String) : Option Atom :=
-  b.resolve v 100
-
 /-- Get all variable names that are bound (have assignments). -/
 def boundVars (b : Bindings) : List String :=
   b.assignments.map Prod.fst
+
+/-- Maximum syntax depth of an assignment value. -/
+def resolutionValueDepth (b : Bindings) : Nat :=
+  b.assignments.foldr (fun entry bound => max (atomScanFuel entry.2) bound) 0
+
+/-- Sufficient depth for binding application, including compound values and
+class-aware resolution. Each assignment dependency marks a fresh finite key. -/
+def resolutionFuel (b : Bindings) (atom : Atom) : Nat :=
+  b.boundVars.toFinset.card * (b.resolutionValueDepth + 1) + atomScanFuel atom + 3
+
+/-- Resolve a variable using the proved structural depth. -/
+def resolveDefault (b : Bindings) (v : String) : Option Atom :=
+  b.resolve v (b.resolutionFuel (.var v))
 
 /-- Apply bindings to an atom, substituting variables with their values.
     Uses explicit fuel in the trusted path. -/
@@ -197,9 +214,9 @@ def apply (b : Bindings) (a : Atom) (fuel : Nat) : Atom :=
     | .expression es => .expression (es.map (b.apply · n))
     | other => other
 
-/-- Convenience wrapper for callers outside the trusted theorem boundary. -/
+/-- Apply bindings using the proved structural depth. -/
 def applyDefault (b : Bindings) (a : Atom) : Atom :=
-  b.apply a 100
+  b.apply a (b.resolutionFuel a)
 
 /-! ### Equality-aware resolution (G3b)
 
@@ -476,21 +493,616 @@ example :
     ((Bindings.empty.assign "x" (.expression [.symbol "f", .var "y"])).assign
       "y" (.var "x")).resolveFull "x" 10 = none := by decide
 
-/-- Check if bindings contain a variable loop.
-    Ref: metta.md line 616 "filter(lambda $b: <$b doesn't have variable loops>)". -/
-def hasLoop (b : Bindings) : Bool :=
-  b.assignments.any fun (v, _) => hasLoopFrom b v [v] 100
-where
-  hasLoopFrom (b : Bindings) (v : String) (visited : List String) (fuel : Nat) : Bool :=
-    match fuel with
-    | 0 => true  -- conservative: assume loop on fuel exhaustion
-    | n + 1 =>
+/-- Assigned names not yet visited by an alias walk. -/
+def loopRemaining (b : Bindings) (visited : List String) : Finset String :=
+  b.boundVars.toFinset \ visited.toFinset
+
+theorem loopRemaining_cons (b : Bindings) (visited : List String) (name : String) :
+    b.loopRemaining (name :: visited) = (b.loopRemaining visited).erase name := by
+  ext key
+  simp [loopRemaining, and_assoc, and_comm]
+
+
+/-- Sources which carry an assignment, expanded through their equality classes. -/
+def dependencySources (b : Bindings) : List String :=
+  (b.assignments.flatMap fun entry => b.eqClass entry.1).eraseDups
+
+/-- Assignment dependencies between equality classes. Variables underneath
+compound values remain dependencies. A bare alias to a distinct member of its
+own class is redundant; a direct self-assignment is still a dependency. -/
+def dependencyTargets (b : Bindings) (source : String) : List String :=
+  (b.assignments.flatMap fun (key, value) =>
+    if source ∈ b.eqClass key then
+      (Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars value).flatMap fun dependency =>
+        if value = .var dependency ∧ key ≠ dependency ∧ dependency ∈ b.eqClass key then []
+        else b.eqClass dependency
+    else []).eraseDups
+
+/-- Finite presentation of the binding dependency graph. All stored assignment
+relations participate, including entries in a malformed duplicate-key record. -/
+def dependencyCatalogue (b : Bindings) :
+    Mettapedia.Algorithms.WellFoundedServices.Catalogue String :=
+  ⟨b.dependencySources, b.dependencyTargets⟩
+
+/-- An explicit cycle, found by the shared finite dependency service. Its
+measured elimination and witness walk are total and need no caller fuel. -/
+def dependencyCycle? (b : Bindings) : Option (List String) :=
+  b.dependencyCatalogue.cycle?
+
+/-- Check for a directed cycle through assignment values and equality classes.
+Ref: `matcher.rs::binding_has_loops`, `metta.md`'s variable-loop filter. -/
+def hasLoop (b : Bindings) : Bool := b.dependencyCycle?.isSome
+
+theorem hasLoop_eq_true_iff_dependency_cycle (b : Bindings) :
+    b.hasLoop = true ↔ ∃ name, Relation.TransGen b.dependencyCatalogue.Uses name name :=
+  b.dependencyCatalogue.cycle?_isSome_iff
+
+theorem hasLoop_false_of_no_dependency (b : Bindings)
+    (noDependency : ∀ source target, target ∉ b.dependencyTargets source) :
+    b.hasLoop = false := by
+  rw [← Bool.not_eq_true, hasLoop_eq_true_iff_dependency_cycle]
+  rintro ⟨name, cycle⟩
+  have impossible : ∀ {source target},
+      Relation.TransGen b.dependencyCatalogue.Uses source target → False := by
+    intro source target path
+    induction path with
+    | single edge => exact noDependency _ _ edge.2
+    | tail _ edge _ => exact noDependency _ _ edge.2
+  exact impossible cycle
+
+/-- Ground values cannot create a dependency, regardless of the equality list. -/
+theorem hasLoop_false_of_assignment_vars_nil (b : Bindings)
+    (ground : ∀ entry ∈ b.assignments,
+      Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars entry.2 = []) :
+    b.hasLoop = false := by
+  apply b.hasLoop_false_of_no_dependency
+  intro source target member
+  simp only [dependencyTargets, List.mem_eraseDups, List.mem_flatMap] at member
+  obtain ⟨⟨key, value⟩, stored, member⟩ := member
+  rw [ground (key, value) stored] at member
+  split at member <;> simp at member
+
+theorem hasLoop_false_of_assignments_nil (b : Bindings) (empty : b.assignments = []) :
+    b.hasLoop = false :=
+  b.hasLoop_false_of_assignment_vars_nil (by simp [empty])
+
+theorem hasLoop_empty : Bindings.empty.hasLoop = false :=
+  hasLoop_false_of_assignments_nil _ rfl
+
+/-! ### Coverage of binding-resolution depth
+
+The existing resolver returns `none` both for a detected cycle and for a depth
+cutoff; applying bindings consequently leaves the original variable in either
+case. These read certificates distinguish those outcomes without changing the
+resolver. A covered answer is stable at every greater depth, including a
+covered negative answer. The class-and-compound cycle detector uses total finite dependency analysis;
+it has no cutoff outcome requiring a depth-coverage certificate.
+-/
+
+namespace Depth
+
+open Mettapedia.Machines.ReadOnlyQuery
+
+/-- A recursive call made by one of the two existing binding resolvers or
+binding applications. `full` selects the equality-aware operation. -/
+inductive Request where
+  | resolve (full : Bool) (visited : List String) (atom : Atom)
+  | apply (full : Bool) (atom : Atom)
+
+abbrev Query := Program Request (Option Atom)
+
+def eval (b : Bindings) (depth : Nat) : Request → Option Atom
+  | .resolve false visited atom => b.resolveAtomAux depth visited atom
+  | .resolve true visited atom => b.resolveAtomFullAux depth visited atom
+  | .apply false atom => some (b.apply atom depth)
+  | .apply true atom => some (b.applyFull atom depth)
+
+/-- The list traversal short-circuits at precisely the first failed child,
+as the resolver's actual `mapM` does. -/
+def resolveList (full : Bool) (visited : List String) : List Atom → Query (Option (List Atom))
+  | [] => .pure (some [])
+  | first :: rest => .read (.resolve full visited first) fun answer =>
+      match answer with
+      | none => .pure none
+      | some value => map (Option.map (value :: ·)) (resolveList full visited rest)
+
+def applyList (full : Bool) : List Atom → Query (List Atom)
+  | [] => .pure []
+  | first :: rest => .read (.apply full first) fun answer =>
+      map (answer.getD first :: ·) (applyList full rest)
+
+/-- Expose one layer of the actual algorithms. Recursive evaluator calls are
+reads; lookup, class selection and cycle decisions remain the existing ones. -/
+def body (b : Bindings) : Request → Query (Option Atom)
+  | .resolve false visited (.var v) =>
+      if visited.contains v then .pure none
+      else match b.lookup v with
+        | none => .pure (some (.var v))
+        | some value =>
+            if b.hasAssignedVar value then .read (.resolve false (v :: visited) value) .pure
+            else .pure (some value)
+  | .resolve true visited (.var v) =>
+      let cls := b.eqClassOrdered v
+      if cls.any visited.contains then .pure none
+      else match cls.findSome? b.lookup with
+        | none => .pure (some (.var (if cls = [v] then v else b.eqRepresentative v)))
+        | some (.var w) =>
+            if cls.contains w then
+              if cls.length = 1 then .pure none else .pure (some (.var (b.eqRepresentative v)))
+            else if b.hasResolvableVar (.var w) then
+              .read (.resolve true (cls ++ visited) (.var w)) .pure
+            else .pure (some (.var w))
+        | some value =>
+            if b.hasResolvableVar value then
+              .read (.resolve true (cls ++ visited) value) .pure
+            else .pure (some value)
+  | .resolve full visited (.expression atoms) =>
+      map (Option.map Atom.expression) (resolveList full visited atoms)
+  | .resolve _ _ other => .pure (some other)
+  | .apply false (.var v) =>
       match b.lookup v with
-      | none => false
-      | some (.var w) =>
-        if visited.contains w then true
-        else hasLoopFrom b w (w :: visited) n
-      | some _ => false
+      | none => .pure (some (.var v))
+      | some _ => .read (.resolve false [] (.var v)) fun answer =>
+          .pure (some (answer.getD (.var v)))
+  | .apply true (.var v) =>
+      let cls := b.eqClassOrdered v
+      if cls = [v] && (cls.findSome? b.lookup).isNone then .pure (some (.var v))
+      else .read (.resolve true [] (.var v)) fun answer =>
+          .pure (some (answer.getD (.var v)))
+  | .apply full (.expression atoms) =>
+      map (fun values => some (.expression values)) (applyList full atoms)
+  | .apply _ other => .pure (some other)
+
+theorem run_resolveList (b : Bindings) (depth : Nat) (full : Bool)
+    (visited : List String) (atoms : List Atom) :
+    (run (eval b depth) (resolveList full visited atoms)).answer =
+      atoms.mapM (fun atom => eval b depth (.resolve full visited atom)) := by
+  induction atoms with
+  | nil => rfl
+  | cons first rest ih =>
+      simp only [resolveList, run, List.mapM_cons]
+      cases eval b depth (.resolve full visited first) with
+      | none => rfl
+      | some value =>
+          rw [run_map, ih]
+          cases rest.mapM (fun atom => eval b depth (.resolve full visited atom)) <;> rfl
+
+theorem run_applyList (b : Bindings) (depth : Nat) (full : Bool) (atoms : List Atom) :
+    (run (eval b depth) (applyList full atoms)).answer =
+      atoms.map (fun atom => if full then b.applyFull atom depth else b.apply atom depth) := by
+  induction atoms with
+  | nil => rfl
+  | cons first rest ih =>
+      cases full <;> simp [applyList, run, eval, run_map, ih]
+
+theorem unfold_eval (b : Bindings) (depth : Nat) (request : Request) :
+    eval b (depth + 1) request = (run (eval b depth) (body b request)).answer := by
+  cases request with
+  | resolve full visited atom =>
+      cases full <;> cases atom with
+      | symbol _ => rfl
+      | grounded _ => rfl
+      | var v =>
+          simp only [eval, resolveAtomAux, resolveAtomFullAux, body]
+          repeat first | split | rfl
+      | expression atoms =>
+          simp only [eval, resolveAtomAux, resolveAtomFullAux, body, run_map,
+            run_resolveList]
+          all_goals split <;> simp_all
+  | apply full atom =>
+      cases full with
+      | false =>
+          cases atom with
+          | symbol _ => rfl
+          | grounded _ => rfl
+          | expression atoms => simp [eval, Bindings.apply, body, run_map, run_applyList]
+          | var v =>
+              cases found : b.lookup v with
+              | none => simp [eval, Bindings.apply, body, resolve, found, run]
+              | some value =>
+                  simp only [eval, Bindings.apply, body, resolve, found, run]
+                  cases b.resolveAtomAux depth [] (.var v) <;> rfl
+      | true =>
+          cases atom with
+          | symbol _ => rfl
+          | grounded _ => rfl
+          | expression atoms => simp [eval, applyFull, body, run_map, run_applyList]
+          | var v =>
+              by_cases missing :
+                  (b.eqClassOrdered v = [v] && ((b.eqClassOrdered v).findSome? b.lookup).isNone) = true
+              · simp [eval, applyFull, body, resolveFull, missing, run]
+              · cases result : b.resolveAtomFullAux depth [] (.var v) <;>
+                  simp [eval, applyFull, body, resolveFull, missing, run, result]
+
+def covered (b : Bindings) (depth : Nat) (request : Request) : Bool :=
+  depthCovered (body b) (eval b) depth request
+
+theorem stable (b : Bindings) (depth extra : Nat) (request : Request)
+    (complete : covered b depth request = true) :
+    eval b (depth + extra) request = eval b depth request :=
+  depthCovered_stable (body b) (eval b) (unfold_eval b) depth extra request complete
+
+end Depth
+
+def resolveAtomCovered (b : Bindings) (visited : List String) (atom : Atom) (depth : Nat) : Bool :=
+  Depth.covered b depth (.resolve false visited atom)
+
+def resolveAtomFullCovered (b : Bindings) (visited : List String) (atom : Atom) (depth : Nat) : Bool :=
+  Depth.covered b depth (.resolve true visited atom)
+
+def applyCovered (b : Bindings) (atom : Atom) (depth : Nat) : Bool :=
+  Depth.covered b depth (.apply false atom)
+
+def applyFullCovered (b : Bindings) (atom : Atom) (depth : Nat) : Bool :=
+  Depth.covered b depth (.apply true atom)
+
+theorem resolveAtomCovered_stable (b : Bindings) (visited : List String) (atom : Atom)
+    (depth extra : Nat) (complete : b.resolveAtomCovered visited atom depth = true) :
+    b.resolveAtomAux (depth + extra) visited atom = b.resolveAtomAux depth visited atom :=
+  Depth.stable b depth extra (.resolve false visited atom) complete
+
+theorem resolveAtomFullCovered_stable (b : Bindings) (visited : List String) (atom : Atom)
+    (depth extra : Nat) (complete : b.resolveAtomFullCovered visited atom depth = true) :
+    b.resolveAtomFullAux (depth + extra) visited atom = b.resolveAtomFullAux depth visited atom :=
+  Depth.stable b depth extra (.resolve true visited atom) complete
+
+theorem applyCovered_stable (b : Bindings) (atom : Atom) (depth extra : Nat)
+    (complete : b.applyCovered atom depth = true) :
+    b.apply atom (depth + extra) = b.apply atom depth :=
+  Option.some.inj (Depth.stable b depth extra (.apply false atom) complete)
+
+theorem applyFullCovered_stable (b : Bindings) (atom : Atom) (depth extra : Nat)
+    (complete : b.applyFullCovered atom depth = true) :
+    b.applyFull atom (depth + extra) = b.applyFull atom depth :=
+  Option.some.inj (Depth.stable b depth extra (.apply true atom) complete)
+
+open Mettapedia.Machines.ReadOnlyQuery
+
+theorem resolutionValueDepth_of_mem (b : Bindings) (name : String) (value : Atom)
+    (member : (name,value) ∈ b.assignments) : atomScanFuel value ≤ b.resolutionValueDepth := by
+  have bound : ∀ (entries : List (String × Atom)) (entry : String × Atom),
+      entry ∈ entries → atomScanFuel entry.2 ≤
+        entries.foldr (fun entry bound => max (atomScanFuel entry.2) bound) 0 := by
+    intro entries
+    induction entries with
+    | nil => intro entry member; simp at member
+    | cons first rest ih =>
+        intro entry member
+        rcases List.mem_cons.mp member with here | later
+        · subst entry; exact Nat.le_max_left _ _
+        · exact (ih entry later).trans (Nat.le_max_right _ _)
+  exact bound b.assignments (name,value) member
+
+theorem resolutionValueDepth_of_lookup (b : Bindings) (name : String) (value : Atom)
+    (found : b.lookup name = some value) : atomScanFuel value ≤ b.resolutionValueDepth := by
+  apply b.resolutionValueDepth_of_mem name value
+  obtain ⟨first,rest,same,_⟩ := List.lookup_eq_some_iff.mp found
+  rw [same]
+  simp
+
+def resolutionRank (b : Bindings) (visited : List String) (atom : Atom) : Nat :=
+  (b.loopRemaining visited).card * (b.resolutionValueDepth + 1) + atomScanFuel atom
+
+theorem resolutionRank_value (b : Bindings) (visited added : List String)
+    (key name : String) (value : Atom) (assigned : key ∈ b.boundVars)
+    (fresh : key ∉ visited) (marked : key ∈ added)
+    (bounded : atomScanFuel value ≤ b.resolutionValueDepth) :
+    b.resolutionRank (added ++ visited) value < b.resolutionRank visited (.var name) := by
+  have included : b.loopRemaining (added ++ visited) ⊆
+      (b.loopRemaining visited).erase key := by
+    intro member present
+    simp only [loopRemaining, List.toFinset_append, Finset.mem_sdiff, List.mem_toFinset,
+      Finset.mem_union, not_or] at present
+    simp only [Finset.mem_erase, loopRemaining, Finset.mem_sdiff, List.mem_toFinset]
+    refine ⟨?_,present.1,present.2.2⟩
+    intro same; subst member; exact present.2.1 marked
+  have member : key ∈ b.loopRemaining visited := by
+    simp [loopRemaining, assigned, fresh]
+  have smaller : (b.loopRemaining (added ++ visited)).card + 1 ≤
+      (b.loopRemaining visited).card := by
+    have bound := Finset.card_le_card included
+    have erased := Finset.card_erase_of_mem member
+    have positive := Finset.card_pos.mpr ⟨key,member⟩
+    omega
+  have multiplied := Nat.mul_le_mul_right (b.resolutionValueDepth + 1) smaller
+  simp only [Nat.add_mul, Nat.one_mul] at multiplied
+  simp only [resolutionRank, atomScanFuel]
+  omega
+
+theorem resolveList_reads (store : Depth.Request → Option Atom) (full : Bool)
+    (visited : List String) (atoms : List Atom) (read : Depth.Request × Option Atom)
+    (member : read ∈ (run store (Depth.resolveList full visited atoms)).reads) :
+    ∃ atom ∈ atoms, read.1 = .resolve full visited atom := by
+  induction atoms with
+  | nil => simp [Depth.resolveList, run] at member
+  | cons first rest ih =>
+      cases found : store (.resolve full visited first) with
+      | none =>
+          simp [Depth.resolveList, run, found] at member
+          exact ⟨first,by simp,congrArg Prod.fst member⟩
+      | some value =>
+          simp only [Depth.resolveList, run, found, run_map, List.mem_cons] at member
+          rcases member with same | later
+          · exact ⟨first,by simp,congrArg Prod.fst same⟩
+          · obtain ⟨atom,inside,same⟩ := ih later
+            exact ⟨atom,by simp [inside],same⟩
+
+theorem atomScanFuel_mem (atoms : List Atom) (atom : Atom) (member : atom ∈ atoms) :
+    atomScanFuel atom < atomScanFuel (.expression atoms) := by
+  have bound : ∀ atoms : List Atom, ∀ atom ∈ atoms,
+      atomScanFuel atom ≤ atomScanFuel.atomListScanFuel atoms := by
+    intro atoms
+    induction atoms with
+    | nil => intro atom member; simp at member
+    | cons first rest ih =>
+        intro atom member
+        rcases List.mem_cons.mp member with same | later
+        · subst atom; exact Nat.le_max_left _ _
+        · exact (ih atom later).trans (Nat.le_max_right _ _)
+  have enough := bound atoms atom member
+  simp only [atomScanFuel]
+  omega
+
+theorem applyList_reads (store : Depth.Request → Option Atom) (full : Bool)
+    (atoms : List Atom) (read : Depth.Request × Option Atom)
+    (member : read ∈ (run store (Depth.applyList full atoms)).reads) :
+    ∃ atom ∈ atoms, read.1 = .apply full atom := by
+  induction atoms with
+  | nil => simp [Depth.applyList, run] at member
+  | cons first rest ih =>
+      simp only [Depth.applyList, run, run_map, List.mem_cons] at member
+      rcases member with same | later
+      · exact ⟨first,by simp,congrArg Prod.fst same⟩
+      · obtain ⟨atom,inside,same⟩ := ih later
+        exact ⟨atom,by simp [inside],same⟩
+
+def queryRank (b : Bindings) : Depth.Request → Nat
+  | .resolve _ visited atom => b.resolutionRank visited atom
+  | .apply _ atom => b.boundVars.toFinset.card * (b.resolutionValueDepth + 1) +
+      atomScanFuel atom + 2
+
+theorem lookup_key_mem (b : Bindings) (key : String) (value : Atom)
+    (found : b.lookup key = some value) : key ∈ b.boundVars := by
+  obtain ⟨first,rest,same,_⟩ := List.lookup_eq_some_iff.mp found
+  simp [boundVars, same]
+
+theorem class_value_rank (b : Bindings) (visited cls : List String) (name : String)
+    (value : Atom) (selected : cls.findSome? b.lookup = some value)
+    (fresh : cls.any visited.contains = false) :
+    b.resolutionRank (cls ++ visited) value < b.resolutionRank visited (.var name) := by
+  obtain ⟨key,inside,found⟩ := List.exists_of_findSome?_eq_some selected
+  exact b.resolutionRank_value visited cls key name value
+    (b.lookup_key_mem key value found)
+    (by simpa using List.any_eq_false.mp fresh key inside) inside
+    (b.resolutionValueDepth_of_lookup key value found)
+
+theorem body_reads_decrease (b : Bindings) (store : Depth.Request → Option Atom)
+    (request : Depth.Request) (read : Depth.Request × Option Atom)
+    (member : read ∈ (run store (Depth.body b request)).reads) :
+    b.queryRank read.1 < b.queryRank request := by
+  cases request with
+  | resolve full visited atom =>
+      cases atom with
+      | symbol name => simp [Depth.body, run] at member
+      | grounded value => simp [Depth.body, run] at member
+      | expression atoms =>
+          simp only [Depth.body, run_map] at member
+          obtain ⟨atom,inside,same⟩ := resolveList_reads store full visited atoms read member
+          rw [same]
+          simp only [queryRank, resolutionRank]
+          have smaller := atomScanFuel_mem atoms atom inside
+          omega
+      | var name =>
+          cases full with
+          | false =>
+              simp only [Depth.body] at member
+              split at member
+              · simp [run] at member
+              · rename_i fresh
+                cases found : b.lookup name with
+                | none => simp [found,run] at member
+                | some value =>
+                    simp only [found] at member
+                    split at member
+                    · simp only [run, List.mem_singleton] at member
+                      rw [congrArg Prod.fst member]
+                      simpa only [queryRank, List.singleton_append] using
+                        b.resolutionRank_value visited [name] name name value
+                          (b.lookup_key_mem name value found) (by simpa using fresh)
+                          (by simp) (b.resolutionValueDepth_of_lookup name value found)
+                    · simp [run] at member
+          | true =>
+              simp only [Depth.body] at member
+              split at member
+              · simp [run] at member
+              · rename_i fresh
+                cases selected : (b.eqClassOrdered name).findSome? b.lookup with
+                | none => simp [selected, run] at member
+                | some value =>
+                    cases value with
+                    | var next =>
+                        simp only [selected] at member
+                        split at member
+                        · split at member <;> simp [run] at member
+                        · split at member
+                          · simp only [run, List.mem_singleton] at member
+                            rw [congrArg Prod.fst member]
+                            exact b.class_value_rank visited (b.eqClassOrdered name)
+                              name (.var next) selected (Bool.eq_false_iff.mpr fresh)
+                          · simp [run] at member
+                    | _ =>
+                        simp only [selected] at member
+                        split at member
+                        · simp only [run, List.mem_singleton] at member
+                          rw [congrArg Prod.fst member]
+                          exact b.class_value_rank visited (b.eqClassOrdered name)
+                            name _ selected (Bool.eq_false_iff.mpr fresh)
+                        · simp [run] at member
+  | apply full atom =>
+      cases atom with
+      | symbol name => simp [Depth.body, run] at member
+      | grounded value => simp [Depth.body, run] at member
+      | expression atoms =>
+          simp only [Depth.body, run_map] at member
+          obtain ⟨atom,inside,same⟩ := applyList_reads store full atoms read member
+          rw [same]
+          simp only [queryRank]
+          have smaller := atomScanFuel_mem atoms atom inside
+          omega
+      | var name =>
+          have smaller : b.queryRank (.resolve full [] (.var name)) < b.queryRank (.apply full (.var name)) := by
+            simp [queryRank,resolutionRank,loopRemaining,atomScanFuel]
+          cases full with
+          | false =>
+              cases found : b.lookup name with
+              | none => simp [Depth.body,found,run] at member
+              | some value =>
+                  simp [Depth.body,found,run] at member
+                  exact (congrArg (fun key => b.queryRank key) (congrArg Prod.fst member)) ▸ smaller
+          | true =>
+              simp only [Depth.body] at member
+              split at member
+              · simp [run] at member
+              · simp [run] at member
+                exact (congrArg (fun key => b.queryRank key) (congrArg Prod.fst member)) ▸ smaller
+
+
+
+/-- Every operation requested by either binding resolver is covered above its
+concrete decreasing read rank. No acyclicity assumption is required. -/
+theorem queryRank_covers (b : Bindings) (depth : Nat) (request : Depth.Request)
+    (enough : b.queryRank request < depth) : Depth.covered b depth request = true :=
+  Mettapedia.Machines.ReadOnlyQuery.depthCovered_of_rank (Depth.body b) (Depth.eval b)
+    b.queryRank (fun _ key read member => b.body_reads_decrease _ key read member)
+    depth request enough
+
+theorem applyCovered_resolutionFuel (b : Bindings) (atom : Atom) :
+    b.applyCovered atom (b.resolutionFuel atom) = true := by
+  apply b.queryRank_covers
+  simp [queryRank, resolutionFuel]
+
+theorem applyFullCovered_resolutionFuel (b : Bindings) (atom : Atom) :
+    b.applyFullCovered atom (b.resolutionFuel atom) = true := by
+  apply b.queryRank_covers
+  simp [queryRank, resolutionFuel]
+
+/-- Any independently covered depth gives the same complete application as
+the structural wrapper, even if it is smaller than the structural bound. -/
+theorem applyDefault_eq_of_covered (b : Bindings) (atom : Atom) (depth : Nat)
+    (covered : b.applyCovered atom depth = true) : b.applyDefault atom = b.apply atom depth := by
+  have first := b.applyCovered_stable atom depth (b.resolutionFuel atom) covered
+  have second := b.applyCovered_stable atom (b.resolutionFuel atom) depth
+    (b.applyCovered_resolutionFuel atom)
+  rw [Nat.add_comm depth] at first
+  exact second.symm.trans first
+
+
+/-- Structural application fixes literal symbols. -/
+@[simp] theorem applyDefault_symbol (b : Bindings) (name : String) :
+    b.applyDefault (.symbol name) = .symbol name := by
+  simp [applyDefault,resolutionFuel,Bindings.apply]
+
+@[simp] theorem applyDefault_grounded (b : Bindings) (value : Mettapedia.Languages.MeTTa.OSLFCore.GroundedValue) :
+    b.applyDefault (.grounded value) = .grounded value := by
+  simp [applyDefault,resolutionFuel,Bindings.apply]
+
+/-- Complete binding application respects the expression constructor. -/
+theorem applyDefault_expression (b : Bindings) (atoms : List Atom) :
+    b.applyDefault (.expression atoms) = .expression (atoms.map b.applyDefault) := by
+  let rest := b.boundVars.toFinset.card * (b.resolutionValueDepth + 1) +
+    atomScanFuel.atomListScanFuel atoms + 3
+  have depth : b.resolutionFuel (.expression atoms) = rest + 1 := by
+    simp only [resolutionFuel,atomScanFuel,rest]
+    omega
+  unfold applyDefault
+  rw [depth,Bindings.apply]
+  congr 1
+  apply List.map_congr_left
+  intro atom member
+  apply (b.applyDefault_eq_of_covered atom rest ?_).symm
+  apply b.queryRank_covers
+  have smaller := atomScanFuel_mem atoms atom member
+  simp only [atomScanFuel] at smaller
+  simp only [queryRank,rest]
+  omega
+
+
+/-- Structural depth covers ordinary resolution from every retained path. -/
+theorem resolveAtomCovered_resolutionFuel (b : Bindings) (visited : List String) (atom : Atom) :
+    b.resolveAtomCovered visited atom (b.resolutionFuel atom) = true := by
+  apply b.queryRank_covers
+  have smaller := Finset.card_le_card (Finset.sdiff_subset :
+    b.boundVars.toFinset \ visited.toFinset ⊆ b.boundVars.toFinset)
+  have multiplied := Nat.mul_le_mul_right (b.resolutionValueDepth + 1) smaller
+  simp only [queryRank,resolutionRank,loopRemaining,resolutionFuel]
+  omega
+
+/-- The same bound covers equality-aware class resolution. -/
+theorem resolveAtomFullCovered_resolutionFuel (b : Bindings) (visited : List String) (atom : Atom) :
+    b.resolveAtomFullCovered visited atom (b.resolutionFuel atom) = true := by
+  apply b.queryRank_covers
+  have smaller := Finset.card_le_card (Finset.sdiff_subset :
+    b.boundVars.toFinset \ visited.toFinset ⊆ b.boundVars.toFinset)
+  have multiplied := Nat.mul_le_mul_right (b.resolutionValueDepth + 1) smaller
+  simp only [queryRank,resolutionRank,loopRemaining,resolutionFuel]
+  omega
+
+/-- Increasing the structural depth preserves the complete variable answer. -/
+theorem resolveDefault_stable (b : Bindings) (name : String) (extra : Nat) :
+    b.resolve name (b.resolutionFuel (.var name) + extra) = b.resolveDefault name := by
+  unfold resolveDefault resolve
+  cases found : b.lookup name with
+  | none => rfl
+  | some value =>
+      exact b.resolveAtomCovered_stable [] (.var name) _ extra
+        (b.resolveAtomCovered_resolutionFuel [] (.var name))
+
+namespace Depth.Controls
+
+private def direct := Bindings.empty.assign "x" (.symbol "value")
+
+#guard direct.applyCovered (.var "x") 2
+#guard !direct.applyCovered (.var "x") 1
+#guard direct.applyFullCovered (.var "x") 2
+#guard !direct.applyFullCovered (.var "x") 1
+
+private def nested :=
+  ((Bindings.empty.assign "x" (.expression [.symbol "f", .var "y"])).assign
+    "y" (.symbol "value"))
+
+#guard nested.applyFullCovered (.var "x") 4
+#guard !nested.applyFullCovered (.var "x") 3
+
+private def cyclic := Bindings.empty.assign "x" (.var "x")
+
+/-- A detected cycle is a covered negative result; exhaustion is not. -/
+theorem cycle_is_complete :
+    cyclic.resolveAtomAux 2 [] (.var "x") = none ∧
+      cyclic.resolveAtomCovered [] (.var "x") 2 = true := by decide
+
+theorem zero_depth_is_incomplete :
+    cyclic.resolveAtomAux 0 [] (.var "x") = none ∧
+      cyclic.resolveAtomCovered [] (.var "x") 0 = false := by decide
+
+/-- An acyclic alias chain exceeds the historical loop-check cap. -/
+private def longAliases : Bindings := {
+  assignments := (List.range 106).map fun index =>
+    (s!"v{index}", if index < 105 then .var s!"v{index + 1}" else .symbol "value")
+  equalities := [] }
+
+#guard !longAliases.hasLoop
+#guard !longAliases.applyCovered (.var "v0") 100
+#guard !longAliases.applyFullCovered (.var "v0") 100
+#guard longAliases.applyDefault (.var "v0") == .symbol "value"
+#guard longAliases.applyFullCovered (.var "v0") (longAliases.resolutionFuel (.var "v0"))
+
+/-- A cycle remains rejected when followed by a long independent acyclic chain. -/
+private def earlyCycle : Bindings :=
+  { longAliases with assignments := ("self", .var "self") :: longAliases.assignments }
+
+#guard earlyCycle.hasLoop
+
+end Depth.Controls
 
 /-- Convert to MeTTaCore.Bindings (only when equalities are empty/discharged).
     Returns `none` if equalities are present. -/

@@ -104,13 +104,54 @@ theorem header_decoded (installed : BindingPipeline.Installed) (index : Fin inst
   rw [actualOrigin]
   exact found
 
-def checkedHeaders (installed : BindingPipeline.Installed) (checked : check installed = true) :
-    ∀ index : Fin installed.modal.length, NativeBindingModalAdmission.Admitted installed.modal[index] :=
-  (headers? installed).get (by
-    have clauses : NativeOperationalProfile.check (BindingPipeline.environment installed.generated) = true ∧
-        (headers? installed).isSome = true := by
-      simpa only [check, Bool.and_eq_true] using checked
-    exact clauses.2)
+private theorem allFin?_apply {n : Nat} {A : Fin n → Type}
+    (candidate : ∀ index, Option (A index)) {values : ∀ index, A index}
+    (found : NativeBindingModalAdmission.allFin? candidate = some values) :
+    ∀ index, candidate index = some (values index) := by
+  induction n with
+  | zero => intro index; exact index.elim0
+  | succ n ih =>
+      cases firstFound : candidate 0 with
+      | none => simp [NativeBindingModalAdmission.allFin?, firstFound] at found
+      | some first =>
+          cases restFound : NativeBindingModalAdmission.allFin?
+              (A := fun index : Fin n => A index.succ)
+              (fun index => candidate index.succ) with
+          | none => simp [NativeBindingModalAdmission.allFin?, firstFound, restFound] at found
+          | some rest =>
+              have same : Fin.cases first rest = values := by
+                simpa [NativeBindingModalAdmission.allFin?, firstFound, restFound] using found
+              cases same
+              intro index
+              refine Fin.cases ?_ (fun index => ?_) index
+              · exact firstFound
+              · exact ih (fun index : Fin n => candidate index.succ) restFound index
+
+/-- Decode the selected header without rebuilding the entire finite catalogue. -/
+def checkedHeaders (installed : BindingPipeline.Installed) (checked : check installed = true)
+    (index : Fin installed.modal.length) : NativeBindingModalAdmission.Admitted installed.modal[index] :=
+  (NativeBindingModalAdmission.check? installed.modal[index]).get
+    (Option.isSome_iff_exists.mpr ((NativeBindingModalAdmission.check?_exact _).mpr
+      (((check_exact installed).mp checked).headers index)))
+
+theorem checkedHeaders_decoded (installed : BindingPipeline.Installed)
+    (checked : check installed = true) (index : Fin installed.modal.length) :
+    NativeBindingModalAdmission.check? installed.modal[index] =
+      some (checkedHeaders installed checked index) :=
+  (Option.some_get _).symm
+
+/-- Pointwise decoding returns exactly the prior whole-catalogue selection. -/
+theorem checkedHeaders_catalogue (installed : BindingPipeline.Installed)
+    (checked : check installed = true)
+    (available : (headers? installed).isSome = true) :
+    checkedHeaders installed checked = (headers? installed).get available := by
+  funext index
+  have selected := allFin?_apply
+    (fun index => NativeBindingModalAdmission.check? installed.modal[index])
+    (show NativeBindingModalAdmission.allFin?
+      (fun index => NativeBindingModalAdmission.check? installed.modal[index]) =
+        some ((headers? installed).get available) from (Option.some_get available).symm) index
+  exact Option.some.inj ((checkedHeaders_decoded installed checked index).symm.trans selected)
 
 noncomputable def diagram (installed : BindingPipeline.Installed) (freeEmpty : (BindingPipeline.plan installed.generated).snapshot.free = FreeTypeContext.empty)
     (checked : check installed = true) :

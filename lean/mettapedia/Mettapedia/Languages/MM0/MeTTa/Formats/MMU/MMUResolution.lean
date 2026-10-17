@@ -31,7 +31,7 @@ open scoped ProgramQuotation
 
 def resolverSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../../../hyperon/cetta-mm0-metta-20261004/lib/mm0/mmu.metta"
+    "../../../../../../../../metta/mm0/mmu.metta"
     sha256 "1ad2a077bf4cb7b2bb96a7bd1aaa07ce7be3196f81e5e619af15832515be01e0"
 
 def program : Program := TextualExecution.program.append resolverSource.program
@@ -409,6 +409,37 @@ theorem lookup_member {entries : List Binding} {key value : Atom}
   rw [split]
   simp
 
+
+/-- Working-map values are numerical namespace IDs. This is a refinement of
+stored constructor data, not an additional guard in the source resolver. -/
+def NumericalMap (entries : List Binding) : Prop :=
+  ∀ entry ∈ entries, ∃ logical, entry.value = natural logical
+
+@[simp] theorem numericalMap_nil : NumericalMap [] := by
+  intro entry member
+  simp at member
+
+theorem NumericalMap.prepend {entries : List Binding} (numerical : NumericalMap entries)
+    (key : Atom) (logical : Nat) : NumericalMap (⟨key, natural logical⟩ :: entries) := by
+  intro entry member
+  rcases List.mem_cons.mp member with same | earlier
+  · subst entry
+    exact ⟨logical, rfl⟩
+  · exact numerical entry earlier
+
+theorem NumericalMap.append {first second : List Binding}
+    (left : NumericalMap first) (right : NumericalMap second) : NumericalMap (first ++ second) := by
+  intro entry member
+  rcases List.mem_append.mp member with earlier | later
+  · exact left entry earlier
+  · exact right entry later
+
+theorem numerical_lookup (entries : List Binding) (key value : Atom)
+    (numerical : NumericalMap entries) (found : lookup entries key = some value) :
+    ∃ logical, value = natural logical :=
+  numerical ⟨key, value⟩ (lookup_member found)
+
+
 theorem lookup_unique_complete {entries : List Binding}
     (unique : (entries.map Binding.key).Nodup) {key value : Atom}
     (present : (⟨key, value⟩ : Binding) ∈ entries) : lookup entries key = some value := by
@@ -452,6 +483,23 @@ def publicBinding (space : Namespace) (slot : PublicSlot) : Option Binding :=
 pending metadata list is not inserted into this map. -/
 def publicBindings (space : Namespace) (preceding : List PublicSlot) : List Binding :=
   (preceding.filterMap (publicBinding space)).reverse
+
+
+/-- The actual preceding public slots earn numerical map admission. Their
+order and the resolver's first-binding behavior are retained. -/
+theorem publicBindings_numerical (space : Namespace) (preceding : List PublicSlot) :
+    NumericalMap (publicBindings space preceding) := by
+  intro entry member
+  have retained : entry ∈ preceding.filterMap (publicBinding space) := by
+    simpa [publicBindings] using member
+  obtain ⟨slot, _, found⟩ := List.mem_filterMap.mp retained
+  unfold publicBinding at found
+  split at found
+  · have same := Option.some.inj found
+    subst entry
+    exact ⟨entryIndex slot.specification, rfl⟩
+  · simp at found
+
 
 theorem public_lookup_preceding (space : Namespace) (preceding : List PublicSlot)
     (name : String) (index : Nat)

@@ -918,7 +918,7 @@ theorem family_mem_decodedFamilies_of_derivation
 
 /-- Prefix-order termination and the executable all-choice check discharge
 both global obligations for the canonical exhaustive family enumeration. -/
-def exactFamilyCoverageOfValidation
+theorem exactFamilyCoverageOfValidation
     {view : ForestView} {inventory : Inventory}
     {profile : ParserProfileLayer} {plan : CompiledParserPackPlan}
     (inputs : FamilyDecodingInputs view inventory profile plan)
@@ -955,7 +955,7 @@ def validateExactFamilyRepresentation
 
 /-- Successful exhaustive validation constructs the full two-sided native
 forest representation over the canonical decoded roots and families. -/
-def validateExactFamilyRepresentation_sound
+theorem validateExactFamilyRepresentation_sound
     {view : ForestView} {inventory : Inventory}
     {profile : ParserProfileLayer} {plan : CompiledParserPackPlan}
     (accepted :

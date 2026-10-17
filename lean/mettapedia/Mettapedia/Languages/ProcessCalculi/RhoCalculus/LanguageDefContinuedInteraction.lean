@@ -49,7 +49,7 @@ private def rhoContinuationUnitConstructor :
 
 /-- Rho's COMM contractum is covered by the hereditary continuation closure
 derived from its ordered interaction cut. -/
-def rhoContinuationRetyping : ContinuationRetypingPlan rhoInteractionCut where
+theorem rhoContinuationRetyping : ContinuationRetypingPlan rhoInteractionCut where
   residualCovered := by
     change rhoContinuationParallelConstructor ∈
       continuationConstructors rhoInteractionCut

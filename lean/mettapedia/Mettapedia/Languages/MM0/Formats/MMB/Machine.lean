@@ -627,24 +627,48 @@ def State.forTermProof (loaded : State) (arguments : Nat) : State :=
     heap := loaded.heap.dropLast
     varCount := arguments }
 
+/-- Validate a completed assertion state against its declared statement.
+This checks the final stack, provable sort and statement unification. It does
+not execute the proof stream or grant theorem status to an unfinished state. -/
+def finishAssertion (tables : Tables) (entry : ThmEntry) (state : State)
+    (isAxiom : Bool) : Bool :=
+  let conclusion : Option Nat := match state.stack, isAxiom with
+    | [.expr e], true => some e
+    | [.proof e], false => some e
+    | _, _ => none
+  match conclusion with
+  | some e =>
+      (((state.typeOf e).bind (fun type => tables.sorts[type.sort]?)).map (·.provable)).getD false &&
+        (unifyRun state.store .statement
+          ⟨[e], (List.range entry.args.length).map (·, false), [], state.hyps⟩ entry.unify).isSome
+  | none => false
+
 /-- Check an axiom or theorem: its proof stream leaves exactly the statement
 (an expression for an axiom, a proof for a theorem) of a provable sort, and
 the statement's unify stream matches it and the recorded hypotheses. -/
 def checkAssertion (tables : Tables) (entry : ThmEntry) (proof : List ProofCmd)
     (isAxiom : Bool) : Bool :=
   match (loadArgs tables.sorts entry.args).bind (fun state => run tables .assertion state proof) with
-  | some state =>
-      let conclusion : Option Nat := match state.stack, isAxiom with
-        | [.expr e], true => some e
-        | [.proof e], false => some e
-        | _, _ => none
-      match conclusion with
-      | some e =>
-          (((state.typeOf e).bind (fun type => tables.sorts[type.sort]?)).map (·.provable)).getD false &&
-            (unifyRun state.store .statement
-              ⟨[e], (List.range entry.args.length).map (·, false), [], state.hyps⟩ entry.unify).isSome
-      | none => false
+  | some state => finishAssertion tables entry state isAxiom
   | none => false
+
+/-- The original checker factors through argument loading, the proof stream,
+and final validation of exactly the state returned by that stream. -/
+theorem checkAssertion_factor (tables : Tables) (entry : ThmEntry) (proof : List ProofCmd)
+    (isAxiom : Bool) :
+    checkAssertion tables entry proof isAxiom =
+      (((loadArgs tables.sorts entry.args).bind (fun state => run tables .assertion state proof)).map
+        (fun state => finishAssertion tables entry state isAxiom)).getD false := by
+  unfold checkAssertion
+  cases (loadArgs tables.sorts entry.args).bind (fun state => run tables .assertion state proof) <;> rfl
+
+/-- A retained completed state can be finalized without replaying its proof. -/
+theorem checkAssertion_of_run (tables : Tables) (entry : ThmEntry) (proof : List ProofCmd)
+    (isAxiom : Bool) (loaded after : State)
+    (initialized : loadArgs tables.sorts entry.args = some loaded)
+    (executed : run tables .assertion loaded proof = some after) :
+    checkAssertion tables entry proof isAxiom = finishAssertion tables entry after isAxiom := by
+  simp only [checkAssertion, initialized, Option.bind_some, executed]
 
 /-- Check a term or definition: its arguments and return type are validated as
 binders. The temporary return-validation allocation is discarded before proof

@@ -47,7 +47,7 @@ open Mettapedia.OSLF.MeTTaIL.ContextualStep (BasePremiseEvaluator)
 open Mettapedia.OSLF.MeTTaIL.DerivedContexts
 open Mettapedia.Languages.MeTTa.PrimeCandidates.LanguageDef
 open Mettapedia.Languages.MeTTa.PrimeCandidates.Language (Model)
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 open RuleSignature
 
 /-! ## The patterns that code a derivation -/

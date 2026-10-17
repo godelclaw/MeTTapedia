@@ -11,6 +11,8 @@ import Mettapedia.Cybernetics.DistinctionCalculus.EvidenceContexts
 import Mettapedia.Cybernetics.DistinctionCalculus.SanityTheorems
 import Mettapedia.Cybernetics.DistinctionCalculus.FiniteLaboratory
 import Mettapedia.Cybernetics.DistinctionCalculus.Exclusion
+import Mettapedia.Cybernetics.DistinctionCalculus.ConstructionMiddle
+import Mettapedia.Cybernetics.DistinctionCalculus.ExclusionLearning
 
 /-!
 # Checkable distinction calculus
@@ -28,7 +30,9 @@ dissonance, change of base and a three-object laboratory check the sanity
 theorems and worked examples of *Hyperseed in the d-Calculus*, ch. 3–5.
 Concepts by exclusion close an observer's apartness under double exclusion; every
 concept and its exclusion cover the instances exactly when indistinguishability is
-transitive, as the metric law makes it.
+transitive, as the metric law makes it.  Learned from positive and negative examples,
+the consistent concepts lie between the concept the positive examples generate and the
+exclusion of the negative ones, and the full exclusion determines the concept.
 
 This is a formalized fragment of the September 2026 distinction-calculus
 papers, not a claim that their analytic, statistical, hive, or metacognitive

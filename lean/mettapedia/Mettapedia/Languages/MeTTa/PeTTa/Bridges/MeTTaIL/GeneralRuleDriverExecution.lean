@@ -4,6 +4,8 @@ import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleDriverExecuti
 # Execution of the original scoped rule-job scheduler
 
 The authored driver retains pending work and physical answer cursors.
+The quoted execution claims require no registered dynamic relations; native
+primitive service execution requires its own correspondence proof.
 -/
 
 set_option autoImplicit false
@@ -178,6 +180,7 @@ theorem start_returns (state : State) (request : GeneralRuleJobExecution.Request
 
 private theorem machine_tick_captured_returns (caller : Subst) (state : State)
     (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (machine : Execution.State request.environment request.goal)
     (covered : Execution.stateFreeWithin (GeneralRuleJobObservation.requestFootprint request)
       request.environment request.goal machine) (arguments : List Atom)
@@ -203,7 +206,7 @@ private theorem machine_tick_captured_returns (caller : Subst) (state : State)
     PremiseOperationsExecution.GeneralExecution.CompletedAssembly.retained_machine_agreement
     (by constructor <;> rfl)
   exact PremiseOperationsExecution.GeneralExecution.EnvironmentExecution.Tasks.expand_captured_within_returns
-    callee state request.environment request.goal current (GeneralRuleJobObservation.requestFootprint request)
+    callee state request.environment finiteProvider request.goal current (GeneralRuleJobObservation.requestFootprint request)
     (fun _ member => List.mem_append_right _ member) (covered.1 current member)
     (v "environment") (v "task") inputs
 
@@ -353,6 +356,7 @@ private theorem expansion_frame_returns (state : State) (request : GeneralRuleJo
   · exact continued
 
 theorem expand_returns (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (task : GeneralRuleJobExecution.Task request)
     (covered : GeneralRuleJobExecution.jobTaskFreeWithin
       (GeneralRuleJobObservation.requestFootprint request) task) :
@@ -410,7 +414,7 @@ theorem expand_returns (state : State) (request : GeneralRuleJobExecution.Reques
             apply branch_returns active done state _
               (encoded (encodeOption PremiseOperationsExecution.GeneralExecution.stateTerm (some advanced)))
               expansionAdvanceCases expansionAdvanced _
-            · apply machine_tick_captured_returns active state request frame.state covered
+            · apply machine_tick_captured_returns active state request finiteProvider frame.state covered
               simp [expansionInnerState, active, selected, expansionBindings, caller, bindings, Helper.names,
                 PremiseOperationsExecution.GeneralExecution.stateTerm, PremiseSchedulerExecution.schedulerStateTerm,
                 applySubst, applySubst.applySubstList, Subst.lookup, CettaWireAtom.encode, CettaWireAtom.encodeMany]
@@ -489,13 +493,14 @@ theorem expand_returns (state : State) (request : GeneralRuleJobExecution.Reques
                     produced] using PureData.template_return program done state expansionReceipt templated
 
 theorem expand_captured_returns (caller : Subst) (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (task : GeneralRuleJobExecution.Task request)
     (covered : GeneralRuleJobExecution.jobTaskFreeWithin
       (GeneralRuleJobObservation.requestFootprint request) task) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) = [encoded (requestTerm request), encoded (taskTerm task)]) :
     PureReturns program caller state (a "gslt:driver:job-expand" arguments) state
       (encoded (encodeOption expansionTerm (some (GeneralRuleJobExecution.expand request task)))) :=
-  helper_capture .expand caller state arguments _ _ rfl captured (expand_returns state request task covered)
+  helper_capture .expand caller state arguments _ _ rfl captured (expand_returns state request finiteProvider task covered)
 
 private def tickBody : Atom :=
   a "let" [v "expanded", a "gslt:driver:job-expand" [v "request", v "task"],
@@ -511,6 +516,7 @@ private theorem tick_shape : (equation .tick).body =
   decide +kernel
 
 theorem tick_returns (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (machine : GeneralRuleJobExecution.State request)
     (covered : GeneralRuleJobExecution.jobStateFreeWithin
       (GeneralRuleJobObservation.requestFootprint request) request machine) :
@@ -554,7 +560,7 @@ theorem tick_returns (state : State) (request : GeneralRuleJobExecution.Request)
     · unfold tickBody
       apply named_let_returns program selected state "expanded" _ expansion
       · simp [selected, caller, bindings, Helper.names, Subst.lookup]
-      · apply expand_captured_returns selected state request current (covered.1 current (by simp [agenda]))
+      · apply expand_captured_returns selected state request finiteProvider current (covered.1 current (by simp [agenda]))
         simp [selected, caller, bindings, Helper.names, applySubst, Subst.lookup]
       · apply PremiseSchedulerExecution.returns_in_extension program scheduler_agreement (by decide +kernel)
         apply PremiseSchedulerExecution.commit_captured_returns continued state taskTerm answerTerm obligationTerm
@@ -563,13 +569,14 @@ theorem tick_returns (state : State) (request : GeneralRuleJobExecution.Request)
           agenda, value, stateTerm, expansionTerm]
 
 theorem tick_captured_returns (caller : Subst) (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (machine : GeneralRuleJobExecution.State request)
     (covered : GeneralRuleJobExecution.jobStateFreeWithin
       (GeneralRuleJobObservation.requestFootprint request) request machine) (arguments : List Atom)
     (captured : arguments.map (applySubst caller) = [encoded (requestTerm request), encoded (stateTerm machine)]) :
     PureReturns program caller state (a "gslt:driver:job-tick" arguments) state
       (encoded (encodeOption stateTerm (some (GeneralRuleJobExecution.tick request machine)))) :=
-  helper_capture .tick caller state arguments _ _ rfl captured (tick_returns state request machine covered)
+  helper_capture .tick caller state arguments _ _ rfl captured (tick_returns state request finiteProvider machine covered)
 
 private theorem bool_if_returns (caller : Subst) (state : State)
     (condition : Atom) (value : Bool) (yes no answer : Atom)
@@ -596,7 +603,8 @@ private theorem run_shape : (equation .run).body =
     a "if" [a "==" [v "fuel", number 0], a "Some" [v "state"], runBody] := by
   decide +kernel
 
-theorem run_returns (state : State) (request : GeneralRuleJobExecution.Request) (fuel : Nat)
+theorem run_returns (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = []) (fuel : Nat)
     (machine : GeneralRuleJobExecution.State request)
     (covered : GeneralRuleJobExecution.jobStateFreeWithin
       (GeneralRuleJobObservation.requestFootprint request) request machine) :
@@ -638,7 +646,7 @@ theorem run_returns (state : State) (request : GeneralRuleJobExecution.Request) 
     apply bool_if_returns caller state _ false _ _ _ tested
     unfold runBody
     apply branch_returns caller selected state _ (a "Some" [nextValue]) runCases runContinue _
-    · apply tick_captured_returns caller state request machine covered
+    · apply tick_captured_returns caller state request finiteProvider machine covered
       simp [caller, bindings, Helper.names, applySubst, Subst.lookup, value]
     · simp [runCases, selected, caller, bindings, Helper.names, SpaceSemantics.selectCase,
         SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup]
@@ -666,6 +674,7 @@ theorem run_returns (state : State) (request : GeneralRuleJobExecution.Request) 
             (provider_covered_by_own_names request.environment.provider)
 
 theorem run_captured_returns (caller : Subst) (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (fuel : Nat) (machine : GeneralRuleJobExecution.State request)
     (covered : GeneralRuleJobExecution.jobStateFreeWithin
       (GeneralRuleJobObservation.requestFootprint request) request machine) (arguments : List Atom)
@@ -673,7 +682,7 @@ theorem run_captured_returns (caller : Subst) (state : State) (request : General
       [encoded (requestTerm request), number fuel, encoded (stateTerm machine)]) :
     PureReturns program caller state (a "gslt:driver:job-run" arguments) state
       (encoded (encodeOption stateTerm (some (GeneralRuleJobExecution.run request fuel machine)))) :=
-  helper_capture .run caller state arguments _ _ rfl captured (run_returns state request fuel machine covered)
+  helper_capture .run caller state arguments _ _ rfl captured (run_returns state request finiteProvider fuel machine covered)
 
 theorem start_captured_returns (caller : Subst) (state : State) (request : GeneralRuleJobExecution.Request)
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
@@ -695,6 +704,7 @@ private theorem begin_shape : (equation .begin).body =
   decide +kernel
 
 theorem begin_returns (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source) (fuel : Nat) :
     PureReturns program [] state
       (a "gslt:driver:job-begin" [encoded (requestTerm request), number fuel]) state
@@ -712,7 +722,7 @@ theorem begin_returns (state : State) (request : GeneralRuleJobExecution.Request
   · simp [beginCases, selected, caller, bindings, Helper.names, SpaceSemantics.selectCase,
       SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup,
       encodeOption, CettaWireAtom.encode, CettaWireAtom.encodeMany]
-  · apply run_captured_returns selected state request fuel initial
+  · apply run_captured_returns selected state request finiteProvider fuel initial
     · exact GeneralRuleJobExecution.job_start_free_within _ request licensed
         (fun _ member => List.mem_append_left _ member)
     · simp [selected, caller, bindings, Helper.names, applySubst, Subst.lookup]
@@ -720,6 +730,7 @@ theorem begin_returns (state : State) (request : GeneralRuleJobExecution.Request
 /-- Completed target runs expose the complete source cursor state and perform
 no input, output or store mutation. Finite fuel can still leave pending work. -/
 theorem run_completed_iff (caller : Subst) (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (fuel : Nat) (machine : GeneralRuleJobExecution.State request)
     (covered : GeneralRuleJobExecution.jobStateFreeWithin
       (GeneralRuleJobObservation.requestFootprint request) request machine) (arguments : List Atom)
@@ -732,9 +743,10 @@ theorem run_completed_iff (caller : Subst) (state : State) (request : GeneralRul
       after = state ∧ answers = [encoded (encodeOption stateTerm
         (some (GeneralRuleJobExecution.run request fuel machine)))] ∧ input = [] ∧ output = [] :=
   pure_returns_completed_iff program caller state state _ _
-    (run_captured_returns caller state request fuel machine covered arguments captured) after answers input output
+    (run_captured_returns caller state request finiteProvider fuel machine covered arguments captured) after answers input output
 
 theorem begin_completed_iff (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source) (fuel : Nat)
     (after : State) (answers input output : List Atom) :
     (∃ evaluatorFuel, Eval.run program evaluatorFuel
@@ -743,12 +755,13 @@ theorem begin_completed_iff (state : State) (request : GeneralRuleJobExecution.R
       after = state ∧ answers = [encoded (encodeOption stateTerm
         (some (GeneralRuleJobExecution.run request fuel (GeneralRuleJobExecution.start request licensed))))] ∧
         input = [] ∧ output = [] :=
-  pure_returns_completed_iff program [] state state _ _ (begin_returns state request licensed fuel)
+  pure_returns_completed_iff program [] state state _ _ (begin_returns state request finiteProvider licensed fuel)
     after answers input output
 
 /-- Resumption consumes the retained cursor state. It preserves the entire
 observation of the corresponding uninterrupted execution. -/
 theorem resume_returns (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (first second : Nat) :
     PureReturns program [] state
@@ -758,16 +771,17 @@ theorem resume_returns (state : State) (request : GeneralRuleJobExecution.Reques
       (encoded (encodeOption stateTerm (some (GeneralRuleJobExecution.run request (first + second)
         (GeneralRuleJobExecution.start request licensed))))) := by
   rw [GeneralRuleJobExecution.run_add]
-  exact run_returns state request second _
+  exact run_returns state request finiteProvider second _
     (GeneralRuleJobExecution.job_run_finite_free_within request licensed first)
 
 theorem finish_returns (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source) :
     PureReturns program [] state
       (a "gslt:driver:job-begin" [encoded (requestTerm request),
         number (GeneralRuleJobExecution.workBound request licensed)]) state
       (encoded (encodeOption stateTerm (some (GeneralRuleJobExecution.finishState request licensed)))) :=
-  begin_returns state request licensed (GeneralRuleJobExecution.workBound request licensed)
+  begin_returns state request finiteProvider licensed (GeneralRuleJobExecution.workBound request licensed)
 
 /-- A completed observation is stated directly using the target evaluator.
 The observed receipt list is independent data; it is not defined by source replay. -/
@@ -782,6 +796,7 @@ def FinishedObservation (state : State) (request : GeneralRuleJobExecution.Reque
       [agenda, encodeList ScopedRuleJobReadoutExecution.receiptTerm receipts, unresolved, .natural work]])] [] []
 
 theorem finished_observation_iff (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (agenda : Term) (receipts : List GeneralRuleJobs.Receipt) (unresolved : Term) (work : Nat) :
     FinishedObservation state request licensed agenda receipts unresolved work ↔
@@ -795,7 +810,7 @@ theorem finished_observation_iff (state : State) (request : GeneralRuleJobExecut
     rw [encodeList_map]
     rfl
   unfold FinishedObservation
-  rw [begin_completed_iff]
+  rw [begin_completed_iff state request finiteProvider licensed (GeneralRuleJobExecution.workBound request licensed)]
   change (state = state ∧
     [encoded (.application "Some" [.application "PremiseState"
       [agenda, encodeList ScopedRuleJobReadoutExecution.receiptTerm receipts, unresolved, .natural work]])] =
@@ -811,6 +826,7 @@ theorem finished_observation_iff (state : State) (request : GeneralRuleJobExecut
 of its selected original job. This includes refused replacements and duplicate
 physical answer occurrences through the ordered list theorem above. -/
 theorem finished_receipt_iff (state : State) (request : GeneralRuleJobExecution.Request)
+    (finiteProvider : request.environment.provider.dynamicRelations = [])
     (licensed : request.job.Valid request.plan request.bound request.expected request.source)
     (checked : GeneralPremise.checkStepStratification request.environment.language = true)
     (receipt : GeneralRuleJobs.Receipt) :
@@ -819,14 +835,14 @@ theorem finished_receipt_iff (state : State) (request : GeneralRuleJobExecution.
       receipt.Valid request.plan request.bound request.expected request.source ∧ receipt.job = request.job := by
   constructor
   · rintro ⟨agenda, receipts, unresolved, work, observed, member⟩
-    have same := (finished_observation_iff state request licensed agenda receipts unresolved work).mp observed
+    have same := (finished_observation_iff state request finiteProvider licensed agenda receipts unresolved work).mp observed
     apply (GeneralRuleJobExecution.finishState_receipt_iff request licensed checked receipt).mp
     simpa only [same.2.1] using member
   · intro valid
     let finished := GeneralRuleJobExecution.finishState request licensed
     refine ⟨encodeList taskTerm finished.agenda, finished.answers.map Subtype.val,
       encodeList obligationTerm finished.unresolved, finished.work, ?_, ?_⟩
-    · exact (finished_observation_iff state request licensed _ _ _ _).mpr ⟨rfl, rfl, rfl, rfl⟩
+    · exact (finished_observation_iff state request finiteProvider licensed _ _ _ _).mpr ⟨rfl, rfl, rfl, rfl⟩
     · exact (GeneralRuleJobExecution.finishState_receipt_iff request licensed checked receipt).mpr valid
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleDriverExecution

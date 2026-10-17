@@ -1,3 +1,6 @@
+import Mettapedia.GSLT.LanguageDef.AuthoredBindingEquationServices
+import Mettapedia.GSLT.LanguageDef.GSLTILAuthoredFibre
+import Mettapedia.GSLT.LanguageDef.GeneralPremiseNativeEvidence
 import Mettapedia.GSLT.Core.LambdaTheoryCategory
 import Mettapedia.GSLT.Core.StepFree
 import Mettapedia.GSLT.Core.ContextualLadder
@@ -208,6 +211,7 @@ import Mettapedia.GSLT.Parsing.HornRequestDiscovery
 import Mettapedia.GSLT.Parsing.HornSemanticPlan
 import Mettapedia.GSLT.Parsing.ParserPackSemanticGSLT
 import Mettapedia.GSLT.LanguageDef
+import Mettapedia.GSLT.LanguageDef.ContextSupportTransport
 import Mettapedia.GSLT.LanguageDef.KernelAuthority
 import Mettapedia.GSLT.LanguageDef.ProofSystems
 import Mettapedia.GSLT.LanguageDef.VerificationTiers

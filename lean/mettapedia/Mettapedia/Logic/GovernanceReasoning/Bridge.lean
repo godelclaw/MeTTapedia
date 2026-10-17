@@ -1,5 +1,5 @@
 import Mettapedia.Logic.GovernanceReasoning.Core
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 
 /-!
 # Governance Reasoning: WM Calculus Bridge

@@ -19,8 +19,13 @@ import Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaWeightLedger
 import Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaNeedHistory
 import Mettapedia.Machines.ResourceOwnership
 import Mettapedia.Machines.Cursor.OwnedLifecycle
+import Mettapedia.Machines.Cursor.ProducerAccountTransport
 import Mettapedia.Machines.Cursor.ReadOnlyQuery
 import Mettapedia.Machines.BranchLocalNeed.InteractionValuation
+import Mettapedia.Machines.RelationalBuiltinResumption
+import Mettapedia.Machines.SourceProducerCardinality
+import Mettapedia.Machines.RegisterCode
+import Mettapedia.Machines.Cursor.Sequence
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeGradeAttachment
 import Mettapedia.Algorithms.WellFoundedServices.DependencyExamples
 import Mettapedia.Languages.MeTTa.PrimeCandidates.NativeCandidateCostInterface
@@ -29,6 +34,39 @@ import Mettapedia.Languages.ProcessCalculi.MORK.MM2MatchingCursor
 
 /-!
 # Native semantic weights: foundation and controls
+
+Finite relational mode evidence uses actual input bindings, aliasing and the
+complete equation view. Its weighted worker comparison preserves pending
+frontiers, output rejection accounts and the order of noncommutative factors.
+The existing recursive equation IR derives cardinality without evaluating
+bodies; admitted direct code and its collection cursor refine the independent
+source interpretation. An optional worker uses the same resolved instruction
+grammar and shared shape tree, with no answer distinct from an empty returned
+collection. Its recursive execution and source-derived selection preserve
+every outer occurrence; an expired equation view restores the source worker.
+The same selector checks the receiving result interface: a value-only consumer
+refuses optional code without changing the source's answer occurrences. This
+interface restriction composes with complete equation-view validation.
+Retained register execution uses the common bounded machine runner and
+composes with the existing scoped source-lowering theorem. Child computations
+and register regions share cumulative-debit composition; refusal keeps its
+instruction and earlier slots. Their transition units remain distinct from
+native instructions, callbacks and physical work.
+Source-account admission now consumes earned history and its ordered
+production ledger through the existing ownership lifecycle. The finite
+residual check includes continuation, receipts, paid work and allocator
+identities; erased heaps and substituted controls are counterexamples to
+weaker views. External source replay remains a separate verification cost.
+This sequential ownership construction does not establish native release,
+concurrent sharing or authority for a raw caller-supplied certificate.
+These are finite pure machine contracts. Native
+realization, compound producer ownership, effects and the dependent judgment
+remain separate obligations; a determinism summary grants none of them.
+Producer-supplied final-return metadata erases to the existing pull protocol.
+Its list and array implementations derive the empty future from retained state;
+the equation-frontier construction refuses unmatched frames whose no-rule
+observation remains owed. Neither construction probes an additional answer or
+grants permission to discard another owner's account.
 
 The native Need frontier instantiates the free resumption handler and its
 finite-arity operation theory. Coefficient erasure recovers ordinary execution;

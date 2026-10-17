@@ -77,7 +77,7 @@ theorem canary_hol_higherOrderRefl_provable :
 theorem canary_hol_higherOrderRefl_singleton_strength_one :
     BinaryWorldModel.queryStrength
         (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
-        (Query := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery
+        (Query := Mettapedia.Logic.HOL.HOLQuery
           (Base := FixtureBase) FixtureConst)
         ({fixtureModel} :
           Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
@@ -87,12 +87,12 @@ theorem canary_hol_higherOrderRefl_singleton_strength_one :
     Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLSoundness.holProvable_models
       (Const := FixtureConst) canary_hol_higherOrderRefl_provable fixtureModel
   exact
-    Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL.queryStrength_singleton_of_satisfies
-      (Base := FixtureBase) (Const := FixtureConst)
+    Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.queryStrength_singleton_of_satisfies
+      (Mettapedia.Logic.HOL.holSatisfies (Base := FixtureBase) (Const := FixtureConst))
       fixtureModel fixtureHigherOrderRefl hsatisfies
 
 theorem canary_hol_id_eta_eq :
-    Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLRules.HOLProvEq
+    Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLProvEq
       (Base := FixtureBase) (Const := FixtureConst)
       (.lam (.app (weaken (Base := FixtureBase) (σ := FixtureObjTy) fixtureId) (.var .vz)))
       fixtureId :=
@@ -111,8 +111,9 @@ theorem canary_hol_top_imp_top_link
     W
 
 theorem canary_hol_top_iff_top_queryEq :
-    Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLConsequence.HOLWMQueryEq
-      (Base := FixtureBase) (Const := FixtureConst)
+    Mettapedia.PLN.WorldModel.PLNWorldModel.WMQueryEq
+      (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
+      (Query := Mettapedia.Logic.HOL.HOLQuery FixtureConst)
       (.top : ClosedFormula FixtureConst) .top :=
   Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLConsequence.holProvIff_to_WMQueryEq
     (Base := FixtureBase) (Const := FixtureConst)
@@ -121,8 +122,9 @@ theorem canary_hol_top_iff_top_queryEq :
       (.top : ClosedFormula FixtureConst))
 
 theorem canary_hol_and_comm_queryEq :
-    Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLConsequence.HOLWMQueryEq
-      (Base := FixtureBase) (Const := FixtureConst)
+    Mettapedia.PLN.WorldModel.PLNWorldModel.WMQueryEq
+      (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
+      (Query := Mettapedia.Logic.HOL.HOLQuery FixtureConst)
       (.and (.top : ClosedFormula FixtureConst) .bot)
       (.and (.bot : ClosedFormula FixtureConst) .top) :=
   Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLConsequence.holProvIff_to_WMQueryEq
@@ -132,8 +134,9 @@ theorem canary_hol_and_comm_queryEq :
       (.top : ClosedFormula FixtureConst) .bot)
 
 theorem canary_hol_or_comm_queryEq :
-    Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLConsequence.HOLWMQueryEq
-      (Base := FixtureBase) (Const := FixtureConst)
+    Mettapedia.PLN.WorldModel.PLNWorldModel.WMQueryEq
+      (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
+      (Query := Mettapedia.Logic.HOL.HOLQuery FixtureConst)
       (.or (.top : ClosedFormula FixtureConst) .bot)
       (.or (.bot : ClosedFormula FixtureConst) .top) :=
   Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLConsequence.holProvIff_to_WMQueryEq
@@ -165,52 +168,54 @@ theorem canary_hol_imp_mono_link
     W
 
 theorem canary_hol_not_queryEq_top_bot :
-    ¬ Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLConsequence.HOLWMQueryEq
-      (Base := FixtureBase) (Const := FixtureConst)
+    ¬ Mettapedia.PLN.WorldModel.PLNWorldModel.WMQueryEq
+      (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
+      (Query := Mettapedia.Logic.HOL.HOLQuery FixtureConst)
       (.top : ClosedFormula FixtureConst) (.bot : ClosedFormula FixtureConst) := by
   intro hEq
   have hStrength :=
     WMQueryEq.to_queryStrength
       (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
-      (Query := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery
+      (Query := Mettapedia.Logic.HOL.HOLQuery
         (Base := FixtureBase) FixtureConst)
       hEq ({fixtureModel} :
         Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
   have htop :
       BinaryWorldModel.queryStrength
           (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
-          (Query := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery
+          (Query := Mettapedia.Logic.HOL.HOLQuery
             (Base := FixtureBase) FixtureConst)
           ({fixtureModel} :
             Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
           (.top : ClosedFormula FixtureConst) = 1 :=
-    Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL.queryStrength_singleton_of_satisfies
-      (Base := FixtureBase) (Const := FixtureConst) fixtureModel .top
+    Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.queryStrength_singleton_of_satisfies
+      (Mettapedia.Logic.HOL.holSatisfies (Base := FixtureBase) (Const := FixtureConst)) fixtureModel .top
       (HenkinModel.models_top fixtureModel)
   have hbot :
       BinaryWorldModel.queryStrength
           (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
-          (Query := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery
+          (Query := Mettapedia.Logic.HOL.HOLQuery
             (Base := FixtureBase) FixtureConst)
           ({fixtureModel} :
             Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
           (.bot : ClosedFormula FixtureConst) = 0 :=
-    Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL.queryStrength_singleton_of_not_satisfies
-      (Base := FixtureBase) (Const := FixtureConst) fixtureModel .bot
+    Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.queryStrength_singleton_of_not_satisfies
+      (Mettapedia.Logic.HOL.holSatisfies (Base := FixtureBase) (Const := FixtureConst)) fixtureModel .bot
       (HenkinModel.models_bot fixtureModel)
   rw [htop, hbot] at hStrength
   exact zero_ne_one hStrength.symm
 
 theorem canary_hol_not_queryEq_and_top_bot_top :
-    ¬ Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLConsequence.HOLWMQueryEq
-      (Base := FixtureBase) (Const := FixtureConst)
+    ¬ Mettapedia.PLN.WorldModel.PLNWorldModel.WMQueryEq
+      (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
+      (Query := Mettapedia.Logic.HOL.HOLQuery FixtureConst)
       (.and (.top : ClosedFormula FixtureConst) .bot)
       (.top : ClosedFormula FixtureConst) := by
   intro hEq
   have hStrength :=
     WMQueryEq.to_queryStrength
       (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
-      (Query := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery
+      (Query := Mettapedia.Logic.HOL.HOLQuery
         (Base := FixtureBase) FixtureConst)
       hEq ({fixtureModel} :
         Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
@@ -223,24 +228,24 @@ theorem canary_hol_not_queryEq_and_top_bot_top :
   have hand :
       BinaryWorldModel.queryStrength
           (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
-          (Query := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery
+          (Query := Mettapedia.Logic.HOL.HOLQuery
             (Base := FixtureBase) FixtureConst)
           ({fixtureModel} :
             Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
           (.and (.top : ClosedFormula FixtureConst) .bot) = 0 :=
-    Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL.queryStrength_singleton_of_not_satisfies
-      (Base := FixtureBase) (Const := FixtureConst) fixtureModel
+    Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.queryStrength_singleton_of_not_satisfies
+      (Mettapedia.Logic.HOL.holSatisfies (Base := FixtureBase) (Const := FixtureConst)) fixtureModel
       (.and (.top : ClosedFormula FixtureConst) .bot) hAndNot
   have htop :
       BinaryWorldModel.queryStrength
           (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
-          (Query := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery
+          (Query := Mettapedia.Logic.HOL.HOLQuery
             (Base := FixtureBase) FixtureConst)
           ({fixtureModel} :
             Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
           (.top : ClosedFormula FixtureConst) = 1 :=
-    Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL.queryStrength_singleton_of_satisfies
-      (Base := FixtureBase) (Const := FixtureConst) fixtureModel .top
+    Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.queryStrength_singleton_of_satisfies
+      (Mettapedia.Logic.HOL.holSatisfies (Base := FixtureBase) (Const := FixtureConst)) fixtureModel .top
       (HenkinModel.models_top fixtureModel)
   rw [hand, htop] at hStrength
   exact zero_ne_one hStrength
@@ -249,13 +254,13 @@ theorem canary_hol_not_singletonConsequence_top_bot :
     ¬ ∀ M : HenkinModel FixtureBase FixtureConst,
       BinaryWorldModel.queryStrength
           (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
-          (Query := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery
+          (Query := Mettapedia.Logic.HOL.HOLQuery
             (Base := FixtureBase) FixtureConst)
           ({M} : Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
           (.top : ClosedFormula FixtureConst) ≤
         BinaryWorldModel.queryStrength
           (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
-          (Query := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery
+          (Query := Mettapedia.Logic.HOL.HOLQuery
             (Base := FixtureBase) FixtureConst)
           ({M} : Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
           (.bot : ClosedFormula FixtureConst) := by
@@ -263,24 +268,24 @@ theorem canary_hol_not_singletonConsequence_top_bot :
   have htop :
       BinaryWorldModel.queryStrength
           (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
-          (Query := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery
+          (Query := Mettapedia.Logic.HOL.HOLQuery
             (Base := FixtureBase) FixtureConst)
           ({fixtureModel} :
             Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
           (.top : ClosedFormula FixtureConst) = 1 :=
-    Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL.queryStrength_singleton_of_satisfies
-      (Base := FixtureBase) (Const := FixtureConst) fixtureModel .top
+    Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.queryStrength_singleton_of_satisfies
+      (Mettapedia.Logic.HOL.holSatisfies (Base := FixtureBase) (Const := FixtureConst)) fixtureModel .top
       (HenkinModel.models_top fixtureModel)
   have hbot :
       BinaryWorldModel.queryStrength
           (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
-          (Query := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLQuery
+          (Query := Mettapedia.Logic.HOL.HOLQuery
             (Base := FixtureBase) FixtureConst)
           ({fixtureModel} :
             Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
           (.bot : ClosedFormula FixtureConst) = 0 :=
-    Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOL.queryStrength_singleton_of_not_satisfies
-      (Base := FixtureBase) (Const := FixtureConst) fixtureModel .bot
+    Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.queryStrength_singleton_of_not_satisfies
+      (Mettapedia.Logic.HOL.holSatisfies (Base := FixtureBase) (Const := FixtureConst)) fixtureModel .bot
       (HenkinModel.models_bot fixtureModel)
   have hcontra := h fixtureModel
   rw [htop, hbot] at hcontra

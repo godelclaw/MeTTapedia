@@ -1,6 +1,6 @@
 import Mettapedia.GSLT.Core.InferenceControl
-import Mettapedia.Machines.TraceObservationBoundary
-import Mathlib.Algebra.Order.BigOperators.Group.List
+import Mettapedia.GSLT.Core.InferenceRecordingPrefix
+import Mettapedia.GSLT.Causality.HistoryMonad
 
 /-!
 # Bounded recording of controlled inference
@@ -12,7 +12,8 @@ with an explicit omitted count; truncation does not stop the search.
 
 Recorded items describe selected inference occurrences, not automatically
 committed external effects. A client chooses which existing node information
-to materialize. Disabled and full recorders do not request materialization.
+to materialize. `runSelected` sends an unrecorded request to the original
+driver; its recorded worker materializes events only while capacity remains.
 The model counts recording requests and retained items, not CPU instructions
 or bytes. Concrete allocation, identity and concurrency services need their
 own implementation correspondence. Complete payload projections require every
@@ -28,327 +29,8 @@ open Mettapedia.GSLT.Core.BranchingTemporal
 
 variable {Node Answer Memory Event Payload : Type*}
 
-/-- A prefix retained in reverse order, with unused capacity and the number
-of later items omitted. Once capacity is exhausted it is never replenished
-by resumption. -/
-structure Prefix (Event : Type*) where
-  reversed : List Event
-  remaining : Nat
-  omitted : Nat
-deriving DecidableEq, Repr
-
-namespace Prefix
-
-def initial (capacity : Nat) : Prefix Event := ⟨[], capacity, 0⟩
-
-def items (record : Prefix Event) : List Event := record.reversed.reverse
-
-/-- Transport retained payloads without changing capacity or omission status.
-This is an observation of an existing record, not a request to record an
-unavailable prefix of execution. -/
-def map {NextEvent : Type*} (mapping : Event → NextEvent)
-    (record : Prefix Event) : Prefix NextEvent :=
-  ⟨record.reversed.map mapping, record.remaining, record.omitted⟩
-
-@[simp] theorem map_id (record : Prefix Event) : record.map id = record := by
-  cases record
-  simp [map]
-
-theorem map_comp {NextEvent FinalEvent : Type*}
-    (first : Event → NextEvent) (second : NextEvent → FinalEvent) (record : Prefix Event) :
-    (record.map first).map second = record.map (second ∘ first) := by
-  simp [map, List.map_map]
-
-@[simp] theorem items_map {NextEvent : Type*} (mapping : Event → NextEvent)
-    (record : Prefix Event) : (record.map mapping).items = record.items.map mapping := by
-  simp [map, items, List.map_reverse]
-
-/-- The thunk is demanded only when storage is available. The omitted
-count is recording overhead even when no payload is materialized. -/
-def push (record : Prefix Event) (event : Unit → Event) : Prefix Event :=
-  match record.remaining with
-  | 0 => { record with omitted := record.omitted + 1 }
-  | left + 1 => { record with reversed := event () :: record.reversed, remaining := left }
-
-/-- Payload transport commutes with accepting an event, including a full
-prefix that only increases its omission count. -/
-theorem push_map {NextEvent : Type*} (mapping : Event → NextEvent)
-    (record : Prefix Event) (event : Unit → Event) :
-    (record.push event).map mapping =
-      (record.map mapping).push (fun _ => mapping (event ())) := by
-  cases available : record.remaining <;> simp [push, map, available]
-
-def append : Prefix Event → List Event → Prefix Event
-  | record, [] => record
-  | record, event :: rest => append (record.push (fun _ => event)) rest
-
-/-- Only an untruncated prefix may be presented as the complete recording
-since its captured start. It says nothing about execution before that start. -/
-def complete? (record : Prefix Event) : Option (List Event) :=
-  if record.omitted = 0 then some record.items else none
-
-theorem complete?_map {NextEvent : Type*} (mapping : Event → NextEvent)
-    (record : Prefix Event) : (record.map mapping).complete? =
-      record.complete?.map (List.map mapping) := by
-  by_cases complete : record.omitted = 0 <;> simp [complete?, map, items, complete]
-
-theorem push_full (record : Prefix Event) (full : record.remaining = 0)
-    (first second : Unit → Event) : record.push first = record.push second := by
-  simp [push, full]
-
-theorem append_append (record : Prefix Event) (first second : List Event) :
-    record.append (first ++ second) = (record.append first).append second := by
-  induction first generalizing record with
-  | nil => rfl
-  | cons event rest ih => exact ih _
-
-theorem append_state (record : Prefix Event) (events : List Event) :
-    (record.append events).items = record.items ++ events.take record.remaining ∧
-      (record.append events).remaining = record.remaining - events.length ∧
-      (record.append events).omitted = record.omitted + (events.length - record.remaining) := by
-  induction events generalizing record with
-  | nil => simp [append]
-  | cons event rest ih =>
-      cases available : record.remaining with
-      | zero =>
-          obtain ⟨retained, left, omitted⟩ := ih (record.push (fun _ => event))
-          simp only [append, push, available]
-          simp only [push, available] at retained left omitted
-          simp [items] at retained ⊢
-          exact ⟨retained, by simpa using left, by omega⟩
-      | succ availableCount =>
-          obtain ⟨retained, left, omitted⟩ := ih (record.push (fun _ => event))
-          simp only [append, push, available]
-          simp only [push, available] at retained left omitted
-          simp only [items, List.reverse_cons] at retained
-          refine ⟨?_, ?_, ?_⟩
-          · simpa [available, items, List.append_assoc] using retained
-          · simpa [available] using left
-          · simpa [available] using omitted
-
-theorem initial_items (capacity : Nat) (events : List Event) :
-    ((initial capacity : Prefix Event).append events).items = events.take capacity := by
-  simpa [initial, items] using (append_state (initial capacity) events).1
-
-theorem initial_omitted (capacity : Nat) (events : List Event) :
-    ((initial capacity : Prefix Event).append events).omitted = events.length - capacity := by
-  simpa [initial] using (append_state (initial capacity) events).2.2
-
-theorem complete_iff (capacity : Nat) (events : List Event) :
-    ((initial capacity : Prefix Event).append events).complete? = some events ↔
-      events.length ≤ capacity := by
-  rw [complete?, initial_omitted]
-  by_cases fits : events.length ≤ capacity
-  · simp [fits, Nat.sub_eq_zero_of_le fits, initial_items, List.take_of_length_le fits]
-  · have positive : events.length - capacity ≠ 0 := by omega
-    simp [fits, positive]
-
-/-- The two numerical readouts count retained payloads and omitted requests
-separately. Their sum is the exact number of observed selections. -/
-theorem request_account (capacity : Nat) (events : List Event) :
-    ((initial capacity : Prefix Event).append events).items.length +
-      ((initial capacity : Prefix Event).append events).omitted = events.length := by
-  rw [initial_items, initial_omitted, List.length_take]
-  omega
-
-
-private theorem mapPayloads_iff (decode : Event → Option Payload)
-    (events : List Event) (payloads : List Payload) :
-    events.mapM decode = some payloads ↔
-      List.Forall₂ (fun event payload => decode event = some payload) events payloads := by
-  induction events generalizing payloads with
-  | nil => cases payloads <;> simp
-  | cons event rest ih =>
-      cases decoded : decode event with
-      | none => cases payloads <;> simp [List.mapM_cons, decoded]
-      | some payload =>
-          cases payloads with
-          | nil =>
-              cases tail : rest.mapM decode <;> simp [List.mapM_cons, decoded, tail]
-          | cons first others =>
-              cases tail : rest.mapM decode with
-              | none => simp [List.mapM_cons, decoded, tail, ← ih]
-              | some values => simp [List.mapM_cons, decoded, tail, ← ih]
-
-/-- Decode every retained payload only when the outer prefix is complete.
-A refused inner graph makes the projection incomplete, rather than silently
-filtering that occurrence from a successful readout. -/
-def project? (decode : Event → Option Payload) (record : Prefix Event) : Option (List Payload) :=
-  record.complete?.bind (fun events => events.mapM decode)
-
-theorem project?_iff (decode : Event → Option Payload) (record : Prefix Event)
-    (payloads : List Payload) : project? decode record = some payloads ↔
-    record.omitted = 0 ∧
-      List.Forall₂ (fun event payload => decode event = some payload) record.items payloads := by
-  by_cases complete : record.omitted = 0
-  · simp [project?, complete?, complete, mapPayloads_iff]
-  · simp [project?, complete?, complete]
-
-theorem project?_length (decode : Event → Option Payload) (record : Prefix Event)
-    (payloads : List Payload) (accepted : project? decode record = some payloads) :
-    payloads.length = record.items.length :=
-  ((project?_iff decode record payloads).mp accepted).2.length_eq.symm
-
-theorem project?_truncated (decode : Event → Option Payload) (record : Prefix Event)
-    (lost : record.omitted ≠ 0) : project? decode record = none := by
-  simp [project?, complete?, lost]
-
-/-- An inner refusal cannot disappear from a complete outer recording. -/
-theorem project?_refused (decode : Event → Option Payload) (record : Prefix Event)
-    (event : Event) (member : event ∈ record.items) (refused : decode event = none) :
-    project? decode record = none := by
-  cases result : project? decode record with
-  | none => rfl
-  | some payloads =>
-      have related := ((project?_iff decode record payloads).mp result).2
-      have all : ∀ event ∈ record.items, ∃ payload, decode event = some payload := by
-        clear result
-        generalize record.items = events at related ⊢
-        induction related with
-        | nil => simp
-        | cons decoded rest ih =>
-            intro event found
-            rcases List.mem_cons.mp found with rfl | found
-            · exact ⟨_, decoded⟩
-            · exact ih event found
-      obtain ⟨payload, decoded⟩ := all event member
-      simp [refused] at decoded
-
-/-- Occurrence keys are retained when the payload decoder preserves them.
-Payload equality alone supplies no such identity law. -/
-theorem project?_keys {Key : Type*} (decode : Event → Option Payload)
-    (eventKey : Event → Key) (payloadKey : Payload → Key)
-    (faithful : ∀ event payload, decode event = some payload → eventKey event = payloadKey payload)
-    (record : Prefix Event) (payloads : List Payload)
-    (accepted : project? decode record = some payloads) :
-    record.items.map eventKey = payloads.map payloadKey := by
-  have related := ((project?_iff decode record payloads).mp accepted).2
-  clear accepted
-  generalize record.items = events at related ⊢
-  induction related with
-  | nil => rfl
-  | cons decoded rest ih =>
-      simp only [List.map_cons]
-      rw [faithful _ _ decoded, ih]
-
-theorem initial_project?_iff (decode : Event → Option Payload) (capacity : Nat)
-    (events : List Event) (payloads : List Payload) :
-    project? decode ((initial capacity).append events) = some payloads ↔
-      events.length ≤ capacity ∧
-        List.Forall₂ (fun event payload => decode event = some payload) events payloads := by
-  rw [project?_iff, initial_omitted, initial_items]
-  by_cases fits : events.length ≤ capacity
-  · simp [fits, Nat.sub_eq_zero_of_le fits, List.take_of_length_le fits]
-  · have positive : events.length - capacity ≠ 0 := by omega
-    simp [positive, fits]
-
-/-- A conservative retained-storage charge is bounded only when every
-retained payload has a supplied charge bound. Node count alone supplies none. -/
-theorem retained_charge_bound (charge : Event → Nat) (capacity perItem : Nat)
-    (events : List Event) (bounded : ∀ event ∈ events.take capacity, charge event ≤ perItem) :
-    ((((initial capacity : Prefix Event).append events).items).map charge).sum ≤ capacity * perItem := by
-  rw [initial_items]
-  have localBound := List.sum_le_card_nsmul ((events.take capacity).map charge) perItem (by
-    intro value member
-    obtain ⟨event, eventMember, rfl⟩ := List.mem_map.mp member
-    exact bounded event eventMember)
-  simp only [List.length_map, List.length_take, nsmul_eq_mul] at localBound
-  exact localBound.trans (Nat.mul_le_mul_right perItem (Nat.min_le_left _ _))
-
-/-- A complete graph readout uses the existing causal receipt. Its explicit
-boundary lists dependencies captured before this recording scope. Structural
-checking does not authenticate the evaluator's claimed dependency edges. -/
-def graph? [DecidableEq Event] (boundary roots : List Event)
-    (record : Prefix (Mettapedia.Machines.CausalEvent Event)) :
-    Option (Mettapedia.Machines.CausalReceipt Event) := do
-  let events ← record.complete?
-  let receipt : Mettapedia.Machines.CausalReceipt Event := ⟨roots, events⟩
-  if receipt.check boundary then some receipt else none
-
-theorem graph?_sound [DecidableEq Event] (boundary roots : List Event)
-    (record : Prefix (Mettapedia.Machines.CausalEvent Event))
-    (receipt : Mettapedia.Machines.CausalReceipt Event)
-    (accepted : graph? boundary roots record = some receipt) :
-    record.complete? = some receipt.events ∧ receipt.WellFormed boundary ∧ receipt.roots = roots := by
-  unfold graph? at accepted
-  cases complete : record.complete? with
-  | none => simp [complete] at accepted
-  | some events =>
-    simp only [complete] at accepted
-    change (if Mettapedia.Machines.CausalReceipt.check boundary ⟨roots, events⟩
-      then some ⟨roots, events⟩ else none) = some receipt at accepted
-    split at accepted
-    · rename_i checked
-      cases Option.some.inj accepted
-      exact ⟨rfl, (Mettapedia.Machines.CausalReceipt.check_iff _ _).mp checked, rfl⟩
-    · cases accepted
-
-theorem graph?_truncated [DecidableEq Event] (boundary roots : List Event)
-    (record : Prefix (Mettapedia.Machines.CausalEvent Event)) (lost : record.omitted ≠ 0) :
-    graph? boundary roots record = none := by
-  simp [graph?, complete?, lost]
-
-/-- A complete graph readout requires both occurrence coverage and the
-structural graph contract. Neither is inferred from the returned answer. -/
-theorem initial_graph_iff [DecidableEq Event] (boundary roots : List Event)
-    (capacity : Nat) (events : List (Mettapedia.Machines.CausalEvent Event)) :
-    graph? boundary roots ((initial capacity).append events) = some ⟨roots, events⟩ ↔
-      events.length ≤ capacity ∧ Mettapedia.Machines.CausalReceipt.WellFormed boundary
-        ⟨roots, events⟩ := by
-  constructor
-  · intro accepted
-    obtain ⟨complete, valid, _⟩ := graph?_sound boundary roots _ _ accepted
-    exact ⟨(complete_iff capacity events).mp complete, valid⟩
-  · rintro ⟨fits, valid⟩
-    have complete := (complete_iff capacity events).mpr fits
-    have checked := (Mettapedia.Machines.CausalReceipt.check_iff _ _).mpr valid
-    simp [graph?, complete, checked]
-
-end Prefix
-
-/-- `none` is genuinely disabled; `some 0` records omissions from the first
-selected occurrence. The two states have different observation contracts. -/
-def initial (capacity : Option Nat) : Option (Prefix Event) :=
-  capacity.map Prefix.initial
-
-def accept (record : Option (Prefix Event)) (event : Unit → Event) : Option (Prefix Event) :=
-  match record with
-  | none => none
-  | some record => some (record.push event)
-
-theorem accept_map {NextEvent : Type*} (mapping : Event → NextEvent)
-    (record : Option (Prefix Event)) (event : Unit → Event) :
-    (accept record event).map (Prefix.map mapping) =
-      accept (record.map (Prefix.map mapping)) (fun _ => mapping (event ())) := by
-  cases record with
-  | none => rfl
-  | some record => simp only [accept, Option.map_some, Prefix.push_map]
-
-def append (record : Option (Prefix Event)) (events : List Event) : Option (Prefix Event) :=
-  record.map (fun retained => retained.append events)
-
-@[simp] theorem append_nil (record : Option (Prefix Event)) : append record [] = record := by
-  cases record <;> rfl
-
-theorem append_cons (record : Option (Prefix Event)) (event : Event) (rest : List Event) :
-    append record (event :: rest) = append (accept record (fun _ => event)) rest := by
-  cases record <;> rfl
-
-theorem append_append (record : Option (Prefix Event)) (first second : List Event) :
-    append record (first ++ second) = append (append record first) second := by
-  cases record with
-  | none => rfl
-  | some record => simp [append, Prefix.append_append]
-
-/-- Existing prefix append is the stateful observer's chronological consume
-fold, including disabled recording and omission-only updates. -/
-theorem append_foldl (record : Option (Prefix Event)) (events : List Event) :
-    append record events =
-      events.foldl (fun current event => accept current (fun _ => event)) record := by
-  induction events generalizing record with
-  | nil => exact append_nil _
-  | cons event rest ih => rw [append_cons, List.foldl_cons, ih]
-
+/-- Observer-state specification for the preservation laws. `runSelected`
+chooses the executable ordinary or bounded-recording worker at entry. -/
 def controller (base : Controller Node Answer Memory)
     (observe : Memory → Node → Option Answer → List Node → Event)
     (capacity : Option Nat) : Controller Node Answer (Memory × Option (Prefix Event)) :=
@@ -526,6 +208,52 @@ theorem stream_add (system : BranchingSystem Node Answer)
               (Snapshot.run system base second (Snapshot.run system base first snapshot))).toList)
       rw [ih, Snapshot.run_add, List.append_assoc]
 
+/-- A complete request records at most one selection per unit of allowance.
+If fewer selections were made, the actual controller frontier is exhausted;
+a valid proper prefix of an open run cannot certify the whole request. -/
+theorem stream_request_boundary
+    (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (fuel : Nat) (snapshot : Snapshot Node Answer Memory) :
+    (stream system base observe fuel snapshot).length ≤ fuel ∧
+      ((stream system base observe fuel snapshot).length = fuel ∨
+        (Snapshot.run system base fuel snapshot).search.frontier = []) := by
+  induction fuel with
+  | zero => simp [stream]
+  | succ fuel ih =>
+      obtain ⟨bound, boundary⟩ := ih
+      cases selected : (base.scheduler (Snapshot.run system base fuel snapshot).memory).reorder
+          (Snapshot.run system base fuel snapshot).search.frontier with
+      | nil =>
+          have empty : (Snapshot.run system base fuel snapshot).search.frontier = [] :=
+            List.length_eq_zero_iff.mp (by
+              simpa only [selected, List.length_nil] using
+                ((base.scheduler (Snapshot.run system base fuel snapshot).memory).reorder_complete
+                  (Snapshot.run system base fuel snapshot).search.frontier).length_eq.symm)
+          refine ⟨?_, Or.inr ?_⟩
+          · simpa only [stream, next, selected, List.head?_nil, Option.map_none,
+              Option.toList_none, List.append_nil] using bound.trans (Nat.le_succ fuel)
+          · change (Snapshot.tick system base
+                (Snapshot.run system base fuel snapshot)).search.frontier = []
+            rw [Snapshot.tick_eq_self_of_frontier_nil system base _ empty]
+            exact empty
+      | cons node pending =>
+          have full : (stream system base observe fuel snapshot).length = fuel := by
+            rcases boundary with full | empty
+            · exact full
+            · have member : node ∈
+                  (base.scheduler (Snapshot.run system base fuel snapshot).memory).reorder
+                    (Snapshot.run system base fuel snapshot).search.frontier := by
+                rw [selected]
+                exact List.mem_cons_self
+              have original :=
+                ((base.scheduler (Snapshot.run system base fuel snapshot).memory).reorder_complete
+                  (Snapshot.run system base fuel snapshot).search.frontier).mem_iff.mp member
+              simp only [empty, List.not_mem_nil] at original
+          simp only [stream, next, selected, List.head?_cons, Option.map_some,
+            Option.toList_some, List.length_append, List.length_singleton, full]
+          exact ⟨Nat.le_refl _, Or.inl True.intro⟩
+
 /-- A second observation that reads only the original continuation sees
 the same chronological stream whether the first observer is attached or
 erased. Neither observer may use the other's private accumulated state. -/
@@ -634,6 +362,229 @@ def start (snapshot : Snapshot Node Answer Memory) (capacity : Option Nat) :
     Snapshot Node Answer (Memory × Option (Prefix Event)) :=
   ⟨snapshot.search, (snapshot.memory, initial capacity)⟩
 
+@[simp] theorem erase_start (snapshot : Snapshot Node Answer Memory)
+    (capacity : Option Nat) :
+    erase (start (Event := Event) snapshot capacity) = snapshot := by
+  cases snapshot
+  rfl
+
+/-! ### Entry-selected execution
+
+The ordinary branch uses the original controller and memory directly. The
+recorded branch passes an event thunk to `Prefix.push`, so a full prefix does
+not materialize another event. Both branches retain the existing complete
+snapshot and the same bounded-prefix contract.
+-/
+
+private def boundedController (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (record : Prefix Event) : Controller Node Answer (Memory × Prefix Event) :=
+  base.observing (fun memory node answer generated _ =>
+    observe memory node answer generated) record Prefix.push
+
+private theorem plain_tick_included (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (snapshot : Snapshot Node Answer Memory) :
+    (Snapshot.tick system base snapshot).mapMemory (fun memory => (memory, none)) =
+      Snapshot.tick system (controller base observe none)
+        (snapshot.mapMemory (fun memory => (memory, none))) := by
+  rcases snapshot with ⟨search, memory⟩
+  simp only [Snapshot.tick, Snapshot.mapMemory, controller, Controller.observing]
+  cases (base.scheduler memory).reorder search.frontier <;> rfl
+
+private theorem plain_run_included (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (fuel : Nat) (snapshot : Snapshot Node Answer Memory) :
+    (Snapshot.run system base fuel snapshot).mapMemory (fun memory => (memory, none)) =
+      Snapshot.run system (controller base observe none) fuel
+        (snapshot.mapMemory (fun memory => (memory, none))) := by
+  induction fuel with
+  | zero => rfl
+  | succ fuel ih => rw [Snapshot.run, plain_tick_included, ih, Snapshot.run]
+
+private theorem bounded_tick_included (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (record : Prefix Event) (snapshot : Snapshot Node Answer (Memory × Prefix Event)) :
+    (Snapshot.tick system (boundedController base observe record) snapshot).mapMemory
+        (fun memory => (memory.1, some memory.2)) =
+      Snapshot.tick system (controller base observe none)
+        (snapshot.mapMemory (fun memory => (memory.1, some memory.2))) := by
+  rcases snapshot with ⟨search, memory, retained⟩
+  simp only [Snapshot.tick, Snapshot.mapMemory, boundedController, controller,
+    Controller.observing]
+  cases (base.scheduler memory).reorder search.frontier <;> rfl
+
+private theorem bounded_run_included (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (record : Prefix Event) (fuel : Nat)
+    (snapshot : Snapshot Node Answer (Memory × Prefix Event)) :
+    (Snapshot.run system (boundedController base observe record) fuel snapshot).mapMemory
+        (fun memory => (memory.1, some memory.2)) =
+      Snapshot.run system (controller base observe none) fuel
+        (snapshot.mapMemory (fun memory => (memory.1, some memory.2))) := by
+  induction fuel with
+  | zero => rfl
+  | succ fuel ih => rw [Snapshot.run, bounded_tick_included, ih, Snapshot.run]
+
+/-- Choose the execution loop at a retained boundary. Disabled execution has
+no recorder in the loop's controller or memory. Recorded execution retains
+the existing prefix, unused capacity and omissions without constructing an
+intermediate event list. The common result wrapper is built only on return. -/
+def runSelected (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (fuel : Nat) (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    Snapshot Node Answer (Memory × Option (Prefix Event)) :=
+  match snapshot.memory.2 with
+  | none =>
+      (Snapshot.run system base fuel (erase snapshot)).mapMemory (fun memory => (memory, none))
+  | some record =>
+      (Snapshot.run system (boundedController base observe record) fuel
+        ⟨snapshot.search, (snapshot.memory.1, record)⟩).mapMemory
+          (fun memory => (memory.1, some memory.2))
+
+/-- The two selected loops implement the existing observer specification,
+including the full search frontier, controller memory and bounded record. -/
+theorem runSelected_eq_reference (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (fuel : Nat) (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    runSelected system base observe fuel snapshot =
+      Snapshot.run system (controller base observe none) fuel snapshot := by
+  rcases snapshot with ⟨search, memory, record⟩
+  cases record with
+  | none => exact plain_run_included system base observe fuel ⟨search, memory⟩
+  | some record =>
+      exact bounded_run_included system base observe record fuel ⟨search, memory, record⟩
+
+theorem runSelected_erasure (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (fuel : Nat) (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    erase (runSelected system base observe fuel snapshot) =
+      Snapshot.run system base fuel (erase snapshot) := by
+  rw [runSelected_eq_reference, run_erasure]
+
+theorem runSelected_record (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (fuel : Nat) (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    (runSelected system base observe fuel snapshot).memory.2 =
+      append snapshot.memory.2 (stream system base observe fuel (erase snapshot)) := by
+  rw [runSelected_eq_reference, run_record]
+
+theorem runSelected_split (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (first second : Nat) (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    runSelected system base observe (first + second) snapshot =
+      runSelected system base observe second (runSelected system base observe first snapshot) := by
+  simp only [runSelected_eq_reference]
+  exact Snapshot.run_add _ _ _ _ _
+
+/-- An unrecorded run does not depend on the event materializer. This is the
+direct ordinary loop, not an observer whose retained result is empty. -/
+theorem runSelected_unrecorded (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (fuel : Nat) (snapshot : Snapshot Node Answer Memory) :
+    runSelected system base observe fuel (start snapshot none) =
+      start (Snapshot.run system base fuel snapshot) none := by
+  cases snapshot
+  rfl
+
+/-- Forget the record at a quiescent boundary, then use the ordinary loop.
+The complete operational continuation agrees with continuous execution. -/
+theorem runSelected_forget (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (first second : Nat) (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    erase (runSelected system base observe second
+        (start (erase (runSelected system base observe first snapshot)) none)) =
+      erase (runSelected system base observe (first + second) snapshot) := by
+  rw [runSelected_unrecorded, erase_start, runSelected_erasure,
+    runSelected_erasure, Snapshot.run_add]
+
+/-- Attaching a recorder after an ordinary prefix stores only the suffix.
+The recorded boundary is the actual retained search and controller state. -/
+theorem runSelected_late_prefix (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (capacity first second : Nat) (snapshot : Snapshot Node Answer Memory) :
+    ((runSelected system base observe second
+      (start (Snapshot.run system base first snapshot) (some capacity))).memory.2).map
+        Prefix.items =
+      some ((stream system base observe second
+        (Snapshot.run system base first snapshot)).take capacity) := by
+  rw [runSelected_record]
+  simp [start, initial, append, erase, Snapshot.mapMemory, Prefix.initial_items]
+
+/-- Entry selection commutes with a change of representation under the
+existing local execution, scheduling, memory and observation laws. Disabled
+recording remains disabled; retained capacity and omissions transport intact. -/
+theorem runSelected_transport {NextNode NextMemory NextEvent : Type*}
+    (mapping : Node → NextNode) (transfer : Memory → NextMemory)
+    (payloadMap : Event → NextEvent)
+    (source : BranchingSystem Node Answer) (target : BranchingSystem NextNode Answer)
+    (first : Controller Node Answer Memory) (second : Controller NextNode Answer NextMemory)
+    (observeSource : Memory → Node → Option Answer → List Node → Event)
+    (observeTarget : NextMemory → NextNode → Option Answer → List NextNode → NextEvent)
+    (emits : ∀ node, source.emit node = target.emit (mapping node))
+    (successors : ∀ node,
+      (source.successors node).map mapping = target.successors (mapping node))
+    (reorders : ∀ memory nodes,
+      ((first.scheduler memory).reorder nodes).map mapping =
+        (second.scheduler (transfer memory)).reorder (nodes.map mapping))
+    (integrates : ∀ memory pending generated,
+      ((first.scheduler memory).integrate pending generated).map mapping =
+        (second.scheduler (transfer memory)).integrate
+          (pending.map mapping) (generated.map mapping))
+    (advances : ∀ memory node emission generated,
+      transfer (first.advance memory node emission generated) =
+        second.advance (transfer memory) (mapping node) emission (generated.map mapping))
+    (observations : ∀ memory node emission generated,
+      payloadMap (observeSource memory node emission generated) =
+        observeTarget (transfer memory) (mapping node) emission (generated.map mapping))
+    (fuel : Nat) (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    (runSelected source first observeSource fuel snapshot).mapState
+        mapping (transferMemory transfer payloadMap) =
+      runSelected target second observeTarget fuel
+        (snapshot.mapState mapping (transferMemory transfer payloadMap)) := by
+  simp only [runSelected_eq_reference]
+  exact run_transport mapping transfer payloadMap source target first second observeSource
+    observeTarget emits successors reorders integrates advances observations none fuel snapshot
+
+/-- Stop recording at the retained boundary and resume the ordinary driver.
+The suffix uses `base`, with no recorder in its memory or controller. Its
+entire operational snapshot agrees with erasing a continuously recorded run.
+This law concerns semantic state, not compiled instruction counts. -/
+theorem forget_to_unrecorded (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event) (capacity : Option Nat)
+    (first second : Nat) (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    Snapshot.run system base second
+        (erase (Snapshot.run system (controller base observe capacity) first snapshot)) =
+      erase (Snapshot.run system (controller base observe capacity) (first + second) snapshot) := by
+  rw [Snapshot.run_add]
+  exact (run_erasure system base observe capacity second
+    (Snapshot.run system (controller base observe capacity) first snapshot)).symm
+
+/-- Start a recorder after an ordinary prefix, retaining the same frontier,
+emissions and controller continuation. The prefix ran through the ordinary
+driver rather than an observer carrying an empty record. -/
+theorem record_after_unrecorded_prefix (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event) (capacity : Option Nat)
+    (first second : Nat) (snapshot : Snapshot Node Answer Memory) :
+    erase (Snapshot.run system (controller base observe capacity) second
+        (start (Snapshot.run system base first snapshot) capacity)) =
+      Snapshot.run system base (first + second) snapshot := by
+  rw [run_erasure, erase_start, Snapshot.run_add]
+
 theorem start_mapState {NextNode NextMemory NextEvent : Type*}
     (mapping : Node → NextNode) (transfer : Memory → NextMemory)
     (payloadMap : Event → NextEvent) (snapshot : Snapshot Node Answer Memory)
@@ -651,6 +602,19 @@ theorem retained_prefix (system : BranchingSystem Node Answer)
         some ((stream system base observe fuel snapshot).take capacity) := by
   rw [run_record]
   simp [start, initial, append, erase, Snapshot.mapMemory, Prefix.initial_items]
+
+/-- Late recording contains exactly the selected suffix, with its own bound.
+No earlier event stream is constructed by the unrecorded prefix. -/
+theorem late_recording_retains_only_suffix (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (capacity first second : Nat) (snapshot : Snapshot Node Answer Memory) :
+    ((Snapshot.run system (controller base observe (some capacity)) second
+      (start (Snapshot.run system base first snapshot) (some capacity))).memory.2).map
+        Prefix.items =
+      some ((stream system base observe second
+        (Snapshot.run system base first snapshot)).take capacity) :=
+  retained_prefix system base observe capacity second (Snapshot.run system base first snapshot)
 
 theorem complete_record_iff (system : BranchingSystem Node Answer)
     (base : Controller Node Answer Memory)
@@ -810,6 +774,115 @@ namespace Replay
 def observe (_ : Memory) (node : Node) (emission : Option Answer) (generated : List Node) :
     Preparation.Capture Node Answer := ⟨node, emission, generated⟩
 
+/-- The replay frames label genuine steps of the existing controlled GSLT.
+A frame identifies the selected expansion; reconstruction still starts from
+its complete checkpoint and the fixed controller. It is not a source-state
+identity or an execution capability. -/
+def labels (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory) :
+    Mettapedia.GSLT.Causality.HistoryMonad.EventLabels (Snapshot.toGSLT system base)
+      (Preparation.Capture Node Answer) where
+  labelled source target frame :=
+    source.search.frontier ≠ [] ∧ target = Snapshot.tick system base source ∧
+      next system base observe source = some frame
+  sound := fun framed => ⟨framed.1, framed.2.1⟩
+  resp_left := by
+    intro source source' target frame equal framed
+    change source = source' at equal
+    subst source'
+    exact ⟨target, framed, rfl⟩
+  resp_right := by
+    intro source target target' frame framed equal
+    change target = target' at equal
+    subst target'
+    exact framed
+
+/-- Every actual controlled rewrite has a replay frame. An exhausted
+frontier is not padded with a synthetic history event. -/
+theorem labels_total (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory) : (labels system base).Total := by
+  intro source target step
+  obtain ⟨live, targetIsTick⟩ := step
+  cases order : (base.scheduler source.memory).reorder source.search.frontier with
+  | nil =>
+      have empty : source.search.frontier = [] := List.length_eq_zero_iff.mp (by
+        simpa only [order, List.length_nil] using
+          ((base.scheduler source.memory).reorder_complete source.search.frontier).length_eq.symm)
+      exact False.elim (live empty)
+  | cons node pending =>
+      exact ⟨observe source.memory node (system.emit node) (system.successors node),
+        live, targetIsTick, by simp [next, order]⟩
+
+/-- A finite controller run lifts to the existing history construction.
+The full reference word is mathematical evidence, not an intermediate value
+built by the bounded or disabled execution workers. -/
+theorem history_run (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory) (fuel : Nat)
+    (snapshot : Snapshot Node Answer Memory)
+    (word : FreeMonoid (Preparation.Capture Node Answer)) :
+    (Mettapedia.GSLT.Causality.HistoryMonad.history (labels system base)).MultiStep
+      (snapshot, word)
+      (Snapshot.run system base fuel snapshot,
+        word * FreeMonoid.ofList (stream system base observe fuel snapshot)) := by
+  induction fuel generalizing snapshot word with
+  | zero => simpa [Snapshot.run, stream] using
+      (GSLT.MultiStep.refl (S :=
+        Mettapedia.GSLT.Causality.HistoryMonad.history (labels system base)) (snapshot, word))
+  | succ fuel ih =>
+      rw [show fuel + 1 = 1 + fuel by omega, Snapshot.run_add, stream_add]
+      cases order : (base.scheduler snapshot.memory).reorder snapshot.search.frontier with
+      | nil =>
+          have empty : snapshot.search.frontier = [] := List.length_eq_zero_iff.mp (by
+            simpa only [order, List.length_nil] using
+              ((base.scheduler snapshot.memory).reorder_complete
+                snapshot.search.frontier).length_eq.symm)
+          simpa [stream, next, order, Snapshot.run,
+            Snapshot.tick_eq_self_of_frontier_nil system base snapshot empty] using ih snapshot word
+      | cons node pending =>
+          let frame := observe snapshot.memory node (system.emit node) (system.successors node)
+          have live : snapshot.search.frontier ≠ [] := by
+            intro empty
+            have present : node ∈ snapshot.search.frontier :=
+              ((base.scheduler snapshot.memory).reorder_complete snapshot.search.frontier).mem_iff.mp
+                (by simp [order])
+            simp [empty] at present
+          have first :
+              (Mettapedia.GSLT.Causality.HistoryMonad.history (labels system base)).Step
+                (snapshot, word) (Snapshot.tick system base snapshot, word * FreeMonoid.of frame) :=
+            (Mettapedia.GSLT.Causality.HistoryMonad.history_step_iff _).mpr
+              ⟨frame, ⟨live, rfl, by simp [next, order, frame]⟩, rfl⟩
+          simpa only [stream, Snapshot.run, next, order, List.head?_cons, Option.map_some,
+            Option.toList_some, List.nil_append, FreeMonoid.ofList_append,
+            FreeMonoid.ofList_singleton, mul_assoc, frame] using
+            GSLT.MultiStep.step first
+              (ih (Snapshot.tick system base snapshot) (word * FreeMonoid.of frame))
+
+/-- A complete prefix returned by the selected worker is an actual history
+of its erased source execution, not merely a graph with valid-looking edges.
+Truncated prefixes remain available for prefix debugging but cannot satisfy
+the complete-history premise. -/
+theorem selected_recorded_history (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory) (capacity fuel : Nat)
+    (snapshot : Snapshot Node Answer Memory) (record : Prefix (Preparation.Capture Node Answer))
+    (retained : (runSelected system base observe fuel
+      (start snapshot (some capacity))).memory.2 = some record)
+    (complete : record.omitted = 0) :
+    (Mettapedia.GSLT.Causality.HistoryMonad.history (labels system base)).MultiStep
+      (snapshot, 1)
+      (erase (runSelected system base observe fuel (start snapshot (some capacity))),
+        FreeMonoid.ofList record.items) := by
+  have recorded := runSelected_record system base observe fuel (start snapshot (some capacity))
+  rw [retained, erase_start] at recorded
+  have recordIs : record = (Prefix.initial capacity).append
+      (stream system base observe fuel snapshot) := by
+    exact Option.some.inj (by simpa [start, initial, append] using recorded)
+  have fits : (stream system base observe fuel snapshot).length ≤ capacity := by
+    rw [recordIs, Prefix.initial_omitted] at complete
+    exact Nat.sub_eq_zero_iff_le.mp complete
+  have frames : record.items = stream system base observe fuel snapshot := by
+    rw [recordIs, Prefix.initial_items, List.take_of_length_le fits]
+  simpa only [runSelected_erasure, erase_start, frames, one_mul] using
+    history_run system base fuel snapshot 1
+
 /-- Check the selected occurrence and its complete expansion before using
 the recorded payload. Scheduler integration and memory updates still belong
 to the captured controller. -/
@@ -965,6 +1038,64 @@ def readout [DecidableEq Node] [DecidableEq Answer]
     (record : Prefix (Preparation.Capture Node Answer)) (snapshot : Snapshot Node Answer Memory) :=
   record.complete?.map (fun frames => run system base frames snapshot)
 
+/-- Replay a requested retained prefix from its captured checkpoint. Later
+omissions do not invalidate available earlier frames. An unavailable cut
+refuses before replay. The original record stays with its caller, including
+the unrequested suffix and its omission status. This pure checker grants no
+authority to repeat external effects. -/
+def readPrefix [DecidableEq Node] [DecidableEq Answer]
+    (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (count : Nat) (record : Prefix (Preparation.Capture Node Answer))
+    (snapshot : Snapshot Node Answer Memory) :=
+  if count ≤ record.items.length then
+    some (run system base (record.items.take count) snapshot)
+  else none
+
+theorem readPrefix_available [DecidableEq Node] [DecidableEq Answer]
+    (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (count : Nat) (record : Prefix (Preparation.Capture Node Answer))
+    (snapshot : Snapshot Node Answer Memory) (available : count ≤ record.items.length) :
+    readPrefix system base count record snapshot =
+      some (run system base (record.items.take count) snapshot) := by
+  simp only [readPrefix, if_pos available]
+
+theorem readPrefix_missing [DecidableEq Node] [DecidableEq Answer]
+    (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (count : Nat) (record : Prefix (Preparation.Capture Node Answer))
+    (snapshot : Snapshot Node Answer Memory) (missing : record.items.length < count) :
+    readPrefix system base count record snapshot = none := by
+  simp only [readPrefix, if_neg (Nat.not_le.mpr missing)]
+
+theorem readPrefix_zero [DecidableEq Node] [DecidableEq Answer]
+    (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (record : Prefix (Preparation.Capture Node Answer)) (snapshot : Snapshot Node Answer Memory) :
+    readPrefix system base 0 record snapshot = some (.ok snapshot) := by
+  simp [readPrefix, run]
+
+/-- Accepted prefix replay reconstructs exactly that many authorized steps,
+with the complete current frontier and controller continuation. -/
+theorem readPrefix_sound [DecidableEq Node] [DecidableEq Answer]
+    (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (count : Nat) (record : Prefix (Preparation.Capture Node Answer))
+    (snapshot result : Snapshot Node Answer Memory)
+    (accepted : readPrefix system base count record snapshot = some (.ok result)) :
+    result = Snapshot.run system base count snapshot := by
+  unfold readPrefix at accepted
+  split at accepted
+  · rename_i available
+    have checked := Option.some.inj accepted
+    have sound := run_sound system base (record.items.take count) snapshot result checked
+    simpa only [List.length_take, Nat.min_eq_left available] using sound
+  · cases accepted
+
+theorem readPrefix_complete [DecidableEq Node] [DecidableEq Answer]
+    (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (record : Prefix (Preparation.Capture Node Answer)) (snapshot : Snapshot Node Answer Memory)
+    (complete : record.omitted = 0) :
+    readPrefix system base record.items.length record snapshot =
+      readout system base record snapshot := by
+  simp [readPrefix, readout, Prefix.complete?, complete]
+
 theorem readout_truncated [DecidableEq Node] [DecidableEq Answer]
     (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
     (record : Prefix (Preparation.Capture Node Answer)) (snapshot : Snapshot Node Answer Memory)
@@ -983,6 +1114,30 @@ theorem recorded_replay [DecidableEq Node] [DecidableEq Answer]
       some (.ok (Snapshot.run system base fuel snapshot)) := by
   have complete := (complete_record_iff system base observe capacity fuel snapshot).mpr fits
   cases retained : (Snapshot.run system (controller base observe (some capacity)) fuel
+      (start snapshot (some capacity))).memory.2 with
+  | none => simp [retained] at complete
+  | some record =>
+      simp only [retained, Option.bind_some] at complete ⊢
+      simp [readout, complete, run_stream]
+
+/-- The entry-selected recorder supplies complete replay frames from its
+actual bounded prefix. Incomplete recording still cannot replay a whole run. -/
+theorem selected_recorded_replay [DecidableEq Node] [DecidableEq Answer]
+    (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (capacity fuel : Nat) (snapshot : Snapshot Node Answer Memory)
+    (fits : (stream system base observe fuel snapshot).length ≤ capacity) :
+    ((runSelected system base observe fuel
+      (start snapshot (some capacity))).memory.2).bind
+        (fun record => readout system base record snapshot) =
+      some (.ok (Snapshot.run system base fuel snapshot)) := by
+  have complete : ((runSelected system base observe fuel
+      (start snapshot (some capacity))).memory.2).bind Prefix.complete? =
+        some (stream system base observe fuel snapshot) := by
+    rw [runSelected_record]
+    simpa only [start, initial, Option.map_some, erase, Snapshot.mapMemory,
+      append, Option.bind_some] using
+      (Prefix.complete_iff capacity (stream system base observe fuel snapshot)).mpr fits
+  cases retained : (runSelected system base observe fuel
       (start snapshot (some capacity))).memory.2 with
   | none => simp [retained] at complete
   | some record =>
@@ -1290,7 +1445,7 @@ private def observe (_ : Unit) (node : TestNode) (_ : Option TestAnswer) (_ : Li
 private def point : Snapshot TestNode TestAnswer Unit :=
   Snapshot.initial base [WorkOccurrence.root .root]
 private def execute (capacity : Option Nat) (fuel : Nat) :=
-  Snapshot.run system (controller base observe capacity) fuel (start point capacity)
+  runSelected system base observe fuel (start point capacity)
 
 theorem duplicate_occurrences_remain_distinct :
     ((execute (some 3) 3).memory.2).map
@@ -1307,15 +1462,38 @@ theorem truncation_preserves_complete_search :
   exact ⟨rfl, rfl, rfl⟩
 
 theorem resume_retains_prefix_and_omissions :
-    Snapshot.run system (controller base observe (some 1)) 2 (execute (some 1) 1) =
+    runSelected system base observe 2 (execute (some 1) 1) =
       execute (some 1) 3 := by
-  exact (run_split system base observe (some 1) 1 2 (start point (some 1))).symm
+  simpa only [execute] using
+    (runSelected_split system base observe 1 2 (start point (some 1))).symm
 
 theorem disabled_and_zero_capacity_differ :
     (execute none 3).memory.2 = none ∧
       ((execute (some 0) 3).memory.2).map Prefix.omitted = some 3 ∧
       (execute none 3).search = (execute (some 0) 3).search := by
   exact ⟨rfl, rfl, rfl⟩
+
+/-- Leaving the recorder resumes the ordinary controller without identifying
+the two equal answers or losing their distinct pending occurrences. -/
+theorem forgetting_keeps_both_answer_occurrences :
+    let unrecorded := Snapshot.run system base 2 (erase (execute (some 3) 1))
+    unrecorded = erase (execute (some 3) 3) ∧
+      unrecorded.search.events.map Emission.value = [(7, [0]), (7, [1])] := by
+  exact ⟨rfl, rfl⟩
+
+/-- Forget a recorded root, run one answer without a recorder, then start a
+new recording. The new record contains only the remaining occurrence; the
+whole operational result still contains both answers. -/
+theorem restarting_recording_does_not_invent_the_forgotten_prefix :
+    let middle := Snapshot.run system base 1 (erase (execute (some 3) 1))
+    let restarted := Snapshot.run system (controller base observe (some 2)) 1
+      (start middle (some 2))
+    (restarted.memory.2.map fun record => record.items.map WorkOccurrence.trace) =
+        some [[1]] ∧
+      (restarted.memory.2.map fun record => record.items.map WorkOccurrence.trace) ≠
+        some [[], [0], [1]] ∧
+      restarted.search.events.map Emission.value = [(7, [0]), (7, [1])] := by
+  exact ⟨rfl, by decide, rfl⟩
 
 /-- Equal retained prefixes can hide different amounts of computation.
 An incomplete recording cannot explain the complete observed run by itself. -/
@@ -1343,7 +1521,7 @@ private def graphObserve (_ : Unit) (node : TestNode) (_ : Option TestAnswer) (_
   ⟨node.trace, if node.trace.isEmpty then [] else [node.trace.dropLast]⟩
 
 private def graphExecute (capacity fuel : Nat) :=
-  Snapshot.run system (controller base graphObserve (some capacity)) fuel
+  runSelected system base graphObserve fuel
     (start point (some capacity))
 
 theorem complete_graph_keeps_duplicate_answer_occurrences :
@@ -1364,7 +1542,7 @@ theorem late_graph_needs_captured_boundary :
   decide
 
 private def captureExecute (capacity fuel : Nat) :=
-  Snapshot.run system (controller base Replay.observe (some capacity)) fuel
+  runSelected system base Replay.observe fuel
     (start point (some capacity))
 
 /-- Replay recovers two answer occurrences with the same payload, together
@@ -1374,7 +1552,7 @@ theorem replay_preserves_duplicate_occurrences :
       some (.ok (Snapshot.run system base 3 point)) ∧
     (Snapshot.run system base 3 point).search.events.map Emission.value =
       [(7, [0]), (7, [1])] := by
-  exact ⟨Replay.recorded_replay system base 3 3 point (by decide), rfl⟩
+  exact ⟨Replay.selected_recorded_replay system base 3 3 point (by decide), rfl⟩
 
 /-- A complete recording of a finite prefix may reconstruct an open run.
 Replay completeness and search completion are different observations. -/
@@ -1382,7 +1560,7 @@ theorem replay_preserves_open_residual :
     ((captureExecute 2 2).memory.2).bind (fun record => Replay.readout system base record point) =
       some (.ok (Snapshot.run system base 2 point)) ∧
     ((Snapshot.run system base 2 point).search.frontier.map WorkOccurrence.trace) = [[1]] := by
-  exact ⟨Replay.recorded_replay system base 2 2 point (by decide), rfl⟩
+  exact ⟨Replay.selected_recorded_replay system base 2 2 point (by decide), rfl⟩
 
 private def firstCapture : Preparation.Capture TestNode TestAnswer :=
   Preparation.capture system (WorkOccurrence.root .root)
@@ -1396,6 +1574,25 @@ private def changedCapture : Preparation.Capture TestNode TestAnswer :=
 theorem replay_refusal_keeps_checkpoint_and_suffix :
     Replay.run system base [firstCapture, changedCapture, thirdCapture] point =
       .error (Snapshot.run system base 1 point, [changedCapture, thirdCapture]) := by
+  rfl
+
+/-- A later recording overflow does not prevent inspecting its valid first
+step. It still cannot supply the missing second frame or replay the whole
+three-step execution. -/
+theorem prefix_replay_of_truncated_record :
+    ((captureExecute 1 3).memory.2).bind
+        (fun record => Replay.readPrefix system base 1 record point) =
+      some (.ok (Snapshot.run system base 1 point)) ∧
+      ((captureExecute 1 3).memory.2).bind
+        (fun record => Replay.readPrefix system base 2 record point) = none ∧
+      ((captureExecute 1 3).memory.2).bind
+        (fun record => Replay.readout system base record point) = none := by
+  exact ⟨rfl, rfl, rfl⟩
+
+theorem prefix_replay_refusal_retains_requested_suffix :
+    Replay.readPrefix system base 3
+      ((Prefix.initial 3).append [firstCapture, changedCapture, thirdCapture]) point =
+        some (.error (Snapshot.run system base 1 point, [changedCapture, thirdCapture])) := by
   rfl
 
 theorem replay_does_not_exchange_equal_answer_occurrences :
@@ -1751,11 +1948,28 @@ end Controls
 #print axioms run_record
 #print axioms disabled_record
 #print axioms run_split
+#print axioms runSelected_eq_reference
+#print axioms runSelected_erasure
+#print axioms runSelected_record
+#print axioms runSelected_split
+#print axioms runSelected_unrecorded
+#print axioms runSelected_forget
+#print axioms runSelected_late_prefix
+#print axioms runSelected_transport
 #print axioms retained_prefix
+#print axioms erase_start
+#print axioms forget_to_unrecorded
+#print axioms record_after_unrecorded_prefix
+#print axioms late_recording_retains_only_suffix
+#print axioms Controls.forgetting_keeps_both_answer_occurrences
+#print axioms Controls.restarting_recording_does_not_invent_the_forgotten_prefix
 #print axioms complete_record_iff
 #print axioms complete_graph_iff
 #print axioms recorded_requests
 #print axioms retained_occurrence_replays
+#print axioms Replay.labels_total
+#print axioms Replay.history_run
+#print axioms Replay.selected_recorded_history
 #print axioms Replay.step?_sound
 #print axioms Replay.run_append
 #print axioms Replay.run_sound
@@ -1763,10 +1977,18 @@ end Controls
 #print axioms Replay.run_next
 #print axioms Replay.run_stream
 #print axioms Replay.readout_truncated
+#print axioms Replay.readPrefix_available
+#print axioms Replay.readPrefix_missing
+#print axioms Replay.readPrefix_zero
+#print axioms Replay.readPrefix_sound
+#print axioms Replay.readPrefix_complete
 #print axioms Replay.recorded_replay
+#print axioms Replay.selected_recorded_replay
 #print axioms Controls.replay_preserves_duplicate_occurrences
 #print axioms Controls.replay_preserves_open_residual
 #print axioms Controls.replay_refusal_keeps_checkpoint_and_suffix
+#print axioms Controls.prefix_replay_of_truncated_record
+#print axioms Controls.prefix_replay_refusal_retains_requested_suffix
 #print axioms Controls.replay_does_not_exchange_equal_answer_occurrences
 #print axioms Controls.replay_changed_authority_refused
 #print axioms Controls.truncated_record_does_not_replay_complete_search

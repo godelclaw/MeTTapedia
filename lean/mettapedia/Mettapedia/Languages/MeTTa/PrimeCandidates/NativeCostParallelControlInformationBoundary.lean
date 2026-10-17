@@ -60,22 +60,22 @@ theorem final_bag_bulk_but_chronology_requires_a_richer_key
             [NativeInteractionFibration.Examples.leftEvent,
               NativeInteractionFibration.Examples.rightEvent]) ∧
       Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (workOnlyRequest NativeInteractionFibration.Examples.Ground)
           (historyWorkSpan :
             History NativeInteractionFibration.Examples.Ground → WorkSpan)) ∧
       ¬ Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (receiptRequest NativeInteractionFibration.Examples.Ground)
           (historyWorkSpan :
             History NativeInteractionFibration.Examples.Ground → WorkSpan)) ∧
       Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (receiptRequest NativeInteractionFibration.Examples.Ground)
           (policyVectorKey
             (receiptRequest NativeInteractionFibration.Examples.Ground))) ∧
       Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (receiptRequest NativeInteractionFibration.Examples.Ground)
           (id : History NativeInteractionFibration.Examples.Ground →
             History NativeInteractionFibration.Examples.Ground)) := by
@@ -94,17 +94,17 @@ elaboration-level analogue of the runtime chronology boundary above. -/
 theorem compact_policy_key_is_not_a_universal_replay_key
     (dependencies : DependencySystem) (revision : dependencies.Revision) :
     Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest
             (compactCarrierKey rhoSelectedCostLayerConfiguration.source) False)
           (compactCarrierKey rhoSelectedCostLayerConfiguration.source)) ∧
       ¬ Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest
             (compactCarrierKey rhoSelectedCostLayerConfiguration.source) True)
           (compactCarrierKey rhoSelectedCostLayerConfiguration.source)) ∧
       Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (singlePolicyRequest
             (compactCarrierKey rhoSelectedCostLayerConfiguration.source) True)
           (id : RhoSelectedCostLayerIterationState →

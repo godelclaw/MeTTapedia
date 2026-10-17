@@ -1,12 +1,12 @@
 import Mettapedia.OSLF.PathMap.PLNBridge
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 import Mathlib.Data.Multiset.Filter
 
 /-!
 # PathMap → BinaryWorldModel Bridge
 
 This module shows how PathMap evidence connects to the `BinaryWorldModel` typeclass
-(`PLNWorldModel.lean`) — overcoming the obstacle that `Finset α` union is idempotent.
+(`BinaryWorldModel.lean`) — overcoming the obstacle that `Finset α` union is idempotent.
 
 ## The Obstacle
 

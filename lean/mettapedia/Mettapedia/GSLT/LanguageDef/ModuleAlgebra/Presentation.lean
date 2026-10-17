@@ -44,6 +44,61 @@ abbrev Presentation (Origin : Type u) (Label : Type v) (Body : Type w)
     [DecidableEq Origin] [DecidableEq Label] [DecidableEq Body] :=
   {entries : Finset (Entry Origin Label Body) // Valid entries}
 
+/-- An explicitly supplied order for an extensional declaration fragment.
+Neither the finite set nor its storage iteration determines this order. -/
+structure OrderedView (fragment : Fragment (Origin := Origin) (Label := Label) (Body := Body)) where
+  entries : List (Entry Origin Label Body)
+  nodup : entries.Nodup
+  covers : entries.toFinset = fragment
+
+/-- Validate the caller's order without sorting, dropping or adding entries. -/
+def orderedView? (fragment : Fragment (Origin := Origin) (Label := Label) (Body := Body))
+    (entries : List (Entry Origin Label Body)) : Option (OrderedView fragment) :=
+  if accepted : entries.Nodup ∧ entries.toFinset = fragment then
+    some ⟨entries, accepted.1, accepted.2⟩
+  else none
+
+theorem orderedView_isSome_iff
+    (fragment : Fragment (Origin := Origin) (Label := Label) (Body := Body))
+    (entries : List (Entry Origin Label Body)) :
+    (orderedView? fragment entries).isSome = true ↔
+      entries.Nodup ∧ entries.toFinset = fragment := by
+  simp [orderedView?]
+
+theorem orderedView_entries
+    {fragment : Fragment (Origin := Origin) (Label := Label) (Body := Body)}
+    {entries : List (Entry Origin Label Body)} {view : OrderedView fragment}
+    (accepted : orderedView? fragment entries = some view) : view.entries = entries := by
+  unfold orderedView? at accepted
+  split at accepted
+  · cases Option.some.inj accepted
+    rfl
+  · cases accepted
+
+/-- Looking up an occurrence retains its declaration's portable origin. -/
+def OrderedView.originAt
+    {fragment : Fragment (Origin := Origin) (Label := Label) (Body := Body)}
+    (view : OrderedView fragment) (index : Fin view.entries.length) : Origin :=
+  view.entries[index].origin
+
+theorem OrderedView.entry_mem
+    {fragment : Fragment (Origin := Origin) (Label := Label) (Body := Body)}
+    (view : OrderedView fragment) (index : Fin view.entries.length) :
+    view.entries[index] ∈ fragment := by
+  have member : view.entries[index] ∈ view.entries.toFinset :=
+    List.mem_toFinset.mpr (List.getElem_mem index.isLt)
+  simpa only [view.covers] using member
+
+/-- An explicit reversal is a different order for the same declarations. -/
+def OrderedView.reverse
+    {fragment : Fragment (Origin := Origin) (Label := Label) (Body := Body)}
+    (view : OrderedView fragment) : OrderedView fragment :=
+  ⟨view.entries.reverse, List.nodup_reverse.mpr view.nodup, by simpa using view.covers⟩
+
+@[simp] theorem OrderedView.reverse_entries
+    {fragment : Fragment (Origin := Origin) (Label := Label) (Body := Body)}
+    (view : OrderedView fragment) : view.reverse.entries = view.entries.reverse := rfl
+
 omit [DecidableEq Origin] [DecidableEq Label] [DecidableEq Body] in
 @[simp] theorem valid_empty : Valid (∅ : Fragment (Origin := Origin)
     (Label := Label) (Body := Body)) := by simp [Valid]

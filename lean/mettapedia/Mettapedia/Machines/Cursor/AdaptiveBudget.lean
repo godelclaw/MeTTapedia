@@ -117,6 +117,67 @@ theorem execution_exact (policy : Policy M C Memory base) (rounds : Nat)
         (resume_add M C charge (allocation M C charge policy rounds initial)
           (policy (run M C charge policy rounds initial)).1 initial.current).symm
 
+/-! ## Policies that do not retain decision history
+
+The full policy type permits inspecting prior rounds. Policies constructed
+from current memory and the retained cursor instead have a direct loop with
+no decision-log field. Its erasure law preserves memory, packet and charge;
+the recorded scheduler is a specification, not a runtime prerequisite.
+-/
+
+abbrev LocalPolicy (Memory : Type v) (base : Base) :=
+  Memory × Scheduling.Cell M C base → Nat × Memory
+
+def forgetDecisions (state : State M C Memory base) :
+    Memory × Scheduling.Cell M C base := (state.memory, state.current)
+
+def liftLocal (policy : LocalPolicy M C Memory base) : Policy M C Memory base :=
+  fun state => policy (forgetDecisions M C state)
+
+/-- The same `resume` operation, without constructing a history entry. -/
+def localStep (policy : LocalPolicy M C Memory base)
+    (state : Memory × Scheduling.Cell M C base) : Memory × Scheduling.Cell M C base :=
+  let choice := policy state
+  (choice.2, resume M C charge choice.1 state.2)
+
+/-- Tail-recursive execution for a policy that does not read prior rounds. -/
+def localRun (policy : LocalPolicy M C Memory base) :
+    Nat → Memory × Scheduling.Cell M C base → Memory × Scheduling.Cell M C base
+  | 0, state => state
+  | rounds + 1, state => localRun policy rounds (localStep M C charge policy state)
+
+theorem localRun_succ (policy : LocalPolicy M C Memory base) (rounds : Nat)
+    (state : Memory × Scheduling.Cell M C base) :
+    localRun M C charge policy (rounds + 1) state =
+      localStep M C charge policy (localRun M C charge policy rounds state) := by
+  induction rounds generalizing state with
+  | zero => rfl
+  | succ rounds ih => exact ih (localStep M C charge policy state)
+
+theorem localStep_erasure (policy : LocalPolicy M C Memory base)
+    (state : State M C Memory base) :
+    forgetDecisions M C (step M C charge (liftLocal M C policy) state) =
+      localStep M C charge policy (forgetDecisions M C state) := rfl
+
+/-- The unrecorded loop realizes the projection of recorded execution for
+every initial history, number of rounds and current-state policy. -/
+theorem localRun_erasure (policy : LocalPolicy M C Memory base) (rounds : Nat)
+    (initial : State M C Memory base) :
+    forgetDecisions M C (run M C charge (liftLocal M C policy) rounds initial) =
+      localRun M C charge policy rounds (forgetDecisions M C initial) := by
+  induction rounds with
+  | zero => rfl
+  | succ rounds ih =>
+      rw [run, localStep_erasure, localRun_succ, ih]
+
+theorem local_execution_exact (policy : LocalPolicy M C Memory base) (rounds : Nat)
+    (initial : State M C Memory base) :
+    (localRun M C charge policy rounds (forgetDecisions M C initial)).2 =
+      resume M C charge (allocation M C charge (liftLocal M C policy) rounds initial)
+        initial.current := by
+  rw [← localRun_erasure]
+  exact execution_exact M C charge (liftLocal M C policy) rounds initial
+
 def start (memory : Memory) (packet : Packet M C base) : State M C Memory base :=
   ⟨memory, [], (0, .paused packet)⟩
 
@@ -183,6 +244,58 @@ theorem zero_policy_unchanged (rounds : Nat) (initial : State M C Memory base) :
   | zero => rfl
   | succ rounds ih => simpa only [run, step, zeroPolicy, resume_zero] using ih
 
+/-- Stop granting inspections once the retained cumulative charge reaches a
+limit. The charge has the selected provider metric; it need not count polls.
+This observes between rounds, so an admitted round may cross the limit.
+It neither predicts that round's charge nor discards its residual. -/
+def stopAtCharge (limit : Nat) (policy : Policy M C Memory base) :
+    Policy M C Memory base := fun state =>
+  if limit ≤ state.current.1 then (0, state.memory) else policy state
+
+/-- A charge guard preserves the current-state policy boundary. -/
+theorem stopAtCharge_liftLocal (limit : Nat) (policy : LocalPolicy M C Memory base) :
+    stopAtCharge M C limit (liftLocal M C policy) =
+      liftLocal M C (fun state =>
+        if limit ≤ state.2.1 then (0, state.1) else policy state) := rfl
+
+theorem stopAtCharge_below (limit : Nat) (policy : Policy M C Memory base)
+    (state : State M C Memory base) (below : state.current.1 < limit) :
+    stopAtCharge M C limit policy state = policy state :=
+  if_neg (Nat.not_le.mpr below)
+
+theorem stopAtCharge_reached (limit : Nat) (policy : Policy M C Memory base)
+    (state : State M C Memory base) (reached : limit ≤ state.current.1) :
+    stopAtCharge M C limit policy state = (0, state.memory) :=
+  if_pos reached
+
+/-- Reaching the limit preserves the exact owned cursor and cumulative paid
+charge; no provider poll or replacement packet is introduced. -/
+theorem stopped_step_current (limit : Nat) (policy : Policy M C Memory base)
+    (state : State M C Memory base) (reached : limit ≤ state.current.1) :
+    (step M C charge (stopAtCharge M C limit policy) state).current = state.current := by
+  simp only [step, stopAtCharge_reached M C limit policy state reached, resume_zero]
+
+theorem stopped_step_memory (limit : Nat) (policy : Policy M C Memory base)
+    (state : State M C Memory base) (reached : limit ≤ state.current.1) :
+    (step M C charge (stopAtCharge M C limit policy) state).memory = state.memory := by
+  simp only [step, stopAtCharge_reached M C limit policy state reached]
+
+/-- Repeated budget decisions after the stop keep the same residual. Policy
+memory and the mathematical decision log cannot restart its computation. -/
+theorem stopped_run_current (limit : Nat) (policy : Policy M C Memory base)
+    (rounds : Nat) (initial : State M C Memory base)
+    (reached : limit ≤ initial.current.1) :
+    (run M C charge (stopAtCharge M C limit policy) rounds initial).current =
+      initial.current := by
+  induction rounds with
+  | zero => rfl
+  | succ rounds ih =>
+      change (step M C charge (stopAtCharge M C limit policy)
+        (run M C charge (stopAtCharge M C limit policy) rounds initial)).current = _
+      rw [stopped_step_current]
+      · exact ih
+      · simpa only [ih] using reached
+
 namespace Controls
 
 open Scheduling.Controls (provider client receipt)
@@ -219,6 +332,33 @@ theorem receipt_is_not_allocated_budget :
     (run provider client receipt adaptive 3 initial).current.1 ≠
       allocation provider client receipt adaptive 3 initial := by decide
 
+theorem charge_limit_keeps_pending_cursor :
+    (run provider client receipt (stopAtCharge provider client 2 adaptive) 4 initial).current =
+      (run provider client receipt adaptive 1 initial).current := rfl
+
+/-- An inspection can cost more than the threshold. The policy stops before
+the next inspection; it does not promise a strict preemptive charge cap. -/
+theorem charge_threshold_can_overshoot :
+    (run provider client receipt (stopAtCharge provider client 1 adaptive) 1 initial).current.1 = 2 ∧
+      (run provider client receipt (stopAtCharge provider client 1 adaptive) 4 initial).current =
+        (run provider client receipt adaptive 1 initial).current := by
+  constructor <;> rfl
+
+def currentOnly : LocalPolicy provider client Nat () :=
+  fun state => (1, state.1 + 1)
+
+theorem local_loop_preserves_completion_and_charge :
+    localRun provider client receipt currentOnly 3 (0, initial.current) =
+      (3, (5, .done ⟨(), 3, (3 : Nat)⟩)) := rfl
+
+/-- A policy that checks earlier decisions cannot be silently assigned the
+current-state interface: identical memory and cursor can choose differently. -/
+theorem earlier_decisions_can_change_policy :
+    let policy : Policy provider client Nat () := fun state =>
+      if state.history.isEmpty then (1, state.memory) else (0, state.memory)
+    policy initial ≠ policy { initial with history := [⟨0, initial.current⟩] } := by
+  decide
+
 theorem finite_work_can_starve :
     advance provider client receipt 3 (base := ()) ⟨(), (([1, 2], 0), (0 : Nat))⟩ =
       (5, .done ⟨(), 3, (3 : Nat)⟩) ∧
@@ -246,16 +386,30 @@ end Controls
 #print axioms history_suffix
 #print axioms history_length
 #print axioms execution_exact
+#print axioms localRun_succ
+#print axioms localStep_erasure
+#print axioms localRun_erasure
+#print axioms local_execution_exact
+#print axioms stopAtCharge_liftLocal
 #print axioms advance_exact
 #print axioms policies_agree_at_same_allocation
 #print axioms completed_is_inert
 #print axioms completion_of_sufficient_budget
 #print axioms eventually_completes
 #print axioms zero_policy_unchanged
+#print axioms stopAtCharge_below
+#print axioms stopAtCharge_reached
+#print axioms stopped_step_current
+#print axioms stopped_step_memory
+#print axioms stopped_run_current
 #print axioms Controls.first_round_keeps_residual
 #print axioms Controls.actual_adaptive_budgets
 #print axioms Controls.adaptive_finishes_without_replay
 #print axioms Controls.receipt_is_not_allocated_budget
+#print axioms Controls.charge_limit_keeps_pending_cursor
+#print axioms Controls.charge_threshold_can_overshoot
+#print axioms Controls.local_loop_preserves_completion_and_charge
+#print axioms Controls.earlier_decisions_can_change_policy
 #print axioms Controls.finite_work_can_starve
 #print axioms Controls.restarting_loses_progress
 

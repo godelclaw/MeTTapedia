@@ -1,12 +1,13 @@
-import Mettapedia.Languages.MeTTa.HE.Correctness
+import Mettapedia.Languages.MeTTa.HE.Eval
+import Mettapedia.Languages.MeTTa.HE.EvalSpec
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval
 
 /-!
 # Argument-result invariants and raw-data preservation
 
 Both HE argument judgments distinguish tagged lists from propagated failures.
-Their result-form laws are derived from their rules. The executable evaluator
-inherits its law through its proved soundness theorem. The raw-data theorem
+Their result-form laws are derived from their rules. The executable evaluator's
+law follows directly from its ordered argument fold. The raw-data theorem
 covers arbitrary lists of atoms, bindings and finite nesting, at every
 sufficient fuel value. It preserves list order and occurrences.
 
@@ -20,10 +21,10 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 
 theorem InterpretArgs.packet_or_error
     {space : Space} {dispatch : GroundedDispatch}
-    {args types : List Atom} {bindings : Bindings} {result : ResultPair}
-    (derivation : InterpretArgs space dispatch args types bindings result) :
+    {args types : List Atom} {bindings : Bindings} {result : ResultPair} {live : List Atom}
+    (derivation : InterpretArgs space dispatch args types bindings result live) :
     (∃ values, result.1 = argumentPacket values) ∨ isEmptyOrError result.1 = true := by
-  induction args generalizing types bindings result with
+  induction args generalizing types bindings result live with
   | nil =>
       cases derivation
       exact Or.inl ⟨[], rfl⟩
@@ -36,11 +37,11 @@ theorem InterpretArgs.packet_or_error
 theorem Spec.Eval.InterpretArgsRel.packet_or_error
     {space : Space} {dispatch : GroundedDispatch} {live : List Atom}
     {typing : Spec.Eval.EvalTypeService}
-    {args types : List Atom} {bindings : Bindings} {result : ResultPair}
+    {args types : List Atom} {bindings : BindingFrame} {result : FrameResult}
     (derivation : Spec.Eval.InterpretArgsRel space dispatch live (typing := typing)
       args types bindings result) :
     (∃ values, result.1 = argumentPacket values) ∨ Spec.Eval.IsEmptyOrErrorRel result.1 := by
-  induction args generalizing types bindings result with
+  induction args generalizing types bindings result live with
   | nil =>
       cases derivation
       exact Or.inl ⟨[], rfl⟩
@@ -52,10 +53,41 @@ theorem Spec.Eval.InterpretArgsRel.packet_or_error
 
 theorem interpretArgs_packet_or_error
     {space : Space} {dispatch : GroundedDispatch} {args types : List Atom}
-    {bindings : Bindings} {fuel : Nat} {result : ResultPair}
-    (returned : result ∈ interpretArgs space dispatch args types bindings fuel) :
-    (∃ values, result.1 = argumentPacket values) ∨ isEmptyOrError result.1 = true :=
-  (interpretArgs_sound space dispatch args types bindings fuel result returned).packet_or_error
+    {bindings : Bindings} {fuel : Nat} {result : ResultPair} {live : List Atom}
+    (returned : result ∈ interpretArgs space dispatch args types bindings fuel live) :
+    (∃ values, result.1 = argumentPacket values) ∨ isEmptyOrError result.1 = true := by
+  induction fuel generalizing args types bindings result live with
+  | zero => simp [interpretArgs] at returned
+  | succ fuel ih =>
+      cases args with
+      | nil =>
+          cases types with
+          | nil =>
+              simp only [interpretArgs, List.mem_cons, List.not_mem_nil, or_false] at returned
+              subst result
+              exact Or.inl ⟨[], rfl⟩
+          | cons type types => simp [interpretArgs] at returned
+      | cons argument arguments =>
+          cases types with
+          | nil => simp [interpretArgs] at returned
+          | cons type types =>
+              rw [interpretArgs, List.mem_flatMap] at returned
+              obtain ⟨⟨head, headBindings⟩, _, returned⟩ := returned
+              dsimp only at returned
+              split at returned
+              · rename_i stopped
+                simp only [List.mem_cons, List.not_mem_nil, or_false] at returned
+                subst result
+                simp only [Bool.and_eq_true] at stopped
+                exact Or.inr stopped.2
+              · rw [List.mem_map] at returned
+                obtain ⟨⟨tail, tailBindings⟩, member, same⟩ := returned
+                dsimp only at same
+                split at same
+                · subst result
+                  exact ih member
+                · subst result
+                  exact Or.inl ⟨_, rfl⟩
 
 /-- A non-packet result of argument computation is an actual failure. -/
 theorem interpretArgs_failure_is_error
@@ -72,8 +104,8 @@ theorem interpretArgs_failure_is_error
 /-- Atom demand returns any input atom unchanged, including error-shaped data. -/
 theorem evalAtom_raw_positive
     (space : Space) (dispatch : GroundedDispatch) (atom : Atom)
-    (bindings : Bindings) (fuel : Nat) :
-    evalAtom space dispatch atom Atom.atomType bindings (fuel + 1) =
+    (bindings : Bindings) (fuel : Nat) (live : List Atom := []) :
+    evalAtom space dispatch atom Atom.atomType bindings (fuel + 1) live =
       [(atom, bindings)] := by
   by_cases failed : isEmptyOrError atom = true
   · simp [evalAtom, failed]
@@ -84,10 +116,11 @@ theorem evalAtom_raw_positive
 /-- Every raw argument list survives intact, with its exact order and multiplicity. -/
 theorem interpretArgs_raw
     (space : Space) (dispatch : GroundedDispatch) (args : List Atom)
-    (bindings : Bindings) (fuel : Nat) (enough : args.length < fuel) :
+    (bindings : Bindings) (fuel : Nat) (enough : args.length < fuel)
+    (live : List Atom := []) :
     interpretArgs space dispatch args (List.replicate args.length Atom.atomType)
-      bindings fuel = [(argumentPacket args, bindings)] := by
-  induction args generalizing fuel with
+      bindings fuel live = [(argumentPacket args, bindings)] := by
+  induction args generalizing fuel live with
   | nil =>
       cases fuel with
       | zero => simp at enough
@@ -104,7 +137,7 @@ theorem interpretArgs_raw
                 omega
               change interpretArgs space dispatch (argument :: arguments)
                 (Atom.atomType :: List.replicate arguments.length Atom.atomType)
-                bindings (fuel + 1 + 1) = _
+                bindings (fuel + 1 + 1) live = _
               rw [interpretArgs]
               simp only [evalAtom_raw_positive, List.flatMap_cons, List.flatMap_nil,
                 bne_self_eq_false, Bool.false_and, Bool.false_eq_true,
@@ -117,11 +150,12 @@ theorem interpretArgs_raw
 /-- Arbitrary raw data in a successful packet cannot be mistaken for failure. -/
 theorem interpretArgs_raw_not_failed
     (space : Space) (dispatch : GroundedDispatch) (args : List Atom)
-    (bindings : Bindings) (fuel : Nat) (enough : args.length < fuel) :
+    (bindings : Bindings) (fuel : Nat) (enough : args.length < fuel)
+    (live : List Atom := []) :
     ∀ result ∈ interpretArgs space dispatch args
-      (List.replicate args.length Atom.atomType) bindings fuel,
+      (List.replicate args.length Atom.atomType) bindings fuel live,
       argumentsSucceeded result.1 = true := by
-  rw [interpretArgs_raw space dispatch args bindings fuel enough]
+  rw [interpretArgs_raw space dispatch args bindings fuel enough live]
   intro result returned
   simp only [List.mem_cons, List.not_mem_nil, or_false] at returned
   subst result

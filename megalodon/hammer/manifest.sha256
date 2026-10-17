@@ -1,0 +1,7 @@
+# Inputs, relative to megalodon/ (checked with sha256sum --check)
+707df8deefc3e97f64ea8633542c5847d145a94ff8e13307c923612fc1730da5  examples/hammer/100thms_12_h.mg
+5d3d0f5b853cdc97bf607619d6f03ae1a6f39c83b9a7bc6e16385d79384e1a7c  ramsey36/adj17_triangle_free.tptp
+4d961ca06a3cff44acfe8e431decd42ca52b05910d640c229f668768f1c2df89  ../tools/split_ramsey_triangle.py
+# Output sets: sha256 of the sorted `sha256sum` listing of the set's *.p files, file count, name
+set 11faed5ef8fe40ed68ed113c9cae0b4d26d0338b6226c477208db05b917829de 2386 hammer_test
+set 353636058288d025a38cf50fa0a3fc0c4e823ffa889db25b90cc906b592364f1 680 triangle_split

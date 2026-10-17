@@ -55,7 +55,9 @@ redex with the calculus (`withLambdaPi_carries`).
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -1240,4 +1242,4 @@ theorem holUnion_hostOf_scopes (base : BasePremiseEvaluator) :
 #print axioms holUnion_validate
 #print axioms holUnion_hostOf_scopes
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

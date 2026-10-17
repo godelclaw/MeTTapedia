@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mathlib.Topology.Instances.ENNReal.Lemmas
 import Mathlib.Topology.Order.Basic
 import Mathlib.Order.Filter.AtTopBot.Basic

@@ -27,11 +27,6 @@ open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted
 open scoped ENNReal
 
-abbrev ModalQuery := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.ModalQuery
-abbrev PointedKripke := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.PointedKripke
-abbrev WeightedSourcePointedKripke :=
-  Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedSourcePointedKripke
-abbrev WeightedState := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted.WeightedState
 
 /-- Source-level provenance membership in a weighted state. -/
 def sourceInState (s : String) (W : WeightedState) : Prop :=
@@ -266,7 +261,7 @@ theorem approx_safe_forgetting_preserves_left_sourceCount
 /-- Recovery theorem:
 when compatible, fallback revision recovers additive weighted evidence. -/
 theorem weightedEvidence_fallback_eq_add_of_compatible
-    (W₁ W₂ : WeightedState) (φ : ModalQuery)
+    (W₁ W₂ : WeightedState) (φ : (LO.Modal.Formula ℕ))
     (hcompat : compatible W₁ W₂) :
     weightedEvidence (fallbackRevision W₁ W₂) φ =
       weightedEvidence W₁ φ + weightedEvidence W₂ φ := by
@@ -275,17 +270,17 @@ theorem weightedEvidence_fallback_eq_add_of_compatible
 
 /-- Lifted consequence theorem through provenance-aware fallback revision. -/
 theorem weighted_strength_le_of_provable_imp_fallback
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Kripke.FrameClass}
     [Sound 𝓢 C]
-    (W₁ W₂ : WeightedState) (φ ψ : ModalQuery)
+    (W₁ W₂ : WeightedState) (φ ψ : (LO.Modal.Formula ℕ))
     (hcompat : compatible W₁ W₂)
     (hW : ∀ pk ∈ weightedExpansion (W₁ + W₂), pk.model.toFrame ∈ C)
     (hprov : 𝓢 ⊢ (φ ➝ ψ)) :
-    BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+    BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         (fallbackRevision W₁ W₂) φ ≤
-      BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         (fallbackRevision W₁ W₂) ψ := by
   rw [fallbackRevision_eq_add_of_compatible (hcompat := hcompat)]
   exact weighted_strength_le_of_provable_imp
@@ -293,18 +288,18 @@ theorem weighted_strength_le_of_provable_imp_fallback
 
 /-- Lifted trusted-gate theorem through provenance-aware fallback revision. -/
 theorem trustedGate_ob_pe_strength_le_of_provable_fallback
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Kripke.FrameClass}
     [Sound 𝓢 C]
     (trusted : String → Prop) [DecidablePred trusted]
-    (W₁ W₂ : WeightedState) (φ : ModalQuery)
+    (W₁ W₂ : WeightedState) (φ : (LO.Modal.Formula ℕ))
     (hcompat : compatible W₁ W₂)
     (hW : ∀ pk ∈ weightedExpansion (trustedGate trusted (W₁ + W₂)), pk.model.toFrame ∈ C)
     (hprov : 𝓢 ⊢ (□φ ➝ ◇φ)) :
-    BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+    BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         (trustedGate trusted (fallbackRevision W₁ W₂)) (□φ) ≤
-      BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         (trustedGate trusted (fallbackRevision W₁ W₂)) (◇φ) := by
   rw [fallbackRevision_eq_add_of_compatible (hcompat := hcompat)]
   exact trustedGate_ob_pe_strength_le_of_provable
@@ -314,15 +309,15 @@ theorem trustedGate_ob_pe_strength_le_of_provable_fallback
 /-- State-indexed WM consequence rule packaging for trusted-gate consequence on
 fallback-revised states. -/
 def wmTrustedGateObPeConsequenceRule_fallback
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Kripke.FrameClass}
     [Sound 𝓢 C]
     (trusted : String → Prop) [DecidablePred trusted]
     (W₂ : WeightedState)
-    (φ : ModalQuery)
+    (φ : (LO.Modal.Formula ℕ))
     (hprov : 𝓢 ⊢ (□φ ➝ ◇φ)) :
-    WMConsequenceRuleOn WeightedState ModalQuery where
+    WMConsequenceRuleOn WeightedState (LO.Modal.Formula ℕ) where
   side := fun W₁ =>
     compatible W₁ W₂ ∧
       trustedGate trusted (fallbackRevision W₁ W₂) = W₁ ∧
@@ -333,9 +328,9 @@ def wmTrustedGateObPeConsequenceRule_fallback
     intro W₁ hSide
     rcases hSide with ⟨hcompat, hclosed, hW⟩
     have hfb :
-        BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+        BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
             (trustedGate trusted (fallbackRevision W₁ W₂)) (□φ) ≤
-          BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+          BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
             (trustedGate trusted (fallbackRevision W₁ W₂)) (◇φ) :=
       trustedGate_ob_pe_strength_le_of_provable_fallback
       (S := S) (𝓢 := 𝓢) (C := C)

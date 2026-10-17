@@ -232,82 +232,130 @@ private def commandForHead? (cfg : ParserDialect) (head : String) : Option Comma
   let canonical := cfg.syntaxSpec.canonicalHead head
   cfg.syntaxSpec.commandHeads.find? fun cmd => cmd.head == canonical
 
-private def fallbackFactOrError (sexpr : SExpr)
-    (allowFallback : Bool) (errMsg : String) (near : Option String := none) : Except ParseError Stmt := do
+/-- A shared command classifier can target an existing command carrier
+without forcing source expressions through a particular Pattern encoding. -/
+structure CommandConstructors (Value Command : Type) where
+  symbol : String → Value
+  fact : Value → Command
+  defineEq : Value → Value → Command
+  defineRule : Value → Value → List Value → Command
+  defineType : Value → Value → Command
+  relationFact : String → List Value → Command
+  builtinFact : String → List Value → Command
+  setFuel : Nat → Command
+  importModule : Value → Value → Command
+  newSpace : String → Command
+  addAtom : Value → Value → Command
+  removeAtom : Value → Value → Command
+
+private def syntaxCommandConstructors : CommandConstructors Pattern Stmt where
+  symbol name := .apply name []
+  fact := .fact
+  defineEq := .defineEq
+  defineRule := .defineRule
+  defineType := .defineType
+  relationFact := .relationFact
+  builtinFact := .builtinFact
+  setFuel := .setFuel
+  importModule := .import
+  newSpace := .newSpace
+  addAtom := .addAtom
+  removeAtom := .removeAtom
+
+private def fallbackFactOrError {Value Command : Type}
+    (read : SExpr → Except ParseError Value) (constructors : CommandConstructors Value Command)
+    (sexpr : SExpr)
+    (allowFallback : Bool) (errMsg : String) (near : Option String := none) : Except ParseError Command := do
   if allowFallback then
-    let p ← sexprToPattern sexpr
-    .ok (.fact p)
+    let p ← read sexpr
+    .ok (constructors.fact p)
   else
     .error (mkParseError errMsg (near := near))
 
-private def stmtFromSExpr (cfg : ParserDialect) (sexpr : SExpr) : Except ParseError Stmt :=
+private def lowerCommandSExpr {Value Command : Type} (cfg : ParserDialect)
+    (read : SExpr → Except ParseError Value) (constructors : CommandConstructors Value Command)
+    (sexpr : SExpr) : Except ParseError Command :=
   match sexpr with
   | .list (.atom head :: tail) =>
       let canonicalHead := cfg.syntaxSpec.canonicalHead head
       if canonicalHead == cfg.syntaxSpec.loweringHeads.relationFactHead then
         match tail with
         | .atom rel :: args => do
-            let args' ← args.mapM sexprToPattern
-            .ok (.relationFact rel args')
+            let args' ← args.mapM read
+            .ok (constructors.relationFact rel args')
         | _ =>
-            fallbackFactOrError sexpr cfg.syntaxSpec.dispatchPolicy.fallbackUnsupportedCommandToFact
+            fallbackFactOrError read constructors sexpr cfg.syntaxSpec.dispatchPolicy.fallbackUnsupportedCommandToFact
               s!"{head} expects relation name atom as first argument" (near := some head)
       else if canonicalHead == cfg.syntaxSpec.loweringHeads.builtinFactHead then
         match tail with
         | .atom rel :: args => do
-            let args' ← args.mapM sexprToPattern
-            .ok (.builtinFact rel args')
+            let args' ← args.mapM read
+            .ok (constructors.builtinFact rel args')
         | _ =>
-            fallbackFactOrError sexpr cfg.syntaxSpec.dispatchPolicy.fallbackUnsupportedCommandToFact
+            fallbackFactOrError read constructors sexpr cfg.syntaxSpec.dispatchPolicy.fallbackUnsupportedCommandToFact
               s!"{head} expects relation name atom as first argument" (near := some head)
       else
         match commandForHead? cfg head with
         | none =>
-            fallbackFactOrError sexpr cfg.syntaxSpec.dispatchPolicy.fallbackUnknownHeadToFact
+            fallbackFactOrError read constructors sexpr cfg.syntaxSpec.dispatchPolicy.fallbackUnknownHeadToFact
               s!"unknown command head: {head}" (near := some head)
         | some cmd =>
             if !arityAllowed cmd tail.length then
-              fallbackFactOrError sexpr cfg.syntaxSpec.dispatchPolicy.fallbackArityMismatchToFact
+              fallbackFactOrError read constructors sexpr cfg.syntaxSpec.dispatchPolicy.fallbackArityMismatchToFact
                 s!"command {head} expects arity [{cmd.arityMin}, {cmd.arityMax}], got {tail.length}"
                 (near := some head)
             else
               match cmd.command, tail with
               | "defineEq", [lhs, rhs] => do
-                  let lhs' ← sexprToPattern lhs
-                  let rhs' ← sexprToPattern rhs
-                  .ok (.defineEq lhs' rhs')
+                  let lhs' ← read lhs
+                  let rhs' ← read rhs
+                  .ok (constructors.defineEq lhs' rhs')
+              | "defineRule", lhs :: rhs :: premises => do
+                  let lhs' ← read lhs
+                  let rhs' ← read rhs
+                  let premises' ← premises.mapM read
+                  .ok (constructors.defineRule lhs' rhs' premises')
               | "defineType", [lhs, rhs] => do
-                  let lhs' ← sexprToPattern lhs
-                  let rhs' ← sexprToPattern rhs
-                  .ok (.defineType lhs' rhs')
+                  let lhs' ← read lhs
+                  let rhs' ← read rhs
+                  .ok (constructors.defineType lhs' rhs')
               | "setFuel", [.atom n] => do
                   let n' ← parseNatToken n
-                  .ok (.setFuel n')
+                  .ok (constructors.setFuel n')
               | "import", [path] => do
-                  let path' ← sexprToPattern path
-                  let defaultSpace := Pattern.apply
-                    cfg.syntaxSpec.programPolicy.defaultSpace []
-                  .ok (.import defaultSpace path')
+                  let path' ← read path
+                  let defaultSpace := constructors.symbol cfg.syntaxSpec.programPolicy.defaultSpace
+                  .ok (constructors.importModule defaultSpace path')
               | "import", [space, path] => do
-                  let space' ← sexprToPattern space
-                  let path' ← sexprToPattern path
-                  .ok (.import space' path')
+                  let space' ← read space
+                  let path' ← read path
+                  .ok (constructors.importModule space' path')
               | "newSpace", [.atom name] =>
-                  .ok (.newSpace name)
+                  .ok (constructors.newSpace name)
               | "addAtom", [space, atom] => do
-                  let space' ← sexprToPattern space
-                  let atom' ← sexprToPattern atom
-                  .ok (.addAtom space' atom')
+                  let space' ← read space
+                  let atom' ← read atom
+                  .ok (constructors.addAtom space' atom')
               | "removeAtom", [space, atom] => do
-                  let space' ← sexprToPattern space
-                  let atom' ← sexprToPattern atom
-                  .ok (.removeAtom space' atom')
+                  let space' ← read space
+                  let atom' ← read atom
+                  .ok (constructors.removeAtom space' atom')
               | _, _ =>
-                  fallbackFactOrError sexpr cfg.syntaxSpec.dispatchPolicy.fallbackUnsupportedCommandToFact
+                  fallbackFactOrError read constructors sexpr cfg.syntaxSpec.dispatchPolicy.fallbackUnsupportedCommandToFact
                     s!"unsupported command lowering: {cmd.command}" (near := some head)
   | _ => do
-      let p ← sexprToPattern sexpr
-      .ok (.fact p)
+      let p ← read sexpr
+      .ok (constructors.fact p)
+
+/-- Classify the intact source S-expression using the declared syntax policy.
+The reader and constructors are the only representation-specific pieces. -/
+def lowerSExprWith {Value Command : Type} (spec : SyntaxSpec)
+    (read : SExpr → Except ParseError Value) (constructors : CommandConstructors Value Command)
+    (sexpr : SExpr) : Except ParseError Command :=
+  lowerCommandSExpr (parserDialectOf spec) read constructors sexpr
+
+private def stmtFromSExpr (cfg : ParserDialect) (sexpr : SExpr) : Except ParseError Stmt :=
+  lowerCommandSExpr cfg sexprToPattern syntaxCommandConstructors sexpr
 
 def parseExprDetailed (input : String) : Except ParseError Pattern := do
   sexprToPattern (← parseSingleSExpr input)
@@ -586,9 +634,8 @@ def parseProgram (text : String) : Except String (List (Nat × Stmt)) :=
 
 -- ═══════════════════════════════════════════════════════════════════════
 -- Parser conformance: PeTTa command heads
--- These tests make Parser.lean a verified oracle for the PeTTa syntax
--- syntax contract. Each test proves a specific SyntaxCommand is produced
--- from the corresponding PeTTa source form.
+-- These runtime controls exercise the actual syntax-command boundary.
+-- General reader correctness remains a separate correspondence obligation.
 -- ═══════════════════════════════════════════════════════════════════════
 
 section ParserConformance
@@ -601,6 +648,21 @@ private def assertParseOk (input : String) (expected : Stmt) : Bool :=
 
 #guard assertParseOk "(= (id $x) $x)"
   (.defineEq (.apply "id" [.fvar "x"]) (.fvar "x"))
+
+#guard assertParseOk "(rule! (guarded $x) (hit $x) (permit $x))"
+  (.defineRule (.apply "guarded" [.fvar "x"]) (.apply "hit" [.fvar "x"])
+    [.apply "permit" [.fvar "x"]])
+
+#guard assertParseOk "(rule! (guarded $x) (hit $x) (permit $x) (permit $x))"
+  (.defineRule (.apply "guarded" [.fvar "x"]) (.apply "hit" [.fvar "x"])
+    [.apply "permit" [.fvar "x"], .apply "permit" [.fvar "x"]])
+
+#guard assertParseOk "(rule! (guarded $x) (hit $x) $unknown)"
+  (.defineRule (.apply "guarded" [.fvar "x"]) (.apply "hit" [.fvar "x"])
+    [.fvar "unknown"])
+
+#guard assertParseOk "(rule! (guarded $x))"
+  (.fact (.apply "rule!" [.apply "guarded" [.fvar "x"]]))
 
 #guard assertParseOk "(: foo Type)"
   (.defineType (.apply "foo" []) (.apply "Type" []))

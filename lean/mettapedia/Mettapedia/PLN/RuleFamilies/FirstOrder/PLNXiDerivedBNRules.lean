@@ -2,7 +2,7 @@ import Mettapedia.PLN.Bridges.ProbabilityTheory.BayesNet.PLNBNCompilation
 import Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNBayesNetFastRules
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
-import Mettapedia.PLN.WorldModel.PLNWorldModelITV
+import Mettapedia.PLN.WorldModel.WorldModelITV
 
 /-!
 # PLN Xi Derived BN Rules (No-Sly Admissibility)
@@ -2083,7 +2083,7 @@ theorem xi_deduction_rewrite_of_chainBN_sigma_concrete_applyITV_bayesExact95
 
 /-- Concrete chain-BN typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_deduction_rewrite_of_chainBN_sigma_concrete_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (valA valB valC : Bool)
     [EventPos (bn := chainBN) Three.B valB]
     [EventPosConstraints (bn := chainBN) [⟨Three.A, valA⟩, ⟨Three.B, valB⟩]]
@@ -2146,7 +2146,7 @@ theorem xi_deduction_rewrite_of_chainBN_sigma_concrete_dep_applyITV_bayesExact95
 
 /-- Concrete chain-BN indexed-dependent typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_deduction_rewrite_of_chainBN_sigma_concrete_dep_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (s0 : Three)
     (valA valB valC : Bool)
     [EventPos (bn := chainBN) Three.B valB]
@@ -2210,7 +2210,7 @@ theorem xi_deduction_rewrite_of_chainBN_sigma_concrete_threeNative_applyITV_baye
 
 /-- Concrete chain-BN native-Three typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_deduction_rewrite_of_chainBN_sigma_concrete_threeNative_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (s0 : Three)
     (valA valB valC : Bool)
     [EventPos (bn := chainBN) Three.B valB]
@@ -2274,7 +2274,7 @@ theorem xi_deduction_rewrite_of_chainBN_sigma_concrete_threeNativeTagged_applyIT
 
 /-- Concrete chain-BN native-tagged-Three typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_deduction_rewrite_of_chainBN_sigma_concrete_threeNativeTagged_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (s0 : Three)
     (valA valB valC : Bool)
     [EventPos (bn := chainBN) Three.B valB]
@@ -2353,7 +2353,7 @@ theorem xi_deduction_rewrite_of_chainBN_sigma_concrete_sortTag_applyITV_bayesExa
 
 /-- Concrete chain-BN sort-tagged typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_deduction_rewrite_of_chainBN_sigma_concrete_sortTag_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (s0 : MeTTaSortTag)
     (valA valB valC : Bool)
     [EventPos (bn := chainBN) Three.B valB]
@@ -2633,7 +2633,7 @@ theorem xi_sourceRule_rewrite_of_forkBN_sigma_concrete_applyITV_bayesExact95
 
 /-- Concrete fork-BN typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_sourceRule_rewrite_of_forkBN_sigma_concrete_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (valA valB valC : Bool)
     [EventPos (bn := forkBN) Three.B valB]
     [EventPosConstraints (bn := forkBN) [⟨Three.A, valA⟩, ⟨Three.B, valB⟩]]
@@ -2696,7 +2696,7 @@ theorem xi_sourceRule_rewrite_of_forkBN_sigma_concrete_dep_applyITV_bayesExact95
 
 /-- Concrete fork-BN indexed-dependent typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_sourceRule_rewrite_of_forkBN_sigma_concrete_dep_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (s0 : Three)
     (valA valB valC : Bool)
     [EventPos (bn := forkBN) Three.B valB]
@@ -2760,7 +2760,7 @@ theorem xi_sourceRule_rewrite_of_forkBN_sigma_concrete_threeNative_applyITV_baye
 
 /-- Concrete fork-BN native-Three typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_sourceRule_rewrite_of_forkBN_sigma_concrete_threeNative_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (s0 : Three)
     (valA valB valC : Bool)
     [EventPos (bn := forkBN) Three.B valB]
@@ -2824,7 +2824,7 @@ theorem xi_sourceRule_rewrite_of_forkBN_sigma_concrete_threeNativeTagged_applyIT
 
 /-- Concrete fork-BN native-tagged-Three typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_sourceRule_rewrite_of_forkBN_sigma_concrete_threeNativeTagged_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (s0 : Three)
     (valA valB valC : Bool)
     [EventPos (bn := forkBN) Three.B valB]
@@ -3082,7 +3082,7 @@ theorem xi_sinkRule_rewrite_of_colliderBN_sigma_concrete_applyITV_bayesExact95
 
 /-- Concrete collider-BN typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_sinkRule_rewrite_of_colliderBN_sigma_concrete_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (valA valB : Bool)
     [EventPos (bn := colliderBN) Three.A valA]
     (hLMarkov : ColliderBNLocalMarkovAll)
@@ -3143,7 +3143,7 @@ theorem xi_sinkRule_rewrite_of_colliderBN_sigma_concrete_dep_applyITV_bayesExact
 
 /-- Concrete collider-BN indexed-dependent typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_sinkRule_rewrite_of_colliderBN_sigma_concrete_dep_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (s0 : Three)
     (valA valB : Bool)
     [EventPos (bn := colliderBN) Three.A valA]
@@ -3205,7 +3205,7 @@ theorem xi_sinkRule_rewrite_of_colliderBN_sigma_concrete_threeNative_applyITV_ba
 
 /-- Concrete collider-BN native-Three typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_sinkRule_rewrite_of_colliderBN_sigma_concrete_threeNative_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (s0 : Three)
     (valA valB : Bool)
     [EventPos (bn := colliderBN) Three.A valA]
@@ -3267,7 +3267,7 @@ theorem xi_sinkRule_rewrite_of_colliderBN_sigma_concrete_threeNativeTagged_apply
 
 /-- Concrete collider-BN native-tagged-Three typed rewrite admits a Walley-IDM ITV judgment lift. -/
 theorem xi_sinkRule_rewrite_of_colliderBN_sigma_concrete_threeNativeTagged_applyITV_walleyIDM
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (s0 : Three)
     (valA valB : Bool)
     [EventPos (bn := colliderBN) Three.A valA]

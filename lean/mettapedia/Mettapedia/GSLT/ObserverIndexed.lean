@@ -11,6 +11,7 @@ import Mettapedia.Languages.ProcessCalculi.RhoCalculus.QuotedChannelCalculus
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.QuotedChannelDetermination
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.QuotedChannelBubbles
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PayloadQuoteBoundary
+import Mettapedia.GSLT.Contexts.Expressiveness
 
 /-!
 # Observer-indexed equivalence
@@ -48,4 +49,10 @@ import Mettapedia.Languages.ProcessCalculi.RhoCalculus.PayloadQuoteBoundary
   and sealed and open bubbles over it.
 * `PayloadQuoteBoundary`: the payload position of the rho quote-free class is
   a delayed quote, checked at the rule level.
+* `Expressiveness`: eliminable and macro-eliminable constructs (Felleisen) and
+  abstraction-preserving reductions (Mitchell) for languages given by contexts
+  and an observation; an elimination preserves equivalence, a macro
+  elimination is fully abstract and leaves the base's equivalence unchanged,
+  and a quoting context makes equivalence equality and rules out every
+  elimination.
 -/

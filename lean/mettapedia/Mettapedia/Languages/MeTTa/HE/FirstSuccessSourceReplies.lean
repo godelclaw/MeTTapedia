@@ -51,7 +51,7 @@ theorem source_types_iff (space : Space) (value : Atom) (types : List Atom) :
 bindings, nesting, quotation and error-shaped data. -/
 theorem raw_result_unique
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch} {live : List Atom}
-    {typing : EvalTypeService} {value : Atom} {bindings : Bindings} {result : ResultPair}
+    {typing : EvalTypeService} {value : Atom} {bindings : BindingFrame} {result : FrameResult}
     (evaluated : EvalAtomRawRel space dispatch live (typing := typing)
       value Atom.atomType bindings result) : result = (value, bindings) := by
   cases evaluated with
@@ -73,7 +73,8 @@ theorem source_raw_reply_iff
   constructor
   · rintro rfl
     exact RetainedArgumentSpecification.atom_demand_raw space semantic live typing value bindings
-  · exact raw_result_unique
+  · intro evaluated
+    exact BindingFrame.historicalResult_injective (raw_result_unique evaluated)
 
 /-- Concrete source output constructs every reply witness in occurrence
 order; the complete reply is a singleton rather than a support quotient. -/
@@ -89,11 +90,11 @@ theorem source_raw_reply
 
 theorem raw_arguments_unique
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch} {live : List Atom}
-    {typing : EvalTypeService} {values : List Atom} {bindings : Bindings} {result : ResultPair}
+    {typing : EvalTypeService} {values : List Atom} {bindings : BindingFrame} {result : FrameResult}
     (evaluated : InterpretArgsRel space dispatch live (typing := typing)
       values (List.replicate values.length Atom.atomType) bindings result) :
     result = (argumentPacket values, bindings) := by
-  induction values generalizing bindings result with
+  induction values generalizing live bindings result with
   | nil => cases evaluated; rfl
   | cons value values ih =>
       cases evaluated with
@@ -126,10 +127,11 @@ theorem source_raw_arguments_iff
   simp only [List.mem_singleton]
   constructor
   · rintro rfl
-    simpa only [List.map_map, Function.comp_def, List.map_id'] using
+    simpa only [List.map_map, Function.comp_def, List.map_id', BindingFrame.historicalResult_pair] using
       RetainedArgumentSpecification.history_to_arguments
         (RetainedArgumentSpecification.raw_history space semantic live typing values bindings)
-  · exact raw_arguments_unique
+  · intro evaluated
+    exact BindingFrame.historicalResult_injective (raw_arguments_unique evaluated)
 
 /-- One raw source callback is delivered to its exact currently pending
 endpoint. Semantic truth is constructed separately from serial acceptance. -/

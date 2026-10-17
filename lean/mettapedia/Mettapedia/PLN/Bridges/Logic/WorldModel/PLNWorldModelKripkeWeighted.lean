@@ -1,5 +1,5 @@
 import Mathlib.Data.Multiset.MapFold
-import Mettapedia.PLN.WorldModel.PLNWorldModelCalculus
+import Mettapedia.PLN.WorldModel.WorldModelCalculus
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeCompleteness
 
 /-!
@@ -15,14 +15,13 @@ namespace Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted
 open LO
 open LO.Modal
 open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.Evidence.EvidenceQuantale
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeCompleteness
 open scoped ENNReal
 
-abbrev ModalQuery := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke.ModalQuery
-abbrev PointedKripke := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke.PointedKripke
 
 /-- Source-aware weighted pointed Kripke datum. -/
 structure WeightedSourcePointedKripke where
@@ -89,14 +88,14 @@ theorem weightedCountP_cons
         simp [weightedCountP_singleton, Nat.add_comm]
 
 /-- Weighted evidence extraction for Kripke modal queries. -/
-noncomputable def weightedEvidence (W : WeightedState) (φ : ModalQuery) : BinaryEvidence := by
+noncomputable def weightedEvidence (W : WeightedState) (φ : (LO.Modal.Formula ℕ)) : BinaryEvidence := by
   classical
   let p : PointedKripke → Prop := fun pk => pk.satisfies φ
   let q : PointedKripke → Prop := fun pk => ¬ pk.satisfies φ
   exact ⟨(weightedCountP p W : ℝ≥0∞), (weightedCountP q W : ℝ≥0∞)⟩
 
 theorem weightedEvidence_add
-    (W₁ W₂ : WeightedState) (φ : ModalQuery) :
+    (W₁ W₂ : WeightedState) (φ : (LO.Modal.Formula ℕ)) :
     weightedEvidence (W₁ + W₂) φ =
       weightedEvidence W₁ φ + weightedEvidence W₂ φ := by
   classical
@@ -105,7 +104,7 @@ theorem weightedEvidence_add
   · simp [weightedEvidence, weightedCountP_add, BinaryEvidence.hplus_def]
 
 /-- Weighted/source-aware `BinaryWorldModel` instance. -/
-noncomputable instance : BinaryWorldModel WeightedState ModalQuery where
+noncomputable instance : BinaryWorldModel WeightedState (LO.Modal.Formula ℕ) where
   evidence := weightedEvidence
   evidence_add := weightedEvidence_add
   evidence_zero q := by
@@ -150,61 +149,61 @@ theorem weightedCountP_toWeightOne_eq_countP
       · simp [Multiset.countP_cons_of_neg, hp, weightOnePoint]
 
 /-- Weight-1 specialization of weighted evidence recovers unweighted Kripke evidence. -/
-theorem weightedEvidence_toWeightOne_eq_kripkeEvidence
-    (W : Multiset PointedKripke) (φ : ModalQuery) :
-    weightedEvidence (toWeightOne W) φ = kripkeEvidence W φ := by
+theorem weightedEvidence_toWeightOne_eq_crispEvidence
+    (W : Multiset PointedKripke) (φ : (LO.Modal.Formula ℕ)) :
+    weightedEvidence (toWeightOne W) φ = crispEvidence PointedKripke.satisfies W φ := by
   classical
   apply BinaryEvidence.ext'
-  · simp [weightedEvidence, kripkeEvidence, weightedCountP_toWeightOne_eq_countP]
-  · simp [weightedEvidence, kripkeEvidence, weightedCountP_toWeightOne_eq_countP]
+  · simp [weightedEvidence, crispEvidence, weightedCountP_toWeightOne_eq_countP]
+  · simp [weightedEvidence, crispEvidence, weightedCountP_toWeightOne_eq_countP]
 
 /-- Weight-1 specialization preserves query strength exactly. -/
 theorem queryStrength_toWeightOne_eq_kripke
-    (W : Multiset PointedKripke) (φ : ModalQuery) :
-    BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+    (W : Multiset PointedKripke) (φ : (LO.Modal.Formula ℕ)) :
+    BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         (toWeightOne W) φ =
-      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         W φ := by
   change (BinaryWorldModel.evidence (toWeightOne W) φ).toStrength =
       (BinaryWorldModel.evidence W φ).toStrength
   exact congrArg (fun e => e.toStrength)
-    (weightedEvidence_toWeightOne_eq_kripkeEvidence (W := W) (φ := φ))
+    (weightedEvidence_toWeightOne_eq_crispEvidence (W := W) (φ := φ))
 
 /-- Weighted evidence coincides with Kripke evidence on the weighted expansion. -/
-theorem weightedEvidence_eq_kripkeEvidence_expansion
-    (W : WeightedState) (φ : ModalQuery) :
-    weightedEvidence W φ = kripkeEvidence (weightedExpansion W) φ := by
+theorem weightedEvidence_eq_crispEvidence_expansion
+    (W : WeightedState) (φ : (LO.Modal.Formula ℕ)) :
+    weightedEvidence W φ = crispEvidence PointedKripke.satisfies (weightedExpansion W) φ := by
   classical
   apply BinaryEvidence.ext'
-  · simp [weightedEvidence, weightedCountP, kripkeEvidence]
-  · simp [weightedEvidence, weightedCountP, kripkeEvidence]
+  · simp [weightedEvidence, weightedCountP, crispEvidence]
+  · simp [weightedEvidence, weightedCountP, crispEvidence]
 
 /-- Weighted query strength is exactly Kripke query strength of the weighted expansion. -/
 theorem queryStrength_eq_kripkeExpansion
-    (W : WeightedState) (φ : ModalQuery) :
-    BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery) W φ =
-      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+    (W : WeightedState) (φ : (LO.Modal.Formula ℕ)) :
+    BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ)) W φ =
+      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         (weightedExpansion W) φ := by
   change (BinaryWorldModel.evidence W φ).toStrength =
       (BinaryWorldModel.evidence (weightedExpansion W) φ).toStrength
   exact congrArg (fun e => e.toStrength)
-    (weightedEvidence_eq_kripkeEvidence_expansion (W := W) (φ := φ))
+    (weightedEvidence_eq_crispEvidence_expansion (W := W) (φ := φ))
 
 /-- Proof-theoretic implication consequence on weighted states, via expansion transfer. -/
 theorem weighted_strength_le_of_provable_imp
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Kripke.FrameClass}
     [Sound 𝓢 C]
-    (W : WeightedState) (φ ψ : ModalQuery)
+    (W : WeightedState) (φ ψ : (LO.Modal.Formula ℕ))
     (hW : ∀ pk ∈ weightedExpansion W, pk.model.toFrame ∈ C)
     (hprov : 𝓢 ⊢ (φ ➝ ψ)) :
-    BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery) W φ ≤
-      BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery) W ψ := by
+    BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ)) W φ ≤
+      BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ)) W ψ := by
   have hK :
-      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
           (weightedExpansion W) φ ≤
-        BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+        BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
           (weightedExpansion W) ψ :=
     multiset_strength_le_of_provable_imp
       (S := S) (𝓢 := 𝓢) (C := C)
@@ -214,33 +213,33 @@ theorem weighted_strength_le_of_provable_imp
 
 /-- Any unweighted Kripke strength inequality transfers to the weight-1 embedding. -/
 theorem queryStrength_le_toWeightOne_of_kripke
-    (W : Multiset PointedKripke) (φ ψ : ModalQuery)
+    (W : Multiset PointedKripke) (φ ψ : (LO.Modal.Formula ℕ))
     (hK :
-      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery) W φ ≤
-        BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery) W ψ) :
-    BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ)) W φ ≤
+        BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ)) W ψ) :
+    BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         (toWeightOne W) φ ≤
-      BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         (toWeightOne W) ψ := by
   simpa [queryStrength_toWeightOne_eq_kripke (W := W) (φ := φ),
     queryStrength_toWeightOne_eq_kripke (W := W) (φ := ψ)] using hK
 
 /-- Proof-theoretic implication consequence transfers to the weight-1 weighted WM state. -/
 theorem toWeightOne_strength_le_of_provable_imp
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Kripke.FrameClass}
     [Sound 𝓢 C]
-    (W : Multiset PointedKripke) (φ ψ : ModalQuery)
+    (W : Multiset PointedKripke) (φ ψ : (LO.Modal.Formula ℕ))
     (hW : ∀ pk ∈ W, pk.model.toFrame ∈ C)
     (hprov : 𝓢 ⊢ (φ ➝ ψ)) :
-    BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+    BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         (toWeightOne W) φ ≤
-      BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         (toWeightOne W) ψ := by
   have hK :
-      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery) W φ ≤
-        BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery) W ψ :=
+      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ)) W φ ≤
+        BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ)) W ψ :=
     multiset_strength_le_of_provable_imp
       (S := S) (𝓢 := 𝓢) (C := C)
       (W := W) (φ := φ) (ψ := ψ) hW hprov
@@ -255,17 +254,17 @@ def trustedGate (trusted : String → Prop) [DecidablePred trusted]
 after trusted-source gating, a provable `□φ ➝ ◇φ` implication transfers to the
 weighted WM inequality `□φ ⪯ ◇φ`. -/
 theorem trustedGate_ob_pe_strength_le_of_provable
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Kripke.FrameClass}
     [Sound 𝓢 C]
     (trusted : String → Prop) [DecidablePred trusted]
-    (W : WeightedState) (φ : ModalQuery)
+    (W : WeightedState) (φ : (LO.Modal.Formula ℕ))
     (hW : ∀ pk ∈ weightedExpansion (trustedGate trusted W), pk.model.toFrame ∈ C)
     (hprov : 𝓢 ⊢ (□φ ➝ ◇φ)) :
-    BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+    BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         (trustedGate trusted W) (□φ) ≤
-      BinaryWorldModel.queryStrength (State := WeightedState) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := WeightedState) (Query := (LO.Modal.Formula ℕ))
         (trustedGate trusted W) (◇φ) := by
   exact
     weighted_strength_le_of_provable_imp
@@ -275,14 +274,14 @@ theorem trustedGate_ob_pe_strength_le_of_provable
 /-- State-indexed WM consequence rule packaging for trusted-source gated
 obligation/permission consequence (`□φ ⪯ ◇φ`). -/
 def wmTrustedGateObPeConsequenceRule
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Kripke.FrameClass}
     [Sound 𝓢 C]
     (trusted : String → Prop) [DecidablePred trusted]
-    (φ : ModalQuery)
+    (φ : (LO.Modal.Formula ℕ))
     (hprov : 𝓢 ⊢ (□φ ➝ ◇φ)) :
-    WMConsequenceRuleOn WeightedState ModalQuery where
+    WMConsequenceRuleOn WeightedState (LO.Modal.Formula ℕ) where
   side := fun W =>
     trustedGate trusted W = W ∧
       (∀ pk ∈ weightedExpansion W, pk.model.toFrame ∈ C)

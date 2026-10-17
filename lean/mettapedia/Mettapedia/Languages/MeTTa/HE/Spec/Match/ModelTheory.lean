@@ -455,13 +455,17 @@ noncomputable def canonicalValuation
   else
     .var name
 
-private theorem applyClassSolution_congr_of_eq_on_vars
+/-- Homomorphic observation depends only on the variables of its atom. -/
+theorem applyClassSolution_congr_of_eq_on_vars
     (left right : String → Metta.Atom) :
     ∀ atom : Metta.Atom,
       (∀ name, name ∈ atom.vars → left name = right name) →
         applyClassSolution left atom = applyClassSolution right atom := by
   intro atom
-  induction atom with
+  induction atom using Metta.Atom.rec
+    (motive_2 := fun atoms => ∀ child ∈ atoms,
+      (∀ name, name ∈ child.vars → left name = right name) →
+        applyClassSolution left child = applyClassSolution right child) with
   | sym symbol => intro _; simp [applyClassSolution]
   | var name =>
       intro h
@@ -478,6 +482,40 @@ private theorem applyClassSolution_congr_of_eq_on_vars
       apply h name
       simpa [Metta.Atom.vars] using List.mem_flatten.mpr
         ⟨child.vars, List.mem_map.mpr ⟨child, hchild, rfl⟩, hname⟩
+  | nil => simp_all
+  | cons head tail ihHead ihTail =>
+      rename_i child member agrees
+      rcases List.mem_cons.mp member with rfl | member
+      · exact ihHead agrees
+      · exact ihTail child member agrees
+
+/-- Complete binding satisfaction depends only on the binding record's
+finite support, including variables nested inside assigned values. -/
+theorem bindingSatisfied_congr_of_eq_on_support
+    (left right : String → Metta.Atom) (bindings : Bindings)
+    (agrees : ∀ name ∈ bindingSupport bindings, left name = right name) :
+    HEBindingSatisfied left bindings ↔ HEBindingSatisfied right bindings := by
+  have transfer (first second : String → Metta.Atom)
+      (same : ∀ name ∈ bindingSupport bindings, first name = second name)
+      (satisfied : HEBindingSatisfied first bindings) : HEBindingSatisfied second bindings := by
+    constructor
+    · intro name value member
+      calc
+        second name = first name := (same name (assignment_key_mem_bindingSupport member)).symm
+        _ = applyClassSolution first (toLeaTTaAtom value) := satisfied.1 name value member
+        _ = applyClassSolution second (toLeaTTaAtom value) := by
+          apply applyClassSolution_congr_of_eq_on_vars
+          intro dependency occurs
+          exact same dependency (assignment_value_var_mem_bindingSupport member
+            (atomOccurs_iff_mem_translated_vars.mpr occurs))
+    · intro firstName secondName member
+      calc
+        second firstName = first firstName :=
+          (same firstName (equality_left_mem_bindingSupport member)).symm
+        _ = first secondName := satisfied.2 firstName secondName member
+        _ = second secondName := same secondName (equality_right_mem_bindingSupport member)
+  exact ⟨transfer left right agrees,
+    transfer right left (fun name member => (agrees name member).symm)⟩
 
 /-- At a variable occurring in the selected value, the recursive call used by
 the well-founded evaluator is exactly the total canonical valuation. -/
@@ -594,7 +632,11 @@ theorem applyClassSolution_comp
         applyClassSolution
           (fun name => applyClassSolution outer (inner name)) atom := by
   intro atom
-  induction atom with
+  induction atom using Metta.Atom.rec
+    (motive_2 := fun atoms => ∀ child ∈ atoms,
+      applyClassSolution outer (applyClassSolution inner child) =
+        applyClassSolution
+          (fun name => applyClassSolution outer (inner name)) child) with
   | sym symbol => simp [applyClassSolution]
   | var name => simp [applyClassSolution]
   | gnd grounded => simp [applyClassSolution]
@@ -602,6 +644,12 @@ theorem applyClassSolution_comp
       simp only [applyClassSolution, List.map_map]
       congr 1
       exact List.map_congr_left fun child hchild => ih child hchild
+  | nil => simp_all
+  | cons head tail ihHead ihTail =>
+      rename_i child member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact ihHead
+      · exact ihTail child member
 
 /-- Every concrete model absorbs the canonical class evaluator.  Applying a
 satisfying valuation after one canonical evaluation yields the same concrete
@@ -792,7 +840,9 @@ theorem applyClassSolution_identity :
     ∀ atom : Metta.Atom,
       applyClassSolution (fun name => Metta.Atom.var name) atom = atom := by
   intro atom
-  induction atom with
+  induction atom using Metta.Atom.rec
+    (motive_2 := fun atoms => ∀ child ∈ atoms,
+      applyClassSolution (fun name => Metta.Atom.var name) child = child) with
   | sym symbol => simp [applyClassSolution]
   | var name => simp [applyClassSolution]
   | gnd grounded => simp [applyClassSolution]
@@ -805,6 +855,12 @@ theorem applyClassSolution_identity :
             List.map id atoms :=
           List.map_congr_left fun child hchild => ih child hchild
         _ = atoms := List.map_id atoms
+  | nil => simp_all
+  | cons head tail ihHead ihTail =>
+      rename_i child member
+      rcases List.mem_cons.mp member with rfl | member
+      · exact ihHead
+      · exact ihTail child member
 
 theorem ValuationRefines.refl (valuation : String → Metta.Atom) :
     ValuationRefines valuation valuation := by

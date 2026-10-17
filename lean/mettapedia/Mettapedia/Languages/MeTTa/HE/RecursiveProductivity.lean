@@ -53,6 +53,31 @@ def productive (dispatch : GroundedDispatch) : (machine dispatch).Productive whe
     omega
   moves := moves dispatch
 
+/-- Coverage checks add a visible resource request at their boundary; they
+cannot introduce an infinite administrative region or a stuck configuration.
+This rank concerns the finite approximation, not unbounded source termination. -/
+def checkedProductive (dispatch : GroundedDispatch) : (Checked.machine dispatch).Productive where
+  rank := configurationWork dispatch
+  silent_decreases := by
+    intro state after stepped
+    have original : (machine dispatch).step state = some (.silent after) := by
+      cases blockedHere : Checked.blocked dispatch state with
+      | some request => simp [Checked.machine, Checked.guardMachine, blockedHere] at stepped
+      | none =>
+          cases source : (machine dispatch).step state with
+          | none => simp [Checked.machine, Checked.guardMachine, blockedHere, source] at stepped
+          | some action =>
+              cases action <;> simp [Checked.machine, Checked.guardMachine, blockedHere, source, Transition.relabel] at stepped
+              cases stepped
+              rfl
+    exact (productive dispatch).silent_decreases original
+  moves := by
+    intro state
+    cases blockedHere : Checked.blocked dispatch state with
+    | some request => simp [Checked.machine, Checked.guardMachine, blockedHere]
+    | none =>
+        simpa [Checked.machine, Checked.guardMachine, blockedHere] using moves dispatch state
+
 def finishingBudget (dispatch : GroundedDispatch) (state : Configuration) : Nat :=
   configurationWork dispatch state + (state.remaining dispatch).length + 1
 

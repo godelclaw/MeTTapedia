@@ -33,7 +33,9 @@ carry no premise.
 
 set_option autoImplicit false
 
-namespace Mettapedia.Logic.HostingStyles.PrimeCandidate
+namespace Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
+
+open Mettapedia.Logic.HostingStyles
 
 open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
@@ -755,4 +757,4 @@ theorem turingMap_not_exhausting (base : BasePremiseEvaluator) (machine : Machin
 #print axioms turingPresentation_not_rank
 #print axioms turingMap_not_exhausting
 
-end Mettapedia.Logic.HostingStyles.PrimeCandidate
+end Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles

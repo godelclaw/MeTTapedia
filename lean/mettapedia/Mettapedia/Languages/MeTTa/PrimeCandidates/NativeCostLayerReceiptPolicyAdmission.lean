@@ -184,7 +184,7 @@ def workOnlyRequest (Ground : Type uGround) : PolicyRequest (History Ground) :=
 def workSpanAdmission
     (dependencies : DependencySystem) (revision : dependencies.Revision)
     (Ground : Type uGround) :
-    PolicyKeyAdmission dependencies revision (workOnlyRequest Ground)
+    PolicyKeyAdmission.Admission dependencies revision (workOnlyRequest Ground)
       (historyWorkSpan : History Ground → WorkSpan) where
   realize := fun _ =>
     { run := id
@@ -196,7 +196,7 @@ request and retains no distinction invisible to every requested policy. -/
 def canonicalReceiptAdmission
     (dependencies : DependencySystem) (revision : dependencies.Revision)
     (Ground : Type uGround) :
-    PolicyKeyAdmission dependencies revision (receiptRequest Ground)
+    PolicyKeyAdmission.Admission dependencies revision (receiptRequest Ground)
       (policyVectorKey (receiptRequest Ground)) :=
   policyVectorAdmission dependencies revision (receiptRequest Ground) (by
     simp [receiptRequest])
@@ -205,7 +205,7 @@ def canonicalReceiptAdmission
 def retainedHistoryAdmission
     (dependencies : DependencySystem) (revision : dependencies.Revision)
     (Ground : Type uGround) :
-    PolicyKeyAdmission dependencies revision (receiptRequest Ground)
+    PolicyKeyAdmission.Admission dependencies revision (receiptRequest Ground)
       (id : History Ground → History Ground) :=
   identityKeyAdmission dependencies revision (receiptRequest Ground)
 
@@ -214,7 +214,7 @@ chronology-sensitive request. -/
 theorem no_workSpanAdmission_for_receiptRequest
     (dependencies : DependencySystem) (revision : dependencies.Revision) :
     ¬ Nonempty
-      (PolicyKeyAdmission dependencies revision
+      (PolicyKeyAdmission.Admission dependencies revision
         (receiptRequest NativeInteractionFibration.Examples.Ground)
         (historyWorkSpan :
           History NativeInteractionFibration.Examples.Ground → WorkSpan)) := by
@@ -247,22 +247,22 @@ vector and retained history both realize the larger request. -/
 theorem request_scoped_key_boundary
     (dependencies : DependencySystem) (revision : dependencies.Revision) :
     Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (workOnlyRequest NativeInteractionFibration.Examples.Ground)
           (historyWorkSpan :
             History NativeInteractionFibration.Examples.Ground → WorkSpan)) ∧
       ¬ Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (receiptRequest NativeInteractionFibration.Examples.Ground)
           (historyWorkSpan :
             History NativeInteractionFibration.Examples.Ground → WorkSpan)) ∧
       Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (receiptRequest NativeInteractionFibration.Examples.Ground)
           (policyVectorKey
             (receiptRequest NativeInteractionFibration.Examples.Ground))) ∧
       Nonempty
-        (PolicyKeyAdmission dependencies revision
+        (PolicyKeyAdmission.Admission dependencies revision
           (receiptRequest NativeInteractionFibration.Examples.Ground)
           (id : History NativeInteractionFibration.Examples.Ground →
             History NativeInteractionFibration.Examples.Ground)) :=

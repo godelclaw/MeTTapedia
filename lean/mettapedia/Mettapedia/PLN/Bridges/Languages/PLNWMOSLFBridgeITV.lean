@@ -1,5 +1,5 @@
 import Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
-import Mettapedia.PLN.WorldModel.PLNWorldModelITV
+import Mettapedia.PLN.WorldModel.WorldModelITV
 import Mettapedia.OSLF.Framework.QuantaleCoherence
 
 /-!
@@ -915,7 +915,7 @@ theorem language_quantale_coherence_wmITV_threshold_atom_of_queryEncoders_bayesE
 theorem language_quantale_coherence_wmITV_threshold_atom_of_queryEncoders_walley_id
     (R : Pattern → Pattern → Prop)
     (m : LanguageMorphism L₁ L₂ Eq)
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (W₁ W₂ : State)
     (queryOfAtom₁ queryOfAtom₂ : String → Pattern → Sigma Query)
     (a0 : String)
@@ -944,7 +944,7 @@ theorem language_quantale_coherence_wmITV_threshold_atom_of_queryEncoders_walley
             (State := State) (Srt := Srt) (Query := Query) W₂ queryOfAtom₂ a0) m.mapTerm pick) H ∧
     (∀ u, sem R
       (thresholdAtomSemOfWMITVQSigma
-        (State := State) (Srt := Srt) (Query := Query) (Ctx := IDMPredictiveContext)
+        (State := State) (Srt := Srt) (Query := Query) (Ctx := Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
         ITVSemantics.walleyIDMPredictive ctx W₂ tau coord queryOfAtom₂)
       (.atom a0) (m.mapTerm (pick u))) := by
   exact language_quantale_coherence_wmITV_threshold_atom_of_queryEncoders_id
@@ -1051,7 +1051,7 @@ theorem language_quantale_coherence_wmITV_lower_threshold_atom_of_queryEncoders_
 theorem language_quantale_coherence_wmITV_lower_threshold_atom_of_queryEncoders_walley_id
     (R : Pattern → Pattern → Prop)
     (m : LanguageMorphism L₁ L₂ Eq)
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (W₁ W₂ : State)
     (queryOfAtom₁ queryOfAtom₂ : String → Pattern → Sigma Query)
     (a0 : String) (tau : ℝ)
@@ -1079,7 +1079,7 @@ theorem language_quantale_coherence_wmITV_lower_threshold_atom_of_queryEncoders_
             (State := State) (Srt := Srt) (Query := Query) W₂ queryOfAtom₂ a0) m.mapTerm pick) H ∧
     (∀ u, sem R
       (lowerAtomSemOfWMITVQSigma
-        (State := State) (Srt := Srt) (Query := Query) (Ctx := IDMPredictiveContext)
+        (State := State) (Srt := Srt) (Query := Query) (Ctx := Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
         ITVSemantics.walleyIDMPredictive ctx W₂ tau queryOfAtom₂)
       (.atom a0) (m.mapTerm (pick u))) := by
   simpa [lowerAtomSemOfWMITVQSigma, thresholdAtomSemOfWMITVQSigma] using
@@ -1186,7 +1186,7 @@ theorem language_quantale_coherence_wmITV_upper_threshold_atom_of_queryEncoders_
 theorem language_quantale_coherence_wmITV_upper_threshold_atom_of_queryEncoders_walley_id
     (R : Pattern → Pattern → Prop)
     (m : LanguageMorphism L₁ L₂ Eq)
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (W₁ W₂ : State)
     (queryOfAtom₁ queryOfAtom₂ : String → Pattern → Sigma Query)
     (a0 : String) (tau : ℝ)
@@ -1214,7 +1214,7 @@ theorem language_quantale_coherence_wmITV_upper_threshold_atom_of_queryEncoders_
             (State := State) (Srt := Srt) (Query := Query) W₂ queryOfAtom₂ a0) m.mapTerm pick) H ∧
     (∀ u, sem R
       (upperAtomSemOfWMITVQSigma
-        (State := State) (Srt := Srt) (Query := Query) (Ctx := IDMPredictiveContext)
+        (State := State) (Srt := Srt) (Query := Query) (Ctx := Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
         ITVSemantics.walleyIDMPredictive ctx W₂ tau queryOfAtom₂)
       (.atom a0) (m.mapTerm (pick u))) := by
   simpa [upperAtomSemOfWMITVQSigma, thresholdAtomSemOfWMITVQSigma] using
@@ -1321,7 +1321,7 @@ theorem language_quantale_coherence_wmITV_credibility_threshold_atom_of_queryEnc
 theorem language_quantale_coherence_wmITV_credibility_threshold_atom_of_queryEncoders_walley_id
     (R : Pattern → Pattern → Prop)
     (m : LanguageMorphism L₁ L₂ Eq)
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (W₁ W₂ : State)
     (queryOfAtom₁ queryOfAtom₂ : String → Pattern → Sigma Query)
     (a0 : String) (tau : ℝ)
@@ -1349,7 +1349,7 @@ theorem language_quantale_coherence_wmITV_credibility_threshold_atom_of_queryEnc
             (State := State) (Srt := Srt) (Query := Query) W₂ queryOfAtom₂ a0) m.mapTerm pick) H ∧
     (∀ u, sem R
       (credibilityAtomSemOfWMITVQSigma
-        (State := State) (Srt := Srt) (Query := Query) (Ctx := IDMPredictiveContext)
+        (State := State) (Srt := Srt) (Query := Query) (Ctx := Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
         ITVSemantics.walleyIDMPredictive ctx W₂ tau queryOfAtom₂)
       (.atom a0) (m.mapTerm (pick u))) := by
   simpa [credibilityAtomSemOfWMITVQSigma, thresholdAtomSemOfWMITVQSigma] using
@@ -1456,7 +1456,7 @@ theorem language_quantale_coherence_wmITV_width_threshold_atom_of_queryEncoders_
 theorem language_quantale_coherence_wmITV_width_threshold_atom_of_queryEncoders_walley_id
     (R : Pattern → Pattern → Prop)
     (m : LanguageMorphism L₁ L₂ Eq)
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (W₁ W₂ : State)
     (queryOfAtom₁ queryOfAtom₂ : String → Pattern → Sigma Query)
     (a0 : String) (tau : ℝ)
@@ -1484,7 +1484,7 @@ theorem language_quantale_coherence_wmITV_width_threshold_atom_of_queryEncoders_
             (State := State) (Srt := Srt) (Query := Query) W₂ queryOfAtom₂ a0) m.mapTerm pick) H ∧
     (∀ u, sem R
       (widthAtomSemOfWMITVQSigma
-        (State := State) (Srt := Srt) (Query := Query) (Ctx := IDMPredictiveContext)
+        (State := State) (Srt := Srt) (Query := Query) (Ctx := Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
         ITVSemantics.walleyIDMPredictive ctx W₂ tau queryOfAtom₂)
       (.atom a0) (m.mapTerm (pick u))) := by
   simpa [widthAtomSemOfWMITVQSigma, thresholdAtomSemOfWMITVQSigma] using
@@ -1591,7 +1591,7 @@ theorem language_quantale_coherence_wmITV_strength_threshold_atom_of_queryEncode
 theorem language_quantale_coherence_wmITV_strength_threshold_atom_of_queryEncoders_walley_id
     (R : Pattern → Pattern → Prop)
     (m : LanguageMorphism L₁ L₂ Eq)
-    (ctx : IDMPredictiveContext)
+    (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (W₁ W₂ : State)
     (queryOfAtom₁ queryOfAtom₂ : String → Pattern → Sigma Query)
     (a0 : String) (tau : ℝ)
@@ -1619,7 +1619,7 @@ theorem language_quantale_coherence_wmITV_strength_threshold_atom_of_queryEncode
             (State := State) (Srt := Srt) (Query := Query) W₂ queryOfAtom₂ a0) m.mapTerm pick) H ∧
     (∀ u, sem R
       (strengthAtomSemOfWMITVQSigma
-        (State := State) (Srt := Srt) (Query := Query) (Ctx := IDMPredictiveContext)
+        (State := State) (Srt := Srt) (Query := Query) (Ctx := Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
         ITVSemantics.walleyIDMPredictive ctx W₂ tau queryOfAtom₂)
       (.atom a0) (m.mapTerm (pick u))) := by
   simpa [strengthAtomSemOfWMITVQSigma, thresholdAtomSemOfWMITVQSigma] using

@@ -11,8 +11,9 @@ order the authored rules list them.  From these, the language's step relation
 on encoded states is exactly the machine's successor relation, and the
 encodings are injective, so the language never confuses two typed states.
 
-The reference machine is a proof device.  Downstream theorems consume the
-language step through the exactness theorem, never the machine directly.
+The retained receipt machine uses these same successors.  Erasing its
+annotations gives exactly the declared language executor's ordered list,
+which connects receipt-bearing frontier execution to the language steps.
 -/
 
 set_option autoImplicit false
@@ -323,13 +324,13 @@ private theorem tuples_append (children patterns : List MatrixPattern) (name : S
       [[encodePatterns children, encodePatterns patterns, encodePatterns (children ++ patterns)]] := by
   simp [relationEnv, appendRelation, unfoldRelation, keyIsRelation, keyNotRelation]
 
-private theorem tuples_sourceQuery (relation : String) (names : List String) (bindings : Bindings)
+private theorem tuples_sourceQuery (relation : String) (names : List PatternPlan) (bindings : Bindings)
     (name : String) :
     (relationEnv relations source).tuples sourceQueryRelation
-        [encodeName relation, encodeNames names, encodeBindings bindings, .fvar name] =
-      (relationQueryStep relations source bindings relation (names.map Pattern.fvar)).map
+        [encodeName relation, encodeTemplates names, encodeBindings bindings, .fvar name] =
+      (relationQueryStep relations source bindings relation (MeTTaILFirstOrderRuleCompilation.erasePatterns names)).map
         fun extended =>
-          [encodeName relation, encodeNames names, encodeBindings bindings, encodeBindings extended] := by
+          [encodeName relation, encodeTemplates names, encodeBindings bindings, encodeBindings extended] := by
   simp [relationEnv, sourceQueryRelation, appendRelation, unfoldRelation, keyIsRelation,
     keyNotRelation, encodeName, decodeName?]
 
@@ -734,11 +735,11 @@ private theorem apply_premise (query : PremisePlan) (queries : List PremisePlan)
         encodeState (.premises queries template extended) := by
   have key := tuples_sourceQuery relations source query.relation query.arguments bindings "extended"
   have sourceRun : PremisePlan.run relations source bindings query =
-      relationQueryStep relations source bindings query.relation (query.arguments.map Pattern.fvar) :=
+      relationQueryStep relations source bindings query.relation (MeTTaILFirstOrderRuleCompilation.erasePatterns query.arguments) :=
     PremisePlan.run_eq_premiseStepUsing relations source (fun _ => []) bindings query
   rw [sourceRun]
   generalize relationQueryStep relations source bindings query.relation
-    (query.arguments.map Pattern.fvar) = results at key ⊢
+    (MeTTaILFirstOrderRuleCompilation.erasePatterns query.arguments) = results at key ⊢
   simp +decide [
     applyRuleWithPremisesUsing, applyPremisesWithEnv, premiseStepWithEnv, relationQueryStep,
     builtinRelationTuples, premiseRewrite, metavariable, premisesPattern, qconsPattern,
@@ -859,8 +860,8 @@ private theorem executor_eq (state : Pattern) :
       (applyRuleWithPremisesUsing (relationEnv relations source) language dropRewrite state ++
       (applyRuleWithPremisesUsing (relationEnv relations source) language tryLeafRewrite state ++
       (applyRuleWithPremisesUsing (relationEnv relations source) language tryNextRewrite state ++
-      (applyRuleWithPremisesUsing (relationEnv relations source) language switchDefaultRewrite state ++
       (applyRuleWithPremisesUsing (relationEnv relations source) language switchDispatchRewrite state ++
+      (applyRuleWithPremisesUsing (relationEnv relations source) language switchDefaultRewrite state ++
       (applyRuleWithPremisesUsing (relationEnv relations source) language dispatchHitRewrite state ++
       (applyRuleWithPremisesUsing (relationEnv relations source) language dispatchMissRewrite state ++
       (applyRuleWithPremisesUsing (relationEnv relations source) language prefilterDoneRewrite state ++
@@ -2238,6 +2239,18 @@ theorem executor_eq_machineStep (state : MachineState) :
               exact execute_instantiated_arg relations source value bindings constructor accumulated
                 templates rest
   | done result => exact execute_done relations source result
+
+/-- The retained receipt machine has exactly the declared language successor
+list after erasure.  This is an ordered equality, rather than reachability. -/
+theorem annotatedExecutor_eq (current : ReceiptState) :
+    (annotatedStep relations source current).map (fun next => encodeState next.state) =
+      rewriteStepWithPremisesUsing (relationEnv relations source) language
+        (encodeState current.state) := by
+  rw [executor_eq_machineStep, ← annotatedStep_erase relations source current,
+    List.map_map]
+  rfl
+
+#print axioms annotatedExecutor_eq
 
 /-- On encoded states the language steps exactly as the reference machine. -/
 theorem step_iff_machineStep (state : MachineState) (target : Pattern) :

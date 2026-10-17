@@ -22,7 +22,8 @@ open Mettapedia.GSLT.LanguageDef.WellSorted
 open Mettapedia.OSLF.NativeTypes.Decision.Reference.Core
 
 def snapshot : Snapshot :=
-  ⟨Mettapedia.Languages.PartrecMachine.partrecMachine, [], ⟨[], []⟩⟩
+  ⟨Mettapedia.Languages.PartrecMachine.partrecMachine, [],
+    { signatures := [], rows := [], dynamicRelations := [] }⟩
 
 def permissions : Permissions := {sites := .rootOnly}
 

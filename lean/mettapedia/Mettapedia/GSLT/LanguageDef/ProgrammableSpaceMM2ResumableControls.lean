@@ -9,6 +9,11 @@ answer; a longer grant has both answers but has not established exhaustion.
 Resuming the retained packet publishes exactly once with both path receipts.
 Restarting and resuming have different bounded results, and an intervening
 store edit invalidates this adapter's atomic snapshot boundary.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  Rows are matched one way and sinks are finalized in
+their authored order, as in the support model (`Space`); the kernel (`Mainline`)
+unifies patterns with stored atoms and writes the instances of every `+` sink first.
 -/
 
 set_option autoImplicit false

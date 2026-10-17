@@ -28,6 +28,7 @@ open Mettapedia.OSLF.Framework
 open Mettapedia.Languages.MeTTa.PeTTa.MainlineCallGuardOperational
 
 set_option autoImplicit false
+set_option Elab.async false
 
 /-- The validated cold source consumed by the shared OSLF construction. -/
 def coldSource : ValidatedLanguageDef :=

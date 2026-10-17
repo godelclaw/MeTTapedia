@@ -283,7 +283,7 @@ def choiceZeroSnapshot : Snapshot Nat Expr Unit where
   receipts := []
 
 /-- A current checked zero proposal receives admission. -/
-def choiceZeroAdmission : Admission choiceBranchObserver
+theorem choiceZeroAdmission : Admission choiceBranchObserver
     choiceZeroSnapshot choiceZeroProposal where
   revisionCurrent := rfl
   sourceCurrent := rfl

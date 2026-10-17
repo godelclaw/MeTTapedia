@@ -76,6 +76,39 @@ theorem runSlice_used_le (machine : MachineCore Term) (fuel : Nat)
       | none => simp [runSlice, transition]
       | some next => simpa [runSlice, transition] using Nat.add_le_add_right (ih next) 1
 
+/-- A retained invocation carries its incoming debit into the next slice.
+The entire machine state is retained, independently of its representation. -/
+def paidSlice (machine : MachineCore Term) (fuel : Nat)
+    (packet : Nat × machine.State) : Nat × machine.State :=
+  let result := runSlice machine fuel packet.2
+  (packet.1 + result.2, result.1)
+
+@[simp] theorem paidSlice_zero (machine : MachineCore Term)
+    (packet : Nat × machine.State) : paidSlice machine 0 packet = packet := by
+  simp [paidSlice, runSlice]
+
+theorem paidSlice_add (machine : MachineCore Term) (first second : Nat)
+    (packet : Nat × machine.State) :
+    paidSlice machine (first + second) packet =
+      paidSlice machine second (paidSlice machine first packet) := by
+  have combined := runSlice_add machine first second packet.2
+  have paid := congrArg (fun result : machine.State × Nat =>
+    (packet.1 + result.2, result.1)) combined
+  simpa only [paidSlice, Nat.add_assoc] using paid
+
+theorem paidSlice_debit_bounds (machine : MachineCore Term) (fuel : Nat)
+    (packet : Nat × machine.State) :
+    packet.1 ≤ (paidSlice machine fuel packet).1 ∧
+      (paidSlice machine fuel packet).1 ≤ packet.1 + fuel := by
+  have bounded := runSlice_used_le machine fuel packet.2
+  dsimp only [paidSlice]
+  omega
+
+theorem paidSlice_of_final (machine : MachineCore Term) (state : machine.State)
+    (final : machine.step state = none) (fuel incoming : Nat) :
+    paidSlice machine fuel (incoming, state) = (incoming, state) := by
+  simp [paidSlice, runSlice_of_final machine state final]
+
 /-- The actual debit replays exactly the retained endpoint and debit, even
 when the supplied allowance extends beyond a final state. -/
 theorem runSlice_replay_used (machine : MachineCore Term) (fuel : Nat)

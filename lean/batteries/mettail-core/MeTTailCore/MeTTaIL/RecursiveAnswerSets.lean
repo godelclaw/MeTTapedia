@@ -163,7 +163,7 @@ fragment.
 Positive example: same-head alternatives return multiple answers.
 Negative example: non-ground patterns and rules with remaining premises stay
 outside this staged lane. -/
-partial def evalGroundPatternsMany?
+def evalGroundPatternsMany?
     (fuel : Nat) (rules : List RewriteRule) (knownHeads : List String)
     (term : Pattern) : Option (List Pattern) :=
   let rec evalChoicePlan? (fuel : Nat) (alts : ChoicePlan) : Option (List Pattern) :=
@@ -179,6 +179,7 @@ partial def evalGroundPatternsMany?
           else
             pure acc
         if List.isEmpty out then none else some out
+  termination_by fuel
   match fuel with
   | 0 => none
   | fuel' + 1 =>
@@ -275,6 +276,7 @@ partial def evalGroundPatternsMany?
               if List.isEmpty out then none else some out
       | .collection _ _ _ | .fvar _ | .bvar _ | .lambda _ | .multiLambda _ _ | .subst _ _ =>
           none
+termination_by fuel
 
 /-- Public runner for the current ground nondeterministic recursive fragment.
 
@@ -346,7 +348,7 @@ theorem specialize_lookup_score_ambiguous_preserves_alternatives :
         rewriteRule "lookup-score" (app "lookupScore" [sym "3"]) (sym "7"),
         rewriteRule "lookup-score" (app "lookupScore" [sym "3"]) (sym "8")
       ] := by
-  native_decide
+  cbv
 
 theorem lookup_score_choice_plan_is_explicit :
     allMatchingConcreteChoices
@@ -357,25 +359,33 @@ theorem lookup_score_choice_plan_is_explicit :
       [ { sourceRule := "lookup-score", guard := app "True" [], body := sym "7" }
       , { sourceRule := "lookup-score", guard := app "True" [], body := sym "8" }
       ] := by
-  native_decide
+  cbv
 
 theorem run_lookup_score_collects_all_answers :
     runGroundRecursiveAnswerSet? 20 (app "lookupScore" [sym "3"])
       ambiguousScoreFacts [lookupScoreRule] =
       some [sym "7", sym "8"] := by
-  native_decide
+  cbv
 
 theorem run_pick_branch_collects_constructor_alternatives :
     runGroundRecursiveAnswerSet? 20
       (app "pickBranch" [app "Fork" [app "Tip" [sym "1"], app "Tip" [sym "2"]]])
       [] pickBranchRules =
       some [app "Tip" [sym "1"], app "Tip" [sym "2"]] := by
-  native_decide
+  cbv
 
 theorem run_choice_mix_preserves_scalar_and_symbolic_answers :
     runGroundRecursiveAnswerSet? 20 (app "choiceMix" [sym "5"]) [] choiceMixRules =
       some [sym "5", app "Wrap" [sym "5"]] := by
-  native_decide
+  cbv
+
+theorem non_ground_answer_query_refused :
+    runGroundRecursiveAnswerSet? 20 (app "choiceMix" [fvar "x"]) [] choiceMixRules = none := by
+  cbv
+
+theorem answer_query_without_fuel_refused :
+    runGroundRecursiveAnswerSet? 0 (app "choiceMix" [sym "5"]) [] choiceMixRules = none := by
+  cbv
 
 #eval
   if runGroundRecursiveAnswerSet? 20 (app "lookupScore" [sym "3"])

@@ -188,7 +188,7 @@ end ScopedDTT
 namespace DeepGSLT
 
 open ScopedDTT
-open DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open DeclarationAwareSubstitutionCompiler
 open DeclarationAwareSubstitutionLanguage
 

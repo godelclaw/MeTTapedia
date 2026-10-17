@@ -14,6 +14,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.Languages.MeTTa.HE.RecursiveExecution
 
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open RecursiveTasks RecursiveMachine RecursiveCorrectness
 open Mettapedia.GSLT.Distinction.ProductiveBlocks
 
@@ -167,5 +168,86 @@ theorem finished_results (space : Space) (dispatch : GroundedDispatch) (task : T
   simp only [Configuration.denote, Configuration.remaining, control, stack,
     List.foldl_nil, Control.denote, List.append_nil] at meaning
   exact ⟨history.symm.trans meaning, history, retained.space⟩
+
+/-- Checked completion, rather than an arbitrary fuel choice, earns stability
+of all six evaluator entry points and their retained list traversals. Larger
+depth preserves the complete occurrence list, including equal-valued results
+with different binding histories. This read-only profile does not commit host
+effects. -/
+theorem completed_depth_stable (space : Space) (dispatch : GroundedDispatch) (task : Task)
+    (budget extra : Nat) (events : ResultSet) (final : Configuration)
+    (completed : (Checked.machine dispatch).run budget (Configuration.initial space task) =
+      (events, .finished final)) :
+    (task.replenish extra).denote space dispatch = task.denote space dispatch := by
+  have original := (finished_results space dispatch task budget events final
+    (Checked.finished_refines dispatch budget _ _ _ completed)).1
+  have larger := Checked.completed_deepen dispatch extra budget
+    (Configuration.initial space task) final events completed
+  rw [Configuration.deepen_initial] at larger
+  have increased := (finished_results space dispatch (task.replenish extra) budget events
+    (final.deepen extra) larger).1
+  exact increased.symm.trans original
+
+/-- Completion provides an eventual constant evaluator observation at the
+current depth. The certificate is the actual checked execution, with no
+assumed source-to-machine correspondence in its premises. -/
+theorem completed_atom_depth_stable (space : Space) (dispatch : GroundedDispatch)
+    (value expected : Atom) (bindings : Bindings) (live : List Atom)
+    (depth budget : Nat) (events : ResultSet) (final : Configuration)
+    (completed : (Checked.machine dispatch).run budget
+      (Configuration.initial space (.atom value expected bindings depth live)) =
+        (events, .finished final)) :
+    ∀ extra, evalAtom space dispatch value expected bindings (depth + extra) live = events := by
+  intro extra
+  have stable := completed_depth_stable space dispatch
+    (.atom value expected bindings depth live) budget extra events final completed
+  have original := (finished_results space dispatch (.atom value expected bindings depth live)
+    budget events final (Checked.finished_refines dispatch budget _ _ _ completed)).1
+  exact stable.trans original.symm
+
+/-- Draining a completed result list publishes each physical occurrence once,
+in order, and appends it to the receiver's existing history. -/
+theorem checked_drain_results (space : Space) (dispatch : GroundedDispatch)
+    (results history : ResultSet) :
+    (Checked.machine dispatch).run (results.length + 1)
+      ⟨space, .returning results, [], history⟩ =
+      (results, .finished ⟨space, .returning [], [], history ++ results⟩) := by
+  induction results generalizing history with
+  | nil =>
+      simp [Machine.run, Checked.machine, Checked.guardMachine, Checked.blocked,
+        RecursiveMachine.machine, next, Transition.relabel]
+  | cons result remaining ih =>
+      simpa [Machine.run, Checked.machine, Checked.guardMachine, Checked.blocked,
+        RecursiveMachine.machine, next, Transition.relabel, List.append_assoc] using
+        congrArg (fun run : ResultSet × Outcome Configuration Configuration Checked.ResourceRequest =>
+          ([result] ++ run.1, run.2)) (ih (history ++ [result]))
+
+/-- Local matcher coverage suffices for complete checked primitive unification.
+The budget is constructed from the actual full result list, including equal
+occurrences. No evaluator termination or desired-output premise is used. -/
+theorem checked_unify_results (space : Space) (dispatch : GroundedDispatch)
+    (target pattern yes no : Atom) (bindings : Bindings) (fuel : Nat)
+    (live : List Atom) (caller : Option Atom)
+    (covered : unifyMatchesCovered target pattern bindings fuel = true) :
+    let results := minimalStep space dispatch
+      (.expression [.symbol "unify", target, pattern, yes, no]) bindings (fuel + 1) live caller
+    (Checked.machine dispatch).run (results.length + 2)
+      (Configuration.initial space (.primitive
+        (.expression [.symbol "unify", target, pattern, yes, no]) bindings (fuel + 1) live caller)) =
+      (results, .finished ⟨space, .returning [], [], results⟩) := by
+  dsimp only
+  rw [show (minimalStep space dispatch
+      (.expression [.symbol "unify", target, pattern, yes, no]) bindings (fuel + 1) live caller).length + 2 =
+      ((minimalStep space dispatch
+      (.expression [.symbol "unify", target, pattern, yes, no]) bindings (fuel + 1) live caller).length + 1) + 1 by omega]
+  rw [Machine.run_succ_silent (Checked.machine dispatch)
+    (next := ⟨space, .returning (minimalStep space dispatch
+      (.expression [.symbol "unify", target, pattern, yes, no]) bindings (fuel + 1) live caller), [], []⟩) (by
+    simp [Configuration.initial, Checked.machine, Checked.guardMachine, Checked.blocked,
+      Checked.taskReady, minimalCoreSupported, covered, RecursiveMachine.machine, next,
+      enter, minimalStep, Transition.relabel])]
+  simpa using checked_drain_results space dispatch
+    (minimalStep space dispatch (.expression [.symbol "unify", target, pattern, yes, no])
+      bindings (fuel + 1) live caller) []
 
 end Mettapedia.Languages.MeTTa.HE.RecursiveExecution

@@ -1,5 +1,5 @@
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedBetaSubjectReduction
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 import Mettapedia.GSLT.LanguageDef.LF.RootedBetaEtaCorrespondence
 import Mettapedia.Cybernetics.DistinctionConservation
 
@@ -37,7 +37,7 @@ open Mettapedia.GSLT.LanguageDef.LF
 open Mettapedia.GSLT.LanguageDef.LFTyping
 open Mettapedia.GSLT.LanguageDef.LFRootedBetaEtaCorrespondence
 open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
-open Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternCodec
+open Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodec Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.PatternCodec
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Substitution
 

@@ -75,7 +75,7 @@ import Mettapedia.OSLF.MeTTaIL.ContextualStepClosedSubsystem
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareSubstitutionExecution
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareSubstitutionExecutionBeta
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.HOLNativeMixedOperationalDecomposition
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwarePatternMatching
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.PatternCodecMatching
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.HOLNativeMixedRuleData
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.HOLNativeMixedRuleDataRoots
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.HOLNativeMixedRuleDataCompleteness
@@ -1770,7 +1770,7 @@ def study : Decision → Study
           (And.intro (@SharedJudgmentServiceProgramOSLF.Controls.stopped_exact_native_type)
             (@SharedJudgmentServiceProgramOSLF.Controls.stopped_value_unobservable)),
         checked "HO-029" "qualifying raw service operations retains their exact functions and independently supplied target"
-          (@SharedJudgmentServiceInterpretation.RawService.erase_toService.{0, 0}),
+          (@SemanticService.RawService.erase_toService.{0, 0}),
         checked "HO-030" "an actual accepted four-face invocation has its separately qualified native admission and meaning"
           (@SharedJudgmentServiceInterpretation.NativeAttachment.accepted_native_and_meaning.{0, 0, 0, 0, 0, 0}),
         checked "HO-031" "the same accepted service artifact retains native admission and meaning under actual formed substitution"

@@ -39,7 +39,7 @@ theorem premise_substitutes {environment : Environment} {original : Context} {pr
       | query argumentScopes =>
           simpa only [NativeEventSubstitution.event, context] using
             (PremiseHolds.query (context := context target original) (NativeQuerySubstitution.query_substitutes query admitted located argumentScopes
-              ready.prerequisites.closed substitution objects))
+              ready.prerequisites.closed ready.prerequisites.finiteProvider substitution objects))
   | .freshness interpreted fresh => by cases scopes
   | .step selected interpreted firing matched finalTyped => by
       cases scopes with

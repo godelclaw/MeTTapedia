@@ -204,16 +204,37 @@ mutual
         · exact supported.2.2 size below
     | subst body replacement => simp only [checkSide, Bool.false_eq_true] at ready
     | collection kind elements rest =>
+        simp only [checkSide, Bool.and_eq_true] at ready
         cases rest with
-        | some name => simp only [checkSide, Option.isNone_some, Bool.false_and, Bool.false_eq_true] at ready
+        | some name =>
+            simp only [instantiateAt?, instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at instantiated
+            obtain ⟨explicit, interpreted, value, found, arguments, occurrence, residualValue, residual, spliced⟩ :=
+              instantiated
+            have spine := ready.1
+            simp only [restSupported, occurrence, Bool.and_eq_true] at spine
+            have explicitSupport := instantiateArguments_supported alphabet rule spec ambient site path depth
+              assignment 0 elements explicit ready.2 (supported_element alphabet kind elements (some name) support)
+              bodies interpreted
+            have residualSupport := instantiateValue_supported alphabet value ambient depth arguments residualValue
+              spine.1 (bodies name value found) residual
+            split at spliced
+            · rename_i actualKind items
+              split at spliced
+              · cases spliced
+                apply supported_collection alphabet kind
+                intro child member
+                rcases List.mem_append.mp member with early | late
+                · exact explicitSupport child early
+                · exact supported_element alphabet actualKind items none residualSupport child late
+              · cases spliced
+            · cases spliced
         | none =>
-            simp only [checkSide, Option.isNone_none, Bool.true_and] at ready
             simp only [instantiateAt?, instantiateWith?, Option.bind_eq_bind, Option.bind_eq_some_iff] at instantiated
             obtain ⟨results, interpreted, equal⟩ := instantiated
             cases Option.some.inj equal
             exact supported_collection alphabet kind results
               (instantiateArguments_supported alphabet rule spec ambient site path depth assignment 0
-                elements results ready (supported_element alphabet kind elements none support) bodies interpreted)
+                elements results ready.2 (supported_element alphabet kind elements none support) bodies interpreted)
   termination_by sizeOf pattern
 
   theorem instantiateArguments_supported (alphabet : Alphabet) (rule : RewriteRule) (spec : RuleBindingSpec)

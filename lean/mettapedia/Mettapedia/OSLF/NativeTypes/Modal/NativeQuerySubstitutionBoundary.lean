@@ -1,3 +1,5 @@
+import Mettapedia.OSLF.NativeTypes.Modal.NativeQuerySubstitution
+import Mettapedia.OSLF.MeTTaIL.GeneralPremiseControls
 import Mettapedia.OSLF.NativeTypes.Modal.NativeOperationalAdmission
 import Mettapedia.OSLF.NativeTypes.Modal.NativeContextualSubstitution
 
@@ -30,7 +32,7 @@ def language : LanguageDef := {
 def free : FreeTypeContext := fun name => if name = "a" then some term else none
 def signature : Signature := ⟨"known", [term], [.input]⟩
 def row : ProviderRow := ⟨"known", [.fvar "a"]⟩
-def provider : ProviderSnapshot := ⟨[signature], [row]⟩
+def provider : ProviderSnapshot := {signatures := [signature], rows := [row]}
 def environment : Environment := {
   language := language, free := free, provider := provider, specifications := [(0, binding)] }
 def before : Assignment := [("X", ⟨[], 1, .bvar 0⟩)]
@@ -122,6 +124,8 @@ theorem no_original_firing {index : Nat} {trace : List GeneralScopedMatchMachine
                   | input read tail =>
                       have impossible := Option.some.inj (input_before.symm.trans read)
                       cases impossible
+              | dynamicRow registered _ _ _ _ _ _ _ =>
+                  simp [environment, provider] at registered
 
 #guard NativeOperationalAdmission.checkPrerequisites environment
 #guard NativeOperationalAdmission.checkPremise provider (.relationQuery "known" [.fvar "X"])
@@ -131,3 +135,124 @@ theorem no_original_firing {index : Nat} {trace : List GeneralScopedMatchMachine
 #guard checkOpenPatternWellSorted language free [] term (.fvar "a")
 
 end Mettapedia.OSLF.NativeTypes.Modal.NativeQuerySubstitutionBoundary
+
+open Mettapedia.OSLF.MeTTaIL Syntax GeneralPremise RuleBinding ScopedRuleMatching
+open Mettapedia.GSLT.LanguageDef.WellSorted
+open Mettapedia.OSLF.NativeTypes.Modal
+open GeneralPremise.Controls
+
+namespace Mettapedia.OSLF.NativeTypes.Modal.NativeClosedQueryControls
+
+def beforeContext : Context :=
+  ⟨0, Dynamic.guardedChild, GeneralRuleBindingInference.inferredSpec Dynamic.guardedChild,
+    [term], 0, 0⟩
+def beforeInitial : Assignment := [("X", localValue [term] zero)]
+def beforeRequest : Query.Request := ⟨beforeContext, "seen", [.fvar "X"], beforeInitial⟩
+def beforeState := Query.run Dynamic.dynamicEnvironment beforeRequest 80
+  (Query.start Dynamic.dynamicEnvironment beforeRequest)
+def closing : TypedBoundAssignment Dynamic.dynamicLanguage Dynamic.dynamicEnvironment.free [term] [] where
+  assignment := fun _ => zero
+  typed := by
+    intro index type selected
+    have same : type = term := by simpa only [List.mem_singleton] using List.mem_of_getElem? selected
+    subst type
+    exact (checkOpenPatternWellSorted_sound (by decide +kernel)).1
+
+def afterContext := NativePremiseSubstitutionBase.context [] beforeContext
+def afterInitial := NativeContextualSubstitution.assignment 0 closing.assignment beforeInitial
+def afterRequest : Query.Request := ⟨afterContext, "seen", [.fvar "X"], afterInitial⟩
+def afterState := Query.run Dynamic.dynamicEnvironment afterRequest 80
+  (Query.start Dynamic.dynamicEnvironment afterRequest)
+
+theorem seen_call_closed : NativeQuerySubstitution.NativeCallClosed
+    Dynamic.dynamicEnvironment beforeContext "seen" [.fvar "X"] beforeInitial := by
+  intro signature resolved rows nativeIndex values _ declared _ source selected
+  generalize selectedRelation : ("seen" : String) = relation at source
+  cases source with
+  | seen =>
+      have sameSignature : signature = ⟨"seen", [term], [.input]⟩ :=
+        Option.some.inj (declared.symm.trans (by decide +kernel))
+      subst signature
+      have present := List.mem_of_getElem? selected
+      simp only [List.mem_cons, List.not_mem_nil, or_false, or_self] at present
+      subst values
+      refine ⟨?_, checkRow_sound (by decide +kernel)⟩
+      intro value member
+      have same : value = zero := by simpa only [List.mem_singleton] using member
+      subst value
+      rfl
+  | absent => simp at selected
+  | mirror => exact ((by decide : ("seen" : String) ≠ "mirror") selectedRelation).elim
+  | empty => exact ((by decide : ("seen" : String) ≠ "empty") selectedRelation).elim
+
+def firstAnswer : Query.Answer Dynamic.dynamicEnvironment beforeRequest :=
+  beforeState.answers[0]'(by decide +kernel)
+
+theorem actual_receipt_closes : TracedQuery Dynamic.dynamicEnvironment afterContext "seen" [.fvar "X"]
+    afterInitial firstAnswer.rowIndex
+    (NativeContextualSubstitution.assignment 0 closing.assignment firstAnswer.assignment)
+    firstAnswer.origins := by
+  exact NativeQuerySubstitution.query_substitutes_of_native_closed firstAnswer.valid
+    (by decide +kernel) ⟨.relationQuery "seen" [.fvar "X"], rfl, rfl⟩
+    (by
+      intro schema member
+      have same : schema = .fvar "X" := by
+        simpa only [beforeRequest, List.mem_singleton] using member
+      subst schema
+      rfl)
+    (NativeOperationalAdmission.closedProvider_sound (by decide +kernel)) seen_call_closed
+    closing (by intro index; rfl)
+
+#guard beforeState.answers.length == 2
+#guard afterState.answers.length == 2
+#guard beforeState.answers.map (·.rowIndex) == [1, 2]
+#guard afterState.answers.map (·.rowIndex) == [1, 2]
+#guard beforeState.answers.map (·.origins) == afterState.answers.map (·.origins)
+#guard afterInitial == [("X", localValue [] zero)]
+#guard closing.assignment 0 != .bvar 0
+#guard Query.complete Dynamic.dynamicEnvironment beforeRequest beforeState
+#guard Query.complete Dynamic.dynamicEnvironment afterRequest afterState
+
+def openInitial : Assignment := [("X", localValue [term] (.bvar 0))]
+def openRequest : Query.Request := ⟨beforeContext, "seen", [.fvar "X"], openInitial⟩
+def openState := Query.run Dynamic.dynamicEnvironment openRequest 80
+  (Query.start Dynamic.dynamicEnvironment openRequest)
+
+theorem no_open_query {row : Nat} {final : Assignment}
+    {origins : List (Nat × List GeneralScopedMatchMachine.BagChoice)} :
+    ¬ TracedQuery Dynamic.dynamicEnvironment beforeContext "seen" [.fvar "X"]
+      openInitial row final origins := by
+  intro held
+  let wanted : Query.CertifiedAnswer Dynamic.dynamicEnvironment openRequest :=
+    ⟨row, final, origins, held⟩
+  have present := Query.answers_complete Dynamic.dynamicEnvironment openRequest 80 wanted
+    (by decide +kernel)
+  have empty : openState.answers = [] := by decide +kernel
+  change wanted ∈ openState.answers at present
+  rw [empty] at present
+  cases present
+
+/-- The same native service can gain answers after substitution. The
+closed-call theorem therefore asserts forward transport only. -/
+theorem native_query_reflection_fails :
+    (∃ row final origins,
+      TracedQuery Dynamic.dynamicEnvironment afterContext "seen" [.fvar "X"]
+        (NativeContextualSubstitution.assignment 0 closing.assignment openInitial)
+        row final origins) ∧
+    ¬ (∃ row final origins,
+      TracedQuery Dynamic.dynamicEnvironment beforeContext "seen" [.fvar "X"]
+        openInitial row final origins) := by
+  constructor
+  · let answer := afterState.answers[0]'(by decide +kernel)
+    exact ⟨answer.rowIndex, answer.assignment, answer.origins, answer.valid⟩
+  · rintro ⟨_, _, _, held⟩
+    exact no_open_query held
+
+#guard openState.answers.isEmpty
+#guard Query.complete Dynamic.dynamicEnvironment openRequest openState
+#guard NativeContextualSubstitution.assignment 0 closing.assignment openInitial == afterInitial
+#guard (.bvar 0 : Pattern).isWellScopedAt 0 == false
+#guard afterState.answers.length > openState.answers.length
+
+
+end Mettapedia.OSLF.NativeTypes.Modal.NativeClosedQueryControls

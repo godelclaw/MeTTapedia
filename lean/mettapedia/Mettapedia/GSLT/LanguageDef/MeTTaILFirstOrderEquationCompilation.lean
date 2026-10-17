@@ -1113,7 +1113,7 @@ namespace Controls
 
 def atom (name : String) : PatternPlan := .application name []
 def conditional : RulePlan :=
-  ⟨"choose-out", [], [⟨"choose", ["x", "y"]⟩], .metavariable "x", .application "out" [.metavariable "y"]⟩
+  ⟨"choose-out", [], [⟨"choose", [.metavariable "x", .metavariable "y"]⟩], .metavariable "x", .application "out" [.metavariable "y"]⟩
 def language : LanguageDef :=
   { name := "EquationOccurrences", types := [], terms := [], equations := [equationOfPlan conditional], rewrites := [] }
 def relations : RelationEnv :=
@@ -1251,7 +1251,7 @@ theorem checked_path_equivalent :
 /-! Reversal of a conditional equation which discards a matched variable. -/
 
 def discardConditional : RulePlan :=
-  ⟨"discard-left", [], [⟨"allowed", ["y"]⟩],
+  ⟨"discard-left", [], [⟨"allowed", [.metavariable "y"]⟩],
     .application "drop" [.metavariable "x", .metavariable "y"], .metavariable "y"⟩
 def discardPredecessor : PatternPlan := .application "drop" [atom "a", atom "b"]
 def discardRelations : RelationEnv :=

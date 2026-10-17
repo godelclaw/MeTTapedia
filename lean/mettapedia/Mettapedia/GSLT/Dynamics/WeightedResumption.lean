@@ -1,5 +1,6 @@
 import Mettapedia.GSLT.Dynamics.ResumptionAlgebra
 import Mettapedia.GSLT.Dynamics.SemiringTraversal
+import Mettapedia.Machines.AnswerCardinality
 
 /-!
 # Algebra-valued handlers of free resumptions
@@ -55,6 +56,35 @@ theorem eraseCoefficients_sequence [Mul V] (answers : Contributions Answer V)
       (eraseCoefficients answers).flatMap (fun answer => eraseCoefficients (next answer)) := by
   simp [eraseCoefficients, sequence, List.map_flatMap, List.flatMap_map, List.map_map,
     Function.comp_def]
+
+/-- Counting physical answers forgets coefficients, but not duplicate occurrences. -/
+@[simp] theorem eraseCoefficients_length (answers : Contributions Answer V) :
+    (eraseCoefficients answers).length = answers.length := by
+  simp [eraseCoefficients]
+
+/-- Dependent sequencing sums continuation counts. A product of two counts
+requires a uniform continuation length, not just two sampled executions. -/
+theorem sequence_length [Mul V] (answers : Contributions Answer V)
+    (next : Answer → Contributions Other V) :
+    (sequence answers next).length =
+      (answers.map fun first => (next first.1).length).sum := by
+  simp [sequence, List.length_flatMap]
+
+/-- Existing answer intervals apply to weighted execution before any support
+or aggregate readout. Each reachable continuation must satisfy the bound. -/
+theorem sequence_cardinality [Mul V]
+    (first second : Mettapedia.Machines.AnswerCardinality.Grade)
+    (answers : Contributions Answer V) (next : Answer → Contributions Other V)
+    (input : Mettapedia.Machines.AnswerCardinality.Allows first answers.length)
+    (continuations : ∀ item ∈ answers,
+      Mettapedia.Machines.AnswerCardinality.Allows second (next item.1).length) :
+    Mettapedia.Machines.AnswerCardinality.Allows
+      (Mettapedia.Machines.AnswerCardinality.seq first second)
+      (sequence answers next).length := by
+  simpa [sequence] using Mettapedia.Machines.AnswerCardinality.bind_sound
+    first second answers
+    (fun item => (next item.1).map fun result => (result.1, item.2 * result.2))
+    input (by simpa using continuations)
 
 @[simp] theorem sequence_return [Monoid V] (answer : Answer)
     (next : Answer → Contributions Other V) :
@@ -194,6 +224,30 @@ theorem interpret_mapCoefficients {W : Type*} [Monoid V] [Monoid W]
 /-- The additive readout reuses the existing traversal aggregate. -/
 def total [AddCommMonoid V] (answers : Contributions Answer V) : V :=
   SemiringTraversal.weightSum Prod.snd answers
+
+/-- A separate unit grading counts occurrences. This replaces coefficients;
+it is not a projection of their aggregate, nor an additive homomorphism. -/
+def countingContributions (answers : Contributions Answer V) : Contributions Answer Nat :=
+  mapCoefficients (fun _ => 1) answers
+
+theorem countingContributions_erasure (answers : Contributions Answer V) :
+    eraseCoefficients (countingContributions answers) = eraseCoefficients answers := by
+  simp [countingContributions, mapCoefficients, eraseCoefficients, List.map_map]
+
+theorem total_countingContributions (answers : Contributions Answer V) :
+    total (countingContributions answers) = answers.length := by
+  induction answers with
+  | nil => rfl
+  | cons head tail ih =>
+      change 1 + total (countingContributions tail) = tail.length + 1
+      rw [ih, Nat.add_comm]
+
+theorem countingContributions_sequence [Mul V] (answers : Contributions Answer V)
+    (next : Answer → Contributions Other V) :
+    countingContributions (sequence answers next) =
+      sequence (countingContributions answers)
+        (fun answer => countingContributions (next answer)) :=
+  mapCoefficients_sequence (fun _ => (1 : Nat)) (by intros; rfl) answers next
 
 theorem total_append [AddCommMonoid V] (left right : Contributions Answer V) :
     total (left ++ right) = total left + total right :=

@@ -151,7 +151,7 @@ def compactDerivedPolicyAdmission
     (dependencies : DependencySystem) (revision : dependencies.Revision)
     (source : CIGSLT) {Value : Type uValue}
     (observeCompact : CompactCostCarrier source → Value) :
-    PolicyKeyAdmission dependencies revision
+    PolicyKeyAdmission.Admission dependencies revision
       (singlePolicyRequest
         (observeCompact ∘ compactCarrierKey source) False)
       (compactCarrierKey source) where
@@ -163,7 +163,7 @@ itself—runs without claiming that elaboration provenance can be replayed. -/
 def compactIdentityPolicyAdmission
     (dependencies : DependencySystem) (revision : dependencies.Revision)
     (source : CIGSLT) :
-    PolicyKeyAdmission dependencies revision
+    PolicyKeyAdmission.Admission dependencies revision
       (singlePolicyRequest (compactCarrierKey source) False)
       (compactCarrierKey source) :=
   compactDerivedPolicyAdmission dependencies revision source id

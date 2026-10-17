@@ -18,6 +18,12 @@ This module states the correct outer-level condition: every variable directly
 written by the output template must be bound.  A value obtained from such a
 binding is inserted opaquely, including any expression-local variables inside
 the captured value.  Truly unbound output variables still fail closed.
+
+The matcher is still one way.  In the kernel a captured executable keeps its
+variables, so a later pattern that meets them unifies with them
+(`Mainline.unifyOption`); this module's matcher does not.  The kernel also writes
+an output variable that the input does not bind, as a fresh variable, where this
+module fails closed.
 -/
 
 namespace Mettapedia.Languages.ProcessCalculi.MORK

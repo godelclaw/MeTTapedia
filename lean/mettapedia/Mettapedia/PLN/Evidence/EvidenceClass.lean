@@ -42,22 +42,28 @@ The continuous case (n, Σx, Σx²) makes the context dependence obvious.
 
 namespace Mettapedia.PLN.Evidence.EvidenceClass
 
-/-! ## Abstract BinaryEvidence Type Class
+/-! ## Abstract evidence type class
 
-BinaryEvidence forms a commutative monoid under `hplus` (parallel aggregation).
-This captures the PLN revision rule: independent evidence combines additively.
+Evidence forms a commutative monoid under `+`, the revision of PLN.  Adding two
+bodies of evidence is exact when they come from disjoint sets of observations;
+with overlapping observations it counts the overlap twice
+(`Mettapedia.PLN.WorldModel.EvidenceContracts.additive_revision_exact_iff_disjoint`).
 -/
 
-/-- BinaryEvidence aggregates independently of interpretation context.
+/-- Evidence is combined by `+` independently of the interpretation context.
     This is the monoid structure underlying PLN revision. -/
 class EvidenceType (Ev : Type*) extends AddCommMonoid Ev
 
-/-- BinaryEvidence with sequential composition (tensor product).
-    This captures evidence flow through deduction chains: A → B → C
+/-- Evidence with a second, multiplicative combination (the tensor).
 
-    Note: The full quantale law (tensor_distrib_sup) requires SupSet on Ev,
-    which we don't require here. Specific evidence types can prove this
-    when they have the additional structure. -/
+    For binary evidence the tensor is the coordinatewise product.  Read as
+    likelihood evidence it fuses conditionally independent reports about one
+    proposition (`Mettapedia.PLN.WorldModel.EvidenceContracts.toPaired_tensor`).
+    It is not sequential composition along a deduction chain and it does not
+    compute deduction's conclusion evidence.
+
+    The quantale law (distribution over suprema) needs `SupSet` on `Ev`, which
+    is not required here; carriers that have it prove it themselves. -/
 class SequentialEvidence (Ev : Type*) extends EvidenceType Ev, CommMonoid Ev
 
 /-! ## Context-Dependent Interpretation

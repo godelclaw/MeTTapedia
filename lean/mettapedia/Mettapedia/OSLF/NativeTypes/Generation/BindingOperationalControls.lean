@@ -139,7 +139,8 @@ private theorem environment_eq {first second : Environment}
     (language : first.language = second.language) (free : first.free = second.free)
     (provider : first.provider = second.provider)
     (specifications : first.specifications = second.specifications)
-    (reflection : first.reflection = second.reflection) : first = second := by
+    (reflection : first.reflection = second.reflection) (dynamic : first.dynamic = second.dynamic) :
+    first = second := by
   cases first
   cases second
   cases language
@@ -147,6 +148,7 @@ private theorem environment_eq {first second : Environment}
   cases provider
   cases specifications
   cases reflection
+  cases dynamic
   rfl
 
 /-- Elaboration preserves the complete original scoped environment for all
@@ -215,6 +217,7 @@ theorem family_environment_original (rows : List ProviderRow) (freeTypes : List 
       GeneralPremise.premiseFlow, GeneralPremise.schemaValuesChecked, GeneralPremise.signature?,
       GeneralPremise.queryInputNames, GeneralPremise.queryOutputNames, GeneralPremise.namesAvailable]
   · rfl
+  · rfl
 
 theorem family_structural_admission (rows : List ProviderRow) (freeTypes : List (String × TypeExpr)) :
     StructuralDescent.checkEnvironment (BindingPipeline.environment (generated rows freeTypes)) = true := by
@@ -235,7 +238,8 @@ theorem family_structural_admission (rows : List ProviderRow) (freeTypes : List 
     probeRule, equalRule, sealRule, probe, equalPair, closedBinder,
     specification?, StructuralDescent.checkRule, StructuralDescent.checkPremises,
     StructuralDescent.checkPremise, StructuralDescent.checkSource,
-    StructuralDescent.checkAffine, GeneralEquationMeasures.constantContribution,
+    StructuralDescent.checkDescent, StructuralDescent.fvarCount, StructuralDescent.fvarCountList, GeneralEquationAdmission.restCount, GeneralEquationAdmission.restCountList,
+    GeneralEquationMeasures.constantContribution,
     GeneralEquationMeasures.evaluate, GeneralEquationMeasures.evaluateList,
     Pattern.freeFvarNames, GeneralEquationAdmission.checkSide,
     GeneralEquationAdmission.checkArguments]

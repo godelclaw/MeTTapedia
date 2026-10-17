@@ -328,7 +328,7 @@ theorem rightRootAdmissible_of_admissible
 /-- The certified-boundary/certified-boundary quadrant of the depth-uniform
 plan-stop obligation is discharged by the existing boundary producer, which
 consumes exactly the provider's strictly-smaller recursion callback. -/
-noncomputable def RhoStaticPlanStopSourceAligned.of_nonBoundaryRemainder
+theorem RhoStaticPlanStopSourceAligned.of_nonBoundaryRemainder
     {targetFree : WellSorted.FreeTypeContext}
     {available outer : List TypeExpr}
     {leftPattern rightPattern : Pattern} {type : TypeExpr}
@@ -655,7 +655,7 @@ noncomputable def rhoHereditaryCostLayer_ofApexObligations
     rhoHereditaryStaticNormalizer_preservesReflectiveSupport_path
 
 /-- The cost layer object laws over the apex-form obligations. -/
-noncomputable def rhoHereditaryCompactOpenNormalizerLaws_ofApexObligations
+theorem rhoHereditaryCompactOpenNormalizerLaws_ofApexObligations
     (alignedApex : ∀ color, RhoAlignedPlanStops.HaveCommonRestoration color)
     (collapsingRestoration :
       ∀ color, RhoCollapsingViewsRestorationAlignedInDomain color)

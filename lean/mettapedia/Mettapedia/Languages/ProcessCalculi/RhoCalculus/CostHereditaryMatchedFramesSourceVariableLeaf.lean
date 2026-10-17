@@ -27,7 +27,7 @@ authored source variable have a common-restoration apex.
 The final canonical names may have been changed by atom reification and keyed
 canonicalization.  They are therefore related to the authored names through
 the two positional ancestry certificates, not by string equality. -/
-noncomputable def sourceVariableCanonicalOccurrences_commonRestorationApex
+theorem sourceVariableCanonicalOccurrences_commonRestorationApex
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)
@@ -141,7 +141,7 @@ authored source variable have a common-restoration apex.
 The final canonical names may have been changed by atom reification and keyed
 canonicalization.  They are therefore related to the authored names through
 the two positional ancestry certificates, not by string equality. -/
-noncomputable def sourceVariableCanonicalOccurrences_twoDepthApex
+theorem sourceVariableCanonicalOccurrences_twoDepthApex
     {color : CostStaticColor}
     {targetFree : WellSorted.FreeTypeContext}
     (leftNode rightNode : CostStaticRegionNode rhoCIGSLT color targetFree)

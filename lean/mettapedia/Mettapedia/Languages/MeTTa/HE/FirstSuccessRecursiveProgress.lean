@@ -39,8 +39,11 @@ def appendKey (task : Task) : Key :=
   key parts.1 parts.2.1 parts.2.2 3
 
 def frameKey : Frame → Key
-  | .heads _ _ fuel | .argumentHeads _ _ _ fuel | .tupleHeads _ fuel => key fuel 3 0 0
-  | .calls _ fuel => key fuel 2 0 0
+  | .heads _ _ fuel _ | .argumentHeads _ _ _ fuel _ | .tupleHeads _ fuel _ => key fuel 4 0 0
+  | .calls _ fuel _ | .invocationReturn _ _ fuel _ => key fuel 3 0 0
+  | .producerResults _ _ _ fuel _ _ => key fuel 5 0 0
+  | .minimalResults fuel _ _ | .chainResults _ _ fuel | .bodyResults fuel _ _ =>
+      key fuel 2 0 0
   | .append task => appendKey task
   | _ => key 0 0 0 1
 
@@ -54,11 +57,12 @@ def expansionKeys (expanded : Control × List Frame) : List Key :=
 attribute [local simp] expansionKeys controlKeys frameKey workKey appendKey key
   RecursiveTaskOrder.taskKey Prod.Lex.toLex_lt_toLex
 
+set_option maxHeartbeats 800000 in
 /-- Fuel, phase and remaining occurrences establish every request dependency,
 without evaluating a denotation of a surrounding continuation. -/
 theorem enter_smaller (space : Space) (dispatch : GroundedDispatch) (task : Task)
-    (child : Key) (spawned : child ∈ expansionKeys
-      (FirstSuccessRecursiveStrategy.enter space dispatch task)) :
+    {lookup : TypeLookup} (child : Key) (spawned : child ∈ expansionKeys
+      (FirstSuccessRecursiveStrategy.enter space dispatch task lookup)) :
     child < workKey task := by
   cases task <;>
     simp only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter] at spawned <;>
@@ -70,9 +74,11 @@ theorem enter_smaller (space : Space) (dispatch : GroundedDispatch) (task : Task
     all_goals try omega
 
 theorem resume_smaller (space : Space) (frame : Frame) (results : ResultSet)
-    (child : Key) (spawned : child ∈ expansionKeys (RecursiveMachine.resume space frame results)) :
+    {lookup : TypeLookup} (child : Key)
+    (spawned : child ∈ expansionKeys (RecursiveMachine.resume space frame results lookup)) :
     child < frameKey frame := by
-  cases frame <;> simp only [RecursiveMachine.resume] at spawned
+  cases frame <;> simp only [RecursiveMachine.resume] at spawned <;>
+    repeat' split at spawned
   all_goals
     try simp_all
     repeat' rcases spawned with rfl | spawned
@@ -89,20 +95,24 @@ theorem smaller_wellFounded : WellFounded Smaller :=
   InvImage.wf tokens Multiset.wellFounded_isDershowitzMannaLT
 
 theorem next_smaller (dispatch : GroundedDispatch) (state after : Configuration)
-    (advanced : next dispatch state = some after) : Smaller after state := by
+    {policy : TypePolicy} (advanced : next dispatch state policy = some after) :
+    Smaller after state := by
   cases state with
   | mk space control stack emitted =>
       cases control with
       | work task =>
           cases advanced
+          let lookup := policy.types ⟨space, .work task, stack, emitted⟩
           refine ⟨(stack.map frameKey : Multiset Key),
-            (expansionKeys (FirstSuccessRecursiveStrategy.enter space dispatch task) : Multiset Key),
+            (expansionKeys (FirstSuccessRecursiveStrategy.enter space dispatch task lookup) :
+              Multiset Key),
             {workKey task}, by simp, ?_, ?_, ?_⟩
-          · change (↑(controlKeys (FirstSuccessRecursiveStrategy.enter space dispatch task).1 ++
-                ((FirstSuccessRecursiveStrategy.enter space dispatch task).2 ++ stack).map frameKey) :
+          · change (↑(controlKeys (FirstSuccessRecursiveStrategy.enter space dispatch task lookup).1 ++
+                ((FirstSuccessRecursiveStrategy.enter space dispatch task lookup).2 ++ stack).map
+                  frameKey) :
                 Multiset Key) = ↑(stack.map frameKey) +
-              ↑(controlKeys (FirstSuccessRecursiveStrategy.enter space dispatch task).1 ++
-                (FirstSuccessRecursiveStrategy.enter space dispatch task).2.map frameKey)
+              ↑(controlKeys (FirstSuccessRecursiveStrategy.enter space dispatch task lookup).1 ++
+                (FirstSuccessRecursiveStrategy.enter space dispatch task lookup).2.map frameKey)
             rw [List.map_append, ← List.append_assoc, ← Multiset.coe_add]
             exact add_comm _ _
           · change (↑([workKey task] ++ stack.map frameKey) : Multiset Key) =
@@ -116,14 +126,16 @@ theorem next_smaller (dispatch : GroundedDispatch) (state after : Configuration)
           | nil => simp [next] at advanced
           | cons frame remaining =>
               cases advanced
+              let lookup := policy.types ⟨space, .returning results, frame :: remaining, emitted⟩
               refine ⟨(remaining.map frameKey : Multiset Key),
-                (expansionKeys (RecursiveMachine.resume space frame results) : Multiset Key),
+                (expansionKeys (RecursiveMachine.resume space frame results lookup) : Multiset Key),
                 {frameKey frame}, by simp, ?_, ?_, ?_⟩
-              · change (↑(controlKeys (RecursiveMachine.resume space frame results).1 ++
-                    ((RecursiveMachine.resume space frame results).2 ++ remaining).map frameKey) :
+              · change (↑(controlKeys (RecursiveMachine.resume space frame results lookup).1 ++
+                    ((RecursiveMachine.resume space frame results lookup).2 ++ remaining).map
+                      frameKey) :
                     Multiset Key) = ↑(remaining.map frameKey) +
-                  ↑(controlKeys (RecursiveMachine.resume space frame results).1 ++
-                    (RecursiveMachine.resume space frame results).2.map frameKey)
+                  ↑(controlKeys (RecursiveMachine.resume space frame results lookup).1 ++
+                    (RecursiveMachine.resume space frame results lookup).2.map frameKey)
                 rw [List.map_append, ← List.append_assoc, ← Multiset.coe_add]
                 exact add_comm _ _
               · change (↑([frameKey frame] ++ remaining.map frameKey) : Multiset Key) =

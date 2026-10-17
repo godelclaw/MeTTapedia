@@ -1,7 +1,7 @@
 import Mathlib.Data.Multiset.Basic
 import Mettapedia.ProbabilityTheory.BayesianNetworks.VariableElimination
 import Mettapedia.ProbabilityTheory.BayesianNetworks.ValuationBridge
-import Mettapedia.PLN.WorldModel.PLNWorldModel
+import Mettapedia.PLN.WorldModel.BinaryWorldModel
 
 /-!
 # Canonical Semantic WM: Factorization + Marginalization

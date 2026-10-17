@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.Soundness
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.CDLogic

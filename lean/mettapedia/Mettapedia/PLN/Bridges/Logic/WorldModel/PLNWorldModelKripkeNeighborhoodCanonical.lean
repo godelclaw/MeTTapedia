@@ -22,9 +22,6 @@ open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeNeighborhoodEmbedding
 
-abbrev ModalQuery := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke.ModalQuery
-abbrev PointedKripke := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke.PointedKripke
-abbrev PointedNeighborhood := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood.PointedNeighborhood
 
 /-- Canonical Kripke-to-neighborhood frame translation:
 `w` supports `X` iff every Kripke successor of `w` is in `X`. -/
@@ -46,11 +43,11 @@ def kripkeModelToNeighborhood (M : Kripke.Model) : Neighborhood.Model where
 
 /-- Satisfaction preservation under the canonical Kripke-to-neighborhood translation. -/
 theorem satisfies_iff_kripke_toNeighborhood (M : Kripke.Model) :
-    ∀ (x : M.World) (φ : ModalQuery),
+    ∀ (x : M.World) (φ : (LO.Modal.Formula ℕ)),
       Formula.Neighborhood.Satisfies (kripkeModelToNeighborhood M) x φ ↔
       Formula.Kripke.Satisfies M x φ := by
   intro x φ
-  induction φ generalizing x with
+  induction φ using LO.Modal.Formula.rec generalizing x with
   | atom a =>
       change x ∈ {w : M.World | M a w} ↔ M a x
       simp
@@ -118,7 +115,7 @@ def pointedKripkeToNeighborhood (pk : PointedKripke) : PointedNeighborhood where
   world := pk.world
 
 /-- Pointed satisfaction preservation under canonical translation. -/
-theorem pointed_satisfies_iff (pk : PointedKripke) (φ : ModalQuery) :
+theorem pointed_satisfies_iff (pk : PointedKripke) (φ : (LO.Modal.Formula ℕ)) :
     (pointedKripkeToNeighborhood pk).satisfies φ ↔ pk.satisfies φ := by
   simpa [Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood.PointedNeighborhood.satisfies,
     Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke.PointedKripke.satisfies,
@@ -128,7 +125,7 @@ theorem pointed_satisfies_iff (pk : PointedKripke) (φ : ModalQuery) :
 /-- Class-level canonical Kripke-to-neighborhood representation API. -/
 class CanonicalKripkeNeighborhoodEmbedding where
   pointMap : PointedKripke → PointedNeighborhood
-  sat_iff : ∀ pk : PointedKripke, ∀ φ : ModalQuery,
+  sat_iff : ∀ pk : PointedKripke, ∀ φ : (LO.Modal.Formula ℕ),
     (pointMap pk).satisfies φ ↔ pk.satisfies φ
 
 /-- Canonical instance from the standard frame/model translation. -/
@@ -145,38 +142,39 @@ def canonicalEmbedding [CanonicalKripkeNeighborhoodEmbedding] :
 /-- Canonical query-strength transport corollary. -/
 theorem queryStrength_mapState_eq_canonical
     [CanonicalKripkeNeighborhoodEmbedding]
-    (Wk : Multiset PointedKripke) (φ : ModalQuery) :
-    BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+    (Wk : Multiset PointedKripke) (φ : (LO.Modal.Formula ℕ)) :
+    BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) φ =
-      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk φ :=
   queryStrength_mapState_eq (E := canonicalEmbedding) (Wk := Wk) (φ := φ)
 
 /-- Canonical singleton consequence alignment corollary. -/
 theorem singletonStrengthLEOn_canonical_iff_kripke
     [CanonicalKripkeNeighborhoodEmbedding]
-    (φ ψ : ModalQuery) :
+    (φ ψ : (LO.Modal.Formula ℕ)) :
     (∀ pk : PointedKripke,
-      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         ({CanonicalKripkeNeighborhoodEmbedding.pointMap pk} : Multiset PointedNeighborhood) φ ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         ({CanonicalKripkeNeighborhoodEmbedding.pointMap pk} : Multiset PointedNeighborhood) ψ)
-      ↔ Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke.singletonStrengthLE φ ψ :=
+      ↔ Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.singletonStrengthLE
+        PointedKripke.satisfies φ ψ :=
   singletonStrengthLEOnEmbedding_iff_kripke (E := canonicalEmbedding) (φ := φ) (ψ := ψ)
 
 /-- Canonical mapped-neighborhood multiset consequence from Kripke proof-theoretic implication. -/
 theorem mapState_strength_le_of_provable_imp_canonical
     [CanonicalKripkeNeighborhoodEmbedding]
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Kripke.FrameClass}
     [Sound 𝓢 C]
-    (Wk : Multiset PointedKripke) (φ ψ : ModalQuery)
+    (Wk : Multiset PointedKripke) (φ ψ : (LO.Modal.Formula ℕ))
     (hW : ∀ pk ∈ Wk, pk.model.toFrame ∈ C)
     (hprov : 𝓢 ⊢ (φ ➝ ψ)) :
-    BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+    BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) φ ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) ψ :=
   mapState_strength_le_of_provable_imp
     (S := S) (𝓢 := 𝓢) (C := C)
@@ -186,16 +184,16 @@ theorem mapState_strength_le_of_provable_imp_canonical
 /-- Canonical governance-facing mapped consequence from the Kripke implication bridge. -/
 theorem mapState_governance_ob_pe_strength_le_of_provable_canonical
     [CanonicalKripkeNeighborhoodEmbedding]
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Kripke.FrameClass}
     [Sound 𝓢 C]
-    (Wk : Multiset PointedKripke) (φ : ModalQuery)
+    (Wk : Multiset PointedKripke) (φ : (LO.Modal.Formula ℕ))
     (hW : ∀ pk ∈ Wk, pk.model.toFrame ∈ C)
     (hprov : 𝓢 ⊢ (□φ ➝ ◇φ)) :
-    BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+    BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) (governanceModalityToModalQuery .obligatory φ) ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) (governanceModalityToModalQuery .permitted φ) :=
   mapState_governance_ob_pe_strength_le_of_provable
     (S := S) (𝓢 := 𝓢) (C := C)
@@ -206,20 +204,20 @@ theorem mapState_governance_ob_pe_strength_le_of_provable_canonical
 the same implication premise yields both Kripke and mapped-neighborhood WM inequalities. -/
 theorem parallel_strength_le_of_provable_imp_canonical
     [CanonicalKripkeNeighborhoodEmbedding]
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Kripke.FrameClass}
     [Sound 𝓢 C]
-    (Wk : Multiset PointedKripke) (φ ψ : ModalQuery)
+    (Wk : Multiset PointedKripke) (φ ψ : (LO.Modal.Formula ℕ))
     (hW : ∀ pk ∈ Wk, pk.model.toFrame ∈ C)
     (hprov : 𝓢 ⊢ (φ ➝ ψ)) :
-    (BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk φ ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk ψ) ∧
-    (BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) φ ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) ψ) := by
   refine ⟨?_, ?_⟩
   · exact
@@ -235,20 +233,20 @@ theorem parallel_strength_le_of_provable_imp_canonical
 the same `□φ ➝ ◇φ` premise yields both Kripke and mapped-neighborhood WM inequalities. -/
 theorem parallel_governance_ob_pe_strength_le_of_provable_canonical
     [CanonicalKripkeNeighborhoodEmbedding]
-    {S : Type*} [Entailment S ModalQuery]
+    {S : Type*} [Entailment S (LO.Modal.Formula ℕ)]
     {𝓢 : S}
     {C : Kripke.FrameClass}
     [Sound 𝓢 C]
-    (Wk : Multiset PointedKripke) (φ : ModalQuery)
+    (Wk : Multiset PointedKripke) (φ : (LO.Modal.Formula ℕ))
     (hW : ∀ pk ∈ Wk, pk.model.toFrame ∈ C)
     (hprov : 𝓢 ⊢ (□φ ➝ ◇φ)) :
-    (BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk (□φ) ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk (◇φ)) ∧
-    (BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) (governanceModalityToModalQuery .obligatory φ) ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) (governanceModalityToModalQuery .permitted φ)) := by
   refine ⟨?_, ?_⟩
   · exact
@@ -265,18 +263,18 @@ the same implication shape yields a Kripke-side inequality on `Wk` and a
 mapped-neighborhood inequality on `mapState canonicalEmbedding Wk`. -/
 theorem parallel_strength_le_of_provable_imp_KT_EMT_canonical
     [CanonicalKripkeNeighborhoodEmbedding]
-    (Wk : Multiset PointedKripke) (φ ψ : ModalQuery)
+    (Wk : Multiset PointedKripke) (φ ψ : (LO.Modal.Formula ℕ))
     (hWKT : ∀ pk ∈ Wk, pk.model.toFrame ∈ Kripke.FrameClass.KT)
     (hWEMT : ∀ pn ∈ mapState canonicalEmbedding Wk, pn.model.toFrame ∈ Neighborhood.FrameClass.EMT)
     (hprovKT : Modal.KT ⊢ (φ ➝ ψ))
     (hprovEMT : Modal.EMT ⊢ (φ ➝ ψ)) :
-    (BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk φ ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk ψ) ∧
-    (BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) φ ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) ψ) := by
   refine ⟨?_, ?_⟩
   · exact
@@ -291,18 +289,18 @@ the same implication shape yields a Kripke-side inequality on `Wk` and a
 mapped-neighborhood inequality on `mapState canonicalEmbedding Wk`. -/
 theorem parallel_strength_le_of_provable_imp_KD_ED_canonical
     [CanonicalKripkeNeighborhoodEmbedding]
-    (Wk : Multiset PointedKripke) (φ ψ : ModalQuery)
+    (Wk : Multiset PointedKripke) (φ ψ : (LO.Modal.Formula ℕ))
     (hWKD : ∀ pk ∈ Wk, pk.model.toFrame ∈ Kripke.FrameClass.KD)
     (hWED : ∀ pn ∈ mapState canonicalEmbedding Wk, pn.model.toFrame ∈ Neighborhood.FrameClass.ED)
     (hprovKD : Modal.KD ⊢ (φ ➝ ψ))
     (hprovED : Modal.ED ⊢ (φ ➝ ψ)) :
-    (BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk φ ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk ψ) ∧
-    (BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) φ ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) ψ) := by
   refine ⟨?_, ?_⟩
   · exact
@@ -316,18 +314,18 @@ theorem parallel_strength_le_of_provable_imp_KD_ED_canonical
 `□φ ⪯ φ` on Kripke states and mapped-neighborhood states. -/
 theorem parallel_governance_rexist_strength_le_KT_EMT_canonical
     [CanonicalKripkeNeighborhoodEmbedding]
-    (Wk : Multiset PointedKripke) (φ : ModalQuery)
+    (Wk : Multiset PointedKripke) (φ : (LO.Modal.Formula ℕ))
     (hWKT : ∀ pk ∈ Wk, pk.model.toFrame ∈ Kripke.FrameClass.KT)
     (hWEMT : ∀ pn ∈ mapState canonicalEmbedding Wk, pn.model.toFrame ∈ Neighborhood.FrameClass.EMT)
     (hprovKT : Modal.KT ⊢ (□φ ➝ φ))
     (hprovEMT : Modal.EMT ⊢ (□φ ➝ φ)) :
-    (BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk (□φ) ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk φ) ∧
-    (BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) (governanceModalityToModalQuery .rexist φ) ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) φ) := by
   refine ⟨?_, ?_⟩
   · exact
@@ -341,18 +339,18 @@ theorem parallel_governance_rexist_strength_le_KT_EMT_canonical
 `□φ ⪯ ◇φ` on Kripke states and mapped-neighborhood states. -/
 theorem parallel_governance_ob_pe_strength_le_KD_ED_canonical
     [CanonicalKripkeNeighborhoodEmbedding]
-    (Wk : Multiset PointedKripke) (φ : ModalQuery)
+    (Wk : Multiset PointedKripke) (φ : (LO.Modal.Formula ℕ))
     (hWKD : ∀ pk ∈ Wk, pk.model.toFrame ∈ Kripke.FrameClass.KD)
     (hWED : ∀ pn ∈ mapState canonicalEmbedding Wk, pn.model.toFrame ∈ Neighborhood.FrameClass.ED)
     (hprovKD : Modal.KD ⊢ (□φ ➝ ◇φ))
     (hprovED : Modal.ED ⊢ (□φ ➝ ◇φ)) :
-    (BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk (□φ) ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedKripke) (Query := (LO.Modal.Formula ℕ))
         Wk (◇φ)) ∧
-    (BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+    (BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) (governanceModalityToModalQuery .obligatory φ) ≤
-      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := ModalQuery)
+      BinaryWorldModel.queryStrength (State := Multiset PointedNeighborhood) (Query := (LO.Modal.Formula ℕ))
         (mapState canonicalEmbedding Wk) (governanceModalityToModalQuery .permitted φ)) := by
   refine ⟨?_, ?_⟩
   · exact

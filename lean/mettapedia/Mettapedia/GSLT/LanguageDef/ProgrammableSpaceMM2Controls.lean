@@ -10,6 +10,11 @@ repetition belongs to the authored dispatcher, not to a new native grammar.
 The observation selects the `p` and `q` support facts. It deliberately forgets
 administrative rule records and turns, but the source store and execution
 trace retain them. Stable observed facts do not mean a quiescent agenda.
+
+Scope: "MM2" here names the programmable-space resource profile of MM2's surface
+syntax, not the MORK kernel.  Rows are matched one way and sinks are finalized in
+their authored order, as in the support model (`Space`); the kernel (`Mainline`)
+unifies patterns with stored atoms and writes the instances of every `+` sink first.
 -/
 
 set_option autoImplicit false

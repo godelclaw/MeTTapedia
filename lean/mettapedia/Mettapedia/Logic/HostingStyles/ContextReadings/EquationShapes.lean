@@ -51,7 +51,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.ContextualStep
 open Mettapedia.OSLF.MeTTaIL.DerivedContexts
-open Mettapedia.Logic.HostingStyles.PrimeCandidate
+open Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles
 
 /-! ## Declared constructors as contexts -/
 
@@ -343,7 +343,7 @@ end KeptWeight
 
 /-- **Positive**: a language whose one equation is that of quotation and
 dropping keeps the weight that does not count those two. -/
-def _root_.Mettapedia.Logic.HostingStyles.PrimeCandidate.QuoteDropOnly.keptWeight
+def _root_.Mettapedia.Languages.MeTTa.PrimeComparisons.HostingStyles.QuoteDropOnly.keptWeight
     {lang : LanguageDef} (only : QuoteDropOnly lang) (base : BasePremiseEvaluator) :
     KeptWeight base lang where
   weight := weight

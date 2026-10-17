@@ -98,15 +98,16 @@ theorem openFree_typed (declarations : FreeDeclarations) {free : FreeTypeContext
     {bound : List TypeExpr} {pattern : Pattern} {type : TypeExpr}
     (typed : HasType language free (bound ++ declarations.map (fun entry => .base entry.2)) pattern type) :
     HasType language free bound (openFree bound.length declarations pattern) type := by
-  induction declarations generalizing bound with
-  | nil => simpa only [List.map_nil, List.append_nil, openFree] using typed
-  | cons entry rest ih =>
-      have nested : HasType language free
-          ((bound ++ [.base entry.2]) ++ rest.map (fun next => .base next.2)) pattern type := by
-        simpa only [List.map_cons, List.append_assoc, List.singleton_append] using typed
-      have inside := ih (fun next member => lookups next (List.mem_cons_of_mem _ member)) nested
-      have opened := inside.openLast entry.1 (lookups entry List.mem_cons_self)
-      simpa only [List.length_append, List.length_singleton, openFree] using opened
+  have opened := Mettapedia.GSLT.LanguageDef.NamedFreeContext.openContext_typed
+    (declarations.map (fun entry => (entry.1, TypeExpr.base entry.2)))
+    (by
+      intro entry member
+      obtain ⟨original, present, rfl⟩ := List.mem_map.mp member
+      exact lookups original present)
+    (by simpa only [Mettapedia.GSLT.LanguageDef.NamedFreeContext.contextSorts,
+      List.map_map, Function.comp_def] using typed)
+  simpa only [Mettapedia.GSLT.LanguageDef.NamedFreeContext.openContext,
+    List.map_map, Function.comp_def, openFree] using opened
 
 mutual
   theorem freeVars_openFVar_subset (pattern : Pattern) (depth : Nat) (name actual : String)
@@ -178,8 +179,18 @@ theorem closeFree_openFree (declarations : FreeDeclarations)
         rcases freeVars_openFree_subset rest (depth + 1) pattern entry.1 member with declared | original
         · exact distinct.1 declared
         · exact fresh entry.1 List.mem_cons_self original
-      simp only [openFree, closeFree, close_open_id _ _ _ absent]
-      exact ih distinct.2 (depth + 1) (fun name member => fresh name (List.mem_cons_of_mem _ member))
+      have closeOpen : closeFVar depth entry.1
+          (openBVar depth (.fvar entry.1)
+            (Mettapedia.GSLT.LanguageDef.NamedFreeContext.openNames (depth + 1)
+              (rest.map Prod.fst) pattern)) =
+          Mettapedia.GSLT.LanguageDef.NamedFreeContext.openNames (depth + 1)
+            (rest.map Prod.fst) pattern := close_open_id depth entry.1 _ absent
+      simp only [openFree, closeFree, List.map_cons,
+        Mettapedia.GSLT.LanguageDef.NamedFreeContext.openNames,
+        Mettapedia.GSLT.LanguageDef.NamedFreeContext.closeNames]
+      rw [closeOpen]
+      simpa only [openFree, closeFree] using
+        ih distinct.2 (depth + 1) (fun name member => fresh name (List.mem_cons_of_mem _ member))
 
 abbrev NamedSource (language : LanguageDef) (declarations : FreeDeclarations)
     (context : List String) (sort : String) :=

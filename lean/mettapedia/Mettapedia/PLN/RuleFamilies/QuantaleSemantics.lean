@@ -6,6 +6,8 @@ import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNQuantaleConnection
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNQuantaleDivergence
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.DoubleNegationCorners
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.TwistNegation
+import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.Tetralemma
+import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.ReasonValidity
 
 /-!
 # PLN Quantale Semantics
@@ -59,6 +61,27 @@ Sound inference rules with provable bounds
 - `inot_inot_apply`: double intuitionistic negation keeps two values (closed world),
   while the double complement of the information order keeps four
 
+### Tetralemma.lean - The Four Corners at the Extremes of the Theory Lattice
+- `support_refutation_evalEvidence`: support and refutation of formulas over evidence
+  are first degree entailment's evaluation of the supports
+- `models_univ_eq_both`, `corners_supported_of_degenerate`: the models of the theory of
+  all formulas give every atom both values, and all four corners of every claim are
+  supported there
+- `theoryOf_singleton_eq_empty_iff`, `corners_unsupported_at_neither`: exactly one
+  valuation satisfies nothing, and there all four corners are unsupported
+- `conventions_disagree`, `exists_empty_of_covers_univ`: the two truths over evidence
+- `no_concept_separates`, `strength_leaning_ne_doubting`: valuations with the same
+  supports fall under the same concepts and differ in strength
+
+### ReasonValidity.lean - Valid Reasons
+- `sound_of_marks`, `universal_of_observed`, `doubt_of_unexamined_counterexample`: the
+  three marks, and observed exclusion made universal by non-perception
+- `wheelOf_right_iff_strength`, `wheelOf_inverted_iff_strength`,
+  `wheelOf_tooNarrow_iff_total`, `pervasion_confidence_lt_one`: the wheel of reasons as
+  the evidence for the implication from reason to property
+- `essence_pervasion`, `effect_pervasion`, `Kitchen.smokeMachine_breaks_pervasion`:
+  essence and effect reasons as certificates of pervasion
+
 ### PLNModel.lean - Formal Model Theory
 - `PLNModel`: BinaryEvidence assignment to propositions
 - `isValid`, `isInvalid`, `isUnknown`, `isContradictory`: Validity states
@@ -75,14 +98,14 @@ Sound inference rules with provable bounds
 
 ## Key Results
 
-1. **BinaryEvidence = P-bits**: The existing `BinaryEvidence` type from `EvidenceQuantale.lean`
+1. **BinaryEvidence = P-bits**: The existing `BinaryEvidence` type from `BinaryEvidence.lean`
    is exactly Goertzel's p-bit structure from arXiv:2012.14474.
 
 2. **CD Logic is algebraic**: All CD logic operations are proven to satisfy
    their algebraic laws (involution, commutativity, associativity, distributivity).
 
 3. **BinaryEvidence is a Frame**: BinaryEvidence has complete Heyting algebra structure
-   (proven in `EvidenceQuantale.lean` via `Order.Frame BinaryEvidence`).
+   (proven in `BinaryEvidence.lean` via `Order.Frame BinaryEvidence`).
 
 4. **Quantale law**: Tensor distributes over join (cdTensor_sup_left/right).
 
@@ -106,7 +129,7 @@ Sound inference rules with provable bounds
 ## Building on Existing Infrastructure
 
 This module builds on:
-- `EvidenceQuantale.lean`: BinaryEvidence structure, quantale instance, Frame instance
+- `BinaryEvidence.lean`: BinaryEvidence structure, quantale instance, Frame instance
 - `PLNDeduction.lean`: Deduction formula, consistency bounds
 - `EvidenceBeta.lean`: Beta-BinaryEvidence connection, conjugate prior
 

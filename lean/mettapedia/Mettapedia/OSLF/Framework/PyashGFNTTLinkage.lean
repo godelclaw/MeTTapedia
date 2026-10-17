@@ -1,7 +1,7 @@
 import Mettapedia.OSLF.Framework.PyashGF
 import Mettapedia.PLN.Bridges.CategoryTheory.EvidenceFibration
 import Mettapedia.CategoryTheory.PLNInstance
-import Mettapedia.PLN.Evidence.EvidenceQuantale
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # Pyash GF Canary OSLF→NTT Linkage
