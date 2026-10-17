@@ -3246,7 +3246,7 @@ open Mettapedia.Machines.BranchLocalNeed.NeedInteractionValuation
 open Mettapedia.Machines.BranchLocalNeed.NeedCacheLaws
 open Mettapedia.Machines.BranchLocalNeed.NeedInteractionAuthority
 open Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.Reference
-open Mettapedia.GSLT.Causality.OccurrenceMachineHistory
+open Mettapedia.GSLT.Causality.OccurrenceMachineHistory hiding retained
 open Mettapedia.GSLT.Core.InteractionComposition
 open Mettapedia.GSLT.Dynamics.InteractionEventValuation
 open Mettapedia.OSLF.Binding
@@ -4211,7 +4211,7 @@ open Mettapedia.GSLT.Dynamics.IndependentEventValuationProduct
 open Mettapedia.GSLT.Dynamics.EventValuationFunctor
 open Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.Reference
 open Mettapedia.Machines.BranchLocalNeed.NeedInteractionAuthority
-open Mettapedia.GSLT.Causality.OccurrenceMachineHistory
+open Mettapedia.GSLT.Causality.OccurrenceMachineHistory hiding retained
 open Mettapedia.GSLT.Core.InteractionComposition
 open Mettapedia.GSLT.Dynamics.InteractionEventValuation
 open _root_.CategoryTheory
