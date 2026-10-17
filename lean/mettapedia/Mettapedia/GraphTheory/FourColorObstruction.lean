@@ -1,3 +1,0 @@
-import Mettapedia.GraphTheory.FourColor
-import Mettapedia.GraphTheory.FourColor.Theorem49InteriorVerticesEndpointObstruction
-import Mettapedia.GraphTheory.FourColor.Theorem49ForcingInteriorEdgeObstruction

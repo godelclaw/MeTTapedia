@@ -1,1 +1,0 @@
-import Mettapedia.GraphTheory.FourColor.Theorem49WheelWithInnerTriangleBenchmark

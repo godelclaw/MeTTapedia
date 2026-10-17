@@ -1,2 +1,0 @@
-import Mettapedia.GraphTheory.FourColor.Theorem49SynthesisRoutes
-import Mettapedia.GraphTheory.FourColor.Theorem49SynthesisNonempty
