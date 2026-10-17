@@ -60,6 +60,9 @@ import Mettapedia.GraphTheory.Hamiltonicity
 import Mettapedia.GraphTheory.Representation
 import Mettapedia.GraphTheory.Walk
 import Mettapedia.GraphTheory.FiniteReachability
+import Mettapedia.GraphTheory.RotationSystem
+import Mettapedia.GraphTheory.EdgeColoring.Tables
+import Mettapedia.GraphTheory.EdgeColoring.IncompletableTrail
 
 -- Combinatorics
 import Mettapedia.Combinatorics
