@@ -14,12 +14,14 @@ import Mettapedia.GraphTheory.Representation.EdgeListToMatrixLanguageDef
 import Mettapedia.GraphTheory.Representation.EdgeListToMatrixModule
 import Mettapedia.GraphTheory.Representation.EdgeListToMatrixCost
 import Mettapedia.GraphTheory.Representation.SemanticTransport
+import Mettapedia.GraphTheory.Representation.ColoringTransport
 import Mettapedia.GraphTheory.Representation.CostModel
 import Mettapedia.GraphTheory.Representation.CostedRepresentationGSLT
 import Mettapedia.GraphTheory.Representation.RevisionQuery
 import Mettapedia.GraphTheory.Representation.RevisionPortfolio
 import Mettapedia.GraphTheory.Representation.MatrixBridge
 import Mettapedia.GraphTheory.Representation.MatrixSemantics
+import Mettapedia.GraphTheory.Representation.MatrixOperationalTranslation
 import Mettapedia.GraphTheory.Representation.FrontierAffine
 import Mettapedia.GraphTheory.Representation.Hypergraph
 import Mettapedia.GraphTheory.Representation.Metagraph
@@ -40,4 +42,7 @@ models, exact resource accounts, sound refinement rules, their transformation
 specifications, and detailed operational GSLTs where small-step machines have
 been proved. The matrix materialization language also has an independently
 authored module quotation and a checked canonical text/UTF-8 transport.
+Conversions carry actual vertex colorings, including prescribed boundary
+colors and their counts, and the lookup machines are related by explicit
+operational translation contracts.
 -/
