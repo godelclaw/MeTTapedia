@@ -25,10 +25,12 @@ import Mettapedia.Combinatorics.Matching.TightCut
 import Mettapedia.Combinatorics.Matching.Pfaffian
 import Mettapedia.Combinatorics.Matching.PfaffianUpdate
 import Mettapedia.Combinatorics.Matching.PfaffianContraction
+import Mettapedia.Combinatorics.Matching.Noncrossing
 
 /-!
 # Perfect matching foundations
 
 Graph-free and graph-backed representations of perfect matchings, weighted
-matching sums, exchange, parity, and alternating matchings on cycles.
+matching sums, exchange, parity, alternating matchings on cycles, and the
+noncrossing perfect matchings of a linear order with their Catalan count.
 -/
