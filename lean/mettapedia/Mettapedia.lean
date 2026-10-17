@@ -63,6 +63,8 @@ import Mettapedia.GraphTheory.FiniteReachability
 import Mettapedia.GraphTheory.RotationSystem
 import Mettapedia.GraphTheory.EdgeColoring.Tables
 import Mettapedia.GraphTheory.EdgeColoring.IncompletableTrail
+import Mettapedia.GraphTheory.OddDegree
+import Mettapedia.GraphTheory.Metric
 
 -- Combinatorics
 import Mettapedia.Combinatorics
