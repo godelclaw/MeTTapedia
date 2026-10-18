@@ -301,9 +301,9 @@ def preservesPoly (g i : Nat) : Bool :=
     (List.range (monCount i)).all (fun t => (List.range (monCount i)).all
       (fun u => t == u || renameMon g (monAt i t) != renameMon g (monAt i u)))
 
+set_option maxHeartbeats 4000000 in
 /-- Each element renames every polynomial of the system to another polynomial
 of the system, constants and all. -/
-set_option maxHeartbeats 4000000 in
 private theorem system_preserved_0 : ((List.range 675).all fun i => preservesPoly 0 i) = true := by decide
 set_option maxHeartbeats 4000000 in
 private theorem system_preserved_1 : ((List.range 675).all fun i => preservesPoly 1 i) = true := by decide
@@ -376,54 +376,53 @@ private theorem system_preserved_34 : ((List.range 675).all fun i => preservesPo
 set_option maxHeartbeats 4000000 in
 private theorem system_preserved_35 : ((List.range 675).all fun i => preservesPoly 35 i) = true := by decide
 theorem system_preserved (g : Nat) (hg : g < 36) : ((List.range 675).all fun i => preservesPoly g i) = true := by
-  interval_cases g <;>
-    first
-      | exact system_preserved_0
-      | exact system_preserved_1
-      | exact system_preserved_2
-      | exact system_preserved_3
-      | exact system_preserved_4
-      | exact system_preserved_5
-      | exact system_preserved_6
-      | exact system_preserved_7
-      | exact system_preserved_8
-      | exact system_preserved_9
-      | exact system_preserved_10
-      | exact system_preserved_11
-      | exact system_preserved_12
-      | exact system_preserved_13
-      | exact system_preserved_14
-      | exact system_preserved_15
-      | exact system_preserved_16
-      | exact system_preserved_17
-      | exact system_preserved_18
-      | exact system_preserved_19
-      | exact system_preserved_20
-      | exact system_preserved_21
-      | exact system_preserved_22
-      | exact system_preserved_23
-      | exact system_preserved_24
-      | exact system_preserved_25
-      | exact system_preserved_26
-      | exact system_preserved_27
-      | exact system_preserved_28
-      | exact system_preserved_29
-      | exact system_preserved_30
-      | exact system_preserved_31
-      | exact system_preserved_32
-      | exact system_preserved_33
-      | exact system_preserved_34
-      | exact system_preserved_35
+  interval_cases g
+  · exact system_preserved_0
+  · exact system_preserved_1
+  · exact system_preserved_2
+  · exact system_preserved_3
+  · exact system_preserved_4
+  · exact system_preserved_5
+  · exact system_preserved_6
+  · exact system_preserved_7
+  · exact system_preserved_8
+  · exact system_preserved_9
+  · exact system_preserved_10
+  · exact system_preserved_11
+  · exact system_preserved_12
+  · exact system_preserved_13
+  · exact system_preserved_14
+  · exact system_preserved_15
+  · exact system_preserved_16
+  · exact system_preserved_17
+  · exact system_preserved_18
+  · exact system_preserved_19
+  · exact system_preserved_20
+  · exact system_preserved_21
+  · exact system_preserved_22
+  · exact system_preserved_23
+  · exact system_preserved_24
+  · exact system_preserved_25
+  · exact system_preserved_26
+  · exact system_preserved_27
+  · exact system_preserved_28
+  · exact system_preserved_29
+  · exact system_preserved_30
+  · exact system_preserved_31
+  · exact system_preserved_32
+  · exact system_preserved_33
+  · exact system_preserved_34
+  · exact system_preserved_35
 
-/-- The induced variable maps are bijections, with explicit inverses. -/
 set_option maxHeartbeats 40000000 in
+/-- The induced variable maps are bijections, with explicit inverses. -/
 theorem varPerm_bijective :
     ((List.range 36).all fun g => (List.range 75).all fun v =>
       varInvT (g * 75 + varPerm g v) == v) = true := by
   decide
 
-/-- The induced polynomial-index maps are bijections, with explicit inverses. -/
 set_option maxHeartbeats 4000000 in
+/-- The induced polynomial-index maps are bijections, with explicit inverses. -/
 private theorem polyPerm_bijective_0 : ((List.range 675).all fun i => polyInvT (0 * 675 + polyPerm 0 i) == i) = true := by decide
 set_option maxHeartbeats 4000000 in
 private theorem polyPerm_bijective_1 : ((List.range 675).all fun i => polyInvT (1 * 675 + polyPerm 1 i) == i) = true := by decide
@@ -496,43 +495,42 @@ private theorem polyPerm_bijective_34 : ((List.range 675).all fun i => polyInvT 
 set_option maxHeartbeats 4000000 in
 private theorem polyPerm_bijective_35 : ((List.range 675).all fun i => polyInvT (35 * 675 + polyPerm 35 i) == i) = true := by decide
 theorem polyPerm_bijective (g : Nat) (hg : g < 36) : ((List.range 675).all fun i => polyInvT (g * 675 + polyPerm g i) == i) = true := by
-  interval_cases g <;>
-    first
-      | exact polyPerm_bijective_0
-      | exact polyPerm_bijective_1
-      | exact polyPerm_bijective_2
-      | exact polyPerm_bijective_3
-      | exact polyPerm_bijective_4
-      | exact polyPerm_bijective_5
-      | exact polyPerm_bijective_6
-      | exact polyPerm_bijective_7
-      | exact polyPerm_bijective_8
-      | exact polyPerm_bijective_9
-      | exact polyPerm_bijective_10
-      | exact polyPerm_bijective_11
-      | exact polyPerm_bijective_12
-      | exact polyPerm_bijective_13
-      | exact polyPerm_bijective_14
-      | exact polyPerm_bijective_15
-      | exact polyPerm_bijective_16
-      | exact polyPerm_bijective_17
-      | exact polyPerm_bijective_18
-      | exact polyPerm_bijective_19
-      | exact polyPerm_bijective_20
-      | exact polyPerm_bijective_21
-      | exact polyPerm_bijective_22
-      | exact polyPerm_bijective_23
-      | exact polyPerm_bijective_24
-      | exact polyPerm_bijective_25
-      | exact polyPerm_bijective_26
-      | exact polyPerm_bijective_27
-      | exact polyPerm_bijective_28
-      | exact polyPerm_bijective_29
-      | exact polyPerm_bijective_30
-      | exact polyPerm_bijective_31
-      | exact polyPerm_bijective_32
-      | exact polyPerm_bijective_33
-      | exact polyPerm_bijective_34
-      | exact polyPerm_bijective_35
+  interval_cases g
+  · exact polyPerm_bijective_0
+  · exact polyPerm_bijective_1
+  · exact polyPerm_bijective_2
+  · exact polyPerm_bijective_3
+  · exact polyPerm_bijective_4
+  · exact polyPerm_bijective_5
+  · exact polyPerm_bijective_6
+  · exact polyPerm_bijective_7
+  · exact polyPerm_bijective_8
+  · exact polyPerm_bijective_9
+  · exact polyPerm_bijective_10
+  · exact polyPerm_bijective_11
+  · exact polyPerm_bijective_12
+  · exact polyPerm_bijective_13
+  · exact polyPerm_bijective_14
+  · exact polyPerm_bijective_15
+  · exact polyPerm_bijective_16
+  · exact polyPerm_bijective_17
+  · exact polyPerm_bijective_18
+  · exact polyPerm_bijective_19
+  · exact polyPerm_bijective_20
+  · exact polyPerm_bijective_21
+  · exact polyPerm_bijective_22
+  · exact polyPerm_bijective_23
+  · exact polyPerm_bijective_24
+  · exact polyPerm_bijective_25
+  · exact polyPerm_bijective_26
+  · exact polyPerm_bijective_27
+  · exact polyPerm_bijective_28
+  · exact polyPerm_bijective_29
+  · exact polyPerm_bijective_30
+  · exact polyPerm_bijective_31
+  · exact polyPerm_bijective_32
+  · exact polyPerm_bijective_33
+  · exact polyPerm_bijective_34
+  · exact polyPerm_bijective_35
 
 end KrennX5Eq

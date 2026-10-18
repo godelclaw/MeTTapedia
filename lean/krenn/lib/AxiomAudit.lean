@@ -7,7 +7,34 @@ import CharTwoSix
 import UniformRigidity
 import TightCut
 import FermiKrenn
-import Mettapedia.Combinatorics.Matching
+import Mettapedia.Combinatorics.Matching.Pairing
+import Mettapedia.Combinatorics.Matching.Amplitude
+import Mettapedia.Combinatorics.Matching.Sum
+import Mettapedia.Combinatorics.Matching.Crossing
+import Mettapedia.Combinatorics.Matching.Hall
+import Mettapedia.Combinatorics.Matching.Restriction
+import Mettapedia.Combinatorics.Matching.Support
+import Mettapedia.Combinatorics.Matching.PermutationBridge
+import Mettapedia.Combinatorics.Matching.GraphBridge
+import Mettapedia.Combinatorics.Matching.Kempe
+import Mettapedia.Combinatorics.Matching.LocalCancellation
+import Mettapedia.Combinatorics.Matching.Loopless
+import Mettapedia.Combinatorics.Matching.Nonvanishing
+import Mettapedia.Combinatorics.Matching.Gauge
+import Mettapedia.Combinatorics.Matching.EdgeColoring
+import Mettapedia.Combinatorics.Matching.FourthMatching
+import Mettapedia.Combinatorics.Matching.FourthMatchingCoordinates
+import Mettapedia.Combinatorics.Matching.FourVertices
+import Mettapedia.Combinatorics.Matching.CapIncidence
+import Mettapedia.Combinatorics.Matching.BlockRank
+import Mettapedia.Combinatorics.Matching.EvenCycle
+import Mettapedia.Combinatorics.Matching.CharTwoContraction
+import Mettapedia.Combinatorics.Matching.SiteVectors
+import Mettapedia.Combinatorics.Matching.TightCut
+import Mettapedia.Combinatorics.Matching.Pfaffian
+import Mettapedia.Combinatorics.Matching.PfaffianUpdate
+import Mettapedia.Combinatorics.Matching.PfaffianContraction
+import Mettapedia.Combinatorics.Matching.Noncrossing
 
 /-! # Axiom audit
 Every top-level conditional theorem, with its dependency cone printed. -/

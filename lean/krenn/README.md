@@ -1,16 +1,41 @@
-# The Krenn–Gu conjecture: a machine-checked programme
+# The Krenn–Gu conjecture: retained search corpus
 
-A standalone Lean 4 project. The Krenn development itself is **not** part of the
-MeTTapedia default build and is not imported by any MeTTapedia umbrella module. Its
-reusable foundations have been promoted to `Mettapedia.Combinatorics.Matching` and
-`Mettapedia.Combinatorics.OrbitNormalization`, which are part of the shared library;
-this directory retains the conjecture-specific layer and compatibility imports.
+This branch preserves the Lean 4.31 search corpus and its replay dependencies.
+The canonical shared mathematics lives on main in
+[matching theory](https://github.com/godelclaw/MeTTapedia/tree/main/lean/mettapedia/Mettapedia/Combinatorics/Matching),
+[GHZ weighted matchings](https://github.com/godelclaw/MeTTapedia/tree/main/lean/mettapedia/Mettapedia/Combinatorics/Matching/GHZ),
+and [polynomial certificates](https://github.com/godelclaw/MeTTapedia/tree/main/lean/mettapedia/Mettapedia/Algebra/Polynomial).
+The older structural modules retained here preserve reproducible proof replay on
+the pinned toolchain. Search artifacts remain outside the default shared-library
+build.
 
 > **Claim boundary.** Nothing here proves the Krenn–Gu conjecture. The general results
 > are *conditional*: each derives the official arbitrary-size statement from an explicit
 > structural hypothesis that is itself open. The finite `N = 6` work is a *partial*
 > certified corpus with explicit coverage hypotheses, not a complete verification of that
 > case. See **What is proved** and **What is open** below.
+
+## Verification status of the relocation
+
+The reusable matching, GHZ and polynomial mathematics was promoted to main,
+built on Lean 4.33.1 and audited separately. That library, rather than the
+volume of generated search data, is the mathematical deliverable.
+
+This archive has focused Lean 4.31 verification of its structural libraries,
+certificate checkers, selected assembly interfaces and repaired cover modules.
+The exact checked module set is listed in `verified-modules.txt`. The complete
+generated corpus was **not** rebuilt or fully axiom-audited during relocation.
+Preserving a source file is not a claim that it compiles or completes a case.
+
+To replay the recorded focused checks after loading the pinned dependencies:
+
+```sh
+xargs lake build < verified-modules.txt
+xargs lake env lean --run scripts/check_corpus_axioms.lean < verified-modules.txt
+```
+
+The complete inventory and its optional full-replay commands remain below for
+work that resumes the finite search.
 
 ## The statement
 
@@ -78,16 +103,18 @@ Lean `4.31.0` with Mathlib pinned in `lake-manifest.json`; no other dependency.
 | `KrennRank` (default) | `lake build` | the `N = 6` certified corpus |
 | `KrennType01` | `lake build KrennType01` | the completed type-01 chart closures |
 | `KrennChart0Support` | `lake build KrennChart0Support` | kernel-replayed LRAT consequences |
+| `KrennCorpus` | `lake build KrennCorpus` | every retained non-library module, including sources outside the default closure |
 
 The default target's module manifest is **fail-closed**. `lakefile.lean` carries the
 import closure of its roots explicitly, compressed to a whole-directory glob only where
 every tracked module in that directory is reachable. This prevents a stale project
 `.olean` from silently satisfying an omitted import.
 
-- `private/audit_lake_module_closure.py` — recomputes the closure from tracked source
-  bytes and fails on omissions, extras, missing local imports, or unsafe compression.
-- `private/regenerate_lake_module_closure.py` — its inverse; rewrites the manifest from
-  the same reachability. Run it after adding or removing a root, then re-run the auditor.
+`corpus-modules.txt` lists every retained non-library proof module. Together,
+`lake build KrennLib KrennCorpus` checks the complete retained source inventory;
+the historical default target continues to describe only its designated proof
+assembly. Including a module in either target does not discharge an assembly's
+explicit mathematical hypotheses.
 
 ## Axiom footprint
 
@@ -102,20 +129,29 @@ and the generated corpus prints its own per-leaf cones during the build. No file
 project declares an axiom, and none uses `sorry`, `admit`, `native_decide`, or any
 compiler-trust escape hatch.
 
+After building, run `lake env lean --run scripts/check_corpus_axioms.lean`.
+It imports the full proof manifest and all library sources together, checks every
+compiled mathematical declaration, and rejects axioms outside the three above.
+The audit program itself is checked separately with
+`lake env lean scripts/check_corpus_axioms.lean`.
+
+The 395 activity masks and their 2,868 ordered strata share one global,
+kernel-replayed cover certificate. A semantic adapter proves each activity
+slice from that certificate and checks the concrete table by reduction.
+`KrennCollapseSupportCoverData` preserves the historical Boolean interface
+through compatibility wrappers. The concrete tables and theorem statements
+are unchanged.
+
 ## Provenance and reproducibility
 
-The corpus is generated. Generators and auditors live in `private/` (Python) and
-`tools/`; the receipts they emit — `private/*.json`, and the `.cnf`/`.lrat` pairs under
-`KrennChart0Support/` and `KrennCollapseSupportCover/` — are proof authority, checked by
-content hash. `private/audit_component_promotion.py` re-verifies a promoted component
-against its receipts: it resolves each recorded artifact in the current checkout and
-authenticates by SHA-256, treating recorded paths as provenance text rather than
-authority.
+The corpus contains generated search output. Its retained Lean files and
+`.cnf`/`.lrat` inputs are sufficient for proof replay; external search generators
+and solvers are not build dependencies.
 
-Recorded paths are repository-relative. Two external inputs are named by environment
-variable rather than by location: `KRENN_ARTIFACTS` (the artifact tree consumed by the
-generators) and `MSOLVE` / `MSOLVE_LIB` (an external solver used by some generators).
-Neither is required to build any Lean target.
+Lean's kernel checks the resulting proof terms. Receipts and content hashes
+identify source artifacts and provenance; they do not establish mathematical
+truth or replace a kernel-checked proof. A refuted branch also does not establish
+coverage of the branches that remain outside an assembly's hypotheses.
 
 This formalization was written independently. It contains no material from any external
 Krenn–Gu certificate repository. Licensed under the repository's MIT license.

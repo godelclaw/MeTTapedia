@@ -6,6 +6,16 @@ package krenn where
 
 require mathlib from git "https://github.com/leanprover-community/mathlib4" @ "v4.31.0"
 
+/-- Every retained non-library source, including modules outside the historical
+default target. The flat manifest keeps the complete corpus audit explicit. -/
+def krennCorpusModules : Array Lean.Name :=
+  (((include_str "corpus-modules.txt").splitOn "\n").filter (· != "")).map
+    String.toName |>.toArray
+
+lean_lib KrennCorpus where
+  roots := #[]
+  globs := krennCorpusModules.map Glob.one
+
 /-- Shared MeTTapedia combinatorics used by the standalone Krenn development.
 The source remains in the canonical MeTTapedia tree while this small library
 keeps `lean/krenn` independently buildable. -/
