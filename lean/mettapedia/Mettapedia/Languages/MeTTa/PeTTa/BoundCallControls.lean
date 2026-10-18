@@ -15,7 +15,7 @@ open scoped ProgramQuotation
 
 def source : ProgramQuotation.QuotedProgram :=
   petta_source_file%
-    "../../../../../../../hyperon/cetta-prime-2.0-draft-20260910/tests/support/fixtures/petta_bound_calls.metta"
+    "../../../../../../metta/fixtures/petta_bound_calls.metta"
     sha256 "fa9de2efe213716a3eda2a62a585e9d5f287be879bf45466d4f4909b0f9bc7dc"
 
 def program : SpaceSemantics.Program := source.program

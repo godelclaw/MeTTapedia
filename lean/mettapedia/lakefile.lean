@@ -63,13 +63,21 @@ lean_lib PrimeMotivationQuotation where
   needs := #[`@/primeMotivationSources]
 
 input_dir holLightMeTTaSources where
-  path := "../../../hyperon/cetta-prime-2.0-draft-20260910/lib/hol_light"
+  path := "../../metta/hol_light"
   text := true
   filter := .extension "metta"
 
 lean_lib HOLLightMeTTaQuotation where
   roots := #[`Mettapedia.Languages.HOLLight.MeTTa.Program]
   needs := #[`@/holLightMeTTaSources]
+
+input_file pettaBoundCallsSource where
+  path := "../../metta/fixtures/petta_bound_calls.metta"
+  text := false
+
+lean_lib PeTTaBoundCallQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.BoundCallControls]
+  needs := #[`@/pettaBoundCallsSource]
 
 -- The GSLT execution library lives beside these proofs in `metta/gslt/lib`.
 -- Every quoted file is an input of the module that quotes it.
