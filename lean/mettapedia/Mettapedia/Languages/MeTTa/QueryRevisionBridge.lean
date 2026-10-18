@@ -123,9 +123,9 @@ at the selected query. -/
           BinaryWorldModel.evidence (State := State) (Query := Query)
             second request) :=
   by
-    simp [binaryEvidenceValuation, Valuation.historyGrade,
-      Mettapedia.GSLT.PartialMonoid.foldOption, additive,
-      additivePartialMonoid]
+    change some (BinaryWorldModel.evidence (State := State) (Query := Query) first request +
+      (BinaryWorldModel.evidence (State := State) (Query := Query) second request + 0)) = _
+    simp only [add_zero]
 
 /-- Additive evidence revisions are both behaviorally commuting and compatible
 in the selected evidence valuation. -/
@@ -169,10 +169,9 @@ evidence and work counts events. -/
           BinaryWorldModel.evidence (State := State) (Query := Query)
             second request,
           (2 : Nat)) := by
-  simp [binaryEvidenceAndWorkValuation, binaryEvidenceValuation, eventCount,
-    Valuation.historyGrade, Mettapedia.GSLT.PartialMonoid.foldOption,
-    Valuation.prod, Mettapedia.GSLT.PartialMonoid.prod, additive,
-    additivePartialMonoid]
+  change some (BinaryWorldModel.evidence (State := State) (Query := Query) first request +
+    (BinaryWorldModel.evidence (State := State) (Query := Query) second request + 0), (1 + (1 + 0) : Nat)) = _
+  simp only [add_zero]
 
 /-- A pair may be admitted simultaneously by the evidential and execution-work
 coordinates without identifying their algebras. -/
