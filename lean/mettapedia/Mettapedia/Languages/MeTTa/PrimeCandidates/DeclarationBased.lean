@@ -1,3 +1,7 @@
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredBindingEquationServices
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeWireDataConversion
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredPremiseProofFamily
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredPremiseProofFamilyControls
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredIndexedFamilyConversionPath
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.BoundaryJudgments
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.DeclarationAwareCheckedContext
@@ -795,7 +799,3 @@ internal-language result is exact on the returned-fibre image; it is not a
 claim of semantic-CwF initiality or a universal property for the full command
 language.  Those stronger statements remain machine-visible open boundaries.
 -/
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredBindingEquationServices
-import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeWireDataConversion
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredPremiseProofFamily
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredPremiseProofFamilyControls
