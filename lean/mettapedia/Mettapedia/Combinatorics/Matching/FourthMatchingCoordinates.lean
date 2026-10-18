@@ -33,7 +33,7 @@ theorem exists_mixed (σ : Fin 3 → Perm V)
   set R : V → V → Prop := fun a b => b = σ 0 a ∨ b = σ 1 a with hR
   by_cases hconn : ∀ x y : V, Relation.EqvGen R x y
   · -- The union of the first two matchings is a single alternating cycle.
-    haveI : Nonempty V := Fintype.card_pos_iff.mp (by omega)
+    have : Nonempty V := Fintype.card_pos_iff.mp (by omega)
     obtain ⟨x₀⟩ := ‹Nonempty V›
     set ρ : Perm V := σ 0 * σ 1 with hρ
     have h00 : σ 0 * σ 0 = 1 := Equiv.ext fun x => hinv 0 x
@@ -58,7 +58,7 @@ theorem exists_mixed (σ : Fin 3 → Perm V)
     have hmfix : (ρ ^ m) x₀ = x₀ := (Nat.find_spec hord).2
     have hmin : ∀ n, 0 < n → n < m → (ρ ^ n) x₀ ≠ x₀ :=
       fun n hn hlt h => Nat.find_min hord hlt ⟨hn, h⟩
-    haveI : NeZero m := ⟨by omega⟩
+    have : NeZero m := ⟨by omega⟩
     have hcyc : ∀ n : ℕ, (ρ ^ (n + m)) x₀ = (ρ ^ n) x₀ := by
       intro n
       rw [pow_add, Equiv.Perm.mul_apply, hmfix]

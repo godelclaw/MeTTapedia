@@ -110,13 +110,13 @@ def s1 : Perm (Site m) where
 /-! ### Positions along the cycle -/
 
 lemma val_add_one (hm : 1 < m) (u : ZMod m) (h : u.val + 1 < m) : (u + 1).val = u.val + 1 := by
-  haveI : NeZero m := ⟨by omega⟩
-  haveI : Fact (1 < m) := ⟨hm⟩
+  have : NeZero m := ⟨by omega⟩
+  have : Fact (1 < m) := ⟨hm⟩
   rw [ZMod.val_add, ZMod.val_one, Nat.mod_eq_of_lt h]
 
 lemma val_sub_one (hm : 1 < m) (v : ZMod m) (h : v.val ≠ 0) : (v - 1).val = v.val - 1 := by
-  haveI : NeZero m := ⟨by omega⟩
-  haveI : Fact (1 < m) := ⟨hm⟩
+  have : NeZero m := ⟨by omega⟩
+  have : Fact (1 < m) := ⟨hm⟩
   have h1 : (v - 1) + 1 = v := by ring
   have hlt := ZMod.val_lt (v - 1)
   rcases Nat.lt_or_ge ((v - 1).val + 1) m with h2 | h2
@@ -130,7 +130,7 @@ lemma val_sub_one (hm : 1 < m) (v : ZMod m) (h : v.val ≠ 0) : (v - 1).val = v.
     exact h hv
 
 lemma eq_of_val_sub_eq (hm : 1 < m) {a b j : ZMod m} (h : (a - j).val = (b - j).val) : a = b := by
-  haveI : NeZero m := ⟨by omega⟩
+  have : NeZero m := ⟨by omega⟩
   have := ZMod.val_injective m h
   linear_combination this
 
@@ -189,7 +189,7 @@ lemma cross_eq_two_iff_true (hm : 1 < m) (i j k : ZMod m) :
 
 lemma cross_eq_two_iff_false (_hm : 1 < m) (i j k : ZMod m) :
     cross i j (k, false) = 2 ↔ k = j := by
-  haveI : NeZero m := ⟨by omega⟩
+  have : NeZero m := ⟨by omega⟩
   constructor
   · intro h
     by_cases h0 : (k - j).val = 0
@@ -206,7 +206,7 @@ theorem cross_compatible (hm : 1 < m) (i j : ZMod m) (t : Perm (Site m))
     (h1 : t (i, true) = (j, false)) (h2 : t (j, false) = (i, true))
     (σ : Fin 3 → Perm (Site m)) (hσ0 : σ 0 = s0) (hσ1 : σ 1 = s1) (hσ2 : σ 2 = t)
     (p : Site m) : cross i j (σ (cross i j p) p) = cross i j p := by
-  haveI : NeZero m := ⟨by omega⟩
+  have : NeZero m := ⟨by omega⟩
   obtain ⟨k, b⟩ := p
   cases b
   case false =>
@@ -247,8 +247,8 @@ theorem cross_compatible (hm : 1 < m) (i j : ZMod m) (t : Perm (Site m))
 /-- The crossing colouring is not constant: the site one step past `xᵢ` misses colour `2`. -/
 theorem cross_not_constant (hm : 1 < m) (i j : ZMod m) :
     cross i j (i, true) ≠ cross i j (i + 1, true) := by
-  haveI : NeZero m := ⟨by omega⟩
-  haveI : Fact (1 < m) := ⟨hm⟩
+  have : NeZero m := ⟨by omega⟩
+  have : Fact (1 < m) := ⟨hm⟩
   have hone : (1 : ZMod m) ≠ 0 := by
     intro h
     have hv : (1 : ZMod m).val = (0 : ZMod m).val := by rw [h]
@@ -309,7 +309,7 @@ theorem inter_compatible (hm : 1 < m) {j i i' j' : ZMod m} {a b a' : ℕ}
     (e3 : t (j, false) = (j', false)) (e4 : t (j', false) = (j, false))
     (σ : Fin 3 → Perm (Site m)) (hσ0 : σ 0 = s0) (hσ1 : σ 1 = s1) (hσ2 : σ 2 = t)
     (p : Site m) : inter j a b a' (σ (inter j a b a' p) p) = inter j a b a' p := by
-  haveI : NeZero m := ⟨by omega⟩
+  have : NeZero m := ⟨by omega⟩
   obtain ⟨k, side⟩ := p
   have hkm : (k - j).val < m := ZMod.val_lt _
   have hj0 : (j - j).val = 0 := by simp
@@ -377,7 +377,7 @@ theorem inter_compatible (hm : 1 < m) {j i i' j' : ZMod m} {a b a' : ℕ}
 theorem inter_not_constant (hm : 2 < m) (j : ZMod m) {a b a' : ℕ}
     (_hab : a < b) (_hba : b ≤ a') (_ham : a' < m) :
     ∃ q : Site m, inter j a b a' q ≠ inter j a b a' (j, false) := by
-  haveI : NeZero m := ⟨by omega⟩
+  have : NeZero m := ⟨by omega⟩
   set r : ℕ := if b = 1 then 2 else 1 with hrdef
   have hrm : r < m := by rw [hrdef]; split <;> omega
   have hval : (j + (r : ZMod m) - j).val = r := by
@@ -408,7 +408,7 @@ used once, to bound the span at the base from below. -/
 theorem exists_chords (hm : 1 < m) (τ τ' : ZMod m → ZMod m)
     (hτ : ∀ i, τ (τ i) = i) (hτf : ∀ i, τ i ≠ i) (hτ'f : ∀ j, τ' j ≠ j) :
     ∃ i j : ZMod m, (τ i - j).val < (τ' j - j).val ∧ (τ' j - j).val ≤ (i - j).val := by
-  haveI : NeZero m := ⟨by omega⟩
+  have : NeZero m := ⟨by omega⟩
   obtain ⟨i₀, -, hmin⟩ := Finset.exists_min_image (Finset.univ : Finset (ZMod m))
     (fun i => (τ i - i).val) ⟨0, Finset.mem_univ 0⟩
   set d := (τ i₀ - i₀).val with hd
@@ -443,7 +443,7 @@ theorem exists_mixed_model (hm : 2 < m) (t : Perm (Site m))
     (hinv : ∀ p, t (t p) = p) (hfp : ∀ p, t p ≠ p)
     (σ : Fin 3 → Perm (Site m)) (hσ0 : σ 0 = s0) (hσ1 : σ 1 = s1) (hσ2 : σ 2 = t) :
     ∃ c : Site m → Fin 3, (∃ p q : Site m, c p ≠ c q) ∧ ∀ p, c (σ (c p) p) = c p := by
-  haveI : NeZero m := ⟨by omega⟩
+  have : NeZero m := ⟨by omega⟩
   by_cases hcross : ∃ i j : ZMod m, t (i, true) = (j, false)
   · obtain ⟨i, j, hij⟩ := hcross
     have hji : t (j, false) = (i, true) := by rw [← hij, hinv]
