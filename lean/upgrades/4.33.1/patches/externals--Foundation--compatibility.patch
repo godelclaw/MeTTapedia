@@ -1,0 +1,392 @@
+diff --git a/Foundation/FirstOrder/Arithmetic/Schemata.lean b/Foundation/FirstOrder/Arithmetic/Schemata.lean
+index c3ae1cca..ed6e7d0c 100644
+--- a/Foundation/FirstOrder/Arithmetic/Schemata.lean
++++ b/Foundation/FirstOrder/Arithmetic/Schemata.lean
+@@ -191,8 +191,7 @@ instance models_InductionScheme_alt : V ⊧ₘ* InductionScheme ℒₒᵣ (Arith
+         (∀ x, Semiformula.Evalm V ![x] f φ → Semiformula.Evalm V ![x + 1] f φ) →
+         ∀ x, Semiformula.Evalm V ![x] f φ by
+     simp only [InductionScheme, Semantics.ModelsSet.setOf_iff, forall_exists_index, and_imp]
+-    refine ⟨?_⟩
+-    rintro _ ⟨φ, hφ, rfl⟩
++    rintro _ φ hφ rfl
+     simpa [models_iff, Semiformula.eval_univCl, succInd, Semiformula.eval_rew_q,
+         Semiformula.eval_substs, Function.comp, Matrix.constant_eq_singleton]
+     using this φ hφ
+@@ -364,8 +363,7 @@ lemma models_succInd (φ : Semiformula ℒₒᵣ ℕ 1) : ℕ ⊧ₘ (succInd φ
+ instance models_ISigma (Γ k) : ℕ ⊧ₘ* 𝗜𝗡𝗗 Γ k := by
+   simp only [ModelsTheory.add_iff, PeanoMinus.instModelsTheoryNat, InductionScheme,
+     Semantics.ModelsSet.setOf_iff, forall_exists_index, and_imp, true_and]
+-  refine ⟨?_⟩
+-  rintro _ ⟨φ, _, rfl⟩; simp [models_succInd]
++  rintro _ φ _ rfl; simp [models_succInd]
+ 
+ instance models_ISigmaZero : ℕ ⊧ₘ* 𝗜𝚺₀ := inferInstance
+ 
+@@ -374,8 +372,7 @@ instance models_ISigmaOne : ℕ ⊧ₘ* 𝗜𝚺₁ := inferInstance
+ instance models_Peano : ℕ ⊧ₘ* 𝗣𝗔 := by
+   simp only [Peano, InductionScheme, ModelsTheory.add_iff, PeanoMinus.instModelsTheoryNat,
+     Semantics.ModelsSet.setOf_iff, forall_exists_index, and_imp, true_and]
+-  refine ⟨?_⟩
+-  rintro _ ⟨φ, _, rfl⟩; simp [models_succInd]
++  rintro _ φ _ rfl; simp [models_succInd]
+ 
+ instance : Entailment.Consistent (𝗜𝗡𝗗 Γ k) := (𝗜𝗡𝗗 Γ k).consistent_of_sound (Eq ⊥) rfl
+ 
+diff --git a/Foundation/FirstOrder/Basic/Operator.lean b/Foundation/FirstOrder/Basic/Operator.lean
+index 83f4196d..83f70126 100644
+--- a/Foundation/FirstOrder/Basic/Operator.lean
++++ b/Foundation/FirstOrder/Basic/Operator.lean
+@@ -223,7 +223,7 @@ abbrev gödelNumber' (a : α) : Semiterm L ξ n := const (gödelNumber a)
+ 
+ instance : GödelQuote α (Semiterm L ξ n) := ⟨gödelNumber'⟩
+ 
+-def ofEncodable [Operator.Zero L] [Operator.One L] [Operator.Add L] {α : Type*} [Encodable α] : GödelNumber L α := ⟨Operator.encode L⟩
++@[instance_reducible] def ofEncodable [Operator.Zero L] [Operator.One L] [Operator.Add L] {α : Type*} [Encodable α] : GödelNumber L α := ⟨Operator.encode L⟩
+ 
+ end GödelNumber
+ 
+@@ -242,12 +242,12 @@ variable {L : Language}
+ @[simp] lemma complexity_add [L.Add] (t u : Semiterm L ξ n) :
+     (Operator.Add.add.operator ![t, u]).complexity = max t.complexity u.complexity + 1 := by
+   simp [Operator.operator, Operator.Add.term_eq, complexity_func, Rew.func]
+-  simp [show (Finset.univ : Finset (Fin 2)) = {0, 1} from by ext i; cases i using Fin.cases <;> simp]
++  simp [Finset.univ_fin2]
+ 
+ @[simp] lemma complexity_mul [L.Mul] (t u : Semiterm L ξ n) :
+     (Operator.Mul.mul.operator ![t, u]).complexity = max t.complexity u.complexity + 1 := by
+   simp [Operator.operator, Operator.Mul.term_eq, complexity_func, Rew.func]
+-  simp [show (Finset.univ : Finset (Fin 2)) = {0, 1} from by ext i; cases i using Fin.cases <;> simp]
++  simp [Finset.univ_fin2]
+ 
+ end complexity
+ 
+diff --git a/Foundation/Logic/LogicSymbol.lean b/Foundation/Logic/LogicSymbol.lean
+index c90c5bf1..50f9d9da 100644
+--- a/Foundation/Logic/LogicSymbol.lean
++++ b/Foundation/Logic/LogicSymbol.lean
+@@ -208,8 +208,6 @@ class Closed {F} [LogicalConnective F] (C : F → Prop) extends AndOrClosed C wh
+   not {f : F} : C f → C (∼f)
+   imply {f g : F} : C f → C g → C (f ➝ g)
+ 
+-attribute [simp] AndOrClosed.verum AndOrClosed.falsum
+-
+ end LogicalConnective
+ 
+ /-
+diff --git a/Foundation/Logic/Predicate/Rew.lean b/Foundation/Logic/Predicate/Rew.lean
+index 7b41fb31..84388410 100644
+--- a/Foundation/Logic/Predicate/Rew.lean
++++ b/Foundation/Logic/Predicate/Rew.lean
+@@ -579,13 +579,13 @@ lemma shift_comp_subst1 (t : SyntacticSemiterm L n₂) :
+   · exact IsEmpty.elim e x
+ 
+ lemma rewrite_comp_free_eq_subst (t : SyntacticTerm L) :
+-    (rewrite (t :>ₙ Semiterm.fvar)).comp free = subst ![t] := by ext x <;> simp [comp_app]
++    (rewrite (t :>ₙ Semiterm.fvar)).comp free = subst ![t] := by ext x <;> simp [comp_app, Fin.eq_zero]
+ 
+ lemma rewrite_comp_shift_eq_id (t : SyntacticTerm L) :
+     (rewrite (t :>ₙ Semiterm.fvar)).comp shift = Rew.id := by ext x <;> simp [comp_app]
+ 
+ @[simp] lemma subst_mbar_zero_comp_shift_eq_free :
+-    (subst (L := L) ![&0]).comp shift = free := by ext x <;> simp [comp_app]
++    (subst (L := L) ![&0]).comp shift = free := by ext x <;> simp [comp_app, Fin.eq_zero]
+ 
+ @[simp] lemma subst_comp_bShift_eq_id (v : Fin 1 → Semiterm L ξ 0) :
+     (subst (L := L) v).comp bShift = Rew.id := by
+@@ -610,7 +610,7 @@ lemma free_comp_subst_eq_subst_comp_shift {n'} (w : Fin n' → SyntacticSemiterm
+ 
+ lemma rewrite_comp_fix_eq_subst (t) :
+     ((rewrite (t :>ₙ (&·))).comp free : SyntacticRew L 1 0) = subst ![t] := by
+-  ext x <;> simp [comp_app]
++  ext x <;> simp [comp_app, Fin.eq_zero]
+ 
+ lemma bShift_eq_rewrite :
+     (Rew.bShift : SyntacticRew L 0 1) = Rew.subst ![] := by
+@@ -957,7 +957,7 @@ lemma shift_injective : Function.Injective fun φ : S n ↦ shift φ :=
+ lemma free_rewrite_eq (f : ℕ → SyntacticTerm L) (φ : S 1) :
+     free ((Rew.rewrite fun x ↦ Rew.bShift (f x)) ▹ φ) =
+     Rew.rewrite (&0 :>ₙ fun x ↦ Rew.shift (f x)) ▹ free φ := by
+-  simpa [← comp_app] using smul_ext' <| by ext x <;> simp [Rew.comp_app]
++  simpa [← comp_app] using smul_ext' <| by ext x <;> simp [Rew.comp_app, Fin.eq_zero]
+ 
+ lemma shift_rewrite_eq (f : ℕ → SyntacticTerm L) (φ : S 0) :
+     shift (Rew.rewrite f ▹ φ) = (Rew.rewrite (&0 :>ₙ fun x ↦ Rew.shift (f x))) ▹ shift φ := by
+@@ -988,7 +988,7 @@ lemma rewrite_subst_nil (f : ℕ → SyntacticTerm L) (φ : S 0) :
+ 
+ lemma rewrite_free_eq_subst (t : SyntacticTerm L) (φ : S 1) :
+     Rew.rewrite (t :>ₙ fun x ↦ &x) ▹ free φ = φ/[t] := by
+-  simpa [←comp_app] using smul_ext' <| by ext x <;> simp [Rew.comp_app]
++  simpa [←comp_app] using smul_ext' <| by ext x <;> simp [Rew.comp_app, Fin.eq_zero]
+ 
+ def shiftEmb : S n ↪ S n where
+   toFun := shift
+@@ -1063,6 +1063,7 @@ variable {S : ℕ → Type*} [LCWQ S] [SyntacticRewriting L S S] [LawfulSyntacti
+   apply smul_ext'
+   ext x
+   · simp
++    exact (Fin.eq_zero x).symm
+   · simp
+ 
+ end Rewriting
+diff --git a/Foundation/Logic/Semantics.lean b/Foundation/Logic/Semantics.lean
+index 42745b60..9a0425e0 100644
+--- a/Foundation/Logic/Semantics.lean
++++ b/Foundation/Logic/Semantics.lean
+@@ -208,7 +208,7 @@ instance empty' (𝓜 : M) : 𝓜 ⊧* (∅ : Set F) := ⟨by simp⟩
+     𝓜 ⊧* Set.range φ ↔ ∀ i, 𝓜 ⊧ φ i := by simp [modelsSet_iff]
+ 
+ @[simp] lemma setOf_iff {P : F → Prop} {𝓜 : M} :
+-    𝓜 ⊧* setOf P ↔ ∀ φ, P φ → 𝓜 ⊧ φ := by
++    𝓜 ⊧* Set.ofPred P ↔ ∀ φ, P φ → 𝓜 ⊧ φ := by
+   rw [modelsSet_iff]
+   constructor
+   · intro h φ hφ; exact h hφ
+@@ -224,7 +224,7 @@ lemma Satisfiable.of_subset {T U : Set F} (h : Satisfiable M U) (ss : T ⊆ U) :
+ 
+ variable (M)
+ 
+-instance [Semantics M F] : Semantics (Set M) F := ⟨fun s φ ↦ ∀ ⦃𝓜⦄, 𝓜 ∈ s → 𝓜 ⊧ φ⟩
++instance : Semantics (Set M) F := ⟨fun s φ ↦ ∀ ⦃𝓜⦄, 𝓜 ∈ s → 𝓜 ⊧ φ⟩
+ 
+ @[simp] lemma empty_models (φ : F) : (∅ : Set M) ⊧ φ := by rintro h; simp
+ 
+@@ -289,7 +289,7 @@ lemma subset_of_le {T : ℕ → Set F} (H : Cumulative T)
+ 
+ lemma finset_mem {T : ℕ → Set F}
+     (H : Cumulative T) {u : Finset F} (hu : ↑u ⊆ ⋃ s, T s) : ∃ s, ↑u ⊆ T s := by
+-  haveI := Classical.decEq
++  let := Classical.decEq
+   induction u using Finset.induction
+   case empty => exact ⟨0, by simp⟩
+   case insert φ u _ ih =>
+@@ -329,7 +329,7 @@ lemma conseq_compact [LogicalConnective F] [Semantics.Tarski M] [DecidableEq F]
+   constructor
+   · intro ⟨u, ss, hu⟩
+     refine ⟨Finset.erase u (∼φ), by simp [ss],?_⟩
+-    simp only [Finset.coe_erase, Set.insert_diff_singleton]
++    simp only [Finset.coe_erase, Set.insert_sdiff_singleton]
+     intro h; exact hu (Semantics.Satisfiable.of_subset h (by simp))
+   · intro ⟨u, ss, hu⟩
+     exact ⟨insert (∼φ) u,
+diff --git a/Foundation/Vorspiel/Fin/Basic.lean b/Foundation/Vorspiel/Fin/Basic.lean
+index df3386b1..ee91a4bc 100644
+--- a/Foundation/Vorspiel/Fin/Basic.lean
++++ b/Foundation/Vorspiel/Fin/Basic.lean
+@@ -41,7 +41,7 @@ section last'
+ variable [NeZero n]
+ 
+ /-- The last element of `Fin n` when `n` is `NeZero`. -/
+-def last' [NeZero n] : Fin n := ⟨n - 1, Nat.sub_one_lt'⟩
++def last' : Fin n := ⟨n - 1, Nat.sub_one_lt'⟩
+ 
+ @[simp, grind .]
+ lemma lt_last' : i ≤ Fin.last' := by
+@@ -95,7 +95,7 @@ namespace Fin1
+ 
+ variable {n : Fin 1}
+ 
+-@[simp] lemma eq_one : n = 0 := by cases n; omega;
++lemma eq_one : n = 0 := by cases n; omega;
+ @[simp] lemma not_lt_zero : ¬0 < n := by simp [eq_one];
+ 
+ end Fin1
+diff --git a/Foundation/Vorspiel/List/Basic.lean b/Foundation/Vorspiel/List/Basic.lean
+index 17f6a587..ae9aed4b 100644
+--- a/Foundation/Vorspiel/List/Basic.lean
++++ b/Foundation/Vorspiel/List/Basic.lean
+@@ -179,7 +179,7 @@ def induction_with_singleton'
+   | a :: b :: as => hcons a b as (induction_with_singleton' hnil hsingle hcons (b :: as))
+ 
+ instance Nodup.finite [Finite α] : Finite {l : List α // l.Nodup} := by
+-  haveI : Fintype α := Fintype.ofFinite α
++  let : Fintype α := Fintype.ofFinite α
+   let N := Fintype.card α + 1
+   have : Fintype ((i : Fin N) × Vector α i) := Sigma.instFintype
+   let f : {l : List α // l.Nodup} → ((i : Fin N) × Vector α i) := fun l ↦
+diff --git a/Foundation/Vorspiel/List/ChainI.lean b/Foundation/Vorspiel/List/ChainI.lean
+index 00034892..948103ac 100644
+--- a/Foundation/Vorspiel/List/ChainI.lean
++++ b/Foundation/Vorspiel/List/ChainI.lean
+@@ -49,7 +49,8 @@ lemma cons_cons_iff :
+   · rintro ⟨rfl, hR, hC⟩
+     exact hC.cons hR
+ 
+-lemma not_mem_of_rel (IR : Std.Irrefl R) (TR : Transitive R) {a b x : α} {l : List α} :
++lemma not_mem_of_rel (IR : Std.Irrefl R)
++    (TR : ∀ ⦃x y z⦄, R x y → R y z → R x z) {a b x : α} {l : List α} :
+     ChainI R a b l → R x a → x ∉ l := by
+   intro hChain hxa
+   induction hChain generalizing x with
+@@ -63,7 +64,8 @@ lemma not_mem_of_rel (IR : Std.Irrefl R) (TR : Transitive R) {a b x : α} {l : L
+       · exact IR.irrefl _ hxa
+       · exact ih (TR hxa hR) hx
+ 
+-lemma nodup (IR : Std.Irrefl R) (TR : Transitive R) {a b l} : ChainI R a b l → l.Nodup := by
++lemma nodup (IR : Std.Irrefl R)
++    (TR : ∀ ⦃x y z⦄, R x y → R y z → R x z) {a b l} : ChainI R a b l → l.Nodup := by
+   intro hChain
+   induction hChain with
+   | singleton =>
+@@ -71,9 +73,10 @@ lemma nodup (IR : Std.Irrefl R) (TR : Transitive R) {a b l} : ChainI R a b l →
+   | cons hR hTail ih =>
+       exact List.nodup_cons.mpr ⟨not_mem_of_rel IR TR hTail hR, ih⟩
+ 
+-lemma finite_of_irreflexive_of_transitive [Finite α] (IR : Std.Irrefl R) (TR : Transitive R) (a b : α) :
++lemma finite_of_irreflexive_of_transitive [Finite α] (IR : Std.Irrefl R)
++    (TR : ∀ ⦃x y z⦄, R x y → R y z → R x z) (a b : α) :
+     Finite {l : List α // l.ChainI R a b} := by
+-  haveI : Fintype α := Fintype.ofFinite α
++  let : Fintype α := Fintype.ofFinite α
+   let f : {l : List α // l.ChainI R a b} → {l : List α // l.Nodup} := fun l ↦ ⟨l, l.prop.nodup IR TR⟩
+   have : Function.Injective f := by intro ⟨l₁, hl₁⟩ ⟨l₂, hl₂⟩; simp [f]
+   exact Finite.of_injective f this
+diff --git a/Foundation/Vorspiel/Matrix.lean b/Foundation/Vorspiel/Matrix.lean
+index daeffc1c..d5fd7d5b 100644
+--- a/Foundation/Vorspiel/Matrix.lean
++++ b/Foundation/Vorspiel/Matrix.lean
+@@ -7,7 +7,7 @@ public import Foundation.Vorspiel.Fin.Basic
+ 
+ namespace Matrix
+ 
+-open Fin
++open _root_.Matrix.Fin
+ 
+ section
+ variable {n : ℕ} {α : Type u}
+@@ -146,24 +146,24 @@ lemma vecConsLast_vecEmpty {s : Fin 0 → α} (a : α) : s <: a = ![a] :=
+ 
+ lemma constant_eq_singleton {a : α} : (fun _ => a) = ![a] := by funext x; simp
+ 
+-lemma fun_eq_vec_one {v : Fin 1 → α} : v = ![v 0] := by funext x; simp
++lemma fun_eq_vec_one {v : Fin 1 → α} : v = ![v 0] := by funext x; simp [Fin.Fin1.eq_one]
+ 
+ lemma constant_eq_vec₂ {a : α} : (fun _ => a) = ![a, a] := by
+   funext x; cases x using Fin.cases <;> simp
+ 
+ lemma fun_eq_vec_two {v : Fin 2 → α} : v = ![v 0, v 1] := by
+-  funext x; cases x using Fin.cases <;> simp
++  funext x; cases x using Fin.cases <;> simp [Fin.Fin1.eq_one]
+ 
+ lemma fun_eq_vec_three {v : Fin 3 → α} : v = ![v 0, v 1, v 2] := by
+   funext x
+   cases' x using Fin.cases with x <;> simp
+-  cases' x using Fin.cases with x <;> simp
++  cases' x using Fin.cases with x <;> simp [Fin.Fin1.eq_one]
+ 
+ lemma fun_eq_vec_four {v : Fin 4 → α} : v = ![v 0, v 1, v 2, v 3] := by
+   funext x
+   cases' x using Fin.cases with x <;> simp
+   cases' x using Fin.cases with x <;> simp
+-  cases' x using Fin.cases with x <;> simp
++  cases' x using Fin.cases with x <;> simp [Fin.Fin1.eq_one]
+ 
+ lemma injective_vecCons {f : Fin n → α} (h : Function.Injective f) {a} (ha : ∀ i, a ≠ f i) : Function.Injective (a :> f) := by
+   have : ∀ i, f i ≠ a := fun i => (ha i).symm
+diff --git a/Foundation/Vorspiel/Nat/Basic.lean b/Foundation/Vorspiel/Nat/Basic.lean
+index c3e19301..d581c22e 100644
+--- a/Foundation/Vorspiel/Nat/Basic.lean
++++ b/Foundation/Vorspiel/Nat/Basic.lean
+@@ -1,7 +1,7 @@
+ module
+ 
+ public import Mathlib.Data.Nat.Bits
+-public import Mathlib.Data.Nat.Lattice
++public import Mathlib.Order.Lattice.Nat
+ public import Mathlib.Data.Nat.Pairing
+ public import Mathlib.Tactic.Cases
+ 
+diff --git a/Foundation/Vorspiel/Rel/CWF.lean b/Foundation/Vorspiel/Rel/CWF.lean
+index 8598117d..b95b0d94 100644
+--- a/Foundation/Vorspiel/Rel/CWF.lean
++++ b/Foundation/Vorspiel/Rel/CWF.lean
+@@ -36,7 +36,8 @@ instance [Finite α] [IsTrans α R] [Std.Irrefl R] : IsConverseWellFounded _ R :
+ ⟩
+ 
+ lemma Finite.converseWellFounded_of_trans_irrefl'
+-    (hFinite : Finite α) (hTrans : Transitive R) (hIrrefl : Std.Irrefl R) : ConverseWellFounded R :=
++    (hFinite : Finite α) (hTrans : ∀ ⦃x y z⦄, R x y → R y z → R x z)
++    (hIrrefl : Std.Irrefl R) : ConverseWellFounded R :=
+   @Finite.wellFounded_of_trans_of_irrefl _ _ _
+     ⟨by
+       intro a b c ba cb
+diff --git a/Foundation/Vorspiel/Rel/Isolated.lean b/Foundation/Vorspiel/Rel/Isolated.lean
+index 4c9880e1..7c574078 100644
+--- a/Foundation/Vorspiel/Rel/Isolated.lean
++++ b/Foundation/Vorspiel/Rel/Isolated.lean
+@@ -15,12 +15,12 @@ def Isolated (R : Rel α α) := ∀ ⦃x y⦄, ¬R x y
+ class IsIsolated (R : Rel α α) where
+   isolated : Isolated R
+ 
+-@[simp] lemma isolated [IsIsolated R] {x y : α} : ¬R x y := by apply IsIsolated.isolated
++lemma isolated [IsIsolated R] {x y : α} : ¬R x y := by apply IsIsolated.isolated
+ 
+-instance [IsIsolated R] : IsCoreflexive R := ⟨by simp_all [Coreflexive]⟩
++instance [IsIsolated R] : IsCoreflexive R := ⟨by simp_all [Coreflexive, isolated]⟩
+ 
+-instance [IsIsolated R] : Std.Irrefl R := ⟨by simp_all⟩
++instance [IsIsolated R] : Std.Irrefl R := ⟨by simp_all [isolated]⟩
+ 
+-instance [IsIsolated R] : IsTrans α R := ⟨by simp_all⟩
++instance [IsIsolated R] : IsTrans α R := ⟨by simp_all [isolated]⟩
+ 
+ end
+diff --git a/Foundation/Vorspiel/Rel/WCWF.lean b/Foundation/Vorspiel/Rel/WCWF.lean
+index e94befc2..b1665b76 100644
+--- a/Foundation/Vorspiel/Rel/WCWF.lean
++++ b/Foundation/Vorspiel/Rel/WCWF.lean
+@@ -49,7 +49,7 @@ lemma antisymm_of_weaklyConverseWellFounded :
+   have hNot : ¬ WeaklyConverseWellFounded rel := by
+     simpa [WeaklyConverseWellFounded] using
+       (ConverseWellFounded.iff_has_max (R := Rel.IrreflGen rel)).not.mpr <| by
+-        push_neg
++        push Not
+         use ({x, y} : Set α)
+         constructor
+         · simp
+@@ -68,7 +68,8 @@ instance [IsWeaklyConverseWellFounded _ rel] : Std.Antisymm rel := ⟨by
+ ⟩
+ 
+ 
+-lemma weaklyConverseWellFounded_of_finite_trans_antisymm (hFin : Finite α) (R_trans : Transitive rel)
++lemma weaklyConverseWellFounded_of_finite_trans_antisymm (hFin : Finite α)
++    (R_trans : ∀ ⦃x y z⦄, rel x y → rel y z → rel x z)
+   : (∀ ⦃x y : α⦄, rel x y → rel y x → x = y) → WeaklyConverseWellFounded rel := by
+     intro hAntisymm
+     by_contra h
+@@ -76,7 +77,7 @@ lemma weaklyConverseWellFounded_of_finite_trans_antisymm (hFin : Finite α) (R_t
+         ¬ ∀ (s : Set α), Set.Nonempty s → ∃ m ∈ s, ∀ x ∈ s, ¬Rel.IrreflGen rel m x := by
+       simpa [WeaklyConverseWellFounded] using
+         (ConverseWellFounded.iff_has_max (R := Rel.IrreflGen rel)).not.mp h
+-    push_neg at hbad
++    push Not at hbad
+     obtain ⟨f, hf⟩ := dependent_choice hbad
+     dsimp [Rel.IrreflGen] at hf
+ 
+diff --git a/Foundation/Vorspiel/Set/Basic.lean b/Foundation/Vorspiel/Set/Basic.lean
+index 419e71bb..d9de207a 100644
+--- a/Foundation/Vorspiel/Set/Basic.lean
++++ b/Foundation/Vorspiel/Set/Basic.lean
+@@ -54,8 +54,8 @@ lemma ssubset_of_subset_ne (h : s ⊆ t) (hne : s ≠ t) : s ⊂ t := by
+ lemma infinitely_finset_approximate (count : s.Countable) (inf : s.Infinite) (ha : a ∈ s) :
+   ∃ f : ℕ → Finset α, ((f 0) = {a}) ∧ (∀ i, f i ⊂ f (i + 1)) ∧ (∀ i, ↑(f i) ⊆ s) ∧ (∀ b ∈ s, ∃ i, b ∈ f i) := by
+   let X' := s \ {a}
+-  have count' : Countable X' := (count.mono Set.diff_subset).to_subtype
+-  have inf' : Infinite X' := (inf.diff (Set.finite_singleton a)).to_subtype
++  have count' : Countable X' := (count.mono Set.sdiff_subset).to_subtype
++  have inf' : Infinite X' := (inf.sdiff (Set.finite_singleton a)).to_subtype
+   obtain ⟨eq⟩ : Nonempty (Nat ≃ X') := nonempty_equiv_of_countable
+   refine ⟨
+     fun n => Finset.cons a ((Finset.range n).map
+diff --git a/Foundation/Vorspiel/Small.lean b/Foundation/Vorspiel/Small.lean
+index 8194b56e..bd8a7479 100644
+--- a/Foundation/Vorspiel/Small.lean
++++ b/Foundation/Vorspiel/Small.lean
+@@ -9,7 +9,7 @@ section Small
+ 
+ variable {α : Type uα} {β : Type uβ}
+ 
+-def small_preimage_of_injective (f : α → β) (h : Function.Injective f) (s : Set β) [Small.{u} s] :
++theorem small_preimage_of_injective (f : α → β) (h : Function.Injective f) (s : Set β) [Small.{u} s] :
+     Small.{u} (f ⁻¹' s) := small_of_injective (β := s) (f := fun x ↦ ⟨f x, x.prop⟩) fun x y ↦ by
+   simp [Function.Injective.eq_iff h, SetCoe.ext_iff]
+ 

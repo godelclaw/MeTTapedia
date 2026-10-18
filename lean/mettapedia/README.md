@@ -39,7 +39,8 @@ Mettapedia/
   local repos in `../externals/` for Foundation, exchangeability, provenance,
   OrderedSemigroups, Metatheory, CertifyingDatalog, and `mm-lean4`.
 - `../bootstrap_local_repos.sh` records published dependency revisions;
-  `../upgrades/4.33.1/externals.json` records migration source fingerprints.
+  `../upgrades/4.33.1/externals.json` records migration source fingerprints
+  and the compatibility overlays applied to fresh checkouts.
   Existing editable dependency checkouts can differ from those revisions and
   must be checked when reproducing a build.
 
@@ -64,7 +65,8 @@ scripts/check_library_sanity.sh
 
 `scripts/check_library_sanity.sh` builds the library aggregates and comparison
 entrypoints, checks their freshness with `lake --no-build build`, and checks
-tracked internal imports and source coverage. `--no-build` skips compilation;
+tracked internal imports, source coverage and the required local dependencies'
+effective source fingerprints. `--no-build` skips compilation;
 `--coverage` checks sources only; `--list` prints the target list. A nonzero
 status means qualification is incomplete.
 

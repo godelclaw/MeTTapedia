@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Check the named aggregates, artifact freshness, and tracked source coverage.
+# Check dependency sources, named aggregates, freshness, and source coverage.
 # An aggregate build alone does not qualify sources outside its import closure.
 set -euo pipefail
 
@@ -48,16 +48,18 @@ if [[ "$mode" == --coverage ]]; then
   exit "$source_status"
 fi
 
+dependency_status=0
+python3 ../upgrades/4.33.1/replay.py --verify-required || dependency_status=$?
 build_status=0
 freshness_status=0
 if [[ "$mode" == build ]]; then
   lake build "${targets[@]}" || build_status=$?
 fi
 lake --no-build build "${targets[@]}" || freshness_status=$?
-printf 'Sanity exit statuses: build=%s freshness=%s imports/coverage=%s\n' \
+printf 'Sanity exit statuses: build=%s freshness=%s imports/coverage=%s dependencies=%s\n' \
   "$([[ "$mode" == build ]] && printf '%s' "$build_status" || printf 'not-run')" \
-  "$freshness_status" "$source_status"
-if (( build_status || freshness_status || source_status )); then
+  "$freshness_status" "$source_status" "$dependency_status"
+if (( build_status || freshness_status || source_status || dependency_status )); then
   printf 'Library qualification incomplete; see the failures and coverage report.\n' >&2
   exit 1
 fi

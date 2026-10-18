@@ -53,7 +53,8 @@ class RepositoryTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
-        self.root = Path(self.temp.name)
+        self.root = Path(self.temp.name) / "lean/mettapedia"
+        self.root.mkdir(parents=True)
         subprocess.run(["git", "init", "-q", str(self.root)], check=True)
         (self.root / "scripts").mkdir()
         for name in ("check_import_closure.py", "check_library_sanity.sh"):
@@ -99,6 +100,12 @@ class RepositoryTests(unittest.TestCase):
 
     def gate_fixture(self):
         script = self.root / "scripts/check_library_sanity.sh"
+        bundle = self.root.parent / "upgrades/4.33.1"
+        bundle.mkdir(parents=True)
+        original = SCRIPTS.parent.parent / "upgrades/4.33.1/replay.py"
+        shutil.copyfile(original, bundle / "replay.py")
+        (bundle / "externals.json").write_text('{"repositories": {}}')
+        (self.root / "lake-manifest.json").write_text('{"packages": []}')
         # --list validates the source paths, so create them from the original list.
         result = subprocess.run(["bash", str(SCRIPTS / script.name), "--list"],
                                 capture_output=True, text=True, check=True)
@@ -131,6 +138,17 @@ class RepositoryTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("build=7 freshness=7 imports/coverage=0", result.stdout)
         self.assertEqual(len((self.root / "lake-calls").read_text().splitlines()), 2)
+
+    def test_dependency_failure_is_reported_independently(self):
+        script, env = self.gate_fixture()
+        (self.root / "lake-manifest.json").write_text(json.dumps({"packages": [
+            {"type": "path", "dir": "../externals/Unregistered"},
+        ]}))
+        result = subprocess.run(["bash", str(script), "--no-build"], env=env,
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("imports/coverage=0 dependencies=1", result.stdout)
+        self.assertIn("has no recorded source profile", result.stdout)
 
 
 if __name__ == "__main__":
