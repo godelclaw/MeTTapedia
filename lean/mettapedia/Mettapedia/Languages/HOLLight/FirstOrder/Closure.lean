@@ -384,7 +384,7 @@ theorem charPlane_closed (policy : AxiomPolicy) {arguments premises : List Patte
     simpa using bounded
   have valid : (plane * 65536 + valueDown [d15, d14, d13, d12, d11, d10, d9, d8, d7, d6, d5, d4, d3, d2, d1, d0]).isValidChar := Or.inr ⟨by omega, by omega⟩
   have encoded := charP_digits plane [d15, d14, d13, d12, d11, d10, d9, d8, d7, d6, d5, d4, d3, d2, d1, d0] rfl (by simp; omega) valid
-  exact ⟨_, by simpa [charP, bitP] using encoded⟩
+  exact ⟨_, encoded⟩
 
 set_option maxHeartbeats 1000000 in
 theorem charZero15_closed (policy : AxiomPolicy) {arguments premises : List Pattern} {conclusion : Pattern}
@@ -419,7 +419,7 @@ theorem charZero15_closed (policy : AxiomPolicy) {arguments premises : List Patt
     simp only [valueDown, List.length_cons, List.length_nil, Nat.reduceAdd, Nat.reducePow, Nat.isValidChar]
     omega
   have encoded := charP_digits 0 [0, d14, d13, d12, d11, d10, d9, d8, d7, d6, d5, d4, d3, d2, d1, d0] rfl (by simp; omega) valid
-  exact ⟨_, by simpa [charP, bitP] using encoded⟩
+  exact ⟨_, encoded⟩
 
 set_option maxHeartbeats 1000000 in
 theorem charZero14_closed (policy : AxiomPolicy) {arguments premises : List Pattern} {conclusion : Pattern}
@@ -454,7 +454,7 @@ theorem charZero14_closed (policy : AxiomPolicy) {arguments premises : List Patt
     simp only [valueDown, List.length_cons, List.length_nil, Nat.reduceAdd, Nat.reducePow, Nat.isValidChar]
     omega
   have encoded := charP_digits 0 [d15, 0, d13, d12, d11, d10, d9, d8, d7, d6, d5, d4, d3, d2, d1, d0] rfl (by simp; omega) valid
-  exact ⟨_, by simpa [charP, bitP] using encoded⟩
+  exact ⟨_, encoded⟩
 
 set_option maxHeartbeats 1000000 in
 theorem charZero13_closed (policy : AxiomPolicy) {arguments premises : List Pattern} {conclusion : Pattern}
@@ -489,7 +489,7 @@ theorem charZero13_closed (policy : AxiomPolicy) {arguments premises : List Patt
     simp only [valueDown, List.length_cons, List.length_nil, Nat.reduceAdd, Nat.reducePow, Nat.isValidChar]
     omega
   have encoded := charP_digits 0 [d15, d14, 1, d12, d11, d10, d9, d8, d7, d6, d5, d4, d3, d2, d1, d0] rfl (by simp; omega) valid
-  exact ⟨_, by simpa [charP, bitP] using encoded⟩
+  exact ⟨_, encoded⟩
 
 set_option maxHeartbeats 1000000 in
 theorem charZero12_closed (policy : AxiomPolicy) {arguments premises : List Pattern} {conclusion : Pattern}
@@ -524,7 +524,7 @@ theorem charZero12_closed (policy : AxiomPolicy) {arguments premises : List Patt
     simp only [valueDown, List.length_cons, List.length_nil, Nat.reduceAdd, Nat.reducePow, Nat.isValidChar]
     omega
   have encoded := charP_digits 0 [d15, d14, d13, 0, d11, d10, d9, d8, d7, d6, d5, d4, d3, d2, d1, d0] rfl (by simp; omega) valid
-  exact ⟨_, by simpa [charP, bitP] using encoded⟩
+  exact ⟨_, encoded⟩
 
 set_option maxHeartbeats 1000000 in
 theorem charZero11_closed (policy : AxiomPolicy) {arguments premises : List Pattern} {conclusion : Pattern}
@@ -559,7 +559,7 @@ theorem charZero11_closed (policy : AxiomPolicy) {arguments premises : List Patt
     simp only [valueDown, List.length_cons, List.length_nil, Nat.reduceAdd, Nat.reducePow, Nat.isValidChar]
     omega
   have encoded := charP_digits 0 [d15, d14, d13, d12, 0, d10, d9, d8, d7, d6, d5, d4, d3, d2, d1, d0] rfl (by simp; omega) valid
-  exact ⟨_, by simpa [charP, bitP] using encoded⟩
+  exact ⟨_, encoded⟩
 
 theorem charRules_closed (policy : AxiomPolicy) {r : RuleSchema} (member : r ∈ charRules)
     {arguments premises : List Pattern} {conclusion : Pattern}
