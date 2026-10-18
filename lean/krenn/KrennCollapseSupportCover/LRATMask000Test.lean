@@ -9,8 +9,6 @@ lrat_proof unsatisfiable
   (include_str "LRAT/Mask000.lrat")
 
 #check unsatisfiable
-#check unsatisfiable.ctx_1
-#check unsatisfiable.proof_1
 #print axioms unsatisfiable
 
 end Krenn.CollapseSupportCover.LRATMask000Test
