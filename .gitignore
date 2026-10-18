@@ -186,6 +186,8 @@ codex_scratch/
 **/_scratch/
 
 !lean/mettapedia/scripts/check_import_closure.py
+!lean/mettapedia/scripts/check_library_sanity.sh
+!lean/mettapedia/scripts/test_library_sanity.py
 
 # Regenerable grammar output and local reference corpora.
 *.gfo
