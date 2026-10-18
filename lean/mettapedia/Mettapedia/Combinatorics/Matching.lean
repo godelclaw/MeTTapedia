@@ -27,6 +27,16 @@ import Mettapedia.Combinatorics.Matching.PfaffianUpdate
 import Mettapedia.Combinatorics.Matching.PfaffianContraction
 import Mettapedia.Combinatorics.Matching.Noncrossing
 
+import Mettapedia.Combinatorics.Matching.GHZ
+import Mettapedia.Combinatorics.Matching.GraphFactorization
+import Mettapedia.Combinatorics.Matching.GraphServability
+import Mettapedia.Combinatorics.Matching.ServabilityCounterexamples
+import Mettapedia.Combinatorics.Matching.TripleOrbitClassification
+import Mettapedia.Combinatorics.Matching.SixVertexPotential
+import Mettapedia.Combinatorics.Matching.SixVertexStars
+import Mettapedia.Combinatorics.Matching.SixCyclePotential
+import Mettapedia.Combinatorics.Matching.ThreePairColorProfiles
+
 /-!
 # Perfect matching foundations
 

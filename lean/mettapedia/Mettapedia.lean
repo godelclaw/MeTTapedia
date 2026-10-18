@@ -986,3 +986,6 @@ import Mettapedia.GSLT.Poly.FirstOrderLanguage
 import Mettapedia.GSLT.Poly.FirstOrderLanguageControls
 
 import Mettapedia.PLN.Bridges.CogArch
+
+import Mettapedia.Algebra.Polynomial
+import Mettapedia.Combinatorics.Matching.GHZ.AxiomAudit
