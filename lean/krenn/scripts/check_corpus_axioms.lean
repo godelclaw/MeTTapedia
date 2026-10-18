@@ -44,7 +44,7 @@ private def audit (owned : Std.HashSet Name) : CoreM Unit := do
 
 /-- With no arguments, audit the complete manifest and every library source.
 Explicit module arguments select a partial audit for diagnostic use. -/
-def main (args : List String) : IO Unit := do
+unsafe def main (args : List String) : IO Unit := do
   let mut modules : List Name := []
   if args.isEmpty then
     let source ← IO.FS.readFile "corpus-modules.txt"
@@ -57,10 +57,11 @@ def main (args : List String) : IO Unit := do
     IO.println "Partial audit of explicitly selected modules"
     modules := args.map String.toName
   let owned : Std.HashSet Name := modules.foldl (fun set name => set.insert name) {}
+  enableInitializersExecution
   initSearchPath (← findSysroot)
-  -- Only constant tables are inspected, so imported extension initializers
-  -- need not run. Loading all requested modules also checks name clashes.
+  -- Load Lean's compiled axiom metadata, as ordinary imports do. This keeps
+  -- shared dependency collection module-local and also checks name clashes.
   let imports : Array Import := modules.toArray.map fun name => { module := name }
-  let env ← importModules imports {} (loadExts := false)
+  let env ← importModules imports {} (loadExts := true)
   (audit owned).toIO' { fileName := "corpus-axiom-audit", fileMap := FileMap.ofString "" }
     { env := env }
