@@ -15,6 +15,28 @@ build.
 > certified corpus with explicit coverage hypotheses, not a complete verification of that
 > case. See **What is proved** and **What is open** below.
 
+## Verification status of the relocation
+
+The reusable matching, GHZ and polynomial mathematics was promoted to main,
+built on Lean 4.33.1 and audited separately. That library, rather than the
+volume of generated search data, is the mathematical deliverable.
+
+This archive has focused Lean 4.31 verification of its structural libraries,
+certificate checkers, selected assembly interfaces and repaired cover modules.
+The exact checked module set is listed in `verified-modules.txt`. The complete
+generated corpus was **not** rebuilt or fully axiom-audited during relocation.
+Preserving a source file is not a claim that it compiles or completes a case.
+
+To replay the recorded focused checks after loading the pinned dependencies:
+
+```sh
+xargs lake build < verified-modules.txt
+xargs lake env lean --run scripts/check_corpus_axioms.lean < verified-modules.txt
+```
+
+The complete inventory and its optional full-replay commands remain below for
+work that resumes the finite search.
+
 ## The statement
 
 `OfficialConditional.OfficialKrennGu` is
