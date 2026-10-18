@@ -2,5 +2,8 @@ import Mettapedia.CogArch.Memory.BitemporalClaims
 import Mettapedia.CogArch.Memory.ContextViews
 import Mettapedia.CogArch.Memory.EventSourcedMemory
 import Mettapedia.CogArch.Memory.HierarchicalSummary
+import Mettapedia.CogArch.Memory.Indexing
 import Mettapedia.CogArch.Memory.MemoryRefinement
+import Mettapedia.CogArch.Memory.PinSupersession
+import Mettapedia.CogArch.Memory.SourceObservations
 import Mettapedia.CogArch.Memory.WorkingMemory

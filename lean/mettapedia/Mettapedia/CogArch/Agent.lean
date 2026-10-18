@@ -1,5 +1,6 @@
 import Mettapedia.CogArch.Agent.WorldState
 import Mettapedia.CogArch.Agent.GoalCommitment
+import Mettapedia.CogArch.Agent.GoalContinuity
 import Mettapedia.CogArch.Agent.ChronologicalWorldModel
 import Mettapedia.CogArch.Agent.MultiAgentFusionNoGo
 import Mettapedia.CogArch.Agent.WorldModelRegimeSeparation
