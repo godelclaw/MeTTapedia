@@ -1,10 +1,13 @@
-# The Krenn–Gu conjecture: a machine-checked programme
+# The Krenn–Gu conjecture: retained search corpus
 
-A standalone Lean 4 project. The Krenn development itself is **not** part of the
-MeTTapedia default build and is not imported by any MeTTapedia umbrella module. Its
-reusable foundations have been promoted to `Mettapedia.Combinatorics.Matching` and
-`Mettapedia.Combinatorics.OrbitNormalization`, which are part of the shared library;
-this directory retains the conjecture-specific layer and compatibility imports.
+This branch preserves the Lean 4.31 search corpus and its replay dependencies.
+The canonical shared mathematics lives on main in
+[matching theory](https://github.com/godelclaw/MeTTapedia/tree/main/lean/mettapedia/Mettapedia/Combinatorics/Matching),
+[GHZ weighted matchings](https://github.com/godelclaw/MeTTapedia/tree/main/lean/mettapedia/Mettapedia/Combinatorics/Matching/GHZ),
+and [polynomial certificates](https://github.com/godelclaw/MeTTapedia/tree/main/lean/mettapedia/Mettapedia/Algebra/Polynomial).
+The older structural modules retained here preserve reproducible proof replay on
+the pinned toolchain. Search artifacts remain outside the default shared-library
+build.
 
 > **Claim boundary.** Nothing here proves the Krenn–Gu conjecture. The general results
 > are *conditional*: each derives the official arbitrary-size statement from an explicit
@@ -110,9 +113,12 @@ compiled mathematical declaration, and rejects axioms outside the three above.
 The audit program itself is checked separately with
 `lake env lean scripts/check_corpus_axioms.lean`.
 
-`KrennCollapseSupportCoverData` preserves the historical Boolean interface while
-reusing the split cover certificates. Its 395 covers and 2,868 ordered strata
-agree with the split data; the case proofs are no longer elaborated twice.
+The 395 activity masks and their 2,868 ordered strata share one global,
+kernel-replayed cover certificate. A semantic adapter proves each activity
+slice from that certificate and checks the concrete table by reduction.
+`KrennCollapseSupportCoverData` preserves the historical Boolean interface
+through compatibility wrappers. The concrete tables and theorem statements
+are unchanged.
 
 ## Provenance and reproducibility
 

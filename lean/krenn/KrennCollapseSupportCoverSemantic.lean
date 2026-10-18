@@ -261,6 +261,95 @@ theorem covers_zero (stratum : GlobalFormula.Stratum)
   have falsified := (List.forall_iff_forall_mem.mp covered) _ clauseMember
   simpa [Sat.Valuation.neg, valuation, coordinate.isLt] using falsified
 
+
+/-- Preserve the zero coordinates and component of a global stratum. -/
+def fromGlobal (row : GlobalFormula.Stratum) : Stratum :=
+  ⟨BitVec.ofNat 26 row.zeroMask, row.component.val⟩
+
+/-- The global strata whose activity bits match a selected mask. -/
+noncomputable def strataFor (active : BitVec 14) : List Stratum :=
+  (GlobalFormula.strata.filter fun row =>
+    BitVec.ofNat 14 row.activeMask == active).map fromGlobal
+
+/-- Read one coordinate of the finite activity interface. -/
+theorem activeAt {active : BitVec 14} {pattern : Fin 26 → Prop}
+    (matching : ActiveMatches active pattern) (index : Fin 14) :
+    active.getLsbD index = true ↔ relationLeftActive pattern index := by
+  fin_cases index
+  · exact matching.1
+  · exact matching.2.1
+  · exact matching.2.2.1
+  · exact matching.2.2.2.1
+  · exact matching.2.2.2.2.1
+  · exact matching.2.2.2.2.2.1
+  · exact matching.2.2.2.2.2.2.1
+  · exact matching.2.2.2.2.2.2.2.1
+  · exact matching.2.2.2.2.2.2.2.2.1
+  · exact matching.2.2.2.2.2.2.2.2.2.1
+  · exact matching.2.2.2.2.2.2.2.2.2.2.1
+  · exact matching.2.2.2.2.2.2.2.2.2.2.2.1
+  · exact matching.2.2.2.2.2.2.2.2.2.2.2.2.1
+  · exact matching.2.2.2.2.2.2.2.2.2.2.2.2.2
+
+/-- Assemble the activity interface from its coordinates. -/
+theorem activeMatchesFromForall {active : BitVec 14} {pattern : Fin 26 → Prop}
+    (matching : ∀ index : Fin 14,
+      active.getLsbD index = true ↔ relationLeftActive pattern index) :
+    ActiveMatches active pattern :=
+  ⟨matching 0, matching 1, matching 2, matching 3, matching 4, matching 5, matching 6, matching 7, matching 8, matching 9, matching 10, matching 11, matching 12, matching 13⟩
+
+/-- Assemble the zero-coordinate interface from its coordinates. -/
+theorem zeroMatchesFromForall {zero : BitVec 26} {pattern : Fin 26 → Prop}
+    (matching : ∀ index : Fin 26, zero.getLsbD index = true → ¬ pattern index) :
+    ZeroMatches zero pattern :=
+  ⟨matching 0, matching 1, matching 2, matching 3, matching 4, matching 5, matching 6, matching 7, matching 8, matching 9, matching 10, matching 11, matching 12, matching 13, matching 14, matching 15, matching 16, matching 17, matching 18, matching 19, matching 20, matching 21, matching 22, matching 23, matching 24, matching 25⟩
+
+/-- A covered global stratum carries exactly the pattern activity bits. -/
+theorem activeMatchesOfCovers (row : GlobalFormula.Stratum)
+    (pattern : Fin 26 → Prop) (covered : Covers row pattern) :
+    ActiveMatches (BitVec.ofNat 14 row.activeMask) pattern := by
+  apply activeMatchesFromForall
+  intro index
+  have activity := covers_activity row pattern covered index
+  rw [BitVec.getLsbD_ofNat]
+  cases bit : row.activeMask.testBit index <;>
+    simp_all [index.isLt]
+
+/-- Two matching activity interfaces select the same bit mask. -/
+theorem activeEqOfCovers (row : GlobalFormula.Stratum)
+    (pattern : Fin 26 → Prop) (covered : Covers row pattern)
+    (active : BitVec 14) (matching : ActiveMatches active pattern) :
+    BitVec.ofNat 14 row.activeMask = active := by
+  apply BitVec.eq_of_getLsbD_eq_iff.mpr
+  intro index bound
+  have first := activeAt (activeMatchesOfCovers row pattern covered) ⟨index, bound⟩
+  have second := activeAt matching ⟨index, bound⟩
+  cases leftBit : (BitVec.ofNat 14 row.activeMask).getLsbD index <;>
+    cases rightBit : active.getLsbD index <;> simp_all
+
+/-- Restrict the single global cover proof to one activity table. -/
+theorem zeroCoveredFromGlobal (data : ActiveCover)
+    (table : data.strata = strataFor data.active)
+    (pattern : Fin 26 → Prop) (feasible : Feasible pattern)
+    (matching : ActiveMatches data.active pattern) :
+    ∃ stratum ∈ data.strata, ZeroMatches stratum.zero pattern := by
+  obtain ⟨row, member, covered⟩ := everyFeasiblePatternCovered pattern feasible
+  have active := activeEqOfCovers row pattern covered data.active matching
+  refine ⟨fromGlobal row, ?_, ?_⟩
+  · rw [table]
+    apply List.mem_map.mpr
+    refine ⟨row, List.mem_filter.mpr ⟨member, ?_⟩, rfl⟩
+    simp [active]
+  · apply zeroMatchesFromForall
+    intro index zero
+    have bit : row.zeroMask.testBit index := by
+      change (BitVec.ofNat 26 row.zeroMask).getLsbD index = true at zero
+      rw [BitVec.getLsbD_ofNat] at zero
+      simpa [index.isLt] using zero
+    exact covers_zero row pattern covered index bit
+
 end Krenn.CollapseSupportCover.Semantic
 
 #print axioms Krenn.CollapseSupportCover.Semantic.everyFeasiblePatternCovered
+
+#print axioms Krenn.CollapseSupportCover.Semantic.zeroCoveredFromGlobal

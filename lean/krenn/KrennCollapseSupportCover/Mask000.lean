@@ -1,4 +1,5 @@
 import KrennCollapseSupportCover.Base
+import KrennCollapseSupportCoverSemantic
 import Mathlib.Tactic.Sat.FromLRAT
 
 namespace Krenn.CollapseSupportCover.Mask000
@@ -318,26 +319,11 @@ lrat_proof supportUnsatisfiable
   (include_str "LRAT/Mask000.lrat")
 
 set_option maxRecDepth 1000000 in
-set_option maxHeartbeats 0 in
+set_option maxHeartbeats 5000000 in
 theorem zeroCovered (pattern : Fin 26 → Prop)
     (feasible : Feasible pattern)
     (activePattern : ActiveMatches data.active pattern) :
     ∃ stratum ∈ data.strata, ZeroMatches stratum.zero pattern := by
-  simp (config := { maxSteps := 1000000 }) only [Feasible, relationLeftActive,
-    relationRightActive] at feasible
-  change ActiveMatches activeValue pattern at activePattern
-  simp (config := { maxSteps := 1000000 }) only [activeValue, ActiveMatches,
-    relationLeftActive] at activePattern
-  change ∃ stratum ∈ strataData, ZeroMatches stratum.zero pattern
-  simp (config := { maxSteps := 1000000 }) only [strataData, ZeroMatches,
-    List.mem_cons, List.not_mem_nil, exists_eq_left, exists_eq_right]
-  have contradiction := supportUnsatisfiable
-    (pattern 0) (pattern 1) (pattern 2) (pattern 3) (pattern 4)
-    (pattern 5) (pattern 6) (pattern 7) (pattern 8) (pattern 9)
-    (pattern 10) (pattern 11) (pattern 12) (pattern 13) (pattern 14)
-    (pattern 15) (pattern 16) (pattern 17) (pattern 18) (pattern 19)
-    (pattern 20) (pattern 21) (pattern 22) (pattern 23) (pattern 24)
-    (pattern 25)
-  simp_all (config := { maxSteps := 1000000 })
+  exact Semantic.zeroCoveredFromGlobal data (by rfl) pattern feasible activePattern
 
 end Krenn.CollapseSupportCover.Mask000
