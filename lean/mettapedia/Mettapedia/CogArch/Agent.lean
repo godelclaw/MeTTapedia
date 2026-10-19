@@ -5,6 +5,7 @@ import Mettapedia.CogArch.Agent.ChronologicalWorldModel
 import Mettapedia.CogArch.Agent.MultiAgentFusionNoGo
 import Mettapedia.CogArch.Agent.WorldModelRegimeSeparation
 import Mettapedia.CogArch.Agent.ContextEpoch
+import Mettapedia.CogArch.Agent.InstructionScope
 import Mettapedia.CogArch.Agent.ContextAttention
 import Mettapedia.CogArch.Agent.EffectReceiptProjection
 import Mettapedia.CogArch.Agent.WorkReporting
