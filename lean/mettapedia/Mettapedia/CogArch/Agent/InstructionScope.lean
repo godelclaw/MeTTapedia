@@ -50,6 +50,13 @@ theorem outer_cannot_override (key : Key) (layer : Scope Directory Key Value)
     resolve key (layer :: first) = resolve key (layer :: second) := by
   simp [resolve, defined]
 
+/-- Absence of a definition is distinct from a present value that itself
+represents absence. A raw missing-value sentinel cannot replace this distinction. -/
+theorem present_none_is_a_definition (key : Key) (directory : Directory)
+    (outer : List (Scope Directory Key (Option Value))) :
+    resolve key (⟨directory, [(key, none)]⟩ :: outer) = some (directory, none) := by
+  simp [resolve, lookup]
+
 /-- Extending the ancestor chain is a fallback, not a replacement of existing
 per-key decisions. -/
 theorem resolve_append (key : Key) (inner outer : List (Scope Directory Key Value)) :
