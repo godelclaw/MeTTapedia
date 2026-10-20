@@ -197,13 +197,19 @@ theorem ServiceAwareInterpretExpressionResultsRuntimeSound.of_functionPath
     {services : Spec.Eval.Minimal.Services} {scope : List String}
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch} {live : List Atom}
     {expression expectedType operator : Atom}
-    {arguments types : List Atom} {bindings applicableBindings : Bindings}
+    {arguments rawTypes types : List Atom}
+    {bindings applicableBindings : Bindings}
     {policy : SelectedTypePolicy} {runtimeInput : Metta.Bindings}
     {runtimeResults : List (Metta.Atom × Metta.Bindings)}
     {typing : EvalTypeService}
     (expressionShape : expression = .expression (operator :: arguments))
-    (typesOf : typing.typesOf space operator types)
-    (scan : typing.candidateScan space expression expectedType bindings
+    (typesOf : typing.typesOf space operator rawTypes)
+    (instantiated : typing.instantiateTypes
+      (invocationTypeScope [] live expression expectedType bindings)
+      rawTypes types)
+    (scan : typing.candidateScan
+      (invocationTypeScope [] live expression expectedType bindings)
+      space expression expectedType bindings
       types (.success policy applicableBindings))
     (worker : ServiceAwareSelectedApplicationResultsRuntimeSound services
       scope space dispatch live expression expectedType policy
@@ -216,11 +222,12 @@ theorem ServiceAwareInterpretExpressionResultsRuntimeSound.of_functionPath
       resultRelation⟩ := worker runtimeResult member
   exact ⟨callResult,
     InterpretExpressionRel.functionPath expression expectedType operator
-      arguments types policy
+      arguments rawTypes types policy
       (if policy.returnType = Atom.expressionType
         then Atom.undefinedType else policy.returnType)
       bindings applicableBindings interpreted callResult expressionShape
-      typesOf scan rfl interpretedDerivation callDerivation,
+      typesOf instantiated scan (.historical _ _) rfl
+      interpretedDerivation callDerivation,
     resultRelation⟩
 
 /-- Assemble the service-aware tuple worker into the expression interpreter
@@ -229,13 +236,18 @@ theorem ServiceAwareInterpretExpressionResultsRuntimeSound.of_tuplePath
     {services : Spec.Eval.Minimal.Services} {scope : List String}
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch} {live : List Atom}
     {expression expectedType operator : Atom}
-    {arguments types errors : List Atom} {bindings : Bindings}
+    {arguments rawTypes types errors : List Atom} {bindings : Bindings}
     {runtimeInput : Metta.Bindings}
     {runtimeResults : List (Metta.Atom × Metta.Bindings)}
     {typing : EvalTypeService}
     (expressionShape : expression = .expression (operator :: arguments))
-    (typesOf : typing.typesOf space operator types)
-    (scan : typing.candidateScan space expression expectedType bindings
+    (typesOf : typing.typesOf space operator rawTypes)
+    (instantiated : typing.instantiateTypes
+      (invocationTypeScope [] live expression expectedType bindings)
+      rawTypes types)
+    (scan : typing.candidateScan
+      (invocationTypeScope [] live expression expectedType bindings)
+      space expression expectedType bindings
       types (.exhausted errors true))
     (worker : ServiceAwareTupleApplicationResultsRuntimeSound services scope
       space dispatch live expression expectedType bindings runtimeInput
@@ -248,8 +260,8 @@ theorem ServiceAwareInterpretExpressionResultsRuntimeSound.of_tuplePath
       resultRelation⟩ := worker runtimeResult member
   exact ⟨callResult,
     InterpretExpressionRel.tuplePath expression expectedType operator
-      arguments types errors bindings tupleResult callResult expressionShape
-      typesOf scan tupleDerivation callDerivation,
+      arguments rawTypes types errors bindings tupleResult callResult
+      expressionShape typesOf instantiated scan tupleDerivation callDerivation,
     resultRelation⟩
 
 /-- Lift an expression-interpreter result through the corresponding outer

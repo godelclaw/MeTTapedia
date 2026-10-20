@@ -77,7 +77,11 @@ theorem leatta_application_type_inferred_B :
     Metta.Minimal.matchType, Metta.Minimal.matchReduced, Metta.Atom.vars,
     Metta.Minimal.MinEnv.ofAtomsGT, Std.HashMap.getD_insert,
     Std.HashMap.getD_emptyWithCapacity, Metta.matchAtoms,
-    Metta.matchAtomsWith, Metta.Bindings.merge, Metta.instantiate]
+    Metta.matchAtomsWith, Metta.Bindings.merge, Metta.instantiate,
+    Metta.Bindings.resolveAtom, Metta.Bindings.resolveAtomAux,
+    Metta.Bindings.hasLoop, Metta.Bindings.vars,
+    Metta.Bindings.resolutionFuel, Metta.Bindings.classValues,
+    Metta.Bindings.lookupVal]
 
 /-- Strict-refinement canary: the same application is `%Undefined%` in the
 published direct-lookup relation and has inferred type `B` in LeaTTa. -/

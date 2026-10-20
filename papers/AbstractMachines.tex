@@ -2424,7 +2424,8 @@ Success and refusal are reflected at this boundary.
 equation steps that introduce a fresh destination and match through it,
 while HE matches the value directly. Reusing a public variable as that
 destination has a negative observation witness. This is a local source
-composition law; the completed recursive comparison remains separate.
+composition law consumed by the completed recursive source-tree comparison
+below.
 
 \name{joint_pending_prepend_fresh} constructs model extensions for fresh
 clause syntax on both sides of the scoped relation. Pattern and body share
@@ -2443,8 +2444,8 @@ body/caller observations and the multiset of source-position occurrences,
 including duplicate clauses. A control combines an open aliased caller,
 a past private result destination, duplicate matching clauses and a refused
 different head. The two frontier comparisons reuse the same generic fold;
-there is no second matching semantics. The completed recursive continuation
-comparison remains a separate obligation.
+there is no second matching semantics. These local laws feed the recursive
+source-tree comparison below.
 
 The existing scoped PeTTa machine also has a source-level continuation
 attachment law. A saved goal suffix is protected before fresh allocation;
@@ -2484,12 +2485,25 @@ The saved continuation contains the final equation or invocation goal:
 \name{call_frontier} constructs the complete protected clause frontier with
 physical positions and duplicate occurrences.
 
-This local transport preserves the observations of its certified HE
-occurrence manifest. Separate scoped source paths do not prove that this
-manifest exhausts PeTTa's recursive child search or uses distinct source
-occurrences. The completed open-query comparison still requires that earned
-coverage in both directions. Neither a prefix attachment theorem nor a bag
-equality indexed by a supplied manifest discharges it.
+The earned recursive closure is
+\name{OpenRecursive.Evaluation.transport}. Five mutually inductive source
+judgments describe evaluation, arguments, argument alternatives, invocation
+and clause bodies. Every defined call carries a complete
+\name{ClauseChoice.Frontier}; no child-completion callback occurs in the
+induction. Their forward theorems construct the existing HE
+\name{AtomRel}, \name{TupleRel}, \name{CallsRel} and
+\name{EquationBodiesRel} derivations. \name{Evaluation.paths} reconstructs a
+source branch path to every outcome. A \name{List.Forall2} outcome relation
+gives exact ordered equality of the joint observation packets, hence also a
+multiset equality which preserves duplicate occurrences.
+
+Fresh allocation is split at its actual boundary. A
+\name{PrivateDestination} is fresh for the reached equation store and its
+input syntax. Its saved continuation intentionally mentions the destination,
+because that is the child's return channel. \name{Evaluation.Allocated}
+separately protects the evaluated prefix and pending caller packet at every
+recursive cut. This split is required for nonempty argument lists and is
+exercised by the positive recursive control.
 
 There is also a genuine source-policy boundary at an open variable entry.
 \name{active_binding_separates_dispatch} uses the pure rule
@@ -2534,8 +2548,8 @@ the fresh pattern names. It uses actual unification and no child-completion
 premise. The existing closed body-admission proof factors through the common
 \name{CodeProgram.work_body_code} law. The recursive duplicate-clause control
 satisfies the admission; a pattern containing an applied defining head is
-rejected. These local closure laws do not establish complete recursive
-child-search coverage.
+rejected. The recursive source-tree induction consumes these closure laws at
+every selected clause.
 \[
 \begin{array}{ccc}
  \text{PeTTa ordered clause work}&\longrightarrow&\text{HE source frontier}\\
@@ -2544,16 +2558,16 @@ child-search coverage.
  \text{occurrence bag}&=&\text{occurrence bag}.
 \end{array}
 \]
-The source controls include an open query constrained through a caller alias,
-two identical clauses producing repeated uses of their local variable,
-a saved caller operand, an incompatible literal and a different head. Their
-complete and empty frontiers are proved independently of a backend run.
-This comparison uses PeTTa's finite-term destination profile and HE's
-equality-grounded source matcher. Its equation-only space view does not
-identify type-declaration interpretation, PeTTa list views or rational-tree
-policies. This is full clause-selection coverage, not recursive language
-equivalence: argument demand, returned-body evaluation, effects and publication
-boundaries still require their dialect-specific correspondence.
+The principal positive control evaluates open \code{(fork \$x)} under
+\code{x = Z}. It enters both identical physical clauses, recursively evaluates
+\code{strip}, and assembles \code{Box Z}. The theorem constructs two result
+occurrences and their branch paths, proves exact ordered packet equality,
+admits the joint observation \code{[Box Z,Z]}, and rejects
+\code{[Box Z,S Z]}. Thus duplicate multiplicity and caller correlation are
+both non-vacuous. The active-bound-call and active-pattern examples remain
+the negative admission boundaries. Deterministic \name{CollectionScope} DFS
+queue linearization is a subsequent PeTTa machine theorem; it is not folded
+into the common-fragment source induction.
 
 Exhausted calls give a small separation witness. With the sole equation
 \code{(= (f A) OK)}, both implementations return \code{OK} for \code{(f A)}.
@@ -2563,6 +2577,7 @@ undefined. Thus a common eager fragment must justify the coverage of each
 reached defined call, or explicitly translate this difference. An answer-bag
 quotient cannot erase a residual value versus no value.
 \sources{\name{Mettapedia/Languages/MeTTa/Translation/HEPeTTaNativeLoweringContracts.lean};
+\name{Mettapedia/Languages/MeTTa/Translation/HEPeTTaOpenRecursive.lean};
 \name{Translation/he_petta_defined_miss.metta}.}
 
 \subsection*{Recursive source completion and tuple-protocol separation}
@@ -5097,8 +5112,11 @@ Shared fragment &
 \name{recursive_machine_bag_iff} and
 \name{recursive_machine_storage_permutation} preserve the admitted pure
 recursive fragment's multiplicities and protected caller observations. Its
-inputs are closed and materialized. The completed recursive open-query
-head-return/sibling comparison remains open. \\
+closed profile uses materialized inputs. For the open profile,
+\name{OpenRecursive.Evaluation.transport} constructs the HE derivation and
+source branch paths from one complete recursive source tree, preserving the
+ordered list and bag of joint caller/value observations. CollectionScope DFS
+linearization remains a PeTTa machine obligation. \\
 Interaction &
 The finite weighted Need chain, scoped cut/lifetime and authorized append
 reached-cut laws are constructed instances. Complete cancellation, nested
@@ -5152,23 +5170,23 @@ HE mathematics and implementation studies depend on it in the same direction.
 Every LeaTTa package module is excluded from the protected HE source and AM
 closure. The boundary check covers 117 roots with zero violations and 30
 regression controls. The current global subject-boundary gate also passes
-with zero findings. A fresh audit checks 326 actual principal roots, including
-the scoped worker blocks, source continuations, open-spine laws and passive
-capture and clause-entry closure. They use only \name{propext}, \name{Classical.choice} and
-\name{Quot.sound}. The ten changed proof owners contain no proof admissions
-or unchecked evaluation. This does not establish termination or implementation
-refinement of every executable helper in the wider dependency closure.
+with zero findings. A fresh audit checks 326 earlier principal roots, and the
+E2 follow-up checks ten additional roots including
+\name{Evaluation.transport} and
+\name{open_recursive_duplicate_transport}. They use only \name{propext},
+\name{Classical.choice} and \name{Quot.sound}. The changed proof owners contain
+no proof admissions or unchecked evaluation. This does not establish
+termination or implementation refinement of every executable helper in the
+wider dependency closure.
 
-The frozen ordinary Lake join passes all 20 targets and 5,255 jobs with zero
-warnings or errors. It includes the scoped worker, its service consumers and
-the existing GSLT ordered-realizations driver and resumption consumers. All
-1,185 local dependency sources remain unchanged across both that build and
-the fresh principal-root audit. Two local reader-template consumers were
-repaired to respect distinct anonymous-variable occurrences; their canonical
-source, reader and emitters are unchanged. These checks qualify the recorded
-source snapshot and the actual theorem premises. They do not discharge the
-unfinished recursive correspondence or component-composition obligations,
-and they do not constitute a renewed binary-conformance run.
+The current ordinary Lake join passes all 22 targets and 5,304 jobs with zero
+warnings or errors. It includes the scoped worker and service consumers, the
+open recursive comparison, the public HE/PeTTa translation aggregator, and the
+GSLT ordered-realizations driver and resumption consumers. These checks qualify
+the recorded source snapshot and the actual theorem premises. They do not
+discharge the unfinished worker, queue-linearization, interaction or
+component-composition obligations, and they do not constitute a renewed
+binary-conformance run.
 
 Final qualification uses ordinary dependency-tracked builds of the named
 owners and impacted public consumers, strict warnings, proof-dependency audits
@@ -5188,9 +5206,11 @@ counting their size as source/AM coverage.
 \item Close the scoped worker's recursive multi-result block simulation and
 its preserved admission invariant. Rebuild its affected consumers after the
 active owner stabilizes.
-\item Complete the open-query HE/PeTTa recursive comparison in both directions:
-each returned head must initialize its sibling with the reached constraints,
-retaining correlated caller/value observations and duplicate occurrences.
+\item Linearize the open recursive source tree through PeTTa's
+\name{CollectionScope} DFS queue. Prove that installed alternatives drain in
+source order with their occurrence origins, cut boundaries and exact retained
+outer frontier, then join that machine theorem to the completed open
+HE/PeTTa source comparison.
 \item Finish the declared retained interaction and five-component realization
 joins. Loading, selection, readout, call/return, world/effect, retained-state,
 future-use and productive resumption laws must be constructed locally before

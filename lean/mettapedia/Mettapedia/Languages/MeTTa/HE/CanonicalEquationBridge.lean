@@ -5,6 +5,7 @@ import Mettapedia.Languages.MeTTa.HE.VariantQueryCorrectness
 import Provenance.Util.ValueTypeString
 open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge
 
 namespace Mettapedia.Languages.MeTTa.HE.CanonicalEquationBridge
 
@@ -44,7 +45,7 @@ private theorem counterMapping_find?
         simp [counterMapping]
       · have hbeq : (x == v) = false := by
           simp [hx]
-        simpa [counterMapping, hbeq] using ih
+        simp [counterMapping, hbeq]
 
 private theorem counterSubst_lookup
     (counter : Nat) :
@@ -660,9 +661,10 @@ theorem visible_successor_of_keyRenamed_instantiated_item
     {items : List Metta.Minimal.Item}
     (r : VarRenaming) (hr : r.Injective)
     (hrel : BindingsKeysRenamedBy r qb qb')
-    (hno : NoVarAssignmentValues qb)
     (hno' : NoVarAssignmentValues qb')
+    (heq' : qb'.equalities = [])
     (hkeys' : AssignmentsNodup qb')
+    (hfresh' : ValueKeysFreshForValues (toLeaTTaMatchBindings qb'))
     (hfix : ∀ {v val}, qb.lookup v = some val → applyAtomTotal r val = val)
     (hdepthRenamed : atomDepth (applyAtomTotal r rhs) + 2 ≤ fuel)
     (hitem :
@@ -676,7 +678,8 @@ theorem visible_successor_of_keyRenamed_instantiated_item
     visible_successor_of_instantiated_item
       (rhs := applyAtomTotal r rhs) (qb := qb') (fuel := fuel)
       (prev := prev) (items := items)
-      hno' hkeys' hdepthRenamed hitem
+      heq' hno' hkeys' hfresh' hdepthRenamed hitem
+  rw [Bindings.applyFull_no_equalities heq'] at halphaRenamed
   have happly :
       qb'.apply (applyAtomTotal r rhs) fuel = applyAtomTotal r (qb.apply rhs fuel) :=
     apply_keysRenamed r hr hrel hfix fuel rhs
@@ -693,8 +696,9 @@ theorem visible_successor_of_keyRenamed_instantiated_item
 /-- Same restricted bridge, but with the LeaTTa-side nodup and renamed-depth
 facts discharged from an actual renamed successful match. This is the form the
 next transport proof wants: once the renamed matcher witness has been built,
-the remaining obligations are the semantic no-var and value-fix conditions,
-not bookkeeping about duplicate keys or structural depth. -/
+    the remaining obligations are the semantic no-var, equality-free,
+    value-freshness, and value-fix conditions, not bookkeeping about duplicate
+    keys or structural depth. -/
 theorem visible_successor_of_keyRenamed_instantiated_item_of_match
     {lhs target rhs : OSLFCore.Atom}
     {qb qb' : Bindings} {fuel : Nat} {prev : Metta.Minimal.Stack}
@@ -702,8 +706,9 @@ theorem visible_successor_of_keyRenamed_instantiated_item_of_match
     (r : VarRenaming) (hr : r.Injective)
     (hmatch' : simpleMatch (applyAtomTotal r lhs) target Bindings.empty fuel = some qb')
     (hrel : BindingsKeysRenamedBy r qb qb')
-    (hno : NoVarAssignmentValues qb)
     (hno' : NoVarAssignmentValues qb')
+    (heq' : qb'.equalities = [])
+    (hfresh' : ValueKeysFreshForValues (toLeaTTaMatchBindings qb'))
     (hfix : ∀ {v val}, qb.lookup v = some val → applyAtomTotal r val = val)
     (hdepth : atomDepth rhs + 2 ≤ fuel)
     (hitem :
@@ -721,7 +726,7 @@ theorem visible_successor_of_keyRenamed_instantiated_item_of_match
     visible_successor_of_keyRenamed_instantiated_item
       (rhs := rhs) (qb := qb) (qb' := qb') (fuel := fuel)
       (prev := prev) (items := items)
-      r hr hrel hno hno' hkeys' hfix hdepthRenamed hitem
+      r hr hrel hno' heq' hkeys' hfresh' hfix hdepthRenamed hitem
 
 private theorem applyAtomTotal_lookup_fixed_of_target_fixed_match
     (r : VarRenaming) (hr : r.Injective)
@@ -747,8 +752,8 @@ private theorem applyAtomTotal_lookup_fixed_of_target_fixed_match
 /-- Disjoint-name specialization of the restricted bridge: if the target atom
 is literally fixed by the key renaming, then the matcher-value-fix condition is
 automatic. This isolates a real sound fragment where the canonical-hub bridge
-needs only the renamed witness, no-var hypotheses, and the two successful
-matches. -/
+    needs only the renamed witness, explicit equality/freshness invariants,
+    a no-var hypothesis, and the two successful matches. -/
 theorem visible_successor_of_keyRenamed_instantiated_item_of_matches_targetFixed
     {lhs target rhs : OSLFCore.Atom}
     {qb qb' : Bindings} {fuel : Nat} {prev : Metta.Minimal.Stack}
@@ -758,8 +763,9 @@ theorem visible_successor_of_keyRenamed_instantiated_item_of_matches_targetFixed
     (hmatch : simpleMatch lhs target Bindings.empty fuel = some qb)
     (hmatch' : simpleMatch (applyAtomTotal r lhs) target Bindings.empty fuel = some qb')
     (hrel : BindingsKeysRenamedBy r qb qb')
-    (hno : NoVarAssignmentValues qb)
     (hno' : NoVarAssignmentValues qb')
+    (heq' : qb'.equalities = [])
+    (hfresh' : ValueKeysFreshForValues (toLeaTTaMatchBindings qb'))
     (hdepth : atomDepth rhs + 2 ≤ fuel)
     (hitem :
       Metta.Minimal.evalResult prev
@@ -776,6 +782,6 @@ theorem visible_successor_of_keyRenamed_instantiated_item_of_matches_targetFixed
       (lhs := lhs) (target := target) (rhs := rhs)
       (qb := qb) (qb' := qb') (fuel := fuel)
       (prev := prev) (items := items)
-      r hr hmatch' hrel hno hno' hfix hdepth hitem
+      r hr hmatch' hrel hno' heq' hfresh' hfix hdepth hitem
 
 end Mettapedia.Languages.MeTTa.HE.CanonicalEquationBridge

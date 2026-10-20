@@ -696,25 +696,26 @@ theorem preparedTypeCastCandidateFamilies_privateAlpha
     {space : Space} {env : Metta.Minimal.MinEnv}
     (index : TypeEnvironmentRel space env)
     {atom expectedType : Atom} {bindings : Bindings}
+    {protectedScope : List String}
     {leftSources rightSources leftCandidates rightCandidates : List Atom}
     (leftPresent : PreparedPackagesPresent
       oracle space atom leftSources)
     (rightPresent : PreparedPackagesPresent
       oracle space atom rightSources)
     (leftVariants : ArgumentAlphaVariantsRel
-      (typeServicePrivateAvoid space atom expectedType bindings)
+      (protectedScope ++ typeServicePrivateAvoid space atom expectedType bindings)
       leftSources leftCandidates)
     (rightVariants : ArgumentAlphaVariantsRel
-      (typeServicePrivateAvoid space atom expectedType bindings)
+      (protectedScope ++ typeServicePrivateAvoid space atom expectedType bindings)
       rightSources rightCandidates) :
     PrivateCandidateFamilyAlphaRel
-      (typeServicePrivateAvoid space atom expectedType bindings)
+      (protectedScope ++ typeServicePrivateAvoid space atom expectedType bindings)
       leftCandidates rightCandidates := by
   have sourcesAlpha : List.Forall₂ ObservedTypeAlphaRel
       leftSources rightSources :=
     leftPresent.alpha_unique functional index rightPresent
   have rightVariantsFromLeft : ArgumentAlphaVariantsRel
-      (typeServicePrivateAvoid space atom expectedType bindings)
+      (protectedScope ++ typeServicePrivateAvoid space atom expectedType bindings)
       leftSources rightCandidates :=
     ArgumentAlphaVariantsRel.transport_left sourcesAlpha rightVariants
   exact privateCandidateFamilyAlpha_of_variants
@@ -1214,7 +1215,7 @@ theorem candidateScanFrom
         (Metta.Minimal.typePrep state.world (.sym operator)))
     ∃ outcome,
       (preparedPackageTypeService oracle).candidateScan
-        space expression expectedType incoming presented outcome ∧
+        [] space expression expectedType incoming presented outcome ∧
       FunctionCandidateScanOutcomeRuntimeRel
         (typeServiceObservationScope space expression expectedType)
         expression incoming outcome
@@ -1249,7 +1250,7 @@ theorem candidateScanFrom_aligned
         (Metta.Minimal.typePrep state.world (.sym operator)))
     ∃ outcome,
       (preparedPackageTypeService oracle).candidateScan
-        space expression expectedType incoming presented outcome ∧
+        [] space expression expectedType incoming presented outcome ∧
       FunctionCandidateScanOutcomeRuntimeRelWith
         SelectedTypePolicyRuntimeExactRel
         (typeServiceObservationScope space expression expectedType)
@@ -1288,7 +1289,7 @@ theorem candidateScanFrom_seedScope
         (Metta.Minimal.typePrep state.world (.sym operator)))
     ∃ outcome,
       (preparedPackageTypeService oracle).candidateScan
-        space expression expectedType incoming presented outcome ∧
+        [] space expression expectedType incoming presented outcome ∧
       FunctionCandidateScanOutcomeRuntimeRel
         (typeServiceRuntimeSeedScope expression expectedType)
         expression incoming outcome
@@ -1324,7 +1325,7 @@ theorem candidateScanFrom_seedScope_aligned
         (Metta.Minimal.typePrep state.world (.sym operator)))
     ∃ outcome,
       (preparedPackageTypeService oracle).candidateScan
-        space expression expectedType incoming presented outcome ∧
+        [] space expression expectedType incoming presented outcome ∧
       FunctionCandidateScanOutcomeRuntimeRelWith
         SelectedTypePolicyRuntimeExactRel
         (typeServiceRuntimeSeedScope expression expectedType)

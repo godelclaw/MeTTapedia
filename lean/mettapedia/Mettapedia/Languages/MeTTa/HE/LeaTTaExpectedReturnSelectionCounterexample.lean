@@ -296,10 +296,11 @@ theorem published_scan_rejects_earlier_return_policy
       specSpace specApplication (.symbol "RB") Bindings.empty
       [specArrowA, specArrowB] (.success specPolicyA output) := by
   intro scan
-  have selected := published_scan_success_selected scan
-  cases selected.2 with
-  | success applicable =>
-      exact firstCandidateCannotSucceed output applicable
+  obtain ⟨_, _, selected⟩ := scan.success_candidate
+  cases selected with
+  | success _ applicable =>
+      cases applicable with
+      | success complete => exact firstCandidateCannotSucceed output complete
 
 /-- Kernel-checked pre-repair selection divergence: the unconstrained selector
 chooses the first argument-applicable `RA` declaration, while the published

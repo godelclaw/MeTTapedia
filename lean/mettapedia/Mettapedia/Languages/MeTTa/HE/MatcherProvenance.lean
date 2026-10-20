@@ -340,7 +340,9 @@ theorem addEqRaw_safe {b : Bindings} (hb : BindingsSafe P b) (x y : VarName) :
   unfold Bindings.addEqRaw
   split
   · exact hb
-  · exact bindingsSafe_cons.mpr ⟨trivial, hb⟩
+  · split
+    · exact hb
+    · exact bindingsSafe_cons.mpr ⟨trivial, hb⟩
 
 theorem restoreAlias_safe {b : Bindings} (hb : BindingsSafe P b)
     (edge : VarName × VarName) :

@@ -40,6 +40,20 @@ theorem Graph.fold {predicate : N → A → Prop} (initial : predicate zero star
   | zero => exact initial
   | @successor number value graph ih => exact closed number value ih
 
+/-- Reindex a graph along a map preserving zero, successor and the method.
+The result value is retained. This also applies to nonidentity carrier maps. -/
+theorem Graph.mapIndex {N' : Type w} (map : N → N') (zero' : N')
+    (successor' : N' → N') (step' : N' → A → A)
+    (mapZero : map zero = zero')
+    (mapSuccessor : ∀ n, map (successor n) = successor' (map n))
+    (mapStep : ∀ n value, step n value = step' (map n) value)
+    {number : N} {value : A} (graph : Graph zero successor start step number value) :
+    Graph zero' successor' start step' (map number) value := by
+  induction graph with
+  | zero => rw [mapZero]; exact .zero
+  | @successor n value _ ih =>
+      simpa only [mapSuccessor, mapStep] using Graph.successor ih
+
 theorem Graph.zero_value (different : ∀ number, successor number ≠ zero)
     {number : N} {value : A} (graph : Graph zero successor start step number value)
     (atZero : number = zero) : value = start := by

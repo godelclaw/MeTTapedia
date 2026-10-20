@@ -437,6 +437,7 @@ theorem rootMatch_covers {environment : Environment} {outer : Goal}
   unfold expandRootMatch
   split
   · rename_i seen found
+    unfold continueRootAnswer
     obtain same | remaining :=
       (GeneralScopedMatchMachine.unread_cursor_split (rootRequest frame) frame.state frame.cursor answer).mp unread
     · have equal : seen = answer := Option.some.inj (found.symm.trans same)

@@ -116,6 +116,38 @@ E & A write and a read need not commute & \name{LayerEffects.Controls.put_get_no
 E & The specified distribution-over-finite-sets law is impossible & \name{NondeterminismProbability.no_distributiveLaw} & PCQ & proved\\
 E & Surviving answers cannot recover every failed-branch charge & \name{LayerEffects.Spec.no_failed_cost_recovery} & PCQ & proved\\
 E & Marginals cannot determine same-world conjunction & \name{EvidenceSpaces.no_same_world_conjunction_from_marginals} & PQ & proved\\
+D & Characterize direct value-indexed predicate contexts & \name{HypercubeBubbles.directPredicateContext_formed_iff} & P & proved\\
+D & Characterize direct value-indexed Curry--Howard & \name{HypercubeBubbles.directValueIndexedForall_iff} & P & proved\\
+D & Form direct value-indexed universals at the dependent vertex & \name{HypercubeBubbles.directValueIndexedForall_at_dependent} & P & proved\\
+D & Refuse direct dependency at the other three cube vertices & \name{HypercubeBubbles.directValueIndexedForall_absent_off_dependent_face} & P & proved\\
+D & Introduce direct value-indexed evidence & \name{HypercubeBubbles.directForall_abstract} & P & proved\\
+D & Substitute the actual argument into the evidence type & \name{HypercubeBubbles.directForall_apply} & P & proved\\
+D & Recover both rules of the direct formation basis & \name{HypercubeBubbles.directValueIndexedForall_iff_contains_dependentProducts} & P & proved\\
+D & Keep direct formation independent of the bubble & \name{HypercubeBubbles.directValueIndexedForall_bubble_iff} & P & proved\\
+D & Identify the least basis for the direct universal interface & \name{HypercubeBubbles.dependentProducts_least_directInterface} & P & proved\\
+D & Type the polymorphic identity at every sufficient profile & \name{HypercubeBubbles.polymorphicIdentity_typed} & P & proved\\
+D & Form the kind of unary type operators & \name{HypercubeBubbles.typeOperatorKind_formed} & P & proved\\
+D & Characterize the basis for three direct formation interfaces & \name{HypercubeBubbles.directFormationInterfaces_iff_contains_constructionProducts} & P & proved\\
+D & Identify the relative four-rule formation minimum & \name{HypercubeBubbles.constructionProducts_least_directInterfaces} & P & proved\\
+D & Refuse the interfaces after any required rule is omitted & \name{HypercubeBubbles.directInterfaces_refused_of_missing_rule} & P & proved\\
+D & Characterize literal descent into simple families & \name{DependencyDescentCriterion.descends_iff_constant} & Q & proved\\
+D & Keep the varying Boolean family outside the simple image & \name{DependencyDescentCriterion.varying_outside_image} & PCQ & proved\\
+D & Keep finite index types outside the constant-family image & \name{DependencyDescentCriterion.finFamily_not_constant} & PCQ & proved\\
+D & Separate inhabitation from data-preserving semantics & \name{DependencyDescentCriterion.readout_identifies_inhabited_types} & PCQ & proved\\
+D & Preserve and reflect family descent under exact coding & \name{DependentFamilyEquivalenceTransport.codeFamily_factorization_iff} & Q & proved\\
+D & Retain both observer controls at every exact-code depth & \name{DependentFamilyEquivalenceTransport.Canary.exact_representation_preserves_observer_boundary} & PCQ & proved\\
+D & Characterize observers preserving every anchored equality family & \name{EqualityFamilyObserverFactorization.EqualityFamilyFactorization.all_anchored_nonempty_iff_injective} & PCQ & proved\\
+D & Supply the simple extensional function-space control & \name{DependencyExtensionalityOrthogonality.simpleExtensional_applicationExtensional} & none & proved\\
+D & Supply the dependent extensional function-space control & \name{DependencyExtensionalityOrthogonality.dependentExtensional_applicationExtensional} & none & proved\\
+D & Retain routes at the simple function-space control & \name{DependencyExtensionalityOrthogonality.simpleRouteSensitive_not_applicationExtensional} & none & proved\\
+D & Retain routes at the dependent function-space control & \name{DependencyExtensionalityOrthogonality.dependentRouteSensitive_not_applicationExtensional} & none & proved\\
+D & Reflect normal evidence for the closed implicational fragment & \name{GSLT.Dedukti.HOLHub.sttfa_adequate} & PCQ & proved\\
+D & Reflect coded normal evidence for core universal proofs & \name{GSLT.Dedukti.HOLHub.sttfa_adequate_coded} & PCQ & proved\\
+D & Retain free objects in coded normal proof reflection & \name{GSLT.Dedukti.HOLHub.sttfa_adequate_coded_open} & PCQ & proved\\
+D & Compute the normal roundtrip for detour-free core-witness proofs & \name{GSLT.Dedukti.HOLHub.sttfa_round_trip} & PCQ & proved\\
+D & Retain coding in every normal form of a detour-free core-witness proof & \name{GSLT.Dedukti.HOLHub.compile_normalForm_coded} & PCQ & proved\\
+D & Separate evidence reconstruction from theoremhood with an uncoded witness & \name{GSLT.Dedukti.HOLHub.sttfa_not_exactly_adequate} & PCQ & proved\\
+D & Reject the uncoded normal universal witness & \name{GSLT.Dedukti.HOLHub.sttfa_coding_needed} & PCQ & proved\\
 D & Exact finite local-rule witnesses & \name{FormationSensitiveChecking.interface} & PQ & proved\\
 D & Original typing iff common tree acceptance & \name{FormationSensitiveChecking.typing_iff_checked_tree} & PCQ & proved\\
 D & Original typing iff common shared-graph acceptance & \name{FormationSensitiveChecking.typing_iff_checked_graph} & PCQ & proved\\
@@ -685,6 +717,109 @@ M1 & Formed contexts alone do not upgrade every legacy derivation & \name{Format
 M1 & Selected carrier no-preimage formula has the omitted-point meaning & \name{MM0.NaturalCarrier.noPreimage_meaning} & none & proved\\
 M1 & Selected carrier reference-format controls compute & \name{MM0.NaturalCarrier.all_verdicts} & P & proved\\
 M1 & Natural-subtype statement/domain controls compute & \name{MM0.NaturalType.all_verdicts} & P & proved\\
+M1 & Raw declared constant keeps its exact type adjustment & \name{HasType.constantAdjustment} & P & proved\\
+M1 & Missing declarations cannot create raw spines & \name{HasType.DeclarationSpine.missingConstant} & P & proved\\
+M1 & Raw declared spine reconstructs its principal typing & \name{HasType.DeclarationSpine.typing} & P & proved\\
+M1 & Raw spine recovers observed type adjustment & \name{HasType.DeclarationSpine.adjustment} & PQ & proved\\
+M1 & Raw dependent argument and displayed-type replay & \name{HasType.DeclarationSpine.recoverApplication} & PQ & proved\\
+M1 & Raw spine replays exact conversion/cumulativity tails & \name{HasType.DeclarationSpine.replay} & PQ & proved\\
+M1 & Raw declared telescope recovers every dependent argument & \name{HasType.DeclarationSpine.recoverTelescope} & PQ & proved\\
+M1 & Formed declaration spines share the raw analysis & \name{FormationSensitive.DeclarationSpine.toRaw} & P & proved\\
+M1 & Actual original natural recursor supplies its raw declared spine & \name{NaturalConversion.RawPreservation.recursor_spine} & PCQ & proved\\
+M1 & Actual natural telescope recovers every raw argument & \name{NaturalConversion.RawPreservation.recover} & PCQ & proved\\
+M1 & Natural zero root preserves arbitrary raw observed types & \name{NaturalConversion.RawPreservation.zero_preserves} & PCQ & proved\\
+M1 & Declared successor recovers its raw predecessor typing & \name{NaturalConversion.RawPreservation.successor_argument} & PCQ & proved\\
+M1 & Natural successor root preserves arbitrary raw observed types & \name{NaturalConversion.RawPreservation.successor_preserves} & PCQ & proved\\
+M1 & Actual selected roots preserve the legacy raw judgment & \name{NaturalConversion.RawPreservation.roots_preserve} & PCQ & proved\\
+M1 & Exact selected signature raw-preservation field is discharged & \name{NaturalConversion.RawPreservation.declared_preserves} & PCQ & proved\\
+M1 & All eight declaration-formation certificates check with iota disabled & \name{NaturalConversion.RawPreservation.Formation.all_produced} & PCQ & proved\\
+M1 & Accepted declaration certificates yield the formed judgment & \name{NaturalConversion.RawPreservation.Formation.request_formed} & PCQ & proved\\
+M1 & Formation requests cover every actual declaration lookup & \name{NaturalConversion.RawPreservation.Formation.lookup_covered} & PCQ & proved\\
+M1 & All selections retain formed original declarations & \name{NaturalConversion.RawPreservation.Formation.signature_formed} & PCQ & proved\\
+M1 & Existing checked-signature carrier has formation and raw preservation & \name{NaturalConversion.RawPreservation.checkedSignature} & PCQ & proved\\
+M1 & Actual checked append retains the selected checked signature & \name{NaturalConversion.RawPreservation.checked_append} & PCQ & proved\\
+M1 & The actual zero computation is a permitted root & \name{NaturalConversion.RawPreservation.addition_zero_root} & PCQ & proved\\
+M1 & Actual checked zero redex uses uniform raw preservation & \name{NaturalConversion.RawPreservation.actual_zero_preserved} & PCQ & proved\\
+M1 & Actual successor redex has its original dependent raw type & \name{NaturalConversion.RawPreservation.actual_successor_target} & PCQ & proved\\
+M1 & Selected actual signature refuses a missing declaration & \name{NaturalConversion.RawPreservation.missing_lookup} & PCQ & proved\\
+M1 & Selected raw spine refuses a missing declaration & \name{NaturalConversion.RawPreservation.missing_spine_refused} & PCQ & proved\\
+M1 & Eight formation and two negative controls compute & \name{NaturalConversion.RawPreservation.all_verdicts} & PCQ & proved\\
+I & Read ordinary root preservation as a cross-policy contract & \name{FormationSensitive.RootPreservation.toAgainst} & P & proved\\
+I & Preserve natural checking under every original operational root & \name{NaturalConversion.Preservation.operational_preservation_against} & PCQ & proved\\
+I & Admit a repeated-payload vector step after annotation erasure & \name{Annotated.RepeatedParameterCanary.raw_step} & PCQ & proved\\
+I & Refuse the same source as an annotated schema instance & \name{Annotated.RepeatedParameterCanary.no_annotated_step} & PCQ & proved\\
+I & Refute unrestricted four-row annotation lifting & \name{Annotated.RepeatedParameterCanary.unrestricted_lifting_fails} & PCQ & proved\\
+I & Separate natural lifting from the full repeated-parameter table & \name{Annotated.natural_lifts_but_full_does_not} & PCQ & proved\\
+I & Compose checking-profile capability inclusions & \name{IndexedFamily.Checking.Profile.Extends.trans} & PQ & proved\\
+I & Transport selected conversion through profile inclusion & \name{IndexedFamily.Checking.Profile.computationMorphism} & PQ & proved\\
+I & Transport formed typing through profile inclusion & \name{IndexedFamily.Checking.Profile.judgment_mono} & PQ & proved\\
+I & Transport a profile judgment into a stated realization & \name{IndexedFamily.Checking.Profile.Realization.includeJudgment} & PQ & proved\\
+I & Include the retained-receipt node in natural conversion & \name{CheckingProfiles.minimal_extends_naturalIntensional} & PCQ & proved\\
+I & Add scoped logical extensionality without changing iota & \name{CheckingProfiles.naturalIntensional_extends_scopedLogicalExtensional} & PCQ & proved\\
+I & Extend natural conversion by the original raw operational rows & \name{CheckingProfiles.naturalIntensional_extends_fullRawOperational} & PCQ & proved\\
+I & Separate retained receipts from judgmental conversion & \name{CheckingProfiles.not_naturalIntensional_extends_minimal} & PCQ & proved\\
+I & Separate intensional and scoped logical profiles & \name{CheckingProfiles.not_scopedLogicalExtensional_extends_naturalIntensional} & PCQ & proved\\
+I & Separate logical principles from the raw operational branch & \name{CheckingProfiles.not_scopedLogicalExtensional_extends_fullRawOperational} & PCQ & proved\\
+I & Separate raw vector conversion from the logical branch & \name{CheckingProfiles.not_fullRawOperational_extends_scopedLogicalExtensional} & PCQ & proved\\
+I & Construct the incomparable logical and operational children & \name{CheckingProfiles.natural_profile_fork} & PCQ & proved\\
+I & Connect the operational child to natural checking & \name{CheckingProfiles.fullRawOperational_preserves_naturalChecking} & PCQ & proved\\
+I & Keep the full raw child outside unrestricted annotated conversion & \name{CheckingProfiles.fullRawOperational_not_unrestrictedAnnotatedLift} & PCQ & proved\\
+I & Embed selected natural checking in the layered calculus & \name{CheckingProfiles.naturalToScopedMorphism} & PCQ & proved\\
+I & Type propositional extensionality in the layered calculus & \name{CheckingProfiles.scoped_propositionExtensionality_typed} & PCQ & proved\\
+I & Type dependent append in the scoped logical node & \name{CheckingProfiles.append_typed_scopedLogicalExtensional} & PCQ & proved\\
+I & Check positive and negative profile requests & \name{CheckingProfiles.all_verdicts} & PCQ & proved\\
+M1 & Intrinsic native recursion formula retains its mathematical meaning & \name{MM0.NaturalRecursion.formula_meaning} & none & proved\\
+M1 & Bare-zero and numeral-wrapped recursion agree in the stated standard model & \name{MM0.NaturalRecursion.shared_fact_meaning} & none & proved\\
+M1 & Recursion formula has the nonempty natural-number instance & \name{MM0.NaturalRecursion.standard_natural_recursion} & none & proved\\
+M1 & A collapsed constructor refutes the recursion formula & \name{MM0.NaturalRecursion.fixed_zero_refuses_recursion} & none & proved\\
+M1 & Native recursion finite format controls compute & \name{MM0.NaturalRecursion.all_verdicts} & P & proved\\
+I & Print the intrinsic graph as the exact native definition & \name{MM0.NaturalFactsMeaning.graph_definition_prints} & P & proved\\
+I & Interpret native graph syntax by the independent inductive graph & \name{MM0.NaturalFactsMeaning.graph_meaning} & none & proved\\
+I & Preserve all guarded native induction premises & \name{MM0.NaturalFactsMeaning.induction_statement_prints} & P & proved\\
+I & Print the native constructor-separation formula & \name{MM0.NaturalFactsMeaning.separation_prints} & none & proved\\
+I & Account for native Boolean-equality abbreviation & \name{MM0.NaturalFactsMeaning.injectivity_prints} & none & proved\\
+I & Print the exact alias-bearing native infinity formula & \name{MM0.NaturalFactsMeaning.infinity_prints} & none & proved\\
+I & Expand named infinity definitions beneath binders & \name{MM0.NaturalFactsMeaning.infinity_expands} & none & proved\\
+I & Preserve infinity through genuine Henkin definition reducts & \name{MM0.NaturalFactsMeaning.infinity_definitions_meaning} & PQ & proved\\
+I & Interpret the curried native induction law & \name{MM0.NaturalFactsMeaning.induction_meaning} & none & proved\\
+I & Retain open induction conclusion and premise evidence & \name{MM0.NaturalFactsMeaning.induction_rule} & none & proved\\
+I & Preserve native constructor-separation orientation & \name{MM0.NaturalFactsMeaning.no_confusion_meaning} & none & proved\\
+I & Interpret native nonsurjectivity by an omitted point & \name{MM0.NaturalFactsMeaning.infinity_meaning} & PCQ & proved\\
+I & Compare five native readings with shared natural laws & \name{MM0.NaturalFactsMeaning.shared_fact_meaning} & PCQ & proved\\
+I & Qualify typed native reference and refusal controls & \name{MM0.NaturalFactsMeaning.all_verdicts} & P & proved\\
+I & Validate five native readings on the authored carrier & \name{IndexedInductiveNaturalMM0.all_models} & PCQ & proved\\
+I & Validate named native infinity on the source definition reduct & \name{IndexedInductiveNaturalMM0.native_infinity_model} & PCQ & proved\\
+I & Retain open induction conclusion and premise evidence & \name{IndexedInductiveNaturalMM0.induction_rule} & PCQ & proved\\
+I & Identify exact native graph values with the source recursor & \name{IndexedInductiveNaturalMM0.source_graph_iff} & PQ & proved\\
+I & Construct a native graph witness from source recursion & \name{IndexedInductiveNaturalMM0.source_graph} & PQ & proved\\
+I & Prove selector agreement under its explicit law & \name{IndexedInductiveNaturalMM0.source_selector_agrees} & PQ & proved\\
+I & Reject an incorrect output at a genuine source successor & \name{IndexedInductiveNaturalMM0.wrong_successor_output_refused} & PQ & proved\\
+I & Accept the nonconstant source successor output & \name{IndexedInductiveNaturalMM0.successor_output_accepted} & PQ & proved\\
+I & Transport recursion graph indices through structured maps & \name{Megalodon.NaturalRecursion.Graph.mapIndex} & none & proved\\
+I & Select an explicitly witnessed infinite self-map & \name{Megalodon.NaturalTheoryProfile.selected_infinite} & none & proved\\
+I & Derive an omitted point using the selected classical option & \name{Megalodon.NaturalTheoryProfile.not_surjective_has_omitted} & none & proved\\
+I & Select an omitted point under the stated selection law & \name{Megalodon.NaturalTheoryProfile.zero_omitted} & none & proved\\
+I & Separate every selected successor from selected zero & \name{Megalodon.NaturalTheoryProfile.successor_ne_zero} & none & proved\\
+I & Retain injectivity of the selected infinite function & \name{Megalodon.NaturalTheoryProfile.successor_injective} & none & proved\\
+I & Generate selected zero & \name{Megalodon.NaturalTheoryProfile.generated_zero} & none & proved\\
+I & Close generation under selected successor & \name{Megalodon.NaturalTheoryProfile.generated_successor} & none & proved\\
+I & Construct the selected recursion graph on generated inputs & \name{Megalodon.NaturalTheoryProfile.recursor_graph} & none & proved\\
+I & Establish the selected recursor zero equation & \name{Megalodon.NaturalTheoryProfile.recursor_zero} & none & proved\\
+I & Establish the selected recursor successor equation & \name{Megalodon.NaturalTheoryProfile.recursor_successor} & none & proved\\
+I & Prove generated-carrier uniqueness of selected recursion & \name{Megalodon.NaturalTheoryProfile.recursor_unique} & none & proved\\
+I & Interpret the selected native recursion theorem & \name{Megalodon.NaturalTheoryProfile.recursion} & none & proved\\
+I & Refuse the infinity option on a singleton carrier & \name{Megalodon.NaturalTheoryProfile.unit_refuses_infinity} & none & proved\\
+I & Refuse a function that lacks the selection law & \name{Megalodon.NaturalTheoryProfile.constant_false_refuses_selection} & none & proved\\
+I & Check the optional theory inventory & \name{Megalodon.NaturalTheoryProfile.all_verdicts} & P & proved\\
+I & Construct a lawful preferred-witness selector & \name{IndexedInductiveNaturalMegalodonProfile.choosePreferred_selects} & PCQ & proved\\
+I & Retain a preferred witness when it satisfies the predicate & \name{IndexedInductiveNaturalMegalodonProfile.choosePreferred_of_holds} & PCQ & proved\\
+I & Witness authored successor as a Dedekind injection & \name{IndexedInductiveNaturalMegalodonProfile.successorIsInfinite} & PQ & proved\\
+I & Identify selected successor with authored successor & \name{IndexedInductiveNaturalMegalodonProfile.selected_successor_eq} & PCQ & proved\\
+I & Identify selected zero with authored zero & \name{IndexedInductiveNaturalMegalodonProfile.selected_zero_eq} & PCQ & proved\\
+I & Generate every authored natural value & \name{IndexedInductiveNaturalMegalodonProfile.source_generated} & PCQ & proved\\
+I & Identify selected recursion with the authored eliminator & \name{IndexedInductiveNaturalMegalodonProfile.source_recursor_agrees} & PCQ & proved\\
+I & Derive total authored recursion and uniqueness & \name{IndexedInductiveNaturalMegalodonProfile.source_recursion} & PQ & proved\\
+I & Refuse a constant successor as the infinite witness & \name{IndexedInductiveNaturalMegalodonProfile.constant_successor_refused} & P & proved\\
 \midrule
 A3 & Finite-stack realization of the HOL Light to MM0 translation & --- & --- & open\\
 A2 & Existing shared-lemma HOL translation equals the node-by-node translation & --- & --- & open\\

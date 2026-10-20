@@ -2265,10 +2265,7 @@ private theorem addValRaw_fresh_canonicallyPrincipal
     Metta.Bindings.lookupVal
         (Metta.Bindings.addEqRaw bindings left right) key =
       Metta.Bindings.lookupVal bindings key := by
-  by_cases heq : left = right
-  · subst right
-    simp [Metta.Bindings.addEqRaw]
-  · simp [Metta.Bindings.addEqRaw, heq, Metta.Bindings.lookupVal]
+  exact Metta.Bindings.lookupVal_addEqRaw bindings left right key
 
 private theorem mem_eqClass_addEqRaw_of_mem
     {bindings : Metta.Bindings} {left right start finish : String}
@@ -2279,15 +2276,12 @@ private theorem mem_eqClass_addEqRaw_of_mem
   apply hmem.mono
   intro x y hadj
   rw [EqualityClosure.edgeGraph_adj_iff] at hadj ⊢
-  by_cases heq : left = right
-  · subst right
-    simpa [Metta.Bindings.addEqRaw] using hadj
-  · simp only [Metta.Bindings.addEqRaw, beq_iff_eq, heq,
-      ↓reduceIte, leaEqualityEdges, List.mem_cons]
-    refine ⟨hadj.1, ?_⟩
-    rcases hadj.2 with hforward | hreverse
-    · exact Or.inl (Or.inr hforward)
-    · exact Or.inr (Or.inr hreverse)
+  refine ⟨hadj.1, ?_⟩
+  rcases hadj.2 with hforward | hreverse
+  · exact Or.inl (leaEqualityEdges_addEqRaw_old
+      bindings left right hforward)
+  · exact Or.inr (leaEqualityEdges_addEqRaw_old
+      bindings left right hreverse)
 
 private theorem reachable_cons_of_not_reachable_left
     {edges : List (String × String)} {left right start finish : String}
@@ -2352,13 +2346,24 @@ private theorem classValue_source_of_addEqRaw_of_not_joined
   refine ⟨storedKey, ?_, ?_⟩
   · apply mem_leaEqClassOrdered_iff.mpr
     rw [mem_leaEqClass_iff_reachable]
-    apply reachable_cons_of_not_reachable_left
-    · simpa [mem_leaEqClass_iff_reachable,
-        Metta.Bindings.addEqRaw, hne, leaEqualityEdges] using hnot
-    · have hreach :=
-          mem_leaEqClass_iff_reachable.mp
-            (mem_leaEqClassOrdered_iff.mp hclass)
-      simpa [Metta.Bindings.addEqRaw, hne, leaEqualityEdges] using hreach
+    have hgraph :
+        EqualityClosure.edgeGraph
+            (leaEqualityEdges (Metta.Bindings.addEqRaw bindings left right)) =
+          EqualityClosure.edgeGraph ((left, right) :: leaEqualityEdges bindings) := by
+      ext x y
+      simp only [EqualityClosure.edgeGraph_adj_iff, List.mem_cons]
+      rw [mem_leaEqualityEdges_addEqRaw_iff bindings hne,
+        mem_leaEqualityEdges_addEqRaw_iff bindings hne]
+      aesop
+    have hnotReach :
+        ¬(EqualityClosure.edgeGraph
+            (leaEqualityEdges (Metta.Bindings.addEqRaw bindings left right))).Reachable
+          start left := by
+      simpa [mem_leaEqClass_iff_reachable] using hnot
+    have hreach := mem_leaEqClass_iff_reachable.mp
+      (mem_leaEqClassOrdered_iff.mp hclass)
+    rw [hgraph] at hnotReach hreach
+    exact reachable_cons_of_not_reachable_left hnotReach hreach
   · simpa using hlookup
 
 private theorem mettaClassValueEquations_pair_eq
@@ -2541,7 +2546,7 @@ private theorem addEqRaw_nochange_canonicallyPrincipal
       simpa [chi, applyClassSolution] using hnew
   have hnewEquality : chi left = chi right := by
     apply leaClassSolution_satisfies_equalities houtLoop left right
-    simp [Metta.Bindings.addEqRaw, hne]
+    exact Metta.Bindings.eq_mem_addEqRaw bindings left right hne
   apply canonicallyPrincipal_of_canonical_satisfied
   · exact (leaBindingSatisfied_addEqRaw_iff
       chi bindings left right).mpr ⟨hsourceSatisfied, hnewEquality⟩

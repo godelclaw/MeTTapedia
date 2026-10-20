@@ -1,6 +1,7 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ApplicationEquivariance
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Selection
 import MettaHyperonFull.Minimal.Interpreter
+import MettaHyperonFull.Proofs.BindingLaws
 import MettaHyperonFull.Proofs.Substitution
 import MettaHyperonFull.Proofs.TypeSoundness
 
@@ -94,7 +95,7 @@ private theorem rawFormalMatchesArgument :
       (by simp [Metta.Atom.vars])
   have matched : Metta.matchAtoms (.var "t") (.sym "A") =
       [[.val "t" (.sym "A")]] := by
-    simp [Metta.matchAtoms, Metta.matchAtomsWith, loopFree]
+    simp [Metta.matchAtoms, Metta.matchAtomsWith, Metta.Subst.occurs, loopFree]
   have merged : Metta.Bindings.merge [] [.val "t" (.sym "A")] =
       [[.val "t" (.sym "A")]] := by
     simp [Metta.Bindings.merge, Metta.Bindings.mergeOne,
@@ -115,7 +116,7 @@ private theorem freshFormalMatchesArgument :
       (by simp [Metta.Atom.vars])
   have matched : Metta.matchAtoms (.var "####t#1") (.sym "A") =
       [[.val "####t#1" (.sym "A")]] := by
-    simp [Metta.matchAtoms, Metta.matchAtomsWith, loopFree]
+    simp [Metta.matchAtoms, Metta.matchAtomsWith, Metta.Subst.occurs, loopFree]
   have merged : Metta.Bindings.merge []
       [.val "####t#1" (.sym "A")] =
       [[.val "####t#1" (.sym "A")]] := by
@@ -135,7 +136,7 @@ private theorem independentExpectedAcceptsReturn :
       (by simp [Metta.Atom.vars])
   have matched : Metta.matchAtoms (.var "t") (.sym "B") =
       [[.val "t" (.sym "B")]] := by
-    simp [Metta.matchAtoms, Metta.matchAtomsWith, candidateLoop]
+    simp [Metta.matchAtoms, Metta.matchAtomsWith, Metta.Subst.occurs, candidateLoop]
   have namesDiffer : freshSignatureVariable ≠ "t" := by
     simp [freshSignatureVariable]
   have classEmpty : Metta.Bindings.classValues

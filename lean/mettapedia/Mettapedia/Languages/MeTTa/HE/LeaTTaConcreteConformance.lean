@@ -3710,6 +3710,7 @@ private theorem matchAtoms_chainResolveBoundary_counter0 :
       (by decide)
       (Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge.Bindings.classValues_one_eq_eq_nil
         "x#0" "y#1" "x#0")
+      (by simp)
   have hval :
       Metta.Bindings.merge
           [Metta.BindingRel.eq "x#0" "y#1"]

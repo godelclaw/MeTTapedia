@@ -465,11 +465,30 @@ theorem preparedTypeCast_runtime_scoped_success
     PreparedTypeCastRel.success sourcePresent specVariants specFirst,
     outputSolutions, outputScoped⟩
 
+/-- The complete freshness boundary used when the selected operator head is
+cast.  Keeping this name distinct from the smaller public observation scope
+prevents an outer continuation variable from being treated as private. -/
+def operatorHeadInvocationScope (observationScope : List String)
+    (live : List Atom) (operator : String) (functionType : Atom)
+    (bindings : Bindings) : List String :=
+  invocationTypeScope observationScope live (.symbol operator) functionType
+    bindings
+
+/-- Every publicly observed name is protected by the complete operator-head
+invocation scope. -/
+theorem operatorHeadInvocationScope_contains_observation
+    {observationScope : List String} {live : List Atom} {operator : String}
+    {functionType : Atom} {bindings : Bindings} :
+    ∀ name, name ∈ observationScope →
+      name ∈ operatorHeadInvocationScope observationScope live operator
+        functionType bindings := by
+  intro name member
+  simp [operatorHeadInvocationScope, invocationTypeScope, member]
+
 /-- A successful evaluator-aligned selection supplies the exact protected
-operator-head cast required by `InterpretFunctionRel`.  The head symbol is
-binding-neutral as syntax, while the selected binding theory may gain public
-type information and may rename only private variables across the runtime
-boundary. -/
+operator-head cast required by `InterpretFunctionRel`.  The runtime cast and
+its input correspondence are stated at the complete invocation scope; the
+public result then forgets the extra continuation-local observations. -/
 theorem selectedOperatorHead_castSuccess
     {services : Services} {oracle : TypePreparationOracle}
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
@@ -487,23 +506,30 @@ theorem selectedOperatorHead_castSuccess
       SelectedTypePolicyRuntimeExactRel observationScope expression incoming
         (.success policy selectedBindings) (.selected runtime))
     (operatorNotEmpty : operator ≠ "Empty")
-    (castSuccess : Metta.Minimal.mettaTypeCastAvoiding observationScope env world
+    (castInput : ScopedEvaluatorBindingRuntimeRel
+      (operatorHeadInvocationScope observationScope live operator
+          policy.functionType selectedBindings ++
+        TypeSubst.typeVars policy.functionType)
+      selectedBindings runtime.typeBindings)
+    (castSuccess : Metta.Minimal.mettaTypeCastAvoiding
+      (operatorHeadInvocationScope observationScope live operator
+        policy.functionType selectedBindings) env world
       runtime.typeBindings (.sym operator) runtime.functionType =
         .inr runtimeOutput) :
-    ∃ output,
+    ∃ output : Bindings,
       EvalAtomRawRel space dispatch live
           (protectedScope := observationScope)
           (typing := preparedPackageTypeService oracle)
           (.symbol operator) policy.functionType selectedBindings
-          (.symbol operator, output) ∧
+          (.symbol operator, BindingFrame.historical output) ∧
         ScopedEvaluatorResultRuntimeRel services observationScope
           (.symbol operator, output) (.sym operator, runtimeOutput) := by
-  obtain ⟨inputPresentation, inputSolutions, inputScoped⟩ :=
-    selection.successBindingAtFunctionType
   cases selection with
   | success _base aligned =>
       have runtimeCast :
-          Metta.Minimal.mettaTypeCastAvoiding observationScope env world
+          Metta.Minimal.mettaTypeCastAvoiding
+              (operatorHeadInvocationScope observationScope live operator
+                policy.functionType selectedBindings) env world
               runtime.typeBindings (encodeModelAtom (.symbol operator))
                 (encodeModelAtom policy.functionType) =
             .inr runtimeOutput := by
@@ -511,16 +537,17 @@ theorem selectedOperatorHead_castSuccess
       obtain ⟨output, outputPresentation, serviceCast,
           outputSolutions, outputScoped⟩ :=
         preparedTypeCast_runtime_scoped_success index realization
-          ⟨inputPresentation, inputSolutions, inputScoped⟩ runtimeCast
+          castInput runtimeCast
       have headCast :
           EvalAtomRawRel space dispatch live
             (protectedScope := observationScope)
             (typing := preparedPackageTypeService oracle)
             (.symbol operator) policy.functionType selectedBindings
-            (.symbol operator, output) := by
+            (.symbol operator, BindingFrame.historical output) := by
         apply EvalAtomRawRel.cast
             (.symbol operator) policy.functionType Atom.symbolType
-            selectedBindings (.symbol operator, output)
+            selectedBindings
+              (.symbol operator, BindingFrame.historical output)
         · simp [IsEmptyOrErrorRel, IsErrorRel, Atom.empty,
             operatorNotEmpty]
         · exact MetaTypeRel.symbol operator
@@ -529,10 +556,13 @@ theorem selectedOperatorHead_castSuccess
           rw [functionShape]
           simp [Atom.atomType, Atom.symbolType, Atom.variableType]
         · exact Or.inl ⟨operator, rfl⟩
-        · simpa using serviceCast
+        · simpa [operatorHeadInvocationScope, BindingFrame.rawResult]
+            using serviceCast
+        · exact .historical _ _
       refine ⟨output, headCast, ?_⟩
       apply ScopedEvaluatorResultRuntimeRel.ofScopedUnchangedAtom
-        outputSolutions outputScoped
+        outputSolutions (outputScoped.mono
+          operatorHeadInvocationScope_contains_observation)
         (LeaTTaMinimalInstructionConformance.AtomRuntimeRel.symbol
           (services := services) operator)
       simp [TypeSubst.apply]
@@ -570,8 +600,9 @@ theorem scopedOperatorBadType_privateCandidate
       Metta.Minimal.badTypeAtom, Metta.Atom.isError]
 
 /-- The failed selected operator-head cast produces exactly the published
-`EvalAtomRawRel.cast` error alternatives, with ordered runtime candidates
-retained by the failure bridge and fieldwise diagnostic observation. -/
+`EvalAtomRawRel.cast` error alternatives.  As in the successful case, the
+runtime cast is related at the complete invocation scope while the diagnostic
+is exposed only at the declared observation scope. -/
 theorem selectedOperatorHead_castFailure
     {services : Services} {oracle : TypePreparationOracle}
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
@@ -588,7 +619,14 @@ theorem selectedOperatorHead_castFailure
       SelectedTypePolicyRuntimeExactRel observationScope expression incoming
         (.success policy selectedBindings) (.selected runtime))
     (operatorNotEmpty : operator ≠ "Empty")
-    (castFailure : Metta.Minimal.mettaTypeCastAvoiding observationScope env world
+    (castInput : ScopedEvaluatorBindingRuntimeRel
+      (operatorHeadInvocationScope observationScope live operator
+          policy.functionType selectedBindings ++
+        TypeSubst.typeVars policy.functionType)
+      selectedBindings runtime.typeBindings)
+    (castFailure : Metta.Minimal.mettaTypeCastAvoiding
+      (operatorHeadInvocationScope observationScope live operator
+        policy.functionType selectedBindings) env world
       runtime.typeBindings (.sym operator) runtime.functionType =
         .inl rejected) :
     ∃ runtimeCandidates,
@@ -603,12 +641,12 @@ theorem selectedOperatorHead_castFailure
               (Metta.Minimal.badTypeAtom (.sym operator)
                 runtime.functionType (encodeModelAtom runtimeActual),
                 runtime.typeBindings) := by
-  obtain ⟨inputPresentation, inputSolutions, inputScoped⟩ :=
-    selection.successBindingAtFunctionType
   cases selection with
   | success _base aligned =>
       have runtimeCast :
-          Metta.Minimal.mettaTypeCastAvoiding observationScope env world
+          Metta.Minimal.mettaTypeCastAvoiding
+              (operatorHeadInvocationScope observationScope live operator
+                policy.functionType selectedBindings) env world
               runtime.typeBindings (encodeModelAtom (.symbol operator))
                 (encodeModelAtom policy.functionType) =
             .inl rejected := by
@@ -616,14 +654,15 @@ theorem selectedOperatorHead_castFailure
       obtain ⟨specCandidates, runtimeCandidates, rejectedEquation,
           _candidateAlpha, failures⟩ :=
         preparedTypeCast_runtime_scoped_failure index realization
-          ⟨inputPresentation, inputSolutions, inputScoped⟩ runtimeCast
+          castInput runtimeCast
       refine ⟨runtimeCandidates, rejectedEquation, ?_⟩
       intro runtimeActual runtimeMember
       obtain ⟨specActual, _specMember, actualAlpha, serviceCast⟩ :=
         failures runtimeActual runtimeMember
-      let result : ResultPair :=
+      let rawResult : ResultPair :=
         (mkError (.symbol operator)
           (.badType policy.functionType specActual), selectedBindings)
+      let result : FrameResult := BindingFrame.historicalResult rawResult
       have headCast : EvalAtomRawRel space dispatch live
           (protectedScope := observationScope)
           (typing := preparedPackageTypeService oracle)
@@ -639,17 +678,18 @@ theorem selectedOperatorHead_castFailure
           rw [functionShape]
           simp [Atom.atomType, Atom.symbolType, Atom.variableType]
         · exact Or.inl ⟨operator, rfl⟩
-        · simpa [result] using serviceCast
+        · simpa [result, rawResult, operatorHeadInvocationScope,
+            BindingFrame.rawResult, BindingFrame.historicalResult]
+            using serviceCast
+        · exact .historical _ _
       refine ⟨result, headCast, ?_⟩
       have inputPublic : ScopedEvaluatorBindingRuntimeRel observationScope
           selectedBindings runtime.typeBindings :=
-        ScopedEvaluatorBindingRuntimeRel.mono
-          (⟨inputPresentation, inputSolutions, inputScoped⟩ :
-            ScopedEvaluatorBindingRuntimeRel
-              (observationScope ++ TypeSubst.typeVars policy.functionType)
-              selectedBindings runtime.typeBindings)
-          (fun name member => List.mem_append_left _ member)
-      simpa [result] using scopedOperatorBadType_privateCandidate
+        castInput.mono (fun name member =>
+          List.mem_append_left _
+            (operatorHeadInvocationScope_contains_observation name member))
+      simpa [result, rawResult, BindingFrame.rawResult,
+          BindingFrame.historicalResult] using scopedOperatorBadType_privateCandidate
         (services := services) inputPublic aligned.runtimeFunctionType.symm
           actualAlpha
 
@@ -677,8 +717,18 @@ theorem selectedOperatorHead_castFailure_interpretFunction
         expression incoming (.success policy selectedBindings)
           (.selected runtime))
     (operatorNotEmpty : operator ≠ "Empty")
+    (castInput : ScopedEvaluatorBindingRuntimeRel
+      (operatorHeadInvocationScope
+          (expectedApplicationScope expression returnType)
+          (policy.functionType :: arguments ++ live) operator
+          policy.functionType selectedBindings ++
+        TypeSubst.typeVars policy.functionType)
+      selectedBindings runtime.typeBindings)
     (castFailure : Metta.Minimal.mettaTypeCastAvoiding
-      (expectedApplicationScope expression returnType) env world
+      (operatorHeadInvocationScope
+        (expectedApplicationScope expression returnType)
+        (policy.functionType :: arguments ++ live) operator
+        policy.functionType selectedBindings) env world
         runtime.typeBindings (.sym operator) runtime.functionType =
           .inl rejected) :
     ∃ runtimeCandidates,
@@ -695,8 +745,9 @@ theorem selectedOperatorHead_castFailure_interpretFunction
                 runtime.functionType (encodeModelAtom runtimeActual),
                 runtime.typeBindings) := by
   obtain ⟨runtimeCandidates, rejectedEquation, failures⟩ :=
-    selectedOperatorHead_castFailure index realization selection
-      operatorNotEmpty castFailure
+    selectedOperatorHead_castFailure
+      (live := policy.functionType :: arguments ++ live)
+      index realization selection operatorNotEmpty castInput castFailure
   refine ⟨runtimeCandidates, rejectedEquation, ?_⟩
   intro runtimeActual runtimeMember
   obtain ⟨result, headCast, resultRuntime⟩ :=

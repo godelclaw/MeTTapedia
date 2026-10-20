@@ -304,6 +304,7 @@ import Mettapedia.Bridge.BitVectorEvidence
 
 -- Languages
 import Mettapedia.Languages.MeTTa
+import Mettapedia.Languages.MeTTa.Translation.HEPeTTaOpenRecursive
 import Mettapedia.Languages.TuringMachine
 import Mettapedia.Languages.MeTTa.PeTTa.MainlineTypeQueryGSLT
 import Mettapedia.Languages.MeTTa.PeTTa.CallGuardNativeKernel

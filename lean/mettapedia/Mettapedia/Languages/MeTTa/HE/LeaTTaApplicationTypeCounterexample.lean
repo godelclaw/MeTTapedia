@@ -99,7 +99,8 @@ theorem legacy_getTypes_infers_return_after_failed_argument_match :
   simp [badApplicationEnv, badLeaApplication, legacyGetTypes,
     Metta.Minimal.MinEnv.ofAtomsGT, Std.HashMap.getD_insert,
     Std.HashMap.getD_emptyWithCapacity, Metta.matchAtoms,
-    Metta.matchAtomsWith, Metta.Bindings.merge, Metta.instantiate]
+    Metta.Bindings.merge, Metta.instantiate,
+    Metta.Bindings.resolveAtom]
 
 /-- Positive repair witness: a failed argument match contributes no inferred
 application result, so the gradual fallback is `%Undefined%`. -/
@@ -146,7 +147,7 @@ theorem legacy_getTypes_infers_return_after_cyclic_argument_matches :
   simp [cyclicApplicationEnv, cyclicLeaApplication, legacyGetTypes,
     Metta.Minimal.MinEnv.ofAtomsGT, Std.HashMap.getD_insert,
     Std.HashMap.getD_emptyWithCapacity, Metta.matchAtoms,
-    Metta.matchAtomsWith, Metta.Bindings.merge, Metta.instantiate,
+    Metta.Bindings.merge, Metta.instantiate,
     Metta.Bindings.resolveAtom]
 
 /-- The raw shared-spelling conjunction is still rejected by the repaired

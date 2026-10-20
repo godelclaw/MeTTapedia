@@ -207,6 +207,207 @@ index f84a482..3b5d79d 100644
  
  /-- A many-step `ParRed` reduction is a many-step `Step` reduction (since each parallel step is a
      finite sequence of single steps). -/
+diff --git a/MettaHyperonFull/Core/Atom.lean b/MettaHyperonFull/Core/Atom.lean
+index b538d29..aaf45ff 100644
+--- a/MettaHyperonFull/Core/Atom.lean
++++ b/MettaHyperonFull/Core/Atom.lean
+@@ -1,166 +1,18 @@
+ -- SPDX-FileCopyrightText: 2026 MesTTo
+ -- SPDX-License-Identifier: Apache-2.0
+ 
+-/-
+-Module: MettaHyperonFull.Core.Atom
+-Layer: Core
+-Purpose: The core MeTTa atom datatype and the values it carries. Defines symbols, variables, grounded
+-  payloads, expressions, and the binding relations carried by `collapse-bind`, together with structural
+-  equality, the syntactic meta-types, the built-in type designators, the arrow constructor, and basic
+-  measures over atoms. Structural equality is hand-written so it reduces definitionally for the
+-  metatheory layer.
+-Imports: (none beyond core)
+-Trusted boundary: none
+-Main exports: VarName, StoredGround, StoredAtom, StoredBinding, Ground, Atom, Atom.beq,
+-  Atom.beqList, the BEq Atom instance, MetaType, ReduceResult, the built-in type-designator atoms,
+-  Atom.isError, Atom.metaType,
+-  Atom.typeAtomOfMetaType, Atom.isBuiltinTypeSymbol, Atom.mkArrow, Atom.isArrow, Atom.head?,
+-  Atom.args?, Atom.size, Atom.vars
+-Open obligations: none
+--/
+-namespace Metta
+-
+-/-- Names of MeTTa variables, without the leading `$`. -/
+-abbrev VarName := String
+-
+-/- A grounded binding object can recursively contain atoms, including further grounded bindings.
+-These stored carriers are a lossless type-erased snapshot, separate from the live `Atom` datatype so
+-ordinary atom equality remains definitionally reducible for the metatheory. -/
+-mutual
+-  inductive StoredGround where
+-    | int : Int → StoredGround
+-    | float : Float → StoredGround
+-    | str : String → StoredGround
+-    | bool : Bool → StoredGround
+-    | unit : StoredGround
+-    | error : String → StoredGround
+-    | external : String → String → StoredGround
+-    | bindings : List StoredBinding → StoredGround
+-    deriving Repr, Inhabited
+-
+-  inductive StoredAtom where
+-    | sym : String → StoredAtom
+-    | var : VarName → StoredAtom
+-    | gnd : StoredGround → StoredAtom
+-    | expr : List StoredAtom → StoredAtom
+-    deriving Repr, Inhabited
++import MeTTailCore.MeTTaSyntax.Atom
+ 
+-  inductive StoredBinding where
+-    | val : VarName → StoredAtom → StoredBinding
+-    | eq : VarName → VarName → StoredBinding
+-    deriving Repr, Inhabited
+-end
+-
+-mutual
+-
+-/-- Reducible structural equality for grounded values stored by
+-`collapse-bind`. -/
+-def StoredGround.beq : StoredGround → StoredGround → Bool
+-  | .int left, .int right => left == right
+-  | .float left, .float right => left == right
+-  | .str left, .str right => left == right
+-  | .bool left, .bool right => left == right
+-  | .unit, .unit => true
+-  | .error left, .error right => left == right
+-  | .external leftTag leftPayload, .external rightTag rightPayload =>
+-      leftTag == rightTag && leftPayload == rightPayload
+-  | .bindings left, .bindings right => StoredBinding.beqList left right
+-  | _, _ => false
+-
+-/-- Reducible structural equality for atoms stored by `collapse-bind`. -/
+-def StoredAtom.beq : StoredAtom → StoredAtom → Bool
+-  | .sym left, .sym right => left == right
+-  | .var left, .var right => left == right
+-  | .gnd left, .gnd right => StoredGround.beq left right
+-  | .expr left, .expr right => StoredAtom.beqList left right
+-  | _, _ => false
+-
+-/-- Pointwise structural equality for stored atom lists. -/
+-def StoredAtom.beqList : List StoredAtom → List StoredAtom → Bool
+-  | [], [] => true
+-  | left :: lefts, right :: rights =>
+-      StoredAtom.beq left right && StoredAtom.beqList lefts rights
+-  | _, _ => false
+-
+-/-- Reducible structural equality for one stored binding relation. -/
+-def StoredBinding.beq : StoredBinding → StoredBinding → Bool
+-  | .val leftName leftValue, .val rightName rightValue =>
+-      leftName == rightName && StoredAtom.beq leftValue rightValue
+-  | .eq leftA leftB, .eq rightA rightB =>
+-      leftA == rightA && leftB == rightB
+-  | _, _ => false
+-
+-/-- Pointwise structural equality for stored binding lists. -/
+-def StoredBinding.beqList : List StoredBinding → List StoredBinding → Bool
+-  | [], [] => true
+-  | left :: lefts, right :: rights =>
+-      StoredBinding.beq left right && StoredBinding.beqList lefts rights
+-  | _, _ => false
++/-!
++# LeaTTa atom operations and runtime profile
+ 
+-end
+-
+-
+-instance : BEq StoredGround := ⟨StoredGround.beq⟩
+-instance : BEq StoredAtom := ⟨StoredAtom.beq⟩
+-instance : BEq StoredBinding := ⟨StoredBinding.beq⟩
+-
+-/-- Grounded payloads implemented directly by the Lean runtime. Use `external tag payload`
+-for host-language values whose semantics lies outside this interpreter. `bindings` is the opaque,
+-lossless payload produced by `collapse-bind`. -/
+-inductive Ground where
+-  | int : Int → Ground
+-  | float : Float → Ground
+-  | str : String → Ground
+-  | bool : Bool → Ground
+-  | unit : Ground
+-  | error : String → Ground
+-  | external : String → String → Ground
+-  | bindings : List StoredBinding → Ground
+-  deriving Repr, BEq, Inhabited
+-
+-/-- Reducible structural equality for live grounded payloads. -/
+-def Ground.beq : Ground → Ground → Bool
+-  | .int left, .int right => left == right
+-  | .float left, .float right => left == right
+-  | .str left, .str right => left == right
+-  | .bool left, .bool right => left == right
+-  | .unit, .unit => true
+-  | .error left, .error right => left == right
+-  | .external leftTag leftPayload, .external rightTag rightPayload =>
+-      leftTag == rightTag && leftPayload == rightPayload
+-  | .bindings left, .bindings right => StoredBinding.beqList left right
+-  | _, _ => false
+-
+-/-- MeTTa atoms: symbols, variables, grounded atoms, and expressions. -/
+-inductive Atom where
+-  | sym : String → Atom
+-  | var : VarName → Atom
+-  | gnd : Ground → Atom
+-  | expr : List Atom → Atom
+-  deriving Repr, Inhabited
+-
+-mutual
+-/-- Structural Boolean equality on atoms. Hand-written rather than `deriving BEq` so that it
+-    *reduces* definitionally: `deriving BEq` for this nested inductive (`expr : List Atom`)
+-    compiles to well-founded recursion that is opaque to `rfl`/`simp`/`decide`, so it will not even
+-    reduce on a constructor mismatch, which blocks all equational reasoning about the matcher in
+-    the metatheory layer. This structural version is kernel-reducible and computes exactly the same
+-    result the derived instance would. (`gnd` payloads still defer to `Ground`'s `BEq`, i.e. IEEE
+-    float equality, so the documented host-float behaviour is unchanged.) -/
+-def Atom.beq : Atom → Atom → Bool
+-  | Atom.sym a, Atom.sym b => a == b
+-  | Atom.var a, Atom.var b => a == b
+-  | Atom.gnd a, Atom.gnd b => Ground.beq a b
+-  | Atom.expr a, Atom.expr b => Atom.beqList a b
+-  | _, _ => false
+-/-- Pointwise structural equality of atom lists (companion to `Atom.beq`). -/
+-def Atom.beqList : List Atom → List Atom → Bool
+-  | [], [] => true
+-  | x :: xs, y :: ys => Atom.beq x y && Atom.beqList xs ys
+-  | _, _ => false
+-end
++The atom and payload carriers are owned by the independent shared structure
++module. This module adds LeaTTa's numeric equivalence, builtin designators,
++meta-type classification and grounded-operation outcomes. Those operations
++are an implementation profile, not the authority for HE source judgments.
++-/
+ 
+-instance : BEq Atom := ⟨Atom.beq⟩
++namespace Metta
+ 
+ namespace Ground
+ 
+@@ -288,20 +140,5 @@ def args? : Atom → Option (List Atom)
+   | Atom.expr (_ :: xs) => some xs
+   | _ => none
+ 
+-/-- Structural size: leaves count 1, an expression is `1 +` the sizes of its children. Used as the
+-    well-founded measure for recursion/termination over atoms. -/
+-def size : Atom → Nat
+-  | Atom.sym _ => 1
+-  | Atom.var _ => 1
+-  | Atom.gnd _ => 1
+-  | Atom.expr xs => 1 + (xs.map size).sum
+-
+-/-- All variable occurrences in `a`, left-to-right with duplicates. Atoms have no binders, so
+-    every occurrence is free; see `FreeVars.lean` for the named notion used in the metatheory. -/
+-def vars : Atom → List VarName
+-  | Atom.var x => [x]
+-  | Atom.expr xs => (xs.map vars).flatten
+-  | _ => []
+-
+ end Atom
+ end Metta
 diff --git a/MettaHyperonFull/Proofs/Basic.lean b/MettaHyperonFull/Proofs/Basic.lean
 index 047816a..52b7d4e 100644
 --- a/MettaHyperonFull/Proofs/Basic.lean
@@ -224,14 +425,100 @@ index 047816a..52b7d4e 100644
      (sym : ∀ s, motive (Atom.sym s))
      (var : ∀ v, motive (Atom.var v))
      (gnd : ∀ g, motive (Atom.gnd g))
+diff --git a/MettaHyperonFull/Proofs/BindingLaws.lean b/MettaHyperonFull/Proofs/BindingLaws.lean
+index 7ec192c..f30715a 100644
+--- a/MettaHyperonFull/Proofs/BindingLaws.lean
++++ b/MettaHyperonFull/Proofs/BindingLaws.lean
+@@ -211,6 +211,54 @@ theorem addEqRaw_of_mem (b : Bindings) (x y : VarName)
+   · rfl
+   · exact if_pos found
+ 
++/-- A non-reflexive alias absent from the binding set is prepended exactly once. -/
++theorem addEqRaw_of_not_mem (b : Bindings) (x y : VarName)
++    (different : x ≠ y) (absent : BindingRel.eq x y ∉ b) :
++    addEqRaw b x y = BindingRel.eq x y :: b := by
++  unfold addEqRaw
++  simp only [beq_eq_false_iff_ne.mpr different, Bool.false_eq_true, if_false]
++  split
++  · rename_i found
++    obtain ⟨edge, member, edgeMatch⟩ := List.any_eq_true.mp found
++    cases edge with
++    | val key value => simp at edgeMatch
++    | eq left right =>
++        have equal : left = x ∧ right = y := by simpa using edgeMatch
++        rcases equal with ⟨rfl, rfl⟩
++        exact False.elim (absent member)
++  · rfl
++
++/-- Raw alias insertion preserves every relation already present. -/
++theorem mem_addEqRaw_of_mem (b : Bindings) (x y : VarName)
++    {relation : BindingRel} (present : relation ∈ b) :
++    relation ∈ addEqRaw b x y := by
++  unfold addEqRaw
++  split
++  · exact present
++  · split
++    · exact present
++    · exact List.mem_cons_of_mem _ present
++
++/-- Adding an alias neither creates nor removes value relations. -/
++@[simp] theorem val_mem_addEqRaw_iff (b : Bindings) (x y key : VarName)
++    (value : Atom) :
++    BindingRel.val key value ∈ addEqRaw b x y ↔
++      BindingRel.val key value ∈ b := by
++  unfold addEqRaw
++  split
++  · rfl
++  · split
++    · rfl
++    · simp
++
++/-- Raw alias insertion leaves direct value lookup unchanged. -/
++@[simp] theorem lookupVal_addEqRaw (b : Bindings) (x y key : VarName) :
++    lookupVal (addEqRaw b x y) key = lookupVal b key := by
++  unfold addEqRaw
++  split
++  · rfl
++  · split <;> rfl
++
+ /-- Duplicate suppression preserves exactly the non-reflexive relation set. -/
+ theorem mem_addEqRaw_iff (b : Bindings) (x y : VarName) (different : x ≠ y)
+     (relation : BindingRel) :
+@@ -237,6 +285,12 @@ theorem mem_addEqRaw_iff (b : Bindings) (x y : VarName) (different : x ≠ y)
+         · exact member
+     · rfl
+ 
++/-- Every non-reflexive alias is present after raw insertion, whether newly
++inserted or replayed. -/
++theorem eq_mem_addEqRaw (b : Bindings) (x y : VarName) (different : x ≠ y) :
++    BindingRel.eq x y ∈ addEqRaw b x y :=
++  (mem_addEqRaw_iff b x y different _).2 (by simp)
++
+ /-- Alias insertion is idempotent for every input, including raw binding sets. -/
+ theorem addEqRaw_idempotent (b : Bindings) (x y : VarName) :
+     addEqRaw (addEqRaw b x y) x y = addEqRaw b x y := by
 diff --git a/MettaHyperonFull/Proofs/MultipleSignatureSelection.lean b/MettaHyperonFull/Proofs/MultipleSignatureSelection.lean
-index 0b36617..b5a4ac4 100644
+index 7f883c9..18a243f 100644
 --- a/MettaHyperonFull/Proofs/MultipleSignatureSelection.lean
 +++ b/MettaHyperonFull/Proofs/MultipleSignatureSelection.lean
-@@ -313,6 +313,10 @@ private theorem multiSignature_interpret_a :
+@@ -1,6 +1,3 @@
+--- SPDX-FileCopyrightText: 2026 MesTTo
+--- SPDX-License-Identifier: Apache-2.0
+-
+ /-
+ Module: MettaHyperonFull.Proofs.MultipleSignatureSelection
+ Layer: Proofs
+@@ -310,12 +307,15 @@ private theorem multiSignature_interpret_a :
+     interpretFuel multiSignatureEnv 1 St.init
+       [{ stack := atomToStack (.expr [.sym "eval", .sym "a"]) [], bnd := [] }] [] =
+       ([(notReducibleA, [])], St.init) := by
+-  have hNotEmpty : (notReducibleA != emptyA) = true := by rfl
+   simp [interpretFuel.eq_3, interpretFuel.eq_1, interpretStack1.eq_1,
+     atomToStack, evalOp, queryOp, candidatesW, MinEnv.candidates, extractRules,
      instantiate_nil, multiSignatureEnv, multiSignatureAtoms, MinEnv.ofAtomsGT,
      St.init, World.empty, isEmbeddedOp, isVariableHeaded, headKey, finItem,
-     isFinal, finalPair, Std.HashMap.getD_emptyWithCapacity, hNotEmpty]
+-    isFinal, finalPair, Std.HashMap.getD_emptyWithCapacity, hNotEmpty]
++    isFinal, Std.HashMap.getD_emptyWithCapacity]
 +  change ([(instantiate [] notReducibleA, ([] : Bindings))].filter
 +    (fun p => p.1 != emptyA)) = _
 +  rw [instantiate_nil]
@@ -239,21 +526,19 @@ index 0b36617..b5a4ac4 100644
  
  private theorem multiSignature_eval_a :
      mettaEval multiSignatureEnv 1 St.init [] (.sym "a") =
-@@ -330,8 +334,8 @@ private theorem multiSignature_eval_a_expected :
-   have hCast :
-       mettaTypeCast multiSignatureEnv St.init.world [] (.sym "a") (.sym "A") =
-         .inr [] := by
--    rw [mettaTypeCast]
--    simp only [St.init]
-+    rw [mettaTypeCast, mettaTypeCastAvoiding]
-+    simp only [St.init, List.nil_append]
-     rw [typePrep_empty_symbol, multiSignature_a_type]
-     rw [show freshenArgumentTypes
-       (typeCastInferenceAvoid multiSignatureEnv (.sym "a") (.sym "a")
-@@ -353,61 +357,17 @@ private theorem multiSignature_reduce_application :
+@@ -349,13 +349,16 @@ private theorem multiSignature_reduce_application :
+     interpretFuel multiSignatureEnv 2 St.init
+       [{ stack := atomToStack (.expr [.sym "eval", applicationA]) [], bnd := [] }] [] =
+       ([(notReducibleA, [])], St.init) := by
+-  have hNotEmpty : (notReducibleA != emptyA) = true := by rfl
+   simp [interpretFuel.eq_3, interpretFuel.eq_1, interpretStack1.eq_1,
+     atomToStack, evalOp, queryOp, candidatesW, MinEnv.candidates, extractRules,
+     instantiate_nil, applicationA, multiSignatureEnv, multiSignatureAtoms,
      MinEnv.ofAtomsGT, St.init, World.empty, isEmbeddedOp, isVariableHeaded,
-     headKey, finItem, isFinal, finalPair, callGrounded,
-     GroundingTable.lookup, Std.HashMap.getD_emptyWithCapacity, hNotEmpty]
+-    headKey, finItem, isFinal, finalPair, callGrounded,
+-    GroundingTable.lookup, Std.HashMap.getD_emptyWithCapacity, hNotEmpty]
++    headKey, finItem, isFinal, callGrounded,
++    GroundingTable.lookup, Std.HashMap.getD_emptyWithCapacity]
 +  change ([(instantiate [] notReducibleA, ([] : Bindings))].filter
 +    (fun p => p.1 != emptyA)) = _
 +  rw [instantiate_nil]
@@ -261,62 +546,17 @@ index 0b36617..b5a4ac4 100644
  
  /-- Observable repair canary: the earlier applicable declaration is no longer masked by the later
  incompatible declaration. -/
- theorem mettaEval_uses_first_applicable_signature :
-     (mettaEval multiSignatureEnv 2 St.init [] applicationA).1 =
-       [(applicationA, [])] := by
--  rw [mettaEval.eq_2, instantiate_nil]
--  simp only [applicationA]
--  have hSelection :
--      selectFunctionType multiSignatureEnv St.init.world (.sym "f") [.sym "a"] =
--        .selected ⟨arrowA, [.sym "A"], .sym "RA", []⟩ := by
--    simpa [St.init] using multiSignature_selection
--  rw [hSelection]
--  simp only
--  have hPolicies :
--      argumentEvaluationPolicies
--        ⟨arrowA, [.sym "A"], .sym "RA", []⟩ 1 =
--        [(true, .sym "A")] := by
--    have hAtom : ((.sym "A" : Atom) != .sym "Atom") = true := by rfl
--    have hVariable : ((.sym "A" : Atom) != .sym "Variable") = true := by rfl
--    have hExpression : ((.sym "A" : Atom) != .sym "Expression") = true := by rfl
--    simp [argumentEvaluationPolicies, instantiate_nil,
--      hAtom, hVariable, hExpression]
--  have hReturn : returnsAtom ⟨arrowA, [.sym "A"], .sym "RA", []⟩ = false := by
--    have hRA : ((.sym "RA" : Atom) == .sym "Atom") = false := by rfl
--    simp [returnsAtom, instantiate_nil, hRA]
--  change
--    (prioritizeSemanticResults (evaluateExpectedApplication
--      (fun nextSt nextBindings nextAtom nextExpected =>
--        mettaEvalExpected multiSignatureEnv 1 nextSt nextBindings nextAtom
--          nextExpected)
--      (fun nextSt application =>
--        interpretFuel multiSignatureEnv 2 nextSt
--          [{ stack := atomToStack (.expr [.sym "eval", application]) [], bnd := [] }] [])
--      St.init "f" [.sym "a"]
--      ⟨arrowA, [.sym "A"], .sym "RA", []⟩)).1 =
--        [(.expr [.sym "f", .sym "a"], [])]
--  have hReduce :
--      interpretFuel multiSignatureEnv 2 St.init
--        [{ stack := atomToStack (.expr [.sym "eval", .expr [.sym "f", .sym "a"]]) [],
--           bnd := [] }] [] = ([(notReducibleA, [])], St.init) := by
--    simpa [applicationA] using multiSignature_reduce_application
--  have hNotError : (.sym "a" : Atom).isError = false := by rfl
--  have hSame : ((.sym "a" : Atom) != .sym "a") = false := by rfl
--  have hNotReducibleSelf : (notReducibleA == notReducibleA) = true := by rfl
--  have hMerge : Bindings.merge [] [] = [[]] := by rfl
--  have hVars : (.sym "a" : Atom).vars = [] := by simp [Atom.vars]
--  have hRestrict : restrictBnd [] [] = [] := by rfl
--  have hApplicationNotError :
--      (Atom.expr [Atom.sym "f", Atom.sym "a"]).isError = false := rfl
--  simp [evaluateExpectedApplication, evaluateExpectedApplicationFrom,
--    hPolicies, hReturn,
--    multiSignature_eval_a_expected, hReduce, hNotError, hSame,
--    hNotReducibleSelf, hMerge, hVars, hRestrict,
--    hApplicationNotError, prioritizeSemanticResults]
-+  cbv
+diff --git a/MettaHyperonFull/Proofs/TypeInferenceFreshening.lean b/MettaHyperonFull/Proofs/TypeInferenceFreshening.lean
+index 598a231..c10abc0 100644
+--- a/MettaHyperonFull/Proofs/TypeInferenceFreshening.lean
++++ b/MettaHyperonFull/Proofs/TypeInferenceFreshening.lean
+@@ -1,6 +1,3 @@
+--- SPDX-FileCopyrightText: 2026 MesTTo
+--- SPDX-License-Identifier: Apache-2.0
+-
+ import MettaHyperonFull.Proofs.CaptureAvoidingFreshening
  
- /-! ## Published evaluation-boundary canaries -/
- 
+ /-!
 diff --git a/book/lake-manifest.json b/book/lake-manifest.json
 index f0864dd..aacc610 100644
 --- a/book/lake-manifest.json
@@ -757,10 +997,10 @@ index 18640c8..a8afa7d 100644
 -leanprover/lean4:v4.31.0
 +leanprover/lean4:v4.33.1
 diff --git a/lake-manifest.json b/lake-manifest.json
-index dd02a48..c82bfb5 100644
+index dd02a48..f70cb2e 100644
 --- a/lake-manifest.json
 +++ b/lake-manifest.json
-@@ -1,96 +1,117 @@
+@@ -1,96 +1,126 @@
 -{"version": "1.2.0",
 - "packagesDir": ".lake/packages",
 - "packages":
@@ -861,6 +1101,15 @@ index dd02a48..c82bfb5 100644
 +  "version": "1.2.0",
 +  "packagesDir": ".lake/packages",
 +  "packages": [
++    {
++      "type": "path",
++      "scope": "",
++      "name": "mettail_core",
++      "manifestFile": "lake-manifest.json",
++      "inherited": false,
++      "dir": "../../batteries/mettail-core",
++      "configFile": "lakefile.lean"
++    },
 +    {
 +      "url": "https://github.com/leanprover-community/mathlib4.git",
 +      "type": "git",
@@ -975,11 +1224,16 @@ index dd02a48..c82bfb5 100644
 +  "fixedToolchain": false
 +}
 diff --git a/lakefile.lean b/lakefile.lean
-index 72d0687..ea7df3e 100644
+index 72d0687..fe6f121 100644
 --- a/lakefile.lean
 +++ b/lakefile.lean
-@@ -11,11 +11,11 @@ package «MettaHyperonFull» where
+@@ -9,13 +9,16 @@ package «MettaHyperonFull» where
+   keywords := #["MeTTa", "Hyperon", "formal semantics", "metatheory", "verified interpreter"]
+   leanOptions := #[⟨`autoImplicit, false⟩, ⟨`relaxedAutoImplicit, false⟩]
  
++-- Independent atom syntax shared with the specification clients.
++require mettail_core from "../../batteries/mettail-core"
++
  -- Mathlib backs the *metatheory layer only* (Multiset, Relation.ReflTransGen, order and
  -- decidability infrastructure, aesop). Pinned to the release whose toolchain matches ours
 --- (leanprover/lean4:v4.31.0). The executable kernel deliberately does not import it:

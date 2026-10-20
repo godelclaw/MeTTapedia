@@ -1710,51 +1710,52 @@ theorem hasLoop_false_of_addEqRaw_emptyUnifier
         (Metta.Bindings.addEqRaw source left right) left) = some [])
     (hloop : (Metta.Bindings.addEqRaw source left right).hasLoop = false) :
     source.hasLoop = false := by
-  by_cases hlr : (left == right) = true
-  · unfold Metta.Bindings.addEqRaw at hloop
-    rw [if_pos hlr] at hloop
-    exact hloop
-  · have hlr' : left ≠ right := by simpa using hlr
-    have hext : Metta.Bindings.addEqRaw source left right =
-        Metta.BindingRel.eq left right :: source := by
-      unfold Metta.Bindings.addEqRaw
-      rw [if_neg hlr]
-    rw [hext] at hloop hunify
-    have hnoFloatVals : ∀ v ∈ Metta.Bindings.classValues
-        (Metta.BindingRel.eq left right :: source) left,
-        MettaAtomNoFloat v := by
-      intro v hv
-      unfold Metta.Bindings.classValues at hv
-      obtain ⟨y, _, hlookup⟩ := List.mem_filterMap.mp hv
-      have hval := lookupVal_mem' hlookup
-      rcases List.mem_cons.mp hval with heq | hmem
-      · cases heq
-      · exact hnoFloat y v hmem
-    have hsame := classValues_pairwise_of_unifyValues_nil
-      hnoFloatVals hunify
-    unfold Metta.Bindings.hasLoop at hloop ⊢
-    rw [Bool.or_eq_false_iff] at hloop ⊢
-    obtain ⟨hdirect, hrecursive⟩ := hloop
-    constructor
-    · simp only [List.any_cons, Bool.or_eq_false_iff] at hdirect
-      exact hdirect.2
-    · rw [List.any_eq_false] at hrecursive ⊢
-      intro x hx
-      have hx' := mem_vars_cons
-        (rel := Metta.BindingRel.eq left right) hx
-      have hext' := hrecursive x hx'
-      cases hres : Metta.Bindings.resolveAtomAux
-          (Metta.BindingRel.eq left right :: source)
-          (Metta.Bindings.resolutionFuel
-            (Metta.BindingRel.eq left right :: source) (Metta.Atom.var x))
-          [] (Metta.Atom.var x) with
-      | none => rw [hres] at hext'; exact absurd rfl hext'
-      | some res =>
-        have hsome := resolveAtomAux_some_of_cons_eq hlr' hnonvar hsame
-          _ _ [] _ _ (fun s hs => hs) hres
-        obtain ⟨res', hres'⟩ := Option.isSome_iff_exists.mp hsome
-        have hcanon := resolveAtomAux_some_at_resolutionFuel hres'
-        simp [hcanon]
+  by_cases stored : Metta.BindingRel.eq left right ∈ source
+  · rwa [Metta.Bindings.addEqRaw_of_mem source left right stored] at hloop
+  · by_cases hlr : (left == right) = true
+    · unfold Metta.Bindings.addEqRaw at hloop
+      rw [if_pos hlr] at hloop
+      exact hloop
+    · have hlr' : left ≠ right := by simpa using hlr
+      have hext : Metta.Bindings.addEqRaw source left right =
+          Metta.BindingRel.eq left right :: source :=
+        Metta.Bindings.addEqRaw_of_not_mem source left right hlr' stored
+      rw [hext] at hloop hunify
+      have hnoFloatVals : ∀ v ∈ Metta.Bindings.classValues
+          (Metta.BindingRel.eq left right :: source) left,
+          MettaAtomNoFloat v := by
+        intro v hv
+        unfold Metta.Bindings.classValues at hv
+        obtain ⟨y, _, hlookup⟩ := List.mem_filterMap.mp hv
+        have hval := lookupVal_mem' hlookup
+        rcases List.mem_cons.mp hval with heq | hmem
+        · cases heq
+        · exact hnoFloat y v hmem
+      have hsame := classValues_pairwise_of_unifyValues_nil
+        hnoFloatVals hunify
+      unfold Metta.Bindings.hasLoop at hloop ⊢
+      rw [Bool.or_eq_false_iff] at hloop ⊢
+      obtain ⟨hdirect, hrecursive⟩ := hloop
+      constructor
+      · simp only [List.any_cons, Bool.or_eq_false_iff] at hdirect
+        exact hdirect.2
+      · rw [List.any_eq_false] at hrecursive ⊢
+        intro x hx
+        have hx' := mem_vars_cons
+          (rel := Metta.BindingRel.eq left right) hx
+        have hext' := hrecursive x hx'
+        cases hres : Metta.Bindings.resolveAtomAux
+            (Metta.BindingRel.eq left right :: source)
+            (Metta.Bindings.resolutionFuel
+              (Metta.BindingRel.eq left right :: source) (Metta.Atom.var x))
+            [] (Metta.Atom.var x) with
+        | none => rw [hres] at hext'; exact absurd rfl hext'
+        | some res =>
+          have hsome := resolveAtomAux_some_of_cons_eq hlr' hnonvar hsame
+            _ _ [] _ _ (fun s hs => hs) hres
+          obtain ⟨res', hres'⟩ := Option.isSome_iff_exists.mp hsome
+          have hcanon := resolveAtomAux_some_at_resolutionFuel hres'
+          simp [hcanon]
 
 /-! ## Fresh frame reflection and accepted query callers -/
 

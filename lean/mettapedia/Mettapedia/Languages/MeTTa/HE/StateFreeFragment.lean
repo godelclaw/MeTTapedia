@@ -413,18 +413,20 @@ theorem stateOpFree_resolveStates (world : Metta.Minimal.World)
     ∀ atom, StateOpFree atom →
       StateOpFree (Metta.Minimal.resolveStates world atom) := by
   intro atom
-  fun_induction Metta.Minimal.resolveStates world atom <;> intro safe
+  induction atom using Metta.Minimal.resolveStates.induct world <;> intro safe
   case case1 id value lookup =>
-    exact worldSafe.stateCells id.toNat value lookup
+    simpa [Metta.Minimal.resolveStates, lookup] using
+      worldSafe.stateCells id.toNat value lookup
   case case2 id lookup =>
-    exact safe
+    simpa [Metta.Minimal.resolveStates, lookup] using safe
   case case3 atoms notHandle inductionHypothesis =>
+    simp only [Metta.Minimal.resolveStates]
     apply stateOpFree_expr_iff_list.mpr
     exact stateOpFreeList_map safe.2 (by
       intro child member childSafe
       exact inductionHypothesis child member childSafe)
   case case4 atom first second =>
-    exact safe
+    simpa [Metta.Minimal.resolveStates, first, second] using safe
 
 /-- State wrapping used by type preparation preserves the fragment. -/
 theorem stateOpFree_wrapStates (world : Metta.Minimal.World)
@@ -432,20 +434,22 @@ theorem stateOpFree_wrapStates (world : Metta.Minimal.World)
     ∀ atom, StateOpFree atom →
       StateOpFree (Metta.Minimal.wrapStates world atom) := by
   intro atom
-  fun_induction Metta.Minimal.wrapStates world atom <;> intro safe
+  induction atom using Metta.Minimal.wrapStates.induct world <;> intro safe
   case case1 id value lookup =>
+    simp only [Metta.Minimal.wrapStates, lookup]
     apply stateOpFree_expr_iff_list.mpr
     exact ⟨by simp [StateOpFree, worldMutatingHeads],
       ⟨worldSafe.stateCells id.toNat value lookup, trivial⟩⟩
   case case2 id lookup =>
-    exact safe
+    simpa [Metta.Minimal.wrapStates, lookup] using safe
   case case3 atoms notHandle inductionHypothesis =>
+    simp only [Metta.Minimal.wrapStates]
     apply stateOpFree_expr_iff_list.mpr
     exact stateOpFreeList_map safe.2 (by
       intro child member childSafe
       exact inductionHypothesis child member childSafe)
   case case4 atom first second =>
-    exact safe
+    simpa [Metta.Minimal.wrapStates, first, second] using safe
 
 /-- The complete type-preparation pipeline is state-operation-free. -/
 theorem stateOpFree_typePrep (world : Metta.Minimal.World)

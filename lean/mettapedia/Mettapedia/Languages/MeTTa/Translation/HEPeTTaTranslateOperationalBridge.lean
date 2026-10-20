@@ -765,7 +765,6 @@ namespace Mettapedia.Languages.MeTTa.Translation.PureConstructor
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi
 open PeTTa.SpaceSemantics (Program)
-open private noForeign from Mettapedia.Languages.MeTTa.Translation.HEPeTTaSound
 
 /-- General finite recursive source work constructs both maintained machine
 executions, including nested argument alternatives and recursive clause

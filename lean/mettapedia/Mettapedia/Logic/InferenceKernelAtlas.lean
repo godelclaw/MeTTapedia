@@ -11,17 +11,26 @@ import Mettapedia.Languages.MM0.NaturalClosure
 import Mettapedia.Languages.MM0.NaturalInduction
 import Mettapedia.Languages.MM0.NaturalCarrier
 import Mettapedia.Languages.MM0.NaturalType
+import Mettapedia.Languages.MM0.NaturalRecursion
+import Mettapedia.Languages.MM0.NaturalFactsMeaning
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorRawPreservation
 import Mettapedia.Languages.MM0.HOLTypeDefinitionBoundary
 import Mettapedia.Languages.HOLLight.KernelAtlas
 import Mettapedia.Languages.Megalodon.FuelledConversionProfile
 import Mettapedia.Languages.Megalodon.FuelledConversionWitness
+import Mettapedia.Languages.Megalodon.NaturalTheoryProfile
 import Mettapedia.GSLT.LanguageDef.StandardSemanticAuthorityProfiles
 import Mettapedia.Logic.HOL.ConversionTiers
 import Mettapedia.Logic.HOL.CheckableFragment
 import Mettapedia.Languages.HOLLight.RetainedElaboration
 import Mettapedia.Languages.MM0.Kernel.SubstitutionStability
 import Mettapedia.GSLT.Dedukti.ConstructionsConsistency
+import Mettapedia.GSLT.Dedukti.HOLHubRoundTrip
+import Mettapedia.TypeTheory.HypercubeBubbles
+import Mettapedia.TypeTheory.DependencyDescentCriterion
+import Mettapedia.TypeTheory.DependentFamilyEquivalenceTransport
+import Mettapedia.TypeTheory.EqualityFamilyObserverFactorization
+import Mettapedia.TypeTheory.DependencyExtensionalityOrthogonality
 import Mettapedia.OSLF.MeTTaIL.GeneralRewriteRecipeExecution
 import Mettapedia.Languages.ProcessCalculi.RhoCalculus.NativeExecution
 import Mettapedia.Languages.MeTTa.EquationKernel.Execution
@@ -37,6 +46,7 @@ import Mettapedia.Logic.CertificateConservativeExtension
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorChecking
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorProgramChecking
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorComputationProfiles
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorCheckingProfiles
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorConversion
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorAnnotatedChecking
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorAnnotatedAppend
@@ -45,6 +55,8 @@ import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Models.NativeNaturalDec
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveAppendElaboration
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveNaturalHOL
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveNaturalMegalodon
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveNaturalMegalodonProfile
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveNaturalMM0
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveAppendChecking
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveAppendSource
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.IndexedPolynomialGeneratedChecking
@@ -387,6 +399,47 @@ Compiled batch acceptance is not itself a kernel-reduced Lean proof of that
 finite acceptance proposition; the mathematical comparison theorems are
 ordinary Lean proofs.
 
+The optional classical natural profile makes its commitments explicit
+(`Megalodon.NaturalTheoryProfile`). A polymorphic selector and its law,
+double-negation elimination and Dedekind infinity are independent profile
+items; none is seeded by the Egal kernel tag. They derive a selected zero and
+successor, separation, injectivity, guarded induction, infinity and recursion
+on the generated carrier. Native admission checks one parameter, three exact
+axioms and every resulting proof; omitting any selected axiom refuses.
+
+The corresponding authored-carrier interpretation
+(`IndexedInductiveNaturalMegalodonProfile`) chooses the existing successor as
+the infinite injection and the existing zero as its omitted point. Therefore
+the selected operations agree at the mathematical boundary, and graph-selected
+recursion agrees with the maintained source eliminator at every result type.
+A singleton refutes the infinity option, and a constant successor refutes the
+authored instance. This is one optional theory node, not a new default kernel,
+HOTG adoption, parametricity theorem or complete source-compiler refinement.
+
+The admitted Nat/Vec package also has an explicit checking-profile graph
+(`NativeNaturalVectorCheckingProfiles`).  The minimal node retains all four
+typed iota receipts without licensing conversion.  The natural intensional
+node licenses exactly the two Nat rows.  The scoped logical-extensional node
+layers the same Nat computation above the maintained opaque proposition- and
+function-extensionality declarations.  Inclusion and strict separation are
+proved per capability field; dependent append is typed in the latter two
+nodes and refused by the minimal replay.  No iota receipt is treated as an
+object-theory equality proof, and the scoped node adds neither judgmental
+extensionality, UIP nor equality reflection.  The general
+intensional/extensional translation remains a separate edge.
+
+The natural node has a second, incomparable child: the full four-row raw
+operational profile.  Every original Nat/Vec root preserves the natural-only
+formed checking judgment, without installing the vector roots in its
+conversion.  This split is forced by a checked annotation boundary.  The
+natural rows lift every raw instance to annotated computation; the full table
+does not.  A vector-nil source can put two distinct lambda-domain annotations
+at the repeated payload positions.  Erasure identifies them and admits the raw
+root, while no single annotated substitution can produce that source.  Thus
+the operational and logical-extensional branches form a genuine fork.  Typed
+coherent vector instances remain available; unrestricted annotation lifting
+and a common upper checking node would need an explicit coherence discipline.
+
 Accepted requests map through the original formed typing judgment to the
 existing set-tower interpretation
 (`TowerInterpretation.Checking.request_model_sound`). Checked conversion
@@ -580,6 +633,68 @@ The calculus of constructions, the top of the lambda cube, is consistent
 (`GSLT.Dedukti.ConstructionsModel.constructions_consistent`, by a
 proof-irrelevant model), while a universal sort `∗ : ∗` is not.
 
+Dependency has an exact, bounded necessity result in the same cube. A
+well-formed context `A : Type, P : A → Type` and the direct Curry--Howard
+proposition `Π x : A, P x` exist exactly when both the ordinary function and
+value-to-type product rules are present
+(`HypercubeBubbles.directValueIndexedForall_iff_contains_dependentProducts`).
+The dependent vertex is a least formation basis for this interface under
+every conversion bubble. Its actual abstraction and application rules retain
+the same value in the evidence type, with application producing `P argument`.
+The simple, polymorphic and type-operator vertices reject the interface under
+every bubble: conversion cannot manufacture the missing formation rule.
+
+The minimum changes when the interface changes. Adding the polymorphic
+identity type and the kind `Type → Type` requires exactly the four CoC
+formation rules
+(`HypercubeBubbles.directFormationInterfaces_iff_contains_constructionProducts`).
+Deleting any required rule defeats at least one of these three direct
+interfaces. These are least formation bases in the existing annotated syntax,
+not a least foundation for every encoding of logic. They neither identify
+arbitrary conversion bubbles with ordinary CoC nor supply MLTT's universes,
+identity eliminator or inductives. LF adequacy is a separate theorem for a
+specified logic and signature; higher-order object logic does not by itself
+force a CoC host. The Prime candidates therefore retain distinct profile
+nodes rather than inheriting a selected universal checker.
+
+The semantic comparison has three different levels of fidelity. Literal
+descent through the canonical simple-family inclusion is exactly constancy
+over an inhabited context (`DependencyDescentCriterion.descends_iff_constant`).
+Descent up to fibrewise equivalence instead uses `FamilyFactorization`;
+exact representation layers preserve and reflect its existence
+(`DependentFamilyEquivalenceTransport.codeFamily_factorization_iff`).
+Requiring all anchored equality families to survive an observer forces that
+observer to be injective
+(`EqualityFamilyObserverFactorization.EqualityFamilyFactorization.all_anchored_nonempty_iff_injective`).
+Inhabitation alone is weaker than these data-preserving comparisons. These
+semantic theorems complement the syntactic formation criterion; they do not
+provide an interpretation of every cube profile into a CwF model.
+
+Reifying indices into singleton codes or a second level changes the direct
+contract and introduces a value/code coherence route. Exact recoding does not
+make a genuinely varying family descend through an observer that erased its
+relevant distinctions. Dependency also does not select function extensionality:
+the existing simple and dependent beta function spaces each have extensional
+and route-retaining models (`DependencyExtensionalityOrthogonality`). HoTT path
+structure, identity principles, inductives and universe policies are further
+features. Their admission, evidence and realization laws remain separate from
+the formation graph and from one another.
+
+There is already a proof-level comparison to reuse beside the formation
+minimum. The STTfa hub compiles the maintained implication/universal HOL
+proof calculus into lambda-Pi-modulo evidence. Its normal inhabitants reflect
+closed implicational proofs; for the core universal fragment and free objects,
+reflection retains an explicit witness-coding condition
+(`GSLT.Dedukti.HOLHub.sttfa_adequate_coded_open`). Detour-free source proofs
+with core witnesses have computed normal forms; every normal form of such a
+compiled proof equals the computed one and retains the coding. Removing the
+detour-free premise remains open in this checked comparison. This does not
+supply normalization for every typed hub term. The uncoded bare-connective witness supplies a checked
+failure of exact evidence reconstruction; its object conclusion still has a
+HOL proof with a different witness. This separates evidence exactness from
+theorem conservativity. The hub uses its own declarations and rewrite theory;
+its adequacy theorem is not an interpretation of every product/bubble profile.
+
 The standard-semantics examples have precise scopes: universal affine
 inequalities over natural numbers, and recurrence from a selected root under
 a fixed controller on a finite state space. They do not supply general
@@ -657,3 +772,26 @@ names and a lower claimed universe refuse. This does not authorize the
 original four-row family candidates, unrestricted vector computation or
 annotated equality by a raw-to-formed upgrade.
 -/
+
+/-! The native MM0 primitive-recursion extension derives a total functional
+binary graph over its qualified natural subtype and selects its unique value.
+The exact recursion statement retains the arbitrary result type and the
+result-before-predecessor method order. Its intrinsic formula has the same
+standard interpretation as the shared natural fact, with numeral wrapping
+interpreted as identity. Exact native statement/dependency/mutation checks
+remain distinct from Lean proof checking.
+
+The exact typed graph and guarded induction sequent now share the authored
+natural interpretation (`MM0.NaturalFactsMeaning`,
+`IndexedInductiveNaturalMM0`). The native constructor, induction, recursion
+and infinity readings agree with the five shared laws in that standard
+interpretation. Definition reducts account for named infinity predicates;
+Boolean equality and numeral wrapping retain their declared meanings.
+The graph contains exactly the source recursor value, transposing method
+arguments once and transporting the natural index through ULift. Every
+selector satisfying its explicit selection law agrees with that value;
+a wrong successor output refuses. The definition-reduct comparison applies
+to arbitrary Henkin models, whereas graph/source and shared-law comparisons
+here retain their stated standard interpretation. This is not proof-object
+transport, complete soundness for the supplied HOL presentation or
+compiler/native-C refinement. -/

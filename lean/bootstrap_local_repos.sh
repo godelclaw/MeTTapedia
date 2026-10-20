@@ -3,6 +3,18 @@ set -euo pipefail
 
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
+with_leatta=0
+for argument in "$@"; do
+  case "$argument" in
+    --with-leatta) with_leatta=1 ;;
+    *)
+      echo "unknown argument: $argument" >&2
+      echo "usage: $0 [--with-leatta]" >&2
+      exit 2
+      ;;
+  esac
+done
+
 clone_or_sync_repo() {
   local rel_path=$1
   local branch=$2
@@ -10,6 +22,7 @@ clone_or_sync_repo() {
   local work_branch=$4
   local origin_url=$5
   local upstream_url=${6:-}
+  local replay_mode=${7:---verify}
   local dest="$script_dir/$rel_path"
   local cloned_now=0
 
@@ -41,12 +54,13 @@ clone_or_sync_repo() {
   fi
 
   if [ "$cloned_now" -eq 1 ]; then
-    python3 "$script_dir/upgrades/4.33.1/replay.py" "$rel_path" --verify
+    python3 "$script_dir/upgrades/4.33.1/replay.py" "$rel_path" "$replay_mode"
   fi
 }
 
-# Editable dependencies use the published Lean 4.33.1 commits.
-# Existing checkouts are preserved; source fingerprints verify new checkouts.
+# Editable dependencies start from published commits. Recorded overlays are
+# applied only where the corresponding published integration commit does not
+# yet exist; source fingerprints verify every newly prepared checkout.
 clone_or_sync_repo "externals/Foundation" "lean-upgrade/tauceti-lean__externals__Foundation" \
   "d37fa8cc888c2417d0aa04aed3ff238f2f76342b" "lean-upgrade/tauceti-lean__externals__Foundation" \
   "git@github.com:zariuq/Foundation.git" \
@@ -97,10 +111,16 @@ clone_or_sync_repo "externals/doc-gen4-tauceti" "lean-upgrade/tauceti-docgen" \
   "932691f4ada44325a66733f309c3be773dc55195" "lean-upgrade/tauceti-docgen" \
   "git@github.com:zariuq/doc-gen4.git"
 
-clone_or_sync_repo "externals/LeaTTa" "lean-upgrade/tauceti-lean__externals__LeaTTa" \
-  "e5c5d364158caca098fcb50bfc5f553b01cb38cc" "lean-upgrade/tauceti-lean__externals__LeaTTa" \
-  "git@github.com:zariuq/LeaTTa.git"
+if [ "$with_leatta" -eq 1 ]; then
+  clone_or_sync_repo "externals/LeaTTa" "metatheory" \
+    "63cba425c9cfd4caf4fe000f354e4bcfc382425d" "integration/shared-metta-atom-local" \
+    "git@github.com:zariuq/LeaTTa.git" "https://github.com/MesTTo/LeaTTa.git" "--apply"
 
-clone_or_sync_repo "externals/LeaTTa-vanilla" "lean-upgrade/tauceti-lean__externals__LeaTTa-vanilla" \
-  "c21680176fc31e1636bcd3cfc71d750e22f6569b" "lean-upgrade/tauceti-lean__externals__LeaTTa-vanilla" \
-  "git@github.com:zariuq/LeaTTa.git"
+  clone_or_sync_repo "externals/LeaTTa-vanilla" "lean-upgrade/tauceti-lean__externals__LeaTTa-vanilla" \
+    "c21680176fc31e1636bcd3cfc71d750e22f6569b" "lean-upgrade/tauceti-lean__externals__LeaTTa-vanilla" \
+    "git@github.com:zariuq/LeaTTa.git"
+
+  echo "optional LeaTTa integrations prepared; run $script_dir/build_leatta_integration.sh"
+else
+  echo "skip optional LeaTTa integrations (pass --with-leatta to prepare them)"
+fi

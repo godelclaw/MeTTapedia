@@ -57,6 +57,19 @@ private theorem listAtom_vars_nil (xs : List Nat) : (listAtom xs).vars = [] := b
   | nil => simp [listAtom, mSym, Metta.Atom.vars]
   | cons x xs ih => simp [listAtom, mE, Metta.Atom.vars, peano_vars_nil, ih]
 
+private theorem addVarBinding_empty_closed (name : VarName) (target : Metta.Atom)
+    (closed : target.vars = []) :
+    Metta.Bindings.addVarBinding [] name target = [[.val name target]] := by
+  have classEmpty : Metta.Bindings.classValues [] name = [] := by
+    simp [Metta.Bindings.classValues, Metta.Bindings.lookupVal]
+  have nonvariable : ∀ other, target ≠ .var other := by
+    intro other same
+    subst target
+    simp [Metta.Atom.vars] at closed
+  simpa [Metta.Bindings.addValRaw, Metta.Bindings.removeVal,
+    Metta.Bindings.lookupVal] using
+      (Metta.Bindings.addVarBinding_fresh classEmpty nonvariable)
+
 private theorem match_var_nonvar_atom (v : String) (target : Metta.Atom)
     (hvars : target.vars = []) :
     Metta.matchAtomsWith none (Metta.Atom.var v) target =
@@ -75,17 +88,29 @@ private theorem match_cons_vars (head tail : Metta.Atom)
     (hTail : tail.vars = []) :
     Metta.matchAtomsWith none (mE "Cons" [mVar "x", mVar "xs"]) (mE "Cons" [head, tail]) =
       [[Metta.BindingRel.val "xs" tail, Metta.BindingRel.val "x" head]] := by
+  have headClosed : ClosedValueBindings [.val "x" head] :=
+    .val hHead .nil
+  have tailClosed : ClosedValueBindings [.val "xs" tail] :=
+    .val hTail .nil
+  have mergeHead : Metta.Bindings.merge [] [.val "x" head] =
+      [[.val "x" head]] := by
+    simpa [bindingValueKeys] using
+      (merge_closed_noConflict_eq headClosed (by simp [bindingValueKeys])
+        ClosedValueBindings.nil (by simp [bindingValueKeys]))
+  have mergeTail : Metta.Bindings.merge [.val "x" head] [.val "xs" tail] =
+      [[.val "xs" tail, .val "x" head]] := by
+    simpa [bindingValueKeys] using
+      (merge_closed_noConflict_eq tailClosed (by simp [bindingValueKeys])
+        headClosed (by simp [bindingValueKeys]))
   simp only [mE, mVar, Metta.matchAtomsWith]
   unfold Metta.matchAll
   simp [Metta.matchAtomsWith, Metta.Bindings.merge]
   unfold Metta.matchAll
   rw [match_var_nonvar_atom "x" head hHead]
-  simp [Metta.Bindings.merge, Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
-    Metta.Bindings.addValRaw, Metta.Bindings.removeVal, Metta.Bindings.lookupVal]
+  simp [headClosed.hasLoop_false, mergeHead]
   unfold Metta.matchAll
   rw [match_var_nonvar_atom "xs" tail hTail]
-  simp [Metta.Bindings.merge, Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
-    Metta.Bindings.addValRaw, Metta.Bindings.removeVal, Metta.Bindings.lookupVal]
+  simp [tailClosed.hasLoop_false, mergeTail]
   unfold Metta.matchAll
   rfl
 
@@ -104,19 +129,31 @@ private theorem append_nil_mops_readout (ys : List Nat) :
   refine ⟨(mE "listAppend" [mSym "Nil", mVar "ys"], mVar "ys"), ?_, ?_⟩
   · simp [listAppendLengthRules, Metta.Space.equalityRules, mE, mSym, mVar]
   · refine ⟨[Metta.BindingRel.val "ys" (listAtom ys)], ?_, ?_⟩
-    · simp only [appendQuery, listAtom, mE, mSym, mVar, Metta.matchAtoms,
-        Metta.matchAtomsWith]
-      unfold Metta.matchAll
-      change [Metta.BindingRel.val "ys" (listAtom ys)] ∈
-        Metta.matchAll none [[]] [Metta.Atom.var "ys"] [listAtom ys]
-      unfold Metta.matchAll
-      rw [match_var_nonvar_atom "ys" (listAtom ys) (listAtom_vars_nil ys)]
-      simp [Metta.Bindings.merge, Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
-        Metta.Bindings.addValRaw, Metta.Bindings.removeVal, Metta.Bindings.lookupVal]
-      unfold Metta.matchAll
-      simp
-    · simp [Metta.instantiate, Metta.bindingsToSubst, Metta.Subst.apply,
-        Metta.Subst.lookup, mVar]
+    · have rawMatch : Metta.matchAtomsWith none
+          (mE "listAppend" [mSym "Nil", mVar "ys"])
+          (appendQuery [] ys) = [[.val "ys" (listAtom ys)]] := by
+        simp only [appendQuery, listAtom, mE, mSym, mVar, Metta.matchAtomsWith]
+        unfold Metta.matchAll
+        simp [Metta.matchAtomsWith, Metta.Bindings.merge]
+        unfold Metta.matchAll
+        simp [Metta.matchAtomsWith, Metta.Bindings.merge]
+        unfold Metta.matchAll
+        rw [match_var_nonvar_atom "ys" (listAtom ys) (listAtom_vars_nil ys)]
+        have merged : Metta.Bindings.merge [] [.val "ys" (listAtom ys)] =
+            [[.val "ys" (listAtom ys)]] := by
+          simp [Metta.Bindings.merge, Metta.Bindings.mergeOne,
+            addVarBinding_empty_closed "ys" (listAtom ys) (listAtom_vars_nil ys)]
+        simp [hasLoop_singleton_val_closed_false "ys" (listAtom ys)
+          (listAtom_vars_nil ys), merged]
+        unfold Metta.matchAll
+        rfl
+      rw [Metta.matchAtoms, rawMatch]
+      simp [hasLoop_singleton_val_closed_false "ys" (listAtom ys)
+        (listAtom_vars_nil ys)]
+    · have closed : ClosedValueBindings [.val "ys" (listAtom ys)] :=
+        .val (listAtom_vars_nil ys) .nil
+      rw [closed.instantiate_eq_subst_apply]
+      simp [Metta.bindingsToSubst, Metta.Subst.apply, Metta.Subst.lookup, mVar]
 
 private theorem append_nil_mops_step (ys : List Nat) :
     Metta.MopsStep listAppendLengthRules (appendQuery [] ys) (listAtom ys) := by
@@ -135,21 +172,52 @@ private theorem append_cons_mops_readout (x : Nat) (xs ys : List Nat) :
   · refine ⟨[Metta.BindingRel.val "ys" (listAtom ys),
         Metta.BindingRel.val "x" (peano x),
         Metta.BindingRel.val "xs" (listAtom xs)], ?_, ?_⟩
-    · simp only [appendQuery, listAtom, mE, mVar, Metta.matchAtoms, Metta.matchAtomsWith]
-      unfold Metta.matchAll
-      simp [Metta.matchAtomsWith, Metta.Bindings.merge]
-      unfold Metta.matchAll
-      rw [match_cons_vars_raw (peano x) (listAtom xs)
-        (peano_vars_nil x) (listAtom_vars_nil xs)]
-      simp [Metta.Bindings.merge, Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
-        Metta.Bindings.addValRaw, Metta.Bindings.removeVal, Metta.Bindings.lookupVal]
-      unfold Metta.matchAll
-      rw [match_var_nonvar_atom "ys" (listAtom ys) (listAtom_vars_nil ys)]
-      simp [Metta.Bindings.merge, Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
-        Metta.Bindings.addValRaw, Metta.Bindings.removeVal, Metta.Bindings.lookupVal]
-      unfold Metta.matchAll
-      simp
-    · simp [appendQuery, mE, mVar, Metta.instantiate, Metta.bindingsToSubst,
+    · have nestedClosed : ClosedValueBindings
+          [.val "xs" (listAtom xs), .val "x" (peano x)] :=
+        .val (listAtom_vars_nil xs) (.val (peano_vars_nil x) .nil)
+      have accumulatorClosed : ClosedValueBindings
+          [.val "x" (peano x), .val "xs" (listAtom xs)] :=
+        .val (peano_vars_nil x) (.val (listAtom_vars_nil xs) .nil)
+      have ysClosed : ClosedValueBindings [.val "ys" (listAtom ys)] :=
+        .val (listAtom_vars_nil ys) .nil
+      have outputClosed : ClosedValueBindings
+          [.val "ys" (listAtom ys), .val "x" (peano x), .val "xs" (listAtom xs)] :=
+        .val (listAtom_vars_nil ys) accumulatorClosed
+      have nestedMerge : Metta.Bindings.merge []
+          [.val "xs" (listAtom xs), .val "x" (peano x)] =
+          [[.val "x" (peano x), .val "xs" (listAtom xs)]] := by
+        simpa [bindingValueKeys] using
+          (merge_closed_noConflict_eq nestedClosed (by simp [bindingValueKeys])
+            ClosedValueBindings.nil (by simp [bindingValueKeys]))
+      have ysMerge : Metta.Bindings.merge
+          [.val "x" (peano x), .val "xs" (listAtom xs)]
+          [.val "ys" (listAtom ys)] =
+          [[.val "ys" (listAtom ys), .val "x" (peano x),
+            .val "xs" (listAtom xs)]] := by
+        simpa [bindingValueKeys] using
+          (merge_closed_noConflict_eq ysClosed (by simp [bindingValueKeys])
+            accumulatorClosed (by simp [bindingValueKeys]))
+      rw [Metta.matchAtoms, List.mem_filter]
+      constructor
+      · simp only [appendQuery, listAtom, mE, mVar, Metta.matchAtomsWith]
+        unfold Metta.matchAll
+        simp [Metta.matchAtomsWith, Metta.Bindings.merge]
+        unfold Metta.matchAll
+        rw [match_cons_vars_raw (peano x) (listAtom xs)
+          (peano_vars_nil x) (listAtom_vars_nil xs)]
+        simp [nestedClosed.hasLoop_false, nestedMerge]
+        unfold Metta.matchAll
+        rw [match_var_nonvar_atom "ys" (listAtom ys) (listAtom_vars_nil ys)]
+        simp [ysClosed.hasLoop_false, ysMerge]
+        unfold Metta.matchAll
+        simp
+      · simp [outputClosed.hasLoop_false]
+    · have outputClosed : ClosedValueBindings
+          [.val "ys" (listAtom ys), .val "x" (peano x), .val "xs" (listAtom xs)] :=
+        .val (listAtom_vars_nil ys)
+          (.val (peano_vars_nil x) (.val (listAtom_vars_nil xs) .nil))
+      rw [outputClosed.instantiate_eq_subst_apply]
+      simp [appendQuery, mE, mVar, Metta.bindingsToSubst,
         Metta.Subst.apply, Metta.Subst.lookup]
 
 private theorem append_cons_mops_step (x : Nat) (xs ys : List Nat) :
@@ -173,7 +241,7 @@ private theorem len_nil_mops_readout :
       simp [Metta.matchAtomsWith, Metta.Bindings.merge]
       unfold Metta.matchAll
       simp
-    · simp [Metta.instantiate, Metta.bindingsToSubst, Metta.Subst.apply, mSym]
+    · simp [Metta.instantiate, mSym]
 
 private theorem len_nil_mops_step :
     Metta.MopsStep listAppendLengthRules (lenQuery (listAtom [])) (peano 0) := by
@@ -191,17 +259,35 @@ private theorem len_cons_mops_readout (x : Nat) (xs : List Nat) :
   · simp [listAppendLengthRules, Metta.Space.equalityRules, mE, mSym, mVar]
   · refine ⟨[Metta.BindingRel.val "x" (peano x),
         Metta.BindingRel.val "xs" (listAtom xs)], ?_, ?_⟩
-    · simp only [lenQuery, listAtom, mE, mVar, Metta.matchAtoms, Metta.matchAtomsWith]
-      unfold Metta.matchAll
-      simp [Metta.matchAtomsWith, Metta.Bindings.merge]
-      unfold Metta.matchAll
-      rw [match_cons_vars_raw (peano x) (listAtom xs)
-        (peano_vars_nil x) (listAtom_vars_nil xs)]
-      simp [Metta.Bindings.merge, Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
-        Metta.Bindings.addValRaw, Metta.Bindings.removeVal, Metta.Bindings.lookupVal]
-      unfold Metta.matchAll
-      simp
-    · simp [lenQuery, mE, mVar, Metta.instantiate, Metta.bindingsToSubst,
+    · have nestedClosed : ClosedValueBindings
+          [.val "xs" (listAtom xs), .val "x" (peano x)] :=
+        .val (listAtom_vars_nil xs) (.val (peano_vars_nil x) .nil)
+      have outputClosed : ClosedValueBindings
+          [.val "x" (peano x), .val "xs" (listAtom xs)] :=
+        .val (peano_vars_nil x) (.val (listAtom_vars_nil xs) .nil)
+      have nestedMerge : Metta.Bindings.merge []
+          [.val "xs" (listAtom xs), .val "x" (peano x)] =
+          [[.val "x" (peano x), .val "xs" (listAtom xs)]] := by
+        simpa [bindingValueKeys] using
+          (merge_closed_noConflict_eq nestedClosed (by simp [bindingValueKeys])
+            ClosedValueBindings.nil (by simp [bindingValueKeys]))
+      rw [Metta.matchAtoms, List.mem_filter]
+      constructor
+      · simp only [lenQuery, listAtom, mE, mVar, Metta.matchAtomsWith]
+        unfold Metta.matchAll
+        simp [Metta.matchAtomsWith, Metta.Bindings.merge]
+        unfold Metta.matchAll
+        rw [match_cons_vars_raw (peano x) (listAtom xs)
+          (peano_vars_nil x) (listAtom_vars_nil xs)]
+        simp [nestedClosed.hasLoop_false, nestedMerge]
+        unfold Metta.matchAll
+        simp
+      · simp [outputClosed.hasLoop_false]
+    · have outputClosed : ClosedValueBindings
+          [.val "x" (peano x), .val "xs" (listAtom xs)] :=
+        .val (peano_vars_nil x) (.val (listAtom_vars_nil xs) .nil)
+      rw [outputClosed.instantiate_eq_subst_apply]
+      simp [lenQuery, mE, mVar, Metta.bindingsToSubst,
         Metta.Subst.apply, Metta.Subst.lookup]
 
 private theorem len_cons_mops_step (x : Nat) (xs : List Nat) :

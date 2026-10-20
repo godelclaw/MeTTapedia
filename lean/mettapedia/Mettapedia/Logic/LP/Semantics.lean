@@ -211,4 +211,67 @@ theorem T_P_LP_iter_le_leastHerbrandModel {σ : LPSignature} (kb : KnowledgeBase
         ⊆ T_P_LP kb (leastHerbrandModel kb) := T_P_LP_mono kb ih
       _ = leastHerbrandModel kb              := leastHerbrandModel_fixpoint kb
 
+/-! ## Semi-naive rounds -/
+
+/-- Rule consequences whose body reads at least one fact in the frontier.
+Database facts and rules with empty bodies are supplied by the first full round. -/
+noncomputable def T_P_LP_delta {σ : LPSignature} (kb : KnowledgeBase σ)
+    (I delta : Interpretation σ) : Interpretation σ :=
+  { a | ∃ (c : Clause σ) (g : Grounding σ), c ∈ kb.prog ∧
+      g.groundAtom c.head = a ∧
+      (∀ b ∈ c.body, g.groundAtom b ∈ I) ∧
+      ∃ b ∈ c.body, g.groundAtom b ∈ delta }
+
+theorem T_P_LP_delta_empty {σ : LPSignature} (kb : KnowledgeBase σ)
+    (I : Interpretation σ) : T_P_LP_delta kb I ∅ = ∅ := by
+  ext a
+  constructor
+  · rintro ⟨_, _, _, _, _, _, _, h⟩
+    exact h
+  · intro h
+    exact h.elim
+
+/-- Once the previous full round is included, omitting bodies supported
+entirely by old facts changes no accumulated consequence. -/
+theorem T_P_LP_delta_step {σ : LPSignature} (kb : KnowledgeBase σ)
+    (old current : Interpretation σ) (covered : T_P_LP kb old ⊆ current) :
+    current ∪ T_P_LP kb current =
+      current ∪ T_P_LP_delta kb current (current \ old) := by
+  classical
+  ext a
+  constructor
+  · rintro (ha | ha)
+    · exact Or.inl ha
+    · rcases ha with ha | ⟨c, g, hc, hhead, hbody⟩
+      · exact Or.inl (covered (Or.inl ha))
+      · by_cases hOld : ∀ b ∈ c.body, g.groundAtom b ∈ old
+        · exact Or.inl (covered (Or.inr ⟨c, g, hc, hhead, hOld⟩))
+        · obtain ⟨b, hb, hNew⟩ : ∃ b ∈ c.body, g.groundAtom b ∉ old := by
+            by_contra noNew
+            apply hOld
+            intro b hb
+            by_contra notOld
+            exact noNew ⟨b, hb, notOld⟩
+          exact Or.inr ⟨c, g, hc, hhead, hbody, b, hb, hbody b hb, hNew⟩
+  · rintro (ha | ⟨c, g, hc, hhead, hbody, _⟩)
+    · exact Or.inl ha
+    · exact Or.inr (Or.inr ⟨c, g, hc, hhead, hbody⟩)
+
+/-- Each full iteration after the first is exactly an accumulated delta round. -/
+theorem T_P_LP_iter_delta {σ : LPSignature} (kb : KnowledgeBase σ) (n : ℕ) :
+    T_P_LP_iter kb (n + 2) = T_P_LP_iter kb (n + 1) ∪
+      T_P_LP_delta kb (T_P_LP_iter kb (n + 1))
+        (T_P_LP_iter kb (n + 1) \ T_P_LP_iter kb n) := by
+  calc
+    T_P_LP_iter kb (n + 2) = T_P_LP kb (T_P_LP_iter kb (n + 1)) := rfl
+    _ = T_P_LP_iter kb (n + 1) ∪ T_P_LP kb (T_P_LP_iter kb (n + 1)) :=
+      (Set.union_eq_right.mpr (T_P_LP_iter_succ_le kb (n + 1))).symm
+    _ = _ := T_P_LP_delta_step kb _ _ (fun _ ha => ha)
+
+/-- Negative control: skipping the first full round can lose even an EDB fact. -/
+theorem T_P_LP_delta_requires_initial_round {σ : LPSignature} (a : GroundAtom σ) :
+    let kb : KnowledgeBase σ := ⟨[], {a}⟩
+    (∅ : Interpretation σ) ∪ T_P_LP kb ∅ ≠ ∅ ∪ T_P_LP_delta kb ∅ ∅ := by
+  simp [T_P_LP_delta_empty, T_P_LP]
+
 end Mettapedia.Logic.LP

@@ -230,22 +230,39 @@ def expandQuery (environment : Environment) (outer : Goal) (depth : Nat) (reques
       if state.agenda.isEmpty then { unresolved := state.unresolved.map Obligation.query }
       else { tasks := [.query depth request (Query.tick environment request state) cursor tail] }
 
+/-- The shared scheduled continuation after any root matcher backend returns a
+checked answer. The backend supplies only matching evidence; this continuation
+owns typed captures, premises and the final reduct. -/
+def continueRootAnswer (environment : Environment) (outer : Goal)
+    (depth : Nat) (bound : List TypeExpr) (type : TypeExpr) (source : Pattern)
+    (index : Nat) (rule : RewriteRule) (spec : RuleBindingSpec)
+    (declared : environment.language.rewrites[index]? = some rule)
+    (specified : specification? environment index = some spec)
+    (admitted : admittedFor rule spec = true)
+    (sorted : OpenPatternWellSorted environment.language environment.free bound type source)
+    (answer : GeneralScopedMatchMachine.Answer)
+    (valid : answer.Valid ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩)
+    (tail : Continuation environment (.root (depth + 1) bound type source index) outer)
+    (next : List (Task environment outer)) :
+    Scheduler.Expansion (Task environment outer) (Result environment outer) Obligation :=
+  let context : Context := ⟨index, rule, spec, bound, 0, 0⟩
+  if checked : checkTypedAssignment environment context answer.assignment then
+    { tasks :=
+        .evaluate (.premises depth context rule.premises answer.assignment)
+          (.rootBody depth bound type source index rule spec declared specified admitted sorted
+            answer.trace answer.assignment valid (checkTypedAssignment_sound checked) tail) :: next }
+  else { tasks := next }
+
 def expandRootMatch (environment : Environment) (outer : Goal)
     (frame : RootMatchFrame environment outer) :
     Scheduler.Expansion (Task environment outer) (Result environment outer) Obligation :=
   match found : frame.state.answers[frame.cursor]? with
   | some answer =>
-      let context : Context := ⟨frame.index, frame.rule, frame.spec, frame.bound, 0, 0⟩
       let tail := Task.rootMatch { frame with cursor := frame.cursor + 1 }
-      if checked : checkTypedAssignment environment context answer.assignment then
-        have valid := GeneralScopedMatchMachine.answers_sound frame.reachable
-          (List.mem_of_getElem? found)
-        { tasks := [
-            .evaluate (.premises frame.depth context frame.rule.premises answer.assignment)
-              (.rootBody frame.depth frame.bound frame.type frame.source frame.index frame.rule frame.spec
-                frame.declared frame.specified frame.admitted frame.sorted answer.trace answer.assignment
-                valid (checkTypedAssignment_sound checked) frame.tail), tail] }
-      else { tasks := [tail] }
+      continueRootAnswer environment outer frame.depth frame.bound frame.type frame.source
+        frame.index frame.rule frame.spec frame.declared frame.specified frame.admitted frame.sorted
+        answer (GeneralScopedMatchMachine.answers_sound frame.reachable
+          (List.mem_of_getElem? found)) frame.tail [tail]
   | none =>
       if GeneralScopedMatchMachine.complete frame.state then {}
       else

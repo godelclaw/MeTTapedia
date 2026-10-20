@@ -63,17 +63,26 @@ private theorem answer_match_eq (n : Nat) :
   simp [Metta.matchAtomsWith, Metta.Bindings.merge]
   unfold Metta.matchAll
   rw [match_var_nonvar_atom "answer" (node n) (node_vars_nil n)]
-  simp [Metta.Bindings.merge, Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
-    Metta.Bindings.addValRaw, Metta.Bindings.removeVal, Metta.Bindings.lookupVal]
-  unfold Metta.matchAll
-  rfl
+  have merged : Metta.Bindings.merge []
+      [Metta.BindingRel.val "answer" (node n)] =
+        [[Metta.BindingRel.val "answer" (node n)]] :=
+    singleton_val_merge_empty_eq "answer" (node n) (by
+      intro name impossible
+      simp [node, mE] at impossible)
+  have loopFree : Metta.Bindings.hasLoop
+      [Metta.BindingRel.val "answer" (node n)] = false :=
+    hasLoop_singleton_val_closed_false "answer" (node n) (node_vars_nil n)
+  simp [merged, loopFree, Metta.matchAll]
 
 /-- Querying the one-fact MeTTa space returns exactly the payload matched by `$answer`. -/
 theorem matchQueryComputesAnswer (n : Nat) :
     Metta.Space.transform (answerSpace n) answerPattern answerTemplate = [node n] := by
   unfold Metta.Space.transform Metta.Space.query
-  simp [answerSpace, answer_match_eq, answerTemplate, Metta.instantiate,
-    Metta.bindingsToSubst, Metta.Subst.apply, Metta.Subst.lookup, mVar]
+  simp only [answerSpace, List.flatMap_cons, List.flatMap_nil,
+    List.append_nil, answer_match_eq, List.map_singleton, answerTemplate, mVar]
+  rw [instantiate_singleton_val_var "answer" (node n) (by
+    rw [node_vars_nil]
+    simp)]
 
 /-- LeaTTa's operational `match` rule computes the same exact answer on the runnable interface. -/
 theorem matchQueryReduceAtomComputesAnswer (cfg : Metta.RuntimeConfig) (n : Nat) :

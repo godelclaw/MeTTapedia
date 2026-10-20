@@ -17,7 +17,8 @@ open FuelConvergenceInterpreter
 
 theorem atomToStack_length (atom : Atom) (continuation : Stack) :
     continuation.length < (atomToStack atom continuation).length := by
-  fun_induction atomToStack atom continuation <;> simp_all <;> omega
+  induction atom, continuation using atomToStack.induct <;>
+    simp_all [atomToStack] <;> omega
 
 theorem atomToStack_pending (atom : Atom) (parent : Frame) (continuation : Stack)
     (bindings : Metta.Bindings) :

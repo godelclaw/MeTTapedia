@@ -2429,11 +2429,12 @@ theorem Evaluation.answer_read_exact {program : Program} {bindings : MORK.Subst}
   rw [represented]
   exact (source.values answer member).variable_free
 
-private def noForeign : HE.Spec.Eval.GroundedDispatch where
+/-- Grounded operations are outside the pure HE/PeTTa common fragment. -/
+def noForeign : HE.Spec.Eval.GroundedDispatch where
   executable := fun _ => False
   outcome := fun _ _ _ => False
 
-private theorem OrdinaryHead.he_non_grounded {head : String} (ordinary : OrdinaryHead head)
+theorem OrdinaryHead.he_non_grounded {head : String} (ordinary : OrdinaryHead head)
     (arguments : List Atom) :
     HE.Spec.Eval.NonGroundedCallRel noForeign (.expression (.symbol head::arguments)) := by
   constructor
@@ -3561,12 +3562,14 @@ theorem PassiveEnvironment.variable_he_completes {program : Program} {allowed : 
   · simpa only [HE.Spec.Eval.Entry.Value.erase] using Value.variable (program := program) member
   · simpa only [HE.Spec.Eval.Entry.Value.erase] using NoErrorSymbol.variable name
 
-private theorem Value.not_refusal {program : Program} {atom : Atom} (valid : Value program atom) :
+theorem Value.not_refusal {program : Program} {atom : Atom} {scope : List String}
+    (valid : Value program atom scope) :
     atom ≠ Atom.notReducible := by
   cases valid <;> simp_all [Atom.notReducible]
 
-private theorem Value.not_function_pending {program : Program} {value : HE.Spec.Eval.Entry.Value}
-    (valid : Value program value.erase) (policy : HE.Spec.Eval.Completed.Policy) :
+theorem Value.not_function_pending {program : Program} {value : HE.Spec.Eval.Entry.Value}
+    {scope : List String} (valid : Value program value.erase scope)
+    (policy : HE.Spec.Eval.Completed.Policy) :
     ¬HE.Spec.Eval.Completed.FunctionPending policy value := by
   rintro ⟨⟨body,shape⟩,_ready⟩
   rw [shape] at valid
@@ -5512,33 +5515,33 @@ theorem ClauseScan.passive_completed_pair {program : Program} {head : String}
 
 namespace RecursiveControls
 
-private def numeral : Nat → Atom
+def numeral : Nat → Atom
   | 0 => .symbol "Z"
   | n+1 => .expression [.symbol "S",numeral n]
 
-private def boxed : Atom := .expression [.symbol "Box",.symbol "Z"]
-private def tailCall : Atom := .expression [.symbol "strip",.var "x"]
-private def base : Equation := ⟨"strip",[.symbol "Z"],boxed⟩
-private def stepRule : Equation := ⟨"strip",[.expression [.symbol "S",.var "x"]],tailCall⟩
-private def forkRule : Equation := ⟨"fork",[.var "x"],tailCall⟩
-private def program : Program := {equations := [base,stepRule,forkRule,forkRule],declarations := []}
+def boxed : Atom := .expression [.symbol "Box",.symbol "Z"]
+def tailCall : Atom := .expression [.symbol "strip",.var "x"]
+def base : Equation := ⟨"strip",[.symbol "Z"],boxed⟩
+def stepRule : Equation := ⟨"strip",[.expression [.symbol "S",.var "x"]],tailCall⟩
+def forkRule : Equation := ⟨"fork",[.var "x"],tailCall⟩
+def program : Program := {equations := [base,stepRule,forkRule,forkRule],declarations := []}
 
-private theorem ordinary_strip : OrdinaryHead "strip" := by
+theorem ordinary_strip : OrdinaryHead "strip" := by
   unfold OrdinaryHead
   decide +kernel
-private theorem ordinary_fork : OrdinaryHead "fork" := by
+theorem ordinary_fork : OrdinaryHead "fork" := by
   unfold OrdinaryHead
   decide +kernel
-private theorem passive_s : ConstructorHead program "S" := by
+theorem passive_s : ConstructorHead program "S" := by
   constructor
   · unfold OrdinaryHead; decide +kernel
   · simp [program,base,stepRule,forkRule]
-private theorem passive_box : ConstructorHead program "Box" := by
+theorem passive_box : ConstructorHead program "Box" := by
   constructor
   · unfold OrdinaryHead; decide +kernel
   · simp [program,base,stepRule,forkRule]
 
-private theorem numeral_value (n : Nat) : Value program (numeral n) := by
+theorem numeral_value (n : Nat) : Value program (numeral n) := by
   induction n with
   | zero => exact .symbol "Z" (by decide +kernel) (by decide +kernel)
   | succ n ih =>
@@ -5547,16 +5550,16 @@ private theorem numeral_value (n : Nat) : Value program (numeral n) := by
         obtain rfl := List.mem_singleton.mp member
         exact ih)
 
-private theorem boxed_value : Value program boxed :=
+theorem boxed_value : Value program boxed :=
   .constructor passive_box (by
     intro value member
     obtain rfl := List.mem_singleton.mp member
     exact .symbol "Z" (by decide +kernel) (by decide +kernel))
 
-private theorem defined_strip : DefinedHead program "strip" :=
+theorem defined_strip : DefinedHead program "strip" :=
   ⟨ordinary_strip,base,List.mem_cons_self,rfl⟩
 
-private theorem defined_fork : DefinedHead program "fork" :=
+theorem defined_fork : DefinedHead program "fork" :=
   ⟨ordinary_fork,forkRule,by simp [program],rfl⟩
 
 /-- The existing recursive, duplicate-clause program has passive open patterns. -/
@@ -5730,7 +5733,7 @@ theorem duplicate_recursive_frontier (n : Nat) (live : List Atom)
             simpa [tailCall,MORK.applySubst,MORK.applySubst.applySubstList,MORK.Subst.lookup] using
               second.body_model range frontier (List.mem_cons_of_mem _ List.mem_cons_self) closed valuation satisfied
 
-private theorem numeral_safe (n : Nat) : NoErrorSymbol (numeral n) := by
+theorem numeral_safe (n : Nat) : NoErrorSymbol (numeral n) := by
   induction n with
   | zero => exact .symbol (by decide +kernel)
   | succ n ih =>
@@ -5740,7 +5743,7 @@ private theorem numeral_safe (n : Nat) : NoErrorSymbol (numeral n) := by
       · exact .symbol (by decide +kernel)
       · obtain rfl := List.mem_singleton.mp member; exact ih
 
-private theorem boxed_safe : NoErrorSymbol boxed := by
+theorem boxed_safe : NoErrorSymbol boxed := by
   apply NoErrorSymbol.expression
   intro atom member
   rcases List.mem_cons.mp member with rfl | member
@@ -5758,7 +5761,7 @@ private theorem tail_code (scope : List String) (covered : "x" ∈ scope) :
     exact .variable covered
   simpa only [tailCall,HE.Spec.Eval.Entry.Value.ofAtom,List.map_cons,List.map_nil] using children
 
-private theorem program_code : CodeProgram program := by
+theorem program_code : CodeProgram program := by
   intro equation member
   simp only [program,List.mem_cons,List.not_mem_nil,or_false] at member
   rcases member with rfl | rfl | rfl | rfl
@@ -6915,7 +6918,9 @@ theorem OpenSpine.call_frontier
       HE.Spec.Eval.Steps.EquationFrontierRel
         (HE.Space.ofList (program.equations.map PeTTa.SpaceSemantics.Equation.toAtom)) live
         (.expression ((evaluated ++ outcome.values).map Entry.Value.erase)) outcome.frame.bindings works ∧
-      List.Forall₂ (ConstructorMatch.ClausePendingAgreement destination callerOlder pending sourcePending) choices works ∧
+      List.Forall₂ (ConstructorMatch.ClausePendingAgreement guarded
+        (.expression (.symbol head :: sourceArguments)) destination callerOlder pending sourcePending)
+        choices works ∧
       (works.map (fun work => (work.position,observedTuples work.bindings pending)) : Multiset (Nat × Set (List Atom))) =
         (choices.map (fun selected => (selected.1,solutionTuples selected.2.bindings sourcePending)) :
           Multiset (Nat × Set (List Atom))) := by

@@ -61,6 +61,44 @@ def leaEqualityEdges : Metta.Bindings → List (String × String)
   | cons rel rest ih =>
       cases rel <;> simp [leaEqualityEdges, ih]
 
+/-- Raw alias insertion retains every previously stored equality edge. -/
+theorem leaEqualityEdges_addEqRaw_old
+    (bindings : Metta.Bindings) (left right : String)
+    {edge : String × String} (present : edge ∈ leaEqualityEdges bindings) :
+    edge ∈ leaEqualityEdges (Metta.Bindings.addEqRaw bindings left right) := by
+  rcases edge with ⟨x, y⟩
+  rw [mem_leaEqualityEdges_iff] at present ⊢
+  exact Metta.Bindings.mem_addEqRaw_of_mem bindings left right present
+
+/-- Every non-reflexive alias is present after raw insertion, including replay. -/
+theorem leaEqualityEdges_addEqRaw_new
+    (bindings : Metta.Bindings) {left right : String} (different : left ≠ right) :
+    (left, right) ∈
+      leaEqualityEdges (Metta.Bindings.addEqRaw bindings left right) := by
+  rw [mem_leaEqualityEdges_iff]
+  exact Metta.Bindings.eq_mem_addEqRaw bindings left right different
+
+/-- Equality-edge membership after a non-reflexive insertion is exactly old
+membership plus the requested edge. -/
+theorem mem_leaEqualityEdges_addEqRaw_iff
+    (bindings : Metta.Bindings) {left right x y : String}
+    (different : left ≠ right) :
+    (x, y) ∈ leaEqualityEdges (Metta.Bindings.addEqRaw bindings left right) ↔
+      (x = left ∧ y = right) ∨ (x, y) ∈ leaEqualityEdges bindings := by
+  simpa [mem_leaEqualityEdges_iff] using
+    (Metta.Bindings.mem_addEqRaw_iff bindings left right different
+      (Metta.BindingRel.eq x y))
+
+/-- A fresh non-reflexive alias is prepended to the ordered equality projection. -/
+theorem leaEqualityEdges_addEqRaw_of_not_mem
+    (bindings : Metta.Bindings) {left right : String}
+    (different : left ≠ right)
+    (absent : Metta.BindingRel.eq left right ∉ bindings) :
+    leaEqualityEdges (Metta.Bindings.addEqRaw bindings left right) =
+      (left, right) :: leaEqualityEdges bindings := by
+  rw [Metta.Bindings.addEqRaw_of_not_mem bindings left right different absent]
+  rfl
+
 /-- LeaTTa's saturation pass is HE's pass on the explicit equality projection.
 Value relations have no effect on either equality closure. -/
 theorem leaEqStep_eq_heEqStep (lb : Metta.Bindings) (acc : List String) :
@@ -2499,9 +2537,11 @@ theorem LeaEqualitiesIrreflexive.addEqRaw
   · subst right
     exact hbindings key (by
       simpa [Metta.Bindings.addEqRaw] using hmem)
-  · simp only [Metta.Bindings.addEqRaw, beq_iff_eq, heq, ↓reduceIte,
-      List.mem_cons] at hmem
-    rcases hmem with hnew | hold
+  · have hmem' :=
+      (Metta.Bindings.mem_addEqRaw_iff bindings left right heq
+        (Metta.BindingRel.eq key key)).mp hmem
+    simp only [List.mem_cons] at hmem'
+    rcases hmem' with hnew | hold
     · cases hnew
       exact heq rfl
     · exact hbindings key hold
@@ -2527,12 +2567,9 @@ theorem LeaAssignmentsNonVariable.addEqRaw
     LeaAssignmentsNonVariable
       (Metta.Bindings.addEqRaw bindings left right) := by
   intro key target hmem
-  by_cases heq : left = right
-  · subst right
-    exact hbindings key target (by
-      simpa [Metta.Bindings.addEqRaw] using hmem)
-  · exact hbindings key target (by
-      simpa [Metta.Bindings.addEqRaw, heq] using hmem)
+  exact hbindings key target
+    ((Metta.Bindings.val_mem_addEqRaw_iff bindings left right key
+      (.var target)).mp hmem)
 
 /-- Raw value insertion preserves normalization when the inserted payload is
 not itself a variable. -/
@@ -3669,10 +3706,7 @@ private theorem leaEqualityEdges_restoreAlias_subset
   unfold Metta.Bindings.restoreAlias
   split
   · exact hold
-  · by_cases heq : left = right
-    · subst right
-      simpa [Metta.Bindings.addEqRaw] using hold
-    · simp [Metta.Bindings.addEqRaw, heq, leaEqualityEdges, hold]
+  · exact leaEqualityEdges_addEqRaw_old bindings left right hold
 
 private theorem leaEqClass_mono_restoreAlias
     (bindings : Metta.Bindings) (edge : String × String)
@@ -3709,8 +3743,7 @@ private theorem restoreAlias_connects_edge
     · rw [mem_leaEqClass_iff_reachable]
       apply SimpleGraph.Adj.reachable
       rw [EqualityClosure.edgeGraph_adj_iff]
-      exact ⟨heq, Or.inl (by
-        simp [Metta.Bindings.addEqRaw, heq, leaEqualityEdges])⟩
+      exact ⟨heq, Or.inl (leaEqualityEdges_addEqRaw_new bindings heq)⟩
 
 private theorem restoreAliases_connects_mem
     (aliases : List (String × String)) (bindings : Metta.Bindings)
@@ -3771,6 +3804,7 @@ private theorem leaEqualityEdges_restoreAlias_subset_union
       (Metta.Bindings.restoreAlias bindings aliasEdge)) :
     edge ∈ leaEqualityEdges bindings ∨ edge = aliasEdge := by
   rcases aliasEdge with ⟨left, right⟩
+  rcases edge with ⟨x, y⟩
   unfold Metta.Bindings.restoreAlias at hmem
   split at hmem
   · exact Or.inl hmem
@@ -3778,11 +3812,10 @@ private theorem leaEqualityEdges_restoreAlias_subset_union
     · subst right
       exact Or.inl (by
         simpa [Metta.Bindings.addEqRaw] using hmem)
-    · simp only [Metta.Bindings.addEqRaw, beq_iff_eq, heq, if_false] at hmem
-      simp only [leaEqualityEdges, List.mem_cons] at hmem
-      rcases hmem with rfl | hmem
+    · rcases (mem_leaEqualityEdges_addEqRaw_iff bindings heq).mp hmem with
+        ⟨rfl, rfl⟩ | hold
       · exact Or.inr rfl
-      · exact Or.inl hmem
+      · exact Or.inl hold
 
 private theorem leaEqualityEdges_restoreAliases_subset_union
     (aliases : List (String × String)) (bindings : Metta.Bindings)
@@ -3854,8 +3887,8 @@ neither creates nor removes a direct value relation. -/
   unfold Metta.Bindings.restoreAlias
   split
   · rfl
-  · by_cases heq : left = right <;>
-      simp [Metta.Bindings.addEqRaw, heq]
+  · exact Metta.Bindings.val_mem_addEqRaw_iff
+      bindings left right key value
 
 /-- A fold of alias restorations is likewise inert on direct values. -/
 theorem val_mem_restoreAliases_iff
@@ -4083,11 +4116,14 @@ theorem addEqRaw_vars_subset (bindings : Metta.Bindings) (left right : String)
   unfold Metta.Bindings.addEqRaw at member
   split at member
   · exact Or.inl member
-  · simp only [Metta.Bindings.vars, List.flatMap_cons, List.mem_eraseDups,
-      List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at member
-    rcases member with head | tail
-    · exact Or.inr head
-    · exact Or.inl (by simpa only [Metta.Bindings.vars, List.mem_eraseDups] using tail)
+  · split at member
+    · exact Or.inl member
+    · simp only [Metta.Bindings.vars, List.flatMap_cons, List.mem_eraseDups,
+        List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at member
+      rcases member with head | tail
+      · exact Or.inr head
+      · exact Or.inl (by
+          simpa only [Metta.Bindings.vars, List.mem_eraseDups] using tail)
 
 theorem addValRaw_vars_subset (bindings : Metta.Bindings) (key : String) (value : Metta.Atom)
     {name : String} (member : name ∈ (Metta.Bindings.addValRaw bindings key value).vars) :
@@ -4306,15 +4342,35 @@ theorem leaBindingSatisfied_addEqRaw_iff
         (Metta.Bindings.addEqRaw bindings left right) ↔
       LeaBindingSatisfied valuation bindings ∧
         valuation left = valuation right := by
-  by_cases h : left = right
-  · subst right
-    simp [Metta.Bindings.addEqRaw]
-  · have hbeq : (left == right) = false := by simp [h]
-    rw [show Metta.Bindings.addEqRaw bindings left right =
-        [Metta.BindingRel.eq left right] ++ bindings by
-      simp [Metta.Bindings.addEqRaw, hbeq]]
-    rw [leaBindingSatisfied_append_iff]
-    simp [LeaBindingSatisfied, and_comm]
+  constructor
+  · rintro ⟨hvalues, hequalities⟩
+    refine ⟨⟨?_, ?_⟩, ?_⟩
+    · intro x value present
+      exact hvalues x value
+        (Metta.Bindings.mem_addEqRaw_of_mem bindings left right present)
+    · intro x y present
+      exact hequalities x y
+        (Metta.Bindings.mem_addEqRaw_of_mem bindings left right present)
+    · by_cases different : left = right
+      · exact congrArg valuation different
+      · exact hequalities left right
+          (Metta.Bindings.eq_mem_addEqRaw bindings left right different)
+  · rintro ⟨hold, requested⟩
+    refine ⟨?_, ?_⟩
+    · intro x value present
+      exact hold.1 x value
+        ((Metta.Bindings.val_mem_addEqRaw_iff bindings left right x value).mp present)
+    · intro x y present
+      by_cases different : left = right
+      · subst right
+        exact hold.2 x y (by
+          simpa [Metta.Bindings.addEqRaw] using present)
+      · have split := (Metta.Bindings.mem_addEqRaw_iff
+          bindings left right different (Metta.BindingRel.eq x y)).mp present
+        rcases List.mem_cons.mp split with added | old
+        · cases added
+          exact requested
+        · exact hold.2 x y old
 
 private theorem mettaSubst_lookup_some_mem
     {subst : Metta.Subst} {x : String} {term : Metta.Atom}
@@ -4439,12 +4495,9 @@ private theorem leaBindingsNoFloat_restoreAlias
   split
   · exact hbindings
   · intro key value hmem
-    by_cases heq : left = right
-    · subst right
-      exact hbindings key value (by
-        simpa [Metta.Bindings.addEqRaw] using hmem)
-    · exact hbindings key value (by
-        simpa [Metta.Bindings.addEqRaw, heq] using hmem)
+    exact hbindings key value
+      ((Metta.Bindings.val_mem_addEqRaw_iff
+        bindings left right key value).mp hmem)
 
 private theorem leaBindingsNoFloat_restoreAliases
     {bindings : Metta.Bindings} (hbindings : LeaBindingsNoFloat bindings)
@@ -4991,21 +5044,17 @@ theorem LeaBindingSolutionEquiv.addEqRaw
         Bindings.addEquality, List.mem_append, List.mem_singleton,
         SimpleGraph.sup_adj, SimpleGraph.edge_adj]
       aesop
-    have hleaEdges :
-        leaEqualityEdges
-            (Metta.Bindings.addEqRaw lb patternVar queryVar) =
-          (patternVar, queryVar) :: leaEqualityEdges lb := by
-      simp [Metta.Bindings.addEqRaw, hne', leaEqualityEdges]
     have hleaGraph :
         EqualityClosure.edgeGraph
             (leaEqualityEdges
               (Metta.Bindings.addEqRaw lb patternVar queryVar)) =
           EqualityClosure.edgeGraph (leaEqualityEdges lb) ⊔
             SimpleGraph.edge queryVar patternVar := by
-      rw [hleaEdges]
       ext x y
-      simp only [EqualityClosure.edgeGraph_adj_iff, List.mem_cons,
-        Prod.mk.injEq, SimpleGraph.sup_adj, SimpleGraph.edge_adj]
+      simp only [EqualityClosure.edgeGraph_adj_iff,
+        SimpleGraph.sup_adj, SimpleGraph.edge_adj]
+      rw [mem_leaEqualityEdges_addEqRaw_iff lb hne',
+        mem_leaEqualityEdges_addEqRaw_iff lb hne']
       aesop
     rw [EqualityClosure.mem_eqClass_iff_reachable,
       mem_leaEqClass_iff_reachable, hheGraph, hleaGraph]
@@ -5028,11 +5077,13 @@ theorem LeaBindingSolutionEquiv.addEqRaw
           simp [Bindings.addEquality])
       refine ⟨?_, ?_⟩
       · intro x value hmem
-        exact holdValues x value (by
-          simpa [Metta.Bindings.addEqRaw, hne'] using hmem)
+        exact holdValues x value
+          ((Metta.Bindings.val_mem_addEqRaw_iff
+            lb patternVar queryVar x value).mp hmem)
       · intro x y hmem
-        simp only [Metta.Bindings.addEqRaw, hne', beq_iff_eq,
-          if_false, List.mem_cons, Metta.BindingRel.eq.injEq] at hmem
+        have hmem := (Metta.Bindings.mem_addEqRaw_iff
+          lb patternVar queryVar hne' (Metta.BindingRel.eq x y)).mp hmem
+        simp only [List.mem_cons, Metta.BindingRel.eq.injEq] at hmem
         rcases hmem with ⟨rfl, rfl⟩ | holdMem
         · exact hnew.symm
         · exact holdEqualities x y holdMem
@@ -5040,15 +5091,17 @@ theorem LeaBindingSolutionEquiv.addEqRaw
       have holdLea : LeaBindingSatisfied valuation lb := by
         refine ⟨?_, ?_⟩
         · intro x value hmem
-          exact hvalues x value (by
-            simp [Metta.Bindings.addEqRaw, hne', hmem])
+          exact hvalues x value
+            (Metta.Bindings.mem_addEqRaw_of_mem
+              lb patternVar queryVar hmem)
         · intro x y hmem
-          exact hequalities x y (by
-            simp [Metta.Bindings.addEqRaw, hne', hmem])
+          exact hequalities x y
+            (Metta.Bindings.mem_addEqRaw_of_mem
+              lb patternVar queryVar hmem)
       obtain ⟨holdValues, holdEqualities⟩ := hold.mpr holdLea
       have hnew : valuation patternVar = valuation queryVar :=
-        hequalities patternVar queryVar (by
-          simp [Metta.Bindings.addEqRaw, hne'])
+        hequalities patternVar queryVar
+          (Metta.Bindings.eq_mem_addEqRaw lb patternVar queryVar hne')
       refine ⟨?_, ?_⟩
       · intro x value hmem
         exact holdValues x value (by
@@ -5093,10 +5146,12 @@ theorem LeaBindingCongruence.addEqRaw
       h.classValues.1 key value hvalue
     refine ⟨leaKey, leaValue, ?_, hclassMono hkeyClass,
       HELeaAtomClassRel.mono hclassMono hatom⟩
-    simp [Metta.Bindings.addEqRaw, hne', hleaValue]
+    exact Metta.Bindings.mem_addEqRaw_of_mem
+      lb patternVar queryVar hleaValue
   · intro leaKey leaValue hvalue
     have holdValue : Metta.BindingRel.val leaKey leaValue ∈ lb := by
-      simpa [Metta.Bindings.addEqRaw, hne'] using hvalue
+      exact (Metta.Bindings.val_mem_addEqRaw_iff
+        lb patternVar queryVar leaKey leaValue).mp hvalue
     obtain ⟨key, value, hheValue, hkeyClass, hatom⟩ :=
       h.classValues.2 leaKey leaValue holdValue
     exact ⟨key, value, by
@@ -5399,12 +5454,14 @@ theorem LeaEqualityChronology.addValRaw
 theorem LeaEqualityChronology.addEqRaw
     {b : Bindings} {lb : Metta.Bindings} {queryVar patternVar : String}
     (hchron : LeaEqualityChronology b lb)
-    (hne : queryVar ≠ patternVar) :
+    (hne : queryVar ≠ patternVar)
+    (hnot : Metta.BindingRel.eq patternVar queryVar ∉ lb) :
     LeaEqualityChronology (b.addEquality queryVar patternVar)
       (Metta.Bindings.addEqRaw lb patternVar queryVar) := by
   have hne' : patternVar ≠ queryVar := hne.symm
-  simpa [LeaEqualityChronology, Metta.Bindings.addEqRaw, hne',
-    Bindings.addEquality, List.reverse_append, leaEqualityEdges] using
+  unfold LeaEqualityChronology at hchron ⊢
+  rw [leaEqualityEdges_addEqRaw_of_not_mem lb hne' hnot]
+  simpa [Bindings.addEquality, List.reverse_append] using
     congrArg (fun edges => (patternVar, queryVar) :: edges) hchron
 
 private def leaEdgeOrder (acc : List String) (edge : String × String) : List String :=
@@ -5973,11 +6030,11 @@ theorem LeaBindingRelEquiv.addEqRaw
   have hne' : patternVar ≠ queryVar := hne.symm
   constructor
   · intro v value
-    simpa [Metta.Bindings.addEqRaw, hne', Bindings.addEquality] using
-      hequiv.values v value
+    rw [Metta.Bindings.val_mem_addEqRaw_iff]
+    simpa [Bindings.addEquality] using hequiv.values v value
   · intro x y
     have hbase := hequiv.equalities x y
-    simp only [Metta.Bindings.addEqRaw, hne', beq_iff_eq, if_false,
+    simp only [Metta.Bindings.mem_addEqRaw_iff lb patternVar queryVar hne',
       List.mem_cons, Metta.BindingRel.eq.injEq, Bindings.addEquality,
       List.mem_append, Prod.mk.injEq]
     aesop
@@ -5995,11 +6052,12 @@ theorem LeaBindingTransport.addValRaw_fresh
 theorem LeaBindingTransport.addEqRaw
     {b : Bindings} {lb : Metta.Bindings} {queryVar patternVar : String}
     (htransport : LeaBindingTransport b lb)
-    (hne : queryVar ≠ patternVar) :
+    (hne : queryVar ≠ patternVar)
+    (hnot : Metta.BindingRel.eq patternVar queryVar ∉ lb) :
     LeaBindingTransport (b.addEquality queryVar patternVar)
       (Metta.Bindings.addEqRaw lb patternVar queryVar) :=
   ⟨htransport.relations.addEqRaw hne,
-    htransport.chronology.addEqRaw hne⟩
+    htransport.chronology.addEqRaw hne hnot⟩
 
 /-- The executable fresh-value branch realizes the raw structural transport.
 The class-value premise is explicit here; the general merge theorem will obtain
@@ -6056,6 +6114,7 @@ theorem LeaBindingTransport.addVarEquality_valueless
     {b : Bindings} {lb : Metta.Bindings} {queryVar patternVar : String}
     (htransport : LeaBindingTransport b lb)
     (hne : queryVar ≠ patternVar)
+    (hnot : Metta.BindingRel.eq patternVar queryVar ∉ lb)
     (hclass :
       Metta.Bindings.classValues
           (Metta.Bindings.addEqRaw lb patternVar queryVar) patternVar = []) :
@@ -6063,7 +6122,7 @@ theorem LeaBindingTransport.addVarEquality_valueless
       lb' ∈ Metta.Bindings.addVarEquality lb patternVar queryVar ∧
         LeaBindingTransport (b.addEquality queryVar patternVar) lb' := by
   refine ⟨Metta.Bindings.addEqRaw lb patternVar queryVar, ?_,
-    htransport.addEqRaw hne⟩
+    htransport.addEqRaw hne hnot⟩
   simp only [Metta.Bindings.addVarEquality, hclass,
     Metta.Bindings.unifyValues]
   simp
@@ -6772,12 +6831,9 @@ theorem leaBindingsNoFloat_addEqRaw
     LeaBindingsNoFloat
       (Metta.Bindings.addEqRaw bindings left right) := by
   intro key value hmem
-  by_cases h : left = right
-  · subst right
-    exact hbindingsNoFloat key value (by
-      simpa [Metta.Bindings.addEqRaw] using hmem)
-  · exact hbindingsNoFloat key value (by
-      simpa [Metta.Bindings.addEqRaw, h] using hmem)
+  exact hbindingsNoFloat key value
+    ((Metta.Bindings.val_mem_addEqRaw_iff
+      bindings left right key value).mp hmem)
 
 theorem leaBindingsNoFloat_addValRaw
     {bindings : Metta.Bindings} {v : String} {value : Metta.Atom}
@@ -9230,7 +9286,14 @@ theorem merge_fresh_two_values_one_equality
       (.val payloadKey payload :: .val templateKey template :: caller)
       [.eq patternKey binder] =
       [[.eq patternKey binder, .val payloadKey payload, .val templateKey template] ++ caller] :=
-    merge_singleton_eq_eq_of_valueless_class patternBinder equalityClass
+    merge_singleton_eq_eq_of_valueless_class patternBinder equalityClass (by
+      intro present
+      rcases List.mem_cons.mp present with impossible | present
+      · cases impossible
+      rcases List.mem_cons.mp present with impossible | present
+      · cases impossible
+      exact patternFresh (bindingRelation_vars_subset present (by
+        simp [Metta.Bindings.vars])))
   change Metta.Bindings.mergeOne
     (Metta.Bindings.mergeOne
       (Metta.Bindings.mergeOne [caller] (.val templateKey template)) (.val payloadKey payload))
@@ -9510,14 +9573,14 @@ theorem leaClassChoiceBasis_cons_fresh
     (left right key : String) :
     Metta.Bindings.lookupVal (Metta.Bindings.addEqRaw bindings left right) key =
       Metta.Bindings.lookupVal bindings key := by
-  by_cases heq : left = right <;> simp [Metta.Bindings.addEqRaw, heq, Metta.Bindings.lookupVal]
+  exact Metta.Bindings.lookupVal_addEqRaw bindings left right key
 
 theorem leaClass_addEqRaw_mono {bindings : Metta.Bindings} (left right : String)
     {start finish : String} (hclass : finish ∈ Metta.Bindings.eqClass bindings start) :
     finish ∈ Metta.Bindings.eqClass (Metta.Bindings.addEqRaw bindings left right) start := by
   apply leaEqClass_mono_of_edge_subset (hclass := hclass)
   intro edge hedge
-  by_cases heq : left = right <;> simp [Metta.Bindings.addEqRaw, heq, leaEqualityEdges, hedge]
+  exact leaEqualityEdges_addEqRaw_old bindings left right hedge
 
 theorem leaClassValue_addEqRaw_mono {bindings : Metta.Bindings} (left right : String)
     {key : String} {value : Metta.Atom}
@@ -9546,14 +9609,15 @@ theorem leaClass_addEqRaw_old_or_joined
       rw [EqualityClosure.edgeGraph_adj_iff] at edge
       have hedge : (a, b) ∈ leaEqualityEdges bindings ∨ (b, a) ∈ leaEqualityEdges bindings ∨
           (a = left ∧ b = right) ∨ (a = right ∧ b = left) := by
-        have h := edge.2
-        simp only [Metta.Bindings.addEqRaw, beq_iff_eq, heq, if_false,
-          leaEqualityEdges, List.mem_cons, Prod.mk.injEq] at h
-        rcases h with (⟨rfl, rfl⟩ | hold) | (⟨rfl, rfl⟩ | hold)
-        · exact Or.inr (Or.inr (Or.inl ⟨rfl, rfl⟩))
-        · exact Or.inl hold
-        · exact Or.inr (Or.inr (Or.inr ⟨rfl, rfl⟩))
-        · exact Or.inr (Or.inl hold)
+        rcases edge.2 with forward | reverse
+        · rcases (mem_leaEqualityEdges_addEqRaw_iff bindings heq).mp forward with
+            added | hold
+          · exact Or.inr (Or.inr (Or.inl added))
+          · exact Or.inl hold
+        · rcases (mem_leaEqualityEdges_addEqRaw_iff bindings heq).mp reverse with
+            added | hold
+          · exact Or.inr (Or.inr (Or.inr ⟨added.2, added.1⟩))
+          · exact Or.inr (Or.inl hold)
       rcases hedge with hold | hold | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
       · rcases ih with holdPath | hjoined
         · exact Or.inl ((SimpleGraph.Adj.reachable
@@ -9634,7 +9698,7 @@ theorem leaClassChoiceBasis_addEqRaw_of_trivial
   · rw [mem_leaEqClass_iff_reachable]
     apply SimpleGraph.Adj.reachable
     rw [EqualityClosure.edgeGraph_adj_iff]
-    exact ⟨heq, Or.inl (by simp [Metta.Bindings.addEqRaw, heq, leaEqualityEdges])⟩
+    exact ⟨heq, Or.inl (leaEqualityEdges_addEqRaw_new bindings heq)⟩
 
 /-- Every successful native alias insertion preserves a complete chosen-equation
 basis. Its nontrivial branch uses the actual whole-system reconciliation. -/
@@ -10141,18 +10205,28 @@ def coherentClassValues : Metta.Bindings :=
   [.eq "y" "x", .val "y" (.sym "a"), .val "x" (.sym "a")]
 
 theorem coherentClassValues_classChoiceBasis : LeaClassChoiceBasis coherentClassValues := by
-  have hseed : LeaClassChoiceBasis [.val "y" (.sym "a"), .val "x" (.sym "a")] :=
+  let seed : Metta.Bindings :=
+    [.val "y" (.sym "a"), .val "x" (.sym "a")]
+  have hseed : LeaClassChoiceBasis seed :=
     leaClassChoiceBasis_cons_fresh
       (leaClassChoiceBasis_singleton_value "x" (.sym "a")) (by rfl)
-  exact leaClassChoiceBasis_addEqRaw_of_trivial (left := "y") (right := "x") hseed
+  have hraw : Metta.Bindings.addEqRaw seed "y" "x" = coherentClassValues := by
+    rw [Metta.Bindings.addEqRaw_of_not_mem seed "y" "x" (by decide) (by
+      simp [seed])]
+    rfl
+  have hbasis := leaClassChoiceBasis_addEqRaw_of_trivial
+    (bindings := seed) (left := "y") (right := "x") hseed
     (by intro key value hmem
-        simp only [List.mem_cons, List.not_mem_nil, or_false, Metta.BindingRel.val.injEq] at hmem
+        simp only [seed, List.mem_cons, List.not_mem_nil, or_false,
+          Metta.BindingRel.val.injEq] at hmem
         rcases hmem with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> simp [MettaAtomNoFloat])
     (by
+      rw [hraw]
       change Metta.Bindings.unifyValues [.sym "a", .sym "a"] = some []
       simp [Metta.Bindings.unifyValues, Metta.Unify.unifyRounds,
         Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
         Metta.Atom.size])
+  rwa [hraw] at hbasis
 
 end ClassDependencyControls
 
@@ -11557,13 +11631,14 @@ theorem LeaBindingTransport.addVarEquality_valueless_of_heClass
     {b : Bindings} {lb : Metta.Bindings} {queryVar patternVar : String}
     (htransport : LeaBindingTransport b lb)
     (hne : queryVar ≠ patternVar)
+    (hnot : Metta.BindingRel.eq patternVar queryVar ∉ lb)
     (hclass : (b.addEquality queryVar patternVar).classValues queryVar = []) :
     ∃ lb',
       lb' ∈ Metta.Bindings.addVarEquality lb patternVar queryVar ∧
         LeaBindingTransport (b.addEquality queryVar patternVar) lb' := by
   let candidate := Metta.Bindings.addEqRaw lb patternVar queryVar
   have hcand : LeaBindingTransport (b.addEquality queryVar patternVar) candidate :=
-    htransport.addEqRaw hne
+    htransport.addEqRaw hne hnot
   have hreach :
       (EqualityClosure.edgeGraph
         (b.addEquality queryVar patternVar).equalities).Reachable
@@ -11576,7 +11651,7 @@ theorem LeaBindingTransport.addVarEquality_valueless_of_heClass
     exact hclass
   have hlea : Metta.Bindings.classValues candidate patternVar = [] := by
     exact leaClassValues_eq_nil_of_transport hcand hclassPattern
-  exact htransport.addVarEquality_valueless hne hlea
+  exact htransport.addVarEquality_valueless hne hnot hlea
 
 private def seededOverwriteLeaBase : Metta.Bindings :=
   [Metta.BindingRel.val "p" (.expr [.sym "f", .var "a"]),
@@ -13265,10 +13340,12 @@ theorem addEqRaw_legal (frame : IsolatedSolveFrame)
   unfold Metta.Bindings.addEqRaw
   split
   · exact legal
-  · intro relation present
-    rcases List.mem_cons.mp present with rfl | old
-    · exact edge
-    · exact legal relation old
+  · split
+    · exact legal
+    · intro relation present
+      rcases List.mem_cons.mp present with rfl | old
+      · exact edge
+      · exact legal relation old
 
 theorem addValRaw_legal (frame : IsolatedSolveFrame)
     {bindings : Metta.Bindings} {key : String} {value : Metta.Atom}

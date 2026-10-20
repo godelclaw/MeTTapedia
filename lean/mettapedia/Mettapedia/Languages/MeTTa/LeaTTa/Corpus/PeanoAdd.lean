@@ -980,8 +980,7 @@ theorem interpretFuelAddZeroKernelReadoutOfStaticEq (fuel n : Nat) (st : St)
           (peano n) =
         peano n :=
     instantiate_eq_self_of_vars_nil _ (peano_vars_nil n)
-  simp [interpretFuel, hstep, heval, finItem, isFinal, finalPair, hclosed,
-    peano_bne_empty_true]
+  simp [interpretFuel, hstep, heval, finItem, isFinal]
   have filtered := filtered_final_singleton (peano n)
     (renameBindings (counterSuffix st.counter)
       [Metta.BindingRel.val "n" (peano n)]).reverse
@@ -1394,8 +1393,7 @@ theorem interpretFuelAddSuccKernelReadoutOfStaticEq (fuel m n : Nat) (st : St)
   have hnotEmpty : (mE "S" [addQuery m n] != emptyA) = true := by
     simpa [mE] using
       expr_bne_empty_true [Metta.Atom.sym "S", addQuery m n]
-  simp [interpretFuel, hstep, heval, finItem, isFinal, finalPair, hclosed,
-    hnotEmpty]
+  simp [interpretFuel, hstep, heval, finItem, isFinal]
   have filtered := filtered_final_singleton (mE "S" [addQuery m n])
     (renameBindings (counterSuffix (st.counter + 1))
       [Metta.BindingRel.val "n" (peano n),
