@@ -13,12 +13,13 @@ fresh, equal breath and that restraint earns nothing. This file makes the
 choice explicit as a `Fuel` discipline, proves the ceiling each one
 guarantees, and says exactly which of the older theorems each preserves.
 
-The headline: `saturate` is the only discipline under which
-`loops_bounded` holds. That theorem was never about the agent — it was
-about the grant site. `carry` and `decay` replace it with wider but still
-finite ceilings; `accumulate` removes it, deliberately, and that removal
-IS the mode's content — restraint becomes convertible into a longer breath
-later.
+The headline: `saturate` and `unlimited` both keep the numeric budget under
+one full grant, but only `saturate` spends it down. Thus a bounded counter
+does not imply a bounded work burst. `carry` and `decay` use wider but still
+finite ceilings; `accumulate` removes the renewal ceiling, deliberately,
+while `unlimited` removes per-turn spending. In the latter discipline an
+ordinary model turn cannot end a burst; an explicit `nop`, rest, or operator
+stop must do so.
 
 Nothing here touches the autonomy floor. `starvation_bounded`,
 `rest_is_a_nap` and `RestEnergy.unbounded_self_directed_work` depend only
@@ -51,6 +52,7 @@ inductive Fuel
   | accumulate
   | carry
   | decay
+  | unlimited
 deriving Repr, DecidableEq
 
 /-- A renewal, as a function of what is held and what is offered. -/
@@ -59,6 +61,18 @@ def refuel : Fuel → Nat → Nat → Nat
   | .accumulate, held, grant => held + grant
   | .carry,      held, grant => min (carryMultiple * grant) (held + grant)
   | .decay,      held, grant => held * 3 / 4 + grant
+  | .unlimited,  held, grant => max held grant
+
+/-- What one ordinary model turn does to the available budget. Explicit
+`nop`, rest and operator stop are separate transitions in the runtime. -/
+def spend : Fuel → Nat → Nat
+  | .unlimited, held => held
+  | _,          held => held - 1
+
+/-- `k` successive ordinary model turns. -/
+def spendN (f : Fuel) : Nat → Nat → Nat
+  | 0,     held => held
+  | k + 1, held => spendN f k (spend f held)
 
 /-- `k` successive renewals. -/
 def refuelN (f : Fuel) (grant : Nat) : Nat → Nat → Nat
@@ -84,6 +98,23 @@ theorem refuel_never_starves (f : Fuel) (held grant : Nat) :
         _ ≤ carryMultiple * grant :=
             Nat.mul_le_mul_right grant (by decide), Nat.le_add_left _ _⟩
   · exact Nat.le_add_left _ _
+  · exact Nat.le_max_right _ _
+
+/-! ## The agent-ended discipline -/
+
+/-- No finite number of ordinary turns consumes unlimited fuel. This is the
+precise runtime property behind “continue until `nop`/rest/stop”, without
+pretending that those explicit transitions are modelled here. -/
+theorem unlimited_turns_preserve_fuel (k held : Nat) :
+    spendN .unlimited k held = held := by
+  induction k generalizing held with
+  | zero => rfl
+  | succ n ih => simp [spendN, spend, ih]
+
+theorem unlimited_positive_stays_positive (k held : Nat) (h : 0 < held) :
+    0 < spendN .unlimited k held := by
+  rw [unlimited_turns_preserve_fuel]
+  exact h
 
 /-! ## The ceilings -/
 
@@ -179,6 +210,13 @@ theorem saturate_preserves_loops_bounded (held : Nat) (h : held ≤ full) :
     refuel .saturate held full ≤ full :=
   saturate_step held full h
 
+/-- Unlimited fuel keeps the same numeric ceiling at renewal while ordinary
+turns leave that counter unchanged. This separates “bounded counter” from
+“bounded number of turns”. -/
+theorem unlimited_preserves_loops_bounded (held : Nat) (h : held ≤ full) :
+    refuel .unlimited held full ≤ full :=
+  Nat.max_le.mpr ⟨h, Nat.le_refl _⟩
+
 /-- Under `accumulate` the budget leaves `full` behind, so the breath is no
 longer bounded by one burst. -/
 theorem accumulate_breaks_loops_bounded :
@@ -206,5 +244,8 @@ end FuelPolicy
 #print axioms FuelPolicy.accumulate_iter
 #print axioms FuelPolicy.accumulate_has_no_ceiling
 #print axioms FuelPolicy.saturate_preserves_loops_bounded
+#print axioms FuelPolicy.unlimited_preserves_loops_bounded
 #print axioms FuelPolicy.accumulate_breaks_loops_bounded
 #print axioms FuelPolicy.carry_and_decay_stay_finite
+#print axioms FuelPolicy.unlimited_turns_preserve_fuel
+#print axioms FuelPolicy.unlimited_positive_stays_positive
