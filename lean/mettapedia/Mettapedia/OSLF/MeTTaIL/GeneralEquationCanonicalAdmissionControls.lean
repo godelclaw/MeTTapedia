@@ -35,7 +35,7 @@ def language : LanguageDef where
 def snapshot : Snapshot where
   language := language
   freeTypes := []
-  provider := ⟨[], []⟩
+  provider := ⟨[], [], []⟩
 
 def permissions : Permissions where
   includeDerivedEquations := false

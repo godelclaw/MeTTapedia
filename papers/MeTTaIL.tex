@@ -362,7 +362,7 @@ multisets of atoms, giving precise machine-checked statements of progress
 and determinism for the grounded-operation layer.
 State and transition components are in
 \codepath{Mettapedia/OSLF/MeTTaCore/State.lean} and
-\codepath{Mettapedia/OSLF/MeTTaCore/RewriteRules.lean}; key properties are in
+\codepath{Mettapedia/Languages/MeTTa/OSLFCore/RewriteRules.lean}; key properties are in
 \codepath{Mettapedia/OSLF/MeTTaCore/Properties.lean}.
 
 \begin{lstlisting}[language={},caption={Representative MeTTaCore properties}]
@@ -431,7 +431,7 @@ exporter renders to Ascent syntax.
 PeTTa formalizes MeTTa evaluation through a Prolog-inspired
 logic-programming lens.  The core is \code{MeTTaEval}, an inductive
 big-step evaluation relation in
-\codepath{Mettapedia/OSLF/PeTTa/MeTTaEval.lean}:
+\codepath{Mettapedia/Languages/MeTTa/PeTTa/MeTTaEval.lean}:
 
 \begin{lstlisting}[language={},caption={MeTTaEval inductive relation (excerpt)}]
 inductive MeTTaEval : PeTTaSpace -> Pattern -> Atom -> List Pattern -> Prop where

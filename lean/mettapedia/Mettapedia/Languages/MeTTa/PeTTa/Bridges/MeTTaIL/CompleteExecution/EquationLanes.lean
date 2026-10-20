@@ -223,7 +223,8 @@ theorem jobs_lanes_returns (state : State) (table : List (String × TypeExpr)) (
 theorem typed_generate_agreement : ProgramAgreementOn GeneralTypedSiteExecution.executionHeads
     GeneralTypedSiteExecution.program typedLibrary.runtime := typed_agreement
 
-/-- `gslt:sites:generate` lists a term's licensed sites, in the complete machine's runtime. -/
+/-- `gslt:sites:generate` lists a term's sites for equations (every well-sorted position), in
+the complete machine's runtime. -/
 theorem complete_generate_returns (state : State) (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern)
     (footprint : List String) (covers : ∀ name ∈ source.freeFvarNames, name ∈ footprint) :
     PureReturns runtime [] state
@@ -231,11 +232,11 @@ theorem complete_generate_returns (state : State) (bound : List TypeExpr) (expec
         [encoded (PremiseOperationsExecution.DeclarationTyping.declarationsTerm
             (GeneralPlanEnvironment.environment plan).language.terms),
          encoded (PremiseOperationsExecution.DeclarationTyping.freeContextTerm (plan.snapshot.free.entriesOn footprint)),
-         encoded (InferenceCettaWire.ContextObservation.permissionsTerm plan.permissions.sites),
+         encoded (InferenceCettaWire.ContextObservation.permissionsTerm OperationalPermissions.all),
          encoded (PremiseOperationsExecution.DeclarationTyping.boundContextTerm bound),
          encoded (InferenceCettaWire.AuthoredRule.typeTerm expected), encoded (InferenceCettaWire.encodePattern source)])
       state (encoded (encodeList ScopedRuleJobReadoutExecution.siteTerm
-        (generate (GeneralPlanEnvironment.environment plan).language plan.snapshot.free plan.permissions.sites bound
+        (generate (GeneralPlanEnvironment.environment plan).language plan.snapshot.free OperationalPermissions.all bound
           expected source))) := by
   rw [← generate_snapshot _ _ _ _ _ _ footprint covers]
   metta_lift complete_checked ["declarations", "free", "permissions", "bound", "expected", "source"]
@@ -244,7 +245,7 @@ theorem complete_generate_returns (state : State) (bound : List TypeExpr) (expec
         (by decide +kernel) (by decide) ["declarations", "free", "permissions", "bound", "expected", "source"]
         (by decide) rfl (by decide +kernel)
         (GeneralTypedSiteExecution.generate_returns state (GeneralPlanEnvironment.environment plan).language
-          (plan.snapshot.free.entriesOn footprint) plan.permissions.sites bound expected source)))
+          (plan.snapshot.free.entriesOn footprint) OperationalPermissions.all bound expected source)))
 
 theorem complete_sorted_returns (state : State) (language : LanguageDef) (free : List (String × TypeExpr))
     (bound : List TypeExpr) (type : TypeExpr) (pattern : Pattern) :
@@ -285,7 +286,7 @@ theorem lanes_returns (state : State) (table : List (String × TypeExpr)) (bound
       bound expected source = true
   · have sites := complete_generate_returns plan state bound expected source footprint covers
     have jobs := equations_jobs_returns plan state
-      (generate (GeneralPlanEnvironment.environment plan).language plan.snapshot.free plan.permissions.sites bound
+      (generate (GeneralPlanEnvironment.environment plan).language plan.snapshot.free OperationalPermissions.all bound
         expected source) 0 plan.equations.zipIdx
     have lanes := jobs_lanes_returns plan state (plan.snapshot.free.entriesOn footprint) bound expected footprint rfl
       source (GeneralEquationJobs.jobs plan bound expected source)
@@ -296,7 +297,10 @@ theorem lanes_returns (state : State) (table : List (String × TypeExpr)) (bound
     complete_eval [sorted, sites, jobs, lanes]
       unfolding [planValue, CompletePlanWire.planTerm, PremiseOperationsExecution.GeneralExecution.environmentTerm,
         PremiseOperationsExecution.DeclarationTyping.declarationsTerm,
-        PremiseOperationsExecution.DeclarationTyping.boundContextTerm, typed, GeneralEquationJobs.jobs, patternValue]
+        PremiseOperationsExecution.DeclarationTyping.boundContextTerm,
+        InferenceCettaWire.ContextObservation.permissionsTerm, OperationalPermissions.all,
+        InferenceCettaWire.ContextObservation.booleanTerm, InferenceCettaWire.encodeCollectionType,
+        InferenceCettaWire.encodeList, encodeList, typed, GeneralEquationJobs.jobs, patternValue]
   · have untyped : checkOpenPatternWellSorted (GeneralPlanEnvironment.environment plan).language plan.snapshot.free
         bound expected source = false := Bool.eq_false_iff.mpr typed
     rw [show Complete.EquationJob.lanes plan bound expected source = [] by simp [Complete.EquationJob.lanes, untyped]]

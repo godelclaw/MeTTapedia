@@ -1,5 +1,6 @@
 import Algorithms.MeTTa.Simple.Parser
 import Mettapedia.GSLT.Parsing.ExactDecimalLexeme
+import Mettapedia.Data.FreshString
 import Mettapedia.Languages.ProcessCalculi.MORK.MatchSpec
 import Lean.Data.Json.Parser
 
@@ -104,16 +105,270 @@ theorem plain_reader_rejects_unsafe_tokens :
       readPlainString "\"a\x00b\"" = none ∧
       readPlainString "\"a\"suffix" = none := by decide +kernel
 
-mutual
-  def readExpression : SExpr → Except String Atom
-    | .atom token => readToken token
-    | .list items => .expression <$> readExpressions items
+namespace Anonymous
 
-  def readExpressions : List SExpr → Except String (List Atom)
+/- The anonymous source marker denotes a new variable occurrence. Named
+variables retain their identity; the support includes the whole authored
+syntax before any occurrence is expanded. -/
+mutual
+  def expand (used : Finset String) : Atom → Finset String × Atom
+    | .var name =>
+        if name = "_" then
+          let fresh := FreshString.fresh used
+          (insert fresh used,.var fresh)
+        else (used,.var name)
+    | .symbol name => (used,.symbol name)
+    | .grounded value => (used,.grounded value)
+    | .expression items =>
+        let result := expandList used items
+        (result.1,.expression result.2)
+
+  def expandList (used : Finset String) : List Atom → Finset String × List Atom
+    | [] => (used,[])
+    | head :: tail =>
+        let first := expand used head
+        let rest := expandList first.1 tail
+        (rest.1,first.2 :: rest.2)
+end
+
+/- The source binding condition is independent of the chosen fresh spelling.
+Each anonymous occurrence extends the used support, while each named
+occurrence and each data constructor is retained. -/
+mutual
+  inductive Expansion : Finset String → Atom → Finset String → Atom → Prop where
+    | anonymous (used : Finset String) (name : String) (fresh : name ∉ used) :
+        Expansion used (.var "_") (insert name used) (.var name)
+    | named (used : Finset String) (name : String) (ordinary : name ≠ "_") :
+        Expansion used (.var name) used (.var name)
+    | symbol (used : Finset String) (name : String) :
+        Expansion used (.symbol name) used (.symbol name)
+    | grounded (used : Finset String) (value : OSLFCore.GroundedValue) :
+        Expansion used (.grounded value) used (.grounded value)
+    | expression {used next : Finset String} {before after : List Atom} :
+        Expansions used before next after →
+        Expansion used (.expression before) next (.expression after)
+
+  inductive Expansions : Finset String → List Atom → Finset String → List Atom → Prop where
+    | nil (used : Finset String) : Expansions used [] used []
+    | cons {used middle next : Finset String} {head value : Atom} {tail values : List Atom} :
+        Expansion used head middle value → Expansions middle tail next values →
+        Expansions used (head :: tail) next (value :: values)
+end
+
+mutual
+  theorem expand_sound (used : Finset String) (atom : Atom) :
+      Expansion used atom (expand used atom).1 (expand used atom).2 := by
+    cases atom with
+    | var name =>
+        by_cases anonymous : name = "_"
+        · subst name
+          simpa only [expand,↓reduceIte] using
+            Expansion.anonymous used (FreshString.fresh used) (FreshString.fresh_not_mem used)
+        · simpa only [expand,anonymous,↓reduceIte] using Expansion.named used name anonymous
+    | symbol name => exact .symbol used name
+    | grounded value => exact .grounded used value
+    | expression items => exact .expression (expandList_sound used items)
+
+  theorem expandList_sound (used : Finset String) (atoms : List Atom) :
+      Expansions used atoms (expandList used atoms).1 (expandList used atoms).2 := by
+    cases atoms with
+    | nil => exact .nil used
+    | cons head tail => exact .cons (expand_sound used head) (expandList_sound _ tail)
+end
+
+mutual
+  theorem Expansion.extends {used next : Finset String} {before after : Atom}
+      (source : Expansion used before next after) : used ⊆ next := by
+    cases source with
+    | anonymous => exact Finset.subset_insert _ _
+    | named | symbol | grounded => exact Finset.Subset.refl _
+    | expression items => exact items.extends
+
+  theorem Expansions.extends {used next : Finset String} {before after : List Atom}
+      (source : Expansions used before next after) : used ⊆ next := by
+    cases source with
+    | nil => exact Finset.Subset.refl _
+    | cons head tail => exact head.extends.trans tail.extends
+end
+
+/- Every anonymous occurrence allocates one distinct name outside the
+initial support, even when several occurrences have the same token. -/
+mutual
+  theorem Expansion.card {used next : Finset String} {before after : Atom}
+      (source : Expansion used before next after) :
+      next.card = used.card + (MORK.atomFreeVars before).count "_" := by
+    cases source with
+    | anonymous used name fresh => simp [MORK.atomFreeVars,Finset.card_insert_of_notMem fresh]
+    | named used name ordinary => simp [MORK.atomFreeVars,ordinary]
+    | symbol | grounded => simp [MORK.atomFreeVars]
+    | expression items => exact items.card
+
+  theorem Expansions.card {used next : Finset String} {before after : List Atom}
+      (source : Expansions used before next after) :
+      next.card = used.card + (MORK.atomFreeVars (.expression before)).count "_" := by
+    cases source with
+    | nil => simp [MORK.atomFreeVars,MORK.atomFreeVars.atomFreeVarsList]
+    | cons head tail =>
+        have first := head.card
+        have rest := tail.card
+        simp only [MORK.atomFreeVars] at rest
+        simp only [MORK.atomFreeVars,MORK.atomFreeVars.atomFreeVarsList,List.count_append]
+        omega
+end
+
+mutual
+  theorem Expansion.no_marker {used next : Finset String} {before after : Atom}
+      (source : Expansion used before next after) (reserved : "_" ∈ used) :
+      "_" ∉ MORK.atomFreeVars after := by
+    cases source with
+    | anonymous used name fresh =>
+        intro occurs
+        have same : "_" = name := by simpa only [MORK.atomFreeVars,List.mem_singleton] using occurs
+        exact fresh (same ▸ reserved)
+    | named used name ordinary => simpa only [MORK.atomFreeVars,List.mem_singleton] using ordinary.symm
+    | symbol | grounded => simp [MORK.atomFreeVars]
+    | expression items => exact items.no_marker reserved
+
+  theorem Expansions.no_marker {used next : Finset String} {before after : List Atom}
+      (source : Expansions used before next after) (reserved : "_" ∈ used) :
+      "_" ∉ MORK.atomFreeVars (.expression after) := by
+    cases source with
+    | nil => simp [MORK.atomFreeVars,MORK.atomFreeVars.atomFreeVarsList]
+    | cons head tail =>
+        have first := head.no_marker reserved
+        have rest := tail.no_marker (head.extends reserved)
+        simpa only [MORK.atomFreeVars,MORK.atomFreeVars.atomFreeVarsList,List.mem_append,not_or]
+          using And.intro first rest
+end
+
+mutual
+  theorem expand_of_named (used : Finset String) (atom : Atom)
+      (named : "_" ∉ MORK.atomFreeVars atom) : expand used atom = (used,atom) := by
+    cases atom with
+    | var name =>
+        have ordinary : name ≠ "_" := by
+          intro same
+          subst name
+          exact named (by simp [MORK.atomFreeVars])
+        simp [expand,ordinary]
+    | symbol | grounded => rfl
+    | expression items => simp only [expand,expandList_of_named used items named]
+
+  theorem expandList_of_named (used : Finset String) (atoms : List Atom)
+      (named : "_" ∉ MORK.atomFreeVars (.expression atoms)) :
+      expandList used atoms = (used,atoms) := by
+    cases atoms with
+    | nil => rfl
+    | cons head tail =>
+        have parts : "_" ∉ MORK.atomFreeVars head ∧ "_" ∉ MORK.atomFreeVars (.expression tail) := by
+          simpa only [MORK.atomFreeVars,MORK.atomFreeVars.atomFreeVarsList,List.mem_append,not_or] using named
+        simp only [expandList,expand_of_named used head parts.1,expandList_of_named used tail parts.2]
+end
+
+/-- One expression uses one support containing all its authored names. -/
+def resolve (atom : Atom) : Atom :=
+  (expand (insert "_" (MORK.atomFreeVars atom).toFinset) atom).2
+
+/-- Reading several forms reserves names in the complete source packet. -/
+def resolveList (atoms : List Atom) : List Atom :=
+  (expandList (insert "_" (MORK.atomFreeVars (.expression atoms)).toFinset) atoms).2
+
+theorem resolve_no_marker (atom : Atom) : "_" ∉ MORK.atomFreeVars (resolve atom) :=
+  (expand_sound _ atom).no_marker (by simp)
+
+theorem resolveList_no_marker (atoms : List Atom) :
+    "_" ∉ MORK.atomFreeVars (.expression (resolveList atoms)) :=
+  (expandList_sound _ atoms).no_marker (by simp)
+
+theorem resolve_of_named (atom : Atom) (named : "_" ∉ MORK.atomFreeVars atom) : resolve atom = atom := by
+  simp only [resolve,expand_of_named _ atom named]
+
+theorem resolveList_of_named (atoms : List Atom)
+    (named : "_" ∉ MORK.atomFreeVars (.expression atoms)) : resolveList atoms = atoms := by
+  simp only [resolveList,expandList_of_named _ atoms named]
+
+end Anonymous
+
+mutual
+  def readRawExpression : SExpr → Except String Atom
+    | .atom token => readToken token
+    | .list items => .expression <$> readRawExpressions items
+
+  def readRawExpressions : List SExpr → Except String (List Atom)
     | [] => .ok []
     | item :: items => do
-        return (← readExpression item) :: (← readExpressions items)
+        return (← readRawExpression item) :: (← readRawExpressions items)
 end
+
+/-- Bind anonymous occurrences only after all authored variable spellings in
+the expression are available. Token conversion itself remains lexical. -/
+def readExpression (expression : SExpr) : Except String Atom :=
+  (readRawExpression expression).map Anonymous.resolve
+
+def readExpressions (expressions : List SExpr) : Except String (List Atom) :=
+  (readRawExpressions expressions).map Anonymous.resolveList
+
+theorem readExpression_named {expression : SExpr} {atom : Atom}
+    (read : readRawExpression expression = .ok atom)
+    (named : "_" ∉ MORK.atomFreeVars atom) : readExpression expression = .ok atom := by
+  simp only [readExpression,read,Except.map,Anonymous.resolve_of_named atom named]
+
+/-- Every successful scoped read has expanded all anonymous markers. -/
+theorem readExpression_no_marker {expression : SExpr} {atom : Atom}
+    (read : readExpression expression = .ok atom) : "_" ∉ MORK.atomFreeVars atom := by
+  unfold readExpression at read
+  cases rawRead : readRawExpression expression with
+  | error reason => simp only [rawRead,Except.map] at read; cases read
+  | ok raw =>
+      simp only [rawRead,Except.map] at read
+      cases Except.ok.inj read
+      exact Anonymous.resolve_no_marker raw
+
+theorem readExpressions_no_marker {expressions : List SExpr} {atoms : List Atom}
+    (read : readExpressions expressions = .ok atoms) : "_" ∉ MORK.atomFreeVars (.expression atoms) := by
+  unfold readExpressions at read
+  cases rawRead : readRawExpressions expressions with
+  | error reason => simp only [rawRead,Except.map] at read; cases read
+  | ok raw =>
+      simp only [rawRead,Except.map] at read
+      cases Except.ok.inj read
+      exact Anonymous.resolveList_no_marker raw
+
+/-- The scoped reader earns the independent occurrence-binding relation and
+its exact allocation count from the lexical result. -/
+theorem readExpression_expansion {expression : SExpr} {atom : Atom}
+    (read : readExpression expression = .ok atom) :
+    ∃ raw used, readRawExpression expression = .ok raw ∧
+      Anonymous.Expansion (insert "_" (MORK.atomFreeVars raw).toFinset) raw used atom ∧
+      used.card = (insert "_" (MORK.atomFreeVars raw).toFinset).card +
+        (MORK.atomFreeVars raw).count "_" := by
+  unfold readExpression at read
+  cases rawRead : readRawExpression expression with
+  | error reason => simp only [rawRead,Except.map] at read; cases read
+  | ok raw =>
+      simp only [rawRead,Except.map] at read
+      cases Except.ok.inj read
+      exact ⟨raw,_,rfl,Anonymous.expand_sound _ raw,(Anonymous.expand_sound _ raw).card⟩
+
+theorem reader_anonymous_occurrences_distinct :
+    readExpression (.list [.atom "Pair",.atom "$_",.atom "$_"]) =
+      .ok (.expression [.symbol "Pair",.var "__",.var "___"]) := by decide +kernel
+
+theorem reader_named_occurrences_correlated :
+    readExpression (.list [.atom "Pair",.atom "$x",.atom "$x"]) =
+      .ok (.expression [.symbol "Pair",.var "x",.var "x"]) := by decide +kernel
+
+theorem reader_anonymous_avoids_later_named :
+    readExpression (.list [.atom "Pair",.atom "$_",.atom "$__"]) =
+      .ok (.expression [.symbol "Pair",.var "___",.var "__"]) := by decide +kernel
+
+theorem reader_quoted_marker_is_data :
+    readExpression (.list [.atom "Pair",.atom "\"$_\"",.atom "$_"]) =
+      .ok (.expression [.symbol "Pair",.grounded (.string "$_"),.var "__"]) := by decide +kernel
+
+theorem reader_anonymous_across_forms_distinct :
+    readExpressions [.atom "$_",.atom "$_"] =
+      .ok [.var "__",.var "___"] := by decide +kernel
 
 def readSource (source : String) : Except String (List Atom) := do
   let expressions ← (Algorithms.MeTTa.Simple.Parser.parseSExprProgramWithDetailed
@@ -570,14 +825,21 @@ theorem lowercase_boolean_token_is_grounded :
   simp [readToken]
 
 theorem symbol_is_not_a_nullary_expression :
-    readExpression (.atom "answer") ≠ readExpression (.list [.atom "answer"]) := by
-  simp [readExpression, readExpressions, readToken, parseInteger?,
-    ExactDecimalLexeme.parseIntegerChars?, ExactDecimalLexeme.parseUnsignedChars?,
-    ExactDecimalLexeme.parseDigits?, ExactDecimalLexeme.decimalDigit?]
-  change Except.ok (Atom.symbol "answer") ≠
-    (Except.ok (Atom.expression [.symbol "answer"]) : Except String Atom)
-  intro equal
-  cases equal
+    readExpression (.atom "answer") ≠ readExpression (.list [.atom "answer"]) := by decide +kernel
+
+/-- The fresh occurrences are consumed by the actual finite matcher, rather
+than merely asserted to have different printed names. -/
+theorem anonymous_source_matches_distinct_values :
+    (readExpression (.list [.atom "foo",.atom "$_",.atom "$_"])).map
+      (fun pattern => (matchValue [] pattern
+        (.expression [.symbol "foo",.grounded (.int 1),.grounded (.int 2)])).isSome) =
+      .ok true := by decide +kernel
+
+theorem named_source_rejects_distinct_values :
+    (readExpression (.list [.atom "foo",.atom "$x",.atom "$x"])).map
+      (fun pattern => (matchValue [] pattern
+        (.expression [.symbol "foo",.grounded (.int 1),.grounded (.int 2)])).isSome) =
+      .ok false := by decide +kernel
 
 theorem cons_pattern_exposes_tail :
     matchValue [] (.expression [.symbol "cons", .var "head", .var "tail"])

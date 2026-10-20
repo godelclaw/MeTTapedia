@@ -23,7 +23,7 @@ namespace Mettapedia.PLN.Evidence.PLN_KS_Bridge
 
 open scoped ENNReal
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open KnuthSkilling.TotalityImprecision
 
 /-! ## BinaryEvidence has incomparable elements -/

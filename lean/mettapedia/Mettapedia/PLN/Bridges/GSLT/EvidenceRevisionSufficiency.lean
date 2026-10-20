@@ -40,7 +40,7 @@ open scoped ENNReal
 open Mettapedia.PLN.Bridges.GSLT.EvidenceCostReadout
 open Mettapedia.PLN.Bridges.GSLT.EvidenceWeightedScheduler
 open Mettapedia.PLN.Bridges.GSLT.GuidanceOptimization
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 
 noncomputable section

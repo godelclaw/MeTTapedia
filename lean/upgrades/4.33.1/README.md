@@ -28,6 +28,8 @@ mode flag, both patches are tested sequentially in a private index and object
 store; the working tree, ordinary index and repository object store are unchanged.
 
 The overlays cover Foundation's 15 source repairs, exchangeability's 44 source
-repairs, and one Metamath source repair. The Metamath and Knuth–Skilling pins
+repairs, one Metamath source repair, and LeaTTa's shared atom-carrier import.
+The latter keeps the integration on the carrier defined by `mettail-core`
+instead of a second copy. The Metamath and Knuth–Skilling pins
 also include their published source reorganizations. A source profile identifies
 the build inputs; successful proof builds and axiom audits remain separate checks.

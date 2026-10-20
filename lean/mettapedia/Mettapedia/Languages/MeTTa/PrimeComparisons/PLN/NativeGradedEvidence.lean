@@ -37,7 +37,7 @@ open Mettapedia.GSLT.Core.InferenceControl
 open Mettapedia.GSLT.Dynamics
 open Mettapedia.PLN.Evidence (BinEvNat)
 open Mettapedia.PLN.Bridges.GSLT.EvidenceResolutionAlgebra
-open Mettapedia.PLN.Evidence.EvidenceQuantale (BinaryEvidence)
+open Mettapedia.PLN.Evidence (BinaryEvidence)
 
 /-- Negative counts or other values remain outside the declared natural profile. -/
 def countCoefficient : Outcome → Option BinEvNat

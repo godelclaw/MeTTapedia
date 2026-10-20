@@ -1,6 +1,8 @@
 import Mettapedia.Languages.MeTTa.HE.Matching
 import Mettapedia.Languages.MeTTa.HE.EqualityClosure
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge
+import Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 /-!
 # Binding Composition: Monotonic Extension Under Pattern Matching
@@ -349,7 +351,7 @@ theorem ReadFrame.addEquality {keys : String → Prop} {saved : String → Optio
 
 private theorem lookup_none_of_class_empty {bindings : Bindings} {key : String}
     (empty : bindings.classValues key = []) : bindings.lookup key = none := by
-  have unbound := LeaTTaBridge.isBound_eq_false_of_classValues_nil empty
+  have unbound := EqualityClosure.isBound_eq_false_of_classValues_nil empty
   cases found : bindings.lookup key with
   | none => rfl
   | some value => simp [Bindings.isBound, found] at unbound
@@ -591,7 +593,7 @@ theorem frame_family (keys : String → Prop) (fuel : Nat) :
 
 end FreshPrivateMerge
 
-namespace LeaTTaBridge
+namespace BindingComposition
 
 -- Structural depth measures for HE atoms and atom lists.
 mutual
@@ -624,7 +626,7 @@ single direct lookup as soon as it has one unfold step available. -/
       have hstable : b.hasAssignedVar a = false := hindependent h
       simp [Bindings.resolve, Bindings.resolveAtomAux, h, hstable]
 
-end LeaTTaBridge
+end BindingComposition
 
 /-! ## Ground one-way matching and native constraint matching
 
@@ -4412,3 +4414,470 @@ theorem simpleMatch_ground_matchAtoms_nil
 
 
 end Mettapedia.Languages.MeTTa.HE
+
+/-! ## Complete solution theory of the native matching algebra
+
+These laws use only the HE matcher and the structural atom model. Comparisons
+with other runtimes consume them downstream.
+-/
+
+namespace Mettapedia.Languages.MeTTa.HE.BindingComposition
+
+open Mettapedia.Languages.MeTTa.HE
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
+
+/-! ## Fold plumbing for `mergeBindings` -/
+
+private theorem stepFold_solution {β : Type} {Con : β → (String → Metta.Atom) → Prop}
+    {f : Bindings → β → List Bindings}
+    (hstep : ∀ {bb : Bindings} {p : β} {out : Bindings}, out ∈ f bb p →
+      ∀ μ : String → Metta.Atom,
+        (HEBindingSatisfied μ out ↔ (HEBindingSatisfied μ bb ∧ Con p μ))) :
+    ∀ (entries : List β) (init : List Bindings) (out : Bindings),
+      out ∈ entries.foldl (fun acc p => acc.flatMap fun bb => f bb p) init →
+      ∃ seed ∈ init, ∀ μ : String → Metta.Atom,
+        (HEBindingSatisfied μ out ↔
+          (HEBindingSatisfied μ seed ∧ ∀ p ∈ entries, Con p μ)) := by
+  intro entries
+  induction entries with
+  | nil =>
+      intro init out h
+      exact ⟨out, by simpa using h, fun μ => by simp⟩
+  | cons p entries ih =>
+      intro init out h
+      rw [List.foldl_cons] at h
+      obtain ⟨seed1, hseed1, hiff⟩ := ih _ _ h
+      obtain ⟨seed0, hseed0, hstep1⟩ := List.mem_flatMap.mp hseed1
+      refine ⟨seed0, hseed0, fun μ => ?_⟩
+      rw [hiff μ, hstep hstep1 μ, List.forall_mem_cons]
+      tauto
+
+/-! ## The fuel-indexed solution pack
+
+The five executable functions recurse mutually on one strictly decreasing
+fuel, so their solution characterizations are proven by one simultaneous
+induction on fuel — mirroring `DeclMatchSpec.matchSoundPair`. -/
+
+private theorem solutionPack :
+    ∀ fuel : Nat,
+      (∀ {l r : Atom} {b : Bindings}, b ∈ matchAtoms l r fuel →
+        ∀ μ : String → Metta.Atom,
+          (HEBindingSatisfied μ b ↔
+            applyClassSolution μ (encodeModelAtom l) =
+              applyClassSolution μ (encodeModelAtom r))) ∧
+      (∀ {ls rs : List Atom} {acc : List Bindings} {out : Bindings},
+        out ∈ matchAtomsList ls rs acc fuel →
+        ∃ seed ∈ acc, ∀ μ : String → Metta.Atom,
+          (HEBindingSatisfied μ out ↔
+            (HEBindingSatisfied μ seed ∧
+              (encodeModelAtoms ls).map (applyClassSolution μ) =
+                (encodeModelAtoms rs).map (applyClassSolution μ)))) ∧
+      (∀ {left right out : Bindings}, out ∈ mergeBindings left right fuel →
+        ∀ μ : String → Metta.Atom,
+          (HEBindingSatisfied μ out ↔
+            (HEBindingSatisfied μ left ∧ HEBindingSatisfied μ right))) ∧
+      (∀ {b : Bindings} {v : String} {val : Atom} {out : Bindings},
+        out ∈ addVarBinding b v val fuel →
+        ∀ μ : String → Metta.Atom,
+          (HEBindingSatisfied μ out ↔
+            (HEBindingSatisfied μ b ∧
+              μ v = applyClassSolution μ (encodeModelAtom val)))) ∧
+      (∀ {b : Bindings} {a c : String} {out : Bindings},
+        out ∈ addVarEquality b a c fuel →
+        ∀ μ : String → Metta.Atom,
+          (HEBindingSatisfied μ out ↔
+            (HEBindingSatisfied μ b ∧ μ a = μ c)))
+  | 0 => by
+      refine ⟨?_, ?_, ?_, ?_, ?_⟩
+      · intro l r b h
+        simp [matchAtoms] at h
+      · intro ls rs acc out h
+        simp [matchAtomsList] at h
+      · intro left right out h
+        simp [mergeBindings] at h
+      · intro b v val out h
+        simp [addVarBinding] at h
+      · intro b a c out h
+        simp [addVarEquality] at h
+  | fuel + 1 => by
+      obtain ⟨ihA, ihB, ihC, ihD, ihE⟩ := solutionPack fuel
+      -- The merge/add layer first: it only consumes the IH at `fuel`.
+      have hD : ∀ {b : Bindings} {v : String} {val : Atom} {out : Bindings},
+          out ∈ addVarBinding b v val (fuel + 1) →
+          ∀ μ : String → Metta.Atom,
+            (HEBindingSatisfied μ out ↔
+              (HEBindingSatisfied μ b ∧
+                μ v = applyClassSolution μ (encodeModelAtom val))) := by
+        intro b v val out h
+        simp only [addVarBinding] at h
+        split at h
+        · -- fresh class: no value anywhere in the class
+          next hcv =>
+            simp only [List.mem_singleton] at h
+            subst h
+            exact hesat_assign_of_not_isBound
+              (EqualityClosure.isBound_eq_false_of_classValues_nil hcv)
+        · next first rest hcv =>
+            split at h
+            · -- consistent class values
+              split at h
+              · -- proposed value equals the carried value: no change
+                next hbeq =>
+                  simp only [List.mem_singleton] at h
+                  subst h
+                  have hval : first = val := eq_of_beq hbeq
+                  subst hval
+                  intro μ
+                  constructor
+                  · intro hs
+                    exact ⟨hs, hs.eq_applyClassSolution_of_mem_classValues
+                      (by rw [hcv]; exact List.mem_cons_self ..)⟩
+                  · exact fun hs => hs.1
+              · -- conflicting value: reconcile through the matcher, merge back
+                next hbeq =>
+                  obtain ⟨mb, hmb, hmrg⟩ := List.mem_flatMap.mp h
+                  intro μ
+                  rw [ihC hmrg μ, ihA hmb μ]
+                  have hfirst : HEBindingSatisfied μ b →
+                      μ v = applyClassSolution μ (encodeModelAtom first) :=
+                    fun hs => hs.eq_applyClassSolution_of_mem_classValues
+                      (by rw [hcv]; exact List.mem_cons_self ..)
+                  constructor
+                  · rintro ⟨hs, hfv⟩
+                    exact ⟨hs, (hfirst hs).trans hfv⟩
+                  · rintro ⟨hs, hvv⟩
+                    exact ⟨hs, (hfirst hs).symm.trans hvv⟩
+            · -- inconsistent class values: reconcile the whole class plus `val`
+              next hcons =>
+                obtain ⟨mb, hmb, hmrg⟩ := List.mem_flatMap.mp h
+                obtain ⟨seed, hseed, hiffL⟩ := ihB hmb
+                simp only [List.mem_singleton] at hseed
+                subst hseed
+                intro μ
+                rw [ihC hmrg μ, hiffL μ]
+                simp only [hesat_empty_iff, true_and,
+                  solutionTheory_encodeModelAtoms_eq_map,
+                  List.map_map, List.map_replicate, List.append_eq]
+                rw [replicate_eq_map_iff μ first (rest ++ [val])]
+                have hfirst : HEBindingSatisfied μ b →
+                    μ v = applyClassSolution μ (encodeModelAtom first) :=
+                  fun hs => hs.eq_applyClassSolution_of_mem_classValues
+                    (by rw [hcv]; exact List.mem_cons_self ..)
+                have hrest : HEBindingSatisfied μ b →
+                    ∀ o ∈ rest, applyClassSolution μ (encodeModelAtom o) =
+                      applyClassSolution μ (encodeModelAtom first) :=
+                  fun hs o ho =>
+                    (hs.eq_applyClassSolution_of_mem_classValues
+                      (by rw [hcv]; exact List.mem_cons_of_mem _ ho)).symm.trans
+                      (hfirst hs)
+                constructor
+                · rintro ⟨hs, hall⟩
+                  have hval := hall val
+                    (List.mem_append_right _ (by simp))
+                  exact ⟨hs, (hfirst hs).trans hval.symm⟩
+                · rintro ⟨hs, hvv⟩
+                  refine ⟨hs, fun o ho => ?_⟩
+                  rcases List.mem_append.mp ho with ho | ho
+                  · exact hrest hs o ho
+                  · simp only [List.mem_singleton] at ho
+                    subst ho
+                    exact ((hfirst hs).symm.trans hvv).symm
+      have hE : ∀ {b : Bindings} {a c : String} {out : Bindings},
+          out ∈ addVarEquality b a c (fuel + 1) →
+          ∀ μ : String → Metta.Atom,
+            (HEBindingSatisfied μ out ↔
+              (HEBindingSatisfied μ b ∧ μ a = μ c)) := by
+        intro b a c out h
+        simp only [addVarEquality] at h
+        split at h
+        · -- joined class already consistent
+          simp only [List.mem_singleton] at h
+          subst h
+          exact hesat_addEquality
+        · next hcons =>
+            split at h
+            · -- no values at all: `valuesConsistent [] = true`, contradiction
+              simp at h
+            · -- exactly two conflicting values
+              next first second hcv =>
+                obtain ⟨mb, hmb, hmrg⟩ := List.mem_flatMap.mp h
+                intro μ
+                rw [ihC hmrg μ, ihA hmb μ, hesat_addEquality μ]
+                have hpair : HEBindingSatisfied μ (b.addEquality a c) →
+                    applyClassSolution μ (encodeModelAtom first) =
+                      applyClassSolution μ (encodeModelAtom second) := by
+                  intro hs
+                  have h1 := hs.eq_applyClassSolution_of_mem_classValues
+                    (v := a) (by rw [hcv]; exact List.mem_cons_self ..)
+                  have h2 := hs.eq_applyClassSolution_of_mem_classValues
+                    (v := a) (by
+                      rw [hcv]
+                      exact List.mem_cons_of_mem _ (List.mem_cons_self ..))
+                  exact h1.symm.trans h2
+                constructor
+                · rintro ⟨hs, -⟩
+                  exact hs
+                · rintro ⟨hsb, hac⟩
+                  have hs := (hesat_addEquality μ).mpr ⟨hsb, hac⟩
+                  exact ⟨⟨hsb, hac⟩, hpair hs⟩
+            · -- three or more conflicting values
+              next first rest hnotpair hcv =>
+                obtain ⟨mb, hmb, hmrg⟩ := List.mem_flatMap.mp h
+                obtain ⟨seed, hseed, hiffL⟩ := ihB hmb
+                simp only [List.mem_singleton] at hseed
+                subst hseed
+                intro μ
+                rw [ihC hmrg μ, hiffL μ, hesat_addEquality μ]
+                simp only [hesat_empty_iff, true_and,
+                  solutionTheory_encodeModelAtoms_eq_map,
+                  List.map_map, List.map_replicate]
+                rw [replicate_eq_map_iff μ first rest]
+                have hall : HEBindingSatisfied μ (b.addEquality a c) →
+                    ∀ o ∈ rest, applyClassSolution μ (encodeModelAtom o) =
+                      applyClassSolution μ (encodeModelAtom first) := by
+                  intro hs o ho
+                  have h1 := hs.eq_applyClassSolution_of_mem_classValues
+                    (v := a) (by rw [hcv]; exact List.mem_cons_self ..)
+                  have h2 := hs.eq_applyClassSolution_of_mem_classValues
+                    (v := a) (by rw [hcv]; exact List.mem_cons_of_mem _ ho)
+                  exact h2.symm.trans h1
+                constructor
+                · rintro ⟨hs, -⟩
+                  exact hs
+                · intro hs
+                  have hsat := (hesat_addEquality μ).mpr hs
+                  exact ⟨hs, hall hsat⟩
+      have hC : ∀ {left right out : Bindings},
+          out ∈ mergeBindings left right (fuel + 1) →
+          ∀ μ : String → Metta.Atom,
+            (HEBindingSatisfied μ out ↔
+              (HEBindingSatisfied μ left ∧ HEBindingSatisfied μ right)) := by
+        intro left right out h
+        simp only [mergeBindings] at h
+        obtain ⟨mid, hmid, hiffE⟩ :=
+          stepFold_solution (f := fun bb p => addVarEquality bb p.1 p.2 fuel)
+            (Con := fun p μ => μ p.1 = μ p.2)
+            (fun hstep μ => ihE hstep μ) right.equalities _ out h
+        obtain ⟨seed, hseed, hiffA⟩ :=
+          stepFold_solution (f := fun bb p => addVarBinding bb p.1 p.2 fuel)
+            (Con := fun p μ =>
+              μ p.1 = applyClassSolution μ (encodeModelAtom p.2))
+            (fun hstep μ => ihD hstep μ) right.assignments [left] mid hmid
+        simp only [List.mem_singleton] at hseed
+        subst hseed
+        intro μ
+        rw [hiffE μ, hiffA μ]
+        constructor
+        · rintro ⟨⟨hl, hassigns⟩, heqs⟩
+          exact ⟨hl,
+            ⟨fun x value hx => hassigns (x, value) hx,
+             fun x y hx => heqs (x, y) hx⟩⟩
+        · rintro ⟨hl, hr⟩
+          exact ⟨⟨hl, fun p hp => hr.1 p.1 p.2 (by simpa using hp)⟩,
+            fun p hp => hr.2 p.1 p.2 (by simpa using hp)⟩
+      -- The matcher layer, mirroring `matchSoundPair`'s case skeleton.
+      have hB : ∀ {ls rs : List Atom} {acc : List Bindings} {out : Bindings},
+          out ∈ matchAtomsList ls rs acc (fuel + 1) →
+          ∃ seed ∈ acc, ∀ μ : String → Metta.Atom,
+            (HEBindingSatisfied μ out ↔
+              (HEBindingSatisfied μ seed ∧
+                (encodeModelAtoms ls).map (applyClassSolution μ) =
+                  (encodeModelAtoms rs).map (applyClassSolution μ))) := by
+        intro ls rs acc out h
+        cases ls <;> cases rs <;> simp [matchAtomsList] at h
+        case nil.nil =>
+          exact ⟨out, h, fun μ => by simp⟩
+        case cons.cons l ls r rs =>
+          obtain ⟨seed1, hseed1, hiff⟩ := ihB h
+          obtain ⟨a, ha, hseed1'⟩ := List.mem_flatMap.mp hseed1
+          obtain ⟨bH, hbH, hmrg⟩ := List.mem_flatMap.mp hseed1'
+          refine ⟨a, ha, fun μ => ?_⟩
+          rw [hiff μ, ihC hmrg μ, ihA hbH μ]
+          simp only [encodeModelAtoms_cons, List.map_cons, List.cons.injEq]
+          tauto
+      have hA : ∀ {l r : Atom} {b : Bindings}, b ∈ matchAtoms l r (fuel + 1) →
+          ∀ μ : String → Metta.Atom,
+            (HEBindingSatisfied μ b ↔
+              applyClassSolution μ (encodeModelAtom l) =
+                applyClassSolution μ (encodeModelAtom r)) := by
+        intro l r b h
+        cases l with
+        | symbol s =>
+            cases r with
+            | symbol t =>
+                by_cases hst : s = t
+                · subst hst
+                  simp [matchAtoms, getMetaType, Atom.symbolType] at h
+                  have hb : b = Bindings.empty := by simpa using h.1
+                  subst hb
+                  simp
+                · simp [matchAtoms, getMetaType, Atom.symbolType, hst] at h
+            | var v =>
+                simp [matchAtoms, getMetaType, Atom.symbolType,
+                  Atom.variableType] at h
+                have hb : b = Bindings.empty.assign v (.symbol s) := by
+                  simpa using h.1
+                subst hb
+                intro μ
+                rw [hesat_assign_of_not_isBound (by rfl) μ]
+                simp [eq_comm]
+            | grounded g =>
+                simp [matchAtoms, getMetaType, Atom.symbolType,
+                  Atom.groundedType] at h
+            | expression es =>
+                simp [matchAtoms, getMetaType, Atom.symbolType,
+                  Atom.expressionType] at h
+        | var v =>
+            cases r with
+            | symbol s =>
+                simp [matchAtoms, getMetaType, Atom.symbolType,
+                  Atom.variableType] at h
+                have hb : b = Bindings.empty.assign v (.symbol s) := by
+                  simpa using h.1
+                subst hb
+                intro μ
+                rw [hesat_assign_of_not_isBound (by rfl) μ]
+                simp
+            | var w =>
+                simp [matchAtoms, getMetaType, Atom.variableType] at h
+                have hb : b = Bindings.empty.addEquality v w := by
+                  simpa using h.1
+                subst hb
+                intro μ
+                rw [hesat_addEquality μ]
+                simp
+            | grounded g =>
+                simp [matchAtoms, getMetaType, Atom.variableType,
+                  Atom.groundedType] at h
+                have hb : b = Bindings.empty.assign v (.grounded g) := by
+                  simpa using h.1
+                subst hb
+                intro μ
+                rw [hesat_assign_of_not_isBound (by rfl) μ]
+                simp
+            | expression es =>
+                simp [matchAtoms, getMetaType, Atom.variableType,
+                  Atom.expressionType] at h
+                have hb : b = Bindings.empty.assign v (.expression es) := by
+                  simpa using h.1
+                subst hb
+                intro μ
+                rw [hesat_assign_of_not_isBound (by rfl) μ]
+                simp
+        | grounded g =>
+            cases r with
+            | symbol s =>
+                simp [matchAtoms, getMetaType, Atom.symbolType,
+                  Atom.groundedType] at h
+            | var v =>
+                simp [matchAtoms, getMetaType, Atom.variableType,
+                  Atom.groundedType] at h
+                have hb : b = Bindings.empty.assign v (.grounded g) := by
+                  simpa using h.1
+                subst hb
+                intro μ
+                rw [hesat_assign_of_not_isBound (by rfl) μ]
+                simp [eq_comm]
+            | grounded hG =>
+                by_cases hg : g = hG
+                · subst hg
+                  simp [matchAtoms, getMetaType, Atom.groundedType] at h
+                  have hb : b = Bindings.empty := by simpa using h.1
+                  subst hb
+                  simp
+                · simp [matchAtoms, getMetaType, Atom.groundedType, hg] at h
+            | expression es =>
+                simp [matchAtoms, getMetaType, Atom.expressionType,
+                  Atom.groundedType] at h
+        | expression ls =>
+            cases r with
+            | symbol s =>
+                simp [matchAtoms, getMetaType, Atom.symbolType,
+                  Atom.expressionType] at h
+            | var v =>
+                simp [matchAtoms, getMetaType, Atom.variableType,
+                  Atom.expressionType] at h
+                have hb : b = Bindings.empty.assign v (.expression ls) := by
+                  simpa using h.1
+                subst hb
+                intro μ
+                rw [hesat_assign_of_not_isBound (by rfl) μ]
+                simp [eq_comm]
+            | grounded g =>
+                simp [matchAtoms, getMetaType, Atom.expressionType,
+                  Atom.groundedType] at h
+            | expression rs =>
+                by_cases hlen : ls.length = rs.length
+                · simp [matchAtoms, getMetaType, Atom.expressionType,
+                    hlen] at h
+                  rcases h with ⟨hList, -⟩
+                  obtain ⟨seed, hseed, hiff⟩ := ihB hList
+                  simp only [List.mem_singleton] at hseed
+                  subst hseed
+                  intro μ
+                  rw [hiff μ]
+                  simp [Metta.Atom.expr.injEq]
+                · simp [matchAtoms, getMetaType, Atom.expressionType,
+                    hlen] at h
+      exact ⟨hA, hB, hC, hD, hE⟩
+
+/-! ## Exported solution characterizations -/
+
+/-- **Solution soundness of the executable HE matcher**: every returned
+binding set presents exactly the solution set of the input equation. -/
+theorem matchAtoms_solution_iff {l r : Atom} {b : Bindings} {fuel : Nat}
+    (h : b ∈ matchAtoms l r fuel) (μ : String → Metta.Atom) :
+    HEBindingSatisfied μ b ↔
+      MettaEquationSatisfied μ (encodeModelAtom l, encodeModelAtom r) :=
+  (solutionPack fuel).1 h μ
+
+/-- A raw list result presents exactly one incoming seed together with all
+component equations.  This law does not promote the result to an accepted
+expression match. -/
+theorem matchAtomsList_solution_iff
+    {ls rs : List Atom} {acc : List Bindings} {out : Bindings} {fuel : Nat}
+    (h : out ∈ matchAtomsList ls rs acc fuel) :
+    ∃ seed ∈ acc, ∀ μ : String → Metta.Atom,
+      HEBindingSatisfied μ out ↔
+        HEBindingSatisfied μ seed ∧
+          MettaAtomListsSatisfied μ (encodeModelAtoms ls) (encodeModelAtoms rs) :=
+  (solutionPack fuel).2.1 h
+
+/-- With a singleton incoming frontier, the selected seed is determined. -/
+theorem matchAtomsList_singleton_solution_iff
+    {ls rs : List Atom} {seed out : Bindings} {fuel : Nat}
+    (h : out ∈ matchAtomsList ls rs [seed] fuel)
+    (μ : String → Metta.Atom) :
+    HEBindingSatisfied μ out ↔
+      HEBindingSatisfied μ seed ∧
+        MettaAtomListsSatisfied μ (encodeModelAtoms ls) (encodeModelAtoms rs) := by
+  obtain ⟨selected, hselected, hiff⟩ := matchAtomsList_solution_iff h
+  simp only [List.mem_singleton] at hselected
+  subst selected
+  exact hiff μ
+
+/-- Merging presents exactly solution intersection. -/
+theorem mergeBindings_solution_iff {left right out : Bindings} {fuel : Nat}
+    (h : out ∈ mergeBindings left right fuel) (μ : String → Metta.Atom) :
+    HEBindingSatisfied μ out ↔
+      (HEBindingSatisfied μ left ∧ HEBindingSatisfied μ right) :=
+  (solutionPack fuel).2.2.1 h μ
+
+/-- `addVarBinding` presents exactly one added value constraint. -/
+theorem addVarBinding_solution_iff {b : Bindings} {v : String} {val : Atom}
+    {out : Bindings} {fuel : Nat}
+    (h : out ∈ addVarBinding b v val fuel) (μ : String → Metta.Atom) :
+    HEBindingSatisfied μ out ↔
+      (HEBindingSatisfied μ b ∧
+        μ v = applyClassSolution μ (encodeModelAtom val)) :=
+  (solutionPack fuel).2.2.2.1 h μ
+
+/-- `addVarEquality` presents exactly one added equality constraint. -/
+theorem addVarEquality_solution_iff {b : Bindings} {a c : String}
+    {out : Bindings} {fuel : Nat}
+    (h : out ∈ addVarEquality b a c fuel) (μ : String → Metta.Atom) :
+    HEBindingSatisfied μ out ↔
+      (HEBindingSatisfied μ b ∧ μ a = μ c) :=
+  (solutionPack fuel).2.2.2.2 h μ
+
+end Mettapedia.Languages.MeTTa.HE.BindingComposition

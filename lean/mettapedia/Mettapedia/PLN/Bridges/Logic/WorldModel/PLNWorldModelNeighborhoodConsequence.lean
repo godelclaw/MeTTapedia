@@ -29,7 +29,7 @@ open LO.Modal.Entailment
 open Formula.Neighborhood
 open Mettapedia.Logic.ModalMuCalculus
 open Mettapedia.Logic.GovernanceReasoning.Core
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhoodCompleteness
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeConsequence

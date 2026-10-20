@@ -273,6 +273,23 @@ def pullback {source target : GSLT.{uTheory}}
   liftPredicate source
     (pb map.onClasses (descendPredicate target predicate))
 
+@[simp]
+theorem pullback_apply {source target : GSLT.{uTheory}}
+    (map : EquationRespectingMap source target)
+    (predicate : EquationPredicate target) (term : source.Term) :
+    map.pullback predicate term ↔ predicate (map.toFun term) := Iff.rfl
+
+/-- Pointwise agreement modulo the target equations gives the same semantic
+predicate action. It does not identify retained executions or their costs. -/
+theorem pullback_eq_of_equiv {source target : GSLT.{uTheory}}
+    (first second : EquationRespectingMap source target)
+    (agreement : ∀ term, target.Equiv (first.toFun term) (second.toFun term))
+    (predicate : EquationPredicate target) :
+    first.pullback predicate = second.pullback predicate := by
+  apply Subtype.ext
+  funext term
+  exact propext (predicate.2 (agreement term))
+
 /-- Existential direct image along an equation-respecting map. -/
 def directImage {source target : GSLT.{uTheory}}
     (map : EquationRespectingMap source target)
@@ -471,6 +488,38 @@ theorem semanticGalois (theory : GSLT.{uTheory}) :
   change gsltDiamond theory first.1 ≤ second.1 ↔
     first.1 ≤ gsltBox theory second.1
   exact gsltGalois theory first.1 second.1
+
+private theorem rebaseMultiStep (theory : GSLT.{uTheory})
+    {first second last : theory.Term} (equivalent : theory.Equiv first second)
+    (path : theory.MultiStep first last) :
+    ∃ next, theory.MultiStep second next ∧ theory.Equiv last next := by
+  induction path generalizing second with
+  | refl => exact ⟨second, .refl _, equivalent⟩
+  | step edge rest ih =>
+      obtain ⟨middle, firstEdge, related⟩ := theory.rewrites_resp_left equivalent edge
+      obtain ⟨next, remaining, finalEq⟩ := ih related
+      exact ⟨next, .step firstEdge remaining, finalEq⟩
+
+/-- Finite reachability to an invariant postcondition is itself an invariant
+OSLF predicate. Its existence claim does not execute a search or bound work. -/
+def semanticReach (theory : GSLT.{uTheory})
+    (predicate : EquationPredicate theory) : EquationPredicate theory where
+  val term := ∃ last, theory.MultiStep term last ∧ predicate last
+  property := by
+    intro first second equivalent
+    constructor
+    · rintro ⟨last, path, holds⟩
+      obtain ⟨next, remaining, related⟩ := rebaseMultiStep theory equivalent path
+      exact ⟨next, remaining, (predicate.2 related).mp holds⟩
+    · rintro ⟨last, path, holds⟩
+      obtain ⟨next, remaining, related⟩ := rebaseMultiStep theory
+        (theory.equations.iseqv.symm equivalent) path
+      exact ⟨next, remaining, (predicate.2 related).mp holds⟩
+
+theorem semanticReach_spec (theory : GSLT.{uTheory})
+    (predicate : EquationPredicate theory) (term : theory.Term) :
+    semanticReach theory predicate term ↔
+      ∃ last, theory.MultiStep term last ∧ predicate last := Iff.rfl
 
 /-! ## The canonical OSLF result -/
 

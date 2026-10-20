@@ -25,7 +25,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.TypeTheory.MaterialSets.Hypersets.PresheafFamilies
 
-open CategoryTheory
+open _root_.CategoryTheory
 open Mettapedia.Computability.ComputationalTrinity
 open Mettapedia.TypeTheory.DisplayedPresheafTransport
 open Mettapedia.TypeTheory.DisplayedPresheafComprehension

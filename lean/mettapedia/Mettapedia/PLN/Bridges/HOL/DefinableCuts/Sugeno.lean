@@ -124,7 +124,7 @@ theorem predicateSugenoCalibratedCrispEndpointGeOneCut_intervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCalibratedCrispEndpointGeOneCut
@@ -149,7 +149,7 @@ theorem predicateSugenoCalibratedCrispEndpointGeOneCut_lower_eq_one_iff_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCalibratedCrispEndpointGeOneCut
@@ -178,7 +178,7 @@ theorem predicateSugenoCalibratedCrispEndpointGeOneCut_upper_eq_zero_iff_provabl
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCalibratedCrispEndpointGeOneCut
@@ -208,7 +208,7 @@ theorem predicateSugenoCalibratedCrispEndpointGeOneCut_width_eq_zero_iff_decides
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCalibratedCrispEndpointGeOneCut
@@ -374,7 +374,7 @@ theorem predicateSugenoCountingCrispEndpointGeOneCut_intervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingCrispEndpointGeOneCut
@@ -409,7 +409,7 @@ theorem predicateSugenoCountingCrispEndpointGeOneCut_lower_eq_one_iff_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingCrispEndpointGeOneCut
@@ -450,7 +450,7 @@ theorem predicateSugenoCountingCrispEndpointGeOneCut_upper_eq_zero_iff_provable_
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingCrispEndpointGeOneCut
@@ -492,7 +492,7 @@ theorem predicateSugenoCountingCrispEndpointGeOneCut_width_eq_zero_iff_decides
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingCrispEndpointGeOneCut
@@ -653,7 +653,7 @@ theorem predicateSugenoCountingCardinalityThresholdCut_intervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingCardinalityThresholdCut
@@ -694,7 +694,7 @@ theorem predicateSugenoCountingCardinalityThresholdCut_lower_eq_one_iff_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingCardinalityThresholdCut
@@ -741,7 +741,7 @@ theorem predicateSugenoCountingCardinalityThresholdCut_upper_eq_zero_iff_provabl
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingCardinalityThresholdCut
@@ -788,7 +788,7 @@ theorem predicateSugenoCountingCardinalityThresholdCut_lower_eq_zero_iff_not_pro
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingCardinalityThresholdCut
@@ -835,7 +835,7 @@ theorem predicateSugenoCountingCardinalityThresholdCut_upper_eq_one_iff_not_prov
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingCardinalityThresholdCut
@@ -882,7 +882,7 @@ theorem predicateSugenoCountingCardinalityThresholdCut_width_eq_zero_iff_decides
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingCardinalityThresholdCut
@@ -961,7 +961,7 @@ theorem predicateSugenoCountingExistsExactThresholdCut_intervalOfConsistent
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingExistsExactThresholdCut
@@ -996,7 +996,7 @@ theorem predicateSugenoCountingExistsExactThresholdCut_lower_eq_one_iff_provable
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingExistsExactThresholdCut
@@ -1037,7 +1037,7 @@ theorem predicateSugenoCountingExistsExactThresholdCut_upper_eq_zero_iff_provabl
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingExistsExactThresholdCut
@@ -1078,7 +1078,7 @@ theorem predicateSugenoCountingExistsExactThresholdCut_lower_eq_zero_iff_not_pro
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingExistsExactThresholdCut
@@ -1120,7 +1120,7 @@ theorem predicateSugenoCountingExistsExactThresholdCut_upper_eq_one_iff_not_prov
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingExistsExactThresholdCut
@@ -1162,7 +1162,7 @@ theorem predicateSugenoCountingExistsExactThresholdCut_width_eq_zero_iff_decides
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingExistsExactThresholdCut
@@ -1244,7 +1244,7 @@ theorem predicateSugenoCountingUniversalExactThresholdCut_intervalOfConsistent
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingUniversalExactThresholdCut
@@ -1279,7 +1279,7 @@ theorem predicateSugenoCountingUniversalExactThresholdCut_lower_eq_one_iff_prova
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingUniversalExactThresholdCut
@@ -1320,7 +1320,7 @@ theorem predicateSugenoCountingUniversalExactThresholdCut_upper_eq_zero_iff_prov
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingUniversalExactThresholdCut
@@ -1361,7 +1361,7 @@ theorem predicateSugenoCountingUniversalExactThresholdCut_lower_eq_zero_iff_not_
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingUniversalExactThresholdCut
@@ -1403,7 +1403,7 @@ theorem predicateSugenoCountingUniversalExactThresholdCut_upper_eq_one_iff_not_p
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingUniversalExactThresholdCut
@@ -1445,7 +1445,7 @@ theorem predicateSugenoCountingUniversalExactThresholdCut_width_eq_zero_iff_deci
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingUniversalExactThresholdCut
@@ -1527,7 +1527,7 @@ theorem predicateSugenoCountingAtLeastTwoBaseCut_intervalOfConsistent
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingAtLeastTwoBaseCut
@@ -1563,7 +1563,7 @@ theorem predicateSugenoCountingAtLeastTwoBaseCut_lower_eq_one_iff_provable
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingAtLeastTwoBaseCut
@@ -1605,7 +1605,7 @@ theorem predicateSugenoCountingAtLeastTwoBaseCut_upper_eq_zero_iff_provable_not
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingAtLeastTwoBaseCut
@@ -1647,7 +1647,7 @@ theorem predicateSugenoCountingAtLeastTwoBaseCut_lower_eq_zero_iff_not_provable
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingAtLeastTwoBaseCut
@@ -1690,7 +1690,7 @@ theorem predicateSugenoCountingAtLeastTwoBaseCut_upper_eq_one_iff_not_provable_n
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingAtLeastTwoBaseCut
@@ -1733,7 +1733,7 @@ theorem predicateSugenoCountingAtLeastTwoBaseCut_width_eq_zero_iff_decides
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingAtLeastTwoBaseCut
@@ -1815,7 +1815,7 @@ theorem predicateSugenoCountingAtLeastThreeBaseCut_intervalOfConsistent
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingAtLeastThreeBaseCut
@@ -1851,7 +1851,7 @@ theorem predicateSugenoCountingAtLeastThreeBaseCut_lower_eq_one_iff_provable
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingAtLeastThreeBaseCut
@@ -1893,7 +1893,7 @@ theorem predicateSugenoCountingAtLeastThreeBaseCut_upper_eq_zero_iff_provable_no
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingAtLeastThreeBaseCut
@@ -1935,7 +1935,7 @@ theorem predicateSugenoCountingAtLeastThreeBaseCut_lower_eq_zero_iff_not_provabl
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingAtLeastThreeBaseCut
@@ -1978,7 +1978,7 @@ theorem predicateSugenoCountingAtLeastThreeBaseCut_upper_eq_one_iff_not_provable
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingAtLeastThreeBaseCut
@@ -2021,7 +2021,7 @@ theorem predicateSugenoCountingAtLeastThreeBaseCut_width_eq_zero_iff_decides
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateSugenoCountingAtLeastThreeBaseCut

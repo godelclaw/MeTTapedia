@@ -14,7 +14,7 @@ namespace Mettapedia.PLN.Bridges.HOL.Probabilistic
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.Probabilistic
 open Mettapedia.Logic.HOL.Probabilistic.HierarchicalState
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 universe u v w x

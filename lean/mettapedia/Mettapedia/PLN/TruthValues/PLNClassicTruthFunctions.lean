@@ -39,7 +39,7 @@ but LOSSY (they discard evidence shape).
 namespace Mettapedia.PLN.TruthValues.PLNClassicTruthFunctions
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision

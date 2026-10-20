@@ -188,7 +188,8 @@ theorem applyTypeValuation_display {ρ : Unifier} {valuation : String → Atom} 
       apply List.ofFn_inj.mpr
       funext index
       exact ih index fun key member =>
-        values key (Mettapedia.Logic.LP.Term.mem_freeVars_app.mpr ⟨index, member⟩)
+        values key ((Mettapedia.Logic.LP.Term.mem_freeVars_app (σ := sig)).mpr
+          ⟨index, member⟩)
 
 /-! ## Ground first-order types are clean -/
 
@@ -261,7 +262,8 @@ theorem subatom_of_applyTerm {ρ : Unifier} {key : sig.vars} :
       simp [Mettapedia.Logic.LP.Term.freeVars] at member
   | app n arguments ih =>
       intro type member instance'
-      obtain ⟨index, inner⟩ := Mettapedia.Logic.LP.Term.mem_freeVars_app.mp member
+      obtain ⟨index, inner⟩ :=
+        (Mettapedia.Logic.LP.Term.mem_freeVars_app (σ := sig)).mp member
       cases type with
       | symbol _ => simp [rigid] at instance'
       | grounded _ => simp [rigid] at instance'

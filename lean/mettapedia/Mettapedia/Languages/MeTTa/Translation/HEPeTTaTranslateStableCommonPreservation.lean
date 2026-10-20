@@ -168,68 +168,179 @@ private theorem translateHE_preserves_stableCommonForm_aux
                             | symbol _ => simp [isValidatedHESource] at h
                             | grounded _ => simp [isValidatedHESource] at h
                           | cons _ _ => simp [isValidatedHESource] at h
-                      · by_cases hfoldall : c = "foldall"
-                        · subst hfoldall
-                          simp [isValidatedHESource] at h
-                        · by_cases hprogn : c = "progn"
-                          · subst hprogn
-                            have hfalse : False := by
-                              simpa [isValidatedHESource] using h
-                            exact False.elim hfalse
-                          · by_cases hprog1 : c = "prog1"
-                            · subst hprog1
+                      · by_cases hunique : c = "unique"
+                        · subst hunique
+                          cases args with
+                          | nil =>
                               have hfalse : False := by
-                                simpa [isValidatedHESource] using h
+                                simp [isValidatedHESource] at h
                               exact False.elim hfalse
-                            · by_cases hlt : c = "@<"
-                              · subst hlt
+                          | cons _ rest =>
+                              cases rest <;> simp [isValidatedHESource] at h
+                        · by_cases hfoldl : c = "foldl-atom"
+                          · subst hfoldl
+                            cases args with
+                            | nil => simp [isValidatedHESource] at h
+                            | cons xs rest =>
+                                cases rest with
+                                | nil => simp [isValidatedHESource] at h
+                                | cons init rest =>
+                                    cases rest with
+                                    | nil => simp [isValidatedHESource] at h
+                                    | cons acc rest =>
+                                        cases rest with
+                                        | nil => simp [isValidatedHESource] at h
+                                        | cons item rest =>
+                                            cases rest with
+                                            | nil => simp [isValidatedHESource] at h
+                                            | cons step rest =>
+                                                cases rest with
+                                                | nil =>
+                                                    have hpair :
+                                                        (((isValidatedHESource xs = true ∧
+                                                            isValidatedHESource init = true) ∧
+                                                          isHEBinderAtom acc = true) ∧
+                                                          isHEBinderAtom item = true) ∧
+                                                          isValidatedHESource step = true := by
+                                                      simpa [isValidatedHESource, Bool.and_eq_true] using h
+                                                    rcases hpair with ⟨hleft, hstep_src⟩
+                                                    rcases hleft with ⟨hleft, hitem_bind⟩
+                                                    rcases hleft with ⟨hleft, hacc_bind⟩
+                                                    rcases hleft with ⟨hxs_src, hinit_src⟩
+                                                    have hxs :=
+                                                      translateHE_preserves_stableCommonForm_aux xs s hxs_src
+                                                    have hinit :=
+                                                      translateHE_preserves_stableCommonForm_aux init
+                                                        (translateHE xs s).2 hinit_src
+                                                    have hacc := stableCommon_of_heBinderAtom acc hacc_bind
+                                                    have hitem := stableCommon_of_heBinderAtom item hitem_bind
+                                                    have hacc' :
+                                                        isStableCommonForm
+                                                          (translateHE acc
+                                                            (translateHE init (translateHE xs s).2).2).1 = true := by
+                                                      cases acc with
+                                                      | var _ => simp [translateHE, isStableCommonForm]
+                                                      | symbol _ =>
+                                                          simp [translateHE, isStableCommonForm]
+                                                      | grounded _ => cases hacc_bind
+                                                      | expression _ => cases hacc_bind
+                                                    have hitem' :
+                                                        isStableCommonForm
+                                                          (translateHE item
+                                                            (translateHE acc
+                                                              (translateHE init (translateHE xs s).2).2).2).1 = true := by
+                                                      cases item with
+                                                      | var _ => simp [translateHE, isStableCommonForm]
+                                                      | symbol _ =>
+                                                          simp [translateHE, isStableCommonForm]
+                                                      | grounded _ => cases hitem_bind
+                                                      | expression _ => cases hitem_bind
+                                                    have hstep :=
+                                                      translateHE_preserves_stableCommonForm_aux step
+                                                        (translateHE item
+                                                          (translateHE acc
+                                                            (translateHE init (translateHE xs s).2).2).2).2
+                                                        hstep_src
+                                                    simp [translateHE, translateHE.translateHEList,
+                                                      isStableCommonForm, isStableCommonList,
+                                                      hxs, hinit, hacc', hitem', hstep]
+                                                | cons _ _ => simp [isValidatedHESource] at h
+                          · by_cases hfoldall : c = "foldall"
+                            · subst hfoldall
+                              simp [isValidatedHESource] at h
+                            · by_cases huniqueatom : c = "unique-atom"
+                              · subst huniqueatom
                                 have hfalse : False := by
-                                  simpa [isValidatedHESource] using h
+                                  simp [isValidatedHESource] at h
                                 exact False.elim hfalse
-                              · by_cases hgt : c = "@>"
-                                · subst hgt
+                              · by_cases hprogn : c = "progn"
+                                · subst hprogn
                                   have hfalse : False := by
-                                    simpa [isValidatedHESource] using h
+                                    simp [isValidatedHESource] at h
                                   exact False.elim hfalse
-                                · have hpair :
-                                      isValidatedHEHeadSource (.symbol c) = true ∧
-                                        isValidatedHEList args = true := by
-                                    simpa [isValidatedHESource, isValidatedHEHeadSource,
-                                      Bool.and_eq_true, hchain, hcollapse, hsuperpose, hswitch,
-                                      hswitchm, hatomsubst, hnop, hfunction, hfoldall, hprogn,
-                                      hprog1, hlt, hgt] using h
-                                  have hargs : isValidatedHEList args = true := hpair.2
-                                  have htail :
-                                      isStableCommonList (translateHE.translateHEList args s).1 = true :=
-                                    translateHEList_preserves_stableCommonList_aux args s hargs
-                                  have hhead : isStableCommonHead (.symbol c) = true := by
-                                    simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol,
-                                      hchain, hcollapse, hsuperpose, hswitch, hswitchm, hatomsubst,
-                                      hnop, hfunction, hprogn, hprog1, hfoldall, hlt, hgt]
-                                  have hcons :=
-                                    stableCommonForm_cons_of_head (.symbol c)
-                                      (translateHE.translateHEList args s).1 hhead
-                                  have hbody :
-                                      isStableCommonForm
-                                        (Atom.expression
-                                          (.symbol c :: (translateHE.translateHEList args s).1)) = true := by
-                                    rw [hcons]
-                                    exact htail
-                                  simpa [translateHE, translateHE.translateHEList, hchain,
-                                    hcollapse, hsuperpose, hswitch, hswitchm, hatomsubst, hnop,
-                                    hfunction, hfoldall, hprogn, hprog1, hlt, hgt] using hbody
+                                · by_cases hprog1 : c = "prog1"
+                                  · subst hprog1
+                                    have hfalse : False := by
+                                      simp [isValidatedHESource] at h
+                                    exact False.elim hfalse
+                                  · by_cases hreduce : c = "reduce"
+                                    · subst hreduce
+                                      have hfalse : False := by
+                                        simp [isValidatedHESource] at h
+                                      exact False.elim hfalse
+                                    · by_cases hlt : c = "@<"
+                                      · subst hlt
+                                        have hfalse : False := by
+                                          simp [isValidatedHESource] at h
+                                        exact False.elim hfalse
+                                      · by_cases hgt : c = "@>"
+                                        · subst hgt
+                                          have hfalse : False := by
+                                            simp [isValidatedHESource] at h
+                                          exact False.elim hfalse
+                                        · by_cases hbind : c = "bind!"
+                                          · subst hbind
+                                            have hfalse : False := by
+                                              simp [isValidatedHESource] at h
+                                            exact False.elim hfalse
+                                          · by_cases hnew : c = "new-state"
+                                            · subst hnew
+                                              have hfalse : False := by
+                                                simp [isValidatedHESource] at h
+                                              exact False.elim hfalse
+                                            · by_cases hget : c = "get-state"
+                                              · subst hget
+                                                have hfalse : False := by
+                                                  simp [isValidatedHESource] at h
+                                                exact False.elim hfalse
+                                              · by_cases hchange : c = "change-state!"
+                                                · subst hchange
+                                                  have hfalse : False := by
+                                                    simp [isValidatedHESource] at h
+                                                  exact False.elim hfalse
+                                                · have hpair :
+                                                      isValidatedHEHeadSource (.symbol c) = true ∧
+                                                        isValidatedHEList args = true := by
+                                                    simpa [isValidatedHESource, isValidatedHEHeadSource,
+                                                      Bool.and_eq_true, hchain, hcollapse, hsuperpose,
+                                                      hswitch, hswitchm, hatomsubst, hnop, hfunction,
+                                                      hunique, hfoldl, hfoldall, huniqueatom, hprogn,
+                                                      hprog1, hreduce, hlt, hgt, hbind, hnew, hget,
+                                                      hchange] using h
+                                                  have hargs : isValidatedHEList args = true := hpair.2
+                                                  have htail :
+                                                      isStableCommonList (translateHE.translateHEList args s).1 = true :=
+                                                    translateHEList_preserves_stableCommonList_aux args s hargs
+                                                  have hnot : isForbiddenHeadSymbol (.symbol c) = false :=
+                                                    headSourceSymbol_notForbidden_aux c hpair.1
+                                                  have hhead : isStableCommonHead (.symbol c) = true := by
+                                                    simp [isStableCommonHead, isStableCommonForm, hnot]
+                                                  have hcons :=
+                                                    stableCommonForm_cons_of_head (.symbol c)
+                                                      (translateHE.translateHEList args s).1 hhead
+                                                  have hbody :
+                                                      isStableCommonForm
+                                                        (Atom.expression
+                                                          (.symbol c :: (translateHE.translateHEList args s).1)) = true := by
+                                                    rw [hcons]
+                                                    exact htail
+                                                  simpa [translateHE, translateHE.translateHEList, hchain,
+                                                    hcollapse, hsuperpose, hswitch, hswitchm, hatomsubst,
+                                                    hnop, hfunction, hunique, hfoldl, hfoldall, huniqueatom,
+                                                    hprogn, hprog1, hreduce, hlt, hgt, hbind, hnew, hget,
+                                                    hchange] using hbody
       | var v =>
         have hargs : isValidatedHEList args = true := by
           simpa [isValidatedHESource, isValidatedHEHeadSource] using h
         have htail := translateHEList_preserves_stableCommonList_aux args s hargs
-        simpa [translateHE, translateHE.translateHEList, isStableCommonForm, isStableCommonExpr,
-          isStableCommonHead, isForbiddenHeadSymbol, isStableCommonList, htail]
+        simp [translateHE, translateHE.translateHEList, isStableCommonForm, isStableCommonExpr,
+          isStableCommonHead, isForbiddenHeadSymbol, htail]
       | grounded g =>
         have hargs : isValidatedHEList args = true := by
           simpa [isValidatedHESource, isValidatedHEHeadSource] using h
         have htail := translateHEList_preserves_stableCommonList_aux args s hargs
-        simpa [translateHE, translateHE.translateHEList, isStableCommonForm, isStableCommonExpr,
-          isStableCommonHead, isForbiddenHeadSymbol, isStableCommonList, htail]
+        simp [translateHE, translateHE.translateHEList, isStableCommonForm, isStableCommonExpr,
+          isStableCommonHead, isForbiddenHeadSymbol, htail]
       | expression es' =>
         have hparts :
             isValidatedHEHeadSource (.expression es') = true ∧ isValidatedHEList args = true := by
@@ -254,12 +365,12 @@ private theorem validatedHESource_of_headSource_aux
     (a : Atom) (h : isValidatedHEHeadSource a = true) :
     isValidatedHESource a = true := by
   cases a with
-  | var _ => simp [isValidatedHEHeadSource, isValidatedHESource]
+  | var _ => simp [isValidatedHESource]
   | symbol _ => simp [isValidatedHESource]
-  | grounded _ => simp [isValidatedHEHeadSource, isValidatedHESource]
+  | grounded _ => simp [isValidatedHESource]
   | expression es =>
       cases es with
-      | nil => simp [isValidatedHEHeadSource, isValidatedHESource]
+      | nil => simp [isValidatedHESource]
       | cons hd args =>
           cases hd with
           | symbol c =>
@@ -308,290 +419,112 @@ private theorem headSourceSymbol_notForbidden_aux
   by_cases hchain : c = "chain"
   · subst hchain
     have hfalse : False := by
-      simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+      simp [isValidatedHEHeadSource] at h
     exact False.elim hfalse
   · by_cases hcollapse : c = "collapse-bind"
     · subst hcollapse
       have hfalse : False := by
-        simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+        simp [isValidatedHEHeadSource] at h
       exact False.elim hfalse
     · by_cases hsuperpose : c = "superpose-bind"
       · subst hsuperpose
         have hfalse : False := by
-          simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+          simp [isValidatedHEHeadSource] at h
         exact False.elim hfalse
       · by_cases hswitch : c = "switch"
         · subst hswitch
           have hfalse : False := by
-            simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+            simp [isValidatedHEHeadSource] at h
           exact False.elim hfalse
         · by_cases hswitchm : c = "switch-minimal"
           · subst hswitchm
             have hfalse : False := by
-              simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+              simp [isValidatedHEHeadSource] at h
             exact False.elim hfalse
           · by_cases hatomsubst : c = "atom-subst"
             · subst hatomsubst
               have hfalse : False := by
-                simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+                simp [isValidatedHEHeadSource] at h
               exact False.elim hfalse
             · by_cases hnop : c = "nop"
               · subst hnop
                 have hfalse : False := by
-                  simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+                  simp [isValidatedHEHeadSource] at h
                 exact False.elim hfalse
               · by_cases hfunction : c = "function"
                 · subst hfunction
                   have hfalse : False := by
-                    simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+                    simp [isValidatedHEHeadSource] at h
                   exact False.elim hfalse
-                · by_cases hprogn : c = "progn"
-                  · subst hprogn
+                · by_cases hunique : c = "unique"
+                  · subst hunique
                     have hfalse : False := by
-                      simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+                      simp [isValidatedHEHeadSource] at h
                     exact False.elim hfalse
-                  · by_cases hprog1 : c = "prog1"
-                    · subst hprog1
+                  · by_cases hfoldl : c = "foldl-atom"
+                    · subst hfoldl
                       have hfalse : False := by
-                        simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+                        simp [isValidatedHEHeadSource] at h
                       exact False.elim hfalse
-                    · by_cases hfoldall : c = "foldall"
-                      · subst hfoldall
+                    · by_cases huniqueatom : c = "unique-atom"
+                      · subst huniqueatom
                         have hfalse : False := by
-                          simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+                          simp [isValidatedHEHeadSource] at h
                         exact False.elim hfalse
-                      · by_cases hlt : c = "@<"
-                        · subst hlt
+                      · by_cases hprogn : c = "progn"
+                        · subst hprogn
                           have hfalse : False := by
-                            simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+                            simp [isValidatedHEHeadSource] at h
                           exact False.elim hfalse
-                        · by_cases hgt : c = "@>"
-                          · subst hgt
+                        · by_cases hprog1 : c = "prog1"
+                          · subst hprog1
                             have hfalse : False := by
-                              simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+                              simp [isValidatedHEHeadSource] at h
                             exact False.elim hfalse
-                          · simp [isForbiddenHeadSymbol, hchain, hcollapse, hsuperpose, hswitch,
-                              hswitchm, hatomsubst, hnop, hfunction, hprogn, hprog1, hfoldall,
-                              hlt, hgt]
-
-private theorem translateHE_notForbidden_of_headSymbolExpr_aux
-    (c : String) (args : List Atom) (s : Nat)
-    (h : isValidatedHEHeadSource (.expression (.symbol c :: args)) = true) :
-    isForbiddenHeadSymbol (translateHE (.expression (.symbol c :: args)) s).1 = false := by
-  by_cases hchain : c = "chain"
-  · subst hchain
-    cases args with
-    | nil =>
-        have hfalse : False := by
-          simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-        exact False.elim hfalse
-    | cons e rest =>
-        cases rest with
-        | nil =>
-            have hfalse : False := by
-              simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-            exact False.elim hfalse
-        | cons v rest =>
-            cases rest with
-            | nil =>
-                have hfalse : False := by
-                  simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                exact False.elim hfalse
-            | cons body rest =>
-                cases rest with
-                | nil => simp [translateHE, isForbiddenHeadSymbol]
-                | cons _ _ =>
-                    have hfalse : False := by
-                      simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                    exact False.elim hfalse
-  · by_cases hcollapse : c = "collapse-bind"
-    · subst hcollapse
-      cases args with
-      | nil =>
-          have hfalse : False := by
-            simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-          exact False.elim hfalse
-      | cons inner rest =>
-          cases rest with
-          | nil => simp [translateHE, isForbiddenHeadSymbol]
-          | cons _ _ =>
-              have hfalse : False := by
-                simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-              exact False.elim hfalse
-    · by_cases hsuperpose : c = "superpose-bind"
-      · subst hsuperpose
-        cases args with
-        | nil =>
-            have hfalse : False := by
-              simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-            exact False.elim hfalse
-        | cons inner rest =>
-            cases rest with
-            | nil => simp [translateHE, isForbiddenHeadSymbol]
-            | cons _ _ =>
-                have hfalse : False := by
-                  simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                exact False.elim hfalse
-      · by_cases hswitch : c = "switch"
-        · subst hswitch
-          cases args with
-          | nil =>
-              have hfalse : False := by
-                simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-              exact False.elim hfalse
-          | cons scrut branches =>
-              simp [translateHE, isForbiddenHeadSymbol]
-        · by_cases hswitchm : c = "switch-minimal"
-          · subst hswitchm
-            cases args with
-            | nil =>
-                have hfalse : False := by
-                  simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                exact False.elim hfalse
-            | cons scrut branches =>
-                simp [translateHE, isForbiddenHeadSymbol]
-          · by_cases hatomsubst : c = "atom-subst"
-            · subst hatomsubst
-              cases args with
-              | nil =>
-                  have hfalse : False := by
-                    simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                  exact False.elim hfalse
-              | cons atom rest =>
-                  cases rest with
-                  | nil =>
-                      have hfalse : False := by
-                        simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                      exact False.elim hfalse
-                  | cons v rest =>
-                      cases rest with
-                      | nil =>
-                          have hfalse : False := by
-                            simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                          exact False.elim hfalse
-                      | cons tmpl rest =>
-                          cases rest with
-                          | nil => simp [translateHE, isForbiddenHeadSymbol]
-                          | cons _ _ =>
+                          · by_cases hfoldall : c = "foldall"
+                            · subst hfoldall
                               have hfalse : False := by
-                                simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+                                simp [isValidatedHEHeadSource] at h
                               exact False.elim hfalse
-            · by_cases hnop : c = "nop"
-              · subst hnop
-                cases args with
-                | nil =>
-                    have hfalse : False := by
-                      simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                    exact False.elim hfalse
-                | cons x rest =>
-                    cases rest with
-                    | nil => simp [translateHE, isForbiddenHeadSymbol]
-                    | cons _ _ =>
-                        have hfalse : False := by
-                          simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                        exact False.elim hfalse
-              · by_cases hfunction : c = "function"
-                · subst hfunction
-                  cases args with
-                  | nil =>
-                      have hfalse : False := by
-                        simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                      exact False.elim hfalse
-                  | cons ret rest =>
-                      cases rest with
-                      | nil =>
-                          cases ret with
-                          | expression esx =>
-                              cases esx with
-                              | nil =>
+                            · by_cases hreduce : c = "reduce"
+                              · subst hreduce
+                                have hfalse : False := by
+                                  simp [isValidatedHEHeadSource] at h
+                                exact False.elim hfalse
+                              · by_cases hlt : c = "@<"
+                                · subst hlt
                                   have hfalse : False := by
-                                    simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+                                    simp [isValidatedHEHeadSource] at h
                                   exact False.elim hfalse
-                              | cons hdx tailx =>
-                                  cases hdx with
-                                  | symbol c' =>
-                                      by_cases hreturn : c' = "return"
-                                      · subst hreturn
-                                        cases tailx with
-                                        | nil =>
-                                            have hfalse : False := by
-                                              simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                                            exact False.elim hfalse
-                                        | cons inner restx =>
-                                            cases restx with
-                                            | nil =>
-                                                have hinner : isValidatedHEHeadSource inner = true := by
-                                                  simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                                                simpa [translateHE] using
-                                                  translateHE_notForbidden_of_headSource_aux inner s hinner
-                                            | cons _ _ =>
-                                                have hfalse : False := by
-                                                  simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                                                exact False.elim hfalse
-                                      · have hfalse : False := by
-                                          simpa [isValidatedHEHeadSource, isValidatedHESource, hreturn] using h
+                                · by_cases hgt : c = "@>"
+                                  · subst hgt
+                                    have hfalse : False := by
+                                      simp [isValidatedHEHeadSource] at h
+                                    exact False.elim hfalse
+                                  · by_cases hbind : c = "bind!"
+                                    · subst hbind
+                                      have hfalse : False := by
+                                        simp [isValidatedHEHeadSource] at h
+                                      exact False.elim hfalse
+                                    · by_cases hnew : c = "new-state"
+                                      · subst hnew
+                                        have hfalse : False := by
+                                          simp [isValidatedHEHeadSource] at h
                                         exact False.elim hfalse
-                                  | var _ =>
-                                      have hfalse : False := by
-                                        simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                                      exact False.elim hfalse
-                                  | grounded _ =>
-                                      have hfalse : False := by
-                                        simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                                      exact False.elim hfalse
-                                  | expression _ =>
-                                      have hfalse : False := by
-                                        simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                                      exact False.elim hfalse
-                          | var _ =>
-                              have hfalse : False := by
-                                simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                              exact False.elim hfalse
-                          | symbol _ =>
-                              have hfalse : False := by
-                                simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                              exact False.elim hfalse
-                          | grounded _ =>
-                              have hfalse : False := by
-                                simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                              exact False.elim hfalse
-                      | cons _ _ =>
-                          have hfalse : False := by
-                            simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                          exact False.elim hfalse
-                · have hprogn : c ≠ "progn" := by
-                    intro hc
-                    subst hc
-                    have hfalse : False := by
-                      simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                    exact hfalse
-                  have hprog1 : c ≠ "prog1" := by
-                    intro hc
-                    subst hc
-                    have hfalse : False := by
-                      simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                    exact hfalse
-                  have hfoldall : c ≠ "foldall" := by
-                    intro hc
-                    subst hc
-                    have hfalse : False := by
-                      simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                    exact hfalse
-                  have hlt : c ≠ "@<" := by
-                    intro hc
-                    subst hc
-                    have hfalse : False := by
-                      simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                    exact hfalse
-                  have hgt : c ≠ "@>" := by
-                    intro hc
-                    subst hc
-                    have hfalse : False := by
-                      simpa [isValidatedHEHeadSource, isValidatedHESource] using h
-                    exact hfalse
-                  simp [translateHE, isForbiddenHeadSymbol, hchain, hcollapse, hsuperpose,
-                    hswitch, hswitchm, hatomsubst, hnop, hfunction, hprogn, hprog1,
-                    hfoldall, hlt, hgt]
+                                      · by_cases hget : c = "get-state"
+                                        · subst hget
+                                          have hfalse : False := by
+                                            simp [isValidatedHEHeadSource] at h
+                                          exact False.elim hfalse
+                                        · by_cases hchange : c = "change-state!"
+                                          · subst hchange
+                                            have hfalse : False := by
+                                              simp [isValidatedHEHeadSource] at h
+                                            exact False.elim hfalse
+                                          · simp [isForbiddenHeadSymbol, hchain, hcollapse, hsuperpose,
+                                              hswitch, hswitchm, hatomsubst, hnop, hfunction, hunique,
+                                              hfoldl, huniqueatom, hprogn, hprog1, hfoldall, hreduce,
+                                              hlt, hgt, hbind, hnew, hget, hchange]
 
 private theorem translateHE_notForbidden_of_headSource_aux
     (a : Atom) (s : Nat) (h : isValidatedHEHeadSource a = true) :
@@ -609,6 +542,240 @@ private theorem translateHE_notForbidden_of_headSource_aux
           | var _ => simp [translateHE, isForbiddenHeadSymbol]
           | grounded _ => simp [translateHE, isForbiddenHeadSymbol]
           | expression _ => simp [translateHE, isForbiddenHeadSymbol]
+
+private theorem translateHE_notForbidden_of_headSymbolExpr_aux
+    (c : String) (args : List Atom) (s : Nat)
+    (h : isValidatedHEHeadSource (.expression (.symbol c :: args)) = true) :
+    isForbiddenHeadSymbol (translateHE (.expression (.symbol c :: args)) s).1 = false := by
+  by_cases hchain : c = "chain"
+  · subst hchain
+    cases args with
+    | nil =>
+        have hfalse : False := by
+          simp [isValidatedHEHeadSource, isValidatedHESource] at h
+        exact False.elim hfalse
+    | cons e rest =>
+        cases rest with
+        | nil =>
+            have hfalse : False := by
+              simp [isValidatedHEHeadSource, isValidatedHESource] at h
+            exact False.elim hfalse
+        | cons v rest =>
+            cases rest with
+            | nil =>
+                have hfalse : False := by
+                  simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                exact False.elim hfalse
+            | cons body rest =>
+                cases rest with
+                | nil => simp [translateHE, isForbiddenHeadSymbol]
+                | cons _ _ =>
+                    have hfalse : False := by
+                      simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                    exact False.elim hfalse
+  · by_cases hcollapse : c = "collapse-bind"
+    · subst hcollapse
+      cases args with
+      | nil =>
+          have hfalse : False := by
+            simp [isValidatedHEHeadSource, isValidatedHESource] at h
+          exact False.elim hfalse
+      | cons inner rest =>
+          cases rest with
+          | nil => simp [translateHE, isForbiddenHeadSymbol]
+          | cons _ _ =>
+              have hfalse : False := by
+                simp [isValidatedHEHeadSource, isValidatedHESource] at h
+              exact False.elim hfalse
+    · by_cases hsuperpose : c = "superpose-bind"
+      · subst hsuperpose
+        cases args with
+        | nil =>
+            have hfalse : False := by
+              simp [isValidatedHEHeadSource, isValidatedHESource] at h
+            exact False.elim hfalse
+        | cons inner rest =>
+            cases rest with
+            | nil => simp [translateHE, isForbiddenHeadSymbol]
+            | cons _ _ =>
+                have hfalse : False := by
+                  simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                exact False.elim hfalse
+      · by_cases hswitch : c = "switch"
+        · subst hswitch
+          cases args with
+          | nil =>
+              have hfalse : False := by
+                simp [isValidatedHEHeadSource, isValidatedHESource] at h
+              exact False.elim hfalse
+          | cons scrut branches =>
+              simp [translateHE, isForbiddenHeadSymbol]
+        · by_cases hswitchm : c = "switch-minimal"
+          · subst hswitchm
+            cases args with
+            | nil =>
+                have hfalse : False := by
+                  simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                exact False.elim hfalse
+            | cons scrut branches =>
+                simp [translateHE, isForbiddenHeadSymbol]
+          · by_cases hatomsubst : c = "atom-subst"
+            · subst hatomsubst
+              cases args with
+              | nil =>
+                  have hfalse : False := by
+                    simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                  exact False.elim hfalse
+              | cons atom rest =>
+                  cases rest with
+                  | nil =>
+                      have hfalse : False := by
+                        simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                      exact False.elim hfalse
+                  | cons v rest =>
+                      cases rest with
+                      | nil =>
+                          have hfalse : False := by
+                            simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                          exact False.elim hfalse
+                      | cons tmpl rest =>
+                          cases rest with
+                          | nil => simp [translateHE, isForbiddenHeadSymbol]
+                          | cons _ _ =>
+                              have hfalse : False := by
+                                simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                              exact False.elim hfalse
+            · by_cases hnop : c = "nop"
+              · subst hnop
+                cases args with
+                | nil =>
+                    have hfalse : False := by
+                      simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                    exact False.elim hfalse
+                | cons x rest =>
+                    cases rest with
+                    | nil => simp [translateHE, isForbiddenHeadSymbol]
+                    | cons _ _ =>
+                        have hfalse : False := by
+                          simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                        exact False.elim hfalse
+              · by_cases hfunction : c = "function"
+                · subst hfunction
+                  cases args with
+                  | nil =>
+                      have hfalse : False := by
+                        simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                      exact False.elim hfalse
+                  | cons ret rest =>
+                      cases rest with
+                      | nil =>
+                          cases ret with
+                          | expression esx =>
+                              cases esx with
+                              | nil =>
+                                  have hfalse : False := by
+                                    simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                                  exact False.elim hfalse
+                              | cons hdx tailx =>
+                                  cases hdx with
+                                  | symbol c' =>
+                                      by_cases hreturn : c' = "return"
+                                      · subst hreturn
+                                        cases tailx with
+                                        | nil =>
+                                            have hfalse : False := by
+                                              simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                                            exact False.elim hfalse
+                                        | cons inner restx =>
+                                            cases restx with
+                                            | nil =>
+                                                have hinner : isValidatedHEHeadSource inner = true := by
+                                                  simpa [isValidatedHEHeadSource, isValidatedHESource] using h
+                                                simpa [translateHE] using
+                                                  translateHE_notForbidden_of_headSource_aux inner s hinner
+                                            | cons _ _ =>
+                                                have hfalse : False := by
+                                                  simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                                                exact False.elim hfalse
+                                      · have hfalse : False := by
+                                          simp [isValidatedHEHeadSource, isValidatedHESource, hreturn] at h
+                                        exact False.elim hfalse
+                                  | var _ =>
+                                      have hfalse : False := by
+                                        simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                                      exact False.elim hfalse
+                                  | grounded _ =>
+                                      have hfalse : False := by
+                                        simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                                      exact False.elim hfalse
+                                  | expression _ =>
+                                      have hfalse : False := by
+                                        simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                                      exact False.elim hfalse
+                          | var _ =>
+                              have hfalse : False := by
+                                simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                              exact False.elim hfalse
+                          | symbol _ =>
+                              have hfalse : False := by
+                                simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                              exact False.elim hfalse
+                          | grounded _ =>
+                              have hfalse : False := by
+                                simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                              exact False.elim hfalse
+                      | cons _ _ =>
+                          have hfalse : False := by
+                            simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                          exact False.elim hfalse
+                · have hprogn : c ≠ "progn" := by
+                    intro hc
+                    subst hc
+                    have hfalse : False := by
+                      simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                    exact hfalse
+                  have hunique : c ≠ "unique" := by
+                    intro hc
+                    subst hc
+                    cases args with
+                    | nil =>
+                        have hfalse : False := by
+                          simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                        exact hfalse
+                    | cons _ rest =>
+                        cases rest <;> simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                  have huniqueatom : c ≠ "unique-atom" := by
+                    intro hc
+                    subst hc
+                    have hfalse : False := by
+                      simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                    exact hfalse
+                  have hprog1 : c ≠ "prog1" := by
+                    intro hc
+                    subst hc
+                    have hfalse : False := by
+                      simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                    exact hfalse
+                  have hfoldall : c ≠ "foldall" := by
+                    intro hc
+                    subst hc
+                    have hfalse : False := by
+                      simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                    exact hfalse
+                  have hlt : c ≠ "@<" := by
+                    intro hc
+                    subst hc
+                    have hfalse : False := by
+                      simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                    exact hfalse
+                  have hgt : c ≠ "@>" := by
+                    intro hc
+                    subst hc
+                    have hfalse : False := by
+                      simp [isValidatedHEHeadSource, isValidatedHESource] at h
+                    exact hfalse
+                  simp [translateHE, isForbiddenHeadSymbol, hchain, hcollapse, hsuperpose,
+                    hswitch, hswitchm, hatomsubst, hnop, hfunction, hunique]
 
 private theorem translateHE_preserves_stableCommonHead_aux
     (a : Atom) (s : Nat) (h : isValidatedHEHeadSource a = true) :

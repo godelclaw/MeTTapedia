@@ -1,25 +1,3 @@
-/-
-# Galois Connection Between NARS and PLN
-
-This file establishes the adjunction L ⊣ U between NARS and PLN truth value systems.
-
-## The Theory
-
-- **L (Lower adjoint)**: NARS → PLN - embeds NARS with uniform prior
-- **U (Upper adjoint)**: PLN → NARS - forgets prior information
-- **Adjunction**: L(x) ≤ y ⟺ x ≤ U(y)
-
-This formalizes the claim that:
-- PLN is "more informative" because it includes prior structure
-- NARS is a "projection" of PLN that forgets priors
-- The adjunction shows NARS can be simulated in PLN
-
-## References
-
-- Goertzel et al., "PLN and NARS Comparison" (2024)
-- Wang, "Non-Axiomatic Logic" (2013)
--/
-
 import Mathlib.Tactic
 import Mathlib.Order.GaloisConnection.Defs
 import Mathlib.Data.ENNReal.Basic
@@ -30,10 +8,28 @@ import Mettapedia.NARS.TruthFunctions
 import Mettapedia.NARS.Bridges.PLN.EvidenceTranslation
 import Mettapedia.NARS.Bridges.PLN.SecondOrderProbability
 
+/-!
+# A finite confidence-weight Galois connection between NARS and PLN
+
+The finite-evidence adjunction compares the preorders defined by total evidence
+weight. These preorders do not distinguish frequencies or prior contexts.
+`L` interprets a valid NARS truth value as binary counts and selects a uniform
+prior context. `U` reads the empirical count proportion and converts total
+count weight to confidence; it ignores the stored prior.
+
+Confidence round-trips exactly. Frequency round-trips at positive confidence;
+unsupported frequencies are forgotten. This is a value interpretation, not an
+operational simulation of NARS inference or a posterior-mean interpretation of
+an arbitrary PLN prior. Infinite count mass has its separately stated boundary.
+
+References: Goertzel et al., "PLN and NARS Comparison" (2024); Wang,
+"Non-Axiomatic Logic" (2013).
+-/
+
 namespace Mettapedia.NARS.Bridges.PLN.InformationAdjunction
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.NARS.TruthFunctions
 open Mettapedia.NARS.Bridges.PLN.EvidenceTranslation
@@ -123,7 +119,7 @@ Embeds a NARS truth value into PLN by:
 1. Converting confidence to evidence counts via c2w
 2. Adding a uniform (Laplace) prior
 
-This is the "canonical embedding" of NARS into PLN. -/
+The selected context is fixed; zero confidence loses the frequency coordinate. -/
 noncomputable def L (n : NARSTruthValue) : PLNBelief :=
   let w := c2w n.c
   { evidence := ⟨ENNReal.ofReal (n.f * w), ENNReal.ofReal ((1 - n.f) * w)⟩
@@ -147,10 +143,11 @@ theorem ennreal_top_div_top_add_one : (⊤ : ℝ≥0∞) / (⊤ + 1) = 0 := by
 /-- U (Upper adjoint): PLN → NARS
 
 Projects a PLN belief to NARS by:
-1. Computing the posterior mean (strength)
+1. Reading the empirical positive-count proportion, with frequency one half at zero
 2. Converting total evidence to confidence via w2c
 
-This "forgets" the prior structure. -/
+The stored prior is ignored; this is not its posterior mean. The adjunction
+below concerns finite evidence. -/
 noncomputable def U (b : PLNBelief) : NARSTruthValue where
   f := if b.evidence.total = 0 then 0.5 else (b.evidence.pos / b.evidence.total).toReal
   c := (b.evidence.total / (b.evidence.total + 1)).toReal

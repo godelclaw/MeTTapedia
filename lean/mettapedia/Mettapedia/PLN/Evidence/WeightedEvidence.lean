@@ -18,7 +18,7 @@ noncommuting fixture.
 
 namespace Mettapedia.PLN.Evidence
 
-open EvidenceQuantale
+open BinaryEvidence
 open EvidentialLedger
 open scoped ENNReal
 

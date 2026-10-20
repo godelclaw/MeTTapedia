@@ -30,7 +30,7 @@ theorem predicateVocabularySimilarityGeOneCut_forwardInheritanceRuleImpCut_lower
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (τ : Ty Base) (k : Nat), NoConstOccurrence (param τ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (σ : Ty Base)
     {Pred : Type w}
     (decode : Pred →
@@ -96,7 +96,7 @@ theorem predicateVocabularySimilarityGeOneCut_reverseInheritanceRuleImpCut_lower
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (τ : Ty Base) (k : Nat), NoConstOccurrence (param τ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (σ : Ty Base)
     {Pred : Type w}
     (decode : Pred →
@@ -167,7 +167,7 @@ theorem predicateVocabularySimilarityGeOneCut_of_mutualInheritanceRuleImpCut_low
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (τ : Ty Base) (k : Nat), NoConstOccurrence (param τ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (σ : Ty Base)
     {Pred : Type w}
     (decode : Pred →
@@ -254,7 +254,7 @@ theorem predicateVocabularyFullInheritanceGeOneCut_forward_lower_eq_one_of_simil
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (τ : Ty Base) (k : Nat), NoConstOccurrence (param τ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (σ : Ty Base)
     {Pred : Type w}
     (decode : Pred →
@@ -321,7 +321,7 @@ theorem predicateVocabularyFullInheritanceGeOneCut_reverse_lower_eq_one_of_simil
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (τ : Ty Base) (k : Nat), NoConstOccurrence (param τ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (σ : Ty Base)
     {Pred : Type w}
     (decode : Pred →
@@ -393,7 +393,7 @@ theorem predicateVocabularySimilarityGeOneCut_lower_eq_one_of_mutualInheritance_
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (τ : Ty Base) (k : Nat), NoConstOccurrence (param τ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (σ : Ty Base)
     {Pred : Type w}
     (decode : Pred →

@@ -23,8 +23,8 @@ namespace Mettapedia.PLN.Bridges.HOL.ProbHOLWorldModelBridge
 
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.Probabilistic
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open MeasureTheory
 open scoped ENNReal
 

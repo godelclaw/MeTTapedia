@@ -14,7 +14,7 @@ namespace Mettapedia.PLN.InferenceControl.CertifiedChaining.EstimatorEnvelope
 
 open scoped BigOperators ENNReal
 open Mettapedia.Logic.HOL
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 open Mettapedia.PLN.TruthValues.PLNIndefiniteTruth
 

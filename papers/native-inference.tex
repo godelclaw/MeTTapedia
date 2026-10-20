@@ -37,7 +37,7 @@
 \title{\color{ink}Native Inference\\[3pt]
   \large From grounded judgments to composable proof, computation and meaning}
 \author{Mettapedia Working Notes}
-\date{17 October 2026}
+\date{19 October 2026}
 
 \begin{document}
 \maketitle
@@ -251,6 +251,7 @@ Section & Content \\
 \ref{sec:revalidation} & Admission and revalidation of retained evidence \\
 \ref{sec:modules} & Module coverage and the LRAT action adapter \\
 \ref{sec:headline} & The costed HOL Light to MM0 translation \\
+\ref{sec:dependent} & Dependent judgments, theorem authority and set models \\
 \ref{sec:ledger} & Status ledger \\
 \ref{sec:open} & Open problems \\
 \bottomrule
@@ -953,7 +954,1304 @@ comparison term and says nothing about executed time. On the sixteen-event core
 its available memory at the last of its sixteen nodes, after assembling a
 156-rule presentation; memory, not time, bounds the executed translation there.
 
+
+\section{Dependent judgments, theorem authority and set models}\label{sec:dependent}
+
+Four independent questions determine a kernel interface. Keeping them
+separate permits the same computation to support several faithful consumers.
+
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Coordinate & Declared contract \\
+\midrule
+Judgment & What follows, in which context and theory: typing, equality,
+reachability, one answer, or a complete result observation. \\
+Evidence & What is checked: local rule data, a tree, a shared graph, or a
+finite trace of licensed transitions. \\
+Authority & How checked conclusions can be constructed and used; which
+profile and declaration snapshot authorize them. \\
+Observation & What execution retains or exposes: verdict, pending work,
+cost, dependencies, or an optional exportable history. \\
+\bottomrule
+\end{tabularx}\end{center}
+
+An LCF interface protects theorem construction. It can also record proof
+terms or a journal. Certificate checking can mint the same logical kind of
+value without retaining the certificate. Neither choice supplies a constant
+checking cost, proves a native seal implementation, or recovers evidence
+that execution erased. A checked finite trace can be evidence when its
+transition rules establish the intended conclusion. A trace of an unrelated
+implementation is not automatically a derivation of that judgment.
+
+The MeTTa equation kernel is sound and complete for its native reachability
+judgment. Full HE or PeTTa evaluation, resource consumption and mathematical
+multi-premise inference require their respective judgments. No single one
+of these observations defines every useful MeTTa kernel. The design of a MeTTa kernel integrating these judgments remains open;
+the following connection uses an existing mathematical calculus.
+
+\subsection{Finite dependent evidence through the common interfaces}
+
+The selected profile is the existing cumulative tower over natural-number
+level expressions. Its syntax has dependent functions and pairs, identity
+formation and reflexivity, explicit universe heads, and cumulativity. Its
+formation-sensitive typing relation has fourteen rules. Constants and root
+computations are parameterized in the general construction; this particular
+tower declares neither. Structural beta computation remains available.
+Only this declared mathematical profile is instantiated here.
+
+Local codes contain syntax and rule selections. In the conversion rule they
+contain an existing finite structural conversion code. Decoding checks the
+local universe, declaration and head conditions and checks that conversion
+code; it does not receive a proof of conversion as executable input. The
+decoded node is an instance of the independently defined rule signature.
+The common tree and DAG replay algorithms therefore preserve the original
+premise positions and dependent substitutions. The maintained structural
+replay checker also publishes common checked judgments directly, and its
+existing telescope certificates check the ambient context.
+
+\begin{theorem}[Exact finite authority for the selected judgment]
+For the selected tower, a formation-sensitive judgment in a formed telescope
+holds if and only if there is an accepted finite request. Such a request
+checks its context, every graph row, the root address and its actual
+conclusion. Raw typing derivability is equivalently accepted tree evidence,
+accepted graph evidence, or a minted common checked judgment.
+\end{theorem}
+
+\lean{FormationSensitiveChecking.typing_iff_checked_tree, FormationSensitiveChecking.typing_iff_checked_graph, FormationSensitiveChecking.typing_iff_minted, FormationSensitiveChecking.mintReplay_iff, FormationSensitiveChecking.judgment_iff_checked, Tower.Checking.coverage}
+
+Exactness is existence of accepted evidence, not a terminating procedure
+for finding it. This is a connection of scoped Lean data and checked
+algorithms, not a portable serialization theorem or a refinement of CeTTa's
+C implementation. The source formation-sensitive conversion is structural
+conversion; the comparison into the stronger typed equality does not make
+every typed eta identification a source conversion.
+
+A raw variable rule can hold in an unformed telescope. Such a raw certificate
+must not authorize a formed request. The controls also reject changed root
+claims, missing roots, forward or cyclic dependencies, invalid universe
+lifts, and invalid unused suffixes. Shared references retain all premise
+occurrences; they do not duplicate consumable execution authority.
+
+\subsection{The comparison to sets}
+
+The diagram keeps the source judgment between evidence and meaning:
+\begin{center}
+\begin{tikzpicture}[node distance=10mm and 12mm,>=Stealth,
+ every node/.style={align=center,font=\small}]
+\node (checked) {accepted finite\\dependent evidence};
+\node[right=of checked] (source) {formed source\\typing judgment};
+\node[below=of source] (typed) {admitted typed equality\\and annotated derivation};
+\node[left=of typed] (model) {membership and equality\\in the set tower};
+\draw[->] (checked) -- (source);
+\draw[->] (source) -- (typed);
+\draw[->] (typed) -- (model);
+\end{tikzpicture}
+\end{center}
+
+\begin{theorem}[Checked evidence has its declared set meaning]
+Under the explicit hypothesis \name{CofinalInaccessibles}, every accepted
+request yields an annotated derivation whose telescope, subject and displayed
+type erase to that request and whose statement holds in the existing set
+tower. Checked subject values belong to their displayed type values. Finite
+checked conversion between independently admitted endpoints preserves their
+actual model values.
+\end{theorem}
+
+\lean{TowerInterpretation.Checking.request_model_sound, TowerInterpretation.Checking.checked_value_member, TowerInterpretation.Checking.checked_type_conversion, TowerInterpretation.Checking.checked_term_conversion}
+
+For closed universe-membership queries the comparison also reflects the
+model: a finite request for $U_c : U_d$ exists exactly when the corresponding
+set universe is a member of the other. The same equivalence holds after
+the existing well-founded embedding into material hypersets. This is a
+scoped reflection result for universes, not completeness for arbitrary set
+truth. Under the named model hypothesis, every request for a closed
+inhabitant of the existing empty type is rejected.
+\lean{TowerInterpretation.Checking.universe_request_iff_set, TowerInterpretation.Checking.universe_request_iff_hyperset, TowerInterpretation.Checking.empty_request_refuses}
+
+Substitution uses the actual checked component terms. Their accepted
+requests construct the source contextual arrow. At the semantic comparison
+boundary, the annotated components carry their typing and erasure witnesses;
+evaluation of those components constructs the satisfying-environment map.
+The value of a substituted checked term equals its original value in that
+substituted environment. Context and component compatibility are retained
+in the statement, rather than being replaced by an assumed semantic action.
+\lean{FormationSensitiveChecking.checked_substitute, TowerInterpretation.Checking.checkedArrow, TowerInterpretation.Checking.checked_value_substitution}
+
+The model map has several distinct scopes. The cumulative tower has the
+set interpretation just used, with its named inaccessible-cardinal
+hypothesis. The HOTG-style mathematical packages add declared set operations
+and theory assumptions; they are not automatically translations to the
+native Megalodon Mathdata checker. The material hyperset family construction takes an explicit presentation
+and supplies contexts, dependent families, substitution and Pi/Sigma structure.
+Its extensional identity does not establish a faithful interpretation of
+arbitrary higher paths, cubical operations or every dependent profile.
+
+A useful negative boundary is the existing HOTG-style
+\name{setTheory_not_admitted}: a package can have a set model while failing
+its stated computational admission discipline. The rule-constant alternative
+has separate preservation results. Semantic equality therefore cannot be
+promoted to checker conversion merely because both expressions denote the
+same set. Conversely, a model interpretation need not reflect all set truth
+back into source derivations. These comparisons preserve their assumptions;
+they assert neither equivalence of all foundations nor optimal native speed.
+
+\subsection{Operational logical form and relative checking bases}
+
+The choice of a low-tier checker can follow from a richer dependent theory
+and the fragment requested of it. There are at least three constructions:
+restrict declarations and computation rules; elaborate implicit conversion
+into explicit evidence; or specialize a checking algorithm for a declared
+fragment. These give different proof formats and cost profiles. A literal
+syntax intersection does not decide which construction is best.
+
+Dependent carve-outs additionally retain formed contexts, binding,
+substitution, universe policies and the selected identity rules. Their
+operational predicate comparison does not discharge these dependent laws or
+admit an inductive schema. A fibration organizes the obligations; an
+executable extraction and an optimality theorem require further evidence.
+
+For the existing dependent calculus, every accepted formed request has a
+finite sufficient restriction of its declaration and root-computation package.
+The same context, subject and displayed type are derivable there, and every
+judgment of that restriction reflects to the original package. This is a
+constructed restriction, not a theorem that a smallest checker exists. The
+universe policy is retained. Computational admission and an executable root
+decoder for the restriction are additional obligations: pruning may remove
+formation or preservation support required by a chosen admission discipline.
+\lean{FormationSensitiveCheckingOSLF.checked_request_has_restriction, FormationSensitive.Dependencies.exists_restriction_with_reflection, FormationSensitive.RestrictionPreservation.oslf_observation_does_not_admit_restriction, FormationSensitive.RestrictionPreservation.oslf_observation_with_preserving_repair}
+
+OSLF applies to the declared dynamics. In the conversion-evidence observation,
+vertices are the original scoped terms and edges are original structural
+steps with either orientation. The observation theory retains syntax equality
+as its equation policy, so conversion remains visible as finite paths. Its
+generated reachability native type holds exactly when the independently
+authored conversion holds, equivalently when some supplied finite code checks.
+Reverse beta is therefore a valid conversion edge; this does not declare it
+an evaluator reduction. A raw beta path also does not establish formed typing.
+\lean{FormationSensitiveCheckingOSLF.path_iff_conversion, FormationSensitiveCheckingOSLF.satisfies_iff_checked, Tower.Checking.Controls.reverse_beta_oslf, Tower.Checking.Controls.raw_beta_oslf}
+
+Native type theory obtains richer structure through the internal languages
+of presheaf toposes~\cite{WilliamsStay}. The comparison here concerns the
+declared relational OSLF predicate frame and its operational routes. It does
+not establish that entire presheaf construction for every dependent profile.
+
+In the general OSLF construction, semantic predicates are invariant under the
+selected equations. Closure under computation is a further property. The
+existing route interfaces yield the following separate results:
+\begin{center}\small
+\begin{tabularx}{\linewidth}{@{}lX@{}}
+\toprule
+Route contract & Earned observation law \\
+\midrule
+Equation-respecting map & Reindex invariant predicates. Pointwise agreement
+modulo target equations gives equal predicate actions. \\
+Strict forward operational translation & Preserve existential one-step
+observations; additional target behavior may remain. \\
+Locally covered translation & Also reflect those observations and finite
+reachability from image states. \\
+Path-valued operational realization & Preserve finite reachability while
+permitting a source step to become zero or several target steps. \\
+\bottomrule
+\end{tabularx}\end{center}
+\lean{EquationRespectingMap.pullback_eq_of_equiv, OperationalTranslation.preserves_semanticDiamond, CoveredTranslation.semanticDiamond_iff, CoveredTranslation.semanticReach_iff, OperationalRealization.preserves_semanticReach}
+
+The extra-target-step control refutes unrestricted reflection. The fusion
+control preserves a path observation while destroying a one-step diamond.
+OSLF's right-adjoint box in this construction observes incoming steps; its
+transport cannot be inferred from outgoing coverage alone. Bounded-cost
+observations additionally require a declared charge and a bound on mapped
+paths. Predicate transport does not by itself establish those bounds, proof
+translation, native seal enforcement, or equality of retained proof histories.
+The basic behavioral GSLT morphism only promises bisimilarity preservation.
+\lean{IndexedOperational.Canary.escaping_native_type_not_reflected, IndexedOperational.Canary.outgoing_coverage_does_not_preserve_past_box, OperationalRealization.FusionCanary.fusion_changes_one_step_diamond}
+
+HOL Light, MM0 and Megalodon consequently remain comparison points and native
+realizations with explicit source contracts. They do not exhaust the possible
+checking bases for dependent profiles. A semantic set model is another
+comparison edge, with its assumptions retained; it is not an executable proof
+translation or a reflection theorem for arbitrary set truth. Relative
+optimality needs the fragment, certificate representation, operations and
+cost model to be fixed before it can be asserted.
+
+For the selected cumulative profile, the guarded set-model comparison also
+receives this OSLF conversion observation directly. Two accepted term-typing
+requests in a formed telescope give equal actual set values when the
+conversion-native observation holds. The annotated context and the named
+model hypothesis remain explicit.
+\lean{TowerInterpretation.Checking.oslf_term_conversion}
+
+\subsection{A computational STT carve-out, with a proved boundary}
+
+The existing one-base simply typed lambda calculus supplies a first exact
+comparison. Write $S(\Gamma,A)$ for its intrinsically typed terms, $E$ for
+its embedding in the root-free cumulative Pi/Sigma/identity tower, and
+$H_b$ for its HOL interpretation at a chosen base sort $b$. Simple arrows
+become nondependent products in $E$ and ordinary arrows in $H_b$. The chosen
+base sort remains distinct from HOL's proposition sort. For every context
+and simple type:
+\[
+ \begin{aligned}
+  \operatorname{Join}_{\beta}(H_b(s),H_b(t))
+   &\iff s\equiv_{\beta}t\\
+   &\iff\operatorname{Conv}_{\mathrm{struct}}(E(s),E(t))\\
+   &\iff\operatorname{decideConversion}(s,t)=\mathsf{true}.
+ \end{aligned}
+\]
+The tower conversion path may leave the simple image. Reflection follows
+from normalization and confluence, not an assumption that all intermediate
+terms remain simple. HOL uses its independently defined operational beta
+steps. Normal intrinsic terms remain normal there, so common reducts
+determine the same intrinsic normal form.
+\lean{SingleBaseSTLC.HOLComparison.holJoinable_iff_betaConv, SingleBaseSTLC.HOLComparison.holJoinable_iff_towerConv, SingleBaseSTLC.HOLComparison.decideConversion_iff_holJoinable}
+
+The scope is one base sort, variables, abstractions and applications, with
+no declared constants. This compares a computational judgment, not all HOL
+theoremhood or arbitrary dependent inhabitants. It is a reference component
+for a possible native kernel, not a completed HOL bubble or a selection among
+the dependent language candidates.
+
+The maps commute with simultaneous substitution and give a functor between
+the existing context categories. An indexed family alone is not a fibration:
+chosen cartesian lifts and their laws require additional constructions.
+Typed HOL syntax retains intermediate application types that the unannotated
+tower erasure can lose, even at a fixed result type. Conversion classes remain
+faithfully compared. Raw syntax recovery and conversion reflection are
+therefore different requirements on a shared representation.
+\lean{SingleBaseSTLC.HOLComparison.contextFunctor, SingleBaseSTLC.HOLComparison.substitute_term, SingleBaseSTLC.HOLComparison.Controls.hol_retains_erased_types, SingleBaseSTLC.ConversionDecision.betaClass_toTower_injective}
+
+\paragraph{Two local policies.}
+The common bubble interface now has a simple-term instance. Beta steps retain
+HOL operational evidence; a second policy additionally permits eta, with
+application and abstraction congruence in both policies. Free conversion trees
+retain their composition and intermediate states. Each tree elaborates
+constructively to an ordinary retained HOL equality proof with the same
+endpoints. The beta-only policy presents exactly the structural tower
+conversion above.
+\lean{SingleBaseSTLC.HOLConversionBubble.elaborate, SingleBaseSTLC.HOLConversionBubble.beta_path_iff_tower}
+
+For an arrow-typed variable $f$, the terms $f$ and $\lambda x.fx$ are
+beta-normal and not beta-convertible, although the eta policy relates them
+and HOL proves their equality. The tower's \emph{typed-equality} judgment also
+contains eta; its \emph{structural conversion} in the comparison does not.
+Even two judgments over one package cannot be interchanged silently.
+An equality theorem does not automatically license definitional computation.
+Arbitrary additional rewrite packages would need fresh admission obligations.
+\lean{SingleBaseSTLC.HOLConversionBubble.Controls.eta_strictly_adds_conversion, SingleBaseSTLC.HOLComparison.Controls.hol_equality_does_not_reflect_conversion, SingleBaseSTLC.HOLTowerModel.typed_equality_not_structural_conversion}
+
+\paragraph{Operational predicates, dependent readings and models.}
+This conversion observation and the earlier dependent checking development
+reuse one general construction for the equivalence closure of an authored
+relation. Equations of the observation theory are syntax equality;
+bidirectional computation edges remain visible. Its OSLF reachability
+predicate has exactly the support of retained conversion trees. On the beta
+fragment the existing total intrinsic normal-form comparison decides it.
+Predicate truth does not reconstruct a particular history.
+\lean{IndexedOperational.conversionTheory_path_iff, IndexedOperational.satisfies_conversionNativeType_iff, SingleBaseSTLC.HOLConversionBubble.satisfies_iff_path, SingleBaseSTLC.HOLConversionBubble.beta_satisfies_iff_decides}
+
+Every lawful dependent \name{HOLReading} reads these pure simple terms
+without interpreting additional constants or supplying an equality-proof
+algebra. Their computed codes are typed in that reading's actual selected
+judgment. The maintained native substitution constructor has no unread image
+on this fragment, and code commutes with substitution. The beta observation
+thus gives typed equality of the computed codes. This is a parametric
+inclusion result with explicit reading laws, not reflection from arbitrary
+dependent proofs.
+\lean{SingleBaseSTLC.HOLReadingComparison.code_typed, SingleBaseSTLC.HOLReadingComparison.code_substitute, SingleBaseSTLC.HOLReadingComparison.observed_typed}
+
+For the tower, the independently formed simple context and admitted equality
+reach its maintained annotated set interpretation under the named
+\name{CofinalInaccessibles} hypothesis. That hypothesis belongs to the
+semantic edge, not the beta decision procedure. The earlier well-founded
+embedding into material hypersets retains its stated scope; neither result
+supplies arbitrary higher identities or a translation to native Mathdata.
+\lean{SingleBaseSTLC.HOLTowerModel.observed_set_equality}
+
+\paragraph{From a component to a whole HOL bubble.}
+Choice, infinity and classical principles belong to a declared theory and
+its interpretations; conversion policy belongs to the judgment. Option names
+are not independence proofs for their combinations. The existing HOL calculus,
+retained derivations and theory interfaces supply these logical profiles.
+Merely naming another kernel does not require copying their rules.
+
+A complete proof-level carve-out needs a rule-preserving interpretation into
+the selected dependent judgment and a genuine reflection or conservativity
+argument for the declared image. Type-shape membership supplies neither.
+Routes to native HOL Light, Megalodon and configured MM0 must retain their own
+assumptions, definitions, equality policies and evidence. This comparison
+establishes no new complete three-way translation.
+
+A suitable tier-zero realization can specialize a richer checker, or expose
+its implicit computation as explicit evidence. It need not be a literal
+subset of the checker's source or add an interpreter layer to a qualified
+native operation. Direct normalization, finite replay, optional proof
+recording and protected theorem authority have separate contracts. Choosing
+their best physical realization requires workload and cost comparisons.
+
+\subsection{Conversion policies, proof elaboration and operational fibres}
+
+A checking graph needs more than an ordering of mathematical strength.
+One edge may add an axiom, another may license a formerly explicit equality
+as conversion, and another may change only the producer of certificates.
+An interpretation, a conservative extension and a measured specialization
+carry different laws. Distinct proof and execution histories remain visible
+until an observation explicitly forgets them.
+
+The current HOL reference instance fixes arbitrary base sorts and typed
+constants, while a policy selects beta permissions by the contracted
+redex's result type, eta permissions by domain and codomain, and equation
+permissions by declaration occurrence. The permission is checked at the
+actual inner redex, even when the surrounding term has another type.
+A cited equation carries its pattern telescope and a simultaneous
+substitution. Explicit typed substitution contexts and abstraction/quantifier
+congruence support computation under binders without dropping scope.
+A substitution context can use its parameter repeatedly; this derived
+equality action is not necessarily one evaluator contraction.
+
+For a policy $P$, let $R_P$ be the independently stated local-step relation.
+The maintained equality-recipe checker computes endpoints, checks every
+transitivity join and has exact authority:
+\[
+ s\;\operatorname{EqvGen}(R_P)\;t
+ \quad\Longleftrightarrow\quad
+ \exists e.\;\operatorname{check}_P((s,t),e)=\mathsf{true}.
+\]
+This is a decision about a supplied finite article. It does not require a
+normalizer or decide whether some article exists. The generic decoder
+constructs a free conversion tree from successful replay; forgetting that
+tree recovers the submitted recipe exactly, including its local witnesses
+and binary composition structure.
+\lean{EqualityRecipe.checkedPathWithRecovery, EqualityRecipe.forget_checkedPath, HOL.ConversionRecipes.leaf_authority, HOL.ConversionRecipes.authority}
+
+The existing typed beta-execution carrier also compiles directly into these
+recipes, retaining each contracted position. A previous beta-joinability
+witness consequently supplies an accepted beta-only article. This is a
+computed forward connection to the maintained operational component; it does
+not assert reverse reflection for every policy or equality of proof histories.
+\lean{HOL.ConversionRecipes.executionRecipe, HOL.ConversionRecipes.executionRecipe_checked, HOL.ConversionRecipes.joinable_has_betaRecipe}
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, font=\small,
+  policy/.style={draw=ink!70, rounded corners, fill=ink!4,
+    align=center, minimum width=34mm, minimum height=12mm},
+  target/.style={draw=ink!70, rounded corners, fill=ink!8,
+    align=center, minimum width=48mm, minimum height=12mm}]
+  \node[policy] (b) at (-4,0) {Beta policy};
+  \node[policy] (be) at (0,0) {Beta--eta policy};
+  \node[policy] (bed) at (4,0) {Joined policy\\with licensed equations};
+  \node[target] (hol) at (0,-2) {Retained HOL equality proofs};
+  \draw[->] (b) -- node[above=7mm] {enable eta} (be);
+  \draw[->] (be) -- node[above=7mm] {enable equations} (bed);
+  \draw[->] (b) -- (hol);
+  \draw[->] (be) -- (hol);
+  \draw[->] (bed) -- (hol);
+\end{tikzpicture}
+\end{center}
+The downward edges use actual retained equality receipts for each equation,
+at its original telescope. They construct ordinary HOL proofs through beta,
+eta, congruence and equality composition. Logical retyping becomes explicit
+propositional equality elimination. The two-sort controls reach the same
+endpoint equality by primitive eta and by an instantiated eta declaration,
+while the submitted receipts remain distinct. Another pair has the same
+endpoint equality and retained proof sizes one and three. These are proof
+sizes, not elapsed-time comparisons.
+\lean{HOL.EquationProofs.instantiate, HOL.ConversionRecipes.elaborate, HOL.ConversionRecipes.convertProof, HOL.ConversionRecipes.Controls.eta_and_equation_recipes_distinct, HOL.ConversionRecipes.Controls.proof_costs_differ}
+
+The existing implication/universal modulo calculus stores
+proposition-valued conversion. With the same equation receipts, every one
+of its proofs has an ordinary retained HOL proof at the original ordered
+sequent. This translation establishes existence; it does not reconstruct a
+forgotten source history. The checked recipe interface supplies that stronger
+reconstruction. Curry's cyclic equation cannot acquire the required HOL
+receipts: otherwise its existing modulo proof of $\forall p.p$ would become
+an ordinary HOL proof, contradicting the maintained standard model.
+These edges cover equations already justified by the target calculus.
+Fresh definitional extensions instead use the separate signature-changing
+unfolding and conservativity construction.
+\lean{HOL.ProofSyntaxModulo.hasHOLProof, HOL.ConversionElaborationControls.no_curry_equationProofs, HOL.ProofSyntaxModulo.definition_conservative}
+
+\paragraph{What composes.}
+Two rule packages independently admissible over the \emph{same original}
+judgment system can be combined without changing derivability. Actual local
+certificate compilers also combine, selecting each feature's own expansion
+and node budget. The mixed control eliminates a shortcut and an identity
+inference into a three-node base certificate; adjoining the genuinely new
+fact still has no such compiler. This logical composition law does not
+establish normalization, confluence or decidability for a union of
+conversion engines. Those are separate interaction obligations.
+\lean{extendRules_union_sameDerivability_iff, AdditionalRuleCertificateCompiler.combine, AdditionalRuleCertificateCompiler.combine_sameDerivability, ConservativeExtensionCanary.compiledMixed_count, ConservativeExtensionCanary.combined_newFact_forbidden}
+
+\paragraph{Elaboration and execution.}
+An elaborator may perform implicit-argument search, instance resolution,
+unification or tactics. Here an arbitrary producer submits finite recipes
+to the existing screening interface, and only accepted submissions acquire
+retained equality proofs. Producer completeness is unnecessary for this
+soundness boundary. This is a concrete consumer of the producer/checker
+separation, not an implementation of all those frontend algorithms.
+\lean{HOL.ConversionRecipes.elaborateSubmission, HeuristicEvidence.arbitrary_producer_sound}
+
+The operational fibre over a context, type and policy has the original typed
+terms as states. Its OSLF reachability predicate is exactly certificate
+existence for $\operatorname{EqvGen}(R_P)$. Policy extensions and joins
+preserve this observation, including computations under binders. This
+predicate forgets the chosen recipe; the recipe decoder does not.
+Program-execution fibres additionally retain the chosen world, resources,
+representation and scheduling policy. Their routes use the earlier strict,
+covered or path-valued operational contracts as appropriate. Logical
+conversion is not thereby declared to be evaluator reduction, and execution
+costs need their own accounts.
+\lean{HOL.ConversionRecipes.observed_iff_accepted, HOL.ConversionRecipes.LocalStep.conversion_mono, HOL.ConversionRecipes.observed_mono}
+
+\paragraph{Extensional comparisons remain selected bridges.}
+Modular type-theory presentations provide an established precedent for
+feature-selected fragments~\cite{ModularTheories}. Hofmann's comparison of
+specified extensional and intensional theories, with functional
+extensionality and UIP on the intensional side, concerns an interpretation
+and conservativity, rather than identical conversion algorithms. The later
+Morita-equivalence result compares their categories of models in its stated
+setting~\cite{HofmannExtensional,KapulkinLi}. These results do not establish
+such a bridge for every dependent candidate in this library. A semantic
+extensional readout can coexist with an executable intensional checker and
+explicit transport evidence, without making equality reflection a rule of
+every checker. Chosen route action, universe policy, theory assumptions and
+operational observations remain part of the comparison.
+
+The new checker is a proof-producing reference on already scoped and typed
+syntax. It qualifies neither a raw-byte parser nor native seal enforcement,
+and it supplies no native performance comparison. Full dependent-fragment
+reflection and the routes to actual HOL Light, Mathdata and configured MM0
+remain further graph edges.
+
+\subsection{Selected iota roots and checked dependent instantiation}
+
+The existing \name{ParameterizedPiSigmaId} rules already state the head,
+universe, cumulativity, constant and root-computation policies of that
+calculus. Its indexed-family interface separately carries constructors,
+an eliminator specification and typed iota schemas. The following checking
+connection consumes those schemas; it does not derive another eliminator
+or introduce a universal profile record for every dependent candidate.
+
+An ordered schema table $T$ stores open endpoint pairs at their respective
+arities. A policy $e:\operatorname{Fin}|T|\to\mathsf{Bool}$ selects original
+row occurrences. A finite root code supplies a row address and a list of
+scoped arguments. Replay checks the address, permission and argument count,
+then computes capture-safe simultaneous substitution into the selected pair.
+The independently defined root evidence retains both the original row and
+the substitution. Its decoder is sound and complete for exactly those
+instances. Repeated equal rows remain distinct citations, and an enabled
+duplicate cannot rescue a disabled citation.
+\lean{SchemaTableConversionCode.retained, SchemaTableConversionCode.decode_sound, SchemaTableConversionCode.decode_complete, SchemaTableConversionCode.rootDecoder}
+
+Renaming and substitution act on every submitted argument while retaining
+the row address. Replay commutes with these actions, including refusals.
+Selection by schema occurrence is stable under substitution. A selection
+depending on the instantiated dependent type would need its own stability
+law before becoming a root-computation policy.
+\lean{SchemaTableConversionCode.decode_rename, SchemaTableConversionCode.decode_substitute}
+
+For a table of existing typed iota schemas, row lookup also retrieves the
+original telescope $\Gamma_i$, displayed type $A_i$ and retained computation
+witness. The selected rule package keeps the original head, universe and
+constant policies and replaces its authored roots by the selected instances.
+Unlisted inherited and delta roots are excluded from this restriction.
+The signature's stated correspondence between retained witnesses and raw
+declared computation gives an actual rule morphism into the original
+declaration calculus. It preserves full formation-sensitive judgments and
+induces a forward OSLF conversion route. No reverse coverage, normalization
+or admission theorem is inferred from this inclusion.
+\lean{IndexedFamily.Checking.receiptAt, IndexedFamily.Checking.realizeEvidence, IndexedFamily.Checking.inclusion, IndexedFamily.Checking.judgment_inclusion, IndexedFamily.Checking.conversionRoute}
+
+\paragraph{Typed instantiation is another finite check.}
+At a caller's telescope $\Delta$, a substitution request checks formation of
+$\Delta$ and each dependent argument obligation
+\[
+  \Delta\vdash\sigma(v):\sigma(\Gamma_i(v)).
+\]
+The maintained telescope and structural typing checkers perform these checks.
+Even a zero-argument request must check $\Delta$: an empty argument list
+cannot authorize an unformed context. Every admitted formation-sensitive
+context morphism has such finite evidence; this is certificate existence,
+not an inference procedure.
+\lean{FormationSensitiveChecking.SubstitutionRequest.sound, FormationSensitiveChecking.SubstitutionRequest.complete}
+
+With a permitted row, accepted arguments and the exact requested endpoints
+and displayed type, replay substitutes the original typed receipt. It
+retains both endpoint typings and the original computation witness at
+$\sigma(A_i)$. The same request exports a finite raw root code. The reverse
+implication fails: raw computation does not establish argument typing.
+Disabling a computation permission also does not construct a propositional
+identity proof in the smaller calculus.
+\lean{IndexedFamily.Checking.InstanceRequest.replay, IndexedFamily.Checking.InstanceRequest.formed, IndexedFamily.Checking.InstanceRequest.rootCode_accepted}
+
+\paragraph{The existing natural/vector instance.}
+The cumulative declaration signature has four independently defined iota
+cases: natural zero and successor, and vector nil and cons. Its actual four
+canonical schemas now give an exact decoder for that original root relation.
+The declaration decoder then combines inherited computation, actual delta
+lookup and these four cases. This supplies the missing executable parameter
+of common conversion and formation-sensitive judgment checking for the
+unchanged signature.
+\lean{NativeNaturalVectorFamilies.Checking.iotaDecoder, NativeNaturalVectorFamilies.Checking.decoder, NativeNaturalVectorFamilies.Checking.conversion_iff_checked, NativeNaturalVectorFamilies.Checking.coverage}
+
+The controls check all four raw iota cases, an actual typed natural-eliminator
+instance in its dependent telescope, and its weakening to a larger context.
+They reject exchanged dependent arguments, a changed displayed type,
+incorrect arities, captured endpoints and disabled rows. An instance with
+unknown arguments has raw computation evidence but fails the typed instance check.
+The retained natural iota receipt is reconstructed by the checker, rather
+than supplied as part of its untrusted request.
+\lean{IndexedFamilyCheckingControls.all_verdicts, IndexedFamilyCheckingControls.checkedZeroReceipt}
+
+These results do not qualify uniform preservation of the raw signature,
+general positivity checking, or native execution of vector programs.
+The earlier root-free set comparison does not
+automatically interpret these added declarations. Natural infinity and no-confusion require
+their own constructor and induction laws; finite datatype declarations have
+different consequences. Translation of those laws to HOL Light, Mathdata or
+configured MM0, and a native realization of this checker, remain separate
+edges. Partial checking and operational contracts can therefore enter the
+graph without pretending that every node already discharges every contract.
+
+\subsection{Generated rules, bidirectional evidence and dependent append}
+
+The simple-inductive generator already produces its recursor and one iota
+schema per source constructor occurrence. Its computation relation is stated
+independently of schema replay. The generated ordered table now presents
+exactly that relation, and the common finite decoder checks the resulting
+conversion recipes. A receipt retains its constructor ordinal and complete
+assignment; it translates directly to a single checked root, including below
+binders. This connection does not identify raw conversion evidence with the
+generator's annotated typed receipts or establish declaration admission.
+\lean{IndexedPolynomialGenerated.Checking.presents, IndexedPolynomialGenerated.Checking.table_get, IndexedPolynomialGenerated.Checking.receiptCode_accepted, IndexedPolynomialGenerated.Checking.conversion_iff_checked}
+
+The bidirectional producer works against a selected existing rule package.
+It synthesizes types for variables, declared constants and applications,
+and checks lambdas and pairs against dependent products and sums. Its inputs
+include proposed head types, universe joins, normalizations and conversion
+recipes. These proposals carry no logical authority: every successful
+submission passes the maintained context and formation-sensitive judgment
+checkers. Soundness therefore holds even for incorrect producer choices.
+Fuel bounds the search; refusal is not a proof of nontypability.
+\lean{FormationSensitiveElaboration.replay_sound, FormationSensitiveElaboration.elaborate_sound}
+
+Restricted implicit inference reuses the existing scoped schema matcher.
+Argument-type patterns share one assignment, so repeated metavariables must
+agree. Every omitted prefix argument must be determined; no arbitrary value
+fills an unconstrained slot. The resulting application, with implicit
+arguments followed by the original explicit arguments, undergoes the same
+independent checking. For vector cons, the explicit head and tail determine
+both element type and length. Controls reject an undetermined length,
+inconsistent repeated element types and missing or extra arguments. This is
+not a complete higher-order unifier or an instance-resolution algorithm.
+\lean{FormationSensitiveElaboration.Implicit.complete_sound, FormationSensitiveElaboration.Implicit.elaborate_sound, InductiveElaborationControls.inferredSingleton_typed}
+
+Conversion search traverses the maintained syntax and proposes explicit
+beta, projection, congruence and declaration-root recipes. Each proposed
+normalization is checked against its original endpoints. Comparing two such
+results constructs a recipe through their common shape and checks the
+composite again. The soundness theorems establish conversion, not normal-form
+existence, completeness of search or forward evaluation of every returned
+conversion recipe.
+\lean{StructuralConversionSearch.normalize_sound, StructuralConversionSearch.compare_sound}
+
+\paragraph{A checked dependent function.}
+The independently authored cumulative Nat/Vec declaration has an element
+universe parameter $u$ and a motive parameter $v$. The existing
+level-instantiation morphism specializes the latter to $\max(u,v)$, retaining
+both parameters and transporting declaration formation. This licenses the
+vector-valued motive needed by the following explicit core program:
+\[
+  \mathsf{append} : \Pi(A:U_u).\Pi(n,m:\mathsf{Nat}).
+    \mathsf{Vec}\ A\ n \to \mathsf{Vec}\ A\ m
+    \to \mathsf{Vec}\ A\ (\mathsf{add}\ n\ m).
+\]
+Addition uses the declared natural eliminator, and append uses the declared
+vector eliminator. Neither introduces new recursion or conversion rules.
+The proof checks the entire closed function at this dependent type in the
+selected instance, with its schematic element universe and both lengths.
+\lean{NativeNaturalVectorFamilies.Programs.levelInstance, NativeNaturalVectorFamilies.Programs.signature_formed, NativeNaturalVectorFamilies.Programs.judgment_map, NativeNaturalVectorFamilies.Programs.append_typed}
+
+Evidence production runs outside the proof kernel. A shared constructor-data
+emitter records its finite submission; kernel reduction then checks only
+that data against the independently written program, type and decoder.
+The qualified append submission uses 962 shared definitions in 387836 bytes
+of Lean source. The checker rejects the same submission with its result
+index changed, its program replaced by the second input vector, or its root
+typing rule forged. These refusals concern the submitted evidence, rather
+than general unprovability of other claims.
+\lean{NativeNaturalVectorFamilies.Programs.appendChecked_true, NativeNaturalVectorFamilies.Programs.changedType_refused, NativeNaturalVectorFamilies.Programs.changedTerm_refused, NativeNaturalVectorFamilies.Programs.forgedRoot_refused}
+
+The nil and cons equations of this program hold under arbitrary scoped
+substitutions. In the cons equation the target contains append applied to
+the recursive tail; retaining the unprocessed tail instead is refused by
+the comparison check. These results establish structural conversion, rather
+than a forward execution strategy or a termination theorem.
+\lean{NativeNaturalVectorFamilies.Programs.Computation.append_substitute, NativeNaturalVectorFamilies.Programs.Computation.append_nil, NativeNaturalVectorFamilies.Programs.Computation.append_cons}
+
+\paragraph{Constructor clauses and checking permissions.}
+A scoped clause compiler consumes the admitted constructor inventory.
+Its current fragment has one linear, top-level clause per constructor, in
+source order. The compiler checks names and field counts, replaces written
+calls on the declared recursive children by induction hypotheses, and
+constructs methods for the existing eliminator. Capture-safe inverse
+substitution certifies that replacing those hypotheses by their original
+calls reconstructs the submitted clause. Whole-term elaboration still uses
+the independent formation-sensitive checker.
+\lean{ScopedSubstitutionInversion.invert_sound, IndexedInductive.CaseElaboration.compileBranch_reconstructs, IndexedInductive.CaseElaboration.compileMethods_coverage, IndexedInductive.CaseElaboration.elaborate_sound}
+
+For the admitted vector inventory, the written append clauses compile to
+exactly the independently authored core function above, uniformly in the
+payload type. Controls refuse missing, extra or reordered clauses, incorrect
+field counts, calls on another child or index, and a remaining recursive
+function constant. The concrete source interface includes a noncomputable
+interpretation of natural indices: this is a kernel-evaluated comparison,
+not an executable textual frontend. Nested pattern matrices and their
+compilation remain outside this clause fragment.
+\lean{IndexedInductive.AppendElaboration.methods_match_reference, IndexedInductive.AppendElaboration.compiled_matches_reference, IndexedInductive.AppendElaboration.compiled_typed, IndexedInductive.AppendElaboration.all_verdicts}
+
+The same finite append typing submission also checks in an actual restricted
+calculus containing just the two natural iota rows, with unchanged heads,
+declarations and universe instance. Removing either row rejects that
+submission. The vector rows remain separate permissions for computing
+vector eliminator applications. Monotone permission inclusions preserve
+full judgments and their original contexts. Thus a smaller checking basis
+can be derived from a richer declared judgment, without claiming a globally
+smallest kernel or unprovability from the rejected submissions. These local
+results do not establish uniform computational admission of the package.
+\lean{NativeNaturalVectorFamilies.Programs.ComputationProfiles.permissions_mono, NativeNaturalVectorFamilies.Programs.ComputationProfiles.judgment_inclusion, NativeNaturalVectorFamilies.Programs.ComputationProfiles.append_typed_naturalOnly, NativeNaturalVectorFamilies.Programs.ComputationProfiles.all_verdicts}
+
+General source compilation and complete generated-package admission remain
+separate from that checked target. Acceptance of the corresponding
+natural laws by native HOL Light, Mathdata and configured MM0, representation
+retention in CeTTa, source-bound behavioural observations and joined costs
+remain separate qualification links. No general conservativity, set-model
+interpretation of the added declarations, or native checker refinement
+follows from this finite typing result.
+
+\paragraph{One textual program through that checker.}
+The common module reader now consumes one source file containing the Nat
+and Vec declarations and addition/append constructor clauses. A finite
+operation adapter resolves names through the maintained nullary-constructor
+resolver. The separate literal-variable policy retains its own meaning;
+the adapter does not change general MeTTaIL rewriting. It preserves the
+complete selected declaration/operation blocks, refusing ignored imports,
+extra blocks and a different entry.
+
+The compiler's finite plans contain constructor names, field counts and
+scoped recursive-child calls. Plans derived from the selected textual vector
+declarations agree with the independently admitted semantic inventory,
+uniformly in payload type. The source declarations themselves also lower
+to the original admitted Nat/Vec example. The same clause compiler consumes
+these plans without evaluating the source's noncomputable natural carrier.
+\lean{IndexedInductive.OperationSource.selectModule_exact, IndexedInductive.CaseElaboration.compilePlan_reconstructs, IndexedInductive.AppendSource.text_admitted, IndexedInductive.AppendSource.source_vector_plans_match}
+
+Named expression expansion preserves the original lexical argument order
+and commutes with capture-safe substitution. Addition is compiled from its
+own preceding clauses before append uses it. For this actual source file,
+the proposed addition and complete append function equal the independent
+core programs above. The resulting append therefore has the full dependent
+type, including under the natural-only checking policy. The expected type
+is the explicit checking query; general dependent function-signature syntax
+is not supplied by this connection.
+\lean{IndexedInductive.OperationSource.Symbol.instantiate_substitute, IndexedInductive.OperationSource.lower_substitute, IndexedInductive.AppendSource.addition_matches_reference, IndexedInductive.AppendSource.append_matches_reference, IndexedInductive.AppendSource.append_typed_naturalOnly}
+
+The producer remains untrusted. Independent replay checks its actual proposed
+term rather than accepting a source label or a successful parse. Controls
+refuse missing/reordered clauses, a call on the wrong recursive child,
+unbound results and omission of the recursive computation in the submitted
+dependent evidence. This establishes the selected input's comparison and a
+general formed-target soundness boundary, not correctness of this producer
+for every module. The grammar-driven CeTTa reader and common decoder feed
+the same Lean checking path; their fixture agreement is distinct from packed
+parser completeness and from Prime-mode execution with retained representations.
+\lean{IndexedInductive.AppendSource.checkProposal_sound, IndexedInductive.AppendSource.all_verdicts}
+
+\paragraph{Joining the informative source package.}
+The generated vector candidate now supplies its actual declaration inventory
+and two typed schemas to the append checking policy. Joining the independently
+checked natural prefix recovers the four-row reference table exactly. The
+candidate's complete declaration entries agree with the independent library;
+its root judgment and full formed typing judgments include into that library.
+This route composes with the existing maximum-level instantiation, transporting
+contexts, terms and result types together. The actual textual append is typed
+by the resulting generated policy, whose finite executable specialization is
+proved equal to it.
+\lean{IndexedInductive.AppendChecking.generated_table_reference, IndexedInductive.AppendChecking.candidate_extension, IndexedInductive.AppendChecking.candidate_judgment_to_program, IndexedInductive.AppendChecking.signature_comparison, IndexedInductive.AppendChecking.textual_append_typed}
+
+The declaration-source comparison retains the complete generated library,
+not just the two vector equations. Live grammar-reader proposals now use the
+same generated checking policy, with only the two natural computation rows
+enabled. Independent replay checks the actual proposed term; the source
+fixture's term is not substituted for it. The selected positive reader gate
+requires exact raw and name-resolved module-data agreement and records the
+enabled original row ordinals. This is a selected-source admission/checking
+join, not general parser completeness or a completed native execution chain.
+\lean{IndexedInductive.AppendChecking.textual_candidate_library, IndexedInductive.AppendChecking.replayProposal_sound, IndexedInductive.AppendChecking.replaySource_sound}
+
+Certificate relocation uses an injective embedding of ordered schema tables,
+retaining the entire schema and argument list. It checks the original source
+bound before changing an address, preserves acceptance and refusal under the
+target permissions, and composes along links. The negative example matters:
+an invalid local ordinal can name a valid row in the joined table, so merely
+copying or offsetting an unchecked integer can change its owner. Separately,
+the common typed-instance checker now has exact finite-certificate coverage
+for a fixed row and substitution, including target-context formation and
+independent argument typing. These results do not give uniform computation
+authority or identify the raw judgment with an annotated typed-equality
+calculus.
+\lean{SchemaTableConversionCode.Linking.relocate_comp, SchemaTableConversionCode.Linking.decode_relocate, Declaration.IndexedFamily.Checking.InstanceRequest.checked_arguments_iff}
+
+\paragraph{Annotated instances and the remaining preservation boundary.}
+The same four natural/vector rows now have independently checked annotated
+endpoint derivations and formed canonical telescopes. Eight declaration types,
+eight endpoints and four contexts are emitted as ordinary Lean proof source;
+the receiver checks every proof, so the producer grants no authority. The
+schema elaborator's inferred variable types and result types agree with these
+canonical contexts and types. Thus each actual right side satisfies the
+existing \name{TemplateTyped} interface.
+\lean{Programs.Annotated.endpoints_typed, Programs.Annotated.context_formed, Programs.Annotated.template_typed}
+
+If an original row is permitted and its annotated assignment is a typed
+simultaneous substitution, the maintained premise interface admits the step.
+Substituting the independent endpoint proofs gives a typed equality at the
+instantiated result type. Erasure preserves that equality in the selected
+raw typed-equality calculus. This does not identify that judgment with the
+separate formation-sensitive structural-conversion judgment used for append.
+Each row has a canonical equality witness; altered result-type metadata is
+refused.
+\lean{Programs.Annotated.instantiated_equal, Programs.Annotated.erased_instantiated_equal, Programs.Annotated.canonical_equal, Programs.Annotated.all_metadataVerdicts}
+
+For this actual package, injectivity and discrimination of annotated type
+formers suffice for uniform annotated root preservation and admission. Those
+former facts remain an explicit, undischarged package obligation; the result
+does not assert unconditional preservation. The natural-only policy also
+satisfies the existing first-order, left-linear lifting theorem at every
+annotated input. Vector patterns repeat the element parameter and length
+index. Their typed instances are covered above, while unrestricted lifting
+requires a different annotation-coherence argument. Failure of this one
+syntactic condition is neither a failure of vector checking nor a
+normalization counterexample.
+\lean{Programs.Annotated.root_preserving_of_formerFacts, Programs.Annotated.root_admitted_of_formerFacts, Programs.Annotated.lift_natural_root, Programs.Annotated.vector_cons_repeats_index}
+
+\paragraph{Actual function annotations and typed natural computation.}
+The natural addition used inside append's result index now has a complete
+Church-annotated function. Its motive carries the actual natural domain;
+the recursive method retains the dependent domain obtained by applying that
+motive. Typed beta equalities supply the conversions in both the method and
+recursor application. The existing declaration telescope types all arguments
+independently. Erasure yields the original M1 addition, and the maintained
+bidirectional annotator reconstructs this independently typed term exactly.
+\lean{NativeNaturalVectorFamilies.Programs.Annotated.Functions.addFunction_typed, NativeNaturalVectorFamilies.Programs.Annotated.Functions.producedAddFunction_exact, NativeNaturalVectorFamilies.Programs.Annotated.Functions.add_erases}
+
+Its typed zero and successor equations cite the original permitted rows and
+then compose the actual method's beta equalities. The closed one-plus-zero
+case is a nonempty witness. With every iota root disabled the function is
+still typed, while the annotated root relation is empty: typing grants no
+new computation permission. Two genuinely typed motives with different
+domains share one erasure. These facts neither infer annotated typing from
+raw erasure nor discharge general former injectivity.
+\lean{NativeNaturalVectorFamilies.Programs.Annotated.Functions.add_zero, NativeNaturalVectorFamilies.Programs.Annotated.Functions.add_successor, NativeNaturalVectorFamilies.Programs.Annotated.Functions.typed_without_iota, NativeNaturalVectorFamilies.Programs.Annotated.Functions.domain_erasure_distinction}
+
+The complete dependent append consumes this annotated addition. Its original
+vector constructor and eliminator declarations supply the six dependent
+arguments; the eliminator is not re-derived. The constructor method retains
+four explicit argument domains and uses the permitted natural successor
+equation to convert its constructed vector to the required length. The nil
+branch uses the permitted zero equation. Abstraction over the independently
+formed original context gives a closed function at its actual dependent
+function type, with no package-wide former-facts assumption.
+\lean{NativeNaturalVectorFamilies.Programs.Annotated.Append.method_body_typed, NativeNaturalVectorFamilies.Programs.Annotated.Append.method_typed, NativeNaturalVectorFamilies.Programs.Annotated.Append.appendFunction_typed}
+
+Erasure identifies both that function and its type with the original raw M1
+program. The maintained bidirectional annotator reconstructs the independently
+typed function exactly when supplied its expected type. Without that guidance,
+its output still erases to the source but has different domain annotations.
+The natural-only policy suffices for these finite function derivations;
+uniform richer-package admission, former facts and unrestricted annotation
+coherence for the repeated-parameter vector roots remain distinct obligations.
+\lean{NativeNaturalVectorFamilies.Programs.Annotated.Append.appendFunction_erases, NativeNaturalVectorFamilies.Programs.Annotated.Append.appendFunctionType_erases, NativeNaturalVectorFamilies.Programs.Annotated.Append.producedAppendFunction_typed, NativeNaturalVectorFamilies.Programs.Annotated.Append.unconstrained_erasure_distinction}
+
+The actual annotated append now also has typed nil and cons computation
+equations. Each cites its original permitted vector row and supplies an
+independently typed simultaneous assignment. The cons method computes by a
+general beta law for relative annotated telescopes: its ambient assignment is
+restricted from the complete typed assignment, while the four method
+arguments are applied in declaration order. The result retains the substituted
+dependent type. Closed nil and nonempty-cons examples witness the equations;
+erasure retains the original raw typed-equality judgment and recursive cons
+target, without identifying it with formation-sensitive structural conversion.
+\lean{TypedEquality.Annotated.CTele.lams_apply, NativeNaturalVectorFamilies.Programs.Annotated.Append.append_nil, NativeNaturalVectorFamilies.Programs.Annotated.Append.append_cons, NativeNaturalVectorFamilies.Programs.Annotated.Append.closed_cons_erased}
+
+The actual function remains typed under the natural-only policy, which disables
+both vector rows. Its concrete vector computation certificates are accepted by
+the full policy and refused by that smaller policy. Function typing, licensed
+computation and uniform package admission therefore remain separate graph
+contracts even for the same term and declarations.
+\lean{NativeNaturalVectorFamilies.Programs.Annotated.Append.typed_with_vector_rows_disabled, NativeNaturalVectorFamilies.Programs.Annotated.Append.all_computationVerdicts}
+
+These actual checking policies are connected by the maintained annotated
+package-morphism interface. A schema-family inclusion with the same declaration
+table preserves the independently supplied universe-policy map, root instances
+and their exact premise lists. Morphism composition follows the ancestry of
+every required premise through both edges. It therefore transports complete
+typing, equality and subtyping statements, formed contexts and typed
+substitutions; no proof-size or native-cost conclusion is built into that law.
+\lean{TypedEquality.Annotated.ChurchRules.ofSchemas_morphism, TypedEquality.Annotated.ChurchRules.Morphism.comp, NativeNaturalVectorFamilies.Programs.Annotated.judgment_mono, NativeNaturalVectorFamilies.Programs.Annotated.context_mono, NativeNaturalVectorFamilies.Programs.Annotated.substitution_mono}
+
+For the actual append, the natural-only policy includes into an intermediate
+policy that additionally licenses vector nil, and thence into all four original
+rows. The independently typed function crosses this composed route. Its closed
+nil equation already holds at the intermediate node; its actual cons
+certificate refuses there and accepts at the full node. These are computation
+policies over the same declared calculus, not complete Lean or extensional
+profiles and not a reverse theorem-transport result.
+\lean{NativeNaturalVectorFamilies.Programs.Annotated.Append.function_after_two_extensions, NativeNaturalVectorFamilies.Programs.Annotated.Append.nil_before_cons, NativeNaturalVectorFamilies.Programs.Annotated.Append.cons_certificate_strict}
+
+\paragraph{The authored natural carrier and HOL formulas.}
+The sequentially admitted natural declaration has an independently established
+representation by ordinary naturals. A new consumer of its original polynomial
+eliminator gives the function satisfying
+\[
+  f(\mathsf{Zero})=z,\qquad
+  f(\mathsf{Succ}\ n)=s\ n\ (f\ n),
+\]
+and proves uniqueness and full predicate induction. Its actual zero and
+successor therefore supply the existing Peano structure, including injectivity,
+disjointness and an infinite carrier. Lifting that carrier to the universe of
+the maintained HOL model constructs a full-domain interpretation of the existing
+Peano formulas. For every target simple type, an explicit HOL formula for the
+existence and uniqueness of the recursive function is true in this model.
+The proof uses the source eliminator rather than postulating a recursion axiom.
+\lean{IndexedInductiveNaturalHOL.recursion_exists_unique, IndexedInductiveNaturalHOL.models_axioms, IndexedInductiveNaturalHOL.models_recursion, IndexedInductiveNaturalHOL.infinite_carrier}
+
+This connects the declared source carrier to actual HOL formulas, not merely
+to a list of names for natural-number facts. It is a particular semantic
+interpretation: it neither extracts proofs from truth in one model nor
+identifies the model's constants with a serialized HOL Light closure.
+The selected native HOL Light law interface below now supplies exact
+statement comparison; Mathdata/MM0 transport and full source definition-history
+refinement retain their own obligations. The source's noncomputable semantic
+recursor supplies no executable numeric representation or performance result.
+
+\paragraph{The selected native HOL Light natural-law interface.}
+Five independently typed intrinsic formulas now retain the actual source
+presentation: numeral wrapping, the result-before-predecessor recursion
+method, Boolean equality in successor injectivity, and an explicit injective
+endomorphism with an omitted value for carrier infinity. The recursion root
+is existential; uniqueness belongs to the stronger source theorem above.
+The actual authored carrier interprets all five formulas at arbitrary result
+carriers using its original eliminator. A Boolean-valued instance computes
+distinct results at zero and successor. A finite collapsing model refutes
+no-confusion, and removing the source's numeral wrapper changes the native
+syntax even though its constructed interpretation reads that wrapper as
+identity.
+\lean{HOL.NaturalFacts.recursion_meaning, HOL.NaturalFacts.infinity_meaning, HOL.NaturalFacts.collapsing_noConfusion_refused, IndexedInductiveNaturalHOL.NativeFacts.all_models, IndexedInductiveNaturalHOL.NativeFacts.boolean_recursion_witness, HOLLight.NaturalFacts.bare_zero_statement_distinct}
+
+The existing source exporter produces the four retained natural roots and a
+new carrier-infinity theorem derived from successor injectivity and
+no-confusion. Native CeTTa replay checks the 23225-node closure as 67384
+records and returns all five statements exactly as printed from the independent
+typed terms. The declared standard HOL policy retains its three axioms;
+no source axiom is added. Altered claims, an additional axiom and truncation
+refuse natively, while missing, changed and repeated statement packets refuse
+at the intake gate. Production, adapter and replay costs remain distinct.
+The source producers are untrusted. This qualifies the selected law-signature
+interface; full polymorphic source definition-history refinement and linked-C
+correctness are not inferred.
+\lean{HOLLight.HOLSyntaxWire.encodeTerm_rename, HOL.Names.lift_comp}
+
+\paragraph{An axiom-free native closure component.}
+The Megalodon definition
+\[
+ N_{z,s}(n) \;:=\; \forall P.\ P(z) \to
+   (\forall k.\ P(k)\to P(s(k))) \to P(n)
+\]
+uses only simple types, implication and quantification. Its native Mathdata
+body and the zero, successor and induction statements erase exactly from
+independently typed HOL terms, after the declared definition is unfolded.
+The finite zero and successor proof objects also pass the existing executable
+Mathdata checker in Lean. A separate Megalodon source file proves these laws,
+including induction with a closure hypothesis in the step. Native CeTTa replay
+accepts all six source proofs with an empty imported-axiom allowlist and
+compares the exact definition and three principal statements. Both CeTTa
+dialects agree on these observations. Altered conclusions and unbound
+hypotheses refuse; failed claims are not published.
+\lean{Megalodon.NaturalClosure.body_erases, Megalodon.NaturalClosure.induction_statement_erases, Megalodon.NaturalClosure.zero_proof_checked, Megalodon.NaturalClosure.successor_proof_checked}
+
+The selected authored natural carrier satisfies this very predicate at every
+value. Its existing induction removes the extra closure hypothesis without
+excluding any source values. Interpreting successor as constant zero instead
+excludes a genuine source successor, while still admitting zero; this is a
+nonempty negative comparison. Closure and induction alone do not imply
+successor injectivity, zero separation, unique recursion or infinity.
+Those native-route obligations remain explicit, and no proof is extracted
+from truth in the particular source model.
+\lean{IndexedInductiveNaturalMegalodon.source_member, IndexedInductiveNaturalMegalodon.source_native_formulas, IndexedInductiveNaturalMegalodon.collapsing_successor_refused}
+
+\paragraph{The same closure through MM0's HOL presentation.}
+The typed closure syntax and its Henkin meaning now have a common HOL owner.
+An MM0 syntax producer retains types and explicit binder names; it commutes
+with intrinsic variable renaming. The natural-closure definition body printed
+from that typed term supplies a second specification for the actual MM1
+proofs. Native MM0 accepts zero closure, successor closure and ordinary
+closure elimination against both specifications, with their original
+object-typing hypotheses. The latter rule uses an unrestricted predicate
+step; it is distinct from the strengthened induction statement above.
+\lean{MM0.HOLSyntaxWire.encodeTerm_rename, MM0.NaturalClosure.definition_meaning}
+
+CeTTa's HE, PeTTa and Prime modes each pass fourteen exact-statement,
+retained-proof and refusal controls on the same artifact. A separately built
+upstream \name{mm0-c} also accepts it and refuses changed definitions and
+conclusions. The source extension adds no axioms. The producer's dependency
+audit reports only logical, typing and equality rules, without choice, eta,
+type-definition or infinity axioms. Those axioms remain available in the
+loaded full HOL presentation; extracting a smaller base is separate work.
+A finite collapsing interpretation admits zero but excludes another
+inhabitant, showing why closure alone does not supply infinity. General
+HOL-presentation adequacy and full native natural-number fact transport
+remain open.
+\lean{MM0.NaturalClosure.finite_zero, MM0.NaturalClosure.finite_other_refused}
+
+\paragraph{Closure-premised induction in the same MM0 route.}
+The next source extension proves induction with the generated-number guard
+retained in its step premise. It strengthens the property to the conjunction
+of closure membership and the property, applies the existing ordinary
+elimination rule, then extracts the property. This is a derived proof using
+the existing logical core, with one auxiliary definition and no new axioms.
+An independent public statement and definition specification are emitted
+through the maintained MM0 wire machinery. The compiler and format producer
+remain outside the theorem authority.
+
+The corresponding intrinsic formula holds in every chosen Henkin model.
+For admitted zero, successor and property, the strengthened predicate is the
+denotation of an actual lambda term. Henkin term closure therefore admits
+this particular predicate without a full-domain assumption. In a three-point
+interpretation, zero maps to itself while an unreachable point satisfying
+the property maps to a point that fails it. Its guarded step and induction
+hold, while the unguarded step fails. This separates the rule premises,
+not the strength of any dependent candidate.
+\lean{HOL.NaturalClosure.parameterValuation_admissible, HOL.NaturalClosure.denote_strengthening, HOL.NaturalClosure.strengthening_admitted, HOL.NaturalClosure.closedUnder_induction_admitted, HOL.NaturalClosure.models_induction_henkin, HOL.NaturalClosure.InductionControls.closed_iff_zero, HOL.NaturalClosure.InductionControls.guarded_step, HOL.NaturalClosure.InductionControls.unguarded_step_refused, HOL.NaturalClosure.InductionControls.guarded_induction}
+
+Upstream verification accepts the compiled artifact against both source and
+independent specifications. Native HE, PeTTa and Prime modes each pass twenty
+controls in both the selected optimized and instrumented configurations,
+using the same 65,328-byte artifact. Replayed induction retains all seven
+premises; changed guards, dropped membership and exchanged hypotheses are
+refused. Changed auxiliary definitions, changed conclusions and truncation
+are refused as well. The dependency inventory uses logical, typing and
+equality rules without choice, eta or infinity. The original closure profile
+still passes fourteen controls per mode through the same gate. These are
+qualified proof/statement routes; full natural recursion, no-confusion,
+infinity and source-presentation adequacy remain separate obligations.
+
+\paragraph{Conditional native unique recursion.}
+The extension defines the least graph containing $(z,a)$ and closed under
+$(n,v)\mapsto(s(n),f(n,v))$. Its independent inductive reading is functional
+when $s$ is injective and never returns $z$. Every generated number has a
+graph value. A selector satisfying its explicit selection law therefore
+defines a recursive function, unique on the natural closure. The native
+statement retains all three interfaces; none is an imported natural-number
+axiom.
+\lean{Megalodon.NaturalRecursion.Graph.functional, Megalodon.NaturalRecursion.Graph.exists_of_generated, Megalodon.NaturalRecursion.selected_unique}
+
+In full-domain interpretations, the intrinsic HOL graph denotes exactly this
+inductive graph. The independent typed recursion statement has the stated
+zero/successor equations and pointwise uniqueness. Its native erasure is
+well formed, and the retained native proof is checked against that erasure.
+The combined source supplies 24 proofs and seven definitions, with no imported
+axioms; replay, portable evidence and altered-claim controls pass in both
+CeTTa dialects. Compiled Lean checking also accepts the complete ordered
+source batch. This last execution result is not a kernel-reduced proof of
+the finite batch-acceptance proposition.
+\lean{Megalodon.NaturalRecursion.denote_graph_iff, Megalodon.NaturalRecursion.models_recursion, Megalodon.NaturalRecursion.native_statement_erases, Megalodon.NaturalRecursion.native_statement_formed}
+
+On the authored carrier, every graph value equals the original eliminator's
+value. All valid selectors agree there, and a classical interpretation
+supplies a selector at every inhabited target. This is a semantic choice
+witness, not a runtime provider or a global dependent-type-theory option.
+A constant-zero selector fails a genuine successor computation. The full
+native no-confusion/infinity interface and MM0 transport remain open.
+\lean{IndexedInductiveNaturalMegalodon.source_graph_iff, IndexedInductiveNaturalMegalodon.source_selectors_agree, IndexedInductiveNaturalMegalodon.source_recursion_with_choice, IndexedInductiveNaturalMegalodon.constant_selector_wrong_result}
+
+\paragraph{The selected structural-conversion node.}
+The actual natural-only checking policy retains original schema occurrences
+0 and 1. Its two independent constructor schemas agree exactly with that
+selection. Their left sides are linear constructor patterns, their right-side
+variables are covered, and two matching left sides determine the same rule.
+The maintained constructor-system theorem therefore proves confluence of the
+policy's raw beta/iota conversion, including pair projections and its declared
+head equality. It also supplies the Pi/Sigma conversion boundaries used by
+formation-sensitive preservation. Addition at zero witnesses actual
+computation. Conversely, no conversion identifies the declared natural type
+with a Pi, including paths outside its simple image. These results do not
+supply termination, annotated typed-eta former facts, or a constructor-system
+presentation for the repeated-parameter vector schemas.
+\lean{ComputationProfiles.NaturalConversion.schema_iff, ComputationProfiles.NaturalConversion.roots_exact, ComputationProfiles.NaturalConversion.churchRosser, ComputationProfiles.NaturalConversion.pi_boundary, ComputationProfiles.NaturalConversion.sigma_boundary, ComputationProfiles.NaturalConversion.addition_zero, ComputationProfiles.NaturalConversion.natural_not_pi}
+
+\paragraph{Uniform preservation in the checking policy.}
+The declaration-telescope interface recovers the motive, zero method,
+successor method and input from any typing of the actual recursor call.
+Recovery retains the original formed declarations and replays its complete
+conversion/cumulativity tail. At zero, the recovered zero method already has
+the principal result type. At successor, constructor-argument recovery types
+the predecessor; renewing the input component of the typed substitution
+constructs the recursive call. The same successor method then supplies the
+contractum. The shared telescope interface now proves construction as well
+as recovery, uniformly in its finite dependent arity.
+\lean{FormationSensitive.DeclarationSpine.applyTelescope, ComputationProfiles.NaturalConversion.Preservation.recover, ComputationProfiles.NaturalConversion.Preservation.zero_preserves, ComputationProfiles.NaturalConversion.Preservation.successor_preserves}
+
+These root proofs and the earned conversion boundaries discharge contextual
+preservation for this checking policy. The universe and head laws are inherited
+from the tower. Beta reduction, declared natural computation and projections
+preserve the formed context and exact displayed type under every context.
+Concrete checked zero and successor
+redexes witness the premises; four actual steps compute the latter to the
+successor of zero. Reusing its submitted evidence with a Pi result is refused.
+The policy still disables vector roots. Richer annotated typed-eta former
+facts remain distinct from the actual whole-function annotation already
+checked above.
+\lean{ComputationProfiles.NaturalConversion.Preservation.roots, ComputationProfiles.NaturalConversion.Preservation.steps_preserve, ComputationProfiles.NaturalConversion.Controls.zero_typed, ComputationProfiles.NaturalConversion.Controls.successor_path, ComputationProfiles.NaturalConversion.Controls.successor_preserved, ComputationProfiles.NaturalConversion.Controls.altered_type_refused}
+
+\paragraph{Operational roots with a smaller checking basis.}
+All four original operational iota roots preserve this same smaller checking
+judgment. Recovering the vector eliminator's six dependent arguments retains
+its original declaration and displayed-type adjustment. The nil target is
+its recovered branch. In the cons case, a second telescope inversion recovers
+the constructor's length, head and tail. They extend the recovered parameter
+substitution into the original canonical context. The canonical contractum
+uses the existing eliminator and retains its recursive call; substitution and
+replay then give the exact original displayed type. Closed formation of that
+eliminator is recovered from the actual source derivation, without assuming
+preservation for the larger operational relation.
+\lean{FormationSensitive.Typing.applyClosed_head, FormationSensitive.DeclarationSpine.ofObservedTelescope, FormationSensitive.DeclarationSpine.constant_formed, ComputationProfiles.NaturalConversion.Preservation.Vector.recover, ComputationProfiles.NaturalConversion.Preservation.Vector.constructor_arguments, ComputationProfiles.NaturalConversion.Preservation.Vector.canonical_cons_target, ComputationProfiles.NaturalConversion.Preservation.Vector.nil_preserves, ComputationProfiles.NaturalConversion.Preservation.Vector.cons_preserves, ComputationProfiles.NaturalConversion.Preservation.operational_roots, ComputationProfiles.NaturalConversion.Preservation.operational_rule_roots}
+
+The canonical nil and cons sources are independently checked under the smaller
+policy, and the new theorem types their operational targets. Nevertheless the
+cons rule is not a root conversion of that checker: its concrete certificate
+is refused there and accepted with the original full permissions. This
+distinguishes execution from checking authority. The theorem covers roots;
+lifting a larger operational relation through arbitrary dependent contexts
+requires an additional transport law, since its steps are not thereby
+available as checking conversions.
+\lean{ComputationProfiles.NaturalConversion.Controls.vector_nil_typed, ComputationProfiles.NaturalConversion.Controls.vector_cons_typed, ComputationProfiles.NaturalConversion.Controls.vector_nil_preserved, ComputationProfiles.NaturalConversion.Controls.vector_cons_preserved, ComputationProfiles.NaturalConversion.Controls.vector_cons_root_disabled, ComputationProfiles.NaturalConversion.Controls.vector_cons_citation_refused, ComputationProfiles.NaturalConversion.Controls.vector_cons_citation_enabled}
+
+\paragraph{The opaque annotated baseline.}
+Disabling every declared iota permission leaves all eight original Nat/Vec
+declarations and their level/head policy intact. The maintained theorem for
+packages without root computation gives the richer annotated former
+injectivity and no-confusion laws. In particular, the actual addition
+function's product type cannot equal a universe. The same function is typed
+with those permissions disabled; its actual first beta application is an
+equality at its displayed function type.
+\lean{NativeNaturalVectorFamilies.Programs.Annotated.inactive_raw_no_root, NativeNaturalVectorFamilies.Programs.Annotated.inactive_formerFacts, NativeNaturalVectorFamilies.Programs.Annotated.inactive_pi_not_head, NativeNaturalVectorFamilies.Programs.Annotated.Functions.inactive_function_type_not_universe, NativeNaturalVectorFamilies.Programs.Annotated.Functions.inactive_function_beta}
+
+The cumulative head-preservation argument has a common owner and serves
+both this declaration policy and the existing set-profile client. Along
+with the earned opaque former facts, it discharges the maintained contextual
+preservation theorem: every finite beta/projection/head reduction of a term
+typed in a formed context gives a typed equality, and a term at the exact
+original dependent type. No termination is assumed or concluded. The
+independent annotator still reconstructs the real function. Its natural-zero
+root citation is refused here and accepted when the original row is enabled.
+The absence of declared roots is explicit; this baseline does not admit an
+enabled Nat/Vec computation or establish annotation coherence.
+\lean{Annotated.CHeadPreserving.ofLevelTower, NativeNaturalVectorFamilies.Programs.Annotated.head_preserving, NativeNaturalVectorFamilies.Programs.Annotated.inactive_reduction_equal, NativeNaturalVectorFamilies.Programs.Annotated.inactive_reduction_typed, NativeNaturalVectorFamilies.Programs.Annotated.Functions.inactive_zero_citation_refused, NativeNaturalVectorFamilies.Programs.Annotated.Functions.full_zero_citation_accepted}
+
+\paragraph{The natural annotation has a nontrivial reading.}
+The actual natural type, zero, successor and dependent recursor now use
+the existing domain numeral ideals and type-projected constants. Staging
+constant lookup avoids a recursive definition of the interpretation.
+The four original declared types agree with the maintained numeral
+interface. All eight declarations remain present; the other constants
+are opaque here and their computation is disabled.
+\lean{NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.nat_declared, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.zero_declared, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.successor_declared, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.recursor_declared, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.constants_valid}
+
+Every enabled root is an instance of one of the original two natural rows.
+Its actual annotated argument spine supplies the dependent semantic
+telescope premises; the interpretation then uses the existing projected
+zero and successor computation theorems. Result-type and spine premises
+are retained. Together with the original head policy this gives a valid
+reading of the selected annotated package. The existing closed proof of
+one plus zero denotes successor of zero. That value is distinct from zero,
+and soundness refutes a purported annotated equation between them.
+These are concrete semantic and negative controls for this package,
+not a new strength separation or a general claim about dependent candidates.
+Semantic validity does not supply logical-relation adequacy, enabled
+former injectivity, unrestricted annotation coherence or native refinement.
+\lean{NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.recursor_spine, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.zero_valid, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.successor_valid, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.roots_valid, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.valid, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.one_plus_zero_value, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.zero_ne_successor_zero, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.zero_equal_successor_refused}
+
+\paragraph{An opaque decoder extension that retains computation.}
+The maintained package sum adds the existing fresh proposition/decoder
+declarations to the enabled natural annotation. Spine facts are
+contravariant in declaration inclusion: a larger signature's facts
+retain each original declaration's type. Consequently a valid reading of
+the original package and a valid reading of an opaque second package give
+a valid reading of their sum. Original constants keep their types, and
+every root comes from the original package; the second has none.
+This common semantic law also handles shadowed second declarations.
+\lean{Annotated.SpineFacts.of_decl_inclusion, Annotated.ReadingValid.sum_opaque}
+
+The concrete decoder names are fresh, and its two declarations have their
+stated types. Both original natural roots remain with precisely their
+original required evidence. An actual zero computation and the typed
+one-plus-zero proof survive the existing forward judgment map, while
+the false zero/successor equation is still refuted. The opaque decoder
+constants have no observations in this reading; the natural constructors
+and recursor retain their nontrivial interpretation. This is neither
+the no-root extension used for opaque base packages. The forward semantic
+law concerns validity; the return comparison below supplies conservativity
+for its stated fragment. Recursor adequacy and enabled former facts remain
+further obligations.
+\lean{NaturalDomain.Decoder.fresh_prop, NaturalDomain.Decoder.fresh_holds, NaturalDomain.Decoder.prop_declared, NaturalDomain.Decoder.holds_declared, NaturalDomain.Decoder.declarations_valid, NaturalDomain.Decoder.valid, NaturalDomain.Decoder.roots_iff, NaturalDomain.Decoder.premises_iff, NaturalDomain.Decoder.zero_root, NaturalDomain.Decoder.one_plus_zero, NaturalDomain.Decoder.zero_equal_successor_refused}
+
+\paragraph{The return route preserves the required evidence.}
+The existing constant-instance interface maps the fresh proposition to
+its universe and the decoder to the identity at that universe. Original
+declared names and all eight closed declared types stay fixed. The
+templates, inferred variable types and reflexivity equations of all four
+original rows satisfy the corresponding support conditions. Hence the
+comparison is uniform over their permission selections; repeated vector
+parameters do not require an annotation-lifting claim for this operation.
+\lean{NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.Decoder.original_names_fixed, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.Decoder.declarationTypeFixedCheck_true, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.Decoder.original_types_fixed, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.Decoder.row_left_fixed, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.Decoder.row_right_fixed, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.Decoder.row_variable_type_fixed, NativeNaturalVectorFamilies.Programs.Annotated.NaturalDomain.Decoder.schema_support}
+
+The common schema law lets arbitrary instance arguments change under the
+constant interpretation. Both endpoints remain instances of the original
+schema, and the entire required-premise list becomes precisely the list
+for the changed assignment. Root stability alone would not establish that
+law. Original constant formation, these schema laws and the maintained
+decoder-definition typing proofs construct the full return interpretation.
+\lean{Annotated.patternPremises_instConsts_of_fixed, Annotated.SchemaConstantsFixed.root, Annotated.SchemaConstantsFixed.requires, Annotated.ChurchRules.ofSchemas_constInstance, NaturalDomain.Decoder.original_interpretation, NaturalDomain.Decoder.decoder_type_expansion, NaturalDomain.Decoder.return_interpretation, NaturalDomain.Decoder.returned_judgment}
+
+For every statement fixed by this interpretation, derivability in the
+extended package is equivalent to derivability in the original package.
+The fixed-statement condition covers context, displayed type and all terms.
+The actual addition statement reflects at both natural-only and full
+permissions. Conversely the fresh proposition's typing statement changes
+to the typing of the universe, so the interpretation is not the identity.
+The false natural constructor equation also refuses via the return route.
+These are theorem-level judgment maps. No equality of retained proof data,
+serialized certificate translator, annotation-coherence result or execution
+cost bound follows from them.
+\lean{NaturalDomain.Decoder.fixed_statement_iff, NaturalDomain.Decoder.proposition_typed, NaturalDomain.Decoder.returned_proposition_typed, NaturalDomain.Decoder.proposition_statement_changes, NaturalDomain.Decoder.original_addition_fixed, NaturalDomain.Decoder.original_addition_reflected, NaturalDomain.Decoder.full_policy_addition_reflected, NaturalDomain.Decoder.false_equation_refused_by_return}
+
+\paragraph{Typing the supplied HOL type-definition equation.}
+For the displayed declarations
+\(\mathsf{abs}:A\to N\), \(\mathsf{rep}:N\to A\) and \(a:N\),
+the term \(\mathsf{abs}(\mathsf{rep}(a))\) has type \(N\).
+The maintained OpenTheory source checker accepts its equality with \(a\)
+at \(N\), and rejects an equality indexed by \(A\) whenever \(A\ne N\).
+This is proved for arbitrary types, with concrete distinct-type controls.
+\lean{MM0.HOLTypeDefinitionBoundary.roundtrip_typed, MM0.HOLTypeDefinitionBoundary.defined_equality_typed, MM0.HOLTypeDefinitionBoundary.representation_equality_refused, MM0.HOLTypeDefinitionBoundary.defined_equality_checked, MM0.HOLTypeDefinitionBoundary.representation_equality_check_refused, MM0.HOLTypeDefinitionBoundary.distinct_types, MM0.HOLTypeDefinitionBoundary.all_verdicts}
+
+The pinned supplied \code{hol.mm0}/\code{hol.mm1} example had the
+representation-type index in \code{abs\_rep}; its native declaration
+confirmed that exact source formula. Both local files now use the
+defined-type index. Qualification compares the complete native axiom
+declaration with an independent reference and refuses the reverted
+specification using both the separate verifier and native service.
+The argument and hypothesis inventories are retained; no axiom is added.
+The qualified closure/induction proofs do not depend on this axiom.
+This repair addresses source typing, without inferring inconsistency of
+the earlier untyped presentation or full HOL-presentation adequacy.
+
+\paragraph{Authorization retains the selected judgment.}
+The legacy indexed-family authorization interface requires uniform
+\code{HasType} preservation. The current formation-sensitive checker uses
+a judgment containing its formed ambient context and additional formation
+premises; the annotation has a further typing/equality interface.
+Forgetting refined derivations gives raw ones. A converse upgrade from
+arbitrary raw derivations is impossible even with a formed empty context:
+the raw identity rule permits an undeclared domain, whereas regularity and
+product inversion of the refined judgment require that domain's declaration.
+This comparison is proved generically and checked for every original
+Nat/Vec permission selection. The actual append remains a positive refined
+derivation with its raw view.
+\lean{FormationSensitive.raw_identity_at_any_domain, FormationSensitive.judgment_identity_domain_declared, FormationSensitive.raw_identity_missing_domain, FormationSensitive.no_uniform_raw_upgrade}
+
+These are deliberately different specified judgments. This does not
+refute legacy preservation or expose a strength limitation of a dependent
+candidate. It identifies the remaining interface obligation: the proved
+formed operational preservation and annotated former-fact conditional
+cannot alone fill the legacy raw-authorization field. The selected natural-only field is discharged below by its own raw proof.
+The full four-row family candidates retain their separate preservation
+obligation; no weakening or identification of those interfaces is assumed.
+
+\paragraph{A concrete pointed injection in the native MM0 route.}
+The next proof extension selects an injective, non-surjective endomorphism
+of the supplied HOL individual type and a point outside its image. Its six
+public results prove the successor and zero typings, successor injectivity
+and non-surjectivity, and omitted-zero/no-confusion statements. They use
+only the existing logical rules, choice, eta and infinity; no natural-number
+fact is supplied as a new axiom. Intrinsically typed definition bodies and
+an independent statement emitter bind this extension to the maintained
+MM0 specification. The omitted-point formula has its stated Henkin meaning
+without a full-function-domain hypothesis.
+\lean{MM0.NaturalCarrier.noPreimage_meaning, MM0.NaturalCarrier.all_verdicts}
+
+The separate verifier and native service accept the same compiled extension
+against the independent specification. Altering the injection/zero
+constructions, reversing no-confusion, changing zero's type, or removing
+the typed argument from proof replay is rejected. Both selected optimized
+and sanitizer configurations pass 36 controls in each dialect on the same
+73,808-byte artifact. The unchanged closure/induction profiles retain their
+16/22 controls and original artifact identities. The source's declaration
+order is part of this checked interface. This establishes a pointed infinite
+carrier; forming its natural subtype and proving primitive recursion and
+complete source-to-native natural facts remain required. Neither the MM1
+compiler nor the entire supplied HOL presentation is thereby formally refined.
+
+\paragraph{The native natural subtype.}
+The existing nonempty-predicate type-definition principles form the subtype
+of the selected zero/successor closure. Representation and abstraction
+transport constructor typing, zero/successor separation, successor
+injectivity, induction and Dedekind infinity. The induction proof reuses
+the established closure theorem through an explicit predicate pullback;
+no new natural-number axiom or authored eliminator is introduced.
+The abstraction/representation equality is used at the actual defined type.
+Its exact native proof dependencies include the existing four type-definition
+principles. The induction proof does not depend on the infinity axiom;
+constructor separation and infinity retain that dependency. These are
+proof-local dependency statements, not an automatic weakening of the
+ambient specification.
+\lean{MM0.NaturalType.all_verdicts}
+
+An independent reference specifies the subtype, constructors, pullback
+and six public statements. The shared gate rejects altered membership,
+pullback, equality indices, missing induction premises and switched replay
+inputs. Both selected native configurations pass 50 controls per dialect
+on the same 87,400-byte artifact. The native Boolean-equality abbreviation
+is retained in exact statement comparison. This is a checked natural-subtype
+construction, not yet primitive recursion, a complete comparison with the
+authored Nat interpretation, or a refinement of the compiler/native C.
+
+\paragraph{Direct raw authority for the selected checking policy.}
+The existing raw generation and Pi conversion boundary recover dependent
+arguments at a declaration-rooted spine. The exact conversion/cumulativity
+tail transports a replacement at its principal type to the displayed type.
+No formation premise or raw-to-formed upgrade is needed. The formed spine
+now shares this analysis through its raw view, retaining formation-sensitive
+replay for its stronger judgment.
+\lean{HasType.DeclarationSpine.recoverApplication, HasType.DeclarationSpine.recoverTelescope, FormationSensitive.DeclarationSpine.toRaw}
+
+For the two original natural iota rows, that recovery proves uniform raw
+preservation in arbitrary contexts, retaining all eight declarations.
+The actual recursor methods and recursive call are typed by the existing
+telescope-application theorem. Separately, the maintained elaborator and
+replay checker certify all eight declaration types with every iota rule
+disabled. Their formation evidence transports to each original permission
+selection. Formation plus raw preservation constructs the existing checked
+signature for the natural-only policy; the original dependent append is
+well typed there. Actual zero and successor redexes supply positive
+witnesses, while missing declarations and a lower claimed universe refuse.
+\lean{NaturalConversion.RawPreservation.declared_preserves, NaturalConversion.RawPreservation.Formation.signature_formed, NaturalConversion.RawPreservation.checkedSignature, NaturalConversion.RawPreservation.checked_append, NaturalConversion.RawPreservation.actual_zero_preserved, NaturalConversion.RawPreservation.actual_successor_target, NaturalConversion.RawPreservation.missing_spine_refused, NaturalConversion.RawPreservation.all_verdicts}
+
+This authority concerns the selected source signature. It does not authorize
+the original four-row family candidates, arbitrary vector contextual
+computation, richer annotated equality or a native C checker. The earlier
+missing-domain distinction between raw and formed typing remains valid.
+
 \section{Status ledger}\label{sec:ledger}
+
 
 Entries marked ``proved'' are checked without \code{sorry}, custom axioms or
 native decision. Entries marked ``open'' are obligations, not proved claims.
@@ -985,9 +2283,17 @@ Axioms are those reported by \code{#print axioms} on the listed declaration:
 \item \textbf{Remaining portable modules.} Rho, MeTTa equation and authored
   recipe kernels, and the propositional rule-code kernels, have faithful checkers
   but no portable module presentation.
+\item \textbf{Admitted dependent carve-outs and native specialization.}
+  Complete the context, substitution and theory comparisons for declared
+  dependent fragments; give their smaller packages executable decoders and
+  computational-admission proofs; connect the actual native checking machines
+  through adequate operational routes. Proof-relevant route agreement, model
+  assumptions and executed cost bounds remain separate obligations. Compare
+  derived checking bases with the existing native kernels under the same
+  fragment and cost model.
 \end{enumerate}
 
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
 \bibitem{Nyayabindu}
 Dharmakirti. \emph{Nyayabindu}, chapters I--III, with Dharmottara's commentary.
 English translation in Th. Stcherbatsky, \emph{Buddhist Logic}, vol.~II,
@@ -1012,6 +2318,11 @@ J. Lambek. Deductive systems and categories II: standard constructions and
 closed categories. In \emph{Category Theory, Homology Theory and their
 Applications I}, Lecture Notes in Mathematics 86, Springer, 1969, 76--122.
 
+\bibitem{WilliamsStay}
+C. Williams and M. Stay. Native Type Theory.
+\emph{Electronic Proceedings in Theoretical Computer Science} 372 (2022),
+116--132. \url{https://doi.org/10.4204/EPTCS.372.9}.
+
 \bibitem{Saville}
 P. Saville. Clones, closed categories, and combinatory logic.
 \emph{FoSSaCS 2024}, Lecture Notes in Computer Science 14575, pp.~160--181.
@@ -1031,6 +2342,22 @@ McTT: A verified kernel for a proof assistant.
 L. Pujet and N. Tabareau. Observational equality: now for good.
 \emph{Proceedings of the ACM on Programming Languages} 6, POPL, 2022.
 \url{https://doi.org/10.1145/3498693}.
+\bibitem{ModularTheories}
+F. Blanqui, G. Dowek, E. Grienenberger, G. Hondet and F. Thir\'e.
+A modular construction of type theories.
+\emph{Logical Methods in Computer Science} 19(1), 2023, 12:1--12:28.
+\url{https://doi.org/10.46298/lmcs-19(1:12)2023}.
+
+\bibitem{HofmannExtensional}
+M. Hofmann. \emph{Extensional Concepts in Intensional Type Theory}.
+PhD thesis, University of Edinburgh, 1995.
+\url{https://hdl.handle.net/1842/399}.
+
+\bibitem{KapulkinLi}
+K. Kapulkin and Y. Li. Extensional concepts in intensional type theory,
+revisited. \emph{Theoretical Computer Science} 1029, 2025, 115051.
+\url{https://arxiv.org/abs/2310.05706}.
+
 \end{thebibliography}
 
 \end{document}

@@ -569,14 +569,14 @@ theorem cRuleScopedSourceWorkQueueStep_lineageAuthorized
             exact atomAuthorized
           cases decoded : decodeSupportedSourceExec raw with
           | none =>
-              simp only [selected, decoded] at moved
+              simp only [selected, cConsumeRuleScopedRawExecFact_unsupported space raw decoded] at moved
               injection moved with nextEqual
               subst next
               exact morkEraseSupport_atomsWithin
                 (ExecutableSchemaAtomAuthorized schemas) space raw.atom
                 spaceWithin
           | some directive =>
-              simp only [selected, decoded] at moved
+              simp only [selected, cConsumeRuleScopedRawExecFact_supported space raw directive decoded] at moved
               injection moved with nextEqual
               subst next
               have templateAuthorized :=

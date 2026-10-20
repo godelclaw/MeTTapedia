@@ -23,7 +23,7 @@ one-factor Boolean factor graph and prove that:
 namespace Mettapedia.KR.ConceptGeometry.IntensionalInheritance
 
 open scoped Classical BigOperators
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.ProbabilityTheory.BayesianNetworks
 
 namespace MembershipCounts
@@ -3408,7 +3408,7 @@ namespace MembershipQueryBuilderBridge
 
 variable {State Obj Con Srt : Type*} {Query : Srt → Type*}
 variable [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-variable [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
+variable [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
 variable [Fintype Obj] [Nonempty Obj]
 
 theorem finitePriorProb_toEvidenceMembershipContext_eq_veWeight_ratio
@@ -3533,8 +3533,6 @@ theorem finitePriorProb_inducedContext_eq_veWeight_ratio
     (S : Mettapedia.KR.ConceptOntology.ObservationEncoder Obs Obj Con BinaryEvidence)
     (G : Mettapedia.KR.ConceptOntology.EvidenceGate BinaryEvidence)
     (σ : Multiset Obs) (feature witness : Con) :
-    letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset Obs) :=
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType Obs
     Interpretation.finitePriorProb
         (Mettapedia.KR.ConceptGeometry.IntensionalInheritance.EvidenceMembershipContext.crispInterpretationAt
           (Mettapedia.KR.ConceptOntology.ObservationEncoder.inducedContext S) G σ) witness =
@@ -3549,8 +3547,6 @@ theorem finitePriorProb_inducedContext_eq_veWeight_ratio
             (Mettapedia.KR.ConceptGeometry.IntensionalInheritance.EvidenceMembershipContext.crispInterpretationAt
               (Mettapedia.KR.ConceptOntology.ObservationEncoder.inducedContext S) G σ)
             feature witness) [] := by
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset Obs) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType Obs
   simpa using
     EvidenceMembershipContext.finitePriorProb_crispInterpretationAt_eq_veWeight_ratio
       (M := Mettapedia.KR.ConceptOntology.ObservationEncoder.inducedContext S)
@@ -3560,8 +3556,6 @@ theorem finiteExtensionalProb_inducedContext_eq_bp_ratio
     (S : Mettapedia.KR.ConceptOntology.ObservationEncoder Obs Obj Con BinaryEvidence)
     (G : Mettapedia.KR.ConceptOntology.EvidenceGate BinaryEvidence)
     (σ : Multiset Obs) (feature witness : Con) :
-    letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset Obs) :=
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType Obs
     Interpretation.finiteExtensionalProb
         (Mettapedia.KR.ConceptGeometry.IntensionalInheritance.EvidenceMembershipContext.crispInterpretationAt
           (Mettapedia.KR.ConceptOntology.ObservationEncoder.inducedContext S) G σ)
@@ -3588,8 +3582,6 @@ theorem finiteExtensionalProb_inducedContext_eq_bp_ratio
               (Mettapedia.KR.ConceptGeometry.IntensionalInheritance.EvidenceMembershipContext.crispInterpretationAt
                 (Mettapedia.KR.ConceptOntology.ObservationEncoder.inducedContext S) G σ)
               feature witness) true := by
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset Obs) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType Obs
   simpa using
     EvidenceMembershipContext.finiteExtensionalProb_crispInterpretationAt_eq_bp_ratio
       (M := Mettapedia.KR.ConceptOntology.ObservationEncoder.inducedContext S)
@@ -3599,8 +3591,6 @@ theorem finitePointwiseLogRatioBits_inducedContext_eq_ve_query_score
     (S : Mettapedia.KR.ConceptOntology.ObservationEncoder Obs Obj Con BinaryEvidence)
     (G : Mettapedia.KR.ConceptOntology.EvidenceGate BinaryEvidence)
     (σ : Multiset Obs) (feature witness : Con) :
-    letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset Obs) :=
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType Obs
     Interpretation.finitePointwiseLogRatioBits
         (Mettapedia.KR.ConceptGeometry.IntensionalInheritance.EvidenceMembershipContext.crispInterpretationAt
           (Mettapedia.KR.ConceptOntology.ObservationEncoder.inducedContext S) G σ)
@@ -3637,8 +3627,6 @@ theorem finitePointwiseLogRatioBits_inducedContext_eq_ve_query_score
                 (Mettapedia.KR.ConceptGeometry.IntensionalInheritance.EvidenceMembershipContext.crispInterpretationAt
                   (Mettapedia.KR.ConceptOntology.ObservationEncoder.inducedContext S) G σ)
                 feature witness) []) := by
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset Obs) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType Obs
   simpa using
     EvidenceMembershipContext.finitePointwiseLogRatioBits_crispInterpretationAt_eq_ve_query_score
       (M := Mettapedia.KR.ConceptOntology.ObservationEncoder.inducedContext S)

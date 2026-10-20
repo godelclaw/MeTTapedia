@@ -46,19 +46,15 @@ pointwise implication.
 
 namespace Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 universe u v
 
 variable {Point : Type u} {Query : Type v}
-
-/-- Multisets of points are states, revised by multiset sum. -/
-instance instEvidenceTypeMultiset : EvidenceType (Multiset Point) :=
-  multisetEvidenceType Point
 
 /-- Count evidence of a multiset of points for a crisp semantics: `pos` counts
 the points satisfying `q`, `neg` the points that do not. -/

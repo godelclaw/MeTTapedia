@@ -168,7 +168,7 @@ theorem finiteVolumeWorldMeasure_localQueryEvent
   rw [preimage_localQueryEvent_patch Λ ξ q]
   rw [PMF.toMeasure_apply_fintype]
   simp_rw [Set.indicator_apply, finiteVolumeAssignmentPMF_apply]
-  simp_rw [Set.mem_setOf_eq]
+  simp_rw [Set.mem_ofPred_eq]
   have hsum :
       ∑ x : LocalAssignment Atom Λ,
         (if satisfiesConstraints x q then
@@ -192,6 +192,6 @@ theorem finiteVolumeWorldMeasure_localQueryEvent
         rw [← Finset.sum_mul]
         simp [finiteVolumeQueryMass]
   rw [hsum]
-  simp [finiteVolumeMassSemantics, MassSemantics.queryProb, hZ, div_eq_mul_inv]
+  simp [finiteVolumeMassSemantics, Mettapedia.ProbabilityTheory.MassSemantics.queryProb, hZ, div_eq_mul_inv]
 
 end Mettapedia.Logic.MarkovLogicInfiniteWorldMeasures

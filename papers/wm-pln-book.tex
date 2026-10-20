@@ -683,7 +683,7 @@ conforming instance.
 We write $\mathrm{ev}(W, q)$ for $\code{evidence}(W, q)$, and $W_1 + W_2$
 for the revised state.  The evidence algebra on the extracted values uses
 $\hplus$ for pointwise addition of counts.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNWorldModel.lean}.}
+\footnote{Formalized in \codepath{Mettapedia/PLN/WorldModel/BinaryWorldModel.lean}.}
 
 \begin{figure}[htbp]
 \centering
@@ -913,7 +913,7 @@ evaluation-at-$q$ composed with the profile arrow.
 \end{theorem}
 
 \noindent
-See \codepath{Mettapedia/Logic/PLNWorldModel.lean}.
+See \codepath{Mettapedia/PLN/WorldModel/BinaryWorldModel.lean}.
 
 \paragraph{The terminal extensional world model.}
 The answer-profile object $\mathrm{Prof}(\code{Query}) :=
@@ -956,7 +956,7 @@ project: the hard work is in choosing expressive state spaces, proving
 no-go theorems, and certifying fast inference paths.  But it makes the
 \emph{interface} minimal and the \emph{achievements} sharper.
 
-See \codepath{Mettapedia/Logic/PLNWorldModelProfiles.lean}.
+See \codepath{Mettapedia/PLN/WorldModel/WorldModelProfiles.lean}.
 
 \paragraph{Two orders on evidence.}
 The \Evidence{} type carries two natural preorders:
@@ -984,7 +984,7 @@ $(1, 0) \le (1, 1)$ but $\strength(1, 0) = 1 > \tfrac{1}{2} =
 
 \noindent
 See \code{toStrength\_not\_monotone\_info\_order} in
-\codepath{Mettapedia/Logic/PLNWorldModelProfiles.lean}.
+\codepath{Mettapedia/PLN/WorldModel/WorldModelProfiles.lean}.
 
 This theorem has far-reaching consequences.  It means that the
 strength-enriched category (Chapter~\ref{ch:higher-order}) is
@@ -1098,7 +1098,7 @@ compositionality law:
   \mathrm{ev}(E_1 + E_2, q) = \mathrm{ev}(E_1, q) \hplus \mathrm{ev}(E_2, q)
 \]
 for all queries $q$.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNJointEvidence.lean}.}
+\footnote{Formalized in \codepath{Mettapedia/PLN/Evidence/PLNJointEvidence.lean}.}
 
 \section{The Sequent-Calculus View}
 
@@ -1173,7 +1173,7 @@ From \Evidence{} we obtain posterior-mean probabilities:
   P(B \mid A) = \frac{\#(A \wedge B)}{\#(A)}
 \]
 where $\#(\cdot)$ denotes world-count sums in \JointEvidence{}.  The Lean
-file \codepath{Mettapedia/Logic/PLNJointEvidenceProbability.lean} proves
+file \codepath{Mettapedia/PLN/Evidence/PLNJointEvidenceProbability.lean} proves
 the exact ratio forms for these views.
 
 \section{Derived Link Calculus: Classic PLN Rules as Admissible Rewrites}
@@ -1247,7 +1247,7 @@ theorem chainBN_plnDeductionStrength_exact
 
 The analogous result holds for fork BNs $A \leftarrow B \to C$
 (\code{forkBN\_plnDeductionStrength\_exact}).%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNBayesNetFastRules.lean}.}
+\footnote{Formalized in \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNBayesNetFastRules.lean}.}
 
 \subsection{Induction and Abduction}
 
@@ -1397,7 +1397,7 @@ Since the five marginals cannot distinguish $E_1$ from $E_2$, no
 function $f : \Evidence^5 \to \Evidence$ can compute $\mathrm{ev}(E, A \!\Rightarrow\! C)$
 correctly for both states.
 \end{proof}%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNJointEvidenceNoGo.lean}.}
+\footnote{Formalized in \codepath{Mettapedia/PLN/Evidence/PLNJointEvidenceNoGo.lean}.}
 
 \begin{figure}[htbp]
 \centering
@@ -1528,7 +1528,7 @@ observations.  (In the Lean formalization, we sometimes work over
 $\mathbb{R}_{\ge 0}$ or $\mathbb{R}_{\ge 0}^\infty$ for compatibility
 with measure-theoretic constructions.)  The total sample size is
 $n = n^+ + n^-$.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/EvidenceClass.lean}.}
+\footnote{Formalized in \codepath{Mettapedia/PLN/Evidence/EvidenceClass.lean}.}
 
 Revision is componentwise addition:
 \[
@@ -2146,7 +2146,7 @@ conditions.
 \noindent
 The tensor product of premise evidence provides a \emph{lower bound} on the
 conclusion evidence.  This is the algebraic shadow of the deduction rule.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/EvidenceQuantale.lean}.}
+\footnote{Formalized in \codepath{Mettapedia/PLN/Evidence/BinaryEvidence.lean}.}
 
 For the implementer: when chaining two PLN inferences, tensor gives a
 sound but possibly conservative estimate.  Exact equality requires the
@@ -2187,8 +2187,8 @@ A key formalized fact---the ``totality gate''---establishes that
 $\Evidence$ has incomparable elements (e.g., $(3, 0)$ and $(0, 3)$) and
 admits no faithful order-embedding into the reals.  No single real-valued
 function captures all evidence information.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/HeytingValuationOnEvidence.lean} and
-\codepath{Mettapedia/Logic/PLN\_KS\_Bridge.lean}.}
+\footnote{Formalized in \codepath{Mettapedia/PLN/Evidence/HeytingValuationOnEvidence.lean} and
+\codepath{Mettapedia/PLN/Evidence/PLN\_KS\_Bridge.lean}.}
 
 For the implementer: no single real number captures all evidence
 information.  Any real-valued summary (strength, confidence, etc.)\ is
@@ -2765,7 +2765,7 @@ $P(X > 20) = 0.674$---night readings strongly indicate an overheated
 state.  Sleep consolidation is verified numerically: sequential update
 through morning then night produces the same posterior
 ($\mu_n = 18.93$) as batch processing all 10 readings at once.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNBrokenSensorDemo.lean} (420 lines).}
+\footnote{Formalized in \codepath{Mettapedia/Examples/PLN/BrokenSensorDemo.lean} (420 lines).}
 
 \subsection{Applied Example: Widget Factory Source-Conditional Mixtures}
 
@@ -2797,7 +2797,7 @@ Machine~B (prior $\mu_0 = 10.5$, 3~readings, mean 11.10): posterior
 $\mu_n = 10.95$, 95\% CI $[7.71, 14.19]$, $P(X > 12) = 0.234$.
 Machine~B is about $3.5\times$ more likely to produce a defect
 ($>$12) than Machine~A, consistent with its higher operating mean.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNWidgetFactoryDemo.lean} (422 lines).}
+\footnote{Formalized in \codepath{Mettapedia/Examples/PLN/WidgetFactoryDemo.lean} (422 lines).}
 
 \subsection{Applied Example: Kalman Filter Wake/Sleep Temporal Filtering}
 
@@ -2854,7 +2854,7 @@ posterior mean $= 1.96$, $\sigma^2 = 0.50$.  After night
 Sleep $=$ wake is verified to machine precision: batch replay of all
 10 readings from the initial state produces the same posterior as
 sequential morning-then-night processing.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNKalmanSleepDemo.lean} (374 lines).}
+\footnote{Formalized in \codepath{Mettapedia/Examples/PLN/KalmanSleepDemo.lean} (374 lines).}
 
 \subsection{Applied Example: Gas Sensor Array Drift Classification}
 
@@ -3696,8 +3696,8 @@ shrink to the true probability) but can differ substantially for small
 evidence counts.  \xiPLN{} provides both as explicit selector choices,
 with typed bridges that transport truth values through the system
 without conflation.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNWorldModelITV.lean} and
-  \codepath{Mettapedia/Logic/PLNWorldModelITVHypercube.lean}.}
+\footnote{Formalized in \codepath{Mettapedia/PLN/WorldModel/WorldModelITV.lean} and
+  \codepath{Mettapedia/PLN/WorldModel/WorldModelITVHypercube.lean}.}
 
 \section{The De Finetti Bridge}
 
@@ -3979,8 +3979,8 @@ The original PLN book sometimes uses the notation $[L, U]$ without
 specifying which semantics is intended.  \xiPLN{} insists on explicit
 selector choice: the user declares which interval semantics they want,
 and the system computes accordingly.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNIndefiniteTruth.lean} and
-\codepath{Mettapedia/Logic/PLNWorldModelITV.lean}.}
+\footnote{Formalized in \codepath{Mettapedia/PLN/TruthValues/PLNIndefiniteTruth.lean} and
+\codepath{Mettapedia/PLN/WorldModel/WorldModelITV.lean}.}
 
 \section{Why Views Are Not Proof Objects}
 \label{sec:views-not-proof}
@@ -4115,9 +4115,9 @@ scope~$S$, then no forgetting operation can exactly undo~$\Delta$.
 \noindent
 This is the precise boundary: forgetting cannot undo what leaked.
 
-See \codepath{Mettapedia/Logic/GenericWorldModelForgetting.lean}
+See \codepath{Mettapedia/PLN/WorldModel/GenericWorldModelForgetting.lean}
 (185~lines, 0~sorry) and
-\codepath{Mettapedia/Logic/PLNWorldModelConservationPack.lean}
+\codepath{Mettapedia/PLN/WorldModel/WorldModelConservationPack.lean}
 (220~lines, 0~sorry).
 
 \section{Provenance and Explanation}
@@ -4222,9 +4222,9 @@ checks, all kernel-checked:
 \noindent
 See \codepath{Mettapedia/PLN/WorldModel/Provenance/PLNProvenanceInference.lean} (general
 theory, 0~sorry),
-\codepath{Mettapedia/Logic/PLNClassicTruthFunctions.lean} (truth
+\codepath{Mettapedia/PLN/TruthValues/PLNClassicTruthFunctions.lean} (truth
 functions linked to evidence, 0~sorry), and
-\codepath{Mettapedia/Logic/PLNClassicExamples.lean} (20~conformance
+\codepath{Mettapedia/Examples/PLN/ClassicExamples.lean} (20~conformance
 checks, 0~sorry).
 
 
@@ -4323,7 +4323,7 @@ revision.  Each rule carries its screening-off side conditions, OSLF atom
 bridges, typed BN constructor lifts (chain, fork, or collider), and
 coordinate-specialized endpoints for lower, upper, credibility, width,
 and strength projections.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNXiRuleRegistry.lean} and
+\footnote{Formalized in \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNXiRuleRegistry.lean} and
   \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/BayesNet/PLNBNCompilation.lean}.}
 
 \section{Compiled Tactics vs.\ Foundational Semantics}
@@ -4450,7 +4450,7 @@ not approximations but exact computations within the declared model class.
 The screening-off and positivity hypotheses are part of the mathematical
 statement, and the local-completeness no-go theorem explains why they
 cannot be erased in the unrestricted setting.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNBayesNetFastRules.lean} and
+\footnote{Formalized in \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNBayesNetFastRules.lean} and
   \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNXiDerivedBNRules.lean}.}
 
 \maplecourt{%
@@ -4531,13 +4531,13 @@ packaged as
 \]
 not as a bare derived edge.  In the Lean demo this provenance points back
 to the already-proved exact endpoints
-\code{PLNEndToEnd.forkFormulaExact},
-\code{PLNEndToEnd.chainFormulaExact}, and the corresponding
+\code{xi\_source\_queryStrength\_eq\_plnInduction\_of\_forkBN},
+\code{xi\_deduction\_queryStrength\_eq\_plnDeduction\_of\_chainBN}, and the corresponding
 $\Sigma$-guarded rewrite lemmas.  See
 \code{fork\_contraction\_matches\_exact\_semantics},
 \code{chain\_contraction\_C\_matches\_exact\_semantics},
 \code{chain\_contraction\_D\_matches\_exact\_semantics} in
-\codepath{Mettapedia/Logic/PLNProofCarryingContractionDemo.lean}.
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNProofCarryingContractionDemo.lean}.
 
 The same file also contains two negative controls, because a worked
 positive example is only convincing if it does not quietly smuggle back
@@ -4564,7 +4564,7 @@ while the naive screened-off contraction gives only
 So the gate matters: when $\Sigma$ is not discharged, the exact compiled
 chain contraction should not fire.  See
 \code{soft\_gate\_blocks\_exact\_contraction} in
-\codepath{Mettapedia/Logic/PLNProofCarryingContractionDemo.lean}.
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNProofCarryingContractionDemo.lean}.
 
 Second, a collider negative control keeps the old abduction story honest.
 For the OR-gate collider $A \to C \leftarrow B$ with
@@ -4573,7 +4573,7 @@ $\tfrac23$, while the exact semantic answer remains $\tfrac12$.  So the
 refounded system does \emph{not} license free abduction-style link
 creation merely because a local pattern ``looks like'' a classic PLN
 rule.  See \code{collider\_negative\_control\_blocks\_naive\_abduction} in
-\codepath{Mettapedia/Logic/PLNProofCarryingContractionDemo.lean}.
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNProofCarryingContractionDemo.lean}.
 
 This is the corrected operational reading of PLN rule firing.  The old
 intuition survives, but as admissible, $\Sigma$-guarded local contraction
@@ -4830,7 +4830,7 @@ provides three flagship examples that exercise the core inference rules:
 
 \noindent
 All three examples are verified with 20~kernel-checked conformance
-tests in \codepath{Mettapedia/Logic/PLNClassicExamples.lean}
+tests in \codepath{Mettapedia/Examples/PLN/ClassicExamples.lean}
 (0~sorry), covering PeTTa space queries, stamp disjointness,
 stamp union, and forgetting set-difference.
 
@@ -5618,8 +5618,8 @@ comparison against the truthmaker, and where it is merely operational.
 
 \smallskip
 \textit{Lean theory.}
-\codepath{Mettapedia/Logic/PLNProbGuardedAdmissibilityDemo.lean}\\
-\codepath{Mettapedia/Logic/PLNProbGuardedAdmissibilityRegression.lean}
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNProbGuardedAdmissibilityDemo.lean}\\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNProbGuardedAdmissibilityRegression.lean}
 
 \smallskip
 \textit{Prior versions.}
@@ -6626,7 +6626,7 @@ and threshold acceptance transfers: if $\tau \le \confidence(W, q_1)$,
 then $\tau \le \confidence(W, q_2)$.
 \end{theorem}
 
-See \codepath{Mettapedia/Logic/PLNWorldModelCalculus.lean}.
+See \codepath{Mettapedia/PLN/WorldModel/WorldModelCalculus.lean}.
 
 \section{Threshold Semantics and OSLF Bridge}
 
@@ -6685,7 +6685,7 @@ reasoning), the formalization includes a categorical transport layer:
 institution satisfaction conditions, hyperdoctrine Beck-Chevalley
 transport, and unified endpoints that connect Kripke/neighborhood
 modal semantics to the world-model layer.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNWorldModelInstitution.lean} and
+\footnote{Formalized in \codepath{Mettapedia/PLN/WorldModel/WorldModelInstitution.lean} and
   \codepath{Mettapedia/PLN/Bridges/CategoryTheory/WorldModel/PLNWorldModelCategoricalBridge.lean}.}
 
 
@@ -6705,9 +6705,9 @@ accumulation, together with a small higher-order bridge stating the design
 lesson explicitly: topology-only proxies cannot certify nontrivial residual
 bounds, and unrevealed higher-order chains spend a variance budget until an
 explicit reveal or fallback reset is taken.  Those strengthened forms live in
-\codepath{Mettapedia/Logic/PLNTopologyCPTNoGo.lean},
-\codepath{Mettapedia/Logic/PLNVarianceChainNoGo.lean}, and
-\codepath{Mettapedia/Logic/PLNHigherOrderNoGoBridge.lean}.
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNTopologyCPTNoGo.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNVarianceChainNoGo.lean}, and
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNHigherOrderNoGoBridge.lean}.
 
 \subsection*{Coverage Collapse}
 
@@ -6777,7 +6777,7 @@ accumulate irreducible uncertainty linearly in chain length.
 
 The strengthened theorem layer makes this operational rather than merely
 asymptotic.  In
-\codepath{Mettapedia/Logic/PLNVarianceChainNoGo.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNVarianceChainNoGo.lean},
 \code{variance\_accumulation\_along\_unrevealed\_chain} proves linear
 accumulation on explicit continue-only chain segments, while
 \code{reveal\_resets\_variance\_accumulation} and
@@ -7059,7 +7059,7 @@ introducing a variance approximation error that can be either positive
 
 The distributional inference dominance result is formalized as nine
 kernel-checked theorems (zero sorries) in
-\codepath{Mettapedia/Logic/PLNDistributionalChainDominance.lean}, organized
+\codepath{Mettapedia/PLN/TruthValues/PLNDistributionalChainDominance.lean}, organized
 in four phases.
 
 \paragraph{Phase 1: Same strength, different variance.}
@@ -7176,7 +7176,7 @@ converges to zero.
 \end{theorem}
 
 This is formalized as 16 kernel-checked theorems (zero sorries) in
-\codepath{Mettapedia/Logic/PLNDistributionalConvergence.lean}.
+\codepath{Mettapedia/PLN/TruthValues/PLNDistributionalConvergence.lean}.
 The convergence theorem completes the picture: scalar inference is
 asymptotically correct but wrong in the finite-evidence regime---which
 is precisely the regime where PLN actually operates.
@@ -7856,7 +7856,7 @@ the public route
 
 This is formalized in
 \codepath{Mettapedia/Logic/HOL/Semantics/SetBased.lean} and
-\codepath{Mettapedia/Logic/PLNWorldModelHOLSetBridge.lean}.
+\codepath{Mettapedia/PLN/Bridges/HOL/PLNWorldModelHOLSetBridge.lean}.
 
 \begin{theorem}[Direct set/HOL singleton adequacy (\claimCore{})]
 For a pointed set structure $S$ and closed HOL query $\varphi$,
@@ -7891,11 +7891,11 @@ over real HOL derivability:
 \end{itemize}
 
 This layer is formalized in
-\codepath{Mettapedia/Logic/PLNHigherOrderHOLCore.lean},
-\codepath{Mettapedia/Logic/PLNHigherOrderHOLRules.lean},
-\codepath{Mettapedia/Logic/PLNHigherOrderHOLSoundness.lean},
-\codepath{Mettapedia/Logic/PLNHigherOrderHOLConsequence.lean}, and
-\codepath{Mettapedia/Logic/PLNHigherOrderHOLLinkBridge.lean}.
+\codepath{Mettapedia/PLN/Bridges/HOL/PLNHigherOrderHOLCore.lean},
+\codepath{Mettapedia/PLN/Bridges/HOL/PLNHigherOrderHOLRules.lean},
+\codepath{Mettapedia/PLN/Bridges/HOL/PLNHigherOrderHOLSoundness.lean},
+\codepath{Mettapedia/PLN/Bridges/HOL/PLNHigherOrderHOLConsequence.lean}, and
+\codepath{Mettapedia/PLN/Bridges/HOL/PLNHigherOrderHOLLinkBridge.lean}.
 
 The direct set/HOL/WM route is already exercised by genuinely higher-order
 positive and negative fixtures:
@@ -7917,8 +7917,8 @@ queries, predicate-level eta-equality, and WM-side transport of higher-order
 rules whose principal formulas quantify over predicates.
 
 See
-\codepath{Mettapedia/Logic/PLNWorldModelHOLSetBridgeRegression.lean} and
-\codepath{Mettapedia/Logic/PLNHigherOrderHOLRegression.lean}.
+\codepath{Mettapedia/PLN/Bridges/HOL/PLNWorldModelHOLSetBridgeRegression.lean} and
+\codepath{Mettapedia/PLN/Bridges/HOL/PLNHigherOrderHOLRegression.lean}.
 
 \section{Where Satisfying-Set Reduction Still Fits}
 
@@ -7945,7 +7945,7 @@ pointwise implication collapse and corrected inheritance/similarity transport,
 but it should not be mistaken for the entire higher-order semantics.
 
 Those finite extensional results live in
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} and
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} and
 \codepath{Mettapedia/Logic/HigherOrder/Basic.lean}.
 
 \section{Higher-Order Probability: Now Semantically Grounded}
@@ -7962,7 +7962,7 @@ PLN-to-Kyburg bridge:
 See
 \codepath{Mettapedia/ProbabilityTheory/HigherOrderProbability/KyburgFlattening.lean},
 \codepath{Mettapedia/ProbabilityTheory/HigherOrderProbability/GiryMonad.lean},
-and \codepath{Mettapedia/Logic/PLNKyburgReduction.lean}.
+and \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/PLNKyburgReduction.lean}.
 
 What was still missing at the previous checkpoint was the fully semantic object
 \[
@@ -8008,21 +8008,21 @@ The key new files are:
 \item \codepath{Mettapedia/Logic/HOL/Probabilistic/Flattening.lean}, which
   proves that hierarchical sentence probabilities are computed by flattening the
   hierarchy to the predictive marginal;
-\item \codepath{Mettapedia/Logic/HOL/Probabilistic/BenchmarkBridge.lean}, which
+\item \codepath{Mettapedia/PLN/Bridges/HOL/Probabilistic/BenchmarkBridge.lean}, which
   interprets the current guarded higher-order benchmark payloads as one concrete
   finite hierarchical instance; and
-\item \codepath{Mettapedia/Logic/HOL/Probabilistic/BenchmarkBeliefBridge.lean},
+\item \codepath{Mettapedia/PLN/Bridges/HOL/Probabilistic/BenchmarkBeliefBridge.lean},
   which derives a benchmark-facing LI-style belief day and process from that
   semantic benchmark marginal, while proving that this adapter is
   query-focused rather than a replacement for the benchmark semantics; and
-\item \codepath{Mettapedia/Logic/PLNProbHOLPlannerBridge.lean}, which packages
+\item \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNProbHOLPlannerBridge.lean}, which packages
   the carried guarded query together with that theorem-backed belief shadow, so
   planner/control layers can consume semantically justified prices and tracking
   results without becoming the canonical semantics; and
-\item \codepath{Mettapedia/Logic/PLNProbHOLPlannerBridgeRegression.lean}, which
+\item \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNProbHOLPlannerBridgeRegression.lean}, which
   records positive and negative planner-facing bridge fixtures for the concrete
   higher-order leaky benchmark step; and
-\item \codepath{Mettapedia/Logic/HOL/Probabilistic/HierarchicalRegression.lean},
+\item \codepath{Mettapedia/PLN/Bridges/HOL/Probabilistic/HierarchicalRegression.lean},
   which packages positive and negative canaries for the infinitary,
   empirical-special-case, and guarded-benchmark routes.
 \end{itemize}
@@ -8061,14 +8061,14 @@ The planner-facing consequence is now explicit.  A mixed-mode higher-order
 guarded step can be consumed as a \emph{belief price} precisely because the
 repository proves that the carried value agrees with the benchmark belief
 shadow derived from semantic ProbHOL.  In Lean this is exposed by
-\codepath{Mettapedia/Logic/PLNProbHOLPlannerBridge.lean}, including theorems
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNProbHOLPlannerBridge.lean}, including theorems
 \texttt{leakyHigherOrderPlan\_C\_current\_value\_eq\_benchmarkBeliefPrice} and
 \texttt{leakyHigherOrderPlan\_C\_current\_gateConfidence\_eq\_higherOrderGuardConfidence}.
 So the control layer is no longer merely carrying a higher-order-looking score:
 it is carrying a value with an explicit semantic provenance, together with a
 separate belief-process shadow that tracks the same benchmark query on the
 designated sample.  The paired regression fixtures in
-\codepath{Mettapedia/Logic/PLNProbHOLPlannerBridgeRegression.lean} then records
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNProbHOLPlannerBridgeRegression.lean} then records
 both the positive tracking fixture and the negative expanded-sample guardrail.
 
 \subsection{Certified Higher-Order Chaining from Estimated Variables}
@@ -8085,28 +8085,28 @@ must satisfy before its outputs may enter the chaining theorems.
 
 The current theorem set is:
 \begin{itemize}
-\item \codepath{Mettapedia/Logic/PLNHigherOrderCertifiedEstimates.lean},
+\item \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNHigherOrderCertifiedEstimates.lean},
   defining \texttt{CertifiedAdmissibilityEstimate},
   \texttt{CertifiedTrustEstimate}, and
   \texttt{CertifiedRegimePosterior};
-\item \codepath{Mettapedia/Logic/PLNHigherOrderInformationSets.lean},
+\item \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNHigherOrderInformationSets.lean},
   making the blind/oracle split theorem-visible through
   \texttt{BlindFeatures}, \texttt{OracleFeatures}, and
   \texttt{BlindPolicy};
-\item \codepath{Mettapedia/Logic/PLNHigherOrderVarianceUpdate.lean} and
-  \codepath{Mettapedia/Logic/PLNHigherOrderPosteriorUpdate.lean},
+\item \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNHigherOrderVarianceUpdate.lean} and
+  \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNHigherOrderPosteriorUpdate.lean},
   formalizing enriched regime uncertainty, law-of-total-variance reveal, and
   theorem-facing Bayesian posterior update;
-\item \codepath{Mettapedia/Logic/PLNHigherOrderCalibrationContracts.lean},
+\item \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNHigherOrderCalibrationContracts.lean},
   giving the conformal-style bridge from point predictions to certified
   admissibility intervals;
-\item \codepath{Mettapedia/Logic/PLNHigherOrderChainBounds.lean},
-  \codepath{Mettapedia/Logic/PLNHigherOrderDecisionTheorems.lean}, and
-  \codepath{Mettapedia/Logic/PLNHigherOrderIndependentChainBounds.lean},
+\item \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNHigherOrderChainBounds.lean},
+  \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNHigherOrderDecisionTheorems.lean}, and
+  \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNHigherOrderIndependentChainBounds.lean},
   which turn those certified interfaces into compositional chain bounds,
   continue/reveal/fallback/abstain theorems, and optional stronger
   root-sum-of-squares bounds under explicit assumptions; and
-\item \codepath{Mettapedia/Logic/PLNGWASHigherOrderBridge.lean}, which already
+\item \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNGWASHigherOrderBridge.lean}, which already
   instantiates the same abstract machinery for the upcoming
   fine-mapping/tissue/mechanism/trust GWAS benchmark family.
 \end{itemize}
@@ -8138,7 +8138,7 @@ no longer only a planner heuristic.  It has an exact theoremic gain:
 So reveal is justified precisely when its cost is smaller than the
 \emph{between-regime} variance it can remove; see
 \texttt{revealPreferred\_if\_cost\_lt\_betweenVariance} in
-\codepath{Mettapedia/Logic/PLNHigherOrderVarianceUpdate.lean}.
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNHigherOrderVarianceUpdate.lean}.
 
 The post-reveal state is now theoremically modeled as well.  A reveal updates
 the regime posterior by a Bayesian rule
@@ -8199,7 +8199,7 @@ stronger replacement: semantic higher-order regime uncertainty, theoremic
 reveal/update laws, calibrated contracts for estimated inputs, typed
 information-set separation, and GWAS-ready abstract latent coordinates.  This
 is already exercised concretely in
-\codepath{Mettapedia/Logic/PLNHigherOrderCertifiedChainingRegression.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNHigherOrderCertifiedChainingRegression.lean},
 including continuation, reveal, fallback, abstain, conformal-certificate, and
 GWAS-shaped canaries.
 
@@ -8257,7 +8257,7 @@ over semantic probabilities of Henkin-model events.
 
 There is now also one precise benchmark-facing bridge back from semantic
 probability to LI-style pricing.  The file
-\codepath{Mettapedia/Logic/HOL/Probabilistic/BenchmarkBeliefBridge.lean}
+\codepath{Mettapedia/PLN/Bridges/HOL/Probabilistic/BenchmarkBeliefBridge.lean}
 constructs a benchmark belief day whose visible price on the benchmark query is
 the carried guarded higher-order value \emph{because} that value is already
 proved equal to the hierarchical semantic benchmark marginal.  The key tracking
@@ -8271,7 +8271,7 @@ correctly, but it is not presented as a global belief oracle for unrelated HOL
 sentences.
 
 The generic comparison waist is now explicit in
-\codepath{Mettapedia/Logic/HOL/Probabilistic/BeliefBridge.lean}.  Its central
+\codepath{Mettapedia/PLN/Bridges/HOL/Probabilistic/BeliefBridge.lean}.  Its central
 predicates are \texttt{BeliefDayTracksHierarchicalProbOn} and
 \texttt{BeliefProcessEventuallyTracksHierarchicalProbOn}: these say exactly
 when a day-level price assignment or a time-indexed belief process matches the
@@ -8280,9 +8280,9 @@ HOL formulas.  The benchmark layer then instantiates those generic predicates,
 rather than inventing a second benchmark-only notion of tracking.  In Lean this
 is visible through theorems such as
 \texttt{benchmarkBeliefDay\_tracks\_benchmarkLatentHierarchicalProbOn} in
-\codepath{Mettapedia/Logic/HOL/Probabilistic/BenchmarkBeliefBridge.lean} and
+\codepath{Mettapedia/PLN/Bridges/HOL/Probabilistic/BenchmarkBeliefBridge.lean} and
 \texttt{benchmarkPlannerShadow\_process\_tracks\_benchmarkLatentHierarchicalProbOn}
-in \codepath{Mettapedia/Logic/PLNProbHOLPlannerBridge.lean}.  So the intended
+in \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNProbHOLPlannerBridge.lean}.  So the intended
 four-layer example is now theorem-traceable:
 \[
 \text{HOL truth for } \varphi
@@ -8295,7 +8295,7 @@ four-layer example is now theorem-traceable:
 \]
 Here the richer benchmark latent coordinates for hidden context, trust, and
 topology live explicitly in
-\codepath{Mettapedia/Logic/HOL/Probabilistic/BenchmarkBridge.lean}; the bridge
+\codepath{Mettapedia/PLN/Bridges/HOL/Probabilistic/BenchmarkBridge.lean}; the bridge
 to planner control remains downstream of the generic semantic-vs-belief layer
 rather than becoming a new semantics in its own right.
 
@@ -8611,7 +8611,7 @@ The PAT (pattern) channel provides a complementary structural route based
 on property-pattern proximity: two concepts $A, B$ have high PAT similarity
 when they share structural patterns beyond what mutual-information association
 captures.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNIntensionalWorldModel.lean}.}
+\footnote{Formalized in \codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalWorldModel.lean}.}
 
 \section{Solomonoff Bridge}
 
@@ -8630,7 +8630,7 @@ information theory:
   identity.
 \end{itemize}
 
-See \codepath{Mettapedia/Logic/IntensionalInheritanceSolomonoffBridge.lean}.
+See \codepath{Mettapedia/KR/ConceptGeometry/Bridges/UniversalAI/IntensionalInheritanceSolomonoffBridge.lean}.
 
 \section{Mixed Semantic Packaging}
 
@@ -8658,9 +8658,9 @@ as a general chapter-level law: the full three-channel model
 (extensional, ASSOC, PAT) is needed.
 The corrected theorem set is therefore a typed three-channel mixed
 rule, not a repaired version of the old binary extensional+ASSOC law.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNIntensionalCanary.lean},
-  \codepath{Mettapedia/Logic/PLNIntensionalAssocPatClosure.lean}, and
-  \codepath{Mettapedia/Logic/PLNIntensionalRegression.lean}.}
+\footnote{Formalized in \codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalCanary.lean},
+  \codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalAssocPatClosure.lean}, and
+  \codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalRegression.lean}.}
 
 
 \chapter{Temporal and Causal Inference}
@@ -8801,8 +8801,8 @@ If the residual is known (or bounded), the corrected estimate agrees with
 the true value.
 \end{theorem}
 
-See \codepath{Mettapedia/Logic/PLNMultideductionResidual.lean} and
-\codepath{Mettapedia/Logic/PLNInclusionExclusionIdentifiability.lean}.
+See \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNMultideductionResidual.lean} and
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNInclusionExclusionIdentifiability.lean}.
 
 \section{Trail-Free Protocol Dynamics}
 
@@ -8912,7 +8912,7 @@ two-step policy threshold.
 Lean endpoints:
 \begin{itemize}
 \item \code{evidenceConservationPack\_of\_forgetting} in
-  \codepath{Mettapedia/Logic/PLNWorldModelConservationPack.lean}
+  \codepath{Mettapedia/PLN/WorldModel/WorldModelConservationPack.lean}
 \item \code{scheduleErrorBound\_of\_pairwise\_bounds} and
   \code{scheduleErrorBound\_twoStep\_of\_swapStepBound} in
   \codepath{Mettapedia/PLN/WorldModel/OrderCost/PLNWorldModelOrderCostBounds.lean}
@@ -9174,7 +9174,7 @@ $\mathsf{OverlapMerge}(W_1, W_2)$ & State $\times$ State $\to$ State & overlap-a
 $\mathsf{FallbackRevision}(W_1, W_2)$ & State $\times$ State $\to$ State & source-gated merge \\
 $\mathsf{LeastClosure}(R, W, S)$ & RuleSet $\times$ State $\times$ QuerySet $\to$ QuerySet & fixpoint \\
 $\mathsf{SwapAnomaly}(W_1, W_2, q)$ & State$^2$ $\times$ Query $\to$ Evidence & order cost \\
-$\mathsf{KripkeEvidence}(W, \varphi)$ & State $\times$ ModalQuery $\to$ Evidence & modal evidence \\
+$\mathsf{crispEvidence}(W, \varphi)$ & State $\times$ modal formula $\to$ Evidence & modal evidence (Kripke satisfaction) \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -9697,9 +9697,9 @@ instance (\texttt{PLNWorldModelNeighborhood.lean}):
 
 \begin{theorem}[\texttt{neighborhood\_evidence\_add\_correspondence}, kernel-checked]
 The LanguageDef reduction and the mathematical identity
-$\mathsf{neighborhoodEvidence}(W_1 + W_2, \varphi) =
-\mathsf{neighborhoodEvidence}(W_1, \varphi) +
-\mathsf{neighborhoodEvidence}(W_2, \varphi)$
+$\mathsf{crispEvidence}(W_1 + W_2, \varphi) =
+\mathsf{crispEvidence}(W_1, \varphi) +
+\mathsf{crispEvidence}(W_2, \varphi)$ at neighborhood satisfaction
 are corresponding facts (both hold simultaneously).
 \end{theorem}
 
@@ -10172,7 +10172,7 @@ The full formal chain from first-order MLN syntax to WM
   \;\xrightarrow{\mathrm{compile}}\;
   \underbrace{\text{GroundMLN}}_{\text{ClauseSemantics.lean}}
   \;\xrightarrow{\mathrm{toCountable}}\;
-  \underbrace{\text{MassSemantics}}_{\text{Abstract.lean}}
+  \underbrace{\text{Mettapedia.ProbabilityTheory.MassSemantics}}_{\text{Abstract.lean}}
   \;\xrightarrow{\mathrm{bridge}}\;
   \underbrace{\text{WorldModel.queryStrength}}_{\text{ClauseWorldModel.lean}}
 \]
@@ -10765,7 +10765,7 @@ That a single 765-line formalization serves all three domains
 without modification is a concrete instance of the WM-PLN thesis:
 the evidence algebra is not a domain-specific tool but a
 general-purpose compositional substrate.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/PLNNoisyOr.lean} (765~lines, 0~sorry).}
+\footnote{Formalized in \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNNoisyOr.lean} (765~lines, 0~sorry).}
 
 
 \section{PLN v0.9 Subsumption}
@@ -12347,7 +12347,7 @@ Artifact & Layer & Role & Provenance \\
 Classical PLN-like local kernel &
 Independent-cause combination and noisy-or edge strength &
 PLN book, ``PLN and Bayes Nets'' plus
-\codepath{Mettapedia/Logic/PLNNoisyOr.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNNoisyOr.lean} \\
 \code{noisy-or-cavity-survival},
 \code{noisy-or-child-likelihood-pair},
 \code{noisy-or-prior-prob-from-beliefs} &
@@ -12363,7 +12363,7 @@ WM carrier / queried view &
 Explicit additive message state; posterior probability extracted only as a
 view &
 This book: ``Why Views Are Not Proof Objects'' and
-\codepath{Mettapedia/Logic/PLNWorldModelGeneric.lean} \\
+\codepath{Mettapedia/PLN/WorldModel/PLNWorldModelGeneric.lean} \\
 Python damped iteration and sampling loop in
 \codepath{pplbench/ppls/pln/noisy_or_topic.py} &
 Operational scheduler &
@@ -13263,9 +13263,9 @@ The old noisy-or baseline remains as a reference at
 \hline
 $\Evidence$ & Evidence type $(n^+, n^-)$ & \code{Evidence} in \code{EvidenceClass.lean} \\
 $\JointEvidence(n)$ & Dirichlet world-table & \code{JointEvidence} in \code{PLNJointEvidence.lean} \\
-$\WorldModel$ & World-model typeclass & \code{WorldModel} in \code{PLNWorldModel.lean} \\
+$\WorldModel$ & World-model typeclass & \code{WorldModel} in \code{BinaryWorldModel.lean} \\
 $\hplus$ & Evidence revision (addition) & \code{Evidence.add} \\
-$\htensor$ & Quantale tensor & \code{Evidence.tensor} in \code{EvidenceQuantale.lean} \\
+$\htensor$ & Quantale tensor & \code{Evidence.tensor} in \code{BinaryEvidence.lean} \\
 $\STV{s}{c}$ & Simple truth value & Strength/confidence pair \\
 $\Sigma$ & Side-condition context & \code{WorldModelSigma.sigma} \\
 $\strength$ & Strength view & \code{queryStrength} \\
@@ -13281,7 +13281,7 @@ $\neff$ & Effective sample size & \code{effectiveSampleSize} in \code{PLNNoisyOr
 \begin{longtable}{p{0.28\textwidth}p{0.30\textwidth}p{0.20\textwidth}p{0.14\textwidth}}
 \textbf{Theorem family} & \textbf{Key result} & \textbf{Module} & \textbf{Label} \\
 \hline
-Evidence compositionality & \code{evidence\_add} & PLNWorldModel & \claimCore{} \\
+Evidence compositionality & \code{evidence\_add} & BinaryWorldModel & \claimCore{} \\
 Evidence conservation pack & \code{evidenceConservationPack\_of\_forgetting} & PLNWorldModelConservationPack & \claimConditional{} \\
 Order-cost schedule bound & \code{scheduleErrorBound\_of\_pairwise\_bounds} & PLNWorldModelOrderCostBounds & \claimConditional{} \\
 Runtime audit certificate & \code{runtimePairwiseOrderCheck\_certifies\_policyThreshold} & PLNWorldModelOrderCostAuditCertificate & \claimConditional{} \\
@@ -13290,7 +13290,7 @@ Gas policy certificate & \code{gasOrderBudgetPolicy\_batchSwap\_zero\_via\_runti
 Local-completeness no-go & Thm~\ref{thm:no-go} & PLNJointEvidenceNoGo & \claimBoundary{} \\
 BN chain exactness & \code{chainBN\_plnDeductionStrength\_exact} & PLNBayesNetFastRules & \claimConditional{} \\
 BN fork exactness & \code{forkBN\_plnDeductionStrength\_exact} & PLNBayesNetFastRules & \claimConditional{} \\
-Quantale transitivity & tensor transitivity & EvidenceQuantale & \claimCore{} \\
+Quantale transitivity & tensor transitivity & BinaryEvidence & \claimCore{} \\
 Fr\'{e}chet bounds & consistency iff & PLNFrechetBounds & \claimCore{} \\
 De~Finetti collapse & exchangeable $\to$ counts & DeFinetti & \claimCore{} \\
 Solomonoff collapse & universal $\to$ counts & SolomonoffExchangeable & \claimCore{} \\
@@ -13316,7 +13316,7 @@ PLN $\leftrightarrow$ NARS & correspondence bundle & PLNNARSRuleCorrespondence &
 \section{Entry Points}
 
 \begin{itemize}
-\item \codepath{Mettapedia/PLN/Core/PLNCore.lean} --- umbrella module importing
+\item \codepath{Mettapedia/PLN.lean} --- umbrella module importing
   all core PLN infrastructure (246 lines).
 \item \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean} --- primary public API
   with stable, semantically grounded endpoints (5498 lines).
@@ -13334,21 +13334,21 @@ increasing complexity:
   Hybrid discrete/continuous state: Normal-Gamma temperature evidence
   $+$ binary coolant-failure flag.  Sleep consolidation, exceedance
   specification, component independence.\\
-  \codepath{Mettapedia/Logic/PLNBrokenSensorDemo.lean}
+  \codepath{Mettapedia/Examples/PLN/BrokenSensorDemo.lean}
 
 \item \textbf{Widget Factory} (422~lines).
   Per-source Gaussian mixtures: two machines with independent
   Normal-Gamma posteriors and source-attribution evidence.  Mixture
   exceedance validity, mixture bounds
   ($\min \le p_{\mathrm{mix}} \le \max$).\\
-  \codepath{Mettapedia/Logic/PLNWidgetFactoryDemo.lean}
+  \codepath{Mettapedia/Examples/PLN/WidgetFactoryDemo.lean}
 
 \item \textbf{Kalman Wake/Sleep} (374~lines).
   1D Kalman filter with temporal predict-update cycles.  Kalman gain
   bounded ($0 < K < 1$), variance reduction, and the flagship
   \emph{sleep $=$ wake} theorem: batch replay yields the same posterior
   as sequential online filtering.\\
-  \codepath{Mettapedia/Logic/PLNKalmanSleepDemo.lean}
+  \codepath{Mettapedia/Examples/PLN/KalmanSleepDemo.lean}
 
 \item \textbf{Gas Sensor Array Drift} (652~lines).
   Real UCI data (DOI~10.24432/C5RP6W): 3~gas types (ethanol, ammonia,
@@ -13414,7 +13414,7 @@ lake exe cache get             # cache after update
 \hline
 Ch.\ 1 & Introduction & Semantic stack split (this document; PLNCore) & Done \\
 Ch.\ 2 & Knowledge repr. & PLNQuery, WorldModel, WorldModelSigma & Done \\
-Ch.\ 3 & Experiential sem. & EvidenceClass, EvidenceQuantale, PLNJointEvidence & Done \\
+Ch.\ 3 & Experiential sem. & EvidenceClass, BinaryEvidence, PLNJointEvidence & Done \\
 Ch.\ 4 & Indefinite TVs & PLNIndefiniteTruth, PLNWorldModelITV, PLNWorldModelITVHypercube & Done \\
 Ch.\ 5 & FO ext.\ inference & PLNDeduction, PLNDerivation, PLNBayesNetFastRules & Done \\
 Ch.\ 6 & FO ext.\ + ITV & PLNWMOSLFBridgeITV, PLNCanonicalAPI & Done \\
@@ -13445,11 +13445,11 @@ For readers interested in the categorical and modal-logic layers:
   neighborhood-frame semantics with E, EMN, EMT, ED logics and canonical
   Kripke$\to$neighborhood representation.
 
-\item \textbf{Institutional WM}: \codepath{Mettapedia/Logic/PLNWorldModelInstitution.lean}---
+\item \textbf{Institutional WM}: \codepath{Mettapedia/PLN/WorldModel/WorldModelInstitution.lean}---
   satisfaction conditions, Beck-Chevalley transport, and governance-facing
   mapped consequences.
 
-\item \textbf{HOL/FOL consequence-closure wrappers}: \codepath{Mettapedia/Logic/PLNWorldModelHOLCompleteness.lean},
+\item \textbf{HOL/FOL consequence-closure wrappers}: \codepath{Mettapedia/PLN/Bridges/HOL/PLNWorldModelHOLCompleteness.lean},
   \codepath{Mettapedia/PLN/Bridges/Logic/WorldModel/PLNWorldModelFOLCompleteness.lean}---
   consequence-transfer/closure into WM consequence rules (these are WM-side
   transport wrappers, not HOL completeness theorems).

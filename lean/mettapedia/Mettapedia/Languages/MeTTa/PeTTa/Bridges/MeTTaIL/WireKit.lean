@@ -18,7 +18,7 @@ open Mettapedia.GSLT.LanguageDef CettaWire
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst)
 open SpaceSemantics (Program)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval
 
 /-- A wire term as a PeTTa value. -/

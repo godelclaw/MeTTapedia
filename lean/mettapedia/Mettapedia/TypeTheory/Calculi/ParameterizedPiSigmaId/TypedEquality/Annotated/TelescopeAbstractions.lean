@@ -47,6 +47,17 @@ theorem CIsType.pi (levels : LevelModel R L) {n : Nat} {Γ : CCtx Head n} {A : C
   obtain ⟨c, join⟩ := levels.join_exists hw hu
   exact ⟨c, (levels.join_level join).1, .piForm typedA hw typedC hu join⟩
 
+/-- Abstract one dependent argument using the actual formations of its
+domain and result family. The level model supplies the function universe. -/
+theorem CTyped.abstractTerm (levels : LevelModel R L) {n : Nat} {Γ : CCtx Head n}
+    {A : CTm Head n} {body B : CTm Head (n + 1)}
+    (domain : CIsType Q Γ A) (codomain : CIsType Q (.snoc Γ A) B)
+    (typed : CTyped Q (.snoc Γ A) body B) :
+    CTyped Q Γ (.lam A body) (.pi A B) := by
+  obtain ⟨c, hc, formed⟩ := CIsType.pi levels domain codomain
+  obtain ⟨w, hw, typedA⟩ := domain
+  exact .lamIntro typedA hw formed hc typed
+
 /-- **The function type over a formed telescope of a type over it is a type.** -/
 theorem pisCtx_formed (levels : LevelModel R L) {k : Nat} {Θ : CCtx Head k}
     (formed : CCtxFormed Q Θ) :

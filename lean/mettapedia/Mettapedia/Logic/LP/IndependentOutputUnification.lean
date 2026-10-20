@@ -381,28 +381,35 @@ theorem sequential_publication_exact (first second : List (Term σ × Term σ))
         (sequential_mgu first second theta sequentialResult)]
       exact (total_refinements_exact _ _ accepted observations).symm
 
+/-- The actual total unifier publishes exactly the same refinement family
+when two problems have equal projected solution families. A failed problem
+publishes no answer; successful empty projections still publish one answer. -/
 theorem total_publication_congr
-    (first second : List (Term σ × Term σ))
-    (equivalent : ∀ theta, Unifies theta first ↔ Unifies theta second)
-    (observations : List (Term σ)) :
+    (first second : List (Term σ × Term σ)) (observations : List (Term σ))
+    (same : solutions first observations = solutions second observations) :
     publish (unifyTotal first) observations = publish (unifyTotal second) observations := by
   cases left : unifyTotal first with
   | none =>
-      have right : unifyTotal second = none := by
-        apply (unifyTotal_none_iff_not_unifiable second).mpr
-        rintro ⟨theta, solves⟩
-        exact (unifyTotal_none_iff_not_unifiable first).mp left
-          ⟨theta, (equivalent theta).mpr solves⟩
-      simp [publish, right]
-  | some theta =>
-      obtain ⟨other, right⟩ := unifyTotal_complete
-        ⟨theta, (equivalent theta).mp (unifyTotal_sound first theta left)⟩
-      simp only [publish, right, Option.toList_some, List.map_cons, List.map_nil]
-      congr 1
-      rw [total_refinements_exact first theta left,
-        total_refinements_exact second other right]
-      ext values
-      exact exists_congr fun candidate => and_congr (equivalent candidate) Iff.rfl
+      cases right : unifyTotal second with
+      | none => rfl
+      | some witness =>
+          have member : observations.map witness.applyTerm ∈ solutions second observations :=
+            ⟨witness,unifyTotal_sound _ _ right,rfl⟩
+          rw [← same] at member
+          obtain ⟨other,solves,_⟩ := member
+          exact ((unifyTotal_none_iff_not_unifiable _).mp left ⟨other,solves⟩).elim
+  | some witness =>
+      cases right : unifyTotal second with
+      | none =>
+          have member : observations.map witness.applyTerm ∈ solutions first observations :=
+            ⟨witness,unifyTotal_sound _ _ left,rfl⟩
+          rw [same] at member
+          obtain ⟨other,solves,_⟩ := member
+          exact ((unifyTotal_none_iff_not_unifiable _).mp right ⟨other,solves⟩).elim
+      | some other =>
+          simp only [publish,Option.toList_some,List.map_singleton,
+            total_refinements_exact _ witness left,total_refinements_exact _ other right,same]
+
 
 def earlyOutput (output : σ.vars) (result : Term σ)
     (equations : List (Term σ × Term σ)) : Option (Subst σ) :=
@@ -421,7 +428,10 @@ theorem output_publication_exact (output : σ.vars) (result : Term σ)
   unfold earlyOutput lateOutput
   rw [sequential_publication_exact]
   apply total_publication_congr
+  ext values
+  apply exists_congr
   intro theta
+  apply and_congr _ Iff.rfl
   simp only [Unifies, List.mem_cons, List.mem_append, List.not_mem_nil, or_false]
   constructor
   · intro solves pair member

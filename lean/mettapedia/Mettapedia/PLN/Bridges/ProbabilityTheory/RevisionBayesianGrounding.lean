@@ -17,7 +17,7 @@ namespace Mettapedia.PLN.Bridges.ProbabilityTheory.RevisionBayesianGrounding
 
 open scoped ENNReal
 open Mettapedia.KR.ConceptGeometry.AbstractInheritance
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 open Mettapedia.PLN.Bridges.KR.RevisionStampedWitnessBridge

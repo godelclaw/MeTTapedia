@@ -1,6 +1,10 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaArgumentExecution
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaPatternExecution
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaControlSubstitution
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Returning generated calls through the independent interpreter
@@ -40,19 +44,19 @@ theorem dispatcher_input_interface (program : Program) (head : String) (first : 
 theorem expression_runtime_embedded (program : Program) (names : Names) (fuel : Atom)
     (term : Term) (first : Nat) (rename : String → String) :
     isEmbeddedOp (renBy rename
-      (toLeaTTaAtom (expression program names fuel term first).1)) = true := by
+      (encodeModelAtom (expression program names fuel term first).1)) = true := by
   have guarded (supplied : Atom) (build : Atom → Emit Atom) (start : Nat) :
       isEmbeddedOp (renBy rename
-        (toLeaTTaAtom (withFuel supplied build start).1)) = true := by
+        (encodeModelAtom (withFuel supplied build start).1)) = true := by
     let emitted := build (.var (freshName start)) (start + 1)
-    change isEmbeddedOp (renBy rename (toLeaTTaAtom
+    change isEmbeddedOp (renBy rename (encodeModelAtom
       (call "chain" [call "eval" [call "==" [supplied, .grounded (.int 0)]],
         .var (freshName emitted.2),
         call "unify" [.var (freshName emitted.2), .grounded (.bool true),
           returned (.symbol "nik:Exhausted"),
           call "chain" [call "eval" [call "-" [supplied, .grounded (.int 1)]],
             .var (freshName start), emitted.1]]]))) = true
-    simp only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil,
+    simp only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil,
       isEmbeddedOp]
     rfl
   rw [expression]
@@ -70,23 +74,23 @@ theorem resultBranches_enters_compiled_expression (environment : MinEnv) (state 
     (namesBound : ∀ entry ∈ names, UsesBefore first entry.2)
     (fuelBound : UsesBefore first sourceFuel)
     (stored : ClosedValueBindings bindings)
-    (closed : (toLeaTTaAtom payload).vars = [])
+    (closed : (encodeModelAtom payload).vars = [])
     (freshName : Metta.Bindings.lookupVal bindings (rename (MeTTaEmit.freshName index)) = none)
     (prepared : Metta.instantiate bindings (renBy rename
-      (toLeaTTaAtom (expression program names sourceFuel term first).1)) =
-      renBy rename (toLeaTTaAtom (expression program names sourceFuel term first).1))
+      (encodeModelAtom (expression program names sourceFuel term first).1)) =
+      renBy rename (encodeModelAtom (expression program names sourceFuel term first).1))
     (parentBody : Metta.Atom) (scope : List String) (continuation : Stack)
     (rest : List Item) (done : List (Metta.Atom × Metta.Bindings)) :
     let parent : Frame := { atom := parentBody, ret := .function, vars := scope }
     let output := Metta.Bindings.addValRaw bindings (rename (MeTTaEmit.freshName index))
-      (toLeaTTaAtom payload)
+      (encodeModelAtom payload)
     interpretFuel environment (fuel + 2) state
-        (⟨atomToStack (renBy rename (toLeaTTaAtom
+        (⟨atomToStack (renBy rename (encodeModelAtom
           (resultBranches (value payload) (.var (MeTTaEmit.freshName index))
             (expression program names sourceFuel term first).1)))
           (parent :: continuation), bindings⟩ :: rest) done =
       interpretFuel environment fuel state
-        (⟨atomToStack (renBy rename (toLeaTTaAtom (expression program
+        (⟨atomToStack (renBy rename (encodeModelAtom (expression program
           (names.map (fun entry => (entry.1,
             Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal.substituteName
               (MeTTaEmit.freshName index) payload entry.2)))
@@ -97,8 +101,8 @@ theorem resultBranches_enters_compiled_expression (environment : MinEnv) (state 
   have filled := Control.renamed_expression_runtime_substitution program names sourceFuel
     payload term index first rename injective closed before namesBound fuelBound
   have embedded : isEmbeddedOp (Metta.Subst.apply
-      [(rename (MeTTaEmit.freshName index), toLeaTTaAtom payload)]
-      (renBy rename (toLeaTTaAtom (expression program names sourceFuel term first).1))) = true := by
+      [(rename (MeTTaEmit.freshName index), encodeModelAtom payload)]
+      (renBy rename (encodeModelAtom (expression program names sourceFuel term first).1))) = true := by
     rw [filled]
     exact expression_runtime_embedded _ _ _ _ _ _
   have entered := (renamed_resultBranches_value_enters environment state bindings rename payload
@@ -109,12 +113,12 @@ theorem resultBranches_enters_compiled_expression (environment : MinEnv) (state 
 private theorem let_body_runtime_substitution (program : Program) (sourceBindings : Env)
     (name : String) (payload body : Term) (remaining index first : Nat)
     (before : index < first) (rename : String → String) (injective : Function.Injective rename) :
-    Metta.Subst.apply [(rename (freshName index), toLeaTTaAtom (MeTTaData.encode payload))]
-      (renBy rename (toLeaTTaAtom (expression program
+    Metta.Subst.apply [(rename (freshName index), encodeModelAtom (MeTTaData.encode payload))]
+      (renBy rename (encodeModelAtom (expression program
         ((name, .var (freshName index)) :: sourceBindings.map (fun row =>
           (row.1, MeTTaData.encode row.2)))
         (.grounded (.int remaining)) body first).1)) =
-    renBy rename (toLeaTTaAtom (expression program
+    renBy rename (encodeModelAtom (expression program
       (((name, payload) :: sourceBindings).map (fun row => (row.1, MeTTaData.encode row.2)))
       (.grounded (.int remaining)) body first).1) := by
   have namesBound : ∀ entry ∈ (name, Atom.var (freshName index)) ::
@@ -149,19 +153,19 @@ theorem resultBranches_enters_let_body (environment : MinEnv) (state : St)
     let pending := (expression program
       ((name, .var (freshName index)) :: sourceBindings.map (fun row =>
         (row.1, MeTTaData.encode row.2))) (.grounded (.int remaining)) body first).1
-    (∀ key ∈ (renBy rename (toLeaTTaAtom pending)).vars,
+    (∀ key ∈ (renBy rename (encodeModelAtom pending)).vars,
       Metta.Bindings.lookupVal bindings key = none) →
-    let entered := renBy rename (toLeaTTaAtom (expression program
+    let entered := renBy rename (encodeModelAtom (expression program
       (((name, payload) :: sourceBindings).map (fun row => (row.1, MeTTaData.encode row.2)))
       (.grounded (.int remaining)) body first).1)
     let output := Metta.Bindings.addValRaw bindings (rename (freshName index))
-      (toLeaTTaAtom (MeTTaData.encode payload))
+      (encodeModelAtom (MeTTaData.encode payload))
     let parent : Frame := {atom := parentBody, ret := .function, vars := scope}
     ClosedValueBindings output ∧ LeaRuntimeBindingInvariant output ∧
     (∀ other, other ≠ rename (freshName index) →
       Metta.Bindings.lookupVal output other = Metta.Bindings.lookupVal bindings other) ∧
     interpretFuel environment (fuel + 2) state
-      (⟨atomToStack (renBy rename (toLeaTTaAtom
+      (⟨atomToStack (renBy rename (encodeModelAtom
         (resultBranches (value (MeTTaData.encode payload)) (.var (freshName index)) pending)))
         (parent :: continuation), bindings⟩ :: rest) done =
     interpretFuel environment fuel state
@@ -170,11 +174,11 @@ theorem resultBranches_enters_let_body (environment : MinEnv) (state : St)
   have substituted := let_body_runtime_substitution program sourceBindings name payload body
     remaining index first before rename injective
   change Metta.Subst.apply
-    [(rename (freshName index), toLeaTTaAtom (MeTTaData.encode payload))]
-    (renBy rename (toLeaTTaAtom pending)) = entered at substituted
+    [(rename (freshName index), encodeModelAtom (MeTTaData.encode payload))]
+    (renBy rename (encodeModelAtom pending)) = entered at substituted
   have embedded : isEmbeddedOp (Metta.Subst.apply
-      [(rename (freshName index), toLeaTTaAtom (MeTTaData.encode payload))]
-      (renBy rename (toLeaTTaAtom pending))) = true := by
+      [(rename (freshName index), encodeModelAtom (MeTTaData.encode payload))]
+      (renBy rename (encodeModelAtom pending))) = true := by
     rw [substituted]
     exact expression_runtime_embedded _ _ _ _ _ _
   obtain ⟨closed, preserved, frame, run⟩ := renamed_resultBranches_value_enters environment state
@@ -260,17 +264,17 @@ theorem let_positive_execution_in_frame (program : Program) (names : Names)
     (rest : List Item) (done : List (Metta.Atom × Metta.Bindings)) :
     let source := (expression program names (.grounded (.int (remaining + 1)))
       (.expr [.sym "let", .var name, bound, body]) first).1
-    (∀ key ∈ (renBy rename (toLeaTTaAtom source)).vars,
+    (∀ key ∈ (renBy rename (encodeModelAtom source)).vars,
       Metta.Bindings.lookupVal bindings key = none) →
     let target := Atom.var (freshName (first + 1))
     let assigned := expression program names (.grounded (.int remaining)) bound (first + 2)
     let tail := expression program ((name, target) :: names)
       (.grounded (.int remaining)) body assigned.2
-    let entered := renBy rename (toLeaTTaAtom
+    let entered := renBy rename (encodeModelAtom
       (bindResult assigned.1 target tail.1 tail.2).1)
     let parent : Frame := {atom := parentBody, ret := .function, vars := scope}
     interpretFuel environment (fuel + 8) state
-      (⟨atomToStack (renBy rename (toLeaTTaAtom source)) (parent :: continuation), bindings⟩ :: rest) done =
+      (⟨atomToStack (renBy rename (encodeModelAtom source)) (parent :: continuation), bindings⟩ :: rest) done =
     interpretFuel environment fuel state
       (⟨atomToStack entered (parent :: continuation), bindings⟩ :: rest) done := by
   intro source unassigned target assigned tail entered parent
@@ -315,8 +319,8 @@ theorem let_positive_execution_in_frame (program : Program) (names : Names)
     have same : key = rename (freshName first) := by simpa [Metta.Atom.vars] using member
     subst key
     exact unassigned _ (expression_remaining_occurs program names _ _ first rename)
-  have rawFixed : Metta.instantiate bindings (renBy rename (toLeaTTaAtom raw.1)) =
-      renBy rename (toLeaTTaAtom raw.1) := by
+  have rawFixed : Metta.instantiate bindings (renBy rename (encodeModelAtom raw.1)) =
+      renBy rename (encodeModelAtom raw.1) := by
     apply instantiate_unassigned bindings stored
     intro key member
     apply unassigned key
@@ -327,12 +331,12 @@ theorem let_positive_execution_in_frame (program : Program) (names : Names)
       [.grounded (.int (remaining + 1)), .grounded (.int 1)]], .var (freshName first), raw.1]]] := by
       rw [sourceShape]
       rfl
-    simp only [shape, call, returned, toLeaTTaAtom, toLeaTTaAtoms, renBy,
+    simp only [shape, call, returned, encodeModelAtom, encodeModelAtoms, renBy,
       List.map_cons, List.map_nil, Metta.Atom.vars, List.flatten_cons, List.flatten_nil,
       List.nil_append, List.append_nil, List.mem_append, List.mem_cons, List.not_mem_nil]
     tauto
   have transported := Control.fillInputs_runtime [(first, Atom.grounded (.int remaining))]
-    raw.1 rename injective (by simp [toLeaTTaAtom, Metta.Atom.vars])
+    raw.1 rename injective (by simp [encodeModelAtom, Metta.Atom.vars])
   have substituted := congrArg Prod.fst
     (let_core_substitute_fuel program names name bound body first remaining namesData)
   change substituteName (freshName first) (.grounded (.int remaining)) raw.1 =
@@ -340,7 +344,7 @@ theorem let_positive_execution_in_frame (program : Program) (names : Names)
   simp only [List.map_cons, List.map_nil, Control.fillInputs] at transported
   rw [substituted] at transported
   change Metta.Subst.apply [(rename (freshName first), .gnd (.int remaining))]
-    (renBy rename (toLeaTTaAtom raw.1)) = entered at transported
+    (renBy rename (encodeModelAtom raw.1)) = entered at transported
   have run := renamed_withFuel_positive_execution_in_frame environment state bindings rename
     injective build first remaining fuel parentBody scope continuation rest done groundings
     privateRemaining (by simpa only [buildShape] using rawBound)
@@ -357,9 +361,9 @@ theorem let_waiting_variables_disjoint (program : Program) (names : Names)
     let assigned := expression program names (.grounded (.int remaining)) bound (first + 2)
     let tail := expression program ((name, target) :: names)
       (.grounded (.int remaining)) body assigned.2
-    ∀ key ∈ (renBy rename (toLeaTTaAtom target)).vars ++
-        (renBy rename (toLeaTTaAtom tail.1)).vars,
-      key ∉ (renBy rename (toLeaTTaAtom assigned.1)).vars := by
+    ∀ key ∈ (renBy rename (encodeModelAtom target)).vars ++
+        (renBy rename (encodeModelAtom tail.1)).vars,
+      key ∉ (renBy rename (encodeModelAtom assigned.1)).vars := by
   intro target assigned tail key waiting child
   obtain ⟨index, lower, upper, same⟩ := Control.renamed_expression_data_name_bounds program names
     (.grounded (.int remaining)) bound (first + 2) rename namesData (.grounded _) key child
@@ -373,7 +377,7 @@ theorem let_waiting_variables_disjoint (program : Program) (names : Names)
     omega
   rcases List.mem_append.mp waiting with receiver | pending
   · have receiverSame : key = rename (freshName (first + 1)) := by
-      simpa only [target, toLeaTTaAtom, renBy, Metta.Atom.vars, List.mem_singleton] using receiver
+      simpa only [target, encodeModelAtom, renBy, Metta.Atom.vars, List.mem_singleton] using receiver
     have := freshName_injective (injective (receiverSame.symm.trans same))
     omega
   · have targetBound : UsesBefore assigned.2 target :=
@@ -402,17 +406,17 @@ theorem let_waiting_variables_disjoint (program : Program) (names : Names)
 even when a chain's explicit shared-variable scope is empty. -/
 theorem bindResult_waiting_variables_live (rename : String → String)
     (source name body : Atom) (first : Nat) (previous : Stack) :
-    let sourceCall := renBy rename (toLeaTTaAtom (call "function" [source]))
-    let template := renBy rename (toLeaTTaAtom (resultBranches (.var (freshName first)) name body))
+    let sourceCall := renBy rename (encodeModelAtom (call "function" [source]))
+    let template := renBy rename (encodeModelAtom (resultBranches (.var (freshName first)) name body))
     let caller : Frame :=
       {atom := .expr [.sym "chain", sourceCall, .var (rename (freshName first)), template],
         ret := .chain, vars := chainFrameVars previous sourceCall template}
-    ∀ key ∈ (renBy rename (toLeaTTaAtom name)).vars ++ (renBy rename (toLeaTTaAtom body)).vars,
+    ∀ key ∈ (renBy rename (encodeModelAtom name)).vars ++ (renBy rename (encodeModelAtom body)).vars,
       key ∈ liveStackVars (caller :: previous) := by
   intro sourceCall template caller key member
   have waiting : key ∈ template.vars := by
     simp only [template, resultBranches, selectBranches, List.foldr_cons, List.foldr_nil,
-      call, value, returned, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil,
+      call, value, returned, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil,
       Metta.Atom.vars, List.flatten_cons, List.flatten_nil,
       List.nil_append, List.append_nil, List.mem_append, List.mem_cons, List.not_mem_nil] at *
     tauto
@@ -434,16 +438,16 @@ theorem closed_substitution_vars_subset (atom payload : Metta.Atom) (name : Stri
 
 private theorem withFuel_body_variable (sourceFuel : Atom) (build : Atom → Emit Atom)
     (first : Nat) (rename : String → String) (key : String)
-    (member : key ∈ (renBy rename (toLeaTTaAtom (build (.var (freshName first)) (first + 1)).1)).vars) :
-    key ∈ (renBy rename (toLeaTTaAtom (withFuel sourceFuel build first).1)).vars := by
+    (member : key ∈ (renBy rename (encodeModelAtom (build (.var (freshName first)) (first + 1)).1)).vars) :
+    key ∈ (renBy rename (encodeModelAtom (withFuel sourceFuel build first).1)).vars := by
   let raw := build (.var (freshName first)) (first + 1)
   have shape : (withFuel sourceFuel build first).1 = call "chain"
     [call "eval" [call "==" [sourceFuel, .grounded (.int 0)]], .var (freshName raw.2),
       call "unify" [.var (freshName raw.2), .grounded (.bool true),
         returned (.symbol "nik:Exhausted"), call "chain"
           [call "eval" [call "-" [sourceFuel, .grounded (.int 1)]], .var (freshName first), raw.1]]] := rfl
-  change key ∈ (renBy rename (toLeaTTaAtom raw.1)).vars at member
-  simp only [shape, call, returned, toLeaTTaAtom, toLeaTTaAtoms, renBy,
+  change key ∈ (renBy rename (encodeModelAtom raw.1)).vars at member
+  simp only [shape, call, returned, encodeModelAtom, encodeModelAtoms, renBy,
     List.map_cons, List.map_nil, Metta.Atom.vars, List.flatten_cons, List.flatten_nil,
     List.nil_append, List.append_nil, List.mem_append, List.mem_cons, List.not_mem_nil]
   tauto
@@ -460,8 +464,8 @@ theorem let_core_variables_in_source (program : Program) (names : Names)
     let assigned := expression program names (.grounded (.int remaining)) bound (first + 2)
     let tail := expression program ((name, target) :: names)
       (.grounded (.int remaining)) body assigned.2
-    ∀ key ∈ (renBy rename (toLeaTTaAtom (bindResult assigned.1 target tail.1 tail.2).1)).vars,
-      key ∈ (renBy rename (toLeaTTaAtom source)).vars := by
+    ∀ key ∈ (renBy rename (encodeModelAtom (bindResult assigned.1 target tail.1 tail.2).1)).vars,
+      key ∈ (renBy rename (encodeModelAtom source)).vars := by
   intro source target assigned tail key member
   let build : Atom → Emit Atom := fun n => do
     let t ← fresh
@@ -478,12 +482,12 @@ theorem let_core_variables_in_source (program : Program) (names : Names)
   change Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal.substituteName (freshName first)
     (.grounded (.int remaining)) raw.1 = (bindResult assigned.1 target tail.1 tail.2).1 at filled
   have transport := Control.fillInputs_runtime [(first, Atom.grounded (.int remaining))]
-    raw.1 rename injective (by simp [toLeaTTaAtom, Metta.Atom.vars])
+    raw.1 rename injective (by simp [encodeModelAtom, Metta.Atom.vars])
   simp only [List.map_cons, List.map_nil, Control.fillInputs] at transport
   rw [filled] at transport
   rw [← transport] at member
   have rawMember := closed_substitution_vars_subset _ _ _
-    (by simp [toLeaTTaAtom, Metta.Atom.vars]) key member
+    (by simp [encodeModelAtom, Metta.Atom.vars]) key member
   rw [sourceShape]
   exact withFuel_body_variable _ build first rename key rawMember
 
@@ -498,16 +502,16 @@ theorem let_waiting_variables_in_source (program : Program) (names : Names)
     let assigned := expression program names (.grounded (.int remaining)) bound (first + 2)
     let tail := expression program ((name, target) :: names)
       (.grounded (.int remaining)) body assigned.2
-    ∀ key ∈ (renBy rename (toLeaTTaAtom target)).vars ++ (renBy rename (toLeaTTaAtom tail.1)).vars,
-      key ∈ (renBy rename (toLeaTTaAtom source)).vars := by
+    ∀ key ∈ (renBy rename (encodeModelAtom target)).vars ++ (renBy rename (encodeModelAtom tail.1)).vars,
+      key ∈ (renBy rename (encodeModelAtom source)).vars := by
   intro source target assigned tail key member
   apply let_core_variables_in_source program names name bound body first remaining namesData
     rename injective key
-  change key ∈ (renBy rename (toLeaTTaAtom (call "chain"
+  change key ∈ (renBy rename (encodeModelAtom (call "chain"
     [call "function" [assigned.1], .var (freshName tail.2),
      resultBranches (.var (freshName tail.2)) target tail.1]))).vars
   simp only [resultBranches, selectBranches, List.foldr_cons, List.foldr_nil, call, value,
-    returned, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil,
+    returned, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil,
     Metta.Atom.vars, List.flatten_cons, List.flatten_nil, List.nil_append,
     List.append_nil, List.mem_append, List.mem_cons, List.not_mem_nil] at *
   tauto
@@ -516,15 +520,15 @@ private theorem let_operand_variables_in_source (program : Program) (names : Nam
     (name : String) (bound body : Term) (first remaining : Nat)
     (namesData : ∀ entry ∈ names, MeTTaData.DataAtom entry.2)
     (rename : String → String) (injective : Function.Injective rename) :
-    ∀ key ∈ (renBy rename (toLeaTTaAtom
+    ∀ key ∈ (renBy rename (encodeModelAtom
         (expression program names (.grounded (.int remaining)) bound (first + 2)).1)).vars,
-      key ∈ (renBy rename (toLeaTTaAtom (expression program names (.grounded (.int (remaining + 1)))
+      key ∈ (renBy rename (encodeModelAtom (expression program names (.grounded (.int (remaining + 1)))
         (.expr [.sym "let", .var name, bound, body]) first).1)).vars := by
   intro key member
   apply let_core_variables_in_source program names name bound body first remaining namesData
     rename injective key
-  change key ∈ (renBy rename (toLeaTTaAtom (call "chain" [call "function" [_], _, _]))).vars
-  simp only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil,
+  change key ∈ (renBy rename (encodeModelAtom (call "chain" [call "function" [_], _, _]))).vars
+  simp only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil,
     Metta.Atom.vars, List.flatten_cons, List.flatten_nil, List.nil_append,
     List.append_nil, List.mem_append, List.mem_cons, List.not_mem_nil]
   tauto
@@ -551,36 +555,36 @@ theorem let_value_enters_continuation (program : Program) (sourceBindings : Env)
     let tail := expression program ((name, target) :: names)
       (.grounded (.int remaining)) body assigned.2
     let parent : Frame := {atom := parentBody, ret := .function, vars := scope}
-    let sourceCall := renBy rename (toLeaTTaAtom (call "function" [assigned.1]))
-    let template := renBy rename (toLeaTTaAtom (resultBranches (.var (freshName tail.2)) target tail.1))
+    let sourceCall := renBy rename (encodeModelAtom (call "function" [assigned.1]))
+    let template := renBy rename (encodeModelAtom (resultBranches (.var (freshName tail.2)) target tail.1))
     let recipient : Frame :=
       {atom := .expr [.sym "chain", sourceCall, .var (rename (freshName tail.2)), template],
        ret := .chain, vars := chainFrameVars (parent :: continuation) sourceCall template}
-    (∀ key ∈ (renBy rename (toLeaTTaAtom source)).vars,
+    (∀ key ∈ (renBy rename (encodeModelAtom source)).vars,
       Metta.Bindings.lookupVal incoming key = none) →
     (∀ key ∈ liveStackVars (recipient :: parent :: continuation),
-      key ∉ (renBy rename (toLeaTTaAtom assigned.1)).vars →
+      key ∉ (renBy rename (encodeModelAtom assigned.1)).vars →
       Metta.Bindings.lookupVal incoming key = none →
       Metta.Bindings.lookupVal middle key = none) →
     (interpretFuel environment (fuel + 4 + cost) state
       (⟨atomToStack sourceCall (recipient :: parent :: continuation), incoming⟩ :: rest) done =
      interpretFuel environment (fuel + 4) nextState
       (finItem (recipient :: parent :: continuation)
-        (toLeaTTaAtom (value (MeTTaData.encode payload))) middle :: rest) done) →
+        (encodeModelAtom (value (MeTTaData.encode payload))) middle :: rest) done) →
     let output := Metta.Bindings.addValRaw middle (rename (freshName (first + 1)))
-      (toLeaTTaAtom (MeTTaData.encode payload))
-    let entered := renBy rename (toLeaTTaAtom (expression program
+      (encodeModelAtom (MeTTaData.encode payload))
+    let entered := renBy rename (encodeModelAtom (expression program
       (((name, payload) :: sourceBindings).map (fun row => (row.1, MeTTaData.encode row.2)))
       (.grounded (.int remaining)) body assigned.2).1)
     ClosedValueBindings output ∧ LeaRuntimeBindingInvariant output ∧
-    (∀ key ∈ entered.vars, key ∈ (renBy rename (toLeaTTaAtom source)).vars) ∧
+    (∀ key ∈ entered.vars, key ∈ (renBy rename (encodeModelAtom source)).vars) ∧
     (∀ key ∈ entered.vars, Metta.Bindings.lookupVal output key = none) ∧
     (∀ key ∈ liveStackVars (parent :: continuation),
-      key ∉ (renBy rename (toLeaTTaAtom source)).vars →
+      key ∉ (renBy rename (encodeModelAtom source)).vars →
       Metta.Bindings.lookupVal incoming key = none →
       Metta.Bindings.lookupVal output key = none) ∧
     interpretFuel environment (fuel + 12 + cost) state
-      (⟨atomToStack (renBy rename (toLeaTTaAtom source)) (parent :: continuation), incoming⟩ :: rest) done =
+      (⟨atomToStack (renBy rename (encodeModelAtom source)) (parent :: continuation), incoming⟩ :: rest) done =
     interpretFuel environment fuel nextState
       (⟨atomToStack entered (parent :: continuation), output⟩ :: rest) done := by
   intro names source target assigned tail parent sourceCall template recipient sourcePrivate
@@ -603,8 +607,8 @@ theorem let_value_enters_continuation (program : Program) (sourceBindings : Env)
       · exact targetBound
       · exact namesBound _ entry member) (usesBefore_grounded _ _)
   change assigned.2 < tail.2 ∧ UsesBefore tail.2 tail.1 at tailBound
-  have outputPrivate : ∀ key ∈ (renBy rename (toLeaTTaAtom target)).vars ++
-      (renBy rename (toLeaTTaAtom tail.1)).vars, Metta.Bindings.lookupVal middle key = none := by
+  have outputPrivate : ∀ key ∈ (renBy rename (encodeModelAtom target)).vars ++
+      (renBy rename (encodeModelAtom tail.1)).vars, Metta.Bindings.lookupVal middle key = none := by
     intro key member
     apply framePreserved key
     · exact bindResult_waiting_variables_live rename assigned.1 target tail.1 tail.2
@@ -614,8 +618,8 @@ theorem let_value_enters_continuation (program : Program) (sourceBindings : Env)
     · exact sourcePrivate key (let_waiting_variables_in_source program names name bound body
         first remaining namesData rename injective key member)
   have receiverPrivate : Metta.Bindings.lookupVal middle (rename (freshName (first + 1))) = none :=
-    outputPrivate _ (List.mem_append_left _ (by simp [target, toLeaTTaAtom, Metta.Atom.vars]))
-  have pendingPrivate : ∀ key ∈ (renBy rename (toLeaTTaAtom tail.1)).vars,
+    outputPrivate _ (List.mem_append_left _ (by simp [target, encodeModelAtom, Metta.Atom.vars]))
+  have pendingPrivate : ∀ key ∈ (renBy rename (encodeModelAtom tail.1)).vars,
       Metta.Bindings.lookupVal middle key = none :=
     fun key member => outputPrivate key (List.mem_append_right _ member)
   obtain ⟨outputStored, outputInvariant, _, enteredRun⟩ := resultBranches_enters_let_body environment
@@ -624,10 +628,10 @@ theorem let_value_enters_continuation (program : Program) (sourceBindings : Env)
     parentBody scope continuation rest done pendingPrivate
   have filled := let_body_runtime_substitution program sourceBindings name payload body
     remaining (first + 1) assigned.2 (by omega) rename injective
-  change Metta.Subst.apply [(rename (freshName (first + 1)), toLeaTTaAtom (MeTTaData.encode payload))]
-    (renBy rename (toLeaTTaAtom tail.1)) = entered at filled
+  change Metta.Subst.apply [(rename (freshName (first + 1)), encodeModelAtom (MeTTaData.encode payload))]
+    (renBy rename (encodeModelAtom tail.1)) = entered at filled
   have materialized := instantiate_add_closed_value middle (rename (freshName (first + 1)))
-    (toLeaTTaAtom (MeTTaData.encode payload)) (renBy rename (toLeaTTaAtom tail.1))
+    (encodeModelAtom (MeTTaData.encode payload)) (renBy rename (encodeModelAtom tail.1))
     middleStored (data_atom_runtime_closed (MeTTaData.encode_data payload)) receiverPrivate
   rw [instantiate_unassigned middle middleStored _ pendingPrivate, filled] at materialized
   have fixed : Metta.instantiate output entered = entered := by
@@ -656,14 +660,14 @@ theorem let_value_enters_continuation (program : Program) (sourceBindings : Env)
       apply let_waiting_variables_in_source program names name bound body first remaining
         namesData rename injective key
       apply List.mem_append_left
-      simp only [toLeaTTaAtom, renBy, Metta.Atom.vars, List.mem_singleton]
+      simp only [encodeModelAtom, renBy, Metta.Atom.vars, List.mem_singleton]
       exact same
     exact (lookup_add_other middle _ key _ different).trans middlePrivate
   have guardRun := let_positive_execution_in_frame program names name bound body first remaining
     (fuel + 4 + cost) environment state incoming rename injective namesData stored groundings
     parentBody scope continuation rest done sourcePrivate
-  have resultClosed : (toLeaTTaAtom (value (MeTTaData.encode payload))).vars = [] := by
-    simp [value, call, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars,
+  have resultClosed : (encodeModelAtom (value (MeTTaData.encode payload))).vars = [] := by
+    simp [value, call, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars,
       data_atom_runtime_closed (MeTTaData.encode_data payload)]
   have bindRun := renamed_bindResult_of_operand_execution environment state nextState incoming
     middle rename injective assigned.1 (value (MeTTaData.encode payload)) target tail.1 tail.2
@@ -684,7 +688,7 @@ theorem renamed_resultBranches_stopped_enters_handler (environment : MinEnv) (st
     let steps := if result = "nik:Failure" then 3 else 5
     let parent : Frame := {atom := parentBody, ret := .function, vars := scope}
     interpretFuel environment (fuel + steps) state
-      (⟨atomToStack (renBy rename (toLeaTTaAtom (resultBranches (.symbol result) name body)))
+      (⟨atomToStack (renBy rename (encodeModelAtom (resultBranches (.symbol result) name body)))
         (parent :: continuation), bindings⟩ :: rest) done =
     interpretFuel environment fuel state
       (finItem (parent :: continuation) (.expr [.sym "return", .sym result]) bindings :: rest) done := by
@@ -693,13 +697,13 @@ theorem renamed_resultBranches_stopped_enters_handler (environment : MinEnv) (st
   have bodyRenamed := (renamed_atom_contract rename body).2
   rcases stopped with rfl | rfl
   · simpa only [steps, if_true, resultBranches, selectBranches, List.foldr_cons, List.foldr_nil,
-      call, value, returned, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil,
+      call, value, returned, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil,
       nameRenamed, bodyRenamed] using resultBranches_failure_enters_handler environment state
         bindings (renameTypeVars rename name) (renameTypeVars rename body) parentBody scope
         continuation fuel rest done acyclic
   · simpa only [steps, show ("nik:Exhausted" = "nik:Failure") = False from propext (by decide),
       if_false, resultBranches, selectBranches, List.foldr_cons, List.foldr_nil,
-      call, value, returned, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil,
+      call, value, returned, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil,
       nameRenamed, bodyRenamed] using resultBranches_exhausted_enters_handler environment state
         bindings (renameTypeVars rename name) (renameTypeVars rename body) parentBody scope
         continuation fuel rest done acyclic
@@ -726,19 +730,19 @@ theorem let_stopped_execution_in_frame (program : Program) (names : Names)
     let tail := expression program ((name, target) :: names)
       (.grounded (.int remaining)) body assigned.2
     let parent : Frame := {atom := parentBody, ret := .function, vars := scope}
-    let sourceCall := renBy rename (toLeaTTaAtom (call "function" [assigned.1]))
-    let template := renBy rename (toLeaTTaAtom (resultBranches (.var (freshName tail.2)) target tail.1))
+    let sourceCall := renBy rename (encodeModelAtom (call "function" [assigned.1]))
+    let template := renBy rename (encodeModelAtom (resultBranches (.var (freshName tail.2)) target tail.1))
     let recipient : Frame :=
       {atom := .expr [.sym "chain", sourceCall, .var (rename (freshName tail.2)), template],
        ret := .chain, vars := chainFrameVars (parent :: continuation) sourceCall template}
-    (∀ key ∈ (renBy rename (toLeaTTaAtom source)).vars,
+    (∀ key ∈ (renBy rename (encodeModelAtom source)).vars,
       Metta.Bindings.lookupVal incoming key = none) →
     (interpretFuel environment (fuel + steps + 2 + cost) state
       (⟨atomToStack sourceCall (recipient :: parent :: continuation), incoming⟩ :: rest) done =
      interpretFuel environment (fuel + steps + 2) nextState
       (finItem (recipient :: parent :: continuation) (.sym result) middle :: rest) done) →
     interpretFuel environment (fuel + steps + 10 + cost) state
-      (⟨atomToStack (renBy rename (toLeaTTaAtom source)) (parent :: continuation), incoming⟩ :: rest) done =
+      (⟨atomToStack (renBy rename (encodeModelAtom source)) (parent :: continuation), incoming⟩ :: rest) done =
     interpretFuel environment fuel nextState
       (finItem (parent :: continuation) (.expr [.sym "return", .sym result]) middle :: rest) done := by
   intro steps source target assigned tail parent sourceCall template recipient sourcePrivate operandRun
@@ -761,7 +765,7 @@ theorem let_stopped_execution_in_frame (program : Program) (names : Names)
     parentBody scope continuation rest done sourcePrivate
   have bindRun := renamed_bindResult_of_operand_execution environment state nextState incoming
     middle rename injective assigned.1 (.symbol result) target tail.1 tail.2 cost (fuel + steps)
-    parent continuation rest done (by simp [toLeaTTaAtom, Metta.Atom.vars])
+    parent continuation rest done (by simp [encodeModelAtom, Metta.Atom.vars])
       (targetBound.mono tailBound.1.le) tailBound.2 operandRun
   have stopRun := renamed_resultBranches_stopped_enters_handler environment nextState middle
     target tail.1 rename result stopped parentBody scope continuation fuel rest done acyclic
@@ -779,18 +783,18 @@ theorem computed_operand_enters_expression (environment : MinEnv) (state : St)
     (index first fuel : Nat) (before : index < first)
     (namesBound : ∀ entry ∈ names, UsesBefore first entry.2)
     (fuelBound : UsesBefore first sourceFuel)
-    (closed : (toLeaTTaAtom replacement).vars = [])
+    (closed : (encodeModelAtom replacement).vars = [])
     (scope : List String) (parent : Frame) (continuation : Stack)
     (rest : List Item) (done : List (Metta.Atom × Metta.Bindings)) :
     let template := renBy rename
-      (toLeaTTaAtom (expression program names sourceFuel term first).1)
+      (encodeModelAtom (expression program names sourceFuel term first).1)
     let caller : Frame :=
       { atom := .expr [.sym "chain", source, .var (rename (freshName index)), template],
         ret := .chain, vars := scope }
     interpretFuel environment (fuel + 2) state
-        (finItem (caller :: parent :: continuation) (toLeaTTaAtom replacement) bindings :: rest) done =
+        (finItem (caller :: parent :: continuation) (encodeModelAtom replacement) bindings :: rest) done =
       interpretFuel environment fuel state
-        (⟨atomToStack (renBy rename (toLeaTTaAtom (expression program
+        (⟨atomToStack (renBy rename (encodeModelAtom (expression program
           (names.map (fun entry => (entry.1,
             Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal.substituteName
               (freshName index) replacement entry.2)))
@@ -798,9 +802,9 @@ theorem computed_operand_enters_expression (environment : MinEnv) (state : St)
             (freshName index) replacement sourceFuel) term first).1))
           (parent :: continuation), bindings⟩ :: rest) done := by
   intro template caller
-  rw [chain_result_enters environment state bindings source (toLeaTTaAtom replacement)
+  rw [chain_result_enters environment state bindings source (encodeModelAtom replacement)
     template (rename (freshName index)) scope parent continuation fuel rest done,
-    Metta.instantiate_of_closed bindings (toLeaTTaAtom replacement) closed]
+    Metta.instantiate_of_closed bindings (encodeModelAtom replacement) closed]
   rw [Control.renamed_expression_runtime_substitution program names sourceFuel replacement term
     index first rename injective closed before namesBound fuelBound]
 
@@ -827,8 +831,8 @@ theorem renamed_returnInvocation_enters_handler (environment : MinEnv)
     (notValue : head ≠ "nik:Value") (notPrimitive : head ≠ "nik:primitive")
     (closed : result.vars = []) :
     let parent : Frame := { atom := parentBody, ret := .function, vars := scope }
-    let source := renBy rename (toLeaTTaAtom (call "eval" [call head arguments]))
-    let template := renBy rename (toLeaTTaAtom (returned (.var (freshName first))))
+    let source := renBy rename (encodeModelAtom (call "eval" [call head arguments]))
+    let template := renBy rename (encodeModelAtom (returned (.var (freshName first))))
     let recipient : Frame :=
       { atom := .expr [.sym "chain", source, .var (rename (freshName first)), template],
         ret := .chain,
@@ -839,17 +843,17 @@ theorem renamed_returnInvocation_enters_handler (environment : MinEnv)
         interpretFuel environment (fuel + 3) nextState
           (finItem (recipient :: parent :: continuation) result output :: rest) done) →
     interpretFuel environment (fuel + 3 + cost) state
-        (⟨atomToStack (renBy rename (toLeaTTaAtom (returnInvocation (call head arguments) first).1))
+        (⟨atomToStack (renBy rename (encodeModelAtom (returnInvocation (call head arguments) first).1))
           (parent :: continuation), incoming⟩ :: rest) done =
       interpretFuel environment fuel nextState
         (finItem (parent :: continuation) (.expr [.sym "return", result]) output :: rest) done := by
   intro parent source template recipient callee
   rw [returnInvocation_call_shape head arguments first notValue notPrimitive]
-  have shape : renBy rename (toLeaTTaAtom
+  have shape : renBy rename (encodeModelAtom
       (call "chain" [call "eval" [call head arguments], .var (freshName first),
         returned (.var (freshName first))])) =
       .expr [.sym "chain", source, .var (rename (freshName first)), template] := by
-    simp only [source, template, call, toLeaTTaAtom, toLeaTTaAtoms, renBy,
+    simp only [source, template, call, encodeModelAtom, encodeModelAtoms, renBy,
       List.map_cons, List.map_nil]
   rw [shape]
   change interpretFuel environment (fuel + 3 + cost) state
@@ -861,7 +865,7 @@ theorem renamed_returnInvocation_enters_handler (environment : MinEnv)
     Metta.instantiate_of_closed output result closed]
   have replaced : Metta.Subst.apply [(rename (freshName first), result)] template =
       .expr [.sym "return", result] := by
-    simp [template, returned, call, toLeaTTaAtom, toLeaTTaAtoms, renBy,
+    simp [template, returned, call, encodeModelAtom, encodeModelAtoms, renBy,
       Metta.Subst.apply, Metta.Subst.lookup]
   rw [replaced, return_enters_handler environment nextState output parentBody result scope
     continuation fuel rest done]
@@ -880,8 +884,8 @@ theorem renamed_returnInvocation_of_call_execution (environment : MinEnv)
     (notValue : head ≠ "nik:Value") (notPrimitive : head ≠ "nik:primitive")
     (closed : result.vars = []) :
     let parent : Frame := { atom := parentBody, ret := .function, vars := scope }
-    let source := renBy rename (toLeaTTaAtom (call "eval" [call head arguments]))
-    let template := renBy rename (toLeaTTaAtom (returned (.var (freshName first))))
+    let source := renBy rename (encodeModelAtom (call "eval" [call head arguments]))
+    let template := renBy rename (encodeModelAtom (returned (.var (freshName first))))
     let recipient : Frame :=
       { atom := .expr [.sym "chain", source, .var (rename (freshName first)), template],
         ret := .chain,
@@ -892,7 +896,7 @@ theorem renamed_returnInvocation_of_call_execution (environment : MinEnv)
         interpretFuel environment (fuel + 4) nextState
           (finItem (recipient :: parent :: caller :: continuation) result output :: rest) done) →
     interpretFuel environment (fuel + 4 + cost) state
-        (⟨atomToStack (renBy rename (toLeaTTaAtom (returnInvocation (call head arguments) first).1))
+        (⟨atomToStack (renBy rename (encodeModelAtom (returnInvocation (call head arguments) first).1))
           (parent :: caller :: continuation), incoming⟩ :: rest) done =
       interpretFuel environment fuel nextState
         (finItem (caller :: continuation) result output :: rest) done := by
@@ -918,8 +922,8 @@ theorem returnInvocation_of_call_execution (environment : MinEnv)
     (notValue : head ≠ "nik:Value") (notPrimitive : head ≠ "nik:primitive")
     (closed : result.vars = []) :
     let parent : Frame := { atom := parentBody, ret := .function, vars := scope }
-    let source := toLeaTTaAtom (call "eval" [call head arguments])
-    let template := toLeaTTaAtom (returned (.var (freshName first)))
+    let source := encodeModelAtom (call "eval" [call head arguments])
+    let template := encodeModelAtom (returned (.var (freshName first)))
     let recipient : Frame :=
       { atom := .expr [.sym "chain", source, .var (freshName first), template],
         ret := .chain,
@@ -930,7 +934,7 @@ theorem returnInvocation_of_call_execution (environment : MinEnv)
         interpretFuel environment (fuel + 4) nextState
           (finItem (recipient :: parent :: caller :: continuation) result output :: rest) done) →
     interpretFuel environment (fuel + 4 + cost) state
-        (⟨atomToStack (toLeaTTaAtom (returnInvocation (call head arguments) first).1)
+        (⟨atomToStack (encodeModelAtom (returnInvocation (call head arguments) first).1)
           (parent :: caller :: continuation), incoming⟩ :: rest) done =
       interpretFuel environment fuel nextState
         (finItem (caller :: continuation) result output :: rest) done := by
@@ -1217,7 +1221,7 @@ theorem renamed_returnInvocation_primitive_enters_handler
     (done : List (Metta.Atom × Metta.Bindings))
     (bounded : UsesBefore first (call "nik:primitive" arguments))
     (materialized : Metta.instantiate incoming
-      (renBy rename (toLeaTTaAtom (call "nik:primitive" arguments))) =
+      (renBy rename (encodeModelAtom (call "nik:primitive" arguments))) =
         .expr (.sym "nik:primitive" :: materializedArguments))
     (selected : evalEnvForSpace environment state.world
       (contextSpaceAtom environment.contextName) = some selectedEnvironment)
@@ -1228,7 +1232,7 @@ theorem renamed_returnInvocation_primitive_enters_handler
     let parent : Frame := { atom := parentBody, ret := .function, vars := scope }
     interpretFuel environment (fuel + 7) state
         (⟨atomToStack (renBy rename
-          (toLeaTTaAtom (returnInvocation (call "nik:primitive" arguments) first).1))
+          (encodeModelAtom (returnInvocation (call "nik:primitive" arguments) first).1))
           (parent :: continuation), incoming⟩ :: rest) done =
       interpretFuel environment fuel nextState
         (finItem (parent :: continuation) (.expr [.sym "return", result]) incoming :: rest) done := by
@@ -1244,10 +1248,10 @@ theorem renamed_returnInvocation_primitive_enters_handler
     have impossible := freshName_injective (injective same)
     omega
   rw [shape]
-  simpa only [call, returned, toLeaTTaAtom, toLeaTTaAtoms, renBy,
+  simpa only [call, returned, encodeModelAtom, encodeModelAtoms, renBy,
     List.map_cons, List.map_nil] using
     primitive_gateway_enters_handler environment selectedEnvironment state nextState incoming
-      privateBindings (renBy rename (toLeaTTaAtom (call "nik:primitive" arguments))) result
+      privateBindings (renBy rename (encodeModelAtom (call "nik:primitive" arguments))) result
       materializedArguments (rename (freshName first)) (rename (freshName (first + 1)))
       fuel parentBody scope continuation rest done
       (bounded.renamed_runtime_fresh rename injective) distinct materialized selected evaluation closed
@@ -1265,7 +1269,7 @@ theorem renamed_returnInvocation_primitive_execution
     (done : List (Metta.Atom × Metta.Bindings))
     (bounded : UsesBefore first (call "nik:primitive" arguments))
     (materialized : Metta.instantiate incoming
-      (renBy rename (toLeaTTaAtom (call "nik:primitive" arguments))) =
+      (renBy rename (encodeModelAtom (call "nik:primitive" arguments))) =
         .expr (.sym "nik:primitive" :: materializedArguments))
     (selected : evalEnvForSpace environment state.world
       (contextSpaceAtom environment.contextName) = some selectedEnvironment)
@@ -1276,7 +1280,7 @@ theorem renamed_returnInvocation_primitive_execution
     let parent : Frame := { atom := parentBody, ret := .function, vars := scope }
     interpretFuel environment (fuel + 8) state
         (⟨atomToStack (renBy rename
-          (toLeaTTaAtom (returnInvocation (call "nik:primitive" arguments) first).1))
+          (encodeModelAtom (returnInvocation (call "nik:primitive" arguments) first).1))
           (parent :: caller :: continuation), incoming⟩ :: rest) done =
       interpretFuel environment fuel nextState
         (finItem (caller :: continuation) result incoming :: rest) done := by
@@ -1315,13 +1319,13 @@ private theorem matchedInputs_lookup_sound (first : Nat) (environment : Env)
     (aligned : ValuationFor (valuation ∘ rename) first environment)
     (name : String) (value : Metta.Atom)
     (found : Metta.Subst.lookup ((matchedInputs first environment).map fun entry =>
-      (rename (freshName entry.1), toLeaTTaAtom entry.2)) name = some value) :
+      (rename (freshName entry.1), encodeModelAtom entry.2)) name = some value) :
     valuation name = value := by
   induction environment generalizing first with
   | nil => simp [matchedInputs, Metta.Subst.lookup] at found
   | cons entry rest ih =>
     by_cases same : name = rename (freshName first)
-    · have equal : toLeaTTaAtom (MeTTaData.encode entry.2) = value := by
+    · have equal : encodeModelAtom (MeTTaData.encode entry.2) = value := by
         simpa [matchedInputs, Metta.Subst.lookup, same] using found
       exact same ▸ aligned.1.trans equal
     · apply ih (first + 1) aligned.2
@@ -1332,7 +1336,7 @@ private theorem matchedInputs_lookup_present (first : Nat) (environment : Env)
     (rename : String → String) (index : Nat)
     (inside : first ≤ index ∧ index < first + environment.length) :
     (Metta.Subst.lookup ((matchedInputs first environment).map fun entry =>
-      (rename (freshName entry.1), toLeaTTaAtom entry.2))
+      (rename (freshName entry.1), encodeModelAtom entry.2))
         (rename (freshName index))).isSome := by
   induction environment generalizing first with
   | nil => simp at inside; omega
@@ -1357,15 +1361,15 @@ theorem matched_body_materialization
     (fixed : Metta.instantiate incoming body = body)
     (aligned : ValuationFor (leaClassSolution output ∘ rename) first sourceBindings)
     (matching : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom (MeTTaData.encodeItems arguments)) (toLeaTTaAtom fresh))
+      (encodeModelAtom (MeTTaData.encodeItems arguments)) (encodeModelAtom fresh))
     (merging : output ∈ Metta.Bindings.merge incoming matched) :
     Metta.instantiate output body =
       Metta.Subst.apply ((matchedInputs first sourceBindings).map fun entry =>
-        (rename (freshName entry.1), toLeaTTaAtom entry.2)) body := by
+        (rename (freshName entry.1), encodeModelAtom entry.2)) body := by
   apply Control.instantiate_eq_subst_on_variables
   intro name occurrence
   cases found : Metta.Subst.lookup ((matchedInputs first sourceBindings).map fun entry =>
-      (rename (freshName entry.1), toLeaTTaAtom entry.2)) name with
+      (rename (freshName entry.1), encodeModelAtom entry.2)) name with
   | some value =>
     rw [Metta.Subst.apply, found]
     have reads := matchedInputs_lookup_sound first sourceBindings rename
@@ -1442,18 +1446,18 @@ theorem matched_expression_materialization
     (rename : String → String) (injective : Function.Injective rename)
     (fresh : Atom) (renamed : AlphaRenameAtomRel rename (patterns parameters first).1.1 fresh)
     (incoming matched output : Metta.Bindings) (stored : ClosedValueBindings incoming)
-    (fixed : Metta.instantiate incoming (renBy rename (toLeaTTaAtom
+    (fixed : Metta.instantiate incoming (renBy rename (encodeModelAtom
       (expression program (patterns parameters first).1.2 sourceFuel
-        source (patterns parameters first).2).1)) = renBy rename (toLeaTTaAtom
+        source (patterns parameters first).2).1)) = renBy rename (encodeModelAtom
       (expression program (patterns parameters first).1.2 sourceFuel
         source (patterns parameters first).2).1))
     (aligned : ValuationFor (leaClassSolution output ∘ rename) first sourceBindings)
     (matching : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom (MeTTaData.encodeItems arguments)) (toLeaTTaAtom fresh))
+      (encodeModelAtom (MeTTaData.encodeItems arguments)) (encodeModelAtom fresh))
     (merging : output ∈ Metta.Bindings.merge incoming matched) :
-    Metta.instantiate output (renBy rename (toLeaTTaAtom
+    Metta.instantiate output (renBy rename (encodeModelAtom
       (expression program (patterns parameters first).1.2 sourceFuel
-        source (patterns parameters first).2).1)) = renBy rename (toLeaTTaAtom
+        source (patterns parameters first).2).1)) = renBy rename (encodeModelAtom
       (expression program (sourceBindings.map (fun entry =>
         (entry.1, MeTTaData.encode entry.2))) sourceFuel
         source (patterns parameters first).2).1) := by
@@ -1491,7 +1495,7 @@ theorem matched_variable_execution (program : Program) (parameters arguments : L
       (patterns parameters first).1.1 fresh)
     (sourceMatch : matchTerms parameters arguments = some bindings)
     (matchedHere : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom (MeTTaData.encodeItems arguments)) (toLeaTTaAtom fresh))
+      (encodeModelAtom (MeTTaData.encodeItems arguments)) (encodeModelAtom fresh))
     (mergedHere : output ∈ Metta.Bindings.merge incoming matched)
     (acyclic : output.hasLoop = false)
     (name label target : String) (payload : Term)
@@ -1505,13 +1509,13 @@ theorem matched_variable_execution (program : Program) (parameters arguments : L
       (.var (rename (freshName (patterns parameters first).2))) =
         .var (rename (freshName (patterns parameters first).2))) :
     interpretFuel environment (fuel + 10) state
-        (⟨atomToStack (renBy rename (toLeaTTaAtom (call "function"
+        (⟨atomToStack (renBy rename (encodeModelAtom (call "function"
           [(expression program (patterns parameters first).1.2
             (.grounded (.int (remaining + 1))) (.var name)
             (patterns parameters first).2).1]))) (caller :: continuation), output⟩ :: rest) done =
       interpretFuel environment fuel state
         (finItem (caller :: continuation)
-          (toLeaTTaAtom (value (MeTTaData.encode payload))) output :: rest) done := by
+          (encodeModelAtom (value (MeTTaData.encode payload))) output :: rest) done := by
   have lookup := alpha_patterns_runtime_lookup parameters arguments first invariant renamed
     sourceMatch matchedHere mergedHere acyclic name label target payload found expected
   have bounded : UsesBefore (patterns parameters first).2 (.var target) := by
@@ -1521,17 +1525,17 @@ theorem matched_variable_execution (program : Program) (parameters arguments : L
     exact namesForMatch_scope bindings first (label, .var target) member
   have resultBound : UsesBefore ((patterns parameters first).2 + 1) (value (.var target)) := by
     simpa [value] using bounded.mono (Nat.le_succ _)
-  have resolved : Metta.instantiate output (renBy rename (toLeaTTaAtom (value (.var target)))) =
-      toLeaTTaAtom (value (MeTTaData.encode payload)) := by
-    simpa only [value, call, toLeaTTaAtom, toLeaTTaAtoms, renBy,
+  have resolved : Metta.instantiate output (renBy rename (encodeModelAtom (value (.var target)))) =
+      encodeModelAtom (value (MeTTaData.encode payload)) := by
+    simpa only [value, call, encodeModelAtom, encodeModelAtoms, renBy,
       List.map_cons, List.map_nil, Metta.instantiate, Metta.Bindings.resolveAtom] using
       congrArg (fun value => Metta.Atom.expr [.sym "nik:Value", value]) lookup
-  have closed : (toLeaTTaAtom (value (MeTTaData.encode payload))).vars = [] := by
+  have closed : (encodeModelAtom (value (MeTTaData.encode payload))).vars = [] := by
     have dataClosed := data_atom_runtime_closed (MeTTaData.encode_data payload)
-    simp [value, call, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars, dataClosed]
+    simp [value, call, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars, dataClosed]
   simpa only [expression, found] using
     renamed_withFuel_return_to_caller environment state output rename injective
-      (value (.var target)) (toLeaTTaAtom (value (MeTTaData.encode payload)))
+      (value (.var target)) (encodeModelAtom (value (MeTTaData.encode payload)))
       (patterns parameters first).2 remaining fuel caller continuation rest done
       groundings privateRemaining resultBound resolved closed
 

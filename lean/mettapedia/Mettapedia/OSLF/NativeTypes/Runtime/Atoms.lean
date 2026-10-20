@@ -37,6 +37,7 @@ def admission (driver : Driver) {Atom : Type} (atomic : LeafAdmission Atom) :
     cases leaf with
     | inl leaf => exact driver.leafAdmission.exact leaf
     | inr atom => exact atomic.exact atom
+  spatial := driver.leafAdmission.spatial
 
 def extend (driver : Driver) {Atom : Type}
     (observations : Atom → Test driver.system driver.admitted)
@@ -55,6 +56,8 @@ def extend (driver : Driver) {Atom : Type}
   tests := tests driver observations
   leafAdmission := admission driver atomic
   lookup name := (driver.lookup name).map Sum.inl
+  spatial_admission := driver.spatial_admission
+  spatialLookup := driver.spatialLookup
 
 def structural {Leaf Atom : Type} : Formula Leaf → Formula (Sum Leaf Atom)
   | .atom leaf => .atom (.inl leaf)
@@ -66,12 +69,13 @@ def structural {Leaf Atom : Type} : Formula Leaf → Formula (Sum Leaf Atom)
   | .imp first second => .imp (structural first) (structural second)
   | .possibility formula => .possibility (structural formula)
   | .outgoingUniversal formula => .outgoingUniversal (structural formula)
+  | .separating index first second => .separating index (structural first) (structural second)
 
 theorem structural_denotation (driver : Driver) {Atom : Type}
     (observations : Atom → Test driver.system driver.admitted)
     (formula : driver.Formula) :
-    denotation (tests driver observations) (structural formula) =
-      denotation driver.tests formula := by
+    denotation (tests driver observations) (structural formula) driver.backend.spatial.theory =
+      denotation driver.tests formula driver.backend.spatial.theory := by
   induction formula with
   | atom leaf => rfl
   | top => rfl
@@ -85,6 +89,8 @@ theorem structural_denotation (driver : Driver) {Atom : Type}
     simp only [structural, denotation, firstIH, secondIH]
   | possibility formula ih => simp only [structural, denotation, ih]
   | outgoingUniversal formula ih => simp only [structural, denotation, ih]
+  | separating index first second firstIH secondIH =>
+    simp only [structural, denotation, firstIH, secondIH]
 
 theorem structural_meaning (driver : Driver) {Atom : Type}
     (observations : Atom → Test driver.system driver.admitted)
@@ -93,7 +99,7 @@ theorem structural_meaning (driver : Driver) {Atom : Type}
     Meaning (extend driver observations atomic) (structural formula) raw ↔
       Meaning driver formula raw := by
   change (∃ source, driver.admitted source ∧ driver.render source = raw ∧
-    denotation (tests driver observations) (structural formula) source) ↔ _
+    denotation (tests driver observations) (structural formula) driver.backend.spatial.theory source) ↔ _
   rw [structural_denotation]
   rfl
 
@@ -125,6 +131,9 @@ theorem structural_formation (driver : Driver) {Atom : Type}
       simp only [structural, firstRefusal, firstIH, secondIH]
     | possibility formula ih => simp only [structural, firstRefusal, ih]
     | outgoingUniversal formula ih => simp only [structural, firstRefusal, ih]
+    | separating index first second firstIH secondIH =>
+      simp only [structural, firstRefusal, firstIH, secondIH]
+      rfl
   rw [same]
 
 /-- A decidable atomic observation retains its independently specified,
@@ -156,7 +165,8 @@ def installed (base : Mettapedia.OSLF.NativeTypes.Runtime.Installed) {Atom : Typ
       intro leaf
       cases leaf with
       | inl leaf => exact base.runtime.leaf_meaning leaf
-      | inr atom => rfl}
+      | inr atom => rfl
+    spatial_meaning := base.runtime.spatial_meaning}
 
 theorem installed_structural_meaning (base : Mettapedia.OSLF.NativeTypes.Runtime.Installed) {Atom : Type}
     (observations : Atom → Observation base.native) (atomic : LeafAdmission Atom)

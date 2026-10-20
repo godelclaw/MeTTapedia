@@ -21,7 +21,7 @@ Concept Learning" (arXiv:2012.14474).
 
 namespace Mettapedia.PLN.RuleFamilies.QuantaleSemantics.CDLogic
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 open scoped ENNReal
 
@@ -103,10 +103,10 @@ theorem one_cdTensor (a : BinaryEvidence) : BinaryEvidence.one ⊙ a = a :=
 /-! ## CD Par (Additive Disjunction)
 
 The par operation ⅋ is coordinatewise addition.
-This corresponds to combining independent evidence.
+This corresponds to combining evidence from disjoint observations.
 -/
 
-/-- CD Par: coordinatewise addition (independent evidence combination) -/
+/-- CD Par: coordinatewise addition (combining evidence from disjoint observations) -/
 noncomputable def cdPar (a b : BinaryEvidence) : BinaryEvidence := a + b
 
 /-- CD par notation -/
@@ -176,7 +176,7 @@ This file establishes:
 3. **CD Par** (⅋): Additive disjunction (coordinatewise +)
    - Commutative, associative
    - Unit is BinaryEvidence.zero = ⟨0, 0⟩
-   - Corresponds to independent evidence aggregation
+   - Corresponds to aggregating evidence from disjoint observations
 
 4. **Lattice preservation**: CD negation preserves meet/join structure
 -/

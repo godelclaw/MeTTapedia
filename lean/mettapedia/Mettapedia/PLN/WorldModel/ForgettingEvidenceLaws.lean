@@ -36,8 +36,8 @@ namespace Mettapedia.PLN.WorldModel.ForgettingEvidenceLaws
 
 open scoped ENNReal
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.ProbabilityTheory.ConjugateEvidenceCore
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 open Mettapedia.PLN.WorldModel.GenericWorldModelForgetting

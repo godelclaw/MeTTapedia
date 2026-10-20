@@ -17,7 +17,7 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.BridgeKit
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
 open SpaceSemantics (Program)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval
 
 /-- `if` on a boolean. -/

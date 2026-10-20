@@ -34,8 +34,8 @@ open Mettapedia.OSLF.Framework.EvidenceSemantics
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 
 set_option autoImplicit false
 

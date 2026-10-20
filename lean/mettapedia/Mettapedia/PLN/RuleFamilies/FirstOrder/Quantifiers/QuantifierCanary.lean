@@ -20,7 +20,7 @@ We include both positive and negative canaries:
 
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 open Mettapedia.Algebra.QuantaleWeakness
 open Mettapedia.PLN.TruthValues.PLNIndefiniteTruth

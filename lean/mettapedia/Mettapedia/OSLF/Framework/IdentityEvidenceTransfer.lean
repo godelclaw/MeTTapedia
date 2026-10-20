@@ -17,8 +17,8 @@ This module is intentionally independent of GF/Pi/Rho internals. It provides:
 namespace Mettapedia.OSLF.Framework.IdentityEvidenceTransfer
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.IdentityEvidence
 open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.MeTTaIL.Syntax

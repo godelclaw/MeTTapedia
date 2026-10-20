@@ -11,6 +11,11 @@ release, a second release, signed overflow, a missing return value used by the
 caller, pointer arithmetic past an array and a stray `break` each stop with their
 own reason; an external request suspends with the complete configuration and a
 single reply resumes it.
+
+The scheduled instance additionally retains permitted allocation outcomes and
+object identities as a choice tape. Its controls distinguish depleted supply,
+an inadmissible identity, and a genuine source fault, including a loop whose
+successive visits to the same C state require different choices.
 -/
 
 set_option autoImplicit false
@@ -213,5 +218,132 @@ theorem reply_resumes_once :
     (resumed.map ((machine model policy abi [("main", echoMain)]).run 40)).bind returned = some 7 ∧
       (resumed.bind (reply model policy (.integer six))).isNone = true := by
   decide +kernel
+
+/-! ## Permitted allocation choices on the retained runner -/
+
+namespace ScheduledControls
+
+def allocateOne : Statement model := .allocate "p" .int (.constant one)
+
+def writeThenRead : Continuation model :=
+  .sequence (.assign (.deref (.variable "p")) (.constant seven))
+    (.sequence (.returnValue (some (.read (.deref (.variable "p"))))) .stop)
+
+/-- The pointer's initial null value is actual caller state, not an allocation
+outcome supplied by the fixture. -/
+def initial : Executable model :=
+  ⟨⟨[], []⟩, [], [],
+    [⟨[⟨{}, [("p", some .null)]⟩], .execute allocateOne, writeThenRead⟩], .running⟩
+
+def success : Choice := ⟨7, true⟩
+def failure : Choice := ⟨7, false⟩
+def later : Choice := ⟨11, true⟩
+
+def run (budget : Nat) (configuration : Executable model) (choices : List Choice) :=
+  (Scheduled.machine model policy abi []).run budget ⟨configuration, choices⟩
+
+def result (budget : Nat) (choices : List Choice) : Option Int :=
+  match (run budget initial choices).2 with
+  | .finished (some (.integer scalar)) => some scalar.integer.value
+  | _ => none
+
+def lastFault (budget : Nat) (choices : List Choice) : Option (Fault model) :=
+  match run budget initial choices with
+  | (events, .faulted) => events.getLast?.bind fun
+      | .fault reason => some reason
+      | _ => none
+  | _ => none
+
+theorem successful_allocation_reaches_seven :
+    result 8 (List.replicate 8 success) = some 7 := by decide +kernel
+
+/-- Permitted allocation failure returns null; only the later dereference
+causes the source pointer fault. -/
+theorem failed_allocation_then_dereference_faults :
+    lastFault 8 (failure :: List.replicate 7 success) = some .pointer := by decide +kernel
+
+theorem allocation_failure_itself_is_a_successful_step :
+    match run 1 initial [failure, later] with
+    | ([_], .exhausted saved) => saved.configuration.heap = [] ∧ saved.choices = [later] ∧
+        (match saved.configuration.status with | .running => true | _ => false) = true
+    | _ => False := ⟨rfl, rfl, rfl⟩
+
+theorem distinct_fresh_identities_remain_distinct :
+    (match (run 1 initial [success]).2 with
+      | .exhausted saved => saved.configuration.heap
+      | _ => []) = [7] ∧
+    (match (run 1 initial [later]).2 with
+      | .exhausted saved => saved.configuration.heap
+      | _ => []) = [11] := by decide +kernel
+
+theorem empty_choice_supply_suspends_without_an_event :
+    run 8 initial [] = ([], .suspended .choice ⟨initial, []⟩) := rfl
+
+theorem zero_budget_retains_the_unconsumed_choice :
+    run 0 initial [success] = ([], .exhausted ⟨initial, [success]⟩) := rfl
+
+/-- A loop can revisit precisely the same C state after a failed allocation,
+then consume a success choice on its next visit. No memoryless policy can
+replace this supplied history. -/
+def repeating : Executable model :=
+  { initial with stack :=
+    [⟨[⟨{}, [("p", some .null)]⟩], .execute (.whileLoop (.constant one) allocateOne), .stop⟩] }
+
+theorem repeated_state_keeps_different_future_choices :
+    (run 3 repeating [later, failure, later, later, success]).2 =
+      .exhausted ⟨repeating, [later, success]⟩ := rfl
+
+theorem later_visit_can_allocate_after_earlier_failure :
+    match run 5 repeating [later, failure, later, later, success] with
+    | (events, .exhausted saved) =>
+        events.length = 5 ∧ saved.configuration.heap = [7] ∧ saved.choices = []
+    | _ => False := ⟨rfl, rfl, rfl⟩
+
+/-- The first allocation commits before the second supplied identity is
+rejected. The rejected identity stays in the residual tape. -/
+def allocateTwice : Executable model :=
+  { initial with stack :=
+    [⟨[⟨{}, [("p", some .null)]⟩], .execute allocateOne, .sequence allocateOne .stop⟩] }
+
+theorem reused_identity_is_stuck_with_its_exact_prefix :
+    match run 5 allocateTwice [success, later, success] with
+    | (events, .stuck saved) =>
+        events.length = 2 ∧ saved.configuration.heap = [7] ∧ saved.choices = [success]
+    | _ => False := ⟨rfl, rfl, rfl⟩
+
+theorem pause_resume_preserves_every_committed_occurrence :
+    (Scheduled.machine model policy abi []).run 8 ⟨initial, List.replicate 8 success⟩ =
+      (Scheduled.machine model policy abi []).continueRun 6
+        ((Scheduled.machine model policy abi []).run 2 ⟨initial, List.replicate 8 success⟩) :=
+  (Scheduled.machine model policy abi []).run_add 2 6 _
+
+theorem depleted_supply_is_not_a_pointer_fault :
+    match run 8 initial [failure] with
+    | (events, .suspended .choice saved) =>
+        events.length = 1 ∧ (match saved.configuration.status with | .running => true | _ => false) = true ∧ saved.choices = []
+    | _ => False := ⟨rfl, rfl, rfl⟩
+
+theorem replenish_after_request_keeps_the_committed_prefix :
+    match run 8 initial [success] with
+    | (events, .suspended .choice saved) =>
+        (events ++ ((Scheduled.machine model policy abi []).run 7
+            (Scheduled.supply model saved (List.replicate 7 success))).1,
+          ((Scheduled.machine model policy abi []).run 7
+            (Scheduled.supply model saved (List.replicate 7 success))).2) =
+          run 8 initial (List.replicate 8 success)
+    | _ => False := rfl
+
+end ScheduledControls
+
+#print axioms FixedCore.Scheduled.step_iff
+#print axioms FixedCore.Scheduled.source_path_iff
+#print axioms FixedCore.Scheduled.exhausted_source
+#print axioms FixedCore.Scheduled.boundary_source
+#print axioms FixedCore.Scheduled.finished_source_iff
+#print axioms FixedCore.Scheduled.resume_with_supply
+#print axioms FixedCore.Scheduled.reply_iff
+#print axioms ScheduledControls.repeated_state_keeps_different_future_choices
+#print axioms ScheduledControls.reused_identity_is_stuck_with_its_exact_prefix
+#print axioms ScheduledControls.replenish_after_request_keeps_the_committed_prefix
 
 end Mettapedia.Languages.C11.FixedCoreControls

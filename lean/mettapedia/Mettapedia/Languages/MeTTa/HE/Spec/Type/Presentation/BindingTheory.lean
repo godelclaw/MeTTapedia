@@ -2,7 +2,10 @@ import Mettapedia.Languages.MeTTa.MetavariableFrameStore
 import Mathlib.Data.Nat.Pairing
 import Std.Data.String.ToNat
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Completeness
+import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.PrincipalAlpha
 import Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Finite presentations of binding equation systems
@@ -66,6 +69,22 @@ theorem typeBindingSatisfied_iff_equations
         apply List.mem_append_right
         exact List.mem_map.mpr ⟨(left, right), member, rfl⟩)
       simpa [applyTypeValuation] using equation
+
+/-- One syntactic equation packages the complete native constraint record.
+The two tuples retain equalities as well as assignments, including aliases. -/
+def bindingLeftPacket (bindings : Bindings) : Atom :=
+  .expression ((bindingAtomEquations bindings).map Prod.fst)
+
+def bindingRightPacket (bindings : Bindings) : Atom :=
+  .expression ((bindingAtomEquations bindings).map Prod.snd)
+
+theorem bindingPacket_equation_iff (valuation : String → Atom) (bindings : Bindings) :
+    applyTypeValuation valuation (bindingLeftPacket bindings) =
+      applyTypeValuation valuation (bindingRightPacket bindings) ↔
+    TypeBindingSatisfied valuation bindings := by
+  rw [typeBindingSatisfied_iff_equations]
+  simp only [bindingLeftPacket,bindingRightPacket,applyTypeValuation,List.map_map,
+    Function.comp_def,Atom.expression.injEq,List.map_eq_map_iff]
 
 /-- Left-to-right presentation of an ordered finite equation system. -/
 inductive EquationListPresentationRel :
@@ -782,6 +801,185 @@ theorem satisfiable {bindings : Bindings} {table : TypeSubst}
   ⟨presentedValuation table, (certified.theory _).mp
     (normal_presentedValuation_satisfied certified.normal)⟩
 
+/-- A model-independent source value is the literal read of the retained
+certified table, regardless of its chosen residual representatives. -/
+theorem forced_read {bindings : Bindings} {table : TypeSubst}
+    (certified : ReadoutCertificate bindings table) (raw value : Atom)
+    (forced : ∀ valuation, TypeBindingSatisfied valuation bindings →
+      applyTypeValuation valuation raw = value) : table.apply raw = value := by
+  have model := (certified.theory (presentedValuation table)).mp
+    (normal_presentedValuation_satisfied certified.normal)
+  simpa only [applyTypeValuation_presented_eq_apply] using forced _ model
+
+/-- Any normal finite table with exactly the record's solution theory earns
+one representative certificate for all future operands. The finite tuple
+contains the whole binding support and every table key; its model-fixed
+permutation then extends to all variables and all atoms. -/
+theorem of_normal_theory {bindings : Bindings} {table : TypeSubst}
+    (normal : table.Normal)
+    (sameSolutions : ∀ valuation,
+      TypeSubstSatisfied valuation table ↔ TypeBindingSatisfied valuation bindings) :
+    ReadoutCertificate bindings table := by
+  have model : ∃ valuation, TypeBindingSatisfied valuation bindings :=
+    ⟨presentedValuation table, (sameSolutions _).mp
+      (normal_presentedValuation_satisfied normal)⟩
+  obtain ⟨folded, fold⟩ := exists_binding_presentation model
+  let scope := specBindingVars bindings ++ table.keys
+  let tuple : Atom := .expression (scope.map Atom.var)
+  have alpha := PrincipalAlpha.observedTypeAlpha_of_solution_equiv
+    fold.bindingTheory.1 normal
+    (fun valuation => (fold.bindingTheory.2 valuation).trans (sameSolutions valuation).symm)
+    tuple
+  obtain ⟨choice, observed, fixedModels, _support⟩ :=
+    PrincipalAlpha.observedTypeAlpha_exists_model_fixed_permutation alpha
+      (fun valuation : {v : String → Atom // TypeBindingSatisfied v bindings} => valuation.1)
+      (fun valuation => ((fold.bindingTheory.2 valuation.1).mpr valuation.2).absorbs tuple |>.trans
+        (((sameSolutions valuation.1).mpr valuation.2).absorbs tuple).symm)
+  have fixed : ∀ valuation, TypeBindingSatisfied valuation bindings →
+      ∀ name, valuation (choice name) = valuation name := by
+    intro valuation satisfied name
+    exact fixedModels ⟨valuation, satisfied⟩ name
+  have outside := Spec.Bindings.ScopeObservation.model_fixed_fixes_outside choice model fixed
+  let selected := folded.renameVars choice
+  have selectedRead := (fold.model_fixed_representative choice fixed).2.2
+  have mapped : scope.map (fun name => table.apply (.var name)) =
+      scope.map (fun name => selected.apply (.var name)) := by
+    have equal := observed.trans (selectedRead tuple).symm
+    simpa only [tuple, TypeSubst.apply, List.map_map, Atom.expression.injEq,
+      Function.comp_def, selected] using equal
+  have each : ∀ name ∈ scope, table.apply (.var name) = selected.apply (.var name) := by
+    have mapEqual : ∀ names : List String,
+        names.map (fun name => table.apply (.var name)) =
+          names.map (fun name => selected.apply (.var name)) →
+        ∀ name ∈ names, table.apply (.var name) = selected.apply (.var name) := by
+      intro names
+      induction names with
+      | nil => simp
+      | cons first rest ih =>
+          intro equal name member
+          have parts := List.cons.inj equal
+          rcases List.mem_cons.mp member with rfl | restMember
+          · exact parts.1
+          · exact ih parts.2 name restMember
+    exact mapEqual scope mapped
+  have allVariables : ∀ name, table.apply (.var name) = selected.apply (.var name) := by
+    intro name
+    by_cases present : name ∈ scope
+    · exact each name present
+    · have noBinding : name ∉ specBindingVars bindings := fun member =>
+        present (List.mem_append_left _ member)
+      have noKey : name ∉ table.keys := fun member =>
+        present (List.mem_append_right _ member)
+      have historical : folded.apply (.var name) = .var name :=
+        BindingMaterializationRel.outside_result ⟨folded, fold, rfl⟩
+          (by simpa [TypeSubst.typeVars] using noBinding)
+      rw [show selected.apply (.var name) = renameTypeVars choice (folded.apply (.var name))
+        from selectedRead (.var name), historical]
+      simp only [renameTypeVars, outside name noBinding, TypeSubst.apply,
+        TypeSubst.lookup_eq_none_of_not_mem_keys noKey, Option.getD_none]
+  refine ⟨normal, folded, choice, fold, fixed, outside, ?_⟩
+  intro atom
+  rw [← applyTypeValuation_presented_eq_apply table atom,
+    ← applyTypeValuation_presented_eq_apply selected atom]
+  congr 1
+  exact funext allVariables
+
+/-- A certificate cannot introduce a stored key outside the source record's
+complete support, even when residual representatives have been changed. -/
+theorem lookup_none_of_outside {bindings : Bindings} {table : TypeSubst}
+    (certificate : ReadoutCertificate bindings table) {name : String}
+    (fresh : name ∉ specBindingVars bindings) : table.lookup name = none := by
+  obtain ⟨folded, choice, fold, _fixed, outside, allAtoms⟩ := certificate.representative
+  have unbound : folded.lookup name = none := by
+    apply TypeSubst.lookup_eq_none_of_not_mem_keys
+    exact fun stored => (fold.binding_avoids (forbidden := [name]) (by simpa using fresh)).keys
+      name stored (by simp)
+  have read := TypeSubst.apply_renameVars choice folded (.var name)
+  have unchanged : table.apply (.var name) = .var name := by
+    simpa only [allAtoms, renameTypeVars, outside name fresh, TypeSubst.apply,
+      unbound, Option.getD_none] using read
+  apply TypeSubst.lookup_eq_none_of_not_mem_keys
+  exact certificate.normal.apply_variable_not_key (.var name) name
+    (by rw [unchanged]; simp [TypeSubst.typeVars])
+
+/-- A certified readout cannot expose a name outside both the complete
+binding record and its operand. This also covers open values and aliases. -/
+theorem avoids_outside {bindings : Bindings} {table : TypeSubst}
+    (certificate : ReadoutCertificate bindings table) {name : String}
+    (fresh : name ∉ specBindingVars bindings) (atom : Atom)
+    (absent : name ∉ TypeSubst.typeVars atom) : name ∉ TypeSubst.typeVars (table.apply atom) := by
+  obtain ⟨folded, choice, fold, fixed, outside, allAtoms⟩ := certificate.representative
+  intro occurs
+  rw [allAtoms, (fold.model_fixed_representative choice fixed).2.2 atom,
+    Spec.Type.Presentation.ScopeObservation.typeVars_renameTypeVars] at occurs
+  obtain ⟨other, original, renamed⟩ := List.mem_map.mp occurs
+  have same : other = name := choice.injective (renamed.trans (outside name fresh).symm)
+  subst other
+  exact (BindingMaterializationRel.variables_subset ⟨folded, fold, rfl⟩ original).elim absent fresh
+
+private theorem unbound_occurrence_survives (table : TypeSubst) (name : String)
+    (unbound : table.lookup name = none) (atom : Atom) :
+    name ∈ TypeSubst.typeVars atom → name ∈ TypeSubst.typeVars (table.apply atom) := by
+  induction atom using Atom.rec
+      (motive_2 := fun atoms => name ∈ TypeSubst.typeVarsList atoms →
+        name ∈ TypeSubst.typeVarsList (atoms.map table.apply)) with
+  | symbol | grounded => simp only [TypeSubst.typeVars,List.not_mem_nil,false_implies]
+  | var otherName =>
+      intro present
+      have same : name = otherName := by simpa only [TypeSubst.typeVars,List.mem_singleton] using present
+      subst otherName
+      simp only [TypeSubst.apply,unbound,Option.getD_none,TypeSubst.typeVars,List.mem_singleton]
+  | expression atoms ih => simpa only [TypeSubst.typeVars,TypeSubst.apply] using ih
+  | nil =>
+      rename_i present
+      simpa only [List.map_nil] using present
+  | cons atom atoms head tail =>
+      rename_i present
+      simp only [TypeSubst.typeVarsList,List.map_cons,List.mem_append] at present ⊢
+      exact present.elim (fun h => Or.inl (head h)) (fun h => Or.inr (tail h))
+
+/-- Reading a certified operand changes no support outside the incoming
+constraints. The union is the inventory needed by a subsequent operation. -/
+theorem support_union_apply {bindings : Bindings} {table : TypeSubst}
+    (certificate : ReadoutCertificate bindings table) (atom : Atom) (name : String) :
+    (name ∈ specBindingVars bindings ∨ name ∈ TypeSubst.typeVars (table.apply atom)) ↔
+      name ∈ specBindingVars bindings ∨ name ∈ TypeSubst.typeVars atom := by
+  by_cases old : name ∈ specBindingVars bindings
+  · simp only [old,true_or]
+  · simp only [old,false_or]
+    constructor
+    · intro present
+      by_contra absent
+      exact certificate.avoids_outside old atom absent present
+    · exact unbound_occurrence_survives table name (certificate.lookup_none_of_outside old) atom
+
+/-- A fresh assignment extends the whole frame certificate, including for
+open values that avoid the new name. The old record may contain aliases;
+pending operands continue to use the same extended table. -/
+theorem fresh_assignment {bindings : Bindings} {table : TypeSubst}
+    (certificate : ReadoutCertificate bindings table) (name : String) (value : Atom)
+    (fresh : name ∉ specBindingVars bindings) (absent : name ∉ TypeSubst.typeVars value) :
+    ReadoutCertificate (bindings.assign name value) (table.bind name value) := by
+  have unbound : bindings.lookup name = none := by
+    apply List.lookup_eq_none_iff.mpr
+    intro entry stored
+    have absent : name ≠ entry.1 := by
+      intro same
+      apply fresh
+      apply List.mem_append_left
+      exact List.mem_flatMap.mpr ⟨entry, stored, by simp [same]⟩
+    simpa using absent
+  have assigned : bindings.assign name value =
+      ⟨bindings.assignments ++ [(name, value)], bindings.equalities⟩ := by
+    simp [Bindings.assign, Bindings.isBound, unbound]
+  apply of_normal_theory
+  · exact certificate.normal.bind (certificate.avoids_outside fresh value absent)
+  · intro valuation
+    rw [TypeSubstSatisfied.bind_iff (certificate.lookup_none_of_outside fresh),
+      certificate.theory, assigned,
+      Spec.Bindings.ScopeObservation.appendPrivatePresentation_solutions]
+    simp [TypeSubstSatisfied]
+
 /-- Later constraints absorb every pending operand under the same two tables. -/
 theorem absorbs {before after : Bindings} {earlier later : TypeSubst}
     (old : ReadoutCertificate before earlier) (next : ReadoutCertificate after later)
@@ -807,6 +1005,30 @@ theorem preserves_model {bindings : Bindings} {table : TypeSubst}
     (satisfied : TypeBindingSatisfied valuation bindings) (atom : Atom) :
     applyTypeValuation valuation (table.apply atom) = applyTypeValuation valuation atom :=
   ((certified.theory valuation).mpr satisfied).absorbs atom
+
+/-- One certified table preserves the joint observation of every pending
+packet, including repeated variables and caller/return correlations. -/
+theorem observedTuples_eq {bindings : Bindings} {table : TypeSubst}
+    (certified : ReadoutCertificate bindings table) (atoms : List Atom) :
+    Spec.Bindings.ScopeObservation.observedTuples bindings (atoms.map table.apply) =
+      Spec.Bindings.ScopeObservation.observedTuples bindings atoms := by
+  apply Spec.Bindings.ScopeObservation.observedTuples_congr_models
+  intro model satisfied
+  simp only [List.map_map]
+  exact List.map_congr_left fun atom _ => certified.preserves_model model satisfied atom
+
+/-- Adding source constraints preserves an earlier packet read without
+requiring the later store to choose the same residual representatives. -/
+theorem observedTuples_eq_after_extension {before after : Bindings} {table : TypeSubst}
+    (certified : ReadoutCertificate before table)
+    (extension : ∀ model, TypeBindingSatisfied model after → TypeBindingSatisfied model before)
+    (atoms : List Atom) :
+    Spec.Bindings.ScopeObservation.observedTuples after (atoms.map table.apply) =
+      Spec.Bindings.ScopeObservation.observedTuples after atoms := by
+  apply Spec.Bindings.ScopeObservation.observedTuples_congr_models
+  intro model satisfied
+  simp only [List.map_map]
+  exact List.map_congr_left fun atom _ => certified.preserves_model model (extension model satisfied) atom
 
 /-- The same finite representative choice follows a simultaneous variable
 permutation; it is conjugated rather than selected again for each operand. -/
@@ -2001,6 +2223,63 @@ theorem contextualRows?_open_target {image : ImageOf ContextualOperand} {snapsho
   have same := name_injective_on_snapshot (contextualRows?_unique success) present member sameName
   exact same ▸ value
 
+/-- A named snapshot acquires exactly one equation when an existing open
+coordinate is written. Decoding the snapshot is independent of its payload
+representation; repeated occurrences remain at their inventory positions. -/
+theorem assignments_open_slot_mem (snapshot : List Row) (target : Ref)
+    (named : ∀ row ∈ snapshot, row.name = referenceName row.reference)
+    (present : ∃ row ∈ snapshot, row.reference = target)
+    (unbound : ∀ row ∈ snapshot, row.reference = target → row.observed.value = none)
+    (clock : Nat) (value : Atom) (key : String) (term : Atom) :
+    (key,term) ∈ assignments (snapshot.map (RowOf.afterWrite clock target (some value))) ↔
+      (key,term) ∈ assignments snapshot ∨ key = referenceName target ∧ term = value := by
+  constructor
+  · intro stored
+    obtain ⟨changed,member,keyEq,observed⟩ := mem_assignments.mp stored
+    obtain ⟨row,present,rfl⟩ := List.mem_map.mp member
+    by_cases selected : row.reference = target
+    · exact Or.inr ⟨keyEq.symm.trans ((named row present).trans
+        (congrArg referenceName selected)),by simpa [RowOf.afterWrite,selected] using observed.symm⟩
+    · exact Or.inl (mem_assignments.mpr ⟨row,present,keyEq,
+        by simpa [RowOf.afterWrite,selected] using observed⟩)
+  · rintro (stored | ⟨rfl,rfl⟩)
+    · obtain ⟨row,member,keyEq,observed⟩ := mem_assignments.mp stored
+      have notSelected : row.reference ≠ target := by
+        intro selected
+        simp [unbound row member selected] at observed
+      exact mem_assignments.mpr
+        ⟨row.afterWrite clock target (some value),List.mem_map.mpr ⟨row,member,rfl⟩,
+          keyEq,by simp [RowOf.afterWrite,notSelected,observed]⟩
+    · obtain ⟨row,member,selected⟩ := present
+      exact mem_assignments.mpr
+        ⟨row.afterWrite clock target (some term),List.mem_map.mpr ⟨row,member,rfl⟩,
+          (named row member).trans (congrArg referenceName selected),
+          by simp [RowOf.afterWrite,selected]⟩
+
+/-- The updated snapshot's complete model theory is the old theory and the
+new equation. A previously bound overwrite does not satisfy this law. -/
+theorem open_slot_write_models (snapshot : List Row) (target : Ref)
+    (named : ∀ row ∈ snapshot, row.name = referenceName row.reference)
+    (present : ∃ row ∈ snapshot, row.reference = target)
+    (unbound : ∀ row ∈ snapshot, row.reference = target → row.observed.value = none)
+    (clock : Nat) (value : Atom) (valuation : String → Atom) :
+    TypeBindingSatisfied valuation
+        ⟨assignments (snapshot.map (RowOf.afterWrite clock target (some value))),[]⟩ ↔
+      TypeBindingSatisfied valuation ⟨assignments snapshot,[]⟩ ∧
+        valuation (referenceName target) = applyTypeValuation valuation value := by
+  have membership := assignments_open_slot_mem snapshot target named present unbound clock value
+  constructor
+  · intro model
+    refine ⟨⟨?_,by simp⟩,model.1 _ _ ((membership _ _).mpr (Or.inr ⟨rfl,rfl⟩))⟩
+    intro key term stored
+    exact model.1 key term ((membership key term).mpr (Or.inl stored))
+  · rintro ⟨model,added⟩
+    refine ⟨?_,by simp⟩
+    intro key term stored
+    rcases (membership key term).mp stored with old | ⟨rfl,rfl⟩
+    · exact model.1 key term old
+    · exact added
+
 /-- Membership in the post-write theory is exactly the original equations and
 one new equation. This statement is restricted to an actual previously open
 slot; no overwrite monotonicity is asserted. -/
@@ -2013,34 +2292,13 @@ theorem assignments_open_write_mem {image : ImageOf ContextualOperand} {snapshot
         (snapshot.map (RowOf.afterWrite clock raw.reference (some value))) ↔
       (key, term) ∈ assignments snapshot ∨
         key = referenceName raw.reference ∧ term = value := by
-  constructor
-  · intro stored
-    obtain ⟨changed, member, named, observed⟩ := mem_assignments.mp stored
-    obtain ⟨row, present, rfl⟩ := List.mem_map.mp member
-    by_cases selected : row.reference = raw.reference
-    · right
-      refine ⟨?_, ?_⟩
-      · exact named.symm.trans ((contextualRows?_named success present).trans
-          (congrArg referenceName selected))
-      · simpa [RowOf.afterWrite, selected] using observed.symm
-    · left
-      exact mem_assignments.mpr ⟨row, present, named,
-        by simpa [RowOf.afterWrite, selected] using observed⟩
-  · rintro (stored | ⟨rfl, rfl⟩)
-    · obtain ⟨row, present, named, observed⟩ := mem_assignments.mp stored
-      have notSelected : row.reference ≠ raw.reference := by
-        intro selected
-        have openValue := contextualRows?_open_target success read unbound present selected
-        simp [openValue] at observed
-      exact mem_assignments.mpr
-        ⟨row.afterWrite clock raw.reference (some value), List.mem_map.mpr ⟨row, present, rfl⟩,
-          named, by simp [RowOf.afterWrite, notSelected, observed]⟩
-    · obtain ⟨row, present, projected⟩ :=
-        qualifyRowsFrom?_every_slot success (readRow?_mem_rows read)
-      have coordinates := qualifyRow?_coordinates projected
-      exact mem_assignments.mpr
-        ⟨row.afterWrite clock raw.reference (some term), List.mem_map.mpr ⟨row, present, rfl⟩,
-          coordinates.2.1, by simp [RowOf.afterWrite, coordinates.1]⟩
+  apply assignments_open_slot_mem snapshot raw.reference
+    (fun row present => contextualRows?_named success present)
+  · obtain ⟨row,present,projected⟩ :=
+      qualifyRowsFrom?_every_slot success (readRow?_mem_rows read)
+    exact ⟨row,present,(qualifyRow?_coordinates projected).1⟩
+  · intro row present selected
+    exact contextualRows?_open_target success read unbound present selected
 
 /-- Preserving a supplied dependency rank is a local sufficient condition,
 not an imposed variable ordering or a complete acyclicity criterion. -/
@@ -2068,26 +2326,13 @@ theorem open_write_models {image : ImageOf ContextualOperand} {snapshot : List R
         ⟨assignments (snapshot.map (RowOf.afterWrite clock raw.reference (some value))), []⟩ ↔
       TypeBindingSatisfied valuation ⟨assignments snapshot, []⟩ ∧
         valuation (referenceName raw.reference) = applyTypeValuation valuation value := by
-  constructor
-  · intro model
-    constructor
-    · refine ⟨?_, ?_⟩
-      · intro key term member
-        exact model.1 key term
-          ((assignments_open_write_mem success read unbound clock value key term).mpr (Or.inl member))
-      · intro left right member
-        simp at member
-    · exact model.1 _ _
-        ((assignments_open_write_mem success read unbound clock value _ _).mpr (Or.inr ⟨rfl, rfl⟩))
-  · rintro ⟨model, added⟩
-    refine ⟨?_, ?_⟩
-    · intro key term member
-      rcases (assignments_open_write_mem success read unbound clock value key term).mp member with
-        old | ⟨rfl, rfl⟩
-      · exact model.1 key term old
-      · exact added
-    · intro left right member
-      simp at member
+  apply open_slot_write_models snapshot raw.reference
+    (fun row present => contextualRows?_named success present)
+  · obtain ⟨row,present,projected⟩ :=
+      qualifyRowsFrom?_every_slot success (readRow?_mem_rows read)
+    exact ⟨row,present,(qualifyRow?_coordinates projected).1⟩
+  · intro row present selected
+    exact contextualRows?_open_target success read unbound present selected
 
 theorem open_write_certified {image next : ImageOf ContextualOperand}
     {raw : RowOf ContextualOperand} {payload : ContextualOperand} {atom : Atom}
@@ -2740,19 +2985,19 @@ namespace Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.BindingTheory
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.MeTTa.HE
-open LeaTTaBridge LeaTTaTypeConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 open Spec.Type RuntimeRefinement Theory
 
 private abbrev read (valuation : String → Metta.Atom) (atom : Atom) : Metta.Atom :=
-  applyClassSolution valuation (toLeaTTaAtom atom)
+  applyClassSolution valuation (encodeModelAtom atom)
 
 /-- A structural valuation satisfying a finite table absorbs its application.
 The valuation may use ground constructors outside the native HE signature. -/
 theorem presentation_he_model_absorbs {valuation : String → Metta.Atom}
     {table : TypeSubst} (satisfied : HEBindingSatisfied valuation ⟨table, []⟩)
     (atom : Atom) :
-    applyClassSolution valuation (toLeaTTaAtom (table.apply atom)) =
-      applyClassSolution valuation (toLeaTTaAtom atom) := by
+    applyClassSolution valuation (encodeModelAtom (table.apply atom)) =
+      applyClassSolution valuation (encodeModelAtom atom) := by
   induction atom using Atom.rec (motive_2 := fun atoms =>
       (atoms.map (fun atom => read valuation (table.apply atom))) =
         atoms.map (read valuation)) with
@@ -2762,10 +3007,10 @@ theorem presentation_he_model_absorbs {valuation : String → Metta.Atom}
       cases found : table.lookup name with
       | none => simp [TypeSubst.apply, found]
       | some value =>
-          simpa [TypeSubst.apply, found, toLeaTTaAtom, applyClassSolution] using
+          simpa [TypeSubst.apply, found, encodeModelAtom, applyClassSolution] using
             (satisfied.1 name value (TypeSubst.lookup_eq_some_mem found)).symm
   | expression atoms ih =>
-      simpa only [TypeSubst.apply, toLeaTTaAtom, toLeaTTaAtoms_eq_map,
+      simpa only [TypeSubst.apply, encodeModelAtom, encodeModelAtoms_eq_map,
         List.map_map, applyClassSolution, Metta.Atom.expr.injEq, read, Function.comp_def] using ih
   | nil => rfl
   | cons atom atoms first rest => exact congrArg₂ List.cons first rest
@@ -2806,11 +3051,11 @@ private theorem applied_he_model {valuation : String → Metta.Atom}
     HEBindingSatisfied valuation ⟨output, []⟩ :=
   match derived with
   | .identical _ _ => incoming
-  | .bindLeft _ => bind_he_model incoming (by simpa only [read, toLeaTTaAtom, applyClassSolution] using equation)
-  | .bindRight _ _ => bind_he_model incoming (by simpa only [read, toLeaTTaAtom, applyClassSolution] using equation.symm)
+  | .bindLeft _ => bind_he_model incoming (by simpa only [read, encodeModelAtom, applyClassSolution] using equation)
+  | .bindRight _ _ => bind_he_model incoming (by simpa only [read, encodeModelAtom, applyClassSolution] using equation.symm)
   | .expression children =>
       applied_list_he_model children incoming (by
-        simpa only [read, toLeaTTaAtom, toLeaTTaAtoms_eq_map, applyClassSolution,
+        simpa only [read, encodeModelAtom, encodeModelAtoms_eq_map, applyClassSolution,
           List.map_map, Metta.Atom.expr.injEq, Function.comp_def] using equation)
 
 /-- The exact syntactic presentation step preserves every structural model of
@@ -2874,10 +3119,10 @@ theorem EquationListPresentationRel.he_binding_model {valuation : String → Met
     bindings.equalities.map (fun edge => (Atom.var edge.1, Atom.var edge.2)) at member
   rcases List.mem_append.mp member with assignment | equality
   · obtain ⟨⟨name, value⟩, assigned, rfl⟩ := List.mem_map.mp assignment
-    simpa only [HEAtomEquationSatisfied, toLeaTTaAtom, applyClassSolution] using
+    simpa only [HEAtomEquationSatisfied, encodeModelAtom, applyClassSolution] using
       satisfied.1 name value assigned
   · obtain ⟨⟨left, right⟩, edge, rfl⟩ := List.mem_map.mp equality
-    simpa only [HEAtomEquationSatisfied, toLeaTTaAtom, applyClassSolution] using
+    simpa only [HEAtomEquationSatisfied, encodeModelAtom, applyClassSolution] using
       satisfied.2 left right edge
 
 /-- Native solution implication for finite HE records is conservative under
@@ -2901,13 +3146,13 @@ theorem he_models_of_native_solution_implication {left right : Bindings}
     rw [applyTypeValuation_presented_eq_apply] at equation
     have mapped := congrArg (read valuation) equation
     simpa only [read, presentation_he_model_absorbs structural,
-      toLeaTTaAtom, applyClassSolution] using mapped
+      encodeModelAtom, applyClassSolution] using mapped
   · intro leftName rightName member
     have equation := native.2 leftName rightName member
     change table.apply (.var leftName) = table.apply (.var rightName) at equation
     have mapped := congrArg (read valuation) equation
     simpa only [read, presentation_he_model_absorbs structural,
-      toLeaTTaAtom, applyClassSolution] using mapped
+      encodeModelAtom, applyClassSolution] using mapped
 
 /-- Complete native solution equality also preserves all structural models
 of the existing extended atom language. -/
@@ -2923,7 +3168,7 @@ end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.BindingTheory
 namespace Mettapedia.Languages.MeTTa.HE
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
-open LeaTTaBridge LeaTTaTypeConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 open Spec.Bindings.ScopeObservation
 
 /-- Complete native binding agreement preserves models in the structural
@@ -2968,7 +3213,7 @@ theorem extended_unit_alias_models :
     simp [variableAlias, equalityAlias, RuntimeRefinement.TypeBindingSatisfied,
       RuntimeRefinement.applyTypeValuation]
   have leftModel : HEBindingSatisfied (fun _ => .gnd .unit) variableAlias := by
-    simp [variableAlias, HEBindingSatisfied, toLeaTTaAtom, applyClassSolution]
+    simp [variableAlias, HEBindingSatisfied, encodeModelAtom, applyClassSolution]
   exact ⟨leftModel, (he_models_iff_of_native_solutions same _).mp leftModel⟩
 
 /-- Full theory, rather than satisfiability alone, is required: two finite

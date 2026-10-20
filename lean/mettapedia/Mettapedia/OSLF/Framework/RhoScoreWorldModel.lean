@@ -37,7 +37,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL.ScopedPattern
 open Mettapedia.OSLF.MeTTaIL.DerivedPresentationSyntax
 open Mettapedia.OSLF.MeTTaIL.InterpretedContextualStep
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefRewriteSystem
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefGSLT

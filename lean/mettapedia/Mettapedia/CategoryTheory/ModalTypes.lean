@@ -19,7 +19,7 @@ namespace Mettapedia.CategoryTheory.ModalTypes
 open Mettapedia.CategoryTheory.LambdaTheories
 open Mettapedia.CategoryTheory.PLNInstance
 open Mettapedia.CategoryTheory.PLNTerms
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## Predicate-First Modal Semantics -/
 

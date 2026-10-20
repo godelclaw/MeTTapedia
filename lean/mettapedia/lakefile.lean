@@ -218,13 +218,104 @@ input_file gsltCollectionLawsSource where
   path := "../../metta/gslt/lib/gslt_collection_laws.metta"
   text := false
 
+input_file gsltCanonicalSource where
+  path := "../../metta/gslt/lib/gslt_canonical.metta"
+  text := false
+
+input_file gsltInductiveAppendSource where
+  path := "../../metta/gslt/lib/gslt_inductive_append.metta"
+  text := false
+
+input_file gsltIndexedNatVecAppendModule where
+  path := "../../metta/gslt/module/IndexedNatVecAppend.module"
+  text := false
+
+lean_lib GSLTIndexedAppendSourceQuotation where
+  roots := #[`Mettapedia.GSLT.LanguageDef.IndexedInductiveAppendSource]
+  needs := #[`@/gsltIndexedNatVecAppendModule]
+
+lean_lib GSLTInductiveAppendQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedInductiveAppend,
+    `Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedInductiveAppendControls]
+  needs := #[`@/gsltInductiveAppendSource]
+
 input_file gsltRunnerSource where
   path := "../../metta/gslt/lib/gslt_runner.metta"
   text := false
 
+lean_lib GSLTLawsQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.LawsSource]
+  needs := #[`@/gsltCollectionLawsSource]
+
+lean_lib GSLTCanonicalQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.CanonicalSource]
+  needs := #[`@/gsltCanonicalSource]
+
 lean_lib GSLTRunnerQuotation where
   roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.RunnerSource]
-  needs := #[`@/gsltCollectionLawsSource, `@/gsltRunnerSource]
+  needs := #[`@/gsltRunnerSource]
+
+input_file gsltRhoNativeQueriesSource where
+  path := "../../metta/gslt/lib/gslt_rho_native_queries.metta"
+  text := false
+
+lean_lib GSLTRhoNativeQueriesQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.NativeTypes.RhoRuntimeSource]
+  needs := #[`@/gsltRhoNativeQueriesSource]
+
+input_file gsltNativeSpatialSource where
+  path := "../../metta/gslt/lib/gslt_native_spatial.metta"
+  text := false
+
+lean_lib GSLTNativeSpatialQuotation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.NativeTypes.SpatialSource]
+  needs := #[`@/gsltNativeSpatialSource]
+
+input_file gsltInductiveObservationsSource where
+  path := "../../metta/gslt/lib/gslt_inductive_observations.metta"
+  text := false
+
+lean_lib GSLTInductiveAppendObservation where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.NativeTypes.IndexedAppend,
+    `Mettapedia.Languages.MeTTa.PeTTa.Bridges.NativeTypes.IndexedAppendControls,
+    `Mettapedia.Languages.MeTTa.PeTTa.Bridges.NativeTypes.IndexedAppendExecutionControls]
+  needs := #[`@/gsltInductiveAppendSource, `@/gsltNativeSpatialSource,
+    `@/gsltIndexedNatVecAppendModule, `@/gsltInductiveObservationsSource]
+
+lean_lib GSLTInductiveAppendPolicy where
+  roots := #[`Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedInductiveAppendPolicy]
+  needs := #[`@/gsltInductiveAppendSource, `@/gsltIndexedNatVecAppendModule]
+
+input_file gsltNativeNaturalCounterModule where
+  path := "../../metta/gslt/module/NativeNaturalCounter.module"
+  text := false
+
+input_file gsltNativeFixedPointsSource where
+  path := "../../metta/gslt/lib/gslt_native_fixed_points.metta"
+  text := false
+
+lean_lib GSLTInductiveM1Qualification where
+  roots := #[`Mettapedia.GSLT.LanguageDef.ModuleSource.LbnfDecode,
+    `Mettapedia.GSLT.LanguageDef.IndexedInductiveAppendSelectedTypingControls,
+    `Mettapedia.Languages.MeTTa.PeTTa.ReadAfterRender,
+    `Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedInductiveAppendControls,
+    `Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedInductiveAppendPolicy,
+    `Mettapedia.Languages.MeTTa.PeTTa.Bridges.IndexedInductiveAppendAnnotated,
+    `Mettapedia.Languages.MeTTa.PeTTa.Bridges.NativeTypes.IndexedAppendControls,
+    `Mettapedia.Languages.MeTTa.PeTTa.Bridges.NativeTypes.IndexedAppendExecutionControls,
+    `Mettapedia.Languages.MeTTa.PeTTa.Bridges.NativeTypes.FiniteMuCalculusSource,
+    `Mettapedia.Languages.MeTTa.PeTTa.Bridges.NativeTypes.NaturalCounterExecution,
+    `Mettapedia.GSLT.LanguageDef.IndexedInductiveNaturalHOL,
+    `Mettapedia.Languages.HOLLight.NaturalFacts,
+    `Mettapedia.Languages.MM0.NaturalClosure,
+    `Mettapedia.Languages.Megalodon.NaturalClosure,
+    `Mettapedia.Languages.Megalodon.NaturalRecursion,
+    `Mettapedia.Languages.Megalodon.NativeSyntaxWire,
+    `Mettapedia.GSLT.LanguageDef.IntegerRepresentationPublicationControls,
+    `Mettapedia.OSLF.NativeTypes.Instances.Natural.RetainedCounterControls]
+  needs := #[`@/gsltInductiveAppendSource, `@/gsltIndexedNatVecAppendModule,
+    `@/gsltNativeSpatialSource, `@/gsltNativeNaturalCounterModule,
+    `@/gsltNativeFixedPointsSource, `@/gsltInductiveObservationsSource]
 
 -- Concrete MM2 execution examples are an explicit proof audit, not a
 -- dependency of the routine language umbrellas or the default library.

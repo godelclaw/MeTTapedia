@@ -1,4 +1,4 @@
-import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationMatchConformance
+import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
 
 /-!
 # Resolved-wildcard provenance counterexample
@@ -9,14 +9,9 @@ type variable merely because an incoming substitution presents that variable
 as `%Undefined%`: the raw new equation may conflict with the incoming one.
 
 The legacy presentation relation substituted first and then inspected the
-result for `%Undefined%`.  The witness below pins that over-acceptance against
-the repaired runtime, which rejects the conflicting equation.
-
-This provenance distinction follows upstream Hyperon's implementation:
-`hyperon-experimental/lib/src/metta/types.rs` applies
-`replace_undefined_types` to the two raw arguments at the boundary of
-`match_reducted_types` (lines 563--572 in the audited revision), before the
-ordinary matcher produces or extends any bindings.
+result for `%Undefined%`. The source counterexamples below separate that
+rule from raw wildcard provenance. Runtime comparisons consume these
+independent facts downstream.
 -/
 
 namespace Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.WildcardProvenanceCounterexample
@@ -26,9 +21,6 @@ open Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
 
 def legacyIncoming : TypeSubst :=
   [("x", Atom.undefinedType)]
-
-def legacyLeaIncoming : Metta.Bindings :=
-  [Metta.BindingRel.val "x" (.sym "%Undefined%")]
 
 /-- The legacy decision rule: substitution-produced `%Undefined%` was
 mistaken for a literal wildcard. -/
@@ -68,27 +60,6 @@ theorem corrected_spec_relation_rejects_resolved_wildcard_conflict :
   rw [← leftApply, ← rightApply] at applied
   exact AppliedReducedTypeMatchRel.no_distinct_symbols
     (by decide) applied
-
-/-- The repaired runtime keeps the raw equation visible and rejects the
-conflict `$x := %Undefined%` together with `$x = A`. -/
-theorem repaired_runtime_rejects_resolved_wildcard_conflict :
-    Metta.Minimal.matchReduced legacyLeaIncoming
-      (.var "x") (.sym "A") = none := by
-  have hx : ((Metta.Atom.var "x" ==
-      Metta.Atom.sym "%Undefined%") = false) := by decide
-  have hA : ((Metta.Atom.sym "A" ==
-      Metta.Atom.sym "%Undefined%") = false) := by decide
-  rw [Metta.Minimal.matchReduced, hx, hA]
-  simp [legacyLeaIncoming, Metta.matchAtoms, Metta.matchAtomsWith,
-    Metta.Bindings.merge,
-    Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
-    Metta.Bindings.classValues, Metta.Bindings.eqClassOrdered,
-    Metta.Bindings.eqVarsInOrder, Metta.Bindings.lookupVal,
-    Metta.Bindings.unifyValues, Metta.Unify.unifyRounds,
-    Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
-    Metta.Atom.size]
-  · intro es acts hvar
-    cases hvar
 
 /-! ## Recursive provenance canary -/
 
@@ -131,20 +102,6 @@ theorem corrected_spec_relation_rejects_nested_resolved_wildcard_conflict :
           exact corrected_spec_relation_rejects_resolved_wildcard_conflict
             ⟨_, head⟩
   | ordinary _ _ leafShape _ _ _ => exact leafShape.elim
-
-/-- The repaired runtime also keeps the raw children visible and rejects the
-nested conflicting equation. -/
-theorem repaired_runtime_rejects_nested_resolved_wildcard_conflict :
-    Metta.Minimal.matchReduced legacyLeaIncoming
-      (.expr [.var "x"]) (.expr [.sym "A"]) = none := by
-  have hleft : ((Metta.Atom.expr [Metta.Atom.var "x"] ==
-      Metta.Atom.sym "%Undefined%") = false) := by decide
-  have hright : ((Metta.Atom.expr [Metta.Atom.sym "A"] ==
-      Metta.Atom.sym "%Undefined%") = false) := by decide
-  rw [Metta.Minimal.matchReduced, hleft, hright]
-  simp only [Bool.false_or, Bool.false_eq_true, ↓reduceIte,
-    Metta.Minimal.matchReducedList,
-    repaired_runtime_rejects_resolved_wildcard_conflict]
 
 /-! ## Ordinary `%Undefined%` remains bindable -/
 

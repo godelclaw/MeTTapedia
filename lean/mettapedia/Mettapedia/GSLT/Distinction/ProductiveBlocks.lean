@@ -2093,3 +2093,141 @@ theorem represent_matchesStuck (encode : State → Data) (decode : Data → Opti
 end Machine
 
 end Mettapedia.GSLT.Distinction.ProductiveBlocks
+
+
+namespace Mettapedia.GSLT.Distinction.ProductiveBlocks
+
+/-- A finite execution derivation from independently supplied local rules.
+An absent transition has its own source judgment; it is not a successful
+verdict. Zero budget retains the exact input state without inspecting it. -/
+inductive Derivation {State Event Verdict Request : Type}
+    (rule : State → Option (Transition State Event Verdict Request) → Prop) :
+    ℕ → State → List Event → Outcome State Verdict Request → Prop where
+  | pause (state : State) : Derivation rule 0 state [] (.exhausted state)
+  | silent {fuel : ℕ} {state next : State} {events : List Event}
+      {outcome : Outcome State Verdict Request}
+      (step : rule state (some (.silent next)))
+      (rest : Derivation rule fuel next events outcome) :
+      Derivation rule (fuel + 1) state events outcome
+  | published {fuel : ℕ} {state next : State} {events later : List Event}
+      {outcome : Outcome State Verdict Request}
+      (step : rule state (some (.publish events next)))
+      (rest : Derivation rule fuel next later outcome) :
+      Derivation rule (fuel + 1) state (events ++ later) outcome
+  | finished {fuel : ℕ} {state : State} {verdict : Verdict}
+      (step : rule state (some (.finish verdict))) :
+      Derivation rule (fuel + 1) state [] (.finished verdict)
+  | faulted {fuel : ℕ} {state : State} {events : List Event}
+      (step : rule state (some (.fail events))) :
+      Derivation rule (fuel + 1) state events .faulted
+  | requested {fuel : ℕ} {state saved : State} {request : Request}
+      (step : rule state (some (.call request saved))) :
+      Derivation rule (fuel + 1) state [] (.suspended request saved)
+  | stuck {fuel : ℕ} {state : State} (step : rule state none) :
+      Derivation rule (fuel + 1) state [] (.stuck state)
+
+namespace Derivation
+
+variable {State Event Verdict Request : Type}
+variable {rule : State → Option (Transition State Event Verdict Request) → Prop}
+
+/-- Local source soundness composes into exact finite execution, retaining
+ordered events and every distinct endpoint. No whole-run law is a premise. -/
+theorem sound (machine : Machine State Event Verdict Request)
+    (localStep : ∀ state transition, rule state transition → machine.step state = transition)
+    {fuel : ℕ} {state : State} {events : List Event} {outcome : Outcome State Verdict Request}
+    (source : Derivation rule fuel state events outcome) :
+    machine.run fuel state = (events, outcome) := by
+  induction source with
+  | pause state => rfl
+  | silent step _ ih => simpa only [Machine.run, localStep _ _ step] using ih
+  | published step _ ih => simp only [Machine.run, localStep _ _ step, ih]
+  | finished step => simp only [Machine.run, localStep _ _ step]
+  | faulted step => simp only [Machine.run, localStep _ _ step]
+  | requested step => simp only [Machine.run, localStep _ _ step]
+  | stuck step => simp only [Machine.run, localStep _ _ step]
+
+/-- A source prefix resumes its saved state. Earlier publications are carried
+once, ahead of later publications; none of their source steps is replayed. -/
+theorem resume {first second : ℕ} {state saved : State} {events later : List Event}
+    {outcome : Outcome State Verdict Request}
+    (initial : Derivation rule first state events (.exhausted saved))
+    (suffix : Derivation rule second saved later outcome) :
+    Derivation rule (first + second) state (events ++ later) outcome := by
+  induction first generalizing state events with
+  | zero => cases initial; simpa using suffix
+  | succ first ih =>
+      cases initial with
+      | silent step rest =>
+          simpa only [Nat.succ_add] using Derivation.silent step (ih rest)
+      | published step rest =>
+          simpa only [Nat.succ_add, List.append_assoc] using Derivation.published step (ih rest)
+
+/-- Two independently justified derivations agree under a deterministic
+realization. This compares complete observations, without searching for an
+alternative derivation or identifying proof witnesses. -/
+theorem unique (machine : Machine State Event Verdict Request)
+    (localStep : ∀ state transition, rule state transition → machine.step state = transition)
+    {fuel : ℕ} {state : State} {events other : List Event}
+    {outcome result : Outcome State Verdict Request}
+    (left : Derivation rule fuel state events outcome)
+    (right : Derivation rule fuel state other result) :
+    (events, outcome) = (other, result) :=
+  (left.sound machine localStep).symm.trans (right.sound machine localStep)
+
+end Derivation
+
+namespace Machine
+
+variable {State Event Verdict Request : Type}
+
+/-- Local reflection and preservation of the continuing-state invariant build
+source derivations for arbitrary finite runs. The premises concern one step,
+not a completed evaluation or a supplied finite-run correspondence. -/
+theorem derive (machine : Machine State Event Verdict Request)
+    (rule : State → Option (Transition State Event Verdict Request) → Prop)
+    (valid : State → Prop)
+    (reflect : ∀ state, valid state → rule state (machine.step state))
+    (silent : ∀ state next, valid state → machine.step state = some (.silent next) → valid next)
+    (published : ∀ state events next, valid state → machine.step state = some (.publish events next) → valid next)
+    (fuel : ℕ) (state : State) (admitted : valid state) :
+    Derivation rule fuel state (machine.run fuel state).1 (machine.run fuel state).2 := by
+  induction fuel generalizing state with
+  | zero => exact .pause state
+  | succ fuel ih =>
+      have source := reflect state admitted
+      cases stepped : machine.step state with
+      | none => simpa only [Machine.run, stepped] using Derivation.stuck (fuel := fuel) (stepped ▸ source)
+      | some transition =>
+          cases transition with
+          | silent next =>
+              simpa only [Machine.run, stepped] using
+                Derivation.silent (stepped ▸ source) (ih next (silent state next admitted stepped))
+          | publish events next =>
+              simpa only [Machine.run, stepped] using
+                Derivation.published (stepped ▸ source) (ih next (published state events next admitted stepped))
+          | finish verdict =>
+              simpa only [Machine.run, stepped] using Derivation.finished (fuel := fuel) (stepped ▸ source)
+          | fail events =>
+              simpa only [Machine.run, stepped] using Derivation.faulted (fuel := fuel) (stepped ▸ source)
+          | call request saved =>
+              simpa only [Machine.run, stepped] using Derivation.requested (fuel := fuel) (stepped ▸ source)
+
+/-- Exact finite source/machine correspondence assembled from local laws. -/
+theorem run_iff_derivation (machine : Machine State Event Verdict Request)
+    (rule : State → Option (Transition State Event Verdict Request) → Prop)
+    (valid : State → Prop)
+    (localStep : ∀ state transition, rule state transition → machine.step state = transition)
+    (reflect : ∀ state, valid state → rule state (machine.step state))
+    (silent : ∀ state next, valid state → machine.step state = some (.silent next) → valid next)
+    (published : ∀ state events next, valid state → machine.step state = some (.publish events next) → valid next)
+    (fuel : ℕ) (state : State) (admitted : valid state)
+    (events : List Event) (outcome : Outcome State Verdict Request) :
+    machine.run fuel state = (events, outcome) ↔ Derivation rule fuel state events outcome := by
+  constructor
+  · intro actual
+    simpa only [actual] using machine.derive rule valid reflect silent published fuel state admitted
+  · exact Derivation.sound machine localStep
+
+end Machine
+end Mettapedia.GSLT.Distinction.ProductiveBlocks

@@ -44,7 +44,7 @@ open Mettapedia.KR.ConceptGeometry.AbstractInheritance
 open Mettapedia.KR.ConceptGeometry.ExtensionalIntensionalDivergence
 open Mettapedia.KR.ConceptOntology
 open Mettapedia.Logic.WorldModel.Algorithmic
-open Mettapedia.Logic.WorldModel.AlgorithmicConceptFormationExamples
+open Mettapedia.Logic.WorldModel.AlgorithmicConceptFormation
 open AlgorithmicFeatureEvidence
 open OpenEndedAlgorithmicConceptFormation
 

@@ -565,13 +565,15 @@ $\psi$ at every such state.
 
 \begin{lstlisting}
 -- Mettapedia/PLN/Bridges/HOL/PLNHeytingHOLWorldModelBridge.lean
-theorem provable_imp_iff_singletonStrengthLEOnTheory
+theorem provable_imp_iff_singletonStrengthLEOn
     {T : ClosedTheorySet (WithParams Const)}
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat),
       NoConstOccurrence (param σ k : WithParams Const σ) ψ)
     (φ ψ : ClosedFormula (WithParams Const)) :
     ClosedTheorySet.Provable (Const := WithParams Const) T (.imp φ ψ) ↔
-      singletonStrengthLEOnTheory (Base := Base) T φ ψ
+      singletonStrengthLEOn
+        (heytingSatisfies (Base := Base) (Const := WithParams Const))
+        (stateModelsTheory T) φ ψ
 
 noncomputable def heytingCrispSeparatingReadouts
     (T : ClosedTheorySet (WithParams Const))
@@ -642,7 +644,7 @@ Theorem & Axioms\\
   \code{propext}, \code{Classical.choice}, \code{Quot.sound}\\
 \code{binaryEvidence\_goedelDummett} &
   \code{propext}, \code{Classical.choice}, \code{Quot.sound}\\
-\code{provable\_imp\_iff\_singletonStrengthLEOnTheory} &
+\code{provable\_imp\_iff\_singletonStrengthLEOn} &
   \code{propext}, \code{Classical.choice}, \code{Quot.sound}\\
 \bottomrule
 \end{tabular}

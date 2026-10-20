@@ -1,6 +1,7 @@
 import Mathlib.Algebra.Order.Monoid.Defs
 import Mathlib.Data.ENNReal.Basic
 import Mathlib.Data.NNReal.Defs
+import Mathlib.Algebra.Order.Group.Multiset
 
 open scoped ENNReal NNReal
 
@@ -53,6 +54,9 @@ with overlapping observations it counts the overlap twice
 /-- Evidence is combined by `+` independently of the interpretation context.
     This is the monoid structure underlying PLN revision. -/
 class EvidenceType (Ev : Type*) extends AddCommMonoid Ev
+
+/-- Multisets of observations are evidence, revised by multiset sum. -/
+instance instEvidenceTypeMultiset {α : Type*} : EvidenceType (Multiset α) where
 
 /-- Evidence with a second, multiplicative combination (the tensor).
 

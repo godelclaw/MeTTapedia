@@ -20,7 +20,11 @@ entries before (`CTele.subst`, `CTele.liftAlong`; `CTele.endAt` is the number of
 the result ends at). The function type and the abstraction over a telescope commute with it
 (`CTele.pis_subst`, `CTele.lams_subst`). Over a formed extension of a context, the function
 type over the telescope is a type (`CTele.pis_formed`) and the abstraction of a typed term has
-it (`CTele.lams_typed`).
+it (`CTele.lams_typed`). A full typed assignment restricts to the ambient context
+(`CTele.ambientSub_typed`), and application in declaration order preserves dependent
+equality (`CTele.apply_equal`). Beta for a relative telescope (`CTele.lams_apply`)
+identifies the assigned abstraction at those arguments with its body under the
+complete assignment; its substituted dependent result type is retained.
 
 **The written equations** (`laterEquation`, `laterEquations`). Let `Ξ` be the telescope of
 the later arguments over the inspected argument and `C` the result type over all of them; the
@@ -77,6 +81,18 @@ def subst : {n m : Nat} → (tele : CTele Head n m) → {k : Nat} → CSub Head 
     CTele Head k (tele.endAt k)
   | _, _, .nil, _, _ => .nil
   | _, _, .cons A rest, _, σ => .cons (A.subst σ) (subst rest (CTm.liftSub σ))
+
+/-- Restrict a simultaneous assignment to the context before the telescope. -/
+def ambientSub : {n m : Nat} → CTele Head n m → {k : Nat} → CSub Head m k → CSub Head n k
+  | _, _, .nil, _, σ => σ
+  | _, _, .cons _ rest, _, σ => fun i => ambientSub rest σ i.succ
+
+/-- Apply the telescope's arguments in declaration order, retaining the
+assignment of its ambient variables separately. -/
+def apply : {n m : Nat} → CTele Head n m → {k : Nat} → CSub Head m k →
+    CTm Head k → CTm Head k
+  | _, _, .nil, _, _, function => function
+  | _, _, .cons _ rest, _, σ, function => apply rest σ (.app function (ambientSub rest σ 0))
 
 /-- Negative example: a telescope of one entry ends one variable after its start, whatever is
 substituted. -/
@@ -145,6 +161,89 @@ theorem lams_typed (levels : LevelModel R L) : ∀ {n m : Nat} (tele : CTele Hea
         obtain ⟨c, hc, piTyped⟩ := CIsType.pi levels typeA codomain
         obtain ⟨w, hw, typedA⟩ := typeA
         exact .lamIntro typedA hw piTyped hc body
+
+/-- A typed assignment along the whole telescope restricts to a typed
+assignment of its ambient context. -/
+theorem ambientSub_typed : ∀ {n m : Nat} (tele : CTele Head n m) {Γ : CCtx Head n}
+    {k : Nat} {Δ : CCtx Head k} {σ : CSub Head m k},
+    CSubstMor Q (tele.extend Γ) Δ σ → CSubstMor Q Γ Δ (tele.ambientSub σ)
+  | _, _, .nil, _, _, _, _, typed => typed
+  | _, _, .cons A rest, Γ, _, _, σ, typed => by
+      have inner : CSubstMor Q (.snoc Γ A) _ (rest.ambientSub σ) := ambientSub_typed rest typed
+      intro index
+      have atIndex := inner index.succ
+      change CTyped Q _ (rest.ambientSub σ index.succ)
+        (((Γ.lookup index).rename wk).subst (rest.ambientSub σ)) at atIndex
+      rwa [CTm.subst_rename] at atIndex
+
+/-- Opening the newest binder after the restricted assignment is the
+original assignment to that binder and its ambient variables. -/
+theorem inst_ambientSub {n k : Nat} (σ : CSub Head (n + 1) k) (term : CTm Head (n + 1)) :
+    CTm.inst0 (σ 0) (term.subst (CTm.liftSub fun i => σ i.succ)) = term.subst σ := by
+  rw [CTm.inst0_subst_liftSub]
+  exact congrArg (fun τ => term.subst τ) (CTm.eq_consSub_tail σ).symm
+
+/-- Equal dependent functions remain equal after the same independently
+typed telescope arguments. -/
+theorem apply_equal : ∀ {n m : Nat} (tele : CTele Head n m) {Γ : CCtx Head n}
+    {k : Nat} {Δ : CCtx Head k} {σ : CSub Head m k} {C : CTm Head m}
+    {first second : CTm Head k}, CSubstMor Q (tele.extend Γ) Δ σ →
+      CEqual Q Δ first second ((tele.pis C).subst (tele.ambientSub σ)) →
+      CEqual Q Δ (tele.apply σ first) (tele.apply σ second) (C.subst σ)
+  | _, _, .nil, _, _, _, _, _, _, _, _, equal => equal
+  | _, _, .cons A rest, Γ, _, Δ, σ, C, first, second, typed, equal => by
+      have inner : CSubstMor Q (.snoc Γ A) Δ (rest.ambientSub σ) := ambientSub_typed rest typed
+      have argument : CTyped Q Δ (rest.ambientSub σ 0)
+          (A.subst fun i => rest.ambientSub σ i.succ) := by
+        have atZero := inner 0
+        change CTyped Q Δ (rest.ambientSub σ 0) ((A.rename wk).subst (rest.ambientSub σ)) at atZero
+        rwa [CTm.subst_rename] at atZero
+      have applied := CDerivable.appCong equal (.refl argument)
+      change CEqual Q Δ (.app first (rest.ambientSub σ 0)) (.app second (rest.ambientSub σ 0))
+        (CTm.inst0 (rest.ambientSub σ 0)
+          ((rest.pis C).subst (CTm.liftSub fun i => rest.ambientSub σ i.succ))) at applied
+      rw [inst_ambientSub] at applied
+      exact apply_equal rest typed applied
+
+/-- Beta along a relative telescope: the abstraction uses its ambient
+assignment, and its ordered arguments supply the rest of the full typed
+assignment. Both sides retain the body's substituted dependent type. -/
+theorem lams_apply (levels : LevelModel R L) : ∀ {n m : Nat} (tele : CTele Head n m)
+    {Γ : CCtx Head n} {body C : CTm Head m} {k : Nat} {Δ : CCtx Head k}
+    (σ : CSub Head m k), CCtxFormed Q (tele.extend Γ) →
+      CIsType Q (tele.extend Γ) C → CTyped Q (tele.extend Γ) body C →
+      CSubstMor Q (tele.extend Γ) Δ σ →
+      CEqual Q Δ (tele.apply σ ((tele.lams body).subst (tele.ambientSub σ)))
+        (body.subst σ) (C.subst σ)
+  | _, _, .nil, _, _, _, _, _, _, _, _, typed, assignment =>
+      .refl (CTyped.substitute typed assignment)
+  | _, _, .cons A rest, Γ, body, C, _, Δ, σ, formed, typeC, typed, assignment => by
+      have innerFormed : CCtxFormed Q (.snoc Γ A) := formed_of_extend rest formed
+      have inner : CSubstMor Q (.snoc Γ A) Δ (rest.ambientSub σ) := ambientSub_typed rest assignment
+      have tail : CSubstMor Q Γ Δ (fun i => rest.ambientSub σ i.succ) :=
+        ambientSub_typed (.cons A rest) assignment
+      have argument : CTyped Q Δ (rest.ambientSub σ 0)
+          (A.subst fun i => rest.ambientSub σ i.succ) := by
+        have atZero := inner 0
+        change CTyped Q Δ (rest.ambientSub σ 0) ((A.rename wk).subst (rest.ambientSub σ)) at atZero
+        rwa [CTm.subst_rename] at atZero
+      have codomain := pis_formed levels rest formed typeC
+      have bodyTyped := lams_typed levels rest formed typeC typed
+      cases innerFormed with
+      | snoc _ typeA =>
+        obtain ⟨c, hc, piTyped⟩ := CIsType.pi levels typeA codomain
+        have beta := CDerivable.betaPi (CTyped.substitute piTyped tail) hc
+          (CTyped.substitute bodyTyped (CSubstMor.lift tail A)) argument
+        change CEqual Q Δ
+          (.app ((CTm.lam A (rest.lams body)).subst (fun i => rest.ambientSub σ i.succ))
+            (rest.ambientSub σ 0))
+          (CTm.inst0 (rest.ambientSub σ 0)
+            ((rest.lams body).subst (CTm.liftSub fun i => rest.ambientSub σ i.succ)))
+          (CTm.inst0 (rest.ambientSub σ 0)
+            ((rest.pis C).subst (CTm.liftSub fun i => rest.ambientSub σ i.succ))) at beta
+        rw [inst_ambientSub, inst_ambientSub] at beta
+        exact .trans (apply_equal rest assignment beta)
+          (lams_apply levels rest σ formed typeC typed assignment)
 
 end Judgment
 

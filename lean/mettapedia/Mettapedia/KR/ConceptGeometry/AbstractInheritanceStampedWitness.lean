@@ -15,7 +15,7 @@ This module equips finite inheritance witnesses with provenance stamps:
 
 namespace Mettapedia.KR.ConceptGeometry.AbstractInheritance
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 universe u v

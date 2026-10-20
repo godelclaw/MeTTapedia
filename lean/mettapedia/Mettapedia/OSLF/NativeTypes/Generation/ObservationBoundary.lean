@@ -48,14 +48,7 @@ theorem conjunctive_questions_hold {language : LanguageDef}
 
 private theorem done_class {source target : Pattern}
     (equivalent : Relation.EqvGen Eqv source target) : source = done ↔ target = done := by
-  induction equivalent with
-  | rel source target equated =>
-      rcases equation_events equated with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      · simp [alpha, beta, done]
-      · simp [alpha, beta, done]
-  | refl => rfl
-  | symm _ _ _ ih => exact ih.symm
-  | trans _ _ _ _ _ ihFirst ihSecond => exact ihFirst.trans ihSecond
+  exact equation_keeps_nullary runtimePlan rfl "Done" (by decide) (by decide) equivalent
 
 theorem done_has_no_primitive {receipt : GeneralRuleJobs.Receipt}
     (valid : receipt.Valid runtimePlan [] carrier done) : False := by

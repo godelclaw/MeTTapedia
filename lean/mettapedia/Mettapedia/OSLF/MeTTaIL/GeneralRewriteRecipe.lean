@@ -64,7 +64,7 @@ def checkEquationJob (plan : Plan) (bound : List TypeExpr) (type : TypeExpr)
   decide (plan.equations[job.planPosition]? = some job.equation) &&
     Mettapedia.GSLT.LanguageDef.GeneralTypedOccurrenceChecking.check
       (GeneralPlanEnvironment.environment plan).language plan.snapshot.free
-      plan.permissions.sites bound type source job.site
+      OperationalPermissions.all bound type source job.site
 
 theorem checkEquationJob_exact (plan : Plan) (bound : List TypeExpr) (type : TypeExpr)
     (source : Pattern) (job : GeneralEquationJobs.Job) :

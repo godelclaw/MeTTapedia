@@ -19,12 +19,12 @@ antecedent itself.  As in the FO bridge, this is an implication-fragment
 readout interface, not a further metatheoretic completeness claim.
 -/
 
-namespace Mettapedia.PLN.Bridges.HOL.HeytingWorldModel
+namespace Mettapedia.PLN.Bridges.HOL.PLNHeytingHOLWorldModelBridge
 
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.HeytingSem
 open Mettapedia.Logic.HOL.WithParams
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open scoped ENNReal
 
@@ -146,4 +146,4 @@ noncomputable def heytingCrispSeparatingReadouts
     (provable_imp_iff_singletonStrengthLEOn (Base := Base) hT0 φ ψ).mpr
       (fun S hS => h ⟨S, hS⟩)
 
-end Mettapedia.PLN.Bridges.HOL.HeytingWorldModel
+end Mettapedia.PLN.Bridges.HOL.PLNHeytingHOLWorldModelBridge

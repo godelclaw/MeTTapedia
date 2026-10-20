@@ -948,6 +948,16 @@
         "branch": "lean-upgrade/tauceti-lean__externals__LeaTTa",
         "commit": "e5c5d364158caca098fcb50bfc5f553b01cb38cc",
         "url": "git@github.com:zariuq/LeaTTa.git"
+      },
+      "overlay": {
+        "base": "e5c5d364158caca098fcb50bfc5f553b01cb38cc",
+        "patch": "patches/externals--LeaTTa-shared-atom-overlay.patch",
+        "patch_sha256": "08e050fdc341811e90bc424b073d38d03c8a5f24812610204b63da6a0c5f496a",
+        "files": {
+          "MettaHyperonFull/Core/Atom.lean": "e3924862c4ee77756f2fd1bea5dff40f62c6c38cc57b2a8d047f05142630b3ee",
+          "lakefile.lean": "27cd285406b9450f594c8dd75753829442a6535da31eb3100104461951067dcf",
+          "lake-manifest.json": "0b5f59425150118200179cefae097359497821955d04ada2884545faed7d95a1"
+        }
       }
     },
     "externals/LeaTTa-vanilla": {

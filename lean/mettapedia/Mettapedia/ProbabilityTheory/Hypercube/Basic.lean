@@ -465,7 +465,7 @@ The PLN deduction formula:
   sAC = sAB * sBC + (1 - sAB) * (pC - pB * sBC) / (1 - pB)
 
 is best treated as a **strength-level view** of an underlying evidence semantics:
-- foundational carrier: `Mettapedia.PLN.Evidence.EvidenceQuantale` (evidence counts `(n⁺, n⁻)`)
+- foundational carrier: `Mettapedia.PLN.Evidence.BinaryEvidence` (evidence counts `(n⁺, n⁻)`)
 - scalar order-reflection gate: `Mettapedia.PLN.Evidence.PLN_KS_Bridge`
 - measure-theoretic derivation (with explicit independence assumptions): `Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation`
 
@@ -514,7 +514,7 @@ This extends Walley's imprecise probabilities but with different semantics:
 - Walley: worst-case bounds
 - PLN: expected-case with credibility levels
 
-See: Chapter 4 of PLN book, `Mettapedia.PLN.Evidence.EvidenceQuantale` -/
+See: Chapter 4 of PLN book, `Mettapedia.PLN.Evidence.BinaryEvidence` -/
 def plnIndefinite : ProbabilityVertex where
   commutativity := .commutative   -- Still commutative (tensor)
   distributivity := .boolean
@@ -618,7 +618,7 @@ The Fréchet bounds (proven in PLNFrechetBounds.lean) ensure this is well-define
 
 **Key insight (consistent story)**:
 - The foundational carrier for PLN-style reasoning is **evidence** `(n⁺, n⁻)`, which has a natural
-  partial order with incomparables; see `Mettapedia.PLN.Evidence.EvidenceQuantale` and
+  partial order with incomparables; see `Mettapedia.PLN.Evidence.BinaryEvidence` and
   `Mettapedia.PLN.Evidence.PLN_KS_Bridge`.
 - The familiar `[0,1]` strength formula is a lossy projection/view (via `toStrength`), not a
   faithful identification of the underlying semantics.
@@ -1375,7 +1375,7 @@ The hypercube has a deep connection to quantale theory:
 **Key insight (consistent story)**:
 
 - The canonical “PLN” value space in this repo is **evidence** `(n⁺, n⁻)` (see
-  `Mettapedia.PLN.Evidence.EvidenceQuantale`). This carrier has a natural *partial order* with incomparable
+  `Mettapedia.PLN.Evidence.BinaryEvidence`). This carrier has a natural *partial order* with incomparable
   elements, so it does **not** admit an order-reflecting scalar representation
   `Θ : BinaryEvidence → ℝ`
   (see `Mettapedia.PLN.Evidence.PLN_KS_Bridge`).
@@ -1402,7 +1402,7 @@ express deduction in the usual `[0,1]` formulas; see
 - `Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction` - Core deduction formula (numeric)
 - `Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation` - Measure-theoretic derivation (explicit independence)
 - `Mettapedia.PLN.RuleFamilies.FirstOrder.PLNInferenceRules` - Chapter 5-style rules (similarity, MP, etc.)
-- `Mettapedia.PLN.Evidence.EvidenceQuantale` - BinaryEvidence counts as a (Heyting/Frame) truth-value carrier
+- `Mettapedia.PLN.Evidence.BinaryEvidence` - BinaryEvidence counts as a (Heyting/Frame) truth-value carrier
 - `Mettapedia.PLN.Evidence.PLN_KS_Bridge` - Totality gate: no faithful `Θ : BinaryEvidence → ℝ`
 - `Mettapedia.Implementation.MettaVerification` - MeTTa parity (deduction + consistency helpers)
 - `Mettapedia.Algebra.QuantaleWeakness` - Abstract quantale theory
@@ -1499,7 +1499,7 @@ is the enrichment of that operad over [0,1] or ℝ≥0.
 - `Mettapedia.Algebra.QuantaleWeakness` - Quantale morphisms + weakness transport (`map_weakness`)
 - `Mettapedia.ProbabilityTheory.Hypercube.QuantaleSemantics` - Concrete quantale value spaces + morphisms
 - `Mettapedia.ProbabilityTheory.FreeProbability.Basic` - Noncrossing partitions
-- `Mettapedia.PLN.Evidence.EvidenceQuantale` - BinaryEvidence truth values (partial order + tensor + Heyting ops)
+- `Mettapedia.PLN.Evidence.BinaryEvidence` - BinaryEvidence truth values (partial order + tensor + Heyting ops)
 - `Mettapedia.PLN.Evidence.PLN_KS_Bridge` - Totality gate: no faithful `Θ : BinaryEvidence → ℝ`
 - Future: `Mettapedia.Algebra.IntervalQuantale` - Imprecise probability
 - Future: `Mettapedia.Algebra.FreeQuantale` - Free probability quantale

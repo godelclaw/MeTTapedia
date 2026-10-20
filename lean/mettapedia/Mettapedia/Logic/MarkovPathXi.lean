@@ -13,7 +13,7 @@ queries.
 The key design choice is to stay on the non-additive perimeter:
 
 * single-step row evidence lives in the additive WM layer;
-* multi-step predictive chaining lives in a singleton `MassSemantics` state;
+* multi-step predictive chaining lives in a singleton `Mettapedia.ProbabilityTheory.MassSemantics` state;
 * the path atom semantics therefore compiles to `markovWMPosteriorChain`, not to
   additive carrier pooling.
 -/
@@ -24,13 +24,13 @@ namespace Mettapedia.Logic.MarkovPathXi
 
 open Mettapedia.Logic
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.Logic.MarkovLogicAbstract
 open Mettapedia.OSLF.Framework.EvidenceSemantics
 open Mettapedia.Logic.WMMarkovCanonical
 open Mettapedia.Logic.MarkovPredictiveChaining
 open Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.MeTTaIL.Syntax
 
@@ -169,7 +169,7 @@ chain. This is the honest non-additive carrier for path queries. -/
 def markovPathMassSemantics
     (hk : 0 < k) (prior : Fin k → DirichletParams k)
     (c : _root_.Mettapedia.UniversalAI.UniversalPrediction.TransCounts k) :
-    MassSemantics (MarkovTransitionPathQuery k) where
+    Mettapedia.ProbabilityTheory.MassSemantics (MarkovTransitionPathQuery k) where
   queryMass q := markovWMPosteriorChain hk prior q.start c q.tail
   totalMass := 1
   queryMass_le_total q := markovWMPosteriorChain_le_one (k := k) hk prior q.start c q.tail
@@ -181,15 +181,15 @@ def markovPathMassSemantics
     (c : _root_.Mettapedia.UniversalAI.UniversalPrediction.TransCounts k) (q : MarkovTransitionPathQuery k) :
     (markovPathMassSemantics (k := k) hk prior c).queryProb q =
       markovWMPosteriorChain hk prior q.start c q.tail := by
-  simp [MassSemantics.queryProb, markovPathMassSemantics]
+  simp [Mettapedia.ProbabilityTheory.MassSemantics.queryProb, markovPathMassSemantics]
 
-@[simp] theorem markovPathMassSemantics_evidenceOfMasses
+@[simp] theorem markovPathMassSemantics_binaryMass
     {k : ℕ}
     (hk : 0 < k) (prior : Fin k → DirichletParams k)
     (c : _root_.Mettapedia.UniversalAI.UniversalPrediction.TransCounts k) (q : MarkovTransitionPathQuery k) :
-    (markovPathMassSemantics (k := k) hk prior c).evidenceOfMasses q =
+    (markovPathMassSemantics (k := k) hk prior c).binaryMass q =
       markovPathEvidenceOfProb (markovWMPosteriorChain hk prior q.start c q.tail) := by
-  simp [MassSemantics.evidenceOfMasses, markovPathMassSemantics, markovPathEvidenceOfProb]
+  simp [Mettapedia.ProbabilityTheory.MassSemantics.binaryMass, markovPathMassSemantics, markovPathEvidenceOfProb]
 
 /-- Package a multiset WM state as a singleton mass semantics source for the
 path-query interface. -/

@@ -117,7 +117,7 @@ theorem conversion_iff (extension : ConversionConservativeExtension source targe
   ⟨extension.conversion_forward, extension.conversion_backward⟩
 
 /-- Auxiliary Pi injectivity and separation qualify the authored conversion. -/
-def piConversionBoundary (extension : ConversionConservativeExtension source target)
+theorem piConversionBoundary (extension : ConversionConservativeExtension source target)
     (boundary : PiConversionBoundary target) : PiConversionBoundary source where
   components := by
     intro n A A' B B' conversion
@@ -129,7 +129,7 @@ def piConversionBoundary (extension : ConversionConservativeExtension source tar
     exact boundary.headDisjoint (extension.conversion_forward conversion)
 
 /-- Auxiliary Sigma injectivity and separation qualify the authored conversion. -/
-def sigmaConversionBoundary (extension : ConversionConservativeExtension source target)
+theorem sigmaConversionBoundary (extension : ConversionConservativeExtension source target)
     (boundary : SigmaConversionBoundary target) : SigmaConversionBoundary source where
   components := by
     intro n A A' B B' conversion
@@ -142,7 +142,7 @@ def sigmaConversionBoundary (extension : ConversionConservativeExtension source 
 
 /-- A Church--Rosser auxiliary reduction suffices for authored Pi conversion
 qualification; authored Church--Rosser is not asserted. -/
-def piConversionBoundaryOfChurchRosser
+theorem piConversionBoundaryOfChurchRosser
     (extension : ConversionConservativeExtension source target)
     (neutral : ConversionCoherence.RootPiHeadNeutral target)
     (churchRosser : ConversionCoherence.ChurchRosser target) :
@@ -195,7 +195,7 @@ private theorem sigma_head_stepStar_shape {R : Rules Head}
 
 /-- Church--Rosser plus Sigma/head root neutrality yields the actual pair
 conversion boundary, allowing arbitrary root rules elsewhere. -/
-def sigmaConversionBoundaryOfChurchRosser {R : Rules Head}
+theorem sigmaConversionBoundaryOfChurchRosser {R : Rules Head}
     (neutral : RootSigmaHeadNeutral R) (churchRosser : ChurchRosser R) :
     SigmaConversionBoundary R where
   components := by
@@ -225,7 +225,7 @@ end ConversionCoherence
 
 namespace ConversionConservativeExtension
 
-def sigmaConversionBoundaryOfChurchRosser
+theorem sigmaConversionBoundaryOfChurchRosser
     (extension : ConversionConservativeExtension source target)
     (neutral : ConversionCoherence.RootSigmaHeadNeutral target)
     (churchRosser : ConversionCoherence.ChurchRosser target) :

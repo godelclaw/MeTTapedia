@@ -15,7 +15,7 @@ namespace Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLInfinitary
 
 open LO
 open LO.FirstOrder
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL
 

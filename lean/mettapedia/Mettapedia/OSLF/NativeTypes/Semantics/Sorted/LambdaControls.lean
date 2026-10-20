@@ -1,6 +1,7 @@
 import Mettapedia.OSLF.NativeTypes.Semantics.Sorted.NativeIntroduction
 import Mettapedia.OSLF.NativeTypes.Semantics.Sorted.NativeTransport
 import Mettapedia.OSLF.NativeTypes.Generation.ModalCheckingControls
+import Mathlib.Tactic.FinCases
 
 open Mettapedia.OSLF.Framework
 

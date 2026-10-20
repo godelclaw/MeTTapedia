@@ -11,7 +11,7 @@ infrastructure.
 
 namespace Mettapedia.KR.ConceptOntology
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 universe u v w
 

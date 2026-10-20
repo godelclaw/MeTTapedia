@@ -125,7 +125,7 @@ cannot be unified via `e = 1-c` after combination.
 
 namespace Mettapedia.PLN.TruthValues.PLNIndefiniteTruth
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.TruthValues.PLNWeightTV

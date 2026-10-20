@@ -15,8 +15,8 @@ This module connects typed world-model query extraction to the ontology core:
 namespace Mettapedia.KR.ConceptOntology
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel
 
 universe u v w x y

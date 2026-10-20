@@ -106,11 +106,6 @@ theorem firing_events_returns (state : State) (pattern : Pattern) (conversions :
     have later := firing_events_returns state pattern conversions rest
     complete_eval [later] unfolding [encodeList, eventTerm, classReceiptTerm, patternValue]
 
-theorem encodePattern_injective : Function.Injective InferenceCettaWire.encodePattern := by
-  intro first second same
-  have decoded := congrArg InferenceCettaWire.decodePattern same
-  simpa using decoded
-
 theorem lift_scope_of_lane {bound : List TypeExpr} {expected : TypeExpr} {footprint : List String}
     (scope : Scope plan footprint) {source : Pattern} {lane : Complete.EquationJob.Lane}
     (member : lane ∈ Complete.EquationJob.lanes plan bound expected source) {outcome : Complete.EquationJob.Outcome}
@@ -163,7 +158,7 @@ theorem pattern_equal_returns (program : SpaceSemantics.Program) (caller : Metta
     by_cases equal : first = second
     · subst equal; simp [BEq.beq]
     · have different : InferenceCettaWire.encodePattern first ≠ InferenceCettaWire.encodePattern second :=
-        fun same => equal (encodePattern_injective same)
+        fun same => equal (InferenceCettaWire.encodePattern_injective same)
       simp [BEq.beq, equal, different]
   rwa [same] at compared
 
@@ -218,7 +213,7 @@ theorem backward_events_returns (state : State) (table : List (String × TypeExp
             Mettapedia.Languages.ProcessCalculi.MORK.applySubst.applySubstList,
             Mettapedia.Languages.ProcessCalculi.MORK.Subst.lookup, List.find?]
         have different : InferenceCettaWire.encodePattern receipt.target ≠ InferenceCettaWire.encodePattern pattern :=
-          fun equal => same (beq_iff_eq.mpr (encodePattern_injective equal))
+          fun equal => same (beq_iff_eq.mpr (InferenceCettaWire.encodePattern_injective equal))
         all_goals
           rw [if_neg different]
           metta_eval [later] with complete_checked

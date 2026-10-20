@@ -10,10 +10,10 @@ and packages the main semantics as user-facing WM query judgments.
 namespace Mettapedia.Logic.MarkovTransitionXiExamples
 
 open Mettapedia.Logic
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.Logic.WMMarkovCanonical
 open Mettapedia.Logic.MarkovTransitionXi
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.MeTTaIL.Syntax
 
 open scoped ENNReal

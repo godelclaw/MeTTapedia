@@ -220,7 +220,7 @@ theorem Tm.mapHead_liftSub (f : Head₁ → Head₂) (σ : Sub Head₁ n m) :
 inductive Ctx (Head : Type) : Nat → Type where
   | nil : Ctx Head 0
   | snoc : Ctx Head n → Tm Head n → Ctx Head (n + 1)
-  deriving Repr
+  deriving DecidableEq, Repr
 
 def Ctx.lookup : Ctx Head n → Fin n → Tm Head n
   | .nil, i => nomatch i

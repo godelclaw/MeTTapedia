@@ -120,7 +120,7 @@ theorem compiledPartition_eq_restrictedTotalMass
 /-- The factor-graph specialization also induces a mass semantics object. -/
 noncomputable def compiledMassSemantics
     (M : CountableMLNSemantics World Query Feature)
-    {support : Finset World} (hs : FiniteSupportWitness M support) : MassSemantics Query where
+    {support : Finset World} (hs : FiniteSupportWitness M support) : Mettapedia.ProbabilityTheory.MassSemantics Query where
   queryMass := compiledQueryMass M support
   totalMass := compiledPartition M support
   queryMass_le_total := by
@@ -137,7 +137,7 @@ theorem compiled_queryProb_eq_restricted_queryProb
     (M : CountableMLNSemantics World Query Feature)
     {support : Finset World} (hs : FiniteSupportWitness M support) (q : Query) :
     (compiledMassSemantics M hs).queryProb q = (restrictedMassSemantics M hs).queryProb q := by
-  simp [compiledMassSemantics, restrictedMassSemantics, MassSemantics.queryProb,
+  simp [compiledMassSemantics, restrictedMassSemantics, Mettapedia.ProbabilityTheory.MassSemantics.queryProb,
     compiledQueryMass_eq_restrictedQueryMass, compiledPartition_eq_restrictedTotalMass]
   rfl
 

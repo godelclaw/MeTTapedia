@@ -80,9 +80,9 @@ def mettaCalcPremises : PremiseProgram where
   stateConstructor := none
 
 example : mettaCalcPremises.wellFormed = true := by
-  native_decide
+  decide +kernel
 
 example : mettaCalcPremises.isStratified = true := by
-  native_decide
+  decide +kernel
 
 end Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.Premises

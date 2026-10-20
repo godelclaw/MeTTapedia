@@ -171,6 +171,11 @@ theorem CPremise.statement_mapHead (g : HeadOne → HeadTwo) {n : Nat} (Γ : CCt
     premise.mapHead (fun h => h) = premise := by
   cases premise <;> simp only [CPremise.mapHead, CTm.mapHead_id]
 
+theorem CPremise.mapHead_comp {HeadThree : Type} (g : HeadTwo → HeadThree)
+    (f : HeadOne → HeadTwo) {n : Nat} (premise : CPremise HeadOne n) :
+    (premise.mapHead f).mapHead g = premise.mapHead (g ∘ f) := by
+  cases premise <;> simp only [CPremise.mapHead, CTm.mapHead_comp, Function.comp_def]
+
 /-- The identity map of heads changes no statement. -/
 @[simp] theorem CStatement.mapHead_id (s : CStatement HeadOne) : s.mapHead (fun h => h) = s := by
   cases s <;> simp only [CStatement.mapHead, CTm.mapHead_id, CCtx.mapHead_id]
@@ -208,6 +213,38 @@ theorem ChurchRules.Morphism.identity {R : Rules HeadOne} (P : ChurchRules R) :
   requires := fun {_ _ _ premises} _ required =>
     ⟨premises, by rw [CTm.mapHead_id, CTm.mapHead_id]; exact required,
       fun premise member => ⟨premise, member, (CPremise.mapHead_id premise).symm⟩⟩
+
+/-- Compose actual package transports, including the ancestry of every
+required premise. This states judgment transport, not proof-size or cost
+preservation. -/
+theorem ChurchRules.Morphism.comp {HeadThree : Type}
+    {R : Rules HeadOne} {R' : Rules HeadTwo} {R'' : Rules HeadThree}
+    {P : ChurchRules R} {P' : ChurchRules R'} {P'' : ChurchRules R''}
+    {f : HeadOne → HeadTwo} {g : HeadTwo → HeadThree}
+    (second : P'.Morphism P'' g) (first : P.Morphism P' f) :
+    P.Morphism P'' (g ∘ f) where
+  headTyping := fun typing => second.headTyping (first.headTyping typing)
+  isUniverse := fun formed => second.isUniverse (first.isUniverse formed)
+  join := fun joined => second.join (first.join joined)
+  cumulative := fun cumulative => second.cumulative (first.cumulative cumulative)
+  headEq := fun equal => second.headEq (first.headEq equal)
+  constantType := by
+    intro name type declared
+    simpa only [CTm.mapHead_comp, Function.comp_def] using second.constantType (first.constantType declared)
+  computation := by
+    intro n left right step
+    simpa only [CTm.mapHead_comp, Function.comp_def] using second.computation (first.computation step)
+  requires := by
+    intro n left right premises step required
+    obtain ⟨middle, middleRequired, fromSource⟩ := first.requires step required
+    obtain ⟨final, finalRequired, fromMiddle⟩ := second.requires (first.computation step) middleRequired
+    refine ⟨final, ?_, ?_⟩
+    · simpa only [CTm.mapHead_comp, Function.comp_def] using finalRequired
+    · intro premise member
+      obtain ⟨intermediate, middleMember, atFinal⟩ := fromMiddle premise member
+      obtain ⟨source, sourceMember, atMiddle⟩ := fromSource intermediate middleMember
+      refine ⟨source, sourceMember, ?_⟩
+      rw [atFinal, atMiddle, CPremise.mapHead_comp]
 
 /-- **Transport along a morphism of annotated packages.** Every derivable annotated statement
 of the source is derivable in the target with its heads mapped. -/

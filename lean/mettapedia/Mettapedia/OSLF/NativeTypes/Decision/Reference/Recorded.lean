@@ -87,7 +87,7 @@ theorem scan_prior_unknown {statement : Prop} (evaluate : Nat → Outcome statem
 def run {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (backend : Backend.{u,v} system admitted) (tests : Leaf → Test system admitted)
     (formula : Formula Leaf) (source : system.Term) (budget : Nat) :
-    Record (denotation tests formula source) :=
+    Record (denotation tests formula backend.spatial.theory source) :=
   scan (fun horizon => raw backend tests horizon formula source) 1 budget
 
 theorem run_outcome {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
@@ -125,7 +125,7 @@ structure FrontierView {system : GSLT.{u}} {admitted : system.Term → Prop}
 def frontierView {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (backend : Backend.{u,v} system admitted) {tests : Leaf → Test system admitted}
     {formula : Formula Leaf} {source : system.Term}
-    (record : Record (denotation tests formula source)) : FrontierView backend source where
+    (record : Record (denotation tests formula backend.spatial.theory source)) : FrontierView backend source where
   horizon := record.horizon
   receipts := backend.frontier record.horizon source
   receipts_exact := rfl

@@ -1,6 +1,8 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 import Mettapedia.Languages.MeTTa.HE.DeclMergeSpec
 import Mettapedia.Languages.MeTTa.HE.EqualityClosure
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
 
 /-!
 # Representation-independent HE/LeaTTa binding transport
@@ -42,12 +44,8 @@ relation-set equivalence. Matcher orientation is reversed because LeaTTa's
 `queryOp` matches the rule pattern against the query atom. -/
 def LeaMatcherTransport (query pattern : Atom) (hb : Bindings) : Prop :=
   ∃ lb,
-    lb ∈ Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
+    lb ∈ Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom query) ∧
       LeaBindingRelEquiv hb lb
-
-/-- The only recursive matcher case. -/
-def BothExpressions (left right : Atom) : Prop :=
-  ∃ ls rs, left = .expression ls ∧ right = .expression rs
 
 /-- Equality edges carried by a LeaTTa binding list, retaining stored order and
 orientation while erasing direct value relations. -/
@@ -688,27 +686,27 @@ theorem MettaSubstNoFloat.extend
 
 mutual
 
-theorem toLeaTTaAtom_noFloat (atom : Atom) :
-    MettaAtomNoFloat (toLeaTTaAtom atom) := by
+theorem encodeModelAtom_noFloat (atom : Atom) :
+    MettaAtomNoFloat (encodeModelAtom atom) := by
   cases atom with
-  | symbol => simp [toLeaTTaAtom, MettaAtomNoFloat]
-  | var => simp [toLeaTTaAtom, MettaAtomNoFloat]
+  | symbol => simp [encodeModelAtom, MettaAtomNoFloat]
+  | var => simp [encodeModelAtom, MettaAtomNoFloat]
   | grounded ground =>
-      cases ground <;> simp [toLeaTTaAtom, toLeaTTaGround, MettaAtomNoFloat]
+      cases ground <;> simp [encodeModelAtom, encodeModelGround, MettaAtomNoFloat]
   | expression atoms =>
-      simpa [toLeaTTaAtom, MettaAtomNoFloat] using
-        toLeaTTaAtoms_noFloat atoms
+      simpa [encodeModelAtom, MettaAtomNoFloat] using
+        encodeModelAtoms_noFloat atoms
 
-theorem toLeaTTaAtoms_noFloat (atoms : List Atom) :
-    ∀ atom ∈ toLeaTTaAtoms atoms, MettaAtomNoFloat atom := by
+theorem encodeModelAtoms_noFloat (atoms : List Atom) :
+    ∀ atom ∈ encodeModelAtoms atoms, MettaAtomNoFloat atom := by
   cases atoms with
-  | nil => simp [toLeaTTaAtoms]
+  | nil => simp [encodeModelAtoms]
   | cons head tail =>
       intro atom hmem
-      simp only [toLeaTTaAtoms, List.mem_cons] at hmem
+      simp only [encodeModelAtoms, List.mem_cons] at hmem
       rcases hmem with rfl | htail
-      · exact toLeaTTaAtom_noFloat head
-      · exact toLeaTTaAtoms_noFloat tail atom htail
+      · exact encodeModelAtom_noFloat head
+      · exact encodeModelAtoms_noFloat tail atom htail
 
 end
 
@@ -724,13 +722,6 @@ private theorem ground_eq_of_equiv_of_noFloat
     simp_all
   exact storedBindings_eq_of_beq_true_noFloat hleft hright hequiv
 
-/-- Satisfaction of one syntactic atom equation by a valuation. -/
-def MettaEquationSatisfied
-    (valuation : String → Metta.Atom)
-    (equation : Metta.Atom × Metta.Atom) : Prop :=
-  applyClassSolution valuation equation.1 =
-    applyClassSolution valuation equation.2
-
 /-- Satisfaction of every equation in a worklist. -/
 def MettaEquationsSatisfied
     (valuation : String → Metta.Atom)
@@ -745,13 +736,6 @@ def MettaConstraintsSatisfied
   ∀ constraint ∈ constraints,
     valuation constraint.1 =
       applyClassSolution valuation constraint.2
-
-/-- Pointwise satisfaction of two atom lists. -/
-def MettaAtomListsSatisfied
-    (valuation : String → Metta.Atom)
-    (left right : List Metta.Atom) : Prop :=
-  left.map (applyClassSolution valuation) =
-    right.map (applyClassSolution valuation)
 
 /-- Structural decomposition preserves exactly the valuation solutions of a
 host-float-free atom equation. -/
@@ -4658,7 +4642,7 @@ inductive HELeaAtomClassRel (b : Bindings) : Atom → Metta.Atom → Prop where
         HELeaAtomClassRel b (.var left) (.var right)
   | grounded (value : GroundedValue) :
       HELeaAtomClassRel b (.grounded value)
-        (toLeaTTaAtom (.grounded value))
+        (encodeModelAtom (.grounded value))
   | expression {left : List Atom} {right : List Metta.Atom} :
       List.Forall₂ (HELeaAtomClassRel b) left right →
         HELeaAtomClassRel b (.expression left) (.expr right)
@@ -4668,7 +4652,7 @@ mutual
 /-- Exact translation is the reflexive case of class-relative atom
 agreement. -/
 theorem HELeaAtomClassRel.translation (b : Bindings) :
-    (atom : Atom) → HELeaAtomClassRel b atom (toLeaTTaAtom atom)
+    (atom : Atom) → HELeaAtomClassRel b atom (encodeModelAtom atom)
   | .symbol name => .symbol name
   | .var name => .variable (by
       rw [EqualityClosure.mem_eqClass_iff_reachable])
@@ -4679,7 +4663,7 @@ theorem HELeaAtomClassRel.translation (b : Bindings) :
 /-- List companion to exact class-relative atom translation. -/
 theorem HELeaAtomClassRel.translationList (b : Bindings) :
     (atoms : List Atom) →
-      List.Forall₂ (HELeaAtomClassRel b) atoms (toLeaTTaAtoms atoms)
+      List.Forall₂ (HELeaAtomClassRel b) atoms (encodeModelAtoms atoms)
   | [] => .nil
   | atom :: atoms => .cons
       (HELeaAtomClassRel.translation b atom)
@@ -4774,10 +4758,10 @@ theorem LeaBindingSolutionEquiv.of_value_and_equality_theories
     refine ⟨?_, (hequalities valuation).mpr hleaEqualities⟩
     intro x heValue hmem
     have hlea :
-        Metta.BindingRel.val x (toLeaTTaAtom heValue) ∈ lb :=
-      (hvalues x (toLeaTTaAtom heValue)).mpr
+        Metta.BindingRel.val x (encodeModelAtom heValue) ∈ lb :=
+      (hvalues x (encodeModelAtom heValue)).mpr
         ⟨heValue, hmem, rfl⟩
-    exact hleaValues x (toLeaTTaAtom heValue) hlea
+    exact hleaValues x (encodeModelAtom heValue) hlea
 
 /-- Exact direct-value agreement plus equality-graph theory constructs the
 strong compositional invariant.  This is the common leaf/canonical case; later
@@ -4791,9 +4775,9 @@ theorem LeaBindingCongruence.of_value_and_equality_theories
     hvalues hequalities, ?_⟩
   constructor
   · intro key value hmem
-    refine ⟨key, toLeaTTaAtom value, ?_, ?_,
+    refine ⟨key, encodeModelAtom value, ?_, ?_,
       HELeaAtomClassRel.translation b value⟩
-    · exact (hvalues key (toLeaTTaAtom value)).mpr
+    · exact (hvalues key (encodeModelAtom value)).mpr
         ⟨value, hmem, rfl⟩
     · rw [EqualityClosure.mem_eqClass_iff_reachable]
   · intro leaKey leaValue hmem
@@ -4828,10 +4812,10 @@ theorem LeaBindingSolutionEquiv.of_rel
     refine ⟨?_, ?_⟩
     · intro x heValue hmem
       have hlea :
-          Metta.BindingRel.val x (toLeaTTaAtom heValue) ∈ lb :=
-        (hequiv.values x (toLeaTTaAtom heValue)).mpr
+          Metta.BindingRel.val x (encodeModelAtom heValue) ∈ lb :=
+        (hequiv.values x (encodeModelAtom heValue)).mpr
           ⟨heValue, hmem, rfl⟩
-      exact hvalues x (toLeaTTaAtom heValue) hlea
+      exact hvalues x (encodeModelAtom heValue) hlea
     · intro x y hmem
       have hlea := (hequiv.equalities x y).mpr (Or.inl hmem)
       rcases hlea with hxy | hyx
@@ -4847,9 +4831,9 @@ theorem LeaBindingCongruence.of_rel
   refine ⟨LeaBindingSolutionEquiv.of_rel hequiv, ?_⟩
   constructor
   · intro key value hmem
-    refine ⟨key, toLeaTTaAtom value, ?_, ?_,
+    refine ⟨key, encodeModelAtom value, ?_, ?_,
       HELeaAtomClassRel.translation b value⟩
-    · exact (hequiv.values key (toLeaTTaAtom value)).mpr
+    · exact (hequiv.values key (encodeModelAtom value)).mpr
         ⟨value, hmem, rfl⟩
     · rw [EqualityClosure.mem_eqClass_iff_reachable]
   · intro leaKey leaValue hmem
@@ -5140,7 +5124,7 @@ part of this interface.
 /-- HE's resolved value of one equality class, translated to LeaTTa atoms.
 An unresolved variable is observed as itself. -/
 def heClassSolutionAt (b : Bindings) (fuel : Nat) (v : String) : Metta.Atom :=
-  toLeaTTaAtom ((b.resolveFull v fuel).getD (.var v))
+  encodeModelAtom ((b.resolveFull v fuel).getD (.var v))
 
 /-- LeaTTa's resolved value of one equality class.  An unresolved variable is
 observed as itself. -/
@@ -5334,7 +5318,7 @@ theorem empty (scope : List String) (fuel : Nat) :
       simp [heClassSolutionAt, Bindings.empty, Bindings.resolveFull,
         Bindings.eqClassOrdered, Bindings.eqVarsInOrder, Bindings.eqClass,
         Bindings.eqClassAux, Bindings.eqStep, Bindings.lookup,
-        toLeaTTaAtom]
+        encodeModelAtom]
     rw [hlea, hhe]
     simp
 
@@ -5406,7 +5390,7 @@ theorem LeaEqualityChronology.addValRaw
     {b : Bindings} {lb : Metta.Bindings} {v : String} {value : Atom}
     (hchron : LeaEqualityChronology b lb) :
     LeaEqualityChronology (b.assign v value)
-      (Metta.Bindings.addValRaw lb v (toLeaTTaAtom value)) := by
+      (Metta.Bindings.addValRaw lb v (encodeModelAtom value)) := by
   unfold LeaEqualityChronology at hchron ⊢
   simp only [Metta.Bindings.addValRaw, leaEqualityEdges,
     leaEqualityEdges_removeVal]
@@ -5658,7 +5642,7 @@ end LeaBindingTransport
 equality-class and representative agreement. -/
 def LeaMatcherTransportFull (query pattern : Atom) (hb : Bindings) : Prop :=
   ∃ lb,
-    lb ∈ Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
+    lb ∈ Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom query) ∧
       LeaBindingTransport hb lb
 
 /-- Matcher transport through the compositional equality-class/solution-theory
@@ -5666,7 +5650,7 @@ invariant. -/
 def LeaMatcherSolutionTransport
     (query pattern : Atom) (hb : Bindings) : Prop :=
   ∃ lb,
-    lb ∈ Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
+    lb ∈ Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom query) ∧
       LeaBindingSolutionEquiv hb lb
 
 /-- Matcher transport through the strengthened compositional invariant.  This
@@ -5674,7 +5658,7 @@ is the induction-facing witness for recursive expression matching. -/
 def LeaMatcherCongruenceTransport
     (query pattern : Atom) (hb : Bindings) : Prop :=
   ∃ lb,
-    lb ∈ Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
+    lb ∈ Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom query) ∧
       LeaBindingCongruence hb lb
 
 /-- Declarative leaf transport. Every non-expression constructor of the
@@ -5688,16 +5672,16 @@ theorem matchRel_leaf_transport
   cases hrel with
   | symSym s =>
       refine ⟨[], ?_, LeaBindingTransport.empty⟩
-      simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+      simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
   | varVar queryVar patternVar =>
       have hne : patternVar ≠ queryVar := by
         intro h
         subst patternVar
         exact hdisj queryVar
-          (by simp [toLeaTTaAtom, Metta.Atom.vars])
-          (by simp [toLeaTTaAtom, Metta.Atom.vars])
+          (by simp [encodeModelAtom, Metta.Atom.vars])
+          (by simp [encodeModelAtom, Metta.Atom.vars])
       refine ⟨[Metta.BindingRel.eq patternVar queryVar], ?_, ?_⟩
-      · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hne]
+      · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hne]
       · simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
           toLeaTTaMatchBindings, toLeaTTaMatchSubst,
           Metta.Bindings.ofSubst] using
@@ -5712,39 +5696,39 @@ theorem matchRel_leaf_transport
           refine ⟨[Metta.BindingRel.val v (.sym s)], ?_, ?_⟩
           · have hloop := Metta.Bindings.hasLoop_singleton_val_of_not_mem
               v (.sym s) (by simp [Metta.Atom.vars])
-            simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hloop]
+            simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hloop]
           · simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
               toLeaTTaMatchBindings, toLeaTTaMatchSubst,
-              Metta.Bindings.ofSubst, toLeaTTaAtom] using
+              Metta.Bindings.ofSubst, encodeModelAtom] using
               (LeaBindingTransport.canonical
                 (b := (⟨[(v, .symbol s)], []⟩ : Bindings))
                 (by simp [NoBareVarAssignments]))
       | grounded g =>
-          refine ⟨[Metta.BindingRel.val v (.gnd (toLeaTTaGround g))], ?_, ?_⟩
+          refine ⟨[Metta.BindingRel.val v (.gnd (encodeModelGround g))], ?_, ?_⟩
           · have hloop := Metta.Bindings.hasLoop_singleton_val_of_not_mem
-              v (.gnd (toLeaTTaGround g)) (by simp [Metta.Atom.vars])
-            simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hloop]
+              v (.gnd (encodeModelGround g)) (by simp [Metta.Atom.vars])
+            simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hloop]
           · simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
               toLeaTTaMatchBindings, toLeaTTaMatchSubst,
-              Metta.Bindings.ofSubst, toLeaTTaAtom] using
+              Metta.Bindings.ofSubst, encodeModelAtom] using
               (LeaBindingTransport.canonical
                 (b := (⟨[(v, .grounded g)], []⟩ : Bindings))
                 (by simp [NoBareVarAssignments]))
       | expression es =>
-          have hnotMem : v ∉ (toLeaTTaAtom (.expression es)).vars :=
-            hdisj v (by simp [toLeaTTaAtom, Metta.Atom.vars])
+          have hnotMem : v ∉ (encodeModelAtom (.expression es)).vars :=
+            hdisj v (by simp [encodeModelAtom, Metta.Atom.vars])
           have hoccurs :
-              Metta.Subst.occurs v (toLeaTTaAtom (.expression es)) = false :=
+              Metta.Subst.occurs v (encodeModelAtom (.expression es)) = false :=
             occurs_eq_false_of_not_mem_vars v _ hnotMem
-          change Metta.Subst.occurs v (.expr (toLeaTTaAtoms es)) = false at hoccurs
-          refine ⟨[Metta.BindingRel.val v (.expr (toLeaTTaAtoms es))], ?_, ?_⟩
+          change Metta.Subst.occurs v (.expr (encodeModelAtoms es)) = false at hoccurs
+          refine ⟨[Metta.BindingRel.val v (.expr (encodeModelAtoms es))], ?_, ?_⟩
           · have hloop := Metta.Bindings.hasLoop_singleton_val_of_not_mem
-              v (.expr (toLeaTTaAtoms es)) (by
-                simpa [toLeaTTaAtom] using hnotMem)
-            simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hoccurs, hloop]
+              v (.expr (encodeModelAtoms es)) (by
+                simpa [encodeModelAtom] using hnotMem)
+            simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hoccurs, hloop]
           · simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
               toLeaTTaMatchBindings, toLeaTTaMatchSubst,
-              Metta.Bindings.ofSubst, toLeaTTaAtom] using
+              Metta.Bindings.ofSubst, encodeModelAtom] using
               (LeaBindingTransport.canonical
                 (b := (⟨[(v, .expression es)], []⟩ : Bindings))
                 (by simp [NoBareVarAssignments]))
@@ -5757,49 +5741,49 @@ theorem matchRel_leaf_transport
           refine ⟨[Metta.BindingRel.val v (.sym s)], ?_, ?_⟩
           · have hloop := Metta.Bindings.hasLoop_singleton_val_of_not_mem
               v (.sym s) (by simp [Metta.Atom.vars])
-            simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hloop]
+            simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hloop]
           · simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
               toLeaTTaMatchBindings, toLeaTTaMatchSubst,
-              Metta.Bindings.ofSubst, toLeaTTaAtom] using
+              Metta.Bindings.ofSubst, encodeModelAtom] using
               (LeaBindingTransport.canonical
                 (b := (⟨[(v, .symbol s)], []⟩ : Bindings))
                 (by simp [NoBareVarAssignments]))
       | grounded g =>
-          refine ⟨[Metta.BindingRel.val v (.gnd (toLeaTTaGround g))], ?_, ?_⟩
+          refine ⟨[Metta.BindingRel.val v (.gnd (encodeModelGround g))], ?_, ?_⟩
           · have hloop := Metta.Bindings.hasLoop_singleton_val_of_not_mem
-              v (.gnd (toLeaTTaGround g)) (by simp [Metta.Atom.vars])
-            simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hloop]
+              v (.gnd (encodeModelGround g)) (by simp [Metta.Atom.vars])
+            simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hloop]
           · simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
               toLeaTTaMatchBindings, toLeaTTaMatchSubst,
-              Metta.Bindings.ofSubst, toLeaTTaAtom] using
+              Metta.Bindings.ofSubst, encodeModelAtom] using
               (LeaBindingTransport.canonical
                 (b := (⟨[(v, .grounded g)], []⟩ : Bindings))
                 (by simp [NoBareVarAssignments]))
       | expression es =>
-          have hnotMem : v ∉ (toLeaTTaAtom (.expression es)).vars :=
-            hdisj' v (by simp [toLeaTTaAtom, Metta.Atom.vars])
+          have hnotMem : v ∉ (encodeModelAtom (.expression es)).vars :=
+            hdisj' v (by simp [encodeModelAtom, Metta.Atom.vars])
           have hoccurs :
-              Metta.Subst.occurs v (toLeaTTaAtom (.expression es)) = false :=
+              Metta.Subst.occurs v (encodeModelAtom (.expression es)) = false :=
             occurs_eq_false_of_not_mem_vars v _ hnotMem
-          change Metta.Subst.occurs v (.expr (toLeaTTaAtoms es)) = false at hoccurs
-          refine ⟨[Metta.BindingRel.val v (.expr (toLeaTTaAtoms es))], ?_, ?_⟩
+          change Metta.Subst.occurs v (.expr (encodeModelAtoms es)) = false at hoccurs
+          refine ⟨[Metta.BindingRel.val v (.expr (encodeModelAtoms es))], ?_, ?_⟩
           · have hloop := Metta.Bindings.hasLoop_singleton_val_of_not_mem
-              v (.expr (toLeaTTaAtoms es)) (by
-                simpa [toLeaTTaAtom] using hnotMem)
-            simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hoccurs, hloop]
+              v (.expr (encodeModelAtoms es)) (by
+                simpa [encodeModelAtom] using hnotMem)
+            simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hoccurs, hloop]
           · simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
               toLeaTTaMatchBindings, toLeaTTaMatchSubst,
-              Metta.Bindings.ofSubst, toLeaTTaAtom] using
+              Metta.Bindings.ofSubst, encodeModelAtom] using
               (LeaBindingTransport.canonical
                 (b := (⟨[(v, .expression es)], []⟩ : Bindings))
                 (by simp [NoBareVarAssignments]))
   | grounded g =>
       refine ⟨[], ?_, LeaBindingTransport.empty⟩
       have hself :
-          Metta.Atom.equiv (.gnd (toLeaTTaGround g))
-            (.gnd (toLeaTTaGround g)) = true := by
-        simpa [toLeaTTaAtom] using toLeaTTaAtom_grounded_equiv_self g
-      simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hself]
+          Metta.Atom.equiv (.gnd (encodeModelGround g))
+            (.gnd (encodeModelGround g)) = true := by
+        simpa [encodeModelAtom] using encodeModelAtom_grounded_equiv_self g
+      simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hself]
   | @expr ls rs b hlist _ =>
       exact (hleaf ⟨ls, rs, rfl, rfl⟩).elim
 
@@ -5890,7 +5874,7 @@ theorem heBindingSatisfied_assign_fresh_iff
     HEBindingSatisfied valuation (b.assign v value) ↔
       HEBindingSatisfied valuation b ∧
         valuation v =
-          applyClassSolution valuation (toLeaTTaAtom value) := by
+          applyClassSolution valuation (encodeModelAtom value) := by
   have hbound : b.isBound v = false := by
     simp [Bindings.isBound, hlookup]
   constructor
@@ -5943,7 +5927,7 @@ theorem LeaBindingRelEquiv.addValRaw_fresh
     (hfresh : b.lookup v = none)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false) :
     LeaBindingRelEquiv (b.assign v value)
-      (Metta.Bindings.addValRaw lb v (toLeaTTaAtom value)) := by
+      (Metta.Bindings.addValRaw lb v (encodeModelAtom value)) := by
   constructor
   · intro x leaValue
     simp only [Metta.Bindings.addValRaw, Metta.Bindings.removeVal,
@@ -6004,7 +5988,7 @@ theorem LeaBindingTransport.addValRaw_fresh
     (hfresh : b.lookup v = none)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false) :
     LeaBindingTransport (b.assign v value)
-      (Metta.Bindings.addValRaw lb v (toLeaTTaAtom value)) :=
+      (Metta.Bindings.addValRaw lb v (encodeModelAtom value)) :=
   ⟨htransport.relations.addValRaw_fresh hfresh hnonvar,
     htransport.chronology.addValRaw⟩
 
@@ -6027,12 +6011,12 @@ theorem LeaBindingRelEquiv.addVarBinding_fresh
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hclass : Metta.Bindings.classValues lb v = []) :
     ∃ lb',
-      lb' ∈ Metta.Bindings.addVarBinding lb v (toLeaTTaAtom value) ∧
+      lb' ∈ Metta.Bindings.addVarBinding lb v (encodeModelAtom value) ∧
         LeaBindingRelEquiv (b.assign v value) lb' := by
-  refine ⟨Metta.Bindings.addValRaw lb v (toLeaTTaAtom value), ?_,
+  refine ⟨Metta.Bindings.addValRaw lb v (encodeModelAtom value), ?_,
     hequiv.addValRaw_fresh hlookup hnonvar⟩
   cases value <;>
-    simp [Metta.Bindings.addVarBinding, hclass, toLeaTTaAtom,
+    simp [Metta.Bindings.addVarBinding, hclass, encodeModelAtom,
       DeclMatchSpec.Atom.isVarB] at hnonvar ⊢
 
 /-- The executable valueless-class equality branch realizes the raw alias
@@ -6060,12 +6044,12 @@ theorem LeaBindingTransport.addVarBinding_fresh
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hclass : Metta.Bindings.classValues lb v = []) :
     ∃ lb',
-      lb' ∈ Metta.Bindings.addVarBinding lb v (toLeaTTaAtom value) ∧
+      lb' ∈ Metta.Bindings.addVarBinding lb v (encodeModelAtom value) ∧
         LeaBindingTransport (b.assign v value) lb' := by
-  refine ⟨Metta.Bindings.addValRaw lb v (toLeaTTaAtom value), ?_,
+  refine ⟨Metta.Bindings.addValRaw lb v (encodeModelAtom value), ?_,
     htransport.addValRaw_fresh hlookup hnonvar⟩
   cases value <;>
-    simp [Metta.Bindings.addVarBinding, hclass, toLeaTTaAtom,
+    simp [Metta.Bindings.addVarBinding, hclass, encodeModelAtom,
       DeclMatchSpec.Atom.isVarB] at hnonvar ⊢
 
 theorem LeaBindingTransport.addVarEquality_valueless
@@ -6153,7 +6137,7 @@ theorem LeaBindingSolutionEquiv.addValRaw_fresh
     (hleaLookup : Metta.Bindings.lookupVal lb v = none) :
     LeaBindingSolutionEquiv
       (b.assign v value)
-      (Metta.Bindings.addValRaw lb v (toLeaTTaAtom value)) := by
+      (Metta.Bindings.addValRaw lb v (encodeModelAtom value)) := by
   have hremove : Metta.Bindings.removeVal lb v = lb :=
     removeVal_eq_self_of_lookupVal_eq_none hleaLookup
   have hbound : b.isBound v = false := by
@@ -6185,7 +6169,7 @@ theorem LeaBindingSolutionEquiv.addValRaw_fresh
       obtain ⟨holdValues, holdEqualities⟩ := hold.mp holdHE
       have hnew :
           valuation v =
-            applyClassSolution valuation (toLeaTTaAtom value) :=
+            applyClassSolution valuation (encodeModelAtom value) :=
         hvalues v value (by
           simp [Bindings.assign, hbound])
       refine ⟨?_, ?_⟩
@@ -6210,8 +6194,8 @@ theorem LeaBindingSolutionEquiv.addValRaw_fresh
       obtain ⟨holdValues, holdEqualities⟩ := hold.mpr holdLea
       have hnew :
           valuation v =
-            applyClassSolution valuation (toLeaTTaAtom value) :=
-        hvalues v (toLeaTTaAtom value) (by
+            applyClassSolution valuation (encodeModelAtom value) :=
+        hvalues v (encodeModelAtom value) (by
           simp [Metta.Bindings.addValRaw, hremove])
       refine ⟨?_, ?_⟩
       · intro x heValue hmem
@@ -6236,7 +6220,7 @@ theorem LeaBindingCongruence.addValRaw_fresh
     (hleaLookup : Metta.Bindings.lookupVal lb v = none) :
     LeaBindingCongruence
       (b.assign v value)
-      (Metta.Bindings.addValRaw lb v (toLeaTTaAtom value)) := by
+      (Metta.Bindings.addValRaw lb v (encodeModelAtom value)) := by
   have hbound : b.isBound v = false := by
     simp [Bindings.isBound, hheLookup]
   have hremove : Metta.Bindings.removeVal lb v = lb :=
@@ -6262,7 +6246,7 @@ theorem LeaBindingCongruence.addValRaw_fresh
         HELeaAtomClassRel.mono hclassMono hatom⟩
       simp [Metta.Bindings.addValRaw, Metta.Bindings.removeVal,
         hleaValue, hne]
-    · refine ⟨key, toLeaTTaAtom stored, ?_, ?_,
+    · refine ⟨key, encodeModelAtom stored, ?_, ?_,
         HELeaAtomClassRel.translation (b.assign key stored) stored⟩
       · simp [Metta.Bindings.addValRaw]
       · rw [EqualityClosure.mem_eqClass_iff_reachable]
@@ -6291,12 +6275,12 @@ theorem LeaBindingSolutionEquiv.addVarBinding_fresh
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hclass : Metta.Bindings.classValues lb v = []) :
     ∃ lb',
-      lb' ∈ Metta.Bindings.addVarBinding lb v (toLeaTTaAtom value) ∧
+      lb' ∈ Metta.Bindings.addVarBinding lb v (encodeModelAtom value) ∧
         LeaBindingSolutionEquiv (b.assign v value) lb' := by
-  refine ⟨Metta.Bindings.addValRaw lb v (toLeaTTaAtom value), ?_,
+  refine ⟨Metta.Bindings.addValRaw lb v (encodeModelAtom value), ?_,
     h.addValRaw_fresh hheLookup hleaLookup⟩
   cases value <;>
-    simp [Metta.Bindings.addVarBinding, hclass, toLeaTTaAtom,
+    simp [Metta.Bindings.addVarBinding, hclass, encodeModelAtom,
       DeclMatchSpec.Atom.isVarB] at hnonvar ⊢
 
 /-- The executable fresh-value branch preserves class-indexed raw provenance
@@ -6310,12 +6294,12 @@ theorem LeaBindingCongruence.addVarBinding_fresh
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hclass : Metta.Bindings.classValues lb v = []) :
     ∃ lb',
-      lb' ∈ Metta.Bindings.addVarBinding lb v (toLeaTTaAtom value) ∧
+      lb' ∈ Metta.Bindings.addVarBinding lb v (encodeModelAtom value) ∧
         LeaBindingCongruence (b.assign v value) lb' := by
-  refine ⟨Metta.Bindings.addValRaw lb v (toLeaTTaAtom value), ?_,
+  refine ⟨Metta.Bindings.addValRaw lb v (encodeModelAtom value), ?_,
     h.addValRaw_fresh hheLookup hleaLookup⟩
   cases value <;>
-    simp [Metta.Bindings.addVarBinding, hclass, toLeaTTaAtom,
+    simp [Metta.Bindings.addVarBinding, hclass, encodeModelAtom,
       DeclMatchSpec.Atom.isVarB] at hnonvar ⊢
 
 /-- The executable valueless equality branch preserves equality classes and
@@ -6539,41 +6523,6 @@ theorem ignoredClassValue_semantic_cycle : ¬LeaSemanticLoopFree ignoredClassVal
 
 
 end ClassDependencyControls
-
-/-- A variable occurring in a genuine non-variable LeaTTa atom is strictly
-smaller than the interpreted whole atom under every valuation. -/
-theorem size_valuation_lt_apply_of_mem_vars_nonvariable
-    (valuation : String → Metta.Atom) {value : Metta.Atom}
-    {dependency : String}
-    (hnonvariable : ∀ target, value ≠ .var target)
-    (hdependency : dependency ∈ value.vars) :
-    (valuation dependency).size <
-      (applyClassSolution valuation value).size := by
-  cases value with
-  | sym symbol => simp [Metta.Atom.vars] at hdependency
-  | var target => exact (hnonvariable target rfl).elim
-  | gnd grounded => simp [Metta.Atom.vars] at hdependency
-  | expr atoms =>
-      simp only [Metta.Atom.vars, List.mem_flatten,
-        List.mem_map] at hdependency
-      obtain ⟨varsList, ⟨child, hchild, rfl⟩, hdependency⟩ :=
-        hdependency
-      have hle := size_applyClassSolution_ge_of_mem_vars
-        valuation dependency child hdependency
-      have hmember :
-          (applyClassSolution valuation child).size ∈
-            ((atoms.map (applyClassSolution valuation)).map
-              Metta.Atom.size) := by
-        exact List.mem_map.mpr
-          ⟨applyClassSolution valuation child,
-            List.mem_map.mpr ⟨child, hchild, rfl⟩, rfl⟩
-      have hsum :
-          (applyClassSolution valuation child).size ≤
-            ((atoms.map (applyClassSolution valuation)).map
-              Metta.Atom.size).sum :=
-        List.single_le_sum (by intro _ _; omega) _ hmember
-      simp only [applyClassSolution, Metta.Atom.size]
-      omega
 
 /-- Every semantic dependency edge in a satisfiable normalized LeaTTa record
 strictly decreases the size of the satisfying valuation. -/
@@ -10249,7 +10198,7 @@ theorem heBindingSatisfied_classValue
     {v : String} {value : Atom}
     (hsatisfied : HEBindingSatisfied valuation b)
     (hvalue : value ∈ b.classValues v) :
-    valuation v = applyClassSolution valuation (toLeaTTaAtom value) := by
+    valuation v = applyClassSolution valuation (encodeModelAtom value) := by
   unfold Bindings.classValues at hvalue
   obtain ⟨key, hkey, hlookup⟩ := List.mem_filterMap.mp hvalue
   have hreach :
@@ -10296,7 +10245,7 @@ structure HESolutionTheoryPack (fuel : Nat) : Prop where
         HEBindingSatisfied valuation out ↔
           HEBindingSatisfied valuation b ∧
             valuation v =
-              applyClassSolution valuation (toLeaTTaAtom value)
+              applyClassSolution valuation (encodeModelAtom value)
   addEqualityTheory : ∀ {b left right out},
     out ∈ addVarEquality b left right fuel →
       ∀ valuation,
@@ -10371,7 +10320,7 @@ private theorem heAddValueTheory_succ
       HEBindingSatisfied valuation out ↔
         HEBindingSatisfied valuation b ∧
           valuation v =
-            applyClassSolution valuation (toLeaTTaAtom value) := by
+            applyClassSolution valuation (encodeModelAtom value) := by
   simp only [addVarBinding] at hout
   cases hvalues : b.classValues v with
   | nil =>
@@ -10570,7 +10519,7 @@ private theorem heAddEqualityTheory_succ
 private def HEAssignmentsSatisfied
     (valuation : String → Metta.Atom) (assignments : List (String × Atom)) : Prop :=
   ∀ x value, (x, value) ∈ assignments →
-    valuation x = applyClassSolution valuation (toLeaTTaAtom value)
+    valuation x = applyClassSolution valuation (encodeModelAtom value)
 
 private def HEEqualitiesSatisfied
     (valuation : String → Metta.Atom) (equalities : List (String × String)) : Prop :=
@@ -10581,7 +10530,7 @@ private def HEEqualitiesSatisfied
     (valuation : String → Metta.Atom) (v : String) (value : Atom)
     (rest : List (String × Atom)) :
     HEAssignmentsSatisfied valuation ((v, value) :: rest) ↔
-      valuation v = applyClassSolution valuation (toLeaTTaAtom value) ∧
+      valuation v = applyClassSolution valuation (encodeModelAtom value) ∧
         HEAssignmentsSatisfied valuation rest := by
   constructor
   · intro hall
@@ -10739,7 +10688,7 @@ private theorem heAtomListEquations_iff_expressionEquation
       cases rights with
       | nil =>
           simp [HEAtomListEquationsSatisfied, HEAtomEquationSatisfied,
-            toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution]
+            encodeModelAtom, encodeModelAtoms, applyClassSolution]
       | cons right rights => simp at hlength
   | cons left lefts ih =>
       intro rights hlength
@@ -10749,7 +10698,7 @@ private theorem heAtomListEquations_iff_expressionEquation
           have htail : lefts.length = rights.length := by
             simpa using hlength
           simp [HEAtomListEquationsSatisfied, HEAtomEquationSatisfied,
-            toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution, ih htail]
+            encodeModelAtom, encodeModelAtoms, applyClassSolution, ih htail]
 
 private theorem heMatchTheory_succ
     {fuel : Nat} (ih : HESolutionTheoryPack fuel)
@@ -10768,7 +10717,7 @@ private theorem heMatchTheory_succ
             have houtEmpty : out = Bindings.empty := by simpa using hout.1
             subst out
             simp [HEBindingSatisfied, HEAtomEquationSatisfied,
-              Bindings.empty, toLeaTTaAtom, applyClassSolution]
+              Bindings.empty, encodeModelAtom, applyClassSolution]
           · simp [matchAtoms, getMetaType, Atom.symbolType, heq] at hout
       | var v =>
           simp [matchAtoms, getMetaType, Atom.symbolType,
@@ -10778,7 +10727,7 @@ private theorem heMatchTheory_succ
           subst out
           simp [HEBindingSatisfied, HEAtomEquationSatisfied, Bindings.empty,
             Bindings.assign, Bindings.isBound, Bindings.lookup,
-            toLeaTTaAtom, applyClassSolution, eq_comm]
+            encodeModelAtom, applyClassSolution, eq_comm]
       | grounded ground =>
           simp [matchAtoms, getMetaType, Atom.symbolType,
             Atom.groundedType] at hout
@@ -10795,14 +10744,14 @@ private theorem heMatchTheory_succ
           subst out
           simp [HEBindingSatisfied, HEAtomEquationSatisfied, Bindings.empty,
             Bindings.assign, Bindings.isBound, Bindings.lookup,
-            toLeaTTaAtom, applyClassSolution]
+            encodeModelAtom, applyClassSolution]
       | var w =>
           simp [matchAtoms, getMetaType, Atom.variableType] at hout
           have houtEq : out = Bindings.empty.addEquality v w := by
             simpa using hout.1
           subst out
           simp [HEBindingSatisfied, HEAtomEquationSatisfied, Bindings.empty,
-            Bindings.addEquality, toLeaTTaAtom, applyClassSolution]
+            Bindings.addEquality, encodeModelAtom, applyClassSolution]
       | grounded ground =>
           simp [matchAtoms, getMetaType, Atom.variableType,
             Atom.groundedType] at hout
@@ -10811,7 +10760,7 @@ private theorem heMatchTheory_succ
           subst out
           simp [HEBindingSatisfied, HEAtomEquationSatisfied, Bindings.empty,
             Bindings.assign, Bindings.isBound, Bindings.lookup,
-            toLeaTTaAtom, applyClassSolution]
+            encodeModelAtom, applyClassSolution]
       | expression atoms =>
           simp [matchAtoms, getMetaType, Atom.variableType,
             Atom.expressionType] at hout
@@ -10820,7 +10769,7 @@ private theorem heMatchTheory_succ
           subst out
           simp [HEBindingSatisfied, HEAtomEquationSatisfied, Bindings.empty,
             Bindings.assign, Bindings.isBound, Bindings.lookup,
-            toLeaTTaAtom, applyClassSolution]
+            encodeModelAtom, applyClassSolution]
   | grounded leftGround =>
       cases right with
       | symbol symbol =>
@@ -10834,7 +10783,7 @@ private theorem heMatchTheory_succ
           subst out
           simp [HEBindingSatisfied, HEAtomEquationSatisfied, Bindings.empty,
             Bindings.assign, Bindings.isBound, Bindings.lookup,
-            toLeaTTaAtom, applyClassSolution, eq_comm]
+            encodeModelAtom, applyClassSolution, eq_comm]
       | grounded rightGround =>
           by_cases heq : leftGround = rightGround
           · subst rightGround
@@ -10842,7 +10791,7 @@ private theorem heMatchTheory_succ
             have houtEmpty : out = Bindings.empty := by simpa using hout.1
             subst out
             simp [HEBindingSatisfied, HEAtomEquationSatisfied,
-              Bindings.empty, toLeaTTaAtom, applyClassSolution]
+              Bindings.empty, encodeModelAtom, applyClassSolution]
           · simp [matchAtoms, getMetaType, Atom.groundedType, heq] at hout
       | expression atoms =>
           simp [matchAtoms, getMetaType, Atom.expressionType,
@@ -10860,7 +10809,7 @@ private theorem heMatchTheory_succ
           subst out
           simp [HEBindingSatisfied, HEAtomEquationSatisfied, Bindings.empty,
             Bindings.assign, Bindings.isBound, Bindings.lookup,
-            toLeaTTaAtom, applyClassSolution, eq_comm]
+            encodeModelAtom, applyClassSolution, eq_comm]
       | grounded ground =>
           simp [matchAtoms, getMetaType, Atom.expressionType,
             Atom.groundedType] at hout
@@ -10918,7 +10867,7 @@ theorem heAddVarBinding_solution_iff
     HEBindingSatisfied valuation out ↔
       HEBindingSatisfied valuation b ∧
         valuation v =
-          applyClassSolution valuation (toLeaTTaAtom value) :=
+          applyClassSolution valuation (encodeModelAtom value) :=
   (heSolutionTheoryPack fuel).addValueTheory hout valuation
 
 theorem heAddVarEquality_solution_iff
@@ -10940,13 +10889,13 @@ theorem addVarBinding_solutionTheory_of_successes
     (hlbNoFloat : LeaBindingsNoFloat lb)
     (hhe : heOut ∈ addVarBinding b v value fuel)
     (hlea : leaOut ∈
-      Metta.Bindings.addVarBinding lb v (toLeaTTaAtom value)) :
+      Metta.Bindings.addVarBinding lb v (encodeModelAtom value)) :
     LeaBindingSolutionTheoryEquiv heOut leaOut := by
   intro valuation
   rw [heAddVarBinding_solution_iff valuation hhe,
     hbase valuation,
     leaAddVarBinding_solution_iff valuation hlbNoFloat
-      (toLeaTTaAtom_noFloat value) hlea]
+      (encodeModelAtom_noFloat value) hlea]
 
 /-- Paired successful equality insertions preserve cross-engine solution
 theory independently of edge orientation. -/
@@ -10990,13 +10939,13 @@ theorem matchAtoms_solutionTheory_of_successes
     {leaOut : Metta.Bindings} {fuel : Nat}
     (hhe : heOut ∈ matchAtoms query pattern fuel)
     (hlea : leaOut ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query)) :
+      (encodeModelAtom pattern) (encodeModelAtom query)) :
     LeaBindingSolutionTheoryEquiv heOut leaOut := by
   intro valuation
   rw [heMatchAtoms_solution_iff valuation hhe,
     leaMatchAtoms_solution_iff valuation
-      (toLeaTTaAtom_noFloat pattern)
-      (toLeaTTaAtom_noFloat query) hlea]
+      (encodeModelAtom_noFloat pattern)
+      (encodeModelAtom_noFloat query) hlea]
   simp [HEAtomEquationSatisfied, MettaEquationSatisfied, eq_comm]
 
 /-- If an HE operation and repaired LeaTTa whole-system reconciliation consume
@@ -11244,7 +11193,7 @@ theorem rebuild_addVarBinding_solutionTheory
     (hhe : heOut ∈ addVarBinding b v value fuel)
     (hreconcile :
       wholeBindingReconciliation lb
-        [(.var v, toLeaTTaAtom value)] = some result) :
+        [(.var v, encodeModelAtom value)] = some result) :
     LeaBindingSolutionTheoryEquiv heOut
       (rebuildBindingsFromUnifier lb result) := by
   apply rebuildBindingsFromUnifier_solutionTheory_of_heTheory
@@ -11252,7 +11201,7 @@ theorem rebuild_addVarBinding_solutionTheory
   · intro equation hmem
     simp only [List.mem_singleton] at hmem
     subst equation
-    exact ⟨by simp [MettaAtomNoFloat], toLeaTTaAtom_noFloat value⟩
+    exact ⟨by simp [MettaAtomNoFloat], encodeModelAtom_noFloat value⟩
   · intro valuation
     rw [heAddVarBinding_solution_iff valuation hhe]
     simp [MettaEquationsSatisfied, MettaEquationSatisfied,
@@ -11288,16 +11237,16 @@ theorem rebuildReconciliation_addVarBinding_solutionTheory
     (hhe : heOut ∈ addVarBinding b v value fuel)
     (hreconcile :
       wholeBindingReconciliation lb
-        [(.var v, toLeaTTaAtom value)] = some result) :
+        [(.var v, encodeModelAtom value)] = some result) :
     LeaBindingSolutionTheoryEquiv heOut
       (Metta.Bindings.rebuildFromReconciliation lb lb
-        [(.var v, toLeaTTaAtom value)] result) := by
+        [(.var v, encodeModelAtom value)] result) := by
   apply rebuildFromReconciliation_solutionTheory_of_heTheory
     hbase hlbNoFloat (hreconcile := hreconcile)
   · intro equation hmem
     simp only [List.mem_singleton] at hmem
     subst equation
-    exact ⟨by simp [MettaAtomNoFloat], toLeaTTaAtom_noFloat value⟩
+    exact ⟨by simp [MettaAtomNoFloat], encodeModelAtom_noFloat value⟩
   · intro valuation
     rw [heAddVarBinding_solution_iff valuation hhe]
     simp [MettaEquationsSatisfied, MettaEquationSatisfied,
@@ -11363,7 +11312,7 @@ theorem leaLookupVal_eq_map_lookup_of_transport
     (htransport : LeaBindingTransport b lb)
     (hkeys : AssignmentsNodup b) (x : String) :
     Metta.Bindings.lookupVal lb x =
-      Option.map toLeaTTaAtom (b.lookup x) := by
+      Option.map encodeModelAtom (b.lookup x) := by
   cases hlea : Metta.Bindings.lookupVal lb x with
   | none =>
       cases hhe : b.lookup x with
@@ -11373,11 +11322,11 @@ theorem leaLookupVal_eq_map_lookup_of_transport
             heAssignment_mem_of_lookup_eq_some (by
               simpa [Bindings.lookup] using hhe)
           have hleaMem :
-              Metta.BindingRel.val x (toLeaTTaAtom value) ∈ lb :=
-            (htransport.relations.values x (toLeaTTaAtom value)).2
+              Metta.BindingRel.val x (encodeModelAtom value) ∈ lb :=
+            (htransport.relations.values x (encodeModelAtom value)).2
               ⟨value, hmem, rfl⟩
           exact (no_leaValue_of_lookupVal_eq_none hlea
-            (toLeaTTaAtom value) hleaMem).elim
+            (encodeModelAtom value) hleaMem).elim
   | some leaValue =>
       have hleaMem : Metta.BindingRel.val x leaValue ∈ lb :=
         leaValue_mem_of_lookupVal_eq_some hlea
@@ -11395,7 +11344,7 @@ theorem leaClassValues_eq_map_of_transport
     (htransport : LeaBindingTransport b lb)
     (hkeys : AssignmentsNodup b) (v : String) :
     Metta.Bindings.classValues lb v =
-      (b.classValues v).map toLeaTTaAtom := by
+      (b.classValues v).map encodeModelAtom := by
   unfold Metta.Bindings.classValues Bindings.classValues
   rw [eqClassOrdered_eq_of_transport htransport.relations
     htransport.chronology v]
@@ -11547,7 +11496,7 @@ theorem LeaBindingCongruence.addVarBinding_fresh_of_heClass
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hclass : b.classValues v = []) :
     ∃ lb',
-      lb' ∈ Metta.Bindings.addVarBinding lb v (toLeaTTaAtom value) ∧
+      lb' ∈ Metta.Bindings.addVarBinding lb v (encodeModelAtom value) ∧
         LeaBindingCongruence (b.assign v value) lb' := by
   have hleaClass : Metta.Bindings.classValues lb v = [] :=
     leaClassValues_eq_nil_of_congruence h hclass
@@ -11597,7 +11546,7 @@ theorem LeaBindingTransport.addVarBinding_fresh_of_heClass
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hclass : b.classValues v = []) :
     ∃ lb',
-      lb' ∈ Metta.Bindings.addVarBinding lb v (toLeaTTaAtom value) ∧
+      lb' ∈ Metta.Bindings.addVarBinding lb v (encodeModelAtom value) ∧
         LeaBindingTransport (b.assign v value) lb' :=
   htransport.addVarBinding_fresh hlookup hnonvar
     (leaClassValues_eq_nil_of_transport htransport hclass)
@@ -11715,8 +11664,8 @@ theorem nonlinearValue_reconciliation_match_oracles :
     nonlinearValueHEBindings ∈
         matchAtoms nonlinearValueQuery nonlinearValuePattern 30 ∧
       nonlinearValueLeaBindings ∈
-        Metta.matchAtoms (toLeaTTaAtom nonlinearValuePattern)
-          (toLeaTTaAtom nonlinearValueQuery) := by
+        Metta.matchAtoms (encodeModelAtom nonlinearValuePattern)
+          (encodeModelAtom nonlinearValueQuery) := by
   constructor
   · decide
   · have hloop : Metta.Bindings.hasLoop
@@ -11750,7 +11699,7 @@ theorem nonlinearValue_reconciliation_match_oracles :
       Metta.Bindings.hasLoop_singleton_val_of_not_mem _ _ (by simp [Metta.Atom.vars])
     simp (config := { maxSteps := 1000000 })
       [nonlinearValuePattern, nonlinearValueQuery,
-        nonlinearValueLeaBindings, toLeaTTaAtom, toLeaTTaAtoms,
+        nonlinearValueLeaBindings, encodeModelAtom, encodeModelAtoms,
         hloop, hpaLoop, hpbLoop,
         Metta.matchAtoms, Metta.matchAtomsWith, Metta.matchAll,
         Metta.Bindings.merge, Metta.Bindings.mergeOne,
@@ -11778,7 +11727,7 @@ theorem nonlinearValue_reconciliation_relations :
     LeaBindingRelEquiv nonlinearValueHEBindings nonlinearValueLeaBindings := by
   constructor
   · intro v value
-    simp [nonlinearValueHEBindings, nonlinearValueLeaBindings, toLeaTTaAtom]
+    simp [nonlinearValueHEBindings, nonlinearValueLeaBindings, encodeModelAtom]
   · intro x y
     simp only [nonlinearValueHEBindings, nonlinearValueLeaBindings,
       List.mem_cons, List.not_mem_nil, or_false,
@@ -11845,7 +11794,7 @@ private theorem nonlinearValue_leaClassSolution_b :
 private theorem nonlinearValue_heClassSolution_p :
     heClassSolutionAt nonlinearValueHEBindings 30 "p" =
       .expr [.sym "f", .var "a"] := by
-  change toLeaTTaAtom
+  change encodeModelAtom
     (((⟨[("p", .expression [.symbol "f", .var "a"])], [("a", "b")]⟩ :
       Bindings).resolveFull "p" 30).getD (.var "p")) =
         .expr [.sym "f", .var "a"]
@@ -11853,14 +11802,14 @@ private theorem nonlinearValue_heClassSolution_p :
 
 private theorem nonlinearValue_heClassSolution_a :
     heClassSolutionAt nonlinearValueHEBindings 30 "a" = .var "a" := by
-  change toLeaTTaAtom
+  change encodeModelAtom
     (((⟨[("p", .expression [.symbol "f", .var "a"])], [("a", "b")]⟩ :
       Bindings).resolveFull "a" 30).getD (.var "a")) = .var "a"
   rfl
 
 private theorem nonlinearValue_heClassSolution_b :
     heClassSolutionAt nonlinearValueHEBindings 30 "b" = .var "a" := by
-  change toLeaTTaAtom
+  change encodeModelAtom
     (((⟨[("p", .expression [.symbol "f", .var "a"])], [("a", "b")]⟩ :
       Bindings).resolveFull "b" 30).getD (.var "b")) = .var "a"
   rfl
@@ -11916,7 +11865,7 @@ theorem nonlinearValue_instantiation_alpha :
     Metta.AlphaEq
       (Metta.instantiate nonlinearValueLeaBindings
         (.expr [.sym "h", .var "p"]))
-      (toLeaTTaAtom
+      (encodeModelAtom
         (nonlinearValueHEBindings.applyFull
           (.expression [.symbol "h", .var "p"]) 30)) := by
   have hlea :
@@ -11970,8 +11919,8 @@ private def connectedLeaBindings : Metta.Bindings :=
 general representation-independent relation, despite opposite edge order. -/
 theorem connectedClass_binding_transport :
     connectedLeaBindings ∈
-        Metta.matchAtoms (toLeaTTaAtom connectedPattern)
-          (toLeaTTaAtom connectedQuery) ∧
+        Metta.matchAtoms (encodeModelAtom connectedPattern)
+          (encodeModelAtom connectedQuery) ∧
       LeaBindingRelEquiv connectedHEBindings connectedLeaBindings := by
   constructor
   · have hmatch :
@@ -11980,8 +11929,8 @@ theorem connectedClass_binding_transport :
             (.expr [.sym "g", .var "q1", .var "q2"]) =
           [connectedLeaBindings] := by
         rfl
-    simpa [connectedPattern, connectedQuery, toLeaTTaAtom,
-      toLeaTTaAtoms] using congrArg (connectedLeaBindings ∈ ·) hmatch
+    simpa [connectedPattern, connectedQuery, encodeModelAtom,
+      encodeModelAtoms] using congrArg (connectedLeaBindings ∈ ·) hmatch
   · constructor
     · intro v value
       simp [connectedHEBindings, connectedLeaBindings]
@@ -11993,8 +11942,8 @@ theorem connectedClass_binding_transport :
 
 theorem connectedClass_full_transport :
     connectedLeaBindings ∈
-        Metta.matchAtoms (toLeaTTaAtom connectedPattern)
-          (toLeaTTaAtom connectedQuery) ∧
+        Metta.matchAtoms (encodeModelAtom connectedPattern)
+          (encodeModelAtom connectedQuery) ∧
       LeaBindingTransport connectedHEBindings connectedLeaBindings := by
   refine ⟨connectedClass_binding_transport.1,
     connectedClass_binding_transport.2, ?_⟩
@@ -12015,8 +11964,8 @@ theorem applyFull_var_eq_instantiate_of_noAssignments
     {b : Bindings} {lb : Metta.Bindings}
     (htransport : LeaBindingTransport b lb)
     (hassign : b.assignments = []) (v : String) (fuel : Nat) :
-    toLeaTTaAtom (b.applyFull (.var v) (fuel + 2)) =
-      Metta.instantiate lb (toLeaTTaAtom (.var v)) := by
+    encodeModelAtom (b.applyFull (.var v) (fuel + 2)) =
+      Metta.instantiate lb (encodeModelAtom (.var v)) := by
   have hheValues : b.classValues v = [] := by
     simp [Bindings.classValues, Bindings.lookup, hassign]
   have hleaValues : Metta.Bindings.classValues lb v = [] :=
@@ -12032,7 +11981,7 @@ theorem applyFull_var_eq_instantiate_of_noAssignments
     rw [List.findSome?_eq_none_iff]
     intro x _
     simp [Bindings.lookup, hassign]
-  simp only [toLeaTTaAtom, Metta.instantiate, Metta.Bindings.resolveAtom]
+  simp only [encodeModelAtom, Metta.instantiate, Metta.Bindings.resolveAtom]
   by_cases htriv : b.eqClassOrdered v = [v]
   · have htrivLea : Metta.Bindings.eqClassOrdered lb v = [v] := by
       rw [hordered]
@@ -12040,14 +11989,14 @@ theorem applyFull_var_eq_instantiate_of_noAssignments
     simp [Bindings.applyFull, Bindings.resolveFull,
       htriv,
       Metta.Bindings.resolve, hleaValues, htrivLea, hlookup,
-      toLeaTTaAtom]
+      encodeModelAtom]
   · have htrivLea : Metta.Bindings.eqClassOrdered lb v ≠ [v] := by
       simpa [hordered] using htriv
     simp [Bindings.applyFull, Bindings.resolveFull,
       Bindings.resolveAtomFullAux, hfind, htriv,
       Metta.Bindings.resolve, Metta.Bindings.resolveAtomAux,
       Metta.Bindings.resolutionFuel, hleaValues,
-      hordered, hrep, Bindings.eqRepresentative, toLeaTTaAtom]
+      hordered, hrep, Bindings.eqRepresentative, encodeModelAtom]
 
 /-- Equality-only instantiation agrees exactly on every atom once HE fuel
 covers the atom depth. -/
@@ -12056,8 +12005,8 @@ theorem applyFull_eq_instantiate_of_noAssignments
     (htransport : LeaBindingTransport b lb)
     (hassign : b.assignments = []) :
     ∀ fuel atom, atomDepth atom + 2 ≤ fuel →
-      toLeaTTaAtom (b.applyFull atom fuel) =
-        Metta.instantiate lb (toLeaTTaAtom atom) := by
+      encodeModelAtom (b.applyFull atom fuel) =
+        Metta.instantiate lb (encodeModelAtom atom) := by
   intro fuel
   induction fuel with
   | zero =>
@@ -12072,19 +12021,19 @@ theorem applyFull_eq_instantiate_of_noAssignments
           cases atom with
           | symbol symbol =>
               simp [Bindings.applyFull, Metta.instantiate,
-                Metta.Bindings.resolveAtom, toLeaTTaAtom]
+                Metta.Bindings.resolveAtom, encodeModelAtom]
           | var v =>
               exact applyFull_var_eq_instantiate_of_noAssignments
                 htransport hassign v fuel'
           | grounded ground =>
               simp [Bindings.applyFull, Metta.instantiate,
-                Metta.Bindings.resolveAtom, toLeaTTaAtom]
+                Metta.Bindings.resolveAtom, encodeModelAtom]
           | expression atoms =>
               have hlist :
                   ∀ atoms : List Atom, listDepth atoms + 2 ≤ fuel' + 1 →
-                    toLeaTTaAtoms
+                    encodeModelAtoms
                         (atoms.map (fun atom => b.applyFull atom (fuel' + 1))) =
-                      (toLeaTTaAtoms atoms).map
+                      (encodeModelAtoms atoms).map
                         (Metta.Bindings.resolveAtom lb) := by
                 intro atoms
                 induction atoms with
@@ -12093,7 +12042,7 @@ theorem applyFull_eq_instantiate_of_noAssignments
                     rfl
                 | cons atom atoms ihAtoms =>
                     intro hatoms
-                    simp [toLeaTTaAtoms, listDepth] at hatoms ⊢
+                    simp [encodeModelAtoms, listDepth] at hatoms ⊢
                     have hhead : atomDepth atom + 2 ≤ fuel' + 1 := by omega
                     have htail : listDepth atoms + 2 ≤ fuel' + 1 := by omega
                     constructor
@@ -12103,7 +12052,7 @@ theorem applyFull_eq_instantiate_of_noAssignments
                 simp [atomDepth] at hdepth
                 omega
               simpa [Bindings.applyFull, Metta.instantiate,
-                Metta.Bindings.resolveAtom, toLeaTTaAtom] using
+                Metta.Bindings.resolveAtom, encodeModelAtom] using
                 hlist atoms hatoms
 
 /-- The semantic invariant genuinely generalizes the earlier exact
@@ -12127,14 +12076,14 @@ theorem LeaBindingTransport.semantic_of_noAssignments
           omega)
     have hhe :
         heClassSolutionAt b fuel v =
-          toLeaTTaAtom (b.applyFull (.var v) (fuel + 1)) := by
+          encodeModelAtom (b.applyFull (.var v) (fuel + 1)) := by
       cases hresolve : b.resolveFull v fuel <;>
         simp [heClassSolutionAt, Bindings.applyFull, hresolve]
     have hlea :
         leaClassSolution lb v =
-          Metta.instantiate lb (toLeaTTaAtom (.var v)) := by
+          Metta.instantiate lb (encodeModelAtom (.var v)) := by
       simp [leaClassSolution, Metta.instantiate,
-        Metta.Bindings.resolveAtom, toLeaTTaAtom]
+        Metta.Bindings.resolveAtom, encodeModelAtom]
     rw [hlea, hhe, renBy_refl]
     exact happly.symm
 
@@ -12165,12 +12114,12 @@ theorem semantic_canonical_of_noEqualities
   · refine ⟨Equiv.refl String, ?_⟩
     intro v _hv
     have happly :
-        toLeaTTaAtom (b.applyFull (.var v) (fuel + 1)) =
+        encodeModelAtom (b.applyFull (.var v) (fuel + 1)) =
           Metta.instantiate (toLeaTTaMatchBindings b)
-            (toLeaTTaAtom (.var v)) := by
+            (encodeModelAtom (.var v)) := by
       rw [Bindings.applyFull_no_equalities heq]
       exact
-        toLeaTTaAtom_apply_eq_instantiate_matchBindings_of_noVarAssignmentValues
+        encodeModelAtom_apply_eq_instantiate_matchBindings_of_noVarAssignmentValues
           hno hkeys hfresh (fuel + 1) (.var v) (by
             simp [atomDepth]
             omega)
@@ -12179,16 +12128,16 @@ theorem semantic_canonical_of_noEqualities
       simp [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings, heq]
     have hhe :
         heClassSolutionAt b fuel v =
-          toLeaTTaAtom (b.applyFull (.var v) (fuel + 1)) := by
+          encodeModelAtom (b.applyFull (.var v) (fuel + 1)) := by
       cases hresolve : b.resolveFull v fuel <;>
         simp [heClassSolutionAt, Bindings.applyFull, hresolve]
     have hlea :
         leaClassSolution (toLeaTTaMatchBindingsFull b) v =
           Metta.instantiate (toLeaTTaMatchBindings b)
-            (toLeaTTaAtom (.var v)) := by
+            (encodeModelAtom (.var v)) := by
       rw [hfull]
       simp [leaClassSolution, Metta.instantiate,
-        Metta.Bindings.resolveAtom, toLeaTTaAtom]
+        Metta.Bindings.resolveAtom, encodeModelAtom]
     rw [hlea, hhe, renBy_refl]
     exact happly.symm
 
@@ -12198,17 +12147,17 @@ both variable/non-variable matcher orientations. -/
 theorem singletonAssignment_semantic
     {key : String} {value : Atom}
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
-    (hfresh : key ∉ (toLeaTTaAtom value).vars)
+    (hfresh : key ∉ (encodeModelAtom value).vars)
     (scope : List String) (fuel : Nat) (hfuel : 1 ≤ fuel) :
     LeaBindingSemanticEquivAt scope fuel
       (⟨[(key, value)], []⟩ : Bindings)
-      [Metta.BindingRel.val key (toLeaTTaAtom value)] := by
+      [Metta.BindingRel.val key (encodeModelAtom value)] := by
   have hrelation :
       toLeaTTaAssignmentRel (key, value) =
-        Metta.BindingRel.val key (toLeaTTaAtom value) := by
+        Metta.BindingRel.val key (encodeModelAtom value) := by
     cases value <;>
       simp_all [toLeaTTaAssignmentRel, DeclMatchSpec.Atom.isVarB,
-        toLeaTTaAtom]
+        encodeModelAtom]
   have hno : NoVarAssignmentValues
       (⟨[(key, value)], []⟩ : Bindings) := by
     intro v x hlookup
@@ -12224,7 +12173,7 @@ theorem singletonAssignment_semantic
     simp [AssignmentsNodup]
   have hbindings :
       toLeaTTaMatchBindings (⟨[(key, value)], []⟩ : Bindings) =
-        [Metta.BindingRel.val key (toLeaTTaAtom value)] := by
+        [Metta.BindingRel.val key (encodeModelAtom value)] := by
     rw [toLeaTTaMatchBindings_eq_map]
     simpa using congrArg (fun relation => [relation]) hrelation
   have hfreshBindings :
@@ -12244,7 +12193,7 @@ def LeaMatcherSemanticTransportAt
     (scope : List String) (fuel : Nat)
     (query pattern : Atom) (hb : Bindings) : Prop :=
   ∃ lb,
-    lb ∈ Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
+    lb ∈ Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom query) ∧
       LeaBindingSemanticEquivAt scope fuel hb lb
 
 /-- Every non-expression constructor of the declarative HE matcher is realized
@@ -12260,17 +12209,17 @@ theorem matchRel_leaf_semantic_transport
   cases hrel with
   | symSym s =>
       exact ⟨[], by
-        simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom],
+        simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom],
         LeaBindingSemanticEquivAt.empty scope solutionFuel⟩
   | varVar queryVar patternVar =>
       have hne : patternVar ≠ queryVar := by
         intro h
         subst patternVar
         exact hdisj queryVar
-          (by simp [toLeaTTaAtom, Metta.Atom.vars])
-          (by simp [toLeaTTaAtom, Metta.Atom.vars])
+          (by simp [encodeModelAtom, Metta.Atom.vars])
+          (by simp [encodeModelAtom, Metta.Atom.vars])
       refine ⟨[Metta.BindingRel.eq patternVar queryVar], ?_, ?_⟩
-      · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hne]
+      · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hne]
       · have htransport :
             LeaBindingTransport
               (⟨[], [(queryVar, patternVar)]⟩ : Bindings)
@@ -12290,28 +12239,28 @@ theorem matchRel_leaf_semantic_transport
           refine ⟨[Metta.BindingRel.val v (.sym s)], ?_, ?_⟩
           · have hloop := Metta.Bindings.hasLoop_singleton_val_of_not_mem
               v (.sym s) (by simp [Metta.Atom.vars])
-            simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hloop]
+            simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hloop]
           · exact singletonAssignment_semantic hnonvar (by
-              simp [toLeaTTaAtom, Metta.Atom.vars]) scope solutionFuel hfuel
+              simp [encodeModelAtom, Metta.Atom.vars]) scope solutionFuel hfuel
       | grounded g =>
-          refine ⟨[Metta.BindingRel.val v (.gnd (toLeaTTaGround g))], ?_, ?_⟩
+          refine ⟨[Metta.BindingRel.val v (.gnd (encodeModelGround g))], ?_, ?_⟩
           · have hloop := Metta.Bindings.hasLoop_singleton_val_of_not_mem
-              v (.gnd (toLeaTTaGround g)) (by simp [Metta.Atom.vars])
-            simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hloop]
+              v (.gnd (encodeModelGround g)) (by simp [Metta.Atom.vars])
+            simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hloop]
           · exact singletonAssignment_semantic hnonvar (by
-              simp [toLeaTTaAtom, Metta.Atom.vars]) scope solutionFuel hfuel
+              simp [encodeModelAtom, Metta.Atom.vars]) scope solutionFuel hfuel
       | expression es =>
-          have hfresh : v ∉ (toLeaTTaAtom (.expression es)).vars :=
-            hdisj v (by simp [toLeaTTaAtom, Metta.Atom.vars])
+          have hfresh : v ∉ (encodeModelAtom (.expression es)).vars :=
+            hdisj v (by simp [encodeModelAtom, Metta.Atom.vars])
           have hoccurs :
-              Metta.Subst.occurs v (toLeaTTaAtom (.expression es)) = false :=
+              Metta.Subst.occurs v (encodeModelAtom (.expression es)) = false :=
             occurs_eq_false_of_not_mem_vars v _ hfresh
-          change Metta.Subst.occurs v (.expr (toLeaTTaAtoms es)) = false at hoccurs
-          refine ⟨[Metta.BindingRel.val v (.expr (toLeaTTaAtoms es))], ?_, ?_⟩
+          change Metta.Subst.occurs v (.expr (encodeModelAtoms es)) = false at hoccurs
+          refine ⟨[Metta.BindingRel.val v (.expr (encodeModelAtoms es))], ?_, ?_⟩
           · have hloop := Metta.Bindings.hasLoop_singleton_val_of_not_mem
-              v (.expr (toLeaTTaAtoms es)) (by
-                simpa [toLeaTTaAtom] using hfresh)
-            simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hoccurs, hloop]
+              v (.expr (encodeModelAtoms es)) (by
+                simpa [encodeModelAtom] using hfresh)
+            simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hoccurs, hloop]
           · exact singletonAssignment_semantic hnonvar hfresh
               scope solutionFuel hfuel
   | nonVarVar hnonvar _hoccurs =>
@@ -12323,37 +12272,37 @@ theorem matchRel_leaf_semantic_transport
           refine ⟨[Metta.BindingRel.val v (.sym s)], ?_, ?_⟩
           · have hloop := Metta.Bindings.hasLoop_singleton_val_of_not_mem
               v (.sym s) (by simp [Metta.Atom.vars])
-            simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hloop]
+            simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hloop]
           · exact singletonAssignment_semantic hnonvar (by
-              simp [toLeaTTaAtom, Metta.Atom.vars]) scope solutionFuel hfuel
+              simp [encodeModelAtom, Metta.Atom.vars]) scope solutionFuel hfuel
       | grounded g =>
-          refine ⟨[Metta.BindingRel.val v (.gnd (toLeaTTaGround g))], ?_, ?_⟩
+          refine ⟨[Metta.BindingRel.val v (.gnd (encodeModelGround g))], ?_, ?_⟩
           · have hloop := Metta.Bindings.hasLoop_singleton_val_of_not_mem
-              v (.gnd (toLeaTTaGround g)) (by simp [Metta.Atom.vars])
-            simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hloop]
+              v (.gnd (encodeModelGround g)) (by simp [Metta.Atom.vars])
+            simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hloop]
           · exact singletonAssignment_semantic hnonvar (by
-              simp [toLeaTTaAtom, Metta.Atom.vars]) scope solutionFuel hfuel
+              simp [encodeModelAtom, Metta.Atom.vars]) scope solutionFuel hfuel
       | expression es =>
-          have hfresh : v ∉ (toLeaTTaAtom (.expression es)).vars :=
-            hdisj' v (by simp [toLeaTTaAtom, Metta.Atom.vars])
+          have hfresh : v ∉ (encodeModelAtom (.expression es)).vars :=
+            hdisj' v (by simp [encodeModelAtom, Metta.Atom.vars])
           have hoccurs :
-              Metta.Subst.occurs v (toLeaTTaAtom (.expression es)) = false :=
+              Metta.Subst.occurs v (encodeModelAtom (.expression es)) = false :=
             occurs_eq_false_of_not_mem_vars v _ hfresh
-          change Metta.Subst.occurs v (.expr (toLeaTTaAtoms es)) = false at hoccurs
-          refine ⟨[Metta.BindingRel.val v (.expr (toLeaTTaAtoms es))], ?_, ?_⟩
+          change Metta.Subst.occurs v (.expr (encodeModelAtoms es)) = false at hoccurs
+          refine ⟨[Metta.BindingRel.val v (.expr (encodeModelAtoms es))], ?_, ?_⟩
           · have hloop := Metta.Bindings.hasLoop_singleton_val_of_not_mem
-              v (.expr (toLeaTTaAtoms es)) (by
-                simpa [toLeaTTaAtom] using hfresh)
-            simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hoccurs, hloop]
+              v (.expr (encodeModelAtoms es)) (by
+                simpa [encodeModelAtom] using hfresh)
+            simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hoccurs, hloop]
           · exact singletonAssignment_semantic hnonvar hfresh
               scope solutionFuel hfuel
   | grounded g =>
       refine ⟨[], ?_, LeaBindingSemanticEquivAt.empty scope solutionFuel⟩
       have hself :
-          Metta.Atom.equiv (.gnd (toLeaTTaGround g))
-            (.gnd (toLeaTTaGround g)) = true := by
-        simpa [toLeaTTaAtom] using toLeaTTaAtom_grounded_equiv_self g
-      simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hself]
+          Metta.Atom.equiv (.gnd (encodeModelGround g))
+            (.gnd (encodeModelGround g)) = true := by
+        simpa [encodeModelAtom] using encodeModelAtom_grounded_equiv_self g
+      simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hself]
   | @expr ls rs b hlist _ =>
       exact (hleaf ⟨ls, rs, rfl, rfl⟩).elim
 
@@ -12385,12 +12334,12 @@ representative. -/
 theorem connectedClass_instantiation_observables :
     Metta.instantiate connectedLeaBindings
         (.expr [.var "q1", .var "q2"]) =
-      toLeaTTaAtom
+      encodeModelAtom
         (connectedHEBindings.applyFull
           (.expression [.var "q1", .var "q2"]) 20) ∧
     Metta.instantiate connectedLeaBindings
         (.expr [.sym "f", .var "p"]) =
-      toLeaTTaAtom
+      encodeModelAtom
         (connectedHEBindings.applyFull
           (.expression [.symbol "f", .var "p"]) 20) := by
   constructor
@@ -12427,7 +12376,7 @@ theorem connectedClass_lea_instantiate_oracles :
   · calc
       Metta.instantiate connectedLeaBindings
           (.expr [.var "q1", .var "q2"]) =
-          toLeaTTaAtom
+          encodeModelAtom
             (connectedHEBindings.applyFull
               (.expression [.var "q1", .var "q2"]) 20) :=
         connectedClass_instantiation_observables.1
@@ -12437,7 +12386,7 @@ theorem connectedClass_lea_instantiate_oracles :
   · calc
       Metta.instantiate connectedLeaBindings
           (.expr [.sym "f", .var "p"]) =
-          toLeaTTaAtom
+          encodeModelAtom
             (connectedHEBindings.applyFull
               (.expression [.symbol "f", .var "p"]) 20) :=
         connectedClass_instantiation_observables.2
@@ -12452,7 +12401,7 @@ example :
       ⟨[], [("query", "pattern")]⟩ := by
   apply matchRel_leaf_transport (.varVar "query" "pattern")
   · intro v hvQuery hvPattern
-    simp [toLeaTTaAtom, Metta.Atom.vars] at hvQuery hvPattern
+    simp [encodeModelAtom, Metta.Atom.vars] at hvQuery hvPattern
     subst v
     simp at hvPattern
   · simp [BothExpressions]
@@ -12499,8 +12448,8 @@ value presentations independently. -/
 theorem aliasTraceProbe_match_oracles :
     aliasTraceProbeHEBindings ∈
         matchAtoms aliasTraceProbeQuery aliasTraceProbePattern 40 ∧
-      Metta.matchAtoms (toLeaTTaAtom aliasTraceProbePattern)
-          (toLeaTTaAtom aliasTraceProbeQuery) =
+      Metta.matchAtoms (encodeModelAtom aliasTraceProbePattern)
+          (encodeModelAtom aliasTraceProbeQuery) =
         [aliasTraceProbeLeaBindings] := by
   constructor
   · decide
@@ -12544,7 +12493,7 @@ theorem aliasTraceProbe_match_oracles :
       Metta.Bindings.hasLoop_singleton_val_of_not_mem _ _ (by simp [Metta.Atom.vars])
     simp (config := { maxSteps := 1000000 })
       [aliasTraceProbePattern, aliasTraceProbeQuery,
-        aliasTraceProbeLeaBindings, toLeaTTaAtom, toLeaTTaAtoms,
+        aliasTraceProbeLeaBindings, encodeModelAtom, encodeModelAtoms,
         hloop, hqbLoop, hrpqaLoop, hrpqbLoop,
         Metta.matchAtoms, Metta.matchAtomsWith, Metta.matchAll,
         Metta.Bindings.merge, Metta.Bindings.mergeOne,
@@ -12607,8 +12556,8 @@ direct-edge identity is required. -/
 theorem aliasForkProbe_match_oracles :
     aliasForkProbeHEBindings ∈
         matchAtoms aliasForkProbeQuery aliasForkProbePattern 100 ∧
-      Metta.matchAtoms (toLeaTTaAtom aliasForkProbePattern)
-          (toLeaTTaAtom aliasForkProbeQuery) =
+      Metta.matchAtoms (encodeModelAtom aliasForkProbePattern)
+          (encodeModelAtom aliasForkProbeQuery) =
         [aliasForkProbeLeaBindings] := by
   constructor
   · decide
@@ -12654,7 +12603,7 @@ theorem aliasForkProbe_match_oracles :
       Metta.Bindings.hasLoop_singleton_val_of_not_mem _ _ (by simp [Metta.Atom.vars])
     simp (config := { maxSteps := 1000000 })
       [aliasForkProbePattern, aliasForkProbeQuery,
-        aliasForkProbeLeaBindings, toLeaTTaAtom, toLeaTTaAtoms,
+        aliasForkProbeLeaBindings, encodeModelAtom, encodeModelAtoms,
         hloop, hpLeftLoop, hpRightLoop,
         Metta.matchAtoms, Metta.matchAtomsWith, Metta.matchAll,
         Metta.Bindings.merge, Metta.Bindings.mergeOne,
@@ -12696,8 +12645,8 @@ theorem aliasForkProbe_solution_transport :
     · rintro ⟨heValue, hmem, rfl⟩
       simp [aliasForkProbeHEBindings] at hmem
       rcases hmem with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      · simp [aliasForkProbeLeaBindings, toLeaTTaAtom, toLeaTTaAtoms]
-      · simp [aliasForkProbeLeaBindings, toLeaTTaAtom]
+      · simp [aliasForkProbeLeaBindings, encodeModelAtom, encodeModelAtoms]
+      · simp [aliasForkProbeLeaBindings, encodeModelAtom]
   · intro valuation
     constructor
     · intro hhe
@@ -12815,10 +12764,10 @@ theorem valueProvenanceProbe_base_solution_equiv :
       · intro key value hmem
         simp [valueProvenanceProbeLeaBase] at hmem
         rcases hmem with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-        · simpa [toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution,
+        · simpa [encodeModelAtom, encodeModelAtoms, applyClassSolution,
             hx, hy] using hp
-        · simpa [toLeaTTaAtom, applyClassSolution] using hx
-        · simpa [toLeaTTaAtom, applyClassSolution] using hy
+        · simpa [encodeModelAtom, applyClassSolution] using hx
+        · simpa [encodeModelAtom, applyClassSolution] using hy
       · intro left right hmem
         simp [valueProvenanceProbeLeaBase] at hmem
     · rintro ⟨hvalues, _hequalities⟩
@@ -12832,10 +12781,10 @@ theorem valueProvenanceProbe_base_solution_equiv :
       · intro key value hmem
         simp [valueProvenanceProbeHEBase] at hmem
         rcases hmem with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-        · simpa [toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution,
+        · simpa [encodeModelAtom, encodeModelAtoms, applyClassSolution,
             hx, hy] using hp
-        · simpa [toLeaTTaAtom, applyClassSolution] using hx
-        · simpa [toLeaTTaAtom, applyClassSolution] using hy
+        · simpa [encodeModelAtom, applyClassSolution] using hx
+        · simpa [encodeModelAtom, applyClassSolution] using hy
       · intro left right hmem
         simp [valueProvenanceProbeHEBase] at hmem
 
@@ -12928,7 +12877,7 @@ theorem valueProvenanceProbe_output_solution_theory :
             (.expr [.sym "f", .var "z"]) := by
         rw [valueProvenanceProbe_add_oracles.2]
         simp
-      simpa [toLeaTTaAtom, toLeaTTaAtoms] using hmem)
+      simpa [encodeModelAtom, encodeModelAtoms] using hmem)
 
 /-- NEGATIVE: the current equality-closure plus global-solution invariant is
 not preserved by nontrivial value reconciliation.  A compositional invariant

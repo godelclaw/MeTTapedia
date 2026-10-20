@@ -22,7 +22,7 @@ def render (term : Term) : String := Term.render term
 congruences are authored), states of sort `Term`. -/
 def spec : Spec :=
   ⟨GeneralExecutionAdmission.compile ⟨Lambda.reduced, Lambda.free, { signatures := [], rows := [] }⟩
-    { sites := .rootOnly, includeDerivedEquations := false }, [], .base "Term"⟩
+    { sites := .rootOnly, includeDerivedEquations := false }, [], .base "Term", .standard⟩
 
 def work : Nat := 5000
 

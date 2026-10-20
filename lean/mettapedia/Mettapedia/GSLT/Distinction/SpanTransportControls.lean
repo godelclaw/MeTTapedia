@@ -1,6 +1,7 @@
 import Mettapedia.GSLT.Distinction.SpanTransport
 import Mettapedia.GSLT.Logic.ObservationSpanControls
 import Mettapedia.GSLT.Core.NonFactorization
+import Mettapedia.Machines.ProductiveCoreAdapters
 
 /-!
 # Controls for two-sided span transport
@@ -396,5 +397,201 @@ theorem added_occurrence_not_matched : ¬ (SpanRelation.ofSpanMap inclusion).Out
   decide
 
 end Added
+
+/-! ## Relational finite blocks with private event labels -/
+
+namespace RelationalBlocks
+
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+
+inductive SourceState where
+  | pending | done
+
+inductive TargetState where
+  | entry | ready | extra | done
+
+inductive SourceRule : SourceState → Option (Transition SourceState Nat Bool Empty) → Prop where
+  | publish : SourceRule .pending (some (.publish [7,7] .done))
+  | finish : SourceRule .done (some (.finish true))
+
+inductive TargetRule : TargetState → Option (Transition TargetState (Nat × Nat) Nat Empty) → Prop where
+  | enter : TargetRule .entry (some (.silent .ready))
+  | extra : TargetRule .entry (some (.silent TargetState.extra))
+  | publish : TargetRule .ready (some (.publish [(7,42),(7,99)] .done))
+  | lost : TargetRule .extra (some (.publish [(7,42)] .done))
+  | finish : TargetRule .done (some (.finish 9))
+
+inductive Related : SourceState → TargetState → Prop where
+  | entry : Related .pending .entry
+  | ready : Related .pending .ready
+  | done : Related .done .done
+
+def sourceRead : ExecutionReadout Nat Bool Empty Nat Bool Empty := ⟨fun event => [event],id,id⟩
+
+def targetRead : ExecutionReadout (Nat × Nat) Nat Empty Nat Bool Empty :=
+  ⟨fun event => [event.1], fun verdict => verdict == 9, id⟩
+
+theorem pending_one {events outcome} (path : Derivation SourceRule 1 .pending events outcome) :
+    events = [7,7] ∧ outcome = .exhausted .done := by
+  cases path with
+  | silent advanced _ => cases advanced
+  | published advanced rest => cases advanced; cases rest; exact ⟨rfl,rfl⟩
+  | finished advanced => cases advanced
+  | faulted advanced => cases advanced
+  | requested advanced => cases advanced
+  | stuck advanced => cases advanced
+
+theorem done_one {events outcome} (path : Derivation SourceRule 1 .done events outcome) :
+    events = [] ∧ outcome = .finished true := by
+  cases path with
+  | silent advanced _ => cases advanced
+  | published advanced _ => cases advanced
+  | finished advanced => cases advanced; exact ⟨rfl,rfl⟩
+  | faulted advanced => cases advanced
+  | requested advanced => cases advanced
+  | stuck advanced => cases advanced
+
+/-- The source action is implemented by two target transitions, with two
+different private labels for its two equal public answer occurrences. The
+target is genuinely nondeterministic and has a separate extra behavior. -/
+theorem forward : DerivationSimulation SourceRule TargetRule Related sourceRead targetRead := by
+  refine ⟨?_⟩
+  intro state state' events outcome retained path
+  cases retained with
+  | entry =>
+      obtain ⟨rfl,rfl⟩ := pending_one path
+      exact ⟨2, [(7,42),(7,99)], .exhausted .done,
+        .silent TargetRule.enter (.published TargetRule.publish (.pause _)), rfl, .exhausted .done⟩
+  | ready =>
+      obtain ⟨rfl,rfl⟩ := pending_one path
+      exact ⟨1, [(7,42),(7,99)], .exhausted .done,
+        .published TargetRule.publish (.pause _), rfl, .exhausted .done⟩
+  | done =>
+      obtain ⟨rfl,rfl⟩ := done_one path
+      exact ⟨1, [], .finished 9, .finished TargetRule.finish, rfl, .finished true⟩
+
+theorem source_complete : Derivation SourceRule 2 .pending [7,7] (.finished true) :=
+  .published SourceRule.publish (.finished SourceRule.finish)
+
+theorem target_complete :
+    Derivation TargetRule 3 .entry [(7,42),(7,99)] (.finished 9) :=
+  .silent TargetRule.enter (.published TargetRule.publish (.finished TargetRule.finish))
+
+theorem target_extra_complete : Derivation TargetRule 3 .entry [(7,42)] (.finished 9) :=
+  .silent TargetRule.extra (.published TargetRule.lost (.finished TargetRule.finish))
+
+theorem done_completed_exact {fuel events verdict}
+    (path : Derivation SourceRule fuel .done events (.finished verdict)) : events = [] ∧ verdict = true := by
+  cases path with
+  | silent advanced _ => cases advanced
+  | published advanced _ => cases advanced
+  | finished advanced => cases advanced; exact ⟨rfl,rfl⟩
+
+theorem source_completed_exact {fuel events verdict}
+    (path : Derivation SourceRule fuel .pending events (.finished verdict)) :
+    events = [7,7] ∧ verdict = true := by
+  cases path with
+  | silent advanced _ => cases advanced
+  | published advanced rest =>
+      cases advanced
+      obtain ⟨rfl,rfl⟩ := done_completed_exact rest
+      exact ⟨rfl,rfl⟩
+  | finished advanced => cases advanced
+
+/-- A forward realization does not license the target's extra branch, which
+drops one occurrence. Consequently the converse local realization is false. -/
+theorem no_backward :
+    ¬DerivationSimulation TargetRule SourceRule (fun target source => Related source target)
+      targetRead sourceRead := by
+  intro backward
+  obtain ⟨fuel, events, verdict, path, observed, _⟩ := backward.completed target_extra_complete Related.entry
+  obtain ⟨rfl,rfl⟩ := source_completed_exact path
+  have impossible : 2 = 1 := by
+    simpa [sourceRead,targetRead] using congrArg List.length observed
+  cases impossible
+
+/-- Exact public readout can forget private label distinctions while still
+preserving both occurrences; it cannot coalesce the duplicate answers. -/
+theorem public_occurrences :
+    ([(7,42),(7,99)] : List (Nat × Nat)).flatMap targetRead.event = [7,7] ∧
+      ([(7,42)] : List (Nat × Nat)).flatMap targetRead.event ≠ [7,7] := by
+  exact ⟨rfl, by decide⟩
+
+/-- An effects-only prefix observer omits internal answers. The independent
+completed verdict still retains both equal answer occurrences. -/
+def effectsOnly : ExecutionReadout (Sum Nat String) (List Nat) Empty String (List Nat) Empty :=
+  ⟨fun event => match event with | .inl _ => [] | .inr effect => [effect],id,id⟩
+
+theorem internal_publication_is_not_public_answer_prefix :
+    ([.inl 7,.inr "committed-write",.inl 7] : List (Sum Nat String)).flatMap effectsOnly.event =
+      ["committed-write"] ∧ effectsOnly.verdict [7,7] = [7,7] := ⟨rfl,rfl⟩
+
+/-- The executable source has the independently declared two rules above.
+The nondeterministic target remains a relation, not a chosen traversal. -/
+def sourceMachine : Machine SourceState Nat Bool Empty where
+  step
+    | .pending => some (.publish [7,7] .done)
+    | .done => some (.finish true)
+
+theorem sourceRule_exact : SourceRule = (fun state action => sourceMachine.step state = action) := by
+  funext state action
+  apply propext
+  constructor
+  · intro step
+    cases step <;> rfl
+  · intro step
+    subst action
+    cases state
+    · exact .publish
+    · exact .finish
+
+open Mettapedia.Machines Mettapedia.Machines.ProductiveCoreAdapters in
+/-- Actual scheduler resumption realizes two relational target blocks at the
+same saved endpoint. Both equal public occurrences survive their different
+private labels; the target's additional branch does not become a source rule. -/
+theorem scheduled_resume :
+    let actual := Cursor.resume (EventCursor.provider sourceMachine) EventCursor.client
+      (EventCursor.charge sourceMachine (fun _ => 1)) 1
+      (Cursor.advance (EventCursor.provider sourceMachine) EventCursor.client
+        (EventCursor.charge sourceMachine (fun _ => 1)) 1
+        (EventCursor.packet sourceMachine ([], .exhausted .pending)))
+    actual.1 = 2 ∧ EventCursor.read sourceMachine actual.2 = ([7,7], .finished true) ∧
+      ∃ first second saved' events' later' outcome',
+        Derivation TargetRule first .entry events' (.exhausted saved') ∧
+        Related .done saved' ∧ Derivation TargetRule second saved' later' outcome' ∧
+        (events' ++ later').flatMap targetRead.event = [7,7] ∧
+        outcome'.relabel targetRead.verdict targetRead.request = .finished true ∧
+        Derivation TargetRule (first + second) .entry (events' ++ later') outcome' := by
+  have simulation : DerivationSimulation (fun state action => sourceMachine.step state = action)
+      TargetRule Related sourceRead targetRead := by
+    rw [← sourceRule_exact]
+    exact forward
+  obtain ⟨_, first, second, saved', events', later', outcome', prefixPath, retained, suffixPath,
+      _, publicEvents, publicOutcome, whole⟩ :=
+    EventCursor.resume_simulation sourceMachine simulation (fun _ => 1) 1 1 []
+      (show sourceMachine.run 1 .pending = ([7,7], .exhausted .done) from rfl) Related.entry
+  refine ⟨rfl, rfl, first, second, saved', events', later', outcome',
+    prefixPath, retained, suffixPath, ?_, ?_, whole⟩
+  · exact publicEvents.symm
+  · exact publicOutcome.finished_inv
+
+open Mettapedia.Machines Mettapedia.Machines.ProductiveCoreAdapters in
+/-- No scheduler allowance realizes the target's completed one-occurrence
+branch. More budget cannot repair a lost occurrence or justify reflection. -/
+theorem no_scheduled_extra (price : SourceState → Nat) (fuel : Nat) :
+    EventCursor.read sourceMachine
+      (Cursor.advance (EventCursor.provider sourceMachine) EventCursor.client
+        (EventCursor.charge sourceMachine price) fuel
+        (EventCursor.packet sourceMachine ([], .exhausted .pending))).2 ≠ ([7], .finished true) := by
+  intro extra
+  have executed := (EventCursor.advance_run sourceMachine price fuel .pending []).2
+  have reached : sourceMachine.run fuel .pending = ([7], .finished true) := by
+    simpa only [List.nil_append] using executed.symm.trans extra
+  have path := sourceMachine.execution_derivation fuel .pending
+  rw [reached, ← sourceRule_exact] at path
+  have impossible := (source_completed_exact path).1
+  cases impossible
+
+end RelationalBlocks
 
 end Mettapedia.GSLT.Distinction.SpanTransport.Controls

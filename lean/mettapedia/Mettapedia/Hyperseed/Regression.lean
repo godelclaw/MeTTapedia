@@ -19,10 +19,10 @@ Negative example:
 namespace Mettapedia.Hyperseed.Regression
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointCascade
 open Mettapedia.PLN.WorldModel
@@ -71,9 +71,6 @@ theorem agentEncoder_unitObservation :
   intro o q
   change (unitPositiveEvidence : BinaryEvidence).total = 1
   simp [unitPositiveEvidence, BinaryEvidence.total]
-
-noncomputable instance : EvidenceType (Multiset AgentObservation) :=
-  multisetEvidenceType AgentObservation
 
 noncomputable instance : BinaryWorldModel (Multiset AgentObservation) AgentQuery :=
   worldModelOfAtomicEvidence agentEncoder.observe
@@ -468,7 +465,6 @@ theorem selfAware_golden_poc_of_nonempty
 empty observation traces are exactly the count-zero / revision-idempotent case. -/
 theorem selfAware_triviality_iff
     (σ : Multiset AgentObservation) :
-    letI : EvidenceType (Multiset AgentObservation) := multisetEvidenceType AgentObservation
     letI : AdditiveWorldModel (Multiset AgentObservation) AgentQuery BinaryEvidence :=
       agentEncoder.inducedWorldModel
     σ = 0 ↔
@@ -476,7 +472,6 @@ theorem selfAware_triviality_iff
           (State := Multiset AgentObservation) (Query := AgentQuery) (Ev := BinaryEvidence)
           σ AgentQuery.awareReady = 0 ∧
       (σ + σ : Multiset AgentObservation) = σ := by
-  letI : EvidenceType (Multiset AgentObservation) := multisetEvidenceType AgentObservation
   letI : AdditiveWorldModel (Multiset AgentObservation) AgentQuery BinaryEvidence :=
     agentEncoder.inducedWorldModel
   constructor

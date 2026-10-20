@@ -40,9 +40,9 @@ interpretation would require additional hypotheses.
 namespace Mettapedia.OSLF.Framework.RhoWorldModel
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.OSLF.Framework.GSLTEvidence
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
 
 /-! ## Process Ensemble -/

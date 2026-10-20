@@ -1,6 +1,7 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompletePlanWire
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.RunnerSource
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.StandardWire
+import Mettapedia.OSLF.MeTTaIL.Complete.ClassesReady
 import Mettapedia.Languages.MeTTa.PeTTa.DeclarativeSpec
 import Mettapedia.Languages.MeTTa.PeTTa.StdLib
 import Mettapedia.Languages.MeTTa.PeTTa.Eval
@@ -9,21 +10,25 @@ import Mettapedia.Languages.MeTTa.PeTTa.ReadAfterRender
 /-!
 # Emitting a runnable MeTTa module for the complete machine
 
-`emit?` takes a plan with no admission obligations, its expected type and a module name, and
-returns a MeTTa program with three entries over the complete machine's libraries
-(`gslt_descent_execution`, `gslt_complete`, `gslt_collection_laws`, `gslt_runner`):
+`emit?` takes a plan with no admission obligations, its expected type, how runs commit their
+targets and a module name, and returns a MeTTa program with four entries over the complete
+machine's libraries (`gslt_descent_execution`, `gslt_complete`, `gslt_collection_laws`,
+`gslt_canonical`, `gslt_runner`):
 
 - `name:begin source` returns the runner at the source, to continue with `gslt:runner:tick`
   and `gslt:runner:advance`;
 - `name:run source ticks quantum` returns the trace of one path after that page: its phase and
   its states in order;
-- `name:explore source work` returns the states every path has reached after `work` fair rounds.
+- `name:explore source work` returns the states every path has reached after `work` fair rounds;
+- `name:edges source work` returns the transitions found by then, `(Edge state receipt target)`:
+  every explored state's published receipts with their targets (`Complete.Graph`).
 
 Equations, premises that recurse through any rule, and unstratified plans are all emitted: the
 complete machine's child searches cover every declaration, so the stratification obligation is
 not needed (`Complete.Classes`, `Complete.Explore`). The plan is inlined as data with the plan's
 own free types as its table, and so are its declared collection and scope-extrusion laws: every
-committed state is in their standard form (`Complete.Normalized`).
+committed state is in their standard form, or in canonical form, which also sorts every unordered
+collection, compared by the plan's name table (`StandardWire.planTable`) (`Complete.Normalized`).
 
 `emit?` refuses a plan with any other admission obligation, a plan whose equations are not
 balanced (`Predecessors.equationsChecked`, which the theorems of `Complete.Classes` assume), a plan
@@ -50,17 +55,25 @@ private abbrev a (head : String) (arguments : List Atom) : Atom := .expression (
 private abbrev v (name : String) : Atom := .var name
 
 /-- What a module is emitted for: a plan, the bound types of its sources (empty for closed
-sources) and the type of its states. -/
+sources), the type of its states, and how its runs commit targets. -/
 structure Spec where
   plan : GeneralExecutionAdmission.Plan
   bound : List TypeExpr
   expected : TypeExpr
+  mode : Complete.Normalized.Commit
 
 def planAtom (spec : Spec) : Atom :=
   CettaWireAtom.encode (planTerm spec.plan spec.plan.snapshot.freeTypes spec.bound spec.expected)
 
-/-- The plan's declared laws, as the runner reads them. -/
-def standardAtom (spec : Spec) : Atom := CettaWireAtom.encode (StandardWire.standardTerm spec.plan)
+/-- The plan's name table: its constructors and declared free names. -/
+def table (spec : Spec) : List String :=
+  StandardWire.planTable spec.plan (Complete.Footprint.declaredFootprint spec.plan)
+
+theorem table_for (spec : Spec) : StandardWire.TableFor spec.plan (table spec) :=
+  StandardWire.planTable_for spec.plan Complete.Footprint.declared_footprint
+
+/-- How runs commit targets, as the runner reads it. -/
+def standardAtom (spec : Spec) : Atom := CettaWireAtom.encode (StandardWire.commitTerm spec.plan spec.mode (table spec))
 
 /-- The libraries an emitted module loads after. -/
 abbrev runtime : Program := CompleteExecution.runnerLibrary.runtime
@@ -70,8 +83,9 @@ abbrev runtime : Program := CompleteExecution.runnerLibrary.runtime
 def beginHead (name : String) : String := name ++ ":begin"
 def runHead (name : String) : String := name ++ ":run"
 def exploreHead (name : String) : String := name ++ ":explore"
+def edgesHead (name : String) : String := name ++ ":edges"
 
-def entries (name : String) : List String := [beginHead name, runHead name, exploreHead name]
+def entries (name : String) : List String := [beginHead name, runHead name, exploreHead name, edgesHead name]
 
 def beginBody (spec : Spec) : Atom := a "gslt:runner:begin" [planAtom spec, standardAtom spec, v "source"]
 
@@ -86,6 +100,11 @@ def exploreBody (spec : Spec) : Atom :=
     a "let" [v "explored", a "gslt:explore:rounds" [planAtom spec, standardAtom spec, v "work", v "explorer"],
       a "gslt:explore:states" [v "explored"]]]
 
+def edgesBody (spec : Spec) : Atom :=
+  a "let" [v "explorer", a "gslt:explore:begin" [planAtom spec, standardAtom spec, v "source"],
+    a "let" [v "explored", a "gslt:explore:rounds" [planAtom spec, standardAtom spec, v "work", v "explorer"],
+      a "gslt:explore:edges" [standardAtom spec, v "explored"]]]
+
 /-- `(: head (-> Atom … Atom %Undefined%))`: every argument is passed as data. -/
 def declaration (head : String) (arity : Nat) : Atom :=
   .expression [.symbol ":", .symbol head,
@@ -96,12 +115,15 @@ def runEquation (spec : Spec) (name : String) : SpaceSemantics.Equation :=
   ⟨runHead name, [v "source", v "ticks", v "quantum"], runBody spec⟩
 def exploreEquation (spec : Spec) (name : String) : SpaceSemantics.Equation :=
   ⟨exploreHead name, [v "source", v "work"], exploreBody spec⟩
+def edgesEquation (spec : Spec) (name : String) : SpaceSemantics.Equation :=
+  ⟨edgesHead name, [v "source", v "work"], edgesBody spec⟩
 
 /-- The emitted program. -/
 def program (spec : Spec) (name : String) : Program where
-  equations := [beginEquation spec name, runEquation spec name, exploreEquation spec name]
-  declarations := [declaration (beginHead name) 1, declaration (runHead name) 3, declaration (exploreHead name) 2]
-  layout := [.declaration, .equation, .declaration, .equation, .declaration, .equation]
+  equations := [beginEquation spec name, runEquation spec name, exploreEquation spec name, edgesEquation spec name]
+  declarations := [declaration (beginHead name) 1, declaration (runHead name) 3, declaration (exploreHead name) 2,
+    declaration (edgesHead name) 2]
+  layout := [.declaration, .equation, .declaration, .equation, .declaration, .equation, .declaration, .equation]
 
 /-! ## Admission -/
 
@@ -124,7 +146,7 @@ def namesFresh (spec : Spec) (name : String) : Bool :=
     (fun equation => allowed name equation.head && codeWithin (allowed name) equation.body) &&
   runtime.declarations.all (declaredHeadAllowed name) &&
   codeWithin (allowed name) (beginBody spec) && codeWithin (allowed name) (runBody spec) &&
-  codeWithin (allowed name) (exploreBody spec)
+  codeWithin (allowed name) (exploreBody spec) && codeWithin (allowed name) (edgesBody spec)
 
 /-- The admission obligations the complete machine needs discharged: all but stratification. -/
 def pending (plan : GeneralExecutionAdmission.Plan) : List GeneralExecutionAdmission.Obligation :=
@@ -186,7 +208,8 @@ private theorem loaded_program (spec : Spec) (name : String) :
     SpaceSemantics.loadedAtoms (program spec name) =
       [declaration (beginHead name) 1, (beginEquation spec name).toAtom,
        declaration (runHead name) 3, (runEquation spec name).toAtom,
-       declaration (exploreHead name) 2, (exploreEquation spec name).toAtom] := rfl
+       declaration (exploreHead name) 2, (exploreEquation spec name).toAtom,
+       declaration (edgesHead name) 2, (edgesEquation spec name).toAtom] := rfl
 
 /-- **Emitted text reads back as the emitted program**, through the shared source reader. -/
 theorem emitted_text_reads_back {spec : Spec} {name : String} {text : String}
@@ -207,7 +230,7 @@ theorem emitted_text_reads_back {spec : Spec} {name : String} {text : String}
         rw [loaded_program]
         intro atom member
         simp only [List.mem_cons, List.not_mem_nil, or_false] at member
-        rcases member with rfl | rfl | rfl | rfl | rfl | rfl <;> exact ⟨_, rfl⟩
+        rcases member with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> exact ⟨_, rfl⟩
       rw [ReadAfterRender.read_render rendered expressionsOnly, loaded_program]
       rfl
 

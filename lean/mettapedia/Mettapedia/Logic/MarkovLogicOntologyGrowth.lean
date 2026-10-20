@@ -173,7 +173,7 @@ theorem finiteVolumeQueryProb_eq_of_specAgreesOnRegion
     refine Finset.sum_congr rfl ?_
     intro x hx
     by_cases hsat : satisfiesConstraints x q
-    · simp [hsat, hweight x]
+    · simp [hweight x]
     · simp [hsat]
   change
     (if N₁.finiteVolumePartition Γ ξ = 0 then 0
@@ -223,7 +223,7 @@ theorem queryProb_eq_of_specAgreesOnRegion
   classical
   by_cases hqnil : q = []
   · subst hqnil
-    simp [MassSemantics.queryProb, infiniteMLNMassSemantics, infiniteQueryEvent,
+    simp [Mettapedia.ProbabilityTheory.MassSemantics.queryProb, infiniteMLNMassSemantics, infiniteQueryEvent,
       satisfiesConstraints]
   · let qΓ : LocalConstraintQuery Atom Γ := restrictQueryToRegion Γ q hq
     let ξ₀ : BoundaryCondition Atom := fun _ => false
@@ -352,7 +352,7 @@ theorem queryProb_eq_of_specAgreesOnRegion
     calc
       (infiniteMLNMassSemantics M₁ μ₁ hμ₁).queryProb q
           = (μ₁ : Measure (InfiniteWorld Atom)) (localQueryEvent Γ qΓ) := by
-              simp [MassSemantics.queryProb, infiniteMLNMassSemantics, hEvent]
+              simp [Mettapedia.ProbabilityTheory.MassSemantics.queryProb, infiniteMLNMassSemantics, hEvent]
       _ = M₁.toStrictlyPositiveInfiniteGroundMLNSpec.finiteVolumeWorldMeasure Γ ξ₀
             (localQueryEvent Γ qΓ) := hprob₁
       _ = (finiteVolumeMassSemantics
@@ -363,7 +363,7 @@ theorem queryProb_eq_of_specAgreesOnRegion
             (localQueryEvent Γ qΓ) := hfv₂.symm
       _ = (μ₂ : Measure (InfiniteWorld Atom)) (localQueryEvent Γ qΓ) := hprob₂.symm
       _ = (infiniteMLNMassSemantics M₂ μ₂ hμ₂).queryProb q := by
-            simp [MassSemantics.queryProb, infiniteMLNMassSemantics, hEvent]
+            simp [Mettapedia.ProbabilityTheory.MassSemantics.queryProb, infiniteMLNMassSemantics, hEvent]
 
 /-- **Developer-facing corollary**: extending a specification with new clauses
     whose atoms are disjoint from the agreement zone preserves all query

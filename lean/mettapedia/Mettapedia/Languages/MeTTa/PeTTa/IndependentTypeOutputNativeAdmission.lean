@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.PeTTa.IndependentTypeOutputRoot
+import Mettapedia.Languages.MeTTa.MetavariableFrameStoreGrowth
 import Mathlib.Data.List.Dedup
 
 /-!
@@ -24,6 +25,11 @@ open Mettapedia.Logic.LP
 open Mettapedia.Logic.LP.UnificationRenaming
 open Mettapedia.Logic.LP.IndependentOutputUnification
 open IntrinsicTypeFacts (signature TypeTerm Declaration)
+open Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared (Token)
+open Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaFrameWriteback.NativeFrames
+  (Representable encoding encoding_bounds unpack_encoding generationMax handleLimit
+    classOneFirst classThreeFirst)
+open Mettapedia.Languages.MeTTa.MetavariableFrameStoreGrowth (Store WellFormed Minted)
 
 /-- The low and high halves of a native variable identifier are unsigned
 32-bit fields. This arithmetic is over naturals, with the field bounds in
@@ -55,40 +61,53 @@ theorem packed_fits (coordinate : VariableCoordinate) :
   unfold VariableCoordinate.packed wordRadix at *
   omega
 
-/-- A frame packs a 20-bit handle below its generation. Distinct generations
-of a reused handle remain distinct identities. -/
-def frameIdentity (generation handle : Nat) : Nat := generation * 1048576 + handle
+/-- A frame identity spells a handle and its generation in the runtime's
+class-prefixed layout. Distinct generations of a reused handle remain distinct
+identities, and so do handles of different classes. -/
+theorem frame_identity_injective {first second : Token} (firstValid : Representable first)
+    (secondValid : Representable second) :
+    encoding first = encoding second ↔ first = second := by
+  constructor
+  · intro same
+    have left := unpack_encoding firstValid
+    have right := unpack_encoding secondValid
+    rw [same] at left
+    cases first
+    cases second
+    simp only [Token.mk.injEq]
+    exact ⟨left.1.symm.trans right.1, left.2.symm.trans right.2⟩
+  · rintro rfl
+    rfl
 
-theorem frame_identity_injective (first second left right : Nat)
-    (leftBound : left < 1048576) (rightBound : right < 1048576) :
-    frameIdentity first left = frameIdentity second right ↔
-      first = second ∧ left = right := by
-  unfold frameIdentity
-  omega
+/-- The class bound on generations is needed: past it, a class-zero spelling
+is a class-one identity. -/
+example : encoding ⟨1, 2064⟩ = encoding ⟨classOneFirst + 1, 1⟩ ∧
+    ¬ Representable ⟨1, 2064⟩ ∧ Representable ⟨classOneFirst + 1, 1⟩ := by decide
 
-theorem live_frame_identity_fits (generation handle : Nat)
-    (generationPositive : 0 < generation) (generationBound : generation ≤ 4094)
-    (handlePositive : 0 < handle) (handleBound : handle < 1048576) :
-    0 < frameIdentity generation handle ∧ frameIdentity generation handle < wordRadix := by
-  unfold frameIdentity wordRadix
+theorem live_frame_identity_fits {token : Token} (valid : Representable token) :
+    0 < encoding token ∧ encoding token < wordRadix := by
+  have bounds := encoding_bounds valid
+  unfold wordRadix
   omega
 
 /-- The sequential history at an acquisition boundary records the greatest
-generation issued for each handle. The native atomic/free-list implementation
-must realize these boundaries; it is not part of this state model. -/
+generation issued for each handle. The growing frame store realizes these
+boundaries (`store_acquisition_realizes`); its atomics are not part of this
+state model. -/
 abbrev GenerationHistory := Nat → Nat
 
+/-- The ambient identity zero, and the spelling of every representable
+incarnation the history has reached. -/
 def previouslyIssued (history : GenerationHistory) (identity : Nat) : Prop :=
-  identity = 0 ∨ ∃ generation handle,
-    0 < generation ∧ handle < 1048576 ∧ generation ≤ history handle ∧
-      identity = frameIdentity generation handle
+  identity = 0 ∨ ∃ token : Token, Representable token ∧
+    token.generation ≤ history token.handle ∧ identity = encoding token
 
-/-- A successful acquisition increases a handle's generation. The maximum
-retired generation cannot be acquired again. -/
+/-- A successful acquisition increases a handle's generation. A handle at its
+class's largest generation cannot be acquired again. -/
 def acquireFrame (history : GenerationHistory) (handle : Nat) :
     Option (Nat × GenerationHistory) :=
-  if 0 < handle ∧ handle < 1048576 ∧ history handle < 4094 then
-    some (frameIdentity (history handle + 1) handle,
+  if 0 < handle ∧ handle < handleLimit ∧ history handle < generationMax handle then
+    some (encoding ⟨handle, history handle + 1⟩,
       Function.update history handle (history handle + 1))
   else none
 
@@ -103,25 +122,27 @@ theorem acquired_frame_fresh (history : GenerationHistory) (handle identity : Na
     simp only [Option.some.injEq, Prod.mk.injEq] at acquired
     obtain ⟨rfl, rfl⟩ := acquired
     obtain ⟨positive, bounded, available⟩ := allowed
-    obtain ⟨idPositive, idBound⟩ := live_frame_identity_fits (history handle + 1) handle
-      (by omega) (by omega) positive bounded
+    have valid : Representable ⟨handle, history handle + 1⟩ :=
+      ⟨positive, bounded, Nat.succ_pos _, available⟩
+    obtain ⟨idPositive, idBound⟩ := live_frame_identity_fits valid
     refine ⟨idPositive, idBound, ?_, ?_, ?_⟩
-    · rintro (ambient | ⟨oldGeneration, oldHandle, _, oldBound, issued, same⟩)
+    · rintro (ambient | ⟨old, oldValid, issued, same⟩)
       · omega
-      · obtain ⟨generations, handles⟩ :=
-          (frame_identity_injective _ _ _ _ bounded oldBound).mp same
-        subst oldHandle
+      · have equal := (frame_identity_injective valid oldValid).mp same
+        subst equal
+        dsimp only at issued
         omega
-    · right
-      exact ⟨history handle + 1, handle, by omega, bounded, by simp, rfl⟩
+    · exact Or.inr ⟨_, valid, by simp, rfl⟩
     · intro old issued
-      rcases issued with ambient | ⟨oldGeneration, oldHandle, oldPositive, oldBound, count, same⟩
+      rcases issued with ambient | ⟨token, tokenValid, count, same⟩
       · exact Or.inl ambient
-      · refine Or.inr ⟨oldGeneration, oldHandle, oldPositive, oldBound, ?_, same⟩
-        by_cases equal : oldHandle = handle
-        · subst oldHandle
-          simpa using Nat.le.step count
-        · simpa only [Function.update_of_ne equal] using count
+      · refine Or.inr ⟨token, tokenValid, ?_, same⟩
+        by_cases equal : token.handle = handle
+        · rw [equal] at count ⊢
+          simp only [Function.update_self]
+          omega
+        · rw [Function.update_of_ne equal]
+          exact count
   · cases acquired
 
 /-- Every previously issued coordinate, including the ambient namespace, is
@@ -133,6 +154,58 @@ theorem acquired_frame_avoids_caller (history : GenerationHistory) (handle ident
     identity ≠ caller.identity.val := by
   intro same
   exact (acquired_frame_fresh history handle identity later acquired).2.2.1 (same ▸ issued)
+
+/-- The generations a frame store has reached. -/
+def storeHistory (store : Store) : GenerationHistory :=
+  fun handle => (store.cells handle).generation
+
+/-- Each acquisition of the growing frame store is an `acquireFrame` step of its
+history, at the handle the store chose, spelling the token it minted. -/
+theorem store_acquisition_realizes {store later : Store} {room : Bool} {token : Token}
+    (valid : WellFormed store) (taken : store.take? room = some (later, token)) :
+    acquireFrame (storeHistory store) token.handle =
+      some (encoding token, storeHistory later) := by
+  obtain ⟨generation, cells⟩ := MetavariableFrameStoreGrowth.take?_cells taken
+  obtain ⟨_, below, positive, inside⟩ := MetavariableFrameStoreGrowth.take?_available valid taken
+  have tokenEq : (⟨token.handle, (store.cells token.handle).generation + 1⟩ : Token) = token := by
+    cases token
+    dsimp only at generation ⊢
+    rw [generation]
+  have historyEq : Function.update (fun h => (store.cells h).generation) token.handle
+      ((store.cells token.handle).generation + 1) = fun h => (later.cells h).generation := by
+    funext h
+    rw [cells]
+    by_cases same : h = token.handle
+    · subst same
+      simp only [Function.update_self]
+      exact generation.symm
+    · simp only [Function.update_of_ne same]
+  unfold acquireFrame storeHistory
+  rw [if_pos ⟨positive, inside, below⟩, tokenEq, historyEq]
+
+/-- The identities a store's history has issued are the spellings of the
+incarnations it has minted. -/
+theorem store_previously_issued {store : Store} (valid : WellFormed store) (identity : Nat) :
+    previouslyIssued (storeHistory store) identity ↔
+      identity = 0 ∨ ∃ token, Minted store token ∧ identity = encoding token := by
+  constructor
+  · rintro (ambient | ⟨token, representable, reached, same⟩)
+    · exact Or.inl ambient
+    · exact Or.inr ⟨token, ⟨representable.2.2.1, reached⟩, same⟩
+  · rintro (ambient | ⟨token, minted, same⟩)
+    · exact Or.inl ambient
+    · exact Or.inr ⟨token, valid.minted_representable minted, minted.2, same⟩
+
+/-- A store acquisition's identity is a 32-bit word separate from every
+identity the store issued before, including the ambient namespace. -/
+theorem store_acquired_fresh {store later : Store} {room : Bool} {token : Token}
+    (valid : WellFormed store) (taken : store.take? room = some (later, token)) :
+    0 < encoding token ∧ encoding token < wordRadix ∧
+      ¬ previouslyIssued (storeHistory store) (encoding token) ∧
+      previouslyIssued (storeHistory later) (encoding token) := by
+  obtain ⟨positive, bounded, unissued, issued, _⟩ :=
+    acquired_frame_fresh _ _ _ _ (store_acquisition_realizes valid taken)
+  exact ⟨positive, bounded, unissued, issued⟩
 
 /-- Successful slot reservation advances beyond both the current extent and
 an imported inventory. Exhaustion is explicit, rather than a wrapped slot. -/
@@ -504,6 +577,17 @@ theorem acquired_inventory_avoids_caller (history : GenerationHistory) (handle :
   exact acquired_frame_avoids_caller history handle identity.val later acquired caller issued
     (congrArg Fin.val same)
 
+/-- The frame store's own acquisition supplies that freshness premise. -/
+theorem store_inventory_avoids_caller {store later : Store} {room : Bool} {token : Token}
+    (valid : WellFormed store) (taken : store.take? room = some (later, token))
+    (inventory : List Nat) (fits : inventory.length < wordRadix)
+    (name : Nat) (present : name ∈ inventory) (caller : VariableCoordinate)
+    (issued : previouslyIssued (storeHistory store) caller.identity.val) :
+    (inventoryCoordinate ⟨encoding token, (store_acquired_fresh valid taken).2.1⟩ inventory fits
+      name present).packed ≠ caller.packed :=
+  acquired_inventory_avoids_caller _ token.handle _ _ (store_acquisition_realizes valid taken)
+    inventory fits name present caller issued
+
 /-- The same finite mapping is applied to every alternative. A repeated
 source name therefore has one coordinate even across different answers. -/
 def materialize (identity : Nat) (inventory : List Nat) (answers : List TypeTerm) :
@@ -742,10 +826,32 @@ example : reserveAmbientBlock 4294967295 = some (1, 4294967296) := by decide
 example : reserveAmbientBlock 4294967296 = none := by decide
 
 
-example : (acquireFrame (fun _ => 0) 7).map Prod.fst = some (frameIdentity 1 7) := by
-  simp [acquireFrame]
+/-- A class-zero handle keeps its generation above twenty handle bits. -/
+example : (acquireFrame (fun _ => 0) 7).map Prod.fst = some (1 * 1048576 + 7) := by
+  unfold acquireFrame; rw [if_pos (by decide)]; decide
 
-example : acquireFrame (fun _ => 4094) 7 = none := by simp [acquireFrame]
+/-- Class zero's generations end at 2046. -/
+example : (acquireFrame (fun _ => 2045) 7).isSome := by
+  unfold acquireFrame; rw [if_pos (by decide)]; rfl
+
+example : acquireFrame (fun _ => 2046) 7 = none := by
+  unfold acquireFrame; rw [if_neg (by decide)]
+
+/-- A handle beyond twenty bits is spelled in its own class, and a class-three
+handle serves two generations. Handle zero is never acquired. -/
+example : (acquireFrame (fun _ => 0) classOneFirst).map Prod.fst = some 0x81000000 := by
+  unfold acquireFrame; rw [if_pos (by decide)]; decide
+
+example : acquireFrame (fun _ => 2) classThreeFirst = none := by
+  unfold acquireFrame; rw [if_neg (by decide)]
+
+example : acquireFrame (fun _ => 0) 0 = none := by
+  unfold acquireFrame; rw [if_neg (by decide)]
+
+/-- The store's first acquisition is the history's step at handle one. -/
+example : (acquireFrame (storeHistory MetavariableFrameStoreGrowth.Store.initial) 1).map
+    Prod.fst = some (encoding ⟨1, 1⟩) := by
+  unfold acquireFrame storeHistory; rw [if_pos (by decide)]; decide
 
 
 end Mettapedia.Languages.MeTTa.PeTTa.IndependentTypeOutput.NativeAdmission

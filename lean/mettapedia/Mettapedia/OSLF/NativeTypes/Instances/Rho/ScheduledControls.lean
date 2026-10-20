@@ -74,7 +74,7 @@ def runRaw (formula : Formula Empty) (budget : Nat) (raw : Pattern) : Option (Op
 #guard runRaw (.possibility .top) 100 (.apply "POutput" [zero, zero]) == none
 
 theorem root_native_positive (accepted : Mettapedia.OSLF.NativeTypes.Instances.Rho.Canonical.admit redex = true) :
-    denotation tests (.possibility .top) (originalSource redex accepted) := by
+    denotation tests (.possibility .top) (.empty _) (originalSource redex accepted) := by
   obtain ⟨item, listed, _target⟩ := root_communication
   let owned : Mettapedia.OSLF.NativeTypes.Instances.Rho.Canonical.OriginalReceipt (originalSource redex accepted) :=
     ⟨item, listed⟩
@@ -83,7 +83,7 @@ theorem root_native_positive (accepted : Mettapedia.OSLF.NativeTypes.Instances.R
       Mettapedia.OSLF.NativeTypes.Instances.Rho.Canonical.originalTarget_sound _ owned, True.intro⟩
 
 theorem payload_native_negative (accepted : Mettapedia.OSLF.NativeTypes.Instances.Rho.Canonical.admit payloadRedex = true) :
-    ¬ denotation tests (.possibility .top) (originalSource payloadRedex accepted) := by
+    ¬ denotation tests (.possibility .top) (.empty _) (originalSource payloadRedex accepted) := by
   intro holds
   obtain ⟨target, step, _⟩ := (GSLTTypeSynthesis.gsltDiamond_spec _ _ _).mp holds
   obtain ⟨item, listed, _⟩ :=
@@ -94,7 +94,7 @@ theorem payload_native_negative (accepted : Mettapedia.OSLF.NativeTypes.Instance
 
 theorem root_outgoing_universal_negative
     (accepted : Mettapedia.OSLF.NativeTypes.Instances.Rho.Canonical.admit redex = true) :
-    ¬ denotation tests (.outgoingUniversal .bottom) (originalSource redex accepted) := by
+    ¬ denotation tests (.outgoingUniversal .bottom) (.empty _) (originalSource redex accepted) := by
   obtain ⟨target, step, _⟩ :=
     (GSLTTypeSynthesis.gsltDiamond_spec _ _ _).mp (root_native_positive accepted)
   intro universal
@@ -102,7 +102,7 @@ theorem root_outgoing_universal_negative
 
 theorem payload_outgoing_universal_positive
     (accepted : Mettapedia.OSLF.NativeTypes.Instances.Rho.Canonical.admit payloadRedex = true) :
-    denotation tests (.outgoingUniversal .bottom) (originalSource payloadRedex accepted) := by
+    denotation tests (.outgoingUniversal .bottom) (.empty _) (originalSource payloadRedex accepted) := by
   intro target step
   exact payload_native_negative accepted
     ((GSLTTypeSynthesis.gsltDiamond_spec _ _ _).mpr ⟨target, step, True.intro⟩)

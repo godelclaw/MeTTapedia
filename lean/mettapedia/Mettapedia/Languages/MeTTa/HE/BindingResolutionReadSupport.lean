@@ -91,6 +91,45 @@ private theorem vars_expression (atoms : List Atom) :
   | nil => rfl
   | cons atom rest ih => simp [vars.varsList, ih]
 
+/-- Resolution cannot discover an isolated name that occurs neither in the
+operand nor in any stored assignment value. Equality classes and assignment
+values are checked separately, including absent class lookups. -/
+theorem atomSupport_avoids (bindings : Bindings) (name : String)
+    (classes : ∀ root, root ≠ name → name ∉ bindings.eqClassOrdered root)
+    (values : ∀ key value, bindings.lookup key = some value → name ∉ vars value) :
+    ∀ fuel visited atom, name ∉ vars atom →
+      name ∉ atomSupport bindings fuel visited atom := by
+  intro fuel
+  induction fuel with
+  | zero => intro visited atom absent; simp [atomSupport]
+  | succ fuel ih =>
+      intro visited atom absent
+      cases atom with
+      | symbol | grounded => simp [atomSupport]
+      | expression atoms =>
+          simp only [atomSupport, List.mem_flatMap]
+          rintro ⟨child, member, occurs⟩
+          apply ih visited child _ occurs
+          intro childOccurs
+          exact absent (by
+            rw [vars_expression]
+            exact List.mem_flatMap.mpr ⟨child, member, childOccurs⟩)
+      | var root =>
+          have different : root ≠ name := by simpa [vars, eq_comm] using absent
+          simp only [atomSupport]
+          split
+          · simp
+          · simp only [List.mem_append, not_or]
+            refine ⟨classes root different, ?_⟩
+            cases found : (bindings.eqClassOrdered root).findSome? bindings.lookup with
+            | none => simp
+            | some value =>
+                obtain ⟨key, _member, lookup⟩ := List.exists_of_findSome?_eq_some found
+                have valueAbsent := values key value lookup
+                simp only [guardSupport, List.mem_append, not_or]
+                exact ⟨valueAbsent,
+                  ih (bindings.eqClassOrdered root ++ visited) value valueAbsent⟩
+
 private theorem guardAux_eq {first second : Bindings}
     (classes : ∀ key, second.eqClassOrdered key = first.eqClassOrdered key) :
     ∀ fuel atom,
@@ -596,3 +635,41 @@ theorem edge_permutation_changes_joint_residual :
 end Controls
 
 end Mettapedia.Languages.MeTTa.HE.BindingResolutionReadSupport
+
+/-! ## Complete readout at the resolution depth -/
+
+namespace Mettapedia.Languages.MeTTa.HE.Bindings
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+/-- Two covered depths select the same complete equality-aware readout. -/
+theorem applyFull_resolutionFuel_eq_of_covered (bindings : Bindings) (atom : Atom) (depth : Nat)
+    (covered : bindings.applyFullCovered atom depth=true) :
+    bindings.applyFull atom (bindings.resolutionFuel atom)=bindings.applyFull atom depth := by
+  have first:=bindings.applyFullCovered_stable atom depth (bindings.resolutionFuel atom) covered
+  have second:=bindings.applyFullCovered_stable atom (bindings.resolutionFuel atom) depth
+    (bindings.applyFullCovered_resolutionFuel atom)
+  rw [Nat.add_comm depth] at first
+  exact second.symm.trans first
+
+/-- The complete readout of a whole retained tuple is the tuple of complete
+component readouts, despite their different structural depth bounds. -/
+theorem applyFull_resolutionFuel_expression (bindings : Bindings) (atoms : List Atom) :
+    bindings.applyFull (.expression atoms) (bindings.resolutionFuel (.expression atoms))=
+      .expression (atoms.map fun atom=>bindings.applyFull atom (bindings.resolutionFuel atom)) := by
+  let rest:=bindings.boundVars.toFinset.card*(bindings.resolutionValueDepth+1)+
+    atomScanFuel.atomListScanFuel atoms+3
+  have depth : bindings.resolutionFuel (.expression atoms)=rest+1 := by
+    simp only [resolutionFuel,atomScanFuel,rest]
+    omega
+  rw [depth,Bindings.applyFull]
+  congr 1
+  apply List.map_congr_left
+  intro atom member
+  apply (bindings.applyFull_resolutionFuel_eq_of_covered atom rest ?_).symm
+  apply bindings.queryRank_covers
+  have smaller:=atomScanFuel_mem atoms atom member
+  simp only [atomScanFuel] at smaller
+  simp only [queryRank,rest]
+  omega
+
+end Mettapedia.Languages.MeTTa.HE.Bindings

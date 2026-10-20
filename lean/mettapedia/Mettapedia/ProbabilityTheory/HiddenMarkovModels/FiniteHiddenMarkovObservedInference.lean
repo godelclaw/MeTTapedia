@@ -31,7 +31,7 @@ namespace Mettapedia.ProbabilityTheory.HiddenMarkovModels.FiniteHiddenMarkovObse
 
 open Mettapedia.ProbabilityTheory.Exchangeability.MarkovDeFinettiHard
 open Mettapedia.ProbabilityTheory.HiddenMarkovModels.FiniteHiddenMarkovModel
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped BigOperators ENNReal NNReal
 
 variable {latent obs : ℕ}

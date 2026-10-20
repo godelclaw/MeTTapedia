@@ -22,7 +22,7 @@ authority by itself.
 namespace Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelHERuntimeBridge
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelRuntimeBridge
 open Mettapedia.Languages.MeTTa.RuntimeSpec
 open Mettapedia.Languages.MeTTa.HE

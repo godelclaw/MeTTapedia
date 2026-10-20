@@ -934,3 +934,160 @@ theorem old_unconditional_call_soundness_is_false :
     (claimed _ _ _ _ _ completed_function_is_a_new_ordinary_result)
 
 end Mettapedia.Languages.MeTTa.HE.RecursiveControls.Invocation
+
+/-! ## Polymorphic invocation controls
+
+One annotation `(-> $t $t)` is used by two calls in one tuple. The actual
+retained worker reuses the literal variable for both calls, so the binding
+`t ↦ Number` from the first call rejects the second. An instance freshened
+against the complete retained configuration accepts it. -/
+
+section PolymorphicInvocationControls
+set_option autoImplicit false
+set_option maxRecDepth 8192
+
+namespace Mettapedia.Languages.MeTTa.HE.RecursiveControls.PolymorphicInvocation
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+def arrow : Atom := .expression [.symbol "->", .var "t", .var "t"]
+def context : Space := Space.ofList [
+  .expression [.symbol ":", .symbol "ident", arrow],
+  .expression [.symbol "=", .expression [.symbol "ident", .var "x"], .var "x"]]
+def numberCall : Atom := .expression [.symbol "ident", .grounded (.int 7)]
+def boolCall : Atom := .expression [.symbol "ident", .grounded (.bool true)]
+def pairCall : Atom := .expression [.symbol "Pair", numberCall, boolCall]
+def prior : Bindings := Bindings.empty.assign "t" (.symbol "Number")
+def initial (atom : Atom) : RecursiveTasks.Configuration :=
+  ⟨context, .work (.atom atom Atom.undefinedType Bindings.empty 40 []), [], []⟩
+def error : Atom := mkError boolCall (.badArgType 1 (.var "t") (.symbol "Bool"))
+
+theorem first_use_constrains_type_variable :
+    checkIfFunctionTypeIsApplicable numberCall arrow Atom.undefinedType context Bindings.empty 20 =
+      .inr [prior] := by decide +kernel
+
+theorem reused_variable_rejects_independent_call :
+    checkIfFunctionTypeIsApplicable boolCall arrow Atom.undefinedType context prior 20 =
+      .inl [error] := by decide +kernel
+
+theorem fresh_variable_accepts_independent_call :
+    checkIfFunctionTypeIsApplicable boolCall
+      (.expression [.symbol "->", .var "fresh", .var "fresh"])
+      Atom.undefinedType context prior 20 =
+      .inr [prior.assign "fresh" (.symbol "Bool")] := by decide +kernel
+
+/-- This is an actual retained-worker result, not the definition of a second
+evaluator. The two calls share one enclosing tuple continuation. -/
+theorem retained_repeated_polymorphism_obstruction :
+    ((FirstSuccessRecursiveExecution.Checked.machine GroundedDispatch.none).run 1000
+      (initial pairCall)).1.map Prod.fst = [error] := by decide +kernel
+
+theorem retained_single_call_positive :
+    ((FirstSuccessRecursiveExecution.Checked.machine GroundedDispatch.none).run 1000
+      (initial numberCall)).1.map Prod.fst = [.grounded (.int 7)] := by decide +kernel
+
+theorem raw_annotation_does_not_instantiate :
+    getAnnotatedTypes context (.symbol "ident") = [arrow] := by decide +kernel
+
+theorem independent_annotation_does_not_instantiate :
+    ¬Spec.Type.TypeOfRel context (.symbol "ident")
+      (.expression [.symbol "->", .var "fresh", .var "fresh"]) := by
+  rw [Spec.Type.Conformance.typeOfRel_iff_mem_getAtomTypes]
+  decide +kernel
+
+end Mettapedia.Languages.MeTTa.HE.RecursiveControls.PolymorphicInvocation
+
+namespace Mettapedia.Languages.MeTTa.HE.RecursiveControls.PolymorphicInvocation
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open FirstSuccessSourceApplicability FirstSuccessSourceApplicability.InvocationSignature
+open Spec.Type.Presentation
+open Spec.Type.RuntimeRefinement
+
+def retained : RecursiveTasks.Configuration :=
+  ⟨context, .work (.expression boolCall Atom.undefinedType
+    ⟨[("t#2", .var "nested")], [("left", "right")]⟩ 10 []),
+    [.invocationReturn (.ordinary (.var "t#0"))
+      (.expression [.symbol "origin", .var "t#1"]) 8 []],
+    [(.var "t#3", Bindings.empty)]⟩
+
+theorem retained_names : RecursiveScope.configurationNames retained =
+    ["t#2", "nested", "left", "right", "t#0", "t#1", "t#3"] := by
+  simp [RecursiveScope.configurationNames, RecursiveScope.liveAtoms,
+    RecursiveScope.controlAtoms, RecursiveScope.taskAtoms, RecursiveScope.frameAtoms,
+    RecursiveScope.bindingAtoms, RecursiveScope.resultAtoms, retained, boolCall,
+    InvocationMode.expected, Atom.undefinedType, Bindings.empty, atomVariables, atomListVariables]
+
+theorem complete_scope_avoids_saved_receivers_and_output :
+    instantiate (retainedAvoid retained []) 0 arrow =
+      .expression [.symbol "->", .var "t#4", .var "t#4"] := by
+  simp only [instantiate, arrow, renameTypeVars, List.map_cons, List.map_nil]
+  simp only [retainedAvoid, retained_names, TypeSubst.typeVarsList, List.append_nil]
+  decide +kernel
+
+/-- A caller may save a pending demand even when the current task's narrow
+live list is empty. This is a configuration fact, not a reachable-state claim. -/
+theorem narrow_live_is_not_complete_configuration_scope :
+    instantiate (avoid [] boolCall Atom.undefinedType [] Bindings.empty) 0 arrow =
+      .expression [.symbol "->", .var "t#0", .var "t#0"] ∧
+    "t#0" ∈ RecursiveScope.configurationNames retained := by
+  simp only [instantiate, arrow, renameTypeVars, List.map_cons, List.map_nil]
+  rw [retained_names]
+  decide +kernel
+
+theorem repeated_arrow_positions_remain_one_variable :
+    instantiate ["t#0", "t#1"] 0 arrow =
+      .expression [.symbol "->", .var "t#2", .var "t#2"] := by
+  simp only [instantiate, arrow, renameTypeVars, List.map_cons, List.map_nil]
+  decide +kernel
+
+theorem fresh_second_invocation_checks :
+    checkIfFunctionTypeIsApplicable boolCall
+      (instantiate (avoid [] boolCall Atom.undefinedType [] prior) 0 arrow)
+      Atom.undefinedType context prior 20 =
+      .inr [prior.assign "t#0" (.symbol "Bool")] := by
+  simp only [instantiate, arrow, renameTypeVars, List.map_cons, List.map_nil]
+  decide +kernel
+
+def firstInstanceBinding : Bindings := Bindings.empty.assign "t#0" (.symbol "Number")
+
+/-- The first local check creates the support protected by the second one. -/
+theorem sequential_instantiated_checks :
+    checkIfFunctionTypeIsApplicable numberCall
+      (instantiate (avoid [] numberCall Atom.undefinedType [] Bindings.empty) 0 arrow)
+      Atom.undefinedType context Bindings.empty 20 = .inr [firstInstanceBinding] ∧
+    checkIfFunctionTypeIsApplicable boolCall
+      (instantiate (avoid [] boolCall Atom.undefinedType [] firstInstanceBinding) 0 arrow)
+      Atom.undefinedType context firstInstanceBinding 20 =
+      .inr [firstInstanceBinding.assign "t#1" (.symbol "Bool")] := by
+  simp only [instantiate, arrow, renameTypeVars, List.map_cons, List.map_nil]
+  decide +kernel
+
+theorem closed_list_preserved_with_duplicates :
+    instantiateAll ["live"] 0 [
+      .expression [.symbol "->", .symbol "Number", .symbol "Number"],
+      .expression [.symbol "->", .symbol "Number", .symbol "Number"]] = [
+      .expression [.symbol "->", .symbol "Number", .symbol "Number"],
+      .expression [.symbol "->", .symbol "Number", .symbol "Number"]] := by
+  simp [instantiateAll, instantiate, renameTypeVars]
+
+theorem distinct_physical_polymorphic_occurrences :
+    instantiateAll [] 0 [arrow, arrow] = [
+      .expression [.symbol "->", .var "t#0", .var "t#0"],
+      .expression [.symbol "->", .var "t#1", .var "t#1"]] := by
+  simp only [instantiateAll, instantiate, arrow, renameTypeVars, List.map_cons, List.map_nil]
+  decide +kernel
+
+theorem fresh_class_can_have_unrelated_equalities :
+    Spec.Type.TypeMatchRel (.var "t") (.symbol "Bool")
+      ⟨[("saved", .symbol "Number")], [("left", "right")]⟩
+      (Bindings.assign ⟨[("saved", .symbol "Number")], [("left", "right")]⟩ "t" (.symbol "Bool")) := by
+  exact independent_fresh_symbol_type_match "t" "Bool" _ (by decide) (by decide) (by decide +kernel)
+
+theorem insufficient_depth_remains_uncovered :
+    matchTypes (.var "fresh") (.symbol "Bool") prior 0 = [] ∧
+      matchTypesCovered (.var "fresh") (.symbol "Bool") prior 0 = false := by decide +kernel
+
+end Mettapedia.Languages.MeTTa.HE.RecursiveControls.PolymorphicInvocation
+
+end PolymorphicInvocationControls

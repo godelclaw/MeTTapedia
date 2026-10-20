@@ -59,8 +59,8 @@ private theorem translateHE_id_of_stableCommonForm_aux
                                       isStableCommonHead, isForbiddenHeadSymbol] at h
                                   | cons a3 rest =>
                                       cases rest with
-                                      | nil => simp [isStableCommonForm, isStableCommonExpr,
-                                          isStableCommonHead, isForbiddenHeadSymbol] at h
+                                      | nil => simp [isStableCommonForm,
+                                          ] at h
                                       | cons a4 rest =>
                                           cases rest with
                                           | nil =>
@@ -155,7 +155,7 @@ private theorem translateHE_id_of_stableCommonForm_aux
                               exact congrArg Prod.snd htail
                             simp [translateHE, translateHE.translateHEList, hchain, hcollapse,
                               hsuperpose, hswitch, hswitchm, hatomsubst, hnop, hfunction,
-                              hfoldl, hfoldall, hunique, huniqueatom, htail₁, htail₂]
+                              hunique, htail₁, htail₂]
       | var v =>
         have hargs : isStableCommonList args = true := by
           simpa [isStableCommonForm, isStableCommonExpr, isStableCommonHead,
@@ -229,8 +229,8 @@ private theorem translatePeTTa_id_of_stableCommonForm_aux
                       | cons a3 rest =>
                           cases rest with
                           | nil =>
-                              simp [isStableCommonForm, isStableCommonExpr,
-                                isStableCommonHead, isForbiddenHeadSymbol] at h
+                              simp [isStableCommonForm,
+                                ] at h
                           | cons a4 rest =>
                               cases rest with
                               | nil =>
@@ -496,7 +496,7 @@ theorem translatePeTTa_foldall_preserves_stableCommonForm
     simp [accVar, itemVar, isStableCommonList, isStableCommonForm]
   simp [translatePeTTa, freshVar, isStableCommonForm, isStableCommonExpr,
     isStableCommonHead, isForbiddenHeadSymbol, isStableCommonList, hgoal, hinit,
-    hnot, accVar, itemVar, happ]
+    accVar, itemVar, happ]
 
 /-- First-order short `foldl-atom` lowering also lands in the stable common
     fragment once its recursively translated list and init pieces do. -/
@@ -522,7 +522,7 @@ theorem translatePeTTa_foldlAtomShort_preserves_stableCommonForm
     simp [accVar, itemVar, isStableCommonList, isStableCommonForm]
   simp [translatePeTTa, freshVar, isStableCommonForm, isStableCommonExpr,
     isStableCommonHead, isForbiddenHeadSymbol, isStableCommonList, hxs, hinit,
-    hnot, accVar, itemVar, happ]
+    accVar, itemVar, happ]
 
 /-- Raw PeTTa one-argument `reduce` lowering also lands in the stable common
     fragment as soon as its recursively translated argument does. -/
@@ -571,7 +571,7 @@ theorem translatePeTTa_foldall_roundtrip_fixedPoint
     translatePeTTa_id_of_stableCommonForm
       (translatePeTTa (.expression [.symbol "foldall", agg, goal, init]) s).1
       (translatePeTTa (.expression [.symbol "foldall", agg, goal, init]) s).2 hs
-  simpa [hs, hhe, hpe]
+  simp [hhe, hpe]
 
 
 

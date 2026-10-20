@@ -35,7 +35,7 @@ open scoped Classical ENNReal
 open Mettapedia.GSLT.Core.BranchingTemporal
 open Mettapedia.GSLT.Core.InferenceControl
 open Mettapedia.GSLT.LanguageDef.CertificateGSLT
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.InferenceControl.PremiseSelection
 
 universe uGoal uNode uAnswer uEstimate uPriority uMemory uAuthority uCertificate
@@ -239,7 +239,7 @@ end Guidance
 namespace WorldModel
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 variable {State : Type uState} {Query : Type uQuery} {Node : Type uNode}
 

@@ -58,7 +58,7 @@ open scoped ENNReal
 
 open Mettapedia.UniversalAI.SolomonoffPrior
 open Mettapedia.ProbabilityTheory.Exchangeability
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## Exchangeable Programs -/
 

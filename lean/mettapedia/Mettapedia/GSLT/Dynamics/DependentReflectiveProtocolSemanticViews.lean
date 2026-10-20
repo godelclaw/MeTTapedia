@@ -32,7 +32,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.GSLT.Dynamics.DependentReflectiveProtocolSemanticViews
 
-open CategoryTheory
+open _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.Core.ContextualLadder
 open Mettapedia.GSLT.Dynamics.IndexedPolynomialProtocol
@@ -102,6 +102,21 @@ def inhabitedResult : Set Phase :=
 def completedPhase : Set Phase :=
   { phase | completion phase = true }
 
+/-- A phase predicate descends to the protocol's semantic carrier.  Protocol
+equations are equality, so this retains exactly its original satisfaction. -/
+def phasePredicate (protocol : ProtocolPolynomial.{0, 0, 0} Phase)
+    (predicate : Set Phase) : Set (SemanticTerm (lts protocol)) :=
+  descendPredicate (lts protocol) ⟨predicate, by
+    intro left right equal
+    cases equal
+    rfl⟩
+
+@[simp] theorem phasePredicate_mk
+    (protocol : ProtocolPolynomial.{0, 0, 0} Phase) (predicate : Set Phase)
+    (phase : Phase) :
+    Quotient.mk (lts protocol).equations phase ∈ phasePredicate protocol predicate ↔
+      phase ∈ predicate := Iff.rfl
+
 /-- In this protocol, completion detects whether a result exists.  It does
 not determine which result type exists. -/
 theorem inhabitedResult_eq_completedPhase :
@@ -155,19 +170,21 @@ def codedSignature :
 
 /-- Fibre inhabitation semantically entails completion. -/
 theorem inhabitedResult_derives_completedPhase :
-    institution.Derives codedSignature {inhabitedResult} completedPhase := by
+    institution.Derives codedSignature {phasePredicate codedQuery inhabitedResult}
+      (phasePredicate codedQuery completedPhase) := by
   rw [← inhabitedResult_eq_completedPhase]
-  exact premise_derives_itself codedSignature inhabitedResult
+  exact premise_derives_itself codedSignature (phasePredicate codedQuery inhabitedResult)
 
 /-- Completion is not a theorem of the empty semantic context: the initial
 phase is a concrete countermodel. -/
 theorem completedPhase_not_derivable_without_premises :
-    ¬ institution.Derives codedSignature ∅ completedPhase := by
+    ¬ institution.Derives codedSignature ∅ (phasePredicate codedQuery completedPhase) := by
   intro derives
-  have entails : Entails (∅ : Set (Set Phase)) completedPhase :=
-    (derives_iff_entails codedSignature ∅ completedPhase).mp derives
+  have entails : Entails (∅ : Set (Set (SemanticTerm (lts codedQuery))))
+      (phasePredicate codedQuery completedPhase) :=
+    (derives_iff_entails codedSignature ∅ (phasePredicate codedQuery completedPhase)).mp derives
   have startCompleted : Phase.start ∈ completedPhase :=
-    entails Phase.start (by
+    entails (Quotient.mk (lts codedQuery).equations Phase.start) (by
       intro predicate member
       have impossible : False := (Set.mem_empty_iff_false predicate).mp member
       exact False.elim impossible)
@@ -207,16 +224,28 @@ theorem exact_code_preserves_mayReachInhabitedResult :
 /-- Institution sentence transport is the same inverse-image operation as
 OSLF modal change of base for this exact code map. -/
 theorem exact_code_sentence_transport_agrees_oslf :
-    predicateSentence.map encodingSignatureMap completedPhase =
-      (oslfModalFunctor.map encodingSignatureMap).mapPred completedPhase :=
-  sentence_transport_eq_oslf_pullback encodingSignatureMap completedPhase
+    predicateSentence.map encodingSignatureMap (phasePredicate codedQuery completedPhase) =
+      (oslfModalFunctor.map encodingSignatureMap).mapPred
+        (phasePredicate codedQuery completedPhase) :=
+  sentence_transport_eq_oslf_pullback encodingSignatureMap (phasePredicate codedQuery completedPhase)
+
+/-- Descent of every phase predicate commutes with exact command coding. -/
+theorem exact_code_preserves_phasePredicate (predicate : Set Phase) :
+    predicateSentence.map encodingSignatureMap (phasePredicate codedQuery predicate) =
+      phasePredicate query predicate := by
+  change Set.preimage encodingModalTranslation.toCoveredTranslation.toOperational.mapSemantic
+      (phasePredicate codedQuery predicate) = phasePredicate query predicate
+  apply Set.ext
+  intro state
+  induction state using Quotient.inductionOn with
+  | _ phase => rfl
 
 /-- Because endpoint coding is identity on phases, it transports the
 completion predicate exactly. -/
 theorem exact_code_preserves_completedPhase :
-    predicateSentence.map encodingSignatureMap completedPhase =
-      completedPhase :=
-  rfl
+    predicateSentence.map encodingSignatureMap (phasePredicate codedQuery completedPhase) =
+      phasePredicate query completedPhase :=
+  exact_code_preserves_phasePredicate completedPhase
 
 /-! ## Connected non-collapse boundary -/
 
@@ -226,8 +255,9 @@ layer retains the varying result family; the loose route retains both event
 occurrences; and completion determines neither the family nor work/span. -/
 theorem semantic_views_boundary :
     Phase.start ∈ mayReachInhabitedResult ∧
-      institution.Derives codedSignature {inhabitedResult} completedPhase ∧
-      (¬ institution.Derives codedSignature ∅ completedPhase) ∧
+      institution.Derives codedSignature {phasePredicate codedQuery inhabitedResult}
+        (phasePredicate codedQuery completedPhase) ∧
+      (¬ institution.Derives codedSignature ∅ (phasePredicate codedQuery completedPhase)) ∧
       (¬ (simpleToDependentTypeFunctor Phase).essImage resultDisplay) ∧
       (¬ Nonempty
         (Mettapedia.GSLT.LooseRelationEquipment.Representation

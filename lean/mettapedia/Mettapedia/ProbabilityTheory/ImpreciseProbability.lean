@@ -1,3 +1,4 @@
+import Mettapedia.ProbabilityTheory.ImpreciseProbability.IntervalError
 import Mettapedia.ProbabilityTheory.ImpreciseProbability.Basic
 import Mettapedia.ProbabilityTheory.ImpreciseProbability.CredalSets
 import Mettapedia.ProbabilityTheory.ImpreciseProbability.CompletionSemantics

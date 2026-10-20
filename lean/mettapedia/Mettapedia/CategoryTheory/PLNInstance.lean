@@ -4,9 +4,10 @@ import Mathlib.Order.CompleteBooleanAlgebra
 import Mathlib.Data.ENNReal.Basic
 import Mettapedia.CategoryTheory.LambdaTheory
 import Mettapedia.PLN.Evidence.BinaryEvidence
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeductionComposition
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale (BinaryEvidence)
+open Mettapedia.PLN.Evidence (BinaryEvidence)
 
 /-!
 # PLN as an Instance of the Lambda Theory Framework
@@ -48,7 +49,7 @@ which decomposes into:
 namespace Mettapedia.CategoryTheory.PLNInstance
 
 open Mettapedia.CategoryTheory.LambdaTheories
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## The BinaryEvidence Frame ✅
 

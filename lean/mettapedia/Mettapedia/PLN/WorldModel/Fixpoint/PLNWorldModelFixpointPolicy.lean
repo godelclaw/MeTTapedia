@@ -19,7 +19,7 @@ namespace Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointPolicy
 
 open LO
 open LO.Modal
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeightedOverlap

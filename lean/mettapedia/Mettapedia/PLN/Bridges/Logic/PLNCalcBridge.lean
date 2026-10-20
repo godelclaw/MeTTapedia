@@ -29,7 +29,7 @@ This shows that PLN proof calculus is a **conservative extension** of classical 
 namespace Mettapedia.PLN.Bridges.Logic.PLNCalcBridge
 
 open Mettapedia.PLN.Core.PLNProofCalculus
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 /-! ## Formula Translation -/

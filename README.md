@@ -48,15 +48,18 @@ The flagship Lean package has a focused PLN/WM-PLN curriculum and bridge map:
 ## Building the flagship Lean library
 
 ```bash
+./lean/bootstrap_local_repos.sh
 cd lean/mettapedia
 lake exe cache get   # mathlib oleans
-lake build
+scripts/check_library_sanity.sh
 ```
 
-Toolchain: Lean 4.28.0 / Mathlib v4.28.0. External Lean dependencies
-(Foundation, exchangeability, provenance, OrderedSemigroups, Metatheory,
-CertifyingDatalog, mm-lean4) are git-pinned in `lakefile.toml` and fetched
-automatically by Lake. The other Lean packages build the same way from their
+The flagship package uses Lean 4.33.1, with Mathlib pinned in
+`lean/mettapedia/lakefile.lean` and `lake-manifest.json`. Its external Lean
+dependencies use editable local checkouts prepared by the bootstrap script;
+the migration bundle records their required source profiles. See
+`lean/mettapedia/README.md` for qualification and source-coverage checks.
+The other Lean packages declare their own toolchains and build from their
 own directories.
 
 Prover toolchains for the non-Lean subtrees (Megalodon, Mizar, Isabelle,

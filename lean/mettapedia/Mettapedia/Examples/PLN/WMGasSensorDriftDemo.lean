@@ -47,7 +47,7 @@ namespace Mettapedia.Examples.PLN.WMGasSensorDriftDemo
 
 open Mettapedia.PLN.Bridges.ProbabilityTheory
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceNormalGamma
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.Examples.PLN.BrokenSensorDemo (ExceedanceSpec)
 

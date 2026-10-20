@@ -1580,3 +1580,505 @@ theorem checked_applicability_covered (space : Space) (operator expected returne
           expectedClosed returnedClosed enough)
 
 end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability
+
+/-! ## Fresh polymorphic invocation instances
+
+A schematic annotation such as `(-> $t $t)` is a scheme. Each invocation
+needs its own instance whose variables avoid the complete call-site scope;
+otherwise the binding from one call constrains an independent second call.
+The laws below give one fresh instance its applicability, selection and
+retained entry, and construct the specification's alpha-variant witnesses
+from the existing fresh-name generator. -/
+
+namespace Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type Spec.Match.Merge
+open Mettapedia.Machines.ReadOnlyQuery
+
+attribute [local simp] Atom.variableType Atom.symbolType
+
+theorem fresh_symbol_match (name actual : String) (depth : Nat) :
+    matchAtoms (.var name) (.symbol actual) (depth + 1) =
+      [Bindings.empty.assign name (.symbol actual)] := by
+  have noLoop : (Bindings.empty.assign name (.symbol actual)).hasLoop = false :=
+    hasLoop_single_assignment_eq_false_iff.mpr (by intro occurs; cases occurs)
+  simp [matchAtoms, getMetaType, noLoop]
+
+/-- A fresh unvalued class accepts one concrete type, without constraining
+unrelated caller assignments or requiring an equality-free caller. -/
+theorem fresh_symbol_type_match (name actual : String) (bindings : Bindings)
+    (depth : Nat) (notUndefined : actual ≠ "%Undefined%") (notAtom : actual ≠ "Atom")
+    (fresh : bindings.classValues name = []) :
+    matchTypes (.var name) (.symbol actual) bindings (depth + 2) =
+      [bindings.assign name (.symbol actual)] := by
+  have notWildcard :
+      ((Atom.var name == Atom.undefinedType || Atom.var name == Atom.atomType ||
+        Atom.symbol actual == Atom.undefinedType || Atom.symbol actual == Atom.atomType)) = false := by
+    simp [Atom.undefinedType, Atom.atomType, notUndefined, notAtom]
+  rw [matchTypes, notWildcard]
+  simp only [Bool.false_eq_true, if_false]
+  rw [fresh_symbol_match]
+  simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil]
+  rw [mergeBindings_single_assign]
+  simp [addVarBinding, fresh]
+
+/-- Independent source evidence for the same newly constrained type class. -/
+theorem independent_fresh_symbol_type_match (name actual : String) (bindings : Bindings)
+    (notUndefined : actual ≠ "%Undefined%") (notAtom : actual ≠ "Atom")
+    (fresh : bindings.classValues name = []) :
+    TypeMatchRel (.var name) (.symbol actual) bindings
+      (bindings.assign name (.symbol actual)) := by
+  apply TypeMatchRel.structural (matched := Bindings.empty.assign name (.symbol actual))
+  · intro equal; cases equal
+  · intro equal; cases equal
+  · simpa [Atom.undefinedType] using notUndefined
+  · simpa [Atom.atomType] using notAtom
+  · exact .varNonVar rfl (semanticLoopFree_single_assignment (by intro occurs; cases occurs))
+  · apply MergeRel.mk (order := [.value name (.symbol actual)])
+    · change [Constraint.value name (.symbol actual)].Perm [Constraint.value name (.symbol actual)]
+      exact List.Perm.refl _
+    · exact .value (.fresh fresh) .nil
+
+theorem fresh_symbol_type_match_covered (name actual : String) (bindings : Bindings)
+    (depth : Nat) (fresh : bindings.classValues name = []) :
+    matchTypesCovered (.var name) (.symbol actual) bindings (depth + 2) = true := by
+  have atomCovered : matchCovered (depth + 2) (.atoms (.var name) (.symbol actual)) = true := by
+    simp [matchCovered, depthCovered, MatchDepth.body, MatchDepth.rawAtoms, getMetaType,
+      run_map, run]
+  have mergeCovered : matchCovered (depth + 2)
+      (.merge bindings (Bindings.empty.assign name (.symbol actual))) = true := by
+    simp [matchCovered, depthCovered, MatchDepth.body, Bindings.empty, Bindings.assign,
+      Bindings.isBound, Bindings.lookup, foldQueries, flatTraverse, run_bind, run_map,
+      run, fresh]
+  unfold matchTypesCovered MatchDepth.queryCovered MatchDepth.typesQuery
+  split
+  · rfl
+  · simp [run, evalMatch, fresh_symbol_match, run_flatTraverse_reads, atomCovered, mergeCovered]
+
+end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability
+
+namespace Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type
+open Mettapedia.Machines.ReadOnlyQuery
+
+/-- An actual singleton argument-type query gives a fresh polymorphic arrow
+one changed binding. The complete arrow shares the same variable. -/
+theorem fresh_polymorphic_applicability (space : Space) (operator argument : Atom)
+    (name actual : String) (bindings : Bindings) (depth : Nat)
+    (lookup : TypeLookup := rawTypeLookup space)
+    (types : lookup bindings argument (.var name) = [.symbol actual])
+    (notUndefined : actual ≠ "%Undefined%") (notAtom : actual ≠ "Atom")
+    (fresh : bindings.classValues name = []) :
+    checkIfFunctionTypeIsApplicable (.expression [operator, argument])
+      (.expression [.symbol "->", .var name, .var name]) Atom.undefinedType
+      space bindings (depth + 3) lookup = .inr [bindings.assign name (.symbol actual)] := by
+  have matched := fresh_symbol_type_match name actual bindings depth notUndefined notAtom fresh
+  have returned : ∀ next, matchTypes Atom.undefinedType (.var name) next (depth + 2) = [next] := by
+    intro next
+    simp [matchTypes]
+  simp [checkIfFunctionTypeIsApplicable, getFunctionArgTypes, getFunctionRetType,
+    checkIfFunctionTypeIsApplicable.checkArgLoop, checkArgumentType, types, matched,
+    returned]
+
+/-- The source judgment is constructed from the actual type occurrence and
+the independent matcher/merge rules, not from an assumed evaluator result. -/
+theorem independent_fresh_polymorphic_applicability (space : Space)
+    (operator argument : Atom) (name actual : String) (bindings : Bindings)
+    (lookup : TypeLookupRel := rawTypeLookupRel space)
+    (actualType : TypeAtRel lookup bindings argument (.var name) (.symbol actual))
+    (notUndefined : actual ≠ "%Undefined%") (notAtom : actual ≠ "Atom")
+    (fresh : bindings.classValues name = []) :
+    ApplicationSuccessRel space (lookup := lookup) (.expression [operator, argument])
+      (.expression [.symbol "->", .var name, .var name]) Atom.undefinedType
+      bindings (bindings.assign name (.symbol actual)) := by
+  exact .mk (argumentTypes := [.var name]) (returnType := .var name) rfl rfl (.cons actualType
+    (independent_fresh_symbol_type_match name actual bindings notUndefined notAtom fresh)
+    (.nil _)) (.undefinedLeft _ _)
+
+theorem fresh_polymorphic_applicability_covered (space : Space) (operator argument : Atom)
+    (name actual : String) (bindings : Bindings) (depth : Nat)
+    (lookup : TypeLookup := rawTypeLookup space)
+    (types : lookup bindings argument (.var name) = [.symbol actual])
+    (fresh : bindings.classValues name = []) :
+    functionTypeCovered (.expression [operator, argument])
+      (.expression [.symbol "->", .var name, .var name]) Atom.undefinedType
+      space bindings (depth + 3) lookup = true := by
+  simp only [functionTypeCovered, TypeCheckDepth.functionQuery, getFunctionArgTypes,
+    getFunctionRetType, List.length_cons, List.length_nil]
+  apply query_covered_bind
+  · unfold TypeCheckDepth.argumentsQuery
+    apply query_covered_bind
+    · apply query_covered_fold
+      intro state selected member
+      have equal : selected = bindings := by simpa using member
+      subst selected
+      apply query_covered_map
+      unfold TypeCheckDepth.argumentQuery
+      apply query_covered_flatTraverse
+      intro found member
+      change found ∈ lookup bindings argument (.var name) at member
+      rw [types] at member
+      have equal : found = .symbol actual := by simpa using member
+      subst found
+      apply query_covered_map
+      exact fresh_symbol_type_match_covered name actual bindings depth fresh
+    · intro next
+      rfl
+  · intro next
+    split
+    · rfl
+    · apply query_covered_map
+      apply query_covered_fold
+      intro state selected member
+      apply query_covered_map
+      simp [MatchDepth.queryCovered, MatchDepth.typesQuery, run]
+
+end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability
+
+namespace Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Eval Spec.Type FirstSuccessRecursiveStrategy
+
+def freshPolymorphicPolicy (name : String) : SelectedTypePolicy :=
+  ⟨.expression [.symbol "->", .var name, .var name], [.var name], .var name, rfl⟩
+
+/-- Assigning one fresh instance and linking a second fresh instance retains
+the assigned value as their sole class value. Unrelated incoming constraints
+are retained, including repeated edges and open values. -/
+theorem fresh_instance_alias_values (bindings : Bindings) (left right : String)
+    (value : Atom) (leftFresh : left ∉ bindings.names)
+    (rightFresh : right ∉ bindings.names) (different : left ≠ right) :
+    ((bindings.assign left value).addEquality left right).classValues left = [value] := by
+  have unbound (name : String) (fresh : name ∉ bindings.names) :
+      bindings.lookup name = none := by
+    apply List.lookup_eq_none_iff.mpr
+    intro entry stored
+    apply bne_iff_ne.mpr
+    intro same
+    apply fresh
+    apply List.mem_append_left
+    exact List.mem_flatMap.mpr ⟨entry, stored, by simp [same]⟩
+  have noEdge (name : String) (fresh : name ∉ bindings.names) :
+      name ∉ bindings.eqVarsInOrder := by
+    intro stored
+    apply fresh
+    apply List.mem_append_right
+    exact EqualityClosure.mem_eqVarsInOrder_iff.mp stored
+  apply EqualityClosure.classValues_addEquality_of_fresh
+  · exact noEdge left leftFresh
+  · exact noEdge right rightFresh
+  · exact different
+  · exact lookup_assign_of_lookup_none bindings left value (unbound left leftFresh)
+  · rw [assign_lookup_ne bindings left value right different.symm (unbound left leftFresh)]
+    exact unbound right rightFresh
+
+/-- A singleton actual-type query earns the first flattened success and cuts
+off every later arrow. No scan coverage callback is assumed. -/
+theorem fresh_polymorphic_selection (space : Space) (operator argument : Atom)
+    (name actual : String) (bindings : Bindings) (depth : Nat) (later : List Atom)
+    (lookup : TypeLookup := rawTypeLookup space)
+    (types : lookup bindings argument (.var name) = [.symbol actual])
+    (notUndefined : actual ≠ "%Undefined%") (notAtom : actual ≠ "Atom")
+    (fresh : bindings.classValues name = []) :
+    select space (.expression [operator, argument]) Atom.undefinedType bindings (depth + 3)
+      (.expression [.symbol "->", .var name, .var name] :: later) lookup =
+      .selected (freshPolymorphicPolicy name) [bindings.assign name (.symbol actual)] := by
+  have applies := fresh_polymorphic_applicability space operator argument name actual
+    bindings depth lookup types notUndefined notAtom fresh
+  simp only [select, readPolicy, applies, List.take_succ_cons, List.take_zero]
+  rfl
+
+theorem fresh_polymorphic_selection_source (space : Space) (operator argument : Atom)
+    (name actual : String) (bindings : Bindings) (later : List Atom)
+    (lookup : Space → TypeLookupRel := rawTypeLookupRel)
+    (actualType : TypeAtRel (lookup space) bindings argument (.var name) (.symbol actual))
+    (notUndefined : actual ≠ "%Undefined%") (notAtom : actual ≠ "Atom")
+    (fresh : bindings.classValues name = []) :
+    FunctionCandidateScanRel
+      (fun context subject candidate expected incoming outcome =>
+        PublishedCandidateApplicabilityRel context (lookup := lookup context)
+          subject candidate expected incoming outcome) space
+      (.expression [operator, argument]) Atom.undefinedType bindings
+      (.expression [.symbol "->", .var name, .var name] :: later)
+      (.success (freshPolymorphicPolicy name) (bindings.assign name (.symbol actual))) := by
+  apply FunctionCandidateScanRel.functionSuccess
+    (argumentTypes := [.var name]) (returnType := .var name) rfl
+  exact .success rfl (.success
+    (independent_fresh_polymorphic_applicability space operator argument name actual bindings
+      (lookup space) actualType notUndefined notAtom fresh))
+
+theorem fresh_polymorphic_selection_ready (space : Space) (operator argument : Atom)
+    (name actual : String) (bindings : Bindings) (depth : Nat) (later : List Atom)
+    (lookup : TypeLookup := rawTypeLookup space)
+    (types : lookup bindings argument (.var name) = [.symbol actual])
+    (notUndefined : actual ≠ "%Undefined%") (notAtom : actual ≠ "Atom")
+    (fresh : bindings.classValues name = []) :
+    selectionReady space (.expression [operator, argument]) Atom.undefinedType bindings (depth + 3)
+      (.expression [.symbol "->", .var name, .var name] :: later) lookup = true := by
+  have applies := fresh_polymorphic_applicability space operator argument name actual
+    bindings depth lookup types notUndefined notAtom fresh
+  have covered := fresh_polymorphic_applicability_covered space operator argument name actual
+    bindings depth lookup types fresh
+  simp [selectionReady, readPolicy, applies, covered]
+
+/-- The existing retained task saves the instantiated whole signature, changed
+bindings, selected demand and live syntax. -/
+theorem fresh_polymorphic_retained_entry (space : Space) (dispatch : GroundedDispatch)
+    (operator argument : Atom) (name actual : String) (bindings : Bindings) (depth : Nat)
+    (later live : List Atom) (lookup : TypeLookup := rawTypeLookup space)
+    (types : lookup bindings argument (.var name) = [.symbol actual])
+    (notUndefined : actual ≠ "%Undefined%") (notAtom : actual ≠ "Atom")
+    (fresh : bindings.classValues name = []) :
+    enter space dispatch (.functions (.expression [operator, argument]) Atom.undefinedType
+      bindings (depth + 3) (.expression [.symbol "->", .var name, .var name] :: later) live) lookup =
+      (.work (.bindingAlternatives (.expression [operator, argument])
+        (.expression [.symbol "->", .var name, .var name]) (.var name)
+        (depth + 3) [bindings.assign name (.symbol actual)] live), []) := by
+  rw [selected_enter _ _ _ _ _ _ _ _ _ _
+    (fresh_polymorphic_selection space operator argument name actual bindings depth later
+      lookup types notUndefined notAtom fresh)]
+  simp [freshPolymorphicPolicy, Atom.expressionType]
+
+/-- The configuration-scoped worker and the independent scoped service select
+the same fresh arrow and reached binding. The argument query is proved from
+its literal singleton declaration; the operator's selected instance is retained
+explicitly rather than regenerated under a different saved scope. -/
+theorem fresh_polymorphic_scoped_selection (state : RecursiveTasks.Configuration)
+    (operator argument : Atom) (name actual : String) (bindings : Bindings)
+    (depth : Nat) (later : List Atom) (protectedScope : List String)
+    (types : getAtomTypes state.space argument = [.symbol actual])
+    (notUndefined : actual ≠ "%Undefined%") (notAtom : actual ≠ "Atom")
+    (fresh : bindings.classValues name = []) :
+    select state.space (.expression [operator, argument]) Atom.undefinedType bindings (depth + 3)
+        (.expression [.symbol "->", .var name, .var name] :: later)
+        (FirstSuccessRecursiveExecution.invocationTypes state) =
+      .selected (freshPolymorphicPolicy name) [bindings.assign name (.symbol actual)] ∧
+    selectionReady state.space (.expression [operator, argument]) Atom.undefinedType bindings (depth + 3)
+        (.expression [.symbol "->", .var name, .var name] :: later)
+        (FirstSuccessRecursiveExecution.invocationTypes state) = true ∧
+    scopedStorageTypeService.candidateScan protectedScope state.space
+      (.expression [operator, argument]) Atom.undefinedType bindings
+      (.expression [.symbol "->", .var name, .var name] :: later)
+      (.success (freshPolymorphicPolicy name) (bindings.assign name (.symbol actual))) := by
+  have queried : FirstSuccessRecursiveExecution.invocationTypes state bindings argument (.var name) =
+      [.symbol actual] := by
+    unfold FirstSuccessRecursiveExecution.invocationTypes getAtomTypesScoped
+    rw [types]
+    simp [instantiateTypeSignatures, instantiateTypeSignature, renameAtom]
+  have source : TypeAtRel (scopedTypeLookup protectedScope state.space)
+      bindings argument (.var name) (.symbol actual) := by
+    refine ⟨[.symbol actual], ⟨[.symbol actual], ?_, .cons ?_ (.nil _)⟩, by simp⟩
+    · rw [← types]
+      exact FirstSuccessSourceReplies.source_types _ _
+    · exact ⟨id, Function.injective_id, by simp,
+        by simp [Spec.Type.Presentation.TypeSubst.typeVars]⟩
+  exact ⟨fresh_polymorphic_selection _ _ _ _ _ _ _ _ _ queried notUndefined notAtom fresh,
+    fresh_polymorphic_selection_ready _ _ _ _ _ _ _ _ _ queried notUndefined notAtom fresh,
+    fresh_polymorphic_selection_source _ _ _ _ _ _ _ (scopedTypeLookup protectedScope)
+      source notUndefined notAtom fresh⟩
+
+/-- One actual checked transition consumes the selected signature, preserving
+the saved continuation and emitted prefix. Its matcher coverage is constructed
+by the same query that justifies the independent source selection. -/
+theorem fresh_polymorphic_scoped_step (state : RecursiveTasks.Configuration)
+    (dispatch : GroundedDispatch) (operator argument : Atom) (name actual : String)
+    (bindings : Bindings) (depth : Nat) (later live : List Atom)
+    (pending : state.control = .work (.functions (.expression [operator, argument])
+      Atom.undefinedType bindings (depth + 3)
+      (.expression [.symbol "->", .var name, .var name] :: later) live))
+    (types : getAtomTypes state.space argument = [.symbol actual])
+    (notUndefined : actual ≠ "%Undefined%") (notAtom : actual ≠ "Atom")
+    (fresh : bindings.classValues name = []) :
+    (FirstSuccessRecursiveExecution.Checked.machine dispatch
+      FirstSuccessRecursiveExecution.scopedTypes).step state =
+      some (.silent {state with control := .work (.bindingAlternatives
+        (.expression [operator, argument]) (.expression [.symbol "->", .var name, .var name])
+        (.var name) (depth + 3) [bindings.assign name (.symbol actual)] live)}) := by
+  obtain ⟨selected, ready, _⟩ := fresh_polymorphic_scoped_selection
+    state operator argument name actual bindings depth later [] types notUndefined notAtom fresh
+  have entered := selected_enter state.space dispatch _ _ _ _ _ live _ _ selected
+  have unblocked : FirstSuccessRecursiveExecution.Checked.blocked dispatch state
+      FirstSuccessRecursiveExecution.scopedTypes = none := by
+    simp only [FirstSuccessRecursiveExecution.Checked.blocked, pending,
+      FirstSuccessRecursiveStrategy.taskReady, FirstSuccessRecursiveExecution.scopedTypes, ready]
+    rfl
+  simp only [FirstSuccessRecursiveExecution.Checked.machine, RecursiveMachine.Checked.guardMachine]
+  rw [unblocked]
+  simp only [FirstSuccessRecursiveExecution.machine, FirstSuccessRecursiveExecution.next, pending,
+    FirstSuccessRecursiveExecution.scopedTypes, entered]
+  simp [freshPolymorphicPolicy, Atom.expressionType,
+    Mettapedia.GSLT.Distinction.ProductiveBlocks.Transition.relabel]
+
+namespace ScopedSelectionControls
+
+private def incoming : Bindings := Bindings.empty.assign "t" (.symbol "Number")
+private def argument : Atom := .grounded (.bool true)
+private def call : Atom := .expression [.symbol "ident", argument]
+private def candidates : List Atom := [(.expression [.symbol "->", .var "private", .var "private"])]
+private def saved : RecursiveTasks.Configuration :=
+  ⟨Space.empty, .work (.functions call Atom.undefinedType incoming 8 candidates []),
+    [.filter], [(.symbol "AlreadyPublished", incoming)]⟩
+
+/-- A fresh signature accepts Bool despite the caller's unrelated Number
+assignment. The actual transition retains its filter and published prefix. -/
+theorem scoped_step_preserves_caller_and_continuation :
+    (FirstSuccessRecursiveExecution.Checked.machine GroundedDispatch.none
+      FirstSuccessRecursiveExecution.scopedTypes).step saved =
+      some (.silent {saved with control := .work (.bindingAlternatives call
+        (.expression [.symbol "->", .var "private", .var "private"])
+        (.var "private") 8 [incoming.assign "private" (.symbol "Bool")] [])}) :=
+  fresh_polymorphic_scoped_step saved GroundedDispatch.none (.symbol "ident") argument
+    "private" "Bool" incoming 5 [] [] rfl rfl (by decide) (by decide) (by decide)
+
+/-- The same changed binding is justified independently by the scoped source
+service; caller and private type variables are separate constraints. -/
+theorem scoped_source_selects_the_changed_binding :
+    scopedStorageTypeService.candidateScan ["t"] Space.empty call Atom.undefinedType incoming
+      candidates (.success (freshPolymorphicPolicy "private")
+        (incoming.assign "private" (.symbol "Bool"))) :=
+  (fresh_polymorphic_scoped_selection saved (.symbol "ident") argument "private" "Bool"
+    incoming 5 [] ["t"] rfl (by decide) (by decide) (by decide)).2.2
+
+/-- Reusing the caller's schematic name makes the independent Bool call fail
+under the literal policy. This is the contrasting profile, not HE's choice. -/
+theorem literal_name_reuse_rejects_the_call :
+    select Space.empty call Atom.undefinedType incoming 8
+      [.expression [.symbol "->", .var "t", .var "t"]] =
+      .exhausted [mkError call (.badArgType 1 (.var "t") (.symbol "Bool"))] false := by
+  rfl
+
+end ScopedSelectionControls
+
+end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability
+
+namespace Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability.InvocationSignature
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type.Presentation Spec.Type.Presentation.Exact
+open Spec.Type.RuntimeRefinement
+open Spec.Type.Presentation.ScopeObservation Spec.Bindings.ScopeObservation
+
+/-- One finite call-site scope includes retained syntax, the complete call,
+its demand, discovered argument types, and every incoming constraint name. -/
+def avoid (live : List Atom) (call expected : Atom) (argumentTypes : List Atom)
+    (bindings : Bindings) : List String :=
+  TypeSubst.typeVarsList (live ++ call :: expected :: argumentTypes) ++ specBindingVars bindings
+
+/-- Reuse the existing total injective fresh-name generator for one complete
+signature. Its physical type-list position is explicit. -/
+def instantiate (scope : List String) (position : Nat) (signature : Atom) : Atom :=
+  renameTypeVars (instanceName scope (TypeSubst.typeVars signature).eraseDups position) signature
+
+theorem instance_variant (scope : List String) (position : Nat) (signature : Atom) :
+    TypeCandidateAlphaVariantRel scope signature (instantiate scope position signature) := by
+  exact ⟨instanceName scope (TypeSubst.typeVars signature).eraseDups position,
+    instanceName_injective _ _ _, rfl, fun name _ => instanceName_not_mem _ _ _ name⟩
+
+theorem instance_avoids (scope : List String) (position : Nat) (signature : Atom)
+    {name : String} (occurs : name ∈ TypeSubst.typeVars (instantiate scope position signature)) :
+    name ∉ scope := by
+  rw [instantiate, typeVars_renameTypeVars] at occurs
+  obtain ⟨original, _, rfl⟩ := List.mem_map.mp occurs
+  exact instanceName_not_mem _ _ _ original
+
+theorem instance_protects_call (live : List Atom) (call expected : Atom)
+    (argumentTypes : List Atom) (bindings : Bindings) (position : Nat) (signature : Atom)
+    {name : String}
+    (occurs : name ∈ TypeSubst.typeVars
+      (instantiate (avoid live call expected argumentTypes bindings) position signature)) :
+    name ∉ specBindingVars bindings ∧
+      name ∉ TypeSubst.typeVarsList (live ++ call :: expected :: argumentTypes) := by
+  have fresh := instance_avoids _ position signature occurs
+  have separated : name ∉ TypeSubst.typeVarsList (live ++ call :: expected :: argumentTypes) ∧
+      name ∉ specBindingVars bindings := by
+    simpa only [avoid, List.mem_append, not_or] using fresh
+  exact ⟨separated.2, separated.1⟩
+
+theorem instance_unvalued (live : List Atom) (call expected : Atom)
+    (argumentTypes : List Atom) (bindings : Bindings) (position : Nat) (signature : Atom)
+    {name : String}
+    (occurs : name ∈ TypeSubst.typeVars
+      (instantiate (avoid live call expected argumentTypes bindings) position signature)) :
+    bindings.classValues name = [] := by
+  apply List.eq_nil_iff_forall_not_mem.mpr
+  intro value member
+  exact (instance_protects_call live call expected argumentTypes bindings position signature occurs).1
+    (FreshPrivateMerge.class_key_support member)
+
+/-- The same map acts on all arrow domains and its return. Freshening does not
+split repeated variables into independent operands. -/
+theorem instance_arrow (scope : List String) (position : Nat) (domains : List Atom)
+    (returned : Atom) :
+    let signature := Atom.expression (.symbol "->" :: (domains ++ [returned]))
+    let rename := instanceName scope (TypeSubst.typeVars signature).eraseDups position
+    instantiate scope position signature =
+      .expression (.symbol "->" :: (domains.map (renameTypeVars rename) ++
+        [renameTypeVars rename returned])) := by
+  simp [instantiate, renameTypeVars]
+
+theorem repeated_variable (scope : List String) (position : Nat) (name : String) :
+    ∃ fresh,
+      instantiate scope position (.expression [.symbol "->", .var name, .var name]) =
+        .expression [.symbol "->", .var fresh, .var fresh] ∧ fresh ∉ scope := by
+  let signature := Atom.expression [.symbol "->", .var name, .var name]
+  let fresh := instanceName scope (TypeSubst.typeVars signature).eraseDups position name
+  refine ⟨fresh, ?_, instanceName_not_mem _ _ _ name⟩
+  simp only [instantiate, renameTypeVars, List.map_cons, List.map_nil, fresh, signature]
+
+theorem instantiate_closed (scope : List String) (position : Nat) (signature : Atom)
+    (closed : TypeSubst.typeVars signature = []) :
+    instantiate scope position signature = signature := by
+  unfold instantiate
+  calc
+    _ = renameTypeVars id signature := by
+      apply renameTypeVars_congr_on_typeVars
+      simp [closed]
+    _ = signature := renameTypeVars_id signature
+
+/-- Finite candidate-list mapping, preserving every physical position. -/
+def instantiateAll (scope : List String) : Nat → List Atom → List Atom
+  | _, [] => []
+  | position, signature :: rest =>
+      instantiate scope position signature :: instantiateAll scope (position + 1) rest
+
+theorem instantiateAll_variants (scope : List String) (position : Nat) (signatures : List Atom) :
+    OperatorAlphaVariantsRel scope signatures (instantiateAll scope position signatures) := by
+  induction signatures generalizing position with
+  | nil => exact .nil
+  | cons signature rest ih => exact .cons (instance_variant _ _ _) (ih _)
+
+theorem instantiateAll_length (scope : List String) (position : Nat) (signatures : List Atom) :
+    (instantiateAll scope position signatures).length = signatures.length := by
+  induction signatures generalizing position with
+  | nil => rfl
+  | cons signature rest ih => simp [instantiateAll, ih]
+
+theorem instantiateAll_occurrence (scope : List String) (position index : Nat)
+    (signatures : List Atom) :
+    (instantiateAll scope position signatures)[index]? =
+      signatures[index]?.map (instantiate scope (position + index)) := by
+  induction signatures generalizing position index with
+  | nil => simp [instantiateAll]
+  | cons signature rest ih =>
+      cases index with
+      | zero => simp [instantiateAll]
+      | succ index =>
+          simpa [instantiateAll, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm] using
+            (ih (position + 1) index)
+
+theorem instantiateAll_closed (scope : List String) (position : Nat) (signatures : List Atom)
+    (closed : ∀ signature ∈ signatures, TypeSubst.typeVars signature = []) :
+    instantiateAll scope position signatures = signatures := by
+  induction signatures generalizing position with
+  | nil => rfl
+  | cons signature rest ih =>
+      simp only [instantiateAll]
+      rw [instantiate_closed _ _ _ (closed _ (by simp)), ih]
+      intro atom member
+      exact closed atom (by simp [member])
+
+end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability.InvocationSignature

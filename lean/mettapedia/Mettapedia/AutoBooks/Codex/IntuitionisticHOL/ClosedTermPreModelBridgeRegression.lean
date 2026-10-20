@@ -3,7 +3,7 @@ import Mettapedia.AutoBooks.Codex.IntuitionisticHOL.ClosedTermPreModelBridge
 namespace Mettapedia.AutoBooks.Codex.IntuitionisticHOL.ClosedTermPreModelBridgeRegression
 
 open Mettapedia.Logic.HOL
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open ClosedTermCanonicalWorldModel
 open scoped ENNReal
 

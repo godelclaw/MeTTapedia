@@ -15,7 +15,7 @@ namespace Mettapedia.Ethics
 
 open Mettapedia.KR.ConceptOntology
 open Mettapedia.KR.ConceptGeometry
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.KR.ConceptGeometry.AbstractInheritance
 
 universe u v

@@ -18,7 +18,7 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.Eval
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst)
 open SpaceSemantics (Program)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 
 private theorem empty_sequence_frames_path (program : Program) (state : State)
     (answers input output : List Atom) (count : Nat) :

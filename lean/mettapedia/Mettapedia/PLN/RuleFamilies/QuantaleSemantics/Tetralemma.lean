@@ -54,7 +54,7 @@ set_option autoImplicit false
 namespace Mettapedia.PLN.RuleFamilies.QuantaleSemantics.Tetralemma
 
 open Set
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.CDLogic
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.TwistNegation

@@ -19,7 +19,7 @@ formation.
 
 namespace Mettapedia.Ethics
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.KR.ConceptOntology
 open Mettapedia.KR.ConceptGeometry
 open Mettapedia.KR.ConceptGeometry.AbstractInheritance

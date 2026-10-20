@@ -5,6 +5,8 @@ canonical valuation χ also identifies them, provided variable-to-variable
 canonical picks.
 -/
 import Mettapedia.Languages.MeTTa.HE.LeaTTaBindingTransport
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
 
 namespace Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 

@@ -85,7 +85,7 @@ theorem legacy_positive_native (bound : List TypeExpr)
     (translated : fromLegacy? formula = some generated) (fuel : Nat)
     (source : Pattern) (typed : Source bound source)
     (positive : legacyCheck fuel source formula = .sat) :
-    denotation (noLeaves bound) generated source := by
+    denotation (noLeaves bound) generated (.empty _) source := by
   apply (denotation_iff_original bound (fun _ _ => False) translated source typed).mpr
   exact Mettapedia.OSLF.Formula.check_sat_sound
     (R := Mettapedia.Languages.PartrecMachine.Reduces)
@@ -98,7 +98,7 @@ theorem legacy_predecessor_positive_native (bound : List TypeExpr)
     (translated : fromLegacy? formula = some generated) (pred : Pattern → List Pattern)
     (fuel : Nat) (source : Pattern) (typed : Source bound source)
     (positive : legacyCheckWithPred pred fuel source formula = .sat) :
-    denotation (noLeaves bound) generated source := by
+    denotation (noLeaves bound) generated (.empty _) source := by
   have same := shared_predecessors_irrelevant legacyStep pred noAtoms translated fuel source
   change legacyCheckWithPred pred fuel source formula = legacyCheck fuel source formula at same
   rw [same] at positive
@@ -160,6 +160,7 @@ def liftEmpty {Leaf : Type} : Mettapedia.OSLF.NativeTypes.Decision.Reference.Cor
   | .imp left right => .imp (liftEmpty left) (liftEmpty right)
   | .possibility formula => .possibility (liftEmpty formula)
   | .outgoingUniversal formula => .outgoingUniversal (liftEmpty formula)
+  | .separating index left right => .separating index (liftEmpty left) (liftEmpty right)
 
 theorem lifted_meaning {Leaf : Type} (bound : List TypeExpr)
     (tests : Leaf → Test (theory bound) (Source bound))
@@ -169,6 +170,8 @@ theorem lifted_meaning {Leaf : Type} (bound : List TypeExpr)
   | atom impossible => cases impossible
   | top | bottom => rfl
   | conj left right ihl ihr | disj left right ihl ihr | imp left right ihl ihr =>
+    simp only [liftEmpty, denotation, ihl, ihr]
+  | separating index left right ihl ihr =>
     simp only [liftEmpty, denotation, ihl, ihr]
   | neg formula ih | possibility formula ih | outgoingUniversal formula ih =>
     simp only [liftEmpty, denotation, ih]
@@ -208,7 +211,7 @@ theorem machine_meaning (configuration : Mettapedia.OSLF.NativeTypes.Instances.P
     (translated : fromLegacy? formula = some generated) (source : Pattern) (typed : Source bound source) :
     Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation
       (Mettapedia.OSLF.NativeTypes.Runtime.Local.partrecRuntime configuration bound).leaves
-      (liftEmpty generated) source ↔
+      (liftEmpty generated) (.empty _) source ↔
       sem Mettapedia.Languages.PartrecMachine.Reduces (fun _ _ => False) formula source := by
   have comparison := Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation_comparison
     (Mettapedia.OSLF.NativeTypes.Runtime.Local.partrecRuntime configuration bound).leaves

@@ -55,17 +55,17 @@ namespace GibbsianSpecification
 variable {Atom ClauseId : Type*} [DecidableEq Atom] [DecidableEq ClauseId]
 variable {M : InfiniteGroundMLNSpec Atom ClauseId}
 
-/-- Each finite-volume kernel induces a `MassSemantics` object on local queries. -/
+/-- Each finite-volume kernel induces a `Mettapedia.ProbabilityTheory.MassSemantics` object on local queries. -/
 noncomputable def kernelMassSemantics
     (S : GibbsianSpecification Atom ClauseId M)
     (Λ : Region Atom) (ξ : BoundaryCondition Atom)
     (hZ : M.finiteVolumePartition Λ ξ ≠ 0) :
-    MassSemantics (LocalConstraintQuery Atom Λ) where
+    Mettapedia.ProbabilityTheory.MassSemantics (LocalConstraintQuery Atom Λ) where
   queryMass := fun q => S.kernel Λ ξ hZ (localQueryEvent Λ q)
   totalMass := 1
   queryMass_le_total := by
     intro q
-    letI := S.kernel_isProbability Λ ξ hZ
+    let := S.kernel_isProbability Λ ξ hZ
     have hmono :
         S.kernel Λ ξ hZ (localQueryEvent (Atom := Atom) Λ q) ≤
           S.kernel Λ ξ hZ Set.univ :=
@@ -80,7 +80,7 @@ theorem kernelMassSemantics_queryProb
     (q : LocalConstraintQuery Atom Λ) :
     (S.kernelMassSemantics Λ ξ hZ).queryProb q =
       S.kernel Λ ξ hZ (localQueryEvent Λ q) := by
-  simp [kernelMassSemantics, MassSemantics.queryProb]
+  simp [kernelMassSemantics, Mettapedia.ProbabilityTheory.MassSemantics.queryProb]
 
 end GibbsianSpecification
 
@@ -111,7 +111,7 @@ theorem finiteVolumeSpecification_queryStrength_eq_finiteVolume
     (Λ : Region Atom) (ξ : BoundaryCondition Atom)
     (hZ : M.finiteVolumePartition Λ ξ ≠ 0)
     (q : LocalConstraintQuery Atom Λ) :
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryStrength
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryStrength
       ({(finiteVolumeSpecification M).kernelMassSemantics Λ ξ hZ} :
         MassState (LocalConstraintQuery Atom Λ)) q =
       (finiteVolumeMassSemantics M Λ ξ).queryProb q := by

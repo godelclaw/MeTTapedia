@@ -31,6 +31,53 @@ theorem Observation.step {system : GSLT.{u}} {admitted : system.Term → Prop}
     system.Step observation.source (backend.target observation.source observation.receipt) :=
   backend.sound _ _ observation.listed
 
+/-- A structural decomposition is evidence about a source, not an execution step. -/
+structure SpatialObservation {system : GSLT.{u}} {admitted : system.Term → Prop}
+    (backend : CursorBackend.{u,v} system admitted) where
+  index : Nat
+  source : system.Term
+  parts : system.Term × system.Term
+  listed : parts ∈ (backend.splitTasks index source).flatten
+  location : List Nat
+
+theorem SpatialObservation.split {system : GSLT.{u}} {admitted : system.Term → Prop}
+    {backend : CursorBackend.{u,v} system admitted} (observation : SpatialObservation backend) :
+    backend.spatial.theory.Split observation.index observation.source
+      observation.parts.1 observation.parts.2 :=
+  backend.spatial.sound _ _ _ (by
+    rw [← backend.splitTasks_exact]
+    exact observation.listed)
+
+/-- Retained evidence preserves the distinction between transitions and decompositions. -/
+inductive Evidence {system : GSLT.{u}} {admitted : system.Term → Prop}
+    (backend : CursorBackend.{u,v} system admitted) where
+  | operational : Observation backend → Evidence backend
+  | separation : SpatialObservation backend → Evidence backend
+
+def Evidence.operational? {system : GSLT.{u}} {admitted : system.Term → Prop}
+    {backend : CursorBackend.{u,v} system admitted} : Evidence backend → Option (Observation backend)
+  | .operational observation => some observation
+  | .separation _ => none
+
+def Evidence.separation? {system : GSLT.{u}} {admitted : system.Term → Prop}
+    {backend : CursorBackend.{u,v} system admitted} : Evidence backend → Option (SpatialObservation backend)
+  | .operational _ => none
+  | .separation observation => some observation
+
+@[simp] theorem Evidence.mem_operational {system : GSLT.{u}} {admitted : system.Term → Prop}
+    {backend : CursorBackend.{u,v} system admitted} (observation : Observation backend)
+    (evidence : List (Evidence backend)) :
+    observation ∈ evidence.filterMap Evidence.operational? ↔
+      Evidence.operational observation ∈ evidence := by
+  rw [List.mem_filterMap]
+  constructor
+  · rintro ⟨entry, listed, selected⟩
+    cases entry with
+    | operational value => cases selected; exact listed
+    | separation value => cases selected
+  · intro listed
+    exact ⟨.operational observation, listed, rfl⟩
+
 structure State (Obs : Type v) (statement : Prop) where
   pending : Stream (Event Obs statement)
   reversed : List Obs

@@ -85,7 +85,7 @@ theorem dependentSecondBetaTypes_ne :
 
 /-- Equality-based transport is uninhabited at this dependent beta, whereas
 the retained conversion transport above is inhabited. -/
-@[reducible] def noEqualityTransportForDependentSecondBeta :
+theorem noEqualityTransportForDependentSecondBeta :
     IsEmpty
       (instantiateType dependentCodomain
           (dependentSum.firstProjection dependentPair) =

@@ -16,10 +16,10 @@ The WM state remains evidence-valued; ITV is a derived query view chosen by an
 explicit semantics object.
 -/
 
-namespace Mettapedia.PLN.WorldModel.PLNWorldModel
+namespace Mettapedia.PLN.WorldModel
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.TruthValues.PLNIndefiniteTruth
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet (IDMPredictiveContext)
 
@@ -33,9 +33,9 @@ namespace ITVSemantics
 /-- Turn a context-indexed world-model ITV semantics into a constructor
 semantics for `PLNTruthTower.TypedITV`, after fixing the context.  The source
 remains the extracted `BinaryEvidence`; the raw ITV is only its projection. -/
-noncomputable def toTruthTowerSemantics {Ctx : Type*}
+noncomputable def toITVConstructor {Ctx : Type*}
     (sem : ITVSemantics Ctx) (ctx : Ctx) :
-    Mettapedia.PLN.TruthValues.PLNTruthTower.ITVSemantics where
+    Mettapedia.PLN.TruthValues.PLNTruthTower.ITVConstructor where
   Source := BinaryEvidence
   toITV := sem.eval ctx
 
@@ -44,7 +44,7 @@ fixed context. -/
 noncomputable def typedEval {Ctx : Type*}
     (sem : ITVSemantics Ctx) (ctx : Ctx) (e : BinaryEvidence) :
     Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx) where
+      (ITVSemantics.toITVConstructor sem ctx) where
   source := e
 
 @[simp] theorem typedEval_value_eq {Ctx : Type*}
@@ -124,7 +124,7 @@ raw projection. -/
 noncomputable def queryTypedITV (sem : ITVSemantics Ctx) (ctx : Ctx)
     (W : State) (q : Query) :
     Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx) where
+      (ITVSemantics.toITVConstructor sem ctx) where
   source := BinaryWorldModel.evidence (State := State) (Query := Query) W q
 
 /-- Forgetting constructor provenance recovers the existing raw ITV query. -/
@@ -174,7 +174,7 @@ Walley-binary constructor semantics. -/
 noncomputable def queryTypedITVWalley
     (ctx : IDMPredictiveContext) (W : State) (q : Query) :
     Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (Mettapedia.PLN.TruthValues.PLNTruthTower.walleyBinaryITVSemantics ctx.s) :=
+      (Mettapedia.PLN.TruthValues.PLNTruthTower.walleyBinaryITVConstructor ctx.s) :=
   Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromWalleyBinary
     ctx.s ctx.s_pos
     (BinaryWorldModel.evidence (State := State) (Query := Query) W q)
@@ -241,7 +241,7 @@ def WMTypedITVJudgment
     (sem : ITVSemantics Ctx) (ctx : Ctx)
     (W : State) (q : Query)
     (itv : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx)) : Prop :=
+      (ITVSemantics.toITVConstructor sem ctx)) : Prop :=
   WMJudgment W ∧ itv = queryTypedITV (State := State) (Query := Query) sem ctx W q
 
 /-- Provenance-preserving ITV judgment under a context-indexed WM derivation. -/
@@ -249,14 +249,14 @@ def WMTypedITVJudgmentCtx
     (sem : ITVSemantics Ctx) (ctx : Ctx)
     (Γ : Set State) (W : State) (q : Query)
     (itv : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx)) : Prop :=
+      (ITVSemantics.toITVConstructor sem ctx)) : Prop :=
   WMJudgmentCtx Γ W ∧ itv = queryTypedITV (State := State) (Query := Query) sem ctx W q
 
 /-- Forgetting a typed ITV judgment recovers the legacy raw ITV judgment. -/
 theorem WMTypedITVJudgment.forget
     (sem : ITVSemantics Ctx) (ctx : Ctx) {W : State} {q : Query}
     {itv : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx)}
+      (ITVSemantics.toITVConstructor sem ctx)}
     (h : WMTypedITVJudgment (State := State) (Query := Query) sem ctx W q itv) :
     WMITVJudgment (State := State) (Query := Query) sem ctx W q itv.value := by
   rcases h with ⟨hW, hitv⟩
@@ -267,11 +267,21 @@ context-indexed ITV judgment. -/
 theorem WMTypedITVJudgmentCtx.forget
     (sem : ITVSemantics Ctx) (ctx : Ctx) {Γ : Set State} {W : State} {q : Query}
     {itv : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx)}
+      (ITVSemantics.toITVConstructor sem ctx)}
     (h : WMTypedITVJudgmentCtx (State := State) (Query := Query) sem ctx Γ W q itv) :
     WMITVJudgmentCtx (State := State) (Query := Query) sem ctx Γ W q itv.value := by
   rcases h with ⟨hW, hitv⟩
   exact ⟨hW, by rw [hitv]; rfl⟩
+
+end BinaryWorldModel
+
+/-! ### Rewrite rules read through an ITV semantics -/
+
+section RewriteITV
+
+open BinaryWorldModel
+
+variable {State Query Ctx : Type*} [EvidenceType State] [BinaryWorldModel State Query]
 
 /-- BinaryEvidence-level rewrite soundness lifted to ITV semantics. -/
 theorem WMRewriteRule.itv_eval_eq_queryITV
@@ -329,7 +339,7 @@ theorem WMRewriteRule.applyTypedITVCtx
     WMRewriteRule.typed_eval_eq_queryTypedITV
       (State := State) (Query := Query) sem ctx hSide W⟩
 
-end BinaryWorldModel
+end RewriteITV
 
 namespace WorldModelSigma
 
@@ -375,14 +385,14 @@ noncomputable def queryITVWidth (sem : ITVSemantics Ctx) (ctx : Ctx) (W : State)
 noncomputable def queryTypedITV (sem : ITVSemantics Ctx) (ctx : Ctx) (W : State)
     (q : Sigma Query) :
     Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx) where
+      (ITVSemantics.toITVConstructor sem ctx) where
   source := WorldModelSigma.evidence (State := State) (Srt := Srt) (Query := Query) W q
 
 /-- Provenance-preserving ITV query view for an explicitly sorted query. -/
 noncomputable def queryTypedITVAt (sem : ITVSemantics Ctx) (ctx : Ctx) (W : State)
     {s : Srt} (q : Query s) :
     Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx) :=
+      (ITVSemantics.toITVConstructor sem ctx) :=
   queryTypedITV (State := State) (Srt := Srt) (Query := Query) sem ctx W ⟨s, q⟩
 
 /-- Forgetting constructor provenance recovers the existing raw sorted ITV query. -/
@@ -440,7 +450,7 @@ theorem queryTypedITV_strength_eq_queryITVStrength
 noncomputable def queryTypedITVWalley
     (ctx : IDMPredictiveContext) (W : State) (q : Sigma Query) :
     Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (Mettapedia.PLN.TruthValues.PLNTruthTower.walleyBinaryITVSemantics ctx.s) :=
+      (Mettapedia.PLN.TruthValues.PLNTruthTower.walleyBinaryITVConstructor ctx.s) :=
   Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromWalleyBinary
     ctx.s ctx.s_pos
     (WorldModelSigma.evidence (State := State) (Srt := Srt) (Query := Query) W q)
@@ -508,7 +518,7 @@ def WMTypedITVJudgmentSigma
     (sem : ITVSemantics Ctx) (ctx : Ctx)
     (W : State) (q : Sigma Query)
     (itv : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx)) : Prop :=
+      (ITVSemantics.toITVConstructor sem ctx)) : Prop :=
   WMJudgment W ∧
     itv = queryTypedITV (State := State) (Srt := Srt) (Query := Query) sem ctx W q
 
@@ -517,7 +527,7 @@ def WMTypedITVJudgmentCtxSigma
     (sem : ITVSemantics Ctx) (ctx : Ctx)
     (Γ : Set State) (W : State) (q : Sigma Query)
     (itv : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx)) : Prop :=
+      (ITVSemantics.toITVConstructor sem ctx)) : Prop :=
   WMJudgmentCtx Γ W ∧
     itv = queryTypedITV (State := State) (Srt := Srt) (Query := Query) sem ctx W q
 
@@ -525,7 +535,7 @@ def WMTypedITVJudgmentCtxSigma
 theorem WMTypedITVJudgmentSigma.forget
     (sem : ITVSemantics Ctx) (ctx : Ctx) {W : State} {q : Sigma Query}
     {itv : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx)}
+      (ITVSemantics.toITVConstructor sem ctx)}
     (h : WMTypedITVJudgmentSigma
       (State := State) (Srt := Srt) (Query := Query) sem ctx W q itv) :
     WMITVJudgmentSigma
@@ -538,7 +548,7 @@ theorem WMTypedITVJudgmentCtxSigma.forget
     (sem : ITVSemantics Ctx) (ctx : Ctx)
     {Γ : Set State} {W : State} {q : Sigma Query}
     {itv : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx)}
+      (ITVSemantics.toITVConstructor sem ctx)}
     (h : WMTypedITVJudgmentCtxSigma
       (State := State) (Srt := Srt) (Query := Query) sem ctx Γ W q itv) :
     WMITVJudgmentCtxSigma
@@ -585,7 +595,7 @@ theorem WMQueryEqSigma.to_WMTypedITVJudgmentSigma
     (hEq : WMQueryEqSigma (State := State) (Srt := Srt) (Query := Query) q₁ q₂)
     (sem : ITVSemantics Ctx) (ctx : Ctx) (W : State)
     {itv : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (ITVSemantics.toTruthTowerSemantics sem ctx)}
+      (ITVSemantics.toITVConstructor sem ctx)}
     (hJudg : WMTypedITVJudgmentSigma
       (State := State) (Srt := Srt) (Query := Query) sem ctx W q₁ itv) :
     WMTypedITVJudgmentSigma
@@ -778,4 +788,4 @@ theorem WMRewriteRuleSigma.applyITVThreshold_walleyIDM
 
 end WorldModelSigma
 
-end Mettapedia.PLN.WorldModel.PLNWorldModel
+end Mettapedia.PLN.WorldModel

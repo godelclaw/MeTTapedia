@@ -1,18 +1,22 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.BindingTheory
 import Mettapedia.Languages.MeTTa.HE.EquationScope
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
-import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationExactConformance
+import Mettapedia.Languages.MeTTa.HE.Spec.Eval
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ScopeObservation
-import MettaHyperonFull.Proofs.CaptureAvoidingFreshening
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
-# Equation freshening realizes independent alpha variation
+# Scoped equation instances and source alpha transport
 
-Both branches of LeaTTa's actual rule freshener are simultaneous, injective
-renamings. The collision branch avoids the complete finite caller scope;
-the normal branch retains its existing spelling when that spelling is fresh.
-The structural HE adapter realizes `AlphaVariantRel` without an atom-depth
-or evaluation-fuel bound.
+Independent HE equation instances admit one permutation fixing the complete
+caller-visible scope. Logical transport preserves their entire constraint
+theory, including incoming variable-valued aliases. The structural HE
+freshener realizes `AlphaVariantRel` without an atom-depth or evaluation-fuel
+bound. Implementation fresheners are optional downstream realizations of
+this source contract.
 -/
 
 set_option autoImplicit false
@@ -20,228 +24,10 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.HE.EquationFreshening
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
-open LeaTTaBridge LeaTTaTypeConformance LeaTTaTypePresentationExactConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 open Spec.Type.Presentation Spec.Type.Presentation.Exact
 open Spec.Type.RuntimeRefinement
 open Spec.Eval.Steps
-
-private theorem mapped_lookup (names : List String) (rename : String → String)
-    (name : String) (member : name ∈ names) :
-    Metta.Subst.lookup (names.map fun candidate =>
-      (candidate, Metta.Atom.var (rename candidate))) name =
-        some (.var (rename name)) := by
-  induction names with
-  | nil => simp at member
-  | cons head tail ih =>
-    simp only [List.mem_cons] at member
-    rcases member with rfl | member
-    · simp [Metta.Subst.lookup]
-    · by_cases equal : name = head
-      · subst name
-        simp [Metta.Subst.lookup]
-      · simpa [Metta.Subst.lookup, equal] using ih member
-
-private theorem mapped_apply (names : List String) (rename : String → String)
-    (atom : Metta.Atom) (covers : ∀ name ∈ atom.vars, name ∈ names) :
-    Metta.Subst.apply (names.map fun name => (name, Metta.Atom.var (rename name))) atom =
-      Metta.Minimal.renameAllVars rename atom := by
-  cases atom with
-  | sym name => simp [Metta.Subst.apply, Metta.Minimal.renameAllVars]
-  | gnd value => simp [Metta.Subst.apply, Metta.Minimal.renameAllVars]
-  | var name =>
-      have member : name ∈ names := covers name (by simp [Metta.Atom.vars])
-      simp [Metta.Subst.apply, Metta.Minimal.renameAllVars,
-        mapped_lookup names rename name member]
-  | expr atoms =>
-      simp only [Metta.Subst.apply, Metta.Minimal.renameAllVars]
-      congr 1
-      apply List.map_congr_left
-      intro atom member
-      apply mapped_apply names rename atom
-      intro name occurrence
-      apply covers name
-      simp only [Metta.Atom.vars, List.mem_flatten]
-      exact ⟨atom.vars, List.mem_map.mpr ⟨atom, member, rfl⟩, occurrence⟩
-termination_by atom.size
-decreasing_by
-  subst_vars
-  have bound : atom.size ≤ (atoms.map Metta.Atom.size).sum :=
-    List.le_sum_of_mem (List.mem_map.mpr ⟨atom, member, rfl⟩)
-  simp only [Metta.Atom.size]
-  omega
-
-/-- The ordinary counter freshener is one total simultaneous renaming. -/
-theorem legacy_is_total_renaming (counter : Nat) (lhs rhs : Metta.Atom) :
-    Metta.Minimal.freshenRule counter lhs rhs =
-      (Metta.Minimal.renameAllVars (fun name => name ++ "#" ++ toString counter) lhs,
-        Metta.Minimal.renameAllVars (fun name => name ++ "#" ++ toString counter) rhs) := by
-  have left := mapped_apply (lhs.vars ++ rhs.vars)
-    (fun name => name ++ "#" ++ toString counter) lhs
-    (fun name member => List.mem_append_left _ member)
-  have right := mapped_apply (lhs.vars ++ rhs.vars)
-    (fun name => name ++ "#" ++ toString counter) rhs
-    (fun name member => List.mem_append_right _ member)
-  unfold Metta.Minimal.freshenRule
-  split
-  · rename_i empty
-    simp only [empty, List.map_nil, Metta.Subst.apply_nil] at left right
-    exact congrArg₂ Prod.mk left right
-  · exact congrArg₂ Prod.mk left right
-
-/-- The name function selected by the runtime's collision test. -/
-def ruleRename (avoid : List String) (counter : Nat) (lhs rhs : Metta.Atom) : String → String :=
-  if ∃ name ∈ (Metta.Minimal.freshenRule counter lhs rhs).1.vars ++
-      (Metta.Minimal.freshenRule counter lhs rhs).2.vars, name ∈ avoid
-  then Metta.Minimal.captureAvoidingName avoid counter
-  else fun name => name ++ "#" ++ toString counter
-
-theorem ruleRename_injective (avoid : List String) (counter : Nat) (lhs rhs : Metta.Atom) :
-    Function.Injective (ruleRename avoid counter lhs rhs) := by
-  unfold ruleRename
-  split
-  · exact Metta.Minimal.captureAvoidingName_injective avoid counter
-  · intro left right equal
-    have suffixEqual : left ++ ("#" ++ toString counter) =
-        right ++ ("#" ++ toString counter) := by
-      simpa [String.append_assoc] using equal
-    exact (String.append_left_inj ("#" ++ toString counter)).mp suffixEqual
-
-/-- The actual freshener, including its counter, realizes the selected map. -/
-theorem runtime_freshening (avoid : List String) (counter : Nat) (lhs rhs : Metta.Atom) :
-    Metta.Minimal.freshenRuleAvoiding counter avoid lhs rhs =
-      ((Metta.Minimal.renameAllVars (ruleRename avoid counter lhs rhs) lhs,
-        Metta.Minimal.renameAllVars (ruleRename avoid counter lhs rhs) rhs), counter + 1) := by
-  unfold Metta.Minimal.freshenRuleAvoiding ruleRename
-  dsimp only
-  split
-  · rfl
-  · rw [legacy_is_total_renaming]
-
-
-
-/-- Read the actual runtime's freshened HE equation back into HE syntax. -/
-def freshRule (avoid : List String) (counter : Nat) (lhs rhs : Atom) : Atom × Atom :=
-  let native := (Metta.Minimal.freshenRuleAvoiding counter avoid
-    (toLeaTTaAtom lhs) (toLeaTTaAtom rhs)).1
-  (fromLeaTTaAtom native.1, fromLeaTTaAtom native.2)
-
-theorem freshRule_eq_renamed (avoid : List String) (counter : Nat) (lhs rhs : Atom) :
-    freshRule avoid counter lhs rhs =
-      (renameTypeVars (ruleRename avoid counter (toLeaTTaAtom lhs) (toLeaTTaAtom rhs)) lhs,
-        renameTypeVars (ruleRename avoid counter (toLeaTTaAtom lhs) (toLeaTTaAtom rhs)) rhs) := by
-  simp only [freshRule, runtime_freshening]
-  rw [← toLeaTTaAtom_renameTypeVars, ← toLeaTTaAtom_renameTypeVars,
-    fromLeaTTaAtom_toLeaTTaAtom, fromLeaTTaAtom_toLeaTTaAtom]
-
-/-- Readback preserves the actual native freshened rule exactly. -/
-theorem freshRule_translation (avoid : List String) (counter : Nat) (lhs rhs : Atom) :
-    (toLeaTTaAtom (freshRule avoid counter lhs rhs).1,
-      toLeaTTaAtom (freshRule avoid counter lhs rhs).2) =
-      (Metta.Minimal.freshenRuleAvoiding counter avoid (toLeaTTaAtom lhs) (toLeaTTaAtom rhs)).1 := by
-  rw [freshRule_eq_renamed, runtime_freshening]
-  simp only [toLeaTTaAtom_renameTypeVars]
-
-/-- Neither side of the returned equation contains an avoided variable. -/
-theorem freshRule_variables_avoid (avoid : List String) (counter : Nat) (lhs rhs : Atom) :
-    ∀ name ∈ (toLeaTTaAtom (freshRule avoid counter lhs rhs).1).vars ++
-        (toLeaTTaAtom (freshRule avoid counter lhs rhs).2).vars,
-      name ∉ avoid := by
-  have nativeFresh := Metta.Minimal.freshenRuleAvoiding_vars_fresh counter avoid
-    (toLeaTTaAtom lhs) (toLeaTTaAtom rhs)
-  have translation := freshRule_translation avoid counter lhs rhs
-  have left := congrArg Prod.fst translation
-  have right := congrArg Prod.snd translation
-  simp only at left right
-  intro name member
-  rw [left, right] at member
-  exact nativeFresh name member
-
-/-- Any finite avoidance list containing the complete caller scope suffices.
-Additional native or retained names do not weaken hygiene. -/
-theorem freshRule_alphaVariant_of_covers (live : List Atom) (query lhs rhs : Atom)
-    (incoming : Bindings) (counter : Nat) (avoid : List String)
-    (covers : ∀ name, QueryVisibleName live query incoming name → name ∈ avoid) :
-    AlphaVariantRel live query incoming lhs rhs
-      (freshRule avoid counter lhs rhs).1
-      (freshRule avoid counter lhs rhs).2 := by
-  let rename := ruleRename avoid counter (toLeaTTaAtom lhs) (toLeaTTaAtom rhs)
-  rw [freshRule_eq_renamed]
-  refine ⟨rename, ruleRename_injective _ _ _ _, rename_alpha _ _, rename_alpha _ _, ?_⟩
-  intro name occurs visible
-  have renamedOccurs : rename name ∈
-      (toLeaTTaAtom (renameTypeVars rename lhs)).vars ++
-        (toLeaTTaAtom (renameTypeVars rename rhs)).vars := by
-    rw [toLeaTTaAtom_vars_eq_typeVars, toLeaTTaAtom_vars_eq_typeVars,
-      Spec.Type.Presentation.ScopeObservation.typeVars_renameTypeVars,
-      Spec.Type.Presentation.ScopeObservation.typeVars_renameTypeVars]
-    rcases occurs with left | right
-    · apply List.mem_append_left
-      apply List.mem_map_of_mem
-      rw [← toLeaTTaAtom_vars_eq_typeVars]
-      exact Spec.Match.ModelTheory.atomOccurs_iff_mem_translated_vars.mp left
-    · apply List.mem_append_right
-      apply List.mem_map_of_mem
-      rw [← toLeaTTaAtom_vars_eq_typeVars]
-      exact Spec.Match.ModelTheory.atomOccurs_iff_mem_translated_vars.mp right
-  have fresh := Metta.Minimal.freshenRuleAvoiding_vars_fresh counter avoid
-    (toLeaTTaAtom lhs) (toLeaTTaAtom rhs)
-  rw [runtime_freshening] at fresh
-  simp only [toLeaTTaAtom_renameTypeVars] at renamedOccurs
-  exact fresh (rename name) renamedOccurs (covers (rename name) visible)
-
-/-- Complete caller scope and the actual freshener construct a hygienic
-alpha variant of both equation sides, at arbitrary nesting depth. -/
-theorem freshRule_alphaVariant (live : List Atom) (query lhs rhs : Atom)
-    (incoming : Bindings) (counter : Nat) :
-    AlphaVariantRel live query incoming lhs rhs
-      (freshRule (EquationScope.visibleNames live query incoming) counter lhs rhs).1
-      (freshRule (EquationScope.visibleNames live query incoming) counter lhs rhs).2 :=
-  freshRule_alphaVariant_of_covers live query lhs rhs incoming counter _
-    (fun name visible => (EquationScope.mem_visibleNames_iff live query incoming name).mpr visible)
-
-
-
-/-- Two legal fresh variants of both sides admit one constructed permutation
-fixing the entire caller-visible scope. The finite extension is shared with
-the existing private-candidate theory, applied to the pair of equation sides. -/
-theorem alphaVariants_public_fixed_permutation
-    {live : List Atom} {query lhs rhs leftPattern leftRhs rightPattern rightRhs : Atom}
-    {incoming : Bindings}
-    (left : AlphaVariantRel live query incoming lhs rhs leftPattern leftRhs)
-    (right : AlphaVariantRel live query incoming lhs rhs rightPattern rightRhs) :
-    ∃ permutation : Equiv.Perm String,
-      (∀ name, QueryVisibleName live query incoming name → permutation name = name) ∧
-      rightPattern = renameTypeVars permutation leftPattern ∧
-      rightRhs = renameTypeVars permutation leftRhs := by
-  let scope := EquationScope.visibleNames live query incoming
-  have lift {pattern body : Atom}
-      (variant : AlphaVariantRel live query incoming lhs rhs pattern body) :
-      Spec.Type.Presentation.Exact.TypeCandidateAlphaVariantRel scope
-        (.expression [lhs, rhs]) (.expression [pattern, body]) := by
-    obtain ⟨rename, injective, patternRenamed, bodyRenamed, fresh⟩ := variant
-    refine ⟨rename, injective, ?_, ?_⟩
-    · rw [alphaRename_eq patternRenamed, alphaRename_eq bodyRenamed]
-      simp only [renameTypeVars, List.map_cons, List.map_nil]
-    · intro name member visible
-      have occurrence : Spec.Match.Merge.AtomOccurs lhs name ∨ Spec.Match.Merge.AtomOccurs rhs name := by
-        have translated : name ∈ (toLeaTTaAtom lhs).vars ∨ name ∈ (toLeaTTaAtom rhs).vars := by
-          simpa only [TypeSubst.typeVars, TypeSubst.typeVarsList, List.mem_append,
-            List.not_mem_nil, or_false, toLeaTTaAtom_vars_eq_typeVars] using member
-        exact translated.imp Spec.Match.ModelTheory.atomOccurs_iff_mem_translated_vars.mpr
-          Spec.Match.ModelTheory.atomOccurs_iff_mem_translated_vars.mpr
-      exact fresh name occurrence
-        ((EquationScope.mem_visibleNames_iff live query incoming (rename name)).mp visible)
-  have siblings : Spec.Type.Presentation.ScopeObservation.PrivateCandidateAlphaRel scope
-      (.expression [leftPattern, leftRhs]) (.expression [rightPattern, rightRhs]) :=
-    ⟨.expression [lhs, rhs], lift left, lift right⟩
-  obtain ⟨permutation, fixed, equation⟩ := siblings.exists_public_fixed_permutation
-  refine ⟨permutation, ?_, ?_⟩
-  · intro name visible
-    exact fixed name ((EquationScope.mem_visibleNames_iff live query incoming name).mpr visible)
-  · simpa only [renameTypeVars, List.map_cons, List.map_nil, Atom.expression.injEq,
-      List.cons.injEq, and_true] using equation
-
-
 
 /-- Reindexing a valuation by a caller-fixed name function leaves its query
 observation unchanged, including names at arbitrary finite depth. -/
@@ -249,8 +35,8 @@ theorem query_observation_reindex {live : List Atom} {query : Atom} {incoming : 
     (rename : String → String)
     (fixed : ∀ name, QueryVisibleName live query incoming name → rename name = name)
     (valuation : String → Metta.Atom) :
-    applyClassSolution (valuation ∘ rename) (toLeaTTaAtom query) =
-      applyClassSolution valuation (toLeaTTaAtom query) := by
+    applyClassSolution (valuation ∘ rename) (encodeModelAtom query) =
+      applyClassSolution valuation (encodeModelAtom query) := by
   apply Spec.Match.ModelTheory.applyClassSolution_congr_of_eq_on_vars
   intro name member
   have visible : QueryVisibleName live query incoming name :=
@@ -275,18 +61,13 @@ theorem incoming_satisfaction_reindex {live : List Atom} {query : Atom} {incomin
       (by simp only [EquationScope.visibleNames, List.mem_append]; tauto)
   simp only [Function.comp_apply, fixed name visible]
 
-/-- An independent occurrence transports to any other legal fresh pair of
-that same physical raw rule. The complete output theory is preserved under
-the constructed permutation's valuation reindexing. It fixes the query,
-incoming bindings and every retained live name; private spellings may change.
-
-Normalized incoming assignments are the condition used by the existing
-semantic merge-existence theorem, not an assumed evaluator correspondence. -/
-theorem occurrence_alpha_transport
+/-- Source fresh-instance transport uses logical conjunction rather than an
+operational merge representation. It accepts arbitrary incoming aliases and
+preserves the whole output theory under one caller-fixed permutation. -/
+theorem occurrence_alpha_transport_logical
     {space : Space} {live : List Atom} {query lhs rhs sourcePattern sourceRhs
       targetPattern targetRhs emitted : Atom}
     {incoming matched output : Bindings} {position : Nat}
-    (incomingNonvariable : HEAssignmentsNonVariable incoming)
     (source : EquationQueryOccurrenceRel space live query incoming position lhs rhs
       sourcePattern sourceRhs matched emitted output)
     (targetVariant : AlphaVariantRel live query incoming lhs rhs targetPattern targetRhs) :
@@ -298,7 +79,8 @@ theorem occurrence_alpha_transport
         targetPattern targetRhs targetMatched (renameTypeVars permutation emitted) targetOutput ∧
       (∀ valuation, HEBindingSatisfied valuation targetOutput ↔
         HEBindingSatisfied (valuation ∘ permutation) output) ∧
-      HEAssignmentsNonVariable targetOutput := by
+      targetOutput = ⟨targetMatched.assignments ++ incoming.assignments,
+        targetMatched.equalities ++ incoming.equalities⟩ := by
   obtain ⟨permutation, fixed, patternEquation, rhsEquation⟩ :=
     alphaVariants_public_fixed_permutation source.selected.1 targetVariant
   have inverseFixed : ∀ name, QueryVisibleName live query incoming name →
@@ -321,14 +103,17 @@ theorem occurrence_alpha_transport
       ((Spec.Match.SolutionTheory.matchRel_solution_iff source.selected.2 sourceModel).mp sourceParts.1)
   obtain ⟨targetMatched, targetMatch, targetMatchedSatisfied⟩ :=
     Spec.Match.Completeness.exists_specMatch_of_solution targetEquation
-  obtain ⟨targetOutput, targetMerge, targetSatisfied, targetNonvariable⟩ :=
-    Spec.Match.Completeness.exists_specMerge_of_solution targetMatchedSatisfied
-      (LeaTTaSpecConformance.specMatch_assignmentsNonVariable targetMatch)
-      targetIncoming incomingNonvariable
+  let targetOutput : Bindings :=
+    ⟨targetMatched.assignments ++ incoming.assignments,
+      targetMatched.equalities ++ incoming.equalities⟩
+  have targetMerge : Spec.Bindings.ScopeObservation.LogicalMergeRel targetMatched incoming targetOutput :=
+    Spec.Bindings.ScopeObservation.LogicalMergeRel.append_of_common_model
+      ⟨_,specTypeBindingSatisfied_of_heBindingSatisfied targetMatchedSatisfied,
+        specTypeBindingSatisfied_of_heBindingSatisfied targetIncoming⟩
   have theory (valuation : String → Metta.Atom) :
       HEBindingSatisfied valuation targetOutput ↔
         HEBindingSatisfied (valuation ∘ permutation) output := by
-    rw [Spec.Match.SolutionTheory.mergeRel_solution_iff targetMerge,
+    rw [targetMerge.he_solutions,
       Spec.Match.SolutionTheory.matchRel_solution_iff targetMatch,
       source.result.1.he_solutions,
       Spec.Match.SolutionTheory.matchRel_solution_iff source.selected.2,
@@ -337,13 +122,61 @@ theorem occurrence_alpha_transport
       patternEquation, applyClassSolution_renameTypeVars]
   refine ⟨permutation, targetMatched, targetOutput, fixed, patternEquation, rhsEquation,
     ⟨source.stored, ⟨targetVariant, targetMatch⟩,
-      ⟨targetMerge.logicalMerge ⟨_,
-        specTypeBindingSatisfied_of_heBindingSatisfied targetSatisfied⟩, ?_⟩⟩,
-      theory, targetNonvariable⟩
+      ⟨targetMerge, ?_⟩⟩, theory, rfl⟩
   intro valuation satisfied
   unfold HEAtomEquationSatisfied
   rw [rhsEquation, applyClassSolution_renameTypeVars, applyClassSolution_renameTypeVars]
   exact source.result.2 (valuation ∘ permutation) ((theory valuation).mp satisfied)
+
+/-- The existing no-variable-assignment specialization is obtained from the
+general logical transport. Its stronger output invariant is preserved. -/
+theorem occurrence_alpha_transport
+    {space : Space} {live : List Atom} {query lhs rhs sourcePattern sourceRhs
+      targetPattern targetRhs emitted : Atom}
+    {incoming matched output : Bindings} {position : Nat}
+    (incomingNonvariable : HEAssignmentsNonVariable incoming)
+    (source : EquationQueryOccurrenceRel space live query incoming position lhs rhs
+      sourcePattern sourceRhs matched emitted output)
+    (targetVariant : AlphaVariantRel live query incoming lhs rhs targetPattern targetRhs) :
+    ∃ permutation : Equiv.Perm String, ∃ targetMatched targetOutput,
+      (∀ name, QueryVisibleName live query incoming name → permutation name = name) ∧
+      targetPattern = renameTypeVars permutation sourcePattern ∧
+      targetRhs = renameTypeVars permutation sourceRhs ∧
+      EquationQueryOccurrenceRel space live query incoming position lhs rhs
+        targetPattern targetRhs targetMatched (renameTypeVars permutation emitted) targetOutput ∧
+      (∀ valuation, HEBindingSatisfied valuation targetOutput ↔
+        HEBindingSatisfied (valuation ∘ permutation) output) ∧
+      HEAssignmentsNonVariable targetOutput := by
+  obtain ⟨permutation,targetMatched,_,fixed,patternEquation,rhsEquation,selected,theory,rfl⟩ :=
+    occurrence_alpha_transport_logical source targetVariant
+  refine ⟨permutation,targetMatched,_,fixed,patternEquation,rhsEquation,selected,theory,?_⟩
+  intro key target member
+  rcases List.mem_append.mp member with matched | old
+  · exact Spec.Match.ModelTheory.specMatch_assignmentsNonVariable selected.selected.2 key target matched
+  · exact incomingNonvariable key target old
+
+/-- A no-unifier certificate for one legal fresh instance rules out every
+other instance of the same stored row, including with alias-bearing callers.
+This supplies the negative leaf needed by complete source frontiers. -/
+theorem row_miss_of_instance
+    {space : Space} {live : List Atom} {query lhs rhs pattern body : Atom}
+    {incoming : Bindings} {position : Nat}
+    (stored : space.atoms[position]? = some (.expression [.symbol "=",lhs,rhs]))
+    (variant : AlphaVariantRel live query incoming lhs rhs pattern body)
+    (absent : ∀ matched output,
+      ¬(Spec.Match.Merge.MatchRel Spec.Match.Merge.equalityGroundedSemantic query pattern matched ∧
+        Spec.Bindings.ScopeObservation.LogicalMergeRel matched incoming output)) :
+    EquationRowResultsRel live query incoming position (.expression [.symbol "=",lhs,rhs]) [] := by
+  apply EquationRowResultsRel.miss position lhs rhs pattern body variant
+  intro otherPattern otherBody otherInstance matched output viable
+  have source : EquationQueryOccurrenceRel space live query incoming position lhs rhs
+      otherPattern otherBody matched otherBody output :=
+    ⟨stored,⟨otherInstance,viable.1⟩,viable.2,fun _ _ => rfl⟩
+  obtain ⟨_,targetMatched,targetOutput,_,_,_,selected,_,_⟩ :=
+    occurrence_alpha_transport_logical source variant
+  exact absent targetMatched targetOutput ⟨selected.selected.2,selected.result.1⟩
+
+
 
 /-! ## The retained evaluator's freshener
 
@@ -395,7 +228,7 @@ end
 /-- The structural variable scan has exactly the independent occurrence support. -/
 theorem atomOccurs_iff_mem_atomVariables {atom : Atom} {name : String} :
     Spec.Match.Merge.AtomOccurs atom name ↔ name ∈ atomVariables atom := by
-  rw [Spec.Match.ModelTheory.atomOccurs_iff_mem_translated_vars, toLeaTTaAtom_vars_eq_typeVars,
+  rw [Spec.Match.ModelTheory.atomOccurs_iff_mem_translated_vars, encodeModelAtom_vars_eq_typeVars,
     atomVariables_eq_typeVars]
 
 /-- Every name visible to the independent query judgment is in the call scope of
@@ -448,6 +281,126 @@ theorem freshenEquationAvoiding_alphaVariant (live : List Atom) (query lhs rhs :
   · intro name _ visible
     exact instanceName_not_mem avoid ruleVariables counter name (covers _ visible)
 
+/-- One independent HE rule instance uses the existing structural freshener.
+Its spelling is a representation choice; source coverage ranges over every
+legal alpha variant. -/
+def freshRule (avoid : List String) (counter : Nat) (lhs rhs : Atom) : Atom × Atom :=
+  freshenEquationAvoiding avoid counter lhs rhs
+
+/-- Both sides of the structural source instance avoid the full caller scope. -/
+theorem freshRule_variables_avoid (avoid : List String) (counter : Nat) (lhs rhs : Atom) :
+    ∀ name ∈ (encodeModelAtom (freshRule avoid counter lhs rhs).1).vars ++
+        (encodeModelAtom (freshRule avoid counter lhs rhs).2).vars,
+      name ∉ avoid := by
+  intro name member
+  rw [encodeModelAtom_vars_eq_typeVars, encodeModelAtom_vars_eq_typeVars] at member
+  simp only [freshRule, freshenEquationAvoiding, renameAtom_eq_renameTypeVars,
+    Spec.Type.Presentation.ScopeObservation.typeVars_renameTypeVars, List.mem_append] at member
+  rcases member with member | member
+  all_goals
+    obtain ⟨original, _occurs, rfl⟩ := List.mem_map.mp member
+    exact instanceName_not_mem _ _ _ _
+
+/-- Any finite avoidance list covering the complete caller scope yields a
+lawful source equation instance, independently of a runtime freshener. -/
+theorem freshRule_alphaVariant_of_covers (live : List Atom) (query lhs rhs : Atom)
+    (incoming : Bindings) (counter : Nat) (avoid : List String)
+    (covers : ∀ name, QueryVisibleName live query incoming name → name ∈ avoid) :
+    AlphaVariantRel live query incoming lhs rhs
+      (freshRule avoid counter lhs rhs).1 (freshRule avoid counter lhs rhs).2 :=
+  freshenEquationAvoiding_alphaVariant live query lhs rhs incoming avoid counter covers
+
+theorem freshRule_alphaVariant (live : List Atom) (query lhs rhs : Atom)
+    (incoming : Bindings) (counter : Nat) :
+    AlphaVariantRel live query incoming lhs rhs
+      (freshRule (EquationScope.visibleNames live query incoming) counter lhs rhs).1
+      (freshRule (EquationScope.visibleNames live query incoming) counter lhs rhs).2 :=
+  freshRule_alphaVariant_of_covers live query lhs rhs incoming counter _
+    (fun name visible => (EquationScope.mem_visibleNames_iff live query incoming name).mpr visible)
+
+/-- Every finite space has a complete source query frontier. Each physical
+row is classified using one fresh instance; alpha transport earns coverage
+of all other legal instances. This concerns selection only, not termination
+of the selected equation bodies. Incoming aliases need no normalization. -/
+theorem equationFrontier_exists (space : Space) (live : List Atom) (query : Atom)
+    (incoming : Bindings) :
+    ∃ results, EquationFrontierRel space live query incoming results := by
+  classical
+  have rowComplete (row : Atom × Nat) (member : row ∈ space.atoms.zipIdx) :
+      ∃ results, EquationRowResultsRel live query incoming row.2 row.1 results := by
+    have stored := List.mem_zipIdx_iff_getElem?.mp member
+    by_cases equation : ∃ left right, row.1 = .expression [.symbol "=",left,right]
+    · obtain ⟨left,right,shape⟩ := equation
+      rw [shape] at stored ⊢
+      let chosen := freshenEquationAvoiding (EquationScope.visibleNames live query incoming)
+        row.2 left right
+      have variant : AlphaVariantRel live query incoming left right chosen.1 chosen.2 :=
+        freshenEquationAvoiding_alphaVariant live query left right incoming _ row.2
+          (fun name visible => (EquationScope.mem_visibleNames_iff live query incoming name).mpr visible)
+      by_cases viable : ∃ matched output,
+          Spec.Match.Merge.MatchRel Spec.Match.Merge.equalityGroundedSemantic query chosen.1 matched ∧
+          Spec.Bindings.ScopeObservation.LogicalMergeRel matched incoming output
+      · obtain ⟨matched,output,matching,merged⟩ := viable
+        exact ⟨_,.hit row.2 left right chosen.1 chosen.2 matched output variant matching merged⟩
+      · exact ⟨[],row_miss_of_instance stored variant (by
+          intro matched output both
+          exact viable ⟨matched,output,both⟩)⟩
+    · refine ⟨[],.irrelevant row.2 row.1 ?_⟩
+      intro left right shape
+      exact equation ⟨left,right,shape⟩
+  have collect : ∀ rows : List (Atom × Nat),
+      (∀ row ∈ rows, row ∈ space.atoms.zipIdx) →
+      ∃ blocks, List.Forall₂ (fun row block =>
+        EquationRowResultsRel live query incoming row.2 row.1 block) rows blocks := by
+    intro rows
+    induction rows with
+    | nil => exact fun _ => ⟨[],.nil⟩
+    | cons row rows ih =>
+        intro included
+        obtain ⟨block,classified⟩ := rowComplete row (included row (by simp))
+        obtain ⟨blocks,rest⟩ := ih (fun item member => included item (List.mem_cons_of_mem _ member))
+        exact ⟨block :: blocks,.cons classified rest⟩
+  obtain ⟨blocks,completed⟩ := collect _ (fun _ member => member)
+  exact ⟨blocks.flatten,.completed completed⟩
+
+/-- Complete coverage preserves the entire principal binding theory and
+the selected RHS observation, not only the existence of a matching row.
+Representatives may differ by one permutation fixing the caller's scope. -/
+theorem frontier_covers_readout
+    {space : Space} {live : List Atom} {query lhs rhs sourcePattern sourceRhs emitted : Atom}
+    {incoming matched output : Bindings} {position : Nat} {results : List EquationWork}
+    (completed : EquationFrontierRel space live query incoming results)
+    (source : EquationQueryOccurrenceRel space live query incoming position lhs rhs
+      sourcePattern sourceRhs matched emitted output) :
+    ∃ work ∈ results, work.position = position ∧ ∃ permutation : Equiv.Perm String,
+      (∀ name, QueryVisibleName live query incoming name → permutation name = name) ∧
+      work.pattern = renameTypeVars permutation sourcePattern ∧
+      work.body = renameTypeVars permutation sourceRhs ∧
+      (∀ valuation, HEBindingSatisfied valuation work.bindings ↔
+        HEBindingSatisfied (valuation ∘ permutation) output) ∧
+      (∀ valuation, HEBindingSatisfied valuation work.bindings →
+        HEAtomEquationSatisfied valuation work.body (renameTypeVars permutation emitted)) := by
+  obtain ⟨work,present,positionEquation⟩ := completed.covers source
+  obtain ⟨workMatch,actual⟩ := completed.occurrence present
+  have atPosition : EquationQueryOccurrenceRel space live query incoming position
+      work.left work.right work.pattern work.body workMatch work.body work.bindings := by
+    simpa only [positionEquation] using actual
+  obtain ⟨leftEquation,rightEquation⟩ := source.raw_rule_unique atPosition
+  have variant : AlphaVariantRel live query incoming lhs rhs work.pattern work.body := by
+    rw [leftEquation,rightEquation]
+    exact actual.selected.1
+  obtain ⟨permutation,targetMatch,targetOutput,fixed,patternEquation,rhsEquation,selected,theory,_⟩ :=
+    occurrence_alpha_transport_logical source variant
+  have sameTheory (valuation : String → Metta.Atom) :
+      HEBindingSatisfied valuation work.bindings ↔ HEBindingSatisfied valuation targetOutput := by
+    rw [actual.result.1.he_solutions,selected.result.1.he_solutions,
+      Spec.Match.SolutionTheory.matchRel_solution_iff actual.selected.2,
+      Spec.Match.SolutionTheory.matchRel_solution_iff selected.selected.2]
+  refine ⟨work,present,positionEquation,permutation,fixed,patternEquation,rhsEquation,
+    fun valuation => (sameTheory valuation).trans (theory valuation),?_⟩
+  intro valuation satisfied
+  exact (selected.result.2 valuation ((sameTheory valuation).mp satisfied)).symm
+
 /-- Every hit of the retained evaluator's equation query comes from a stored row
 whose instance is a legal independent alpha variant for the call's visible
 scope, and whose renamed left-hand side matched by the HE declarative matcher. -/
@@ -493,7 +446,6 @@ evaluator's own instance names for the same call, with every visible name fixed.
 theorem occurrence_transports_to_retained_instance
     {space : Space} {live : List Atom} {query type_ lhs rhs sourcePattern sourceRhs emitted : Atom}
     {incoming matched output : Bindings} {position : Nat}
-    (incomingNonvariable : HEAssignmentsNonVariable incoming)
     (source : EquationQueryOccurrenceRel space live query incoming position lhs rhs
       sourcePattern sourceRhs matched emitted output) :
     ∃ permutation : Equiv.Perm String, ∃ targetMatched targetOutput,
@@ -505,7 +457,7 @@ theorem occurrence_transports_to_retained_instance
       (∀ valuation, HEBindingSatisfied valuation targetOutput ↔
         HEBindingSatisfied (valuation ∘ permutation) output) := by
   obtain ⟨permutation, targetMatched, targetOutput, fixed, _, _, occurrence, theory, _⟩ :=
-    occurrence_alpha_transport incomingNonvariable source
+    occurrence_alpha_transport_logical source
       (freshenEquationAvoiding_alphaVariant live query lhs rhs incoming
         (equationScope live query type_ incoming) position
         (fun _ visible => equationScope_visible visible))
@@ -567,7 +519,7 @@ invocation query answers the scoped source lookup for every protected scope
 that the worker retains. -/
 theorem getAtomTypesScoped_scopedTypeLookup {protectedScope : List String} (scope : List String)
     (space : Space) (bindings : Bindings) (subject expected : Atom)
-    (raw : Spec.Type.TypesOfRel space subject (getAtomTypes space subject))
+    (raw : Spec.Type.StorageTypesRel space subject (getAtomTypes space subject))
     (retained : ∀ name ∈ protectedScope, name ∈ scope) :
     Spec.Eval.scopedTypeLookup protectedScope space bindings subject expected
       (getAtomTypesScoped scope space bindings subject expected) := by
@@ -588,5 +540,81 @@ example : getAtomTypesScoped [] (Space.ofList
       [.expression [.symbol ":", .symbol "ident", .expression [.symbol "->", .var "t", .var "t"]]])
       Bindings.empty (.symbol "ident") (.symbol "%Undefined%") ≠
     [.expression [.symbol "->", .var "t", .var "t"]] := by decide
+
+namespace LogicalTransportControls
+
+def incoming : Bindings := ⟨[("left",.var "right")],[]⟩
+def query : Atom := .symbol "Value"
+def context : Space := Space.ofList [.expression [.symbol "=",.var "private",.var "private"]]
+
+private theorem source_instance : AlphaVariantRel [] query incoming
+    (.var "private") (.var "private") (.var "private") (.var "private") := by
+  refine ⟨id,Function.injective_id,.variable _,.variable _,?_⟩
+  intro name occurs
+  rcases occurs with occurs | occurs <;> cases occurs
+  all_goals simp [QueryVisibleName,query,incoming,
+    ← Spec.Match.Merge.mem_vars_iff_atomOccurs,Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars]
+
+/-- The source caller really contains a bare alias, outside the old input
+invariant. This is not an empty or normalized special case. -/
+theorem caller_is_not_nonvariable : ¬HEAssignmentsNonVariable incoming := by
+  intro normalized
+  exact normalized "left" "right" (by simp [incoming])
+
+private theorem source_occurrence : ∃ matched output,
+    EquationQueryOccurrenceRel context [] query incoming 0 (.var "private") (.var "private")
+      (.var "private") (.var "private") matched (.var "private") output := by
+  let valuation : String → Metta.Atom := fun _ => .sym "Value"
+  obtain ⟨matched,matching,satisfied⟩ := Spec.Match.Completeness.exists_specMatch_of_solution
+    (show HEAtomEquationSatisfied valuation query (.var "private") by
+      simp [HEAtomEquationSatisfied,valuation,query,encodeModelAtom,applyClassSolution])
+  have callerModel : HEBindingSatisfied valuation incoming := by
+    simp [HEBindingSatisfied,incoming,valuation,applyClassSolution,encodeModelAtom]
+  have merged := Spec.Bindings.ScopeObservation.LogicalMergeRel.append_of_common_model
+    ⟨_,specTypeBindingSatisfied_of_heBindingSatisfied satisfied,
+      specTypeBindingSatisfied_of_heBindingSatisfied callerModel⟩
+  exact ⟨matched,_,rfl,⟨source_instance,matching⟩,merged,fun _ _ => rfl⟩
+
+def target : Atom × Atom := freshenEquationAvoiding
+  (EquationScope.visibleNames [] query incoming) 0 (.var "private") (.var "private")
+
+private theorem target_instance : AlphaVariantRel [] query incoming
+    (.var "private") (.var "private") target.1 target.2 :=
+  freshenEquationAvoiding_alphaVariant [] query _ _ incoming _ 0
+    (fun name visible => (EquationScope.mem_visibleNames_iff [] query incoming name).mpr visible)
+
+theorem fresh_instance_is_distinct : target.1 ≠ .var "private" := by decide +kernel
+
+/-- Actual distinct fresh instances preserve the complete source theory
+with the caller's bare alias and every visible name fixed. -/
+theorem aliased_caller_transports :
+    ∃ sourceMatched sourceOutput, ∃ permutation : Equiv.Perm String, ∃ matched output,
+      EquationQueryOccurrenceRel context [] query incoming 0 (.var "private") (.var "private")
+        (.var "private") (.var "private") sourceMatched (.var "private") sourceOutput ∧
+      (∀ name, QueryVisibleName [] query incoming name → permutation name = name) ∧
+      EquationQueryOccurrenceRel context [] query incoming 0 (.var "private") (.var "private")
+        target.1 target.2 matched (renameTypeVars permutation (.var "private")) output ∧
+      (∀ valuation, HEBindingSatisfied valuation output ↔
+        HEBindingSatisfied (valuation ∘ permutation) sourceOutput) := by
+  obtain ⟨matched,output,source⟩ := source_occurrence
+  obtain ⟨permutation,targetMatched,targetOutput,fixed,_,_,selected,theory,_⟩ :=
+    occurrence_alpha_transport_logical source target_instance
+  exact ⟨matched,output,permutation,targetMatched,targetOutput,source,fixed,selected,theory⟩
+
+/-- A name occurring only inside a caller alias remains protected. Reusing
+it for the rule's private variable would capture that caller relation. -/
+theorem alias_value_cannot_be_a_private_instance :
+    ¬AlphaVariantRel [] query incoming (.var "private") (.var "private")
+      (.var "right") (.var "right") := by
+  rintro ⟨rename,_,renamed,_,fresh⟩
+  have same : rename "private" = "right" := by
+    simpa only [renameTypeVars,Atom.var.injEq] using (alphaRename_eq renamed).symm
+  have outside := fresh "private" (Or.inl (.var "private"))
+  rw [same] at outside
+  apply outside
+  simp [QueryVisibleName,incoming,query,
+    ← Spec.Match.Merge.mem_vars_iff_atomOccurs,Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars]
+
+end LogicalTransportControls
 
 end Mettapedia.Languages.MeTTa.HE.EquationFreshening

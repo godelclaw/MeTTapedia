@@ -26,8 +26,8 @@ open Mettapedia.Logic.HOL.Probabilistic
 open Mettapedia.Logic.HOL
 open Mettapedia.PLN.Bridges.HOL.ProbHOLWorldModelBridge
 open Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open scoped ENNReal
 

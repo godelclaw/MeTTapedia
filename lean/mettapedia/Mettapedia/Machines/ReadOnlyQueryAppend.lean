@@ -21,6 +21,48 @@ variable {Key : Type u} {Row : Type v} {Answer : Type w}
 def bucket (selects : Key → Row → Bool) (rows : List Row) (key : Key) : List Row :=
   rows.filter (selects key)
 
+/-- If old rows survive in order, equality of candidate counts establishes
+equality of the complete selected family, including duplicate occurrences.
+Rows may have been inserted between members of a composed store. -/
+theorem bucket_eq_of_sublist_of_length_eq (selects : Key → Row → Bool)
+    {before after : List Row} (preserved : before.Sublist after) (key : Key)
+    (sameCount : (bucket selects before key).length =
+      (bucket selects after key).length) :
+    bucket selects after key = bucket selects before key := by
+  exact ((preserved.filter (selects key)).eq_of_length sameCount).symm
+
+/-- Candidate counts are a sufficient certificate for an adaptive query
+only together with preservation of the old rows. Complete observations,
+including the ordered read trace, are preserved. -/
+theorem run_eq_of_sublist_of_bucket_lengths (selects : Key → Row → Bool)
+    {before after : List Row} (preserved : before.Sublist after)
+    (program : Program Key (List Row) Answer) (keys : List Key)
+    (covers : ∀ read ∈ (run (bucket selects before) program).reads, read.1 ∈ keys)
+    (sameCounts : ∀ key ∈ keys, (bucket selects before key).length =
+      (bucket selects after key).length) :
+    run (bucket selects after) program = run (bucket selects before) program := by
+  apply run_eq_of_agrees
+  intro read member
+  rw [bucket_eq_of_sublist_of_length_eq selects preserved read.1
+    (sameCounts read.1 (covers read member))]
+  exact run_agrees (bucket selects before) program read member
+
+example : bucket (fun (key row : Nat) => decide (key = row))
+    [1, 2, 1, 3] 1 = [1, 1] := by decide
+
+/-- Equal counts without a preserved prefix do not establish ordered answers. -/
+example :
+    (bucket (fun (_ : Unit) (_ : Nat) => true) [1, 2] ()).length =
+      (bucket (fun (_ : Unit) (_ : Nat) => true) [2, 1] ()).length ∧
+    bucket (fun (_ : Unit) (_ : Nat) => true) [1, 2] () ≠
+      bucket (fun (_ : Unit) (_ : Nat) => true) [2, 1] () := by decide
+
+/-- A duplicate selected row changes the candidate count even when answer
+support is unchanged. -/
+example :
+    (bucket (fun (key row : Nat) => decide (key = row)) [1] 1).length ≠
+      (bucket (fun (key row : Nat) => decide (key = row)) [1, 1] 1).length := by decide
+
 /-- Check only the proposed suffix, against a conservative list of read keys. -/
 def misses (selects : Key → Row → Bool) (keys : List Key) (delta : List Row) : Bool :=
   keys.all fun key => delta.all fun row => !selects key row

@@ -222,6 +222,27 @@ instance instNoZeroDivisors [NoZeroDivisors R] : NoZeroDivisors (Evidence R) whe
 
 end Order
 
+/-! ### Change of count semiring -/
+
+section Map
+
+variable {R : Type u} {S : Type v} [CommSemiring R] [CommSemiring S]
+
+/-- Evidence is functorial in the count semiring: a semiring map acts on both
+counts and preserves revision and paired conjunction. -/
+def map (f : R →+* S) : Evidence R →+* Evidence S where
+  toFun e := ⟨f e.pos, f e.neg⟩
+  map_one' := by ext <;> simp
+  map_mul' a b := by ext <;> simp
+  map_zero' := by ext <;> simp
+  map_add' a b := by ext <;> simp
+
+@[simp] theorem map_apply_pos (f : R →+* S) (e : Evidence R) : (map f e).pos = f e.pos := rfl
+
+@[simp] theorem map_apply_neg (f : R →+* S) (e : Evidence R) : (map f e).neg = f e.neg := rfl
+
+end Map
+
 /-! ### Strength -/
 
 section Strength
@@ -310,7 +331,7 @@ theorem posHom_bind {X Y : Type*} (A : Ans (Evidence ℕ) X) (f : X → Ans (Evi
 section Binary
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-- Read binary evidence as counts. -/
 def toPaired (e : BinaryEvidence) : Evidence ℝ≥0∞ := ⟨e.pos, e.neg⟩
@@ -514,9 +535,6 @@ open Mettapedia.OSLF.Framework.WMCalculusOSLFBridge
 open Mettapedia.OSLF.Framework.WMCalculusContextEncoding
 
 variable {W : Type}
-
-/-- Bags of samples revise by addition. -/
-scoped instance : EvidenceType (Multiset W) where
 
 /-- **A bag of samples is an additive world model.** -/
 scoped instance sampleWorldModel : AdditiveWorldModel (Multiset W) (W → Bool) (Evidence ℕ) where

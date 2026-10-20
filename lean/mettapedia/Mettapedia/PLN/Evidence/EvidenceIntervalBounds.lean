@@ -39,7 +39,7 @@ import KnuthSkilling.Core.HeytingIntervalRepresentation
 namespace Mettapedia.PLN.Evidence.EvidenceIntervalBounds
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open BinaryEvidence
 
 /-! ## Strength Bounds from BinaryEvidence -/

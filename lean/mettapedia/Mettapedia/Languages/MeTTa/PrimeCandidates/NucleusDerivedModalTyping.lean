@@ -233,9 +233,11 @@ modules that pin the probe today.  Promotion into the probe itself is a
 design decision (`Q-TT-001`/`Q-TT-002` of the research-spec draft).
 
 * `prime-choose : Process × Process → Process` with rewrites to either branch:
-  under the derived modalities this makes `◇φ (choose a b) ⇔ φ a ∨ φ b` the
-  *may* modality and `□φ (choose a b) ⇔ φ a ∧ φ b` the *must* modality — the
-  Hennessy–Milner pair falls out of choice-as-reduction with no new role;
+  when these are its exact successors, the derived diamond gives
+  `◇φ (choose a b) ⇔ φ a ∨ φ b`. Universal observation of these outgoing
+  successors is `¬◇¬φ`, yielding `φ a ∧ φ b`. OSLF's right-adjoint
+  `langBoxUsing` instead quantifies over incoming predecessors; it must not
+  be identified with this outgoing universal observation;
 * `prime-collect : Process → Alternatives`, the reification of a process into
   its bag of alternatives; its domain is the reduction sort, so the existing
   classifier reads it as **quoting** (`◇`): collecting is the monadic unit

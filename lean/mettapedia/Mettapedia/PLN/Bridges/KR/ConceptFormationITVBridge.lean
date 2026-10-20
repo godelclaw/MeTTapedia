@@ -69,7 +69,7 @@ noncomputable def conceptFormationTypedWidthComplementITVOfSpec
     (S : ObservationEncoder Obs Obj Attr Q)
     (Γ : Gate → EvidenceGate Q) (σ : Multiset Obs)
     (A : DualConcept Obj Attr) :
-    TypedITV (projectiveCredalWidthComplementITVSemantics Window Gate) :=
+    TypedITV (projectiveCredalWidthComplementITVConstructor Window Gate) :=
   TypedITV.fromProjectiveCredalWidthComplement
     (conceptFormationWidthComplementITVSourceOfSpec spec compatible S Γ σ A)
 
@@ -99,7 +99,7 @@ noncomputable def conceptFormationTypedWidthComplementITV
     (S : ObservationEncoder Obs Obj Attr Q)
     (Γ : Gate → EvidenceGate Q) (σ : Multiset Obs)
     (A : DualConcept Obj Attr) :
-    TypedITV (projectiveCredalWidthComplementITVSemantics PUnit Gate) :=
+    TypedITV (projectiveCredalWidthComplementITVConstructor PUnit Gate) :=
   TypedITV.fromProjectiveCredalWidthComplement
     (conceptFormationWidthComplementITVSource S Γ σ A)
 
@@ -399,7 +399,7 @@ theorem conceptFormationTypedWidthComplementITVOfSpec_width_pos_of_strictWidth
       if A ∈ ObservationEncoder.upperConceptFamily S Γ σ then 1 else 0 := by
   unfold conceptFormationTypedWidthComplementITV conceptFormationWidthComplementITVSource
   dsimp [TypedITV.fromProjectiveCredalWidthComplement, TypedITV.upper,
-    TypedITV.value, projectiveCredalWidthComplementITVSemantics,
+    TypedITV.value, projectiveCredalWidthComplementITVConstructor,
     projectiveCredalWidthComplementITV,
     ProjectiveCredalWidthComplementITVSource.finite]
   simpa [gateCredalProjectiveSpec,

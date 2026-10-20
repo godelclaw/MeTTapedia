@@ -17,11 +17,11 @@ not as the primitive truth algebra; using them as truth values is legitimate
 but changes the logic, and must be labeled as such.
 -/
 
-namespace Mettapedia.PLN.Bridges.HOL.EvidenceValued
+namespace Mettapedia.PLN.Bridges.HOL.EvidenceValuedModels
 
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.HeytingSem
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 universe u v
@@ -99,4 +99,4 @@ theorem pushforward_binaryEvidence_validates_lc
   refine HeytingGeneralModel.lc_valid_of_prelinear _ (fun a b => ?_) φ ψ
   exact le_of_eq (binaryEvidence_goedelDummett a b).symm
 
-end Mettapedia.PLN.Bridges.HOL.EvidenceValued
+end Mettapedia.PLN.Bridges.HOL.EvidenceValuedModels

@@ -38,7 +38,7 @@ open Mettapedia.OSLF.Framework.PLNWMHypercubeBasis
 open Mettapedia.OSLF.Framework.WMCalculusLanguageDef
 open Mettapedia.OSLF.Framework.WMCalculusContextClosure
 open Mettapedia.OSLF.Framework.WMCalculusOSLFBridge
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.OSLF.Framework.WMCalculusEncoding
 
 /-! ## §1: Rule Membership -/

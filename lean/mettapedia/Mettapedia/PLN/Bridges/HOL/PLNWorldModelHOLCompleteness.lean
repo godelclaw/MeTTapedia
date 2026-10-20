@@ -1,6 +1,7 @@
 import Mathlib.Data.Multiset.Count
 import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
 import Mettapedia.Logic.HOL.TermModel.HenkinCompleteness
+import Mettapedia.Logic.HOL.SevenVirtues.Completeness
 import Mettapedia.Logic.HOL.Soundness
 
 /-!
@@ -10,14 +11,19 @@ Theory-relative consequence for the Henkin world model
 (`PLNWorldModelHOLCore`): pointwise implication on the models of a classical
 HOL theory is singleton-strength consequence there, finite derivability
 transports to it, and classical Henkin completeness turns it back into
-provability and supplies singleton states of consistent theories.  The
-theory-free consequence theorems are the generic ones of
+provability and supplies singleton states of consistent theories:
+- over `WithParams Const` (for parameter-free theories that prove every
+  excluded-middle instance), and
+- directly over the original signature `Const` via `SevenVirtues.Completeness`
+  (for countable signatures with a closed inhabitant at each base type and the
+  single excluded-middle axiom `SevenVirtues.excludedMiddle`).
+The theory-free consequence theorems are the generic ones of
 `PLNWorldModelCrispSpecialization` at `holSatisfies`.
 -/
 
 namespace Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.WithParams
@@ -37,13 +43,15 @@ theory-model abstraction:
 - states are multisets of pointed Henkin models satisfying such a theory,
 - pointwise implication on those theory-model states transports to WM strength
   inequalities, and
-- classical consistency yields a concrete singleton WM state by Henkin
-  completeness.
+- a consistent theory in which no parameter occurs and which proves every
+  excluded-middle instance yields a concrete singleton WM state, by
+  `ClosedTheorySet.henkin_model_exists_of_consistent_classical`.
 
-This makes the landed completeness theorem load-bearing for WM-PLN at the
-model-class grounding layer, even before the stronger proof-theoretic
-`provable ↔ consequence` bridge is finished for the public no-assumptions
-interface.
+The completeness theorems below take a surjective enumeration of the one-variable
+bodies (a countable signature), parameter-freeness of the theory and of the query,
+and provability of the excluded-middle schema.
+`PLNHigherOrderHOLCompletenessControls` instantiates each of them with the single
+excluded-middle axiom over the propositional signature.
 -/
 
 /-- The actual classical Henkin theory interface used by HO WM-PLN. -/
@@ -114,15 +122,12 @@ theorem derivableImpOnTheory_implies_singletonStrengthLEOn
 private theorem provable_of_provable_notnot_closed_em
     {T : ClosedTheorySet (WithParams Const)}
     {χ : HOLQuery (Base := Base) (WithParams Const)}
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hnn : ClosedTheorySet.Provable (Const := WithParams Const) T (.not (.not χ))) :
     ClosedTheorySet.Provable (Const := WithParams Const) T χ := by
   have hem :
       ClosedTheorySet.Provable (Const := WithParams Const) T (.or χ (.not χ)) :=
-    ClosedTheorySet.provable_of_mem
-      (Const := WithParams Const)
-      (T := T)
-      (hEM _ (emClosed_mem (Const := Const) χ))
+    hEM _ (emClosed_mem (Const := Const) χ)
   have hswap :
       ClosedTheorySet.Provable (Const := WithParams Const) T
         (.imp (.or χ (.not χ)) (.or (.not χ) χ)) :=
@@ -148,13 +153,13 @@ private theorem provable_of_provable_notnot_closed_em
       hemSwap
       hnn
 
-/-- If a classical EM-closed theory does not prove `χ`, adjoining `¬χ`
-remains consistent. This is the public countermodel-preparation lemma used by
+/-- If a theory that proves every excluded-middle instance does not prove `χ`,
+adjoining `¬χ` remains consistent. This is the public countermodel-preparation lemma used by
 the completeness-tight HO-PLN credal envelope. -/
 theorem consistent_insert_not_of_not_provable_classical
     {T : ClosedTheorySet (WithParams Const)}
     {χ : HOLQuery (Base := Base) (WithParams Const)}
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hNotProv : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T χ) :
     ClosedTheorySet.Consistent (Const := WithParams Const) (insert (.not χ) T) := by
   intro hIncon
@@ -176,14 +181,15 @@ theorem consistent_insert_not_of_not_provable_classical
           hIncon))
 
 /-- Classical Henkin completeness gives an actual `T`-model refuting any
-param-free query that `T` does not prove. -/
+param-free query that `T` does not prove, for a parameter-free `T` that proves
+every excluded-middle instance. -/
 theorem exists_model_not_models_of_not_provable_classical
     {T : ClosedTheorySet (WithParams Const)}
     {χ : HOLQuery (Base := Base) (WithParams Const)}
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProv : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T χ) :
     ∃ M : ClassicalHOLPointed (Base := Base) (Const := Const),
@@ -208,7 +214,7 @@ theorem exists_model_not_models_of_not_provable_classical
         · exact hT0 ψ hψT σ k)
       (by
         intro ψ hψ
-        exact Set.mem_insert_iff.mpr (.inr (hEM ψ hψ)))
+        exact ClosedTheorySet.provable_mono (fun h => Set.mem_insert_of_mem _ h) (hEM ψ hψ))
   refine ⟨M, ?_, ?_⟩
   · intro ψ hψ
     exact hM ψ (Set.mem_insert_iff.mpr (.inr hψ))
@@ -225,7 +231,7 @@ theorem exists_extensional_model_not_models_of_not_provable_classical
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProv : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T χ) :
     ∃ M : ClassicalHOLPointed (Base := Base) (Const := Const),
@@ -252,7 +258,7 @@ theorem exists_extensional_model_not_models_of_not_provable_classical
         · exact hT0 ψ hψT σ k)
       (by
         intro ψ hψ
-        exact Set.mem_insert_iff.mpr (.inr (hEM ψ hψ)))
+        exact ClosedTheorySet.provable_mono (fun h => Set.mem_insert_of_mem _ h) (hEM ψ hψ))
   refine ⟨M, ?_, ?_, hExt⟩
   · intro ψ hψ
     exact hM ψ (Set.mem_insert_iff.mpr (.inr hψ))
@@ -268,7 +274,7 @@ theorem exists_model_models_of_not_provable_not_classical
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProvNot : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ)) :
     ∃ M : ClassicalHOLPointed (Base := Base) (Const := Const),
@@ -300,7 +306,7 @@ theorem exists_extensional_model_models_of_not_provable_not_classical
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProvNot : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ)) :
     ∃ M : ClassicalHOLPointed (Base := Base) (Const := Const),
@@ -333,7 +339,7 @@ theorem provable_imp_onTheory_of_pointwiseImpliesOn_classical
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hT0 : ∀ χ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
-    (hEM : ∀ χ ∈ EMSchema Const, χ ∈ T)
+    (hEM : ∀ χ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T χ)
     (hImp0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) (.imp φ ψ))
     (himp : pointwiseImpliesOn holSatisfies (modelsTheory T) φ ψ) :
     ClosedTheorySet.Provable (Const := WithParams Const) T (.imp φ ψ) := by
@@ -364,7 +370,7 @@ theorem provable_imp_onTheory_of_pointwiseImpliesOn_classical
           · exact hT0 χ hχT σ k)
         (by
           intro χ hχ
-          exact Set.mem_insert_iff.mpr (.inr (hEM χ hχ)))
+          exact ClosedTheorySet.provable_mono (fun h => Set.mem_insert_of_mem _ h) (hEM χ hχ))
     have hMT : ∀ χ ∈ T, HenkinModel.models M χ := by
       intro χ hχ
       exact hM χ (Set.mem_insert_iff.mpr (.inr hχ))
@@ -395,7 +401,7 @@ theorem provable_imp_onTheory_of_singletonStrengthLEOn_classical
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hT0 : ∀ χ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
-    (hEM : ∀ χ ∈ EMSchema Const, χ ∈ T)
+    (hEM : ∀ χ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T χ)
     (hImp0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) (.imp φ ψ)) :
     singletonStrengthLEOn holSatisfies (modelsTheory T) φ ψ →
       ClosedTheorySet.Provable (Const := WithParams Const) T (.imp φ ψ) := by
@@ -439,7 +445,7 @@ theorem exists_model_of_consistent_classicalTheory
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ∃ M : ClassicalHOLPointed (Base := Base) (Const := Const), ∀ ψ ∈ T, HenkinModel.models M ψ := by
   exact
     ClosedTheorySet.henkin_model_exists_of_consistent_classical
@@ -454,7 +460,7 @@ theorem exists_extensional_model_of_consistent_classicalTheory
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ∃ M : ClassicalHOLPointed (Base := Base) (Const := Const),
       (∀ ψ ∈ T, HenkinModel.models M ψ) ∧
         HenkinModel.FunctionsRespectEqv M := by
@@ -469,7 +475,7 @@ theorem exists_singletonStateModelsTheory_of_consistent_classicalTheory
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ∃ W : ClassicalHOLState (Base := Base) (Const := Const),
       stateModelsTheory T W := by
   obtain ⟨M, hM⟩ :=
@@ -489,7 +495,7 @@ theorem exists_singletonState_with_member_strength_one_of_consistent_classicalTh
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hφ : φ ∈ T) :
     ∃ W : ClassicalHOLState (Base := Base) (Const := Const),
       stateModelsTheory T W ∧
@@ -507,5 +513,74 @@ theorem exists_singletonState_with_member_strength_one_of_consistent_classicalTh
     exact hM ψ hψ
   · exact
       queryStrength_singleton_of_satisfies holSatisfies M φ (hM φ hφ)
+
+/-! ## Original-signature classical completeness via `SevenVirtues`
+
+Over a countable signature `Const` with a closed term at every base type,
+`SevenVirtues.Completeness` proves classical Henkin completeness directly over
+`Const` with the single axiom `SevenVirtues.excludedMiddle`, avoiding the
+parameter signature `WithParams Const` and manual `NoConstOccurrence` side
+conditions. -/
+
+/-- Extensional pointed Henkin models of a theory `T` over the original signature `Const`. -/
+def modelsExtTheoryOrig (T : ClosedTheorySet Const)
+    (M : HenkinModel.{u, v, v} Base Const) : Prop :=
+  M.FunctionsRespectEqv ∧ ∀ χ ∈ T, HenkinModel.models M χ
+
+/-- Multiset world-model state of extensional Henkin models over `Const`. -/
+def stateModelsExtTheoryOrig (T : ClosedTheorySet Const)
+    (W : Multiset (HenkinModel.{u, v, v} Base Const)) : Prop :=
+  ∀ M ∈ W, modelsExtTheoryOrig T M
+
+/-- `SevenVirtues.exists_model_of_consistent` yields a concrete extensional
+pointed Henkin model of `T` over the original signature `Const`. -/
+theorem exists_extensional_model_of_consistent_orig
+    [Countable Base] [∀ τ, Countable (Const τ)]
+    (inh : ∀ b : Base, ClosedTerm Const (.base b))
+    {T : ClosedTheorySet Const}
+    (hCons : ClosedTheorySet.Consistent (Const := Const) (insert SevenVirtues.excludedMiddle T)) :
+    ∃ M : HenkinModel.{u, v, v} Base Const, modelsExtTheoryOrig T M :=
+  SevenVirtues.exists_model_of_consistent inh hCons
+
+/-- Over a countable signature with closed base inhabitants, provability of
+`φ → ψ` from `insert SevenVirtues.excludedMiddle T` is equivalent to singleton
+world-model consequence over extensional Henkin models of `T`. -/
+theorem provable_imp_iff_singletonStrengthLEOn_orig
+    [Countable Base] [∀ τ, Countable (Const τ)]
+    (inh : ∀ b : Base, ClosedTerm Const (.base b))
+    (T : ClosedTheorySet Const)
+    (φ ψ : HOLQuery Const) :
+    ClosedTheorySet.Provable (Const := Const) (insert SevenVirtues.excludedMiddle T) (.imp φ ψ) ↔
+      singletonStrengthLEOn holSatisfies (modelsExtTheoryOrig T) φ ψ := by
+  rw [← pointwiseImpliesOn_iff_singletonStrengthLEOn holSatisfies (modelsExtTheoryOrig T) φ ψ]
+  rw [SevenVirtues.provable_iff_valid inh T (.imp φ ψ)]
+  constructor
+  · intro hValid M ⟨hExt, hT⟩ hφ
+    exact (HenkinModel.models_imp M).mp (hValid M hExt hT) hφ
+  · intro hImp M hExt hT
+    exact (HenkinModel.models_imp M).mpr (hImp M ⟨hExt, hT⟩)
+
+/-- A consistent classical theory over the original signature `Const` yields a
+singleton WM state in which every theory member has strength `1`. -/
+theorem exists_singletonState_with_member_strength_one_of_consistent_orig
+    [Countable Base] [∀ τ, Countable (Const τ)]
+    (inh : ∀ b : Base, ClosedTerm Const (.base b))
+    {T : ClosedTheorySet Const}
+    {φ : HOLQuery Const}
+    (hCons : ClosedTheorySet.Consistent (Const := Const) (insert SevenVirtues.excludedMiddle T))
+    (hφ : φ ∈ T) :
+    ∃ W : Multiset (HenkinModel.{u, v, v} Base Const),
+      stateModelsExtTheoryOrig T W ∧
+        BinaryWorldModel.queryStrength
+            (State := Multiset (HenkinModel.{u, v, v} Base Const))
+            (Query := HOLQuery Const)
+            W φ = 1 := by
+  obtain ⟨M, hExt, hM⟩ := exists_extensional_model_of_consistent_orig inh hCons
+  refine ⟨({M} : Multiset (HenkinModel.{u, v, v} Base Const)), ?_, ?_⟩
+  · intro N hN
+    have hNM : N = M := by simpa using hN
+    subst hNM
+    exact ⟨hExt, hM⟩
+  · exact queryStrength_singleton_of_satisfies holSatisfies M φ (hM φ hφ)
 
 end Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness

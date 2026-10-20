@@ -1,3 +1,8 @@
+import Mettapedia.PLN.Bridges.ProbabilityTheory.FiniteJointInputStability
+import Mettapedia.PLN.Bridges.ProbabilityTheory.FiniteJointBalancedInformation
+import Mettapedia.PLN.Bridges.ProbabilityTheory.FiniteJointInformation
+import Mettapedia.PLN.Bridges.ProbabilityTheory.FiniteJointDistribution
+import Mettapedia.PLN.Bridges.ProbabilityTheory.MassSemantics
 import Mettapedia.PLN.Bridges.ProbabilityTheory.ConjugateEvidenceCore
 import Mettapedia.PLN.Bridges.ProbabilityTheory.CategoricalNuPLNBridge
 import Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta

@@ -1,10 +1,11 @@
+import Mettapedia.Logic.WorldModel.Basic
 import Mettapedia.PLN.WorldModel.WorldModelAdditive
 import Mettapedia.PLN.Bridges.ProbabilityTheory.ConjugateEvidenceCore
 
 /-!
 # Generic PLN World Models
 
-This module generalizes the binary `PLNWorldModel.BinaryWorldModel` interface to arbitrary
+This module generalizes the binary `BinaryWorldModel` interface to arbitrary
 additive extract carriers.
 
 The existing `BinaryWorldModel` remains the PLN-facing specialization with extract codomain
@@ -14,7 +15,9 @@ The existing `BinaryWorldModel` remains the PLN-facing specialization with extra
 - additive query extraction into any `AddCommMonoid Ev`
 - count/confidence views when `Ev` carries `ConjugateEvidence`
 
-This is the right layer for Dirichlet- and Normal-Gamma-valued query extraction.
+The representation-neutral `WorldModel` is the foundation; this module
+specializes it to additive revision and extraction. It is the layer for
+Dirichlet- and Normal-Gamma-valued sufficient-statistic extraction.
 It does not replace the binary PLN layer; it sits strictly below it.
 -/
 
@@ -22,9 +25,9 @@ namespace Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 
 open scoped ENNReal
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.PLN.Bridges.ProbabilityTheory.ConjugateEvidenceCore
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet
 
@@ -42,6 +45,25 @@ class AdditiveWorldModel (State Query Ev : Type*) [EvidenceType State] [AddCommM
   extract_add : ∀ W₁ W₂ q, extract (W₁ + W₂) q = extract W₁ q + extract W₂ q
 
 namespace AdditiveWorldModel
+
+/-- The general world-model interface is available from every additive model.
+The converse requires a separate additive extraction law. -/
+instance (priority := 100) instGeneralWorldModel
+    {State Query Ev : Type*} [EvidenceType State] [AddCommMonoid Ev]
+    [AdditiveWorldModel State Query Ev] : WorldModel State Query Ev where
+  revise := (· + ·)
+  empty := 0
+  extract := AdditiveWorldModel.extract
+
+/-- Additive revision is one monoidal revision regime. Query extraction need
+not preserve zero unless an additional law states that it does. -/
+@[instance_reducible] def toMonoidalWorldModel
+    {State Query Ev : Type*} [EvidenceType State] [AddCommMonoid Ev]
+    [AdditiveWorldModel State Query Ev] : MonoidalWorldModel State Query Ev where
+  toWorldModel := instGeneralWorldModel
+  revise_assoc := add_assoc
+  revise_empty_left := zero_add
+  revise_empty_right := add_zero
 
 variable {State Query Ev : Type*}
 variable [EvidenceType State]
@@ -158,7 +180,7 @@ end BinaryBridge
 
 /-! ## Generic multiset world models
 
-The multiset construction from `PLNWorldModelAdditive` works for any additive
+The multiset construction from `WorldModelAdditive` works for any additive
 carrier `Ev`, not just binary `BinaryEvidence`.
 -/
 
@@ -166,9 +188,7 @@ carrier `Ev`, not just binary `BinaryEvidence`.
 @[instance_reducible] noncomputable def genericWorldModelOfAtomicEvidence
     {Obs Query Ev : Type*} [AddCommMonoid Ev]
     (a : GenAtomicEvidenceContribution Obs Query Ev) :
-    letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
     AdditiveWorldModel (Multiset Obs) Query Ev := by
-  letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
   exact
     { extract := genAdditiveExtension a
       extract_add := genAdditiveExtension_add a }
@@ -180,7 +200,6 @@ theorem queryObservationCount_of_unit
     (a : GenAtomicEvidenceContribution Obs Query Ev)
     (hunit : ∀ o q, ConjugateEvidence.observationCount (a o q) = 1)
     (σ : Multiset Obs) (q : Query) :
-    letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
     @queryObservationCount (Multiset Obs) Query Ev _ _
       (genericWorldModelOfAtomicEvidence a) σ q = (σ.card : ℝ≥0∞) := by
   simp only [queryObservationCount]
@@ -194,7 +213,6 @@ theorem queryObservationConfidence_of_unit
     (a : GenAtomicEvidenceContribution Obs Query Ev)
     (hunit : ∀ o q, ConjugateEvidence.observationCount (a o q) = 1)
     (σ : Multiset Obs) (q : Query) :
-    letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
     @queryObservationConfidence (Multiset Obs) Query Ev _ _
       (genericWorldModelOfAtomicEvidence a) κ σ q =
         (σ.card : ℝ≥0∞) / ((σ.card : ℝ≥0∞) + κ) := by
@@ -240,7 +258,6 @@ theorem dirichlet_queryObservationCount_of_single {k : ℕ}
     (a : GenAtomicEvidenceContribution Obs Query (MultiEvidence k))
     (hunit : ∀ o q, (a o q).total = 1)
     (σ : Multiset Obs) (q : Query) :
-    letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
     @queryObservationCount (Multiset Obs) Query (MultiEvidence k) _ _
       (genericWorldModelOfAtomicEvidence a) σ q = (σ.card : ℝ≥0∞) := by
   have hobs : ∀ o q, ConjugateEvidence.observationCount (a o q) = 1 := by

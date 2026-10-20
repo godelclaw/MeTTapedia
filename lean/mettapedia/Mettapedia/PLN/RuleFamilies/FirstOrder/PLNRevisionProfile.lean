@@ -14,7 +14,7 @@ not confuse raw additive revision with provenance-aware duplicate suppression.
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open BinaryEvidence
 
 /-- Reader-facing theorem profile for the finite binary-evidence Revision rule.

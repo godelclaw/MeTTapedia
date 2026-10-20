@@ -34,7 +34,7 @@ The two routes are intentionally parallel:
 namespace Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelTwoSortBridge
 
 open CategoryTheory
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Syntax
 open Mettapedia.TypeTheory.Calculi.TwoSortPiSigmaId.Reduction

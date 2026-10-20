@@ -539,7 +539,7 @@ theorem bioGeneRelevance_eq_noisyOr :
 
 /-- The bio model's WM queryStrength (via the ProbLog bridge) equals its noisy-OR probability. -/
 theorem bioQueryStrength_eq_noisyOr :
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength
+    Mettapedia.PLN.Evidence.BinaryEvidence.toStrength
       (propEvidence (n := 3) (E := bioJointEvidence) regulatoryEffect) =
     queryProb bioWeights (fun w => worldToAssignment 3 w regulatoryEffect) := by
   exact queryStrength_prop_eq_queryProb bioWeights regulatoryEffect
@@ -598,7 +598,7 @@ theorem queryProb_anyTrue_toReal_eq_noisyOrMulti
 When ProbLog weights match PLN evidence strengths, the distribution-semantics
 query probability equals the noisy-OR computed directly from evidence counts. -/
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale in
+open Mettapedia.PLN.Evidence in
 /-- When ProbLog weights equal empirical evidence strengths, the distribution-semantics
     noisy-OR probability agrees with the evidence-calculus noisy-OR. -/
 theorem queryProb_from_evidence
@@ -612,7 +612,7 @@ theorem queryProb_from_evidence
   simp only [hp_match] at h
   exact h
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale in
+open Mettapedia.PLN.Evidence in
 /-- Concrete bio instantiation: when the 3 ProbLog weights match evidence strengths,
     the WM noisy-OR score equals the PLN benchmark's noisy-OR. -/
 theorem bio_queryProb_from_evidence

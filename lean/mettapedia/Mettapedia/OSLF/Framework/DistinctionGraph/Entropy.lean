@@ -18,7 +18,7 @@ namespace Mettapedia.OSLF.Framework.DistinctionGraph.Entropy
 
 open Mettapedia.OSLF.Framework.DistinctionGraph.Weighted
 open Mettapedia.OSLF.Framework.EvidenceSemantics
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.OSLF.Formula
 
 open scoped ENNReal

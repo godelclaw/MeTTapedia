@@ -21,7 +21,7 @@ namespace Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlAl
 open scoped Classical
 open Mettapedia.PLN.InferenceControl.PremiseSelection
 open Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore
 
 noncomputable section

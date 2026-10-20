@@ -21,8 +21,8 @@ ontology fragment:
 namespace Mettapedia.PLN.ConceptGeometry.AssocPat.AbstractInheritanceIntensionalDemo
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel
 open Mettapedia.KR.ConceptOntology
 open Mettapedia.KR.ConceptOntology.Examples

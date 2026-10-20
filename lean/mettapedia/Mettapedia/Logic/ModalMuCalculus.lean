@@ -10,8 +10,12 @@ with fixed-point operators for reasoning about infinite behavior.
 ## Mathematical Foundation
 
 Modal μ-calculus extends Hennessy-Milner Logic (HML) with:
-- **Least fixed point**: μ X . φ (finite/inductive properties)
-- **Greatest fixed point**: ν X . φ (infinite/coinductive properties)
+- **Least fixed point**: μ X . φ (inductively defined properties)
+- **Greatest fixed point**: ν X . φ (coinductively defined properties)
+
+Neither constructor says that the described executions terminate or are
+deterministic. Finite-state model checking can finish while deciding a property
+of an infinite execution.
 
 This is the foundation for model checking and program verification.
 
@@ -242,17 +246,17 @@ def eventually (a : Act) (φ : Formula Act 0) : Formula Act 0 :=
 def always (a : Act) (φ : Formula Act 0) : Formula Act 0 :=
   nu (conj (weaken φ) (box a (var 0)))
 
-/-- Always eventually φ (□◇φ): φ holds infinitely often
-    GF φ = ν Y . (μ X . (φ ∨ ⟨·⟩X)) ∧ [·]Y
-    Note: nested fixed points require careful weakening -/
+/-- `AG EF φ`: from every reachable state there is a finite path to `φ`.
+    This branching property does not require any one path to visit `φ`
+    infinitely often. Nested fixed points require careful weakening. -/
 def alwaysEventually (a : Act) (φ : Formula Act 0) : Formula Act 0 :=
   -- Inner eventually: μ X . (φ ∨ ⟨a⟩X) at level 1
   let innerEv : Formula Act 1 := mu (disj (weaken (weaken φ)) (diamond a (var 0)))
   -- Outer always: ν Y . innerEv ∧ [a]Y
   nu (conj innerEv (box a (var 0)))
 
-/-- Eventually always φ (◇□φ): φ eventually holds forever
-    FG φ = μ Y . (ν X . (φ ∧ [·]X)) ∨ ⟨·⟩Y -/
+/-- `EF AG φ`: some reachable state satisfies `φ` at every state reachable
+    from it. This is a branching property, not a single-path `FG` claim. -/
 def eventuallyAlways (a : Act) (φ : Formula Act 0) : Formula Act 0 :=
   -- Inner always: ν X . (φ ∧ [a]X) at level 1
   let innerAlw : Formula Act 1 := nu (conj (weaken (weaken φ)) (box a (var 0)))

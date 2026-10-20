@@ -1,5 +1,8 @@
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.Sizes
-import Mettapedia.OSLF.MeTTaIL.Complete
+import Mettapedia.OSLF.MeTTaIL.Complete.Run
+import Mettapedia.OSLF.MeTTaIL.Complete.ClassesChecked
+import Mettapedia.OSLF.MeTTaIL.Complete.Graph
+import Mettapedia.OSLF.MeTTaIL.Complete.Termination
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteExecution.DescentLower
 
 /-!

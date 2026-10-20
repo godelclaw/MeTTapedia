@@ -19,9 +19,9 @@ machinery into forms that are convenient for OpenClaw-style observation flows.
 namespace Mettapedia.Hyperseed
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointCascade
 open Mettapedia.PLN.WorldModel
@@ -78,7 +78,6 @@ def traceSeed (frontier : Obs → Set Query) (σ : Multiset Obs) : Set Query :=
 interface. -/
 abbrev RulePool
     (S : SufficientStatisticEncoder Obs Query BinaryEvidence) :=
-  letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
   letI : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
   RuleSet (Multiset Obs) Query
 
@@ -89,7 +88,6 @@ noncomputable def closureFromTrace
     (frontier : Obs → Set Query)
     (R : RulePool S)
     (σ : Multiset Obs) : Set Query :=
-  letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
   letI : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
   leastRuleClosure R σ (traceSeed frontier σ)
 
@@ -99,7 +97,6 @@ def cascadeFromTrace
     (frontier : Obs → Set Query)
     (R : RulePool S)
     (σ : Multiset Obs) : ℕ → Set Query :=
-  letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
   letI : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
   immediateIter R σ (traceSeed frontier σ)
 
@@ -109,7 +106,6 @@ theorem seed_subset_closureFromTrace
     (R : RulePool S)
     (σ : Multiset Obs) :
     traceSeed frontier σ ⊆ closureFromTrace S frontier R σ := by
-  letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
   letI : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
   exact seed_subset_leastRuleClosure (R := R) (W := σ) (seed := traceSeed frontier σ)
 
@@ -121,7 +117,6 @@ theorem mem_closureFromTrace_iff_mem_cascade_card_of_finite
     (σ : Multiset Obs) (q : Query) :
     q ∈ closureFromTrace S frontier R σ ↔
       q ∈ cascadeFromTrace S frontier R σ (Fintype.card Query) := by
-  letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
   letI : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
   exact
     mem_leastRuleClosure_iff_mem_immediateIter_card_of_finite
@@ -136,7 +131,6 @@ theorem mem_closureFromTrace_implies_eventualDiscovery_of_finite
     {q : Query}
     (hq : q ∈ closureFromTrace S frontier R σ) :
     ∃ N ≤ Fintype.card Query, q ∈ cascadeFromTrace S frontier R σ N := by
-  letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
   letI : BinaryWorldModel (Multiset Obs) Query := worldModelOfAtomicEvidence S.observe
   exact
     mem_leastRuleClosure_implies_eventual_discovery_of_finite

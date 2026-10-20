@@ -24,7 +24,7 @@ Assurance is computed via weighted Beta aggregation:
 
 ## Compatibility
 
-- BinaryEvidence counts (n⁺, n⁻) align with `Mettapedia.PLN.Evidence.EvidenceQuantale`
+- BinaryEvidence counts (n⁺, n⁻) align with `Mettapedia.PLN.Evidence.BinaryEvidence`
 - Strength/confidence align with PLN SimpleTruthValue
 - Review votes are meta-evidence with source_type = llmReview/humanReview
 

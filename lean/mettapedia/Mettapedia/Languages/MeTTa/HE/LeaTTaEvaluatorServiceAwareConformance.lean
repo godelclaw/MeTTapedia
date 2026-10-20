@@ -1,5 +1,9 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaEvaluatorBindingObservation
 import Mettapedia.Languages.MeTTa.HE.LeaTTaEvaluatorSuccessPriorityConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Service-aware evaluator result composition
@@ -121,7 +125,7 @@ def ServiceAwareRawEvaluatorResultsRuntimeSound
     (atom expectedType : Atom) (bindings : Bindings)
     (runtimeInput : Metta.Bindings)
     (runtimeResults : List (Metta.Atom × Metta.Bindings))
-    (typing : EvalTypeService := publishedTypeService) : Prop :=
+    (typing : EvalTypeService := storageTypeService) : Prop :=
   ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ result,
       EvalAtomRawRel space dispatch live (typing := typing)
@@ -137,7 +141,7 @@ def ServiceAwareInterpretExpressionResultsRuntimeSound
     (expression expectedType : Atom) (bindings : Bindings)
     (runtimeInput : Metta.Bindings)
     (runtimeResults : List (Metta.Atom × Metta.Bindings))
-    (typing : EvalTypeService := publishedTypeService) : Prop :=
+    (typing : EvalTypeService := storageTypeService) : Prop :=
   ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ result,
       InterpretExpressionRel space dispatch live (typing := typing)
@@ -154,7 +158,7 @@ def ServiceAwareSelectedApplicationResultsRuntimeSound
     (expression expectedType : Atom) (policy : SelectedTypePolicy)
     (applicableBindings : Bindings) (runtimeInput : Metta.Bindings)
     (runtimeResults : List (Metta.Atom × Metta.Bindings))
-    (typing : EvalTypeService := publishedTypeService) : Prop :=
+    (typing : EvalTypeService := storageTypeService) : Prop :=
   ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ interpreted callResult,
       InterpretFunctionRel space dispatch
@@ -177,7 +181,7 @@ def ServiceAwareTupleApplicationResultsRuntimeSound
     (expression expectedType : Atom) (bindings : Bindings)
     (runtimeInput : Metta.Bindings)
     (runtimeResults : List (Metta.Atom × Metta.Bindings))
-    (typing : EvalTypeService := publishedTypeService) : Prop :=
+    (typing : EvalTypeService := storageTypeService) : Prop :=
   ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ tupleResult callResult,
       InterpretTupleRel space dispatch (expectedType :: live) (typing := typing)
@@ -308,11 +312,11 @@ theorem replacement_result_not_extending
     · intro name value member
       simp at member
       rcases member with ⟨rfl, rfl⟩
-      simp [valuation, LeaTTaBridge.applyClassSolution]
+      simp [valuation, Spec.Match.SolutionTheory.applyClassSolution]
     · intro left right member
       simp at member
   have satisfiesA := relation.extension valuation satisfiesB
   have forced := satisfiesA.1 "x" (.sym "A") (by simp)
-  simp [valuation, LeaTTaBridge.applyClassSolution] at forced
+  simp [valuation, Spec.Match.SolutionTheory.applyClassSolution] at forced
 
 end Mettapedia.Languages.MeTTa.HE.LeaTTaEvaluatorServiceAwareConformance

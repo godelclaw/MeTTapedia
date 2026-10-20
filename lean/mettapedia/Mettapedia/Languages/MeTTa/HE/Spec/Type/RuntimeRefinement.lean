@@ -503,7 +503,7 @@ private theorem r1_f_type :
     TypeOfRel r1Space (.symbol "f")
       (.expression [.symbol "->", .symbol "A", .symbol "B"]) := by
   refine ⟨[.expression [.symbol "->", .symbol "A", .symbol "B"]], ?_, by simp⟩
-  apply TypesOfRel.symbolKnown
+  apply StorageTypesRel.symbolKnown
   · exact AnnotationTypesRel.hit
       (AnnotationTypesRel.skip (by simp) AnnotationTypesRel.nil)
   · simp
@@ -540,7 +540,7 @@ private theorem r1_f_runtime_type
 private theorem r1_a_type :
     TypeOfRel r1Space (.symbol "a") (.symbol "A") := by
   refine ⟨[.symbol "A"], ?_, by simp⟩
-  apply TypesOfRel.symbolKnown
+  apply StorageTypesRel.symbolKnown
   · exact AnnotationTypesRel.skip (by simp)
       (AnnotationTypesRel.hit AnnotationTypesRel.nil)
   · simp
@@ -625,7 +625,7 @@ private theorem r1_id_type :
     TypeOfRel r1ParametricSpace (.symbol "id")
       (.expression [.symbol "->", .var "t", .var "t"]) := by
   refine ⟨[.expression [.symbol "->", .var "t", .var "t"]], ?_, by simp⟩
-  apply TypesOfRel.symbolKnown
+  apply StorageTypesRel.symbolKnown
   · exact AnnotationTypesRel.hit
       (AnnotationTypesRel.skip (by simp) AnnotationTypesRel.nil)
   · simp
@@ -633,7 +633,7 @@ private theorem r1_id_type :
 private theorem r1_parametric_a_type :
     TypeOfRel r1ParametricSpace (.symbol "a") (.symbol "A") := by
   refine ⟨[.symbol "A"], ?_, by simp⟩
-  apply TypesOfRel.symbolKnown
+  apply StorageTypesRel.symbolKnown
   · exact AnnotationTypesRel.skip (by simp)
       (AnnotationTypesRel.hit AnnotationTypesRel.nil)
   · simp
@@ -873,7 +873,7 @@ private def runtimeCall : Atom :=
 private theorem runtime_xs_type :
     TypeOfRel runtimeApplicabilitySpace (.symbol "xs") runtimeListActual := by
   refine ⟨[runtimeListActual], ?_, by simp⟩
-  apply TypesOfRel.symbolKnown
+  apply StorageTypesRel.symbolKnown
   · exact AnnotationTypesRel.hit AnnotationTypesRel.nil
   · simp
 

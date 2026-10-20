@@ -29,7 +29,7 @@ open Mettapedia.KR.ConceptGeometry.AbstractInheritance
 open Mettapedia.KR.ConceptGeometry.ExtensionalIntensionalDivergence
 open Mettapedia.KR.ConceptGeometry.Bridges.UniversalAI.OpenEndedAlgorithmicConceptFormation
 open Mettapedia.Logic.WorldModel.Algorithmic
-open Mettapedia.Logic.WorldModel.AlgorithmicConceptFormationExamples
+open Mettapedia.Logic.WorldModel.AlgorithmicConceptFormation
 
 universe u v
 
@@ -250,7 +250,7 @@ namespace Mettapedia.KR.ConceptGeometry.Bridges.UniversalAI.AlgorithmicFeatureEv
 open KolmogorovComplexity
 open Mettapedia.KR.ConceptGeometry.ExtensionalIntensionalDivergence
 open Mettapedia.KR.ConceptGeometry.Bridges.UniversalAI.AlgorithmicFeatureEvidence
-open Mettapedia.Logic.WorldModel.AlgorithmicConceptFormationExamples
+open Mettapedia.Logic.WorldModel.AlgorithmicConceptFormation
 
 /-! ## Quantitative strict-growth control -/
 

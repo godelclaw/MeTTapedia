@@ -147,7 +147,7 @@ theorem raw_positive_witness {system : GSLT.{u}} {admitted : system.Term → Pro
   cases budget with
   | zero => cases positive
   | succ budget =>
-    obtain ⟨receipt, listed, read⟩ := possibility_positive_receipt backend (denotation tests formula)
+    obtain ⟨receipt, listed, read⟩ := possibility_positive_receipt backend (denotation tests formula backend.spatial.theory)
       (budget + 1) source (fun receipt => raw backend tests budget formula (backend.target source receipt)) positive
     obtain ⟨family, selected, _⟩ := retained_positive_witness
       (fun receipt => raw backend tests budget formula (backend.target source receipt)) _ receipt listed read
@@ -161,7 +161,7 @@ theorem raw_negative_counterreceipt {system : GSLT.{u}} {admitted : system.Term 
   cases budget with
   | zero => cases negative
   | succ budget =>
-    obtain ⟨receipt, listed, read⟩ := universal_negative_receipt backend (denotation tests formula)
+    obtain ⟨receipt, listed, read⟩ := universal_negative_receipt backend (denotation tests formula backend.spatial.theory)
       (budget + 1) source (fun receipt => raw backend tests budget formula (backend.target source receipt)) negative
     obtain ⟨family, selected, _⟩ := retained_negative_witness
       (fun receipt => raw backend tests budget formula (backend.target source receipt)) _ receipt listed read
@@ -175,7 +175,7 @@ theorem raw_negative_possibility_closed {system : GSLT.{u}} {admitted : system.T
   cases budget with
   | zero => cases negative
   | succ budget =>
-    exact possibility_negative_closed backend (denotation tests formula)
+    exact possibility_negative_closed backend (denotation tests formula backend.spatial.theory)
       (budget + 1) source (fun receipt => raw backend tests budget formula (backend.target source receipt)) negative
 
 theorem raw_positive_universal_closed {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
@@ -186,7 +186,7 @@ theorem raw_positive_universal_closed {system : GSLT.{u}} {admitted : system.Ter
   cases budget with
   | zero => cases positive
   | succ budget =>
-    exact universal_positive_closed backend (denotation tests formula)
+    exact universal_positive_closed backend (denotation tests formula backend.spatial.theory)
       (budget + 1) source (fun receipt => raw backend tests budget formula (backend.target source receipt)) positive
 
 theorem recorded_positive_witness {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
@@ -228,7 +228,7 @@ theorem recorded_positive_receipt_evidence {system : GSLT.{u}} {admitted : syste
     (formula : Formula Leaf) (source : system.Term) (budget : Nat)
     (positive : (run backend tests (.possibility formula) source budget).outcome.answer = some true) :
     ∃ receipt, receipt ∈ (frontierView backend (run backend tests (.possibility formula) source budget)).receipts ∧
-      system.Step source (backend.target source receipt) ∧ denotation tests formula (backend.target source receipt) := by
+      system.Step source (backend.target source receipt) ∧ denotation tests formula backend.spatial.theory (backend.target source receipt) := by
   obtain ⟨family, selected⟩ := recorded_positive_witness backend tests formula source budget positive
   have listed := positive_member _ _ family selected
   exact ⟨family.1, listed, backend.sound _ source family.1 listed, family.2.down⟩
@@ -238,7 +238,7 @@ theorem recorded_negative_receipt_evidence {system : GSLT.{u}} {admitted : syste
     (formula : Formula Leaf) (source : system.Term) (budget : Nat)
     (negative : (run backend tests (.outgoingUniversal formula) source budget).outcome.answer = some false) :
     ∃ receipt, receipt ∈ (frontierView backend (run backend tests (.outgoingUniversal formula) source budget)).receipts ∧
-      system.Step source (backend.target source receipt) ∧ ¬ denotation tests formula (backend.target source receipt) := by
+      system.Step source (backend.target source receipt) ∧ ¬ denotation tests formula backend.spatial.theory (backend.target source receipt) := by
   obtain ⟨family, selected⟩ := recorded_negative_counterreceipt backend tests formula source budget negative
   have listed := negative_member _ _ family selected
   exact ⟨family.1, listed, backend.sound _ source family.1 listed, family.2.down⟩

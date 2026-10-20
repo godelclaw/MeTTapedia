@@ -17,7 +17,7 @@ This keeps the tensor-quantale on `BinaryEvidence` unchanged, while giving a cle
 quantale instance for the additive (parallel) combination on a separate type.
 -/
 
-namespace Mettapedia.PLN.Evidence.EvidenceQuantale
+namespace Mettapedia.PLN.Evidence
 
 /-- BinaryEvidence with the **order-dual** lattice. -/
 abbrev EvidenceHplus := OrderDual BinaryEvidence
@@ -219,4 +219,4 @@ instance : Mettapedia.Algebra.QuantaleWeakness.IsCommQuantale EvidenceHplus :=
   Mettapedia.Algebra.QuantaleWeakness.IsCommQuantale.ofCommSemigroup hplus_sSup_right
 
 end EvidenceHplus
-end Mettapedia.PLN.Evidence.EvidenceQuantale
+end Mettapedia.PLN.Evidence

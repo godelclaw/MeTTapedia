@@ -15,7 +15,7 @@ supersedes.
 namespace Mettapedia.Examples.PLN.RavenInductionCurriculum
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+open Mettapedia.PLN.Evidence.BinaryEvidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder
 open Mettapedia.PLN.RuleFamilies.FirstOrder.RavenInductionBridge
 open Mettapedia.PLN.RuleFamilies.FirstOrder.RavenAsymmetricInduction

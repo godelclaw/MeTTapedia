@@ -11,8 +11,8 @@ inheritance channels, not define a second inheritance semantics.
 namespace Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 
 /-- Coarse semantic layer tag for inheritance-facing statements.  The tag is a
 gate into the already-existing inheritance query channels. -/

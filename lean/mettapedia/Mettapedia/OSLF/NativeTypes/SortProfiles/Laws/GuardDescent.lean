@@ -40,7 +40,7 @@ def rule : RewriteRule where
   bindings := some ⟨[("X", [])], []⟩
 
 def provider : ProviderSnapshot :=
-  ⟨[⟨"recognize", [.base "Term"], [.input]⟩], [⟨"recognize", [first]⟩]⟩
+  ⟨[⟨"recognize", [.base "Term"], [.input]⟩], [⟨"recognize", [first]⟩], []⟩
 
 def environment : Environment where
   language := language
@@ -91,6 +91,7 @@ theorem actual_second_query_impossible :
         simp [environment, provider]
       rw [absent] at found
       cases found
+  | dynamicRow registered _ _ _ _ _ _ _ => simp [environment, provider] at registered
 
 def sortModel : Mettapedia.UniversalAlgebra.Model (signature language) HSort :=
   Mettapedia.OSLF.NativeTypes.SortProfiles.EquationalCenter.model _ (fun _ => .star)

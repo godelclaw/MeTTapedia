@@ -14,7 +14,7 @@ reusing `BinaryEvidence.toStrength_hplus`.
 namespace Mettapedia.PLN.InferenceControl.PremiseSelection
 
 open scoped Classical ENNReal BigOperators
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-- BinaryEvidence-valued scoring for a goal/fact pair. -/
 structure Scorer (Goal Fact : Type*) where

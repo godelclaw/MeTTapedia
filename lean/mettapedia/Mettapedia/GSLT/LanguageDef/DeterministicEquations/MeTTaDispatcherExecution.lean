@@ -1,4 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaCallExecution
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Source rows in the emitted dispatcher
@@ -88,9 +92,9 @@ theorem EmittedCase.lower {program : Program} {fuel : Atom} {row : CaseRow}
 
 private theorem substitute_absent (name : String) (replacement atom : Atom)
     (absent : ¬AtomOccurs atom name) : substituteName name replacement atom = atom := by
-  apply toLeaTTaAtom_injective
+  apply encodeModelAtom_injective
   rw [substituteName_runtime]
-  exact substitute_fresh name (toLeaTTaAtom replacement) (toLeaTTaAtom atom)
+  exact substitute_fresh name (encodeModelAtom replacement) (encodeModelAtom atom)
     (fun member => absent (atomOccurs_of_mem_translated_vars member))
 
 /-- A dispatcher input is allocated before every row-local name. Filling
@@ -346,34 +350,34 @@ theorem matched_header_materialization (head fuelName argumentName : String)
     (different : fuelName ≠ argumentName)
     (privateBody : ∀ name ∈ body.vars, Metta.Bindings.lookupVal incoming name = none)
     (matching : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom (call head [.var fuelName, .var argumentName]))
-      (toLeaTTaAtom (call head [.grounded (.int fuel), MeTTaData.encodeItems arguments])))
+      (encodeModelAtom (call head [.var fuelName, .var argumentName]))
+      (encodeModelAtom (call head [.grounded (.int fuel), MeTTaData.encodeItems arguments])))
     (merging : output ∈ Metta.Bindings.merge incoming matched) :
     ClosedValueBindings output ∧ LeaRuntimeBindingInvariant output ∧
       Metta.instantiate output body =
         Metta.Subst.apply [(fuelName, .gnd (.int fuel)),
-          (argumentName, toLeaTTaAtom (MeTTaData.encodeItems arguments))] body := by
+          (argumentName, encodeModelAtom (MeTTaData.encodeItems arguments))] body := by
   let header := call head [.var fuelName, .var argumentName]
   let query := call head [.grounded (.int fuel), MeTTaData.encodeItems arguments]
-  have closed : (toLeaTTaAtom query).vars = [] := by
-    simp only [query, call, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars,
+  have closed : (encodeModelAtom query).vars = [] := by
+    simp only [query, call, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars,
       List.map_cons, List.map_nil, List.flatten_cons, List.flatten_nil,
       List.append_nil,
       data_atom_runtime_closed (MeTTaData.encodeItems_data arguments)]
-  have matchedClosed := matching_closed_side (toLeaTTaAtom header) (toLeaTTaAtom query)
+  have matchedClosed := matching_closed_side (encodeModelAtom header) (encodeModelAtom query)
     matched (.inr closed) matching
   have outputClosed := merge_closed_closed_mem stored matchedClosed merging
   have outputInvariant := invariant.merge_matchOutput
-    (toLeaTTaAtom_noFloat header) (toLeaTTaAtom_noFloat query)
+    (encodeModelAtom_noFloat header) (encodeModelAtom_noFloat query)
     matching merging outputClosed.hasLoop_false
   have inputs := (leaMerge_solution_iff (leaClassSolution output) invariant.noFloat
-    (leaMatchAtoms_result_noFloat (toLeaTTaAtom_noFloat header)
-      (toLeaTTaAtom_noFloat query) matching) merging).mp outputInvariant.canonical.1
+    (leaMatchAtoms_result_noFloat (encodeModelAtom_noFloat header)
+      (encodeModelAtom_noFloat query) matching) merging).mp outputInvariant.canonical.1
   have equation := (leaMatchAtoms_solution_iff (leaClassSolution output)
-    (toLeaTTaAtom_noFloat header) (toLeaTTaAtom_noFloat query) matching).mp inputs.2
+    (encodeModelAtom_noFloat header) (encodeModelAtom_noFloat query) matching).mp inputs.2
   have values : leaClassSolution output fuelName = .gnd (.int fuel) ∧
-      leaClassSolution output argumentName = toLeaTTaAtom (MeTTaData.encodeItems arguments) := by
-    simpa only [header, query, call, MettaEquationSatisfied, toLeaTTaAtom, toLeaTTaAtoms, toLeaTTaGround,
+      leaClassSolution output argumentName = encodeModelAtom (MeTTaData.encodeItems arguments) := by
+    simpa only [header, query, call, MettaEquationSatisfied, encodeModelAtom, encodeModelAtoms, encodeModelGround,
       applyClassSolution, List.map_cons, List.map_nil, Metta.Atom.expr.injEq,
       List.cons.injEq, true_and, and_true, encoded_items_solution_fixed] using equation
   refine ⟨outputClosed, outputInvariant, instantiate_eq_subst_on_variables output _ body ?_⟩
@@ -395,9 +399,9 @@ theorem matched_header_materialization (head fuelName argumentName : String)
         rcases merge_closed_closed_valueKeys_subset stored matchedClosed merging name key with old | new
         · obtain ⟨value, present⟩ := stored.toValueBindings.lookup_some_of_key_mem old
           simp only [privateBody name occurrence, reduceCtorEq] at present
-        · have occurs := matching_closed_keys (toLeaTTaAtom header) (toLeaTTaAtom query)
+        · have occurs := matching_closed_keys (encodeModelAtom header) (encodeModelAtom query)
             matched (.inr closed) matching name new
-          simp only [header, call, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars,
+          simp only [header, call, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars,
             List.map_cons, List.map_nil, List.flatten_cons, List.flatten_nil,
             List.nil_append, List.append_nil, closed, List.singleton_append,
             List.mem_cons, List.not_mem_nil, isFuel, isArgument, or_self] at occurs
@@ -414,9 +418,9 @@ theorem dispatcher_query_materialization (program : Program) (head : String)
     (first fuel counter : Nat) (arguments : List Term) (previous : Stack)
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) :
-    let lhs := toLeaTTaAtom (call (dispatchName head)
+    let lhs := encodeModelAtom (call (dispatchName head)
       [.var (freshName first), .var (freshName (first + 1))])
-    let query := toLeaTTaAtom (call (dispatchName head)
+    let query := encodeModelAtom (call (dispatchName head)
       [.grounded (.int fuel), MeTTaData.encodeItems arguments])
     ∃ rawBody branches checked, ∃ rename : String → String,
       (dispatcher program head first).1.2 = call "="
@@ -428,18 +432,18 @@ theorem dispatcher_query_materialization (program : Program) (head : String)
       (∀ branch ∈ branches, UsesBefore checked branch.1 ∧ UsesBefore checked branch.2) ∧
       Function.Injective rename ∧
       (freshenRuleAvoiding counter (Metta.Minimal.queryOpAvoid previous query incoming)
-        lhs (toLeaTTaAtom (call "function" [rawBody]))).1 =
-          (renBy rename lhs, renBy rename (toLeaTTaAtom (call "function" [rawBody]))) ∧
+        lhs (encodeModelAtom (call "function" [rawBody]))).1 =
+          (renBy rename lhs, renBy rename (encodeModelAtom (call "function" [rawBody]))) ∧
       ∀ matched output,
         matched ∈ Metta.matchAtoms
           (freshenRuleAvoiding counter (Metta.Minimal.queryOpAvoid previous query incoming)
-            lhs (toLeaTTaAtom (call "function" [rawBody]))).1.1 query →
+            lhs (encodeModelAtom (call "function" [rawBody]))).1.1 query →
         output ∈ Metta.Bindings.merge incoming matched →
         ClosedValueBindings output ∧ LeaRuntimeBindingInvariant output ∧
           Metta.instantiate output
             (freshenRuleAvoiding counter (Metta.Minimal.queryOpAvoid previous query incoming)
-              lhs (toLeaTTaAtom (call "function" [rawBody]))).1.2 =
-            renBy rename (toLeaTTaAtom (call "function" [call "chain"
+              lhs (encodeModelAtom (call "function" [rawBody]))).1.2 =
+            renBy rename (encodeModelAtom (call "function" [call "chain"
               [MeTTaData.encodeItems arguments, .var (freshName checked),
                 selectBranches (.var (freshName checked)) branches
                   (returned (.symbol "nik:Failure"))]])) := by
@@ -447,7 +451,7 @@ theorem dispatcher_query_materialization (program : Program) (head : String)
   obtain ⟨rawBody, branches, checked, emitted, filled, aligned, afterRows, rowBounds⟩ :=
     dispatcher_filled_inputs program head first fuel arguments
   obtain ⟨rename, injective, freshened⟩ := freshenRuleAvoiding_renaming counter
-    (Metta.Minimal.queryOpAvoid previous query incoming) lhs (toLeaTTaAtom (call "function" [rawBody]))
+    (Metta.Minimal.queryOpAvoid previous query incoming) lhs (encodeModelAtom (call "function" [rawBody]))
   refine ⟨rawBody, branches, checked, rename, emitted, aligned, afterRows, rowBounds,
     injective, freshened, ?_⟩
   intro matched output matching merging
@@ -455,45 +459,45 @@ theorem dispatcher_query_materialization (program : Program) (head : String)
     intro same
     have equalIndex := freshName_injective (injective same)
     omega
-  have privateBody : ∀ name ∈ (renBy rename (toLeaTTaAtom rawBody)).vars,
+  have privateBody : ∀ name ∈ (renBy rename (encodeModelAtom rawBody)).vars,
       Metta.Bindings.lookupVal incoming name = none := by
     intro name member
     apply query_fresh_variables_unassigned counter previous query lhs
-      (toLeaTTaAtom (call "function" [rawBody])) incoming stored name
+      (encodeModelAtom (call "function" [rawBody])) incoming stored name
     rw [freshened]
     apply List.mem_append_right
-    simpa only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons,
+    simpa only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons,
       List.map_nil, Metta.Atom.vars, List.flatten_cons, List.flatten_nil,
       List.nil_append, List.append_nil] using member
   have headerMatch : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom (call (dispatchName head)
+      (encodeModelAtom (call (dispatchName head)
         [.var (rename (freshName first)), .var (rename (freshName (first + 1)))])) query := by
     rw [freshened] at matching
-    simpa only [lhs, call, toLeaTTaAtom, toLeaTTaAtoms, renBy,
+    simpa only [lhs, call, encodeModelAtom, encodeModelAtoms, renBy,
       List.map_cons, List.map_nil] using matching
   obtain ⟨outputClosed, outputInvariant, materialized⟩ := matched_header_materialization
     (dispatchName head) (rename (freshName first)) (rename (freshName (first + 1)))
-    fuel arguments (renBy rename (toLeaTTaAtom rawBody)) incoming matched output
+    fuel arguments (renBy rename (encodeModelAtom rawBody)) incoming matched output
     stored invariant different privateBody headerMatch merging
   have transport := fillInputs_runtime
     [(first, .grounded (.int fuel)), (first + 1, MeTTaData.encodeItems arguments)]
     rawBody rename injective (by
       intro entry member
       rcases List.mem_cons.mp member with rfl | member
-      · simp only [toLeaTTaAtom, Metta.Atom.vars]
+      · simp only [encodeModelAtom, Metta.Atom.vars]
       · rcases List.mem_singleton.mp member with rfl
         exact data_atom_runtime_closed (MeTTaData.encodeItems_data arguments))
   rw [filled] at transport
-  have inner : Metta.instantiate output (renBy rename (toLeaTTaAtom rawBody)) =
-      renBy rename (toLeaTTaAtom (call "chain"
+  have inner : Metta.instantiate output (renBy rename (encodeModelAtom rawBody)) =
+      renBy rename (encodeModelAtom (call "chain"
         [MeTTaData.encodeItems arguments, .var (freshName checked),
           selectBranches (.var (freshName checked)) branches
             (returned (.symbol "nik:Failure"))])) := by
     rw [materialized]
-    simpa only [List.map_cons, List.map_nil, toLeaTTaAtom, toLeaTTaGround] using transport
+    simpa only [List.map_cons, List.map_nil, encodeModelAtom, encodeModelGround] using transport
   refine ⟨outputClosed, outputInvariant, ?_⟩
   rw [freshened]
-  simpa only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil,
+  simpa only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil,
     Metta.instantiate, Metta.Bindings.resolveAtom] using
     congrArg (fun body => Metta.Atom.expr [.sym "function", body]) inner
 
@@ -504,7 +508,7 @@ theorem encoded_arguments_chain_enters (arguments : List Term)
     (template : Metta.Atom) (name : String) (environment : MinEnv) (state : St)
     (bindings : Metta.Bindings) (parent : Frame) (continuation : Stack) (fuel : Nat)
     (rest : List Item) (done : List (Metta.Atom × Metta.Bindings)) :
-    let payload := toLeaTTaAtom (MeTTaData.encodeItems arguments)
+    let payload := encodeModelAtom (MeTTaData.encodeItems arguments)
     interpretFuel environment (fuel + 3) state
       (⟨atomToStack (.expr [.sym "chain", payload, .var name, template])
         (parent :: continuation), bindings⟩ :: rest) done =
@@ -526,11 +530,11 @@ theorem encoded_arguments_chain_enters (arguments : List Term)
       (data_atom_runtime_closed (MeTTaData.encodeItems_data arguments))
   have initial : atomToStack body (parent :: continuation) = start.stack := by
     cases arguments <;> simp [body, payload, scope, caller, start, MeTTaData.encodeItems,
-      toLeaTTaAtom, toLeaTTaAtoms, atomToStack, varsCopy]
+      encodeModelAtom, encodeModelAtoms, atomToStack, varsCopy]
   have firstStep (budget : Nat) : interpretStack1 environment budget state start =
       ([ready], state) := by
     cases arguments <;> simp [start, ready, payload, MeTTaData.encodeItems,
-      toLeaTTaAtom, toLeaTTaAtoms, interpretStack1, isEmbeddedOp]
+      encodeModelAtom, encodeModelAtoms, interpretStack1, isEmbeddedOp]
   have secondStep (budget : Nat) : interpretStack1 environment budget state ready =
       ([middle], state) := by
     simp only [ready, middle, caller, body, interpretStack1, closed, if_true]
@@ -554,33 +558,33 @@ private theorem substitute_renamed_scan (arguments : List Term)
     (injective : Function.Injective rename)
     (bounds : ∀ branch ∈ branches, UsesBefore checked branch.1 ∧ UsesBefore checked branch.2) :
     Metta.Subst.apply [(rename (freshName checked),
-        toLeaTTaAtom (MeTTaData.encodeItems arguments))]
-      (renBy rename (toLeaTTaAtom (selectBranches (.var (freshName checked)) branches
+        encodeModelAtom (MeTTaData.encodeItems arguments))]
+      (renBy rename (encodeModelAtom (selectBranches (.var (freshName checked)) branches
         (returned (.symbol "nik:Failure"))))) =
-    renBy rename (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) branches
+    renBy rename (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) branches
       (returned (.symbol "nik:Failure")))) := by
   have closed := renBy_eq_self_of_vars_nil rename
-    (toLeaTTaAtom (MeTTaData.encodeItems arguments))
+    (encodeModelAtom (MeTTaData.encodeItems arguments))
     (data_atom_runtime_closed (MeTTaData.encodeItems_data arguments))
   induction branches with
-  | nil => simp [selectBranches, returned, call, toLeaTTaAtom, toLeaTTaAtoms,
+  | nil => simp [selectBranches, returned, call, encodeModelAtom, encodeModelAtoms,
       renBy, Metta.Subst.apply]
   | cons branch branches ih =>
     have leftSame := substitute_fresh (rename (freshName checked))
-      (toLeaTTaAtom (MeTTaData.encodeItems arguments))
-      (renBy rename (toLeaTTaAtom branch.1))
+      (encodeModelAtom (MeTTaData.encodeItems arguments))
+      (renBy rename (encodeModelAtom branch.1))
       ((bounds branch (by simp)).1.renamed_runtime_fresh rename injective)
     have rightSame := substitute_fresh (rename (freshName checked))
-      (toLeaTTaAtom (MeTTaData.encodeItems arguments))
-      (renBy rename (toLeaTTaAtom branch.2))
+      (encodeModelAtom (MeTTaData.encodeItems arguments))
+      (renBy rename (encodeModelAtom branch.2))
       ((bounds branch (by simp)).2.renamed_runtime_fresh rename injective)
     have tailSame := ih (fun entry member => bounds entry (List.mem_cons_of_mem _ member))
-    simpa only [selectBranches, List.foldr_cons, call, toLeaTTaAtom, toLeaTTaAtoms,
+    simpa only [selectBranches, List.foldr_cons, call, encodeModelAtom, encodeModelAtoms,
       renBy, List.map_cons, List.map_nil, Metta.Subst.apply, Metta.Subst.lookup,
       beq_self_eq_true, if_true, Option.getD_some, leftSame, rightSame, closed] using
       congrArg (fun tail => Metta.Atom.expr [.sym "unify",
-        toLeaTTaAtom (MeTTaData.encodeItems arguments),
-        renBy rename (toLeaTTaAtom branch.1), renBy rename (toLeaTTaAtom branch.2), tail]) tailSame
+        encodeModelAtom (MeTTaData.encodeItems arguments),
+        renBy rename (encodeModelAtom branch.1), renBy rename (encodeModelAtom branch.2), tail]) tailSame
 
 /-- The argument-materialization prefix of an actually allocated dispatcher
 enters its ordered scan. The allocation theorem supplies the only freshness
@@ -593,24 +597,24 @@ theorem dispatcher_body_enters_scan (arguments : List Term)
     (parent : Frame) (continuation : Stack) (fuel : Nat)
     (rest : List Item) (done : List (Metta.Atom × Metta.Bindings)) :
     interpretFuel environment (fuel + 3) state
-      (⟨atomToStack (renBy rename (toLeaTTaAtom (call "chain"
+      (⟨atomToStack (renBy rename (encodeModelAtom (call "chain"
         [MeTTaData.encodeItems arguments, .var (freshName checked),
           selectBranches (.var (freshName checked)) branches
             (returned (.symbol "nik:Failure"))]))) (parent :: continuation), bindings⟩ :: rest) done =
     interpretFuel environment fuel state
-      (⟨atomToStack (renBy rename (toLeaTTaAtom
+      (⟨atomToStack (renBy rename (encodeModelAtom
         (selectBranches (MeTTaData.encodeItems arguments) branches
           (returned (.symbol "nik:Failure"))))) (parent :: continuation), bindings⟩ :: rest) done := by
   have renamedData := renBy_eq_self_of_vars_nil rename
-    (toLeaTTaAtom (MeTTaData.encodeItems arguments))
+    (encodeModelAtom (MeTTaData.encodeItems arguments))
     (data_atom_runtime_closed (MeTTaData.encodeItems_data arguments))
-  have shape : renBy rename (toLeaTTaAtom (call "chain"
+  have shape : renBy rename (encodeModelAtom (call "chain"
       [MeTTaData.encodeItems arguments, .var (freshName checked),
         selectBranches (.var (freshName checked)) branches (returned (.symbol "nik:Failure"))])) =
-      .expr [.sym "chain", renBy rename (toLeaTTaAtom (MeTTaData.encodeItems arguments)),
-        .var (rename (freshName checked)), renBy rename (toLeaTTaAtom
+      .expr [.sym "chain", renBy rename (encodeModelAtom (MeTTaData.encodeItems arguments)),
+        .var (rename (freshName checked)), renBy rename (encodeModelAtom
           (selectBranches (.var (freshName checked)) branches (returned (.symbol "nik:Failure"))))] := by
-    simp only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil]
+    simp only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil]
   rw [shape, renamedData, encoded_arguments_chain_enters,
     substitute_renamed_scan arguments branches checked rename injective bounds]
 
@@ -624,27 +628,27 @@ theorem dispatcher_scan_materialized (arguments : List Term)
     (bindings : Metta.Bindings) (stored : ClosedValueBindings bindings)
     (raw : Metta.Atom)
     (materialized : Metta.instantiate bindings raw =
-      renBy rename (toLeaTTaAtom (call "function" [call "chain"
+      renBy rename (encodeModelAtom (call "function" [call "chain"
         [MeTTaData.encodeItems arguments, .var (freshName checked),
           selectBranches (.var (freshName checked)) branches
             (returned (.symbol "nik:Failure"))]]))) :
-    Metta.instantiate bindings (renBy rename (toLeaTTaAtom
+    Metta.instantiate bindings (renBy rename (encodeModelAtom
       (selectBranches (MeTTaData.encodeItems arguments) branches
         (returned (.symbol "nik:Failure"))))) =
-      renBy rename (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) branches
+      renBy rename (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) branches
         (returned (.symbol "nik:Failure")))) := by
   have stable := instantiate_closed_value_bindings_idempotent stored raw
   rw [materialized] at stable
-  have templateFixed : Metta.instantiate bindings (renBy rename (toLeaTTaAtom
+  have templateFixed : Metta.instantiate bindings (renBy rename (encodeModelAtom
       (selectBranches (.var (freshName checked)) branches (returned (.symbol "nik:Failure"))))) =
-      renBy rename (toLeaTTaAtom
+      renBy rename (encodeModelAtom
         (selectBranches (.var (freshName checked)) branches (returned (.symbol "nik:Failure")))) := by
-    simp only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil,
+    simp only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil,
       Metta.instantiate, Metta.Bindings.resolveAtom, Metta.Atom.expr.injEq,
       List.cons.injEq, true_and, and_true] at stable
     exact stable.2.2
   have filled := instantiate_substitute_fixed bindings (rename (freshName checked))
-    (toLeaTTaAtom (MeTTaData.encodeItems arguments)) _
+    (encodeModelAtom (MeTTaData.encodeItems arguments)) _
     (data_atom_runtime_closed (MeTTaData.encodeItems_data arguments)) templateFixed
   rwa [substitute_renamed_scan arguments branches checked rename injective bounds] at filled
 
@@ -686,28 +690,28 @@ theorem selectBranches_first_match (target : Atom) (earlierRows suffix : List (A
     (scope : List String) (continuation : Stack) (fuel : Nat)
     (rest : List Item) (done : List (Metta.Atom × Metta.Bindings))
     (stored : ClosedValueBindings incoming)
-    (closed : (toLeaTTaAtom target).vars = [])
+    (closed : (encodeModelAtom target).vars = [])
     (fixed : Metta.instantiate incoming
-      (toLeaTTaAtom (selectBranches target (earlierRows ++ (pattern, body) :: suffix) otherwise)) =
-        toLeaTTaAtom (selectBranches target (earlierRows ++ (pattern, body) :: suffix) otherwise))
+      (encodeModelAtom (selectBranches target (earlierRows ++ (pattern, body) :: suffix) otherwise)) =
+        encodeModelAtom (selectBranches target (earlierRows ++ (pattern, body) :: suffix) otherwise))
     (refused : ∀ row ∈ earlierRows, ¬∃ candidate merged,
-      candidate ∈ Metta.matchAtoms (toLeaTTaAtom target) (toLeaTTaAtom row.1) ∧
+      candidate ∈ Metta.matchAtoms (encodeModelAtom target) (encodeModelAtom row.1) ∧
       merged ∈ Metta.Bindings.merge incoming candidate ∧ merged.hasLoop = false)
-    (matching : matched ∈ Metta.matchAtoms (toLeaTTaAtom target) (toLeaTTaAtom pattern))
+    (matching : matched ∈ Metta.matchAtoms (encodeModelAtom target) (encodeModelAtom pattern))
     (merging : output ∈ Metta.Bindings.merge incoming matched) :
     let parent : Frame := { atom := parentBody, ret := .function, vars := scope }
     ClosedValueBindings output ∧
       interpretFuel environment (fuel + 2 + 2 * earlierRows.length) state
         (finItem (parent :: continuation)
-          (toLeaTTaAtom (selectBranches target (earlierRows ++ (pattern, body) :: suffix) otherwise))
+          (encodeModelAtom (selectBranches target (earlierRows ++ (pattern, body) :: suffix) otherwise))
           incoming :: rest) done =
       interpretFuel environment fuel state
         (finItem (parent :: continuation)
-          (Metta.instantiate output (toLeaTTaAtom body)) output :: rest) done := by
+          (Metta.instantiate output (encodeModelAtom body)) output :: rest) done := by
   intro parent
   have suffixFixed : Metta.instantiate incoming
-      (toLeaTTaAtom (selectBranches target ((pattern, body) :: suffix) otherwise)) =
-      toLeaTTaAtom (selectBranches target ((pattern, body) :: suffix) otherwise) := by
+      (encodeModelAtom (selectBranches target ((pattern, body) :: suffix) otherwise)) =
+      encodeModelAtom (selectBranches target ((pattern, body) :: suffix) otherwise) := by
     clear refused
     induction earlierRows with
     | nil => exact fixed
@@ -715,30 +719,30 @@ theorem selectBranches_first_match (target : Atom) (earlierRows suffix : List (A
       apply ih
       have parts := fixed
       simp only [selectBranches, List.cons_append, List.foldr_cons, call,
-        toLeaTTaAtom, toLeaTTaAtoms, Metta.instantiate, Metta.Bindings.resolveAtom,
+        encodeModelAtom, encodeModelAtoms, Metta.instantiate, Metta.Bindings.resolveAtom,
         List.map_cons, List.map_nil, Metta.Atom.expr.injEq, List.cons.injEq,
         true_and, and_true] at parts
       exact parts.2.2.2
   let fallback := selectBranches target suffix otherwise
   have parts :
-      Metta.instantiate incoming (toLeaTTaAtom target) = toLeaTTaAtom target ∧
-      Metta.instantiate incoming (toLeaTTaAtom pattern) = toLeaTTaAtom pattern ∧
-      Metta.instantiate incoming (toLeaTTaAtom body) = toLeaTTaAtom body ∧
-      Metta.instantiate incoming (toLeaTTaAtom fallback) = toLeaTTaAtom fallback := by
+      Metta.instantiate incoming (encodeModelAtom target) = encodeModelAtom target ∧
+      Metta.instantiate incoming (encodeModelAtom pattern) = encodeModelAtom pattern ∧
+      Metta.instantiate incoming (encodeModelAtom body) = encodeModelAtom body ∧
+      Metta.instantiate incoming (encodeModelAtom fallback) = encodeModelAtom fallback := by
     simpa only [fallback, selectBranches, List.foldr_cons, call,
-      toLeaTTaAtom, toLeaTTaAtoms, Metta.instantiate, Metta.Bindings.resolveAtom,
+      encodeModelAtom, encodeModelAtoms, Metta.instantiate, Metta.Bindings.resolveAtom,
       List.map_cons, List.map_nil, Metta.Atom.expr.injEq, List.cons.injEq,
       true_and, and_true] using suffixFixed
   obtain ⟨outputClosed, selected⟩ := unify_closed_candidate (parent :: continuation)
-    (toLeaTTaAtom target) (toLeaTTaAtom pattern) (toLeaTTaAtom body)
-    (toLeaTTaAtom fallback) incoming matched output stored closed matching merging
+    (encodeModelAtom target) (encodeModelAtom pattern) (encodeModelAtom body)
+    (encodeModelAtom fallback) incoming matched output stored closed matching merging
   refine ⟨outputClosed, ?_⟩
   rw [selectBranches_refused_prefix target earlierRows ((pattern, body) :: suffix) otherwise
     environment state incoming parentBody scope continuation (fuel + 2) rest done fixed refused]
   change interpretFuel environment ((fuel + 1) + 1) state
     (finItem (parent :: continuation)
-      (.expr [.sym "unify", toLeaTTaAtom target, toLeaTTaAtom pattern,
-        toLeaTTaAtom body, toLeaTTaAtom fallback]) incoming :: rest) done = _
+      (.expr [.sym "unify", encodeModelAtom target, encodeModelAtom pattern,
+        encodeModelAtom body, encodeModelAtom fallback]) incoming :: rest) done = _
   rw [function_unify_enters, parts.1, parts.2.1, parts.2.2.1, parts.2.2.2]
   apply driver_singleton_step
   · simpa only [atomToStack, step_unify] using
@@ -798,24 +802,24 @@ private theorem scan_body_occurs (target otherwise : Atom)
 
 private theorem renamed_scan_code (arguments : List Term) (branches : List (Atom × Atom))
     (rename : String → String) :
-    toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments)
+    encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments)
       (branches.map fun branch => (renameTypeVars rename branch.1, renameTypeVars rename branch.2))
         (returned (.symbol "nik:Failure"))) =
-    renBy rename (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) branches
+    renBy rename (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) branches
       (returned (.symbol "nik:Failure")))) := by
   have dataFixed := renBy_eq_self_of_vars_nil rename
-    (toLeaTTaAtom (MeTTaData.encodeItems arguments))
+    (encodeModelAtom (MeTTaData.encodeItems arguments))
     (data_atom_runtime_closed (MeTTaData.encodeItems_data arguments))
   induction branches with
-  | nil => simp [selectBranches, returned, call, toLeaTTaAtom, toLeaTTaAtoms, renBy]
+  | nil => simp [selectBranches, returned, call, encodeModelAtom, encodeModelAtoms, renBy]
   | cons branch branches ih =>
     simpa only [List.map_cons, selectBranches, List.foldr_cons, call,
-      toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_nil, dataFixed,
+      encodeModelAtom, encodeModelAtoms, renBy, List.map_nil, dataFixed,
       (renamed_atom_contract rename branch.1).2,
       (renamed_atom_contract rename branch.2).2] using
       congrArg (fun tail => Metta.Atom.expr [.sym "unify",
-        toLeaTTaAtom (MeTTaData.encodeItems arguments),
-        renBy rename (toLeaTTaAtom branch.1), renBy rename (toLeaTTaAtom branch.2), tail]) ih
+        encodeModelAtom (MeTTaData.encodeItems arguments),
+        renBy rename (encodeModelAtom branch.1), renBy rename (encodeModelAtom branch.2), tail]) ih
 
 /-- Actual materialization supplies the row freshness required by the
 ordered selector. The only row data used here is the stateful emitter's
@@ -825,10 +829,10 @@ theorem emitted_rows_after_materialization {program : Program} {sourceFuel : Ato
     (aligned : List.Forall₂ (fun row branch => EmittedCase program sourceFuel row branch lower)
       rows branches) (arguments : List Term) (rename : String → String)
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
-    (fixed : Metta.instantiate incoming (renBy rename (toLeaTTaAtom
+    (fixed : Metta.instantiate incoming (renBy rename (encodeModelAtom
       (selectBranches (MeTTaData.encodeItems arguments) branches
         (returned (.symbol "nik:Failure"))))) =
-      renBy rename (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) branches
+      renBy rename (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) branches
         (returned (.symbol "nik:Failure"))))) :
     List.Forall₂ (FreshEmittedCase program sourceFuel rename incoming) rows
       (branches.map fun branch => (renameTypeVars rename branch.1, renameTypeVars rename branch.2)) := by
@@ -851,14 +855,14 @@ theorem emitted_rows_after_materialization {program : Program} {sourceFuel : Ato
 
 theorem selectBranches_fixed_body (target otherwise : Atom)
     (branches : List (Atom × Atom)) (bindings : Metta.Bindings)
-    (fixed : Metta.instantiate bindings (toLeaTTaAtom (selectBranches target branches otherwise)) =
-      toLeaTTaAtom (selectBranches target branches otherwise)) :
-    ∀ branch ∈ branches, Metta.instantiate bindings (toLeaTTaAtom branch.2) =
-      toLeaTTaAtom branch.2 := by
+    (fixed : Metta.instantiate bindings (encodeModelAtom (selectBranches target branches otherwise)) =
+      encodeModelAtom (selectBranches target branches otherwise)) :
+    ∀ branch ∈ branches, Metta.instantiate bindings (encodeModelAtom branch.2) =
+      encodeModelAtom branch.2 := by
   induction branches with
   | nil => simp
   | cons first rest ih =>
-    simp only [selectBranches, List.foldr_cons, call, toLeaTTaAtom, toLeaTTaAtoms,
+    simp only [selectBranches, List.foldr_cons, call, encodeModelAtom, encodeModelAtoms,
       Metta.instantiate, Metta.Bindings.resolveAtom, List.map_cons, List.map_nil,
       Metta.Atom.expr.injEq, List.cons.injEq, true_and, and_true] at fixed
     intro branch member
@@ -884,9 +888,9 @@ theorem source_selection_execution (program : Program) (sourceFuel : Atom)
     (environment : MinEnv) (parentBody : Metta.Atom)
     (scope : List String) (continuation : Stack)
     (fixed : Metta.instantiate incoming
-      (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) branches
+      (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) branches
         (returned (.symbol "nik:Failure")))) =
-      toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) branches
+      encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) branches
         (returned (.symbol "nik:Failure")))) :
     let parent : Frame := { atom := parentBody, ret := .function, vars := scope }
     ∃ earlierRows branch laterRows first output,
@@ -896,20 +900,20 @@ theorem source_selection_execution (program : Program) (sourceFuel : Atom)
           sourceFuel row.equation.body (patterns row.equation.params first).2).1 branch.2 ∧
       ClosedValueBindings output ∧ LeaRuntimeBindingInvariant output ∧
       ValuationFor (leaClassSolution output ∘ rename) first sourceBindings ∧
-      Metta.instantiate output (toLeaTTaAtom branch.2) = renBy rename (toLeaTTaAtom
+      Metta.instantiate output (encodeModelAtom branch.2) = renBy rename (encodeModelAtom
         (expression program (sourceBindings.map (fun entry =>
           (entry.1, MeTTaData.encode entry.2))) sourceFuel row.equation.body
           (patterns row.equation.params first).2).1) ∧
-      (∀ name, (∀ branch ∈ branches, name ∉ (toLeaTTaAtom branch.1).vars) →
+      (∀ name, (∀ branch ∈ branches, name ∉ (encodeModelAtom branch.1).vars) →
         Metta.Bindings.lookupVal incoming name = none →
           Metta.Bindings.lookupVal output name = none) ∧
       ∀ state fuel rest done, interpretFuel environment (fuel + 1 + 2 * earlierRows.length) state
         (⟨atomToStack
-          (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) branches
+          (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) branches
             (returned (.symbol "nik:Failure")))) (parent :: continuation), incoming⟩ :: rest) done =
         interpretFuel environment fuel state
           (finItem (parent :: continuation)
-            (Metta.instantiate output (toLeaTTaAtom branch.2)) output :: rest) done := by
+            (Metta.instantiate output (encodeModelAtom branch.2)) output :: rest) done := by
   intro parent
   obtain ⟨earlierRows, branch, laterRows, layout, related, matchedSource, earlierRefused⟩ :=
     selected_prefix aligned arguments row sourceBindings selected
@@ -918,8 +922,8 @@ theorem source_selection_execution (program : Program) (sourceFuel : Atom)
     (alpha_patterns_closed_runtime_match_iff row.equation.params arguments first invariant stored
       injective patternCode privateNames).mpr ⟨sourceBindings, matchedSource⟩
   have refused : ∀ earlier ∈ earlierRows, ¬∃ candidate merged,
-      candidate ∈ Metta.matchAtoms (toLeaTTaAtom (MeTTaData.encodeItems arguments))
-        (toLeaTTaAtom earlier.1) ∧
+      candidate ∈ Metta.matchAtoms (encodeModelAtom (MeTTaData.encodeItems arguments))
+        (encodeModelAtom earlier.1) ∧
       merged ∈ Metta.Bindings.merge incoming candidate ∧ merged.hasLoop = false := by
     intro earlier member
     obtain ⟨previous, previousCode, unmatched⟩ := earlierRefused earlier member
@@ -948,7 +952,7 @@ theorem source_selection_execution (program : Program) (sourceFuel : Atom)
     outputInvariant, valuation, materialized, ?_, ?_⟩
   · intro name absent unassigned
     exact matching_closed_preserves_unassigned
-      (toLeaTTaAtom (MeTTaData.encodeItems arguments)) (toLeaTTaAtom branch.1)
+      (encodeModelAtom (MeTTaData.encodeItems arguments)) (encodeModelAtom branch.1)
       incoming matched output name stored
       (data_atom_runtime_closed (MeTTaData.encodeItems_data arguments)) unassigned
       (absent branch (by rw [layout]; simp)) matching merging
@@ -960,13 +964,13 @@ theorem source_selection_execution (program : Program) (sourceFuel : Atom)
     (data_atom_runtime_closed (MeTTaData.encodeItems_data arguments))
     (layout ▸ fixed) refused matching merging
   have embedded : isEmbeddedOp (Metta.instantiate incoming
-      (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) branches
+      (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) branches
         (returned (.symbol "nik:Failure"))))) = true := by
     rw [fixed, layout]
     cases earlierRows <;> simp only [List.nil_append, List.cons_append,
-      selectBranches, List.foldr_cons, call, toLeaTTaAtom, toLeaTTaAtoms, isEmbeddedOp] <;> rfl
+      selectBranches, List.foldr_cons, call, encodeModelAtom, encodeModelAtoms, isEmbeddedOp] <;> rfl
   have enter := function_embedded_enters environment state incoming parentBody
-    (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) branches
+    (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) branches
       (returned (.symbol "nik:Failure")))) scope continuation
     (fuel + 1 + 2 * earlierRows.length) rest done embedded
   rw [fixed] at enter
@@ -987,9 +991,9 @@ theorem dispatcher_selected_execution (program : Program) (head : String)
     (environment : MinEnv) (continuation : Stack)
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) :
-    let lhs := toLeaTTaAtom (call (dispatchName head)
+    let lhs := encodeModelAtom (call (dispatchName head)
       [.var (freshName first), .var (freshName (first + 1))])
-    let query := toLeaTTaAtom (call (dispatchName head)
+    let query := encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])
     ∃ rawBody, ∃ rename : String → String,
       (dispatcher program head first).1.2 = call "="
@@ -999,7 +1003,7 @@ theorem dispatcher_selected_execution (program : Program) (head : String)
       ∀ matched merged,
         let fresh := (freshenRuleAvoiding counter
           (Metta.Minimal.queryOpAvoid continuation query incoming) lhs
-          (toLeaTTaAtom (call "function" [rawBody]))).1
+          (encodeModelAtom (call "function" [rawBody]))).1
         matched ∈ Metta.matchAtoms fresh.1 query →
         merged ∈ Metta.Bindings.merge incoming matched →
         let function := Metta.instantiate merged fresh.2
@@ -1011,14 +1015,14 @@ theorem dispatcher_selected_execution (program : Program) (head : String)
               (patterns row.equation.params start).2).1 body ∧
           ClosedValueBindings output ∧ LeaRuntimeBindingInvariant output ∧
           ValuationFor (leaClassSolution output ∘ rename) start sourceBindings ∧
-          Metta.instantiate output (toLeaTTaAtom body) = renBy rename (toLeaTTaAtom
+          Metta.instantiate output (encodeModelAtom body) = renBy rename (encodeModelAtom
             (expression program (sourceBindings.map (fun entry =>
               (entry.1, MeTTaData.encode entry.2))) (.grounded (.int sourceFuel))
               row.equation.body (patterns row.equation.params start).2).1) ∧
           (∀ name ∈ liveStackVars continuation,
             Metta.Bindings.lookupVal incoming name = none →
               Metta.Bindings.lookupVal output name = none) ∧
-          (∀ name ∈ (Metta.instantiate output (toLeaTTaAtom body)).vars,
+          (∀ name ∈ (Metta.instantiate output (encodeModelAtom body)).vars,
             name ∉ liveStackVars continuation) ∧
           isFinal (evalResult continuation function merged) = false ∧
           ∀ state fuel rest done,
@@ -1026,7 +1030,7 @@ theorem dispatcher_selected_execution (program : Program) (head : String)
               (evalResult continuation function merged :: rest) done =
             interpretFuel environment fuel state
               (finItem (parent :: continuation)
-                (Metta.instantiate output (toLeaTTaAtom body)) output :: rest) done := by
+                (Metta.instantiate output (encodeModelAtom body)) output :: rest) done := by
   intro lhs query
   obtain ⟨rawBody, branches, checked, rename, emitted, aligned, _, bounds,
       injective, _, materializes⟩ := dispatcher_query_materialization program head first
@@ -1042,9 +1046,9 @@ theorem dispatcher_selected_execution (program : Program) (head : String)
     (renameTypeVars rename branch.1, renameTypeVars rename branch.2)
   have freshRows := emitted_rows_after_materialization aligned arguments rename merged mergedClosed fixed
   have renamedFixed : Metta.instantiate merged
-      (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) renamedBranches
+      (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) renamedBranches
         (returned (.symbol "nik:Failure")))) =
-      toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) renamedBranches
+      encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) renamedBranches
         (returned (.symbol "nik:Failure"))) := by
     rw [renamed_scan_code]
     exact fixed
@@ -1054,19 +1058,19 @@ theorem dispatcher_selected_execution (program : Program) (head : String)
     sourceBindings rename injective merged mergedInvariant mergedClosed freshRows selected
     environment function (varsCopy continuation) continuation renamedFixed
   have branchesPrivate (branch : Atom × Atom) (member : branch ∈ renamedBranches)
-      (name : String) (occurs : name ∈ (toLeaTTaAtom branch.1).vars ++
-        (toLeaTTaAtom branch.2).vars) : name ∉ liveStackVars continuation := by
+      (name : String) (occurs : name ∈ (encodeModelAtom branch.1).vars ++
+        (encodeModelAtom branch.2).vars) : name ∉ liveStackVars continuation := by
     intro live
     have absent := materialized_query_excludes_caller counter continuation query lhs
-      (toLeaTTaAtom (call "function" [rawBody])) incoming merged mergedClosed name live
+      (encodeModelAtom (call "function" [rawBody])) incoming merged mergedClosed name live
     change name ∉ (Metta.instantiate merged fresh.2).vars at absent
     rw [materialized] at absent
     obtain ⟨original, originalMember, rfl⟩ := List.mem_map.mp member
     simp only [(renamed_atom_contract rename original.1).2,
       (renamed_atom_contract rename original.2).2, renBy_vars] at occurs
     obtain ⟨originalName, occurrence, same⟩ :
-        ∃ originalName, originalName ∈ (toLeaTTaAtom original.1).vars ++
-          (toLeaTTaAtom original.2).vars ∧ rename originalName = name := by
+        ∃ originalName, originalName ∈ (encodeModelAtom original.1).vars ++
+          (encodeModelAtom original.2).vars ∧ rename originalName = name := by
       simpa only [← List.map_append, List.mem_map] using occurs
     have inScan : AtomOccurs (selectBranches (.var (freshName checked)) branches
         (returned (.symbol "nik:Failure"))) originalName := by
@@ -1094,21 +1098,21 @@ theorem dispatcher_selected_execution (program : Program) (head : String)
     · intro chosen member occurrence
       exact branchesPrivate chosen member name (List.mem_append_left _ occurrence) live
     · exact query_preserves_unassigned_caller continuation query lhs
-        (toLeaTTaAtom (call "function" [rawBody])) incoming matched merged counter name
-        stored (by simp [query, call, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars,
+        (encodeModelAtom (call "function" [rawBody])) incoming matched merged counter name
+        stored (by simp [query, call, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars,
           data_atom_runtime_closed (MeTTaData.encodeItems_data arguments)])
         live unassigned matching merging
-  have selectedPrivate : ∀ name ∈ (Metta.instantiate output (toLeaTTaAtom branch.2)).vars,
+  have selectedPrivate : ∀ name ∈ (Metta.instantiate output (encodeModelAtom branch.2)).vars,
       name ∉ liveStackVars continuation := by
     intro name occurs
     exact branchesPrivate branch branchMember name (List.mem_append_right _
       (instantiate_closed_vars_subset output outputClosed _ name occurs))
   have startShape : evalResult continuation function merged =
-      ⟨atomToStack (renBy rename (toLeaTTaAtom (call "chain"
+      ⟨atomToStack (renBy rename (encodeModelAtom (call "chain"
         [MeTTaData.encodeItems arguments, .var (freshName checked),
           selectBranches (.var (freshName checked)) branches
             (returned (.symbol "nik:Failure"))]))) (parent :: continuation), merged⟩ := by
-    simp only [function, parent, materialized, call, toLeaTTaAtom, toLeaTTaAtoms,
+    simp only [function, parent, materialized, call, encodeModelAtom, encodeModelAtoms,
       renBy, List.map_cons, List.map_nil, evalResult, atomToStack]
   refine ⟨earlier.length, start, branch.2, output, bodyCode, outputClosed, outputInvariant,
     valuation, bodyMaterialized, callerPreserved, selectedPrivate, ?_, ?_⟩
@@ -1156,21 +1160,21 @@ theorem source_refusal_execution (program : Program) (sourceFuel : Atom)
     (scope : List String) (continuation : Stack) (fuel : Nat)
     (rest : List Item) (done : List (Metta.Atom × Metta.Bindings))
     (fixed : Metta.instantiate incoming
-      (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) branches
+      (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) branches
         (returned (.symbol "nik:Failure")))) =
-      toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) branches
+      encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) branches
         (returned (.symbol "nik:Failure")))) :
     let parent : Frame := { atom := parentBody, ret := .function, vars := scope }
     interpretFuel environment (fuel + if branches = [] then 1 else 2 * branches.length - 1) state
         (⟨atomToStack
-          (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) branches
+          (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) branches
             (returned (.symbol "nik:Failure")))) (parent :: continuation), incoming⟩ :: rest) done =
       interpretFuel environment fuel state
         (finItem (parent :: continuation) (.expr [.sym "return", .sym "nik:Failure"]) incoming :: rest) done := by
   intro parent
   have none : ∀ branch ∈ branches, ¬∃ matched merged,
-      matched ∈ Metta.matchAtoms (toLeaTTaAtom (MeTTaData.encodeItems arguments))
-        (toLeaTTaAtom branch.1) ∧
+      matched ∈ Metta.matchAtoms (encodeModelAtom (MeTTaData.encodeItems arguments))
+        (encodeModelAtom branch.1) ∧
       merged ∈ Metta.Bindings.merge incoming matched ∧ merged.hasLoop = false := by
     intro branch member
     obtain ⟨row, related, noMatch⟩ := refused_rows aligned arguments refused branch member
@@ -1186,24 +1190,24 @@ theorem source_refusal_execution (program : Program) (sourceFuel : Atom)
   cases branches with
   | nil =>
     simpa only [if_pos rfl, if_true, selectBranches, List.foldr_nil, returned, call,
-      toLeaTTaAtom, toLeaTTaAtoms, Metta.instantiate, Metta.Bindings.resolveAtom] using
+      encodeModelAtom, encodeModelAtoms, Metta.instantiate, Metta.Bindings.resolveAtom] using
       return_enters_handler environment state incoming parentBody (.sym "nik:Failure")
         scope continuation fuel rest done
   | cons branch branches =>
     have embedded : isEmbeddedOp (Metta.instantiate incoming
-        (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) (branch :: branches)
+        (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) (branch :: branches)
           (returned (.symbol "nik:Failure"))))) = true := by
       rw [fixed]
-      simp only [selectBranches, List.foldr_cons, call, toLeaTTaAtom, toLeaTTaAtoms,
+      simp only [selectBranches, List.foldr_cons, call, encodeModelAtom, encodeModelAtoms,
         isEmbeddedOp]
       rfl
     have enter := function_embedded_enters environment state incoming parentBody
-      (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) (branch :: branches)
+      (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) (branch :: branches)
         (returned (.symbol "nik:Failure")))) scope continuation
       (fuel + (2 * (branch :: branches).length - 1)) rest done embedded
     rw [fixed] at enter
     simpa only [List.cons_ne_nil, if_false] using enter.symm.trans (by
-      simpa only [selectBranches, returned, call, toLeaTTaAtom, toLeaTTaAtoms,
+      simpa only [selectBranches, returned, call, encodeModelAtom, encodeModelAtoms,
         show fuel + (2 * (branch :: branches).length - 1) + 1 =
           fuel + 2 * (branch :: branches).length by simp only [List.length_cons]; omega] using scan)
 
@@ -1216,9 +1220,9 @@ theorem dispatcher_refused_execution (program : Program) (head : String)
     (environment : MinEnv) (previous : Stack)
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) :
-    let lhs := toLeaTTaAtom (call (dispatchName head)
+    let lhs := encodeModelAtom (call (dispatchName head)
       [.var (freshName first), .var (freshName (first + 1))])
-    let query := toLeaTTaAtom (call (dispatchName head)
+    let query := encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])
     ∃ rawBody,
       (dispatcher program head first).1.2 = call "="
@@ -1227,7 +1231,7 @@ theorem dispatcher_refused_execution (program : Program) (head : String)
       ∀ matched merged,
         let fresh := (freshenRuleAvoiding counter
           (Metta.Minimal.queryOpAvoid previous query incoming) lhs
-          (toLeaTTaAtom (call "function" [rawBody]))).1
+          (encodeModelAtom (call "function" [rawBody]))).1
         matched ∈ Metta.matchAtoms fresh.1 query →
         merged ∈ Metta.Bindings.merge incoming matched →
         ∃ cost, ∀ state fuel rest done,
@@ -1253,9 +1257,9 @@ theorem dispatcher_refused_execution (program : Program) (head : String)
     (renameTypeVars rename branch.1, renameTypeVars rename branch.2)
   have freshRows := emitted_rows_after_materialization aligned arguments rename merged mergedClosed fixed
   have renamedFixed : Metta.instantiate merged
-      (toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) renamedBranches
+      (encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) renamedBranches
         (returned (.symbol "nik:Failure")))) =
-      toLeaTTaAtom (selectBranches (MeTTaData.encodeItems arguments) renamedBranches
+      encodeModelAtom (selectBranches (MeTTaData.encodeItems arguments) renamedBranches
         (returned (.symbol "nik:Failure"))) := by
     rw [renamed_scan_code]
     exact fixed
@@ -1270,11 +1274,11 @@ theorem dispatcher_refused_execution (program : Program) (head : String)
   have prefixRun := dispatcher_body_enters_scan arguments branches checked rename injective bounds
     environment state merged parent previous (fuel + scanCost) rest done
   have startShape : evalResult previous function merged =
-      ⟨atomToStack (renBy rename (toLeaTTaAtom (call "chain"
+      ⟨atomToStack (renBy rename (encodeModelAtom (call "chain"
         [MeTTaData.encodeItems arguments, .var (freshName checked),
           selectBranches (.var (freshName checked)) branches
             (returned (.symbol "nik:Failure"))]))) (parent :: previous), merged⟩ := by
-    simp only [function, parent, materialized, call, toLeaTTaAtom, toLeaTTaAtoms,
+    simp only [function, parent, materialized, call, encodeModelAtom, encodeModelAtoms,
       renBy, List.map_cons, List.map_nil, evalResult, atomToStack]
   change interpretFuel environment (fuel + (scanCost + 3)) state
     (evalResult previous function merged :: rest) done = _
@@ -1289,10 +1293,10 @@ theorem dispatcher_instantiated_pending (program : Program) (head : String) (fir
       [call (dispatchName head) [.var (freshName first), .var (freshName (first + 1))],
         call "function" [rawBody]])
     (previous : Stack) (query : Metta.Atom) (incoming output : Metta.Bindings) :
-    let lhs := toLeaTTaAtom (call (dispatchName head)
+    let lhs := encodeModelAtom (call (dispatchName head)
       [.var (freshName first), .var (freshName (first + 1))])
     let fresh := freshenRuleAvoiding counter (Metta.Minimal.queryOpAvoid previous query incoming)
-      lhs (toLeaTTaAtom (call "function" [rawBody]))
+      lhs (encodeModelAtom (call "function" [rawBody]))
     isFinal (evalResult previous (Metta.instantiate output fresh.1.2) output) = false := by
   intro lhs fresh
   obtain ⟨branches, checked, shape, _⟩ := dispatcher_rows program head first
@@ -1301,12 +1305,12 @@ theorem dispatcher_instantiated_pending (program : Program) (head : String) (fir
     simpa only [call, Atom.expression.injEq, List.cons.injEq, true_and, and_true]
       using emitted.symm.trans shape
   obtain ⟨rename, _, renamed⟩ := freshenRuleAvoiding_renaming counter
-    (Metta.Minimal.queryOpAvoid previous query incoming) lhs (toLeaTTaAtom (call "function" [rawBody]))
+    (Metta.Minimal.queryOpAvoid previous query incoming) lhs (encodeModelAtom (call "function" [rawBody]))
   change isFinal (evalResult previous (Metta.instantiate output
     (freshenRuleAvoiding counter (Metta.Minimal.queryOpAvoid previous query incoming)
-      lhs (toLeaTTaAtom (call "function" [rawBody]))).1.2) output) = false
+      lhs (encodeModelAtom (call "function" [rawBody]))).1.2) output) = false
   rw [renamed, body]
-  simp only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil,
+  simp only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil,
     Metta.instantiate, Metta.Bindings.resolveAtom, evalResult, atomToStack]
   exact atomToStack_pending _ _ _ _
 
@@ -1320,23 +1324,23 @@ theorem loaded_dispatcher_entry (program : Program) (head : String) (first sourc
     (environment : MinEnv) (state : St) (previous : Stack)
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (nativeMiss : Metta.callGrounded environment.gt (dispatchName head)
-      ([toLeaTTaAtom (.grounded (.int sourceFuel)),
-        toLeaTTaAtom (MeTTaData.encodeItems arguments)].map
+      ([encodeModelAtom (.grounded (.int sourceFuel)),
+        encodeModelAtom (MeTTaData.encodeItems arguments)].map
           (fun atom => resolveStates state.world (subTokens state.world atom))) = .noReduce)
-    (notEmbedded : isEmbeddedOp (toLeaTTaAtom (call (dispatchName head)
+    (notEmbedded : isEmbeddedOp (encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])) = false)
-    (loaded : candidatesW environment state.world (toLeaTTaAtom (call (dispatchName head)
+    (loaded : candidatesW environment state.world (encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])) =
-      [(toLeaTTaAtom (call (dispatchName head)
+      [(encodeModelAtom (call (dispatchName head)
           [.var (freshName first), .var (freshName (first + 1))]),
-        toLeaTTaAtom (call "function" [rawBody]))]) :
-    let lhs := toLeaTTaAtom (call (dispatchName head)
+        encodeModelAtom (call "function" [rawBody]))]) :
+    let lhs := encodeModelAtom (call (dispatchName head)
       [.var (freshName first), .var (freshName (first + 1))])
-    let query := toLeaTTaAtom (call (dispatchName head)
+    let query := encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])
     let fresh := freshenRuleAvoiding state.counter
       (Metta.Minimal.queryOpAvoid previous query incoming) lhs
-      (toLeaTTaAtom (call "function" [rawBody]))
+      (encodeModelAtom (call "function" [rawBody]))
     ∃ matched output, matched ∈ Metta.matchAtoms fresh.1.1 query ∧
       output ∈ Metta.Bindings.merge incoming matched ∧ ClosedValueBindings output ∧
       ∀ fuel rest done,
@@ -1351,30 +1355,30 @@ theorem loaded_dispatcher_entry (program : Program) (head : String) (first sourc
     omega
   obtain ⟨matched, output, matching, merging, outputClosed⟩ := query_two_input_header
     (dispatchName head) (freshName first) (freshName (first + 1)) (.gnd (.int sourceFuel))
-    (toLeaTTaAtom (MeTTaData.encodeItems arguments)) (toLeaTTaAtom (call "function" [rawBody]))
+    (encodeModelAtom (MeTTaData.encodeItems arguments)) (encodeModelAtom (call "function" [rawBody]))
     distinct (by simp [Metta.Atom.vars])
     (data_atom_runtime_closed (MeTTaData.encodeItems_data arguments))
     state.counter previous incoming stored
   refine ⟨matched, output, matching, merging, outputClosed, ?_⟩
   intro fuel rest done
   have queryClosed : query.vars = [] := by
-    simp only [query, call, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars,
+    simp only [query, call, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars,
       List.map_cons, List.map_nil, List.flatten_cons, List.flatten_nil,
       List.append_nil, data_atom_runtime_closed (MeTTaData.encodeItems_data arguments)]
   obtain ⟨_, queried⟩ := query_single_rule environment state previous query lhs
-    (toLeaTTaAtom (call "function" [rawBody])) incoming matched output loaded
-    (by simp [query, call, toLeaTTaAtom, toLeaTTaAtoms, isVariableHeaded])
+    (encodeModelAtom (call "function" [rawBody])) incoming matched output loaded
+    (by simp [query, call, encodeModelAtom, encodeModelAtoms, isVariableHeaded])
     stored queryClosed matching merging
   apply driver_singleton_step
   · have entryShape : atomToStack (.expr [.sym "eval", query]) previous =
         { atom := .expr [.sym "eval", query], vars := varsCopy previous } :: previous := by
-      simp [query, call, toLeaTTaAtom, toLeaTTaAtoms, atomToStack]
+      simp [query, call, encodeModelAtom, encodeModelAtoms, atomToStack]
     have native := nativeMiss
-    simp only [toLeaTTaAtom] at native
+    simp only [encodeModelAtom] at native
     have ordinary := notEmbedded
-    simp only [call, toLeaTTaAtom, toLeaTTaAtoms] at ordinary
+    simp only [call, encodeModelAtom, encodeModelAtoms] at ordinary
     rw [entryShape, step_eval, evalOp, Metta.instantiate_of_closed incoming _ queryClosed]
-    simpa only [query, fresh, call, toLeaTTaAtom, toLeaTTaAtoms, native, ordinary,
+    simpa only [query, fresh, call, encodeModelAtom, encodeModelAtoms, native, ordinary,
       Bool.false_eq_true, if_false] using queried
   · exact dispatcher_instantiated_pending program head first state.counter rawBody emitted
       previous query incoming output
@@ -1390,23 +1394,23 @@ theorem loaded_dispatcher_selection (program : Program) (head : String)
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming)
     (nativeMiss : Metta.callGrounded environment.gt (dispatchName head)
-      ([toLeaTTaAtom (.grounded (.int sourceFuel)),
-        toLeaTTaAtom (MeTTaData.encodeItems arguments)].map
+      ([encodeModelAtom (.grounded (.int sourceFuel)),
+        encodeModelAtom (MeTTaData.encodeItems arguments)].map
           (fun atom => resolveStates state.world (subTokens state.world atom))) = .noReduce)
-    (notEmbedded : isEmbeddedOp (toLeaTTaAtom (call (dispatchName head)
+    (notEmbedded : isEmbeddedOp (encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])) = false)
     (loaded : ∀ rawBody,
       (dispatcher program head first).1.2 = call "="
         [call (dispatchName head) [.var (freshName first), .var (freshName (first + 1))],
           call "function" [rawBody]] →
-      candidatesW environment state.world (toLeaTTaAtom (call (dispatchName head)
+      candidatesW environment state.world (encodeModelAtom (call (dispatchName head)
         [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])) =
-      [(toLeaTTaAtom (call (dispatchName head)
+      [(encodeModelAtom (call (dispatchName head)
           [.var (freshName first), .var (freshName (first + 1))]),
-        toLeaTTaAtom (call "function" [rawBody]))]) :
-    let lhs := toLeaTTaAtom (call (dispatchName head)
+        encodeModelAtom (call "function" [rawBody]))]) :
+    let lhs := encodeModelAtom (call (dispatchName head)
       [.var (freshName first), .var (freshName (first + 1))])
-    let query := toLeaTTaAtom (call (dispatchName head)
+    let query := encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])
     ∃ rawBody, ∃ rename : String → String, ∃ headerBindings output skipped start body,
       (dispatcher program head first).1.2 = call "="
@@ -1419,25 +1423,25 @@ theorem loaded_dispatcher_selection (program : Program) (head : String)
           (patterns row.equation.params start).2).1 body ∧
       ClosedValueBindings output ∧ LeaRuntimeBindingInvariant output ∧
       ValuationFor (leaClassSolution output ∘ rename) start sourceBindings ∧
-      Metta.instantiate output (toLeaTTaAtom body) = renBy rename (toLeaTTaAtom
+      Metta.instantiate output (encodeModelAtom body) = renBy rename (encodeModelAtom
         (expression program (sourceBindings.map (fun entry =>
           (entry.1, MeTTaData.encode entry.2))) (.grounded (.int sourceFuel))
           row.equation.body (patterns row.equation.params start).2).1) ∧
       (∀ name ∈ liveStackVars previous,
         Metta.Bindings.lookupVal incoming name = none →
           Metta.Bindings.lookupVal output name = none) ∧
-      (∀ name ∈ (Metta.instantiate output (toLeaTTaAtom body)).vars,
+      (∀ name ∈ (Metta.instantiate output (encodeModelAtom body)).vars,
         name ∉ liveStackVars previous) ∧
       let fresh := freshenRuleAvoiding state.counter
         (Metta.Minimal.queryOpAvoid previous query incoming) lhs
-        (toLeaTTaAtom (call "function" [rawBody]))
+        (encodeModelAtom (call "function" [rawBody]))
       let function := Metta.instantiate headerBindings fresh.1.2
       let parent : Frame := { atom := function, ret := .function, vars := varsCopy previous }
       ∀ fuel rest done,
         interpretFuel environment (fuel + 5 + 2 * skipped) state
           (⟨atomToStack (.expr [.sym "eval", query]) previous, incoming⟩ :: rest) done =
         interpretFuel environment fuel { state with counter := fresh.2 }
-          (finItem (parent :: previous) (Metta.instantiate output (toLeaTTaAtom body)) output :: rest) done := by
+          (finItem (parent :: previous) (Metta.instantiate output (encodeModelAtom body)) output :: rest) done := by
   intro lhs query
   obtain ⟨rawBody, rename, emitted, injective, executes⟩ := dispatcher_selected_execution
     program head first sourceFuel state.counter arguments row sourceBindings selected

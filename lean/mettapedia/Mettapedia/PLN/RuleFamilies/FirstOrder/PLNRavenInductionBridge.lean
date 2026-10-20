@@ -21,7 +21,7 @@ namespace RavenInductionBridge
 
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 open Mettapedia.PLN.RuleFamilies.FirstOrder.RavenAsymmetricInduction
-open Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+open Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-- In the black-observation subpopulation, the observed raven base rate is
 `R / (R + M)`, where `R` is the number of black ravens and `M` the number of

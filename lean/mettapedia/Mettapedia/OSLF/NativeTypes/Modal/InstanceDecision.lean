@@ -57,11 +57,12 @@ def tests {system : GSLT.{u}} {admitted : system.Term → Prop}
 
 theorem instance_native_comparison {system : GSLT.{u}} {admitted : system.Term → Prop}
     (equations : EquationDecision system) (target : system.Term) (continuation : Prop)
-    (accepts : Bool) (continuationExact : accepts = true ↔ continuation) (source : system.Term) :
+    (accepts : Bool) (continuationExact : accepts = true ↔ continuation) (source : system.Term)
+    (spatial : Decision.Spatial.SpatialTheory system := .empty system) :
     denotation (tests (admitted := admitted) equations target continuation accepts continuationExact)
-        instanceFormula source ↔ system.Step source target ∧ continuation := by
+        instanceFormula spatial source ↔ system.Step source target ∧ continuation := by
   rw [show denotation (tests (admitted := admitted) equations target continuation accepts continuationExact)
-      instanceFormula = semanticDiamond system (contractumPredicate system target continuation) from rfl]
+      instanceFormula spatial = semanticDiamond system (contractumPredicate system target continuation) from rfl]
   change gsltDiamond system (contractumPredicate system target continuation) source ↔ _
   rw [gsltDiamond_spec]
   constructor
@@ -75,7 +76,8 @@ def check {system : GSLT.{u}} {admitted : system.Term → Prop}
     (target : system.Term) (continuation : Prop) (accepts : Bool)
     (continuationExact : accepts = true ↔ continuation) (source : system.Term) (budget : Nat) :
     Outcome (system.Step source target ∧ continuation) :=
-  Outcome.map (instance_native_comparison equations target continuation accepts continuationExact source)
+  Outcome.map (instance_native_comparison equations target continuation accepts continuationExact source
+      backend.spatial.theory)
     (Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.check backend (tests equations target continuation accepts continuationExact)
       instanceFormula source budget)
 

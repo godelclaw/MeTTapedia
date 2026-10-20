@@ -2,6 +2,12 @@ import Mettapedia.AutoBooks.Codex.IntuitionisticHOL.SemanticConsequenceBridge
 import Mettapedia.AutoBooks.Codex.IntuitionisticHOL.AwodeyButzCompletenessBridge
 import Mettapedia.AutoBooks.Codex.IntuitionisticHOL.ClosedTermWorldModelCountermodel
 
+/-!
+On 2026-10-20 the `awodey_butz_completeness*` theorems used here were renamed
+to `awodey_butz_not_derivable_of_*`, since they state soundness; the mapping is
+recorded in `AwodeyButzCompletenessBridge`.
+-/
+
 namespace Mettapedia.AutoBooks.Codex.IntuitionisticHOL
 
 open Mettapedia.Logic.HOL
@@ -216,7 +222,7 @@ theorem awodey_butz_not_derivable_of_derivation_exists_semantics
               SemilocalModel.formulaTruth M env φ ≠ ⊤) ∧
         SemilocalModel.SupportsUniformRelativization M) :
     ¬ DerivabilityGoal (Base := Base) (Const := Const) F :=
-  awodey_butz_completeness_of_exists_semantics
+  awodey_butz_not_derivable_of_exists_semantics
     (Base := Base) (Const := Const) D terminal branchClosed hSem
 
 /-- Centralized Awodey-Butz certified-completion wrapper. -/
@@ -235,7 +241,7 @@ theorem awodey_butz_not_derivable_of_completion_exists_semantics
               SemilocalModel.formulaTruth M env φ ≠ ⊤) ∧
         SemilocalModel.SupportsUniformRelativization M) :
     ¬ DerivabilityGoal (Base := Base) (Const := Const) F :=
-  C.awodey_butz_completeness_of_exists_semantics hSem
+  C.awodey_butz_not_derivable_of_exists_semantics hSem
 
 /-- Centralized Awodey-Butz search-state completion wrapper. -/
 theorem awodey_butz_not_derivable_of_headPriorityCompletion_exists_semantics
@@ -255,7 +261,7 @@ theorem awodey_butz_not_derivable_of_headPriorityCompletion_exists_semantics
               SemilocalModel.formulaTruth M env φ ≠ ⊤) ∧
         SemilocalModel.SupportsUniformRelativization M) :
     ¬ DerivabilityGoal (Base := Base) (Const := Const) F :=
-  C.awodey_butz_completeness_of_exists_semantics hInitial hCompat hSem
+  C.awodey_butz_not_derivable_of_exists_semantics hInitial hCompat hSem
 
 /-- Centralized Awodey-Butz certified-candidate raw semantics wrapper. -/
 theorem awodey_butz_not_derivable_of_candidate_exists_semantics
@@ -272,7 +278,7 @@ theorem awodey_butz_not_derivable_of_candidate_exists_semantics
               SemilocalModel.formulaTruth M env φ ≠ ⊤) ∧
         SemilocalModel.SupportsUniformRelativization M) :
     ¬ DerivabilityGoal (Base := Base) (Const := Const) C.frontier :=
-  C.awodey_butz_completeness_of_exists_semantics hSem
+  C.awodey_butz_not_derivable_of_exists_semantics hSem
 
 /-- Centralized Awodey-Butz certified-candidate classified semantics wrapper. -/
 theorem awodey_butz_not_derivable_of_candidate_exists_candidateClosedHintikkaSemantics
@@ -284,7 +290,7 @@ theorem awodey_butz_not_derivable_of_candidate_exists_candidateClosedHintikkaSem
         Nonempty (C.CandidateClosedHintikkaSemantics env) ∧
         SemilocalModel.SupportsUniformRelativization M) :
     ¬ DerivabilityGoal (Base := Base) (Const := Const) C.frontier :=
-  C.awodey_butz_completeness_of_exists_candidateClosedHintikkaSemantics hSem
+  C.awodey_butz_not_derivable_of_exists_candidateClosedHintikkaSemantics hSem
 
 /-- Closed-frontier world-model/query-strength consequence in reusable form. -/
 abbrev ClosedWorldModelInterface (F : CompletenessFrontier Const []) : Prop :=

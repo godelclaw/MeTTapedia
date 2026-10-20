@@ -350,7 +350,7 @@ def generatedEquiv (n : Nat) : Code noTemplates n ≃ RussellTarski.Code n where
       rw [ofGenerated_toGenerated]
     _ = RussellTarski.decode (toGenerated code) := decode_ofGenerated _
 
-def HasCode.ofGenerated {Gamma : Tower.Ctx n}
+theorem HasCode.ofGenerated {Gamma : Tower.Ctx n}
     {code : RussellTarski.Code n} {level : LevelExpr Nat}
     (formation : RussellTarski.HasCode Gamma code level) :
     Contextual.HasCode Gamma (ofGenerated code) level := by
@@ -368,7 +368,7 @@ def HasCode.ofGenerated {Gamma : Tower.Ctx n}
         (by simpa only [decode_ofGenerated] using rightTyping)
   | lift codeFormation order ihCode => exact .lift ihCode order
 
-def HasCode.toGenerated {Gamma : Tower.Ctx n}
+theorem HasCode.toGenerated {Gamma : Tower.Ctx n}
     {code : Code noTemplates n} {level : LevelExpr Nat}
     (formation : Contextual.HasCode Gamma code level) :
     RussellTarski.HasCode Gamma (toGenerated code) level := by

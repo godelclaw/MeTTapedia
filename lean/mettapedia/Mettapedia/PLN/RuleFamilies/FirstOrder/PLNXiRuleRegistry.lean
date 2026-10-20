@@ -34,8 +34,8 @@ All theorems are fully proved (0 sorry).
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.PLNXiRuleRegistry
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision

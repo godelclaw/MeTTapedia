@@ -4,7 +4,10 @@ Validate that HE I/O fixtures are anchored to Lean theorems where required.
 
 Policy:
 - Fixtures with tier `core_anchor` must specify `lean_theorem`.
-- Each required theorem must exist in the configured Lean file.
+- Short anchors are resolved in the configured Lean file.
+- Qualified anchors are resolved in their declaring module and namespace.
+
+This is a source-link check; strict Lean builds separately check the proofs.
 """
 
 from __future__ import annotations
@@ -21,11 +24,31 @@ THEOREM_RE = re.compile(r"^\s*theorem\s+([A-Za-z0-9_']+)\b")
 
 def parse_theorems(path: Path) -> set[str]:
     names: set[str] = set()
+    scopes: list[str | None] = []
     for line in path.read_text(encoding="utf-8").splitlines():
+        scope = re.match(r"^\s*(namespace|section)(?:\s+([A-Za-z0-9_.']+))?\s*$", line)
+        if scope:
+            scopes.append(scope.group(2) if scope.group(1) == "namespace" else None)
+            continue
+        if re.match(r"^\s*end(?:\s+[A-Za-z0-9_.']+)?\s*$", line):
+            if scopes:
+                scopes.pop()
+            continue
         m = THEOREM_RE.match(line)
         if m:
             names.add(m.group(1))
+            names.add(".".join([scope for scope in scopes if scope] + [m.group(1)]))
     return names
+
+
+def declaring_file(root: Path, qualified_name: str) -> Path | None:
+    """Find the longest existing module prefix; namespaces need not be modules."""
+    parts = qualified_name.split(".")
+    for end in range(len(parts) - 1, 0, -1):
+        candidate = root.joinpath(*parts[:end]).with_suffix(".lean")
+        if candidate.is_file():
+            return candidate
+    return None
 
 
 def main() -> int:
@@ -50,7 +73,7 @@ def main() -> int:
     if not isinstance(fixtures, list):
         raise ValueError("fixtures must be a list")
 
-    theorem_names = parse_theorems(lean_path)
+    theorem_files = {lean_path: parse_theorems(lean_path)}
 
     missing_anchor_field: list[str] = []
     missing_theorem: list[tuple[str, str]] = []
@@ -71,13 +94,17 @@ def main() -> int:
         if tier == "core_anchor":
             if theorem == "":
                 missing_anchor_field.append(fid)
-            elif theorem not in theorem_names:
-                missing_theorem.append((fid, theorem))
+            else:
+                source = declaring_file(root, theorem) if "." in theorem else lean_path
+                if source is not None and source not in theorem_files:
+                    theorem_files[source] = parse_theorems(source)
+                if source is None or theorem not in theorem_files[source]:
+                    missing_theorem.append((fid, theorem))
 
     print("HE I/O Lean anchor report")
     print(f"  fixture_count: {len(fixtures)}")
     print(f"  core_anchor_count: {sum(1 for r in fixtures if isinstance(r, dict) and r.get('tier') == 'core_anchor')}")
-    print(f"  theorem_count_in_lean_file: {len(theorem_names)}")
+    print(f"  lean_source_file_count: {len(theorem_files)}")
     print(f"  duplicate_fixture_ids: {sorted(duplicate_ids)}")
     print(f"  missing_anchor_field: {missing_anchor_field}")
     print(f"  missing_theorem_targets: {missing_theorem}")

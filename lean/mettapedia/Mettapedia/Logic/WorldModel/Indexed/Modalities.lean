@@ -29,7 +29,7 @@ set_option autoImplicit false
 
 open CategoryTheory
 
-namespace Mettapedia.Logic.WorldModel.Indexed.Modal
+namespace Mettapedia.Logic.WorldModel.Indexed.Modalities
 
 universe vB uB
 
@@ -293,4 +293,4 @@ theorem reachable_not_epistemic (a : Src) :
 
 end Sources
 
-end Mettapedia.Logic.WorldModel.Indexed.Modal
+end Mettapedia.Logic.WorldModel.Indexed.Modalities

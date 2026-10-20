@@ -521,7 +521,8 @@ theorem authoredDrain_publication {source : OrderedFirstOrderAdmission.Source}
     (authoredDrain admitted type subject).publication =
       GeneralRuleJobExecution.completedReceipts (rootPlan source.core provider) [] type subject := by
   exact ProgramRun.publication_eq_completed_of_static (rootPlan source.core provider) [] type subject
-    (static_admission admitted) typed.2.1 (authoredBudget admitted) (fun _ _ => Nat.le_refl _)
+    (static_admission admitted) admitted.profile.firstOrder.noDynamic typed.2.1
+    (authoredBudget admitted) (fun _ _ => Nat.le_refl _)
 
 theorem drained_realizations {source : OrderedFirstOrderAdmission.Source}
     {provider : GeneralPremise.ProviderSnapshot}

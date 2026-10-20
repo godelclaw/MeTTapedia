@@ -37,8 +37,11 @@ to another formalism.
    networks and the collider counterexample
    (`RuleFamilies.FirstOrder.PLNXiDerivedBNRules`), and conclusion confidence
    through intervals (`EvidenceContracts.deduction_confidence_route`).
-5. **World models.**  `WorldModel.BinaryWorldModel` (states revised by `+`,
-   queries answered by extracting evidence), `WorldModel.WorldModelCalculus`
+5. **World models.**  `Mettapedia.Logic.WorldModel.Basic` is the general
+   revision/query interface, with no additive law. `Observation` supplies
+   composable meaning-preserving maps. `WorldModel.BinaryWorldModel` specializes
+   to states revised by `+`,
+   queries answered by extracting evidence; `WorldModel.WorldModelCalculus`
    (a rule is a query rewrite guarded by its side condition),
    `WorldModel.PLNWorldModelCrispSpecialization` (the world model of a crisp
    semantics), `WorldModel.PLNWorldModelGeneric` (other conjugate carriers).
@@ -49,8 +52,9 @@ to another formalism.
    compares PLN with other systems.  Neither redefines a spine concept.
    Steps 1–4 as portable module data: `Bridges.GSLT.EvidenceCalculusModule`
    (the rules with their contract premises, read back through the verified
-   module reader) and `Bridges.GSLT.EvidenceCalculusSemantics` (the revision
-   rule is sound with its contract and unsound without it).
+   module reader) and `Bridges.GSLT.EvidenceCalculusSemantics` (independent semantic settings and their contract counterexamples).
+   `EvidenceCalculusComposition` combines the nine sound schemas while keeping
+   counts, likelihoods and population readouts distinct.
 
 ## Rooms
 

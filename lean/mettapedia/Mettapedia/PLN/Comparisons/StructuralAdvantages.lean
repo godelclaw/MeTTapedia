@@ -59,7 +59,7 @@ Until that is written, the asymmetry is motivation, not a result.
 
 namespace Mettapedia.PLN.Comparisons
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 open scoped ENNReal
 

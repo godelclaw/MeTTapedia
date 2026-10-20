@@ -2,6 +2,7 @@ import Mettapedia.PLN.Bridges.HOL.ProvenanceSemiringReadout
 import Mettapedia.PLN.Evidence.EvidentialLedger
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNInductionAbductionITVBridge
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeductionComposition
 
 /-!
 # BinaryEvidence readout for HOL derivation-tree provenance
@@ -17,7 +18,7 @@ namespace Mettapedia.PLN.Bridges.HOL.BinaryEvidenceReadout
 
 open Mettapedia.Logic.HOL
 open Mettapedia.PLN.Evidence
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidentialLedger
 open Mettapedia.PLN.RuleFamilies.FirstOrder
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
@@ -30,11 +31,11 @@ variable {Base : Type u} {Const : Ty Base → Type v}
 variable {Γ : Ctx Base} {Δ : List (Formula Const Γ)}
 variable {φ ψ χ : Formula Const Γ}
 
-/-- Adding independent evidence is coordinatewise nondecreasing on the left. -/
+/-- Adding evidence is coordinatewise nondecreasing on the left. -/
 theorem binaryEvidence_le_hplus_right (x y : BinaryEvidence) : x ≤ x + y := by
   simp [BinaryEvidence.le_def, BinaryEvidence.hplus_def]
 
-/-- Adding independent evidence is coordinatewise nondecreasing on the right. -/
+/-- Adding evidence is coordinatewise nondecreasing on the right. -/
 theorem binaryEvidence_le_hplus_left (x y : BinaryEvidence) : x ≤ y + x := by
   simpa [BinaryEvidence.hplus_comm] using binaryEvidence_le_hplus_right x y
 

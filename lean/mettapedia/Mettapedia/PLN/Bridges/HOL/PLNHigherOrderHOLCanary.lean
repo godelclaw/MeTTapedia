@@ -13,7 +13,7 @@ namespace Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCanary
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.Probabilistic
 open Mettapedia.PLN.Bridges.HOL.Probabilistic
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open scoped ENNReal
 
 abbrev FixtureBase := PUnit
@@ -111,7 +111,7 @@ theorem canary_hol_top_imp_top_link
     W
 
 theorem canary_hol_top_iff_top_queryEq :
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WMQueryEq
+    Mettapedia.PLN.WorldModel.WMQueryEq
       (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
       (Query := Mettapedia.Logic.HOL.HOLQuery FixtureConst)
       (.top : ClosedFormula FixtureConst) .top :=
@@ -122,7 +122,7 @@ theorem canary_hol_top_iff_top_queryEq :
       (.top : ClosedFormula FixtureConst))
 
 theorem canary_hol_and_comm_queryEq :
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WMQueryEq
+    Mettapedia.PLN.WorldModel.WMQueryEq
       (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
       (Query := Mettapedia.Logic.HOL.HOLQuery FixtureConst)
       (.and (.top : ClosedFormula FixtureConst) .bot)
@@ -134,7 +134,7 @@ theorem canary_hol_and_comm_queryEq :
       (.top : ClosedFormula FixtureConst) .bot)
 
 theorem canary_hol_or_comm_queryEq :
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WMQueryEq
+    Mettapedia.PLN.WorldModel.WMQueryEq
       (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
       (Query := Mettapedia.Logic.HOL.HOLQuery FixtureConst)
       (.or (.top : ClosedFormula FixtureConst) .bot)
@@ -168,7 +168,7 @@ theorem canary_hol_imp_mono_link
     W
 
 theorem canary_hol_not_queryEq_top_bot :
-    ¬ Mettapedia.PLN.WorldModel.PLNWorldModel.WMQueryEq
+    ¬ Mettapedia.PLN.WorldModel.WMQueryEq
       (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
       (Query := Mettapedia.Logic.HOL.HOLQuery FixtureConst)
       (.top : ClosedFormula FixtureConst) (.bot : ClosedFormula FixtureConst) := by
@@ -206,7 +206,7 @@ theorem canary_hol_not_queryEq_top_bot :
   exact zero_ne_one hStrength.symm
 
 theorem canary_hol_not_queryEq_and_top_bot_top :
-    ¬ Mettapedia.PLN.WorldModel.PLNWorldModel.WMQueryEq
+    ¬ Mettapedia.PLN.WorldModel.WMQueryEq
       (State := Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore.HOLState FixtureBase FixtureConst)
       (Query := Mettapedia.Logic.HOL.HOLQuery FixtureConst)
       (.and (.top : ClosedFormula FixtureConst) .bot)

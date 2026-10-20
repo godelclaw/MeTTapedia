@@ -24,7 +24,7 @@ open Mettapedia.OSLF.Framework.ConstructorCategory
 open Mettapedia.OSLF.Framework.CategoryBridge
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.OSLF.Framework.EvidenceSemantics
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge.WMHyperdoctrine
 
 universe u v x

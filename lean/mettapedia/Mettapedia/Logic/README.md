@@ -39,7 +39,7 @@ their own READMEs (linked below).
 | Core PLN inference rules | top-level `PLN*.lean` | sorry-free |
 | Weight / confidence | `PLNConfidenceWeight.lean`, … | sorry-free |
 | Bounds / consistency | `PLNFrechetBounds.lean`, … | sorry-free |
-| Algebraic structure (quantale/Heyting) | `EvidenceQuantale.lean`, `HeytingValuationOnEvidence.lean`, `PLNQuantaleSemantics/` | sorry-free |
+| Algebraic structure (quantale/Heyting) | `BinaryEvidence.lean`, `HeytingValuationOnEvidence.lean`, `PLNQuantaleSemantics/` | sorry-free |
 | Solomonoff / exchangeability bridge | `../UniversalAI/SolomonoffExchangeable.lean`, `DeFinetti.lean` | bridge built; see `UniversalAI/` |
 | First-order & fuzzy quantifiers | `PLNFirstOrder/` (own README) | sorry-free |
 | Logic programming theory | `LP/` | sorry-free |
@@ -72,7 +72,7 @@ Anchor theorems (files all verified present):
 | Fréchet bounds / PLN consistency | `PLNFrechetBounds.lean` |
 | Weight-space minimization | `PLNConfidenceWeight.lean` |
 | Evidence is not Boolean | `HeytingValuationOnEvidence.lean` |
-| Quantale transitivity | `EvidenceQuantale.lean` |
+| Quantale transitivity | `BinaryEvidence.lean` |
 | Solomonoff collapse | `../UniversalAI/SolomonoffExchangeable.lean` |
 | De Finetti | `DeFinetti.lean` |
 

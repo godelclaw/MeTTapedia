@@ -39,16 +39,16 @@ open CategoryTheory Opposite
 namespace Mettapedia.Logic.WorldModel.Indexed.InstitutionBridge
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelInstitution
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelInstitution
 
 /-- World-model signatures are worlds: signature morphisms compose as functions
 on sorts and sentences. -/
 instance sigCategory : Category WMSignature where
   Hom sig1 sig2 := WMSigMorphism sig1 sig2
-  id sig := Mettapedia.PLN.WorldModel.PLNWorldModelInstitution.id sig
-  comp f g := Mettapedia.PLN.WorldModel.PLNWorldModelInstitution.comp f g
+  id sig := Mettapedia.PLN.WorldModel.WorldModelInstitution.id sig
+  comp f g := Mettapedia.PLN.WorldModel.WorldModelInstitution.comp f g
   id_comp _ := rfl
   comp_id _ := rfl
   assoc _ _ _ := rfl
@@ -81,14 +81,14 @@ theorem profiles_map_apply {sig1 sig2 : WMSignature} (σ : sig1 ⟶ sig2)
 
 /-- `profilePrecomp_id` is the identity law of the profile functor. -/
 theorem profilePrecomp_id_of_functor (sig : WMSignature) (F : Sentence sig → BinaryEvidence) :
-    profilePrecomp (Mettapedia.PLN.WorldModel.PLNWorldModelInstitution.id sig) F = F := by
+    profilePrecomp (Mettapedia.PLN.WorldModel.WorldModelInstitution.id sig) F = F := by
   have := congrArg (fun k => k.hom F) (profiles.map_id (op sig))
   exact this
 
 /-- `profilePrecomp_comp` is the composition law of the profile functor. -/
 theorem profilePrecomp_comp_of_functor {sig1 sig2 sig3 : WMSignature} (σ : sig1 ⟶ sig2)
     (τ : sig2 ⟶ sig3) (F : Sentence sig3 → BinaryEvidence) :
-    profilePrecomp (Mettapedia.PLN.WorldModel.PLNWorldModelInstitution.comp σ τ) F =
+    profilePrecomp (Mettapedia.PLN.WorldModel.WorldModelInstitution.comp σ τ) F =
       profilePrecomp σ (profilePrecomp τ F) := by
   have := congrArg (fun k => k.hom F) (profiles.map_comp τ.op σ.op)
   exact this
@@ -151,7 +151,7 @@ theorem satisfactionAlong_iff_doctrineHom {sig1 sig2 : WMSignature} (σ : sig1 �
 /-- **Every morphism of an institution bundle is a doctrine morphism**: the
 identity of the state, over the signature morphism, from the source world
 model to the target world model. -/
-noncomputable def _root_.Mettapedia.PLN.WorldModel.PLNWorldModelInstitution.WMInstitution.doctrineHom
+noncomputable def _root_.Mettapedia.PLN.WorldModel.WorldModelInstitution.WMInstitution.doctrineHom
     (I : WMInstitution) {sig1 sig2 : I.Sig} (h : I.Hom sig1 sig2) :
     Total.mk profiles (I.sigData sig1) (sigModel (I.sigData sig1) (I.worldModel sig1)) ⟶
       Total.mk profiles (I.sigData sig2) (sigModel (I.sigData sig2) (I.worldModel sig2)) :=
@@ -188,7 +188,7 @@ the state violate the satisfaction condition along the identity of
 signatures, so no institution bundle assigns them to the ends of a morphism
 mapped to that identity. -/
 theorem zero_identity_not_satisfactionAlong :
-    ¬ SatisfactionAlong (Mettapedia.PLN.WorldModel.PLNWorldModelInstitution.id unitSignature)
+    ¬ SatisfactionAlong (Mettapedia.PLN.WorldModel.WorldModelInstitution.id unitSignature)
         zeroModel identityModel := by
   intro h
   have one : (0 : BinaryEvidence) = 1 := h 1 ⟨(), ()⟩
@@ -210,12 +210,12 @@ both translated identically into it and both reading the state-answering
 model through the translation. -/
 noncomputable def consistentInstitution : WMInstitution :=
   WMInstitution.overTop BinaryEvidence unitSignature identityModel (fun _ : Bool => unitSignature)
-    (fun _ => Mettapedia.PLN.WorldModel.PLNWorldModelInstitution.id unitSignature)
+    (fun _ => Mettapedia.PLN.WorldModel.WorldModelInstitution.id unitSignature)
 
 /-- The morphism `false → true` of the positive bundle: the identity of
 signatures, which commutes with the translations. -/
 def consistentInstitution_up : consistentInstitution.Hom false true :=
-  ⟨Mettapedia.PLN.WorldModel.PLNWorldModelInstitution.id unitSignature, fun phi => by
+  ⟨Mettapedia.PLN.WorldModel.WorldModelInstitution.id unitSignature, fun phi => by
     cases phi
     rfl⟩
 

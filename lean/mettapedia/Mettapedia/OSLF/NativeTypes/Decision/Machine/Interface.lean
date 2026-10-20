@@ -30,6 +30,13 @@ structure CursorBackend (system : GSLT.{u}) (admitted : system.Term → Prop) wh
     ∃ receipt, receipt ∈ (tasks source).flatten ∧ system.Equiv actual (target source receipt)
   target_admitted : ∀ source, admitted source → ∀ receipt,
     receipt ∈ (tasks source).flatten → admitted (target source receipt)
+  spatial : Mettapedia.OSLF.NativeTypes.Decision.Spatial.SplitBackend system admitted := .empty system admitted
+  splitTasks : Nat → system.Term → Stream (system.Term × system.Term) :=
+    fun index source => Stream.ofList (spatial.enumerate index source)
+  splitTasks_exact : ∀ index source,
+    (splitTasks index source).flatten = spatial.enumerate index source := by
+      intro index source
+      exact Stream.flatten_ofList _
 
 structure LeafBackend (system : GSLT.{u}) (admitted : system.Term → Prop) where
   predicate : EquationPredicate system

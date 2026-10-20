@@ -36,7 +36,7 @@ In a quantale/frame, residuation `a ⊸ b` is the largest element `c` such that
 
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.ResidualDeductionFormula
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## Residuation in BinaryEvidence -/
 

@@ -24,9 +24,9 @@ have BinaryEvidence values that track both positive and negative support.
 - Lawvere, "Metric spaces, generalized logic, and closed categories" (1973)
 -/
 
-namespace Mettapedia.PLN.RuleFamilies.QuantaleSemantics.Model
+namespace Mettapedia.PLN.RuleFamilies.QuantaleSemantics
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.CDLogic
 open scoped ENNReal
@@ -46,6 +46,8 @@ structure PLNModel (α : Type*) where
 variable {α : Type*}
 
 /-! ## BinaryEvidence-Based Validity -/
+
+namespace PLNModel
 
 /-- A proposition is "valid" in a model if it has positive evidence and no negative evidence.
     This corresponds to the pTrue corner of the p-bit square. -/
@@ -162,14 +164,14 @@ theorem tensorCompose_assoc (M₁ M₂ M₃ : PLNModel α) (p : α) :
     (tensorCompose M₁ (tensorCompose M₂ M₃)).evidence p :=
   cdTensor_assoc _ _ _
 
-/-! ## Par Composition (Independent BinaryEvidence)
+/-! ## Par Composition (evidence from disjoint observations)
 
-When we have independent evidence sources, they combine via par (⅋).
-This corresponds to evidence aggregation from independent observations.
+Evidence from disjoint observations combines via par (⅋), which adds the
+counts.
 -/
 
-/-- Combine independent evidence via par.
-    Given models M₁ and M₂ with independent evidence, combine additively.
+/-- Combine evidence from disjoint observations via par.
+    Given models M₁ and M₂ built from disjoint observations, combine additively.
 -/
 noncomputable def parCompose (M₁ M₂ : PLNModel α) : PLNModel α where
   evidence p := M₁.evidence p ⅋ M₂.evidence p
@@ -263,4 +265,6 @@ This file establishes:
    while preserving unknown/contradictory status.
 -/
 
-end Mettapedia.PLN.RuleFamilies.QuantaleSemantics.Model
+end PLNModel
+
+end Mettapedia.PLN.RuleFamilies.QuantaleSemantics

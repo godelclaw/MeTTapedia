@@ -17,7 +17,7 @@ for WM queries.
 namespace Mettapedia.PLN.RuleFamilies.HigherOrder.PLNWorldModelRegimeAdmissibility
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.Hyperseed
 open scoped ENNReal

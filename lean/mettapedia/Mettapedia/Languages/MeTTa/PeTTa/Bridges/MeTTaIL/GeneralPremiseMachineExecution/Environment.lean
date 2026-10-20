@@ -15,7 +15,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.MeTTaIL RuleBinding ScopedRuleMatching
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open SpaceSemantics (Program Equation)
 open Eval
 open GeneralPremise (Environment)

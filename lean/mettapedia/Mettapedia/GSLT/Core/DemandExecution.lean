@@ -98,6 +98,29 @@ theorem run_mapNodes {NextNode : Type*} (mapping : Node → NextNode)
       | true => rfl
       | false => simp only [Bool.false_eq_true, ↓reduceIte, ih, ticks]
 
+/-- A local commuting step transports the entire demanded continuation.
+The stopping predicate observes the same ordered answers and live frontier;
+private memory may be transported or erased without changing that boundary. -/
+theorem run_mapMemory {NextMemory : Type*} (transfer : Memory → NextMemory)
+    (system : BranchingSystem Node Answer)
+    (first : Controller Node Answer Memory) (second : Controller Node Answer NextMemory)
+    (goal : List Answer → Bool)
+    (ticks : ∀ state : State Node Answer Memory,
+      (InferenceControl.Snapshot.tick system first state).mapMemory transfer =
+        InferenceControl.Snapshot.tick system second (state.mapMemory transfer))
+    (fuel : Nat) (state : State Node Answer Memory) :
+    (run system first goal fuel state).mapMemory transfer =
+      run system second goal fuel (state.mapMemory transfer) := by
+  have stopEquality : ∀ state : State Node Answer Memory,
+      stopped goal (state.mapMemory transfer) = stopped goal state := fun _ => rfl
+  induction fuel generalizing state with
+  | zero => rfl
+  | succ fuel ih =>
+    simp only [run, stopEquality]
+    cases done : stopped goal state with
+    | true => rfl
+    | false => simp only [Bool.false_eq_true, ↓reduceIte, ih, ticks]
+
 /-- The demand mechanism only shortens the original controlled run. -/
 theorem run_prefix (system : BranchingSystem Node Answer)
     (controller : Controller Node Answer Memory) (goal : List Answer → Bool)
@@ -481,5 +504,7 @@ example :
   decide
 
 end Controls
+
+#print axioms Mettapedia.GSLT.Core.DemandExecution.run_mapMemory
 
 end Mettapedia.GSLT.Core.DemandExecution

@@ -1,3 +1,4 @@
+import Mettapedia.Languages.MeTTa.PeTTa.Resumption
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RootRuleExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RuleTraceExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.PremiseOperationsExecution
@@ -26,7 +27,7 @@ open Mettapedia.OSLF.MeTTaIL.InterpretedContextualStep
 open Mettapedia.OSLF.MeTTaIL.GeneralPremise (ProviderRow)
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst applySubst_nil matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval RuleExecutionProgram
 open MatchAutomataBindingExecution (bindingsTerm bindingsOptionTerm matchesTerm boundMatchTerm)
 open RelationPremiseExecution (providerEnv providerRowsTerm bindingResultsTerm)
@@ -1591,6 +1592,32 @@ theorem observes_contextual_iff_gslt_step (state : State) (strategy : Strategy)
     exact ⟨depth, _, (language_contextual_derivation_iff state strategy language types terms contexts fields rows
       providerAdmitted admitted projected depth subject state _ [] []).mpr ⟨rfl, rfl, rfl, rfl⟩, member⟩
 
+/-- The actual common-machine run observes exactly the licensed contextual
+GSLT steps. The terminal frontier retains its occurrence list and complete
+effect store; evaluator budget remains distinct from premise depth. -/
+theorem common_machine_observes_contextual_iff_gslt_step (state : State) (strategy : Strategy)
+    (language : LanguageDef) (types terms : Term) (contexts fields : RewriteRule → Term)
+    (rows : List ProviderRow) (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
+    (admitted : languageAdmitted language = true)
+    (projected : ∀ rule ∈ language.rewrites, premisesTerm? rule.premises = some (fields rule))
+    (subject : PatternPlan) (target : Pattern) :
+    (∃ depth, ∃ reducts : List Pattern, ∃ fuel events,
+      (CommonMachine.machine program).run fuel
+        { state, control := .evaluate [] (encoded
+            (languageQueryTerm strategy language types terms contexts fields rows depth subject)) } =
+        (events, .finished (.complete state [patternsValue reducts] [] [])) ∧ target ∈ reducts) ↔
+      (Mettapedia.OSLF.Framework.TypeSynthesis.langGSLTUsing (providerEnv rows) language).Step
+        subject.erase target := by
+  rw [← observes_contextual_iff_gslt_step state strategy language types terms contexts fields rows
+    providerAdmitted admitted projected subject target]
+  constructor
+  · rintro ⟨depth, reducts, fuel, events, finished, member⟩
+    exact ⟨depth, reducts,
+      (CommonMachine.finished_iff_source program _ _).mp ⟨fuel, events, finished⟩, member⟩
+  · rintro ⟨depth, reducts, executed, member⟩
+    obtain ⟨fuel, events, finished⟩ := (CommonMachine.finished_iff_source program _ _).mpr executed
+    exact ⟨depth, reducts, fuel, events, finished, member⟩
+
 namespace Controls
 
 theorem variable_query_source_admitted :
@@ -1641,6 +1668,17 @@ theorem recursive_witnesses_preserved (state : State) (strategy : Strategy) :
       (patternsValue [box middle, box final, box middle]) := by
   simpa only [empty_provider, recursive_witnesses_ordered] using
     fixture_returns state strategy language (by decide +kernel) [] (by decide +kernel) 2 subject
+
+/-- The common runner preserves the repeated recursive witness in its actual
+ordered answer frontier. -/
+theorem common_machine_recursive_witnesses_preserved (state : State) (strategy : Strategy) :
+    ∃ fuel events, (CommonMachine.machine program).run fuel
+      { state, control := .evaluate [] (encoded (queryTerm strategy language [] 2 subject)) } =
+      (events, .finished (.complete state
+        [patternsValue [box middle, box final, box middle]] [] [])) := by
+  apply (CommonMachine.finished_iff_source program _ _).mpr
+  exact (pure_returns_derivation_iff program [] state state _ _
+    (recursive_witnesses_preserved state strategy) state _ [] []).mpr ⟨rfl, rfl, rfl, rfl⟩
 
 theorem zero_depth_preserved (state : State) (strategy : Strategy) :
     PureReturns program [] state (encoded (queryTerm strategy language [] 0 subject)) state (.symbol "LNil") := by
@@ -1796,11 +1834,30 @@ theorem incorrect_observation_refused (state : State) (strategy : Strategy)
   have sameAtom := List.cons.inj observed.2.1 |>.1
   exact different (InferenceCettaWire.encodePatterns_injective (CettaWireAtom.encode_injective _ _ sameAtom))
 
+/-- A common-machine completion cannot publish a different frontier from the
+independently justified contextual execution. -/
+theorem common_machine_incorrect_observation_refused (state : State) (strategy : Strategy)
+    (language : LanguageDef) (rows : List ProviderRow) (depth : Nat) (subject : PatternPlan)
+    (admitted : languageAdmitted language = true)
+    (providerAdmitted : RuleTraceExecution.providerFirstOrder rows = true)
+    (incorrect : List Pattern)
+    (different : incorrect ≠ MeTTaILMatchAutomataExecution.runAt strategy
+      (engineBasePremises (providerEnv rows)) language depth subject) :
+    ¬ ∃ fuel events, (CommonMachine.machine program).run fuel
+      { state, control := .evaluate [] (encoded (queryTerm strategy language rows depth subject)) } =
+      (events, .finished (.complete state [patternsValue incorrect] [] [])) := by
+  intro finished
+  exact incorrect_observation_refused state strategy language rows depth subject admitted
+    providerAdmitted incorrect different
+    ((CommonMachine.finished_iff_source program _ _).mp finished)
+
 #print axioms variable_query_source_admitted
 #print axioms constructed_query_core_admitted
 #print axioms constructed_query_source_refused
 
 end Controls
+
+#print axioms common_machine_observes_contextual_iff_gslt_step
 
 #print axioms recursive_results_captured_returns
 #print axioms recursive_results_returns
@@ -1814,6 +1871,7 @@ end Controls
 #print axioms premise_projection_exists
 #print axioms premises_projection_exists
 #print axioms Controls.recursive_witnesses_preserved
+#print axioms Controls.common_machine_recursive_witnesses_preserved
 #print axioms Controls.unauthorized_child_refused
 #print axioms Controls.duplicate_guard_witnesses_preserved
 #print axioms Controls.freshness_occurrences_preserved
@@ -1824,5 +1882,6 @@ end Controls
 #print axioms Controls.query_before_freshness_refused
 #print axioms Controls.freshness_before_query_preserved
 #print axioms Controls.incorrect_observation_refused
+#print axioms Controls.common_machine_incorrect_observation_refused
 
 end Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.ContextualRuleExecution

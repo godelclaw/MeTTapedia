@@ -1,5 +1,9 @@
 import Mettapedia.GSLT.Core.DemandExecution
+import Mettapedia.GSLT.Core.InferenceRecording
 import Mettapedia.Machines.BranchLocalNeed.ExecutionMachine
+import Mettapedia.Machines.BranchLocalNeed.InteractionAuthority
+import Mettapedia.Machines.ResourceOwnership
+import Mettapedia.GSLT.Contracts.IndexedAuthority
 
 /-!
 # Inference control for the reference Need machine
@@ -402,10 +406,1643 @@ theorem demanded_breadthFirst_run_erases
 
 end Erasure
 
+/-! ## Owned Resume of a selected ready occurrence
+
+Inspection exposes existing work, without preparing any successor. A session
+is sealed by selection; it never reopens an old view on a later frontier.
+The exclusive-use registry supplies the exclusion boundary, independently of
+current semantic permission. Source expansion remains the existing controller
+operation, including its whole successor list and memory update.
+-/
+
+namespace ResumeTicket
+
+open Mettapedia.Machines.BranchLocalNeed.NeedInteractionAuthority
+open Mettapedia.GSLT.Contracts
+open Mettapedia.GSLT.Logic.SeparationTransport
+open _root_.CategoryTheory
+
+variable {Node Answer Memory : Type*}
+
+/-- Stable extraction by position preserves equal-looking occurrences. -/
+def promote (index : Nat) (nodes : List Node) : List Node :=
+  match nodes[index]? with
+  | none => nodes
+  | some node => node :: nodes.eraseIdx index
+
+theorem promote_perm (index : Nat) (nodes : List Node) :
+    (promote index nodes).Perm nodes := by
+  unfold promote
+  cases found : nodes[index]? with
+  | none => exact .refl _
+  | some node =>
+      obtain ⟨bound, value⟩ := List.getElem?_eq_some_iff.mp found
+      rw [← value]
+      exact List.getElem_cons_eraseIdx_perm bound
+
+/-- Only selection changes. The original integration retains all siblings
+and children, and the original controller updates its actual memory. -/
+def selectedController (base : Controller Node Answer Memory) :
+    Controller Node Answer (Option Nat × Memory) where
+  initialMemory := (none, base.initialMemory)
+  scheduler memory :=
+    match memory.1 with
+    | none => base.scheduler memory.2
+    | some index =>
+        { reorder := promote index
+          reorder_complete := promote_perm index
+          integrate := (base.scheduler memory.2).integrate
+          integrate_complete := (base.scheduler memory.2).integrate_complete }
+  advance memory node answer generated :=
+    (none, base.advance memory.2 node answer generated)
+
+structure Session (Node Answer Memory : Type*) where
+  snapshot : Mettapedia.GSLT.Core.InferenceControl.Snapshot Node Answer (Option Nat × Memory)
+  inspection : Option (SourceCursor Node)
+
+/-- An inspection retains a live list suffix, not a computed answer stream. -/
+def begin (snapshot : Mettapedia.GSLT.Core.InferenceControl.Snapshot Node Answer Memory) :
+    Session Node Answer Memory :=
+  ⟨snapshot.mapMemory (fun memory => (none, memory)), some ⟨0, snapshot.search.frontier⟩⟩
+
+def InspectionSound (session : Session Node Answer Memory) : Prop :=
+  ∀ cursor, session.inspection = some cursor →
+    cursor.index ≤ session.snapshot.search.frontier.length ∧
+      cursor.rest = session.snapshot.search.frontier.drop cursor.index
+
+theorem begin_inspectionSound
+    (snapshot : Mettapedia.GSLT.Core.InferenceControl.Snapshot Node Answer Memory) :
+    InspectionSound (begin snapshot) := by
+  intro cursor held
+  cases Option.some.inj held
+  exact ⟨Nat.zero_le _, rfl⟩
+
+/-- Reuse the maintained read-only cursor. This operation does not call the
+branching authority or the execution controller. -/
+def page (allowance : Nat) (session : Session Node Answer Memory) :
+    Option (DiscoveryView Node × Session Node Answer Memory) :=
+  session.inspection.map fun cursor =>
+    let result := discover allowance [] cursor
+    (readDiscovery result.2,
+      { session with inspection := some (retainedCursor result.2) })
+
+theorem page_preserves_snapshot (allowance : Nat)
+    (session next : Session Node Answer Memory) (view : DiscoveryView Node)
+    (served : page allowance session = some (view, next)) :
+    next.snapshot = session.snapshot := by
+  obtain ⟨cursor, _, equal⟩ := Option.map_eq_some_iff.mp served
+  cases equal
+  rfl
+
+theorem page_retains_suffix (allowance : Nat)
+    (session next : Session Node Answer Memory) (view : DiscoveryView Node)
+    (sound : InspectionSound session)
+    (served : page allowance session = some (view, next)) : InspectionSound next := by
+  obtain ⟨cursor, held, equal⟩ := Option.map_eq_some_iff.mp served
+  cases equal
+  obtain ⟨bound, rest⟩ := sound cursor held
+  intro retained same
+  cases Option.some.inj same
+  rw [retained_cursor]
+  dsimp only
+  constructor
+  · rw [rest, List.length_drop]
+    omega
+  · rw [rest, List.drop_drop]
+
+/-- The displayed occurrence's identity comes from actual paging of the
+captured frontier, independently of its payload or equality with other nodes. -/
+theorem page_origin (allowance : Nat)
+    (session next : Session Node Answer Memory) (view : DiscoveryView Node)
+    (sound : InspectionSound session)
+    (served : page allowance session = some (view, next))
+    (descriptor : OccurrenceDescriptor Node) (displayed : descriptor ∈ view.yielded) :
+    session.snapshot.search.frontier[descriptor.index]? = some descriptor.target := by
+  obtain ⟨cursor, held, equal⟩ := Option.map_eq_some_iff.mp served
+  cases equal
+  have shownPrefix := (discovery_view_agrees allowance cursor.index cursor.rest []).1
+  rw [shownPrefix] at displayed
+  simp only [List.reverse_nil, List.nil_append] at displayed
+  obtain ⟨lower, found⟩ := orderedOccurrences_mem_lookup cursor.index cursor.rest descriptor
+    (List.mem_of_mem_take displayed)
+  rw [(sound cursor held).2, List.getElem?_drop] at found
+  have index : cursor.index + (descriptor.index - cursor.index) = descriptor.index := by omega
+  simpa only [index] using found
+
+/-- The checked position must already have been inspected. No returned node
+or successor supplied by the caller is trusted by selection. -/
+def choose (index : Nat) (session : Session Node Answer Memory) :
+    Option (Session Node Answer Memory) :=
+  session.inspection.bind fun cursor =>
+    if index < cursor.index then
+      (session.snapshot.search.frontier[index]?).map fun _ =>
+        { snapshot := { session.snapshot with memory := (some index, session.snapshot.memory.2) }
+          inspection := none }
+    else none
+
+theorem choose_origin (index : Nat) (session next : Session Node Answer Memory)
+    (chosen : choose index session = some next) :
+    ∃ cursor node, session.inspection = some cursor ∧ index < cursor.index ∧
+      session.snapshot.search.frontier[index]? = some node ∧
+      next.snapshot.search = session.snapshot.search ∧
+      next.snapshot.memory = (some index, session.snapshot.memory.2) ∧ next.inspection = none := by
+  obtain ⟨cursor, held, selected⟩ := Option.bind_eq_some_iff.mp chosen
+  split at selected
+  next scanned =>
+    obtain ⟨node, found, equal⟩ := Option.map_eq_some_iff.mp selected
+    cases equal
+    exact ⟨cursor, node, held, scanned, found, rfl, rfl, rfl⟩
+  next refused => cases selected
+
+/-- Positive execution uses only the ordinary controller run. An unselected
+inspection cannot accidentally run the producer. -/
+def resume (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (allowance : Nat) (session : Session Node Answer Memory) : Session Node Answer Memory :=
+  match session.inspection with
+  | some _ => session
+  | none => { session with snapshot := session.snapshot.run system (selectedController base) allowance }
+
+@[simp] theorem resume_zero (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory) (session : Session Node Answer Memory) :
+    resume system base 0 session = session := by
+  cases session with
+  | mk snapshot inspection => cases inspection <;> rfl
+
+theorem resume_split (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory) (earlier later : Nat)
+    (session : Session Node Answer Memory) :
+    resume system base (earlier + later) session =
+      resume system base later (resume system base earlier session) := by
+  cases held : session.inspection with
+  | some cursor => simp [resume, held]
+  | none => simp [resume, held, Snapshot.run_add]
+
+/-- Exact selected expansion: siblings retain their original order before
+integration; all children enter through the original controller's scheduler. -/
+theorem selected_expansion (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (session next : Session Node Answer Memory) (index : Nat)
+    (chosen : choose index session = some next) :
+    ∃ node, session.snapshot.search.frontier[index]? = some node ∧
+      (resume system base 1 next).snapshot.search.frontier =
+        (base.scheduler session.snapshot.memory.2).integrate
+          (session.snapshot.search.frontier.eraseIdx index) (system.successors node) ∧
+      (resume system base 1 next).snapshot.memory =
+        (none, base.advance session.snapshot.memory.2 node (system.emit node) (system.successors node)) := by
+  obtain ⟨cursor, node, _, _, found, search, memory, sealed⟩ := choose_origin index session next chosen
+  refine ⟨node, found, ?_, ?_⟩
+  all_goals simp [resume, sealed, Snapshot.run, Snapshot.tick, selectedController,
+    promote, memory, search, found, Mettapedia.GSLT.Core.BranchingTemporal.tick]
+
+private theorem ordinary_tick (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (snapshot : Mettapedia.GSLT.Core.InferenceControl.Snapshot Node Answer Memory) :
+    (snapshot.mapMemory (fun memory => (none, memory))).tick system (selectedController base) =
+      (snapshot.tick system base).mapMemory (fun memory => (none, memory)) := by
+  cases snapshot with
+  | mk search memory =>
+    simp only [Snapshot.tick, Snapshot.mapMemory, selectedController]
+    cases (base.scheduler memory).reorder search.frontier <;> rfl
+
+/-- Once its initial choice is consumed, the adapter is the original
+controller, preserving its actual continuation and complete search state. -/
+theorem ordinary_run (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory) (allowance : Nat)
+    (snapshot : Mettapedia.GSLT.Core.InferenceControl.Snapshot Node Answer Memory) :
+    (snapshot.mapMemory (fun memory => (none, memory))).run system (selectedController base) allowance =
+      (snapshot.run system base allowance).mapMemory (fun memory => (none, memory)) := by
+  induction allowance with
+  | zero => rfl
+  | succ allowance ih => rw [Snapshot.run, ih, ordinary_tick]; rfl
+
+/-- Only the first positive expansion uses the selected position. All
+remaining allowance goes to the original controller on that exact residual. -/
+theorem selected_then_original (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory) (session next : Session Node Answer Memory)
+    (index allowance : Nat) (chosen : choose index session = some next) :
+    (resume system base (allowance + 1) next).snapshot =
+      (((resume system base 1 next).snapshot.mapMemory Prod.snd).run system base allowance).mapMemory
+        (fun memory => (none, memory)) := by
+  obtain ⟨_, _, _, _, _, _, _, sealed⟩ := choose_origin index session next chosen
+  obtain ⟨node, _, _, memory⟩ := selected_expansion system base session next index chosen
+  have reconstructed : ((resume system base 1 next).snapshot.mapMemory Prod.snd).mapMemory
+      (fun memory => (none, memory)) = (resume system base 1 next).snapshot := by
+    have tag := congrArg Prod.fst memory
+    cases before : (resume system base 1 next).snapshot with
+    | mk search saved =>
+      rw [before] at tag
+      simp only at tag
+      cases saved with
+      | mk pending original =>
+        simp only at tag
+        subst pending
+        rfl
+  rw [← ordinary_run, reconstructed, show allowance + 1 = 1 + allowance by omega, resume_split]
+  simp [resume, sealed]
+
+theorem selected_conserves_occurrences (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (session next : Session Node Answer Memory) (index : Nat)
+    (chosen : choose index session = some next) :
+    ∃ node, session.snapshot.search.frontier[index]? = some node ∧
+      ((resume system base 1 next).snapshot.search.frontier).Perm
+        (session.snapshot.search.frontier.eraseIdx index ++ system.successors node) := by
+  obtain ⟨node, found, frontier, _⟩ := selected_expansion system base session next index chosen
+  exact ⟨node, found, frontier ▸ (base.scheduler session.snapshot.memory.2).integrate_complete _ _⟩
+
+theorem resume_sound (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory) (allowance : Nat)
+    (session : Session Node Answer Memory) (roots : List Node)
+    (sound : session.snapshot.search.Sound system roots) :
+    (resume system base allowance session).snapshot.search.Sound system roots := by
+  cases held : session.inspection with
+  | some cursor => simpa [resume, held] using sound
+  | none => simpa [resume, held] using Snapshot.sound_run system (selectedController base) sound allowance
+
+theorem page_zero (session : Session Node Answer Memory) (cursor : SourceCursor Node)
+    (held : session.inspection = some cursor) :
+    page 0 session = some (⟨[], cursor.index, false⟩, session) := by
+  cases session with
+  | mk snapshot inspection =>
+    simp only at held
+    subst inspection
+    rfl
+
+theorem displayed_can_choose (allowance : Nat)
+    (session next : Session Node Answer Memory) (view : DiscoveryView Node)
+    (sound : InspectionSound session)
+    (served : page allowance session = some (view, next))
+    (descriptor : OccurrenceDescriptor Node) (displayed : descriptor ∈ view.yielded) :
+    ∃ selected, choose descriptor.index next = some selected := by
+  have origin := page_origin allowance session next view sound served descriptor displayed
+  obtain ⟨cursor, held, equal⟩ := Option.map_eq_some_iff.mp served
+  cases equal
+  have displayedPrefix := (discovery_view_agrees allowance cursor.index cursor.rest []).1
+  rw [displayedPrefix] at displayed
+  simp only [List.reverse_nil, List.nil_append] at displayed
+  have interval : descriptor.index < cursor.index + min allowance cursor.rest.length := by
+    have bound : ∀ (nodes : List Node) (start count : Nat),
+        descriptor ∈ (orderedOccurrences start nodes).take count → descriptor.index < start + count := by
+      intro nodes
+      induction nodes with
+      | nil => simp [orderedOccurrences]
+      | cons head tail ih =>
+        intro start count member
+        cases count with
+        | zero => simp at member
+        | succ count =>
+          simp only [orderedOccurrences, List.take_succ_cons, List.mem_cons] at member
+          rcases member with same | later
+          · cases same; simp
+          · have remaining := ih (start + 1) count later
+            omega
+    exact bound _ _ _ displayed
+  have inspected : descriptor.index < (retainedCursor (discover allowance [] cursor).2).index := by
+    change descriptor.index < (retainedCursor (discover allowance [] ⟨cursor.index, cursor.rest⟩).2).index
+    rw [retained_cursor]
+    exact interval
+  simp [choose, origin, inspected]
+
+namespace Owned
+
+open Mettapedia.Machines
+
+variable {Holder Use : Type*} [DecidableEq Use]
+
+abbrev Registry (Holder Use Node Answer Memory : Type*) :=
+  ResourceOwnership.AcquiredUse.State Holder Use (Session Node Answer Memory)
+
+/-- Currency and the exact exclusive receipt protect a paging session. -/
+def currentUse {Resource : Type*} (use : Use)
+    (registry : ResourceOwnership.AcquiredUse.State Holder Use Resource) : Prop :=
+  registry.current = true ∧ ResourceOwnership.AcquiredUse.mayMutate use registry
+
+instance {Resource : Type*} (use : Use)
+    (registry : ResourceOwnership.AcquiredUse.State Holder Use Resource) :
+    Decidable (currentUse use registry) := inferInstanceAs (Decidable (_ ∧ _))
+
+/-- The read-only page changes only the saved cursor; it executes no source
+operation. Inspected source data grants no subsequent right by itself. -/
+def pageUse (use : Use) (allowance : Nat) (registry : Registry Holder Use Node Answer Memory) :
+    Option (DiscoveryView Node × Registry Holder Use Node Answer Memory) :=
+  if currentUse use registry then
+    registry.resource.bind fun session =>
+      (page allowance session).map fun (view, next) => (view, { registry with resource := some next })
+  else none
+
+theorem pageUse_admitted (use : Use) (allowance : Nat)
+    (before after : Registry Holder Use Node Answer Memory) (view : DiscoveryView Node)
+    (accepted : pageUse use allowance before = some (view, after)) :
+    currentUse use before ∧ ∃ session next, before.resource = some session ∧
+      page allowance session = some (view, next) ∧ after = { before with resource := some next } := by
+  unfold pageUse at accepted
+  split at accepted
+  next owned =>
+    obtain ⟨session, held, served⟩ := Option.bind_eq_some_iff.mp accepted
+    obtain ⟨⟨observed, next⟩, paged, equal⟩ := Option.map_eq_some_iff.mp served
+    cases equal
+    exact ⟨owned, session, next, held, paged, rfl⟩
+  next refused => cases accepted
+
+variable {World : Type*} [Category World]
+variable (authority : IndexedAuthority World) (point : authority.Point)
+  (required : authority.Fibre point.world) [Decidable (FrameUpdate point.authority required)]
+
+/-- Taking transfers the existing exclusive use and seals one inspected
+original position. It does not evaluate that occurrence, even once. -/
+def takeUse (source destination : Use) (index : Nat)
+    (registry : Registry Holder Use Node Answer Memory) :
+    Option (Registry Holder Use Node Answer Memory) :=
+  if currentUse source registry ∧ FrameUpdate point.authority required then
+    registry.resource.bind fun session =>
+      (choose index session).bind fun next =>
+        (ResourceOwnership.AcquiredUse.moveUse source destination registry).map fun moved => { moved.next with resource := some next }
+  else none
+
+/-- Current permission is tested again for every execution grant. This is
+permission eligibility, not a proof that exclusive authority was discharged. -/
+def advanceUse (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (use : Use) (allowance : Nat) (registry : Registry Holder Use Node Answer Memory) :
+    Option (Registry Holder Use Node Answer Memory) :=
+  if currentUse use registry ∧ FrameUpdate point.authority required then
+    registry.resource.bind fun session =>
+      if session.inspection = none then
+        some { registry with resource := some (resume system base allowance session) }
+      else none
+  else none
+
+theorem takeUse_admitted (source destination : Use) (index : Nat)
+    (before after : Registry Holder Use Node Answer Memory)
+    (accepted : takeUse authority point required source destination index before = some after) :
+    currentUse source before ∧ FrameUpdate point.authority required ∧
+      ∃ session next moved, before.resource = some session ∧ choose index session = some next ∧
+        ResourceOwnership.AcquiredUse.moveUse source destination before = some moved ∧
+        after = { moved.next with resource := some next } := by
+  unfold takeUse at accepted
+  split at accepted
+  next permitted =>
+    obtain ⟨session, held, selected⟩ := Option.bind_eq_some_iff.mp accepted
+    obtain ⟨next, chosen, transferred⟩ := Option.bind_eq_some_iff.mp selected
+    obtain ⟨moved, move, equal⟩ := Option.map_eq_some_iff.mp transferred
+    exact ⟨permitted.1, permitted.2, session, next, moved, held, chosen, move, equal.symm⟩
+  next refused => cases accepted
+
+theorem advanceUse_admitted (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (use : Use) (allowance : Nat) (before after : Registry Holder Use Node Answer Memory)
+    (accepted : advanceUse authority point required system base use allowance before = some after) :
+    currentUse use before ∧ FrameUpdate point.authority required ∧
+      ∃ session, before.resource = some session ∧ session.inspection = none ∧
+        after = { before with resource := some (resume system base allowance session) } := by
+  unfold advanceUse at accepted
+  split at accepted
+  next permitted =>
+    obtain ⟨session, held, advanced⟩ := Option.bind_eq_some_iff.mp accepted
+    split at advanced
+    next sealed =>
+      cases Option.some.inj advanced
+      exact ⟨permitted.1, permitted.2, session, held, sealed, rfl⟩
+    next unselected => cases advanced
+  next refused => cases accepted
+
+theorem takeUse_transfers_exact_computation (source destination : Use) (index : Nat)
+    (before after : Registry Holder Use Node Answer Memory)
+    (accepted : takeUse authority point required source destination index before = some after) :
+    currentUse destination after ∧ ¬ ResourceOwnership.AcquiredUse.mayMutate source after ∧
+      ∃ session selected node, before.resource = some session ∧ after.resource = some selected ∧
+        session.snapshot.search.frontier[index]? = some node ∧
+        selected.snapshot.search = session.snapshot.search ∧
+        selected.snapshot.memory = (some index, session.snapshot.memory.2) ∧ selected.inspection = none := by
+  obtain ⟨owned, _, session, selected, moved, held, chosen, transferred, rfl⟩ :=
+    takeUse_admitted authority point required source destination index before after accepted
+  obtain ⟨cursor, node, _, _, found, search, memory, sealed⟩ := choose_origin index session selected chosen
+  unfold ResourceOwnership.AcquiredUse.moveUse at transferred
+  split at transferred
+  next admitted =>
+    cases Option.some.inj transferred
+    have different : source ≠ destination := by
+      intro same
+      exact admitted.2 (same ▸ admitted.1)
+    simp only [owned.2.2, if_true]
+    refine ⟨⟨owned.1, ?_⟩, ?_, session, selected, node, held, rfl, found, search, memory, sealed⟩
+    · exact ⟨Finset.mem_insert_self _ _, rfl⟩
+    · intro old
+      exact different (Option.some.inj old.2).symm
+  next refused => cases transferred
+
+theorem advanceUse_zero (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (use : Use) (before after : Registry Holder Use Node Answer Memory)
+    (accepted : advanceUse authority point required system base use 0 before = some after) : after = before := by
+  obtain ⟨_, _, session, held, _, rfl⟩ := advanceUse_admitted authority point required system base use 0 before after accepted
+  rw [resume_zero]
+  cases before
+  simp_all
+
+/-- Exact finite splitting requires the same current authority contract.
+No allowance law is asserted across revocation or a changed callback. -/
+theorem advanceUse_split (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (use : Use) (earlier later : Nat) (before : Registry Holder Use Node Answer Memory) :
+    advanceUse authority point required system base use (earlier + later) before =
+      (advanceUse authority point required system base use earlier before).bind
+        (advanceUse authority point required system base use later) := by
+  unfold advanceUse
+  split
+  next permitted =>
+    cases held : before.resource with
+    | none => simp
+    | some session =>
+      simp only [Option.bind_some]
+      split
+      next sealed =>
+        simp_all [currentUse, ResourceOwnership.AcquiredUse.mayMutate, resume, Snapshot.run_add]
+      next unselected => simp
+  next refused => simp
+
+theorem stale_or_unissued_refused (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (use : Use) (allowance : Nat) (registry : Registry Holder Use Node Answer Memory)
+    (unavailable : ¬ currentUse use registry) :
+    advanceUse authority point required system base use allowance registry = none := by
+  simp [advanceUse, unavailable]
+
+theorem authority_refused (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (use : Use) (allowance : Nat) (registry : Registry Holder Use Node Answer Memory)
+    (denied : ¬ FrameUpdate point.authority required) :
+    advanceUse authority point required system base use allowance registry = none ∧
+      ∀ destination index, takeUse authority point required use destination index registry = none := by
+  simp [advanceUse, takeUse, denied]
+
+/-- A reachability invariant on the actual saved computation, not a claim
+about a supplied answer list. -/
+def SourceSound (system : BranchingSystem Node Answer) (roots : List Node)
+    (registry : Registry Holder Use Node Answer Memory) : Prop :=
+  ∀ session, registry.resource = some session → session.snapshot.search.Sound system roots
+
+omit [DecidableEq Use] in
+theorem initial_sourceSound (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (holder : Holder) (roots : List Node) :
+    SourceSound system roots (ResourceOwnership.AcquiredUse.initial (Use := Use) holder (begin (Snapshot.initial base roots))) := by
+  intro session held
+  cases Option.some.inj held
+  exact initial_sound system roots
+
+theorem pageUse_preserves_source (system : BranchingSystem Node Answer) (roots : List Node)
+    (use : Use) (allowance : Nat) (before after : Registry Holder Use Node Answer Memory)
+    (view : DiscoveryView Node) (sound : SourceSound system roots before)
+    (accepted : pageUse use allowance before = some (view, after)) : SourceSound system roots after := by
+  obtain ⟨_, session, next, held, served, rfl⟩ := pageUse_admitted use allowance before after view accepted
+  intro saved found
+  cases Option.some.inj found
+  rw [page_preserves_snapshot allowance session next view served]
+  exact sound session held
+
+theorem takeUse_preserves_source (system : BranchingSystem Node Answer) (roots : List Node)
+    (source destination : Use) (index : Nat) (before after : Registry Holder Use Node Answer Memory)
+    (sound : SourceSound system roots before)
+    (accepted : takeUse authority point required source destination index before = some after) : SourceSound system roots after := by
+  obtain ⟨_, _, session, next, _, held, chosen, _, rfl⟩ :=
+    takeUse_admitted authority point required source destination index before after accepted
+  intro saved found
+  cases Option.some.inj found
+  obtain ⟨cursor, node, _, _, _, same, _, _⟩ := choose_origin index session next chosen
+  rw [same]
+  exact sound session held
+
+theorem advanceUse_preserves_source (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (roots : List Node) (use : Use) (allowance : Nat) (before after : Registry Holder Use Node Answer Memory)
+    (sound : SourceSound system roots before)
+    (accepted : advanceUse authority point required system base use allowance before = some after) : SourceSound system roots after := by
+  obtain ⟨_, _, session, held, _, rfl⟩ := advanceUse_admitted authority point required system base use allowance before after accepted
+  intro saved found
+  cases Option.some.inj found
+  exact resume_sound system base allowance session roots (sound session held)
+
+theorem pageUse_wellFormed (use : Use) (allowance : Nat)
+    (before after : Registry Holder Use Node Answer Memory) (view : DiscoveryView Node)
+    (valid : ResourceOwnership.AcquiredUse.WellFormed before)
+    (accepted : pageUse use allowance before = some (view, after)) :
+    ResourceOwnership.AcquiredUse.WellFormed after := by
+  obtain ⟨owned, session, next, _, _, rfl⟩ := pageUse_admitted use allowance before after view accepted
+  exact ⟨⟨fun _ => Or.inl owned.1, fun _ => rfl⟩, valid.exclusive_issued⟩
+
+theorem takeUse_wellFormed (source destination : Use) (index : Nat)
+    (before after : Registry Holder Use Node Answer Memory)
+    (valid : ResourceOwnership.AcquiredUse.WellFormed before)
+    (accepted : takeUse authority point required source destination index before = some after) :
+    ResourceOwnership.AcquiredUse.WellFormed after := by
+  have owned := (takeUse_transfers_exact_computation authority point required source destination index before after accepted).1
+  obtain ⟨_, _, _, _, moved, _, _, transferred, rfl⟩ := takeUse_admitted authority point required source destination index before after accepted
+  have nextValid := ResourceOwnership.AcquiredUse.moveUse_wellFormed source destination valid transferred
+  exact ⟨⟨fun _ => Or.inl owned.1, fun _ => rfl⟩, nextValid.exclusive_issued⟩
+
+theorem advanceUse_wellFormed (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (use : Use) (allowance : Nat) (before after : Registry Holder Use Node Answer Memory)
+    (valid : ResourceOwnership.AcquiredUse.WellFormed before)
+    (accepted : advanceUse authority point required system base use allowance before = some after) :
+    ResourceOwnership.AcquiredUse.WellFormed after := by
+  obtain ⟨owned, _, session, _, _, rfl⟩ := advanceUse_admitted authority point required system base use allowance before after accepted
+  exact ⟨⟨fun _ => Or.inl owned.1, fun _ => rfl⟩, valid.exclusive_issued⟩
+
+end Owned
+
+namespace Need
+
+open Mettapedia.Machines.BranchLocalNeed.NeedReference
+
+variable {Origin Local Resume Rule Value StableFault RetryableFault Effect Holder Use : Type*}
+
+/-- The retained resource is the real rich Need frontier: exact branch worlds,
+receipts and work stay in both pending work and producing occurrences. -/
+theorem saved_source_paths
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (initial : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (registry : Owned.Registry Holder Use
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+      (Produced Value StableFault RetryableFault × List Nat) Memory)
+    (sound : Owned.SourceSound (Reference.occurrenceSystem spec) [WorkOccurrence.root initial] registry)
+    (session : Session
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+      (Produced Value StableFault RetryableFault × List Nat) Memory)
+    (held : registry.resource = some session) :
+    (∀ node ∈ session.snapshot.search.frontier,
+      Steps spec node.trace.length initial node.state ∧
+        node.state.work.transitions = initial.work.transitions + node.trace.length) ∧
+      (∀ event ∈ session.snapshot.search.events,
+        Steps spec event.origin.trace.length initial event.origin.state ∧
+          haltedOutcome event.origin.state = some event.value.1 ∧ event.value.2 = event.origin.trace) := by
+  have reached := sound session held
+  constructor
+  · intro node present
+    exact ⟨Reference.generated_has_steps spec (reached.1 node present),
+      Reference.generated_transition_clock spec (reached.1 node present)⟩
+  · intro event present
+    exact Reference.emission_has_steps_of_sound spec reached present
+
+/-- The source invariant is discharged from the authored machine entry and
+actual bounded paging/selection/run, rather than supplied as an answer equation. -/
+theorem selected_from_entry_has_paths
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (base : Controller
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+      (Produced Value StableFault RetryableFault × List Nat) Memory)
+    (initial : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (earlier inspectionAllowance index later : Nat)
+    (view : Mettapedia.Machines.BranchLocalNeed.NeedInteractionAuthority.DiscoveryView
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)))
+    (paged selected : Session
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+      (Produced Value StableFault RetryableFault × List Nat) Memory)
+    (served : page inspectionAllowance
+      (begin ((Snapshot.initial base [WorkOccurrence.root initial]).run (Reference.occurrenceSystem spec) base earlier)) = some (view, paged))
+    (chosen : choose index paged = some selected) :
+    (∀ node ∈ (resume (Reference.occurrenceSystem spec) base later selected).snapshot.search.frontier,
+      Steps spec node.trace.length initial node.state ∧
+        node.state.work.transitions = initial.work.transitions + node.trace.length) ∧
+      (∀ event ∈ (resume (Reference.occurrenceSystem spec) base later selected).snapshot.search.events,
+        Steps spec event.origin.trace.length initial event.origin.state ∧
+          haltedOutcome event.origin.state = some event.value.1 ∧ event.value.2 = event.origin.trace) := by
+  have before := Snapshot.sound_run (Reference.occurrenceSystem spec) base
+    (snapshot := Snapshot.initial base [WorkOccurrence.root initial])
+    (initial_sound (Reference.occurrenceSystem spec) [WorkOccurrence.root initial]) earlier
+  have pagedSound : paged.snapshot.search.Sound (Reference.occurrenceSystem spec) [WorkOccurrence.root initial] := by
+    rw [page_preserves_snapshot _ _ _ _ served]
+    exact before
+  obtain ⟨cursor, node, _, _, _, same, _, _⟩ := choose_origin index paged selected chosen
+  have selectedSound : selected.snapshot.search.Sound (Reference.occurrenceSystem spec) [WorkOccurrence.root initial] := by
+    rw [same]
+    exact pagedSound
+  have reached := resume_sound (Reference.occurrenceSystem spec) base later selected _ selectedSound
+  constructor
+  · intro node present
+    exact ⟨Reference.generated_has_steps spec (reached.1 node present),
+      Reference.generated_transition_clock spec (reached.1 node present)⟩
+  · intro event present
+    exact Reference.emission_has_steps_of_sound spec reached present
+
+end Need
+
+namespace Controls
+
+open Mettapedia.Machines
+open Mettapedia.Machines.BranchLocalNeed.NeedReference
+
+abbrev Machine := NeedReference.Machine Unit Unit Unit Unit Unit Unit Unit Unit
+abbrev ControlNode := WorkOccurrence Machine
+abbrev ControlAnswer := Produced Unit Unit Unit × List Nat
+
+def cell : CellId := ⟨0, [], 0, 0⟩
+
+def spec : Spec Unit Unit Unit Unit Unit Unit Unit Unit where
+  alternatives _ := [((), ()), ((), ())]
+  action _ := .done (.value ())
+  afterDemand _ _ := ()
+  afterAllocation _ _ := ()
+
+def initial : Machine :=
+  { world := { NeedInteractionAuthority.Canary.demoWorld with
+      heap := (Heap.empty.allocate? cell ()).getD Heap.empty
+      nextCell := 1 }
+    control := .force cell [] }
+
+abbrev base : Controller ControlNode ControlAnswer Unit := Controller.fixed Scheduler.breadthFirst
+abbrev system := Reference.occurrenceSystem spec
+
+def ready := (Snapshot.initial base [WorkOccurrence.root initial]).run system base 1
+
+def original : Owned.Registry Nat Nat ControlNode ControlAnswer Unit :=
+  ResourceOwnership.AcquiredUse.initial 0 (begin ready)
+
+def acquired : Owned.Registry Nat Nat ControlNode ControlAnswer Unit :=
+  ((ResourceOwnership.AcquiredUse.acquire 4 .exclusive 0 10 original).getD ⟨original, none⟩).next
+
+def firstPage := (Owned.pageUse 10 1 acquired).getD (⟨[], 0, false⟩, acquired)
+def secondPage := (Owned.pageUse 10 1 firstPage.2).getD (⟨[], 0, false⟩, firstPage.2)
+
+abbrev authority := IndexedAuthority.still Unit Access
+abbrev permitted : authority.Point := ⟨(), .consume⟩
+abbrev readOnly : authority.Point := ⟨(), .read⟩
+
+local instance : Decidable (FrameUpdate permitted.authority (Access.consume : authority.Fibre permitted.world)) := .isTrue (FrameUpdate.refl _)
+local instance : Decidable (FrameUpdate readOnly.authority (Access.consume : authority.Fibre readOnly.world)) := .isFalse Access.not_frameUpdate_read_consume
+
+def taken := (Owned.takeUse authority permitted Access.consume 10 20 1 secondPage.2).getD secondPage.2
+
+theorem two_pages_inspect_distinct_original_occurrences :
+    firstPage.1.yielded.map (fun item => (item.index, item.target.trace)) = [(0, [0])] ∧
+      secondPage.1.yielded.map (fun item => (item.index, item.target.trace)) = [(1, [1])] ∧
+      (secondPage.2.resource.map fun session => session.snapshot.search.frontier.map (fun node => node.state.work.transitions)) =
+        some [1, 1] := by decide
+
+theorem selected_second_keeps_sibling_and_child :
+    ((Owned.advanceUse authority permitted Access.consume system base 20 1 taken).bind fun registry => registry.resource).map
+        (fun session => session.snapshot.search.frontier.map (fun node => (node.trace, node.state.work.transitions))) =
+      some [([0], 1), ([1, 0], 2)] := by decide
+
+theorem zero_grant_keeps_original_pending_intent :
+    ((Owned.advanceUse authority permitted Access.consume system base 20 0 taken).bind fun registry => registry.resource).map
+        (fun session => (session.snapshot.memory.1, session.snapshot.search.frontier.map WorkOccurrence.trace)) =
+      some (some 1, [[0], [1]]) := by decide
+
+theorem uninspected_occurrence_refused :
+    (Owned.takeUse authority permitted Access.consume 10 20 1 firstPage.2).isNone = true := by decide
+
+theorem transferred_use_cannot_advance_again :
+    (Owned.advanceUse authority permitted Access.consume system base 10 1 taken).isNone = true ∧
+      (Owned.takeUse authority permitted Access.consume 20 30 0 taken).isNone = true := by decide
+
+theorem unchanged_source_read_authority_cannot_resume :
+    (Owned.advanceUse authority readOnly Access.consume system base 20 1 taken).isNone = true ∧
+      (Owned.takeUse authority readOnly Access.consume 10 20 1 secondPage.2).isNone = true := by decide
+
+theorem detached_slot_with_retained_exclusive_use_refused :
+    let detached := (ResourceOwnership.AcquiredUse.detach taken).next
+    detached.resource.isSome = true ∧
+      (Owned.advanceUse authority permitted Access.consume system base 20 1 detached).isNone = true := by decide
+
+theorem second_exclusive_admission_refused :
+    (ResourceOwnership.AcquiredUse.acquire 4 .exclusive 0 30 acquired).isNone = true := by decide
+
+theorem lifetime_fork_does_not_gain_execution :
+    let forked := ((ResourceOwnership.AcquiredUse.forkLifetime 4 20 30 taken).getD ⟨taken, none⟩).next
+    (ResourceOwnership.AcquiredUse.readUse 30 forked).isSome = true ∧
+      (Owned.advanceUse authority permitted Access.consume system base 30 1 forked).isNone = true := by decide
+
+end Controls
+
+/-! ### Optional recording of the actual selected controller
+
+The retained consumer uses the existing entry-selected recorder. An absent
+record enters the ordinary runner; a present prefix retains only its declared
+capacity. Inspection and take update the same saved session without requesting
+source-history items. Complete history readouts describe source expansions,
+not authority to repeat them.
+-/
+
+/-- Demand delimits the same saved selected computation. Neither a satisfied
+request nor zero allowance consumes the pending selected intent. -/
+def demand (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (allowance : Nat) (session : Session Node Answer Memory) :
+    Session Node Answer Memory :=
+  match session.inspection with
+  | some _ => session
+  | none => { session with snapshot := Mettapedia.GSLT.Core.DemandExecution.run system (selectedController base) goal allowance session.snapshot }
+
+/-- Capture this target once at the new request boundary and retain it across
+allowance slices. This is the actual source-observed prefix, not a native
+consumer acknowledgement counter. -/
+def additionalTarget (additional : Nat) (session : Session Node Answer Memory) : Nat :=
+  session.snapshot.search.events.length + additional
+
+theorem demand_prefix (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (allowance : Nat) (session : Session Node Answer Memory) :
+    ∃ used ≤ allowance, demand system base goal allowance session = resume system base used session := by
+  cases held : session.inspection with
+  | some cursor => exact ⟨0, Nat.zero_le _, by simp [demand, held]⟩
+  | none =>
+    obtain ⟨used, bound, same⟩ := Mettapedia.GSLT.Core.DemandExecution.run_prefix system (selectedController base) goal allowance session.snapshot
+    exact ⟨used, bound, by simp [demand, resume, held, same]⟩
+
+theorem demand_split (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (earlier later : Nat) (session : Session Node Answer Memory) :
+    demand system base goal (earlier + later) session = demand system base goal later (demand system base goal earlier session) := by
+  cases held : session.inspection <;> simp [demand, held, Mettapedia.GSLT.Core.DemandExecution.run_add]
+
+theorem demand_sound (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (allowance : Nat) (session : Session Node Answer Memory) (roots : List Node)
+    (sound : session.snapshot.search.Sound system roots) :
+    (demand system base goal allowance session).snapshot.search.Sound system roots := by
+  obtain ⟨used, _, actual⟩ := demand_prefix system base goal allowance session
+  rw [actual]
+  exact resume_sound system base used session roots sound
+
+namespace Owned
+
+open Mettapedia.Machines
+
+variable {Holder Use World : Type*} [DecidableEq Use] [Category World]
+variable (authority : IndexedAuthority World) (point : authority.Point)
+  (required : authority.Fibre point.world) [Decidable (FrameUpdate point.authority required)]
+
+def demandUse (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (use : Use) (allowance : Nat)
+    (registry : Registry Holder Use Node Answer Memory) : Option (Registry Holder Use Node Answer Memory) :=
+  if currentUse use registry ∧ FrameUpdate point.authority required then
+    registry.resource.bind fun session =>
+      if session.inspection = none then some { registry with resource := some (demand system base goal allowance session) }
+      else none
+  else none
+
+theorem demandUse_preserves_source (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (roots : List Node) (use : Use) (allowance : Nat)
+    (before after : Registry Holder Use Node Answer Memory) (sound : SourceSound system roots before)
+    (advanced : demandUse authority point required system base goal use allowance before = some after) : SourceSound system roots after := by
+  unfold demandUse at advanced
+  split at advanced
+  next permitted =>
+    obtain ⟨session, held, work⟩ := Option.bind_eq_some_iff.mp advanced
+    split at work
+    next sealed =>
+      cases Option.some.inj work
+      intro saved found
+      cases Option.some.inj found
+      exact demand_sound system base goal allowance session roots (sound session held)
+    next unselected => cases work
+  next refused => cases advanced
+
+end Owned
+
+namespace Recorded
+
+open Mettapedia.GSLT.Core.InferenceControl
+
+abbrev Capture (Node Answer : Type*) := Preparation.Capture Node Answer
+
+structure State (Node Answer Memory : Type*) where
+  saved : Session Node Answer Memory
+  history : Option (Recording.Prefix (Capture Node Answer))
+
+def attach (capacity : Option Nat) (session : Session Node Answer Memory) : State Node Answer Memory :=
+  ⟨session, Recording.initial capacity⟩
+
+def checkpoint (state : State Node Answer Memory) :
+    Snapshot Node Answer ((Option Nat × Memory) × Option (Recording.Prefix (Capture Node Answer))) :=
+  ⟨state.saved.snapshot.search, (state.saved.snapshot.memory, state.history)⟩
+
+/-- The existing selected worker executes once on the real retained snapshot.
+It does not prepare the independent reference stream used by the proofs. -/
+def advance (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (allowance : Nat) (state : State Node Answer Memory) : State Node Answer Memory :=
+  match state.saved.inspection with
+  | some _ => state
+  | none =>
+      let next := Recording.runSelected system (selectedController base) Recording.Replay.observe allowance (checkpoint state)
+      ⟨{ state.saved with snapshot := Recording.erase next }, next.memory.2⟩
+
+/-- Read-only discovery keeps the current record untouched. -/
+def page (allowance : Nat) (state : State Node Answer Memory) :
+    Option (Mettapedia.Machines.BranchLocalNeed.NeedInteractionAuthority.DiscoveryView Node × State Node Answer Memory) :=
+  (ResumeTicket.page allowance state.saved).map fun (view, saved) => (view, ⟨saved, state.history⟩)
+
+def choose (index : Nat) (state : State Node Answer Memory) : Option (State Node Answer Memory) :=
+  (ResumeTicket.choose index state.saved).map fun saved => ⟨saved, state.history⟩
+
+@[simp] theorem advance_erasure (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (allowance : Nat) (state : State Node Answer Memory) :
+    (advance system base allowance state).saved = resume system base allowance state.saved := by
+  cases held : state.saved.inspection with
+  | some cursor => simp [advance, resume, held]
+  | none =>
+    simp only [advance, resume, held]
+    rw [Recording.runSelected_erasure]
+    rfl
+
+@[simp] theorem advance_zero (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (state : State Node Answer Memory) : advance system base 0 state = state := by
+  cases state with
+  | mk saved history =>
+    cases saved with
+    | mk snapshot inspection =>
+      cases inspection <;> simp [advance, checkpoint, Recording.runSelected_eq_reference, Snapshot.run, Recording.erase, Snapshot.mapMemory]
+
+theorem advance_record (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (allowance : Nat) (state : State Node Answer Memory) (selected : state.saved.inspection = none) :
+    (advance system base allowance state).history =
+      Recording.append state.history
+        (Recording.stream system (selectedController base) Recording.Replay.observe allowance state.saved.snapshot) := by
+  simp only [advance, selected]
+  rw [Recording.runSelected_record]
+  rfl
+
+/-- The disabled branch is the actual ordinary worker, not a recorder whose
+retained output happens to be empty. -/
+theorem disabled_original (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (allowance : Nat) (session : Session Node Answer Memory) :
+    advance system base allowance (attach none session) = attach none (resume system base allowance session) := by
+  cases held : session.inspection with
+  | some cursor => simp [advance, attach, resume, held]
+  | none =>
+    have ordinary := Recording.runSelected_unrecorded system (selectedController base)
+      (Recording.Replay.observe (Memory := Option Nat × Memory)) allowance session.snapshot
+    simp only [advance, attach, held, checkpoint, Recording.initial, Option.map_none]
+    change _ = attach none (resume system base allowance session)
+    rw [show (⟨session.snapshot.search, (session.snapshot.memory, none)⟩ :
+      Snapshot Node Answer ((Option Nat × Memory) × Option (Recording.Prefix (Capture Node Answer)))) =
+        Recording.start session.snapshot none from rfl, ordinary]
+    simp [Recording.start, Recording.initial, attach, resume, held, Recording.erase, Snapshot.mapMemory]
+
+theorem advance_split (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (earlier later : Nat) (state : State Node Answer Memory) :
+    advance system base (earlier + later) state = advance system base later (advance system base earlier state) := by
+  cases held : state.saved.inspection with
+  | some cursor => simp [advance, held]
+  | none =>
+    simp only [advance, held]
+    rw [Recording.runSelected_split]
+    rfl
+
+/-- Forgetting needs only the actual saved state. It neither reconstructs a
+past prefix nor resets source work or the pending selected position. -/
+theorem forget_preserves_endpoint (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (earlier later : Nat) (state : State Node Answer Memory) :
+    resume system base later (advance system base earlier state).saved =
+      (advance system base (earlier + later) state).saved := by
+  simp only [advance_erasure, resume_split]
+
+/-- The bound and omissions are those of the existing Prefix consumer. -/
+theorem bounded_readout (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (capacity allowance : Nat) (session : Session Node Answer Memory) (selected : session.inspection = none) :
+    ∃ record, (advance system base allowance (attach (some capacity) session)).history = some record ∧
+      record.items = (Recording.stream system (selectedController base) Recording.Replay.observe allowance session.snapshot).take capacity ∧
+      record.omitted = (Recording.stream system (selectedController base) Recording.Replay.observe allowance session.snapshot).length - capacity ∧
+      record.remaining = capacity - (Recording.stream system (selectedController base) Recording.Replay.observe allowance session.snapshot).length := by
+  rw [advance_record system base allowance _ selected]
+  refine ⟨_, rfl, ?_, ?_, ?_⟩
+  · exact Recording.Prefix.initial_items _ _
+  · exact Recording.Prefix.initial_omitted _ _
+  · exact (Recording.Prefix.append_state (Recording.Prefix.initial capacity) _).2.1
+
+/-- Late recording starts at the actual saved boundary, including a still
+pending selected intent. It cannot synthesize the unrecorded prefix. -/
+theorem late_recording_suffix (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (capacity earlier later : Nat) (session : Session Node Answer Memory) (selected : session.inspection = none) :
+    ((advance system base later (attach (some capacity) (resume system base earlier session))).history).map Recording.Prefix.items =
+      some ((Recording.stream system (selectedController base) Recording.Replay.observe later
+        (resume system base earlier session).snapshot).take capacity) := by
+  have sealed : (resume system base earlier session).inspection = none := by simp [resume, selected]
+  obtain ⟨record, held, items, _, _⟩ := bounded_readout system base capacity later _ sealed
+  simp [held, items]
+
+theorem complete_record_is_source_history (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (capacity allowance : Nat) (session : Session Node Answer Memory) (selected : session.inspection = none)
+    (record : Recording.Prefix (Capture Node Answer))
+    (retained : (advance system base allowance (attach (some capacity) session)).history = some record)
+    (complete : record.omitted = 0) :
+    (Mettapedia.GSLT.Causality.HistoryMonad.history (Recording.Replay.labels system (selectedController base))).MultiStep
+      (session.snapshot, 1)
+      ((advance system base allowance (attach (some capacity) session)).saved.snapshot,
+        FreeMonoid.ofList record.items) := by
+  have actual : (Recording.runSelected system (selectedController base) Recording.Replay.observe allowance
+      (Recording.start session.snapshot (some capacity))).memory.2 = some record := by
+    simpa only [advance, selected, attach, checkpoint, Recording.start] using retained
+  simpa only [advance, selected, attach, checkpoint, Recording.start] using
+    Recording.Replay.selected_recorded_history system (selectedController base) capacity allowance session.snapshot record actual complete
+
+/-- Source inspection and take are not controller reductions and therefore
+append no source-history event. -/
+theorem page_keeps_history (allowance : Nat) (state next : State Node Answer Memory)
+    (view : Mettapedia.Machines.BranchLocalNeed.NeedInteractionAuthority.DiscoveryView Node)
+    (served : page allowance state = some (view, next)) :
+    next.history = state.history ∧ ResumeTicket.page allowance state.saved = some (view, next.saved) := by
+  obtain ⟨⟨observed, saved⟩, paged, equal⟩ := Option.map_eq_some_iff.mp served
+  cases equal
+  exact ⟨rfl, paged⟩
+
+theorem choose_keeps_history (index : Nat) (state next : State Node Answer Memory)
+    (chosen : choose index state = some next) :
+    next.history = state.history ∧ ResumeTicket.choose index state.saved = some next.saved := by
+  obtain ⟨saved, selected, equal⟩ := Option.map_eq_some_iff.mp chosen
+  cases equal
+  exact ⟨rfl, selected⟩
+
+private theorem stream_capture_authentic (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory) (allowance : Nat)
+    (snapshot : Snapshot Node Answer Memory) (roots : List Node)
+    (sound : snapshot.search.Sound system roots) (frame : Capture Node Answer)
+    (member : frame ∈ Recording.stream system base Recording.Replay.observe allowance snapshot) :
+    Generated system roots frame.input ∧ frame.emission = system.emit frame.input ∧
+      frame.generated = system.successors frame.input := by
+  induction allowance with
+  | zero => simp [Recording.stream] at member
+  | succ allowance ih =>
+    rw [Recording.stream, List.mem_append] at member
+    rcases member with earlier | current
+    · exact ih earlier
+    · cases ordered : (base.scheduler (snapshot.run system base allowance).memory).reorder
+        (snapshot.run system base allowance).search.frontier with
+      | nil => simp [Recording.next, ordered] at current
+      | cons node pending =>
+        simp only [Recording.next, ordered, List.head?_cons, Option.map_some, Option.toList_some,
+          List.mem_singleton] at current
+        subst frame
+        have selected : node ∈ (snapshot.run system base allowance).search.frontier :=
+          ((base.scheduler (snapshot.run system base allowance).memory).reorder_complete _).mem_iff.mp
+            (by simp [ordered])
+        exact ⟨(Snapshot.sound_run system base sound allowance).1 node selected, rfl, rfl⟩
+
+/-- Every stored capture is an actual source expansion even when later
+captures were omitted. The full history claim still requires completeness. -/
+theorem retained_capture_authentic (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory) (capacity allowance : Nat)
+    (session : Session Node Answer Memory) (selected : session.inspection = none) (roots : List Node)
+    (sound : session.snapshot.search.Sound system roots) (record : Recording.Prefix (Capture Node Answer))
+    (retained : (advance system base allowance (attach (some capacity) session)).history = some record)
+    (frame : Capture Node Answer) (member : frame ∈ record.items) :
+    Generated system roots frame.input ∧ frame.emission = system.emit frame.input ∧
+      frame.generated = system.successors frame.input := by
+  obtain ⟨actual, held, items, _, _⟩ := bounded_readout system base capacity allowance session selected
+  have same : actual = record := Option.some.inj (held.symm.trans retained)
+  subst actual
+  rw [items] at member
+  exact stream_capture_authentic system (selectedController base) allowance session.snapshot roots sound frame
+    (List.mem_of_mem_take member)
+
+namespace Need
+
+open Mettapedia.Machines.BranchLocalNeed.NeedReference
+
+variable {Origin Local Resume Rule Value StableFault RetryableFault Effect : Type*}
+
+/-- Actual Need captures retain the authentic input world/work and every
+ordered successor occurrence, including equal alternatives. -/
+theorem retained_capture_has_steps
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (base : Controller
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+      (Produced Value StableFault RetryableFault × List Nat) Memory)
+    (initial : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (capacity allowance : Nat)
+    (session : Session
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+      (Produced Value StableFault RetryableFault × List Nat) Memory)
+    (selected : session.inspection = none)
+    (sound : session.snapshot.search.Sound (Reference.occurrenceSystem spec) [WorkOccurrence.root initial])
+    (record : Recording.Prefix (Capture
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+      (Produced Value StableFault RetryableFault × List Nat)))
+    (retained : (advance (Reference.occurrenceSystem spec) base allowance (attach (some capacity) session)).history = some record)
+    (frame : Capture
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+      (Produced Value StableFault RetryableFault × List Nat)) (member : frame ∈ record.items) :
+    Steps spec frame.input.trace.length initial frame.input.state ∧
+      frame.input.state.work.transitions = initial.work.transitions + frame.input.trace.length ∧
+      frame.emission = (Reference.occurrenceSystem spec).emit frame.input ∧
+      frame.generated = (Reference.occurrenceSystem spec).successors frame.input := by
+  obtain ⟨generated, emission, children⟩ := retained_capture_authentic (Reference.occurrenceSystem spec)
+    base capacity allowance session selected _ sound record retained frame member
+  exact ⟨Reference.generated_has_steps spec generated, Reference.generated_transition_clock spec generated,
+    emission, children⟩
+
+end Need
+
+/-- Demand uses the same recorded Session and the maintained entry-selected
+worker, including its disabled ordinary branch. -/
+def demand (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (allowance : Nat) (state : State Node Answer Memory) : State Node Answer Memory :=
+  match state.saved.inspection with
+  | some _ => state
+  | none =>
+      let next := Recording.runDemandSelected system (selectedController base) Recording.Replay.observe goal allowance (checkpoint state)
+      ⟨{ state.saved with snapshot := Recording.erase next }, next.memory.2⟩
+
+theorem demand_erasure (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (allowance : Nat) (state : State Node Answer Memory) :
+    (demand system base goal allowance state).saved = ResumeTicket.demand system base goal allowance state.saved := by
+  cases held : state.saved.inspection with
+  | some cursor => simp [demand, ResumeTicket.demand, held]
+  | none =>
+    simp only [demand, ResumeTicket.demand, held]
+    rw [Recording.runDemandSelected_erasure]
+    rfl
+
+/-- One actual prefix determines both the entire computation and its record.
+The witness is not an executable oracle or a second demand loop. -/
+theorem demand_prefix (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (allowance : Nat) (state : State Node Answer Memory) :
+    ∃ used ≤ allowance, demand system base goal allowance state = advance system base used state := by
+  cases held : state.saved.inspection with
+  | some cursor => exact ⟨0, Nat.zero_le _, by simp [demand, held]⟩
+  | none =>
+    obtain ⟨used, bound, actual⟩ := Recording.runDemandSelected_prefix system (selectedController base)
+      Recording.Replay.observe goal allowance (checkpoint state)
+    exact ⟨used, bound, by simp [demand, advance, held, actual]⟩
+
+theorem demand_split (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (earlier later : Nat) (state : State Node Answer Memory) :
+    demand system base goal (earlier + later) state = demand system base goal later (demand system base goal earlier state) := by
+  cases held : state.saved.inspection with
+  | some cursor => simp [demand, held]
+  | none =>
+    simp only [demand, held]
+    rw [Recording.runDemandSelected_split]
+    rfl
+
+theorem demand_zero (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (state : State Node Answer Memory) : demand system base goal 0 state = state := by
+  obtain ⟨used, bound, same⟩ := demand_prefix system base goal 0 state
+  have zero : used = 0 := by omega
+  rw [same, zero, advance_zero]
+
+theorem demand_of_stopped (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (allowance : Nat) (state : State Node Answer Memory)
+    (done : Mettapedia.GSLT.Core.DemandExecution.stopped goal state.saved.snapshot = true) :
+    demand system base goal allowance state = state := by
+  cases state with
+  | mk saved history =>
+    cases saved with
+    | mk snapshot inspection =>
+      cases inspection with
+      | some cursor => rfl
+      | none =>
+        simp only [demand]
+        rw [Recording.runDemandSelected_of_stopped system (selectedController base)
+          Recording.Replay.observe goal allowance (checkpoint ⟨⟨snapshot, none⟩, history⟩) done]
+        rfl
+
+theorem prefix_zero_keeps_pending (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (allowance : Nat) (state : State Node Answer Memory) :
+    demand system base (Mettapedia.GSLT.Core.DemandExecution.atLeast 0) allowance state = state := by
+  apply demand_of_stopped
+  simp [Mettapedia.GSLT.Core.DemandExecution.stopped, Mettapedia.GSLT.Core.DemandExecution.satisfied,
+    Mettapedia.GSLT.Core.DemandExecution.atLeast]
+
+theorem demand_unrecorded (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (allowance : Nat) (session : Session Node Answer Memory) :
+    demand system base goal allowance (attach none session) = attach none (ResumeTicket.demand system base goal allowance session) := by
+  cases held : session.inspection with
+  | some cursor => simp [demand, attach, ResumeTicket.demand, held]
+  | none =>
+    have ordinary := Recording.runDemandSelected_unrecorded system (selectedController base)
+      (Recording.Replay.observe (Memory := Option Nat × Memory)) goal allowance session.snapshot
+    simp only [demand, attach, held, checkpoint, Recording.initial, Option.map_none]
+    rw [show (⟨session.snapshot.search, (session.snapshot.memory, none)⟩ :
+      Snapshot Node Answer ((Option Nat × Memory) × Option (Recording.Prefix (Capture Node Answer)))) =
+        Recording.start session.snapshot none from rfl, ordinary]
+    simp [Recording.start, Recording.initial, ResumeTicket.demand, held, Recording.erase, Snapshot.mapMemory]
+
+theorem demand_forget (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (earlier later : Nat) (state : State Node Answer Memory) :
+    ResumeTicket.demand system base goal later (demand system base goal earlier state).saved =
+      (demand system base goal (earlier + later) state).saved := by
+  rw [demand_erasure, demand_erasure, ResumeTicket.demand_split]
+
+theorem demand_late (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (capacity : Option Nat) (earlier later : Nat) (session : Session Node Answer Memory) :
+    (demand system base goal later (attach capacity (ResumeTicket.demand system base goal earlier session))).saved =
+      ResumeTicket.demand system base goal (earlier + later) session := by
+  rw [demand_erasure, ResumeTicket.demand_split]
+  rfl
+
+theorem complete_demand_history (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (capacity allowance : Nat) (session : Session Node Answer Memory)
+    (selected : session.inspection = none) (record : Recording.Prefix (Capture Node Answer))
+    (retained : (demand system base goal allowance (attach (some capacity) session)).history = some record)
+    (complete : record.omitted = 0) :
+    (Mettapedia.GSLT.Causality.HistoryMonad.history (Recording.Replay.labels system (selectedController base))).MultiStep
+      (session.snapshot, 1)
+      ((demand system base goal allowance (attach (some capacity) session)).saved.snapshot, FreeMonoid.ofList record.items) := by
+  obtain ⟨used, _, same⟩ := demand_prefix system base goal allowance (attach (some capacity) session)
+  rw [same] at retained ⊢
+  exact complete_record_is_source_history system base capacity used session selected record retained complete
+
+namespace Need
+
+open Mettapedia.Machines.BranchLocalNeed.NeedReference
+
+variable {Origin Local Resume Rule Value StableFault RetryableFault Effect : Type*}
+
+theorem demanded_capture_has_steps
+    (spec : Spec Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (base : Controller
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+      (Produced Value StableFault RetryableFault × List Nat) Memory)
+    (initial : Machine Origin Local Resume Rule Value StableFault RetryableFault Effect)
+    (goal : List (Produced Value StableFault RetryableFault × List Nat) → Bool) (capacity allowance : Nat)
+    (session : Session
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+      (Produced Value StableFault RetryableFault × List Nat) Memory)
+    (selected : session.inspection = none)
+    (sound : session.snapshot.search.Sound (Reference.occurrenceSystem spec) [WorkOccurrence.root initial])
+    (record : Recording.Prefix (Capture
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+      (Produced Value StableFault RetryableFault × List Nat)))
+    (retained : (demand (Reference.occurrenceSystem spec) base goal allowance (attach (some capacity) session)).history = some record)
+    (frame : Capture
+      (WorkOccurrence (Machine Origin Local Resume Rule Value StableFault RetryableFault Effect))
+      (Produced Value StableFault RetryableFault × List Nat)) (member : frame ∈ record.items) :
+    Steps spec frame.input.trace.length initial frame.input.state ∧
+      frame.input.state.work.transitions = initial.work.transitions + frame.input.trace.length ∧
+      frame.emission = (Reference.occurrenceSystem spec).emit frame.input ∧
+      frame.generated = (Reference.occurrenceSystem spec).successors frame.input := by
+  obtain ⟨used, _, same⟩ := demand_prefix (Reference.occurrenceSystem spec) base goal allowance (attach (some capacity) session)
+  rw [same] at retained
+  exact retained_capture_has_steps spec base initial capacity used session selected sound record retained frame member
+
+end Need
+
+namespace Retained
+
+open Mettapedia.Machines
+open Mettapedia.GSLT.Contracts
+open Mettapedia.GSLT.Logic.SeparationTransport
+open _root_.CategoryTheory
+
+variable {Holder Use : Type*} [DecidableEq Use]
+
+abbrev Registry (Holder Use Node Answer Memory : Type*) :=
+  ResourceOwnership.AcquiredUse.State Holder Use (State Node Answer Memory)
+
+/-- Attaching or erasing an observer transports the same registry identities;
+it does not acquire another issued use. -/
+def attachRegistry (capacity : Option Nat) (registry : Owned.Registry Holder Use Node Answer Memory) :
+    Registry Holder Use Node Answer Memory :=
+  ⟨registry.current, registry.holders, registry.uses, registry.exclusive, registry.resource.map (attach capacity)⟩
+
+def eraseRegistry (registry : Registry Holder Use Node Answer Memory) :
+    Owned.Registry Holder Use Node Answer Memory :=
+  ⟨registry.current, registry.holders, registry.uses, registry.exclusive, registry.resource.map State.saved⟩
+
+omit [DecidableEq Use] in
+@[simp] theorem erase_attachRegistry (capacity : Option Nat)
+    (registry : Owned.Registry Holder Use Node Answer Memory) : eraseRegistry (attachRegistry capacity registry) = registry := by
+  cases registry with
+  | mk current holders uses exclusive resource =>
+    cases resource <;> rfl
+
+/-- Retained inspection runs the existing pager, changing no source record. -/
+def pageUse (use : Use) (allowance : Nat) (registry : Registry Holder Use Node Answer Memory) :
+    Option (Mettapedia.Machines.BranchLocalNeed.NeedInteractionAuthority.DiscoveryView Node × Registry Holder Use Node Answer Memory) :=
+  if Owned.currentUse use registry then
+    registry.resource.bind fun state =>
+      (page allowance state).map fun (view, next) => (view, { registry with resource := some next })
+  else none
+
+variable {World : Type*} [Category World]
+variable (authority : IndexedAuthority World) (point : authority.Point)
+  (required : authority.Fibre point.world) [Decidable (FrameUpdate point.authority required)]
+
+def takeUse (source destination : Use) (index : Nat)
+    (registry : Registry Holder Use Node Answer Memory) : Option (Registry Holder Use Node Answer Memory) :=
+  if Owned.currentUse source registry ∧ FrameUpdate point.authority required then
+    registry.resource.bind fun state =>
+      (choose index state).bind fun next =>
+        (ResourceOwnership.AcquiredUse.moveUse source destination registry).map fun moved =>
+          { moved.next with resource := some next }
+  else none
+
+/-- The current issued-use/semantic-permission boundary is shared with plain
+Resume. One accepted callback executes the existing recording worker once. -/
+def advanceUse (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (use : Use) (allowance : Nat) (registry : Registry Holder Use Node Answer Memory) :
+    Option (Registry Holder Use Node Answer Memory) :=
+  if Owned.currentUse use registry ∧ FrameUpdate point.authority required then
+    registry.resource.bind fun state =>
+      if state.saved.inspection = none then
+        some { registry with resource := some (advance system base allowance state) }
+      else none
+  else none
+
+theorem takeUse_erasure (source destination : Use) (index : Nat)
+    (registry : Registry Holder Use Node Answer Memory) :
+    (takeUse authority point required source destination index registry).map eraseRegistry =
+      Owned.takeUse authority point required source destination index (eraseRegistry registry) := by
+  cases registry with
+  | mk current holders uses exclusive resource =>
+    cases resource with
+    | none =>
+      dsimp [takeUse, Owned.takeUse, eraseRegistry]
+      split_ifs <;> rfl
+    | some state =>
+      cases chosen : ResumeTicket.choose index state.saved with
+      | none => simp [takeUse, Owned.takeUse, choose, eraseRegistry, chosen]
+      | some session =>
+        simp only [takeUse, Owned.takeUse, choose, eraseRegistry, chosen, Option.map_some, Option.bind_some]
+        simp only [Owned.currentUse, ResourceOwnership.AcquiredUse.mayMutate, ResourceOwnership.AcquiredUse.moveUse]
+        split_ifs <;> rfl
+
+theorem advanceUse_erasure (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (use : Use) (allowance : Nat) (registry : Registry Holder Use Node Answer Memory) :
+    (advanceUse authority point required system base use allowance registry).map eraseRegistry =
+      Owned.advanceUse authority point required system base use allowance (eraseRegistry registry) := by
+  cases registry with
+  | mk current holders uses exclusive resource =>
+    cases resource with
+    | none =>
+      dsimp [advanceUse, Owned.advanceUse, eraseRegistry]
+      split_ifs <;> rfl
+    | some state =>
+      by_cases sealed : state.saved.inspection = none
+      · simp [advanceUse, Owned.advanceUse, eraseRegistry, Owned.currentUse,
+          ResourceOwnership.AcquiredUse.mayMutate, sealed, apply_ite]
+        aesop
+      · simp [advanceUse, Owned.advanceUse, eraseRegistry, Owned.currentUse,
+          ResourceOwnership.AcquiredUse.mayMutate, sealed]
+
+theorem advanceUse_split (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (use : Use) (earlier later : Nat) (registry : Registry Holder Use Node Answer Memory) :
+    advanceUse authority point required system base use (earlier + later) registry =
+      (advanceUse authority point required system base use earlier registry).bind
+        (advanceUse authority point required system base use later) := by
+  unfold advanceUse
+  split
+  next permitted =>
+    cases held : registry.resource with
+    | none => simp
+    | some state =>
+      simp only [Option.bind_some]
+      split
+      next sealed =>
+        simp_all [Owned.currentUse, ResourceOwnership.AcquiredUse.mayMutate, advance, checkpoint, Recording.erase, Snapshot.mapMemory, Recording.runSelected_split]
+      next unselected => simp
+  next refused => simp
+
+/-- Forgetting at an owned boundary preserves the full ordinary callback
+result under the same current permission contract, including refusal. -/
+theorem forget_to_plain (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (use : Use) (earlier later : Nat) (registry : Registry Holder Use Node Answer Memory) :
+    (advanceUse authority point required system base use earlier registry).bind
+        (fun next => Owned.advanceUse authority point required system base use later (eraseRegistry next)) =
+      (advanceUse authority point required system base use (earlier + later) registry).map eraseRegistry := by
+  rw [advanceUse_split, Option.map_bind]
+  apply congrArg (fun continuation =>
+    (advanceUse authority point required system base use earlier registry).bind continuation)
+  funext next
+  exact (advanceUse_erasure authority point required system base use later next).symm
+
+theorem refused_without_current_permission (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (use : Use) (allowance : Nat) (registry : Registry Holder Use Node Answer Memory)
+    (denied : ¬ Owned.currentUse use registry ∨ ¬ FrameUpdate point.authority required) :
+    advanceUse authority point required system base use allowance registry = none ∧
+      ∀ destination index, takeUse authority point required use destination index registry = none := by
+  rcases denied with absent | revoked
+  · simp [advanceUse, takeUse, absent]
+  · simp [advanceUse, takeUse, revoked]
+
+/-- Optional history cannot change the reached source computation, even
+when it has overflowed or has been attached late. -/
+theorem advanceUse_preserves_source (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (roots : List Node) (use : Use) (allowance : Nat)
+    (before after : Registry Holder Use Node Answer Memory)
+    (sound : Owned.SourceSound system roots (eraseRegistry before))
+    (advanced : advanceUse authority point required system base use allowance before = some after) :
+    Owned.SourceSound system roots (eraseRegistry after) := by
+  have erased := advanceUse_erasure authority point required system base use allowance before
+  rw [advanced, Option.map_some] at erased
+  exact Owned.advanceUse_preserves_source authority point required system base roots use allowance
+    (eraseRegistry before) (eraseRegistry after) sound erased.symm
+
+/-- Demand changes the observation scope of this same retained call. Its
+current exclusive use and invocation permission are checked at each grant. -/
+def demandUse (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (use : Use) (allowance : Nat)
+    (registry : Registry Holder Use Node Answer Memory) : Option (Registry Holder Use Node Answer Memory) :=
+  if Owned.currentUse use registry ∧ FrameUpdate point.authority required then
+    registry.resource.bind fun state =>
+      if state.saved.inspection = none then some { registry with resource := some (demand system base goal allowance state) }
+      else none
+  else none
+
+theorem demandUse_erasure (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (use : Use) (allowance : Nat) (registry : Registry Holder Use Node Answer Memory) :
+    (demandUse authority point required system base goal use allowance registry).map eraseRegistry =
+      Owned.demandUse authority point required system base goal use allowance (eraseRegistry registry) := by
+  cases registry with
+  | mk current holders uses exclusive resource =>
+    cases resource with
+    | none =>
+      dsimp [demandUse, Owned.demandUse, eraseRegistry]
+      split_ifs <;> rfl
+    | some state =>
+      by_cases sealed : state.saved.inspection = none
+      · simp [demandUse, Owned.demandUse, eraseRegistry, Owned.currentUse,
+          ResourceOwnership.AcquiredUse.mayMutate, sealed, demand_erasure, apply_ite]
+        aesop
+      · simp [demandUse, Owned.demandUse, eraseRegistry, Owned.currentUse,
+          ResourceOwnership.AcquiredUse.mayMutate, sealed]
+
+theorem demandUse_split (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (use : Use) (earlier later : Nat) (registry : Registry Holder Use Node Answer Memory) :
+    demandUse authority point required system base goal use (earlier + later) registry =
+      (demandUse authority point required system base goal use earlier registry).bind
+        (demandUse authority point required system base goal use later) := by
+  unfold demandUse
+  split
+  next permitted =>
+    cases held : registry.resource with
+    | none => simp
+    | some state =>
+      simp only [Option.bind_some]
+      split
+      next sealed =>
+        simp_all [Owned.currentUse, ResourceOwnership.AcquiredUse.mayMutate, demand, checkpoint,
+          Recording.erase, Snapshot.mapMemory, Recording.runDemandSelected_split]
+      next unselected => simp
+  next refused => simp
+
+theorem demand_forget_to_plain (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (use : Use) (earlier later : Nat) (registry : Registry Holder Use Node Answer Memory) :
+    (demandUse authority point required system base goal use earlier registry).bind
+        (fun next => Owned.demandUse authority point required system base goal use later (eraseRegistry next)) =
+      (demandUse authority point required system base goal use (earlier + later) registry).map eraseRegistry := by
+  rw [demandUse_split, Option.map_bind]
+  apply congrArg (fun continuation =>
+    (demandUse authority point required system base goal use earlier registry).bind continuation)
+  funext next
+  exact (demandUse_erasure authority point required system base goal use later next).symm
+
+theorem demandUse_preserves_source (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (roots : List Node) (use : Use) (allowance : Nat)
+    (before after : Registry Holder Use Node Answer Memory)
+    (sound : Owned.SourceSound system roots (eraseRegistry before))
+    (advanced : demandUse authority point required system base goal use allowance before = some after) :
+    Owned.SourceSound system roots (eraseRegistry after) := by
+  have erased := demandUse_erasure authority point required system base goal use allowance before
+  rw [advanced, Option.map_some] at erased
+  exact Owned.demandUse_preserves_source authority point required system base goal roots use allowance
+    (eraseRegistry before) (eraseRegistry after) sound erased.symm
+
+theorem demandUse_refused (system : BranchingSystem Node Answer) (base : Controller Node Answer Memory)
+    (goal : List Answer → Bool) (use : Use) (allowance : Nat) (registry : Registry Holder Use Node Answer Memory)
+    (denied : ¬ Owned.currentUse use registry ∨ ¬ FrameUpdate point.authority required) :
+    demandUse authority point required system base goal use allowance registry = none := by
+  rcases denied with absent | revoked
+  · simp [demandUse, absent]
+  · simp [demandUse, revoked]
+
+end Retained
+
+namespace Controls
+
+open ResumeTicket.Controls
+open Mettapedia.GSLT.Contracts
+open Mettapedia.GSLT.Logic.SeparationTransport
+
+abbrev DemoRegistry := Retained.Registry Nat Nat ResumeTicket.Controls.ControlNode ResumeTicket.Controls.ControlAnswer Unit
+
+local instance : Decidable (FrameUpdate permitted.authority (Access.consume : authority.Fibre permitted.world)) := .isTrue (FrameUpdate.refl _)
+local instance : Decidable (FrameUpdate readOnly.authority (Access.consume : authority.Fibre readOnly.world)) := .isFalse Access.not_frameUpdate_read_consume
+
+def inspection : DemoRegistry := Retained.attachRegistry (some 1) acquired
+
+def viewed := (Retained.pageUse 10 2 inspection).getD (⟨[], 0, false⟩, inspection)
+
+def pending : DemoRegistry := (Retained.takeUse authority permitted Access.consume 10 20 1 viewed.2).getD viewed.2
+
+def once : DemoRegistry := (Retained.advanceUse authority permitted Access.consume system base 20 1 pending).getD pending
+
+def twice : DemoRegistry := (Retained.advanceUse authority permitted Access.consume system base 20 1 once).getD once
+
+def pendingState := pending.resource.getD (attach (some 1) (begin ready))
+def onceState := once.resource.getD pendingState
+
+theorem inspection_and_take_create_no_source_record :
+    (pending.resource.map fun state =>
+      (state.history.map (fun record => record.items.length), state.saved.snapshot.memory.1)) =
+      some (some 0, some 1) := by decide
+
+theorem zero_grant_preserves_recorder_and_pending :
+    ((Retained.advanceUse authority permitted Access.consume system base 20 0 pending).bind fun registry => registry.resource).map
+      (fun state => (state.history.map (fun record => (record.remaining, record.omitted)), state.saved.snapshot.memory.1)) =
+      some (some (1, 0), some 1) := by decide
+
+theorem truncation_keeps_original_capture_and_complete_residual :
+    (twice.resource.map fun state =>
+      (state.history.map (fun record => (record.items.map (fun frame => frame.input.trace), record.omitted, record.complete?.isNone)),
+        state.saved.snapshot.search.frontier.map WorkOccurrence.trace)) =
+      some (some ([[1]], 1, true), [[1, 0], [0, 0]]) := by decide
+
+theorem late_recording_retains_only_actual_suffix :
+    ((advance system base 1 (attach (some 2) (resume system base 1 pendingState.saved))).history).map
+      (fun record => record.items.map (fun frame => frame.input.trace)) = some [[0]] := by decide
+
+theorem forgetting_retains_ordered_source_residual :
+    let next := advance system base 1 (attach none onceState.saved)
+    next.history.isNone = true ∧ next.saved.snapshot.search.frontier.map WorkOccurrence.trace = [[1, 0], [0, 0]] := by decide
+
+theorem retained_history_does_not_replace_current_permission :
+    (Retained.advanceUse authority readOnly Access.consume system base 20 1 once).isNone = true ∧
+      (once.resource.bind fun state => state.history.map (fun record => record.items.map (fun frame => frame.input.trace))) =
+        some [[1]] := by decide
+
+theorem exhausted_source_creates_no_more_captures :
+    let done := advance system base 30 pendingState
+    done.saved.snapshot.search.frontier = [] ∧
+      (advance system base 5 done).history.map (fun record => (record.items.length, record.omitted)) =
+        done.history.map (fun record => (record.items.length, record.omitted)) := by decide
+
+end Controls
+
+namespace DemandControls
+
+open ResumeTicket.Controls (system base authority permitted readOnly)
+open Mettapedia.GSLT.Contracts
+open Mettapedia.GSLT.Logic.SeparationTransport
+
+abbrev DemoRegistry := Controls.DemoRegistry
+
+local instance : Decidable (FrameUpdate permitted.authority (Access.consume : authority.Fibre permitted.world)) := .isTrue (FrameUpdate.refl _)
+local instance : Decidable (FrameUpdate readOnly.authority (Access.consume : authority.Fibre readOnly.world)) := .isFalse Access.not_frameUpdate_read_consume
+
+def start (capacity : Option Nat) : DemoRegistry := Retained.attachRegistry capacity ResumeTicket.Controls.taken
+
+def request (goal : List ResumeTicket.Controls.ControlAnswer → Bool) (allowance : Nat)
+    (registry : DemoRegistry) : DemoRegistry :=
+  (Retained.demandUse authority permitted Access.consume system base goal 20 allowance registry).getD registry
+
+abbrev atLeast := Mettapedia.GSLT.Core.DemandExecution.atLeast (Answer := ResumeTicket.Controls.ControlAnswer)
+
+def first : DemoRegistry := request (atLeast 1) 30 (start (some 20))
+
+def firstState := first.resource.getD Controls.pendingState
+
+def nextTarget : Nat := additionalTarget 1 firstState.saved
+
+theorem zero_demand_and_budget_keep_pending_intent :
+    (request (atLeast 0) 30 (start (some 20))).resource.map
+      (fun state => (state.saved.snapshot.memory.1, state.saved.snapshot.search.events.length,
+        state.history.map (fun record => (record.remaining, record.omitted)))) = some (some 1, 0, some (20, 0)) ∧
+      (request (fun _ => false) 0 (start none)).resource.map
+        (fun state => (state.saved.snapshot.memory.1, state.saved.snapshot.search.frontier.map (fun node => node.state.work.transitions))) =
+          some (some 1, [1, 1]) := by decide
+
+theorem satisfied_prefix_retains_real_source_residual :
+    first.resource.map (fun state =>
+      (Mettapedia.GSLT.Core.DemandExecution.satisfied (atLeast 1) state.saved.snapshot,
+       Mettapedia.GSLT.Core.DemandExecution.closed state.saved.snapshot,
+       state.saved.snapshot.search.events.length, state.saved.snapshot.search.frontier.length,
+       (state.history.bind Recording.Prefix.complete?).isSome)) = some (true, false, 1, 1, true) := by decide
+
+theorem all_demand_keeps_equal_occurrences_in_selected_order :
+    (request (fun _ => false) 30 (start none)).resource.map (fun state =>
+      (Mettapedia.GSLT.Core.DemandExecution.closed state.saved.snapshot,
+       state.saved.snapshot.search.events.map (fun event => (event.value.1, event.origin.trace)))) =
+      some (true, [(.value (), [1, 0, 0, 0]), (.value (), [0, 0, 0, 0])]) := by decide
+
+theorem exhausted_source_can_refuse_requested_count :
+    (request (atLeast 3) 30 (start none)).resource.map (fun state =>
+      (Mettapedia.GSLT.Core.DemandExecution.satisfied (atLeast 3) state.saved.snapshot,
+       Mettapedia.GSLT.Core.DemandExecution.closed state.saved.snapshot, state.saved.snapshot.search.events.length)) =
+      some (false, true, 2) := by decide
+
+theorem additional_target_is_anchored_to_observed_prefix :
+    nextTarget = 2 ∧
+      (request (atLeast 1) 30 first).resource.map (fun state => state.saved.snapshot.search.events.length) = some 1 ∧
+      (request (atLeast nextTarget) 1 (request (atLeast nextTarget) 0 first)).resource.map
+        (fun state => (state.saved.snapshot.search.events.length, Mettapedia.GSLT.Core.DemandExecution.closed state.saved.snapshot)) =
+          some (2, true) := by decide
+
+theorem truncated_history_does_not_erase_satisfied_prefix :
+    (request (atLeast 1) 30 (start (some 1))).resource.map (fun state =>
+      (Mettapedia.GSLT.Core.DemandExecution.satisfied (atLeast 1) state.saved.snapshot,
+       Mettapedia.GSLT.Core.DemandExecution.closed state.saved.snapshot,
+       (state.history.bind Recording.Prefix.complete?).isNone)) = some (true, false, true) := by decide
+
+theorem late_and_forgotten_recording_keep_actual_boundary :
+    (demand system base (atLeast 1) 30 (attach (some 20) firstState.saved)).history.map
+      (fun record => record.items.length) = some 0 ∧
+      let next := demand system base (atLeast nextTarget) 1 (attach none firstState.saved)
+      next.history.isNone = true ∧ next.saved.snapshot.search.events.length = 2 := by decide
+
+theorem retained_answers_do_not_grant_new_resume_permission :
+    (Retained.demandUse authority readOnly Access.consume system base (atLeast nextTarget) 20 1 first).isNone = true ∧
+      first.resource.map (fun state => state.saved.snapshot.search.events.length) = some 1 := by decide
+
+end DemandControls
+
+end Recorded
+
+end ResumeTicket
+
+#print axioms ResumeTicket.Recorded.advance_erasure
+#print axioms ResumeTicket.Recorded.advance_zero
+#print axioms ResumeTicket.Recorded.advance_record
+#print axioms ResumeTicket.Recorded.disabled_original
+#print axioms ResumeTicket.Recorded.advance_split
+#print axioms ResumeTicket.Recorded.forget_preserves_endpoint
+#print axioms ResumeTicket.Recorded.bounded_readout
+#print axioms ResumeTicket.Recorded.late_recording_suffix
+#print axioms ResumeTicket.Recorded.complete_record_is_source_history
+#print axioms ResumeTicket.Recorded.page_keeps_history
+#print axioms ResumeTicket.Recorded.choose_keeps_history
+#print axioms ResumeTicket.Recorded.retained_capture_authentic
+#print axioms ResumeTicket.Recorded.Need.retained_capture_has_steps
+#print axioms ResumeTicket.Recorded.Retained.erase_attachRegistry
+#print axioms ResumeTicket.Recorded.Retained.takeUse_erasure
+#print axioms ResumeTicket.Recorded.Retained.advanceUse_erasure
+#print axioms ResumeTicket.Recorded.Retained.advanceUse_split
+#print axioms ResumeTicket.Recorded.Retained.forget_to_plain
+#print axioms ResumeTicket.Recorded.Retained.refused_without_current_permission
+#print axioms ResumeTicket.Recorded.Retained.advanceUse_preserves_source
+#print axioms ResumeTicket.Recorded.Controls.inspection_and_take_create_no_source_record
+#print axioms ResumeTicket.Recorded.Controls.zero_grant_preserves_recorder_and_pending
+#print axioms ResumeTicket.Recorded.Controls.truncation_keeps_original_capture_and_complete_residual
+#print axioms ResumeTicket.Recorded.Controls.late_recording_retains_only_actual_suffix
+#print axioms ResumeTicket.Recorded.Controls.forgetting_retains_ordered_source_residual
+#print axioms ResumeTicket.Recorded.Controls.retained_history_does_not_replace_current_permission
+#print axioms ResumeTicket.Recorded.Controls.exhausted_source_creates_no_more_captures
+
+#print axioms ResumeTicket.promote_perm
+#print axioms ResumeTicket.begin_inspectionSound
+#print axioms ResumeTicket.page_preserves_snapshot
+#print axioms ResumeTicket.page_retains_suffix
+#print axioms ResumeTicket.page_origin
+#print axioms ResumeTicket.choose_origin
+#print axioms ResumeTicket.resume_zero
+#print axioms ResumeTicket.resume_split
+#print axioms ResumeTicket.selected_expansion
+#print axioms ResumeTicket.ordinary_run
+#print axioms ResumeTicket.selected_then_original
+#print axioms ResumeTicket.selected_conserves_occurrences
+#print axioms ResumeTicket.resume_sound
+#print axioms ResumeTicket.page_zero
+#print axioms ResumeTicket.displayed_can_choose
+#print axioms ResumeTicket.Owned.pageUse_admitted
+#print axioms ResumeTicket.Owned.takeUse_admitted
+#print axioms ResumeTicket.Owned.advanceUse_admitted
+#print axioms ResumeTicket.Owned.takeUse_transfers_exact_computation
+#print axioms ResumeTicket.Owned.advanceUse_zero
+#print axioms ResumeTicket.Owned.advanceUse_split
+#print axioms ResumeTicket.Owned.stale_or_unissued_refused
+#print axioms ResumeTicket.Owned.authority_refused
+#print axioms ResumeTicket.Owned.initial_sourceSound
+#print axioms ResumeTicket.Owned.pageUse_preserves_source
+#print axioms ResumeTicket.Owned.takeUse_preserves_source
+#print axioms ResumeTicket.Owned.advanceUse_preserves_source
+#print axioms ResumeTicket.Owned.pageUse_wellFormed
+#print axioms ResumeTicket.Owned.takeUse_wellFormed
+#print axioms ResumeTicket.Owned.advanceUse_wellFormed
+#print axioms ResumeTicket.Need.saved_source_paths
+#print axioms ResumeTicket.Need.selected_from_entry_has_paths
+#print axioms ResumeTicket.Controls.two_pages_inspect_distinct_original_occurrences
+#print axioms ResumeTicket.Controls.selected_second_keeps_sibling_and_child
+#print axioms ResumeTicket.Controls.zero_grant_keeps_original_pending_intent
+#print axioms ResumeTicket.Controls.uninspected_occurrence_refused
+#print axioms ResumeTicket.Controls.transferred_use_cannot_advance_again
+#print axioms ResumeTicket.Controls.unchanged_source_read_authority_cannot_resume
+#print axioms ResumeTicket.Controls.detached_slot_with_retained_exclusive_use_refused
+#print axioms ResumeTicket.Controls.second_exclusive_admission_refused
+#print axioms ResumeTicket.Controls.lifetime_fork_does_not_gain_execution
+
 #print axioms Reference.generated_has_steps
 #print axioms Reference.generated_transition_clock
 #print axioms Reference.controlled_emission_has_steps
 #print axioms Erasure.occurrence_emit_erases
 #print axioms Erasure.occurrence_successors_erase
+
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.demand_prefix
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.demand_split
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.demand_sound
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Owned.demandUse_preserves_source
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.demand_erasure
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.demand_prefix
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.demand_split
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.demand_zero
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.demand_of_stopped
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.prefix_zero_keeps_pending
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.demand_unrecorded
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.demand_forget
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.demand_late
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.complete_demand_history
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.Need.demanded_capture_has_steps
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.Retained.demandUse_erasure
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.Retained.demandUse_split
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.Retained.demand_forget_to_plain
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.Retained.demandUse_preserves_source
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.Retained.demandUse_refused
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.DemandControls.zero_demand_and_budget_keep_pending_intent
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.DemandControls.satisfied_prefix_retains_real_source_residual
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.DemandControls.all_demand_keeps_equal_occurrences_in_selected_order
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.DemandControls.exhausted_source_can_refuse_requested_count
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.DemandControls.additional_target_is_anchored_to_observed_prefix
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.DemandControls.truncated_history_does_not_erase_satisfied_prefix
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.DemandControls.late_and_forgotten_recording_keep_actual_boundary
+#print axioms Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl.ResumeTicket.Recorded.DemandControls.retained_answers_do_not_grant_new_resume_permission
 
 end Mettapedia.Machines.BranchLocalNeed.NeedInferenceControl

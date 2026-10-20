@@ -19,7 +19,7 @@ namespace Mettapedia.Languages.GF.HandCrafted.English.SemanticHighlights
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.QuantifiedFormula2
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.Languages.GF.VisibleLayer
 open Mettapedia.Languages.GF.WorldModelSemantics
 open Mettapedia.Languages.GF.WorldModelVisibleBridge

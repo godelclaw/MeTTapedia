@@ -66,7 +66,7 @@ def check {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (generated : Generated) (status : Option Bool) (backend : Backend.{u,v} system admitted)
     (tests : Leaf → Test system admitted) (admission : LeafAdmission Leaf)
     (formula : Formula Leaf) (source : system.Term) (budget : Nat) :
-    Verdict (denotation tests formula source) :=
+    Verdict (denotation tests formula backend.spatial.theory source) :=
   Mettapedia.OSLF.NativeTypes.Decision.Admission.check (checkingView generated status)
     backend tests admission formula source budget
 

@@ -14,7 +14,7 @@ view.  The four witness sets remain primary; the two counts are a readout.
 namespace Mettapedia.NARS.Bridges.PLN.InheritanceEvidence
 
 open Mettapedia.NARS.Logic.Inheritance
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.NARS.TruthFunctions
 open scoped ENNReal
 

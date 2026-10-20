@@ -34,10 +34,10 @@ It is intentionally *not* a prose paper section (no `.md`), just a compiler-chec
 
 ## BinaryEvidence Semantics (Quantale/Heyting layer)
 
-- BinaryEvidence carrier and operations: `Mettapedia.PLN.Evidence.EvidenceQuantale`
+- BinaryEvidence carrier and operations: `Mettapedia.PLN.Evidence.BinaryEvidence`
   - `BinaryEvidence` (counts `(nPlus, nMinus)`), `toStrength`, `toConfidence`
-  - revision-style aggregation lemma: `Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength_hplus`
-  - polarity-swap negation rule: `Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength_flip`
+  - revision-style aggregation lemma: `Mettapedia.PLN.Evidence.BinaryEvidence.toStrength_hplus`
+  - polarity-swap negation rule: `Mettapedia.PLN.Evidence.BinaryEvidence.toStrength_flip`
     (defined in `Mettapedia.PLN.Evidence.PLNDerivedFromEvidence`)
 
 - BinaryEvidence scalar order-reflection gate

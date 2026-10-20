@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.HE.Eval
+import Mettapedia.Languages.MeTTa.HE.Spec.Eval
 
 /-!
 # First-order control for the recursive HE evaluator
@@ -550,3 +551,704 @@ def configurationNames (configuration : Configuration) : List String :=
   simp only [configurationNames, liveAtoms_deepen]
 
 end Mettapedia.Languages.MeTTa.HE.RecursiveScope
+
+namespace Mettapedia.Languages.MeTTa.HE.RecursiveTasks.Contextual
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Eval
+open Spec.Eval.Completed (Policy Result)
+open Mettapedia.Machines.OrderedProtocol.Completion
+
+/-! ## Retained control for contextual source phases
+
+The work items below retain values and certified logical activations. They
+do not contain recursive evaluation proofs. Their source readings are used
+only in correspondence proofs; machine transitions inspect work and consume
+primitive casting, matching and complete-query evidence separately.
+-/
+
+inductive Task where
+  | atom (live : List Atom) (scope : List String) (value : Entry.Value)
+      (expected : Atom) (activation : Spec.Eval.Completed.Frame)
+  | tuple (live : List Atom) (scope : List String) (values : List Entry.Value)
+      (activation : Spec.Eval.Completed.Frame)
+  | branches (live : List Atom) (scope : List String) (tail : List Entry.Value)
+      (heads : List Result)
+  | arguments (live : List Atom) (scope : List String) (requests : List Completed.ArgumentRequest)
+      (activation : Completed.Frame)
+  | argumentBranches (live : List Atom) (scope : List String) (original : Entry.Value)
+      (requests : List Completed.ArgumentRequest) (heads : List Result)
+  | function (live : List Atom) (scope : List String) (expected : Atom) (signature : SelectedTypePolicy)
+      (operator : Entry.Value) (arguments : List Entry.Value) (activation : Completed.Frame)
+  | functionBranches (live : List Atom) (scope : List String) (requests : List Completed.ArgumentRequest)
+      (heads : List Result)
+  | invocations (live : List Atom) (scope : List String) (expected : Atom) (signature : SelectedTypePolicy)
+      (operator : Entry.Value) (arguments : List Entry.Value) (activations : List Completed.Frame)
+  | minimal (live : List Atom) (scope : List String) (caller : Option Atom) (value : Entry.Value) (activation : Completed.Frame)
+  | body (live : List Atom) (scope : List String) (caller : Option Atom) (value : Entry.Value) (activation : Completed.Frame)
+  | invocation (live : List Atom) (scope : List String) (caller : Option Atom) (value : Entry.Value) (activation : Completed.Frame)
+  | invocationEquations (live : List Atom) (scope : List String) (original : Entry.Value)
+      (activation : Completed.Frame) (works : List Spec.Eval.Steps.EquationWork)
+  | boundary (live : List Atom) (scope : List String) (caller : Option Atom) (site : Completed.Boundary)
+      (value : Entry.Value) (activation : Completed.Frame)
+  | boundaryBatch (live : List Atom) (scope : List String) (caller : Option Atom) (site : Completed.Boundary) (rows : List Result)
+  | calls (live : List Atom) (scope : List String) (expected : Atom) (rows : List Result)
+  | call (live : List Atom) (scope : List String) (value : Entry.Value)
+      (expected : Atom) (activation : Spec.Eval.Completed.Frame)
+  | equations (live : List Atom) (scope : List String) (original : Entry.Value)
+      (expected : Atom) (activation : Spec.Eval.Completed.Frame)
+      (works : List Spec.Eval.Steps.EquationWork)
+  | returned (live : List Atom) (scope : List String) (original : Entry.Value)
+      (expected : Atom) (value : Entry.Value) (activation : Spec.Eval.Completed.Frame)
+
+  | capture (rows : List Result) (saved : List Entry.Value) (caller : Completed.Frame)
+  | restore (pairs : List Entry.Value) (saved : List Result) (caller : Completed.Frame)
+
+/-- Independent source meaning for each pending work mode. No transition
+consults this predicate. -/
+def Task.SourceRel (space : Space) (dispatch : Spec.Eval.GroundedDispatch)
+    (lookup : Spec.Eval.Completed.CastLookup) (policy : Policy) : Task → List Result → Prop
+  | .atom live scope value expected activation, results =>
+      Spec.Eval.Completed.AtomRel space dispatch lookup live scope value expected activation results
+        (policy := policy)
+  | .tuple live scope values activation, results =>
+      Spec.Eval.Completed.TupleRel space dispatch lookup live scope values activation results (policy := policy)
+  | .branches live scope tail heads, results =>
+      Spec.Eval.Completed.TupleBranchesRel space dispatch lookup live scope tail heads results (policy := policy)
+  | .arguments live scope requests activation, results =>
+      Completed.ArgumentsRel space dispatch lookup live scope requests activation results (policy := policy)
+  | .argumentBranches live scope original requests heads, results =>
+      Completed.ArgumentBranchesRel space dispatch lookup live scope original requests heads results (policy := policy)
+  | .function live scope expected signature operator operands activation, results =>
+      Completed.FunctionRel space dispatch lookup live scope expected signature operator operands activation results (policy := policy)
+  | .functionBranches live scope requests heads, results =>
+      Completed.FunctionBranchesRel space dispatch lookup live scope requests heads results (policy := policy)
+  | .invocations live scope expected signature operator operands activations, results =>
+      Completed.InvocationsRel space dispatch lookup live scope expected signature operator operands activations results (policy := policy)
+  | .minimal live scope caller value activation, results =>
+      Completed.MinimalRel space dispatch lookup live scope caller value activation results (policy := policy)
+  | .body live scope caller value activation, results =>
+      Completed.BodyRel space dispatch lookup live scope caller value activation results (policy := policy)
+  | .invocation live scope caller value activation, results =>
+      Completed.InvocationRel space dispatch lookup live scope caller value activation results (policy := policy)
+  | .invocationEquations live scope original activation works, results =>
+      Completed.InvocationEquationsRel space dispatch lookup live scope original activation works results (policy := policy)
+  | .boundary live scope caller site value activation, results =>
+      Completed.BoundaryRel space dispatch lookup live scope caller site value activation results (policy := policy)
+  | .boundaryBatch live scope caller site rows, results =>
+      Completed.BoundaryBatchRel space dispatch lookup live scope caller site rows results (policy := policy)
+  | .calls live scope expected rows, results =>
+      Spec.Eval.Completed.CallsRel space dispatch lookup live scope expected rows results (policy := policy)
+  | .call live scope value expected activation, results =>
+      Spec.Eval.Completed.CallRel space dispatch lookup live scope value expected activation results (policy := policy)
+  | .equations live scope original expected activation works, results =>
+      Spec.Eval.Completed.EquationBodiesRel space dispatch lookup live scope original expected activation works results
+        (policy := policy)
+  | .returned live scope original expected value activation, results =>
+      Spec.Eval.Completed.ReturnRel space dispatch lookup live scope original expected value activation results
+        (policy := policy)
+
+  | .capture _ _ _, _ | .restore _ _ _, _ => False
+
+/-- First-order continuations retain pending source occurrences and values.
+Publication is a separate boundary after all caller work has returned. -/
+inductive Continuation where
+  | publish (original : Atom)
+  | singleton
+  | branches (live : List Atom) (scope : List String) (tail : List Entry.Value)
+  | tupleTail (head : Entry.Value)
+  | arguments (live : List Atom) (scope : List String) (original : Entry.Value)
+      (requests : List Completed.ArgumentRequest)
+  | argumentTail (head : Entry.Value)
+  | functionHeads (live : List Atom) (scope : List String) (requests : List Completed.ArgumentRequest)
+  | functionAssemble (head : Entry.Value)
+  | diagnostics (errors : List Atom) (activation : Completed.Frame)
+  | boundaryBatch (live : List Atom) (scope : List String) (caller : Option Atom) (site : Completed.Boundary)
+  | calls (live : List Atom) (scope : List String) (expected : Atom)
+  | append (remaining : Task)
+  | prepend (selected : List Result)
+
+  | collect (caller : Completed.Frame)
+
+/-- Context labels are separate from their current space contents. The
+read-only instance uses snapshots; a live world uses stable identities. -/
+inductive Control (Context : Type := Space) where
+  | work (task : Task)
+  | returning (results : List Result)
+  | context (label : Context) (child : Control Context) (stack : List Continuation)
+
+/-- Resolve only saved context labels. Values, bindings, continuation frames
+and answer occurrences are retained without reconstruction. -/
+def Control.mapContexts {Context Other : Type} (view : Context → Other) : Control Context → Control Other
+  | .work task => .work task
+  | .returning results => .returning results
+  | .context label child stack => .context (view label) (child.mapContexts view) stack
+
+theorem Control.mapContexts_id {Context : Type} (control : Control Context) :
+    control.mapContexts id = control := by
+  induction control with
+  | work => rfl
+  | returning => rfl
+  | context label child stack ih => simp only [mapContexts, id_eq, ih]
+
+theorem Control.mapContexts_comp {Context Middle Other : Type}
+    (first : Context → Middle) (second : Middle → Other) (control : Control Context) :
+    (control.mapContexts first).mapContexts second = control.mapContexts (second ∘ first) := by
+  induction control with
+  | work => rfl
+  | returning => rfl
+  | context label child stack ih => simp only [mapContexts, Function.comp_apply, ih]
+
+structure Configuration where
+  space : Space
+  control : Control
+  stack : List Continuation
+  emitted : List Result
+
+def Configuration.initial (space : Space) (task : Task) : Configuration :=
+  ⟨space,.work task,[],[]⟩
+
+/-- The source reading of a continuation. Recursive premises describe its
+pending work, rather than an atomic operation available to the machine. -/
+inductive Continuation.Applies (space : Space) (dispatch : Spec.Eval.GroundedDispatch)
+    (lookup : Spec.Eval.Completed.CastLookup) (policy : Policy) :
+    Continuation → List Result → List Result → Prop where
+  | publish {original raw selected} :
+      SuccessPriorityRel (fun result : Result => isErrorAtom result.1.erase)
+        (raw.map (Spec.Eval.Completed.readResult policy)) selected →
+      Applies space dispatch lookup policy (.publish original) raw
+        (selected.map (Spec.Eval.Completed.publishResult policy original))
+  | singleton (results) :
+      Applies space dispatch lookup policy .singleton results
+        (results.map Spec.Eval.Completed.tupleSingleton)
+  | branches {live scope tail heads results} :
+      Spec.Eval.Completed.TupleBranchesRel space dispatch lookup live scope tail heads results (policy := policy) →
+      Applies space dispatch lookup policy (.branches live scope tail) heads results
+  | tupleTail (head) (results) :
+      Applies space dispatch lookup policy (.tupleTail head) results
+        (results.map (Spec.Eval.Completed.tuplePrepend head))
+  | arguments {live scope original requests heads results} :
+      Completed.ArgumentBranchesRel space dispatch lookup live scope original requests heads results (policy := policy) →
+      Applies space dispatch lookup policy (.arguments live scope original requests) heads results
+  | argumentTail (head) (results) :
+      Applies space dispatch lookup policy (.argumentTail head) results
+        (results.map (Completed.argumentPrepend head))
+  | functionHeads {live scope requests heads results} :
+      Completed.FunctionBranchesRel space dispatch lookup live scope requests heads results (policy := policy) →
+      Applies space dispatch lookup policy (.functionHeads live scope requests) heads results
+  | functionAssemble (head) (results) :
+      Applies space dispatch lookup policy (.functionAssemble head) results
+        (results.map (Completed.functionAssemble head))
+  | diagnostics (errors) (activation) (results) :
+      Applies space dispatch lookup policy (.diagnostics errors activation) results
+        (results ++ Completed.diagnosticResults errors activation)
+  | boundaryBatch {live scope caller site rows results} :
+      Completed.BoundaryBatchRel space dispatch lookup live scope caller site rows results (policy := policy) →
+      Applies space dispatch lookup policy (.boundaryBatch live scope caller site) rows results
+  | calls {live scope expected rows results} :
+      Spec.Eval.Completed.CallsRel space dispatch lookup live scope expected rows results (policy := policy) →
+      Applies space dispatch lookup policy (.calls live scope expected) rows results
+  | append {remaining before after} :
+      remaining.SourceRel space dispatch lookup policy after →
+      Applies space dispatch lookup policy (.append remaining) before (before ++ after)
+  | prepend (selected results) :
+      Applies space dispatch lookup policy (.prepend selected) results (selected ++ results)
+
+inductive StackRel (space : Space) (dispatch : Spec.Eval.GroundedDispatch)
+    (lookup : Spec.Eval.Completed.CastLookup) (policy : Policy) :
+    List Continuation → List Result → List Result → Prop where
+  | nil (results) : StackRel space dispatch lookup policy [] results results
+  | cons {frame stack before middle after} :
+      frame.Applies space dispatch lookup policy before middle →
+      StackRel space dispatch lookup policy stack middle after →
+      StackRel space dispatch lookup policy (frame :: stack) before after
+
+inductive Control.SourceRel : Space → Spec.Eval.GroundedDispatch →
+    Spec.Eval.Completed.CastLookup → Policy → Control → List Result → Prop where
+  | work {space dispatch lookup policy task results} : task.SourceRel space dispatch lookup policy results →
+      SourceRel space dispatch lookup policy (.work task) results
+  | returning {space dispatch lookup policy} (results) :
+      SourceRel space dispatch lookup policy (.returning results) results
+  | context {space childSpace dispatch lookup policy child stack current results} :
+      SourceRel childSpace dispatch lookup policy child current →
+      StackRel childSpace dispatch lookup policy stack current results →
+      SourceRel space dispatch lookup policy (.context childSpace child stack) results
+
+/-- Complete source meaning of the current work, its actual continuation and
+the already published prefix. It does not assert that the machine terminates. -/
+def Configuration.SourceRel (dispatch : Spec.Eval.GroundedDispatch)
+    (lookup : Spec.Eval.Completed.CastLookup) (policy : Policy)
+    (state : Configuration) (answers : List Result) : Prop :=
+  ∃ current pending,
+    state.control.SourceRel state.space dispatch lookup policy current ∧
+    StackRel state.space dispatch lookup policy state.stack current pending ∧
+    answers = state.emitted ++ pending
+
+end Mettapedia.Languages.MeTTa.HE.RecursiveTasks.Contextual
+
+
+namespace Mettapedia.Languages.MeTTa.HE.RecursiveTasks.Contextual
+
+open Spec.Eval.Completed (Result)
+
+/-- The context labels currently retained as operational scopes. Opaque
+handles inside source syntax remain syntax until their own entry boundary. -/
+def Control.contexts {Context : Type} : Control Context → List Context
+  | .work _ | .returning _ => []
+  | .context label child _ => label :: child.contexts
+
+theorem Control.mapContexts_congr {Context Other : Type} (first second : Context → Other)
+    (control : Control Context) (same : ∀ label ∈ control.contexts, first label = second label) :
+    control.mapContexts first = control.mapContexts second := by
+  induction control with
+  | work => rfl
+  | returning => rfl
+  | context label child stack ih =>
+      have here := same label List.mem_cons_self
+      have below := ih (fun name present => same name (List.mem_cons_of_mem _ present))
+      simp only [mapContexts, here, below]
+
+/-- A shared world and stable context labels surround the existing control.
+Bindings and continuation frames do not capture a private copy of the world.
+The read-only snapshot configuration remains its existing explicit instance. -/
+structure WorldConfiguration (Context World : Type) where
+  world : World
+  context : Context
+  control : Control Context
+  stack : List Continuation
+  emitted : List Result
+
+namespace WorldConfiguration
+
+/-- Read all operational scope views from the reached world. This projection
+is a phase observation; it does not identify contexts with equal contents. -/
+def snapshot {Context World : Type} (view : World → Context → Space)
+    (state : WorldConfiguration Context World) : Configuration :=
+  ⟨view state.world state.context, state.control.mapContexts (view state.world), state.stack, state.emitted⟩
+
+/-- A local world operation preserves the entire saved evaluator state. Its
+next phase obtains fresh views through `snapshot`, rather than cached spaces. -/
+def withWorld {Context World : Type} (state : WorldConfiguration Context World) (world : World) :
+    WorldConfiguration Context World := {state with world}
+
+/-- Only agreement on actually retained operational context labels is needed
+for equal current snapshots. This is not equivalence of future mutable worlds. -/
+theorem snapshot_congr {Context World : Type} (view : World → Context → Space)
+    (state : WorldConfiguration Context World) (other : World)
+    (root : view state.world state.context = view other state.context)
+    (saved : ∀ label ∈ state.control.contexts, view state.world label = view other label) :
+    state.snapshot view = (state.withWorld other).snapshot view := by
+  simp only [snapshot, withWorld, root, Control.mapContexts_congr _ _ _ saved]
+
+theorem withWorld_retains_control {Context World : Type} (state : WorldConfiguration Context World) (world : World) :
+    (state.withWorld world).context = state.context ∧
+    (state.withWorld world).control = state.control ∧
+    (state.withWorld world).stack = state.stack ∧
+    (state.withWorld world).emitted = state.emitted := ⟨rfl, rfl, rfl, rfl⟩
+
+/-- The existing read-only evaluator embeds as a world with no mutation.
+Its context labels are the declared space snapshots. -/
+def ofReadOnly (state : Configuration) : WorldConfiguration Space Unit :=
+  ⟨(), state.space, state.control, state.stack, state.emitted⟩
+
+theorem snapshot_ofReadOnly (state : Configuration) :
+    (ofReadOnly state).snapshot (fun _ context => context) = state := by
+  cases state with
+  | mk space control stack emitted =>
+      change Configuration.mk space (control.mapContexts id) stack emitted =
+        Configuration.mk space control stack emitted
+      rw [Control.mapContexts_id]
+
+end WorldConfiguration
+end Mettapedia.Languages.MeTTa.HE.RecursiveTasks.Contextual
+
+
+namespace Mettapedia.Languages.MeTTa.HE.RecursiveTasks.Contextual
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
+open Spec.Eval.Completed (Frame Result WorldServices)
+
+/-- Ordinary control nodes have no operational context label to decode.
+This relation transports them without identifying different context handles. -/
+inductive UnscopedControl {Context : Type} : Control Context → Control → Prop where
+  | work (task : Task) : UnscopedControl (.work task) (.work task)
+  | returning (results : List Result) : UnscopedControl (.returning results) (.returning results)
+
+theorem UnscopedControl.same {before after : Control} (same : UnscopedControl before after) :
+    before = after := by cases same <;> rfl
+
+/-- Context-space is served by the live context boundary. Delegating it to
+an old snapshot service would encode contents where identity is required. -/
+def managedContextControl {Context : Type} : Control Context → Bool
+  | .work (.minimal _ _ _ (.expression _ [.symbol "context-space"]) _) => true
+  | _ => false
+
+end Mettapedia.Languages.MeTTa.HE.RecursiveTasks.Contextual
+
+
+namespace Mettapedia.Languages.MeTTa.HE.RecursiveTasks.Contextual
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Eval
+open Spec.Eval.Completed (Policy Result WorldEnvironment)
+open Mettapedia.Machines.OrderedProtocol.Completion
+
+/-- Pending work reads the independent stateful source judgment. Neither
+primitive transitions nor host contracts consult this completed evidence. -/
+def Task.WorldSourceRel {Context World : Type}
+    (environment : WorldEnvironment Context World) (policy : Policy) (label : Context) (world : World) :
+    Task → List Result → World → Prop
+  | .atom live scope value expected activation, results, afterWorld =>
+      Completed.Stateful.AtomRel environment label world live scope value expected activation results
+        afterWorld (policy := policy)
+  | .tuple live scope values activation, results, afterWorld =>
+      Completed.Stateful.TupleRel environment label world live scope values activation results afterWorld (policy := policy)
+  | .branches live scope tail heads, results, afterWorld =>
+      Completed.Stateful.TupleBranchesRel environment label world live scope tail heads results afterWorld (policy := policy)
+  | .arguments live scope requests activation, results, afterWorld =>
+      Completed.Stateful.ArgumentsRel environment label world live scope requests activation results afterWorld (policy := policy)
+  | .argumentBranches live scope original requests heads, results, afterWorld =>
+      Completed.Stateful.ArgumentBranchesRel environment label world live scope original requests heads results afterWorld (policy := policy)
+  | .function live scope expected signature operator operands activation, results, afterWorld =>
+      Completed.Stateful.FunctionRel environment label world live scope expected signature operator operands activation results afterWorld (policy := policy)
+  | .functionBranches live scope requests heads, results, afterWorld =>
+      Completed.Stateful.FunctionBranchesRel environment label world live scope requests heads results afterWorld (policy := policy)
+  | .invocations live scope expected signature operator operands activations, results, afterWorld =>
+      Completed.Stateful.InvocationsRel environment label world live scope expected signature operator operands activations results afterWorld (policy := policy)
+  | .minimal live scope caller value activation, results, afterWorld =>
+      Completed.Stateful.MinimalRel environment label world live scope caller value activation results afterWorld (policy := policy)
+  | .body live scope caller value activation, results, afterWorld =>
+      Completed.Stateful.BodyRel environment label world live scope caller value activation results afterWorld (policy := policy)
+  | .invocation live scope caller value activation, results, afterWorld =>
+      Completed.Stateful.InvocationRel environment label world live scope caller value activation results afterWorld (policy := policy)
+  | .invocationEquations live scope original activation works, results, afterWorld =>
+      Completed.Stateful.InvocationEquationsRel environment label world live scope original activation works results afterWorld (policy := policy)
+  | .boundary live scope caller site value activation, results, afterWorld =>
+      Completed.Stateful.BoundaryRel environment label world live scope caller site value activation results afterWorld (policy := policy)
+  | .boundaryBatch live scope caller site rows, results, afterWorld =>
+      Completed.Stateful.BoundaryBatchRel environment label world live scope caller site rows results afterWorld (policy := policy)
+  | .calls live scope expected rows, results, afterWorld =>
+      Completed.Stateful.CallsRel environment label world live scope expected rows results afterWorld (policy := policy)
+  | .call live scope value expected activation, results, afterWorld =>
+      Completed.Stateful.CallRel environment label world live scope value expected activation results afterWorld (policy := policy)
+  | .equations live scope original expected activation works, results, afterWorld =>
+      Completed.Stateful.EquationBodiesRel environment label world live scope original expected activation works results
+        afterWorld (policy := policy)
+  | .returned live scope original expected value activation, results, afterWorld =>
+      Completed.Stateful.ReturnRel environment label world live scope original expected value activation results
+        afterWorld (policy := policy)
+
+
+  | .capture rows saved caller, results, afterWorld =>
+      ∃ snapshots packed, environment.services.snapshots = some snapshots ∧
+        Completed.CaptureRowsRel snapshots label world rows saved packed afterWorld ∧ results = [(packed,caller)]
+  | .restore pairs saved caller, results, afterWorld =>
+      ∃ snapshots, environment.services.snapshots = some snapshots ∧ afterWorld = world ∧
+        Completed.RestoreRowsRel snapshots label world policy caller pairs saved results
+
+/-- A saved continuation resumes in its child's reached world. -/
+inductive Continuation.WorldApplies {Context World : Type}
+    (environment : WorldEnvironment Context World) (policy : Policy) :
+    Context → World → Continuation → List Result → List Result → World → Prop where
+  | publish {label world original raw selected} :
+      SuccessPriorityRel (fun result : Result => isErrorAtom result.1.erase)
+        (raw.map (Completed.readResult policy)) selected →
+      WorldApplies environment policy label world (.publish original) raw
+        (selected.map (Completed.publishResult policy original)) world
+  | singleton {label world} (results) :
+      WorldApplies environment policy label world .singleton results
+        (results.map Completed.tupleSingleton) world
+  | branches {label world afterWorld live scope tail heads results} :
+      Completed.Stateful.TupleBranchesRel environment label world live scope tail heads results afterWorld (policy := policy) →
+      WorldApplies environment policy label world (.branches live scope tail) heads results afterWorld
+  | tupleTail {label world} (head) (results) :
+      WorldApplies environment policy label world (.tupleTail head) results
+        (results.map (Completed.tuplePrepend head)) world
+  | arguments {label world afterWorld live scope original requests heads results} :
+      Completed.Stateful.ArgumentBranchesRel environment label world live scope original requests heads results afterWorld (policy := policy) →
+      WorldApplies environment policy label world (.arguments live scope original requests) heads results afterWorld
+  | argumentTail {label world} (head) (results) :
+      WorldApplies environment policy label world (.argumentTail head) results
+        (results.map (Completed.argumentPrepend head)) world
+  | functionHeads {label world afterWorld live scope requests heads results} :
+      Completed.Stateful.FunctionBranchesRel environment label world live scope requests heads results afterWorld (policy := policy) →
+      WorldApplies environment policy label world (.functionHeads live scope requests) heads results afterWorld
+  | functionAssemble {label world} (head) (results) :
+      WorldApplies environment policy label world (.functionAssemble head) results
+        (results.map (Completed.functionAssemble head)) world
+  | diagnostics {label world} (errors) (activation) (results) :
+      WorldApplies environment policy label world (.diagnostics errors activation) results
+        (results ++ Completed.diagnosticResults errors activation) world
+  | boundaryBatch {label world afterWorld live scope caller site rows results} :
+      Completed.Stateful.BoundaryBatchRel environment label world live scope caller site rows results afterWorld (policy := policy) →
+      WorldApplies environment policy label world (.boundaryBatch live scope caller site) rows results afterWorld
+  | calls {label world afterWorld live scope expected rows results} :
+      Completed.Stateful.CallsRel environment label world live scope expected rows results afterWorld (policy := policy) →
+      WorldApplies environment policy label world (.calls live scope expected) rows results afterWorld
+  | append {label world afterWorld remaining before after} :
+      remaining.WorldSourceRel environment policy label world after afterWorld →
+      WorldApplies environment policy label world (.append remaining) before (before ++ after) afterWorld
+  | prepend {label world} (selected results) :
+      WorldApplies environment policy label world (.prepend selected) results (selected ++ results) world
+  | collect {label world afterWorld caller rows packed snapshots} :
+      environment.services.snapshots = some snapshots →
+      Completed.CaptureRowsRel snapshots label world rows [] packed afterWorld →
+      WorldApplies environment policy label world (.collect caller) rows [(packed,caller)] afterWorld
+
+inductive WorldStackRel {Context World : Type}
+    (environment : WorldEnvironment Context World) (policy : Policy) (label : Context) :
+    World → List Continuation → List Result → List Result → World → Prop where
+  | nil {world} (results) : WorldStackRel environment policy label world [] results results world
+  | cons {world middleWorld afterWorld frame stack before middle after} :
+      frame.WorldApplies environment policy label world before middle middleWorld →
+      WorldStackRel environment policy label middleWorld stack middle after afterWorld →
+      WorldStackRel environment policy label world (frame :: stack) before after afterWorld
+
+inductive Control.WorldSourceRel {Context World : Type}
+    (environment : WorldEnvironment Context World) (policy : Policy) :
+    Context → World → Control Context → List Result → World → Prop where
+  | work {label world afterWorld task results} :
+      task.WorldSourceRel environment policy label world results afterWorld →
+      WorldSourceRel environment policy label world (.work task) results afterWorld
+  | returning {label world} (results) :
+      WorldSourceRel environment policy label world (.returning results) results world
+  | context {label childLabel world childWorld afterWorld child stack current results} :
+      WorldSourceRel environment policy childLabel world child current childWorld →
+      WorldStackRel environment policy childLabel childWorld stack current results afterWorld →
+      WorldSourceRel environment policy label world (.context childLabel child stack) results afterWorld
+
+/-- The retained source meaning includes the final reached world and the
+already emitted ordered prefix. It does not postulate termination. -/
+def WorldConfiguration.SourceRel {Context World : Type}
+    (environment : WorldEnvironment Context World) (policy : Policy)
+    (state : WorldConfiguration Context World) (answers : List Result) (afterWorld : World) : Prop :=
+  ∃ current pending childWorld,
+    state.control.WorldSourceRel environment policy state.context state.world current childWorld ∧
+    WorldStackRel environment policy state.context childWorld state.stack current pending afterWorld ∧
+    answers = state.emitted ++ pending
+
+/-! ## Simultaneous Variable Renaming on Retained Contextual Control and Configurations -/
+
+open Mettapedia.Languages.MeTTa.HE
+open Spec.Type.RuntimeRefinement
+open Spec.Type.Presentation.ScopeObservation
+
+private theorem perm_symm_mul_self (p : Equiv.Perm String) :
+    p.symm * p = Equiv.refl String := by
+  ext x
+  simp
+
+def Task.rename (p : Equiv.Perm String) : Task → Task
+  | .atom live scope value expected activation =>
+      .atom (live.map (renameTypeVars p)) (scope.map p) (value.rename p)
+        (renameTypeVars p expected) (activation.rename p)
+  | .tuple live scope values activation =>
+      .tuple (live.map (renameTypeVars p)) (scope.map p)
+        (values.map (Entry.Value.rename p)) (activation.rename p)
+  | .branches live scope tail heads =>
+      .branches (live.map (renameTypeVars p)) (scope.map p)
+        (tail.map (Entry.Value.rename p)) (heads.map (Completed.Result.rename p))
+  | .arguments live scope requests activation =>
+      .arguments (live.map (renameTypeVars p)) (scope.map p)
+        (requests.map (Completed.ArgumentRequest.rename p)) (activation.rename p)
+  | .argumentBranches live scope original requests heads =>
+      .argumentBranches (live.map (renameTypeVars p)) (scope.map p)
+        (original.rename p) (requests.map (Completed.ArgumentRequest.rename p))
+        (heads.map (Completed.Result.rename p))
+  | .function live scope expected signature operator operands activation =>
+      .function (live.map (renameTypeVars p)) (scope.map p)
+        (renameTypeVars p expected) (Spec.Eval.Renaming.policy p signature)
+        (operator.rename p) (operands.map (Entry.Value.rename p)) (activation.rename p)
+  | .functionBranches live scope requests heads =>
+      .functionBranches (live.map (renameTypeVars p)) (scope.map p)
+        (requests.map (Completed.ArgumentRequest.rename p))
+        (heads.map (Completed.Result.rename p))
+  | .invocations live scope expected signature operator operands activations =>
+      .invocations (live.map (renameTypeVars p)) (scope.map p)
+        (renameTypeVars p expected) (Spec.Eval.Renaming.policy p signature)
+        (operator.rename p) (operands.map (Entry.Value.rename p))
+        (activations.map (Completed.Frame.rename p))
+  | .minimal live scope caller value activation =>
+      .minimal (live.map (renameTypeVars p)) (scope.map p)
+        (caller.map (renameTypeVars p)) (value.rename p) (activation.rename p)
+  | .body live scope caller value activation =>
+      .body (live.map (renameTypeVars p)) (scope.map p)
+        (caller.map (renameTypeVars p)) (value.rename p) (activation.rename p)
+  | .invocation live scope caller value activation =>
+      .invocation (live.map (renameTypeVars p)) (scope.map p)
+        (caller.map (renameTypeVars p)) (value.rename p) (activation.rename p)
+  | .invocationEquations live scope original activation works =>
+      .invocationEquations (live.map (renameTypeVars p)) (scope.map p)
+        (original.rename p) (activation.rename p)
+        (works.map (Spec.Eval.Steps.EquationWork.rename p))
+  | .boundary live scope caller site value activation =>
+      .boundary (live.map (renameTypeVars p)) (scope.map p)
+        (caller.map (renameTypeVars p)) (site.rename p)
+        (value.rename p) (activation.rename p)
+  | .boundaryBatch live scope caller site rows =>
+      .boundaryBatch (live.map (renameTypeVars p)) (scope.map p)
+        (caller.map (renameTypeVars p)) (site.rename p)
+        (rows.map (Completed.Result.rename p))
+  | .calls live scope expected rows =>
+      .calls (live.map (renameTypeVars p)) (scope.map p)
+        (renameTypeVars p expected) (rows.map (Completed.Result.rename p))
+  | .call live scope value expected activation =>
+      .call (live.map (renameTypeVars p)) (scope.map p)
+        (value.rename p) (renameTypeVars p expected) (activation.rename p)
+  | .equations live scope original expected activation works =>
+      .equations (live.map (renameTypeVars p)) (scope.map p)
+        (original.rename p) (renameTypeVars p expected) (activation.rename p)
+        (works.map (Spec.Eval.Steps.EquationWork.rename p))
+  | .returned live scope original expected value activation =>
+      .returned (live.map (renameTypeVars p)) (scope.map p)
+        (original.rename p) (renameTypeVars p expected)
+        (value.rename p) (activation.rename p)
+  | .capture rows saved caller =>
+      .capture (rows.map (Completed.Result.rename p))
+        (saved.map (Entry.Value.rename p)) (caller.rename p)
+  | .restore pairs saved caller =>
+      .restore (pairs.map (Entry.Value.rename p))
+        (saved.map (Completed.Result.rename p)) (caller.rename p)
+
+@[simp] theorem Task.rename_id (task : Task) :
+    task.rename (Equiv.refl String) = task := by
+  cases task <;>
+    simp [Task.rename, show (Equiv.refl String : String → String) = id from rfl]
+
+@[simp] theorem Task.rename_id_fun :
+    Task.rename (Equiv.refl String) = id := by
+  funext task
+  exact Task.rename_id task
+
+theorem Task.rename_comp (p q : Equiv.Perm String) (task : Task) :
+    (task.rename p).rename q = task.rename (q * p) := by
+  cases task <;>
+    simp [Task.rename, List.map_map, Option.map_map, Function.comp_def,
+      renameTypeVars_comp, Entry.Value.rename_comp, Completed.Frame.rename_comp,
+      Completed.Result.rename_comp, Completed.ArgumentRequest.rename_comp,
+      Completed.Boundary.rename_comp, Spec.Eval.Steps.EquationWork.rename_comp,
+      Equiv.Perm.coe_mul]
+
+@[simp] theorem Task.rename_cancel (p : Equiv.Perm String) (task : Task) :
+    (task.rename p).rename p.symm = task := by
+  rw [Task.rename_comp, perm_symm_mul_self, Task.rename_id]
+
+@[simp] theorem Task.rename_cancel_reverse (p : Equiv.Perm String) (task : Task) :
+    (task.rename p.symm).rename p = task :=
+  Task.rename_cancel p.symm task
+
+def Continuation.rename (p : Equiv.Perm String) : Continuation → Continuation
+  | .publish original => .publish (renameTypeVars p original)
+  | .singleton => .singleton
+  | .branches live scope tail =>
+      .branches (live.map (renameTypeVars p)) (scope.map p)
+        (tail.map (Entry.Value.rename p))
+  | .tupleTail head => .tupleTail (head.rename p)
+  | .arguments live scope original requests =>
+      .arguments (live.map (renameTypeVars p)) (scope.map p)
+        (original.rename p) (requests.map (Completed.ArgumentRequest.rename p))
+  | .argumentTail head => .argumentTail (head.rename p)
+  | .functionHeads live scope requests =>
+      .functionHeads (live.map (renameTypeVars p)) (scope.map p)
+        (requests.map (Completed.ArgumentRequest.rename p))
+  | .functionAssemble head => .functionAssemble (head.rename p)
+  | .diagnostics errors activation =>
+      .diagnostics (errors.map (renameTypeVars p)) (activation.rename p)
+  | .boundaryBatch live scope caller site =>
+      .boundaryBatch (live.map (renameTypeVars p)) (scope.map p)
+        (caller.map (renameTypeVars p)) (site.rename p)
+  | .calls live scope expected =>
+      .calls (live.map (renameTypeVars p)) (scope.map p) (renameTypeVars p expected)
+  | .append remaining => .append (remaining.rename p)
+  | .prepend selected => .prepend (selected.map (Completed.Result.rename p))
+  | .collect caller => .collect (caller.rename p)
+
+@[simp] theorem Continuation.rename_id (frame : Continuation) :
+    frame.rename (Equiv.refl String) = frame := by
+  cases frame <;>
+    simp [Continuation.rename, show (Equiv.refl String : String → String) = id from rfl]
+
+@[simp] theorem Continuation.rename_id_fun :
+    Continuation.rename (Equiv.refl String) = id := by
+  funext frame
+  exact Continuation.rename_id frame
+
+theorem Continuation.rename_comp (p q : Equiv.Perm String) (frame : Continuation) :
+    (frame.rename p).rename q = frame.rename (q * p) := by
+  cases frame <;>
+    simp [Continuation.rename, List.map_map, Option.map_map, Function.comp_def,
+      renameTypeVars_comp, Entry.Value.rename_comp, Completed.Frame.rename_comp,
+      Completed.Result.rename_comp, Completed.ArgumentRequest.rename_comp,
+      Completed.Boundary.rename_comp, Task.rename_comp, Equiv.Perm.coe_mul]
+
+@[simp] theorem Continuation.rename_cancel (p : Equiv.Perm String) (frame : Continuation) :
+    (frame.rename p).rename p.symm = frame := by
+  rw [Continuation.rename_comp, perm_symm_mul_self, Continuation.rename_id]
+
+@[simp] theorem Continuation.rename_cancel_reverse (p : Equiv.Perm String) (frame : Continuation) :
+    (frame.rename p.symm).rename p = frame :=
+  Continuation.rename_cancel p.symm frame
+
+def Control.rename (p : Equiv.Perm String) : Control → Control
+  | .work task => .work (task.rename p)
+  | .returning results => .returning (results.map (Completed.Result.rename p))
+  | .context label child stack =>
+      .context (Spec.Eval.Renaming.space p label) (child.rename p)
+        (stack.map (Continuation.rename p))
+
+@[simp] theorem Control.rename_id (control : Control) :
+    control.rename (Equiv.refl String) = control := by
+  induction control with
+  | work task => simp [Control.rename]
+  | returning results => simp [Control.rename]
+  | context label child stack ih =>
+      simp [Control.rename, ih]
+
+theorem Control.rename_comp (p q : Equiv.Perm String) (control : Control) :
+    (control.rename p).rename q = control.rename (q * p) := by
+  induction control with
+  | work task => simp [Control.rename, Task.rename_comp]
+  | returning results =>
+      simp [Control.rename, List.map_map, Function.comp_def, Completed.Result.rename_comp]
+  | context label child stack ih =>
+      simp [Control.rename, ih, List.map_map, Function.comp_def, Continuation.rename_comp]
+
+@[simp] theorem Control.rename_cancel (p : Equiv.Perm String) (control : Control) :
+    (control.rename p).rename p.symm = control := by
+  rw [Control.rename_comp, perm_symm_mul_self, Control.rename_id]
+
+@[simp] theorem Control.rename_cancel_reverse (p : Equiv.Perm String) (control : Control) :
+    (control.rename p.symm).rename p = control :=
+  Control.rename_cancel p.symm control
+
+def Configuration.rename (p : Equiv.Perm String) (state : Configuration) : Configuration :=
+  ⟨Spec.Eval.Renaming.space p state.space,
+   state.control.rename p,
+   state.stack.map (Continuation.rename p),
+   state.emitted.map (Completed.Result.rename p)⟩
+
+@[simp] theorem Configuration.initial_rename (p : Equiv.Perm String) (space : Space) (task : Task) :
+    (Configuration.initial space task).rename p =
+      Configuration.initial (Spec.Eval.Renaming.space p space) (task.rename p) := rfl
+
+@[simp] theorem Configuration.rename_id (state : Configuration) :
+    state.rename (Equiv.refl String) = state := by
+  cases state
+  simp [Configuration.rename]
+
+theorem Configuration.rename_comp (p q : Equiv.Perm String) (state : Configuration) :
+    (state.rename p).rename q = state.rename (q * p) := by
+  cases state
+  simp [Configuration.rename, Control.rename_comp, Continuation.rename_comp,
+    Completed.Result.rename_comp, List.map_map, Function.comp_def]
+
+@[simp] theorem Configuration.rename_cancel (p : Equiv.Perm String) (state : Configuration) :
+    (state.rename p).rename p.symm = state := by
+  rw [Configuration.rename_comp, perm_symm_mul_self, Configuration.rename_id]
+
+@[simp] theorem Configuration.rename_cancel_reverse (p : Equiv.Perm String) (state : Configuration) :
+    (state.rename p.symm).rename p = state :=
+  Configuration.rename_cancel p.symm state
+
+end Mettapedia.Languages.MeTTa.HE.RecursiveTasks.Contextual
+

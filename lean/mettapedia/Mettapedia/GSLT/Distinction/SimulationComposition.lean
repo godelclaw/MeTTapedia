@@ -223,11 +223,6 @@ theorem OutcomeRel.ne_stuck {outcome : Outcome Source Verdict Request}
   | stuck related => exact False.elim (sourceNotStuck _ rfl)
   | _ => intro same; cases same
 
-theorem OutcomeRel.finished_inv {verdict : Verdict} {outcome' : Outcome Middle Verdict Request}
-    (relatedOutcomes : OutcomeRel R (.finished verdict) outcome') : outcome' = .finished verdict := by
-  cases relatedOutcomes
-  rfl
-
 theorem OutcomeRel.faulted_inv {outcome' : Outcome Middle Verdict Request}
     (relatedOutcomes : OutcomeRel R (Outcome.faulted (State := Source)) outcome') :
     outcome' = .faulted := by

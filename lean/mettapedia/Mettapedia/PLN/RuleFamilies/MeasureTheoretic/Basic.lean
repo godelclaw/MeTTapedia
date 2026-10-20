@@ -1,4 +1,5 @@
 import Mettapedia.PLN.Evidence.BinaryEvidence
+import Mettapedia.PLN.TruthValues.PLNDistributional
 import Mathlib.MeasureTheory.Measure.ProbabilityMeasure
 import Mathlib.Topology.UnitInterval
 
@@ -37,7 +38,8 @@ The standard prior choices are:
 
 namespace Mettapedia.PLN.RuleFamilies.MeasureTheoretic
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.TruthValues.PLNDistributional (BetaParams)
 open MeasureTheory
 open scoped ENNReal NNReal unitInterval
 
@@ -140,60 +142,7 @@ end EvidenceInterpretation
 
 /-! ## Converting BinaryEvidence to Beta Parameters -/
 
-/-- Beta distribution parameters derived from BinaryEvidence and prior.
-
-    Given BinaryEvidence `(n⁺, n⁻)` and prior `(α₀, β₀)`:
-    - α = α₀ + n⁺
-    - β = β₀ + n⁻
--/
-structure BetaParams where
-  /-- α parameter (shape for success) -/
-  alpha : ℝ
-  /-- β parameter (shape for failure) -/
-  beta : ℝ
-  /-- α must be positive -/
-  alpha_pos : 0 < alpha
-  /-- β must be positive -/
-  beta_pos : 0 < beta
-
-namespace BetaParams
-
-/-- Total concentration: α + β -/
-noncomputable def total (p : BetaParams) : ℝ := p.alpha + p.beta
-
-/-- Total is positive -/
-theorem total_pos (p : BetaParams) : 0 < p.total := by
-  unfold total
-  linarith [p.alpha_pos, p.beta_pos]
-
-/-- Beta mean: α / (α + β) -/
-noncomputable def mean (p : BetaParams) : ℝ := p.alpha / p.total
-
-/-- Beta mean is in [0, 1] -/
-theorem mean_mem_unit (p : BetaParams) : p.mean ∈ Set.Icc (0 : ℝ) 1 := by
-  unfold mean total
-  constructor
-  · apply div_nonneg
-    · linarith [p.alpha_pos]
-    · linarith [p.alpha_pos, p.beta_pos]
-  · rw [div_le_one (by linarith [p.alpha_pos, p.beta_pos])]
-    have hbeta : 0 < p.beta := p.beta_pos
-    linarith [hbeta]
-
-/-- Beta variance: αβ / ((α+β)²(α+β+1)) -/
-noncomputable def variance (p : BetaParams) : ℝ :=
-  (p.alpha * p.beta) / (p.total ^ 2 * (p.total + 1))
-
-/-- Variance is non-negative -/
-theorem variance_nonneg (p : BetaParams) : 0 ≤ p.variance := by
-  unfold variance total
-  apply div_nonneg
-  · apply mul_nonneg <;> linarith [p.alpha_pos, p.beta_pos]
-  · apply mul_nonneg
-    · apply sq_nonneg
-    · linarith [p.alpha_pos, p.beta_pos]
-
-end BetaParams
+/-! Beta parameters are `Mettapedia.PLN.TruthValues.PLNDistributional.BetaParams`. -/
 
 /-! ## BinaryEvidence to Beta Conversion -/
 
@@ -207,7 +156,7 @@ end BetaParams
 noncomputable def evidenceToBetaParams (e : BinaryEvidence) (interp : EvidenceInterpretation)
     (_hpos_fin : e.pos ≠ ⊤) (_hneg_fin : e.neg ≠ ⊤) : BetaParams where
   alpha := interp.prior_alpha + e.pos.toReal
-  beta := interp.prior_beta + e.neg.toReal
+  betaParam := interp.prior_beta + e.neg.toReal
   alpha_pos := by
     have h : 0 ≤ e.pos.toReal := ENNReal.toReal_nonneg
     linarith [interp.prior_pos.1]
@@ -228,9 +177,9 @@ noncomputable def evidenceToBetaParams (e : BinaryEvidence) (interp : EvidenceIn
 theorem evidenceToBetaParams_mean (e : BinaryEvidence) (interp : EvidenceInterpretation)
     (hpos_fin : e.pos ≠ ⊤) (hneg_fin : e.neg ≠ ⊤) :
     let bp := evidenceToBetaParams e interp hpos_fin hneg_fin
-    bp.mean = (interp.prior_alpha + e.pos.toReal) /
+    bp.expectedValue = (interp.prior_alpha + e.pos.toReal) /
               (interp.totalPrior + e.total.toReal) := by
-  simp only [evidenceToBetaParams, BetaParams.mean, BetaParams.total,
+  simp only [evidenceToBetaParams, BetaParams.expectedValue, BetaParams.n,
              EvidenceInterpretation.totalPrior]
   congr 1
   unfold BinaryEvidence.total
@@ -240,9 +189,9 @@ theorem evidenceToBetaParams_mean (e : BinaryEvidence) (interp : EvidenceInterpr
 /-- BinaryEvidence with finite components yields well-defined Beta parameters -/
 theorem evidenceToBetaParams_total (e : BinaryEvidence) (interp : EvidenceInterpretation)
     (hpos_fin : e.pos ≠ ⊤) (hneg_fin : e.neg ≠ ⊤) :
-    (evidenceToBetaParams e interp hpos_fin hneg_fin).total =
+    (evidenceToBetaParams e interp hpos_fin hneg_fin).n =
     interp.totalPrior + e.total.toReal := by
-  simp only [evidenceToBetaParams, BetaParams.total, EvidenceInterpretation.totalPrior,
+  simp only [evidenceToBetaParams, BetaParams.n, EvidenceInterpretation.totalPrior,
              BinaryEvidence.total]
   rw [ENNReal.toReal_add hpos_fin hneg_fin]
   ring
@@ -286,9 +235,8 @@ This file establishes:
    - `uniform`: Laplace prior (1, 1)
    - `jeffreys`: Jeffreys prior (0.5, 0.5)
 
-3. **BetaParams**: Parameters (α, β) for Beta distribution with:
-   - `mean`: Expected value α/(α+β)
-   - `variance`: Variance αβ/((α+β)²(α+β+1))
+3. **BetaParams** (from `PLNDistributional`): Parameters (α, β) for Beta distribution with
+   `expectedValue` α/(α+β) and `variance` αβ/((α+β)²(α+β+1))
 
 4. **BinaryEvidence.toBetaParams**: Convert evidence (n⁺, n⁻) to Beta(α₀+n⁺, β₀+n⁻)
 

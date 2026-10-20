@@ -36,7 +36,7 @@ import Foundation.Propositional.Hilbert.Standard.Glivenko
 namespace Mettapedia.PLN.Bridges.Logic.PLNIntuitionisticBridge
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open LO.Propositional
 open Kripke
 

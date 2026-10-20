@@ -124,7 +124,7 @@ theorem congruence_native_types (bound : List TypeExpr) {Atom : Type}
           (canonicalSystem (FirstOrderProfile.of_check congruence_profile) Engine.RelationEnv.empty
             bound (.base "T") observes) formula).pred ↔
       (Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltOSLF
-          (general congruenceLanguage ⟨[], []⟩ bound (.base "T"))).satisfies (S := ()) term
+          (general congruenceLanguage ⟨[], [], []⟩ bound (.base "T"))).satisfies (S := ()) term
         (Mettapedia.OSLF.Framework.HennessyMilnerNativeTypes.formulaNativeType
           (generalSystem (FirstOrderProfile.of_check congruence_profile) bound (.base "T") observes)
           formula).pred :=
@@ -151,7 +151,7 @@ def followLanguage : LanguageDef :=
 position is an input and the second an output. -/
 def followProvider : GeneralPremise.ProviderSnapshot :=
   ⟨[⟨"next", [.base "T", .base "T"], [.input, .output]⟩],
-    [⟨"next", [.apply "A" [], .apply "B" []]⟩, ⟨"next", [.apply "B" [], .apply "C" []]⟩]⟩
+    [⟨"next", [.apply "A" [], .apply "B" []]⟩, ⟨"next", [.apply "B" [], .apply "C" []]⟩], []⟩
 
 theorem follow_profile : checkFirstOrderProfile followLanguage followProvider = true := by
   cbv
@@ -237,7 +237,7 @@ def eqLanguage : LanguageDef :=
   LanguageDef.ofCore "Same" ["T"] followTerms [] eqRewrites
 
 def eqProvider : GeneralPremise.ProviderSnapshot :=
-  ⟨[⟨"eq", [.base "T", .base "T"], [.input, .output]⟩], [⟨"eq", [.apply "A" [], .apply "B" []]⟩]⟩
+  ⟨[⟨"eq", [.base "T", .base "T"], [.input, .output]⟩], [⟨"eq", [.apply "A" [], .apply "B" []]⟩], []⟩
 
 theorem eq_refused : checkFirstOrderProfile eqLanguage eqProvider = false := by
   cbv
@@ -245,7 +245,7 @@ theorem eq_refused : checkFirstOrderProfile eqLanguage eqProvider = false := by
 /-- A row that its signature does not type is refused. -/
 def badProvider : GeneralPremise.ProviderSnapshot :=
   ⟨[⟨"next", [.base "T", .base "T"], [.input, .output]⟩],
-    [⟨"next", [.apply "A" [], .apply "Missing" []]⟩]⟩
+    [⟨"next", [.apply "A" [], .apply "Missing" []]⟩], []⟩
 
 theorem bad_row_refused : checkFirstOrderProfile followLanguage badProvider = false := by
   cbv
@@ -295,7 +295,7 @@ def atom (label : String) : Pattern := .apply label []
 /-- Two equal rows from `A`, then a row from `B`. -/
 def duplicateProvider : GeneralPremise.ProviderSnapshot :=
   ⟨[nextSignature], [⟨"next", [atom "A", atom "B"]⟩, ⟨"next", [atom "A", atom "B"]⟩,
-    ⟨"next", [atom "B", atom "C"]⟩]⟩
+    ⟨"next", [atom "B", atom "C"]⟩], []⟩
 
 theorem duplicate_profile : checkFirstOrderProfile followLanguage duplicateProvider = true := by
   cbv
@@ -427,7 +427,7 @@ def otherSignature : GeneralPremise.Signature := ⟨"other", [.base "T", .base "
 
 /-- A row of another relation precedes the only row of `next`. -/
 def interleavedProvider : GeneralPremise.ProviderSnapshot :=
-  ⟨[nextSignature, otherSignature], [⟨"other", [atom "A", atom "B"]⟩, ⟨"next", [atom "A", atom "C"]⟩]⟩
+  ⟨[nextSignature, otherSignature], [⟨"other", [atom "A", atom "B"]⟩, ⟨"next", [atom "A", atom "C"]⟩], []⟩
 
 theorem interleaved_profile : checkFirstOrderProfile followLanguage interleavedProvider = true := by
   cbv
@@ -467,10 +467,10 @@ theorem interleaved_answers :
 /-! ## Row order is answer order -/
 
 def forwardProvider : GeneralPremise.ProviderSnapshot :=
-  ⟨[nextSignature], [⟨"next", [atom "A", atom "B"]⟩, ⟨"next", [atom "A", atom "C"]⟩]⟩
+  ⟨[nextSignature], [⟨"next", [atom "A", atom "B"]⟩, ⟨"next", [atom "A", atom "C"]⟩], []⟩
 
 def backwardProvider : GeneralPremise.ProviderSnapshot :=
-  ⟨[nextSignature], [⟨"next", [atom "A", atom "C"]⟩, ⟨"next", [atom "A", atom "B"]⟩]⟩
+  ⟨[nextSignature], [⟨"next", [atom "A", atom "C"]⟩, ⟨"next", [atom "A", atom "B"]⟩], []⟩
 
 theorem forward_profile : checkFirstOrderProfile followLanguage forwardProvider = true := by
   cbv
@@ -717,7 +717,7 @@ theorem backward_receipt_targets :
 /-- **Negative.** A rule that descends through a congruence premise is outside
 the query profile. Its child search reads only earlier declarations, while the
 canonical engine reads all of them. -/
-theorem congruence_query_refused : checkQueryProfile congruenceLanguage ⟨[], []⟩ = false := by
+theorem congruence_query_refused : checkQueryProfile congruenceLanguage ⟨[], [], []⟩ = false := by
   cbv
 
 end QueryOccurrences

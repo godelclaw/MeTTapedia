@@ -18,7 +18,7 @@ instead of duplicating a higher-order quantifier semantics beside it.
 namespace Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLQuantifierBridge
 
 open Mettapedia.Logic.HOL
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers
 open Mettapedia.Algebra.QuantaleWeakness
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit

@@ -20,8 +20,8 @@ Negative examples:
 namespace Mettapedia.PLN.RuleFamilies.HigherOrder.PLNWorldModelRegimeAdmissibilityRegression
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.PLN.RuleFamilies.HigherOrder.PLNWorldModelRegimeAdmissibility
 open Mettapedia.PLN.WorldModel

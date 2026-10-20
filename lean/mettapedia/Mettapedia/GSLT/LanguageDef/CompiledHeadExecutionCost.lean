@@ -269,11 +269,11 @@ theorem leaves_cost (n : Nat) (state : HeadState signature Nat) :
 
 theorem shared_success_cost (n : Nat) :
     (treeCharged id (fun _ _ => 1) (shared n) (input "a")).2 = 1 := by
-  simp [shared, treeCharged, step, testA, input, Subst.applyTerm, leaves_cost]
+  simp [shared, treeCharged, CompiledTwoSidedHeadProgram.step, testA, input, Subst.applyTerm, leaves_cost]
 
 theorem shared_failure_cost (n : Nat) :
     (treeCharged id (fun _ _ => 1) (shared n) (input "b")).2 = 1 := by
-  simp [shared, treeCharged, step, testA, input, Subst.applyTerm]
+  simp [shared, treeCharged, CompiledTwoSidedHeadProgram.step, testA, input, Subst.applyTerm]
 
 theorem independent_cost (n : Nat) (value : String) :
     (eachCharged id (fun _ _ => 1) (shared n).paths (input value)).2 = n := by
@@ -293,7 +293,7 @@ theorem independent_cost (n : Nat) (value : String) :
 theorem duplicate_answers_retained :
     ((treeCharged id (fun _ _ => 1) (shared 3) (input "a")).1.map Prod.fst) =
       ["answer", "answer", "answer"] := by
-  simp [shared, leaves, treeCharged, step, testA, input, Subst.applyTerm]
+  simp [shared, leaves, treeCharged, CompiledTwoSidedHeadProgram.step, testA, input, Subst.applyTerm]
 
 theorem shared_test_strict_saving {n : Nat} (many : 1 < n) :
     (treeCharged id (fun _ _ => 1) (shared n) (input "a")).2 <

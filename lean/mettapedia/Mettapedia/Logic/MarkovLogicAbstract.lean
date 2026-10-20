@@ -1,3 +1,4 @@
+import Mettapedia.PLN.Bridges.ProbabilityTheory.MassSemantics
 import Mathlib.Data.ENNReal.Basic
 import Mathlib.Data.Multiset.Basic
 import Mettapedia.PLN.WorldModel.BinaryWorldModel
@@ -8,7 +9,7 @@ import Mettapedia.PLN.WorldModel.BinaryWorldModel
 This module records the semantics-first core for the MLN→WM bridge.
 
 - `AbstractMLNSemantics` keeps the world/query/feature layer abstract.
-- `MassSemantics` packages the query-mass / total-mass interface.
+- The shared probability-theory `Mettapedia.ProbabilityTheory.MassSemantics` supplies query and total masses.
 - `MassState` turns any such semantic source into an additive `BinaryWorldModel`.
 
 The key theorem is the generic transfer:
@@ -21,8 +22,8 @@ whenever the extracted evidence matches the semantic query mass and total mass.
 namespace Mettapedia.Logic.MarkovLogicAbstract
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open scoped ENNReal
 
 /-- Abstract MLN-style semantics: world weights, query truth, and feature potentials.
@@ -34,45 +35,8 @@ structure AbstractMLNSemantics (World Query Feature : Type*) where
   queryHolds : Query → World → Prop
   featurePotential : Feature → World → ENNReal
 
-/-- A query-mass semantics packages the exact information needed by the WM bridge. -/
-structure MassSemantics (Query : Type*) where
-  queryMass : Query → ENNReal
-  totalMass : ENNReal
-  queryMass_le_total : ∀ q, queryMass q ≤ totalMass
-  totalMass_ne_top : totalMass ≠ ⊤
-
-namespace MassSemantics
-
-variable {Query : Type*} (S : MassSemantics Query)
-
-/-- Semantic query probability, with the same `0` convention used by `BinaryEvidence.toStrength`
-when the total mass vanishes. -/
-noncomputable def queryProb (q : Query) : ENNReal :=
-  if S.totalMass = 0 then 0 else S.queryMass q / S.totalMass
-
-/-- Convert semantic masses into binary evidence. -/
-noncomputable def evidenceOfMasses (q : Query) : BinaryEvidence :=
-  ⟨S.queryMass q, S.totalMass - S.queryMass q⟩
-
-theorem evidenceOfMasses_total (q : Query) :
-    (S.evidenceOfMasses q).total = S.totalMass := by
-  unfold evidenceOfMasses BinaryEvidence.total
-  rw [add_comm]
-  exact tsub_add_cancel_of_le (S.queryMass_le_total q)
-
-theorem toStrength_evidenceOfMasses (q : Query) :
-    BinaryEvidence.toStrength (S.evidenceOfMasses q) = S.queryProb q := by
-  by_cases hzero : S.totalMass = 0
-  · unfold BinaryEvidence.toStrength queryProb
-    rw [S.evidenceOfMasses_total q, if_pos hzero, if_pos hzero]
-  · unfold BinaryEvidence.toStrength queryProb
-    rw [S.evidenceOfMasses_total q, if_neg hzero, if_neg hzero]
-    simp [evidenceOfMasses]
-
-end MassSemantics
-
 /-- Additive state of semantic sources. Revision is multiset addition. -/
-abbrev MassState (Query : Type*) := Multiset (MassSemantics Query)
+abbrev MassState (Query : Type*) := Multiset (Mettapedia.ProbabilityTheory.MassSemantics Query)
 
 namespace MassState
 
@@ -83,12 +47,12 @@ instance : EvidenceType (MassState Query) where
 
 /-- Extract the evidence supplied by a multiset of semantic sources. -/
 noncomputable def evidence (W : MassState Query) (q : Query) : BinaryEvidence :=
-  (W.map fun src => src.evidenceOfMasses q).sum
+  (W.map fun src => src.binaryMass q).sum
 
 noncomputable instance : BinaryWorldModel (MassState Query) Query where
   evidence W q := evidence W q
   evidence_add W₁ W₂ q := by
-    let f : MassSemantics Query → BinaryEvidence := fun src => src.evidenceOfMasses q
+    let f : Mettapedia.ProbabilityTheory.MassSemantics Query → BinaryEvidence := fun src => src.binaryMass q
     have h :
         (Multiset.map f (W₁ + W₂)).sum =
           (Multiset.map f W₁).sum + (Multiset.map f W₂).sum := by
@@ -99,29 +63,29 @@ noncomputable instance : BinaryWorldModel (MassState Query) Query where
   evidence_zero _ := by
     simp [evidence, Multiset.map_zero, Multiset.sum_zero]
 
-theorem evidence_singleton (S : MassSemantics Query) (q : Query) :
-    evidence ({S} : MassState Query) q = S.evidenceOfMasses q := by
+theorem evidence_singleton (S : Mettapedia.ProbabilityTheory.MassSemantics Query) (q : Query) :
+    evidence ({S} : MassState Query) q = S.binaryMass q := by
   unfold evidence
   simp [Multiset.map_singleton, Multiset.sum_singleton]
 
-theorem queryStrength_singleton_eq_queryProb (S : MassSemantics Query) (q : Query) :
+theorem queryStrength_singleton_eq_queryProb (S : Mettapedia.ProbabilityTheory.MassSemantics Query) (q : Query) :
     BinaryWorldModel.queryStrength ({S} : MassState Query) q = S.queryProb q := by
   unfold BinaryWorldModel.queryStrength
-  rw [show BinaryWorldModel.evidence ({S} : MassState Query) q = S.evidenceOfMasses q by
+  rw [show BinaryWorldModel.evidence ({S} : MassState Query) q = S.binaryMass q by
       exact evidence_singleton S q]
-  exact S.toStrength_evidenceOfMasses q
+  exact S.toStrength_binaryMass q
 
 end MassState
 
 theorem queryStrength_eq_queryProb_of_evidence_eq
     {State Query : Type*}
     [EvidenceType State] [BinaryWorldModel State Query]
-    (W : State) (S : MassSemantics Query)
-    (hEvidence : ∀ q, BinaryWorldModel.evidence (State := State) (Query := Query) W q = S.evidenceOfMasses q)
+    (W : State) (S : Mettapedia.ProbabilityTheory.MassSemantics Query)
+    (hEvidence : ∀ q, BinaryWorldModel.evidence (State := State) (Query := Query) W q = S.binaryMass q)
     (q : Query) :
     BinaryWorldModel.queryStrength (State := State) (Query := Query) W q = S.queryProb q := by
   unfold BinaryWorldModel.queryStrength
   rw [hEvidence q]
-  exact S.toStrength_evidenceOfMasses q
+  exact S.toStrength_binaryMass q
 
 end Mettapedia.Logic.MarkovLogicAbstract

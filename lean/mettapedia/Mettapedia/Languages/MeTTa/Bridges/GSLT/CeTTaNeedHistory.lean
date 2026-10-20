@@ -11,6 +11,14 @@ import Mettapedia.Machines.BranchLocalNeed.CacheLaws
 import Mettapedia.Machines.BranchLocalNeed.Representation
 import Mettapedia.Machines.RationalTermGraph
 import Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaFrameWriteback
+import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.BindingTheory
+import Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
+import Mettapedia.Languages.MeTTa.HE.CeTTaRuntimeContracts
+import Mathlib.Data.List.Indexes
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Original C Need-cache completion, view transport and the shared lifecycle
@@ -4794,7 +4802,7 @@ Atom graph. The theorem constructs the source value; no logical Atom or final
 readback equality is supplied by the caller. -/
 theorem finite_observation_has_source_value {World Node : Type}
     (table : NumberedSymbols World) (world : Node → World)
-    (graph : Graph Node (NativePayload.Label Empty))
+    (graph : Mettapedia.Machines.RationalTermGraph.Graph Node (NativePayload.Label Empty))
     (context : ∀ node child, child ∈ graph.children node → world child = world node)
     (leaves : ∀ node identifier,
       graph.label node = .symbol identifier ∨ graph.label node = .variable identifier →
@@ -4836,7 +4844,7 @@ theorem finite_observation_has_source_value {World Node : Type}
 
 theorem finite_source_readout_stable {World Node : Type}
     (table : NumberedSymbols World) (world : World)
-    (graph : Graph Node (NativePayload.Label Empty))
+    (graph : Mettapedia.Machines.RationalTermGraph.Graph Node (NativePayload.Label Empty))
     (rank : Node → Nat) (decreasing : Order.Decreasing graph rank)
     (depth extra : Nat) (node : Node) (fits : rank node < depth) :
     sourceObservation? table world (observe graph (depth + extra) node) =
@@ -5195,7 +5203,8 @@ theorem narrow_value_does_not_satisfy_wide_variable_field :
 
 /-- An actual repeated self-edge cannot acquire a decreasing finite rank. -/
 theorem self_edge_has_no_decreasing_rank {Node Label : Type}
-    (graph : Graph Node Label) (node : Node) (self : node ∈ graph.children node) :
+    (graph : Mettapedia.Machines.RationalTermGraph.Graph Node Label)
+    (node : Node) (self : node ∈ graph.children node) :
     ¬ ∃ rank, Order.Decreasing graph rank := by
   rintro ⟨rank, decreases⟩
   exact Nat.lt_irrefl (rank node) (decreases node node self)
@@ -5867,3 +5876,2047 @@ theorem lookup_live_layer_and_source {World Ground : Type}
 end Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaFrameWriteback.NativeFrames.NumberedSymbol.ManagedLookup
 
 end ManagedCurrentSourceReadout
+
+/-! ## Current native bindings and one joint source observation
+
+This adapter consumes the maintained native draft's represented current
+frame directory and ordinary Atom graph. Directory enumeration, borrowed
+lifetime, the field ABI and the current symbol API remain their existing
+component contracts. It does not interpret an historical trail as current
+bindings or establish the surrounding RESULT dispatcher.
+
+The source equations and every pending operand use one ID-to-reference map
+constructed from that directory. Ambient variables have explicit unframed
+IDs; a missing contextual generation cannot be admitted as an ambient name.
+The finite source profile checks the existing binding-cycle test. Graph
+read failure, insufficient observation depth and cyclic bindings are reader
+refusals, not completed language failure. No expression is evaluated here.
+-/
+namespace Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaNeedHistory.NativePayload.CurrentBindings
+
+open Mettapedia.GSLT.LanguageDef.NativeOps
+open Mettapedia.Machines.RationalTermGraph
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.MetavariableFrameStore
+open MetavariableFrameStore.Shared MetavariableFrameStore.Snapshot
+open Mettapedia.Languages.MeTTa.HE
+open Spec.Type Spec.Type.RuntimeRefinement Spec.Type.Presentation
+open Spec.Type.Presentation.BindingTheory
+open Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaFrameWriteback
+open NativeFrames
+
+abbrev SourceRow := RowOf Atom
+abbrev NativeRow := RowOf BindingValueView
+abbrev AtomGraph (World : Type) := KeyedTable (Cursor World) (Label Empty)
+
+/-- Full native IDs are paired with their actual current generational slots.
+The directory's vector order never becomes a lexical identity. -/
+def names (directory : DirectoryReadback) : List (BitVec 64 × Ref) :=
+  directory.frames.flatMap fun frame => List.ofFn fun index : Fin frame.slots.length =>
+    (frame.slots[index.val].varId, frame.view.token.ref index.val)
+
+theorem names_coordinate (directory : DirectoryReadback) {identifier : BitVec 64} {ref : Ref}
+    (member : (identifier, ref) ∈ names directory) :
+    directory.variableCoordinate? identifier = some ref := by
+  obtain ⟨frame, present, member⟩ := List.mem_flatMap.mp member
+  obtain ⟨index, equal⟩ := List.mem_ofFn.mp member
+  cases equal
+  exact directory.variableCoordinate_slot frame present index
+
+theorem names_functional (directory : DirectoryReadback)
+    {identifier : BitVec 64} {left right : Ref}
+    (first : (identifier, left) ∈ names directory)
+    (second : (identifier, right) ∈ names directory) : left = right :=
+  Option.some.inj ((names_coordinate directory first).symm.trans
+    (names_coordinate directory second))
+
+/-- This lookup is over the earned finite inventory, not a supplied decoder. -/
+def lookupName? (entries : List (BitVec 64 × Ref)) (name : String) : Option Ref :=
+  (entries.find? fun entry => sourceIdName entry.1 == name).map Prod.snd
+
+theorem lookupName?_of_mem {entries : List (BitVec 64 × Ref)}
+    (coherent : ∀ id left right, (id, left) ∈ entries → (id, right) ∈ entries → left = right)
+    {identifier : BitVec 64} {ref : Ref} (member : (identifier, ref) ∈ entries) :
+    lookupName? entries (sourceIdName identifier) = some ref := by
+  induction entries with
+  | nil => simp at member
+  | cons head tail ih =>
+    by_cases same : head.1 = identifier
+    · have refs : head.2 = ref := coherent identifier head.2 ref
+        (List.mem_cons.mpr (Or.inl (Prod.ext same.symm rfl))) member
+      simp [lookupName?, same, refs]
+    · have rest : (identifier, ref) ∈ tail := by
+        rcases List.mem_cons.mp member with equal | rest
+        · exact (same (congrArg Prod.fst equal).symm).elim
+        · exact rest
+      have different : sourceIdName head.1 ≠ sourceIdName identifier :=
+        fun equal => same (sourceIdName_injective equal)
+      simpa [lookupName?, different] using ih
+        (fun id left right first second => coherent id left right
+          (List.mem_cons_of_mem head first) (List.mem_cons_of_mem head second)) rest
+
+theorem lookupName?_slot (directory : DirectoryReadback) (frame : FrameReadback)
+    (member : frame ∈ directory.frames) (index : Fin frame.slots.length) :
+    lookupName? (names directory) (sourceIdName frame.slots[index.val].varId) =
+      some (frame.view.token.ref index.val) := by
+  apply lookupName?_of_mem (fun _ _ _ => names_functional directory)
+  exact List.mem_flatMap.mpr ⟨frame, member, List.mem_ofFn.mpr ⟨index, rfl⟩⟩
+
+private def coordinateNames (coordinates : Shared.Token × List (BitVec 64)) :
+    List (BitVec 64 × Ref) :=
+  coordinates.2.mapIdx fun index identifier => (identifier,coordinates.1.ref index)
+
+private theorem names_coordinates (directory : DirectoryReadback) :
+    names directory =
+      (directory.frames.map (fun frame =>
+        (frame.view.token,frame.slots.map FrameSlotView.varId))).flatMap coordinateNames := by
+  simp only [names,List.flatMap_map]
+  apply List.flatMap_congr
+  intro frame _
+  simp only [coordinateNames,List.mapIdx_eq_ofFn,List.get_eq_getElem,
+    List.length_map,List.getElem_map,Fin.val_cast]
+
+/-- Receiving a value changes no native lexical identity. Thus the same
+source decoder remains valid after the directory's write clock advances. -/
+theorem names_receiveDirectory {directory after : DirectoryReadback}
+    {wanted : Destination} {value : BindingValueView}
+    (received : receiveDirectory? directory wanted value = some after) :
+    names after = names directory := by
+  rw [names_coordinates,names_coordinates,
+    receiveDirectory_coordinates directory after wanted value received]
+
+/-- Only unframed IDs can be declared ambient. In particular, listing a stale
+framed ID here cannot turn a missing current generation into a free variable. -/
+def globals (identifiers : List (BitVec 64)) : List String :=
+  (identifiers.filter fun identifier => variableEpoch identifier == 0).map sourceIdName
+
+def sourceName (directory : DirectoryReadback) (name : String) : String :=
+  match lookupName? (names directory) name with
+  | some ref => CurrentStore.referenceName ref
+  | none => CurrentStore.freeName name
+
+def covered (directory : DirectoryReadback) (ambient : List (BitVec 64)) (atom : Atom) : Bool :=
+  (TypeSubst.typeVars atom).all fun name =>
+    (lookupName? (names directory) name).isSome || decide (name ∈ globals ambient)
+
+def qualify? (directory : DirectoryReadback) (ambient : List (BitVec 64)) (atom : Atom) :
+    Option Atom :=
+  if covered directory ambient atom then some (renameTypeVars (sourceName directory) atom)
+  else none
+
+theorem qualify?_slot (directory : DirectoryReadback) (ambient : List (BitVec 64))
+    (frame : FrameReadback) (member : frame ∈ directory.frames)
+    (index : Fin frame.slots.length) :
+    qualify? directory ambient (.var (sourceIdName frame.slots[index.val].varId)) =
+      some (.var (CurrentStore.referenceName (frame.view.token.ref index.val))) := by
+  simp [qualify?, covered, TypeSubst.typeVars, sourceName,
+    lookupName?_slot directory frame member index, renameTypeVars]
+
+theorem qualify?_unlisted_contextual (directory : DirectoryReadback)
+    (ambient : List (BitVec 64)) (identifier : BitVec 64)
+    (missing : lookupName? (names directory) (sourceIdName identifier) = none)
+    (contextual : variableEpoch identifier ≠ 0) :
+    qualify? directory ambient (.var (sourceIdName identifier)) = none := by
+  have absent : sourceIdName identifier ∉ globals ambient := by
+    intro member
+    obtain ⟨actual, present, equal⟩ := List.mem_map.mp member
+    have same := sourceIdName_injective equal
+    subst actual
+    exact contextual (beq_iff_eq.mp (List.mem_filter.mp present).2)
+  simp [qualify?, covered, TypeSubst.typeVars, missing, absent]
+
+variable {World : Type} [DecidableEq World]
+
+/-- Reuse the existing finite graph observation and source decoder. The node
+lookup checks membership; both child order and repeated uses are retained. -/
+def atom? (symbols : PhysicalAtoms.NumberedSymbols World) (graph : AtomGraph World)
+    (directory : DirectoryReadback) (ambient : List (BitVec 64)) (depth : Nat)
+    (cursor : Cursor World) : Option Atom := do
+  let node ← graph.node? cursor
+  let raw ← PhysicalAtoms.sourceObservation? symbols cursor.world (observe graph.graph depth node)
+  qualify? directory ambient raw
+
+theorem atom?_key (symbols : PhysicalAtoms.NumberedSymbols World) (graph : AtomGraph World)
+    (directory : DirectoryReadback) (ambient : List (BitVec 64)) (depth : Nat)
+    (node : graph.Node) :
+    atom? symbols graph directory ambient depth (graph.key node) =
+      (PhysicalAtoms.sourceObservation? symbols (graph.key node).world
+        (observe graph.graph depth node)).bind (qualify? directory ambient) := by
+  unfold atom?
+  rw [graph.node?_key]
+  rfl
+
+/-- Source naming depends on lexical coordinates, not a binding write clock. -/
+theorem atom?_same_names {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {before after : DirectoryReadback} (equal : names after = names before)
+    (ambient : List (BitVec 64)) (depth : Nat) :
+    atom? symbols graph after ambient depth = atom? symbols graph before ambient depth := by
+  have namesEqual : sourceName after = sourceName before := by
+    funext name
+    simp only [sourceName,equal]
+  have qualified : qualify? after ambient = qualify? before ambient := by
+    funext atom
+    simp only [qualify?,covered,equal,namesEqual]
+    rfl
+  funext cursor
+  unfold atom?
+  rw [qualified]
+
+/-- The admitted graph's readout is the actual memory observation, followed
+by the checked source naming. The logical graph is not a replacement oracle. -/
+theorem atom?_memory {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {memory : World → TargetMemory} {inventory : List (Cursor World)}
+    (graphRead : readGraph? memory (fun _ => (none : Option Empty)) inventory = some graph)
+    {directory : DirectoryReadback} {ambient : List (BitVec 64)} {depth : Nat}
+    {cursor : Cursor World} {value : Atom}
+    (read : atom? symbols graph directory ambient depth cursor = some value) :
+    ∃ raw, (observeMemory memory (fun _ => (none : Option Empty)) depth cursor).bind
+        (PhysicalAtoms.sourceObservation? symbols cursor.world) = some raw ∧
+      qualify? directory ambient raw = some value := by
+  obtain ⟨node, found, rest⟩ := Option.bind_eq_some_iff.mp read
+  obtain ⟨raw, decoded, qualified⟩ := Option.bind_eq_some_iff.mp rest
+  have key := (graph.node?_eq_some_iff cursor node).mp found
+  subst cursor
+  refine ⟨raw, ?_, qualified⟩
+  rw [readGraph?_observe graphRead depth node]
+  exact decoded
+
+def value? (symbols : PhysicalAtoms.NumberedSymbols World) (graph : AtomGraph World)
+    (directory : DirectoryReadback) (ambient : List (BitVec 64)) (depth : Nat) (world : World) :
+    Option BindingValueView → Option (Option Atom)
+  | none => some none
+  | some payload => (atom? symbols graph directory ambient depth ⟨world, payload⟩).map some
+
+/-- Metadata is copied from the actual current slot. Null/open slots are
+retained and do not call the Atom reader. -/
+def row? (symbols : PhysicalAtoms.NumberedSymbols World) (graph : AtomGraph World)
+    (directory : DirectoryReadback) (ambient : List (BitVec 64)) (depth : Nat) (world : World)
+    (raw : NativeRow) : Option SourceRow := do
+  let value ← value? symbols graph directory ambient depth world raw.observed.value
+  pure ⟨raw.reference, CurrentStore.referenceName raw.reference,
+    ⟨value, raw.observed.writeVersion, raw.observed.writeClock, raw.observed.activationBoundary⟩⟩
+
+def rows? (symbols : PhysicalAtoms.NumberedSymbols World) (graph : AtomGraph World)
+    (directory : DirectoryReadback) (ambient : List (BitVec 64)) (depth : Nat) (world : World) :
+    List NativeRow → Option (List SourceRow)
+  | [] => some []
+  | raw :: rest => do
+    let row ← row? symbols graph directory ambient depth world raw
+    let tail ← rows? symbols graph directory ambient depth world rest
+    pure (row :: tail)
+
+theorem row?_coordinates {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {directory : DirectoryReadback} {ambient : List (BitVec 64)} {depth : Nat} {world : World}
+    {raw : NativeRow} {row : SourceRow}
+    (read : row? symbols graph directory ambient depth world raw = some row) :
+    row.reference = raw.reference ∧ row.name = CurrentStore.referenceName raw.reference ∧
+      row.observed.writeVersion = raw.observed.writeVersion ∧
+      row.observed.writeClock = raw.observed.writeClock ∧
+      row.observed.activationBoundary = raw.observed.activationBoundary := by
+  obtain ⟨value, _, equal⟩ := Option.bind_eq_some_iff.mp read
+  have same : (⟨raw.reference, CurrentStore.referenceName raw.reference,
+    ⟨value, raw.observed.writeVersion, raw.observed.writeClock,
+      raw.observed.activationBoundary⟩⟩ : SourceRow) = row := Option.some.inj equal
+  subst row
+  exact ⟨rfl, rfl, rfl, rfl, rfl⟩
+
+theorem row?_value {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {directory : DirectoryReadback} {ambient : List (BitVec 64)} {depth : Nat} {world : World}
+    {raw : NativeRow} {row : SourceRow}
+    (read : row? symbols graph directory ambient depth world raw = some row) :
+    value? symbols graph directory ambient depth world raw.observed.value =
+      some row.observed.value := by
+  obtain ⟨value, decoded, equal⟩ := Option.bind_eq_some_iff.mp read
+  cases Option.some.inj equal
+  exact decoded
+
+theorem row?_outputAfter {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {directory : DirectoryReadback} {ambient : List (BitVec 64)} {depth : Nat} {world : World}
+    {raw : NativeRow} {row : SourceRow}
+    (read : row? symbols graph directory ambient depth world raw = some row) (boundary : Nat) :
+    value? symbols graph directory ambient depth world (raw.observed.outputAfter boundary) =
+      some (row.observed.outputAfter boundary) := by
+  have version := (row?_coordinates read).2.2.1
+  by_cases recent : boundary < raw.observed.writeVersion
+  · simpa [SlotReadbackOf.outputAfter, version, recent] using row?_value read
+  · simp [SlotReadbackOf.outputAfter, version, recent, value?]
+
+theorem rows?_correspondence {symbols : PhysicalAtoms.NumberedSymbols World}
+    {graph : AtomGraph World} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {raw : List NativeRow} {snapshot : List SourceRow}
+    (read : rows? symbols graph directory ambient depth world raw = some snapshot) :
+    List.Forall₂ (fun before after => row? symbols graph directory ambient depth world before =
+      some after) raw snapshot := by
+  induction raw generalizing snapshot with
+  | nil => simp only [rows?, Option.some.injEq] at read; subst snapshot; exact .nil
+  | cons head tail ih =>
+    obtain ⟨first, firstRead, rest⟩ := Option.bind_eq_some_iff.mp read
+    obtain ⟨remaining, tailRead, equal⟩ := Option.bind_eq_some_iff.mp rest
+    cases Option.some.inj equal
+    exact .cons firstRead (ih tailRead)
+
+theorem rows?_names {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {directory : DirectoryReadback} {ambient : List (BitVec 64)} {depth : Nat} {world : World}
+    {raw : List NativeRow} {snapshot : List SourceRow}
+    (read : rows? symbols graph directory ambient depth world raw = some snapshot) :
+    snapshot.map RowOf.name = raw.map (fun row => CurrentStore.referenceName row.reference) := by
+  have related := rows?_correspondence read
+  clear read
+  induction related with
+  | nil => rfl
+  | cons first _ ih => simp only [List.map_cons, (row?_coordinates first).2.1, ih]
+
+/-- Every decoded source occurrence comes from a real raw slot occurrence. -/
+theorem rows?_source_member {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {directory : DirectoryReadback} {ambient : List (BitVec 64)} {depth : Nat} {world : World}
+    {raw : List NativeRow} {snapshot : List SourceRow}
+    (read : rows? symbols graph directory ambient depth world raw = some snapshot)
+    {row : SourceRow} (member : row ∈ snapshot) :
+    ∃ slot ∈ raw, row? symbols graph directory ambient depth world slot = some row := by
+  have related := rows?_correspondence read
+  clear read
+  induction related with
+  | nil => simp at member
+  | @cons head result tail remaining first rest ih =>
+    rcases List.mem_cons.mp member with same | member
+    · subst row
+      exact ⟨head,List.mem_cons_self,first⟩
+    · obtain ⟨slot,present,decoded⟩ := ih member
+      exact ⟨slot,List.mem_cons_of_mem head present,decoded⟩
+
+theorem rows?_same_names {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {before after : DirectoryReadback} (equal : names after = names before)
+    (ambient : List (BitVec 64)) (depth : Nat) (world : World) (raw : List NativeRow) :
+    rows? symbols graph after ambient depth world raw =
+      rows? symbols graph before ambient depth world raw := by
+  have values : value? symbols graph after ambient depth world =
+      value? symbols graph before ambient depth world := by
+    funext payload
+    cases payload <;> simp only [value?,atom?_same_names equal]
+  have rowEqual : row? symbols graph after ambient depth world =
+      row? symbols graph before ambient depth world := by
+    funext slot
+    simp only [row?,values]
+  induction raw with
+  | nil => rfl
+  | cons head tail ih => simp only [rows?,rowEqual,ih]
+
+/-- Decoding commutes with a real slot-value replacement, while retaining
+the complete row metadata and every untouched source occurrence. -/
+theorem row?_afterWrite {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {directory : DirectoryReadback} {ambient : List (BitVec 64)} {depth : Nat} {world : World}
+    {raw : NativeRow} {row : SourceRow}
+    (read : row? symbols graph directory ambient depth world raw = some row)
+    {payload : BindingValueView} {atom : Atom}
+    (decoded : atom? symbols graph directory ambient depth ⟨world,payload⟩ = some atom)
+    (clock : Nat) (target : Ref) :
+    row? symbols graph directory ambient depth world (raw.afterWrite clock target (some payload)) =
+      some (row.afterWrite clock target (some atom)) := by
+  obtain ⟨value,valueRead,finished⟩ := Option.bind_eq_some_iff.mp read
+  cases Option.some.inj finished
+  by_cases selected : raw.reference = target
+  · simp [row?,RowOf.afterWrite,selected,value?,decoded]
+  · simp [row?,RowOf.afterWrite,selected,valueRead]
+
+theorem rows?_afterWrite {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {directory : DirectoryReadback} {ambient : List (BitVec 64)} {depth : Nat} {world : World}
+    {raw : List NativeRow} {snapshot : List SourceRow}
+    (read : rows? symbols graph directory ambient depth world raw = some snapshot)
+    {payload : BindingValueView} {atom : Atom}
+    (decoded : atom? symbols graph directory ambient depth ⟨world,payload⟩ = some atom)
+    (clock : Nat) (target : Ref) :
+    rows? symbols graph directory ambient depth world
+        (raw.map (RowOf.afterWrite clock target (some payload))) =
+      some (snapshot.map (RowOf.afterWrite clock target (some atom))) := by
+  have related := rows?_correspondence read
+  clear read
+  induction related with
+  | nil => rfl
+  | cons first _ ih =>
+    simp only [List.map_cons,rows?,row?_afterWrite first decoded,
+      Option.bind_eq_bind,Option.bind_some,ih,pure]
+
+/-- Read the complete admitted graph, every current slot, and the complete
+pending tuple before constructing the single binding presentation. -/
+def prepare? (symbols : PhysicalAtoms.NumberedSymbols World) (memory : World → TargetMemory)
+    (directory : DirectoryReadback) (ambient : List (BitVec 64)) (depth : Nat) (world : World)
+    (inventory : List (Cursor World)) (pending : List BindingValueView) :
+    Option (List SourceRow × List Atom) := do
+  let graph ← readGraph? memory (fun _ => (none : Option Empty)) inventory
+  let snapshot ← rows? symbols graph directory ambient depth world (Snapshot.rows directory.toImage)
+  let tuple ← pending.mapM fun payload => atom? symbols graph directory ambient depth ⟨world, payload⟩
+  if Bindings.hasLoop ⟨CurrentStore.assignments snapshot, []⟩ then none
+  else some (snapshot, tuple)
+
+def readout? (symbols : PhysicalAtoms.NumberedSymbols World) (memory : World → TargetMemory)
+    (directory : DirectoryReadback) (ambient : List (BitVec 64)) (depth : Nat) (world : World)
+    (inventory : List (Cursor World)) (pending : List BindingValueView) : Option (List Atom) :=
+  (prepare? symbols memory directory ambient depth world inventory pending).map fun (rows, tuple) =>
+    tuple.map (CurrentStore.normalize (CurrentStore.assignments rows)).apply
+
+theorem prepare?_components {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (read : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple)) :
+    ∃ graph, readGraph? memory (fun _ => (none : Option Empty)) inventory = some graph ∧
+      rows? symbols graph directory ambient depth world (Snapshot.rows directory.toImage) =
+        some snapshot ∧
+      pending.mapM (fun payload => atom? symbols graph directory ambient depth ⟨world, payload⟩) =
+        some tuple ∧ Bindings.hasLoop ⟨CurrentStore.assignments snapshot, []⟩ = false := by
+  obtain ⟨graph, graphRead, rest⟩ := Option.bind_eq_some_iff.mp read
+  obtain ⟨rows, rowsRead, rest⟩ := Option.bind_eq_some_iff.mp rest
+  obtain ⟨atoms, atomsRead, rest⟩ := Option.bind_eq_some_iff.mp rest
+  split at rest
+  · contradiction
+  · next noLoop =>
+    cases Option.some.inj rest
+    exact ⟨graph, graphRead, rowsRead, atomsRead, Bool.eq_false_iff.mpr noLoop⟩
+
+/-- A successful current-directory receipt is decoded as the same ordered
+source-slot replacement. The Atom graph is unchanged; its actual decoder
+also reads the new payload. The finite-reader check remains explicit. -/
+theorem prepare?_receiveDirectory
+    {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {memory : World → TargetMemory} {directory after : DirectoryReadback}
+    {ambient : List (BitVec 64)} {depth : Nat} {world : World}
+    {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (prepared : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot,tuple))
+    (graphRead : readGraph? memory (fun _ => (none : Option Empty)) inventory = some graph)
+    {wanted : Destination} {payload : BindingValueView} {atom : Atom}
+    (received : receiveDirectory? directory wanted payload = some after)
+    (decoded : atom? symbols graph directory ambient depth ⟨world,payload⟩ = some atom)
+    (finite : Bindings.hasLoop ⟨CurrentStore.assignments
+      (snapshot.map (RowOf.afterWrite after.directory.writeClock
+        (wanted.token.ref wanted.slot) (some atom))),[]⟩ = false) :
+    prepare? symbols memory after ambient depth world inventory pending =
+      some (snapshot.map (RowOf.afterWrite after.directory.writeClock
+        (wanted.token.ref wanted.slot) (some atom)),tuple) := by
+  obtain ⟨observed,observedRead,rowsRead,tupleRead,_⟩ := prepare?_components prepared
+  have sameGraph : observed = graph := Option.some.inj (observedRead.symm.trans graphRead)
+  subst observed
+  have namesEq := names_receiveDirectory received
+  have nextRows : rows? symbols graph after ambient depth world (Snapshot.rows after.toImage) =
+      some (snapshot.map (RowOf.afterWrite after.directory.writeClock
+        (wanted.token.ref wanted.slot) (some atom))) := by
+    rw [Snapshot.rows_write (receiveDirectory_correspondence directory after wanted payload received),
+      DirectoryReadback.toImage_clock,rows?_same_names namesEq]
+    exact rows?_afterWrite rowsRead decoded _ _
+  have nextTuple : pending.mapM
+      (fun value => atom? symbols graph after ambient depth ⟨world,value⟩) = some tuple := by
+    rw [atom?_same_names namesEq]
+    exact tupleRead
+  simp only [prepare?,graphRead,Option.bind_eq_bind,Option.bind_some,nextRows,nextTuple,finite,
+    Bool.false_eq_true,if_false]
+
+/-- The certificate is earned by the actual successful native read, unique
+current references and the existing finite normalization theorem. -/
+theorem prepare?_certified {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (read : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple)) :
+    ReadoutCertificate ⟨CurrentStore.assignments snapshot, []⟩
+      (CurrentStore.normalize (CurrentStore.assignments snapshot)) := by
+  obtain ⟨graph, _, rowsRead, _, noLoop⟩ := prepare?_components read
+  apply CurrentStore.normalize_certified_of_noLoop (CurrentStore.assignments_unique ?_) noLoop
+  rw [rows?_names rowsRead]
+  simpa only [List.map_map, Function.comp_def] using
+    (Snapshot.rows_reference_unique directory.toImage).map CurrentStore.referenceName_injective
+
+/-- The logical store exposes aliases as equations, using the existing
+constraint presentation rather than treating variable-valued slot contents
+as rigid values. This projection does not rewrite the physical slots. -/
+def logicalBindings (snapshot : List SourceRow) : Bindings :=
+  aliasConstraints ⟨CurrentStore.assignments snapshot,[]⟩
+
+theorem logicalBindings_agreement (snapshot : List SourceRow) :
+    BindingSourceAgreement ⟨CurrentStore.assignments snapshot,[]⟩ (logicalBindings snapshot) :=
+  ⟨fun model => (aliasConstraints_models _ model).symm,
+    fun name => (aliasConstraints_support _ name).symm⟩
+
+/-- The store view earns the comparison interface's shape condition even
+when an actual slot contains another variable. This is not a consistency or
+groundness claim. -/
+theorem logicalBindings_nonvariable (snapshot : List SourceRow) :
+    Spec.Match.SolutionTheory.HEAssignmentsNonVariable (logicalBindings snapshot) := by
+  intro key name stored
+  have shape := aliasConstraints_nonvariable ⟨CurrentStore.assignments snapshot,[]⟩
+    key (.var name) stored
+  cases shape
+
+/-- The actual successful read earns the same finite table for the logical
+alias presentation. No source table or desired readout is an input. -/
+theorem prepare?_logical_certified {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (read : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot,tuple)) :
+    ReadoutCertificate (logicalBindings snapshot)
+      (CurrentStore.normalize (CurrentStore.assignments snapshot)) :=
+  ReadoutCertificate.of_normal_theory (prepare?_certified read).normal
+    (fun model => ((prepare?_certified read).theory model).trans
+      ((logicalBindings_agreement snapshot).solutions model))
+
+theorem readout?_prepared {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (read : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple)) :
+    readout? symbols memory directory ambient depth world inventory pending =
+      some (tuple.map (CurrentStore.normalize (CurrentStore.assignments snapshot)).apply) := by
+  simp only [readout?, read, Option.map_some]
+
+/-- One actual decoded packet realizes the nonvariable logical store view,
+retaining every repeated and open operand under one common valuation. -/
+theorem readout?_logical_observation {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple values : List Atom}
+    (prepared : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot,tuple))
+    (decoded : readout? symbols memory directory ambient depth world inventory pending = some values) :
+    Spec.Bindings.ScopeObservation.observedTuples (logicalBindings snapshot) values =
+      Spec.Bindings.ScopeObservation.observedTuples (logicalBindings snapshot) tuple := by
+  have actual : values = tuple.map (CurrentStore.normalize (CurrentStore.assignments snapshot)).apply :=
+    Option.some.inj (decoded.symm.trans (readout?_prepared prepared))
+  rw [actual]
+  exact (prepare?_logical_certified prepared).observedTuples_eq tuple
+
+section FutureUnification
+
+open Spec.Eval.Steps Spec.Bindings.ScopeObservation
+
+/-- The actual decoded operand pair preserves success of the next source
+unification against any equivalent certified frame. Reader refusal is not
+admitted by the preparation and decoding premises. -/
+theorem readout?_unify_exists_iff {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {target pattern targetRead patternRead : Atom}
+    {rest restRead : List Atom} {source : Bindings} {table : TypeSubst}
+    (prepared : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot,target :: pattern :: rest))
+    (decoded : readout? symbols memory directory ambient depth world inventory pending =
+      some (targetRead :: patternRead :: restRead))
+    (agreement : BindingSourceAgreement (logicalBindings snapshot) source)
+    (certified : ReadoutCertificate source table) :
+    (∃ output, UnifyCandidateRel targetRead patternRead (logicalBindings snapshot) output) ↔
+      ∃ output, UnifyCandidateRel (table.apply target) (table.apply pattern) source output := by
+  have actual := Option.some.inj (decoded.symm.trans (readout?_prepared prepared))
+  simp only [List.map_cons,List.cons.injEq] at actual
+  obtain ⟨rfl,rfl,rfl⟩ := actual
+  exact certified_unify_exists_iff agreement (prepare?_logical_certified prepared) certified target pattern
+
+theorem readout?_unify_noMatch_iff {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {target pattern targetRead patternRead : Atom}
+    {rest restRead : List Atom} {source : Bindings} {table : TypeSubst}
+    (prepared : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot,target :: pattern :: rest))
+    (decoded : readout? symbols memory directory ambient depth world inventory pending =
+      some (targetRead :: patternRead :: restRead))
+    (agreement : BindingSourceAgreement (logicalBindings snapshot) source)
+    (certified : ReadoutCertificate source table) :
+    UnifyNoMatchRel targetRead patternRead (logicalBindings snapshot) ↔
+      UnifyNoMatchRel (table.apply target) (table.apply pattern) source := by
+  simpa only [not_exists,UnifyNoMatchRel] using
+    not_congr (readout?_unify_exists_iff prepared decoded agreement certified)
+
+/-- Decoded native operands construct the counterpart source operation and
+both reached readout certificates. The saved packet remains correlated after
+the new constraint, even when its two stores choose different representatives.
+This is a reader/source-operation law, not a native slot-write theorem. -/
+theorem readout?_unify_transport {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {target pattern targetRead patternRead : Atom}
+    {rest restRead : List Atom} {source output : Bindings} {table : TypeSubst}
+    (prepared : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot,target :: pattern :: rest))
+    (decoded : readout? symbols memory directory ambient depth world inventory pending =
+      some (targetRead :: patternRead :: restRead))
+    (agreement : BindingSourceAgreement (logicalBindings snapshot) source)
+    (certified : ReadoutCertificate source table)
+    (selected : UnifyCandidateRel targetRead patternRead (logicalBindings snapshot) output) :
+    ∃ sourceOutput nextTable sourceNext,
+      UnifyCandidateRel (table.apply target) (table.apply pattern) source sourceOutput ∧
+      BindingSourceAgreement output sourceOutput ∧
+      ReadoutCertificate output nextTable ∧ ReadoutCertificate sourceOutput sourceNext ∧
+      restRead.map nextTable.apply = rest.map nextTable.apply ∧
+      (rest.map table.apply).map sourceNext.apply = rest.map sourceNext.apply ∧
+      observedTuples output (restRead.map nextTable.apply) =
+        observedTuples sourceOutput ((rest.map table.apply).map sourceNext.apply) := by
+  have actual := Option.some.inj (decoded.symm.trans (readout?_prepared prepared))
+  simp only [List.map_cons,List.cons.injEq] at actual
+  obtain ⟨rfl,rfl,rfl⟩ := actual
+  obtain ⟨sourceOutput,nextTable,sourceNext,candidate,outputs,nextCertified,sourceCertified,packet⟩ :=
+    selected.certifies_paired_pending agreement (prepare?_logical_certified prepared) certified
+  exact ⟨sourceOutput,nextTable,sourceNext,candidate,outputs,nextCertified,sourceCertified,packet rest⟩
+
+end FutureUnification
+
+/-- One valuation and one presentation serve the entire ordered pending tuple.
+This includes repeated variables and expressions that remain unevaluated. -/
+theorem prepare?_joint_models {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (read : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple)) (valuation : String → Atom)
+    (model : TypeBindingSatisfied valuation ⟨CurrentStore.assignments snapshot, []⟩) :
+    (tuple.map (CurrentStore.normalize (CurrentStore.assignments snapshot)).apply).map
+        (applyTypeValuation valuation) = tuple.map (applyTypeValuation valuation) := by
+  rw [List.map_map]
+  exact List.map_congr_left fun atom _ => (prepare?_certified read).preserves_model valuation model atom
+
+/-- The actual reader's decoded packet has exactly the joint source
+observation of its prepared operands. Repeated and open operands are read
+together under the one earned binding presentation. -/
+theorem readout?_joint_observation {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple values : List Atom}
+    (prepared : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple))
+    (decoded : readout? symbols memory directory ambient depth world inventory pending = some values) :
+    Spec.Bindings.ScopeObservation.observedTuples ⟨CurrentStore.assignments snapshot, []⟩ values =
+      Spec.Bindings.ScopeObservation.observedTuples ⟨CurrentStore.assignments snapshot, []⟩ tuple := by
+  have actual : values = tuple.map (CurrentStore.normalize (CurrentStore.assignments snapshot)).apply :=
+    Option.some.inj (decoded.symm.trans (readout?_prepared prepared))
+  rw [actual]
+  exact (prepare?_certified prepared).observedTuples_eq tuple
+
+/-- The actual packet reader realizes any independently certified source
+presentation of the same complete constraint theory. The two readout tables
+may choose different alias representatives; all operand occurrences share
+one valuation at the public boundary. -/
+theorem readout?_joint_source_readout {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple values : List Atom} {source : Bindings} {table : TypeSubst}
+    (prepared : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple))
+    (decoded : readout? symbols memory directory ambient depth world inventory pending = some values)
+    (agreement : BindingSourceAgreement ⟨CurrentStore.assignments snapshot, []⟩ source)
+    (certified : ReadoutCertificate source table) :
+    Spec.Bindings.ScopeObservation.observedTuples ⟨CurrentStore.assignments snapshot, []⟩ values =
+      Spec.Bindings.ScopeObservation.observedTuples source (tuple.map table.apply) := by
+  have same := (agreement.theoryEquivAt (TypeSubst.typeVarsList tuple)).observedTuples_eq
+    tuple (fun _ member => member)
+  exact (readout?_joint_observation prepared decoded).trans
+    (same.trans (certified.observedTuples_eq tuple).symm)
+
+/-- A future source merge preserves this decoded packet even when the
+incoming logical store and its next readout use different representatives.
+The actual merge supplies the extension law; no native mutation or evaluator
+correspondence is assumed. -/
+theorem readout?_joint_source_readout_after_merge
+    {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple values : List Atom}
+    {source extra output : Bindings} {table : TypeSubst}
+    (prepared : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple))
+    (decoded : readout? symbols memory directory ambient depth world inventory pending = some values)
+    (agreement : BindingSourceAgreement ⟨CurrentStore.assignments snapshot, []⟩ source)
+    (merged : Spec.Match.Merge.MergeRel Spec.Match.Merge.equalityGroundedSemantic source extra output)
+    (certified : ReadoutCertificate output table) :
+    Spec.Bindings.ScopeObservation.observedTuples output values =
+      Spec.Bindings.ScopeObservation.observedTuples output (tuple.map table.apply) := by
+  have actual : values = tuple.map (CurrentStore.normalize (CurrentStore.assignments snapshot)).apply :=
+    Option.some.inj (decoded.symm.trans (readout?_prepared prepared))
+  rw [actual]
+  have preserved :
+      Spec.Bindings.ScopeObservation.observedTuples output
+          (tuple.map (CurrentStore.normalize (CurrentStore.assignments snapshot)).apply) =
+        Spec.Bindings.ScopeObservation.observedTuples output tuple := by
+    apply (prepare?_certified prepared).observedTuples_eq_after_extension
+    intro model satisfied
+    exact (agreement.solutions model).mpr
+      (((Spec.Bindings.ScopeObservation.bindingSatisfied_append_iff model source extra).mp
+        ((merged.bindingSourceAgreement.solutions model).mp satisfied)).1)
+  exact preserved.trans (certified.observedTuples_eq tuple).symm
+
+/-- An independently derived source merge consumes the earned logical alias
+view. Its model extension preserves the already decoded packet jointly,
+without asserting any unproved native slot-write law. -/
+theorem readout?_logical_after_merge {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple values : List Atom} {extra output : Bindings} {table : TypeSubst}
+    (prepared : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot,tuple))
+    (decoded : readout? symbols memory directory ambient depth world inventory pending = some values)
+    (merged : Spec.Match.Merge.MergeRel Spec.Match.Merge.equalityGroundedSemantic
+      (logicalBindings snapshot) extra output)
+    (certified : ReadoutCertificate output table) :
+    Spec.Bindings.ScopeObservation.observedTuples output values =
+      Spec.Bindings.ScopeObservation.observedTuples output (tuple.map table.apply) :=
+  readout?_joint_source_readout_after_merge prepared decoded (logicalBindings_agreement snapshot) merged certified
+
+/-- A later independent source merge preserves the meaning of an already
+read packet. Its model-extension fact comes from that actual merge derivation;
+the concrete store may choose a different finite readout afterwards. -/
+theorem readout?_joint_observation_after_merge {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple values : List Atom} {extra output : Bindings}
+    (prepared : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple))
+    (decoded : readout? symbols memory directory ambient depth world inventory pending = some values)
+    (merged : Spec.Match.Merge.MergeRel Spec.Match.Merge.equalityGroundedSemantic
+      ⟨CurrentStore.assignments snapshot, []⟩ extra output) :
+    Spec.Bindings.ScopeObservation.observedTuples output values =
+      Spec.Bindings.ScopeObservation.observedTuples output tuple := by
+  have actual : values = tuple.map (CurrentStore.normalize (CurrentStore.assignments snapshot)).apply :=
+    Option.some.inj (decoded.symm.trans (readout?_prepared prepared))
+  rw [actual]
+  apply (prepare?_certified prepared).observedTuples_eq_after_extension
+  intro model satisfied
+  exact ((Spec.Bindings.ScopeObservation.bindingSatisfied_append_iff model _ _).mp
+    ((merged.bindingSourceAgreement.solutions model).mp satisfied)).1
+
+/-- Later source constraints absorb this earlier observation simultaneously.
+This reuses the existing certificate law; it makes no assumption about a
+native evaluator or an independent expected result for any operand. -/
+theorem prepare?_pending_absorbed {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (read : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple)) {later : Bindings} {table : TypeSubst}
+    (next : ReadoutCertificate later table)
+    (extension : ∀ valuation, TypeBindingSatisfied valuation later →
+      TypeBindingSatisfied valuation ⟨CurrentStore.assignments snapshot, []⟩) :
+    (tuple.map (CurrentStore.normalize (CurrentStore.assignments snapshot)).apply).map table.apply =
+      tuple.map table.apply :=
+  (prepare?_certified read).pending_absorbed next extension tuple
+
+
+/-- Every slot, including open slots, remains in its original occurrence.
+This is exact traversal rather than a membership-only completeness premise. -/
+theorem prepare?_slots {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (read : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple)) :
+    ∃ graph, readGraph? memory (fun _ => (none : Option Empty)) inventory = some graph ∧
+      List.Forall₂ (fun before after =>
+        row? symbols graph directory ambient depth world before = some after)
+        (Snapshot.rows directory.toImage) snapshot := by
+  obtain ⟨graph, graphRead, rowsRead, _⟩ := prepare?_components read
+  exact ⟨graph, graphRead, rows?_correspondence rowsRead⟩
+
+theorem rows?_every_slot {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {directory : DirectoryReadback} {ambient : List (BitVec 64)} {depth : Nat} {world : World}
+    {raw : List NativeRow} {snapshot : List SourceRow}
+    (read : rows? symbols graph directory ambient depth world raw = some snapshot)
+    {slot : NativeRow} (member : slot ∈ raw) :
+    ∃ row ∈ snapshot, row? symbols graph directory ambient depth world slot = some row := by
+  have related := rows?_correspondence read
+  clear read
+  induction related with
+  | nil => simp at member
+  | @cons head result tail remaining first rest ih =>
+    rcases List.mem_cons.mp member with same | member
+    · subst slot
+      exact ⟨result, List.mem_cons_self, first⟩
+    · obtain ⟨row, present, decoded⟩ := ih member
+      exact ⟨row, List.mem_cons_of_mem result present, decoded⟩
+
+/-- The decoded native snapshot obeys the same independent open-slot model
+law as the contextual store. No source decoder or post-write theory is
+supplied as an oracle. -/
+theorem rows?_open_write_models
+    {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {directory : DirectoryReadback} {ambient : List (BitVec 64)} {depth : Nat} {world : World}
+    {snapshot : List SourceRow}
+    (rowsRead : rows? symbols graph directory ambient depth world
+      (Snapshot.rows directory.toImage) = some snapshot)
+    {raw : NativeRow} (read : Snapshot.readRow? directory.toImage raw.reference = some raw)
+    (unbound : raw.observed.value = none) (clock : Nat) (atom : Atom) (valuation : String → Atom) :
+    TypeBindingSatisfied valuation
+        ⟨CurrentStore.assignments (snapshot.map (RowOf.afterWrite clock raw.reference (some atom))),[]⟩ ↔
+      TypeBindingSatisfied valuation ⟨CurrentStore.assignments snapshot,[]⟩ ∧
+        valuation (CurrentStore.referenceName raw.reference) = applyTypeValuation valuation atom := by
+  apply CurrentStore.open_slot_write_models snapshot raw.reference
+  · intro row member
+    obtain ⟨slot,_,decoded⟩ := rows?_source_member rowsRead member
+    exact (row?_coordinates decoded).2.1.trans
+      (congrArg CurrentStore.referenceName (row?_coordinates decoded).1.symm)
+  · obtain ⟨row,member,decoded⟩ := rows?_every_slot rowsRead (Snapshot.readRow?_mem_rows read)
+    exact ⟨row,member,(row?_coordinates decoded).1⟩
+  · intro row member selected
+    obtain ⟨slot,slotMember,decoded⟩ := rows?_source_member rowsRead member
+    have slotRef : slot.reference = raw.reference :=
+      (row?_coordinates decoded).1.symm.trans selected
+    have slotRead := Snapshot.rows_readback slotMember
+    rw [slotRef] at slotRead
+    have sameSlot : slot = raw := Option.some.inj (slotRead.symm.trans read)
+    subst slot
+    have empty := row?_value decoded
+    rw [unbound] at empty
+    exact (Option.some.inj empty).symm
+
+/-- The real current-directory operation constructs the next certified
+source frame. An open destination strengthens its theory by the actual
+decoded equation, so every earlier correlated packet read remains usable. -/
+theorem receiveDirectory_open_renewal
+    {symbols : PhysicalAtoms.NumberedSymbols World} {graph : AtomGraph World}
+    {memory : World → TargetMemory} {directory after : DirectoryReadback}
+    {ambient : List (BitVec 64)} {depth : Nat} {world : World}
+    {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (prepared : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot,tuple))
+    (graphRead : readGraph? memory (fun _ => (none : Option Empty)) inventory = some graph)
+    {wanted : Destination} {payload : BindingValueView} {atom : Atom}
+    (received : receiveDirectory? directory wanted payload = some after)
+    (decoded : atom? symbols graph directory ambient depth ⟨world,payload⟩ = some atom)
+    {raw : NativeRow} (read : Snapshot.readRow? directory.toImage raw.reference = some raw)
+    (selected : raw.reference = wanted.token.ref wanted.slot)
+    (unbound : raw.observed.value = none)
+    (finite : Bindings.hasLoop ⟨CurrentStore.assignments
+      (snapshot.map (RowOf.afterWrite after.directory.writeClock
+        (wanted.token.ref wanted.slot) (some atom))),[]⟩ = false) :
+    let updated := snapshot.map (RowOf.afterWrite after.directory.writeClock
+      (wanted.token.ref wanted.slot) (some atom))
+    let beforeBindings : Bindings := ⟨CurrentStore.assignments snapshot,[]⟩
+    let afterBindings : Bindings := ⟨CurrentStore.assignments updated,[]⟩
+    let earlier := CurrentStore.normalize (CurrentStore.assignments snapshot)
+    let later := CurrentStore.normalize (CurrentStore.assignments updated)
+    ∃ _certificate : ReadoutCertificate afterBindings later,
+      directoryProvider.step (base := ()) (index := ()) directory (wanted,payload) = ⟨true,after⟩ ∧
+      prepare? symbols memory after ambient depth world inventory pending = some (updated,tuple) ∧
+      (∀ valuation,TypeBindingSatisfied valuation afterBindings ↔
+        TypeBindingSatisfied valuation beforeBindings ∧
+          valuation (CurrentStore.referenceName raw.reference) = applyTypeValuation valuation atom) ∧
+      (∀ value,later.apply (earlier.apply value) = later.apply value) ∧
+      (∀ packet,Spec.Bindings.ScopeObservation.observedTuples afterBindings (packet.map earlier.apply) =
+        Spec.Bindings.ScopeObservation.observedTuples afterBindings packet) := by
+  intro updated beforeBindings afterBindings earlier later
+  have next := prepare?_receiveDirectory prepared graphRead received decoded finite
+  have nextCertificate := prepare?_certified next
+  have beforeCertificate := prepare?_certified prepared
+  obtain ⟨observed,observedRead,rowsRead,_⟩ := prepare?_components prepared
+  have sameGraph : observed = graph := Option.some.inj (observedRead.symm.trans graphRead)
+  subst observed
+  have models : ∀ valuation,TypeBindingSatisfied valuation afterBindings ↔
+      TypeBindingSatisfied valuation beforeBindings ∧
+        valuation (CurrentStore.referenceName raw.reference) = applyTypeValuation valuation atom := by
+    intro valuation
+    simpa only [updated,afterBindings,beforeBindings,selected] using
+      rows?_open_write_models rowsRead read unbound after.directory.writeClock atom valuation
+  have extension : ∀ valuation,TypeBindingSatisfied valuation afterBindings →
+      TypeBindingSatisfied valuation beforeBindings := fun valuation model => (models valuation).mp model |>.1
+  exact ⟨nextCertificate,directoryProvider_accepted directory after wanted payload received,next,models,
+    fun value => beforeCertificate.absorbs nextCertificate extension value,
+    fun packet => beforeCertificate.observedTuples_eq_after_extension extension packet⟩
+
+/-- An open current slot stays a free residual in the selected table. Its
+metadata remains present; this is distinct from a failed/stale slot read. -/
+theorem prepare?_open_slot {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (read : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple)) {raw : NativeRow}
+    (present : Snapshot.readRow? directory.toImage raw.reference = some raw)
+    (unbound : raw.observed.value = none) :
+    (CurrentStore.normalize (CurrentStore.assignments snapshot)).apply
+      (.var (CurrentStore.referenceName raw.reference)) =
+        .var (CurrentStore.referenceName raw.reference) := by
+  obtain ⟨graph, _, rowsRead, _⟩ := prepare?_components read
+  obtain ⟨row, member, rowRead⟩ := rows?_every_slot rowsRead (Snapshot.readRow?_mem_rows present)
+  have name := (row?_coordinates rowRead).2.1
+  have empty := row?_value rowRead
+  rw [unbound] at empty
+  have empty : row.observed.value = none := (Option.some.inj empty).symm
+  have unique : (snapshot.map RowOf.name).Nodup := by
+    rw [rows?_names rowsRead]
+    simpa only [List.map_map, Function.comp_def] using
+      (Snapshot.rows_reference_unique directory.toImage).map CurrentStore.referenceName_injective
+  rw [← name]
+  exact CurrentStore.normalize_unassigned _ _ (CurrentStore.open_slot_not_assigned unique member empty)
+
+/-- Actual activation lookup is decoded by the same graph and names. The
+original lookup receipt distinguishes unknown from known-open; outer failure
+remains an unreadable/stale observation. No historical trail supplies it. -/
+def activation? (symbols : PhysicalAtoms.NumberedSymbols World) (graph : AtomGraph World)
+    (memory : TargetMemory) (directory : DirectoryReadback) (ambient : List (BitVec 64))
+    (depth : Nat) (world : World) (inventory : Activation.Inventory) (source : Address) :
+    Option (Activation.Lookup × Option Atom) := do
+  let observed ← Activation.readValue? directory memory inventory source
+  match observed with
+  | .unknown => some (Activation.Lookup.unknown, none)
+  | .known value =>
+    (value? symbols graph directory ambient depth world value).map
+      (fun decoded => (Activation.Lookup.known value, decoded))
+
+theorem activation?_source_slot (symbols : PhysicalAtoms.NumberedSymbols World)
+    (graph : AtomGraph World) (memory : TargetMemory) (directory : DirectoryReadback)
+    (ambient : List (BitVec 64)) (depth : Nat) (world : World)
+    (inventory : Activation.Inventory) (source : Address) (frame : FrameReadback)
+    (member : frame ∈ directory.frames) (index : Fin frame.slots.length)
+    (identity : inventory.view.authority = encode frame.view.token)
+    (known : frame.slots[index.val].sourceId ∈ inventory.sources)
+    (kind : targetRead memory (sourceFieldAddress source 0) = some (.word 1))
+    (sourceId : targetRead memory (sourceFieldAddress source 2) =
+      some (.word frame.slots[index.val].sourceId))
+    (row : SourceRow)
+    (decoded : row? symbols graph directory ambient depth world
+      ⟨frame.view.token.ref index.val, sourceIdName frame.slots[index.val].sourceId,
+        ⟨frame.slots[index.val].value.payload, frame.slots[index.val].writeVersion,
+          frame.view.writeClock, frame.view.boundary⟩⟩ = some row) :
+    activation? symbols graph memory directory ambient depth world inventory source =
+      some (.known (if inventory.view.firstWrite < frame.slots[index.val].writeVersion
+        then frame.slots[index.val].value.payload else none),
+        row.observed.outputAfter inventory.view.firstWrite) := by
+  rw [activation?, Activation.readValue?_source_slot directory memory inventory source frame
+    member index identity known kind sourceId]
+  have valueRead := row?_outputAfter decoded inventory.view.firstWrite
+  exact congrArg (Option.map fun value =>
+    (Activation.Lookup.known (if inventory.view.firstWrite < frame.slots[index.val].writeVersion
+      then frame.slots[index.val].value.payload else none), value)) valueRead
+
+theorem activation?_unknown (symbols : PhysicalAtoms.NumberedSymbols World)
+    (graph : AtomGraph World) (memory : TargetMemory) (directory : DirectoryReadback)
+    (ambient : List (BitVec 64)) (depth : Nat) (world : World)
+    (inventory : Activation.Inventory) (source : Address) (identifier : BitVec 64)
+    (observed : readVariableId? memory ⟨some source, 0, 0⟩ = some identifier)
+    (unknown : identifier ∉ inventory.sources) :
+    activation? symbols graph memory directory ambient depth world inventory source =
+      some (.unknown, none) := by
+  unfold activation?
+  rw [Activation.readValue?_unknown directory memory inventory source identifier observed unknown]
+  rfl
+
+/-- Successful whole preparation supplies the activation's decoded current
+row. Only the actual source fields, current slot and activation authority
+remain inputs; no separate payload readback hypothesis is required. -/
+theorem prepare?_activation_slot {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (read : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple)) (activation : Activation.Inventory) (source : Address)
+    (frame : FrameReadback) (member : frame ∈ directory.frames) (index : Fin frame.slots.length)
+    (identity : activation.view.authority = encode frame.view.token)
+    (known : frame.slots[index.val].sourceId ∈ activation.sources)
+    (kind : targetRead (memory world) (sourceFieldAddress source 0) = some (.word 1))
+    (sourceId : targetRead (memory world) (sourceFieldAddress source 2) =
+      some (.word frame.slots[index.val].sourceId)) :
+    ∃ graph row,
+      readGraph? memory (fun _ => (none : Option Empty)) inventory = some graph ∧
+      row ∈ snapshot ∧ row.reference = frame.view.token.ref index.val ∧
+      row.name = CurrentStore.referenceName (frame.view.token.ref index.val) ∧
+      activation? symbols graph (memory world) directory ambient depth world activation source =
+        some (.known (if activation.view.firstWrite < frame.slots[index.val].writeVersion
+          then frame.slots[index.val].value.payload else none),
+          row.observed.outputAfter activation.view.firstWrite) := by
+  obtain ⟨graph, graphRead, rowsRead, _⟩ := prepare?_components read
+  have present := directory.toImage_frameAt frame.view.token.handle
+    (directory.frame_agrees frame member).2
+  rw [directory.select_frame frame member, Option.map_some] at present
+  have slotRead := directory.toImage_readSlot frame member index.val
+  rw [frame.toEntry_readSlot index] at slotRead
+  let raw : NativeRow :=
+    ⟨frame.view.token.ref index.val, sourceIdName frame.slots[index.val].sourceId,
+      ⟨frame.slots[index.val].value.payload, frame.slots[index.val].writeVersion,
+        frame.view.writeClock, frame.view.boundary⟩⟩
+  have rawRead : Snapshot.readRow? directory.toImage raw.reference = some raw := by
+    simp only [raw, Snapshot.readRow?, Token.ref, present]
+    have named : frame.toEntry.frame[index.val]? =
+        some (sourceIdName frame.slots[index.val].sourceId) := by
+      simp [FrameReadback.toEntry, index.isLt]
+    rw [named]
+    simpa only [Token.ref, Option.map_some] using
+      congrArg (Option.map (fun observed =>
+        (⟨frame.view.token.ref index.val, sourceIdName frame.slots[index.val].sourceId,
+          observed⟩ : NativeRow))) slotRead
+  obtain ⟨row, rowMember, rowRead⟩ := rows?_every_slot rowsRead
+    (Snapshot.readRow?_mem_rows rawRead)
+  have coordinates := row?_coordinates rowRead
+  refine ⟨graph, row, graphRead, rowMember, coordinates.1, coordinates.2.1, ?_⟩
+  exact activation?_source_slot symbols graph (memory world) directory ambient depth world
+    activation source frame member index identity known kind sourceId row rowRead
+
+
+/-- A bound slot earns its actual payload read and its equation in the one
+selected presentation. Neither that readout nor a model is an input. -/
+theorem prepare?_bound_slot {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (read : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple)) {raw : NativeRow}
+    (present : Snapshot.readRow? directory.toImage raw.reference = some raw)
+    {payload : BindingValueView} (stored : raw.observed.value = some payload) :
+    ∃ graph value,
+      readGraph? memory (fun _ => (none : Option Empty)) inventory = some graph ∧
+      atom? symbols graph directory ambient depth ⟨world, payload⟩ = some value ∧
+      (CurrentStore.normalize (CurrentStore.assignments snapshot)).apply
+          (.var (CurrentStore.referenceName raw.reference)) =
+        (CurrentStore.normalize (CurrentStore.assignments snapshot)).apply value := by
+  obtain ⟨graph, graphRead, rowsRead, _⟩ := prepare?_components read
+  obtain ⟨row, member, rowRead⟩ := rows?_every_slot rowsRead (Snapshot.readRow?_mem_rows present)
+  have decoded := row?_value rowRead
+  rw [stored] at decoded
+  obtain ⟨value, valueRead, same⟩ := Option.map_eq_some_iff.mp decoded
+  have name := (row?_coordinates rowRead).2.1
+  have cert := prepare?_certified read
+  have model := (cert.theory _).mp (Theory.normal_presentedValuation_satisfied cert.normal)
+  have equation := model.1 row.name value
+    (CurrentStore.mem_assignments.mpr ⟨row, member, rfl, same.symm⟩)
+  refine ⟨graph, value, graphRead, valueRead, ?_⟩
+  simpa only [Theory.presentedValuation, Theory.applyTypeValuation_presented_eq_apply,
+    name] using equation
+
+private theorem tuple_correspondence {symbols : PhysicalAtoms.NumberedSymbols World}
+    {graph : AtomGraph World} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {pending : List BindingValueView} {tuple : List Atom}
+    (read : pending.mapM (fun payload => atom? symbols graph directory ambient depth
+      ⟨world, payload⟩) = some tuple) :
+    List.Forall₂ (fun payload value => atom? symbols graph directory ambient depth
+      ⟨world, payload⟩ = some value) pending tuple := by
+  induction pending generalizing tuple with
+  | nil => simp only [List.mapM_nil, pure] at read; cases Option.some.inj read; exact .nil
+  | cons head tail ih =>
+    rw [List.mapM_cons] at read
+    obtain ⟨first, firstRead, rest⟩ := Option.bind_eq_some_iff.mp read
+    obtain ⟨remaining, tailRead, equal⟩ := Option.bind_eq_some_iff.mp rest
+    cases Option.some.inj equal
+    exact .cons firstRead (ih tailRead)
+
+/-- Exact order and multiplicity of the complete native pending tuple, with
+actual memory observations at its retained world. -/
+theorem prepare?_tuple_memory {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {tuple : List Atom}
+    (read : prepare? symbols memory directory ambient depth world inventory pending =
+      some (snapshot, tuple)) :
+    List.Forall₂ (fun payload value => ∃ raw,
+      (observeMemory memory (fun _ => (none : Option Empty)) depth ⟨world, payload⟩).bind
+        (PhysicalAtoms.sourceObservation? symbols world) = some raw ∧
+      qualify? directory ambient raw = some value) pending tuple := by
+  obtain ⟨graph, graphRead, _, tupleRead, _⟩ := prepare?_components read
+  exact (tuple_correspondence tupleRead).imp fun _ _ decoded => atom?_memory graphRead decoded
+
+namespace Controls
+
+private def token : Token := ⟨1, 1⟩
+private def x : BitVec 64 := BitVec.ofNat 64 ((encode token).toNat * 2 ^ 32 + 1)
+private def y : BitVec 64 := BitVec.ofNat 64 ((encode token).toNat * 2 ^ 32 + 2)
+private def address (storage : Nat) : Address := ⟨storage, 0, []⟩
+private def payload (storage : Nat) : BindingValueView := ⟨some (address storage), 0, 0⟩
+private def aliasPayload : BindingValueView := ⟨some (address 8), encode token, 1⟩
+private def openValue : BindingValueView := ⟨none, 0, 0⟩
+private def view : FrameStateView :=
+  ⟨address 20, address 21, token, 2, 2, 0, 2, 0, false, true, true⟩
+private def second (mode : Fin 3) : BindingValueView :=
+  if mode.val = 0 then openValue else if mode.val = 1 then payload 4 else payload 1
+private def frame (mode : Fin 3) : FrameReadback where
+  view := view
+  slots := [⟨1, x, 0, none, true, aliasPayload, 1⟩, ⟨2, y, 0, none, true, second mode, 2⟩]
+  admitted := by fin_cases mode <;> decide
+private def directory (mode : Fin 3) : DirectoryReadback where
+  directory := ⟨address 20, some (address 21), 1, 0, 2⟩
+  capacity := 2
+  frames := [frame mode]
+  admitted := by fin_cases mode <;> decide
+private def symbols : PhysicalAtoms.NumberedSymbols Unit where
+  bytes := fun _ _ => none
+  unique := by intros; contradiction
+private def stale : BitVec 64 := BitVec.ofNat 64 ((encode ⟨1, 2⟩).toNat * 2 ^ 32 + 1)
+private def memory : Unit → TargetMemory := fun _ =>
+  ⟨fun storage index =>
+    if storage = 10 then
+      if index < 2 then some (.reference (some (address 1))) else none
+    else if index = 0 then
+      if storage = 1 then some (.record "Atom" [.word 1, .word 0, .word x])
+      else if storage = 2 then some (.record "Atom" [.word 1, .word 0, .word y])
+      else if storage = 3 then some (.record "Atom"
+        [.word 3, .word 0, .word 0, .word 0, .word 0, .reference none, .word 0, .word 0,
+          .record "expr" [.reference (some (address 10)), .word 2]])
+      else if storage = 4 then some (.record "Atom"
+        [.word 0, .word 0, .word 0, .word 0, .word 0, .reference none])
+      else if storage = 5 then some (.record "Atom" [.word 1, .word 0, .word 99])
+      else if storage = 6 then some (.record "Atom" [.word 1, .word 0, .word stale])
+      else if storage = 7 then some (.record "Atom" [.word 1, .word 0, .word 1])
+      else if storage = 8 then some (.record "Atom" [.word 1, .word 0, .word 2])
+      else none
+    else none, fun _ => none⟩
+private def cursor (storage : Nat) : Cursor Unit := ⟨(), payload storage⟩
+private def inventory : List (Cursor Unit) := [cursor 1, cursor 2, cursor 3, cursor 4, cursor 5, cursor 6, ⟨(), aliasPayload⟩]
+private def graphRows : List (KeyedRow (Cursor Unit) (Label Empty)) :=
+  [⟨cursor 1, .variable x, []⟩, ⟨cursor 2, .variable y, []⟩,
+    ⟨cursor 3, .expression, [cursor 1, cursor 1]⟩, ⟨cursor 4, .symbolBytes [], []⟩,
+    ⟨cursor 5, .variable 99, []⟩, ⟨cursor 6, .variable stale, []⟩,
+    ⟨⟨(), aliasPayload⟩, .variable y, []⟩]
+private def graph : AtomGraph Unit := ⟨graphRows, by decide⟩
+private theorem graph_rows : readRows? memory (fun _ => (none : Option Empty)) inventory =
+    some graphRows := by decide
+private theorem graph_read : readGraph? memory (fun _ => (none : Option Empty)) inventory =
+    some graph := by
+  change (readRows? memory (fun _ => (none : Option Empty)) inventory).bind decodeKeyedTable? = _
+  rw [graph_rows]
+  change decodeKeyedTable? graphRows = some graph
+  exact dif_pos graph.valid
+private def sx : String := CurrentStore.referenceName (token.ref 0)
+private def sy : String := CurrentStore.referenceName (token.ref 1)
+private def snapshot (mode : Fin 3) : List SourceRow :=
+  [⟨token.ref 0, sx, ⟨some (.var sy), 1, 2, none⟩⟩,
+    ⟨token.ref 1, sy, ⟨if mode.val = 0 then none else
+      if mode.val = 1 then some (.symbol "") else some (.var sx), 2, 2, none⟩⟩]
+private theorem x_read (mode : Fin 3) (ambient : List (BitVec 64) := []) : atom? symbols graph (directory mode) ambient 2 ⟨(), payload 1⟩ =
+    some (.var sx) := by
+  change atom? symbols graph (directory mode) ambient 2 (graph.key ⟨0, by decide⟩) = _
+  rw [atom?_key]
+  change (some (Atom.var (sourceIdName x))).bind (qualify? (directory mode) ambient) = _
+  exact qualify?_slot (directory mode) ambient (frame mode) (by simp [directory]) ⟨0, by simp [frame]⟩
+private theorem y_read (mode : Fin 3) (ambient : List (BitVec 64) := []) : atom? symbols graph (directory mode) ambient 2 ⟨(), payload 2⟩ =
+    some (.var sy) := by
+  change atom? symbols graph (directory mode) ambient 2 (graph.key ⟨1, by decide⟩) = _
+  rw [atom?_key]
+  change (some (Atom.var (sourceIdName y))).bind (qualify? (directory mode) ambient) = _
+  exact qualify?_slot (directory mode) ambient (frame mode) (by simp [directory]) ⟨1, by simp [frame]⟩
+private theorem alias_read (mode : Fin 3) (ambient : List (BitVec 64) := []) :
+    atom? symbols graph (directory mode) ambient 2 ⟨(), aliasPayload⟩ = some (.var sy) := by
+  change atom? symbols graph (directory mode) ambient 2 (graph.key ⟨6, by decide⟩) = _
+  rw [atom?_key]
+  change (some (Atom.var (sourceIdName y))).bind (qualify? (directory mode) ambient) = _
+  exact qualify?_slot (directory mode) ambient (frame mode) (by simp [directory]) ⟨1, by simp [frame]⟩
+private theorem empty_symbol_read (mode : Fin 3) (ambient : List (BitVec 64) := []) :
+    atom? symbols graph (directory mode) ambient 2 ⟨(), payload 4⟩ = some (.symbol "") := by
+  change atom? symbols graph (directory mode) ambient 2 (graph.key ⟨3, by decide⟩) = _
+  rw [atom?_key]
+  change qualify? (directory mode) ambient (.symbol "") = _
+  simp [qualify?, covered, TypeSubst.typeVars, renameTypeVars]
+
+private theorem repeated_read (mode : Fin 3) (ambient : List (BitVec 64) := []) :
+    atom? symbols graph (directory mode) ambient 2 ⟨(), payload 3⟩ =
+      some (.expression [.var sx, .var sx]) := by
+  change atom? symbols graph (directory mode) ambient 2 (graph.key ⟨2, by decide⟩) = _
+  rw [atom?_key]
+  change qualify? (directory mode) ambient
+    (.expression [.var (sourceIdName x), .var (sourceIdName x)]) = _
+  have named := lookupName?_slot (directory mode) (frame mode)
+    (by simp [directory]) ⟨0, by simp [frame]⟩
+  change lookupName? (names (directory mode)) (sourceIdName x) = some (token.ref 0) at named
+  simp [qualify?, covered, TypeSubst.typeVars, TypeSubst.typeVarsList,
+    sourceName, named, renameTypeVars, sx]
+
+private def nativeSnapshot (mode : Fin 3) : List NativeRow :=
+  [⟨token.ref 0, sourceIdName 1, ⟨some aliasPayload, 1, 2, none⟩⟩,
+    ⟨token.ref 1, sourceIdName 2,
+      ⟨if mode.val = 0 then none else some (second mode), 2, 2, none⟩⟩]
+
+private theorem native_snapshot (mode : Fin 3) :
+    Snapshot.rows (directory mode).toImage = nativeSnapshot mode := by
+  fin_cases mode <;> rfl
+
+private theorem snapshot_read (mode : Fin 3) (ambient : List (BitVec 64) := []) :
+    rows? symbols graph (directory mode) ambient 2 () (Snapshot.rows (directory mode).toImage) =
+      some (snapshot mode) := by
+  rw [native_snapshot]
+  fin_cases mode <;>
+    simp [nativeSnapshot, snapshot, rows?, row?, value?, second,
+      x_read, alias_read, empty_symbol_read, sx, sy]
+
+theorem alias_pending_tuple_is_prepared :
+    prepare? symbols memory (directory 0) [] 2 () inventory [payload 3, payload 1] =
+      some (snapshot 0, [.expression [.var sx, .var sx], .var sx]) := by
+  simp only [prepare?, graph_read, Option.bind_eq_bind, Option.bind_some, snapshot_read,
+    List.mapM_cons, List.mapM_nil, repeated_read, x_read, pure]
+  decide
+
+theorem actual_nonempty_alias_has_one_certificate :
+    ReadoutCertificate ⟨CurrentStore.assignments (snapshot 0), []⟩
+      (CurrentStore.normalize (CurrentStore.assignments (snapshot 0))) :=
+  prepare?_certified alias_pending_tuple_is_prepared
+
+theorem repeated_open_residuals_stay_correlated :
+    readout? symbols memory (directory 0) [] 2 () inventory [payload 3, payload 1] =
+      some [.expression [.var sy, .var sy], .var sy] := by
+  rw [readout?_prepared alias_pending_tuple_is_prepared]
+  simp [CurrentStore.assignments, CurrentStore.normalize, CurrentStore.normalizeFrom,
+    snapshot, TypeSubst.bind, TypeSubst.apply, TypeSubst.lookup, TypeSubst.erase,
+    TypeSubst.applyAssignment, sx, sy,
+    CurrentStore.referenceName, token, Token.ref]
+
+/-- The actual memory read supplies a different constraint record with the
+earned nonvariable shape, certificate and complete repeated-operand readout. -/
+theorem actual_reader_has_logical_binding_view :
+    Spec.Match.SolutionTheory.HEAssignmentsNonVariable (logicalBindings (snapshot 0)) ∧
+    ReadoutCertificate (logicalBindings (snapshot 0))
+      (CurrentStore.normalize (CurrentStore.assignments (snapshot 0))) ∧
+    logicalBindings (snapshot 0) ≠ ⟨CurrentStore.assignments (snapshot 0),[]⟩ ∧
+    Spec.Bindings.ScopeObservation.observedTuples (logicalBindings (snapshot 0))
+        [.expression [.var sy,.var sy],.var sy] =
+      Spec.Bindings.ScopeObservation.observedTuples (logicalBindings (snapshot 0))
+        [.expression [.var sx,.var sx],.var sx] := by
+  refine ⟨logicalBindings_nonvariable _,prepare?_logical_certified alias_pending_tuple_is_prepared,?_,
+    readout?_logical_observation alias_pending_tuple_is_prepared repeated_open_residuals_stay_correlated⟩
+  intro same
+  have assignments := congrArg Bindings.assignments same
+  change [] = [(sx,Atom.var sy)] at assignments
+  cases assignments
+
+/-- A nonvariable constraint-record shape does not close an open alias or
+select a ground value. Two distinct future valuations still satisfy it. -/
+theorem actual_logical_alias_view_remains_open :
+    TypeBindingSatisfied (fun _ => .symbol "A") (logicalBindings (snapshot 0)) ∧
+    TypeBindingSatisfied (fun _ => .symbol "B") (logicalBindings (snapshot 0)) ∧
+    (Atom.symbol "A" ≠ .symbol "B") := by
+  refine ⟨?_,?_,by decide +kernel⟩
+  · apply ((logicalBindings_agreement (snapshot 0)).solutions _).mp
+    simp [TypeBindingSatisfied,CurrentStore.assignments,snapshot,applyTypeValuation]
+  · apply ((logicalBindings_agreement (snapshot 0)).solutions _).mp
+    simp [TypeBindingSatisfied,CurrentStore.assignments,snapshot,applyTypeValuation]
+
+private def independentAlias : Bindings := ⟨[], [(sy, sx)]⟩
+private def independentAliasTable : TypeSubst := [(sy, .var sx)]
+
+private theorem independentAlias_agreement :
+    BindingSourceAgreement ⟨CurrentStore.assignments (snapshot 0), []⟩ independentAlias := by
+  constructor
+  · intro model
+    simp [TypeBindingSatisfied, CurrentStore.assignments, snapshot, independentAlias,
+      applyTypeValuation, eq_comm]
+  · intro name
+    simp [Spec.Bindings.ScopeObservation.specBindingVars, CurrentStore.assignments, snapshot,
+      independentAlias, TypeSubst.typeVars, or_comm]
+
+/-- The source alias edge is deliberately oriented oppositely to the actual
+slot assignment. Its finite readout is earned by its independent equation fold. -/
+theorem independent_alias_readout_certificate :
+    ReadoutCertificate independentAlias independentAliasTable := by
+  apply ReadoutCertificate.of_fold
+  change EquationListPresentationRel [(.var sy, .var sx)] [] independentAliasTable
+  apply EquationListPresentationRel.cons _ (.nil _)
+  apply AppliedTypePresentationMatchRel.ordinary
+    (TypeSubst.apply_empty (.var sy)) (TypeSubst.apply_empty (.var sx))
+  simpa [independentAliasTable, TypeSubst.bind, TypeSubst.apply, TypeSubst.lookup,
+    TypeSubst.erase] using
+    (AppliedReducedTypeMatchRel.bindLeft (substitution := []) (name := sy)
+      (right := .var sx) (by decide +kernel))
+
+/-- The actual memory reader's repeated open residuals agree jointly with
+the independent source readout, although their literal representatives differ. -/
+theorem actual_reader_has_independent_joint_readout :
+    Spec.Bindings.ScopeObservation.observedTuples
+        ⟨CurrentStore.assignments (snapshot 0), []⟩
+        [.expression [.var sy, .var sy], .var sy] =
+      Spec.Bindings.ScopeObservation.observedTuples independentAlias
+        ([.expression [.var sx, .var sx], .var sx].map independentAliasTable.apply) :=
+  readout?_joint_source_readout alias_pending_tuple_is_prepared
+    repeated_open_residuals_stay_correlated independentAlias_agreement
+    independent_alias_readout_certificate
+
+/-- Requiring the actual reader to choose the independent source table's
+literal open name is false. This is reader execution, not a list-only control. -/
+theorem actual_reader_does_not_choose_source_representative :
+    readout? symbols memory (directory 0) [] 2 () inventory [payload 3, payload 1] ≠
+      some ([Atom.expression [.var sx, .var sx], .var sx].map independentAliasTable.apply) := by
+  rw [repeated_open_residuals_stay_correlated]
+  have different : sx ≠ sy := by decide +kernel
+  have fixed :
+      ([Atom.expression [.var sx, .var sx], .var sx].map independentAliasTable.apply) =
+        [.expression [.var sx, .var sx], .var sx] := by
+    simp [independentAliasTable, TypeSubst.apply, TypeSubst.lookup, different]
+  rw [fixed]
+  decide +kernel
+
+/-- The actual memory-reader packet is used as the next source operation's
+operands. Both output certificates and the independent counterpart operation
+are earned, while the saved repeated packet keeps its joint observation. -/
+theorem actual_reader_next_source_unification :
+    readout? symbols memory (directory 0) [] 2 () inventory
+        [payload 1,payload 4,payload 3,payload 1] =
+      some [.var sy,.symbol "",.expression [.var sy,.var sy],.var sy] ∧
+    ∃ output sourceOutput nextTable sourceNext,
+      Spec.Eval.Steps.UnifyCandidateRel (.var sy) (.symbol "") (logicalBindings (snapshot 0)) output ∧
+      Spec.Eval.Steps.UnifyCandidateRel (independentAliasTable.apply (.var sx))
+        (independentAliasTable.apply (.symbol "")) independentAlias sourceOutput ∧
+      BindingSourceAgreement output sourceOutput ∧
+      ReadoutCertificate output nextTable ∧ ReadoutCertificate sourceOutput sourceNext ∧
+      Spec.Bindings.ScopeObservation.observedTuples output
+          ([Atom.expression [.var sy,.var sy],.var sy].map nextTable.apply) =
+        Spec.Bindings.ScopeObservation.observedTuples sourceOutput
+          (([Atom.expression [.var sx,.var sx],.var sx].map independentAliasTable.apply).map sourceNext.apply) := by
+  have prepared : prepare? symbols memory (directory 0) [] 2 () inventory
+      [payload 1,payload 4,payload 3,payload 1] =
+      some (snapshot 0,[.var sx,.symbol "",.expression [.var sx,.var sx],.var sx]) := by
+    simp only [prepare?,graph_read,Option.bind_eq_bind,Option.bind_some,snapshot_read,
+      List.mapM_cons,List.mapM_nil,x_read,empty_symbol_read,repeated_read,pure]
+    decide
+  have decoded : readout? symbols memory (directory 0) [] 2 () inventory
+      [payload 1,payload 4,payload 3,payload 1] =
+      some [.var sy,.symbol "",.expression [.var sy,.var sy],.var sy] := by
+    rw [readout?_prepared prepared]
+    simp [CurrentStore.assignments,CurrentStore.normalize,CurrentStore.normalizeFrom,
+      snapshot,TypeSubst.bind,TypeSubst.apply,TypeSubst.lookup,TypeSubst.erase,
+      TypeSubst.applyAssignment,sx,sy,CurrentStore.referenceName,token,Token.ref]
+  obtain ⟨output,selected⟩ := (Spec.Eval.Steps.unifyCandidate_exists_iff_equation_model
+    (.var sy) (.symbol "") (logicalBindings (snapshot 0))).mpr
+      ⟨fun _ => .symbol "",(logicalBindings_agreement (snapshot 0)).solutions _ |>.mp
+        (by simp [TypeBindingSatisfied,CurrentStore.assignments,snapshot,applyTypeValuation]),
+        by simp [applyTypeValuation]⟩
+  obtain ⟨sourceOutput,nextTable,sourceNext,candidate,agreement,nextCertified,sourceCertified,packet⟩ :=
+    readout?_unify_transport prepared decoded
+      ((logicalBindings_agreement (snapshot 0)).symm.trans independentAlias_agreement)
+      independent_alias_readout_certificate selected
+  exact ⟨decoded,output,sourceOutput,nextTable,sourceNext,selected,candidate,agreement,
+    nextCertified,sourceCertified,packet.2.2⟩
+
+private def receiptDestination (mode : Fin 3) : Destination :=
+  destination (frame mode) ⟨1,by simp [frame]⟩
+
+private def openReceived : DirectoryReadback :=
+  (receiveDirectory? (directory 0) (receiptDestination 0) (payload 4)).get (by decide +kernel)
+
+private theorem open_received :
+    receiveDirectory? (directory 0) (receiptDestination 0) (payload 4) = some openReceived :=
+  (Option.some_get _).symm
+
+private def openRaw : NativeRow :=
+  (Snapshot.readRow? (directory 0).toImage (token.ref 1)).get (by decide +kernel)
+
+private def openUpdated : List SourceRow :=
+  (snapshot 0).map (RowOf.afterWrite openReceived.directory.writeClock (token.ref 1) (some (.symbol "")))
+
+/-- The actual directory receipt writes the open alias target. The decoder
+retains the earlier repeated packet, earns the new certificate, and reads
+both old occurrences through the same new ground value. -/
+theorem actual_open_receipt_retains_the_saved_packet :
+    ∃ _certificate : ReadoutCertificate ⟨CurrentStore.assignments openUpdated,[]⟩
+        (CurrentStore.normalize (CurrentStore.assignments openUpdated)),
+      directoryProvider.step (base := ()) (index := ()) (directory 0)
+        (receiptDestination 0,payload 4) = ⟨true,openReceived⟩ ∧
+      prepare? symbols memory openReceived [] 2 () inventory [payload 3,payload 1] =
+        some (openUpdated,[.expression [.var sx,.var sx],.var sx]) ∧
+      (∀ value,(CurrentStore.normalize (CurrentStore.assignments openUpdated)).apply
+        ((CurrentStore.normalize (CurrentStore.assignments (snapshot 0))).apply value) =
+        (CurrentStore.normalize (CurrentStore.assignments openUpdated)).apply value) ∧
+      readout? symbols memory openReceived [] 2 () inventory [payload 3,payload 1] =
+        some [.expression [.symbol "",.symbol ""],.symbol ""] ∧
+      openReceived.directory.writeClock = 3 := by
+  have renewed := receiveDirectory_open_renewal alias_pending_tuple_is_prepared graph_read
+    open_received (empty_symbol_read 0) (raw := openRaw)
+    (by decide +kernel) (by decide +kernel) (by decide +kernel) (by decide +kernel)
+  obtain ⟨certificate,accepted,prepared,_,absorbs,_⟩ := renewed
+  refine ⟨certificate,accepted,prepared,absorbs,?_,by decide +kernel⟩
+  have target : (receiptDestination 0).token.ref (receiptDestination 0).slot = token.ref 1 := rfl
+  simp only [target] at prepared
+  rw [readout?_prepared prepared]
+  simp [CurrentStore.assignments,CurrentStore.normalize,CurrentStore.normalizeFrom,
+    snapshot,RowOf.afterWrite,TypeSubst.bind,TypeSubst.apply,TypeSubst.lookup,TypeSubst.erase,
+    TypeSubst.applyAssignment,sx,sy,CurrentStore.referenceName,token,Token.ref]
+
+private def overwritten : DirectoryReadback :=
+  (receiveDirectory? (directory 1) (receiptDestination 1) (payload 5)).get (by decide +kernel)
+
+private def free99 : String := CurrentStore.freeName (sourceIdName 99)
+
+private def overwrittenRows : List SourceRow :=
+  (snapshot 1).map (RowOf.afterWrite overwritten.directory.writeClock (token.ref 1) (some (.var free99)))
+
+private theorem overwritten_prepared :
+    prepare? symbols memory overwritten [99] 2 () inventory [payload 3,payload 1] =
+      some (overwrittenRows,[.expression [.var sx,.var sx],.var sx]) := by
+  have before : prepare? symbols memory (directory 1) [99] 2 () inventory [payload 3,payload 1] =
+      some (snapshot 1,[.expression [.var sx,.var sx],.var sx]) := by
+    simp only [prepare?,graph_read,Option.bind_eq_bind,Option.bind_some,snapshot_read,
+      List.mapM_cons,List.mapM_nil,repeated_read,x_read,pure]
+    decide
+  have decoded : atom? symbols graph (directory 1) [99] 2 ⟨(),payload 5⟩ = some (.var free99) := by
+    change atom? symbols graph (directory 1) [99] 2 (graph.key ⟨4,by decide⟩) = _
+    rw [atom?_key]
+    change qualify? (directory 1) [99] (.var (sourceIdName 99)) = _
+    have admitted : covered (directory 1) [99] (.var (sourceIdName 99)) = true := by decide +kernel
+    have absent : lookupName? (names (directory 1)) (sourceIdName 99) = none := by decide +kernel
+    unfold qualify?
+    rw [admitted,if_pos rfl]
+    simp only [renameTypeVars,sourceName,absent,free99]
+  have received : receiveDirectory? (directory 1) (receiptDestination 1) (payload 5) =
+      some overwritten := (Option.some_get _).symm
+  exact prepare?_receiveDirectory before graph_read received decoded (by decide +kernel)
+
+/-- Overwriting a bound target is a real successful receipt and remains
+readable, but its new constraints do not preserve the old source theory. -/
+theorem actual_bound_overwrite_does_not_strengthen_the_old_frame :
+    prepare? symbols memory overwritten [99] 2 () inventory [payload 3,payload 1] =
+      some (overwrittenRows,[.expression [.var sx,.var sx],.var sx]) ∧
+    readout? symbols memory overwritten [99] 2 () inventory [payload 3,payload 1] =
+      some [.expression [.var free99,.var free99],.var free99] ∧
+    ¬(∀ valuation,TypeBindingSatisfied valuation ⟨CurrentStore.assignments overwrittenRows,[]⟩ →
+      TypeBindingSatisfied valuation ⟨CurrentStore.assignments (snapshot 1),[]⟩) := by
+  refine ⟨overwritten_prepared,?_,?_⟩
+  · rw [readout?_prepared overwritten_prepared]
+    have different : sx ≠ sy := by decide +kernel
+    have outsideX : free99 ≠ sx :=
+      (CurrentStore.referenceName_ne_freeName (token.ref 0) (sourceIdName 99)).symm
+    simp [overwrittenRows,CurrentStore.assignments,CurrentStore.normalize,CurrentStore.normalizeFrom,
+      snapshot,RowOf.afterWrite,TypeSubst.bind,TypeSubst.apply,TypeSubst.lookup,TypeSubst.erase,
+      TypeSubst.applyAssignment,token,Token.ref,different,outsideX]
+  ·
+    intro strengthens
+    have current : TypeBindingSatisfied (fun _ => .symbol "Z")
+        ⟨CurrentStore.assignments overwrittenRows,[]⟩ := by
+      refine ⟨?_,by simp⟩
+      intro key term stored
+      simp [overwrittenRows,CurrentStore.assignments,snapshot,RowOf.afterWrite,
+        token,Token.ref] at stored
+      rcases stored with ⟨rfl,rfl⟩ | ⟨rfl,rfl⟩ <;> simp [applyTypeValuation]
+    have old := strengthens _ current
+    have impossible := old.1 sy (.symbol "") (by simp [CurrentStore.assignments,snapshot])
+    simp [applyTypeValuation] at impossible
+
+theorem ground_assignment_reaches_both_uses :
+    readout? symbols memory (directory 1) [] 2 () inventory [payload 3, payload 1] =
+      some [.expression [.symbol "", .symbol ""], .symbol ""] := by
+  have prepared : prepare? symbols memory (directory 1) [] 2 () inventory [payload 3, payload 1] =
+      some (snapshot 1, [.expression [.var sx, .var sx], .var sx]) := by
+    simp only [prepare?, graph_read, Option.bind_eq_bind, Option.bind_some, snapshot_read,
+      List.mapM_cons, List.mapM_nil, repeated_read, x_read, pure]
+    decide
+  rw [readout?_prepared prepared]
+  simp [CurrentStore.assignments, CurrentStore.normalize, CurrentStore.normalizeFrom,
+    snapshot, TypeSubst.bind, TypeSubst.apply, TypeSubst.lookup, TypeSubst.erase,
+    TypeSubst.applyAssignment, sx, sy,
+    CurrentStore.referenceName, token, Token.ref]
+
+theorem cyclic_snapshot_is_reader_refusal :
+    prepare? symbols memory (directory 2) [] 2 () inventory [] = none := by
+  simp only [prepare?, graph_read, Option.bind_eq_bind, Option.bind_some, snapshot_read,
+    List.mapM_nil, pure]
+  decide
+
+theorem missing_graph_node_is_not_open :
+    atom? symbols graph (directory 0) [] 2 ⟨(), payload 77⟩ = none := by
+  have missing : graph.node? ⟨(), payload 77⟩ = none := by decide
+  unfold atom?
+  rw [missing]
+  rfl
+
+theorem zero_depth_is_not_successful_empty_readout :
+    atom? symbols graph (directory 0) [] 0 (cursor 1) = none := by
+  change atom? symbols graph (directory 0) [] 0 (graph.key ⟨0, by decide⟩) = _
+  rw [atom?_key]
+  rfl
+
+theorem stale_id_cannot_be_declared_ambient :
+    qualify? (directory 0) [stale] (.var (sourceIdName stale)) = none := by
+  apply qualify?_unlisted_contextual
+  · decide
+  · decide
+
+theorem undeclared_ambient_is_refused :
+    qualify? (directory 0) [] (.var (sourceIdName 99)) = none := by decide
+
+theorem declared_ambient_retains_its_identity :
+    qualify? (directory 0) [99] (.var (sourceIdName 99)) =
+      some (.var (CurrentStore.freeName (sourceIdName 99))) := by
+  have missing : lookupName? (names (directory 0)) (sourceIdName 99#64) = none := by decide
+  have ambient : sourceIdName 99#64 ∈ globals [99#64] := by decide
+  simp [qualify?, covered, sourceName, missing, ambient, TypeSubst.typeVars, renameTypeVars]
+
+end Controls
+
+#print axioms prepare?_certified
+#print axioms prepare?_bound_slot
+#print axioms prepare?_tuple_memory
+#print axioms prepare?_joint_models
+#print axioms prepare?_pending_absorbed
+#print axioms activation?_source_slot
+#print axioms prepare?_activation_slot
+
+end Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaNeedHistory.NativePayload.CurrentBindings
+
+/-! ## Entered ordinary-return readback from the current binding store
+
+This downstream instance supplies the Atom and binding readers of the existing
+native frame adapter. Its binding region has an authoritative borrowed frame
+directory and no additional flat or equality rows. Borrowed inventory validity,
+the native layout interpretation and the space API remain explicit boundaries.
+The saved post-argument call is read structurally, never substituted again.
+
+An entered CALLER frame is the starting point. These laws do not select the
+ordinary branch of RESULT dispatch, execute CALLER's binding fold, or establish
+its transition to BIND. In particular, an inert symbol may take another native
+dispatch branch before reaching this point.
+-/
+namespace Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaNeedHistory.NativePayload.CurrentReturn
+
+open Mettapedia.GSLT.LanguageDef.NativeOps
+open Mettapedia.Machines.CMemory
+open Mettapedia.GSLT.SeparationAlgebra
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+open scoped Mettapedia.GSLT.SeparationAlgebra
+open CellPermission
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.MetavariableFrameStore
+open MetavariableFrameStore.Shared MetavariableFrameStore.Snapshot
+open Mettapedia.Languages.MeTTa.HE
+open Spec.Type Spec.Type.RuntimeRefinement Spec.Type.Presentation
+open Spec.Type.Presentation.BindingTheory Spec.Eval
+open Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaFrameWriteback
+open NativeFrames CurrentBindings
+open CeTTaRuntimeContracts NativeCallFrame NativeCallFrame.Copy
+
+variable {World : Type} [DecidableEq World]
+
+/-- An Atom pointer at the materialized C interface carries no deferred
+context. Contextual BindingValue payloads inside the store retain their tags
+and epochs in the existing graph reader. -/
+def pointerValue (pointer : Ptr) : BindingValueView :=
+  ⟨some (CurrentValueRead.physicalAddress pointer), 0, 0⟩
+
+abbrev snapshotBindings (snapshot : List SourceRow) : Bindings :=
+  ⟨CurrentStore.assignments snapshot, []⟩
+
+/-- This admits a complete frame-only binding image. A nonempty omitted flat
+row, a different directory or Prime state causes refusal, not an empty source
+environment. Native metadata remains in the retained physical storage. -/
+def imageBindings? (directory : DirectoryReadback) (snapshot : List SourceRow)
+    (image : BindingImage) : Option Bindings :=
+  if image.sharedRows = [] ∧ image.exclusiveRows = [] ∧ image.constraintRows = [] ∧
+      image.prime = none ∧
+      image.frameIndex.map CurrentValueRead.physicalAddress = directory.directory.directory then
+    some (snapshotBindings snapshot)
+  else none
+
+def atomPayloads (symbols : PhysicalAtoms.NumberedSymbols World) (graph : AtomGraph World)
+    (directory : DirectoryReadback) (ambient : List (BitVec 64)) (depth : Nat) (world : World)
+    (spaces : Ptr → Option Space) : PayloadReadback where
+  atom := fun address => atom? symbols graph directory ambient depth ⟨world, pointerValue address⟩
+  space := spaces
+  bindings := fun _ => none
+
+universe u
+variable {L : Type u} [Zero L] [Add L] [SepAlgebra L] [CellPermission L (Option CVal)]
+
+def payloads (symbols : PhysicalAtoms.NumberedSymbols World) (graph : AtomGraph World)
+    (directory : DirectoryReadback) (ambient : List (BitVec 64)) (depth : Nat) (world : World)
+    (spaces : Ptr → Option Space) (snapshot : List SourceRow)
+    (entryExtent constraintExtent : Nat) (heap : Heap L) : PayloadReadback :=
+  payloadsFromBindingImage entryExtent constraintExtent heap
+    (atomPayloads symbols graph directory ambient depth world spaces)
+    (imageBindings? directory snapshot)
+
+theorem payloads_binding_owned (symbols : PhysicalAtoms.NumberedSymbols World)
+    (graph : AtomGraph World) (directory : DirectoryReadback) (ambient : List (BitVec 64))
+    (depth : Nat) (world : World) (spaces : Ptr → Option Space) (snapshot : List SourceRow)
+    (entryExtent constraintExtent : Nat) (heap : Heap L) (address : Ptr)
+    (descriptor : BindingDescriptor) (rest : Heap L → Prop)
+    (owned : (BindingCells address descriptor ∗ rest) heap)
+    (flat : descriptor.length = 0) (shared : descriptor.sharedLength = 0)
+    (equalities : descriptor.equalityLength = 0) (he : descriptor.prime = none)
+    (directoryPointer : descriptor.frameIndex.map CurrentValueRead.physicalAddress =
+      directory.directory.directory) :
+    (payloads symbols graph directory ambient depth world spaces snapshot
+      entryExtent constraintExtent heap).bindings address = some (snapshotBindings snapshot) := by
+  have fields := owned_binding_descriptor address descriptor rest heap owned
+  simp [payloads, payloadsFromBindingImage, bindingImage?, fields, imageOfDescriptor?,
+    flat, shared, equalities, segmentReadback?, imageBindings?, he, directoryPointer]
+
+/-- Structural observations of the four actual pointers. The same graph and
+current-name map also read the remaining pending tuple. -/
+theorem prepared_operands {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)}
+    {original demand variantOnly materialized : Ptr} {pending : List BindingValueView}
+    {snapshot : List SourceRow} {call expected raw value : Atom} {remaining : List Atom}
+    (prepared : prepare? symbols memory directory ambient depth world inventory
+      (pointerValue original :: pointerValue demand :: pointerValue variantOnly ::
+        pointerValue materialized :: pending) =
+      some (snapshot, call :: expected :: raw :: value :: remaining)) :
+    ∃ graph, readGraph? memory (fun _ => (none : Option Empty)) inventory = some graph ∧
+      rows? symbols graph directory ambient depth world (Snapshot.rows directory.toImage) =
+        some snapshot ∧
+      atom? symbols graph directory ambient depth ⟨world, pointerValue original⟩ = some call ∧
+      atom? symbols graph directory ambient depth ⟨world, pointerValue demand⟩ = some expected ∧
+      atom? symbols graph directory ambient depth ⟨world, pointerValue variantOnly⟩ = some raw ∧
+      atom? symbols graph directory ambient depth ⟨world, pointerValue materialized⟩ = some value ∧
+      pending.mapM (fun payload => atom? symbols graph directory ambient depth ⟨world, payload⟩) =
+        some remaining := by
+  obtain ⟨graph, graphRead, rowsRead, tupleRead, _⟩ := prepare?_components prepared
+  have uncons : ∀ (head : BindingValueView) (tail : List BindingValueView)
+      (first : Atom) (rest : List Atom),
+      (head :: tail).mapM (fun payload => atom? symbols graph directory ambient depth
+        ⟨world, payload⟩) = some (first :: rest) →
+      atom? symbols graph directory ambient depth ⟨world, head⟩ = some first ∧
+        tail.mapM (fun payload => atom? symbols graph directory ambient depth
+          ⟨world, payload⟩) = some rest := by
+    intro head tail first rest read
+    rw [List.mapM_cons] at read
+    obtain ⟨value, headRead, read⟩ := Option.bind_eq_some_iff.mp read
+    obtain ⟨values, tailRead, equal⟩ := Option.bind_eq_some_iff.mp read
+    have equal := List.cons.inj (Option.some.inj equal)
+    cases equal.1
+    cases equal.2
+    exact ⟨headRead, tailRead⟩
+  obtain ⟨firstRead, rest⟩ := uncons _ _ _ _ tupleRead
+  obtain ⟨secondRead, rest⟩ := uncons _ _ _ _ rest
+  obtain ⟨thirdRead, rest⟩ := uncons _ _ _ _ rest
+  obtain ⟨fourthRead, rest⟩ := uncons _ _ _ _ rest
+  exact ⟨graph, graphRead, rowsRead, firstRead, secondRead, thirdRead, fourthRead, rest⟩
+
+def observedInvocation (caller : NativeCaller) (parent : PushArguments)
+    (prepared : PreparedOutcome) (space : Space) (target : Ptr)
+    (snapshot : List SourceRow) (call expected raw value : Atom) :
+    CallReturnControl.Invocation NativeCaller :=
+  ⟨caller, space, call, expected, prepared.row, snapshotBindings snapshot,
+    value, raw, pointerIdentity target, pointerIdentity prepared.relay,
+    parent.fuel.toInt, parent.preserve, .raw⟩
+
+theorem invocation_from_prepared_operands (symbols : PhysicalAtoms.NumberedSymbols World)
+    (graph : AtomGraph World) (directory : DirectoryReadback) (ambient : List (BitVec 64))
+    (depth : Nat) (world : World) (spaces : Ptr → Option Space) (snapshot : List SourceRow)
+    (entryExtent constraintExtent : Nat) (heap : Heap L)
+    (caller : NativeCaller) (parent : PushArguments) (prepared : PreparedOutcome)
+    (original demand spaceAddress target : Ptr) (space : Space)
+    (call expected raw value : Atom)
+    (kind : parent.kind = 7) (callPointer : parent.atom = some original)
+    (demandPointer : parent.demand = some demand) (spacePointer : parent.space = some spaceAddress)
+    (targetPointer : parent.target = some target) (spaceRead : spaces spaceAddress = some space)
+    (callRead : atom? symbols graph directory ambient depth ⟨world, pointerValue original⟩ = some call)
+    (demandRead : atom? symbols graph directory ambient depth ⟨world, pointerValue demand⟩ = some expected)
+    (rawRead : atom? symbols graph directory ambient depth ⟨world, pointerValue prepared.variantOnly⟩ = some raw)
+    (valueRead : atom? symbols graph directory ambient depth ⟨world, pointerValue prepared.materialized⟩ = some value)
+    (descriptor : BindingDescriptor) (rest : Heap L → Prop)
+    (owned : (BindingCells prepared.environment descriptor ∗ rest) heap)
+    (flat : descriptor.length = 0) (shared : descriptor.sharedLength = 0)
+    (equalities : descriptor.equalityLength = 0) (he : descriptor.prime = none)
+    (directoryPointer : descriptor.frameIndex.map CurrentValueRead.physicalAddress =
+      directory.directory.directory) :
+    invocationOfFields? (payloads symbols graph directory ambient depth world spaces snapshot
+      entryExtent constraintExtent heap) caller parent prepared =
+      some (observedInvocation caller parent prepared space target snapshot call expected raw value) := by
+  have bindingsRead := payloads_binding_owned symbols graph directory ambient depth world spaces snapshot
+    entryExtent constraintExtent heap prepared.environment descriptor rest owned
+    flat shared equalities he directoryPointer
+  simp only [invocationOfFields?, kind, bne_self_eq_false, Bool.false_eq_true, ↓reduceIte,
+    spacePointer, callPointer, targetPointer, demandReadback, demandPointer, bindingsRead]
+  simp [payloads, payloadsFromBindingImage, atomPayloads, callRead, demandRead, rawRead,
+    valueRead, spaceRead, observedInvocation]
+
+theorem entered_current_return_readback {ReturnWorld Failure : Type}
+    (symbols : PhysicalAtoms.NumberedSymbols World) (memory : World → TargetMemory)
+    (directory : DirectoryReadback) (ambient : List (BitVec 64)) (depth : Nat) (world : World)
+    (inventory : List (Cursor World)) (pending : List BindingValueView)
+    (snapshot : List SourceRow) (call expected raw value : Atom) (remaining : List Atom)
+    (spaces : Ptr → Option Space) (space : Space)
+    (offset : FrameOffsets) (frameEnvironmentOffset outcomeEnvironmentOffset : Nat)
+    (entryExtent constraintExtent : Nat) (storage : ExecutableStorage.Storage CVal)
+    (stack child : Ptr) (caller : NativeCaller) (prepared : PreparedOutcome)
+    (parent : PushArguments) (original demand spaceAddress target : Ptr)
+    (descriptor : BindingDescriptor) (rest : Heap (Excl (Option CVal)) → Prop)
+    (preparedRead : prepare? symbols memory directory ambient depth world inventory
+      (pointerValue original :: pointerValue demand :: pointerValue prepared.variantOnly ::
+        pointerValue prepared.materialized :: pending) =
+      some (snapshot, call :: expected :: raw :: value :: remaining))
+    (kind : parent.kind = 7) (callPointer : parent.atom = some original)
+    (demandPointer : parent.demand = some demand) (spacePointer : parent.space = some spaceAddress)
+    (targetPointer : parent.target = some target) (spaceRead : spaces spaceAddress = some space)
+    (flat : descriptor.length = 0) (shared : descriptor.sharedLength = 0)
+    (equalities : descriptor.equalityLength = 0) (he : descriptor.prime = none)
+    (directoryPointer : descriptor.frameIndex.map CurrentValueRead.physicalAddress =
+      directory.directory.directory)
+    (borrowedFrom : directory.directory.bindings = CurrentValueRead.physicalAddress prepared.environment)
+    (environment : prepared.environment = prepared.seed + outcomeEnvironmentOffset)
+    (owned : (FrameCells offset caller.frame parent ∗
+      FrameCells offset child
+        (callbackArguments parent prepared.seed prepared.variantOnly prepared.relay
+          outcomeEnvironmentOffset).scalar ∗
+      StackCells stack (child :: caller.frame :: caller.parents) ∗
+      BindingCells prepared.environment descriptor ∗
+      BindingCells (child + frameEnvironmentOffset) descriptor.retainedFork ∗ rest)
+      (ExecutableStorage.heap storage))
+    (distinct : (child :: caller.frame :: caller.parents).Nodup) :
+    let invocation := observedInvocation caller parent prepared space target snapshot call expected raw value
+    let table := CurrentStore.normalize (CurrentStore.assignments snapshot)
+    ∃ graph, readGraph? memory (fun _ => (none : Option Empty)) inventory = some graph ∧
+      directory.directory.bindings = CurrentValueRead.physicalAddress prepared.environment ∧
+      retainedFrameReadback? (World := ReturnWorld) (Failure := Failure) offset frameEnvironmentOffset
+        (payloads symbols graph directory ambient depth world spaces snapshot entryExtent constraintExtent
+          (ExecutableStorage.heap storage)) storage stack child caller prepared =
+        some (CallReturnControl.active
+          ⟨invocation, raw, expected, snapshotBindings snapshot, pointerIdentity prepared.relay⟩
+          (stack, child, storage)) ∧
+      ReadoutCertificate (snapshotBindings snapshot) table ∧
+      readout? symbols memory directory ambient depth world inventory
+        (pointerValue original :: pointerValue demand :: pointerValue prepared.variantOnly ::
+          pointerValue prepared.materialized :: pending) =
+        some ((call :: expected :: raw :: value :: remaining).map table.apply) ∧
+      ∀ (published : List (Nat × ResultPair)) (dispatch : Spec.Eval.GroundedDispatch)
+        (live : List Atom) (typing : EvalTypeService) (protectedScope : List String)
+        (result : FrameResult),
+        value ≠ Atom.notReducible → ¬IsEmptyOrErrorRel value →
+        CallReturnControl.project? .ordinaryTail (CallReturnControl.start invocation published) =
+          some (CallReturnControl.requested invocation published) ∧
+        (EvalAtomRawRel space dispatch live value expected
+            (BindingFrame.selected (snapshotBindings snapshot) table (prepare?_certified preparedRead))
+            result (typing := typing) (protectedScope := protectedScope) ↔
+          CallReturnRel space dispatch live call expected value
+            (BindingFrame.selected (snapshotBindings snapshot) table (prepare?_certified preparedRead))
+            result (typing := typing) (protectedScope := protectedScope)) := by
+  dsimp only
+  obtain ⟨graph, graphRead, _, callRead, demandRead, rawRead, valueRead, _⟩ :=
+    prepared_operands preparedRead
+  let base := atomPayloads symbols graph directory ambient depth world spaces
+  let decode := imageBindings? directory snapshot
+  let readers := payloads symbols graph directory ambient depth world spaces snapshot
+    entryExtent constraintExtent (ExecutableStorage.heap storage)
+  let invocation := observedInvocation caller parent prepared space target snapshot call expected raw value
+  have sourceOwned : (BindingCells prepared.environment descriptor ∗
+      FrameCells offset caller.frame parent ∗
+      FrameCells offset child
+        (callbackArguments parent prepared.seed prepared.variantOnly prepared.relay
+          outcomeEnvironmentOffset).scalar ∗
+      StackCells stack (child :: caller.frame :: caller.parents) ∗
+      BindingCells (child + frameEnvironmentOffset) descriptor.retainedFork ∗ rest)
+      (ExecutableStorage.heap storage) := by cmem_exact
+  have decoded := invocation_from_prepared_operands symbols graph directory ambient depth world spaces
+    snapshot entryExtent constraintExtent (ExecutableStorage.heap storage) caller parent prepared
+    original demand spaceAddress target space call expected raw value kind callPointer demandPointer
+    spacePointer targetPointer spaceRead callRead demandRead rawRead valueRead descriptor _ sourceOwned
+    flat shared equalities he directoryPointer
+  have copied : readers.bindings (child + frameEnvironmentOffset) = readers.bindings prepared.environment := by
+    apply owned_retained_copy_readback entryExtent constraintExtent (ExecutableStorage.heap storage)
+      base decode prepared.environment (child + frameEnvironmentOffset) descriptor
+      (by simp [flat, shared]) he
+      (FrameCells offset caller.frame parent ∗
+        FrameCells offset child
+          (callbackArguments parent prepared.seed prepared.variantOnly prepared.relay
+            outcomeEnvironmentOffset).scalar ∗
+        StackCells stack (child :: caller.frame :: caller.parents) ∗ rest)
+    cmem_exact
+  have retained := retained_readback_of_owned_native_entry (World := ReturnWorld) (Failure := Failure)
+    offset frameEnvironmentOffset outcomeEnvironmentOffset readers storage stack child caller prepared
+    parent invocation (BindingCells prepared.environment descriptor ∗
+      BindingCells (child + frameEnvironmentOffset) descriptor.retainedFork ∗ rest)
+    owned decoded environment copied distinct
+  refine ⟨graph, graphRead, borrowedFrom, retained, prepare?_certified preparedRead,
+    readout?_prepared preparedRead, ?_⟩
+  intro published dispatch live typing protectedScope result notRefusal notStopped
+  refine ⟨(CallReturnControl.ordinary_source_square invocation published dispatch live typing
+    (.selected _ (prepare?_certified preparedRead)) rfl notRefusal notStopped result).1, ?_⟩
+  exact (CallReturnRel.evaluate_iff notRefusal notStopped).symm
+
+/-- A successful finite read of an actual variable layer uses the directory's
+full generational identity. The observed source variable is not a supplied
+decoder result. -/
+theorem prepared_variable_identity {symbols : PhysicalAtoms.NumberedSymbols World}
+    {memory : World → TargetMemory} {directory : DirectoryReadback} {ambient : List (BitVec 64)}
+    {depth : Nat} {world : World} {inventory : List (Cursor World)} {graph : AtomGraph World}
+    (graphRead : readGraph? memory (fun _ => (none : Option Empty)) inventory = some graph)
+    (frame : FrameReadback) (member : frame ∈ directory.frames) (index : Fin frame.slots.length)
+    (pointer : Ptr) (raw : Atom)
+    (layer : readLayer? memory (fun _ => (none : Option Empty)) ⟨world, pointerValue pointer⟩ =
+      some (.variable frame.slots[index.val].varId, []))
+    (observed : atom? symbols graph directory ambient depth ⟨world, pointerValue pointer⟩ = some raw) :
+    raw = .var (CurrentStore.referenceName (frame.view.token.ref index.val)) := by
+  obtain ⟨source, memoryRead, qualified⟩ := atom?_memory graphRead observed
+  cases depth with
+  | zero => simp [observeMemory, Mettapedia.Machines.RationalTermGraph.LayerReader.observe,
+      layer, PhysicalAtoms.sourceObservation?] at memoryRead
+  | succ depth =>
+    simp only [observeMemory, Mettapedia.Machines.RationalTermGraph.LayerReader.observe, layer,
+      List.mapM_nil, pure, Option.map_some, Option.bind_some,
+      PhysicalAtoms.sourceObservation?, Option.some.injEq] at memoryRead
+    subst source
+    exact (Option.some.inj ((qualify?_slot directory ambient frame member index).symm.trans qualified)).symm
+
+/-- The freshly written slot and the actual materialized pointer earn a
+selected-frame substitution. Open payloads use the same certified readout as
+the remaining packet; they need not already be normal. This does not execute
+the native CALLER variable step. -/
+theorem prepared_current_slot_materialization
+    {symbols : PhysicalAtoms.NumberedSymbols World} {memory : World → TargetMemory}
+    {directory : DirectoryReadback} {ambient : List (BitVec 64)} {depth : Nat} {world : World}
+    {inventory : List (Cursor World)} {original demand variantOnly materialized : Ptr}
+    {pending : List BindingValueView} {snapshot : List SourceRow}
+    {call expected raw value : Atom} {remaining : List Atom}
+    (prepared : prepare? symbols memory directory ambient depth world inventory
+      (pointerValue original :: pointerValue demand :: pointerValue variantOnly ::
+        pointerValue materialized :: pending) =
+      some (snapshot, call :: expected :: raw :: value :: remaining))
+    (activation : Activation.Inventory) (source : Address)
+    (frame : FrameReadback) (member : frame ∈ directory.frames) (index : Fin frame.slots.length)
+    (identity : activation.view.authority = encode frame.view.token)
+    (known : frame.slots[index.val].sourceId ∈ activation.sources)
+    (kind : targetRead (memory world) (sourceFieldAddress source 0) = some (.word 1))
+    (sourceId : targetRead (memory world) (sourceFieldAddress source 2) =
+      some (.word frame.slots[index.val].sourceId))
+    (fresh : activation.view.firstWrite < frame.slots[index.val].writeVersion)
+    (stored : frame.slots[index.val].value.payload = some (pointerValue materialized))
+    (layer : readLayer? memory (fun _ => (none : Option Empty)) ⟨world, pointerValue variantOnly⟩ =
+      some (.variable frame.slots[index.val].varId, [])) :
+    (BindingFrame.selected (snapshotBindings snapshot)
+      (CurrentStore.normalize (CurrentStore.assignments snapshot)) (prepare?_certified prepared)).Materialization
+        raw ((CurrentStore.normalize (CurrentStore.assignments snapshot)).apply value) ∧
+      ∃ graph, readGraph? memory (fun _ => (none : Option Empty)) inventory = some graph ∧
+        activation? symbols graph (memory world) directory ambient depth world activation source =
+          some (.known (some (pointerValue materialized)), some value) := by
+  obtain ⟨graph, graphRead, _, _, _, rawRead, valueRead, _⟩ := prepared_operands prepared
+  obtain ⟨graph', row, graphRead', rowMember, _, rowName, activationRead⟩ :=
+    prepare?_activation_slot prepared activation source frame member index identity known kind sourceId
+  have sameGraph := Option.some.inj (graphRead.symm.trans graphRead')
+  subst graph'
+  have nativeRead := Activation.readValue?_source_slot directory (memory world) activation source frame
+    member index identity known kind sourceId
+  have decoded : activation? symbols graph (memory world) directory ambient depth world activation source =
+      some (.known (some (pointerValue materialized)), some value) := by
+    simp [activation?, nativeRead, fresh, stored, value?, valueRead]
+  have output : row.observed.outputAfter activation.view.firstWrite = some value := by
+    have equal := Option.some.inj (activationRead.symm.trans decoded)
+    exact congrArg Prod.snd equal
+  have rowValue : row.observed.value = some value := by
+    unfold SlotReadbackOf.outputAfter at output
+    split at output
+    · exact output
+    · contradiction
+  have certified := prepare?_certified prepared
+  have model := (certified.theory _).mp (Theory.normal_presentedValuation_satisfied certified.normal)
+  have equation := model.1 row.name value
+    (CurrentStore.mem_assignments.mpr ⟨row, rowMember, rfl, rowValue⟩)
+  have rawIdentity := prepared_variable_identity graphRead frame member index variantOnly raw layer rawRead
+  refine ⟨?_, graph, graphRead, decoded⟩
+  rw [BindingFrame.materialization_selected, rawIdentity]
+  simpa only [Theory.presentedValuation, Theory.applyTypeValuation_presented_eq_apply,
+    rowName] using equation.symm
+
+namespace Controls
+
+private def ptr (block : Nat) : Ptr := ⟨block, 0⟩
+private def address (block : Nat) : Address := CurrentValueRead.physicalAddress (ptr block)
+private def token : Token := ⟨1, 1⟩
+private def variableId : BitVec 64 := BitVec.ofNat 64 ((encode token).toNat * 2 ^ 32 + 1)
+private def frame : FrameReadback where
+  view := ⟨address 32, address 21, token, 1, 1, 0, 1, 0, false, true, true⟩
+  slots := [⟨1, variableId, 0, none, true, pointerValue (ptr 2), 1⟩]
+  admitted := by decide
+private def directory : DirectoryReadback where
+  directory := ⟨address 32, some (address 21), 1, 0, 1⟩
+  capacity := 2
+  frames := [frame]
+  admitted := by decide
+private def symbols : PhysicalAtoms.NumberedSymbols Unit where
+  bytes := fun _ _ => none
+  unique := by intros; contradiction
+private def memory : Unit → TargetMemory := fun _ =>
+  ⟨fun storage index =>
+    if storage = 12 then
+      if index < 2 then some (.reference (some (address 1))) else none
+    else if index = 0 then
+      if storage = 1 then some (.record "Atom" [.word 1, .word 0, .word variableId])
+      else if storage = 2 then some (.record "Atom"
+        [.word 0, .word 0, .word 0, .word 0, .word 0, .reference none])
+      else if storage = 3 then some (.record "Atom"
+        [.word 3, .word 0, .word 0, .word 0, .word 0, .reference none, .word 0, .word 0,
+          .record "expr" [.reference (some (address 12)), .word 2]])
+      else if storage = 4 then some (.record "Atom" [.word 1, .word 0, .word 1])
+      else none
+    else none, fun _ => none⟩
+private def cursor (block : Nat) : NativePayload.Cursor Unit := ⟨(), pointerValue (ptr block)⟩
+private def inventory : List (NativePayload.Cursor Unit) := [cursor 1, cursor 2, cursor 3]
+private def graphRows : List (Mettapedia.Machines.RationalTermGraph.KeyedRow
+    (NativePayload.Cursor Unit) (Label Empty)) :=
+  [⟨cursor 1, .variable variableId, []⟩, ⟨cursor 2, .symbolBytes [], []⟩,
+    ⟨cursor 3, .expression, [cursor 1, cursor 1]⟩]
+private def graph : AtomGraph Unit := ⟨graphRows, by decide⟩
+private theorem graph_read : readGraph? memory (fun _ => (none : Option Empty)) inventory =
+    some graph := by
+  have rows : readRows? memory (fun _ => (none : Option Empty)) inventory = some graphRows := by decide
+  change (readRows? memory (fun _ => (none : Option Empty)) inventory).bind
+    Mettapedia.Machines.RationalTermGraph.decodeKeyedTable? = _
+  rw [rows]
+  change Mettapedia.Machines.RationalTermGraph.decodeKeyedTable? graphRows = some graph
+  exact dif_pos graph.valid
+private def name : String := CurrentStore.referenceName (token.ref 0)
+private def savedCall : Atom := .expression [.var name, .var name]
+private def snapshot : List SourceRow := [⟨token.ref 0, name, ⟨some (.symbol ""), 1, 1, none⟩⟩]
+private theorem variable_read : atom? symbols graph directory [] 2 (cursor 1) = some (.var name) := by
+  change atom? symbols graph directory [] 2 (graph.key ⟨0, by decide⟩) = _
+  rw [atom?_key]
+  change qualify? directory [] (.var (sourceIdName variableId)) = _
+  exact qualify?_slot directory [] frame (by simp [directory]) ⟨0, by decide⟩
+private theorem symbol_read : atom? symbols graph directory [] 2 (cursor 2) = some (.symbol "") := by
+  change atom? symbols graph directory [] 2 (graph.key ⟨1, by decide⟩) = _
+  rw [atom?_key]
+  change qualify? directory [] (.symbol "") = _
+  simp [qualify?, covered, TypeSubst.typeVars, renameTypeVars]
+private theorem call_read : atom? symbols graph directory [] 2 (cursor 3) = some savedCall := by
+  change atom? symbols graph directory [] 2 (graph.key ⟨2, by decide⟩) = _
+  rw [atom?_key]
+  change qualify? directory []
+    (.expression [.var (sourceIdName variableId), .var (sourceIdName variableId)]) = _
+  have named := lookupName?_slot directory frame (by simp [directory]) ⟨0, by decide⟩
+  change lookupName? (names directory) (sourceIdName variableId) = some (token.ref 0) at named
+  simp [qualify?, covered, TypeSubst.typeVars, TypeSubst.typeVarsList,
+    sourceName, named, renameTypeVars, savedCall, name]
+private theorem rows_read : rows? symbols graph directory [] 2 ()
+    (Snapshot.rows directory.toImage) = some snapshot := by
+  change rows? symbols graph directory [] 2 ()
+    [⟨token.ref 0, sourceIdName 1, ⟨some (pointerValue (ptr 2)), 1, 1, none⟩⟩] = _
+  have read := symbol_read
+  change atom? symbols graph directory [] 2 ⟨(), pointerValue (ptr 2)⟩ = some (.symbol "") at read
+  simp [rows?, row?, value?, read, snapshot, name]
+
+theorem nonempty_entered_operands_are_prepared :
+    prepare? symbols memory directory [] 2 () inventory
+      [pointerValue (ptr 3), pointerValue (ptr 2), pointerValue (ptr 1), pointerValue (ptr 2)] =
+      some (snapshot, [savedCall, .symbol "", .var name, .symbol ""]) := by
+  have call := call_read
+  have symbol := symbol_read
+  have variableRead := variable_read
+  dsimp only [cursor] at call symbol variableRead
+  simp only [prepare?, graph_read, Option.bind_eq_bind, Option.bind_some, rows_read,
+    List.mapM_cons, List.mapM_nil, call, symbol, variableRead, pure]
+  decide
+
+private def activation (boundary : Nat) (small : boundary < 2 ^ 64) : Activation.Inventory where
+  view := ⟨none, none, encode token, 1, 1, true, encode token, 1, 0, boundary⟩
+  sources := [1]
+  admitted := by
+    constructor
+    · dsimp only [Activation.View.Admissible]
+      exact ⟨by decide, by decide, by decide, by decide, by decide, small⟩
+    · refine ⟨rfl, by simp, ?_, ?_⟩
+      · intro source member
+        have equal : source = (1 : BitVec 64) := by simpa using member
+        subst source
+        decide
+      · intro _ index
+        simp
+
+theorem current_variable_earns_ground_materialization :
+    (BindingFrame.selected (snapshotBindings snapshot)
+      (CurrentStore.normalize (CurrentStore.assignments snapshot))
+      (prepare?_certified nonempty_entered_operands_are_prepared)).Materialization
+      (.var name) (.symbol "") ∧
+    ∃ observed, readGraph? memory (fun _ => (none : Option Empty)) inventory = some observed ∧
+      activation? symbols observed (memory ()) directory [] 2 () (activation 0 (by decide)) (address 4) =
+        some (.known (some (pointerValue (ptr 2))), some (.symbol "")) := by
+  simpa only [TypeSubst.apply] using prepared_current_slot_materialization nonempty_entered_operands_are_prepared
+    (activation 0 (by decide)) (address 4) frame (by simp [directory]) ⟨0, by decide⟩
+    rfl (by decide) rfl rfl (by decide) rfl (by decide)
+
+private def offsets : FrameOffsets := ⟨1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15⟩
+private def parent : PushArguments :=
+  ⟨7, some (ptr 40), none, some (ptr 3), some (ptr 2), 17, some (ptr 41), true⟩
+private def prepared : PreparedOutcome := ⟨ptr 32, ptr 32, ptr 2, ptr 1, ptr 42, 5⟩
+private def caller : NativeCaller := ⟨ptr 30, [ptr 33]⟩
+private def descriptor : BindingDescriptor :=
+  { BindingDescriptor.initial with frameIndex := some (ptr 21) }
+private def frameCells (next : Option Ptr) (phase : UInt32) (arguments : PushArguments) : List (Option CVal) :=
+  [some (.ptr next), some (.u32 arguments.kind), some (.u32 phase), some (.ptr arguments.space),
+    some (.ptr arguments.arena), some (.ptr arguments.atom), some (.ptr arguments.demand),
+    some (.i32 arguments.fuel), some (.ptr arguments.target), some (.bool arguments.preserve)]
+private def storage : ExecutableStorage.Storage CVal :=
+  [(29, ⟨true, [some (.ptr (some (ptr 31))), some (.u64 3)]⟩),
+    (30, ⟨true, frameCells (some (ptr 33)) 1 parent⟩),
+    (31, ⟨true, frameCells (some (ptr 30)) 0
+      (callbackArguments parent prepared.seed prepared.variantOnly prepared.relay 0).scalar ++
+        List.replicate 10 none ++ descriptor.retainedFork.cells.map some⟩),
+    (32, ⟨true, descriptor.cells.map some⟩), (33, ⟨true, [some (.ptr none)]⟩)]
+private def spaces (address : Ptr) : Option Space := if address = ptr 40 then some ⟨[]⟩ else none
+private def readers : PayloadReadback := payloads symbols graph directory [] 2 () spaces snapshot
+  1 1 (ExecutableStorage.heap storage)
+private def invocation := observedInvocation caller parent prepared ⟨[]⟩ (ptr 41)
+  snapshot savedCall (.symbol "") (.var name) (.symbol "")
+
+private theorem parent_fields : frameArguments? offsets (ExecutableStorage.heap storage) caller.frame =
+    some parent := rfl
+private theorem child_fields : frameArguments? offsets (ExecutableStorage.heap storage) (ptr 31) =
+    some (callbackArguments parent prepared.seed prepared.variantOnly prepared.relay 0).scalar := rfl
+private theorem source_image : bindingImage? 1 1 (ExecutableStorage.heap storage) (ptr 32) =
+    imageOfDescriptor? 1 1 (ExecutableStorage.heap storage) descriptor := rfl
+private theorem child_image : bindingImage? 1 1 (ExecutableStorage.heap storage) (ptr 31 + 20) =
+    imageOfDescriptor? 1 1 (ExecutableStorage.heap storage) descriptor.retainedFork := rfl
+private theorem source_bindings : readers.bindings (ptr 32) = some (snapshotBindings snapshot) := by
+  simp only [readers, payloads, payloadsFromBindingImage, bind]
+  rw [source_image]
+  rfl
+private theorem child_bindings : readers.bindings (ptr 31 + 20) = some (snapshotBindings snapshot) := by
+  simp only [readers, payloads, payloadsFromBindingImage, bind]
+  rw [child_image]
+  rfl
+private theorem decoded_invocation : invocationOfFields? readers caller parent prepared = some invocation := by
+  have call : readers.atom (ptr 3) = some savedCall := call_read
+  have symbol : readers.atom (ptr 2) = some (.symbol "") := symbol_read
+  have variableRead : readers.atom (ptr 1) = some (.var name) := variable_read
+  have space : readers.space (ptr 40) = some (Space.mk []) := rfl
+  simp only [invocationOfFields?, parent, prepared, demandReadback, bne_self_eq_false,
+    Bool.false_eq_true, ↓reduceIte, bind, Option.bind_some, space, call, symbol, variableRead,
+    source_bindings]
+  rfl
+
+/-- This fixture starts at the entered child. It does not claim that the
+ordinary dispatcher chooses this branch for an inert ground symbol. -/
+theorem entered_return_keeps_the_actual_request_and_storage :
+    retainedFrameReadback? (World := Unit) (Failure := Unit) offsets 20 readers storage
+      (ptr 29) (ptr 31) caller prepared =
+      some (CallReturnControl.active
+        ⟨invocation, .var name, .symbol "", snapshotBindings snapshot, pointerIdentity (ptr 42)⟩
+        (ptr 29, ptr 31, storage)) := by
+  have request := callback_request_from_native_parent readers caller parent prepared invocation
+    0 decoded_invocation rfl
+  have copied : readers.bindings (ptr 31 + 20) = readers.bindings prepared.environment := by
+    exact child_bindings.trans source_bindings.symm
+  have loaded : nativeChildRequest? offsets 20 readers (ExecutableStorage.heap storage)
+      caller prepared (ptr 31) = some
+        ⟨invocation, .var name, .symbol "", snapshotBindings snapshot, pointerIdentity (ptr 42)⟩ := by
+    simp only [nativeChildRequest?, invocationReadback?, parent_fields, bind, Option.bind_some,
+      decoded_invocation, child_fields, callbackArguments, bne_self_eq_false,
+      Bool.false_eq_true, ↓reduceIte]
+    simpa [requestOfCaller?, callbackArguments, copied, prepared, ptr_add_zero,
+      invocation, observedInvocation] using request
+  have top : pointerCell (ExecutableStorage.heap storage) (ptr 29) = some (some (ptr 31)) := rfl
+  simp only [retainedFrameReadback?, top, bind, Option.bind_some, bne_self_eq_false,
+    Bool.false_eq_true, ↓reduceIte, loaded, pure]
+
+theorem saved_call_is_not_substituted_again : invocation.original = savedCall ∧
+    invocation.original ≠ (CurrentStore.normalize (CurrentStore.assignments snapshot)).apply savedCall := by
+  constructor
+  · rfl
+  · simp [invocation, observedInvocation, savedCall, snapshot, CurrentStore.assignments,
+      CurrentStore.normalize, CurrentStore.normalizeFrom, TypeSubst.bind, TypeSubst.apply,
+      TypeSubst.lookup, TypeSubst.erase, TypeSubst.applyAssignment, name]
+
+/-- No new activation output does not mean that the current environment is
+empty: its older binding still materializes the current variable. -/
+theorem old_write_is_not_an_empty_current_environment :
+    activation? symbols graph (memory ()) directory [] 2 () (activation 1 (by decide)) (address 4) =
+      some (.known none, none) ∧
+    (BindingFrame.selected (snapshotBindings snapshot)
+      (CurrentStore.normalize (CurrentStore.assignments snapshot))
+      (prepare?_certified nonempty_entered_operands_are_prepared)).Materialization
+      (.var name) (.symbol "") := by
+  constructor
+  · have read := Activation.readValue?_source_slot directory (memory ()) (activation 1 (by decide))
+      (address 4) frame (by simp [directory]) ⟨0, by decide⟩ rfl (by decide) rfl rfl
+    unfold activation?
+    rw [read]
+    rfl
+  · exact current_variable_earns_ground_materialization.1
+
+theorem extra_flat_rows_are_refused (image : BindingImage) (cell : CVal) :
+    imageBindings? directory snapshot { image with exclusiveRows := [cell] } = none := by
+  simp [imageBindings?]
+
+end Controls
+
+end Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaNeedHistory.NativePayload.CurrentReturn

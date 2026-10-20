@@ -20,7 +20,7 @@ namespace Mettapedia.KR.ConceptOntology
 open Function OrderDual
 open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 open Mettapedia.Algebra.QuantaleWeakness
 
@@ -127,9 +127,7 @@ theorem aggregate_eq_of_isMembershipAdditiveExtension
 observation interface. -/
 noncomputable def inducedContext
     (S : ObservationEncoder Obs Obj Con Ev) :
-    letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
     EvidenceMembershipContext (Multiset Obs) Obj Con Ev := by
-  letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
   exact
     { memberEvidence := aggregate S
       memberEvidence_add := aggregate_add S }
@@ -137,9 +135,7 @@ noncomputable def inducedContext
 @[simp] theorem inducedContext_memberEvidence_eq_aggregate
     (S : ObservationEncoder Obs Obj Con Ev)
     (σ : Multiset Obs) (x : Obj) (c : Con) :
-    letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
     (S.inducedContext).memberEvidence σ x c = aggregate S σ x c := by
-  letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
   rfl
 
 end Additive

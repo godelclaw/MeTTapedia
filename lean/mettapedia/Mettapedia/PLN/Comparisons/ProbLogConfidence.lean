@@ -1,4 +1,4 @@
-import Mettapedia.PLN.Bridges.Languages.ProbLog.DistributionSemantics
+import Mettapedia.PLN.Bridges.Languages.ProbLog.MassSemantics
 import Mettapedia.PLN.Comparisons.StructuralAdvantages
 
 /-!
@@ -7,9 +7,10 @@ import Mettapedia.PLN.Comparisons.StructuralAdvantages
 The companion to `MarkovLogicConfidence`, for ProbLog. The conclusion is the
 same and the reason is sharper.
 
-ProbLog's distribution semantics is not a `MassSemantics`, so the Markov Logic
-argument does not transfer; it needs its own bridge. That bridge is already in
-the tree:
+ProbLog and Markov Logic both have the shared
+`Mettapedia.ProbabilityTheory.MassSemantics` interface. The finite ProbLog
+bridge identifies its existing proposition readout with `binaryMass`. This
+carrier contains normalization mass, not an observation count:
 
 * `propEvidence (E := probLogToJointEvidence p) A` is the evidence a
   proposition induces;
@@ -45,7 +46,7 @@ set_option autoImplicit false
 namespace Mettapedia.PLN.Comparisons
 
 open Mettapedia.PLN.Bridges.Languages.ProbLog.DistributionSemantics
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.PLNJointEvidence
 open Mettapedia.PLN.Evidence.PLNJointEvidence.JointEvidence
 open Mettapedia.PLN.Core.CompletePLN

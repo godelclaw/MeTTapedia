@@ -61,9 +61,12 @@ theorem arguments_nil_readout {context : Context} {index : Nat} {initial final :
   cases arguments
   exact ⟨rfl, rfl, rfl⟩
 
+/-- The static row table decides a nullary query only for a relation that is
+not served by a registered dynamic provider; a dynamic relation can hold at a
+native row index past the static rows. -/
 theorem nullary_query_exact (environment : Environment) (context : Context)
     (relation : String) (initial : Assignment) (typed : TypedAssignment environment context initial)
-    (index : Nat) :
+    (index : Nat) (unregistered : relation ∉ environment.provider.dynamicRelations) :
     QueryHolds environment context relation [] initial index initial ↔
       (∃ signature, signature? environment.provider relation 0 = some signature) ∧
         index ∈ rows environment.provider relation := by
@@ -74,6 +77,7 @@ theorem nullary_query_exact (environment : Environment) (context : Context)
       have valuesEmpty := (arguments_nil_readout arguments).1
       refine ⟨⟨_, signature⟩, (row_mem_iff _ _ _).mpr ⟨_, found, ?_, valuesEmpty⟩⟩
       exact typedRow.1.trans (signature?_readout _ _ _ _ signature).2.1
+    | dynamicRow registered _ _ _ _ _ _ _ => exact absurd registered unregistered
   · rintro ⟨⟨signature, selected⟩, member⟩
     obtain ⟨row, found, same, empty⟩ := (row_mem_iff _ _ _).mp member
     obtain ⟨_, relationRead, typesLength, modesLength⟩ := signature?_readout _ _ _ _ selected

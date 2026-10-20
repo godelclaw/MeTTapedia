@@ -51,7 +51,7 @@ open Mettapedia.CategoryTheory.PLNInstance
 open Mettapedia.PLN.Bridges.CategoryTheory.EvidenceFibration
 open Mettapedia.CategoryTheory.PLNTerms
 open Mettapedia.CategoryTheory.ModalTypes
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## Section 3.1: Per-Object Enrichment
 

@@ -178,7 +178,7 @@ theorem mStepEvidence_observationCount (S : GaussianMixtureState ι)
     (σ : Multiset ℝ) (i : ι) :
     Mettapedia.PLN.Bridges.ProbabilityTheory.ConjugateEvidenceCore.ConjugateEvidence.observationCount
         (S.mStepEvidence σ i) =
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.genAdditiveExtension
+      Mettapedia.PLN.WorldModel.WorldModelAdditive.genAdditiveExtension
         (Ev := ENNReal)
         (fun x j => (S.responsibilityNNReal x j : ENNReal)) σ i := by
   simpa [mStepEvidence, mStepEncoder] using

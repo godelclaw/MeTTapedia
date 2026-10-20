@@ -16,7 +16,7 @@ Hyperseed-style consequence dynamics for WM/PLN:
 
 namespace Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
 open scoped ENNReal
 

@@ -1176,7 +1176,7 @@ theorem reinforcedLine_originSpin_queryProb_spinFlip
         (reinforcedLineClassicalSpec edgeLogWeight).toStrictlyPositiveInfiniteGroundMLNSpec.toInfiniteGroundMLNSpec
         Λ ξ).queryProb
         (lineOriginSpinLocalQueryInRegion Λ hOrigin (!b)) := by
-  unfold finiteVolumeMassSemantics MassSemantics.queryProb
+  unfold finiteVolumeMassSemantics Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   simp [reinforcedLine_originSpin_queryMass_spinFlip,
     reinforcedLine_finiteVolumePartition_spinFlip]
 
@@ -1218,7 +1218,7 @@ theorem reinforcedLine_originSpin_queryProb_add_complement
       Msp Λ ξ
   have htop : Msp.finiteVolumePartition Λ ξ ≠ ⊤ := by
     simpa using finiteVolumePartition_ne_top Msp.toInfiniteGroundMLNSpec Λ ξ
-  unfold finiteVolumeMassSemantics MassSemantics.queryProb
+  unfold finiteVolumeMassSemantics Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   simp [Msp, hZ]
   rw [ENNReal.div_add_div_same]
   rw [reinforcedLine_originSpin_queryMass_add_complement]
@@ -1271,7 +1271,7 @@ theorem reinforcedLine_originSpinUp_queryProb_toReal_ge_three_quarters_of_wallFa
     ENNReal.div_le_div_right hmass _
   have hprobFalse_le :
       S.queryProb qFalse ≤ (3 : ENNReal)⁻¹ * S.queryProb qTrue := by
-    simpa [S, finiteVolumeMassSemantics, MassSemantics.queryProb, hZ,
+    simpa [S, finiteVolumeMassSemantics, Mettapedia.ProbabilityTheory.MassSemantics.queryProb, hZ,
       div_eq_mul_inv, mul_assoc, mul_left_comm, mul_comm] using hprobFalse_le_pre
   have hprobSum : S.queryProb qTrue + S.queryProb qFalse = 1 := by
     simpa [S, M, Msp, Λ, qTrue, qFalse] using
@@ -1630,11 +1630,11 @@ theorem reinforcedLine_originSpinUp_plnStrictInterval_of_uniformFiniteVolumeBoun
     fun I =>
       ((PplusFamily I : ProbabilityMeasure (LocalAssignment LineNode I)) :
         Measure (LocalAssignment LineNode I))
-  haveI hPminusProb : ∀ I : Finset LineNode, IsProbabilityMeasure (Pminus I) := by
+  have hPminusProb : ∀ I : Finset LineNode, IsProbabilityMeasure (Pminus I) := by
     intro I
     dsimp [Pminus]
     infer_instance
-  haveI hPplusProb : ∀ I : Finset LineNode, IsProbabilityMeasure (Pplus I) := by
+  have hPplusProb : ∀ I : Finset LineNode, IsProbabilityMeasure (Pplus I) := by
     intro I
     dsimp [Pplus]
     infer_instance

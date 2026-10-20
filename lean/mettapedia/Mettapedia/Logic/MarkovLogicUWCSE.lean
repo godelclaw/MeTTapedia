@@ -131,7 +131,7 @@ end Atoms
 
 section UWCSE
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 /-- Clause identifiers for the UW-CSE micro-slice ground MLN.
 Naming: rule family + grounding substitution. -/
@@ -596,7 +596,7 @@ theorem uwcse_queryProb_advisedBy_eq_half :
       advisedBy429_335Query = (1 : ENNReal) / 2 := by
   have htotal : (clauseMassSemantics uwcseGroundMLN uwcseFullSupport).totalMass ≠ 0 := by
     rw [uwcse_totalMass_eq_two]; norm_num
-  unfold MassSemantics.queryProb
+  unfold Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   rw [if_neg htotal, uwcse_queryMass_advisedBy_eq_one, uwcse_totalMass_eq_two]
 
 /-! ### Canary theorem -/

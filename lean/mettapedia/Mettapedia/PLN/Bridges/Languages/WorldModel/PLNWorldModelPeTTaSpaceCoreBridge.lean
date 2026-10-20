@@ -24,7 +24,7 @@ Negative example:
 namespace Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelPeTTaSpaceCoreBridge
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelRuntimeBridge
 open Mettapedia.Languages.MeTTa.PeTTa
 open Mettapedia.Languages.MeTTa.PeTTa.SpaceCoreFragment

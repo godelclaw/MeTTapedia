@@ -1,3 +1,4 @@
+import Mettapedia.PLN.WorldModel.ObservationSemantics
 import Mettapedia.PLN.WorldModel.BinaryWorldModel
 import Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 import Mettapedia.PLN.WorldModel.GenericWorldModelForgetting

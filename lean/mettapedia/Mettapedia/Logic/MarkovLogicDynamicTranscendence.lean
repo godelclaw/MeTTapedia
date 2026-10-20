@@ -51,7 +51,7 @@ open Mettapedia.Logic.MarkovLogicInfiniteWorldModel
 open Mettapedia.Logic.MarkovLogicOntologyGrowth
 open Mettapedia.Logic.MarkovLogicIndividuation
 open Mettapedia.Logic.MarkovLogicSelfTranscendence
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.Logic.MarkovLogicAbstract
 open Mettapedia.Logic.MarkovLogicAbstract.MassState
 open MeasureTheory
@@ -220,7 +220,7 @@ private theorem infiniteQueryEvent_eq_localQueryEvent_restrictQueryToRegion
   -- `hiff.symm` closes it by defeq.  (At 4.31 `simp`/`simpa` won't bridge the
   -- `worldRestriction`/`Finset.restrict` and `constraintQueryHolds` defeqs in its final check.)
   rw [hpatch] at hiff
-  simp only [infiniteQueryEvent, localQueryEvent, Set.mem_setOf_eq]
+  simp only [infiniteQueryEvent, localQueryEvent, Set.mem_ofPred_eq]
   exact hiff.symm
 
 private lemma infiniteMLNMassSemantics_queryProb_empty_eq_one
@@ -531,7 +531,7 @@ theorem DynamicTranscendenceStep.queryProb_approximately_preserved_of_uniformCon
     have hp₁ :
         ((infiniteMLNMassSemantics M₁ μ₁ hμ₁).queryProb q).toReal =
           ((μ₁ : Measure (InfiniteWorld Atom)) (localQueryEvent Γ qΓ)).toReal := by
-      unfold MassSemantics.queryProb infiniteMLNMassSemantics
+      unfold Mettapedia.ProbabilityTheory.MassSemantics.queryProb infiniteMLNMassSemantics
       rw [if_neg (by simp), div_one]
       have hmeasureEvent :
           (μ₁ : Measure (InfiniteWorld Atom)) (infiniteQueryEvent q) =
@@ -541,7 +541,7 @@ theorem DynamicTranscendenceStep.queryProb_approximately_preserved_of_uniformCon
     have hp₂ :
         ((infiniteMLNMassSemantics M₂ μ₂ hμ₂).queryProb q).toReal =
           ((μ₂ : Measure (InfiniteWorld Atom)) (localQueryEvent Γ qΓ)).toReal := by
-      unfold MassSemantics.queryProb infiniteMLNMassSemantics
+      unfold Mettapedia.ProbabilityTheory.MassSemantics.queryProb infiniteMLNMassSemantics
       rw [if_neg (by simp), div_one]
       have hmeasureEvent :
           (μ₂ : Measure (InfiniteWorld Atom)) (infiniteQueryEvent q) =

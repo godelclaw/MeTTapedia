@@ -56,23 +56,38 @@ private theorem translatePeTTa_notForbidden_of_headSource_aux
                       | cons _ _ =>
                           simp [translatePeTTa, translatePeTTa.translatePeTTaProg1,
                             freshVar, isForbiddenHeadSymbol]
-                · by_cases hfoldall : c = "foldall"
-                  · subst hfoldall
+                · by_cases hfoldl : c = "foldl-atom"
+                  · subst hfoldl
                     cases args with
                     | nil => simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
-                    | cons _ rest =>
+                    | cons xs rest =>
                         cases rest with
                         | nil => simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
-                        | cons _ rest =>
+                        | cons init rest =>
                             cases rest with
                             | nil => simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
-                            | cons _ rest =>
+                            | cons a3 rest =>
                                 cases rest with
-                                | nil => simp [translatePeTTa, isForbiddenHeadSymbol]
-                                | cons _ _ =>
-                                    simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
-                  · by_cases hlt : c = "@<"
-                    · subst hlt
+                                | nil =>
+                                    rw [translatePeTTa_foldlAtomShort]
+                                    simp [isForbiddenHeadSymbol]
+                                | cons a4 rest =>
+                                    cases rest with
+                                    | nil =>
+                                        have hfalse : False := by
+                                          simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                                        exact False.elim hfalse
+                                    | cons a5 rest =>
+                                        cases rest with
+                                        | nil =>
+                                            simp [translatePeTTa, translatePeTTa.translatePeTTaList,
+                                              isForbiddenHeadSymbol]
+                                        | cons _ _ =>
+                                            have hfalse : False := by
+                                              simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                                            exact False.elim hfalse
+                  · by_cases hfoldall : c = "foldall"
+                    · subst hfoldall
                       cases args with
                       | nil => simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
                       | cons _ rest =>
@@ -80,23 +95,100 @@ private theorem translatePeTTa_notForbidden_of_headSource_aux
                           | nil => simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
                           | cons _ rest =>
                               cases rest with
-                              | nil => simp [translatePeTTa, isForbiddenHeadSymbol]
-                              | cons _ _ =>
-                                  simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
-                    · by_cases hgt : c = "@>"
-                      · subst hgt
+                              | nil => simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                              | cons _ rest =>
+                                  cases rest with
+                                  | nil => simp [translatePeTTa, isForbiddenHeadSymbol]
+                                  | cons _ _ =>
+                                      simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                    · by_cases hreduce : c = "reduce"
+                      · subst hreduce
                         cases args with
-                        | nil => simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                        | nil =>
+                            have hfalse : False := by
+                              simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                            exact False.elim hfalse
                         | cons _ rest =>
                             cases rest with
-                            | nil => simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                            | nil => simp [translatePeTTa, isForbiddenHeadSymbol]
+                            | cons _ _ =>
+                                have hfalse : False := by
+                                  simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                                exact False.elim hfalse
+                      · by_cases hlt : c = "@<"
+                        · subst hlt
+                          cases args with
+                          | nil =>
+                              have hfalse : False := by
+                                simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                              exact False.elim hfalse
+                          | cons _ rest =>
+                              cases rest with
+                              | nil =>
+                                  have hfalse : False := by
+                                    simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                                  exact False.elim hfalse
+                              | cons _ rest =>
+                                  cases rest with
+                                  | nil => simp [translatePeTTa, isForbiddenHeadSymbol]
+                                  | cons _ _ =>
+                                      have hfalse : False := by
+                                        simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                                      exact False.elim hfalse
+                        · by_cases hgt : c = "@>"
+                          · subst hgt
+                            cases args with
+                            | nil =>
+                                have hfalse : False := by
+                                  simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                                exact False.elim hfalse
                             | cons _ rest =>
                                 cases rest with
-                                | nil => simp [translatePeTTa, isForbiddenHeadSymbol]
-                                | cons _ _ =>
+                                | nil =>
+                                    have hfalse : False := by
+                                      simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                                    exact False.elim hfalse
+                                | cons _ rest =>
+                                    cases rest with
+                                    | nil => simp [translatePeTTa, isForbiddenHeadSymbol]
+                                    | cons _ _ =>
+                                        have hfalse : False := by
+                                          simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                                        exact False.elim hfalse
+                          · by_cases hunique : c = "unique"
+                            · subst hunique
+                              have hfalse : False := by
+                                simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                              exact False.elim hfalse
+                            · by_cases huniqueatom : c = "unique-atom"
+                              · subst huniqueatom
+                                have hfalse : False := by
+                                  simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                                exact False.elim hfalse
+                              · by_cases hbind : c = "bind!"
+                                · subst hbind
+                                  have hfalse : False := by
                                     simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
-                      · simp [translatePeTTa, translatePeTTa.translatePeTTaList, hprogn,
-                          hprog1, hfoldall, hlt, hgt, isForbiddenHeadSymbol]
+                                  exact False.elim hfalse
+                                · by_cases hnew : c = "new-state"
+                                  · subst hnew
+                                    have hfalse : False := by
+                                      simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                                    exact False.elim hfalse
+                                  · by_cases hget : c = "get-state"
+                                    · subst hget
+                                      have hfalse : False := by
+                                        simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                                      exact False.elim hfalse
+                                    · by_cases hchange : c = "change-state!"
+                                      · subst hchange
+                                        have hfalse : False := by
+                                          simp [isValidatedPeTTaHeadSource, isValidatedPeTTaSource] at h
+                                        exact False.elim hfalse
+                                      · simp [translatePeTTa, translatePeTTa.translatePeTTaList, hprogn,
+                                          hprog1, hfoldl, hfoldall, hreduce, hlt, hgt,
+                                          huniqueatom, hbind, hnew, hget, hchange,
+                                          isForbiddenHeadSymbol]
           | var _ =>
               simp [translatePeTTa, translatePeTTa.translatePeTTaList, isForbiddenHeadSymbol]
           | grounded _ =>
@@ -330,149 +422,290 @@ private theorem translatePeTTa_preserves_stableCommonForm_aux
                         exact translatePeTTa_preserves_stableCommonForm_aux a s ha)
                       args s hargs hbound
                   simpa [translatePeTTa] using hprog1Form
-                · by_cases hfoldall : c = "foldall"
-                  · subst hfoldall
+                · by_cases hfoldl : c = "foldl-atom"
+                  · subst hfoldl
                     cases args with
                     | nil => simp [isValidatedPeTTaSource] at h
-                    | cons agg rest =>
+                    | cons xs rest =>
                         cases rest with
                         | nil => simp [isValidatedPeTTaSource] at h
-                        | cons goal rest =>
+                        | cons init rest =>
                             cases rest with
                             | nil => simp [isValidatedPeTTaSource] at h
-                            | cons init rest =>
+                            | cons a3 rest =>
                                 cases rest with
                                 | nil =>
                                     have hparts :
-                                        (isFirstOrderReducerAtom agg = true ∧
-                                          isValidatedPeTTaSource goal = true) ∧
+                                        (isFirstOrderReducerAtom a3 = true ∧
+                                          isValidatedPeTTaSource xs = true) ∧
                                             isValidatedPeTTaSource init = true := by
                                       simpa [isValidatedPeTTaSource, Bool.and_eq_true] using h
-                                    have hgoal :=
-                                      translatePeTTa_preserves_stableCommonForm_aux goal s hparts.1.2
+                                    have hxs :=
+                                      translatePeTTa_preserves_stableCommonForm_aux xs s hparts.1.2
                                     have hinit :=
                                       translatePeTTa_preserves_stableCommonForm_aux init
-                                        (translatePeTTa goal s).2 hparts.2
-                                    exact translatePeTTa_foldall_preserves_stableCommonForm
-                                      agg goal init s hparts.1.1 hgoal hinit
-                                | cons _ _ => simp [isValidatedPeTTaSource] at h
-                  · by_cases hlt : c = "@<"
-                    · subst hlt
+                                        (translatePeTTa xs s).2 hparts.2
+                                    exact translatePeTTa_foldlAtomShort_preserves_stableCommonForm
+                                      xs init a3 s hparts.1.1 hxs hinit
+                                | cons a4 rest =>
+                                    cases rest with
+                                    | nil => simp [isValidatedPeTTaSource] at h
+                                    | cons a5 rest =>
+                                        cases rest with
+                                        | nil =>
+                                            have hpair :
+                                                (((isValidatedPeTTaSource xs = true ∧
+                                                    isValidatedPeTTaSource init = true) ∧
+                                                  isHEBinderAtom a3 = true) ∧
+                                                  isHEBinderAtom a4 = true) ∧
+                                                  isValidatedPeTTaSource a5 = true := by
+                                              simpa [isValidatedPeTTaSource, Bool.and_eq_true] using h
+                                            rcases hpair with ⟨hleft, hstep_src⟩
+                                            rcases hleft with ⟨hleft, hitem_bind⟩
+                                            rcases hleft with ⟨hleft, hacc_bind⟩
+                                            rcases hleft with ⟨hxs_src, hinit_src⟩
+                                            have hxs :=
+                                              translatePeTTa_preserves_stableCommonForm_aux xs s hxs_src
+                                            have hinit :=
+                                              translatePeTTa_preserves_stableCommonForm_aux init
+                                                (translatePeTTa xs s).2 hinit_src
+                                            have hacc := stableCommon_of_heBinderAtom a3 hacc_bind
+                                            have hitem := stableCommon_of_heBinderAtom a4 hitem_bind
+                                            have hacc' :
+                                                isStableCommonForm
+                                                  (translatePeTTa a3
+                                                    (translatePeTTa init (translatePeTTa xs s).2).2).1 = true := by
+                                              cases a3 with
+                                              | var _ =>
+                                                  simp [translatePeTTa, isStableCommonForm]
+                                              | symbol _ =>
+                                                  simp [translatePeTTa, isStableCommonForm]
+                                              | grounded _ => cases hacc_bind
+                                              | expression _ => cases hacc_bind
+                                            have hitem' :
+                                                isStableCommonForm
+                                                  (translatePeTTa a4
+                                                    (translatePeTTa a3
+                                                      (translatePeTTa init (translatePeTTa xs s).2).2).2).1 = true := by
+                                              cases a4 with
+                                              | var _ =>
+                                                  simp [translatePeTTa, isStableCommonForm]
+                                              | symbol _ =>
+                                                  simp [translatePeTTa, isStableCommonForm]
+                                              | grounded _ => cases hitem_bind
+                                              | expression _ => cases hitem_bind
+                                            have hstep :=
+                                              translatePeTTa_preserves_stableCommonForm_aux a5
+                                                (translatePeTTa a4
+                                                  (translatePeTTa a3
+                                                    (translatePeTTa init (translatePeTTa xs s).2).2).2).2
+                                                hstep_src
+                                            simp [translatePeTTa, translatePeTTa.translatePeTTaList,
+                                              isStableCommonForm, isStableCommonList,
+                                              hxs, hinit, hacc', hitem', hstep]
+                                        | cons _ rest =>
+                                            cases rest with
+                                            | nil => simp [isValidatedPeTTaSource] at h
+                                            | cons _ _ => simp [isValidatedPeTTaSource] at h
+                  · by_cases hfoldall : c = "foldall"
+                    · subst hfoldall
                       cases args with
                       | nil => simp [isValidatedPeTTaSource] at h
-                      | cons a rest =>
+                      | cons agg rest =>
                           cases rest with
                           | nil => simp [isValidatedPeTTaSource] at h
-                          | cons b rest =>
+                          | cons goal rest =>
                               cases rest with
-                              | nil =>
-                                  have hpair :
-                                      isValidatedPeTTaSource a = true ∧
-                                        isValidatedPeTTaSource b = true := by
-                                    simpa [isValidatedPeTTaSource, Bool.and_eq_true] using h
-                                  have ha :=
-                                    translatePeTTa_preserves_stableCommonForm_aux a s hpair.1
-                                  have hb :=
-                                    translatePeTTa_preserves_stableCommonForm_aux b
-                                      (translatePeTTa a s).2 hpair.2
-                                  simp [translatePeTTa, isStableCommonForm, isStableCommonExpr,
-                                    isStableCommonHead, isForbiddenHeadSymbol,
-                                    isStableCommonList, ha, hb]
-                              | cons _ _ => simp [isValidatedPeTTaSource] at h
-                    · by_cases hgt : c = "@>"
-                      · subst hgt
+                              | nil => simp [isValidatedPeTTaSource] at h
+                              | cons init rest =>
+                                  cases rest with
+                                  | nil =>
+                                      have hparts :
+                                          (isFirstOrderReducerAtom agg = true ∧
+                                            isValidatedPeTTaSource goal = true) ∧
+                                              isValidatedPeTTaSource init = true := by
+                                        simpa [isValidatedPeTTaSource, Bool.and_eq_true] using h
+                                      have hgoal :=
+                                        translatePeTTa_preserves_stableCommonForm_aux goal s hparts.1.2
+                                      have hinit :=
+                                        translatePeTTa_preserves_stableCommonForm_aux init
+                                          (translatePeTTa goal s).2 hparts.2
+                                      exact translatePeTTa_foldall_preserves_stableCommonForm
+                                        agg goal init s hparts.1.1 hgoal hinit
+                                  | cons _ _ => simp [isValidatedPeTTaSource] at h
+                    · by_cases hreduce : c = "reduce"
+                      · subst hreduce
                         cases args with
-                        | nil => simp [isValidatedPeTTaSource] at h
-                        | cons a rest =>
+                        | nil =>
+                            have hfalse : False := by
+                              simp [isValidatedPeTTaSource, isValidatedPeTTaHeadSource] at h
+                            exact False.elim hfalse
+                        | cons expr rest =>
                             cases rest with
+                            | nil =>
+                                have hexpr : isValidatedPeTTaSource expr = true := by
+                                  simpa [isValidatedPeTTaSource] using h
+                                have hexpr' :=
+                                  translatePeTTa_preserves_stableCommonForm_aux expr s hexpr
+                                exact translatePeTTa_reduce_preserves_stableCommonForm expr s hexpr'
+                            | cons _ _ =>
+                                have hfalse : False := by
+                                  simp [isValidatedPeTTaSource, isValidatedPeTTaHeadSource] at h
+                                exact False.elim hfalse
+                      · by_cases hlt : c = "@<"
+                        · subst hlt
+                          cases args with
+                          | nil => simp [isValidatedPeTTaSource] at h
+                          | cons a rest =>
+                              cases rest with
+                              | nil => simp [isValidatedPeTTaSource] at h
+                              | cons b rest =>
+                                  cases rest with
+                                  | nil =>
+                                      have hpair :
+                                          isValidatedPeTTaSource a = true ∧
+                                            isValidatedPeTTaSource b = true := by
+                                        simpa [isValidatedPeTTaSource, Bool.and_eq_true] using h
+                                      have ha :=
+                                        translatePeTTa_preserves_stableCommonForm_aux a s hpair.1
+                                      have hb :=
+                                        translatePeTTa_preserves_stableCommonForm_aux b
+                                          (translatePeTTa a s).2 hpair.2
+                                      simp [translatePeTTa, isStableCommonForm, isStableCommonExpr,
+                                        isStableCommonHead, isForbiddenHeadSymbol,
+                                        isStableCommonList, ha, hb]
+                                  | cons _ _ =>
+                                      simp [isValidatedPeTTaSource] at h
+                        · by_cases hgt : c = "@>"
+                          · subst hgt
+                            cases args with
                             | nil => simp [isValidatedPeTTaSource] at h
-                            | cons b rest =>
+                            | cons a rest =>
                                 cases rest with
-                                | nil =>
-                                    have hpair :
-                                        isValidatedPeTTaSource a = true ∧
-                                          isValidatedPeTTaSource b = true := by
-                                      simpa [isValidatedPeTTaSource, Bool.and_eq_true] using h
-                                    have ha :=
-                                      translatePeTTa_preserves_stableCommonForm_aux a s hpair.1
-                                    have hb :=
-                                      translatePeTTa_preserves_stableCommonForm_aux b
-                                        (translatePeTTa a s).2 hpair.2
-                                    simp [translatePeTTa, isStableCommonForm, isStableCommonExpr,
-                                      isStableCommonHead, isForbiddenHeadSymbol,
-                                      isStableCommonList, ha, hb]
-                                | cons _ _ => simp [isValidatedPeTTaSource] at h
-                      · have hchain : c ≠ "chain" := by
-                          intro hc
-                          subst hc
-                          simp [isValidatedPeTTaSource] at h
-                        have hcollapse : c ≠ "collapse-bind" := by
-                          intro hc
-                          subst hc
-                          simp [isValidatedPeTTaSource] at h
-                        have hsuperpose : c ≠ "superpose-bind" := by
-                          intro hc
-                          subst hc
-                          simp [isValidatedPeTTaSource] at h
-                        have hswitch : c ≠ "switch" := by
-                          intro hc
-                          subst hc
-                          simp [isValidatedPeTTaSource] at h
-                        have hswitchm : c ≠ "switch-minimal" := by
-                          intro hc
-                          subst hc
-                          simp [isValidatedPeTTaSource] at h
-                        have hatomsubst : c ≠ "atom-subst" := by
-                          intro hc
-                          subst hc
-                          simp [isValidatedPeTTaSource] at h
-                        have hnop : c ≠ "nop" := by
-                          intro hc
-                          subst hc
-                          simp [isValidatedPeTTaSource] at h
-                        have hfunction : c ≠ "function" := by
-                          intro hc
-                          subst hc
-                          simp [isValidatedPeTTaSource] at h
-                        have hparts :
-                            isValidatedPeTTaHeadSource (.symbol c) = true ∧
-                              isValidatedPeTTaList args = true := by
-                          simpa [isValidatedPeTTaSource, isValidatedPeTTaHeadSource,
-                            Bool.and_eq_true, hchain, hcollapse, hsuperpose, hswitch,
-                            hswitchm, hatomsubst, hnop, hfunction, hprogn, hprog1,
-                            hfoldall, hlt, hgt] using h
-                        have htail :
-                            isStableCommonList (translatePeTTa.translatePeTTaList args s).1 = true :=
-                          translatePeTTaList_preserves_stableCommonList_aux args s hparts.2
-                        have hnot : isForbiddenHeadSymbol (.symbol c) = false :=
-                          headSourcePeTTaSymbol_notForbidden_aux c hparts.1
-                        have hhead : isStableCommonHead (.symbol c) = true := by
-                          simpa [isStableCommonHead, isStableCommonForm] using hnot
-                        have hcons :=
-                          stableCommonForm_cons_of_head (.symbol c)
-                            (translatePeTTa.translatePeTTaList args s).1 hhead
-                        have hbody :
-                            isStableCommonForm
-                              (.expression
-                                (.symbol c :: (translatePeTTa.translatePeTTaList args s).1)) = true := by
-                          rw [hcons]
-                          exact htail
-                        simpa [translatePeTTa, translatePeTTa.translatePeTTaList,
-                          hprogn, hprog1, hfoldall, hlt, hgt] using hbody
+                                | nil => simp [isValidatedPeTTaSource] at h
+                                | cons b rest =>
+                                    cases rest with
+                                    | nil =>
+                                        have hpair :
+                                            isValidatedPeTTaSource a = true ∧
+                                              isValidatedPeTTaSource b = true := by
+                                          simpa [isValidatedPeTTaSource, Bool.and_eq_true] using h
+                                        have ha :=
+                                          translatePeTTa_preserves_stableCommonForm_aux a s hpair.1
+                                        have hb :=
+                                          translatePeTTa_preserves_stableCommonForm_aux b
+                                            (translatePeTTa a s).2 hpair.2
+                                        simp [translatePeTTa, isStableCommonForm, isStableCommonExpr,
+                                          isStableCommonHead, isForbiddenHeadSymbol,
+                                          isStableCommonList, ha, hb]
+                                    | cons _ _ =>
+                                        simp [isValidatedPeTTaSource] at h
+                          ·
+                            have hchain : c ≠ "chain" := by
+                              intro hc
+                              subst hc
+                              simp [isValidatedPeTTaSource] at h
+                            have hcollapse : c ≠ "collapse-bind" := by
+                              intro hc
+                              subst hc
+                              simp [isValidatedPeTTaSource] at h
+                            have hsuperpose : c ≠ "superpose-bind" := by
+                              intro hc
+                              subst hc
+                              simp [isValidatedPeTTaSource] at h
+                            have hswitch : c ≠ "switch" := by
+                              intro hc
+                              subst hc
+                              simp [isValidatedPeTTaSource] at h
+                            have hswitchm : c ≠ "switch-minimal" := by
+                              intro hc
+                              subst hc
+                              simp [isValidatedPeTTaSource] at h
+                            have hatomsubst : c ≠ "atom-subst" := by
+                              intro hc
+                              subst hc
+                              simp [isValidatedPeTTaSource] at h
+                            have hnop : c ≠ "nop" := by
+                              intro hc
+                              subst hc
+                              simp [isValidatedPeTTaSource] at h
+                            have hfunction : c ≠ "function" := by
+                              intro hc
+                              subst hc
+                              simp [isValidatedPeTTaSource] at h
+                            have hunique : c ≠ "unique" := by
+                              intro hc
+                              subst hc
+                              simp [isValidatedPeTTaSource] at h
+                            have huniqueatom : c ≠ "unique-atom" := by
+                              intro hc
+                              subst hc
+                              have hbad : False := by
+                                simp [isValidatedPeTTaSource, isValidatedPeTTaHeadSource] at h
+                              exact hbad
+                            have hbind : c ≠ "bind!" := by
+                              intro hc
+                              subst hc
+                              have hbad : False := by
+                                simp [isValidatedPeTTaSource, isValidatedPeTTaHeadSource] at h
+                              exact hbad
+                            have hnew : c ≠ "new-state" := by
+                              intro hc
+                              subst hc
+                              have hbad : False := by
+                                simp [isValidatedPeTTaSource, isValidatedPeTTaHeadSource] at h
+                              exact hbad
+                            have hget : c ≠ "get-state" := by
+                              intro hc
+                              subst hc
+                              have hbad : False := by
+                                simp [isValidatedPeTTaSource, isValidatedPeTTaHeadSource] at h
+                              exact hbad
+                            have hchange : c ≠ "change-state!" := by
+                              intro hc
+                              subst hc
+                              have hbad : False := by
+                                simp [isValidatedPeTTaSource, isValidatedPeTTaHeadSource] at h
+                              exact hbad
+                            have hparts :
+                                isValidatedPeTTaHeadSource (.symbol c) = true ∧
+                                  isValidatedPeTTaList args = true := by
+                              simpa [isValidatedPeTTaSource, isValidatedPeTTaHeadSource,
+                                Bool.and_eq_true, hchain, hcollapse, hsuperpose, hswitch,
+                                hswitchm, hatomsubst, hnop, hfunction, hunique,
+                                huniqueatom, hbind, hnew, hget, hchange, hprogn, hprog1,
+                                hfoldl, hfoldall, hreduce, hlt, hgt] using h
+                            have htail :
+                                isStableCommonList (translatePeTTa.translatePeTTaList args s).1 = true :=
+                              translatePeTTaList_preserves_stableCommonList_aux args s hparts.2
+                            have hnot : isForbiddenHeadSymbol (.symbol c) = false :=
+                              headSourcePeTTaSymbol_notForbidden_aux c hparts.1
+                            have hhead : isStableCommonHead (.symbol c) = true := by
+                              simpa [isStableCommonHead, isStableCommonForm] using hnot
+                            have hcons :=
+                              stableCommonForm_cons_of_head (.symbol c)
+                                (translatePeTTa.translatePeTTaList args s).1 hhead
+                            have hbody :
+                                isStableCommonForm
+                                  (.expression
+                                    (.symbol c :: (translatePeTTa.translatePeTTaList args s).1)) = true := by
+                              rw [hcons]
+                              exact htail
+                            simpa [translatePeTTa, translatePeTTa.translatePeTTaList,
+                              hprogn, hprog1, hfoldl, hfoldall, hreduce, hlt, hgt, hunique,
+                              huniqueatom, hbind, hnew, hget, hchange] using hbody
           | var _ =>
               have hargs : isValidatedPeTTaList args = true := by
                 simpa [isValidatedPeTTaSource, isValidatedPeTTaHeadSource] using h
               have htail := translatePeTTaList_preserves_stableCommonList_aux args s hargs
               simp [translatePeTTa, translatePeTTa.translatePeTTaList, isStableCommonForm,
-                isStableCommonExpr, isStableCommonHead, isForbiddenHeadSymbol,
-                isStableCommonList, htail]
+                isStableCommonExpr, isStableCommonHead, isForbiddenHeadSymbol, htail]
           | grounded _ =>
               have hargs : isValidatedPeTTaList args = true := by
                 simpa [isValidatedPeTTaSource, isValidatedPeTTaHeadSource] using h
               have htail := translatePeTTaList_preserves_stableCommonList_aux args s hargs
               simp [translatePeTTa, translatePeTTa.translatePeTTaList, isStableCommonForm,
-                isStableCommonExpr, isStableCommonHead, isForbiddenHeadSymbol,
-                isStableCommonList, htail]
+                isStableCommonExpr, isStableCommonHead, isForbiddenHeadSymbol, htail]
           | expression es' =>
               have hparts :
                   isValidatedPeTTaHeadSource (.expression es') = true ∧
@@ -507,12 +740,9 @@ private theorem translatePeTTa_preserves_stableCommonForm_aux
   decreasing_by
     all_goals
       subst_vars
-      try simpa using hsmall
-      try
-        have hmem := List.sizeOf_lt_of_mem hxInArgs
-        omega
-      simp_wf
-      try omega
+      first
+      | assumption
+      | simp_wf <;> omega
 
 private theorem translatePeTTaList_preserves_stableCommonList_aux
     (xs : List Atom) (s : Nat) (h : isValidatedPeTTaList xs = true) :
@@ -531,12 +761,9 @@ private theorem translatePeTTaList_preserves_stableCommonList_aux
   decreasing_by
     all_goals
       subst_vars
-      try simpa using hsmall
-      try
-        have hmem := List.sizeOf_lt_of_mem hxInArgs
-        omega
-      simp_wf
-      try omega
+      first
+      | assumption
+      | simp_wf <;> omega
 end
 
 /-- Validated PeTTa inputs translate into the stable common fragment. -/
@@ -560,7 +787,7 @@ theorem translatePeTTa_roundtrip_fixedPoint_of_validatedPeTTaSource (a : Atom) (
   have hpe : translatePeTTa (translatePeTTa a s).1 (translatePeTTa a s).2 =
       ((translatePeTTa a s).1, (translatePeTTa a s).2) :=
     translatePeTTa_id_of_stableCommonForm (translatePeTTa a s).1 (translatePeTTa a s).2 hs
-  simpa [hs, hhe, hpe]
+  simp [hhe, hpe]
 
 /-- Corrected HE→PeTTa→HE fixed-point theorem on the validated HE fragment. -/
 theorem translateHE_roundtrip_fixedPoint_of_validatedHESource (a : Atom) (s : Nat)
@@ -577,7 +804,7 @@ theorem translateHE_roundtrip_fixedPoint_of_validatedHESource (a : Atom) (s : Na
   have hhe : translateHE (translateHE a s).1 (translateHE a s).2 =
       ((translateHE a s).1, (translateHE a s).2) :=
     translateHE_id_of_stableCommonForm (translateHE a s).1 (translateHE a s).2 hs
-  simpa [hs, hpe, hhe]
+  simp [hpe, hhe]
 
 
 

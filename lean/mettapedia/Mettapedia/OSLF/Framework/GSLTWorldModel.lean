@@ -49,9 +49,9 @@ additivity alone.
 namespace Mettapedia.OSLF.Framework.GSLTWorldModel
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.Framework.GSLTEvidence
 
 /-! ## Generic Ensemble and Query -/
@@ -97,9 +97,6 @@ theorem ensembleEvidence_zero {T : Type*} (q : DecProp T) :
   rfl
 
 /-! ## Universal BinaryWorldModel Instance -/
-
-/-- Multiset T is an EvidenceType (AddCommMonoid via multiset union). -/
-instance {T : Type*} : EvidenceType (Multiset T) where
 
 /-- **The Universal BinaryWorldModel for Multiset Ensembles.**
 

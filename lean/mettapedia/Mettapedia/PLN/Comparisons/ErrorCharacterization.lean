@@ -10,22 +10,22 @@ complete (exact Bayesian) PLN, providing:
 
 1. **Exact error formula**: The difference is precisely the independence violation
 2. **Error bounds**: Upper bounds in terms of measurable quantities
-3. **Zero-error conditions**: Algebraic characterization of when fast = complete
+3. **Zero-error conditions**: Sufficient screening conditions, allowing cancellation
 4. **Decision criteria**: When to use fast vs complete mode
 
 ## The Key Insight
 
 Fast PLN assumes: P(C|A,B) = P(C|B) and P(C|A,¬B) = P(C|¬B)
 
-The error is EXACTLY the violation of these independence assumptions:
+The weighted screening violation has the form:
   error = |P(B|A) · [P(C|A,B) - P(C|B)] + P(¬B|A) · [P(C|A,¬B) - P(C|¬B)]|
 
 ## Algebraic Structure (K&S-inspired)
 
 The decision of when to use fast vs complete PLN can be grounded in:
-1. **Information geometry**: Independence ↔ zero mutual information I(A;C|B) = 0
-2. **Lattice structure**: BinaryEvidence combination respects information ordering
-3. **Divergence bounds**: Error bounded by KL-divergence from independence
+1. Branch probabilities determine a convex combination of signed violations.
+2. Unit-interval endpoint bounds give a conservative estimate.
+3. Quantitative divergence bounds require additional information-theoretic results.
 
 ## References
 
@@ -37,7 +37,7 @@ The decision of when to use fast vs complete PLN can be grounded in:
 namespace Mettapedia.PLN.Comparisons.ErrorCharacterization
 
 open Mettapedia.PLN.Core.CompletePLN
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 
 /-! ## Part 1: The Independence Violation
@@ -69,9 +69,19 @@ noncomputable def totalViolation (J : JointDistribution n) (a b c : Fin n) : ℝ
   condProb J b a * positiveViolation J a b c +
   (1 - condProb J b a) * negativeViolation J a b c
 
+/-- Weighted violation is the signed difference between the exact query and
+its independently defined screening approximation. Empty internal branches
+are handled by the total-probability theorem. -/
+theorem exact_sub_screening_eq_totalViolation (J : JointDistribution n) (a b c : Fin n)
+    (possible : marginalProb J a ≠ 0) :
+    completeDeduction J a b c - screeningDeduction J a b c = totalViolation J a b c := by
+  unfold completeDeduction screeningDeduction totalViolation positiveViolation negativeViolation
+  rw [conditional_total_probability J a b c possible]
+  ring
+
 /-! ## Part 2: Zero Error Characterization
 
-Fast PLN = Complete PLN if and only if both independence conditions hold.
+Branch screening is sufficient for zero error. Opposite signed branch errors can also cancel.
 -/
 
 /-- Sufficient condition for zero total violation:
@@ -266,89 +276,105 @@ def formalShouldUseComplete (criteria : DecisionCriteria) (n : ℕ)
   importance > criteria.importance_threshold ∧
   n ≤ criteria.tractability_limit
 
-/-! ## Part 5: Information-Theoretic Interpretation
+/-! ## Branch screening and conservative error estimates
 
-Connection to mutual information and entropy (K&S foundations).
+The screening predicate below names precisely the two conditional equalities.
+It is not a definition of conditional mutual information. Quantitative
+information-theoretic bounds require a separate divergence construction.
 -/
 
-/-- The independence violations relate to conditional mutual information.
-
-    I(A; C | B) measures how much A tells us about C beyond what B tells us.
-    When I(A; C | B) = 0, the positive independence condition holds.
-
-    This connects PLN error analysis to information theory.
--/
-def conditionalMutualInformationZero (J : JointDistribution n) (a b c : Fin n) : Prop :=
+/-- The two branch-screening equalities used by PLN deduction. -/
+def branchScreening (J : JointDistribution n) (a b c : Fin n) : Prop :=
   hasPositiveIndependence J a b c ∧ hasNegativeIndependence J a b c
 
-/-- CMI = 0 implies fast PLN is exact (information-theoretic characterization) -/
-theorem cmi_zero_implies_exact (J : JointDistribution n) (a b c : Fin n)
-    (h : conditionalMutualInformationZero J a b c) :
+theorem branch_screening_implies_exact (J : JointDistribution n) (a b c : Fin n)
+    (h : branchScreening J a b c) :
     totalViolation J a b c = 0 :=
   independent_implies_exact J a b c h.1 h.2
 
-/-! ## Part 6: Practical Error Estimation
+/-- Distance from a unit-interval value to a reference probability is bounded
+by the farther endpoint. -/
+theorem abs_sub_le_max_complement {actual reference : ℝ}
+    (hactual : actual ∈ Set.Icc (0 : ℝ) 1) :
+    |actual - reference| ≤ max reference (1 - reference) := by
+  rw [abs_le]
+  constructor
+  · linarith [le_max_left reference (1 - reference), hactual.1]
+  · linarith [le_max_right reference (1 - reference), hactual.2]
 
-How to estimate error without computing the full joint.
--/
-
-/-- Conservative error estimate using observable marginals only.
-
-    If we don't have the full joint, we can still bound the error
-    using only pairwise marginals.
--/
+/-- A bound available from the three branch readouts alone. The farther
+endpoint is necessary: a reference probability near zero can have an error
+near one. Additional joint information can give a tighter bound. -/
 noncomputable def conservativeErrorEstimate
-    (p_ba : ℝ)      -- P(B|A) - observable
-    (p_cb : ℝ)      -- P(C|B) - observable
-    (p_c_not_b : ℝ) -- P(C|¬B) - observable
-    : ℝ :=
-  -- Worst case: independence violations are maximal
-  -- |P(C|A,B) - P(C|B)| ≤ min(P(C|B), 1-P(C|B)) in worst case
-  -- Similarly for negative path
-  let pos_max := min p_cb (1 - p_cb)
-  let neg_max := min p_c_not_b (1 - p_c_not_b)
-  p_ba * pos_max + (1 - p_ba) * neg_max
+    (p_ba p_cb p_c_not_b : ℝ) : ℝ :=
+  p_ba * max p_cb (1 - p_cb) + (1 - p_ba) * max p_c_not_b (1 - p_c_not_b)
 
-/-- The conservative estimate is indeed an upper bound -/
-theorem conservative_estimate_is_bound
+/-- The conservative estimate is a unit-interval quantity. -/
+theorem conservative_estimate_mem_unit
     (p_ba p_cb p_c_not_b : ℝ)
-    (h_ba : 0 ≤ p_ba ∧ p_ba ≤ 1)
-    (h_cb : 0 ≤ p_cb ∧ p_cb ≤ 1)
-    (h_cnb : 0 ≤ p_c_not_b ∧ p_c_not_b ≤ 1) :
-    0 ≤ conservativeErrorEstimate p_ba p_cb p_c_not_b ∧
-    conservativeErrorEstimate p_ba p_cb p_c_not_b ≤ 1/2 := by
+    (h_ba : p_ba ∈ Set.Icc (0 : ℝ) 1)
+    (h_cb : p_cb ∈ Set.Icc (0 : ℝ) 1)
+    (h_cnb : p_c_not_b ∈ Set.Icc (0 : ℝ) 1) :
+    conservativeErrorEstimate p_ba p_cb p_c_not_b ∈ Set.Icc (0 : ℝ) 1 := by
+  have pos0 : 0 ≤ max p_cb (1 - p_cb) := le_trans h_cb.1 (le_max_left _ _)
+  have neg0 : 0 ≤ max p_c_not_b (1 - p_c_not_b) := le_trans h_cnb.1 (le_max_left _ _)
+  have pos1 : max p_cb (1 - p_cb) ≤ 1 := max_le h_cb.2 (by linarith [h_cb.1])
+  have neg1 : max p_c_not_b (1 - p_c_not_b) ≤ 1 := max_le h_cnb.2 (by linarith [h_cnb.1])
   unfold conservativeErrorEstimate
   constructor
-  · -- Non-negativity
-    apply add_nonneg
-    · apply mul_nonneg h_ba.1
-      exact le_min h_cb.1 (by linarith)
-    · apply mul_nonneg (by linarith : 0 ≤ 1 - p_ba)
-      exact le_min h_cnb.1 (by linarith)
-  · -- Upper bound of 1/2
-    -- min(p, 1-p) ≤ 1/2 for any p ∈ [0,1]
-    have hmin_cb : min p_cb (1 - p_cb) ≤ 1/2 := by
-      rcases le_or_gt p_cb (1/2) with h | h
-      · have : p_cb ≤ 1 - p_cb := by linarith
-        rw [min_eq_left this]
-        exact h
-      · have : 1 - p_cb ≤ p_cb := by linarith
-        rw [min_eq_right this]
-        linarith
-    have hmin_cnb : min p_c_not_b (1 - p_c_not_b) ≤ 1/2 := by
-      rcases le_or_gt p_c_not_b (1/2) with h | h
-      · have : p_c_not_b ≤ 1 - p_c_not_b := by linarith
-        rw [min_eq_left this]
-        exact h
-      · have : 1 - p_c_not_b ≤ p_c_not_b := by linarith
-        rw [min_eq_right this]
-        linarith
-    calc p_ba * min p_cb (1 - p_cb) + (1 - p_ba) * min p_c_not_b (1 - p_c_not_b)
-        ≤ p_ba * (1/2) + (1 - p_ba) * (1/2) := by
-          apply add_le_add
-          · exact mul_le_mul_of_nonneg_left hmin_cb h_ba.1
-          · exact mul_le_mul_of_nonneg_left hmin_cnb (by linarith)
-      _ = 1/2 := by ring
+  · exact add_nonneg (mul_nonneg h_ba.1 pos0) (mul_nonneg (by linarith [h_ba.2]) neg0)
+  · calc
+      _ ≤ p_ba * 1 + (1 - p_ba) * 1 := add_le_add
+        (mul_le_mul_of_nonneg_left pos1 h_ba.1)
+        (mul_le_mul_of_nonneg_left neg1 (by linarith [h_ba.2]))
+      _ = 1 := by ring
+
+/-- This is the missing connection between the estimate and the actual
+weighted screening violation. No independence hypothesis is used. -/
+theorem error_le_conservative_estimate (J : JointDistribution n) (a b c : Fin n)
+    (h_weight : condProb J b a ∈ Set.Icc (0 : ℝ) 1)
+    (h_positive : condProb2 J c a b ∈ Set.Icc (0 : ℝ) 1)
+    (h_negative : condProb2Neg J c a b ∈ Set.Icc (0 : ℝ) 1) :
+    |totalViolation J a b c| ≤ conservativeErrorEstimate
+      (condProb J b a) (condProb J c b) (condProbNeg J c b) := by
+  apply le_trans (error_bound_by_max_violation J a b c h_weight)
+  exact add_le_add
+    (mul_le_mul_of_nonneg_left (abs_sub_le_max_complement h_positive) h_weight.1)
+    (mul_le_mul_of_nonneg_left (abs_sub_le_max_complement h_negative) (by linarith [h_weight.2]))
+
+/-- A query-level error bound whose interval side conditions are discharged
+from the joint distribution, rather than supplied as approximation assumptions. -/
+theorem query_error_le_conservative_estimate (J : JointDistribution n) (a b c : Fin n)
+    (possible : 0 < marginalProb J a) :
+    |completeDeduction J a b c - screeningDeduction J a b c| ≤
+      conservativeErrorEstimate (condProb J b a) (condProb J c b) (condProbNeg J c b) := by
+  rw [exact_sub_screening_eq_totalViolation J a b c possible.ne']
+  exact error_le_conservative_estimate J a b c (cond_prob_bounds J b a possible)
+    (condProb2_mem_unit J a b c) (condProb2Neg_mem_unit J a b c)
+
+/-- Separate bounds on the two screening defects give a weighted query bound.
+A rarely visited branch contributes proportionally to its query weight. -/
+theorem query_error_le_weighted_violations (J : JointDistribution n) (a b c : Fin n)
+    (possible : 0 < marginalProb J a) {positiveBound negativeBound : ℝ}
+    (positive : |positiveViolation J a b c| ≤ positiveBound)
+    (negative : |negativeViolation J a b c| ≤ negativeBound) :
+    |completeDeduction J a b c - screeningDeduction J a b c| ≤
+      condProb J b a * positiveBound + (1 - condProb J b a) * negativeBound := by
+  rw [exact_sub_screening_eq_totalViolation J a b c possible.ne']
+  have weights := cond_prob_bounds J b a possible
+  exact le_trans (error_bound_by_max_violation J a b c weights) (add_le_add
+    (mul_le_mul_of_nonneg_left positive weights.1)
+    (mul_le_mul_of_nonneg_left negative (by linarith [weights.2])))
+
+/-- A branch probability of 0.9 can differ from its 0.1 reference by 0.8.
+The nearer-endpoint expression is 0.1 and therefore cannot bound the error. -/
+theorem nearer_endpoint_is_not_an_error_bound :
+    |(9 / 10 : ℝ) - 1 / 10| > min (1 / 10 : ℝ) (1 - 1 / 10) := by norm_num
+
+/-- The repaired farther-endpoint estimate covers that discrepancy. -/
+theorem farther_endpoint_covers_error :
+    |(9 / 10 : ℝ) - 1 / 10| ≤ conservativeErrorEstimate 1 (1 / 10) (1 / 2) := by
+  norm_num [conservativeErrorEstimate]
 
 /-! ## Part 7: Classification of Error Regimes
 
@@ -379,72 +405,86 @@ def posViolationSignificant (pos_violation : ℝ) (ε : ℝ) : Prop :=
 def negViolationSignificant (neg_violation : ℝ) (ε : ℝ) : Prop :=
   |neg_violation| > ε
 
-/-- In the exact regime (both violations ≤ ε), error is bounded by 2ε -/
-theorem exact_regime_bounded (J : JointDistribution n) (a b c : Fin n) (ε : ℝ) (hε : 0 < ε)
+/-- If both branch violations are at most `ε`, their convex combination is
+at most `ε`; the previous factor two is unnecessary. -/
+theorem exact_regime_bounded (J : JointDistribution n) (a b c : Fin n) (ε : ℝ) (_hε : 0 < ε)
     (h_pos : |positiveViolation J a b c| ≤ ε)
     (h_neg : |negativeViolation J a b c| ≤ ε)
     (h_bounds : 0 ≤ condProb J b a ∧ condProb J b a ≤ 1) :
-    |totalViolation J a b c| ≤ 2 * ε := by
-  have hbound := error_bound_by_max_violation J a b c h_bounds
-  calc |totalViolation J a b c|
-      ≤ condProb J b a * |positiveViolation J a b c| +
-        (1 - condProb J b a) * |negativeViolation J a b c| := hbound
-    _ ≤ condProb J b a * ε + (1 - condProb J b a) * ε := by
-        apply add_le_add
-        · exact mul_le_mul_of_nonneg_left h_pos h_bounds.1
-        · exact mul_le_mul_of_nonneg_left h_neg (by linarith)
-    _ = ε := by ring
-    _ ≤ 2 * ε := by linarith
+    |totalViolation J a b c| ≤ ε := by
+  exact le_trans (error_bound_by_max J a b c h_bounds) (max_le h_pos h_neg)
 
-/-! ## Summary
-
-This file establishes:
-
-1. **Exact Error Formula** (`totalViolation`):
-   - error = P(B|A) · [P(C|A,B) - P(C|B)] + P(¬B|A) · [P(C|A,¬B) - P(C|¬B)]
-   - The error is EXACTLY the weighted independence violations
-
-2. **Zero Error Conditions** (`independent_implies_exact`):
-   - Fast PLN = Complete PLN ⟺ both independence conditions hold
-   - This is equivalent to conditional mutual information I(A;C|B) = 0
-
-3. **Error Bounds**:
-   - `error_bound_by_max`: |error| ≤ max(|pos_violation|, |neg_violation|)
-   - `violation_bounded`: Each violation is in [-1, 1]
-   - `conservative_estimate_is_bound`: Practical upper bound ≤ 1/2
-
-4. **Decision Criteria** (`formalShouldUseComplete`):
-   - Use complete mode when:
-     a. Independence score > threshold (significant violation)
-     b. Decision importance > threshold (high stakes)
-     c. n ≤ tractability limit (computation feasible)
-
-5. **Error Classification** (`ErrorRegime`):
-   - exact: Both independences hold
-   - positiveOnly: Only P(C|A,B) ≠ P(C|B)
-   - negativeOnly: Only P(C|A,¬B) ≠ P(C|¬B)
-   - bothFail: Both assumptions violated
-
-## When to Use Fast PLN (Summary)
-
-Use FAST PLN when:
-- Independence score < ε (assumptions approximately hold)
-- Low-stakes decision (errors are tolerable)
-- Many propositions (complete is intractable)
-- Speed is critical
-
-Use COMPLETE PLN when:
-- Independence score > ε (significant violations)
-- High-stakes decision
-- Few propositions (n ≤ 10)
-- Accuracy is paramount
-
-## K&S Connection
-
-The independence score relates to information-theoretic quantities:
-- I(A;C|B) = 0 implies positiveViolation = 0
-- Entropy bounds connect to error bounds
-- The lattice structure of BinaryEvidence respects these information relationships
+/-!
+The exactness result is one-way: branch screening implies zero weighted
+violation. It is not necessary because signed violations may cancel. The
+conservative estimate bounds weighted violation when the actual conditionals
+lie in the unit interval. Relating that violation to a concrete query answer
+requires the total-probability identity for the chosen world model.
 -/
+
+/-- The bound applies to the existing PLN formula on coherent WM readouts,
+not only to the branch-reference spelling used in the derivation. -/
+theorem pln_query_error_le_conservative_estimate (J : JointDistribution n) (a b c : Fin n)
+    (possible : 0 < marginalProb J a) :
+    |completeDeduction J a b c -
+      plnDeductionStrength (condProb J b a) (condProb J c b)
+        (marginalProb J b) (marginalProb J c)| ≤
+      conservativeErrorEstimate (condProb J b a) (condProb J c b) (condProbNeg J c b) := by
+  simpa only [screeningDeduction_eq_plnDeductionStrength] using
+    query_error_le_conservative_estimate J a b c possible
+
+namespace Controls
+
+private theorem sum_boolean_three (f : Fin (2 ^ 3) → ℝ) :
+    (∑ x, f x) = f 0 + (f 1 + (f 2 + (f 3 + (f 4 + (f 5 + (f 6 + f 7)))))) := by
+  change (∑ x : Fin 8, f x) = _
+  simp [Fin.sum_univ_succ]
+
+/-- `B` always holds and the rare event `A` coincides with `C`. A small
+reference conditional therefore permits a large positive branch error. -/
+noncomputable def rareSubsetDistribution : JointDistribution 3 where
+  prob world := if world.val = 2 then 9 / 10 else if world.val = 7 then 1 / 10 else 0
+  prob_nonneg world := by split_ifs <;> norm_num
+  prob_sum_one := by
+    change (∑ world : Fin 8,
+      if world.val = 2 then (9 / 10 : ℝ) else if world.val = 7 then 1 / 10 else 0) = 1
+    norm_num [Fin.sum_univ_succ]
+
+/-- The nearer-endpoint estimate fails on an actual coherent joint model:
+the query error is `9/10`, while that estimate reports only `1/10`. -/
+theorem nearer_endpoint_estimate_fails_on_joint_model :
+    |completeDeduction rareSubsetDistribution 0 1 2 -
+      screeningDeduction rareSubsetDistribution 0 1 2| = (9 / 10 : ℝ) ∧
+    (condProb rareSubsetDistribution 1 0 *
+        min (condProb rareSubsetDistribution 2 1) (1 - condProb rareSubsetDistribution 2 1) +
+      (1 - condProb rareSubsetDistribution 1 0) *
+        min (condProbNeg rareSubsetDistribution 2 1) (1 - condProbNeg rareSubsetDistribution 2 1)) =
+      (1 / 10 : ℝ) := by
+  norm_num [completeDeduction, screeningDeduction, condProb, condProbNeg,
+    marginalProb, marginalProbNeg, jointProb2, rareSubsetDistribution,
+    sum_boolean_three, worldToAssignment]
+
+/-- Within the `b` branch `a` and `c` agree, while outside it they disagree.
+The unconditional query is nevertheless predicted exactly by cancellation. -/
+noncomputable def cancellingDistribution : JointDistribution 3 where
+  prob world := if world.val = 1 ∨ world.val = 2 ∨ world.val = 4 ∨ world.val = 7 then 1 / 4 else 0
+  prob_nonneg world := by split_ifs <;> norm_num
+  prob_sum_one := by
+    change (∑ world : Fin 8,
+      if world.val = 1 ∨ world.val = 2 ∨ world.val = 4 ∨ world.val = 7 then (1 / 4 : ℝ) else 0) = 1
+    norm_num [Fin.sum_univ_succ]
+
+theorem exact_query_need_not_have_branch_screening :
+    completeDeduction cancellingDistribution 0 1 2 = screeningDeduction cancellingDistribution 0 1 2 ∧
+      positiveViolation cancellingDistribution 0 1 2 = (1 / 2 : ℝ) ∧
+      negativeViolation cancellingDistribution 0 1 2 = -(1 / 2 : ℝ) ∧
+      ¬ branchScreening cancellingDistribution 0 1 2 := by
+  norm_num [completeDeduction, screeningDeduction, positiveViolation, negativeViolation,
+    branchScreening, hasPositiveIndependence, hasNegativeIndependence,
+    condProb, condProb2, condProbNeg, condProb2Neg, marginalProb, marginalProbNeg,
+    jointProb2, jointProb2Neg, jointProb3, jointProb3Neg, cancellingDistribution,
+    sum_boolean_three, worldToAssignment]
+
+end Controls
 
 end Mettapedia.PLN.Comparisons.ErrorCharacterization

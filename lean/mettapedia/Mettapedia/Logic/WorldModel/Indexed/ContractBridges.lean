@@ -19,9 +19,9 @@ open CategoryTheory Opposite
 namespace Mettapedia.Logic.WorldModel.Indexed.ContractBridges
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open FixedQuery CountContracts
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
+open FixedQueryBridge CountContracts
 
 /-- Binary evidence as the single answer of the one-world base. -/
 noncomputable def evidenceProfiles : Pointᵒᵖ ⥤ AddCommMonCat :=

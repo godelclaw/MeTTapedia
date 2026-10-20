@@ -427,10 +427,12 @@ def disjunctionElim {p q r : Formula Const Γ}
   .impE (.impE (cast (instantiate_disjunctionBody r p q) (.allE r cases)) (.impI left))
     (.impI right)
 
-theorem subst_lift_single_rename_lift_weaken {σ τ : Ty Base} (r : Formula Const Γ)
+/-- Substituting under one binder into a body weakened under that binder
+leaves the body unchanged. -/
+theorem subst_lift_single_rename_lift_weaken {ρ σ τ : Ty Base} (r : Term Const Γ ρ)
     (φ : Term Const (σ :: Γ) τ) :
     subst (Subst.lift (Subst.single r))
-      (rename (Rename.lift (Rename.weaken (σ := .prop))) φ) = φ := by
+      (rename (Rename.lift (Rename.weaken (σ := ρ))) φ) = φ := by
   rw [subst_rename]
   calc subst (fun {_} i => Subst.lift (Subst.single r) (Rename.lift Rename.weaken i)) φ
       = subst Subst.id φ := by

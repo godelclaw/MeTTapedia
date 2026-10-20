@@ -263,19 +263,32 @@ theorem service_call_guards (service : Service) (arguments : List Atom) :
 
 /-- The adapter adds no binding assignments. The existing HE merge remains
 visible for every caller, including callers whose binding representation has
-not been assumed normalized. -/
+not been assumed normalized. A caller whose bindings admit no merge receives
+HE's native `Empty` reply with its bindings unchanged. -/
 theorem he_mettaCall_accepted_merges (scope : Lean.Name) (language : LanguageDef) (base : HE.GroundedDispatch)
     (space : HE.Space) (service : Service) (arguments : List Atom) (reply : Atom)
     (bindings : HE.Bindings) (accepted : invoke? scope language service arguments = some reply) (fuel : Nat) :
     HE.mettaCall space (heDispatch scope language base)
       (.expression (.symbol service.head :: arguments)) Atom.atomType bindings (fuel + 2) =
-        (HE.mergeBindings HE.Bindings.empty bindings (fuel + 1)).map (fun merged => (reply, merged)) := by
+        if (HE.mergeBindings HE.Bindings.empty bindings (fuel + 1)).isEmpty then
+          [(Atom.empty, bindings)]
+        else
+          (HE.mergeBindings HE.Bindings.empty bindings (fuel + 1)).map (fun merged => (reply, merged)) := by
   obtain ⟨_, _, output, _, _, _, bound⟩ := invoke_sound scope language service arguments reply accepted
   subst reply
-  cases service <;>
-    simp [HE.mettaCall, Service.head, heDispatch, Service.readHead, accepted,
-      HE.evalAtom, HE.isEmptyOrError, HE.isEmptyAtom, HE.isErrorAtom, textAtom]
-  all_goals exact List.map_eq_flatMap.symm
+  cases merged : HE.mergeBindings HE.Bindings.empty bindings (fuel + 1) with
+  | nil =>
+    cases service <;>
+      simp [HE.mettaCall, HE.invoke, HE.InvocationMode.errorPassthrough, HE.ordinaryCallReturn,
+        Service.head, heDispatch, Service.readHead, accepted, merged, HE.isEmptyOrError, HE.isEmptyAtom,
+        HE.isErrorAtom, textAtom, Atom.empty, Atom.notReducible]
+  | cons first rest =>
+    cases service <;>
+      simp [HE.mettaCall, HE.invoke, HE.InvocationMode.errorPassthrough, HE.ordinaryCallReturn,
+        HE.invocationResult, HE.Bindings.applyFull, Service.head, heDispatch, Service.readHead, accepted,
+        merged, HE.evalAtom, HE.isEmptyOrError, HE.isEmptyAtom, HE.isErrorAtom, textAtom, Atom.notReducible,
+        List.flatMap_map]
+    all_goals exact List.map_eq_flatMap.symm
 
 /-- This is the actual modeled `mettaCall`, including its native binding
 merge and recursive evaluation of the returned grounded string. -/
@@ -286,7 +299,23 @@ theorem he_mettaCall_accepted (scope : Lean.Name) (language : LanguageDef) (base
       (.expression (.symbol service.head :: arguments)) Atom.atomType HE.Bindings.empty (fuel + 2) =
         [(reply, HE.Bindings.empty)] := by
   rw [he_mettaCall_accepted_merges scope language base space service arguments reply HE.Bindings.empty accepted fuel]
-  simp only [HE.mergeBindings, HE.Bindings.empty, List.foldl_nil, List.map_cons, List.map_nil]
+  simp only [HE.mergeBindings, HE.Bindings.empty, List.foldl_nil, List.isEmpty_cons, Bool.false_eq_true,
+    ↓reduceIte, List.map_cons, List.map_nil]
+
+/-- A caller assignment that the available fuel cannot merge receives HE's
+`Empty` reply, not an empty answer list. -/
+theorem he_mettaCall_accepted_unmerged (scope : Lean.Name) (language : LanguageDef)
+    (base : HE.GroundedDispatch) (space : HE.Space) (service : Service) (arguments : List Atom)
+    (reply : Atom) (accepted : invoke? scope language service arguments = some reply)
+    (name : String) (value : Atom) :
+    HE.mettaCall space (heDispatch scope language base)
+      (.expression (.symbol service.head :: arguments)) Atom.atomType ⟨[(name, value)], []⟩ 2 =
+        [(Atom.empty, ⟨[(name, value)], []⟩)] := by
+  have merged := he_mettaCall_accepted_merges scope language base space service arguments reply
+    ⟨[(name, value)], []⟩ accepted 0
+  simp only [HE.mergeBindings, HE.addVarBinding, List.foldl_cons, List.foldl_nil, List.flatMap_cons,
+    List.flatMap_nil, List.append_nil, List.isEmpty_nil, ↓reduceIte] at merged
+  exact merged
 
 theorem he_mettaCall_refused (scope : Lean.Name) (language : LanguageDef) (base : HE.GroundedDispatch)
     (space : HE.Space) (service : Service) (arguments : List Atom) (type_ : Atom) (bindings : HE.Bindings)
@@ -294,7 +323,9 @@ theorem he_mettaCall_refused (scope : Lean.Name) (language : LanguageDef) (base 
     HE.mettaCall space (heDispatch scope language base)
       (.expression (.symbol service.head :: arguments)) type_ bindings (fuel + 1) = [(Atom.empty, bindings)] := by
   cases service <;>
-    simp [HE.mettaCall, HE.isErrorAtom, Service.head, heDispatch, Service.readHead, refused]
+    simp [HE.mettaCall, HE.invoke, HE.InvocationMode.errorPassthrough, HE.ordinaryCallReturn, HE.isErrorAtom,
+      HE.isEmptyOrError, HE.isEmptyAtom, Service.head, heDispatch, Service.readHead, refused, Atom.empty,
+      Atom.notReducible]
 
 /-- Accepted service calls also have derivations in the independently stated
 HE call judgment, using its original grounded-call and type-pass rules. -/
@@ -310,6 +341,9 @@ theorem he_mettaCall_derivation (scope : Lean.Name) (language : LanguageDef) (ba
   have notError : HE.isEmptyOrError reply = false := by
     obtain ⟨text, rfl⟩ := shape
     rfl
+  have notReducible : reply ≠ Atom.notReducible := by
+    obtain ⟨text, rfl⟩ := shape
+    simp [textAtom, Atom.notReducible]
   refine HE.MettaCall.grounded_ok _ _ _ (.symbol service.head) arguments
     [(reply, HE.Bindings.empty)] (reply, HE.Bindings.empty) HE.Bindings.empty
     (reply, HE.Bindings.empty) 1 rfl (he_service_executable scope language base service)
@@ -319,7 +353,8 @@ theorem he_mettaCall_derivation (scope : Lean.Name) (language : LanguageDef) (ba
   · rw [he_service_execute, accepted]
     rfl
   · simp [HE.mergeBindings, HE.Bindings.empty]
-  · exact HE.EvalAtom.type_pass reply Atom.atomType HE.Bindings.empty notError (Or.inl rfl)
+  · exact HE.OrdinaryCallReturnRel.of_eval notReducible
+      (HE.EvalAtom.type_pass reply Atom.atomType HE.Bindings.empty notError (Or.inl rfl))
 
 /-- Successful string replies are preserved and reflected by the actual HE
 call. Refusal is the distinct source `Empty` result. -/

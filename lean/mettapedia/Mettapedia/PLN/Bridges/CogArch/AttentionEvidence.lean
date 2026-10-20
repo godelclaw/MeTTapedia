@@ -29,7 +29,7 @@ namespace Mettapedia.PLN.Bridges.CogArch.AttentionEvidence
 
 open scoped BigOperators ENNReal Classical
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 open Mettapedia.CogArch.Attention
 open Mettapedia.ProbabilityTheory.MarkovChain.FiniteMassTransport

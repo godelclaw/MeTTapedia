@@ -1,3 +1,4 @@
+import Mathlib.Tactic.IntervalCases
 import Mettapedia.GSLT.LanguageDef.TypedFullSpineRecovery
 
 /-!

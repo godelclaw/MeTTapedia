@@ -5,7 +5,7 @@ import Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLConsequence
 namespace Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLInheritanceBridge
 
 open Mettapedia.Logic.HOL
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.KR.ConceptOntology
 open Mettapedia.KR.ConceptGeometry.AbstractInheritance
 

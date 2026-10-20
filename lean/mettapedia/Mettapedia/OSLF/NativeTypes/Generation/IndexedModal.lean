@@ -6,7 +6,9 @@ import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Consumers
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Continuation
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Controls
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Declarations
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Discovery
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.EarlierDeclarations
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.EquationProfiles
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.FocusChecking
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.FocusSemantics
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.FiniteFocusControls

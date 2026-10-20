@@ -29,7 +29,7 @@ open Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Adapters.CoreEmbed
 open Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Adapters.PatternBridge
 open Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Adapters.ProfileTheory
 open Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelTwoSortBridge
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
 
 private def betaPiRule : RewriteRule :=

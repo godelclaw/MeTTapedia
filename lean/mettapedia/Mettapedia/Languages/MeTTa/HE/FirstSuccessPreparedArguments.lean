@@ -2,6 +2,10 @@ import Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceReplies
 import Mettapedia.Languages.MeTTa.HE.BindingComposition
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Instantiation
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Normal
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Constructed substitution boundary for retained argument requests
@@ -22,7 +26,7 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.HE.FirstSuccessPreparedArguments
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
-open Spec.Type.Presentation Spec.Type.Instantiation LeaTTaBridge
+open Spec.Type.Presentation Spec.Type.Instantiation Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 open NativeArgumentControl NativeArgumentControlPolicy
 
 /-- The finite presentation's assignments, without an invented equality
@@ -204,7 +208,7 @@ theorem applyFull_presented_of_covered {table : TypeSubst} (normal : table.Norma
     (covered : (presentedBindings table).applyFullCovered atom depth = true) :
     (presentedBindings table).applyFull atom depth = table.apply atom := by
   rw [← Bindings.applyFullCovered_stable (presentedBindings table) atom depth
-    (LeaTTaBridge.atomDepth atom + 2) covered]
+    (BindingComposition.atomDepth atom + 2) covered]
   exact applyFull_presented normal _ atom (by omega)
 
 

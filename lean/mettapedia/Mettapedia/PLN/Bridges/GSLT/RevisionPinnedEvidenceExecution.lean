@@ -33,7 +33,7 @@ open Mettapedia.KR.ConceptGeometry.AbstractInheritance
 open Mettapedia.Machines
 open Mettapedia.PLN.Bridges.KR.RevisionStampedWitnessBridge
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 
 abbrev CountPair := Nat × Nat

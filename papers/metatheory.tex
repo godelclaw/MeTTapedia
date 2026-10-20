@@ -54,7 +54,7 @@
   and Open-Ended Reflection\\[3pt]
   \large Dependent families, CBPV, coalgebraic worlds, and staged qualification}
 \author{Mettapedia Working Notes}
-\date{September 2026}
+\date{October 2026}
 
 \begin{document}
 \maketitle
@@ -106,6 +106,15 @@ algorithms, and proof authority.  The result is a
 precise research programme rather than a declaration of a final native
 calculus.  Proved results, conditional constructions, negative controls, and
 open design choices are kept distinct throughout.
+Compositional execution contracts place resource authority, actual read
+dependencies and committed observer families over the same worlds and runs.
+Checked transport and adaptive-query laws connect these components without
+identifying permission, proof evidence, trusted assumptions or outstanding
+obligations; their complete native realization remains a separate boundary.
+Evidence is treated as a summary of observations whose operations are derived
+from stated observation contracts; absence is intuitionistic negation
+certified at declared frontiers; and nondeterministic choice yields
+probabilities only through a scheduler.
 \end{abstract}
 
 \tableofcontents
@@ -195,12 +204,14 @@ or small-based condition, and then instantiate an existence theorem.
 \section{Digest: what is known about HO MeTTa Prime, and how firmly}
 \label{sec:digest}
 
-This section is a map of the current state, dated 12 October 2026. Each row
+This section is a map of the current state, dated 19 October 2026. Each row
 names a part of the design, says what is known, and gives its status in the
-sense of the previous section, together with a confidence that the part will
-survive in the finished language. \emph{Decided} marks a design decision that is
-no longer under investigation. The confidence figures are working estimates,
-revised as results arrive; they are not probabilities derived from a model.
+sense of the previous section, together with a PLN simple truth value
+$\mathrm{STV}\langle s, c\rangle$ and credal indefinite truth value
+$\mathrm{ITV}\langle [L, U], b\rangle$ (with prior weight $\kappa = 2$)
+recording how firmly the doctrinal decision and its Lean/C realization are
+established. \emph{Decided} marks a design decision that is
+no longer under investigation.
 Section~\ref{sec:bubbles-hosted} explains the newest material, and
 Section~\ref{sec:status-ledger} keeps the detailed ledger.
 
@@ -244,8 +255,9 @@ Section~\ref{sec:status-ledger} keeps the detailed ledger.
   {OSLF:\\native types,\\$\Diamond$ and $\Box$\\from the\\rewrites} (type.west);
 \node[guest, below=0.55cm of gslt, text width=11.6cm] (g) {%
   Hosted logics beside Prime, linked by translations (biform routes) that state
-  what they preserve: native \code{hol:} profiles, the HOL Light guest
-  \code{hol-light:}, an LF kernel, MM0, Dedukti.};
+  what they preserve: the native logic \code{hol:} and the \code{set:}
+  theories over it, the HOL Light guest \code{hol-light:}, an LF kernel, MM0,
+  Dedukti.};
 \end{tikzpicture}
 \caption{The three faces, the bubbles of the type face, and the hosted logics.
 Every language is presented as a GSLT: its rewrites run in the operational
@@ -257,90 +269,180 @@ properties are theorems about that bubble.}
 \end{figure}
 
 {\small
-\begin{longtable}{>{\raggedright\arraybackslash}p{2.4cm}
-  >{\raggedright\arraybackslash}p{6.3cm}
-  >{\raggedright\arraybackslash}p{2.5cm}
-  >{\raggedright\arraybackslash}p{1.8cm}}
+\begin{longtable}{>{\raggedright\arraybackslash}p{2.3cm}
+  >{\raggedright\arraybackslash}p{5.9cm}
+  >{\raggedright\arraybackslash}p{2.3cm}
+  >{\raggedright\arraybackslash}p{2.5cm}}
 \toprule
-Part & What is known & Status & Confidence\\
+Part & What is known & Status & PLN STV / ITV\\
 \midrule
 \endhead
 Three faces & Every construct has a set face (meaning), a type face (checking)
   and an operational face (running), with links between them. & Decided &
-  $\ge 90\%$\\
+  $\mathrm{STV}\langle 1.00, 0.92\rangle$ $[0.92,1.00]$\\
 Sets ambient & A type is a set; the extensional side is the strongest.
   Membership is not yet connected to typing in the draft runtime. & Decided;
-  implementation open & $\ge 90\%$\\
-Identity & $J$ with its computation rule in the core; no global K or UIP; K
-  only in admitted regions. & Decided & $\ge 90\%$\\
-$\eta$ & Kept, and type-directed. & Decided & $\ge 90\%$\\
-HE's type engine & Prime never falls back to it. & Decided & $100\%$\\
+  realization open & Doc $\langle 0.95, 0.90\rangle$; Real $\langle 0.42, 0.86\rangle$ $[0.28,0.64]$\\
+Identity & $J$ with $\iota$ in the core; no global K or UIP (``sans-K''); K
+  and proof irrelevance in admitted per-space \code{(id:profile ...)} bubbles;
+  UIP definable inside a non-UIP spine. & Decided &
+  Doc $\langle 1.00, 0.92\rangle$; Real $\langle 0.89, 0.90\rangle$ $[0.80,0.95]$\\
+$\eta$ & Kept, and type-directed; proof-producing $\beta\eta$ conversion
+  recipes (\leanname{ConversionRecipes}) retain HOL equality witnesses. & Decided &
+  Doc $\langle 1.00, 0.91\rangle$; Real $\langle 0.88, 0.89\rangle$ $[0.79,0.95]$\\
+HE's type engine & Prime never falls back to it; HE-style fragments are decided
+  by the hosted HOL Light checker. & Decided &
+  Doc $\langle 1.00, 0.94\rangle$; Real $\langle 0.95, 0.90\rangle$ $[0.86,0.99]$\\
+Candidate web & Prime is a web of explicit DTT candidates
+  (\leanname{ParameterizedPiSigmaId}, \leanname{CumulativePiSigmaId},
+  \leanname{StagedScopedReflective}) and carved profile bubbles (Lean, Agda,
+  Rocq), never one monolithic calculus. & Decided &
+  Doc $\langle 1.00, 0.93\rangle$; Real $\langle 0.82, 0.89\rangle$ $[0.71,0.91]$\\
+Grounding \& 3 kernels & Tier-0 grounding is correct-by-construction (Rung~1:
+  minimal HOL proves the checker faithful once); certificates and per-proof
+  exports to HOL Light, Megalodon and MM0 are interop/acceleration bridges, all
+  checking the same fiber semantics. & Decided &
+  Doc $\langle 1.00, 0.92\rangle$; Real $\langle 0.71, 0.88\rangle$ $[0.56,0.84]$\\
+Variables modulo $E$ & Repeated pattern variables denote equality of model
+  elements modulo the active equational theory $E$ (presentation invariance;
+  syntactic unification is the $E = \emptyset$ bubble). & Decided &
+  Doc $\langle 1.00, 0.91\rangle$; Real $\langle 0.81, 0.89\rangle$ $[0.69,0.90]$\\
+Least bubbles \& Horn fiber & Least sufficient bubbles do not exist in general
+  (\leanname{no_least_sufficient_bubble}); a least bubble above every seed
+  exists iff sufficiency is meet-closed (\leanname{tfae_mooreFamily}), for
+  which Horn is the canonical finitary syntax (\leanname{models_hornTheoryOf},
+  \leanname{oneStep_rulesOf}). & Decided; proved &
+  Doc $\langle 1.00, 0.92\rangle$; Real $\langle 0.95, 0.90\rangle$ $[0.86,0.99]$\\
+Normal-form fiber & Normalizing both sides and comparing decides a bubble's
+  conversion on a set exactly when the set is weakly normalizing with unique
+  normal forms (\leanname{decidedOn_iff_uniqueNormalForms}); for orthogonal
+  theories of the $\lambda\Pi$-calculus modulo, exactly where they normalize.
+  Outside: choice, identified variables ($\eta$ on variables, proof
+  irrelevance), and commutativity on variables, for every theory
+  (\leanname{not_decidedOn_of_commutative}). & Proved; end to end for HOL through Holide and STTfa; STTfa adequate over HOL proofs for normal coded terms; normalization of the typed hub and of other translations open &
+  $\mathrm{STV}\langle 0.93, 0.88\rangle$ $[0.82,0.94]$\\
+Inductive spine & Authored inductives join indexed polynomial containers
+  $P = \Sigma_t \Pi_p \Delta_s$ (\leanname{IndexedPolynomial}) and
+  representation-independent CeTTa backends (GMP exact integers) with
+  proof-relevant $\iota$ policies (\leanname{ConversionRecipes.Policy}). &
+  Decided; slice in progress &
+  Doc $\langle 0.94, 0.89\rangle$; Real $\langle 0.67, 0.88\rangle$ $[0.52,0.80]$\\
 GSLT and OSLF & Every language is presented as a GSLT (sorts, binders,
   equations, rewrites); OSLF derives its native types, predicates on terms with
   $\Diamond$ and $\Box$ from the rewrite relation. Binding signatures are free
   monads of context-indexed polynomial functors; collections as quotients are
   proved for single languages, with the general case in progress. &
-  Proved pieces; design & $80\%$\\
+  Proved pieces; design & $\mathrm{STV}\langle 0.80, 0.88\rangle$ $[0.67,0.90]$\\
 Hosting & Three layers with their own crossing contracts: conversion bubbles,
   different logics, operational regions. A host preserves the counterexamples
-  of its guest and declares what it adds. & Decided & $\ge 90\%$\\
+  of its guest and declares what it adds. & Decided &
+  Doc $\langle 1.00, 0.92\rangle$; Real $\langle 0.82, 0.89\rangle$ $[0.71,0.91]$\\
 Kernel shape & A weak core (syntax-directed dependent typing with identity
   evidence) and bubbles that declare their conversion, each step justified by
   a global proof. Soundness, widening, substitution and the weakness order are
   proved; the version for full models of type theory and the decidability of
-  joins of bubbles are open. & Proved core; design recommendation & $75\%$\\
+  joins of bubbles are open. & Proved core; design recommendation &
+  $\mathrm{STV}\langle 0.84, 0.90\rangle$ $[0.73,0.93]$\\
 Equality per bubble & Contextual by default: a paused read-only search that
   resumes only in its own world cannot tell contextually equal programs apart.
-  & Proved for read-only searches; recommendation & $80\%$\\
+  & Proved for read-only searches; recommendation &
+  $\mathrm{STV}\langle 0.80, 0.88\rangle$ $[0.67,0.90]$\\
 Propositions & In a set model an impredicative universe is
   proof-irrelevant, so impredicative propositions are truth values and
   proof-relevant propositions are predicative types; irrelevance is an opt-in
-  bubble. & Proved obstruction; recommendation & $70\%$\\
+  bubble. & Proved obstruction; recommendation &
+  $\mathrm{STV}\langle 0.69, 0.87\rangle$ $[0.53,0.82]$\\
 The top & The kernel's universe rules do not depend on the set profile; the
   top supplies universes as sets, at levels above $V_\omega$ exactly the
   $V_\kappa$ for inaccessible $\kappa$. Which set theory is outermost
   (hypersets are the stated direction) remains open. & Proved layering,
-  conditional on cofinal inaccessibles; top open & $80\%$ layering, $65\%$
-  top\\
+  conditional on cofinal inaccessibles; top open &
+  Layer $\langle 0.80, 0.88\rangle$; Top $\langle 0.50, 0.86\rangle$ $[0.30,0.70]$\\
 Operational contract & Twelve clauses: evaluation positions, binding,
   quotation, held data positions, shared and independent choice, ignored
   divergence, answer order, two kinds of effect, step/pause/resume, stale
-  dependencies, \code{once} versus \code{select}. Laws proved on the
-  specification cores; the C runtime is evidenced by fixtures, not proved. &
-  Proved specification; runtime evidenced & $85\%$\\
-HE types & HE indexes types by symbols, as in \code{(Vec \$t (S \$x))}, and
-  matches the indices syntactically; it has no binder naming an argument and no
-  conversion. Each fragment on which HE's checker is one well-defined typing
+  dependencies, \code{once} versus \code{select}. Function arguments are
+  call-by-need by default while \code{let} is eager unless inside a \code{lazy}
+  demand bubble. &
+  Proved specification; runtime evidenced &
+  Doc $\langle 1.00, 0.92\rangle$; Real $\langle 0.88, 0.89\rangle$ $[0.79,0.95]$\\
+Execution contracts & Resource authority is reified to machine states;
+  complete occurrence-query certificates compose through adaptive reads and
+  validated resumption; dependent observer families share the existing
+  preservation and erasure boundary. Resource-safe interleaving does not
+  establish observable commutation, and permission weakening does not
+  discharge a duty. & Proved abstract laws and query/control profiles;
+  complete native instances open & $\mathrm{STV}\langle 0.82, 0.89\rangle$ $[0.71,0.91]$\\
+HE types & Each fragment on which HE's checker is one well-defined typing
   relation (static arrows, schemes, tuples, meta-types, \code{\%Undefined\%} as
-  the gradual unknown) is exactly typing in HOL, where every type is inhabited
-  and inhabitation is not truth. At run time the hosted HOL Light kernel
-  decides. The named binders of the \code{he-prime} profile are genuinely
-  dependent and need a dependent contract ($\lambda\Pi$). & Proved fragments;
-  runtime in progress; dependent part open & $75\%$\\
+  the gradual unknown) is exactly typing in HOL, with three-way kernel agreement
+  across HOL Light, Megalodon and MM0 (\leanname{KernelRealizations}). The named
+  binders of the \code{he-prime} profile are genuinely dependent ($\lambda\Pi$). &
+  Proved fragments \& 3-kernel agreement; dependent part open &
+  $\mathrm{STV}\langle 0.84, 0.90\rangle$ $[0.73,0.93]$\\
 Logic translations & The Grothendieck institution of a logic graph; borrowing
   a prover is sound exactly when the translation is conservative; proofs travel
-  along routes. & Proved & $85\%$\\
-HOL and sets & Relativizing HOTG into the HOL core is exact; HOL Light into
-  HOTG and the HOL core into HOTG are not conservative, with the added
-  commitments named. & Proved in part; argued in part & $75\%$\\
+  along routes. & Proved & $\mathrm{STV}\langle 0.85, 0.89\rangle$ $[0.74,0.93]$\\
+HOL and sets & Classical HOL satisfies Farmer's seven virtues
+  (\leanname{SevenVirtues}: Henkin completeness, Peano and COF categoricity,
+  choice separation); intuitionistic HOL is complete for Heyting substitutional
+  models (\leanname{HeytingGeneral}). Relativizing HOTG into its base logic is
+  exact; HOL Light into HOTG and base into HOTG are not conservative. &
+  Proved & $\mathrm{STV}\langle 0.91, 0.91\rangle$ $[0.82,0.97]$\\
 Evidence logic & The four-valued reading of evidence (true, false, both,
-  neither) is exactly double negation on the PLN evidence quantale. & Proved &
-  $90\%$\\
+  neither) is exactly double negation on the PLN evidence quantale. Counts
+  summarize observations, and each operation is derived from a stated
+  observation contract: additive revision for disjoint ledgers, an interval
+  for overlap and for same-world conjunction, the paired product for pairs of
+  sample bags, PLN's tensor for conditionally independent reports. Negation by
+  evidence is monotone; PLN deduction is exact under screening off;
+  conclusion confidence is derived through credal intervals. & Proved
+  & $\mathrm{STV}\langle 0.90, 0.90\rangle$ $[0.80,0.96]$\\
+Infinite MLNs \& DLR shells & DLR Gibbs completions induce additive world models
+  (\leanname{MarkovLogicInfiniteWorldModel}); under the Dobrushin bound the query
+  strength is fixed by the specification. The DLR query envelope has strict
+  width exactly when the query observation leaks
+  (\leanname{queryObservation_leaks_iff_strictWidth}); it collapses on the
+  zero-weight grid and is strictly wide on the reinforced line. The IDM width of
+  finite counts is a separate quantity (\leanname{EvidenceContracts.idm_width}).
+  Extending a specification outside an interaction-closed core preserves the
+  core's query strengths exactly (\leanname{TranscendencePath.original_queries_stable});
+  agreement on an $n$-shell bounds the change by $2|\Gamma|C^n$ for some $C<1$
+  (\leanname{DynamicTranscendenceStep.queryProb_approximately_preserved}).
+  Reading these world models as bubbles is open and not yet investigated.
+  & Proved; bubble reading open & Doc $\langle 0.95, 0.91\rangle$; Real $\langle 0.88, 0.89\rangle$ $[0.79,0.95]$\\
+Weighted answers & One annotation semiring for spaces and answers; possibility
+  composes exactly over positive semirings; commuting binds need commuting
+  annotations; the answer readout is an observer of ordered runs. & Proved &
+  $\mathrm{STV}\langle 0.85, 0.89\rangle$ $[0.74,0.93]$\\
+Absence & Presence-only programs are coordination free; absence at a frontier
+  is intuitionistic negation over reachable states, certified by the owner of
+  the pattern's head and revoked only by it. & Proved; native source open &
+  $\mathrm{STV}\langle 0.80, 0.88\rangle$ $[0.67,0.90]$\\
+Choice, probability, strategy & Probability views a program with choice only
+  through a scheduler, with envelopes at deterministic schedulers;
+  consumption needs arbitration; bounded overtaking, realized by deadlines,
+  certifies fair service. & Proved abstract laws &
+  $\mathrm{STV}\langle 0.80, 0.88\rangle$ $[0.67,0.90]$\\
 Empty and null & No universal null. Zero answers is not a value; an error is a
   value; an unknown call stays inert. Empty functions into different codomains
   are equal as sets and equivalent, not equal, as types. & Proved pieces;
-  recommendation & $80\%$\\
-Names & ``Bubble type theory'' with a ``weak core''; the HOL profiles
-  \code{(hol:profile core)} and \code{(hol:profile megalodon-hotg)}. & Working
-  names & ---\\
+  recommendation & $\mathrm{STV}\langle 0.80, 0.88\rangle$ $[0.67,0.90]$\\
+Names & ``Bubble type theory'', glossed as a weak dependent type theory with
+  bubble-local definitional equality (``fibered type theory'' also fits). The
+  native logic is \code{(hol:profile base)}; the HOTG set theory is the set
+  profile \code{(set:profile megalodon-hotg)}, built over that logic. & Decided
+  & Doc $\langle 1.00, 0.90\rangle$; Real $\langle 0.94, 0.89\rangle$ $[0.84,0.99]$\\
 \bottomrule
 \end{longtable}
 }
 
-The weakest parts are the correspondence between the C runtime and the
-specification cores, the dependent half of HE's typing, and the choice of the
-outermost set theory. The strongest are the identity and $\eta$ decisions and
-the theorems that make bubbles and hosting precise.
+The weakest parts are the choice of the outermost set/hyperset theory, the
+generic dependent eliminator derivation across the authored inductive spine, and
+the Kripke--Henkin scheduler extension for intuitionistic HOL. The strongest are
+the identity and $\eta$ decisions, the meet-closed (Horn) characterization of
+least sufficient bubbles, Farmer's seven virtues for HOL, and the theorems that
+make bubbles and hosting precise.
 
 \section{The semantic envelope}
 
@@ -797,6 +899,352 @@ discharge them. Futamura specialization and Turchin supercompilation
 specialized checkers and transformations. Their semantic correspondence,
 termination, preservation of sharing and resource benefit remain separate
 requirements, not consequences of low distortion.
+
+\subsection{Evidence: observation contracts, readouts and PLN}
+\label{sec:evidence-contracts}
+
+A pair of counts $(n^+,n^-)$ summarizes observations: how many samples
+supported a proposition and how many refuted it.  Which operations on such
+pairs are sound depends on what was observed and how the observations
+relate.  The checked development states the relation as an
+\emph{observation contract} and derives each operation from it; no
+combination formula is postulated.  Probability is read from evidence; the
+evidence is what a world model carries.
+
+\paragraph{Identified observations.}
+When every observation has an identity, a body of evidence is a ledger, a
+finite set of identities, each recording one world.  Ledgers form a
+distributive lattice whose join is union: merging two replicas is idempotent,
+commutative and associative, so ledgers replicate without coordination.  The
+evidence of a ledger is a valuation on that lattice: the evidence of a union
+plus the evidence of the overlap is the sum of the two evidences
+(\leanname{EvidenceContracts.ledgerEvidence_union_add_inter}).  Consequently
+additive revision is exact exactly for disjoint ledgers and otherwise counts
+the overlap twice (\leanname{additive_revision_exact_iff_disjoint},
+\leanname{revision_counts_overlap_twice}); the disjointness check that
+non-axiomatic reasoning performs on evidential bases before revising
+\cite{WangNAL} is this condition.  Retraction of a ledger subtracts the
+evidence of its overlap by the monus of counts (\leanname{ledgerEvidence_sdiff}),
+and the abstract overlap world model of the tree is instantiated with the
+overlap read off the intersection (\leanname{ledgerOverlapModel}).  When the
+overlap is unknown, the merged evidence lies between the coordinatewise
+maximum and the sum of the two evidences, and both ends occur for the same two
+evidences (\leanname{unknown_overlap_bounds},
+\leanname{Controls.overlap_interval_ends}).  The maximum is therefore the
+revision that is sound whatever the overlap, the counting analogue of
+covariance intersection \cite{JulierUhlmannCI}.  The source-keyed revision of
+the layer atlas, which keeps each source's cumulative evidence and merges by
+maximum, computes the evidence of the merged ledger exactly when each
+source's observations on the two replicas are nested, as under cumulative
+publication, and under-counts otherwise
+(\leanname{ledgerEvidence_union_eq_sourceMerge},
+\leanname{Controls.sourceMerge_undercounts}).
+
+\paragraph{Pairs of samples and the weights of answers.}
+Pairing every sample of one bag with every sample of another forces the
+paired product $(a^+b^+,\;a^+b^-+a^-b^++a^-b^-)$
+(\leanname{EvidenceSpaces.conjunction_unique}); in the coordinates (positive,
+total) of non-axiomatic logic it is coordinatewise multiplication
+(\leanname{EvidenceSpaces.posHom}, \leanname{EvidenceSpaces.totalHom}), and its
+strength is the product of the strengths.  With it the counts form a
+commutative semiring, so evidence can weight answers.  Which laws of an
+annotation semiring a readout needs is now exact.  Possibility composes for
+all answers if and only if the semiring is \emph{positive}: sums vanish only
+when both summands do and products only when a factor does
+(\leanname{AnnotationCapabilities.support_bind_iff_positive}); this is
+equivalent to a zero-reflecting homomorphism into the two-element semiring
+(\leanname{positive_iff_exists_hom}), as in the semiring provenance of
+first-order logic \cite{GradelTannenProvenance}.  Evidence counts with the
+paired product are positive, the coordinatewise product on pairs is not, and
+no nontrivial ring is (\leanname{positive_evidence},
+\leanname{not_positive_pair}, \leanname{not_positive_of_ring}): signed
+weights retract anything exactly but lose compositional possibility, while
+the monus retracts only a known batch and keeps it.  Two independent binds
+commute for all answers only if the annotations commute
+(\leanname{comm_of_bind_comm}).
+
+The total of a paired product counts pairs, not independent samples of the
+conjunction.  For independent bags of sizes $n$ and $m$ with success
+probabilities $p$ and $q$, the variance of the number of positive pairs is
+\[
+  nm\,pq(1-pq)\;+\;nm\,pq\bigl((m-1)q(1-p)+(n-1)p(1-q)\bigr),
+\]
+derived from the sampling model by finite sums
+(\leanname{PairedSampleDispersion.paired_variance}).  The first term is the
+variance for $nm$ independent joint samples; the excess vanishes for interior
+probabilities exactly when $n=m=1$
+(\leanname{paired_variance_eq_joint_iff}).  At $p=q=1/2$ the effective number
+of independent joint samples is $3n^2/(2n+1)$, below $3n/2$, not $n^2$
+(\leanname{Controls.effective_size_half}).  A confidence readout for a
+conjunction must therefore be derived from the factors' counts and strengths,
+not from the paired total.
+
+\paragraph{Observations of one world.}
+Two predicates evaluated on the same bag of worlds have marginal counts that
+do not determine their conjunction
+(\leanname{EvidenceSpaces.no_same_world_conjunction_from_marginals}).  The
+compatible conjunction counts are exactly the Fréchet interval
+$\max(0,a+b-n)\le c\le\min(a,b)$ \cite{FrechetTableaux}: every value in it is
+realized by a bag and none outside it
+(\leanname{EvidenceContracts.conjunction_counts_iff}).  The product of the two
+frequencies lies inside (\leanname{independence_within_frechet}).  For
+dependent observations the sound readout of a conjunction is this interval;
+independence is an assumption that selects one point.
+
+\paragraph{Reports about one hypothesis.}
+A report can instead be read as the pair of masses of a hypothesis and of its
+negation jointly with the report.  For two reports conditionally independent
+given the hypothesis, under a uniform prior, the evidence of both reports is
+the coordinatewise product of the single-report evidences, up to the prior
+constant, and its strength is the posterior probability
+(\leanname{testimony_fuse_uniform}, \leanname{strength_fuse_uniform}).  This
+coordinatewise product is PLN's binary-evidence tensor
+(\leanname{toPaired_tensor}).  Its strength is the logarithmic opinion pool
+\cite{GenestZidekPooling}, or Dempster's rule on Bayesian mass functions over a
+two-element frame \cite{DempsterUpperLower} (\leanname{strength_fuse}); its
+zero divisor is total conflict between two certain reports
+(\leanname{fuse_total_conflict}); and fusing two posteriors that each contain a
+non-uniform prior counts the prior twice
+(\leanname{testimony_fuse_counts_prior_twice},
+\leanname{Controls.prior_counted_twice}).  Likelihood ratios of independent
+tests multiply in the same way as betting scores do in game-theoretic
+statistics, where the product of independent e-values is an e-value
+\cite{VovkWangEValues,ShaferVovkGTP}.  The tensor is thus a sound fusion
+operator for its own contract.  It is not conjunction and not the direct path
+of PLN deduction: on two half-strength premises it has strength $1/2$, while
+the direct-path term $s_{AB}s_{BC}$ is $1/4$, the strength of the paired product
+(\leanname{Controls.fuse_not_direct_path}).
+
+\paragraph{Readouts.}
+Strength is undetermined with no samples
+(\leanname{EvidenceSpaces.readout_zero}), never strength zero.  The interval of
+Walley's imprecise Dirichlet model \cite{WalleyBagOfMarbles} is $[0,1]$ at zero
+counts (\leanname{idm_vacuous}); its width is one minus the PLN confidence
+$n/(n+s)$ (\leanname{idm_width}), and with samples it contains the observed
+frequency (\leanname{idm_contains_frequency}).  Revision shrinks the width but
+moves the interval, so the intervals of successive evidence states are not
+nested (\leanname{idm_not_nested}).  The vacuous interval coincides with the
+probabilities that schedulers assign to a pure nondeterministic choice between
+two outcomes (Section~\ref{sec:demand-effects}).  Strength is not additive
+under revision (it is the mediant, \leanname{EvidenceSpaces.strength_add}), so
+the weights of alternatives must be carried as counts and read out once.
+
+\paragraph{Negation by evidence, not by absence.}
+Evidence against a proposition is recorded, not inferred from a missing
+record.  Exchanging the two counts is an involution that is monotone in the
+information order and distributes over revision
+(\leanname{against_mono}, \leanname{against_add}); the truth-order meet and join
+of the evidence bilattice are monotone in the information order and exchanged
+by it (\leanname{tmeet_mono}, \leanname{tjoin_mono}, \leanname{against_tmeet}); and
+the four-valued reading as neither, true, false or both \cite{BelnapFourValued}
+is monotone (\leanname{belnap_mono}).  This is the constructible falsity of
+Nelson \cite{NelsonConstructibleFalsity}, which the basic logic of evidence of
+Carnielli and Rodrigues reads as preservation of evidence
+\cite{CarnielliRodriguesLET}: every connective only grows with evidence, so a
+program built from them stays presence-only and coordination free.  The
+intuitionistic negation $a\Rightarrow\bot$ of a nontrivial Heyting algebra is
+not monotone (\leanname{hnot_not_monotone}), in particular on PLN's evidence
+frame (\leanname{binaryEvidence_hnot_not_monotone}).  Negation by absence
+therefore needs a frontier (Section~\ref{sec:pqi-absence}); negation by
+evidence does not.
+
+\paragraph{What PLN's rules become.}
+Revision is derived for disjoint ledgers and refuted for overlapping ones.  The
+strength of a conjunction is derived for independent sample bags and is only
+an interval for observations of one world.  Inversion is Bayes' rule in counts
+(\leanname{EvidenceSpaces.condition_pos_symm}).  Deduction is exact under
+screening off: if, in the counts of a bag of worlds, $C$ is independent of $A$
+given $B$ and given $\neg B$, the frequency of $C$ among the $A$-worlds is
+$s_{AB}s_{BC}+(1-s_{AB})(p_C-p_Bs_{BC})/(1-p_B)$
+(\leanname{EvidenceContracts.deduction_exact_of_screening}); without screening
+off the formula gives $1/4$ where the frequency is $0$
+(\leanname{Controls.deduction_fails_without_screening}).
+
+\paragraph{Conclusion confidence through intervals.}
+A conclusion's confidence is derived through credal intervals, in the sense of
+the confidence characterization of the tree: a truth value $\langle s,c\rangle$
+is a readout of a credal envelope.  The route has three steps.  Premise
+evidence $(n^+,n^-)$ becomes the imprecise Dirichlet interval with a declared
+prior strength $s$, an envelope theorem of the tree
+(\leanname{WalleyBinaryIDM.credal_envelope_matches_Walley_ITV_bounds}); its
+evidence weight reads back $n^++n^-$ (\leanname{EvidenceContracts.idm_intervalWeight}).
+The rule then maps premise intervals to a conclusion interval by the map its
+observation contract fixes: the product interval for independent pairs
+(\leanname{product_interval}), the Fréchet interval for conjunction on one world
+(\leanname{frechet_interval}), the corner interval of the bilinear deduction map
+under screening off (\leanname{deduction_interval},
+\leanname{bilinear_between_corners}), and the vacuous interval $[0,1]$ without
+screening off, where two bags agree on $s_{AB}=s_{BC}=1/2$ and give $C$ among the
+$A$-worlds the frequencies $0$ and $1$ (\leanname{Controls.unscreened_vacuous}).
+Finally a declared selector gives the strength and the width-complement chart
+the confidence, which is the PLN odds chart $w/(w+s)$ for the interval's
+evidence weight $w$ (\leanname{widthConfidence_eq_odds}); the chart is forced by
+the Walley gate (\leanname{walley_width_complement_forces_plnOdds}).
+\leanname{deduction_confidence_route} assembles the steps for deduction.
+\begin{center}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.27\linewidth}%
+                >{\raggedright\arraybackslash}p{0.25\linewidth}%
+                >{\raggedright\arraybackslash}p{0.38\linewidth}}
+\toprule
+Choice & Status & Fixed or justified by \\
+\midrule
+Prior strength $s$ ($\kappa$) & genuine degree of freedom & declared per context
+  and source \\
+Credal model of a premise & genuine backend choice & the imprecise Dirichlet
+  model is the one whose width complement is the PLN chart \\
+Range and normalization & convention & the declared range $[0,1]$ \\
+Confidence chart & free until gated & forced to $w/(w+s)$ by the Walley gate \\
+Propagation map & fixed & the observation contract of the rule \\
+Strength selector & genuine decision knob & lower, midpoint, upper or point
+  estimate; it does not affect confidence \\
+Rule-level transport & computed in interval or weight space & raw-confidence
+  transport double-damps: inputs $(0.5,0.5)$ give $0.5$ under minimum-support
+  transport, not $0.333$ (\leanname{truthInduction_conf_eq_min_capped}) \\
+\bottomrule
+\end{tabular}
+\end{center}
+Against this route, the deduction evidence constructed in the tree, whose total
+is the sum of the premise totals (\leanname{EvidenceContracts.deductionEvidence_total}),
+is neither an upper nor a lower bound.  On premises $(1,1)$ and $(1,1)$ with
+$s=1$ it posits $4$ (\leanname{Controls.deductionEvidence_posits_four}); the
+route derives the interval $[1/9,4/9]$ and weight $2$ at $p_B=p_C=0$, and the
+interval $[4/9,5/9]$ and weight $8$ at $p_B=p_C=1/2$; on premises $(0,2)$ and
+$(1,2)$ at $p_B=p_C=0$ both give $5$ (\leanname{Controls.deduction_posited_overstates},
+\leanname{Controls.deduction_posited_understates},
+\leanname{Controls.deduction_posited_agrees}).  Likewise the weight-product
+conjunction of the tree, $w_{a\wedge b}=w_aw_b$, gives confidence $4/5$ on
+premises $(1,1)$ and $(1,1)$, where the route derives $2/3$ for independent
+conjunction and $1/3$ for conjunction on one world
+(\leanname{Controls.conjunction_through_intervals},
+\leanname{Controls.frechet_through_intervals}); the weight product is the paired
+total, which the variance identity above shows overstates.
+
+\paragraph{Neighbouring formalisms.}
+The same counts underlie several formalisms that read them differently.
+\begin{center}
+\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{0.21\linewidth}%
+                >{\raggedright\arraybackslash}p{0.33\linewidth}%
+                >{\raggedright\arraybackslash}p{0.36\linewidth}}
+\toprule
+Formalism & Its reading of $(n^+,n^-)$ & Relation to the contracts above \\
+\midrule
+Non-axiomatic logic \cite{WangNAL} & frequency $w^+/w$, confidence $w/(w+k)$ &
+  revision adds evidence after a disjointness check of evidential bases: the
+  ledger contract \\
+Subjective logic \cite{JosangBeliefCalculus} & opinions in bijection with Beta
+  evidence & cumulative fusion, for separate and independent evidence, adds the
+  evidence parameters, and averaging fusion, for the same evidence, is
+  idempotent \cite{JosangFission}: the ledger contract at its two ends; the
+  product of opinions coarsens the product frame and approximates the exact
+  product \cite{JosangBeliefCalculus} \\
+Dempster--Shafer \cite{ShaferEvidence} & mass on hypotheses and on the frame &
+  Dempster's rule on Bayesian masses is the likelihood contract, and total
+  conflict is its zero divisor \\
+Imprecise probability \cite{WalleyBagOfMarbles} & credal sets &
+  the imprecise Dirichlet interval, vacuous at zero counts \\
+Game-theoretic probability \cite{ShaferVovkGTP} & betting capital &
+  independent betting scores multiply: the likelihood contract \\
+Semiring provenance \cite{GreenProvenanceSemirings} & annotations &
+  counts are a commutative positive semiring; exact overlap needs identities \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Is evidential logic more fundamental than PLN?}
+In a precise sense, yes.  Its objects are bodies of observations with an
+information order in which both polarities only grow; its operations are
+derived from an observation contract (identities, one world, pairs, reports);
+its readouts are strength, confidence and credal intervals, each derived and
+each undetermined at no evidence.  PLN's truth values are readouts of these
+objects, and its rules are derivations from them under stated assumptions:
+disjointness for revision, independence for conjunction, screening off for
+deduction, a uniform prior for fusion.  What PLN adds is an inference
+discipline over a knowledge base: a set of rules applied to cached readouts
+of links, higher-order and quantified extensions, and the heuristic
+assumptions that let it chain without carrying the joint model.  Those
+assumptions are where its results can fail, and each now has a checked
+counterexample.
+
+\subsection{Infinite relational world models and Dobrushin shells}
+\label{sec:infinite-mln-wm-bubbles}
+
+When a knowledge base ranges over a countably infinite domain of atoms and
+clauses (\leanname{ClassicalInfiniteGroundMLNSpec}), its probabilistic semantics
+is given by the Dobrushin--Lanford--Ruelle (DLR) specification of
+infinite-volume Gibbs measures (\leanname{MarkovLogicInfiniteExistence},
+\leanname{MarkovLogicInfiniteUniqueness}).  Every DLR probability measure $\mu$
+on $\leanname{InfiniteWorld}\;\mathrm{Atom}$ induces a mass semantics of total
+mass one whose singleton world-model query strength is the Gibbs cylinder
+probability
+(\leanname{MarkovLogicInfiniteWorldModel.infiniteMLN_queryStrength_eq_gibbsProb}).
+Under the uniform Dobrushin bound (\leanname{PaperUniformSmallTotalInfluence})
+the DLR measure is unique, so the query strength is determined by the
+specification alone (\leanname{infiniteMLN_queryStrength_unique_of_uniform});
+the same holds for the world-of-views trust networks under their trust budget
+(\leanname{MarkovLogicInfiniteWorldOfViews.worldOfViews_wmBridge_unique}).
+
+\paragraph{Two widths.}
+Two different quantities give credal intervals here, and the formal
+development proves facts about each separately.
+\begin{enumerate}
+\item \emph{Finite counts.}  The Walley IDM interval of the counts
+  $(n^+, n^-)$ with prior strength $s$ has width $1 - n/(n+s)$, where
+  $n = n^+ + n^-$ (\leanname{EvidenceContracts.idm_width}); so the width is
+  $s/(n+s) > 0$ for every finite count when $s > 0$.  Merging two ledgers whose
+  overlap is unknown gives evidence between the coordinatewise maximum and the
+  sum (\leanname{unknown_overlap_bounds}), and the conjunction counts compatible
+  with given marginal counts are exactly the Fr\'echet interval
+  (\leanname{conjunction_counts_iff}).
+\item \emph{The specification.}  The DLR completions of a specification form a
+  credal set (\leanname{MarkovLogicInfiniteCredalBridge}).  For a finite query
+  its envelope has strict width exactly when the query observation leaks in the
+  generative semantics
+  (\leanname{GibbsCompletion.queryObservation_leaks_iff_strictWidth}), and the
+  Dobrushin bound makes every finite-query observation stable
+  (\leanname{queryObservation_stable_of_uniform}).  The envelope of the origin
+  spin collapses on the zero-weight grid
+  (\leanname{zeroWeightGrid_originSpinUp_queryEnvelope_collapse}) and has
+  positive width on the geometrically reinforced line
+  (\leanname{reinforcedLineGeometric_originSpinUp_queryEnvelopeWidth_pos}).  On
+  the symmetric zero-field grid, strict width is proved under the hypothesis
+  that the plus and minus boundary completions separate the origin spin
+  (\leanname{symmetricGridZeroField_originSpinUp_strictWidth_of_plusMinusBoundarySeparation});
+  that separation at low temperature is open.
+\end{enumerate}
+On the zero-weight grid the second width is zero while the first is positive
+for every finite count, so the second does not bound the first.  No theorem
+relates the two widths beyond that, and an interval combining them is not
+formalized.
+
+\paragraph{Growth outside a core.}
+Syntactic non-occurrence does not isolate a query when a hidden fact can
+entail it (\leanname{CandidateDependentWorldModel.syntactic_nonoccurrence_counterexample}).
+For infinite MLNs whose specifications both satisfy the Dobrushin bound:
+\begin{itemize}
+\item extending a specification outside an individuated core that stays
+  interaction-closed, with the two specifications agreeing on the core,
+  preserves the query strengths on the core exactly
+  (\leanname{MarkovLogicSelfTranscendence.TranscendenceStep.old_queries_preserved}),
+  and so does every coherent path of such extensions on the original core
+  (\leanname{TranscendencePath.original_queries_stable});
+\item when two specifications agree on the $n$-step interaction shell around a
+  query region $\Gamma$, the query probabilities on $\Gamma$ differ by at most
+  $2|\Gamma|C^n$ for some $C < 1$
+  (\leanname{MarkovLogicDynamicTranscendence.DynamicTranscendenceStep.queryProb_approximately_preserved});
+\item along a coherent coupled path on which a coordination score grows at
+  every step (a field of the path), the score grows from start to end, and the
+  strength of every query on the original cores moves by at most the path's
+  shell-tail budget
+  (\leanname{MarkovLogicSyntheticCognitiveDevelopment.SyntheticCognitiveDevelopmentPath.coordination_improves_while_joint_identity_drift_bounded}).
+\end{itemize}
+
+\paragraph{Relation to bubbles: open.}
+Whether these world models, their evidence ledgers and their widths can be
+read as bubbles of the bubble type theory (Section~\ref{sec:bubbles-hosted})
+has not yet been investigated; it is open.  No theorem relates the conversion
+of a bubble to ledger evidence, to forgetting, or to either width.
 
 \subsection{Draft-critical judgments and workload discriminators}
 \label{sec:draft-critical-judgments}
@@ -2047,6 +2495,306 @@ an extensional bubble is a certified quotient/model readout of an intensional
 one when such a model theorem is available.  It is not permission to add
 equality reflection to every checker.
 
+\subsection{Compositional execution contracts over worlds and runs}
+\label{sec:execution-contracts}
+
+An execution contract selects a program semantics, the resources and services
+it may use, its observable outcomes and commitments, and the applicable
+progress and cost comparisons. These are obligations over a common execution
+object, not interchangeable meanings of one numerical weight. Epistemic
+authority qualifies a judgment and its evidence; resource authority describes
+held rights. A service assumption can justify conditional reasoning about a
+run without becoming checked evidence or an execution grant.
+
+\paragraph{Resource authority and reification.}
+Let $A$ be a separation algebra, with compatibility $p\mathbin{\#}r$ and
+composition $p+r$ defined lawfully on compatible resources. A reification
+$V:A\to\mathcal P(S)$ interprets authority as sets of machine states.
+For an action relation $a:S\to S\to\mathsf{Prop}$, the frame judgment is
+\[
+  \mathsf{AP}(V,a,p,q)
+  \quad\Longleftrightarrow\quad
+  \forall r,\ p\mathbin{\#}r\Rightarrow
+  \forall s\in V(p+r),\ \forall s',\
+  a(s,s')\Rightarrow
+  q\mathbin{\#}r\ \land\ s'\in V(q+r).
+\]
+This is the existing \leanname{Contracts.ActionPreserves}, following the
+Views interpretation of concurrent reasoning
+\cite{DinsdaleYoungViews}. Rely--guarantee claims instantiate the same
+separation algebra: assertions are stable under their rely, and compatibility
+requires each guarantee to lie within the other's rely
+\cite{JonesInterferingPrograms}. These laws prove safety of completed
+interleavings. They do not equate their visible traces or establish that a
+particular waiting task receives service. Enabledness is separate: an action
+that never runs from the admitted view can satisfy this safety judgment
+vacuously.
+
+\paragraph{Relational transport with a frame back law.}
+Suppose $f:A\to B$ is a resource homomorphism and
+$R:S\to T\to\mathsf{Type}$ is a proof-relevant relation. The reification square
+is
+\[
+  t\in V_T(f(p))
+  \quad\Longleftrightarrow\quad
+  \exists s\in V_S(p),\ \mathsf{Nonempty}(R(s,t)).
+\]
+Target steps must reflect along the selected relation witness: from
+$R(s,t)$ and $b(t,t')$, obtain an $s'$ with $a(s,s')$ and $R(s',t')$.
+The resource back law lifts every compatible target frame:
+\[
+  f(p)\mathbin{\#}u
+  \quad\Longrightarrow\quad
+  \exists r,\ p\mathbin{\#}r\ \land\ f(r)=u.
+\]
+\begin{proposition}[Transport and composition of the frame judgment]
+Under these three conditions, $\mathsf{AP}(V_S,a,p,q)$ implies
+$\mathsf{AP}(V_T,b,f(p),f(q))$. Two such adapters compose by resource
+homomorphism composition and by the existing horizontal relation
+\[
+  (R;Q)(s,u)=\sum_{t:T}R(s,t)\times Q(t,u).
+\]
+\end{proposition}
+\begin{proof}
+Lift an arbitrary target frame to a source frame, recover a related source
+state through the reification square, reflect the target step, and apply the
+source frame judgment. Reify its successor and map its compatible frame
+back to the target. For composition, retain the actual middle state and both
+relation witnesses; frame lifting and step reflection compose through that
+same middle representation. The checked endpoints in the
+\leanname{ActionPreserves} namespace of
+\leanname{GSLT.Contracts.ReifiedActions} are
+\leanname{transport_relation},
+\leanname{ReifiesThrough.comp},
+\leanname{ReflectsThrough.comp}, and
+\leanname{transport_relation_comp}.
+\end{proof}
+
+The controls are substantive. Exchanging two owned cell locations transports
+the write judgment. Adding an effect log gives a relational representation
+whose frame-safe actions can emit $[\mathsf{false},\mathsf{true}]$ or
+$[\mathsf{true},\mathsf{false}]$ while leaving identical owned cells.
+Conversely, forgetting one cell's authority admits a reification square and
+step reflection for a target action that overwrites both cells; it breaks
+the forgotten cell's independently held frame. Thus the first two conditions
+alone do not justify the general transport rule, and a frame-safe adapter
+still owes its selected observation comparison.
+
+World-indexed resource transport has the covariant opfibration constructed
+in \leanname{Contracts.IndexedAuthority}. Its base arrows are already
+selected changes of world; the cocartesian lift does not authorize an actor
+to take an arbitrary arrow. Cartesian lifts require the stated right-adjoint
+law. The constructed all-access revocation example fails that law; this is
+not a claim that every information-losing transport lacks a right adjoint.
+Contravariant predicate reindexing remains a different, compatible role.
+
+\paragraph{Actual adaptive reads determine transaction dependencies.}
+For a finite ordered occurrence store $s$, let
+$\mathsf{rows}(q,s)$ be its full list of matching identifier/payload pairs.
+The certificate of a read records both the complete ordered identifier list
+and the presence of each corresponding payload. Under the explicit integrity
+condition that one identifier has one payload in the current store,
+validation of this certificate is equivalent to equality of the full row list.
+The equality retains multiplicity, including distinct occurrences with equal
+printed values.
+
+\leanname{Contracts.Dependencies.valid_readDependencies_iff} connects those
+concrete certificates to the existing \leanname{Machines.ReadOnlyQuery}
+interpreter's actual read agreement.
+\leanname{validated_adaptive_query} consequently preserves its entire
+observation, including the answer-selected query path.
+\leanname{readDependencies_bind} appends the actual continuation's
+dependencies; \leanname{validated_adaptive_resume} validates the performed
+prefix before querying a fresh suffix. A coexisting environment run
+establishes that same validation premise. Unrelated insertions preserve the
+constructed adaptive query; inserted child matches, changed payloads and
+ambiguous identifiers distinguish invalid certificates. An empty child
+answer still contributes a complete-query dependency.
+
+These are laws for the pure occurrence-query profile with fixed program and
+query meanings. They do not supply native higher-order matching, rule-version
+agreement, cross-space dependency completeness or stateful own-write
+continuation. Snapshot continuation and validated-fresh resumption retain
+their separately stated meanings.
+
+\paragraph{Committed observers and nondiscardable obligations.}
+For a dependent observer family $O(s):\prod_{i:I}D_i$, administrative
+preservation holds exactly when it holds componentwise. Erasure likewise
+preserves a committed family $O$ against retained family $H$ exactly when
+each $O_i$ agrees with $H_i$ at every erased administrative dead end.
+The checked endpoints are
+\leanname{OrderedSystem.administrationPreserves_family_iff} and
+\leanname{OrderedSystem.erasurePreserves_family_iff}. The family may therefore
+include separate permission, duty, disclosure or history readouts without
+coercing their carriers into one algebra.
+
+Frame-preserving updates permit relinquishing authority. They do not thereby
+settle an obligation already incurred. The constructed
+\leanname{Contracts.Joins.duty_family_requires_retention} control permits
+erasure at an empty permission observer and refuses it at an outstanding-duty
+observer unless the duty is retained outside the rejected leaf.
+Authorized settlement, transfer, cancellation, crash recovery and compensation
+still require actual service transitions and disposition evidence. A check
+after publication can expose an obligation without providing a compensator;
+irreversible and uncertain outcomes cannot be reclassified as rollback.
+
+\paragraph{Presence, consumption and fair service.}
+Presence-only programs, whose rules are monotone and inflationary, reach the
+same quiescent store under every schedule and every network delivery order,
+and an inflationary program that computes a function without coordination
+computes a monotone one: the two halves of the CALM theorem
+\cite{HellersteinAlvaroCALM,AmelootRelationalTransducers}
+(\leanname{Contracts.Coordination.coordinationFree_of_presenceOnly},
+\leanname{monotone_of_coordinationFree}).  Absence breaks confluence, and
+firing absence rules only at a frontier restores it
+(\leanname{stratified_determinate}); frontiers are certified as in
+Section~\ref{sec:pqi-absence}.  Consumption is not confluent either: two
+consumers of one token reach two stores (\leanname{Controls.consumption_not_confluent}).
+What it needs is arbitration, a single decision of which consumer takes the
+token.  The commit order is one arbitration: in every schedule the first
+consumer to fire takes the token and later ones change nothing
+(\leanname{Contracts.Arbitration.first_committer_wins}); optimistic validation
+refuses a later commit whose dependency on the taken occurrence fails
+(\leanname{Contracts.Dependencies.printed_value_does_not_rescue}).  Exclusive
+authority is another: if each consumer may fire only while it holds the
+consume right and the two rights can be held side by side, at most one holds
+it, the gated program is confluent, and its outcome is the holder's whatever
+the schedule (\leanname{gated_confluent}, \leanname{gated_winner}).  Neither
+removes the choice; each moves it from the schedule to an order or an
+assignment fixed once, which is the controlled nondeterminism that
+coordination supplies.
+
+Fair service is a separate obligation.  A least-first scheduler can starve an
+item behind regenerated work (\leanname{PriorityFairness.Controls.priority_not_weakly_fair}).
+If at most $B$ items arrive ahead of $x$ from time $t$ on, $x$ fires within
+$|\mathrm{ahead}|+B$ steps (\leanname{PriorityFairness.Run.fires_within_overtaking}).
+The overtaking bound is the per-item certificate that the recurrence of
+stable states (\leanname{Contracts.Joins.ranked_stable_within_rank}) does not
+give.  Deadlines realize it: if every arrival carries a deadline later than its
+arrival time, for instance arrival time plus a slack chosen by priority, and
+at most $k$ items arrive per step, an item with deadline $d$ fires within
+$|\mathrm{ahead}|+kd$ steps (\leanname{deadline_fires_within}).  Urgent work is
+served first among items due together, and no stream of urgent work starves an
+older item; epochs are deadlines rounded to a period
+(\leanname{PriorityFairness.epoch_fires_within}).
+
+\paragraph{Conserved service credit.}
+Service scheduling and financial permission to continue are distinct. The
+existing \leanname{ParallelFuelLease.Ledger} threads one authoritative account
+of balances $b_i$ and incurred work $s$ with invariant $\sum_i b_i+s=T$.
+Concurrent siblings do not spend copied pre-debit snapshots. A reservation transfers
+existing balance to a child; spending decreases that child's balance and
+increases $s$; cancellation returns only the unused balance. Copying a
+reference does not create another balance. An unmetered provider is selected
+separately: neither finite zero nor a largest machine integer denotes it.
+
+The maintained cursor now derives its charge word from the source provider's
+actual replies and continuations. \leanname{Cursor.Lease.advance_exact} and
+\leanname{resume_exact} identify the funded run with the same source outcome
+and its exact spending; \leanname{advance_erases} forgets only the financial
+coordinate. The source world, full residual and occurrence history remain.
+A local bound $B$ per request supplies a pre-execution reservation of $qB$ for
+$q$ requests (\leanname{reserved_advance}), without inspecting future answers.
+An unaffordable algebraic debit is not an admitted financial execution.
+The shared-producer instance connects these charges to the independent
+\leanname{runActions} and existing \leanname{RunAccount}: shared production is
+paid once, and distinct deliveries retain their separate declared prices.
+Its concrete later-tranche control spends five units, refuses an unfunded
+positive suffix, transfers the remaining two units into the same child and
+resumes to total spending seven without replaying the prefix
+(\leanname{LeaseExecution.Controls.conserved_tranche_resumes_the_same_execution}).
+A genuine failed primitive also retains its changed world and paid work
+(\leanname{Cursor.Lease.Controls.a_faulted_request_is_not_free}).
+
+The native owned-execution adapter selects a funded provider explicitly and
+debits the existing controller-step counter, including work without answers.
+Its lease survives movement, pending-loan refusal and shared production; a
+later transfer changes funding without restarting the retained computation.
+The ordinary provider body contains no credit calls. These are serialized,
+process-local accounts, not authenticated grants or durable credit issuance.
+Their protocol and controller prices are not CPU time or complete service-slot
+prices. Preparation, copying, callbacks, validation, cleanup and external
+delivery retain their separate costs and progress obligations; conservation
+alone does not discharge those bounds or prove the compiled implementation.
+
+\paragraph{Trust, observation and the remaining realization boundary.}
+Entrusted service assertions retain their identity, scope, meaning, epoch
+where relevant, and assumption dependencies through composition. Reputation
+can inform a scoped reliance or delegation policy; it cannot inhabit a
+checker's evidence-soundness field merely by adding a basis tag. Established
+proofs remain proofs after reputational revocation, while new reliance or
+effect publication must satisfy the current admission contract.
+Distributed profiles additionally state tolerated fault families,
+authenticated local evidence and authority for membership or rule changes.
+Resource overlap alone proves neither honest quorum intersection nor a
+distributed protocol.
+
+Observation refinement, run accounts, oracle meanings and cost/progress
+simulation carry the complementary comparisons.
+Resource transport does not discharge any of those independent comparisons.
+Work, parallel span, retained storage and recording expense use their stated
+composition laws; listing them as fields does not make them all additive.
+An optional history or reflective graph view is a selected observer with its
+own retention and expense obligations. Execution still retains the state
+needed for sharing, authority and exact resumption when recording is disabled;
+that does not require eagerly materializing a history graph.
+
+\paragraph{Joint coefficient, demand and ownership contracts.}
+An ordered coefficient ledger with a common inherited prefix is a restricted
+realization, not a general parallel composition law. Independent same-world
+work may share a producer after its exclusive extensions; alternative worlds
+instead retain their distinct accounts. A factor view or its compatible
+subsequences do not determine the source's admissible global order, and
+noncommutative coefficients can distinguish proposed orders.
+The existing scoped ledger now also validates occurrence captures:
+\leanname{SharedCoefficientLedger.Scoped.extendsOccurrenceCapture} checks
+unique productions, retained factor identity, dependency and coefficient,
+captured order, and supported inherited claims. Selection keeps fresh unclaimed
+identities in the established world order, rather than reusing an integer
+offset after other factors have been inserted.
+Its claim and transport laws preserve the account; complete captured-world
+admission, pending producer authority and concurrent claim arbitration remain
+separate execution obligations. A native producer reply must retain the
+chosen world, bindings, factors, claims, rights and unfinished work alongside
+its value. Weight-only qualification therefore does not justify a production
+port before these ownership, resumption and parallel joins are established.
+
+\paragraph{Cardinality as an execution consumer.}
+The existing \leanname{AnswerCardinality} intervals apply to physical answer
+occurrences before coefficient aggregation. Weighted sequencing sums the
+counts of its reachable continuations; multiplying two counts needs a uniform
+continuation bound or an independent product construction. Unit regrading
+counts occurrences while preserving their order, but an arbitrary coefficient
+total does not determine that count. These laws now connect directly through
+\leanname{WeightedResumption.sequence_cardinality} and
+\leanname{WeightedResumption.total_countingContributions}.
+The checked consumer \leanname{WeightedBranchingCardinality.singleResult?}
+accepts only a complete cut with at most one returned occurrence, preserving
+its entire packet and coefficient. Its reconstruction and resumption laws
+compare the direct frontier with the free handler without forcing a second
+answer. Refused conversion returns the complete cut; continuing that retained
+representation agrees with the independently computed combined-budget run.
+A singleton prefix cannot establish closure; duplicate values remain
+distinct occurrences, and zero coefficients do not delete them.
+The actual Need instance retains its world and transition account. A halted
+fault is a reply, but not a successful value, so the value observer counts it
+separately. These are completed-cut representation laws, not an inferred
+determinism contract or a native fast-path qualification. Early specialization
+still requires independent mode-sensitive evidence, validated source-world
+dependencies, and preservation of the selected effects, faults and residuals.
+Termination, choicepoint elimination, cost composition and parallel admission
+retain their separate proof obligations.
+
+The native frame and contextual-variable readbacks in
+\leanname{CeTTaNeedHistory}, together with \leanname{CeTTaFrameWriteback},
+provide a concrete component of retained-world realization: selected frame
+readback and write receipts preserve the shared logical image. Complete
+payload graphs, producer worlds, force rights, Need identities and native
+memory/commitment correspondence remain further joins. A model-level
+\leanname{OracleRealization.Meets} theorem also retains a separate dependency
+on the actual compiled service. These constructions support compositional
+contract instances; they do not establish a minimal final architecture.
+
 \subsection{An open-ended PQI-inspired indexed decomposition}
 
 Chalmers's scrutability programme distinguishes physical, qualitative, and
@@ -2073,6 +2821,47 @@ visible state without recovering all intensional distinctions.  Later theories
 may enlarge $I$, refine $P$, or add new $Q$-fibres together with explicit
 transition maps.  Such enlargement is not an exhaustiveness assertion at the
 earlier or later stage; it is an open sequence of explicitly related theories.
+
+\paragraph{Absence without a totality clause.}
+\label{sec:pqi-absence}
+Refusing an exhaustiveness clause has a cost: a negative answer cannot be read
+off the absence of a record, since a later stage may add it.  The checked
+replacement is a closure that is declared and certified for one question, not
+asserted for the whole theory.  Read the states a program can reach as the
+worlds of a Kripke model ordered by reachability.  Reads of what is present
+are persistent when the program only adds, and the positive connectives keep
+persistence (\leanname{FrontierNegation.presence_persistent},
+\leanname{Persistent.and}, \leanname{Persistent.or}, \leanname{Persistent.exists}):
+presence-only programs read the positive fragment of intuitionistic logic.
+Intuitionistic negation, failure in every reachable state, is also
+persistent, but it quantifies over the future; its finite evidence is an
+inductive invariant that excludes the pattern (\leanname{knot_iff_invariant}).
+For the over-approximation of firing in a self-modifying space, a pattern is
+absent in every reachable state exactly when it is absent now and no pending
+executable may eventually produce it
+(\leanname{FrontierNegation.knot_iff_absent_frontier}).  So frontier absence
+is intuitionistic negation, and a snapshot absence read, the closed-world
+reading of negation as failure, is never contradicted later exactly at a
+frontier.  A frontier is sound for every refinement of the over-approximation
+(\leanname{refinement_sound}) and not complete for refinements: when a
+producer can never fire, the pattern is absent in every actually reachable
+state though no frontier exists (\leanname{Controls.refinement_incomplete}).
+
+A frontier is declared by naming a pattern and certified by ownership.  If
+the space obeys the namespace discipline of the closed-resolver results (an
+executable outputs only atoms whose heads its own module owns or nobody owns)
+and the module that owns the pattern's head is frozen at a set of its atoms
+closed under its own outputs and free of matches, the absence is final
+(\leanname{ownership_certifies_frontier}).  The check reads only the owning
+module's atoms.  Atoms of other modules never revoke the certificate
+(\leanname{foreign_extension_certified}); the owner revokes it by installing a
+producer, after which a previously final absence becomes false in a
+reachable state (\leanname{Controls.owner_revokes}).  A verdict read under a
+certificate holds for that certificate's rule set, and a change of the rule
+set begins a new epoch of the module.  This is a local, checked ``that is all''
+for one question and one owner, revocable by that owner alone.  Evidence
+against a proposition needs no such closure, since it is recorded rather than
+inferred (Section~\ref{sec:evidence-contracts}).
 
 \subsection{A GSLT-shaped description of mathematics}
 
@@ -2259,9 +3048,10 @@ The obligation bubble is not stable under substitution
 \begin{remark}[Names]
 ``Weak Type Theory'' already names an unrelated system for mathematical
 vernacular \cite{KamareddineNederpeltWTT}, and theories with no judgmental
-computation are called objective or axiomatic type theories. The working name
-here is \emph{bubble type theory}, with \emph{weak core} for the global layer,
-which is exactly the layer the theorem above shows to be weakest.
+computation are called objective or axiomatic type theories. The settled name
+here is \emph{bubble type theory} (or \emph{fibered type theory}), with
+\emph{weak core} for the global layer, which is exactly the layer the theorem
+above shows to be weakest.
 \end{remark}
 
 \begin{remark}[Prior art]
@@ -2276,6 +3066,296 @@ rewrite rules into axioms and conversion into transport, conservatively
 equality are candidate bubbles of the same kind
 \cite{AltenkirchCapriottiKraus2LTT,AltenkirchMcBrideOTT}.
 \end{remark}
+
+\subsection{Least sufficient bubbles and the meet-closed (Horn) fiber}
+
+When does a request have a single canonical \emph{least} sufficient bubble above
+every seed? In general it does not
+(\leanname{SufficientBubbles.no_least_sufficient_bubble}): conversion-preserving
+and evaluation-based typing requests can admit incomparable minimal bubbles
+(\leanname{ComputationBubbles.syntactic_not_convex},
+\leanname{ComputationBubbles.evaluation_no_least}), and minimal inclusion can
+disagree with minimal checking cost
+(\leanname{CertificateBubbles.cost_inclusion_disagree}).
+
+\begin{theorem}[Meet-closed sufficiency and the Horn fiber; proved]
+Let $L$ be a complete lattice of candidate bubbles (such as $\mathcal{P}(G)$ over
+a finite generator set $G$) and let $F \subseteq L$ be the bubbles sufficient
+for a request.
+\begin{enumerate}[leftmargin=*]
+\item Seven characterizations of $F$ coincide
+  (\leanname{ClosureSystems.tfae_mooreFamily}): (a)~$F$ is closed under
+  arbitrary meets; (b)~$F$ is the set of closed elements of a closure operator;
+  (c)~$F$ is the set of prefixed points of a monotone operator; (d)~$F$ is the
+  set of elements respecting a family of implications $a \le x \to b \le x$;
+  (e)~the inclusion of $F$ has a left adjoint; (f)~$F$ is the category of
+  Eilenberg--Moore algebras of an idempotent monad on $L$; and (g)~every seed
+  has a least member of $F$ above it.
+\item Over $L = \mathcal{P}(G)$, single-conclusion implications are definite
+  Horn clauses: Horn is the natural, canonical finitary syntax of meet-closure
+  (\leanname{models_hornTheoryOf}, Aczel's rule presentation
+  \leanname{oneStep_rulesOf}, \leanname{leastAbove_iff_hornDefinable}).
+\item Within any meet-closed fiber, chaotic fair iteration reaches the least
+  sufficient bubble independently of rule order or search strategy
+  (\leanname{ChaoticIteration.schedule_independent},
+  \leanname{effectiveSteps_le_card}).
+\item When meet-closure fails, the canonical object is the Smyth upper set
+  $\mathord{\uparrow}F$ of sufficient bubbles ordered by reverse inclusion
+  (\leanname{DisjunctiveBubbles}), which is principal if and only if a least
+  sufficient bubble exists.
+\end{enumerate}
+\end{theorem}
+
+Thus a meet-closed (Horn) fiber is welcomed in Prime wherever obligations are
+implicational---such as declaration closure and syntax-directed typing
+(\leanname{ComputationBubbles.syntactic_isLeast})---without making Horn or
+depth-first clause order the global default where conversion or disjunction
+breaks meet-closure.
+
+\subsection{The normal-form fiber: where normalizing both sides decides conversion}
+\label{sec:normal-form-fiber}
+
+The $\lambda\Pi$-calculus modulo rewriting checks a conversion by reducing both
+sides to normal form and comparing the results syntactically. Call a bubble,
+with a set $S$ of expressions on which conversions are asked (for a typed
+calculus, its typed terms), \emph{in the normal-form fiber} when this is
+correct on $S$: every element of $S$ has a normal form, and two elements of $S$
+are convertible exactly when their normal forms are equal
+(\leanname{NormalFormDecision.DecidedOn}).
+
+\begin{theorem}[The normal-form fiber and its boundaries; proved]
+\label{thm:normal-form-fiber}
+\leavevmode
+\begin{enumerate}[leftmargin=*]
+\item \emph{Characterization.} Conversion on $S$ is decided by normal forms
+  exactly when every element of $S$ has a normal form and convertible normal
+  forms of elements of $S$ are equal (\leanname{decidedOn_iff_uniqueNormalForms});
+  on a set closed under steps, exactly when every element has a normal form and
+  convertible elements have a common reduct
+  (\leanname{decidedOn_iff_churchRosser}). Every normalization strategy then
+  computes the same normal form (\leanname{DecidedOn.normalForm_unique}).
+\item \emph{Confluent and orthogonal theories.} For a confluent theory of the
+  $\lambda\Pi$-calculus modulo, in particular for an orthogonal one, the fiber
+  is exactly where reduction normalizes
+  (\leanname{decidedOn_iff_weaklyNormalizingOn_of_orthogonal}). Orthogonality
+  does not suffice: the single rule $\mathit{add}\,x\,y \hookrightarrow
+  \mathit{add}\,y\,x$ passes the orthogonality test and $\mathit{add}\,x\,y$
+  has no normal form (\leanname{orthogonal_not_in_fiber}).
+\item \emph{An inhabitant.} Under the recursion rules of addition, conversion of
+  closed arithmetic expressions is decided by normal forms
+  (\leanname{PeanoFiber.peano_decidedOn}), while $x+y$ and $y+x$ are distinct
+  normal terms (\leanname{plus_comm_not_conv}).
+\item \emph{Nondeterminism.} With $\mathit{choose}\,x\,y \hookrightarrow x$ and
+  $\mathit{choose}\,x\,y \hookrightarrow y$, the term $\mathit{choose}\,x\,y$
+  has two normal forms, and no set containing it is in the fiber
+  (\leanname{withChoice_not_decidedOn}).
+\item \emph{Identified variables.} In a theory whose rules are headed by
+  constants, variables are normal, so a conversion that identifies two distinct
+  variables, as proof irrelevance does, or a variable with its
+  $\eta$-expansion, is outside the fiber on every set containing them
+  (\leanname{not_decidedOn_of_conv_vars}, \leanname{not_decidedOn_of_conv_eta}).
+\item \emph{Symmetry.} A map of terms that carries steps to steps, with a left
+  inverse that also does, sends normal forms to normal forms. So a conversion
+  class that such a map preserves, with no member fixed by it, is outside the
+  fiber for every relation the map respects
+  (\leanname{not_decidedOn_of_symmetric_class}). Hence in every theory with
+  closed definitions that converts $f\,x\,y$ with $f\,y\,x$ and keeps $f\,u\,x$
+  apart from $f\,v\,x$, no set containing $f\,x\,y$ and $f\,y\,x$ is in the
+  fiber, whatever the rules; under confluence $f\,x\,y$ has no normal form at
+  all (\leanname{not_decidedOn_of_commutative},
+  \leanname{no_normalForm_of_commutative}).
+\end{enumerate}
+\end{theorem}
+
+Items~1 and~2 are classical \cite{NewmanCombinatorial,HuetConfluentReductions,KlopCRS},
+and so is the commutative case of item~6: commutativity cannot be oriented,
+which is why rewriting modulo associativity and commutativity was introduced
+\cite{PetersonStickelAC,JouannaudKirchnerModulo}. Item~6 is stated in the form
+used here, where the symmetry is a renaming of variables.
+
+\paragraph{Definability.}
+The meet-closed fiber has its definability theorem: the Horn-definable families
+are exactly the intersection-closed ones (\leanname{leastAbove_iff_hornDefinable}).
+The normal-form fiber has one too, over any term structure whose one-hole
+contexts compose and whose substitutions enter contexts uniformly. An
+equivalence is the conversion of rule schemas whose normal forms decide it on
+every term exactly when it is closed under contexts and substitutions and has
+a transversal, one representative per class, that is closed under subterms and
+reflects substitution instances (\leanname{SchematicPresentation.exists_presentation_iff}).
+The representatives are then the normal forms
+(\leanname{normalForms_of_presentation}), and conversely the rules
+$\sigma(s) \mapsto \sigma(\mathrm{rep}\,s)$ present the equivalence
+(\leanname{presentation_of_transversal}); the rule set is infinite in general.
+On binary terms, associativity has such a transversal, the right-nested terms
+(\leanname{assoc_presentation}), and commutativity has none
+(\leanname{commEq_no_presentation}). Whether a finite presentation exists is a
+further question, on which a finitely presented theory with decidable word
+problem may still have no finite convergent presentation
+\cite{SquierFiniteDerivationType}; that boundary is not formalized here, nor is
+the version of the theorem for normalization asked only on typed terms.
+
+\paragraph{The operational reading.}
+The GSLT of a step relation has a native OSLF type that observes undirected
+conversion (\leanname{satisfies_conversionNativeType_iff}). On a set in the
+normal-form fiber, that observation holds between two terms exactly when the
+normal forms computed by the directed steps are equal
+(\leanname{satisfies_conversionNativeType_iff_normalForm_eq}); for the recursion
+rules of addition it relates $2+3$ with $5$ and not with $4$
+(\leanname{peano_oslf_two_plus_three}). Outside the fiber the observation keeps
+its meaning, but running the steps does not decide it.
+
+\paragraph{The fiber in the bubble order.}
+A bubble declared by rule schemas is closed under substitution and under the
+exchange of two variables (\leanname{BubbleSchematic.Schematic}). The weakest
+schematic bubble meeting a set of required conversions is their closure under
+both operations (\leanname{schematicClosure_weakest}), and that closure is the
+least model of a Horn theory with one-premise clauses
+(\leanname{schematicClosure_eq_hornClosure}); for a program, it is the weakest
+schematic bubble typing the program (\leanname{schematicObligation_weakest}).
+So the meet-closed fiber computes the weakest schematic bubble, and the
+normal-form fiber says when normalizing decides it. For the program that uses
+$v : \mathrm{Vec}\,(x+y)$ at $\mathrm{Vec}\,(y+x)$, every schematic bubble that
+types it and keeps $\mathrm{Vec}\,(x+x)$ apart from $\mathrm{Vec}\,(x+y)$ is
+outside the normal-form fiber on the program's two types
+(\leanname{CommutationProgram.schematic_not_decidedOn}); its weakest schematic
+bubble and the bubble declaring commutativity of every sum are two such bubbles
+(\leanname{weakest_not_decidedOn}, \leanname{commAdd_not_decidedOn}).
+Presenting a bubble by directed rules costs no strict model: strict models
+depend only on conversion, and reversing every declared step changes neither
+(\leanname{models_eq_of_convertible_iff}, \leanname{models_flip}).
+
+\paragraph{The neighbouring routes.}
+Each boundary has a route that decides what normalizing both sides cannot.
+\begin{itemize}[leftmargin=*]
+\item \emph{Comparison up to a built-in equivalence}, as in rewriting modulo
+  associativity and commutativity. Deciding by normal forms is the case of
+  syntactic equality (\leanname{decidedOn_iff_decidedModuloOn_eq}); with
+  commutativity built into the comparison, commutativity is decided with
+  equivariant data (\leanname{CommutativeTerms.decidedModuloOn_commEq}), and
+  commutativity itself is decided by sorted forms
+  (\leanname{commEq_iff_sortForm_eq}).
+\item \emph{Ordered rewriting, or variables as codes.} Orienting a commutation
+  only when it lowers a fixed numbering of terms decides commutativity by normal
+  forms (\leanname{orderedStep_decidedOn}) and is not equivariant
+  (\leanname{orderedStep_not_equivariant}) \cite{MartinNipkowOrdered}. An
+  encoding of universe levels whose variables are closed codes is of this kind:
+  its conversion on level codes is equality of computed normal sets
+  (\leanname{conv_code_iff_normalSet}). An encoding that keeps the level
+  variables builds commutativity into matching \cite{GenestierAgda}.
+\item \emph{Type-directed conversion} for $\eta$ and proof irrelevance
+  \cite{CoquandConversion,GilbertProofIrrelevance}.
+\item \emph{Explicit steps.} The weak core is in the fiber trivially, with
+  conversion syntactic identity (\leanname{noSteps_decidedOn}); each step is then
+  paid for in the certificate (\leanname{size_discardTower}).
+\item \emph{The running GSLT} hosts nondeterminism, which no confluent theory
+  hosts (\leanname{withChoice_not_hosted_by_confluent}); cyclic values need
+  bisimulation, since no theory that terminates on typed terms reads hyperset
+  membership as reduction (\leanname{no_typed_reading_of_membership}).
+\end{itemize}
+On commutativity the first two routes are theorems where normalizing both sides
+fails; a comparison of the routes on a common measure of cost is not
+formalized.
+
+\paragraph{Translations.}
+A translation into the $\lambda\Pi$-calculus modulo lets its checker decide the
+source's conversion under three obligations: it preserves conversion, it
+reflects conversion, and its image lies in the normal-form fiber
+(\leanname{DecidedOn.transport}). A translation that carries steps to
+reductions carries normalization of the source to the image of a confluent
+target (\leanname{decidedOn_image_of_simulation}). For the embedding of pure
+type systems \cite{CousineauDowekPTS} the first two are theorems
+(\leanname{translate_conv}; \leanname{translate_reflects}, up to the erasure of
+annotations), the theory of the embedding is confluent, and the third reduces
+to weak normalization of the translations (\leanname{cd_decidedOn_iff},
+\leanname{cd_transport}); that normalization is not formalized here.
+
+For higher-order logic the three obligations are discharged end to end. The
+source is the intrinsically typed higher-order logic of the tree, with many
+sorts, constants, the connectives, equality and both quantifiers, and with
+$\beta$ at every position, which normalizes strongly and is confluent. An
+encoding names the symbols injectively and translates a term shallowly, with
+the decoding of its type's code as the domain of each abstraction. Take a
+confluent theory with headed rules that defines none of the named symbols and
+in which the decoding of a code reduces to a product of normal decodings of
+named codes. There every $\beta$-step of the source is a step of the target
+(\leanname{translate_betaStep}). The translation of a source normal form,
+with its domains computed, is normal and injective. So every translated term
+has a normal form, the checker decides conversion by normal forms on the
+translated terms (\leanname{decidedOn_translations}), and two terms are
+$\beta$-convertible exactly when their translations are convertible
+(\leanname{translate_conv_iff}). Weak normalization of the image is carried
+from the strong normalization of the source by the simulation; normalization
+of the target on the terms it types is not used. The encoding of
+\cite{AssafBurelHOL} is such a theory (\leanname{holideHub}), and so is the
+hub of \cite{DowekThireLogipedia} (\leanname{sttfaHub}). Its six rules are
+transcribed from its theory file (Logipedia, \texttt{theories/sttfa/sttfa.dk}
+at commit \texttt{0bcb193}), where $\mathtt{eta}$ is a defined symbol,
+$\mathtt{eta} \longrightarrow \lambda t.\,\mathtt{etap}\,(\mathtt{p}\,t)$,
+and pass the orthogonality test (\leanname{STTfa.check}). Once the symbols of the signature are declared, the
+translations are typed in both theories (\leanname{holide_translate_typed},
+\leanname{sttfa_translate_typed}); the hub with proofs also declares the
+remaining constants of the theory file, $\mathtt{ptype}$, $\mathtt{p}$,
+$\mathtt{etap}$, $\mathtt{forallK}$, $\mathtt{eps}$ and $\mathtt{forallP}$.
+The natural-deduction proofs of $\Rightarrow$
+and $\forall$ modulo $\beta$ compile in the hub to terms of
+$\mathtt{eps}$ of the translated conclusion (\leanname{ProofHub.theorem_typed},
+\leanname{sttfa_theorem_typed}).
+
+Conversely, on the closed implicational fragment, whose atoms are the
+$\beta$-normal formulas that are neither implications nor universals, every
+normal inhabitant of $\mathtt{eps}$ of a translated formula, in the context of
+the types of the proofs of hypotheses of the fragment, comes from a proof
+(\leanname{sttfa_adequate}). The proof is an induction on the normal term with
+typing inversion; the types of objects form a class closed under the steps of
+the hub that contains no normal type of a proof
+(\leanname{objTree_not_conv_epsNF}). With universal quantification adequacy is
+not exact. The bare connective $\mathtt{and}$ is normal and has the decoding of
+the code of $\mathrm{prop}\Rightarrow\mathrm{prop}\Rightarrow\mathrm{prop}$, but
+it converts with no translation, since translations apply it to two operands
+and the steps of the hub keep it so, as for the code formers of
+\cite{CousineauDowekPTS}. Applied to a hypothesis of $\forall f.\,P$, it gives a
+normal inhabitant of $\mathtt{eps}\,P$ to which no proof compiles, although $P$
+follows from the hypothesis with another witness
+(\leanname{sttfa_not_exactly_adequate}). Modulo the coding of witnesses,
+adequacy holds: a normal term in which every abstraction binds a hypothesis or
+an object at its normal decoding, and every $\forall$-witness is the translation
+of a core term, typed at $\mathtt{eps}$ of a closed core formula in the context
+of the proofs of closed core hypotheses, comes from a proof
+(\leanname{sttfa_adequate_coded}); so does one typed at a core formula with free
+objects in the context of their decodings
+(\leanname{sttfa_adequate_coded_open}). The bare-$\mathtt{and}$ witness is not
+coded (\leanname{sttfa_coding_needed}). Formulas and witnesses are core because
+the retyping step of the source converts core terms only. These theorems are
+about normal terms: normalization of the typed terms of the hub is not proved,
+so they do not yet make the hub conservative over higher-order logic. $\eta$ is
+a conversion of neither theory (\leanname{eta_not_conv}).
+
+A reading of a signature in a package of proposition codes reads the core of
+the same source (variables, interpreted constants, application, abstraction,
+$\Rightarrow$, $\forall$ and equality). On read terms, convertible
+translations in a hub have equal reads in every lawful reading
+(\leanname{fiber_equal_of_conv}). The converse fails at $\eta$: the reads of
+$\lambda x.\,f\,x$ and $f$ are equal in every lawful reading, and their
+translations are convertible in no hub (\leanname{fiber_not_conservative}).
+On read terms, $\beta\eta$-conversion of the source is equality in every lawful
+reading (\leanname{readBetaEta_equal}). The converse fails in general for an
+expected reason: a package may interpret a constant by a rule, as the set
+profile computes $\mathrm{add}\,x\,\mathrm{zero}$ to $x$, while higher-order
+logic treats the constant as uninterpreted, so the reading equates terms that
+are not $\beta\eta$-convertible (\leanname{set_fiber_beyond_betaEta}). Whether
+equality is exactly $\beta\eta$ on read terms for packages that add no
+equations between them is open; it needs a model of the package in which
+$\beta\eta$ is decided algorithmically, or a set-theoretic model together with
+the completeness of $\beta\eta$ for the full type hierarchy over an infinite
+base \cite{FriedmanEqualityFunctionals}. For the set profile, one proof is
+typed both in the hub and in the object package
+(\leanname{sucProof_in_both}), and the normal form of its compiled term gives
+the proof back (\leanname{set_sucProof_adequate}).
+
+A translation whose source has a
+commutative definitional equality on variables, such as $\max$ on universe
+levels, lands outside the fiber unless it builds commutativity into matching or
+encodes the variables as codes \cite{GenestierAgda,BlanquiVaishnavLean}.
 
 \subsection{The empty top and the inconsistent-top method}
 
@@ -2346,35 +3426,59 @@ requirement checkable \cite{GoguenBurstallInstitutions}.
 \end{enumerate}
 \end{theorem}
 
-The native higher-order logic has its own namespace. A theory space selects it
-with \code{(hol:profile core)} and is judged with \code{hol:}; the set theory
-HOTG is HOL with set axioms and is selected with
-\code{(hol:profile megalodon-hotg)}, never by default
-\cite{BrownKaliszykPakHOTG}. The hosted HOL Light kernel keeps its own
-operations under \code{hol-light:}, and \code{set:} names the set face only.
-Figure~\ref{fig:hol-set-routes} shows the routes between them that run today.
+The native higher-order logic has its own namespace. A theory space selects
+the logic alone with \code{(hol:profile base)} and is judged with \code{hol:}.
+Its metatheory is anchored in two proved packages:
+\begin{itemize}[leftmargin=*]
+\item \textbf{Classical HOL and Farmer's seven virtues}
+  (\leanname{SevenVirtues}): Church-style extensional HOL with a single
+  excluded-middle axiom $\forall p.\, p \lor \neg p$ is sound and Henkin-complete
+  for countable signatures with closed sort inhabitants
+  (\leanname{SevenVirtues.Completeness.provable_iff_valid},
+  \leanname{consistent_iff_satisfiable}), categorical for second-order Peano
+  arithmetic (\leanname{Peano.categorical}) and complete ordered fields
+  (\leanname{OrderedField.categorical}), and strictly separated from Hilbert's
+  choice operator $\varepsilon$ by a Fraenkel--Mostowski permutation model
+  (\leanname{Choice.choice_separates}).
+\item \textbf{Intuitionistic HOL} (\leanname{HeytingGeneral}): parameter-free
+  theories are sound and complete for Heyting-valued substitutional models
+  (\leanname{provable_iff_heytingConsequence_param_free}).
+\end{itemize}
+Tier-0 grounding follows \emph{correct-by-construction} (Rung~1): minimal HOL
+proves the candidate or native-inference checker faithful once, while
+per-run certificates and translations to HOL Light, Megalodon and MM0
+(\code{hol.mm0}) serve as interop and acceleration bridges checking the same
+fiber semantics.
+Every set theory is a set profile over that base logic and is judged with
+\code{set:}: the shared material fragment by default, and the set theory HOTG,
+HOL with set axioms, selected with \code{(set:profile megalodon-hotg)}, never by
+default \cite{BrownKaliszykPakHOTG}. A set profile's signature includes the
+base logic's declarations and rules, and \code{(set:signature base-logic)}
+answers \code{(hol:profile base)}. The hosted HOL Light kernel keeps its own
+operations under \code{hol-light:}. Figure~\ref{fig:hol-set-routes} shows the
+routes between them that run today.
 
 \begin{figure}[ht]
 \centering
 \begin{tikzpicture}[
-  node distance=3.4cm,
+  node distance=3.1cm,
   logic/.style={draw, rounded corners, thick, align=center, font=\small,
     minimum width=2.6cm, minimum height=0.9cm},
   cons/.style={-{Stealth}, very thick, green!45!black},
   ncons/.style={-{Stealth}, thick, red!65!black, dashed},
   unk/.style={-{Stealth}, thick, black!60, densely dotted}]
 \node[logic, fill=orange!8] (hl) {HOL Light\\\code{hol-light:} guest};
-\node[logic, fill=blue!6, right=of hl] (core) {HOL core\\\code{(hol:profile core)}};
-\node[logic, fill=green!6, right=of core] (hotg) {HOTG\\\code{megalodon-hotg}};
+\node[logic, fill=blue!6, right=of hl] (base) {HOL base\\\code{(hol:profile base)}};
+\node[logic, fill=green!6, right=of base] (hotg) {HOTG\\\code{(set:profile}\\\code{megalodon-hotg)}};
 \draw[unk] (hl) -- node[above, font=\footnotesize] {not yet proved}
   node[below, font=\footnotesize, align=center] {adds propext,\\funext,
-  axioms} (core);
+  axioms} (base);
 \draw[ncons] (hl.north) to[bend left=25] node[above, font=\footnotesize]
   {not conservative: HOTG proves HOL Light consistent} (hotg.north);
-\draw[ncons] ([yshift=5pt]core.east) -- node[above, font=\footnotesize,
+\draw[ncons] ([yshift=5pt]base.east) -- node[above, font=\footnotesize,
   align=center] {inclusion:\\not conservative} ([yshift=5pt]hotg.west);
 \draw[cons] ([yshift=-5pt]hotg.west) -- node[below, font=\footnotesize,
-  align=center] {relativization:\\exact} ([yshift=-5pt]core.east);
+  align=center] {relativization:\\exact} ([yshift=-5pt]base.east);
 \end{tikzpicture}
 \caption{Routes between HOL and set theory that run in the draft runtime.
 Solid: conservative (proved). Dashed: not conservative, with the added
@@ -2382,9 +3486,10 @@ commitments named. Dotted: conservativity not yet proved.}
 \label{fig:hol-set-routes}
 \end{figure}
 
-The same module is importable from the other dialects: \code{import hol} gives
-Prime, HE and PeTTa programs the native HOL judgments, each over an explicit
-theory space and with answers returned as data. The HOL Light guest is not
+The same judgments are importable from the other dialects: \code{import hol}
+and \code{import set} give Prime, HE and PeTTa programs the judgments of the
+logic and of its set theories, each over an explicit theory space and with
+answers returned as data. The HOL Light guest is not
 offered in HE until a translation into HE is qualified.
 
 \subsection{HE's types grounded in HOL}
@@ -2416,9 +3521,14 @@ tuples as products (\leanname{Tuples.reference_iff_tupleHOLTyped}), meta-types
 as a classification theory (\leanname{MetaTypes.metaAccepts_iff_entailed}), and
 \code{\%Undefined\%} as the unknown type of abstract gradual typing
 (\leanname{Gradual.corePlusR2Consistent_iff_top}) \cite{GarciaClarkTanterAGT}.
-Prime answers HE-style declarations from a stable HOL contract checked by the
-hosted HOL Light kernel; a Prime candidate may implement that contract only as a
-replaceable backend with proved correspondence. A failed check inside the
+Furthermore, the first-order HOL typing contract is proved to agree across all
+three native kernel realizations---HOL Light, Megalodon
+(\leanname{MathdataKernel.inferTerm}) and MM0 (\leanname{Preterm.infer})
+(\leanname{KernelRealizations}).
+At run time Prime answers HE-style declarations inside these fragments from the
+hosted HOL Light checker, never HE's type engine; a Prime candidate may
+implement that contract only as a replaceable backend with proved
+correspondence. A failed check inside the
 fragments is a genuine refutation; outside them the answer is undetermined and
 never a reason to prune an alternative.
 
@@ -2429,6 +3539,7 @@ contract, of which the HOL contract is the simple slice, checked by a hosted
 logical-framework kernel. Until then such declarations are left undetermined.
 
 \subsection{Demand, sharing and effects}
+\label{sec:demand-effects}
 
 The operational contract requires that a shared value be computed once, that an
 effect happen once, and that a bounded observation bound both work and effects.
@@ -2454,9 +3565,9 @@ answering.
 \node[font=\scriptsize, right] at (2.6,0) {stop: two answers held; two writes};
 \draw[-{Stealth}] (0.6,-0.7) -- node[below, font=\scriptsize] {time} (5.2,-0.7);
 \end{tikzpicture}
-\caption{Bounded selection. A bounded run performs exactly the prefix of the
-eager run's effects up to its $k$-th answer, and an infinite producer
-terminates.}
+\caption{Bounded selection in the illustrated sequential policy. The run stops
+at its $k$-th successful answer and avoids later effects. An infinite producer
+must reach those successes in finite work for this observation to terminate.}
 \label{fig:select-timeline}
 \end{figure}
 
@@ -2473,24 +3584,127 @@ reintroduces it and is killed:
 \item a binding whose closed source produced no answer ran that source twice
   (\leanname{empty_source_once}).
 \end{enumerate}
-The retained search, which can pause and resume, now admits producers with
-effects: a residual keeps the world position at which it paused, and a write by
-anyone else before resumption refuses the resumption.
+Retained search must distinguish a snapshot continuation from validated-fresh
+resumption. The latter checks the dependencies of already performed reads;
+an unrelated write need not invalidate them, while a changed complete result
+or absence must not reuse the old answer. Stateful own writes require their
+own continuation law. Section~\ref{sec:execution-contracts} establishes the
+pure adaptive-query join; the complete effectful retained-world and native
+resumption comparison remains an implementation obligation.
+
+\paragraph{Answers, choice and probability.}
+The speculative layer is read through weighted answers,
+$\mathsf{Spec}\,K\,C\,W\,X=W\to\mathsf{Ans}_K(X\times W\times C)$, which aggregate
+equal outcomes, forget their order and drop branches without answers together
+with their cost.  This readout is an observer of ordered runs, not a
+replacement for them: an ordered run returns its branch outcomes in order, and
+a failed branch keeps its world and the cost it paid.  Observing a sequenced
+run is sequencing the observations, so the observer is a monad morphism
+(\leanname{SpecRunObserver.observe_pure}, \leanname{observe_bind}); it forgets
+order and the cost of failed branches (\leanname{Controls.observe_forgets_order},
+\leanname{Controls.observe_forgets_failed_cost}).  Laws proved for
+$\mathsf{Spec}$ are laws of what ordered runs show through this observer.
+
+Nondeterministic choice and probability are distinct effects.  No distributive
+law of finite distributions over finite sets exists
+\cite{VaraccaWinskelDistributing,ZwartMarsdenNoGo}
+(\leanname{NondeterminismProbability.no_distributiveLaw}); in one weighted
+monad, additive choice and convex probabilistic choice are both algebraic, and
+the support readout identifies them
+(\leanname{convex_bind}, \leanname{support_convex}).  Probability becomes a view
+of a program with choice only once a scheduler resolves each choice.  Without
+choice every scheduler gives the same probabilities
+(\leanname{SchedulerResolution.prob_choiceFree}); with choice, the envelope of
+probabilities over all randomizing schedulers is attained by deterministic
+ones (\leanname{exists_deterministic_le}, \leanname{exists_deterministic_ge}),
+so the honest view is the convex set of distributions between those extreme
+points, the convex powerset of mixed powerdomains
+\cite{KeimelPlotkinMixed}.  A pure choice between two outcomes has every
+probability in $[0,1]$ (\leanname{choice_probabilities}), the interval readout
+of zero evidence.  Counting paths is one scheduler among many: normalizing the
+additive readout of a three-way choice built from two binary choices gives
+$1/3$, fair coins give $1/2$, and the scheduler weighting each choice by its
+number of paths gives $1/3$ (\leanname{Controls.counting_not_fair}).  Evidence
+weights differ from both: they count observations, probabilities sum to one,
+and a nondeterministic choice carries no weight at all.
+
+\paragraph{Where each element lives.}
+The theorems above fix where each element belongs in a theoretical Prime,
+without selecting a candidate calculus.  A \emph{primitive} cannot be
+recovered from the others; a \emph{library} is defined over primitives with
+the laws it needs; a \emph{profile} is a declared choice of strategy or
+semantics that consumers can rely on.
+{\small
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.16\linewidth}%
+                  >{\raggedright\arraybackslash}p{0.10\linewidth}%
+                  >{\raggedright\arraybackslash}p{0.31\linewidth}%
+                  >{\raggedright\arraybackslash}p{0.29\linewidth}}
+\toprule
+Element & Place & Typing and authority & Justifying theorem \\
+\midrule
+\endhead
+Annotated space and weighted answers & primitive & one semiring per space,
+  with declared capabilities (merge; meet, monus and join where they exist) &
+  \leanname{Ans.bind_assoc}, \leanname{support_bind_iff_positive},
+  \leanname{no_space_sub_undoes_merge} \\
+Evidence algebra & library & counts as a positive annotation; ledgers carry
+  identities; revision of overlapping ledgers is typed by a disjointness proof
+  or falls back to the maximum; readouts return ``undetermined'' &
+  \leanname{additive_revision_exact_iff_disjoint},
+  \leanname{unknown_overlap_bounds}, \leanname{conjunction_counts_iff} \\
+Absence at frontiers & primitive guard & an absence read carries its
+  certificate, the owner of the pattern's head and the frozen rule set; only
+  the owner revokes & \leanname{knot_iff_absent_frontier},
+  \leanname{ownership_certifies_frontier}, \leanname{foreign_extension_certified} \\
+Call & primitive step & a synchronous call is a step of the kernel, not
+  sugar over rewriting & \leanname{call_not_locally_eliminable} \\
+Seals and owned namespaces & primitive & sealing and the right to extend a
+  head are capabilities; kernels resolve helpers in a closed environment &
+  \leanname{isEmpty_sealElimination}, \leanname{late_bound_forgery},
+  \leanname{owned_sound} \\
+Consumption & primitive step, arbitration by profile & the consume right is
+  exclusive; commit order, optimistic validation or exclusive authority
+  arbitrates & \leanname{consumption_not_confluent},
+  \leanname{first_committer_wins}, \leanname{gated_confluent} \\
+Strategy & profile & priority keys are semantic; a fairness certificate is an
+  overtaking bound, realized by deadlines or epochs &
+  \leanname{priority_not_weakly_fair}, \leanname{fires_within_overtaking},
+  \leanname{deadline_fires_within} \\
+Probability and choice & library and readout & probability is an annotation;
+  credal sets are the readout of choice under all schedulers &
+  \leanname{no_distributiveLaw}, \leanname{exists_deterministic_le},
+  \leanname{choice_probabilities} \\
+Knowledge-based programs & library & three-valued tests answered by grounded
+  inquiry; ranked programs are decided & \leanname{stage_sound},
+  \leanname{least_decides} \\
+Observer-indexed truth & library & knowledge is the interior of an observer's
+  partition & \leanname{knows_le}, \leanname{knows_knows} \\
+Speculative readout & observer & $\mathsf{Spec}$ observes ordered runs; order
+  and paid work stay with the runs & \leanname{observe_bind},
+  \leanname{Controls.observe_forgets_failed_cost} \\
+\bottomrule
+\end{longtable}
+}
 
 \subsection{Open decisions}
 
 \begin{enumerate}[leftmargin=*]
 \item The stable $\lambda\Pi$ contract for dependent HE declarations, and the
   hosted kernel that checks it.
-\item The names: ``bubble type theory'', ``weak core'', and the word for the
-  logic-only HOL profile.
-\item Bounded \code{select} and \code{once} in HE's extended profiles, which are
-  present but eager.
-\item The decidability of joins of decidable bubbles, and the weakness order
-  for full models of type theory rather than term congruences.
-\item A fixed bound on contextual frame identities in the runtime, which
-  violates the requirement that no implementation limit become part of the
-  language.
+\item Pairing conversion bubbles (\leanname{BubbleWeakness}) with axiomatic
+  little-theory nodes (\leanname{HenkinInstitution}), cross-base feature
+  composition, and the weakness order for full models of type theory rather
+  than term congruences.
+\item Generic derivation of the complete dependent eliminator from an authored
+  inductive signature across the indexed-polynomial container spine
+  (\leanname{IndexedPolynomial}) and proof-relevant $\iota$ conversion policies
+  (\leanname{ConversionRecipes.Policy}).
+\item Full Kripke--Henkin completeness for intuitionistic HOL via a scheduler
+  provider extending the proved Heyting substitutional completeness
+  (\leanname{HeytingGeneral}).
+\item Bounded \code{select} and \code{once} in HE's extended profiles, and
+  eliminating any fixed implementation bound on contextual frame identities in
+  the runtime.
 \end{enumerate}
 
 \section{Prime's planned CBPV basis and qualified evaluation strategies}
@@ -3531,6 +4745,136 @@ provenance-sensitive replay, route-dependent continuation types, independently
 valued costs, revision control, and explanations that distinguish duplicated
 occurrences.  The $R$-construction does not by itself strengthen the object
 logic, prove a consistency statement, or justify a larger universe.
+
+\subsection{A constructed final coalgebra: circular propositions}
+\label{sec:circular-propositions}
+
+Equation~(1) remains conditional notation; the following final coalgebra is
+constructed.  Fix a type $B$ of base facts and let $\Sigma_B$ be the polynomial
+functor with one node for each base fact, a truth node $\mathsf{Tr}$, negation,
+conjunction and disjunction, with arities $0$, $1$, $1$, $2$ and $2$.  Its final
+coalgebra $\mathsf{Prop}_B=\nu\Sigma_B$ is built as an M-type; no
+well-foundedness condition is imposed, so a circular proposition may contain
+itself.  $\mathsf{Tr}\,p$ reads ``$p$ is true''.
+
+A \emph{system} of self-referential judgments assigns to each judgment $j$ a
+strong Kleene formula $\mathsf{spec}(j)$ whose atoms are base facts and truth
+claims $\mathsf{Tr}\,j'$ about judgments.  Finality gives each system exactly one
+unfolding map into $\mathsf{Prop}_B$ that commutes with one step of unfolding
+(\leanname{System.unfold_unique}).  This is the solution lemma of anti-founded
+set theory \cite{AczelNonWellFounded} for this signature.
+
+$\mathsf{Prop}_B$ is itself the judgment set of one \emph{universal} system: the
+specification of a proposition is its root connective applied to the truth of
+its parts.  Grounded truth is a property of propositions, not of presentations.
+A formula holds or fails in the least fixed point of a system exactly when its
+unfolding does in the universal system (\leanname{System.unfold_mem_least}), and
+morphisms of systems preserve and reflect grounded verdicts
+(\leanname{System.Hom.mem_least_iff}).  The universe is therefore terminal for
+the semantics as well as for the structure: every presentation maps into it by
+one map, and that map neither creates nor loses a grounded verdict.
+
+The collapse is a collapse of meaning, not of objects.  Two liars, each calling
+the other false, unfold to the same proposition as one liar calling itself false
+(\leanname{Controls.mutualLiars_unfold}).  The unfolding map is the readout $q$
+of~(2), and it has the collapse of~(3).  Literal self-reference exists and is
+unique: the self-negating proposition is the unique $p$ with $\neg p=p$, and the
+falsity liar is the unique $p$ with $\neg\mathsf{Tr}\,p=p$
+(\leanname{selfNegation_unique}, \leanname{falsityLiar_unique}).
+
+Over encodable base facts the universe reads faithfully into hypersets
+(\leanname{material_injective}).  Grounded truth and grounded falsity are then
+hypersets of the same universe, the truth schema and the negation schema hold,
+and no proposition lies in both
+(\leanname{hypersetUniverse}).  Groundedness is a property of evidence, not of
+shape.  The proposition ``the fact, or this proposition'' is circular and
+grounded-true (\leanname{orSelf_held}), so the truth hyperset is not
+well-founded (\leanname{Controls.truthSet_not_wf}).
+
+These are three faces of one meaning.  Stages of the jump are the operational
+face, well-founded evidence is the intensional face, and the fixed point is the
+extensional face.  All three agree on every verdict
+(\leanname{System.mem_least_iff_exists_stage}, \leanname{System.mem_least_iff_evidence}),
+and evidence of height $n$ is exactly a verdict reached at stage $n+1$
+(\leanname{System.mem_stage_succ_iff_evidence}).  The comparison maps are not
+injective: two pieces of evidence for one verdict differ
+(\leanname{Controls.twoEvidence_ne}), and different stages yield the same verdict.
+
+\emph{Status.}  Proved.  Choice enters through the M-type and the classical
+dual; the checked results use at most \texttt{propext},
+\texttt{Classical.choice} and \texttt{Quot.sound}, and several use none.
+Nothing here constructs the indexed coalgebra $\nu H_V$ of the obligation above.
+The universe is propositional: it has no quantifiers and no provability
+predicate.
+
+\subsection{Truth over the circular universe is partial}
+\label{sec:circular-truth}
+
+Grounded truth is Kripke's least fixed point in the information order under
+strong Kleene evaluation \cite{KripkeTruth,FittingKripkeKleene}.  It is
+consistent (\leanname{System.least_consistent}), and it leaves both liars
+undetermined (\leanname{selfNegation_undetermined}).  Its status map sends
+negation to Kleene negation and the self-negating proposition to the Kleene
+fixed point, \emph{undetermined} (\leanname{groundedStatus_neg},
+\leanname{groundedStatus_selfNegation}).  The greatest fixed point is circular
+justification: with bivalent base facts, it holds a judgment exactly when some
+sound valuation does (\leanname{System.mem_greatest_iff_sound}).  There the liar is
+self-justifying in both polarities (\leanname{System.liar_selfJustifying}).  For finite
+systems the least fixed point is reached within $2|J|$ jumps and is decided by
+the kernel (\leanname{System.stage_eq_least}, \leanname{System.groundedDecide_spec}).
+
+The universe cannot carry a stronger truth notion.  Each of the following is
+proved.
+\begin{itemize}[leftmargin=*]
+\item \emph{No two-valued meaning.}  No Boolean valuation of circular
+  propositions commutes with negation (\leanname{no_boolean_valuation}).  This
+  is the negative reading of Lawvere's diagonal argument
+  \cite{LawvereDiagonal}, with the fixed point supplied by finality instead of
+  by a code map.
+\item \emph{No classical deduction.}  Every Hilbert system over circular
+  propositions that has modus ponens and the axioms K and S for the material
+  conditional proves every proposition (\leanname{hilbert_trivial}).  The
+  proof is Curry's paradox \cite{CurryInconsistency}, obtained as L\"ob's
+  theorem for the identity provability operator
+  (\leanname{ProvabilityStage.curry}).  Grounded truth escapes only because it
+  is not classical: axiom K is not grounded at the self-negating proposition
+  (\leanname{least_not_axiomK}).
+\item \emph{The gap is invisible from inside.}  No strong Kleene formula holds
+  exactly at the valuations that leave a given judgment undetermined
+  (\leanname{System.undetermined_not_definable}).  The least fixed point holds neither
+  the liar nor the true sentence ``the liar is not true''
+  (\leanname{System.liar_revenge}).  That sentence is stated one level up.  This is
+  the revenge phenomenon recorded at the end of Kripke's paper.
+\end{itemize}
+
+Consistent self-reference in one universe is therefore partial.  Coded
+self-reference behaves differently.  In arithmetic the diagonal reaches only the
+provability predicate, classical deduction stays consistent, and the price is
+incompleteness (Section~\ref{sec:consistency-tower}).  Both routes feed the same
+abstract theorem (\leanname{ProvabilityStage.loeb_of_hasLoebSentences}).
+Final coalgebras answer which cyclic objects exist.  They do not answer which
+propositions about those objects are true: a cycle can exist as data while truth
+about it stays partial.
+
+\paragraph{Knowledge-based programs.}
+A one-round knowledge-based program translates to such a system of judgments,
+``agent $i$ does $a$ in local state $\ell$'', with knowledge evaluated in strong
+Kleene logic over the worlds an agent cannot distinguish.  Implementations are
+its two-valued fixed points, every finite stage of the grounded inquiry is
+below every implementation, and a decided inquiry has exactly one
+implementation (\leanname{KnowledgeBasedPrograms.implementation_fixed},
+\leanname{stage_sound}, \leanname{implementation_eq_of_decided}); this is the
+one-round case of the constructive interpretation of Knapp, M\"uhlberger and
+Reus \cite{KnappMuehlbergerReusKBP}, who ask for criteria that ensure a decided
+least fixed point.  One criterion is a rank that strictly decreases along every
+reference to the truth of a judgment.  With bivalent base facts, a ranked
+system decides every judgment of rank below $n$ at stage $n$, so its least
+fixed point decides every judgment and a ranked program has exactly one
+implementation (\leanname{RankedDecision.stage_decides},
+\leanname{least_decides}, \leanname{ranked_implementation_unique}).  ``Act if I
+know I will act'' refers to itself, is not ranked
+(\leanname{RankedDecision.Controls.teller_not_ranked}) and is undetermined.  The
+multi-round case over reachable states is not covered.
 
 \section{HOTG as host, not as hyperset membership}
 
@@ -6104,6 +7448,80 @@ the stack indefinitely.''  For category-theoretic consumers, universe-change
 invariance must likewise be proved for the constructions being transported
 \cite{ShulmanSetTheory,LowUniverses}.
 
+\subsection{Four stratifications that should stay apart}
+\label{sec:four-stratifications}
+
+\emph{Open design note.}  The checked results of
+Sections~\ref{sec:circular-propositions}, \ref{sec:circular-truth} and
+\ref{sec:consistency-tower} each contain a ``level'', but the levels are of four
+different kinds.  A reflective language should keep them as independent indices
+rather than compress them into one integer.
+
+\begin{longtable}{>{\raggedright\arraybackslash}p{0.20\linewidth}%
+                  >{\raggedright\arraybackslash}p{0.33\linewidth}%
+                  >{\raggedright\arraybackslash}p{0.37\linewidth}}
+\toprule
+Stratification & What the index measures & What it prevents \\
+\midrule
+\endhead
+Reflective level $\ell$ & Which interpreter's code and state a computation
+  may inspect; successor with no top & Uncontrolled same-level access to one's
+  own evaluator \\
+Computational delay $\triangleright$ & Available approximation steps of a
+  recursive definition & Unguarded recursive feedback \\
+Truth definedness & Information about truth: true, false or undetermined, with
+  grounding stages & Totalizing self-applied truth (the liar) \\
+Logical reflection strength & Which theory proves a statement, and which
+  consistency or reflection principles it has & Treating ``this theory
+  proves'' as harmless evaluator reflection \\
+\bottomrule
+\end{longtable}
+
+The identifications that suggest themselves fail for stated reasons.
+\begin{itemize}[leftmargin=*]
+\item \emph{Truth stage is not delay.}  Kripke's construction and the later
+  modality both replace a self-referential equation by approximations
+  \cite{KripkeTruth,NakanoModality}, but along different orders.  For
+  arithmetic the least truth fixed point closes only at the first nonrecursive
+  ordinal \cite{KripkeTruth}, whereas the standard model of guarded recursion
+  is indexed by $\omega$ \cite{BirkedalGuardedTopos}.
+\item \emph{A guard does not make truth total.}  A guarded L\"ob rule is valid
+  because its antecedent refers to a strictly earlier approximation.
+  Same-level reflection of truth or provability has a different strength:
+  Curry and L\"ob collapse a classical system over literal self-reference
+  (\leanname{hilbert_trivial}), and a sound arithmetic stage cannot prove its
+  own consistency (\leanname{SoundStage.not_proves_own_consistency}).
+\item \emph{Existence is not truth.}  A final coalgebra supplies cyclic objects,
+  but not a total truth predicate on them (\leanname{no_boolean_valuation}).
+  Cyclic live state and circular propositions may therefore need different
+  coalgebras, with different carriers and notions of observation.
+\item \emph{Reflective level is not universe level, and not theory strength.}
+  A small term can sit at a high reflective level, and a large type need not
+  be reflective.  An interpreter at level $\ell+1$ need not embody a sound
+  proof theory for level $\ell$.  The consistency tower ascends in theories, not
+  in interpreters.
+\end{itemize}
+
+The literature on reflective towers supports keeping the reflective level
+unbounded while charging nothing at run time for unused levels.  The
+interpreter tower of 3-Lisp \cite{SmithReflection} has an ordinary
+non-reflective denotational account \cite{WandFriedmanTower}, its levels can be given an explicit
+semantics \cite{DanvyMalmkjaerTower}, and multi-stage specialization can
+collapse a tower to residual code \cite{AminRompfCollapsing}.  The open
+questions lie at the interfaces.  Brown and Palsberg built a self-interpreter
+for a strongly normalizing calculus by indexing code by type
+\cite{BrownPalsbergSelfInterpreter}.  Bauer's note
+shows that their stated criterion also admits a value-carrying
+``interpreter'' for System~T, and that the type of codes cannot be of lower
+complexity than the type of the program.  It asks for a definition by a
+structure-preserving homomorphism between calculi, since commuting with
+substitution alone is not general enough \cite{BauerSelfInterpreterT}.  With
+untyped code and internal type checking, the normalization barrier returns
+\cite{DingZhangBarrier}.  For Nakano's original system with subtyping, the
+known inference algorithm is sound but not complete, and decidable inference
+is proved for a variant without subtyping \cite{SeveriLightModality}.  None of these choices is made here, and no
+candidate calculus is selected by this note.
+
 \subsection{Relative infinity without ultrafilter selection}
 
 Constructive analysis suggests a useful intermediate profile.  Quotient natural
@@ -6333,6 +7751,110 @@ the actual strength of the formal host: if Lean or HOTG proves the entire tower,
 then Lean or HOTG remains part of the metatheoretic account.  Strict ascent avoids
 same-level self-certification; it does not make G\"odel's and Tarski's constraints
 disappear.
+
+\subsection{The internal claim realized in arithmetic: the consistency tower}
+\label{sec:consistency-tower}
+
+The third claim is now realized for arithmetic.  A \emph{sound stage} is a
+theory of arithmetic with a $\Delta_1$ presentation of its axioms that extends
+$\mathsf{I}\Sigma_1$ and is true in the standard model $\mathbb N$.
+\emph{Zoom-out} adds the stage's own consistency statement,
+$S\mapsto S+\mathrm{Con}(S)$, and the result is again a sound stage.
+
+The diagonal step is shared with the rest of the library.  Every $\Delta_1$
+extension of $\mathsf{I}\Sigma_1$ is a provability stage whose code map applies a
+formula to the numeral of a Gödel number.  Gödel's diagonal lemma is exactly its
+relative Lawvere step (\leanname{Arithmetic.stage_diagonalizable}).  L\"ob's
+theorem and the second incompleteness theorem then follow from the abstract
+derivability conditions (\leanname{Arithmetic.loeb},
+\leanname{Arithmetic.consistency_unprovable}), and the conclusion agrees with
+the library's independent proof (\leanname{Arithmetic.agrees_with_foundation}).
+
+\begin{theorem}[Consistency tower]
+For every sound stage $S$:
+\begin{enumerate}[label=(\roman*)]
+\item $S+\mathrm{Con}(S)\vdash\mathrm{Con}(S)$ and $S\nvdash\mathrm{Con}(S)$;
+\item $S$ is strictly weaker than $S+\mathrm{Con}(S)$, and no sound stage contains
+  its own zoom-out;
+\item the finite tower $S, S+\mathrm{Con}(S),\ldots$ increases strictly, and the
+  sound stages ordered by strict extension have no terminal stage;
+\item every zoom-out adds a sentence true in $\mathbb N$, no sound stage proves
+  every truth of $\mathbb N$, and every sound stage is strictly weaker than true
+  arithmetic.
+\end{enumerate}
+\end{theorem}
+
+The checked statements are \leanname{SoundStage.next_proves_consistency},
+\leanname{SoundStage.not_proves_own_consistency},
+\leanname{SoundStage.strictlyWeaker_next}, \leanname{SoundStage.not_next_le},
+\leanname{SoundStage.tower_strictMono}, \leanname{noTerminalStage},
+\leanname{SoundStage.next_new_truth}, \leanname{truth_not_reached} and
+\leanname{SoundStage.strictlyWeaker_trueArith}.
+
+\paragraph{Unconditional at $\mathsf{PA}$.}  The theorem is instantiated.
+$\mathsf{PA}$ and $\mathsf{I}\Sigma_1$ receive constructed $\Delta_1$
+presentations: a recognizer for the codes of universal closures of induction
+instances, correct over $\mathbb N$ and provably proper in $\mathsf{I}\Sigma_1$,
+joined with the finite axiom set of $\mathsf{PA}^-$
+(\leanname{InductionSchemeDelta1.peanoDelta1},
+\leanname{InductionSchemeDelta1.iSigmaOneDelta1}).  The construction is the
+Foundation library's.  The library version pinned here still postulates these
+presentations, so the proof is reproduced and the postulates are never
+imported.  With the standard-model facts from the same library, $\mathsf{PA}$
+and $\mathsf{I}\Sigma_1$ are sound stages (\leanname{peano},
+\leanname{iSigmaOne}), so the type of sound stages is inhabited and the
+negative statements above are not vacuous.  The tower
+$\mathsf{PA},\ \mathsf{PA}+\mathrm{Con}(\mathsf{PA}),\ \ldots$ has the following
+checked properties:
+\begin{itemize}[leftmargin=*]
+\item it increases strictly and its levels are pairwise distinct
+  (\leanname{peano_tower_strictMono}, \leanname{peano_tower_injective});
+\item no level contains every level (\leanname{peano_tower_no_top});
+\item each level's consistency is proved one level up and not at the level
+  itself (\leanname{peano_tower_certified},
+  \leanname{peano_tower_not_self_certified});
+\item each level misses a truth of $\mathbb N$
+  (\leanname{peano_tower_true_unprovable}).
+\end{itemize}
+The base cases are explicit: $\mathsf{PA}\nvdash\mathrm{Con}(\mathsf{PA})$ and
+$\mathsf{PA}+\mathrm{Con}(\mathsf{PA})\vdash\mathrm{Con}(\mathsf{PA})$, and the same
+for $\mathsf{I}\Sigma_1$ (\leanname{peano_not_proves_consistency},
+\leanname{peano_next_proves_consistency},
+\leanname{iSigmaOne_not_proves_consistency},
+\leanname{iSigmaOne_next_proves_consistency}).  All of these use exactly
+\texttt{propext}, \texttt{Classical.choice} and \texttt{Quot.sound}; no
+postulated definability instance is involved.
+
+\paragraph{Negative control.}  The $\Delta_1$ condition is what excludes a top.
+True arithmetic extends $\mathsf{I}\Sigma_1$, is true in $\mathbb N$ and proves
+every truth of $\mathbb N$, so it satisfies every condition except one.  It has
+no $\Delta_1$ presentation (\leanname{trueArith_not_delta1}).  Without that
+condition true arithmetic would be a terminal stage: every theory true in
+$\mathbb N$ is contained in it.
+
+\paragraph{What is claimed, and what is not.}
+\begin{itemize}[leftmargin=*]
+\item $\mathrm{Con}(S)$ is intensional: it is built from the chosen $\Delta_1$
+  presentation of $S$ \cite{FefermanArithmetization}.  The tower is the tower of
+  these presentations.
+\item Only the finite levels are built.  Progressions along ordinal notations,
+  with limit stages that collect the earlier ones
+  \cite{TuringOrdinalLogics,FefermanProgressions}, need a uniform arithmetic
+  presentation of the stages, and they are open here.  So is the completeness
+  of such progressions.  Turing's progression reaches every true $\Pi_1$
+  sentence, and Feferman's uniform-reflection progression reaches every true
+  arithmetic sentence, but only along a path through notations that is not
+  effectively selected.
+\item The whole tower is proved in Lean, so it is also an instance of the
+  fourth claim of the previous subsection, with Lean and the three axioms above
+  as the ambient theory; Lean remains part of the metatheoretic account.  Strict
+  ascent avoids same-level self-certification; it does not remove the
+  incompleteness theorems.
+\item The tower is one strand with genuine strength: each step adds a true
+  $\Pi_1$ sentence that the previous stage does not prove.  This is the kind of
+  edge content that the linearization test above requires; the shape of the
+  index diagram contributes nothing.
+\end{itemize}
 
 \subsection{Conditional coupling of the atlas and qualification tower}
 
@@ -9673,6 +11195,18 @@ framework with a theory, a theory with a model, or a target with a service.
 \subsection{Proved by checked construction}
 
 \begin{enumerate}
+\item \textbf{Execution-contract components have checked composition laws.}
+  Resource reification and reflected actions transport through a
+  frame-lifting resource map and compose through retained middle relation
+  witnesses. Actual pure occurrence-query reads compile to complete ordered
+  identifier/payload dependencies and preserve adaptive observations under
+  validated reuse, bind and performed-prefix resumption. Dependent families
+  of committed observers share the existing administration and erasure
+  laws. Constructed controls distinguish missing frame lifts, reordered
+  effects, stale child/absence reads, ambiguous identifiers and discarded
+  duties. These results have the scopes stated in
+  Section~\ref{sec:execution-contracts}; they do not supply a complete native
+  service, compensator or architectural minimality theorem.
 \item \textbf{A checkable rational distinction-calculus fragment.}
   \nolinkurl{DistinctionCalculus.derives_iff_checked} establishes agreement
   of raw certificates with independent derivations;
@@ -10547,6 +12081,68 @@ framework with a theory, a theory with a model, or a target with a service.
 \item \textbf{Observers.}  Refining an observer adds distinctions; the induced
   map of behavioural classes is functorial, and coarsening is reversible
   exactly when no atoms or labels are added (\texttt{ObserverRefinement}).
+\item \textbf{Circular propositions form a constructed final coalgebra with
+  partial truth.}  The strong Kleene propositions with a truth node are an
+  M-type; every system of self-referential judgments unfolds into it by
+  exactly one map (\leanname{System.unfold_unique}), which preserves and
+  reflects grounded verdicts (\leanname{System.unfold_mem_least},
+  \leanname{System.Hom.mem_least_iff}).  Grounded truth is consistent and
+  agrees with stages and well-founded evidence; over encodable base facts the
+  universe and its truth and falsity sets read faithfully as hypersets
+  (\leanname{hypersetUniverse}).  Section~\ref{sec:circular-propositions}
+  states the scope; the universe is propositional.
+\item \textbf{The consistency tower is unconditional at $\mathsf{PA}$.}  Every
+  sound $\Delta_1$ extension of $\mathsf{I}\Sigma_1$ has its consistency proved
+  one stage up and not at itself, and the stages increase strictly with no
+  terminal stage.  $\mathsf{PA}$ and $\mathsf{I}\Sigma_1$ are constructed sound
+  stages, with constructed $\Delta_1$ presentations and no postulated instance
+  (\leanname{peano}, \leanname{peano_tower_strictMono},
+  \leanname{peano_tower_certified}, \leanname{peano_tower_not_self_certified}).
+  Only finite levels are built (Section~\ref{sec:consistency-tower}).
+\item \textbf{The layer atlas.}  Forty-one cells of combinations of the
+  layers of a rewriting and knowledge-base language are checked theorems in
+  \nolinkurl{PrimeOptions.LayerAtlas}, each assembled from its owning module:
+  CALM in both halves, frontier-stratified absence, non-confluence of
+  consumption and of snapshot absence, the impossibility of a distributive law
+  of distributions over sets, the per-answer tensor of choice, weights and
+  cost, priority and epochs, late-bound forgery and its repairs, grounded
+  knowledge, evidence derivation, and the cells listed in the next items.
+\item \textbf{Evidence is derived from observation contracts.}  Additive
+  revision is exact exactly for disjoint ledgers
+  (\leanname{EvidenceContracts.additive_revision_exact_iff_disjoint}); revision
+  under unknown overlap lies between the maximum and the sum
+  (\leanname{unknown_overlap_bounds}); same-world conjunction counts are
+  exactly the Fréchet interval (\leanname{conjunction_counts_iff}); PLN's
+  tensor is conditional-independence fusion of reports
+  (\leanname{toPaired_tensor}, \leanname{strength_fuse_uniform}); evidential
+  negation is monotone and intuitionistic negation is not
+  (\leanname{against_mono}, \leanname{hnot_not_monotone}); PLN deduction is
+  exact under screening off (\leanname{deduction_exact_of_screening}); the
+  paired count is overdispersed (\leanname{PairedSampleDispersion.paired_variance}).
+  Conclusion confidence is derived through credal intervals, with the
+  propagation map fixed by the contract
+  (\leanname{deduction_confidence_route}, \leanname{widthConfidence_eq_odds},
+  \leanname{idm_intervalWeight}).
+  Section~\ref{sec:evidence-contracts} states the scope.
+\item \textbf{Possibility composes exactly over positive semirings}
+  (\leanname{AnnotationCapabilities.support_bind_iff_positive}), and the
+  speculative answer readout is a monad morphism from ordered runs
+  (\leanname{SpecRunObserver.observe_bind}).
+\item \textbf{Frontier absence is intuitionistic negation, certified by
+  ownership.}  \leanname{FrontierNegation.knot_iff_absent_frontier},
+  \leanname{refinement_sound}, \leanname{ownership_certifies_frontier} and
+  \leanname{foreign_extension_certified} (Section~\ref{sec:pqi-absence}).
+\item \textbf{Schedulers, arbitration and fair service.}  Probability envelopes
+  are attained by deterministic schedulers
+  (\leanname{SchedulerResolution.exists_deterministic_le}); arbitration by
+  commit order or exclusive authority restores a single outcome
+  (\leanname{Arbitration.first_committer_wins}, \leanname{gated_confluent});
+  bounded overtaking and deadlines bound waiting
+  (\leanname{Run.fires_within_overtaking}, \leanname{deadline_fires_within}).
+\item \textbf{Ranked knowledge-based programs are decided.}
+  \leanname{RankedDecision.least_decides} and
+  \leanname{ranked_implementation_unique} give a sufficient criterion for a
+  decided least fixed point in the one-round case.
 \end{enumerate}
 
 \subsection{Refuted or proved impossible}
@@ -10798,6 +12394,46 @@ postponed.
   along the route-family right action; a directed countermodel rules them out
   even up to fibrewise equivalence (Section~\ref{sec:open-obligations}, item
   on the $q$ edge).
+\item \textbf{A circular universe has no two-valued truth and no classical
+  deduction.}  No Boolean valuation of circular propositions commutes with
+  negation (\leanname{no_boolean_valuation}), and every Hilbert system over them
+  with modus ponens, K and S is trivial (\leanname{hilbert_trivial}).  No strong
+  Kleene formula defines ``undetermined''
+  (\leanname{System.undetermined_not_definable}), and the least fixed point does
+  not hold that the liar is untrue (\leanname{System.liar_revenge}).
+\item \textbf{No sound arithmetic stage certifies itself or reaches the standard
+  model.}  A sound stage does not prove its own consistency
+  (\leanname{SoundStage.not_proves_own_consistency}), no sound stage contains its
+  zoom-out (\leanname{SoundStage.not_next_le}), and none proves every truth of
+  $\mathbb N$ (\leanname{truth_not_reached}).  The $\Delta_1$ condition is
+  necessary: true arithmetic satisfies every other condition and has no
+  $\Delta_1$ presentation (\leanname{trueArith_not_delta1}).
+\item \textbf{Additive revision of overlapping evidence is unsound.}  It counts
+  the overlap twice (\leanname{EvidenceContracts.revision_counts_overlap_twice},
+  \leanname{Controls.overlap_double_counted}); source-keyed maximum
+  under-counts without per-source nesting
+  (\leanname{Controls.sourceMerge_undercounts}).
+\item \textbf{The total of a paired product is not a sample size.}  Its
+  variance equals that of independent joint samples only for single samples
+  (\leanname{PairedSampleDispersion.paired_variance_eq_joint_iff}).
+\item \textbf{The posited deduction total is not a derived confidence.}  The
+  sum of the premise totals is above the interval-derived evidence weight in
+  one case and below it in another, with equality in a third
+  (\leanname{EvidenceContracts.Controls.deduction_posited_overstates},
+  \leanname{Controls.deduction_posited_understates},
+  \leanname{Controls.deduction_posited_agrees}).
+\item \textbf{PLN's tensor is neither conjunction nor the deduction direct
+  path}, and fusing posteriors counts a prior twice
+  (\leanname{EvidenceContracts.Controls.fuse_not_direct_path},
+  \leanname{Controls.prior_counted_twice}).  PLN deduction without screening
+  off fails (\leanname{Controls.deduction_fails_without_screening}).
+\item \textbf{No ring annotation keeps possibility}
+  (\leanname{AnnotationCapabilities.not_positive_of_ring}), and intuitionistic
+  negation is not monotone in any nontrivial Heyting algebra
+  (\leanname{EvidenceContracts.hnot_not_monotone}).
+\item \textbf{A frontier is not complete for refinements, and the owner can
+  revoke it} (\leanname{FrontierNegation.Controls.refinement_incomplete},
+  \leanname{Controls.owner_revokes}).
 \end{enumerate}
 
 \subsection{Conditional: proved under a stated hypothesis}
@@ -10837,6 +12473,10 @@ postponed.
   outside that image the descent criterion says what fails. This compares
   the two set-family institutions; it is not a conservativity theorem for
   intrinsic simple syntax translated into the cumulative tower.
+\item \textbf{PLN deduction holds under screening off}
+  (\leanname{EvidenceContracts.deduction_exact_of_screening}); source-keyed
+  revision is ledger union under per-source nesting
+  (\leanname{ledgerEvidence_union_eq_sourceMerge}).
 \end{enumerate}
 
 \subsection{Open, with the smallest step that would decide each}
@@ -11071,6 +12711,37 @@ postponed.
   through the theory graph.  Decisive step: the five premises, one by one.
 \item \textbf{Bootstrap seeds.}  No ``NIK/$x$ over $y$'' cell exists in the
   tree; the seed matrix of the bootstrap section is entirely open.
+\item \textbf{Transfinite consistency and reflection progressions.}  Only the
+  finite levels of the consistency tower are built.  The smallest deciding step
+  is a uniform $\Delta_1$ presentation of the finite tower, from which the
+  $\omega$-th stage is a sound stage; then the strict climb through
+  $\omega+1$.  Completeness of progressions along notations is a further step.
+\item \textbf{A structural definition of typed self-interpretation.}  The
+  published criterion for a typed self-interpreter admits a value-carrying
+  interpreter for System~T, and the type of codes cannot be simpler than the
+  type of the program \cite{BauerSelfInterpreterT}.  A satisfactory definition
+  should present the interpreter as a structure-preserving homomorphism between
+  calculi, which commuting with substitution alone does not capture.  The
+  library's code/behaviour retraction theorem
+  (\leanname{exists_fixedPoint_of_staticBeta}) already gives the single-code-type
+  obstruction.  The smallest deciding step is a candidate definition, checked to
+  hold for a type-indexed quotation of a small total calculus and to fail for the
+  value-carrying representation.
+\item \textbf{Deduction intervals with interval marginals.}  Conclusion
+  confidence is derived through credal intervals
+  (Section~\ref{sec:evidence-contracts}); the corner theorem covers the
+  deduction map with point marginals $p_B$, $p_C$, where it is bilinear.  With
+  interval-valued marginals the map divides by $1-p_B$ and the exact image of
+  the box is not given by its corners in general.  The smallest decisive step
+  is the exact envelope of the deduction map over the full box, or a corner
+  theorem under a stated monotonicity condition.
+\item \textbf{Decided knowledge-based programs over reachable states.}  The
+  ranked criterion covers one round; the multi-round case with must/can
+  bounds remains open.
+\item \textbf{A native absence source with ownership certificates.}  The
+  frontier and ownership theorems are proved over an over-approximation of
+  firing; a frontier check over MM2 executables with owned heads, and its
+  agreement with the kernel model, is the decisive step.
 \end{enumerate}
 
 \section{Open obligations and decision gates}
@@ -11251,6 +12922,15 @@ postponed.
 \subsection{Type theory and computation}
 
 \begin{enumerate}
+\item Realize the compositional contracts of
+  Section~\ref{sec:execution-contracts} on complete retained MeTTa worlds:
+  native matching, ordered occurrences, absences, take/update, consulted
+  spaces and rules, binding lineage, shared producers and force authority.
+  Compose their actual decoders and actions with the independently selected
+  observation, oracle, progress and cost comparisons. Construct an authorized
+  obligation-disposition service and irreversible/uncertain controls;
+  preserving a readout alone does not authenticate settlement or guarantee
+  eventual discharge.
 \item Construct a native inductive--recursive family-enclosing universe and
   prove its substitution and decoding laws.
 \item Construct native superuniverse and extended-predicative Mahlo candidates
@@ -11331,6 +13011,15 @@ postponed.
 \subsection{World-model evidence and probability}
 
 \begin{enumerate}
+\item State every evidence-combination step with its observation contract:
+  identified ledgers for revision, the same-world interval for conjunction,
+  sample pairing for independent products, conditional independence for
+  fusion of reports, and screening off for deduction
+  (Section~\ref{sec:evidence-contracts}).  Under unknown overlap, combine by
+  the coordinatewise maximum, which is sound for every overlap.  Derive every
+  conclusion confidence through the credal-interval route, declaring the prior
+  strength and the selector; replace posited confidence totals, such as the
+  sum of premise totals in deduction and the weight product in conjunction.
 \item Make authorities for probability assumptions explicit: factorization,
   conditional independence, Bayesian-network separation, credal bounds, and
   exchangeability. A compiled evidence-combination plan should discharge
@@ -11457,6 +13146,18 @@ a coherent north star without pinning a living language specification too early.
 
 \begin{thebibliography}{99}
 \raggedright
+
+\bibitem{DinsdaleYoungViews}
+T. Dinsdale-Young, L. Birkedal, P. Gardner, M. Parkinson, and H. Yang.
+\newblock Views: Compositional reasoning for concurrent programs.
+\newblock In \emph{POPL}, 2013.
+\newblock \url{https://cs.au.dk/~birke/papers/views.pdf}.
+
+\bibitem{JonesInterferingPrograms}
+C. B. Jones.
+\newblock Tentative steps toward a development method for interfering programs.
+\newblock \emph{ACM Transactions on Programming Languages and Systems},
+  5(4):596--619, 1983.
 
 \bibitem{MartinLofITT}
 P. Martin-L\"of.
@@ -12148,6 +13849,305 @@ R.~Garcia, A.~M. Clark, and \'E.~Tanter.
 \newblock Abstracting gradual typing.
 \newblock In \emph{Proceedings of the 43rd ACM SIGPLAN Symposium on Principles
   of Programming Languages (POPL 2016)}, pages 429--442, 2016.
+
+\bibitem{KripkeTruth}
+S.~Kripke.
+\newblock Outline of a theory of truth.
+\newblock \emph{The Journal of Philosophy}, 72(19):690--716, 1975.
+
+\bibitem{FittingKripkeKleene}
+M.~Fitting.
+\newblock A {K}ripke--{K}leene semantics for logic programs.
+\newblock \emph{The Journal of Logic Programming}, 2(4):295--312, 1985.
+\newblock \url{https://doi.org/10.1016/0743-1066(85)80005-4}.
+
+\bibitem{LawvereDiagonal}
+F.~W. Lawvere.
+\newblock Diagonal arguments and cartesian closed categories.
+\newblock In \emph{Category Theory, Homology Theory and their Applications II},
+  Lecture Notes in Mathematics 92, pages 134--145. Springer, 1969.
+
+\bibitem{CurryInconsistency}
+H.~B. Curry.
+\newblock The inconsistency of certain formal logics.
+\newblock \emph{The Journal of Symbolic Logic}, 7(3):115--117, 1942.
+
+\bibitem{FefermanArithmetization}
+S.~Feferman.
+\newblock Arithmetization of metamathematics in a general setting.
+\newblock \emph{Fundamenta Mathematicae}, 49:35--92, 1960.
+
+\bibitem{TuringOrdinalLogics}
+A.~M. Turing.
+\newblock Systems of logic based on ordinals.
+\newblock \emph{Proceedings of the London Mathematical Society}, s2-45:161--228,
+  1939.
+
+\bibitem{FefermanProgressions}
+S.~Feferman.
+\newblock Transfinite recursive progressions of axiomatic theories.
+\newblock \emph{The Journal of Symbolic Logic}, 27(3):259--316, 1962.
+
+\bibitem{NakanoModality}
+H.~Nakano.
+\newblock A modality for recursion.
+\newblock In \emph{Proceedings of the 15th Annual IEEE Symposium on Logic in
+  Computer Science (LICS 2000)}, pages 255--266, 2000.
+
+\bibitem{BirkedalGuardedTopos}
+L.~Birkedal, R.~E. M{\o}gelberg, J.~Schwinghammer, and K.~St{\o}vring.
+\newblock First steps in synthetic guarded domain theory: step-indexing in the
+  topos of trees.
+\newblock \emph{Logical Methods in Computer Science}, 8(4:1), 2012.
+\newblock \url{https://doi.org/10.2168/LMCS-8(4:1)2012}.
+
+\bibitem{SeveriLightModality}
+P.~Severi.
+\newblock A light modality for recursion.
+\newblock \emph{Logical Methods in Computer Science}, 15(1:8), 2019.
+\newblock \url{https://doi.org/10.23638/LMCS-15(1:8)2019}.
+
+\bibitem{SmithReflection}
+B.~C. Smith.
+\newblock Reflection and semantics in {LISP}.
+\newblock In \emph{Proceedings of the 11th ACM SIGACT-SIGPLAN Symposium on
+  Principles of Programming Languages (POPL 1984)}, 1984.
+\newblock \url{https://doi.org/10.1145/800017.800513}.
+
+\bibitem{WandFriedmanTower}
+M.~Wand and D.~P. Friedman.
+\newblock The mystery of the tower revealed: a non-reflective description of
+  the reflective tower.
+\newblock In \emph{Proceedings of the 1986 ACM Conference on LISP and
+  Functional Programming}, 1986.
+\newblock \url{https://doi.org/10.1145/319838.319871}.
+
+\bibitem{DanvyMalmkjaerTower}
+O.~Danvy and K.~Malmkj{\ae}r.
+\newblock Intensions and extensions in a reflective tower.
+\newblock In \emph{Proceedings of the 1988 ACM Conference on LISP and
+  Functional Programming}, 1988.
+\newblock \url{https://doi.org/10.1145/62678.62725}.
+
+\bibitem{AminRompfCollapsing}
+N.~Amin and T.~Rompf.
+\newblock Collapsing towers of interpreters.
+\newblock \emph{Proceedings of the ACM on Programming Languages}, 2(POPL):52,
+  2018.
+\newblock \url{https://doi.org/10.1145/3158140}.
+
+\bibitem{BrownPalsbergSelfInterpreter}
+M.~Brown and J.~Palsberg.
+\newblock Breaking through the normalization barrier: a self-interpreter for
+  {F}-omega.
+\newblock In \emph{Proceedings of the 43rd ACM SIGPLAN-SIGACT Symposium on
+  Principles of Programming Languages (POPL 2016)}, 2016.
+\newblock \url{https://doi.org/10.1145/2837614.2837623}.
+
+\bibitem{BauerSelfInterpreterT}
+A.~Bauer.
+\newblock On self-interpreters for {S}ystem {T} and other typed
+  $\lambda$-calculi.
+\newblock Note, 2016.
+
+\bibitem{DingZhangBarrier}
+S.~Ding and Q.~Zhang.
+\newblock The normalization barrier revisited.
+\newblock In \emph{Workshop dedicated to Jens Palsberg on the occasion of his
+  60th birthday (JENSFEST 2024)}, 2024.
+
+\bibitem{GreenProvenanceSemirings}
+T.~J. Green, G.~Karvounarakis and V.~Tannen.
+\newblock Provenance semirings.
+\newblock In \emph{Proceedings of the 26th ACM Symposium on Principles of
+  Database Systems (PODS 2007)}, pages 31--40, 2007.
+
+\bibitem{GradelTannenProvenance}
+E.~Gr\"adel and V.~Tannen.
+\newblock Semiring provenance for first-order model checking.
+\newblock arXiv:1712.01980, 2017.
+
+\bibitem{HellersteinAlvaroCALM}
+J.~M. Hellerstein and P.~Alvaro.
+\newblock Keeping {CALM}: when distributed consistency is easy.
+\newblock \emph{Communications of the ACM}, 63(9):72--81, 2020.
+
+\bibitem{AmelootRelationalTransducers}
+T.~J. Ameloot, F.~Neven and J.~Van den Bussche.
+\newblock Relational transducers for declarative networking.
+\newblock \emph{Journal of the ACM}, 60(2):15, 2013.
+
+\bibitem{WangNAL}
+P.~Wang.
+\newblock \emph{Non-Axiomatic Logic: A Model of Intelligent Reasoning}.
+\newblock World Scientific, 2013.
+
+\bibitem{JosangBeliefCalculus}
+A.~J{\o}sang.
+\newblock Belief calculus.
+\newblock arXiv:cs/0606029, 2006.
+
+\bibitem{JosangFission}
+A.~J{\o}sang.
+\newblock Fission of opinions in subjective logic.
+\newblock In \emph{Proceedings of the 12th International Conference on
+  Information Fusion}, 2009.
+
+\bibitem{DempsterUpperLower}
+A.~P. Dempster.
+\newblock Upper and lower probabilities induced by a multivalued mapping.
+\newblock \emph{Annals of Mathematical Statistics}, 38(2):325--339, 1967.
+
+\bibitem{ShaferEvidence}
+G.~Shafer.
+\newblock \emph{A Mathematical Theory of Evidence}.
+\newblock Princeton University Press, 1976.
+
+\bibitem{WalleyBagOfMarbles}
+P.~Walley.
+\newblock Inferences from multinomial data: learning about a bag of marbles.
+\newblock \emph{Journal of the Royal Statistical Society, Series B},
+  58(1):3--57, 1996.
+
+\bibitem{ShaferVovkGTP}
+G.~Shafer and V.~Vovk.
+\newblock \emph{Game-Theoretic Foundations for Probability and Finance}.
+\newblock Wiley, 2019.
+
+\bibitem{VovkWangEValues}
+V.~Vovk and R.~Wang.
+\newblock E-values: calibration, combination and applications.
+\newblock \emph{Annals of Statistics}, 49(3):1736--1754, 2021.
+
+\bibitem{GenestZidekPooling}
+C.~Genest and J.~V. Zidek.
+\newblock Combining probability distributions: a critique and an annotated
+  bibliography.
+\newblock \emph{Statistical Science}, 1(1):114--135, 1986.
+
+\bibitem{FrechetTableaux}
+M.~Fr\'echet.
+\newblock Sur les tableaux de corr\'elation dont les marges sont donn\'ees.
+\newblock \emph{Annales de l'Universit\'e de Lyon, Section A}, 14:53--77, 1951.
+
+\bibitem{JulierUhlmannCI}
+S.~J. Julier and J.~K. Uhlmann.
+\newblock A non-divergent estimation algorithm in the presence of unknown
+  correlations.
+\newblock In \emph{Proceedings of the American Control Conference}, 1997.
+
+\bibitem{BelnapFourValued}
+N.~D. Belnap.
+\newblock A useful four-valued logic.
+\newblock In J.~M. Dunn and G.~Epstein, editors, \emph{Modern Uses of
+  Multiple-Valued Logic}, pages 5--37. Reidel, 1977.
+
+\bibitem{NelsonConstructibleFalsity}
+D.~Nelson.
+\newblock Constructible falsity.
+\newblock \emph{Journal of Symbolic Logic}, 14(1):16--26, 1949.
+
+\bibitem{CarnielliRodriguesLET}
+W.~Carnielli and A.~Rodrigues.
+\newblock An epistemic approach to paraconsistency: a logic of evidence and
+  truth.
+\newblock \emph{Synthese}, 196:3789--3813, 2019.
+
+\bibitem{VaraccaWinskelDistributing}
+D.~Varacca and G.~Winskel.
+\newblock Distributing probability over non-determinism.
+\newblock \emph{Mathematical Structures in Computer Science}, 16(1):87--113,
+  2006.
+
+\bibitem{ZwartMarsdenNoGo}
+M.~Zwart and D.~Marsden.
+\newblock No-go theorems for distributive laws.
+\newblock \emph{Logical Methods in Computer Science}, 18(1), 2022.
+
+\bibitem{KeimelPlotkinMixed}
+K.~Keimel and G.~D. Plotkin.
+\newblock Mixed powerdomains for probability and nondeterminism.
+\newblock \emph{Logical Methods in Computer Science}, 13(1), 2017.
+
+\bibitem{KnappMuehlbergerReusKBP}
+A.~Knapp, H.~M\"uhlberger and B.~Reus.
+\newblock Interpreting knowledge-based programs.
+\newblock In \emph{Programming Languages and Systems (ESOP 2023)}, 2023.
+\newblock Extended version arXiv:2301.10807.
+
+\bibitem{NewmanCombinatorial}
+M. H. A. Newman.
+\newblock On theories with a combinatorial definition of ``equivalence''.
+\newblock \emph{Annals of Mathematics} 43(2):223--243, 1942.
+
+\bibitem{HuetConfluentReductions}
+G. Huet.
+\newblock Confluent reductions: abstract properties and applications to term
+  rewriting systems.
+\newblock \emph{Journal of the ACM} 27(4):797--821, 1980.
+
+\bibitem{KlopCRS}
+J. W. Klop.
+\newblock \emph{Combinatory Reduction Systems}.
+\newblock Mathematical Centre Tracts 127, Amsterdam, 1980.
+
+\bibitem{PetersonStickelAC}
+G. E. Peterson and M. E. Stickel.
+\newblock Complete sets of reductions for some equational theories.
+\newblock \emph{Journal of the ACM} 28(2):233--264, 1981.
+
+\bibitem{JouannaudKirchnerModulo}
+J.-P. Jouannaud and H. Kirchner.
+\newblock Completion of a set of rules modulo a set of equations.
+\newblock \emph{SIAM Journal on Computing} 15(4):1155--1194, 1986.
+
+\bibitem{MartinNipkowOrdered}
+U. Martin and T. Nipkow.
+\newblock Ordered rewriting and confluence.
+\newblock In \emph{CADE-10}, LNCS 449, pages 366--380, 1990.
+
+\bibitem{CousineauDowekPTS}
+D. Cousineau and G. Dowek.
+\newblock Embedding pure type systems in the lambda-Pi-calculus modulo.
+\newblock In \emph{TLCA 2007}, LNCS 4583, pages 102--117, 2007.
+
+\bibitem{FriedmanEqualityFunctionals}
+H. Friedman.
+\newblock Equality between functionals.
+\newblock In \emph{Logic Colloquium, Boston 1972--73}, Lecture Notes in
+Mathematics 453, pages 22--37, 1975.
+
+\bibitem{GenestierAgda}
+G. Genestier.
+\newblock Encoding Agda programs using rewriting.
+\newblock In \emph{FSCD 2020}, LIPIcs 167, 31:1--31:17, 2020.
+
+\bibitem{BlanquiVaishnavLean}
+F. Blanqui and R. Vaishnav.
+\newblock Encoding Lean's type theory in Dedukti.
+\newblock arXiv:2609.24604, 2026.
+
+\bibitem{CoquandConversion}
+T. Coquand.
+\newblock An algorithm for testing conversion in type theory.
+\newblock In G. Huet and G. Plotkin, editors, \emph{Logical Frameworks}, pages
+  255--279. Cambridge University Press, 1991.
+
+\bibitem{GilbertProofIrrelevance}
+G. Gilbert, J. Cockx, M. Sozeau, and N. Tabareau.
+\newblock Definitional proof-irrelevance without K.
+\newblock \emph{Proceedings of the ACM on Programming Languages} 3(POPL):3:1--3:28,
+  2019.
+
+\bibitem{SquierFiniteDerivationType}
+C. C. Squier.
+\newblock Word problems and a homological finiteness condition for monoids.
+\newblock \emph{Journal of Pure and Applied Algebra} 49(1--2):201--217, 1987.
+
+\bibitem{DowekThireLogipedia}
+G. Dowek and F. Thir\'e.
+\newblock Logipedia: a multi-system encyclopedia of formal proofs.
+\newblock arXiv:2305.00064, 2023.
 
 \end{thebibliography}
 

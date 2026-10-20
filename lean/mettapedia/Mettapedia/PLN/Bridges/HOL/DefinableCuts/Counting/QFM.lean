@@ -344,7 +344,7 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_intervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingCardinalityThresholdCut
@@ -388,7 +388,7 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_lower_eq_one_iff_pro
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingCardinalityThresholdCut
@@ -438,7 +438,7 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_upper_eq_zero_iff_pr
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingCardinalityThresholdCut
@@ -488,7 +488,7 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_lower_eq_zero_iff_no
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingCardinalityThresholdCut
@@ -538,7 +538,7 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_upper_eq_one_iff_not
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingCardinalityThresholdCut
@@ -588,7 +588,7 @@ theorem predicateFuzzyForAllCountingCardinalityThresholdCut_width_eq_zero_iff_de
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingCardinalityThresholdCut
@@ -852,7 +852,7 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_intervalOfConsi
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingCardinalityThresholdCut
@@ -896,7 +896,7 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_lower_eq_one_if
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingCardinalityThresholdCut
@@ -980,7 +980,7 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_intervalOfConsistent
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingExistsExactThresholdCut
@@ -1018,7 +1018,7 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_lower_eq_one_iff_pro
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingExistsExactThresholdCut
@@ -1062,7 +1062,7 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_upper_eq_zero_iff_pr
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingExistsExactThresholdCut
@@ -1106,7 +1106,7 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_lower_eq_zero_iff_no
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingExistsExactThresholdCut
@@ -1151,7 +1151,7 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_upper_eq_one_iff_not
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingExistsExactThresholdCut
@@ -1196,7 +1196,7 @@ theorem predicateFuzzyForAllCountingExistsExactThresholdCut_width_eq_zero_iff_de
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingExistsExactThresholdCut
@@ -1251,7 +1251,7 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_upper_eq_zero_i
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingCardinalityThresholdCut
@@ -1301,7 +1301,7 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_lower_eq_zero_i
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingCardinalityThresholdCut
@@ -1351,7 +1351,7 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_upper_eq_one_if
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingCardinalityThresholdCut
@@ -1401,7 +1401,7 @@ theorem predicateFuzzyThereExistsCountingCardinalityThresholdCut_width_eq_zero_i
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingCardinalityThresholdCut
@@ -1485,7 +1485,7 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_intervalOfConsi
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingExistsExactThresholdCut
@@ -1523,7 +1523,7 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_lower_eq_one_if
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingExistsExactThresholdCut
@@ -1567,7 +1567,7 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_upper_eq_zero_i
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingExistsExactThresholdCut
@@ -1612,7 +1612,7 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_lower_eq_zero_i
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingExistsExactThresholdCut
@@ -1658,7 +1658,7 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_upper_eq_one_if
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingExistsExactThresholdCut
@@ -1703,7 +1703,7 @@ theorem predicateFuzzyThereExistsCountingExistsExactThresholdCut_width_eq_zero_i
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingExistsExactThresholdCut
@@ -1790,7 +1790,7 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_intervalOfConsist
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingUniversalExactThresholdCut
@@ -1828,7 +1828,7 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_lower_eq_one_iff_
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingUniversalExactThresholdCut
@@ -1872,7 +1872,7 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_upper_eq_zero_iff
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingUniversalExactThresholdCut
@@ -1916,7 +1916,7 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_lower_eq_zero_iff
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingUniversalExactThresholdCut
@@ -1961,7 +1961,7 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_upper_eq_one_iff_
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingUniversalExactThresholdCut
@@ -2006,7 +2006,7 @@ theorem predicateFuzzyForAllCountingUniversalExactThresholdCut_width_eq_zero_iff
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingUniversalExactThresholdCut
@@ -2093,7 +2093,7 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_intervalOfCo
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
@@ -2131,7 +2131,7 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_lower_eq_one
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
@@ -2175,7 +2175,7 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_upper_eq_zer
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
@@ -2220,7 +2220,7 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_lower_eq_zer
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
@@ -2266,7 +2266,7 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_upper_eq_one
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
@@ -2311,7 +2311,7 @@ theorem predicateFuzzyThereExistsCountingUniversalExactThresholdCut_width_eq_zer
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingUniversalExactThresholdCut
@@ -2398,7 +2398,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_intervalOfConsistent
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastTwoBaseCut
@@ -2437,7 +2437,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_lower_eq_one_iff_provable
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastTwoBaseCut
@@ -2482,7 +2482,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_upper_eq_zero_iff_provable
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastTwoBaseCut
@@ -2527,7 +2527,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_lower_eq_zero_iff_not_prov
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastTwoBaseCut
@@ -2573,7 +2573,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_upper_eq_one_iff_not_prova
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastTwoBaseCut
@@ -2619,7 +2619,7 @@ theorem predicateFuzzyForAllCountingAtLeastTwoBaseCut_width_eq_zero_iff_decides
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastTwoBaseCut
@@ -2752,7 +2752,7 @@ theorem predicateFuzzyForAllCountingAtLeastNBaseCut_width_eq_zero_iff_decides
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastNBaseCut
@@ -2808,7 +2808,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastNBaseCut_width_eq_zero_iff_decid
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastNBaseCut
@@ -2902,7 +2902,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_intervalOfConsistent
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
@@ -2941,7 +2941,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_lower_eq_one_iff_prov
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
@@ -2986,7 +2986,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_upper_eq_zero_iff_pro
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
@@ -3031,7 +3031,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_lower_eq_zero_iff_not
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
@@ -3077,7 +3077,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_upper_eq_one_iff_not_
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
@@ -3123,7 +3123,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastTwoBaseCut_width_eq_zero_iff_dec
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastTwoBaseCut
@@ -3210,7 +3210,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_intervalOfConsistent
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastThreeBaseCut
@@ -3249,7 +3249,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_lower_eq_one_iff_provabl
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastThreeBaseCut
@@ -3294,7 +3294,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_upper_eq_zero_iff_provab
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastThreeBaseCut
@@ -3339,7 +3339,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_lower_eq_zero_iff_not_pr
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastThreeBaseCut
@@ -3385,7 +3385,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_upper_eq_one_iff_not_pro
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastThreeBaseCut
@@ -3431,7 +3431,7 @@ theorem predicateFuzzyForAllCountingAtLeastThreeBaseCut_width_eq_zero_iff_decide
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCountingAtLeastThreeBaseCut
@@ -3518,7 +3518,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_intervalOfConsisten
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
@@ -3557,7 +3557,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_lower_eq_one_iff_pr
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
@@ -3602,7 +3602,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_upper_eq_zero_iff_p
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
@@ -3647,7 +3647,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_lower_eq_zero_iff_n
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
@@ -3693,7 +3693,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_upper_eq_one_iff_no
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut
@@ -3739,7 +3739,7 @@ theorem predicateFuzzyThereExistsCountingAtLeastThreeBaseCut_width_eq_zero_iff_d
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCountingAtLeastThreeBaseCut

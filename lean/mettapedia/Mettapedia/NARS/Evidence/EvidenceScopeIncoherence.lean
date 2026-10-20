@@ -74,6 +74,20 @@ variable {Statement : Type uStatement} {EvidenceId : Type uEvidence}
 def scope (belief : PathScopedBelief Statement EvidenceId) : Finset EvidenceId :=
   belief.path.sources
 
+/-- An unchecked candidate. The inference rule must establish equal statements,
+source disjointness, and the numerical interpretation before using it. -/
+noncomputable def revisionCandidate (first second : PathScopedBelief Statement EvidenceId) :
+    PathScopedBelief Statement EvidenceId where
+  statement := first.statement
+  truth := truthRevisionCore first.truth second.truth
+  path := { steps := first.path.steps ++ second.path.steps ++ [.revision first.statement]
+            sources := first.scope ∪ second.scope }
+
+/-- Choice retains one complete input occurrence, including its path. -/
+noncomputable def choiceCandidate (first second : PathScopedBelief Statement EvidenceId) :
+    PathScopedBelief Statement EvidenceId :=
+  if first.truth.c < second.truth.c then second else first
+
 /-- A path-scoped NARS belief exposes its retained evidence identifiers through
 the system-independent source-scope interface. -/
 instance instSourceScoped :
@@ -239,13 +253,8 @@ inductive EvidenceResolution where
 revision core.  The caller supplies the source-disjointness receipt. -/
 noncomputable def revise
     (beliefs : CompetingBeliefs (Statement := Statement) (EvidenceId := EvidenceId))
-    (_licensed : beliefs.RevisionLicensed) : PathScopedBelief Statement EvidenceId where
-  statement := beliefs.left.statement
-  truth := truthRevisionCore beliefs.left.truth beliefs.right.truth
-  path :=
-    { steps := beliefs.left.path.steps ++ beliefs.right.path.steps ++
-        [.revision beliefs.left.statement]
-      sources := SourceScope.merge beliefs.left.scope beliefs.right.scope }
+    (_licensed : beliefs.RevisionLicensed) : PathScopedBelief Statement EvidenceId :=
+  PathScopedBelief.revisionCandidate beliefs.left beliefs.right
 
 /-- The usual NARS overlap policy: retain the belief with greater confidence.
 Ties retain the left occurrence, making the operation deterministic while
@@ -253,7 +262,7 @@ preserving one original evidence body rather than manufacturing a sum. -/
 noncomputable def chooseMoreConfident
     (beliefs : CompetingBeliefs (Statement := Statement) (EvidenceId := EvidenceId)) :
     PathScopedBelief Statement EvidenceId :=
-  if beliefs.left.truth.c < beliefs.right.truth.c then beliefs.right else beliefs.left
+  PathScopedBelief.choiceCandidate beliefs.left beliefs.right
 
 /-- Reconcile two beliefs without double-counting: revise disjoint evidence
 bodies and use choice when their scopes overlap. -/
@@ -324,7 +333,7 @@ theorem overlapping_competition_chooses_direct :
       Mettapedia.Evidence.SourceScoped.Independent,
       Mettapedia.Evidence.SourceScope.Independent] using overlapping_scopes
   rw [reconcile_eq_chosen_of_overlap overlappingCompetition overlap]
-  norm_num [chooseMoreConfident, overlappingCompetition, directBelief, directTruth,
+  norm_num [chooseMoreConfident, PathScopedBelief.choiceCandidate, overlappingCompetition, directBelief, directTruth,
     overlappingDeductiveBelief, deductiveTruth, premiseTruth, truthDeduction]
 
 end PathWitness

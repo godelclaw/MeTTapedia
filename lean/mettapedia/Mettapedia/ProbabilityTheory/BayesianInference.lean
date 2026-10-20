@@ -1,3 +1,6 @@
+import Mettapedia.ProbabilityTheory.BayesianInference.BalancedConditioningControls
+import Mettapedia.ProbabilityTheory.BayesianInference.BalancedEventConditioning
+import Mettapedia.ProbabilityTheory.BayesianInference.EventConditioning
 import Mettapedia.ProbabilityTheory.BayesianInference.Basic
 import Mettapedia.ProbabilityTheory.BayesianInference.Variational
 import Mettapedia.ProbabilityTheory.BayesianInference.ExpectationBounds

@@ -10,7 +10,7 @@
       "semanticAuthority": ["Space.queryEquations", "Matching.matchAtoms", "Matching.mergeBindings", "Bindings.apply"],
       "determinism": "nondeterministic",
       "bindingsFlow": "mergeFromMatch",
-      "resultCases": ["match succeeds: template with pattern variables substituted, one result per match", "no match: Empty atom"],
+      "resultCases": ["match succeeds: template with pattern variables substituted, one result per match", "no match: internal Empty sentinel, reported as no user-visible results"],
       "errorCases": [],
       "mutatesSpace": false,
       "fixtures": [
@@ -23,35 +23,35 @@
       "head": "unify",
       "arity": 4,
       "argRoles": ["target-atom", "pattern", "success-body", "failure-body"],
-      "specConstructors": ["MinimalStep.unify_match", "MinimalStep.unify_no_match"],
+      "specConstructors": ["Spec.Eval.Minimal.CoreStepRel.unifySuccess", "Spec.Eval.Minimal.CoreStepRel.unifyNoMatch"],
       "semanticAuthority": ["Matching.matchAtoms", "Matching.mergeBindings", "Bindings.hasLoop", "Bindings.apply"],
       "determinism": "branchingTwoWay",
       "bindingsFlow": "mergeFromMatch",
       "resultCases": ["match succeeds: merged bindings applied to success-body", "match fails: failure-body with original input bindings"],
-      "errorCases": ["variable loop in merged bindings: filtered out (may yield no results)"],
+      "errorCases": ["variable loop in merged bindings: candidate refused; if none survive, use failure-body"],
       "mutatesSpace": false,
       "fixtures": [
       { "label": "unify: match succeeds, binds variable", "positive": true, "instructionAtom": "(unify (A B) ($x $y) (found $x $y) (not-found))", "expectedResults": ["(found A B)"] },
       { "label": "unify: no match, returns else branch", "positive": true, "instructionAtom": "(unify (A B) (C D) success failure)", "expectedResults": ["failure"] },
-      { "label": "unify: variable loop filtered", "positive": false, "instructionAtom": "(unify $x $y success failure)", "expectedResults": [] }
+      { "label": "unify: cyclic candidate refused, returns else branch", "positive": false, "instructionAtom": "(unify $x (f $x) success failure)", "expectedResults": ["failure"] }
       ]
     },
     {
       "head": "switch",
       "arity": 2,
-      "argRoles": ["scrutinee (already evaluated)", "branches ((pattern template) ...)"],
-      "specConstructors": ["MC_SwitchMinimal_Start", "MC_SwitchMinimal_Match", "MC_SwitchMinimal_NoMatch"],
-      "semanticAuthority": ["selectSwitchTemplate", "Matching.matchAtoms", "Matching.mergeBindings", "Bindings.hasLoop", "Bindings.apply"],
+      "argRoles": ["scrutinee under the declared input demand", "branches ((pattern template) ...)"],
+      "specConstructors": ["Spec.Eval.CallRel.equation", "Spec.Eval.Minimal.CoreStepRel.functionReturn", "Spec.Eval.Minimal.CoreStepRel.unifySuccess", "Spec.Eval.Minimal.CoreStepRel.unifyNoMatch"],
+      "semanticAuthority": ["authored stdlib switch, switch-minimal and switch-internal equations", "Spec.Eval.Minimal.CoreInvocationRel", "Spec.Eval.Steps.UnifyCandidateRel", "Spec.Eval.CallReturnRel"],
       "determinism": "nondeterministic",
       "bindingsFlow": "mergeFromMatch",
-      "resultCases": ["first matching branch: template with pattern variables substituted (may yield multiple results if match is nondeterministic)", "no matching branch: Empty"],
+      "resultCases": ["first surviving branch: materialize its template with the reached bindings", "switch-minimal: its Atom result demand holds the selected output", "switch: its ordinary return demand may interpret the selected output again", "no matching branch: internal Empty sentinel, reported as no user-visible results"],
       "errorCases": [],
       "mutatesSpace": false,
       "fixtures": [
       { "label": "switch: first match wins", "positive": true, "instructionAtom": "(switch a ((a ok) (b bad)))", "expectedResults": ["ok"] },
       { "label": "switch: variable pattern binds into template", "positive": true, "instructionAtom": "(switch z (($x (tag $x))))", "expectedResults": ["(tag z)"] },
-      { "label": "switch: no match → Empty", "positive": false, "instructionAtom": "(switch z ((a ok) (b bad)))", "expectedResults": ["Empty"] },
-      { "label": "switch-minimal: identical to switch", "positive": true, "instructionAtom": "(switch-minimal a ((a ok)))", "expectedResults": ["ok"] }
+      { "label": "switch: no match → no results", "positive": false, "instructionAtom": "(switch z ((a ok) (b bad)))", "expectedResults": [] },
+      { "label": "switch-minimal: selected Atom result", "positive": true, "instructionAtom": "(switch-minimal a ((a ok)))", "expectedResults": ["ok"] }
       ]
     },
     {
@@ -62,7 +62,7 @@
       "semanticAuthority": ["metta", "switchContract"],
       "determinism": "nondeterministic",
       "bindingsFlow": "mergeFromMatch",
-      "resultCases": ["scrutinee evaluates, then matching branch selected (via switch semantics)", "no matching branch: Empty"],
+      "resultCases": ["scrutinee evaluates, then matching branch selected (via switch semantics)", "no matching branch: internal Empty sentinel, reported as no user-visible results"],
       "errorCases": [],
       "mutatesSpace": false,
       "fixtures": [
@@ -73,49 +73,50 @@
     {
       "head": "chain",
       "arity": 3,
-      "argRoles": ["atom-to-eval", "variable", "template"],
-      "specConstructors": ["MinimalStep.chain", "MinimalStep.chain_empty"],
-      "semanticAuthority": ["EvalAtom", "Bindings.assign", "Bindings.apply"],
-      "determinism": "deterministic",
-      "bindingsFlow": "assignVariable",
-      "resultCases": ["eval succeeds (non-Empty): template with $var substituted, output bindings include $var assignment", "eval yields Empty: return Empty, output bindings from eval (no $var assignment)"],
+      "argRoles": ["minimal source", "local variable", "minimal continuation template"],
+      "specConstructors": ["Spec.Eval.Minimal.CoreStepRel.chain"],
+      "semanticAuthority": ["Spec.Eval.Minimal.CoreRunRel", "Spec.Type.Presentation.BindingTheory.BindingMaterializationRel", "Spec.Eval.Minimal.substituteName"],
+      "determinism": "nondeterministic",
+      "bindingsFlow": "fromNested",
+      "resultCases": ["each source result: materialize under its output bindings, substitute the local variable and run the minimal template", "source binding refinements are retained; the local binder is not exported", "Empty and NotReducible source sentinels are also substituted into the template", "only final Empty output is omitted at the observation boundary"],
       "errorCases": [],
       "mutatesSpace": false,
       "fixtures": [
       { "label": "chain: eval result substituted into template", "positive": true, "instructionAtom": "(chain x $v (tag $v))", "expectedResults": ["(tag x)"] },
-      { "label": "chain: eval yields Empty → return Empty", "positive": true, "instructionAtom": "(chain Empty $v (tag $v))", "expectedResults": ["Empty"] }
+      { "label": "chain: Empty source is substituted into the continuation", "positive": true, "instructionAtom": "(chain Empty $v (tag $v))", "expectedResults": ["(tag Empty)"] }
       ]
     },
     {
       "head": "collapse-bind",
       "arity": 1,
       "argRoles": ["atom (to evaluate and collect all results)"],
-      "specConstructors": ["MinimalStep.collapse_bind"],
-      "semanticAuthority": ["EvalAtom", "Bindings.toAtom", "Bindings.ofAtom_toAtom"],
+      "specConstructors": ["Spec.Eval.Minimal.CoreStepRel.collapseBind"],
+      "semanticAuthority": ["Spec.Eval.Minimal.MinimalResultRel", "Spec.Eval.Minimal.EvalEnumeration", "Spec.Eval.Minimal.MinimalEnumerationLaws", "Spec.Eval.Minimal.encodeResults", "Spec.Eval.Minimal.Services.bindingPayload"],
       "determinism": "deterministic",
       "bindingsFlow": "encodeBindings",
-      "resultCases": ["one or more results: expression of (<atom> <bindings.toAtom>) pairs", "no results: empty expression ()"],
+      "resultCases": ["one or more results: expression of (<atom> <opaque-bindings>) pairs", "no results: empty expression ()"],
       "errorCases": [],
       "mutatesSpace": false,
       "fixtures": [
-      { "label": "collapse-bind: single result with bindings encoded", "positive": true, "instructionAtom": "(collapse-bind x)", "expectedResults": ["((x (Bindings () ())))"] },
-      { "label": "collapse-bind: empty eval → empty expression", "positive": false, "instructionAtom": "(collapse-bind (match &self (= z $w) $w))", "expectedResults": ["()"] }
+      { "label": "collapse-bind: single result with bindings encoded", "positive": true, "instructionAtom": "(collapse-bind x)", "expectedResults": ["((x {  }))"] },
+      { "label": "collapse-bind: empty eval → empty expression", "positive": false, "instructionAtom": "(collapse-bind (eval (match &self (= z $w) $w)))", "expectedResults": ["()"] },
+      { "label": "collapse-bind: filters Empty branches", "positive": true, "instructionAtom": "(collapse-bind (eval (superpose (a Empty b))))", "expectedResults": ["((b {  }) (a {  }))"] }
       ]
     },
     {
       "head": "superpose-bind",
       "arity": 1,
       "argRoles": ["encoded-pairs (from collapse-bind output)"],
-      "specConstructors": ["MinimalStep.superpose_bind"],
-      "semanticAuthority": ["Bindings.ofAtom?", "Bindings.ofAtom_toAtom"],
+      "specConstructors": ["Spec.Eval.Minimal.CoreStepRel.superposeBind"],
+      "semanticAuthority": ["Spec.Eval.Minimal.encodeResults", "Spec.Match.Merge.MergeRel"],
       "determinism": "nondeterministic",
       "bindingsFlow": "restoreFromCollapse",
       "resultCases": ["one result per encoded pair: original (atom, bindings) restored", "empty input: no results"],
       "errorCases": [],
       "mutatesSpace": false,
       "fixtures": [
-      { "label": "superpose-bind: restores single pair", "positive": true, "instructionAtom": "(superpose-bind ((x (Bindings () ()))))", "expectedResults": ["x"] },
-      { "label": "superpose-bind: restores multiple pairs nondeterministically", "positive": true, "instructionAtom": "(superpose-bind ((a (Bindings () ())) (b (Bindings ((v a)) ()))))", "expectedResults": ["a", "b"] },
+      { "label": "superpose-bind: restores one collapsed alternative", "positive": true, "instructionAtom": "(chain (collapse-bind x) $collapsed (superpose-bind $collapsed))", "expectedResults": ["x"] },
+      { "label": "superpose-bind: restores multiple collapsed alternatives", "positive": true, "instructionAtom": "(chain (collapse-bind (superpose (a b))) $collapsed (superpose-bind $collapsed))", "expectedResults": ["b", "a"] },
       { "label": "superpose-bind: empty input → no results", "positive": false, "instructionAtom": "(superpose-bind ())", "expectedResults": [] }
       ]
     },
@@ -140,16 +141,16 @@
       "head": "function",
       "arity": 1,
       "argRoles": ["body (to evaluate until return)"],
-      "specConstructors": ["MinimalStep.function_return", "MinimalStep.function_no_return"],
-      "semanticAuthority": ["EvalAtom"],
-      "determinism": "deterministic",
-      "bindingsFlow": "passthrough",
-      "resultCases": ["body evaluates to (return <atom>): unwrap and return <atom>", "body does not produce (return ...): return (Error (function <body>) NoReturn)"],
+      "specConstructors": ["Spec.Eval.Minimal.CoreStepRel.functionReturn", "Spec.Eval.Minimal.CoreStepRel.functionNoReturn"],
+      "semanticAuthority": ["Spec.Eval.Minimal.CoreFunctionBodyRel", "Spec.Type.Presentation.BindingTheory.BindingMaterializationRel", "Spec.Eval.Minimal.functionTerminalResult"],
+      "determinism": "nondeterministic",
+      "bindingsFlow": "fromNested",
+      "resultCases": ["materialize every finished body result under its output bindings before classifying it", "an exposed embedded instruction resumes under the saved function frame", "a materialized (return <atom>) unwraps and returns <atom>", "body does not produce (return ...): blame the saved caller, or the terminal at the outermost boundary", "body returns Empty: no user-visible answer"],
       "errorCases": ["NoReturn: body reached a terminal form that is not (return <atom>)"],
       "mutatesSpace": false,
       "fixtures": [
       { "label": "function: return unwraps value", "positive": true, "instructionAtom": "(function (return ok))", "expectedResults": ["ok"] },
-      { "label": "function: no return → NoReturn error", "positive": false, "instructionAtom": "(function stuck)", "expectedResults": ["(Error (function stuck) NoReturn)"] }
+      { "label": "function: no return → NoReturn error", "positive": false, "instructionAtom": "(function (stuck))", "expectedResults": ["(Error (stuck) NoReturn)"] }
       ]
     },
     {
@@ -160,7 +161,7 @@
       "semanticAuthority": [],
       "determinism": "nondeterministic",
       "bindingsFlow": "passthrough",
-      "resultCases": ["non-empty expression: one result per element (nondeterministic)", "empty expression (): return Empty"],
+      "resultCases": ["non-empty expression: one result per element (nondeterministic)", "empty expression (): internal Empty sentinel, reported as no user-visible results"],
       "errorCases": [],
       "mutatesSpace": false,
       "fixtures": [
@@ -172,15 +173,15 @@
       "head": "eval",
       "arity": 1,
       "argRoles": ["atom (to evaluate one step)"],
-      "specConstructors": ["MinimalStep.eval"],
-      "semanticAuthority": ["EvalAtom"],
+      "specConstructors": ["Spec.Eval.Minimal.CoreStepRel.eval"],
+      "semanticAuthority": ["Spec.Eval.Minimal.RawInvocationRel", "Spec.Eval.Minimal.MinimalRunRel", "Spec.Type.Presentation.BindingTheory.BindingMaterializationRel", "Spec.Eval.NativeEmissionRel", "Spec.Eval.GroundedDispatch.bindingMode", "Spec.Eval.GroundedDispatch.valueProvenance"],
       "determinism": "nondeterministic",
       "bindingsFlow": "mergeFromMatch",
-      "resultCases": ["atom reduces: one or more result atoms with updated bindings", "atom is irreducible: returned unchanged"],
-      "errorCases": ["stack overflow (fuel exhaustion): atom returned unchanged"],
+      "resultCases": ["materialize the requested atom under the incoming bindings before invocation", "atom reduces: one or more result atoms with updated bindings", "producer binding mode determines whether native emissions remain raw or are materialized after merge", "equation emissions are materialized under their selected output bindings", "ordinary native emission: emitted function completes before the raw result is returned", "producer-completed native value: raw invocation retains the value without function execution", "atom is irreducible: NotReducible", "empty alternatives: internal Empty sentinel; final Empty output is omitted"],
+      "errorCases": ["runtime failure: structured Error result", "resource exhaustion: incomplete execution, not an unchanged semantic answer"],
       "mutatesSpace": false,
       "fixtures": [
-      { "label": "eval: symbol is irreducible", "positive": true, "instructionAtom": "(eval x)", "expectedResults": ["x"] },
+      { "label": "eval: symbol is irreducible", "positive": false, "instructionAtom": "(eval x)", "expectedResults": ["NotReducible"] },
       { "label": "eval: expression with equation reduces", "positive": true, "instructionAtom": "(eval (f a))", "expectedResults": ["b"] }
       ]
     },
@@ -188,7 +189,7 @@
       "head": "cons-atom",
       "arity": 2,
       "argRoles": ["head (atom)", "tail (expression)"],
-      "specConstructors": ["MinimalStep.cons_atom"],
+      "specConstructors": ["Spec.Eval.Minimal.CoreStepRel.consAtom"],
       "semanticAuthority": [],
       "determinism": "deterministic",
       "bindingsFlow": "passthrough",
@@ -204,7 +205,7 @@
       "head": "decons-atom",
       "arity": 1,
       "argRoles": ["expression (non-empty, to deconstruct)"],
-      "specConstructors": ["MinimalStep.decons_atom"],
+      "specConstructors": ["Spec.Eval.Minimal.CoreStepRel.deconsAtom"],
       "semanticAuthority": [],
       "determinism": "deterministic",
       "bindingsFlow": "passthrough",
@@ -220,22 +221,22 @@
       "head": "context-space",
       "arity": 0,
       "argRoles": [],
-      "specConstructors": ["MinimalStep.context_space"],
-      "semanticAuthority": ["Space.atoms"],
+      "specConstructors": ["Spec.Eval.Minimal.CoreStepRel.contextSpace"],
+      "semanticAuthority": ["Spec.Eval.Minimal.Services.contextPayload"],
       "determinism": "deterministic",
       "bindingsFlow": "passthrough",
-      "resultCases": ["always succeeds: expression containing all atoms in the current space"],
+      "resultCases": ["always succeeds: opaque grounded handle for the current space"],
       "errorCases": [],
       "mutatesSpace": false,
       "fixtures": [
-      { "label": "context-space: empty space", "positive": true, "instructionAtom": "(context-space)", "expectedResults": ["()"] }
+      { "label": "context-space: empty space", "positive": true, "instructionAtom": "(context-space)", "expectedResults": ["&self"] }
       ]
     },
     {
       "head": "call-native",
-      "arity": 2,
+      "arity": 3,
       "argRoles": ["op (executable grounded atom)", "args (expression of arguments)"],
-      "specConstructors": ["MinimalStep.call_native"],
+      "specConstructors": ["Spec.Eval.Minimal.CoreStepRel.callNative"],
       "semanticAuthority": ["GroundedDispatch.isExecutable", "GroundedDispatch.execute"],
       "determinism": "nondeterministic",
       "bindingsFlow": "passthrough",

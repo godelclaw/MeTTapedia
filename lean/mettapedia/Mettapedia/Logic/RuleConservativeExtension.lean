@@ -72,6 +72,23 @@ theorem extendRules_not_sameDerivability_of_new_nullary
   exact Derives.node [] conclusion (Or.inr additionalRule)
     (by intro premise premiseMem; cases premiseMem)
 
+/-- Two independently admissible rule packages over the same base judgment
+can be combined without adding theorems. This criterion concerns derivability,
+not termination or decidability of the union's operational conversion. -/
+theorem extendRules_union_sameDerivability_iff
+    (rules first second : List J → J → Prop) :
+    SameDerivability (extendRules rules (extendRules first second)) rules ↔
+      SameDerivability (extendRules rules first) rules ∧
+        SameDerivability (extendRules rules second) rules := by
+  simp only [extendRules_sameDerivability_iff]
+  constructor
+  · intro combined
+    exact ⟨fun premises conclusion rule => combined premises conclusion (Or.inl rule),
+      fun premises conclusion rule => combined premises conclusion (Or.inr rule)⟩
+  · rintro ⟨firstAdmissible, secondAdmissible⟩ premises conclusion rule
+    exact rule.elim (firstAdmissible premises conclusion)
+      (secondAdmissible premises conclusion)
+
 namespace ConservativeExtensionCanary
 
 inductive Judgment where

@@ -17,7 +17,7 @@ reference a precise, stable contract.
 namespace Mettapedia.PLN.InferenceControl.PremiseSelection
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality
 
 /-- Proof-facing default parameter bundle for a premise selector. -/

@@ -107,8 +107,9 @@ theorem raw_translation_comparison {generated : Generated} {model : Model genera
     {admitted : Pattern → Prop} (atoms : Atoms model bound leaves carrier sort admitted)
     {expression : Expression}
     (formed : Formed generated.logicFragment (leafCarriers leaves) (leafSorts leaves) carrier sort expression)
-    (source : Pattern) (domain : (model bound).sortDomain carrier sort source) :
-    Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation atoms.tests (translateRaw expression) source ↔
+    (source : Pattern) (domain : (model bound).sortDomain carrier sort source)
+    (spatial : Mettapedia.OSLF.NativeTypes.Decision.Spatial.SpatialTheory (theory generated bound carrier) := .empty _) :
+    Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation atoms.tests (translateRaw expression) spatial source ↔
       rawMeaning leaves expression source := by
   induction formed with
   | leaf index carried kinded => exact atoms.leaf_exact index carried kinded source domain
@@ -124,17 +125,18 @@ theorem translation_comparison {generated : Generated} {model : Model generated}
     {admitted : Pattern → Prop} (atoms : Atoms model bound leaves carrier sort admitted)
     {expression : Expression}
     (formed : Formed generated.logicFragment (leafCarriers leaves) (leafSorts leaves) carrier sort expression)
-    (source : Pattern) :
-    Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation atoms.tests (translate expression) source ↔
+    (source : Pattern)
+    (spatial : Mettapedia.OSLF.NativeTypes.Decision.Spatial.SpatialTheory (theory generated bound carrier) := .empty _) :
+    Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation atoms.tests (translate expression) spatial source ↔
       (model bound).sortDomain carrier sort source ∧ rawMeaning leaves expression source := by
   change (atoms.domain.predicate source ∧ _ ) ↔ _
   constructor
   · rintro ⟨within, holds⟩
     have domain := (atoms.domain_exact source).mp within
-    exact ⟨domain, (raw_translation_comparison atoms formed source domain).mp holds⟩
+    exact ⟨domain, (raw_translation_comparison atoms formed source domain spatial).mp holds⟩
   · rintro ⟨domain, holds⟩
     exact ⟨(atoms.domain_exact source).mpr domain,
-      (raw_translation_comparison atoms formed source domain).mpr holds⟩
+      (raw_translation_comparison atoms formed source domain spatial).mpr holds⟩
 
 theorem native_comparison {generated : Generated} {model : Model generated}
     (equations : EquationsInterpreted model) {bound : List TypeExpr} {leaves : LeafCodes generated bound}
@@ -142,10 +144,11 @@ theorem native_comparison {generated : Generated} {model : Model generated}
     {admitted : Pattern → Prop} (atoms : Atoms model bound leaves carrier sort admitted)
     {expression : Expression}
     (formed : Formed generated.logicFragment (leafCarriers leaves) (leafSorts leaves) carrier sort expression)
-    (source : Pattern) :
-    Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation atoms.tests (translate expression) source ↔
+    (source : Pattern)
+    (spatial : Mettapedia.OSLF.NativeTypes.Decision.Spatial.SpatialTheory (theory generated bound carrier) := .empty _) :
+    Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation atoms.tests (translate expression) spatial source ↔
       Native.denotation model equations bound leaves carrier sort expression source :=
-  (translation_comparison atoms formed source).trans
+  (translation_comparison atoms formed source spatial).trans
     (Native.denotation_comparison equations leafEquations formed source).symm
 
 def run {generated : Generated} {model : Model generated} (equations : EquationsInterpreted model)
@@ -156,7 +159,7 @@ def run {generated : Generated} {model : Model generated} (equations : Equations
     (formed : Formed generated.logicFragment (leafCarriers leaves) (leafSorts leaves) carrier sort expression)
     (source : Pattern) (budget : Nat) :
     Outcome (Native.denotation model equations bound leaves carrier sort expression source) :=
-  Outcome.map (native_comparison equations leafEquations atoms formed source)
+  Outcome.map (native_comparison equations leafEquations atoms formed source backend.spatial.theory)
     (Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.check backend atoms.tests (translate expression) source budget)
 
 theorem run_answer {generated : Generated} {model : Model generated} (equations : EquationsInterpreted model)

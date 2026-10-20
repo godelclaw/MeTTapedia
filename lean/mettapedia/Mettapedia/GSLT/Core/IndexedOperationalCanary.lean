@@ -117,7 +117,7 @@ private theorem firstGrowth_map : diagram.map firstGrowth =
   rw [firstGrowth_map]
   rfl
 
-private def sourceSemanticStep :
+private theorem sourceSemanticStep :
     SemanticStep sourceTheory sourceReady sourceDone :=
   semanticStep_mk SourceStep.finish
 
@@ -203,6 +203,94 @@ theorem no_stage_tag_transport_observer
   cases tagged
 
 #print axioms firstGrowth_routes_have_equal_length
+
+/-- Covered growth preserves and reflects every existential next-step native
+predicate, rather than only the particular exact-target positive fixture. -/
+theorem covered_growth_semanticDiamond
+    (predicate : Mettapedia.OSLF.Framework.GSLTTypeSynthesis.EquationPredicate targetTheory)
+    (state : SourceState) :
+    Mettapedia.OSLF.Framework.GSLTTypeSynthesis.semanticDiamond sourceTheory
+      (sourceTargetTranslation.toOperational.equationMap.pullback predicate) state ↔
+    sourceTargetTranslation.toOperational.equationMap.pullback
+      (Mettapedia.OSLF.Framework.GSLTTypeSynthesis.semanticDiamond targetTheory predicate) state :=
+  sourceTargetTranslation.semanticDiamond_iff predicate state
+
+/-- An actual extra target step satisfies a native predicate that the forward
+route cannot reflect. Equation and step preservation alone are insufficient. -/
+theorem escaping_native_type_not_reflected :
+    ∃ predicate : Mettapedia.OSLF.Framework.GSLTTypeSynthesis.EquationPredicate escapingTheory,
+      Mettapedia.OSLF.Framework.GSLTTypeSynthesis.semanticDiamond escapingTheory predicate
+        (embed SourceState.ready) ∧
+      ¬ Mettapedia.OSLF.Framework.GSLTTypeSynthesis.semanticDiamond sourceTheory
+        (escapingForwardTranslation.equationMap.pullback predicate) SourceState.ready := by
+  let predicate : Mettapedia.OSLF.Framework.GSLTTypeSynthesis.EquationPredicate escapingTheory :=
+    ⟨fun state => state = TargetState.unrelated, by
+      intro first last equal
+      change first = last at equal
+      subst last
+      rfl⟩
+  refine ⟨predicate, ?_, ?_⟩
+  · change Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltDiamond escapingTheory predicate.1 _
+    exact (Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltDiamond_spec
+      escapingTheory predicate.1 (embed SourceState.ready)).mpr
+      ⟨TargetState.unrelated, .escape, rfl⟩
+  · change ¬ Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltDiamond sourceTheory
+      (escapingForwardTranslation.equationMap.pullback predicate).1 _
+    intro accepted
+    obtain ⟨next, step, holds⟩ :=
+      (Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltDiamond_spec sourceTheory
+        (escapingForwardTranslation.equationMap.pullback predicate).1 SourceState.ready).mp accepted
+    cases step
+    change embed SourceState.done = TargetState.unrelated at holds
+    cases holds
+
+#print axioms covered_growth_semanticDiamond
+#print axioms escaping_native_type_not_reflected
+
+private inductive IncomingStep : TargetState → TargetState → Prop where
+  | image {source target : SourceState} : SourceStep source target →
+      IncomingStep (.image source) (.image target)
+  | incoming : IncomingStep .unrelated (.image .done)
+
+private def incomingTheory : GSLT := systemOf TargetState IncomingStep
+
+private def incomingCovered : CoveredTranslation sourceTheory incomingTheory where
+  mapTerm := embed
+  mapEquiv := fun equal => congrArg embed equal
+  cover :=
+    { mapStep := fun step => .image step
+      liftStep := by
+        intro source target step
+        cases step with
+        | image sourceStep => exact ⟨_, sourceStep, rfl⟩ }
+
+/-- Coverage of outgoing behavior does not cover new incoming predecessors.
+The right-adjoint past box therefore has a separate transport obligation. -/
+theorem outgoing_coverage_does_not_preserve_past_box :
+    ∃ predicate : Mettapedia.OSLF.Framework.GSLTTypeSynthesis.EquationPredicate incomingTheory,
+      Mettapedia.OSLF.Framework.GSLTTypeSynthesis.semanticBox sourceTheory
+        (incomingCovered.toOperational.equationMap.pullback predicate) SourceState.done ∧
+      ¬ Mettapedia.OSLF.Framework.GSLTTypeSynthesis.semanticBox incomingTheory predicate
+        (embed SourceState.done) := by
+  let predicate : Mettapedia.OSLF.Framework.GSLTTypeSynthesis.EquationPredicate incomingTheory :=
+    ⟨fun state => state = embed SourceState.ready, by
+      intro first last equal
+      change first = last at equal
+      subst last
+      rfl⟩
+  refine ⟨predicate, ?_, ?_⟩
+  · apply (Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltBox_spec sourceTheory
+      (incomingCovered.toOperational.equationMap.pullback predicate).1 SourceState.done).mpr
+    intro previous step
+    cases step
+    rfl
+  · intro accepted
+    have box := (Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltBox_spec incomingTheory
+      predicate.1 (embed SourceState.done)).mp accepted
+    have impossible := box TargetState.unrelated IncomingStep.incoming
+    cases impossible
+
+#print axioms outgoing_coverage_does_not_preserve_past_box
 #print axioms firstGrowth_has_generated_native_type
 #print axioms forward_translation_does_not_give_covered_translation
 #print axioms no_stage_tag_transport_observer

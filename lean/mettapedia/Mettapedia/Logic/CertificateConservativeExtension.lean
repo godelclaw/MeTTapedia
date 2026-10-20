@@ -1,5 +1,6 @@
 import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Algebra.BigOperators.Fin
 import Mathlib.Data.Fintype.Basic
 import Mettapedia.Logic.FinitaryRuleSystem.Tree
 import Mettapedia.Logic.RuleConservativeExtension
@@ -20,7 +21,7 @@ namespace Mettapedia.Logic
 
 open scoped BigOperators
 
-universe u v w
+universe u v w x
 
 variable {J : Type u}
 
@@ -278,6 +279,41 @@ theorem additionalRule_admissible
 
 end AdditionalRuleCertificateCompiler
 
+namespace AdditionalRuleCertificateCompiler
+
+/-- Combine two independently implemented certificate compilers with the same
+base. The additional-rule tag selects the compiler and its actual local
+budget. Complete mixed certificates are then handled by `compileAccepted`.
+This requires both compilers to target the original base, rather than assume
+the soundness of each other's extensions. -/
+def combine {rules first second : List J → J → Prop}
+    {base : RuleWitness.{u, v} rules}
+    {firstInterface : RuleWitness.{u, w} first}
+    {secondInterface : RuleWitness.{u, x} second}
+    (firstCompiler : AdditionalRuleCertificateCompiler base firstInterface)
+    (secondCompiler : AdditionalRuleCertificateCompiler base secondInterface) :
+    AdditionalRuleCertificateCompiler base (firstInterface.sum secondInterface) where
+  overhead
+    | .inl witness => firstCompiler.overhead witness
+    | .inr witness => secondCompiler.overhead witness
+  compileWithBound witness conclusion premises accepted children :=
+    match witness with
+    | .inl witness => firstCompiler.compileWithBound witness conclusion premises accepted children
+    | .inr witness => secondCompiler.compileWithBound witness conclusion premises accepted children
+
+/-- A mixed package inherits the exact theorem-preservation law from the
+computed certificate elimination, with the same base for both features. -/
+theorem combine_sameDerivability {rules first second : List J → J → Prop}
+    {base : RuleWitness.{u, v} rules}
+    {firstInterface : RuleWitness.{u, w} first}
+    {secondInterface : RuleWitness.{u, x} second}
+    (firstCompiler : AdditionalRuleCertificateCompiler base firstInterface)
+    (secondCompiler : AdditionalRuleCertificateCompiler base secondInterface) :
+    SameDerivability (extendRules rules (extendRules first second)) rules :=
+  (firstCompiler.combine secondCompiler).sameDerivability
+
+end AdditionalRuleCertificateCompiler
+
 namespace ConservativeExtensionCanary
 
 inductive BaseRuleWitness where
@@ -494,6 +530,99 @@ theorem compiledShortcut_nodeCount_le_three :
     compiledShortcut.nodeCount ≤ 3 := by
   rw [← shortcutSource_compilationBudget]
   exact compiledShortcut_nodeCount_le_budget
+
+/-- A second, distinct feature removes an explicit identity inference at
+`c`. It has zero local overhead and retains its submitted child's evidence. -/
+inductive IdentityRule : List Judgment → Judgment → Prop where
+  | c : IdentityRule [.c] .c
+
+def identityInterface : RuleWitness IdentityRule where
+  W := Unit
+  isInstance _ premises conclusion := decide (premises = [.c] ∧ conclusion = .c)
+  sound _ premises conclusion accepted := by
+    simp only [decide_eq_true_eq] at accepted
+    rcases accepted with ⟨rfl, rfl⟩
+    exact .c
+  complete _ _ rule := by cases rule; exact ⟨(), by decide⟩
+
+def identityCompiler : AdditionalRuleCertificateCompiler baseRuleInterface identityInterface where
+  overhead _ _ _ := 0
+  compileWithBound {n} _ conclusion premises accepted children := by
+    simp only [identityInterface, decide_eq_true_eq] at accepted
+    rcases accepted with ⟨premisesEq, conclusionEq⟩
+    subst conclusion
+    have lengthEq := congrArg List.length premisesEq
+    simp only [List.length_ofFn, List.length_singleton] at lengthEq
+    subst n
+    have premisesFunctionEq : premises = fun _ : Fin 1 => Judgment.c := by
+      apply List.ofFn_injective
+      simpa using premisesEq
+    subst premises
+    exact ⟨children 0, by simp⟩
+
+def mixedInterface := baseRuleInterface.sum (shortcutRuleInterface.sum identityInterface)
+
+/-- A complete source tree uses the shortcut inside the identity feature.
+Both tags must be handled by the combined compiler. -/
+def mixedSource : AcceptedCertificate mixedInterface Judgment.c :=
+  let axiomCertificate := AcceptedCertificate.node mixedInterface (.inl .axiomA) Judgment.a
+    (fun i : Fin 0 => Fin.elim0 i) (by decide) (fun i => Fin.elim0 i)
+  let shortcut := AcceptedCertificate.node mixedInterface (.inr (.inl .aToC)) Judgment.c
+    (fun _ : Fin 1 => Judgment.a) (by decide) (fun _ => axiomCertificate)
+  AcceptedCertificate.node mixedInterface (.inr (.inr ())) Judgment.c
+    (fun _ : Fin 1 => Judgment.c) (by decide) (fun _ => shortcut)
+
+def compiledMixed : AcceptedCertificate baseRuleInterface Judgment.c :=
+  (shortcutCertificateCompiler.combine identityCompiler).compileAccepted
+    mixedSource.certificate mixedSource.accepted
+
+theorem mixed_budget :
+    (shortcutCertificateCompiler.combine identityCompiler).compilationBudget
+      mixedSource.certificate = 3 := by decide
+
+private def minimumNodes : Judgment → Nat
+  | .a => 1
+  | .b => 2
+  | .c => 3
+  | .d => 4
+
+private theorem minimumNodes_le (certificate : Derivation Judgment baseRuleInterface.W)
+    (accepted : certificate.valid baseRuleInterface = true) :
+    minimumNodes certificate.concl ≤ certificate.nodeCount := by
+  induction certificate with
+  | node conclusion witness n children ih =>
+      simp only [Derivation.valid, Bool.and_eq_true, List.all_eq_true,
+        List.forall_mem_ofFn_iff, id] at accepted
+      have rule := baseRuleInterface.sound witness
+        (List.ofFn fun i => (children i).concl) conclusion accepted.1
+      have localBound : ∀ premises conclusion, BaseRule premises conclusion →
+          minimumNodes conclusion ≤ 1 + (premises.map minimumNodes).sum := by
+        intro premises conclusion rule
+        cases rule <;> decide
+      have bound := localBound _ _ rule
+      simp only [List.map_ofFn, List.sum_ofFn] at bound
+      exact bound.trans (Nat.add_le_add_left
+        (Finset.sum_le_sum fun i _ => ih i (accepted.2 i)) 1)
+
+set_option backward.isDefEq.respectTransparency false in
+/-- Both added features are actually eliminated; the result is a base proof
+of `c`, whose minimum possible tree size is three nodes. -/
+theorem compiledMixed_count : compiledMixed.nodeCount = 3 := by
+  apply Nat.le_antisymm
+  · have bound := (shortcutCertificateCompiler.combine identityCompiler).compileAccepted_nodeCount_le
+      mixedSource.certificate mixedSource.accepted
+    simpa only [compiledMixed, mixed_budget] using bound
+  · have bound := minimumNodes_le compiledMixed.certificate compiledMixed.accepted
+    rw [compiledMixed.concludes] at bound
+    exact bound
+
+theorem combined_newFact_forbidden :
+    ¬ Nonempty (AdditionalRuleCertificateCompiler baseRuleInterface
+      (shortcutRuleInterface.sum newFactRuleInterface)) := by
+  rintro ⟨compiler⟩
+  have separately := (extendRules_union_sameDerivability_iff
+    BaseRule ShortcutRule NewFactRule).1 compiler.sameDerivability
+  exact newFact_not_sameDerivability separately.2
 
 end ConservativeExtensionCanary
 

@@ -24,10 +24,10 @@ open scoped ENNReal
 
 open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.TruthValues.PLNIndefiniteTruth
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 
 /-! ## Factoring through a statistic -/
 

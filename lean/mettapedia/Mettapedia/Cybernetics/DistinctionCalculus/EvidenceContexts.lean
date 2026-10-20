@@ -198,7 +198,7 @@ def gain (v w : PBit R) : PBit R :=
 
 /-! ### The real evidence square inside the library's evidence quantale -/
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit (pTrue pFalse pBoth pNeither)
 
 /-- A real p-bit as library evidence: both coordinates as extended

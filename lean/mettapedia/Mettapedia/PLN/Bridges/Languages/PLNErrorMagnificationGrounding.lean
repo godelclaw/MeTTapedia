@@ -20,8 +20,8 @@ It also internalizes the double-damping bug gap as a threshold-separation theore
 namespace Mettapedia.PLN.Bridges.Languages.PLNErrorMagnificationGrounding
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.TruthValues.PLNBugAnalysis
 open Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
 open Mettapedia.OSLF.Framework.EvidenceSemantics
@@ -47,7 +47,7 @@ theorem WMQueryEq.to_queryConfidence
       queryConfidence (State := State) (Query := Query) κ W q₂ := by
   simpa [queryConfidence] using
     congrArg ENNReal.toReal
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.WMQueryEq.to_queryConfidence
+      (Mettapedia.PLN.WorldModel.WMQueryEq.to_queryConfidence
         (State := State) (Query := Query) hEq κ W)
 
 /-- Query equivalence transports confidence-threshold judgments. -/
@@ -162,7 +162,7 @@ theorem WMQueryEqSigma.to_queryConfidence
       queryConfidenceSigma (State := State) (Srt := Srt) (Query := Query) κ W q₂ := by
   simpa [queryConfidenceSigma] using
     congrArg ENNReal.toReal
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMQueryEqSigma.to_queryConfidence
+      (Mettapedia.PLN.WorldModel.WorldModelSigma.WMQueryEqSigma.to_queryConfidence
         (State := State) (Srt := Srt) (Query := Query) hEq κ W)
 
 /-- Typed query equivalence transports confidence-threshold judgments. -/

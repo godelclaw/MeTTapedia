@@ -131,7 +131,7 @@ variable {Program : Type uP} {Target : Type uT} {Lineage : Type uL}
 variable [DecidableEq Program] [DecidableEq Target]
 
 abbrev PLNBinaryEvidence :=
-  Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+  Mettapedia.PLN.Evidence.BinaryEvidence
 
 def packetExperimentChannel :
     ExperimentChannel (SourcePacket Program Target Lineage) (Program × Target) :=
@@ -410,9 +410,6 @@ structure PacketKey where
 
 abbrev State := Multiset PacketKey
 abbrev Query := PacketKey
-
-noncomputable instance : EvidenceType State :=
-  Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType PacketKey
 
 noncomputable instance : AdditiveWorldModel State Query ℕ where
   extract state query := state.count query

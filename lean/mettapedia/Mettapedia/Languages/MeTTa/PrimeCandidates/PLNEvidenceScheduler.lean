@@ -22,7 +22,7 @@ namespace Mettapedia.Languages.MeTTa.PrimeCandidates.PLNEvidenceScheduler
 
 open Mettapedia.Languages.MeTTa.PrimeCandidates.TypedScheduler
 open Mettapedia.PLN.Bridges.GSLT.EvidenceWeightedScheduler
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 variable {Origin Local Resume Rule Value StableFault RetryableFault Effect : Type}
 

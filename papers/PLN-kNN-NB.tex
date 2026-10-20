@@ -96,7 +96,7 @@ It is forwarded unchanged by \lid{nuPLN.power} and
 layer over the same \(E=(n^+,n^-)\) carrier.
 Its mathematical role is justified by Lean theorems
 \lid{Evidence.toOdds_power_rpow} and \lid{Evidence.toLogOdds_power_mul}
-(\lpath{Mettapedia/Logic/EvidenceQuantale.lean}):
+(\lpath{Mettapedia/PLN/Evidence/BinaryEvidence.lean}):
 \[
 \log\mathrm{odds}(\mathrm{power}(E,w)) = w\cdot \log\mathrm{odds}(E).
 \]
@@ -394,7 +394,7 @@ Abbreviation: \texttt{EB} = \lpath{ExternalBayesianity.lean}.
       (\lpath{PriorNB.lean}).
 \end{itemize}
 
-\paragraph{Evidence-algebra laws (in \lpath{EvidenceQuantale.lean}).}
+\paragraph{Evidence-algebra laws (in \lpath{BinaryEvidence.lean}).}
 Regraduation: \lid{Evidence.toLogOdds_power_mul},
 \lid{Evidence.toOdds_power_rpow}.
 Round-trip canaries: \lid{Evidence.power_power_inv},
@@ -689,15 +689,15 @@ Abbreviation: \texttt{M/L/} = \texttt{Mettapedia/Logic/}.
 \textbf{Module} & \textbf{Contents} \\
 \midrule
 \endhead
-\lpath{M/L/EvidenceQuantale.lean}
+\lpath{M/PLN/Evidence/BinaryEvidence.lean}
   & Evidence carrier, semiring/quantale laws, odds/log-odds and power laws \\
-\lpath{M/PLN/Core/PLNCore.lean}
+\lpath{M/PLN.lean}
   & Curated top-level import path for the theorem-complete PLN stack \\
 \lpath{M/PLN/InferenceControl/PremiseSelection/KNN.lean}
   & General k-NN definitions; MaSh instance \\
 \lpath{M/PLN/InferenceControl/PremiseSelection/KNN_PLNBridge.lean}
   & PLN--k-NN bridge; paper-form equivalence \\
-\lpath{M/L/PLNBayesNetInference.lean}
+\lpath{M/PLN/WorldModel/BayesNet/PLNBayesNetInference.lean}
   & PLN NB bridge; strength = NB posterior \\
 \lpath{M/PLN/InferenceControl/PremiseSelection/Fusion.lean}
   & Fusion via revision; normalization \\
@@ -712,7 +712,7 @@ Abbreviation: \texttt{M/L/} = \texttt{Mettapedia/Logic/}.
   & Prior-NB composition; canonical aliases \\
 \lpath{M/PLN/InferenceControl/PremiseSelection/LocalMixtureBridge.lean}
   & Finite local-mixture TV bounds \\
-\lpath{M/L/DiaconisFreedmanFinite.lean}
+\lpath{M/ProbabilityTheory/Exchangeability/DiaconisFreedmanFinite.lean}
   & Base collision bound \\
 \lpath{M/PLN/InferenceControl/PremiseSelection/Coverage.lean}
   & Submodular coverage \\

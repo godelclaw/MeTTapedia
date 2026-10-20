@@ -1,11 +1,19 @@
 import Mettapedia.Languages.MeTTa.OSLFCore.Atomspace
 import Mettapedia.Languages.MeTTa.Translation.HEPeTTaTranslateStableCommon
+import Mettapedia.Languages.MeTTa.Translation.HEPeTTaSound
+import Mettapedia.Languages.MeTTa.HE.RecursiveExecution
 
 /-!
 # HE↔PeTTa Operational Bridge Fragments
 
 Small-step/trace bridge relations for the currently theorem-backed sequential
 state fragment and the shared atomspace-handle fragment.
+
+The pure constructor-call fragment constructs paths of the retained HE
+machine and completed runs of the PeTTa machine from independent source
+clause/body derivations. A fixed equation traversal preserves the full answer
+list. The public completed bag forgets that order and retains multiplicity;
+its storage-permutation law is restricted to this pure fragment.
 
 The key scope boundary is honest:
 
@@ -742,3 +750,216 @@ theorem importModule_translatePeTTa_commutes
   rw [translatePeTTa_stableCommonModule_id atoms s hmod]
 
 end Mettapedia.Languages.MeTTa.Translation
+
+namespace Mettapedia.Languages.MeTTa.Translation.PureConstructor
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.ProcessCalculi
+open PeTTa.SpaceSemantics (Program)
+open private noForeign from Mettapedia.Languages.MeTTa.Translation.HEPeTTaSound
+
+/-- General finite recursive source work constructs both maintained machine
+executions, including nested argument alternatives and recursive clause
+bodies. The source tree, not a fixed evaluation bound, supplies completion. -/
+theorem Evaluation.recursive_machine_pair {program : Program} {bindings : MORK.Subst}
+    {expression : Atom} {answers : List Atom}
+    (source : Evaluation program bindings expression answers) (programCode : CodeProgram program)
+    (plain : program.declarations = []) (policy : HE.Spec.Eval.Completed.Policy)
+    (live : List Atom) (scope : List String) (frame : HE.Spec.Eval.Completed.Frame)
+    (input : HE.Spec.Eval.Entry.Value) (code : CodeRel program [] input)
+    (image : input.erase = MORK.applySubst bindings expression) (state : PeTTa.Effects.State) :
+    ∃ results, HE.RecursiveMachine.Contextual.Steps noForeign HE.Spec.Eval.Completed.rawLookup policy
+        (HE.RecursiveTasks.Contextual.Configuration.initial (equationSpace program)
+          (.atom live scope input Atom.undefinedType frame))
+        ⟨equationSpace program,.returning [],[],results⟩ ∧
+      results.map (fun result => result.1.erase) = answers ∧
+      (∀ result ∈ results, RecursiveTransport.SafeResult program result) ∧
+      (∀ result ∈ results, HE.Spec.Bindings.ScopeObservation.BindingTheoryEquivAt
+        (HE.EquationScope.visibleNames live input.erase frame.bindings) frame.bindings result.2.bindings) ∧
+      ∃ fuel, PeTTa.Eval.run program fuel {state,control := .evaluate bindings expression} =
+        .complete state answers [] [] := by
+  obtain ⟨results,completed,erased,safe⟩ :=
+    RecursiveTransport.he_evaluation source programCode plain policy live scope frame input code image
+  exact ⟨results,(HE.RecursiveExecution.Contextual.task_source_iff_finished
+    (dispatch := noForeign) (lookup := HE.Spec.Eval.Completed.rawLookup) (policy := policy)
+    (equationSpace program) (.atom live scope input Atom.undefinedType frame) results).mp completed,
+    erased,safe,
+    RecursiveTransport.he_evaluation_caller_observations source programCode plain policy live scope frame input code image completed,
+    (PeTTa.Eval.completed_run_iff_derivation _ _ _ _ _ _).mpr (source.petta_source plain state)⟩
+
+/-- For the same fixed equation traversal, every completed HE answer list
+agrees with the actual PeTTa machine, in both directions. This stronger
+presentation law does not make list order the public HE answer observer.
+The independent finite source tree supplies admission for this fragment. -/
+theorem Evaluation.recursive_machine_observation_iff {program : Program} {bindings : MORK.Subst}
+    {expression : Atom} {answers : List Atom}
+    (source : Evaluation program bindings expression answers) (programCode : CodeProgram program)
+    (plain : program.declarations = []) (policy : HE.Spec.Eval.Completed.Policy)
+    (live : List Atom) (scope : List String) (frame : HE.Spec.Eval.Completed.Frame)
+    (input : HE.Spec.Eval.Entry.Value) (code : CodeRel program [] input)
+    (image : input.erase = MORK.applySubst bindings expression) (state : PeTTa.Effects.State)
+    (observed : List Atom) :
+    (∃ results, HE.RecursiveMachine.Contextual.Steps noForeign HE.Spec.Eval.Completed.rawLookup policy
+        (HE.RecursiveTasks.Contextual.Configuration.initial (equationSpace program)
+          (.atom live scope input Atom.undefinedType frame))
+        ⟨equationSpace program,.returning [],[],results⟩ ∧
+      results.map (fun result => result.1.erase) = observed) ↔
+    ∃ fuel, PeTTa.Eval.run program fuel {state,control := .evaluate bindings expression} =
+      .complete state observed [] [] := by
+  constructor
+  · rintro ⟨results,path,erased⟩
+    have completed := (HE.RecursiveExecution.Contextual.task_source_iff_finished
+      (dispatch := noForeign) (lookup := HE.Spec.Eval.Completed.rawLookup) (policy := policy)
+      (equationSpace program) (.atom live scope input Atom.undefinedType frame) results).mpr path
+    have actual := RecursiveTransport.he_evaluation_exact source programCode plain policy live scope frame input code image completed
+    exact (source.petta_completed_iff plain state state observed [] []).mpr
+      ⟨rfl,erased.symm.trans actual.1,rfl,rfl⟩
+  · intro completed
+    have same := ((source.petta_completed_iff plain state state observed [] []).mp completed).2.1
+    obtain ⟨results,path,erased,_safe,_bindings,_petta⟩ := source.recursive_machine_pair programCode plain policy live scope frame input code image state
+    exact ⟨results,path,erased.trans same.symm⟩
+
+/-- Completed public HE answers are a bag. The retained path and source
+completion remain explicit; an unfinished prefix cannot certify this view. -/
+theorem Evaluation.recursive_machine_bag_iff_source {program : Program} {bindings : MORK.Subst}
+    {expression : Atom} {answers : List Atom}
+    (source : Evaluation program bindings expression answers) (programCode : CodeProgram program)
+    (plain : program.declarations = []) (policy : HE.Spec.Eval.Completed.Policy)
+    (live : List Atom) (scope : List String) (frame : HE.Spec.Eval.Completed.Frame)
+    (input : HE.Spec.Eval.Entry.Value) (code : CodeRel program [] input)
+    (image : input.erase = MORK.applySubst bindings expression) (observed : Multiset Atom) :
+    (∃ results, HE.RecursiveMachine.Contextual.Steps noForeign HE.Spec.Eval.Completed.rawLookup policy
+        (HE.RecursiveTasks.Contextual.Configuration.initial (equationSpace program)
+          (.atom live scope input Atom.undefinedType frame))
+        ⟨equationSpace program,.returning [],[],results⟩ ∧
+      (results.map (fun result => result.1.erase) : Multiset Atom) = observed) ↔
+    (answers : Multiset Atom) = observed := by
+  constructor
+  · rintro ⟨results,path,observed⟩
+    have completed := (HE.RecursiveExecution.Contextual.task_source_iff_finished
+      (dispatch := noForeign) (lookup := HE.Spec.Eval.Completed.rawLookup) (policy := policy)
+      (equationSpace program) (.atom live scope input Atom.undefinedType frame) results).mpr path
+    have exactAnswers := (RecursiveTransport.he_evaluation_exact source programCode plain policy
+      live scope frame input code image completed).1
+    simpa only [exactAnswers] using observed
+  · intro observed
+    obtain ⟨results,path,erased,_safe,_bindings,_petta⟩ :=
+      source.recursive_machine_pair programCode plain policy live scope frame input code image PeTTa.Effects.empty
+    exact ⟨results,path,by simpa only [erased] using observed⟩
+
+/-- The HE bag agrees with the bag view of a completed PeTTa traversal.
+PeTTa's retained ordered execution is still present on the right. -/
+theorem Evaluation.recursive_machine_bag_iff {program : Program} {bindings : MORK.Subst}
+    {expression : Atom} {answers : List Atom}
+    (source : Evaluation program bindings expression answers) (programCode : CodeProgram program)
+    (plain : program.declarations = []) (policy : HE.Spec.Eval.Completed.Policy)
+    (live : List Atom) (scope : List String) (frame : HE.Spec.Eval.Completed.Frame)
+    (input : HE.Spec.Eval.Entry.Value) (code : CodeRel program [] input)
+    (image : input.erase = MORK.applySubst bindings expression) (state : PeTTa.Effects.State)
+    (observed : Multiset Atom) :
+    (∃ results, HE.RecursiveMachine.Contextual.Steps noForeign HE.Spec.Eval.Completed.rawLookup policy
+        (HE.RecursiveTasks.Contextual.Configuration.initial (equationSpace program)
+          (.atom live scope input Atom.undefinedType frame))
+        ⟨equationSpace program,.returning [],[],results⟩ ∧
+      (results.map (fun result => result.1.erase) : Multiset Atom) = observed) ↔
+    ∃ fuel answers, PeTTa.Eval.run program fuel {state,control := .evaluate bindings expression} =
+      .complete state answers [] [] ∧ (answers : Multiset Atom) = observed := by
+  constructor
+  · rintro ⟨results,path,observed⟩
+    obtain ⟨fuel,completed⟩ := (source.recursive_machine_observation_iff programCode plain policy
+      live scope frame input code image state (results.map (fun result => result.1.erase))).mp
+        ⟨results,path,rfl⟩
+    exact ⟨fuel,_,completed,observed⟩
+  · rintro ⟨fuel,answers,completed,observed⟩
+    obtain ⟨results,path,erased⟩ := (source.recursive_machine_observation_iff programCode plain policy
+      live scope frame input code image state answers).mpr ⟨fuel,completed⟩
+    exact ⟨results,path,by simpa only [erased] using observed⟩
+
+/-- Permuting stored equation copies preserves every completed HE answer
+bag on the declared recursive pure fragment. The source proof transports
+finite completion rather than assuming the reordered computation terminates.
+Typed selection and effectful schedules are outside this law. -/
+theorem Evaluation.recursive_machine_storage_permutation {program other : Program}
+    {bindings : MORK.Subst} {expression : Atom} {answers : List Atom}
+    (source : Evaluation program bindings expression answers) (programCode : CodeProgram program)
+    (same : program.equations.Perm other.equations)
+    (plain : program.declarations = []) (otherPlain : other.declarations = [])
+    (policy : HE.Spec.Eval.Completed.Policy) (live : List Atom) (scope : List String)
+    (frame : HE.Spec.Eval.Completed.Frame) (input : HE.Spec.Eval.Entry.Value)
+    (code : CodeRel program [] input) (image : input.erase = MORK.applySubst bindings expression)
+    (observed : Multiset Atom) :
+    (∃ results, HE.RecursiveMachine.Contextual.Steps noForeign HE.Spec.Eval.Completed.rawLookup policy
+        (HE.RecursiveTasks.Contextual.Configuration.initial (equationSpace program)
+          (.atom live scope input Atom.undefinedType frame))
+        ⟨equationSpace program,.returning [],[],results⟩ ∧
+      (results.map (fun result => result.1.erase) : Multiset Atom) = observed) ↔
+    (∃ results, HE.RecursiveMachine.Contextual.Steps noForeign HE.Spec.Eval.Completed.rawLookup policy
+        (HE.RecursiveTasks.Contextual.Configuration.initial (equationSpace other)
+          (.atom live scope input Atom.undefinedType frame))
+        ⟨equationSpace other,.returning [],[],results⟩ ∧
+      (results.map (fun result => result.1.erase) : Multiset Atom) = observed) := by
+  obtain ⟨otherAnswers,⟨otherSource⟩,reordered⟩ := source.perm_program same
+  rw [source.recursive_machine_bag_iff_source programCode plain policy live scope frame input code image,
+    otherSource.recursive_machine_bag_iff_source (programCode.perm_program same) otherPlain policy
+      live scope frame input (code.perm_program same) image]
+  have sameBag : (answers : Multiset Atom) = (otherAnswers : Multiset Atom) := Quot.sound reordered
+  rw [sameBag]
+
+/-- Every completed path of the admitted recursive HE machine preserves
+the caller's declared binding observer, not only its erased answers. -/
+theorem Evaluation.recursive_machine_caller_observations {program : Program} {bindings : MORK.Subst}
+    {expression : Atom} {answers : List Atom}
+    (source : Evaluation program bindings expression answers) (programCode : CodeProgram program)
+    (plain : program.declarations = []) (policy : HE.Spec.Eval.Completed.Policy)
+    (live : List Atom) (scope : List String) (frame : HE.Spec.Eval.Completed.Frame)
+    (input : HE.Spec.Eval.Entry.Value) (code : CodeRel program [] input)
+    (image : input.erase = MORK.applySubst bindings expression)
+    {results : List HE.Spec.Eval.Completed.Result}
+    (path : HE.RecursiveMachine.Contextual.Steps noForeign HE.Spec.Eval.Completed.rawLookup policy
+      (HE.RecursiveTasks.Contextual.Configuration.initial (equationSpace program)
+        (.atom live scope input Atom.undefinedType frame))
+      ⟨equationSpace program,.returning [],[],results⟩) :
+    ∀ result ∈ results, HE.Spec.Bindings.ScopeObservation.BindingTheoryEquivAt
+      (HE.EquationScope.visibleNames live input.erase frame.bindings) frame.bindings result.2.bindings := by
+  have completed := (HE.RecursiveExecution.Contextual.task_source_iff_finished
+    (dispatch := noForeign) (lookup := HE.Spec.Eval.Completed.rawLookup) (policy := policy)
+    (equationSpace program) (.atom live scope input Atom.undefinedType frame) results).mpr path
+  exact RecursiveTransport.he_evaluation_caller_observations source programCode plain policy live scope frame input code image completed
+
+/-- Completed common source work constructs both maintained machine
+executions. The HE path retains the actual logical caller and publication
+history; the PeTTa run preserves the whole pure world and ordered answers. -/
+theorem ClauseScan.passive_machine_pair {program : Program} {head : String}
+    {values : List Atom} {selected : List ClauseWork} {answers : List Atom}
+    (source : ClauseScan head values 0 program.equations selected)
+    (bodies : Bodies program selected answers) (plain : program.declarations = [])
+    (range : RangeRestricted program) (defined : DefinedHead program head) (nonempty : selected ≠ [])
+    (valueData : ∀ value ∈ values, Value program value)
+    (safeData : ∀ value ∈ values, NoErrorSymbol value)
+    (closed : HE.Spec.Type.Presentation.TypeSubst.typeVars (.expression (.symbol head::values)) = [])
+    (ground : MORK.isGroundAtom (.expression (.symbol head::values)) = true)
+    (passive : ∀ item ∈ selected, Value program (MORK.applySubst item.2.1 item.2.2) ∧
+      NoErrorSymbol (MORK.applySubst item.2.1 item.2.2))
+    (policy : HE.Spec.Eval.Completed.Policy) (live : List Atom) (scope : List String)
+    (frame : HE.Spec.Eval.Completed.Frame) (state : PeTTa.Effects.State) :
+    ∃ results, HE.RecursiveMachine.Contextual.Steps noForeign HE.Spec.Eval.Completed.rawLookup policy
+        (HE.RecursiveTasks.Contextual.Configuration.initial (equationSpace program)
+          (.atom live scope (HE.Spec.Eval.Entry.Value.ofAtom (.expression (.symbol head::values)))
+            Atom.undefinedType frame))
+        ⟨equationSpace program,.returning [],[],results⟩ ∧
+      results.map (fun result => result.1.erase) = answers ∧
+      (∀ result ∈ results, HE.Spec.Bindings.ScopeObservation.BindingTheoryEquivAt
+        (HE.EquationScope.visibleNames (Atom.undefinedType::live)
+          (.expression (.symbol head::values)) frame.bindings) frame.bindings result.2.bindings) ∧
+      ∃ fuel, PeTTa.Eval.run program fuel
+        {state,control := .evaluate [] (.expression (.symbol head::values))} =
+        .complete state answers [] [] := by
+  obtain ⟨results,he,erased,retained,petta⟩ := source.passive_completed_pair bodies plain range defined nonempty
+    valueData safeData closed ground passive policy live scope frame state
+  exact ⟨results,(HE.RecursiveExecution.Contextual.task_source_iff_finished
+    (dispatch := noForeign) (lookup := HE.Spec.Eval.Completed.rawLookup) (policy := policy)
+    (equationSpace program) (.atom live scope
+      (HE.Spec.Eval.Entry.Value.ofAtom (.expression (.symbol head::values))) Atom.undefinedType frame) results).mp he,
+    erased,retained,(PeTTa.Eval.completed_run_iff_derivation _ _ _ _ _ _).mpr petta⟩
+
+end Mettapedia.Languages.MeTTa.Translation.PureConstructor

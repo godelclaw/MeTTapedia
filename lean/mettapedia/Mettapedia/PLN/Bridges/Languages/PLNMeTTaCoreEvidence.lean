@@ -1,17 +1,18 @@
 import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.Bridges.Languages.PLNMeTTaCore
+import Mettapedia.PLN.Evidence.EvidenceSTVBridge
 
 /-!
-# BinaryEvidence-DeductionSTV Bridge
+# BinaryEvidence-STV Bridge
 
 This module bridges the gap between:
 1. **BinaryEvidence** (quantale carrier from BinaryEvidence.lean)
-2. **DeductionSTV** (bounded truth values from PLNMeTTaCore.lean)
+2. **STV** (bounded truth values from PLNMeTTaCore.lean)
 
 ## Key Insight
 
 BinaryEvidence counts `(n⁺, n⁻) ∈ ℝ≥0∞ × ℝ≥0∞` are the fundamental carrier,
-while DeductionSTV `(s, c) ∈ [0,1] × [0,1]` is a *view* into this space.
+while STV `(s, c) ∈ [0,1] × [0,1]` is a *view* into this space.
 
 The mapping:
 - `s = n⁺ / (n⁺ + n⁻)` (strength)
@@ -19,40 +20,29 @@ The mapping:
 
 ## Main Results
 
-1. `evidenceToSTV`: Convert BinaryEvidence to bounded DeductionSTV
+1. `evidenceToSTV`: Convert BinaryEvidence to bounded STV
 2. `evidence_hplus_revision`: BinaryEvidence hplus = weighted averaging (revision)
 
 ## References
 
 - BinaryEvidence.lean: BinaryEvidence quantale with toStrength, toConfidence
-- PLNMeTTaCore.lean: DeductionSTV operations with soundness proofs
+- PLNMeTTaCore.lean: STV operations with soundness proofs
 -/
 
 namespace Mettapedia.PLN.Bridges.Languages.PLNMeTTaCoreEvidence
 
 open scoped ENNReal
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.Languages.PLNMeTTaCore
-open Mettapedia.PLN.Evidence.EvidenceSTVBridge (DeductionSTV)
+open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction (STV)
+open Mettapedia.PLN.Evidence.EvidenceSTVBridge (evidenceToSTV)
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 
-/-! ## BinaryEvidence to DeductionSTV Conversion
+/-! ## BinaryEvidence to STV Conversion
 
-Convert BinaryEvidence to bounded DeductionSTV using clamp01 for safety. -/
-
-/-- Convert BinaryEvidence to DeductionSTV with a given prior κ.
-
-    The strength is `n⁺ / (n⁺ + n⁻)` and confidence is `total / (total + κ)`.
-    We use clamp01 to ensure bounds, which is the identity for valid evidence. -/
-noncomputable def evidenceToSTV (κ : ℝ≥0∞) (e : BinaryEvidence) :
-    Mettapedia.PLN.Evidence.EvidenceSTVBridge.DeductionSTV :=
-  let s := (BinaryEvidence.toStrength e).toReal
-  let c := (BinaryEvidence.toConfidence κ e).toReal
-  ⟨clamp01 s, clamp01 c,
-   clamp01_nonneg s, clamp01_le_one s,
-   clamp01_nonneg c, clamp01_le_one c⟩
+The conversion is `EvidenceSTVBridge.evidenceToSTV`. -/
 
 /-- BinaryEvidence strength is non-negative as a real (follows from ENNReal.toReal_nonneg). -/
 theorem evidence_strength_real_nonneg (e : BinaryEvidence) :
@@ -116,11 +106,11 @@ theorem evidence_zero_strength :
 
 /-! ## Summary
 
-This module establishes the bridge between BinaryEvidence and DeductionSTV:
+This module establishes the bridge between BinaryEvidence and STV:
 
 ### Key Results (All Proved, 0 Sorries)
 
-1. **`evidenceToSTV`**: Convert BinaryEvidence to bounded DeductionSTV
+1. **`evidenceToSTV`**: Convert BinaryEvidence to bounded STV
 2. **`evidence_hplus_weighted_avg`**: hplus = weighted average (revision formula)
 3. **`evidence_hplus_total`**: Total evidence is additive under hplus
 4. **`evidence_tensor_strength_ge`**: Tensor preserves strength (lower bound)
@@ -138,7 +128,7 @@ BinaryEvidence (ℝ≥0∞ × ℝ≥0∞)       [BinaryEvidence.lean - quantale]
     │
     │ toReal + clamp01
     ↓
-DeductionSTV (ℝ × ℝ with [0,1])      [PLNMeTTaCore.lean]
+STV (ℝ × ℝ with [0,1])      [PLNMeTTaCore.lean]
     │
     │ executeStep
     ↓
@@ -146,7 +136,7 @@ Correct PLN inference
 ```
 
 The BinaryEvidence layer provides the algebraic foundation (quantale with hplus, tensor),
-while the DeductionSTV layer provides bounded operational semantics.
+while the STV layer provides bounded operational semantics.
 -/
 
 end Mettapedia.PLN.Bridges.Languages.PLNMeTTaCoreEvidence

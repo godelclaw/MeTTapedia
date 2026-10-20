@@ -1106,15 +1106,270 @@ theorem OutcomeRel.stuck_inv {state : Source} {outcome' : Outcome Target Verdict
   cases relatedOutcomes with
   | stuck relatedState => exact ⟨_, rfl, relatedState⟩
 
+theorem OutcomeRel.finished_inv {verdict : Verdict} {outcome' : Outcome Target Verdict Request}
+    (relatedOutcomes : OutcomeRel related (.finished verdict) outcome') :
+    outcome' = .finished verdict := by
+  cases relatedOutcomes
+  rfl
+
 theorem OutcomeRel.exhausted_inv {residual : Source} {outcome' : Outcome Target Verdict Request}
     (relatedOutcomes : OutcomeRel related (.exhausted residual) outcome') :
     ∃ residual', outcome' = .exhausted residual' ∧ related residual residual' := by
   cases relatedOutcomes with
   | exhausted relatedResidual => exact ⟨_, rfl, relatedResidual⟩
 
+/-- Outcome relations compose through the actual saved intermediate state. -/
+theorem OutcomeRel.trans {Middle : Type} {next : Target → Middle → Prop}
+    {first : Outcome Source Verdict Request} {second : Outcome Target Verdict Request}
+    {third : Outcome Middle Verdict Request}
+    (left : OutcomeRel related first second) (right : OutcomeRel next second third) :
+    OutcomeRel (fun source target => ∃ middle, related source middle ∧ next middle target)
+      first third := by
+  cases left <;> cases right
+  · exact .finished _
+  · exact .faulted
+  · exact .suspended _ ⟨_, ‹related _ _›, ‹next _ _›⟩
+  · exact .stuck ⟨_, ‹related _ _›, ‹next _ _›⟩
+  · exact .exhausted ⟨_, ‹related _ _›, ‹next _ _›⟩
+
+/-- Observing public verdicts and requests preserves the state relation,
+including suspended, stuck and exhausted endpoints. -/
+theorem OutcomeRel.relabel {PublicVerdict PublicRequest : Type}
+    {first : Outcome Source Verdict Request} {second : Outcome Target Verdict Request}
+    (matched : OutcomeRel related first second)
+    (verdicts : Verdict → PublicVerdict) (requests : Request → PublicRequest) :
+    OutcomeRel related (first.relabel verdicts requests) (second.relabel verdicts requests) := by
+  cases matched with
+  | finished verdict => exact .finished (verdicts verdict)
+  | faulted => exact .faulted
+  | suspended request saved => exact .suspended (requests request) saved
+  | stuck stopped => exact .stuck stopped
+  | exhausted residual => exact .exhausted residual
+
 end Outcomes
 
+/-! ### Finite block transport over relational local rules -/
+
+/-- Public labels for an execution. One internal event can contribute zero
+or more public records, so internal answer publication can be hidden while
+effects remain ordered and the completed verdict retains the answer bag.
+State and saved control remain in the realization relation. -/
+structure ExecutionReadout (Event Verdict Request PublicEvent PublicVerdict PublicRequest : Type) where
+  event : Event → List PublicEvent
+  verdict : Verdict → PublicVerdict
+  request : Request → PublicRequest
+
+/-- One independently justified source inspection has a finite target
+derivation. Neither local rule is required to be deterministic. The target's
+actual residual is retained, and public event lists preserve occurrences.
+This is a local obligation, not an assumed whole-evaluator correspondence. -/
+structure DerivationSimulation
+    {Source Target SourceEvent TargetEvent SourceVerdict TargetVerdict SourceRequest TargetRequest
+      PublicEvent PublicVerdict PublicRequest : Type}
+    (source : Source → Option (Transition Source SourceEvent SourceVerdict SourceRequest) → Prop)
+    (target : Target → Option (Transition Target TargetEvent TargetVerdict TargetRequest) → Prop)
+    (related : Source → Target → Prop)
+    (sourceRead : ExecutionReadout SourceEvent SourceVerdict SourceRequest PublicEvent PublicVerdict PublicRequest)
+    (targetRead : ExecutionReadout TargetEvent TargetVerdict TargetRequest PublicEvent PublicVerdict PublicRequest) : Prop where
+  one : ∀ {state state' events outcome}, related state state' →
+    Derivation source 1 state events outcome →
+    ∃ count events' outcome', Derivation target count state' events' outcome' ∧
+      events'.flatMap targetRead.event = events.flatMap sourceRead.event ∧
+      OutcomeRel related (outcome.relabel sourceRead.verdict sourceRead.request)
+        (outcome'.relabel targetRead.verdict targetRead.request)
+
+namespace DerivationSimulation
+
+variable {Source Target SourceEvent TargetEvent SourceVerdict TargetVerdict SourceRequest TargetRequest
+  PublicEvent PublicVerdict PublicRequest : Type}
+variable {source : Source → Option (Transition Source SourceEvent SourceVerdict SourceRequest) → Prop}
+  {target : Target → Option (Transition Target TargetEvent TargetVerdict TargetRequest) → Prop}
+  {related : Source → Target → Prop}
+  {sourceRead : ExecutionReadout SourceEvent SourceVerdict SourceRequest PublicEvent PublicVerdict PublicRequest}
+  {targetRead : ExecutionReadout TargetEvent TargetVerdict TargetRequest PublicEvent PublicVerdict PublicRequest}
+
+/-- Local finite blocks compose over every finite source derivation, including
+its incomplete endpoint. No global target bound or source termination is
+assumed. Administrative divergence needs a separate productivity law. -/
+theorem transport (simulation : DerivationSimulation source target related sourceRead targetRead)
+    {fuel state events outcome} (path : Derivation source fuel state events outcome)
+    {state' : Target} (retained : related state state') :
+    ∃ count events' outcome', Derivation target count state' events' outcome' ∧
+      events'.flatMap targetRead.event = events.flatMap sourceRead.event ∧
+      OutcomeRel related (outcome.relabel sourceRead.verdict sourceRead.request)
+        (outcome'.relabel targetRead.verdict targetRead.request) := by
+  induction path generalizing state' with
+  | pause state => exact ⟨0, [], .exhausted state', .pause state', rfl, .exhausted retained⟩
+  | @silent fuel state next events outcome stepped rest ih =>
+      obtain ⟨first, earlier, reached, prefixPath, prefixRead, prefixRelated⟩ :=
+        simulation.one retained (.silent stepped (.pause next))
+      obtain ⟨saved, exhausted, relatedSaved⟩ := prefixRelated.exhausted_inv
+      have reachedEq : reached = .exhausted saved :=
+        (Outcome.relabel_exhausted_iff targetRead.verdict targetRead.request reached saved).mp exhausted
+      subst reached
+      obtain ⟨later, suffix, result, suffixPath, suffixRead, resultRelated⟩ := ih relatedSaved
+      refine ⟨first + later, earlier ++ suffix, result, prefixPath.resume suffixPath, ?_, resultRelated⟩
+      simpa only [List.flatMap_append, prefixRead, List.flatMap_nil, List.nil_append] using suffixRead
+  | @published fuel state next events later outcome stepped rest ih =>
+      obtain ⟨first, earlier, reached, prefixPath, prefixRead, prefixRelated⟩ :=
+        simulation.one retained (.published stepped (.pause next))
+      obtain ⟨saved, exhausted, relatedSaved⟩ := prefixRelated.exhausted_inv
+      have reachedEq : reached = .exhausted saved :=
+        (Outcome.relabel_exhausted_iff targetRead.verdict targetRead.request reached saved).mp exhausted
+      subst reached
+      obtain ⟨remaining, suffix, result, suffixPath, suffixRead, resultRelated⟩ := ih relatedSaved
+      refine ⟨first + remaining, earlier ++ suffix, result, prefixPath.resume suffixPath, ?_, resultRelated⟩
+      simpa only [List.append_nil] using
+        (show (earlier ++ suffix).flatMap targetRead.event = (events ++ later).flatMap sourceRead.event by
+          rw [List.flatMap_append, List.flatMap_append, prefixRead, suffixRead]
+          simp only [List.append_nil])
+  | finished stepped => exact simulation.one retained (.finished (fuel := 0) stepped)
+  | faulted stepped => exact simulation.one retained (.faulted (fuel := 0) stepped)
+  | requested stepped => exact simulation.one retained (.requested (fuel := 0) stepped)
+  | stuck stepped => exact simulation.one retained (.stuck (fuel := 0) stepped)
+
+/-- Identity transport uses the actual one-step derivation without changing
+events or the retained endpoint. -/
+theorem refl (rule : Source → Option (Transition Source SourceEvent SourceVerdict SourceRequest) → Prop)
+    (readout : ExecutionReadout SourceEvent SourceVerdict SourceRequest PublicEvent PublicVerdict PublicRequest) :
+    DerivationSimulation rule rule Eq readout readout := by
+  refine ⟨?_⟩
+  intro state state' events outcome same path
+  subst state'
+  refine ⟨1, events, outcome, path, rfl, ?_⟩
+  cases outcome <;> simp only [Outcome.relabel]
+  · exact .finished _
+  · exact .faulted
+  · exact .suspended _ rfl
+  · exact .stuck rfl
+  · exact .exhausted rfl
+
+/-- Realization stages compose with their independently defined intermediate
+rules and one shared public readout. Private event and verdict carriers may
+differ at every stage. -/
+theorem trans {Last LastEvent LastVerdict LastRequest : Type}
+    {last : Last → Option (Transition Last LastEvent LastVerdict LastRequest) → Prop}
+    {next : Target → Last → Prop}
+    {lastRead : ExecutionReadout LastEvent LastVerdict LastRequest PublicEvent PublicVerdict PublicRequest}
+    (first : DerivationSimulation source target related sourceRead targetRead)
+    (second : DerivationSimulation target last next targetRead lastRead) :
+    DerivationSimulation source last
+      (fun state final => ∃ middle, related state middle ∧ next middle final)
+      sourceRead lastRead := by
+  refine ⟨?_⟩
+  rintro state final events outcome ⟨middle, left, right⟩ path
+  obtain ⟨count, events', outcome', path', read', outcomes'⟩ := first.one left path
+  obtain ⟨count', events'', outcome'', path'', read'', outcomes''⟩ := second.transport path' right
+  exact ⟨count', events'', outcome'', path'', read''.trans read', outcomes'.trans outcomes''⟩
+
+/-- Prefix and suffix are realized at the same actual target residual. The
+second derivation starts there, so resumption appends only its new events. -/
+theorem resume (simulation : DerivationSimulation source target related sourceRead targetRead)
+    {first second : Nat} {state saved : Source} {events later : List SourceEvent}
+    {outcome : Outcome Source SourceVerdict SourceRequest}
+    (earlier : Derivation source first state events (.exhausted saved))
+    (suffix : Derivation source second saved later outcome)
+    {state' : Target} (retained : related state state') :
+    ∃ first' second' saved' events' later' outcome',
+      Derivation target first' state' events' (.exhausted saved') ∧
+      Derivation target second' saved' later' outcome' ∧ related saved saved' ∧
+      events'.flatMap targetRead.event = events.flatMap sourceRead.event ∧
+      later'.flatMap targetRead.event = later.flatMap sourceRead.event ∧
+      OutcomeRel related (outcome.relabel sourceRead.verdict sourceRead.request)
+        (outcome'.relabel targetRead.verdict targetRead.request) ∧
+      Derivation target (first' + second') state' (events' ++ later') outcome' := by
+  obtain ⟨first', events', reached, earlier', readPrefix, relatedPrefix⟩ := simulation.transport earlier retained
+  obtain ⟨saved', exhausted, relatedSaved⟩ := relatedPrefix.exhausted_inv
+  have reachedEq : reached = .exhausted saved' :=
+    (Outcome.relabel_exhausted_iff targetRead.verdict targetRead.request reached saved').mp exhausted
+  subst reached
+  obtain ⟨second', later', outcome', suffix', readSuffix, relatedOutcome⟩ :=
+    simulation.transport suffix relatedSaved
+  exact ⟨first', second', saved', events', later', outcome', earlier', suffix', relatedSaved,
+    readPrefix, readSuffix, relatedOutcome, earlier'.resume suffix'⟩
+
+/-- A completed source derivation produces a completed target derivation,
+with the same public verdict and ordered public occurrences. -/
+theorem completed (simulation : DerivationSimulation source target related sourceRead targetRead)
+    {fuel state events verdict}
+    (path : Derivation source fuel state events (.finished verdict))
+    {state' : Target} (retained : related state state') :
+    ∃ count events' verdict', Derivation target count state' events' (.finished verdict') ∧
+      events'.flatMap targetRead.event = events.flatMap sourceRead.event ∧
+      targetRead.verdict verdict' = sourceRead.verdict verdict := by
+  obtain ⟨count, events', outcome', path', read', relatedOutcome⟩ := simulation.transport path retained
+  cases outcome' with
+  | finished verdict' =>
+      refine ⟨count, events', verdict', path', read', ?_⟩
+      exact (Mettapedia.GSLT.Dynamics.OrderedDemand.Status.finished.inj
+        relatedOutcome.status_eq).symm
+  | faulted => cases relatedOutcome
+  | suspended => cases relatedOutcome
+  | stuck => cases relatedOutcome
+  | exhausted => cases relatedOutcome
+
+/-- Agreement of completed public observations needs simulations in both
+directions. A forward realization alone permits extra target behavior. -/
+theorem completed_iff (forward : DerivationSimulation source target related sourceRead targetRead)
+    (backward : DerivationSimulation target source (fun target source => related source target)
+      targetRead sourceRead)
+    {state : Source} {state' : Target} (retained : related state state')
+    (events : List PublicEvent) (verdict : PublicVerdict) :
+    (∃ fuel rawEvents rawVerdict, Derivation source fuel state rawEvents (.finished rawVerdict) ∧
+      rawEvents.flatMap sourceRead.event = events ∧ sourceRead.verdict rawVerdict = verdict) ↔
+    (∃ fuel rawEvents rawVerdict, Derivation target fuel state' rawEvents (.finished rawVerdict) ∧
+      rawEvents.flatMap targetRead.event = events ∧ targetRead.verdict rawVerdict = verdict) := by
+  constructor
+  · rintro ⟨fuel, rawEvents, rawVerdict, path, eventsRead, verdictRead⟩
+    obtain ⟨fuel', events', verdict', path', eventsRead', verdictRead'⟩ := forward.completed path retained
+    exact ⟨fuel', events', verdict', path', eventsRead'.trans eventsRead, verdictRead'.trans verdictRead⟩
+  · rintro ⟨fuel, rawEvents, rawVerdict, path, eventsRead, verdictRead⟩
+    obtain ⟨fuel', events', verdict', path', eventsRead', verdictRead'⟩ := backward.completed path retained
+    exact ⟨fuel', events', verdict', path', eventsRead'.trans eventsRead, verdictRead'.trans verdictRead⟩
+
+end DerivationSimulation
+
 namespace Machine
+
+/-- Deterministic execution supplies its actual local-rule derivation. This
+adapter makes the existing executable machines clients of relational block
+transport; no independent source adequacy is asserted by the adapter. -/
+theorem execution_derivation {State Event Verdict Request : Type}
+    (machine : Machine State Event Verdict Request) (fuel : Nat) (state : State) :
+    Derivation (fun current action => machine.step current = action) fuel state
+      (machine.run fuel state).1 (machine.run fuel state).2 := by
+  induction fuel generalizing state with
+  | zero => exact .pause state
+  | succ fuel ih =>
+      cases found : machine.step state with
+      | none => simpa only [run,found] using Derivation.stuck (fuel := fuel) found
+      | some transition =>
+          cases transition with
+          | silent next => simpa only [run,found] using Derivation.silent found (ih next)
+          | publish events next => simpa only [run,found] using Derivation.published found (ih next)
+          | finish verdict => simpa only [run,found] using Derivation.finished (fuel := fuel) found
+          | fail events => simpa only [run,found] using Derivation.faulted (fuel := fuel) found
+          | call request saved => simpa only [run,found] using Derivation.requested (fuel := fuel) found
+
+/-- An executable source run is realized by relational target blocks once
+the actual one-inspection laws have been constructed. Source and target
+private labels are compared through their declared public readouts. -/
+theorem run_related_to_rule
+    {Source Target SourceEvent TargetEvent SourceVerdict TargetVerdict SourceRequest TargetRequest
+      PublicEvent PublicVerdict PublicRequest : Type}
+    (source : Machine Source SourceEvent SourceVerdict SourceRequest)
+    {target : Target → Option (Transition Target TargetEvent TargetVerdict TargetRequest) → Prop}
+    {related : Source → Target → Prop}
+    {sourceRead : ExecutionReadout SourceEvent SourceVerdict SourceRequest PublicEvent PublicVerdict PublicRequest}
+    {targetRead : ExecutionReadout TargetEvent TargetVerdict TargetRequest PublicEvent PublicVerdict PublicRequest}
+    (simulation : DerivationSimulation (fun state action => source.step state = action)
+      target related sourceRead targetRead)
+    (fuel : Nat) {state : Source} {state' : Target} (retained : related state state') :
+    ∃ count events' outcome', Derivation target count state' events' outcome' ∧
+      events'.flatMap targetRead.event = ((source.run fuel state).1).flatMap sourceRead.event ∧
+      OutcomeRel related ((source.run fuel state).2.relabel sourceRead.verdict sourceRead.request)
+        (outcome'.relabel targetRead.verdict targetRead.request) :=
+  simulation.transport (source.execution_derivation fuel state) retained
 
 /-- Local finite implementations of one inspection compose into a finite
 implementation of every source prefix. Events are exact, and `OutcomeRel`
@@ -1398,6 +1653,27 @@ theorem run_related_all (simulation : CostSimulation source target related cost)
         intro stopped impossible
         rw [outcome] at impossible
         cases impossible)
+
+/-- A deterministic simulation is a relational block simulation on its step
+graphs. The absent-transition law is required: the five transition clauses
+alone say nothing about stuck endpoints. Public readouts can forget private
+labels without changing saved states or the underlying execution laws. -/
+theorem toDerivationSimulation (simulation : CostSimulation source target related cost)
+    (stuck : MatchesStuck source target related cost)
+    {PublicEvent PublicVerdict PublicRequest : Type}
+    (readout : ExecutionReadout Event Verdict Request PublicEvent PublicVerdict PublicRequest) :
+    DerivationSimulation (fun state action => source.step state = action)
+      (fun state action => target.step state = action) related readout readout := by
+  constructor
+  intro state state' events outcome retained path
+  have ran : source.run 1 state = (events, outcome) :=
+    path.sound source (fun _ _ step => step)
+  obtain ⟨count, _bound, sameEvents, sameOutcome⟩ :=
+    simulation.run_related_all stuck 1 retained
+  rw [ran] at sameEvents sameOutcome
+  refine ⟨count, (target.run count state').1, (target.run count state').2,
+    target.execution_derivation count state', congrArg (List.flatMap readout.event) sameEvents, ?_⟩
+  exact sameOutcome.relabel readout.verdict readout.request
 
 /-- Full finite transport reflects unbounded execution within the current
 interaction region. Stuckness, requests and terminal outcomes cannot silently

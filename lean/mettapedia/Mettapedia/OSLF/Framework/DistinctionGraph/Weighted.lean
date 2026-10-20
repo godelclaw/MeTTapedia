@@ -33,7 +33,7 @@ namespace Mettapedia.OSLF.Framework.DistinctionGraph.Weighted
 
 open Mettapedia.OSLF.Framework.DistinctionGraph
 open Mettapedia.OSLF.Framework.EvidenceSemantics
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceKSBridge
 open Mettapedia.PLN.Evidence.HeytingValuationOnEvidence
 open Mettapedia.OSLF.Formula

@@ -37,7 +37,7 @@ All theorems proven without sorries.
 
 namespace Mettapedia.PLN.RuleFamilies.HigherOrder.Reduction
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers
 open Mettapedia.Algebra.QuantaleWeakness
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit

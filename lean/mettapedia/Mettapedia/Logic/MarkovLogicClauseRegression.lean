@@ -24,9 +24,9 @@ open Mettapedia.Logic.MarkovLogicCountable
 open Mettapedia.Logic.MarkovLogicClauseSemantics
 open Mettapedia.Logic.MarkovLogicClauseFactorGraph
 open Mettapedia.Logic.MarkovLogicClauseWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.ProbabilityTheory.BayesianNetworks
 
 /-! ## Shared Helpers -/
@@ -193,7 +193,7 @@ theorem sigmoid_queryProb_true_eq_three_fourths :
       (clauseMassSemantics sigmoidMLN ({()} : Finset Unit)).totalMass ≠ 0 := by
     rw [sigmoid_totalMass_eq_four]
     norm_num
-  unfold MassSemantics.queryProb
+  unfold Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   rw [if_neg htotal_ne_zero, sigmoid_queryMass_true_eq_three, sigmoid_totalMass_eq_four]
 
 theorem sigmoid_queryStrength_true_eq_three_fourths :
@@ -204,8 +204,8 @@ theorem sigmoid_queryStrength_true_eq_three_fourths :
 
 theorem sigmoid_evidence_true_eq_three_one :
     BinaryWorldModel.evidence (clauseWMState sigmoidMLN ({()} : Finset Unit)) qTrue = ⟨3, 1⟩ := by
-  rw [clauseWM_evidence_eq_evidenceOfMasses]
-  unfold MassSemantics.evidenceOfMasses
+  rw [clauseWM_evidence_eq_binaryMass]
+  unfold Mettapedia.ProbabilityTheory.MassSemantics.binaryMass
   rw [sigmoid_queryMass_true_eq_three, sigmoid_totalMass_eq_four]
   ext <;> simp
   exact (ENNReal.eq_sub_of_add_eq (a := (1 : ENNReal)) (b := (4 : ENNReal)) (c := (3 : ENNReal))
@@ -285,7 +285,7 @@ theorem conflicting_queryProb_true_eq_three_fifths :
       (clauseMassSemantics conflictingMLN (Finset.univ : Finset Bool)).totalMass ≠ 0 := by
     rw [conflicting_totalMass_eq_five]
     norm_num
-  unfold MassSemantics.queryProb
+  unfold Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   rw [if_neg htotal_ne_zero, conflicting_queryMass_true_eq_three, conflicting_totalMass_eq_five]
 
 theorem conflicting_queryStrength_true_eq_three_fifths :
@@ -365,7 +365,7 @@ theorem hardZero_queryProb_false_eq_zero :
       (clauseMassSemantics hardZeroMLN ({()} : Finset Unit)).totalMass ≠ 0 := by
     rw [hardZero_totalMass_eq_one]
     norm_num
-  unfold MassSemantics.queryProb
+  unfold Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   rw [if_neg htotal_ne_zero, hardZero_queryMass_false_eq_zero, hardZero_totalMass_eq_one]
   simp
 

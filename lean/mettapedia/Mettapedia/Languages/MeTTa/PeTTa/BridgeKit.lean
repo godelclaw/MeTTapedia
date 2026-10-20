@@ -26,7 +26,7 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.BridgeKit
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
 open SpaceSemantics (Program Equation)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval
 
 /-- The evaluator's special forms. An authored head is never one of them. -/

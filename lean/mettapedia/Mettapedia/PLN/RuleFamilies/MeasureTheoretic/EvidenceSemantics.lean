@@ -38,7 +38,7 @@ This connects to the quantale semantics in `PLNQuantaleSemantics/`.
 
 namespace Mettapedia.PLN.RuleFamilies.MeasureTheoretic
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal

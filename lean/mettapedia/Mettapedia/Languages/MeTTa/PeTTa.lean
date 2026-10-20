@@ -30,14 +30,17 @@ import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralLiveRunnerExecuti
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralLiveRunnerPartrec
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralLiveRunnerEmission
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.CompleteEmissionExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RhoCanonicalEmission
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RhoLexCanonicalExecution
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.RhoRunnerExecution
+import Mettapedia.Languages.MeTTa.PeTTa.Bridges.NativeTypes
 import Mettapedia.Languages.MeTTa.PeTTa.DispatchCoverage
 import Mettapedia.Languages.MeTTa.PeTTa.BodyClosureFusion
 import Mettapedia.Languages.MeTTa.PeTTa.LPSoundness
 import Mettapedia.Languages.MeTTa.PeTTa.FunctionFreeLPBridge
 import Mettapedia.Languages.MeTTa.PeTTa.Effects
 import Mettapedia.Languages.MeTTa.PeTTa.TypeSystem
+import Mettapedia.Languages.MeTTa.PeTTa.RelationalTyping
 import Mettapedia.Languages.MeTTa.PeTTa.TypecheckV3Core
 import Mettapedia.Languages.MeTTa.PeTTa.TypecheckV3Seam
 import Mettapedia.Languages.MeTTa.PeTTa.TypeSystemGSLT
@@ -59,6 +62,7 @@ import Mettapedia.Languages.MeTTa.PeTTa.ValueOccurrences
 import Mettapedia.Languages.MeTTa.PeTTa.BindingForms
 import Mettapedia.Languages.MeTTa.PeTTa.ExplicitEvaluation
 import Mettapedia.Languages.MeTTa.PeTTa.CallGuardOptimization
+import Mettapedia.Languages.MeTTa.PeTTa.CallArityDispatch
 import Mettapedia.Languages.MeTTa.PeTTa.MainlineGroundProvider
 import Mettapedia.Languages.MeTTa.PeTTa.DispatchErrorScope
 import Mettapedia.Languages.MeTTa.PeTTa.RaiseFree
@@ -232,12 +236,17 @@ Public import interface for the PeTTa formalization.
 - `Bridges.MeTTaIL.CompleteExecution`: the complete machine
   (`gslt_descent_execution.metta`, `gslt_complete.metta`) proved head by head
   against `OSLF/MeTTaIL/Complete`: scheduled descent, fair rule jobs, equation
-  lanes, steps modulo equations, the runner over them and fair exploration of
-  every run. Every reached search stays within the plan's declared footprint.
+  lanes, steps modulo equations, canonical forms (`gslt_canonical.metta`:
+  comparison field by field with a name table, insertion sort), the runner
+  over them and fair exploration of every run. Every reached search stays
+  within the plan's declared footprint.
 - `Bridges.MeTTaIL.CompleteEmissionExecution`: modules emitted for the complete
   machine run their language. For every footprinted plan the emitter accepts
   (every compiled plan it accepts is), the PeTTa runs of `name:run` and
   `name:explore` print the runner's trace and the explored states of the model.
+  A module that commits canonical forms explores the presented GSLT wherever
+  its canonical explorer is complete; the emitted rho module does
+  (`RhoCanonicalEmission.rho_emitted_explores`).
 - `Bridges.MeTTaIL.RhoLexCanonicalExecution`: the authored rho canonicalizer
   computes the lexicographic canonical form of every closed rho process: its
   serializer, comparator, insertion sort, bag splicing, unit removal, collapse

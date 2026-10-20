@@ -36,10 +36,10 @@ set_option autoImplicit false
 
 namespace Mettapedia.Logic.Propositions
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.GSLT.Core.NonFactorization
 open scoped Classical
 
@@ -71,7 +71,6 @@ noncomputable def evidence (observed : Multiset S) (sentence : Sentence N P) : B
 /-- The PLN world model of observed scenarios. -/
 @[instance_reducible]
 noncomputable def evidenceWorldModel :
-    letI : EvidenceType (Multiset S) := multisetEvidenceType S
     BinaryWorldModel (Multiset S) (Sentence N P) :=
   worldModelOfAtomicEvidence I.observation
 

@@ -24,7 +24,7 @@ namespace Mettapedia.NARS.Bridges.PLN.SecondOrderProbability
 
 open scoped ENNReal
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.NARS.TruthFunctions
 
 /-! ## Validity predicate -/

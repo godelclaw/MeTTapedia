@@ -22,18 +22,25 @@ open scoped List
 
 universe u v w
 
+@[simp] theorem fullObservations_operational {system : GSLT.{u}} {admitted : system.Term → Prop}
+    {backend : CursorBackend.{u,v} system admitted} {Item : Type w}
+    (stream : Stream Item) (observe : ∀ item, item ∈ stream.flatten → Observation backend) :
+    (fullObservations stream (fun item listed => Evidence.operational (observe item listed))).filterMap
+      Evidence.operational? = fullObservations stream observe := by
+  simp [fullObservations, List.filterMap_map, Function.comp_def, Evidence.operational?]
+
 theorem possibility_trace_evidence {system : GSLT.{u}} {admitted : system.Term → Prop}
     {Leaf : Type w} (backend : CursorBackend.{u,v} system admitted)
     (leaves : Leaf → LeafBackend system admitted) (formula : Formula Leaf)
     (source : system.Term) (sourceAdmitted : admitted source)
-    {seen : List (Observation backend)} {result : Outcome (denotation leaves (.possibility formula) source)}
+    {seen : List (Evidence backend)} {result : Outcome (denotation leaves (.possibility formula) backend.spatial.theory source)}
     (trace : Trace (tasks backend leaves (.possibility formula) source sourceAdmitted []) seen result) :
     (result.answer = some true → ∃ receipt listed,
-      (Observation.mk source receipt listed []) ∈ seen ∧
-      denotation leaves formula (backend.target source receipt)) ∧
+      (Evidence.operational (Observation.mk source receipt listed [])) ∈ seen ∧
+      denotation leaves formula backend.spatial.theory (backend.target source receipt)) ∧
     (result.answer = some false → ∀ receipt listed,
-      (Observation.mk source receipt listed []) ∈ seen ∧
-      ¬ denotation leaves formula (backend.target source receipt)) := by
+      (Evidence.operational (Observation.mk source receipt listed [])) ∈ seen ∧
+      ¬ denotation leaves formula backend.spatial.theory (backend.target source receipt)) := by
   rw [tasks] at trace
   cases trace with
   | paused tail =>
@@ -56,14 +63,14 @@ theorem universal_trace_evidence {system : GSLT.{u}} {admitted : system.Term →
     {Leaf : Type w} (backend : CursorBackend.{u,v} system admitted)
     (leaves : Leaf → LeafBackend system admitted) (formula : Formula Leaf)
     (source : system.Term) (sourceAdmitted : admitted source)
-    {seen : List (Observation backend)} {result : Outcome (denotation leaves (.outgoingUniversal formula) source)}
+    {seen : List (Evidence backend)} {result : Outcome (denotation leaves (.outgoingUniversal formula) backend.spatial.theory source)}
     (trace : Trace (tasks backend leaves (.outgoingUniversal formula) source sourceAdmitted []) seen result) :
     (result.answer = some true → ∀ receipt listed,
-      (Observation.mk source receipt listed []) ∈ seen ∧
-      denotation leaves formula (backend.target source receipt)) ∧
+      (Evidence.operational (Observation.mk source receipt listed [])) ∈ seen ∧
+      denotation leaves formula backend.spatial.theory (backend.target source receipt)) ∧
     (result.answer = some false → ∃ receipt listed,
-      (Observation.mk source receipt listed []) ∈ seen ∧
-      ¬ denotation leaves formula (backend.target source receipt)) := by
+      (Evidence.operational (Observation.mk source receipt listed [])) ∈ seen ∧
+      ¬ denotation leaves formula backend.spatial.theory (backend.target source receipt)) := by
   rw [tasks] at trace
   cases trace with
   | paused tail =>
@@ -88,9 +95,9 @@ theorem positive_saved_receipt {system : GSLT.{u}} {admitted : system.Term → P
     (source : system.Term) (sourceAdmitted : admitted source) (budget : Nat)
     (read : (run backend leaves (.possibility formula) source sourceAdmitted budget).outcome.answer = some true) :
     ∃ receipt listed,
-      (Observation.mk source receipt listed []) ∈
+      (Evidence.operational (Observation.mk source receipt listed [])) ∈
         (run backend leaves (.possibility formula) source sourceAdmitted budget).observations ∧
-      denotation leaves formula (backend.target source receipt) :=
+      denotation leaves formula backend.spatial.theory (backend.target source receipt) :=
   (possibility_trace_evidence backend leaves formula source sourceAdmitted
     (run_trace backend leaves (.possibility formula) source sourceAdmitted budget ⟨true, read⟩)).1 read
 
@@ -100,9 +107,9 @@ theorem negative_saved_counterreceipt {system : GSLT.{u}} {admitted : system.Ter
     (source : system.Term) (sourceAdmitted : admitted source) (budget : Nat)
     (read : (run backend leaves (.outgoingUniversal formula) source sourceAdmitted budget).outcome.answer = some false) :
     ∃ receipt listed,
-      (Observation.mk source receipt listed []) ∈
+      (Evidence.operational (Observation.mk source receipt listed [])) ∈
         (run backend leaves (.outgoingUniversal formula) source sourceAdmitted budget).observations ∧
-      ¬ denotation leaves formula (backend.target source receipt) :=
+      ¬ denotation leaves formula backend.spatial.theory (backend.target source receipt) :=
   (universal_trace_evidence backend leaves formula source sourceAdmitted
     (run_trace backend leaves (.outgoingUniversal formula) source sourceAdmitted budget ⟨false, read⟩)).2 read
 
@@ -112,9 +119,9 @@ theorem negative_possibility_saved_coverage {system : GSLT.{u}} {admitted : syst
     (source : system.Term) (sourceAdmitted : admitted source) (budget : Nat)
     (read : (run backend leaves (.possibility formula) source sourceAdmitted budget).outcome.answer = some false) :
     ∀ receipt listed,
-      (Observation.mk source receipt listed []) ∈
+      (Evidence.operational (Observation.mk source receipt listed [])) ∈
         (run backend leaves (.possibility formula) source sourceAdmitted budget).observations ∧
-      ¬ denotation leaves formula (backend.target source receipt) :=
+      ¬ denotation leaves formula backend.spatial.theory (backend.target source receipt) :=
   (possibility_trace_evidence backend leaves formula source sourceAdmitted
     (run_trace backend leaves (.possibility formula) source sourceAdmitted budget ⟨false, read⟩)).2 read
 
@@ -124,9 +131,9 @@ theorem positive_universal_saved_coverage {system : GSLT.{u}} {admitted : system
     (source : system.Term) (sourceAdmitted : admitted source) (budget : Nat)
     (read : (run backend leaves (.outgoingUniversal formula) source sourceAdmitted budget).outcome.answer = some true) :
     ∀ receipt listed,
-      (Observation.mk source receipt listed []) ∈
+      (Evidence.operational (Observation.mk source receipt listed [])) ∈
         (run backend leaves (.outgoingUniversal formula) source sourceAdmitted budget).observations ∧
-      denotation leaves formula (backend.target source receipt) :=
+      denotation leaves formula backend.spatial.theory (backend.target source receipt) :=
   (universal_trace_evidence backend leaves formula source sourceAdmitted
     (run_trace backend leaves (.outgoingUniversal formula) source sourceAdmitted budget ⟨true, read⟩)).1 read
 
@@ -137,13 +144,13 @@ theorem negative_possibility_actual_coverage {system : GSLT.{u}} {admitted : sys
     (read : (run backend leaves (.possibility formula) source sourceAdmitted budget).outcome.answer = some false)
     (actual : system.Term) (step : system.Step source actual) :
     ∃ receipt listed,
-      (Observation.mk source receipt listed []) ∈
+      (Evidence.operational (Observation.mk source receipt listed [])) ∈
         (run backend leaves (.possibility formula) source sourceAdmitted budget).observations ∧
-      GSLT.Equiv system actual (backend.target source receipt) ∧ ¬ denotation leaves formula actual := by
+      GSLT.Equiv system actual (backend.target source receipt) ∧ ¬ denotation leaves formula backend.spatial.theory actual := by
   obtain ⟨receipt, listed, related⟩ := backend.coverage source sourceAdmitted actual step
   obtain ⟨saved, absent⟩ := negative_possibility_saved_coverage backend leaves formula
     source sourceAdmitted budget read receipt listed
-  exact ⟨receipt, listed, saved, related, fun holds => absent ((denotation leaves formula).2 related |>.mp holds)⟩
+  exact ⟨receipt, listed, saved, related, fun holds => absent ((denotation leaves formula backend.spatial.theory).2 related |>.mp holds)⟩
 
 theorem positive_universal_actual_coverage {system : GSLT.{u}} {admitted : system.Term → Prop}
     {Leaf : Type w} (backend : CursorBackend.{u,v} system admitted)
@@ -152,13 +159,13 @@ theorem positive_universal_actual_coverage {system : GSLT.{u}} {admitted : syste
     (read : (run backend leaves (.outgoingUniversal formula) source sourceAdmitted budget).outcome.answer = some true)
     (actual : system.Term) (step : system.Step source actual) :
     ∃ receipt listed,
-      (Observation.mk source receipt listed []) ∈
+      (Evidence.operational (Observation.mk source receipt listed [])) ∈
         (run backend leaves (.outgoingUniversal formula) source sourceAdmitted budget).observations ∧
-      GSLT.Equiv system actual (backend.target source receipt) ∧ denotation leaves formula actual := by
+      GSLT.Equiv system actual (backend.target source receipt) ∧ denotation leaves formula backend.spatial.theory actual := by
   obtain ⟨receipt, listed, related⟩ := backend.coverage source sourceAdmitted actual step
   obtain ⟨saved, holds⟩ := positive_universal_saved_coverage backend leaves formula
     source sourceAdmitted budget read receipt listed
-  exact ⟨receipt, listed, saved, related, ((denotation leaves formula).2 related).mpr holds⟩
+  exact ⟨receipt, listed, saved, related, ((denotation leaves formula backend.spatial.theory).2 related).mpr holds⟩
 
 /-- Complete absence retains all physical root origins in their original order. -/
 theorem negative_possibility_ordered_coverage {system : GSLT.{u}} {admitted : system.Term → Prop}
@@ -166,7 +173,7 @@ theorem negative_possibility_ordered_coverage {system : GSLT.{u}} {admitted : sy
     (leaves : Leaf → LeafBackend system admitted) (formula : Formula Leaf)
     (source : system.Term) (sourceAdmitted : admitted source) (budget : Nat)
     (read : (run backend leaves (.possibility formula) source sourceAdmitted budget).outcome.answer = some false) :
-    fullObservations (backend.tasks source) (fun receipt listed => Observation.mk source receipt listed []) <+
+    fullObservations (backend.tasks source) (fun receipt listed => Evidence.operational (Observation.mk source receipt listed [])) <+
       (run backend leaves (.possibility formula) source sourceAdmitted budget).observations := by
   have trace := run_trace backend leaves (.possibility formula) source sourceAdmitted budget ⟨false, read⟩
   rw [tasks] at trace
@@ -186,7 +193,7 @@ theorem positive_universal_ordered_coverage {system : GSLT.{u}} {admitted : syst
     (leaves : Leaf → LeafBackend system admitted) (formula : Formula Leaf)
     (source : system.Term) (sourceAdmitted : admitted source) (budget : Nat)
     (read : (run backend leaves (.outgoingUniversal formula) source sourceAdmitted budget).outcome.answer = some true) :
-    fullObservations (backend.tasks source) (fun receipt listed => Observation.mk source receipt listed []) <+
+    fullObservations (backend.tasks source) (fun receipt listed => Evidence.operational (Observation.mk source receipt listed [])) <+
       (run backend leaves (.outgoingUniversal formula) source sourceAdmitted budget).observations := by
   have trace := run_trace backend leaves (.outgoingUniversal formula) source sourceAdmitted budget ⟨true, read⟩
   rw [tasks] at trace

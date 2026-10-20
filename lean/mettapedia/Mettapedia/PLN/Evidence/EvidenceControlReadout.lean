@@ -22,7 +22,7 @@ set_option autoImplicit false
 namespace Mettapedia.PLN.Evidence.EvidenceControlReadout
 
 open Mettapedia.GSLT.Core
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 noncomputable section
 

@@ -9,7 +9,7 @@ with explicit scorers, checklist assumptions, and a dependency set.
 
 namespace Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlExamples
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.InferenceControl.PremiseSelection
 open Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality
 open Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCore

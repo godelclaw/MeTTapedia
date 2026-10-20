@@ -15,10 +15,12 @@ import Mettapedia.Machines.BranchLocalNeed
 import Mettapedia.Machines.DepthFirstStack
 import Mettapedia.Machines.RevisionedOccurrenceStore
 import Mettapedia.Machines.RevisionDependencySet
+import Mettapedia.Machines.NestedQuerySchedule
 import Mettapedia.Machines.FunctionalCorrespondence
 import Mettapedia.Machines.MachineSubstrate
 import Mettapedia.Machines.MachineRefinement
 import Mettapedia.Machines.ProductiveCoreAdapters
+import Mettapedia.Machines.SourceProducerCardinality
 import Mettapedia.Machines.ExecutionHints
 import Mettapedia.Machines.ProductiveFunctionalMachines
 import Mettapedia.Machines.ProductiveCoreOrdered
@@ -29,6 +31,8 @@ import Mettapedia.Machines.OccurrenceMachine
 import Mettapedia.Machines.OccurrenceCone
 import Mettapedia.Machines.ReceiptReachability
 import Mettapedia.Machines.RunObservation
+import Mettapedia.Machines.IdentityPressureSchedule
+import Mettapedia.Machines.RefusalObservation
 import Mettapedia.Machines.TraceObservationBoundary
 import Mettapedia.Machines.OSLFConeBridge
 
@@ -42,6 +46,12 @@ interruption observations for nondeterministic answer streams, together with
 constructive boundaries on what flattened traces can reconstruct and exact
 guards for causal-receipt reachability.
 
+Finite source-resolved collection producers use shared body and call cursors.
+Their direct, optional and producer workers preserve ordered occurrences,
+captured append contexts, invocation-local commitment and retained stop phases.
+The total supported cursor and every bounded prefix agree with the independent
+source interpreter; native lowering has its own correspondence boundary.
+
 Adaptive reads use the shared cursor protocol. Their retained read certificates
 support validated resumption and certified reuse without introducing another
 binding store or identifying a logical observation with mutable native memory.
@@ -53,6 +63,11 @@ cancellation keeps the committed world and history. Writes computed from reads
 of a shared store commit only after their read certificate is validated against
 the current store; accepted commitments are serializable, refused ones change
 nothing, and the owned host publishes each accepted write list once.
+
+A nested query whose bodies may write the store it reads has a source schedule:
+each level is read once when its branch is reached, and branches run in the
+order of that read.  Fusing levels into one join over the initial store is that
+schedule exactly where no body changes the store, and differs where one does.
 
 Deterministic control cores instantiate the common event-machine interface
 through ordered operational occurrences. Bare missing transitions remain

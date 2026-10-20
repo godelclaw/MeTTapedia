@@ -17,7 +17,7 @@ namespace Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeNeighborhoo
 
 open LO
 open LO.Modal
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeNeighborhoodEmbedding

@@ -150,7 +150,7 @@ end TemporalLinks
 section WMGrounding
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.Framework.EvidenceSemantics
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.Formula

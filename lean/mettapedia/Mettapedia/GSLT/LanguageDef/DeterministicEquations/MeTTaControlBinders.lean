@@ -1,4 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaDataBindings
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Fresh control binders through equation selection
@@ -28,8 +32,8 @@ theorem candidate_solution_iff {target pattern : Atom} {incoming output : Bindin
     (valuation : String → Metta.Atom) :
     HEBindingSatisfied valuation output ↔
       HEBindingSatisfied valuation incoming ∧ HEAtomEquationSatisfied valuation target pattern := by
-  obtain ⟨matched, matching, merged, _, _⟩ := candidate
-  rw [Spec.Match.SolutionTheory.mergeRel_solution_iff merged valuation,
+  obtain ⟨matched, matching, merged⟩ := candidate
+  rw [Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_solutions merged valuation,
     Spec.Match.SolutionTheory.matchRel_solution_iff matching valuation]
   exact and_comm
 
@@ -50,14 +54,14 @@ theorem candidate_free_update {target pattern : Atom} {incoming output : Binding
       exact privateName visible
     exact Function.update_of_ne different replacement valuation
   have patternSame : applyClassSolution (Function.update valuation name replacement)
-      (toLeaTTaAtom pattern) = applyClassSolution valuation (toLeaTTaAtom pattern) := by
+      (encodeModelAtom pattern) = applyClassSolution valuation (encodeModelAtom pattern) := by
     apply applyClassSolution_congr_on_atom_vars
     intro other occurrence
     exact agrees other (.inr (.inl ⟨pattern, by simp,
       atomOccurs_of_mem_translated_vars occurrence⟩))
   refine (candidate_solution_iff candidate _).mpr
     ⟨query_visible_preserves_model agrees inputs.1, ?_⟩
-  change applyClassSolution _ (toLeaTTaAtom target) = applyClassSolution _ (toLeaTTaAtom pattern)
+  change applyClassSolution _ (encodeModelAtom target) = applyClassSolution _ (encodeModelAtom pattern)
   rw [query_visible_solution agrees, patternSame]
   exact inputs.2
 
@@ -65,7 +69,7 @@ theorem candidate_free_update {target pattern : Atom} {incoming output : Binding
 another name whose value is data. -/
 theorem binder_shape_of_observation {output : Bindings}
     (valuation : String → Metta.Atom)
-    (data : ∀ name, ∃ atom, DataAtom atom ∧ valuation name = toLeaTTaAtom atom)
+    (data : ∀ name, ∃ atom, DataAtom atom ∧ valuation name = encodeModelAtom atom)
     (name : String)
     (free : ∀ replacement, HEBindingSatisfied (Function.update valuation name replacement) output)
     (emitted : Atom)
@@ -73,27 +77,27 @@ theorem binder_shape_of_observation {output : Bindings}
       HEAtomEquationSatisfied model emitted (.var name)) :
     emitted = .var name := by
   have same := observed (Function.update valuation name (.var name)) (free (.var name))
-  simp only [HEAtomEquationSatisfied, toLeaTTaAtom, applyClassSolution,
+  simp only [HEAtomEquationSatisfied, encodeModelAtom, applyClassSolution,
     Function.update_self] at same
   cases emitted with
   | symbol | grounded | expression =>
-      simp only [toLeaTTaAtom, applyClassSolution] at same
+      simp only [encodeModelAtom, applyClassSolution] at same
       contradiction
   | var other =>
       by_cases equalName : other = name
       · exact congrArg Atom.var equalName
       · obtain ⟨atom, atomData, assigned⟩ := data other
-        have atomIsVariable : toLeaTTaAtom atom = .var name := by
-          simpa only [toLeaTTaAtom, applyClassSolution,
+        have atomIsVariable : encodeModelAtom atom = .var name := by
+          simpa only [encodeModelAtom, applyClassSolution,
             Function.update_of_ne equalName, assigned] using same
-        cases atomData <;> simp only [toLeaTTaAtom] at atomIsVariable <;> contradiction
+        cases atomData <;> simp only [encodeModelAtom] at atomIsVariable <;> contradiction
 
 /-- The freshness obligation is discharged against the actual matching
 inputs, rather than assumed as a property of the emitted code. -/
 theorem candidate_binder_shape {target pattern : Atom} {incoming output : Bindings}
     (candidate : UnifyCandidateRel target pattern incoming output)
     (valuation : String → Metta.Atom) (satisfied : HEBindingSatisfied valuation output)
-    (data : ∀ name, ∃ atom, DataAtom atom ∧ valuation name = toLeaTTaAtom atom)
+    (data : ∀ name, ∃ atom, DataAtom atom ∧ valuation name = encodeModelAtom atom)
     (name : String) (privateName : ¬QueryVisibleName [pattern] target incoming name)
     (emitted : Atom)
     (observed : ∀ model, HEBindingSatisfied model output →
@@ -107,7 +111,7 @@ theorem selected_chain_binder {target pattern source template emitted : Atom}
     {incoming output : Bindings} (name : String)
     (privateName : ¬QueryVisibleName [pattern] target incoming name)
     (valuation : String → Metta.Atom) (satisfied : HEBindingSatisfied valuation output)
-    (data : ∀ other, ∃ atom, DataAtom atom ∧ valuation other = toLeaTTaAtom atom)
+    (data : ∀ other, ∃ atom, DataAtom atom ∧ valuation other = encodeModelAtom atom)
     (selected : UnifySuccessRel target pattern (call "chain" [source, .var name, template])
       incoming emitted output) :
     ∃ actualSource actualTemplate,
@@ -120,8 +124,8 @@ theorem selected_chain_binder {target pattern source template emitted : Atom}
       [source, .var name, template] emitted selected.2
   have length : items.length = 3 := by
     have same := congrArg List.length (observations valuation satisfied)
-    simpa only [List.length_map, toLeaTTaAtoms, List.length_cons, List.length_nil,
-      solutionTheory_toLeaTTaAtoms_eq_map] using same
+    simpa only [List.length_map, encodeModelAtoms, List.length_cons, List.length_nil,
+      solutionTheory_encodeModelAtoms_eq_map] using same
   obtain ⟨actualSource, actualBinder, actualTemplate, rfl⟩ :
       ∃ a b c, items = [a, b, c] := by
     cases items with
@@ -140,7 +144,7 @@ theorem selected_chain_binder {target pattern source template emitted : Atom}
       HEAtomEquationSatisfied model actualBinder (.var name) ∧
       HEAtomEquationSatisfied model actualTemplate template := by
     intro model modelSatisfied
-    simpa only [HEAtomEquationSatisfied, toLeaTTaAtoms, List.map_cons, List.map_nil,
+    simpa only [HEAtomEquationSatisfied, encodeModelAtoms, List.map_cons, List.map_nil,
       List.cons.injEq, and_true] using observations model modelSatisfied
   have binder := candidate_binder_shape selected.1 valuation satisfied data name privateName
     actualBinder (fun model modelSatisfied => (parts model modelSatisfied).2.1)
@@ -160,13 +164,13 @@ theorem captured_chain_binder_counterexample :
   obtain ⟨output, candidate⟩ :=
     (unify_empty_iff_model (.symbol "nik:Nil") (.var "slot")).mpr
       ⟨fun _ => .sym "nik:Nil", by
-        simp only [HEAtomEquationSatisfied, toLeaTTaAtom, applyClassSolution]⟩
+        simp only [HEAtomEquationSatisfied, encodeModelAtom, applyClassSolution]⟩
   refine ⟨output, candidate, ?_⟩
   intro valuation satisfied
   have same := ((candidate_solution_iff candidate valuation).mp satisfied).2
   have assigned : valuation "slot" = .sym "nik:Nil" := by
-    simpa only [HEAtomEquationSatisfied, toLeaTTaAtom, applyClassSolution] using same.symm
-  simp [HEAtomEquationSatisfied, call, returned, toLeaTTaAtom, toLeaTTaAtoms,
+    simpa only [HEAtomEquationSatisfied, encodeModelAtom, applyClassSolution] using same.symm
+  simp [HEAtomEquationSatisfied, call, returned, encodeModelAtom, encodeModelAtoms,
     applyClassSolution, assigned]
 
 end Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaEmit.Control

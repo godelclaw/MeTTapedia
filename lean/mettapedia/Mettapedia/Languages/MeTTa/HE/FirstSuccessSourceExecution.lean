@@ -7,6 +7,12 @@ import Mettapedia.Languages.MeTTa.HE.EquationFreshening
 import Mettapedia.Languages.MeTTa.HE.RetainedArgumentSpecification
 import Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
 import Mettapedia.Languages.MeTTa.HE.EvaluatorBindingExtension
+import Mettapedia.Languages.MeTTa.HE.RecursiveExecution
+import Mettapedia.Machines.OrderedProtocol
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Scoped recursive source derivations through retained first-success execution
@@ -70,11 +76,14 @@ occurrence and actual merge/read coverage; each chain reads the reached child
 frame, substitutes its explicit binder in saved syntax, then resumes under the
 original live scope and caller. Internal Empty and NotReducible are retained.
 No-match refusal requires independent query absence and covered actual reads.
-General polymorphic first-binding coverage, remaining minimal host operations,
-and host/world effects remain separate boundaries. The full atom-application admission
-still excludes embedded operator heads; the ordinary result is a call-boundary
-theorem, not that additional typing coverage. Raw syntax demand holds programs
-as data. No effectful host adequacy is claimed by this read-only-space worker.
+The ordinary untyped tuple path uses an actual singleton Undefined lookup,
+tuple-specific live scopes and stopping rules, and recursive call children.
+Its ordered replies retain changed bindings and duplicate equation occurrences.
+General failed-arrow fallback, polymorphic first-binding coverage, remaining
+minimal host operations and host/world effects remain separate boundaries.
+Operator coverage still requires an admitted call child; the tuple syntax does
+not supply that evidence. Raw syntax demand holds programs as data. No effectful
+host adequacy is claimed by this read-only-space worker.
 
 -/
 
@@ -90,41 +99,12 @@ open Spec.Bindings.ScopeObservation Spec.Match.ModelTheory
 
 namespace BindingSourceAgreement
 
-private theorem queryVisible_support_iff (live : List Atom) (query : Atom)
-    (bindings : Bindings) (name : String) :
-    Spec.Eval.Steps.QueryVisibleName live query bindings name ↔
-      Spec.Match.Merge.AtomOccurs query name ∨
-        (∃ atom∈live,Spec.Match.Merge.AtomOccurs atom name) ∨ name∈specBindingVars bindings := by
-  have occurs : ∀ atom, Spec.Match.Merge.AtomOccurs atom name ↔ name∈TypeSubst.typeVars atom := by
-    intro atom
-    rw [Spec.Match.ModelTheory.atomOccurs_iff_mem_translated_vars,
-      LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
-  simp only [Spec.Eval.Steps.QueryVisibleName,specBindingVars,List.mem_append,List.mem_flatMap,
-    List.mem_cons,List.not_mem_nil,or_false]
-  simp only [occurs]
-  constructor
-  · rintro (queryOccurs | liveOccurs | ⟨value,stored⟩ | ⟨key,value,stored,inside⟩ |
-        ⟨left,right,stored,inside⟩)
-    · exact Or.inl queryOccurs
-    · exact Or.inr (Or.inl liveOccurs)
-    · exact Or.inr (Or.inr (Or.inl ⟨(name,value),stored,Or.inl rfl⟩))
-    · exact Or.inr (Or.inr (Or.inl ⟨(key,value),stored,Or.inr inside⟩))
-    · exact Or.inr (Or.inr (Or.inr ⟨(left,right),stored,inside⟩))
-  · rintro (queryOccurs | liveOccurs | ⟨⟨key,value⟩,stored,same | inside⟩ |
-        ⟨⟨left,right⟩,stored,inside⟩)
-    · exact Or.inl queryOccurs
-    · exact Or.inr (Or.inl liveOccurs)
-    · change name=key at same
-      subst key
-      exact Or.inr (Or.inr (Or.inl ⟨value,stored⟩))
-    · exact Or.inr (Or.inr (Or.inr (Or.inl ⟨key,value,stored,inside⟩)))
-    · exact Or.inr (Or.inr (Or.inr (Or.inr ⟨left,right,stored,inside⟩)))
 
 theorem queryVisible_iff {left right : Bindings} (related : BindingSourceAgreement left right)
     (live : List Atom) (query : Atom) (name : String) :
     Spec.Eval.Steps.QueryVisibleName live query left name ↔
       Spec.Eval.Steps.QueryVisibleName live query right name := by
-  rw [queryVisible_support_iff,queryVisible_support_iff,related.support]
+  rw [EquationScope.queryVisible_support_iff,EquationScope.queryVisible_support_iff,related.support]
 
 theorem alphaVariant_iff {incoming other : Bindings} (related : BindingSourceAgreement incoming other)
     (live : List Atom) (query left right freshLeft freshRight : Atom) :
@@ -140,6 +120,18 @@ theorem noMatch {incoming other : Bindings} (related : BindingSourceAgreement in
   obtain ⟨left,right,stored,alpha,matching⟩ := rule
   exact absent freshLeft freshRight matched
     ⟨left,right,stored,(related.alphaVariant_iff live query left right freshLeft freshRight).mpr alpha,matching⟩
+
+/-- Failure of a satisfiable match-and-caller conjunction is independent of
+the binding record's presentation. The same match and common valuation
+construct the contradictory candidate in the other presentation. -/
+theorem unifyNoMatch {incoming other : Bindings} (related : BindingSourceAgreement incoming other)
+    {target pattern : Atom}
+    (absent : Spec.Eval.Steps.UnifyNoMatchRel target pattern incoming) :
+    Spec.Eval.Steps.UnifyNoMatchRel target pattern other := by
+  rintro output ⟨matched,matching,merged⟩
+  obtain ⟨valuation,matchedModel,callerModel⟩ := merged.common_model
+  exact absent _ ⟨matched,matching,Spec.Bindings.ScopeObservation.LogicalMergeRel.append_of_common_model
+    ⟨valuation,matchedModel,(related.solutions valuation).mpr callerModel⟩⟩
 
 end BindingSourceAgreement
 
@@ -212,6 +204,14 @@ inductive SourceBindingComparison.FrameRelated :
       FrameRelated .semantic native (.selected source table certificate)
 
 namespace SourceBindingComparison.FrameRelated
+
+/-- Both admitted observers retain the whole independent binding theory. -/
+theorem agreement {comparison : SourceBindingComparison} {native : Bindings}
+    {frame : Spec.Eval.BindingFrame} (witness : comparison.FrameRelated native frame) :
+    BindingSourceAgreement native frame.bindings := by
+  cases witness with
+  | records related => exact BindingSourceAgreement.of_recordPerm related
+  | semantic agreement _ _ => exact agreement
 
 theorem related {comparison : SourceBindingComparison} {native : Bindings}
     {frame : Spec.Eval.BindingFrame} (witness : comparison.FrameRelated native frame) :
@@ -686,6 +686,12 @@ This is its input representation, not an independent equation semantics. -/
 def equationInputs (incoming : Bindings) (fuel : Nat) (candidate : ResultPair) : ResultSet :=
   (mergeBindings candidate.2 (aliasConstraints incoming) fuel).filterMap fun merged =>
     if merged.hasLoop then none else some (merged.applyFull candidate.1 fuel, merged)
+
+/-- Preparing one equality-matched query item preserves its unitary choice.
+Loop rejection and materialization cannot duplicate that source occurrence. -/
+theorem equationInputs_length_le_one (incoming : Bindings) (fuel : Nat) (candidate : ResultPair) :
+    (equationInputs incoming fuel candidate).length ≤ 1 :=
+  (List.length_filterMap_le _ _).trans (mergeBindings_length_le_one _ _ _)
 
 /-- Query preparation retains every surviving merge before any producer or
 typed return continuation is entered. -/
@@ -1968,8 +1974,8 @@ theorem satisfies {bindings : Bindings} (frame : ClosedBindingFrame bindings) :
 
 theorem acyclic {bindings : Bindings} (frame : ClosedBindingFrame bindings) :
     Spec.Match.Merge.SemanticLoopFree bindings := by
-  apply LeaTTaBridge.heSemanticLoopFree_of_satisfied_nonvariable
-    (LeaTTaTypeConformance.heBindingSatisfied_of_specTypeBindingSatisfied frame.satisfies)
+  apply MatchSizeTheory.heSemanticLoopFree_of_satisfied_nonvariable
+    (Spec.Bindings.ScopeObservation.ModelTransport.heBindingSatisfied_of_specTypeBindingSatisfied frame.satisfies)
   intro name value member
   have closed := frame.closed name (.var value) member
   simp [TypeSubst.typeVars] at closed
@@ -2012,7 +2018,7 @@ theorem single (name : String) (value : Atom) (closed : TypeSubst.typeVars value
   empty.fresh_assign name value rfl closed
 
 theorem applyFull {bindings : Bindings} (frame : ClosedBindingFrame bindings)
-    (atom : Atom) (fuel : Nat) (enough : LeaTTaBridge.atomDepth atom + 2 ≤ fuel) :
+    (atom : Atom) (fuel : Nat) (enough : BindingComposition.atomDepth atom + 2 ≤ fuel) :
     bindings.applyFull atom fuel = applyTypeValuation (presentedValuation bindings.assignments) atom := by
   have represented : bindings = FirstSuccessPreparedArguments.presentedBindings bindings.assignments := by
     cases bindings with
@@ -2647,22 +2653,22 @@ theorem runtime_match_type_solution {left right : Atom} {bindings : Bindings} {f
     (matched : bindings ∈ matchAtoms left right fuel) (valuation : String → Atom)
     (satisfied : TypeBindingSatisfied valuation bindings) :
     applyTypeValuation valuation left = applyTypeValuation valuation right := by
-  apply LeaTTaBridge.toLeaTTaAtom_injective
-  simp only [LeaTTaTypeConformance.toLeaTTaAtom_applyTypeValuation]
-  exact (LeaTTaBridge.matchAtoms_solution_iff matched _).mp
-    (LeaTTaTypeConformance.heBindingSatisfied_of_specTypeBindingSatisfied satisfied)
+  apply Spec.Match.SolutionTheory.encodeModelAtom_injective
+  simp only [Spec.Bindings.ScopeObservation.ModelTransport.encodeModelAtom_applyTypeValuation]
+  exact (BindingComposition.matchAtoms_solution_iff matched _).mp
+    (Spec.Bindings.ScopeObservation.ModelTransport.heBindingSatisfied_of_specTypeBindingSatisfied satisfied)
 
 theorem runtime_merge_type_solution {left right output : Bindings} {fuel : Nat}
     (merged : output ∈ mergeBindings left right fuel) (valuation : String → Atom)
     (satisfied : TypeBindingSatisfied valuation output) :
     TypeBindingSatisfied valuation left ∧ TypeBindingSatisfied valuation right := by
-  have parts := (LeaTTaBridge.mergeBindings_solution_iff merged _).mp
-    (LeaTTaTypeConformance.heBindingSatisfied_of_specTypeBindingSatisfied satisfied)
+  have parts := (BindingComposition.mergeBindings_solution_iff merged _).mp
+    (Spec.Bindings.ScopeObservation.ModelTransport.heBindingSatisfied_of_specTypeBindingSatisfied satisfied)
   constructor
-  · simpa only [LeaTTaTypeConformance.fromLeaTTaAtom_toLeaTTaAtom] using
-      LeaTTaTypeConformance.specTypeBindingSatisfied_of_heBindingSatisfied parts.1
-  · simpa only [LeaTTaTypeConformance.fromLeaTTaAtom_toLeaTTaAtom] using
-      LeaTTaTypeConformance.specTypeBindingSatisfied_of_heBindingSatisfied parts.2
+  · simpa only [Spec.Match.SolutionTheory.decodeModelAtom_encodeModelAtom] using
+      Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_of_heBindingSatisfied parts.1
+  · simpa only [Spec.Match.SolutionTheory.decodeModelAtom_encodeModelAtom] using
+      Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_of_heBindingSatisfied parts.2
 
 end ClosedQueryAdmission
 end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution
@@ -2777,8 +2783,8 @@ theorem runtime_merge_type_solution_iff {left right output : Bindings} {fuel : N
     (member : output∈mergeBindings left right fuel) (valuation : String→Atom) :
     TypeBindingSatisfied valuation output ↔
       TypeBindingSatisfied valuation left ∧ TypeBindingSatisfied valuation right := by
-  simp only [LeaTTaTypeConformance.specTypeBindingSatisfied_iff_heBindingSatisfied_translated]
-  exact LeaTTaBridge.mergeBindings_solution_iff member _
+  simp only [Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_iff_heBindingSatisfied_translated]
+  exact BindingComposition.mergeBindings_solution_iff member _
 
 /-- Extend an actual caller model only on the fresh closed match keys. -/
 theorem closed_private_common_model {matched caller : Bindings}
@@ -2808,8 +2814,8 @@ theorem closed_private_principal {matched caller out : Bindings} {fuel : Nat}
     intro key value stored
     have closed := frame.closed key value stored
     cases value <;> simp_all [TypeSubst.typeVars,Spec.Match.Merge.isVariableB]
-  have leftModel := LeaTTaTypeConformance.heBindingSatisfied_of_specTypeBindingSatisfied matchedModel
-  have rightModel := LeaTTaTypeConformance.heBindingSatisfied_of_specTypeBindingSatisfied callerModel
+  have leftModel := Spec.Bindings.ScopeObservation.ModelTransport.heBindingSatisfied_of_specTypeBindingSatisfied matchedModel
+  have rightModel := Spec.Bindings.ScopeObservation.ModelTransport.heBindingSatisfied_of_specTypeBindingSatisfied callerModel
   exact ⟨QueryBindingProjection.mergeBindings_semanticLoopFree_of_common_model
       member matchedShape shape leftModel rightModel,
     QueryBindingProjection.mergeBindings_assignmentsNonVariable_model member matchedShape shape,
@@ -2872,26 +2878,26 @@ theorem closed_private_source_endpoint {matched caller independent out : Binding
   have sourceModel : TypeBindingSatisfied extended
       ⟨independent.assignments++matched.assignments,independent.equalities⟩ :=
     (appendPrivatePresentation_solutions _ _ _).mpr ⟨independentModel,privateModel.1⟩
-  have independentShape : LeaTTaBridge.HEAssignmentsNonVariable independent := by
+  have independentShape : Spec.Match.SolutionTheory.HEAssignmentsNonVariable independent := by
     intro key target present
     have impossible := shape key (.var target) present
     simp [Spec.Match.Merge.isVariableB] at impossible
-  have matchedShape : LeaTTaBridge.HEAssignmentsNonVariable matched := by
+  have matchedShape : Spec.Match.SolutionTheory.HEAssignmentsNonVariable matched := by
     intro key target present
     have impossible := frame.closed key (.var target) present
     simp [TypeSubst.typeVars] at impossible
   obtain ⟨source,swapped,swappedShape,_,sameModels⟩ :=
     Spec.Match.Completeness.exists_swapped_specMerge_of_satisfied sourceMerge
       independentShape matchedShape
-      ⟨fun name=>LeaTTaBridge.toLeaTTaAtom (extended name),
-        LeaTTaTypeConformance.heBindingSatisfied_of_specTypeBindingSatisfied sourceModel⟩
+      ⟨fun name=>Spec.Match.SolutionTheory.encodeModelAtom (extended name),
+        Spec.Bindings.ScopeObservation.ModelTransport.heBindingSatisfied_of_specTypeBindingSatisfied sourceModel⟩
   have theory : ∀ observer,
       TypeBindingSatisfied observer
         ⟨independent.assignments++matched.assignments,independent.equalities⟩ ↔
       TypeBindingSatisfied observer source := by
     intro observer
-    rw [LeaTTaTypeConformance.specTypeBindingSatisfied_iff_heBindingSatisfied_translated,
-      LeaTTaTypeConformance.specTypeBindingSatisfied_iff_heBindingSatisfied_translated]
+    rw [Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_iff_heBindingSatisfied_translated,
+      Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_iff_heBindingSatisfied_translated]
     exact sameModels _
   have outputRelated := closed_private_source_agreement frame related member
   have finalRelated : BindingSourceAgreement out source := by
@@ -2909,7 +2915,7 @@ theorem closed_private_source_endpoint {matched caller independent out : Binding
   have finalModel := (theory extended).mp sourceModel
   exact ⟨source,swapped,finalRelated,finalShape,
     Spec.Match.ModelTheory.semanticLoopFree_of_satisfied_nonvariable
-      (LeaTTaTypeConformance.heBindingSatisfied_of_specTypeBindingSatisfied finalModel) finalShape,
+      (Spec.Bindings.ScopeObservation.ModelTransport.heBindingSatisfied_of_specTypeBindingSatisfied finalModel) finalShape,
     extended,finalModel⟩
 
 /-- A private RHS supported by the closed match has the same literal
@@ -2922,7 +2928,7 @@ theorem closed_private_readout_forced {matched caller source out : Bindings}
     (member : out∈mergeBindings matched caller mergeFuel)
     (atom : Atom)
     (supported : ∀ key∈TypeSubst.typeVars atom,key∈matched.assignments.map Prod.fst)
-    (enough : LeaTTaBridge.atomDepth atom+2≤readFuel) :
+    (enough : BindingComposition.atomDepth atom+2≤readFuel) :
     ∀ observer, TypeBindingSatisfied observer source →
       applyTypeValuation observer atom = out.applyFull atom readFuel := by
   have readout : out.applyFull atom readFuel =
@@ -2960,7 +2966,7 @@ theorem closed_private_source_materialization {matched caller source out : Bindi
     (member : out∈mergeBindings matched caller mergeFuel)
     (atom : Atom)
     (supported : ∀ key∈TypeSubst.typeVars atom,key∈matched.assignments.map Prod.fst)
-    (enough : LeaTTaBridge.atomDepth atom+2≤readFuel) :
+    (enough : BindingComposition.atomDepth atom+2≤readFuel) :
     Spec.Type.Presentation.BindingTheory.BindingMaterializationRel source atom
       (out.applyFull atom readFuel) :=
   BindingTheory.BindingMaterializationRel.of_model_constant model
@@ -2998,7 +3004,7 @@ theorem EquationBodyEvidence.of_closed_match
       (freshenEquationAvoiding (equationScope live query expected incoming) position left right).1 matchFuel)
     (merged : request.2 ∈ mergeBindings candidate.2 (aliasConstraints incoming) mergeFuel)
     (readout : request.1 = request.2.applyFull candidate.1 readFuel)
-    (enough : LeaTTaBridge.atomDepth candidate.1 + 2 ≤ readFuel) :
+    (enough : BindingComposition.atomDepth candidate.1 + 2 ≤ readFuel) :
     EquationBodyEvidence space live query expected incoming candidate request := by
   let pattern := (freshenEquationAvoiding
     (equationScope live query expected incoming) position left right).1
@@ -3070,7 +3076,7 @@ theorem EquationBodyEvidence.of_closed_query_hit
     (noEqualities : incoming.equalities = []) (normal : TypeSubst.Normal incoming.assignments)
     (hit : candidate ∈ equationCandidates space live query expected incoming fuel)
     (input : request ∈ equationInputs incoming fuel candidate)
-    (enough : LeaTTaBridge.atomDepth candidate.1 + 2 ≤ fuel) :
+    (enough : BindingComposition.atomDepth candidate.1 + 2 ≤ fuel) :
     EquationBodyEvidence space live query expected incoming candidate request := by
   obtain ⟨left, right, position, stored, rhs, matched, _⟩ :=
     queryEquationsAvoiding_matchAtoms_witness hit
@@ -3110,6 +3116,13 @@ private theorem queryVisible_cons {live : List Atom} {query atom : Atom} {incomi
   · exact Or.inr (Or.inr (Or.inr (Or.inl values)))
   · exact Or.inr (Or.inr (Or.inr (Or.inr equalities)))
 
+
+/-- Tuple branches stop on every Empty/Error head. Other occurrences retain
+their own tail reply list and its reached bindings. -/
+def tupleOutputs (heads : ResultSet) (tails : ResultPair → ResultSet) : ResultSet :=
+  heads.flatMap fun head =>
+    if isEmptyOrError head.1 then [head]
+    else RecursiveTasks.tupleTail head.1 (tails head)
 
 mutual
 /-- Recursive source derivations retain every answer and its reached binding
@@ -3152,6 +3165,39 @@ inductive AtomDerivation (space : Space) (comparison : SourceBindingComparison :
           request.2 (fuel + 1) (outputs request)) →
       AtomDerivation (comparison := comparison) space live (.expression (.symbol name :: arguments)) expected incoming
         (fuel + 3) (successPriority (((applications name rows).flatMap outputs)))
+  | untypedTuple (live : List Atom) (operator : Atom) (arguments : List Atom)
+      (expected : Atom) (incoming : Bindings) (fuel : Nat)
+      (rows : ResultSet) (outputs : ResultPair → ResultSet) :
+      isEmptyOrError (.expression (operator :: arguments)) = false →
+      expected ≠ Atom.atomType → expected ≠ Atom.expressionType →
+      getAtomTypes space operator = [Atom.undefinedType] →
+      TupleDerivation space comparison (expected :: live) (.expression (operator :: arguments))
+        incoming (fuel + 1) rows →
+      (∀ request ∈ rows, CallDerivation space comparison live request.1 expected request.2
+        (fuel + 1) (outputs request)) →
+      AtomDerivation space comparison live (.expression (operator :: arguments)) expected incoming
+        (fuel + 3) (successPriority (rows.flatMap outputs))
+
+/-- Tuple interpretation uses its own pending-tail scope and stopping rule.
+Its child derivations are the same recursive atom family as ordinary calls. -/
+inductive TupleDerivation (space : Space) (comparison : SourceBindingComparison := .records) :
+    List Atom → Atom → Bindings → Nat → ResultSet → Prop where
+  | nil (live : List Atom) (incoming : Bindings) (fuel : Nat) :
+      TupleDerivation space comparison live Atom.unit incoming (fuel + 1) [(Atom.unit, incoming)]
+  | singleton (live : List Atom) (value : Atom) (incoming : Bindings) (fuel : Nat)
+      (heads : ResultSet) :
+      AtomDerivation space comparison live value Atom.undefinedType incoming fuel heads →
+      TupleDerivation space comparison live (.expression [value]) incoming (fuel + 1)
+        (heads.map HE.tupleSingleton)
+  | cons (live : List Atom) (head second : Atom) (remaining : List Atom)
+      (incoming : Bindings) (fuel : Nat) (heads : ResultSet) (tails : ResultPair → ResultSet) :
+      AtomDerivation space comparison (.expression (second :: remaining) :: live)
+        head Atom.undefinedType incoming fuel heads →
+      (∀ selected ∈ heads, isEmptyOrError selected.1 = false →
+        TupleDerivation space comparison (selected.1 :: live) (.expression (second :: remaining))
+          selected.2 fuel (tails selected)) →
+      TupleDerivation space comparison live (.expression (head :: second :: remaining))
+        incoming (fuel + 1) (tupleOutputs heads tails)
 
 inductive ArgsDerivation (space : Space) (comparison : SourceBindingComparison := .records) :
     List Atom → List Atom → List Atom → Bindings → Nat → ArgumentResults → Prop where
@@ -3169,6 +3215,10 @@ inductive ArgsDerivation (space : Space) (comparison : SourceBindingComparison :
 
 inductive CallDerivation (space : Space) (comparison : SourceBindingComparison := .records) :
     List Atom → Atom → Atom → Bindings → Nat → ResultSet → Prop where
+  | errorPassthrough (live : List Atom) (value expected : Atom)
+      (incoming : Bindings) (fuel : Nat) :
+      IsErrorRel value →
+      CallDerivation space comparison live value expected incoming (fuel + 1) [(value, incoming)]
   | embedded (live : List Atom) (name : String) (arguments : List Atom) (expected : Atom)
       (incoming : Bindings) (fuel : Nat) (raw : ResultSet) (outputs : ResultPair → ResultSet) :
       comparison = .semantic → name ≠ "Error" →
@@ -3346,9 +3396,7 @@ inductive PrimitiveDerivation (space : Space) (comparison : SourceBindingCompari
   | unifyNoMatch (live : List Atom) (caller : Option Atom)
       (target pattern yes no : Atom) (incoming : Bindings) (fuel : Nat) :
       unifyMatchesCovered target pattern incoming fuel = true →
-      matchAtoms target pattern fuel = [] →
-      (∀ matched, ¬Spec.Match.Merge.MatchRel Spec.Match.Merge.equalityGroundedSemantic
-        target pattern matched) →
+      unifySuccessResults target pattern yes incoming fuel = [] →
       PrimitiveDerivation (comparison := comparison) space live caller
         (.expression [.symbol "unify", target, pattern, yes, no]) incoming (fuel + 1) [(no, incoming)]
   | consAtom (live : List Atom) (caller : Option Atom) (head : Atom) (tail : List Atom)
@@ -4329,7 +4377,7 @@ section
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Eval Spec.Eval.Steps Spec.Match.Merge Spec.Match.ModelTheory
 open Spec.Type.Presentation Spec.Type.RuntimeRefinement Spec.Bindings.ScopeObservation
-open LeaTTaBridge LeaTTaTypeConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 open Spec.Type Spec.Type.Presentation.BindingTheory
 
@@ -4481,7 +4529,7 @@ theorem unify_selected_frame_of_actual_merge
   | semantic agreement old oldReads =>
       obtain ⟨certificate, candidate, renewal, _step, reads, _pending⟩ :=
         alias_unify_selected_source_step (thenBranch := target) (elseBranch := pattern)
-          agreement old occurred Space.empty noHost [] publishedTypeService none
+          agreement old occurred Space.empty noHost [] storageTypeService none
       have next : SourceBindingComparison.semantic.FrameRelated output
           (.selected output _ certificate) :=
         .semantic (.refl _) certificate (fun atom depth covered => reads atom depth covered)
@@ -4872,11 +4920,11 @@ theorem PrimitiveDerivation.sound {space : Space} {live : List Atom} {caller : O
             unify_selected_frame_of_actual_merge matchedMember mergeMember loop input related
           exact ⟨output, .unifySuccess space target pattern yes no _ input output
             candidate renewed (read yes _ (merged.applyFullCovered_resolutionFuel yes)), next⟩
-  | unifyNoMatch live caller target pattern yes no incoming fuel covered empty absent =>
+  | unifyNoMatch live caller target pattern yes no incoming fuel covered empty =>
       obtain rfl := List.mem_singleton.mp member
-      refine ⟨input, .unifyNoMatch space target pattern yes no input ?_, related⟩
-      rintro output ⟨matched, matching, _⟩
-      exact absent matched matching
+      exact ⟨input, .unifyNoMatch space target pattern yes no input
+        (related.agreement.unifyNoMatch
+          ((QueryBindingProjection.AliasReadout.covered_unify_empty_iff covered).mp empty)), related⟩
   | consAtom live caller head tail incoming fuel =>
       obtain rfl := List.mem_singleton.mp member
       exact ⟨input, .consAtom space head tail input, related⟩
@@ -4996,8 +5044,8 @@ theorem PrimitiveDerivation.covered_realizes {space : Space} {live : List Atom} 
   | unifySuccess live caller target pattern yes no incoming fuel covered nonempty =>
       simpa only [List.isEmpty_eq_false_iff.mpr nonempty, Bool.false_eq_true, if_false] using
         Covered.primitive_unify_realizes space target pattern yes no incoming fuel live caller covered
-  | unifyNoMatch live caller target pattern yes no incoming fuel covered empty absent =>
-      simpa only [unifySuccessResults, empty, List.flatMap_nil, List.isEmpty_nil, if_true] using
+  | unifyNoMatch live caller target pattern yes no incoming fuel covered empty =>
+      simpa only [empty, List.isEmpty_nil, if_true] using
         Covered.primitive_unify_realizes space target pattern yes no incoming fuel live caller covered
   | consAtom live caller head tail incoming fuel =>
       intro stack emitted
@@ -5142,6 +5190,9 @@ theorem CallDerivation.nonembedded {space : Space} {comparison : SourceBindingCo
     (historical : comparison = .records) :
     Spec.Eval.Minimal.embeddedInstruction query = false := by
   cases derived with
+  | errorPassthrough _ value _ _ _ error =>
+      rcases error with ⟨tail, rfl⟩
+      rfl
   | embedded _ _ _ _ _ _ _ _ semantic _ _ _ _ => cases historical.symm.trans semantic
   | unreduced => assumption
   | equations => assumption
@@ -5323,6 +5374,303 @@ theorem equation_produced_returns_realizes (space : Space) (original expected : 
   simpa only [List.flatten_eq_flatMap, List.flatMap_assoc, List.flatMap_map, id_eq] using joined
 
 
+
+/-- The singleton receiver wraps ordinary values and propagates stopped rows. -/
+theorem tuple_singleton_realizes (space : Space) (value : Atom) (incoming : Bindings)
+    (fuel : Nat) (live : List Atom) (heads : ResultSet)
+    (child : Realizes space (.atom value Atom.undefinedType incoming fuel live) heads) :
+    Realizes space (.tuple (.expression [value]) incoming (fuel + 1) live)
+      (heads.map HE.tupleSingleton) := by
+  intro stack emitted
+  have begin := enter_request space HE.GroundedDispatch.none
+    (.tuple (.expression [value]) incoming (fuel + 1) live) stack emitted
+  have done := consume_continuation space HE.GroundedDispatch.none .tupleSingleton heads stack emitted
+  exact begin.trans (by
+    simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
+      RecursiveMachine.resume, List.cons_append, List.nil_append] using
+      (child (.tupleSingleton :: stack) emitted).trans done)
+
+/-- Each nonstopped physical head enters its own retained tuple tail. -/
+theorem tuple_heads_realizes (space : Space) (tail : Atom) (fuel : Nat) (live : List Atom)
+    (heads : ResultSet) (tails : ResultPair → ResultSet)
+    (children : ∀ head ∈ heads, isEmptyOrError head.1 = false →
+      Realizes space (.tuple tail head.2 fuel (head.1 :: live)) (tails head)) :
+    Realizes space (.tupleHeads tail fuel heads live) (tupleOutputs heads tails) := by
+  induction heads with
+  | nil =>
+      intro stack emitted
+      simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
+        tupleOutputs, List.flatMap_nil, List.nil_append] using
+        enter_request space HE.GroundedDispatch.none (.tupleHeads tail fuel [] live) stack emitted
+  | cons head heads ih =>
+      have remaining := ih (fun selected member => children selected (List.mem_cons_of_mem _ member))
+      intro stack emitted
+      let rest := Task.tupleHeads tail fuel heads live
+      have begin := enter_request space HE.GroundedDispatch.none
+        (.tupleHeads tail fuel (head :: heads) live) stack emitted
+      cases stopped : isEmptyOrError head.1 with
+      | true =>
+          have done := append_results space rest [head] (tupleOutputs heads tails)
+            remaining stack emitted
+          exact begin.trans (by
+            simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter, stopped,
+              if_true, List.cons_append, List.nil_append, tupleOutputs, List.flatMap_cons,
+              rest] using done)
+      | false =>
+          have child := children head (by simp) stopped
+            (.tupleTail head.1 :: .append rest :: stack) emitted
+          have resumed := consume_continuation space HE.GroundedDispatch.none
+            (.tupleTail head.1) (tails head) (.append rest :: stack) emitted
+          have done := append_results space rest (RecursiveTasks.tupleTail head.1 (tails head))
+            (tupleOutputs heads tails) remaining stack emitted
+          exact begin.trans (by
+            simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
+              RecursiveMachine.resume, stopped, Bool.false_eq_true, if_false,
+              List.cons_append, List.nil_append, tupleOutputs, List.flatMap_cons, rest] using
+              child.trans (resumed.trans done))
+
+/-- Tuple head evaluation carries the whole pending tuple in its live scope. -/
+theorem tuple_cons_realizes (space : Space) (head second : Atom) (remaining : List Atom)
+    (incoming : Bindings) (fuel : Nat) (live : List Atom)
+    (heads : ResultSet) (tails : ResultPair → ResultSet)
+    (first : Realizes space (.atom head Atom.undefinedType incoming fuel
+      (.expression (second :: remaining) :: live)) heads)
+    (children : ∀ selected ∈ heads, isEmptyOrError selected.1 = false →
+      Realizes space (.tuple (.expression (second :: remaining)) selected.2 fuel
+        (selected.1 :: live)) (tails selected)) :
+    Realizes space (.tuple (.expression (head :: second :: remaining)) incoming (fuel + 1) live)
+      (tupleOutputs heads tails) := by
+  intro stack emitted
+  let receiver := Frame.tupleHeads (.expression (second :: remaining)) fuel live
+  have begin := enter_request space HE.GroundedDispatch.none
+    (.tuple (.expression (head :: second :: remaining)) incoming (fuel + 1) live) stack emitted
+  have resumed := consume_continuation space HE.GroundedDispatch.none receiver heads stack emitted
+  have done := tuple_heads_realizes space (.expression (second :: remaining)) fuel live
+    heads tails children stack emitted
+  exact begin.trans (by
+    simpa only [receiver, FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
+      RecursiveMachine.resume, List.cons_append, List.nil_append] using
+      (first (receiver :: stack) emitted).trans (resumed.trans done))
+
+/-- The actual Undefined operator lookup selects tuple interpretation before
+the existing ordinary call receiver and success-priority collection. -/
+theorem untyped_tuple_realizes (space : Space) (operator : Atom) (arguments : List Atom)
+    (expected : Atom) (incoming : Bindings) (fuel : Nat) (live : List Atom)
+    (rows results : ResultSet)
+    (clean : isEmptyOrError (.expression (operator :: arguments)) = false)
+    (notRaw : expected ≠ Atom.atomType) (notExpression : expected ≠ Atom.expressionType)
+    (types : getAtomTypes space operator = [Atom.undefinedType])
+    (tuple : Realizes space (.tuple (.expression (operator :: arguments)) incoming
+      (fuel + 1) (expected :: live)) rows)
+    (calls : Realizes space (.calls expected (fuel + 1) rows live) results) :
+    Realizes space (.atom (.expression (operator :: arguments)) expected incoming (fuel + 3) live)
+      (successPriority results) := by
+  change expected ≠ .symbol "Atom" at notRaw
+  change expected ≠ .symbol "Expression" at notExpression
+  intro stack emitted
+  let value := Atom.expression (operator :: arguments)
+  let saved := Frame.prepend [] :: .filter :: stack
+  have first := enter_request space HE.GroundedDispatch.none
+    (.atom value expected incoming (fuel + 3) live) stack emitted
+  have expression := enter_request space HE.GroundedDispatch.none
+    (.expression value expected incoming (fuel + 2) live) (.filter :: stack) emitted
+  have selected := enter_request space HE.GroundedDispatch.none
+    (.functions value expected incoming (fuel + 1) [Atom.undefinedType] live)
+    (.filter :: stack) emitted
+  have entered := enter_request space HE.GroundedDispatch.none
+    (.tupleCalls value expected incoming (fuel + 1) live) saved emitted
+  have resumed := consume_continuation space HE.GroundedDispatch.none
+    (.calls expected (fuel + 1) live) rows saved emitted
+  have prepended := consume_continuation space HE.GroundedDispatch.none (.prepend []) results (.filter :: stack) emitted
+  have filtered := consume_continuation space HE.GroundedDispatch.none .filter results stack emitted
+  have finish := prepended.trans (by
+    simpa only [RecursiveMachine.resume, List.nil_append] using filtered)
+  have callRun := calls saved emitted
+  have tupleRun := tuple (.calls expected (fuel + 1) live :: saved) emitted
+  have completed := tupleRun.trans (resumed.trans (by
+    simpa only [RecursiveMachine.resume, List.nil_append] using callRun.trans finish))
+  have tupleEntered := entered.trans (by
+    simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
+      List.cons_append, List.nil_append, value] using completed)
+  have selection := selected.trans (by
+    simpa only [FirstSuccessRecursiveStrategy.enter, FirstSuccessRecursiveStrategy.select,
+      FirstSuccessRecursiveStrategy.readPolicy, FirstSuccessRecursiveStrategy.noteNonFunction,
+      Atom.undefinedType, if_true, List.map_nil, List.cons_append, List.nil_append, saved] using tupleEntered)
+  have interpreted := expression.trans (by
+    simpa only [FirstSuccessRecursiveStrategy.enter, rawTypeLookup, types, value,
+      List.nil_append] using selection)
+  exact first.trans (by
+    simpa [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter, value, clean,
+      getMetaType, notRaw, notExpression, Atom.unit, Nat.add_assoc] using interpreted)
+
+/-- Error-shaped tuple results use the existing ordinary invocation guard. -/
+theorem error_call_realizes (space : Space) (value expected : Atom) (incoming : Bindings)
+    (fuel : Nat) (live : List Atom) (error : IsErrorRel value) :
+    Realizes space (.call value expected incoming (fuel + 1) live) [(value, incoming)] := by
+  have nativeError := (Conformance.isErrorRel_iff_isErrorAtom value).mp error
+  intro stack emitted
+  have first := enter_request space HE.GroundedDispatch.none (.call value expected incoming (fuel + 1) live)
+    stack emitted
+  have invoked := enter_request space HE.GroundedDispatch.none
+    (.invocation (.ordinary expected) value incoming (fuel + 1) live none) stack emitted
+  exact first.trans (by
+    simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
+      InvocationMode.errorPassthrough, nativeError, if_true, List.nil_append] using invoked)
+
+namespace Covered
+
+
+/-- The singleton receiver wraps ordinary values and propagates stopped rows. -/
+theorem tuple_singleton_realizes (space : Space) (value : Atom) (incoming : Bindings)
+    (fuel : Nat) (live : List Atom) (heads : ResultSet)
+    (child : Realizes space (.atom value Atom.undefinedType incoming fuel live) heads) :
+    Realizes space (.tuple (.expression [value]) incoming (fuel + 1) live)
+      (heads.map HE.tupleSingleton) := by
+  intro stack emitted
+  have begin := enter_request space
+    (.tuple (.expression [value]) incoming (fuel + 1) live) stack emitted
+  have done := consume_continuation space .tupleSingleton heads stack emitted
+  exact begin.trans (by
+    simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
+      RecursiveMachine.resume, List.cons_append, List.nil_append] using
+      (child (.tupleSingleton :: stack) emitted).trans done)
+
+/-- Each nonstopped physical head enters its own retained tuple tail. -/
+theorem tuple_heads_realizes (space : Space) (tail : Atom) (fuel : Nat) (live : List Atom)
+    (heads : ResultSet) (tails : ResultPair → ResultSet)
+    (children : ∀ head ∈ heads, isEmptyOrError head.1 = false →
+      Realizes space (.tuple tail head.2 fuel (head.1 :: live)) (tails head)) :
+    Realizes space (.tupleHeads tail fuel heads live) (tupleOutputs heads tails) := by
+  induction heads with
+  | nil =>
+      intro stack emitted
+      simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
+        tupleOutputs, List.flatMap_nil, List.nil_append] using
+        enter_request space (.tupleHeads tail fuel [] live) stack emitted
+  | cons head heads ih =>
+      have remaining := ih (fun selected member => children selected (List.mem_cons_of_mem _ member))
+      intro stack emitted
+      let rest := Task.tupleHeads tail fuel heads live
+      have begin := enter_request space
+        (.tupleHeads tail fuel (head :: heads) live) stack emitted
+      cases stopped : isEmptyOrError head.1 with
+      | true =>
+          have done := append_results space rest [head] (tupleOutputs heads tails)
+            remaining stack emitted
+          exact begin.trans (by
+            simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter, stopped,
+              if_true, List.cons_append, List.nil_append, tupleOutputs, List.flatMap_cons,
+              rest] using done)
+      | false =>
+          have child := children head (by simp) stopped
+            (.tupleTail head.1 :: .append rest :: stack) emitted
+          have resumed := consume_continuation space
+            (.tupleTail head.1) (tails head) (.append rest :: stack) emitted
+          have done := append_results space rest (RecursiveTasks.tupleTail head.1 (tails head))
+            (tupleOutputs heads tails) remaining stack emitted
+          exact begin.trans (by
+            simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
+              RecursiveMachine.resume, stopped, Bool.false_eq_true, if_false,
+              List.cons_append, List.nil_append, tupleOutputs, List.flatMap_cons, rest] using
+              child.trans (resumed.trans done))
+
+/-- Tuple head evaluation carries the whole pending tuple in its live scope. -/
+theorem tuple_cons_realizes (space : Space) (head second : Atom) (remaining : List Atom)
+    (incoming : Bindings) (fuel : Nat) (live : List Atom)
+    (heads : ResultSet) (tails : ResultPair → ResultSet)
+    (first : Realizes space (.atom head Atom.undefinedType incoming fuel
+      (.expression (second :: remaining) :: live)) heads)
+    (children : ∀ selected ∈ heads, isEmptyOrError selected.1 = false →
+      Realizes space (.tuple (.expression (second :: remaining)) selected.2 fuel
+        (selected.1 :: live)) (tails selected)) :
+    Realizes space (.tuple (.expression (head :: second :: remaining)) incoming (fuel + 1) live)
+      (tupleOutputs heads tails) := by
+  intro stack emitted
+  let receiver := Frame.tupleHeads (.expression (second :: remaining)) fuel live
+  have begin := enter_request space
+    (.tuple (.expression (head :: second :: remaining)) incoming (fuel + 1) live) stack emitted
+  have resumed := consume_continuation space receiver heads stack emitted
+  have done := tuple_heads_realizes space (.expression (second :: remaining)) fuel live
+    heads tails children stack emitted
+  exact begin.trans (by
+    simpa only [receiver, FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
+      RecursiveMachine.resume, List.cons_append, List.nil_append] using
+      (first (receiver :: stack) emitted).trans (resumed.trans done))
+
+/-- The actual Undefined operator lookup selects tuple interpretation before
+the existing ordinary call receiver and success-priority collection. -/
+theorem untyped_tuple_realizes (space : Space) (operator : Atom) (arguments : List Atom)
+    (expected : Atom) (incoming : Bindings) (fuel : Nat) (live : List Atom)
+    (rows results : ResultSet)
+    (clean : isEmptyOrError (.expression (operator :: arguments)) = false)
+    (notRaw : expected ≠ Atom.atomType) (notExpression : expected ≠ Atom.expressionType)
+    (types : getAtomTypes space operator = [Atom.undefinedType])
+    (tuple : Realizes space (.tuple (.expression (operator :: arguments)) incoming
+      (fuel + 1) (expected :: live)) rows)
+    (calls : Realizes space (.calls expected (fuel + 1) rows live) results) :
+    Realizes space (.atom (.expression (operator :: arguments)) expected incoming (fuel + 3) live)
+      (successPriority results) := by
+  change expected ≠ .symbol "Atom" at notRaw
+  change expected ≠ .symbol "Expression" at notExpression
+  intro stack emitted
+  let value := Atom.expression (operator :: arguments)
+  let saved := Frame.prepend [] :: .filter :: stack
+  have first := enter_request space
+    (.atom value expected incoming (fuel + 3) live) stack emitted (by
+      simp [FirstSuccessRecursiveStrategy.taskReady, RecursiveMachine.Checked.taskReady,
+        value, getMetaType, Atom.unit])
+  have expression := enter_request space
+    (.expression value expected incoming (fuel + 2) live) (.filter :: stack) emitted
+  have selected := enter_request space
+    (.functions value expected incoming (fuel + 1) [Atom.undefinedType] live)
+    (.filter :: stack) emitted (by
+      simp [FirstSuccessRecursiveStrategy.taskReady,
+        FirstSuccessRecursiveStrategy.selectionReady, FirstSuccessRecursiveStrategy.readPolicy,
+        Atom.undefinedType])
+  have entered := enter_request space
+    (.tupleCalls value expected incoming (fuel + 1) live) saved emitted
+  have resumed := consume_continuation space
+    (.calls expected (fuel + 1) live) rows saved emitted
+  have prepended := consume_continuation space (.prepend []) results (.filter :: stack) emitted
+  have filtered := consume_continuation space .filter results stack emitted
+  have finish := prepended.trans (by
+    simpa only [RecursiveMachine.resume, List.nil_append] using filtered)
+  have callRun := calls saved emitted
+  have tupleRun := tuple (.calls expected (fuel + 1) live :: saved) emitted
+  have completed := tupleRun.trans (resumed.trans (by
+    simpa only [RecursiveMachine.resume, List.nil_append] using callRun.trans finish))
+  have tupleEntered := entered.trans (by
+    simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
+      List.cons_append, List.nil_append, value] using completed)
+  have selection := selected.trans (by
+    simpa only [FirstSuccessRecursiveStrategy.enter, FirstSuccessRecursiveStrategy.select,
+      FirstSuccessRecursiveStrategy.readPolicy, FirstSuccessRecursiveStrategy.noteNonFunction,
+      Atom.undefinedType, if_true, List.map_nil, List.cons_append, List.nil_append, saved] using tupleEntered)
+  have interpreted := expression.trans (by
+    simpa only [FirstSuccessRecursiveStrategy.enter, rawTypeLookup, types, value,
+      List.nil_append] using selection)
+  exact first.trans (by
+    simpa [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter, value, clean,
+      getMetaType, notRaw, notExpression, Atom.unit, Nat.add_assoc] using interpreted)
+
+/-- Error-shaped tuple results use the existing ordinary invocation guard. -/
+theorem error_call_realizes (space : Space) (value expected : Atom) (incoming : Bindings)
+    (fuel : Nat) (live : List Atom) (error : IsErrorRel value) :
+    Realizes space (.call value expected incoming (fuel + 1) live) [(value, incoming)] := by
+  have nativeError := (Conformance.isErrorRel_iff_isErrorAtom value).mp error
+  intro stack emitted
+  have first := enter_request space (.call value expected incoming (fuel + 1) live)
+    stack emitted
+  have invoked := enter_request space
+    (.invocation (.ordinary expected) value incoming (fuel + 1) live none) stack emitted (by
+      simp [FirstSuccessRecursiveStrategy.taskReady, RecursiveMachine.Checked.taskReady,
+        InvocationMode.errorPassthrough, nativeError])
+  exact first.trans (by
+    simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter,
+      InvocationMode.errorPassthrough, nativeError, if_true, List.nil_append] using invoked)
+
+end Covered
+
 mutual
 /-- A recursive source derivation constructs the actual first-success worker
 path, under every saved caller and already published occurrence list. -/
@@ -5346,6 +5694,30 @@ theorem AtomDerivation.realizes {space : Space} {comparison : SourceBindingCompa
       · apply calls_realizes_map
         intro request member
         exact (calls request member).realizes
+  | untypedTuple live operator arguments expected incoming fuel rows outputs clean notRaw notExpr
+      types tuple calls =>
+      apply untyped_tuple_realizes space operator arguments expected incoming fuel live rows _
+        clean notRaw notExpr types tuple.realizes
+      exact calls_realizes_map space expected (fuel + 1) live rows outputs
+        (fun request member => (calls request member).realizes)
+termination_by 2 * fuel
+
+/-- Tuple paths preserve stopped heads and the actual selected tail bindings. -/
+theorem TupleDerivation.realizes {space : Space} {comparison : SourceBindingComparison}
+    {live : List Atom} {value : Atom} {incoming : Bindings} {fuel : Nat} {results : ResultSet}
+    (derivation : TupleDerivation space comparison live value incoming fuel results) :
+    Realizes space (.tuple value incoming fuel live) results := by
+  cases derivation with
+  | nil live incoming fuel =>
+      intro stack emitted
+      simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter, Atom.unit,
+        List.nil_append] using enter_request space HE.GroundedDispatch.none
+          (.tuple Atom.unit incoming (fuel + 1) live) stack emitted
+  | singleton live value incoming fuel heads child =>
+      exact tuple_singleton_realizes space value incoming fuel live heads child.realizes
+  | cons live head second remaining incoming fuel heads tails first children =>
+      exact tuple_cons_realizes space head second remaining incoming fuel live heads tails
+        first.realizes (fun selected member clean => (children selected member clean).realizes)
 termination_by 2 * fuel
 
 /-- Each argument branch continues with its own bindings and the exact live
@@ -5383,6 +5755,8 @@ theorem CallDerivation.realizes {space : Space} {comparison : SourceBindingCompa
     (derivation : CallDerivation (comparison := comparison) space live query expected incoming fuel results) :
     Realizes space (.call query expected incoming fuel live) results := by
   cases derivation with
+  | errorPassthrough live value expected incoming fuel error =>
+      exact error_call_realizes space _ expected incoming fuel live error
   | unreduced live name arguments expected incoming fuel _ nonembedded clean empty _ =>
       exact call_empty_realizes space name arguments expected incoming fuel live nonembedded clean empty
   | equations live name arguments expected incoming fuel productions outputs _ nonembedded clean selected evidence producers bodies =>
@@ -5432,6 +5806,1145 @@ theorem mem_of_mem_successPriority {result : ResultPair} {results : ResultSet}
     (member : result ∈ successPriority results) : result ∈ results := by
   simp only [successPriority] at member
   split at member <;> exact (List.mem_filter.mp member).1
+
+/-- The actual worker's completed filter implements the independent phase
+judgment, including repeated all-error occurrences. -/
+theorem successPriority_source (results : ResultSet) :
+    Mettapedia.Machines.OrderedProtocol.Completion.SuccessPriorityRel
+      (fun row : ResultPair => isErrorAtom row.1) results (successPriority results) := by
+  classical
+  by_cases succeeds : ∃ row ∈ results, isErrorAtom row.1 = false
+  · have nonempty : (results.filter fun row => !isErrorAtom row.1) ≠ [] := by
+      obtain ⟨row, member, clean⟩ := succeeds
+      intro empty
+      have present : row ∈ results.filter (fun row => !isErrorAtom row.1) :=
+        List.mem_filter.mpr ⟨member, by simp [clean]⟩
+      rw [empty] at present
+      exact List.not_mem_nil present
+    have selected : successPriority results = results.filter (fun row => !isErrorAtom row.1) := by
+      simp [successPriority, List.isEmpty_eq_false_iff.mpr nonempty]
+    rw [selected]
+    exact .successes succeeds
+  · have failed : ∀ row ∈ results, isErrorAtom row.1 = true := by
+      intro row member
+      cases classified : isErrorAtom row.1 with
+      | true => rfl
+      | false => exact False.elim (succeeds ⟨row, member, classified⟩)
+    have empty : (results.filter fun row => !isErrorAtom row.1) = [] := by
+      apply List.filter_eq_nil_iff.mpr
+      intro row member
+      simp [failed row member]
+    have kept : (results.filter fun row => isErrorAtom row.1) = results :=
+      List.filter_eq_self.mpr failed
+    simp only [successPriority, empty, List.isEmpty_nil, Bool.not_true, Bool.false_eq_true,
+      ↓reduceIte, kept]
+    exact .allErrors failed
+
+/-- The publication judgment determines the worker's complete occurrence
+list, not just its support. -/
+theorem successPriority_source_iff (raw published : ResultSet) :
+    Mettapedia.Machines.OrderedProtocol.Completion.SuccessPriorityRel
+      (fun row : ResultPair => isErrorAtom row.1) raw published ↔
+      successPriority raw = published := by
+  constructor
+  · intro completed
+    exact (successPriority_source raw).functional completed
+  · rintro rfl
+    exact successPriority_source raw
+
+/-- A completed source phase consumes the actual retained filter frame.
+The reached space, caller stack and earlier publications are preserved. -/
+theorem completed_priority_retained_filter (space : Space) (raw published : ResultSet)
+    (stack : List Frame) (emitted : ResultSet)
+    (completed : Mettapedia.Machines.OrderedProtocol.Completion.SuccessPriorityRel
+      (fun row : ResultPair => isErrorAtom row.1) raw published) :
+    Covered.SilentPath ⟨space,.returning raw,.filter::stack,emitted⟩
+      ⟨space,.returning published,stack,emitted⟩ := by
+  have selected := (successPriority_source_iff raw published).mp completed
+  simpa only [RecursiveMachine.resume, List.nil_append, selected] using
+    Covered.consume_continuation space .filter raw stack emitted
+
+section ScopedPolymorphicInvocation
+
+open Spec.Type.Presentation.Exact
+open Spec.Type.Presentation.BindingTheory Spec.Type.Presentation.Theory
+open Spec.Type.RuntimeRefinement
+open Spec.Match.Merge
+
+open private atomVariables_eq_typeVars atomListVariables_eq_typeVarsList
+  from Mettapedia.Languages.MeTTa.HE.EquationFreshening
+
+/-- A fresh type alias extends the checkpoint's single certified table. The
+same extension reads every pending operand; the left type is already fixed
+by the reached constraints. -/
+theorem scoped_type_alias_certificate {bindings : Bindings} {table : TypeSubst}
+    (certificate : ReadoutCertificate bindings table) (left right actual : String)
+    (fresh : right ∉ specBindingVars bindings)
+    (forced : ∀ valuation, TypeBindingSatisfied valuation bindings →
+      valuation left = .symbol actual) :
+    ReadoutCertificate (bindings.addEquality left right)
+      (table.bind right (.symbol actual)) := by
+  apply ReadoutCertificate.of_normal_theory
+  · exact certificate.normal.bind (by simp [TypeSubst.apply, TypeSubst.typeVars])
+  · intro valuation
+    rw [TypeSubstSatisfied.bind_iff (certificate.lookup_none_of_outside fresh),
+      certificate.theory]
+    simp only [applyTypeValuation]
+    constructor
+    · rintro ⟨model, assigned⟩
+      refine ⟨model.1, ?_⟩
+      intro first second stored
+      rcases List.mem_append.mp stored with old | added
+      · exact model.2 first second old
+      · cases List.mem_singleton.mp added
+        exact (forced valuation model).trans assigned.symm
+    · intro model
+      have old : TypeBindingSatisfied valuation bindings :=
+        ⟨model.1, fun first second stored =>
+          model.2 first second (List.mem_append_left _ stored)⟩
+      refine ⟨old, ?_⟩
+      exact (model.2 left right (by simp [Bindings.addEquality])).symm.trans
+        (forced valuation old)
+
+private theorem equality_only_classValues (edges : List (String × String)) (name : String) :
+    (⟨[], edges⟩ : Bindings).classValues name = [] := by
+  simp [Bindings.classValues, Bindings.lookup]
+
+/-- Repeated positions of one whole arrow produce two physical equality
+occurrences in the executable matcher, even though their constraint is shared. -/
+theorem repeated_arrow_match (left right : String) (depth : Nat) :
+    matchAtoms (.expression [.symbol "->", .var left, .var left])
+      (.expression [.symbol "->", .var right, .var right]) (depth + 7) =
+      [((Bindings.empty.addEquality left right).addEquality left right)] := by
+  have noLoop (edges : List (String × String)) :
+      (⟨[], edges⟩ : Bindings).hasLoop = false :=
+    Bindings.hasLoop_false_of_assignments_nil _ rfl
+  simp [matchAtoms, matchAtomsList, mergeBindings, addVarEquality, getMetaType,
+    Bindings.empty, Bindings.addEquality, equality_only_classValues, noLoop,
+    Bindings.valuesConsistent]
+
+private theorem source_single_equality_merge (bindings : Bindings) (left right : String)
+    {values : List Atom} (selected : (bindings.addEquality left right).classValues left = values)
+    (agree : ValuesAgree values) :
+    MergeRel equalityGroundedSemantic bindings (Bindings.empty.addEquality left right)
+      (bindings.addEquality left right) := by
+  refine .mk (order := [.equality left right]) ?_ (.equality (.consistent selected agree) .nil)
+  exact List.Perm.refl _
+
+/-- The independent structural matcher also records both variable positions.
+Its enclosing merge folds the unique constraint only once. -/
+theorem independent_repeated_arrow_match (left right : String) :
+    MatchRel equalityGroundedSemantic
+      (.expression [.symbol "->", .var left, .var left])
+      (.expression [.symbol "->", .var right, .var right])
+      ((Bindings.empty.addEquality left right).addEquality left right) := by
+  apply MatchRel.expression
+  · apply MatchListAccRel.cons (.symSym "->" semanticLoopFree_empty)
+      (MergeRel.mk (List.Perm.refl []) .nil)
+    apply MatchListAccRel.cons (.varVar left right (semanticLoopFree_of_assignments_nil rfl))
+      (source_single_equality_merge Bindings.empty left right
+        (equality_only_classValues _ _) trivial)
+    exact MatchListAccRel.cons
+      (.varVar left right (semanticLoopFree_of_assignments_nil rfl))
+      (source_single_equality_merge (Bindings.empty.addEquality left right) left right
+        (equality_only_classValues _ _) trivial) .nil
+  · exact semanticLoopFree_of_assignments_nil rfl
+
+/-- The head cast genuinely changes the applicability binding: its fresh
+second signature is linked to the already valued first signature. -/
+theorem independent_fresh_arrow_type_match (bindings : Bindings) (left right : String)
+    (value : Atom) (leftFresh : left ∉ bindings.names)
+    (rightFresh : right ∉ bindings.names) (different : left ≠ right) :
+    TypeMatchRel (.expression [.symbol "->", .var left, .var left])
+      (.expression [.symbol "->", .var right, .var right]) (bindings.assign left value)
+      ((bindings.assign left value).addEquality left right) := by
+  apply TypeMatchRel.structural (by intro same; cases same) (by intro same; cases same)
+    (by intro same; cases same) (by intro same; cases same)
+    (independent_repeated_arrow_match left right)
+  refine .mk (order := [.equality left right]) ?_
+    (.equality (.consistent
+      (fresh_instance_alias_values bindings left right value leftFresh rightFresh different)
+      (by simp [ValuesAgree])) .nil)
+  simp [constraints, Bindings.empty, Bindings.addEquality, List.eraseDups_cons]
+
+/-- Native merging preserves both physical repeated-arrow edges. This exact
+record is intentionally distinct from the source's unique-constraint fold. -/
+theorem fresh_arrow_type_match (bindings : Bindings) (left right : String)
+    (value : Atom) (depth : Nat) (leftFresh : left ∉ bindings.names)
+    (rightFresh : right ∉ bindings.names) (different : left ≠ right) :
+    matchTypes (.expression [.symbol "->", .var left, .var left])
+      (.expression [.symbol "->", .var right, .var right])
+      (bindings.assign left value) (depth + 7) =
+      [(((bindings.assign left value).addEquality left right).addEquality left right)] := by
+  have first := fresh_instance_alias_values bindings left right value leftFresh rightFresh different
+  have second : (((bindings.assign left value).addEquality left right).addEquality left right).classValues
+      left = [value] := by
+    rw [EqualityClosure.classValues_addEquality_of_mem (by simp [Bindings.addEquality])]
+    exact first
+  have firstAdded : addVarEquality (bindings.assign left value) left right (depth + 6) =
+      [(bindings.assign left value).addEquality left right] := by
+    rw [show depth + 6 = (depth + 5) + 1 by omega, addVarEquality]
+    simp only [first, Bindings.valuesConsistent, List.all_nil, ↓reduceIte]
+  have secondAdded : addVarEquality ((bindings.assign left value).addEquality left right)
+      left right (depth + 6) =
+      [((bindings.assign left value).addEquality left right).addEquality left right] := by
+    rw [show depth + 6 = (depth + 5) + 1 by omega, addVarEquality]
+    simp only [second, Bindings.valuesConsistent, List.all_nil, ↓reduceIte]
+  change (matchAtoms (.expression [.symbol "->", .var left, .var left])
+    (.expression [.symbol "->", .var right, .var right]) (depth + 7)).flatMap
+      (fun matched => mergeBindings (bindings.assign left value) matched (depth + 7)) = _
+  rw [repeated_arrow_match]
+  simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil]
+  change mergeBindings (bindings.assign left value) ⟨[], [(left, right), (left, right)]⟩
+    (depth + 7) = _
+  rw [show depth + 7 = (depth + 6) + 1 by omega, mergeBindings]
+  simp only [List.foldl_cons, List.foldl_nil, List.flatMap_cons, List.flatMap_nil,
+    List.append_nil, firstAdded, secondAdded]
+
+/-- The distinct row multiplicities retain exactly the same complete models
+and name support. This does not identify their physical records. -/
+theorem repeated_type_edge_agreement (bindings : Bindings) (left right : String) :
+    BindingSourceAgreement ((bindings.addEquality left right).addEquality left right)
+      (bindings.addEquality left right) := by
+  constructor
+  · intro valuation
+    constructor
+    · intro model
+      refine ⟨model.1, ?_⟩
+      intro first second stored
+      exact model.2 first second (List.mem_append_left _ stored)
+    · intro model
+      refine ⟨model.1, ?_⟩
+      intro first second stored
+      rcases List.mem_append.mp stored with old | added
+      · exact model.2 first second old
+      · exact model.2 first second (List.mem_append_right _ added)
+  · intro name
+    simp only [specBindingVars, Bindings.addEquality, List.flatMap_append,
+      List.flatMap_cons, List.flatMap_nil, List.append_nil, List.mem_append,
+      List.mem_cons, List.not_mem_nil, or_false]
+    tauto
+
+/-- The source cast and its renewed table are constructed from the selected
+type occurrence and the reached certificate. No evaluator result is assumed. -/
+theorem scoped_fresh_arrow_cast (space : Space) (scope : List String) (operator : Atom)
+    (bindings : Bindings) (left right actual : String) (table : TypeSubst)
+    (certificate : ReadoutCertificate (bindings.assign left (.symbol actual)) table)
+    (leftFresh : left ∉ bindings.names) (rightFresh : right ∉ bindings.names)
+    (different : left ≠ right)
+    (freshReached : right ∉ specBindingVars (bindings.assign left (.symbol actual)))
+    (lookup : scopedTypeLookup scope space (bindings.assign left (.symbol actual)) operator
+      (.expression [.symbol "->", .var left, .var left])
+      [.expression [.symbol "->", .var right, .var right]]) :
+    ∃ nextCertificate : ReadoutCertificate
+        ((bindings.assign left (.symbol actual)).addEquality left right)
+        (table.bind right (.symbol actual)),
+      scopedStorageTypeService.typeCast scope space operator
+        (.expression [.symbol "->", .var left, .var left])
+        (bindings.assign left (.symbol actual))
+        (operator, (bindings.assign left (.symbol actual)).addEquality left right) ∧
+      BindingFrame.Update .renew
+        (.selected (bindings.assign left (.symbol actual)) table certificate)
+        (.selected ((bindings.assign left (.symbol actual)).addEquality left right)
+          (table.bind right (.symbol actual)) nextCertificate) ∧
+      ∀ pending : List Atom, (pending.map table.apply).map
+        (table.bind right (.symbol actual)).apply =
+          pending.map (table.bind right (.symbol actual)).apply := by
+  have unbound : bindings.lookup left = none := by
+    apply List.lookup_eq_none_iff.mpr
+    intro entry stored
+    apply bne_iff_ne.mpr
+    intro same
+    apply leftFresh
+    apply List.mem_append_left
+    exact List.mem_flatMap.mpr ⟨entry, stored, by simp [same]⟩
+  have bound : (left, Atom.symbol actual) ∈ (bindings.assign left (.symbol actual)).assignments := by
+    simp [Bindings.assign, isBound_false_of_lookup_none unbound]
+  have forced (valuation : String → Atom)
+      (model : TypeBindingSatisfied valuation (bindings.assign left (.symbol actual))) :
+      valuation left = .symbol actual := by
+    simpa only [applyTypeValuation] using model.1 left (.symbol actual) bound
+  let nextCertificate := scoped_type_alias_certificate certificate left right actual freshReached forced
+  refine ⟨nextCertificate, ?_, .selected certificate nextCertificate, ?_⟩
+  · exact TypeCastRel.success (earlierTypes := []) (laterTypes := []) lookup rfl
+      (by simp) (independent_fresh_arrow_type_match bindings left right (.symbol actual)
+        leftFresh rightFresh different)
+  · intro pending
+    apply certificate.pending_absorbed nextCertificate _ pending
+    intro valuation model
+    refine ⟨model.1, ?_⟩
+    intro first second stored
+    exact model.2 first second (List.mem_append_left _ stored)
+
+open private reachable_ne_endpoints_mem_edgeNodes
+  from Mettapedia.Languages.MeTTa.HE.EqualityClosure
+
+private theorem scoped_type_class_fresh {bindings : Bindings} {name : String}
+    (fresh : name ∉ bindings.eqVarsInOrder) : bindings.eqClassOrdered name = [name] := by
+  have empty : bindings.eqVarsInOrder.filter
+      (fun other => (bindings.eqClass name).contains other) = [] := by
+    apply List.filter_eq_nil_iff.mpr
+    intro other stored connected
+    by_cases same : name = other
+    · exact fresh (same.symm ▸ stored)
+    · exact fresh (EqualityClosure.mem_eqVarsInOrder_iff.mpr
+        (reachable_ne_endpoints_mem_edgeNodes same
+          (EqualityClosure.mem_eqClass_iff_reachable.mp
+            (List.contains_iff_mem.mp connected))).1)
+  simp only [Bindings.eqClassOrdered, empty]
+
+private theorem scoped_type_class_avoids {bindings : Bindings} {root name : String}
+    (fresh : name ∉ bindings.eqVarsInOrder) (different : root ≠ name) :
+    name ∉ bindings.eqClassOrdered root := by
+  intro member
+  exact fresh (EqualityClosure.mem_eqVarsInOrder_iff.mpr
+    (reachable_ne_endpoints_mem_edgeNodes different
+      (EqualityClosure.mem_eqClass_iff_reachable.mp
+        (EqualityClosure.mem_eqClassOrdered_iff.mp member))).2)
+
+private theorem scoped_type_fresh_edges {bindings : Bindings} {name : String}
+    (fresh : name ∉ specBindingVars bindings) : name ∉ bindings.eqVarsInOrder := by
+  intro member
+  apply fresh
+  exact List.mem_append_right _ (EqualityClosure.mem_eqVarsInOrder_iff.mp member)
+
+private theorem scoped_type_lookup_avoids {bindings : Bindings} {name key : String}
+    {value : Atom} (fresh : name ∉ specBindingVars bindings)
+    (found : bindings.lookup key = some value) : name ∉ TypeSubst.typeVars value := by
+  obtain ⟨before, after, entries, _⟩ := List.lookup_eq_some_iff.mp found
+  intro occurs
+  apply fresh
+  apply List.mem_append_left
+  apply List.mem_flatMap.mpr
+  exact ⟨(key, value), by simp [entries], by simp [occurs]⟩
+
+private theorem scoped_type_alias_guard {bindings : Bindings} {left right actual : String}
+    (leftFresh : left ∉ bindings.eqVarsInOrder)
+    (rightFresh : right ∉ bindings.eqVarsInOrder) (different : left ≠ right)
+    (assigned : bindings.lookup left = some (.symbol actual)) :
+    ∀ fuel atom, right ∉ TypeSubst.typeVars atom →
+      (bindings.addEquality left right).hasResolvableVarAux fuel atom =
+        bindings.hasResolvableVarAux fuel atom := by
+  intro fuel
+  induction fuel with
+  | zero => intro atom absent; rfl
+  | succ fuel ih =>
+      intro atom absent
+      cases atom with
+      | symbol name => rfl
+      | grounded value => rfl
+      | var name =>
+          have outside : name ≠ right := by simpa [TypeSubst.typeVars, eq_comm] using absent
+          by_cases same : name = left
+          · subst name
+            simp [Bindings.hasResolvableVarAux, scoped_type_class_fresh leftFresh,
+              EqualityClosure.eqClassOrdered_addEquality_of_fresh leftFresh rightFresh different,
+              Bindings.isBound, assigned]
+          · simp only [Bindings.hasResolvableVarAux,
+              EqualityClosure.eqClassOrdered_addEquality_of_outside_fresh
+                leftFresh rightFresh different same outside]
+            rfl
+      | expression atoms =>
+          have children : ∀ atom ∈ atoms,
+              (bindings.addEquality left right).hasResolvableVarAux fuel atom =
+                bindings.hasResolvableVarAux fuel atom := by
+            intro atom member
+            exact ih atom (fun occurs => absent
+              (Freshness.typeVars_mem_typeVarsList_of_mem member right occurs))
+          simp only [Bindings.hasResolvableVarAux]
+          clear absent
+          induction atoms with
+          | nil => rfl
+          | cons atom rest tail =>
+              simp only [List.any_cons, children atom (by simp)]
+              rw [tail (fun child member => children child (by simp [member]))]
+
+private theorem scoped_type_alias_resolveAux {bindings : Bindings} {left right actual : String}
+    (leftFresh : left ∉ bindings.eqVarsInOrder)
+    (rightFresh : right ∉ specBindingVars bindings) (different : left ≠ right)
+    (assigned : bindings.lookup left = some (.symbol actual)) :
+    ∀ fuel visited atom, right ∉ visited → right ∉ TypeSubst.typeVars atom →
+      (bindings.addEquality left right).resolveAtomFullAux fuel visited atom =
+        bindings.resolveAtomFullAux fuel visited atom := by
+  have rightEdges := scoped_type_fresh_edges rightFresh
+  have lookups : (bindings.addEquality left right).lookup = bindings.lookup := rfl
+  intro fuel
+  induction fuel with
+  | zero => intro visited atom avoided absent; rfl
+  | succ fuel ih =>
+      intro visited atom avoided absent
+      cases atom with
+      | symbol name => rfl
+      | grounded value => rfl
+      | expression atoms =>
+          have children : ∀ atom ∈ atoms,
+              (bindings.addEquality left right).resolveAtomFullAux fuel visited atom =
+                bindings.resolveAtomFullAux fuel visited atom := by
+            intro atom member
+            exact ih visited atom avoided (fun occurs => absent
+              (Freshness.typeVars_mem_typeVarsList_of_mem member right occurs))
+          simp only [Bindings.resolveAtomFullAux]
+          have mapped : atoms.mapM
+                ((bindings.addEquality left right).resolveAtomFullAux fuel visited) =
+              atoms.mapM (bindings.resolveAtomFullAux fuel visited) := by
+            clear absent
+            induction atoms with
+            | nil => rfl
+            | cons atom rest tail =>
+                simp only [List.mapM_cons, children atom (by simp)]
+                rw [tail (fun child member => children child (by simp [member]))]
+          rw [mapped]
+      | var root =>
+          have outside : root ≠ right := by simpa [TypeSubst.typeVars, eq_comm] using absent
+          by_cases same : root = left
+          · subst root
+            simp [Bindings.resolveAtomFullAux, scoped_type_class_fresh leftFresh,
+              EqualityClosure.eqClassOrdered_addEquality_of_fresh leftFresh rightEdges different,
+              lookups, assigned, avoided, Bindings.hasResolvableVar,
+              Bindings.hasResolvableVarAux, Bindings.atomScanFuel]
+          · have classes := EqualityClosure.eqClassOrdered_addEquality_of_outside_fresh
+              leftFresh rightEdges different same outside
+            have nextAvoided : right ∉ bindings.eqClassOrdered root ++ visited := by
+              simp only [List.mem_append, not_or]
+              exact ⟨scoped_type_class_avoids rightEdges outside, avoided⟩
+            simp only [Bindings.resolveAtomFullAux, classes, lookups]
+            split
+            · rfl
+            · cases found : (bindings.eqClassOrdered root).findSome? bindings.lookup with
+              | none => simp only [Bindings.eqRepresentative, classes]
+              | some value =>
+                  obtain ⟨key, _member, lookup⟩ := List.exists_of_findSome?_eq_some found
+                  have valueAbsent := scoped_type_lookup_avoids rightFresh lookup
+                  have scanned : (bindings.addEquality left right).hasResolvableVar value =
+                      bindings.hasResolvableVar value :=
+                    scoped_type_alias_guard leftFresh rightEdges different assigned _ value valueAbsent
+                  have continued := ih (bindings.eqClassOrdered root ++ visited) value
+                    nextAvoided valueAbsent
+                  cases value <;> simp only [scanned, continued, Bindings.eqRepresentative, classes]
+
+private theorem scoped_type_alias_resolve {bindings : Bindings} {left right actual root : String}
+    (leftFresh : left ∉ bindings.eqVarsInOrder)
+    (rightFresh : right ∉ specBindingVars bindings) (different : left ≠ right)
+    (assigned : bindings.lookup left = some (.symbol actual)) (outside : root ≠ right)
+    (fuel : Nat) :
+    (bindings.addEquality left right).resolveFull root fuel = bindings.resolveFull root fuel := by
+  have rightEdges := scoped_type_fresh_edges rightFresh
+  have lookups : (bindings.addEquality left right).lookup = bindings.lookup := rfl
+  have read := scoped_type_alias_resolveAux leftFresh rightFresh different assigned
+    fuel [] (.var root) (by simp) (by simpa [TypeSubst.typeVars, eq_comm] using outside)
+  by_cases same : root = left
+  · subst root
+    simp only [Bindings.resolveFull, scoped_type_class_fresh leftFresh,
+      EqualityClosure.eqClassOrdered_addEquality_of_fresh leftFresh rightEdges different,
+      lookups, List.findSome?_cons, assigned, Option.isNone_some, Bool.and_false,
+      Bool.false_eq_true, if_false, read]
+  · simp only [Bindings.resolveFull,
+      EqualityClosure.eqClassOrdered_addEquality_of_outside_fresh
+        leftFresh rightEdges different same outside, lookups, read]
+
+private theorem scoped_type_alias_fresh_read {bindings : Bindings} {left right actual : String}
+    (leftFresh : left ∉ bindings.eqVarsInOrder)
+    (rightFresh : right ∉ specBindingVars bindings) (different : left ≠ right)
+    (assigned : bindings.lookup left = some (.symbol actual)) (fuel : Nat) :
+    (bindings.addEquality left right).applyFull (.var right) (fuel + 2) = .symbol actual := by
+  have connected : (EqualityClosure.edgeGraph
+      (bindings.addEquality left right).equalities).Reachable left right :=
+    ⟨.cons ⟨different, Or.inl (by simp [Bindings.addEquality])⟩ .nil⟩
+  have classRight : (bindings.addEquality left right).eqClassOrdered right = [left, right] :=
+    (EqualityClosure.eqClassOrdered_eq_of_reachable connected).symm.trans
+      (EqualityClosure.eqClassOrdered_addEquality_of_fresh leftFresh
+        (scoped_type_fresh_edges rightFresh) different)
+  have lookups : (bindings.addEquality left right).lookup = bindings.lookup := rfl
+  simp [Bindings.applyFull, Bindings.resolveFull, Bindings.resolveAtomFullAux, classRight,
+    lookups, assigned, Bindings.hasResolvableVar, Bindings.hasResolvableVarAux, Bindings.atomScanFuel]
+
+
+
+private theorem scoped_type_bind_unchanged {bindings : Bindings} {table : TypeSubst}
+    (certificate : ReadoutCertificate bindings table) {name actual : String}
+    (fresh : name ∉ specBindingVars bindings) (atom : Atom)
+    (absent : name ∉ TypeSubst.typeVars atom) :
+    (table.bind name (.symbol actual)).apply atom = table.apply atom := by
+  rw [TypeSubst.bind_apply_eq_applyAssignment_apply _ _ _ _
+    (certificate.lookup_none_of_outside fresh)]
+  apply TypeSubst.apply_eq_self_of_variables_not_keys
+  intro other occurs stored
+  have same : other = name := by simpa [TypeSubst.keys] using stored
+  exact certificate.avoids_outside fresh atom absent (same ▸ occurs)
+
+/-- A fresh applicability assignment renews the actual saved frame and its
+single independent readout table. Older alias classes remain intact, and
+all covered pending operands share the same extended interpretation. -/
+theorem scoped_type_assignment_frame {native source : Bindings} {table : TypeSubst}
+    (certificate : ReadoutCertificate source table)
+    (related : SourceBindingComparison.semantic.FrameRelated native
+      (.selected source table certificate)) (name actual : String)
+    (fresh : name ∉ specBindingVars native) :
+    ∃ nextCertificate : ReadoutCertificate (source.assign name (.symbol actual))
+        (table.bind name (.symbol actual)),
+      SourceBindingComparison.semantic.FrameRelated
+        (native.assign name (.symbol actual))
+        (.selected (source.assign name (.symbol actual)) (table.bind name (.symbol actual))
+          nextCertificate) ∧
+      BindingFrame.Update .renew (.selected source table certificate)
+        (.selected (source.assign name (.symbol actual)) (table.bind name (.symbol actual))
+          nextCertificate) ∧
+      ∀ pending : List Atom, (pending.map table.apply).map
+        (table.bind name (.symbol actual)).apply =
+          pending.map (table.bind name (.symbol actual)).apply := by
+  have agreement : BindingSourceAgreement native source := related.related
+  have sourceFresh : name ∉ specBindingVars source :=
+    fun member => fresh ((agreement.support name).mpr member)
+  let nextCertificate := certificate.fresh_assignment name (.symbol actual) sourceFresh (by simp [TypeSubst.typeVars])
+  have freshFrame := FreshPrivateMerge.readFrame_of_fresh
+    (keys := fun key => key = name) (bindings := native) (by
+      intro key same
+      subst key
+      exact fresh)
+  have nativeUnbound : native.lookup name = none := freshFrame.reads name rfl
+  have sourceUnbound : source.lookup name = none :=
+    (FreshPrivateMerge.readFrame_of_fresh (keys := fun key => key = name)
+      (by intro key same; subst key; exact sourceFresh)).reads name rfl
+  have nativeAssigned : native.assign name (.symbol actual) =
+      ⟨native.assignments ++ [(name, .symbol actual)], native.equalities⟩ := by
+    simp [Bindings.assign, Bindings.isBound, nativeUnbound]
+  have sourceAssigned : source.assign name (.symbol actual) =
+      ⟨source.assignments ++ [(name, .symbol actual)], source.equalities⟩ := by
+    simp [Bindings.assign, Bindings.isBound, sourceUnbound]
+  have nextAgreement : BindingSourceAgreement (native.assign name (.symbol actual))
+      (source.assign name (.symbol actual)) := by
+    rw [nativeAssigned, sourceAssigned]
+    constructor
+    · intro valuation
+      simpa only [List.append_nil] using
+        solution_iff_append agreement.solutions ⟨[(name, .symbol actual)], []⟩ valuation
+    · intro key
+      simpa only [List.append_nil] using
+        support_iff_append agreement.support ⟨[(name, .symbol actual)], []⟩ key
+  have classes : ∀ root, root ≠ name → name ∉ native.eqClassOrdered root :=
+    fun _ different => scoped_type_class_avoids (scoped_type_fresh_edges fresh) different
+  have values : ∀ key value, native.lookup key = some value →
+      name ∉ Mettapedia.Languages.MeTTa.SubstitutionAlgebra.vars value := by
+    intro key value found
+    simpa only [← TypeSubst.typeVars_eq_vars] using scoped_type_lookup_avoids fresh found
+  have complete : ∀ atom,
+      (native.assign name (.symbol actual)).applyFull atom
+          ((native.assign name (.symbol actual)).resolutionFuel atom) =
+        (table.bind name (.symbol actual)).apply atom := by
+    intro atom
+    induction atom using Atom.rec
+        (motive_2 := fun atoms =>
+          atoms.map (fun child => (native.assign name (.symbol actual)).applyFull child
+              ((native.assign name (.symbol actual)).resolutionFuel child)) =
+            atoms.map (table.bind name (.symbol actual)).apply) with
+    | symbol key => simp [Bindings.resolutionFuel, Bindings.applyFull, TypeSubst.apply]
+    | grounded value => simp [Bindings.resolutionFuel, Bindings.applyFull, TypeSubst.apply]
+    | var root =>
+        by_cases same : root = name
+        · subst root
+          have singleton : (native.assign name (.symbol actual)).eqClassOrdered name = [name] :=
+            freshFrame.orderedClass rfl
+          have assigned := lookup_assign_of_lookup_none native name (.symbol actual) nativeUnbound
+          simp [Bindings.resolutionFuel, Bindings.applyFull, Bindings.resolveFull,
+            Bindings.resolveAtomFullAux, singleton, assigned, Bindings.hasResolvableVar,
+            Bindings.hasResolvableVarAux, Bindings.atomScanFuel, TypeSubst.apply,
+            TypeSubst.lookup_bind]
+        · have unchanged : ∀ fuel,
+              (native.assign name (.symbol actual)).applyFull (.var root) fuel =
+                native.applyFull (.var root) fuel := by
+            intro fuel
+            apply BindingResolutionReadSupport.applyFull_assign_unrelated
+            cases fuel with
+            | zero => simp [BindingResolutionReadSupport.applySupport]
+            | succ fuel =>
+                simp only [BindingResolutionReadSupport.applySupport,
+                  BindingResolutionReadSupport.support, List.mem_append, not_or]
+                exact ⟨classes root same,
+                  BindingResolutionReadSupport.atomSupport_avoids native name classes values
+                    fuel [] (.var root) (by simpa [SubstitutionAlgebra.vars, eq_comm] using same)⟩
+          have oldRead : native.applyFull (.var root) (native.resolutionFuel (.var root)) =
+              table.apply (.var root) :=
+            related.materialization (.var root) _ (native.applyFullCovered_resolutionFuel _)
+          have oldStable := native.applyFullCovered_stable (.var root)
+            (native.resolutionFuel (.var root))
+            ((native.assign name (.symbol actual)).resolutionFuel (.var root))
+            (native.applyFullCovered_resolutionFuel _)
+          have nextStable := (native.assign name (.symbol actual)).applyFullCovered_stable
+            (.var root) ((native.assign name (.symbol actual)).resolutionFuel (.var root))
+            (native.resolutionFuel (.var root))
+            ((native.assign name (.symbol actual)).applyFullCovered_resolutionFuel _)
+          rw [Nat.add_comm ((native.assign name (.symbol actual)).resolutionFuel (.var root))]
+            at nextStable
+          exact (nextStable.symm.trans ((unchanged _).trans oldStable)).trans (oldRead.trans
+            (scoped_type_bind_unchanged certificate sourceFresh (.var root)
+              (by simpa [TypeSubst.typeVars, eq_comm] using same)).symm)
+    | expression atoms children =>
+        rw [Bindings.applyFull_resolutionFuel_expression]
+        simpa only [TypeSubst.apply] using congrArg Atom.expression children
+    | nil => rfl
+    | cons atom atoms head tail => exact congrArg₂ List.cons head tail
+  refine ⟨nextCertificate, .semantic nextAgreement nextCertificate ?_,
+    .selected certificate nextCertificate, ?_⟩
+  · intro atom depth covered
+    rw [← Bindings.applyFull_resolutionFuel_eq_of_covered _ atom depth covered]
+    exact complete atom
+  · intro pending
+    apply certificate.pending_absorbed nextCertificate _ pending
+    intro valuation model
+    rw [sourceAssigned] at model
+    exact ((appendPrivatePresentation_solutions valuation source [(name, .symbol actual)]).mp
+      model).1
+
+/-- A reached scoped type checkpoint renews one joint readout after its fresh
+head instance is linked to the already assigned applicability instance. The
+worker retains both equality occurrences; the source retains their one fold.
+All covered operands agree, including saved syntax and repeated variables. -/
+theorem scoped_type_alias_frame {native source : Bindings} {table : TypeSubst}
+    (certificate : ReadoutCertificate source table)
+    (related : SourceBindingComparison.semantic.FrameRelated native
+      (.selected source table certificate)) (left right actual : String)
+    (leftFresh : left ∉ native.eqVarsInOrder)
+    (rightFresh : right ∉ specBindingVars native) (different : left ≠ right)
+    (assigned : native.lookup left = some (.symbol actual)) :
+    ∃ nextCertificate : ReadoutCertificate (source.addEquality left right)
+        (table.bind right (.symbol actual)),
+      SourceBindingComparison.semantic.FrameRelated
+        ((native.addEquality left right).addEquality left right)
+        (.selected (source.addEquality left right) (table.bind right (.symbol actual))
+          nextCertificate) ∧
+      BindingFrame.Update .renew (.selected source table certificate)
+        (.selected (source.addEquality left right) (table.bind right (.symbol actual))
+          nextCertificate) ∧
+      ∀ pending : List Atom, (pending.map table.apply).map
+        (table.bind right (.symbol actual)).apply =
+          pending.map (table.bind right (.symbol actual)).apply := by
+  have agreement : BindingSourceAgreement native source := related.related
+  have sourceFresh : right ∉ specBindingVars source :=
+    fun member => rightFresh ((agreement.support right).mpr member)
+  have forced (valuation : String → Atom) (model : TypeBindingSatisfied valuation source) :
+      valuation left = .symbol actual := by
+    have nativeModel := (agreement.solutions valuation).mpr model
+    obtain ⟨before, after, entries, _⟩ := List.lookup_eq_some_iff.mp assigned
+    simpa only [applyTypeValuation] using
+      nativeModel.1 left (.symbol actual) (by simp [entries])
+  let nextCertificate := scoped_type_alias_certificate certificate left right actual sourceFresh forced
+  have nextAgreement : BindingSourceAgreement (native.addEquality left right)
+      (source.addEquality left right) := by
+    constructor
+    · intro valuation
+      simpa only [Bindings.addEquality, List.append_nil] using
+        solution_iff_append agreement.solutions ⟨[], [(left, right)]⟩ valuation
+    · intro name
+      simpa only [Bindings.addEquality, List.append_nil] using
+        support_iff_append agreement.support ⟨[], [(left, right)]⟩ name
+  have complete : ∀ atom,
+      (native.addEquality left right).applyFull atom
+          ((native.addEquality left right).resolutionFuel atom) =
+        (table.bind right (.symbol actual)).apply atom := by
+    intro atom
+    induction atom using Atom.rec
+        (motive_2 := fun atoms =>
+          atoms.map (fun child => (native.addEquality left right).applyFull child
+              ((native.addEquality left right).resolutionFuel child)) =
+            atoms.map (table.bind right (.symbol actual)).apply) with
+    | symbol name => simp [Bindings.resolutionFuel, Bindings.applyFull, TypeSubst.apply]
+    | grounded value => simp [Bindings.resolutionFuel, Bindings.applyFull, TypeSubst.apply]
+    | var name =>
+        by_cases same : name = right
+        · subst name
+          have read := scoped_type_alias_fresh_read leftFresh rightFresh different assigned
+            (native.boundVars.toFinset.card * (native.resolutionValueDepth + 1) + 2)
+          simpa only [Bindings.resolutionFuel, Bindings.boundVars, Bindings.resolutionValueDepth,
+            Bindings.addEquality, Bindings.atomScanFuel, TypeSubst.apply, TypeSubst.lookup_bind,
+            if_pos rfl, ite_true, Option.getD_some, Nat.add_assoc] using read
+        · have sameAt : ∀ fuel, (native.addEquality left right).applyFull (.var name) fuel =
+              native.applyFull (.var name) fuel := by
+            intro fuel
+            cases fuel with
+            | zero => rfl
+            | succ fuel =>
+                simp only [Bindings.applyFull,
+                  scoped_type_alias_resolve leftFresh rightFresh different assigned same fuel]
+          have oldRead : native.applyFull (.var name) (native.resolutionFuel (.var name)) =
+              table.apply (.var name) := by
+            exact related.materialization (.var name) _ (native.applyFullCovered_resolutionFuel _)
+          exact (sameAt _).trans (oldRead.trans
+            (scoped_type_bind_unchanged certificate sourceFresh (.var name)
+              (by simpa [TypeSubst.typeVars, eq_comm] using same)).symm)
+    | expression atoms children =>
+        rw [Bindings.applyFull_resolutionFuel_expression]
+        simpa only [TypeSubst.apply] using congrArg Atom.expression children
+    | nil => rfl
+    | cons atom atoms head tail => exact congrArg₂ List.cons head tail
+  refine ⟨nextCertificate, .semantic
+    ((repeated_type_edge_agreement native left right).trans nextAgreement)
+    nextCertificate ?_, .selected certificate nextCertificate, ?_⟩
+  · intro atom depth covered
+    rw [← Bindings.applyFull_resolutionFuel_eq_of_covered _ atom depth covered,
+      BindingResolutionReadSupport.applyFull_addEquality_of_mem
+        (by simp [Bindings.addEquality]) atom]
+    exact complete atom
+  · intro pending
+    apply certificate.pending_absorbed nextCertificate _ pending
+    intro valuation model
+    refine ⟨model.1, ?_⟩
+    intro first second stored
+    exact model.2 first second (List.mem_append_left _ stored)
+
+/-- The expression request retains every name required by the source's typed
+use, in addition to the older receivers and already emitted occurrences. -/
+private theorem expression_invocation_scope_retained (state : Configuration)
+    (expression expected : Atom) (bindings : Bindings) (fuel : Nat) (live : List Atom)
+    (pending : state.control = .work (.expression expression expected bindings fuel live)) :
+    ∀ name ∈ invocationTypeScope (RecursiveScope.configurationNames state)
+        live expression expected bindings,
+      name ∈ RecursiveScope.configurationNames state ++ bindings.names := by
+  intro name member
+  simp only [invocationTypeScope, List.mem_append] at member ⊢
+  rcases member with (kept | used) | bound
+  · exact Or.inl kept
+  · left
+    rw [← atomListVariables_eq_typeVarsList] at used
+    simp only [atomListVariables_append, atomListVariables, List.append_nil,
+      List.mem_append] at used
+    simp only [RecursiveScope.configurationNames, RecursiveScope.liveAtoms, pending,
+      RecursiveScope.controlAtoms, RecursiveScope.taskAtoms, atomListVariables_append,
+      atomListVariables, List.append_nil, List.mem_append]
+    tauto
+  · exact Or.inr (by rwa [EquationFreshening.bindings_names_eq_specBindingVars])
+
+/-- A literal operator annotation earns its fresh whole-arrow instance and
+the first applicable binding at the actual saved configuration. The two
+checked transitions retain the chosen instance, changed binding, stack and
+emitted prefix. The final equation resumes precisely that checkpoint; it does
+not assert completion of the later operator, argument or call work. -/
+theorem scoped_polymorphic_annotation_prefix (state : Configuration)
+    (dispatch : HE.GroundedDispatch) (operator parameter actual : String)
+    (argument : Atom) (bindings : Bindings) (depth : Nat) (live : List Atom)
+    (pending : state.control = .work (.expression
+      (.expression [.symbol operator, argument]) Atom.undefinedType bindings (depth + 4) live))
+    (declared : getAtomTypes state.space (.symbol operator) =
+      [.expression [.symbol "->", .var parameter, .var parameter]])
+    (argumentTypes : getAtomTypes state.space argument = [.symbol actual])
+    (notUndefined : actual ≠ "%Undefined%") (notAtom : actual ≠ "Atom") :
+    let name := instanceName (RecursiveScope.configurationNames state ++ bindings.names)
+      [parameter] 0 parameter
+    let signature := Atom.expression [.symbol "->", .var name, .var name]
+    let call := Atom.expression [.symbol operator, argument]
+    let scope := invocationTypeScope (RecursiveScope.configurationNames state)
+      live call Atom.undefinedType bindings
+    let selected := {state with control := .work (.functions
+      call Atom.undefinedType bindings (depth + 3) [signature] live)}
+    let reached := {state with control := .work (.bindingAlternatives
+      call signature (.var name) (depth + 3)
+        [bindings.assign name (.symbol actual)] live)}
+    StorageTypesRel state.space (.symbol operator)
+        [.expression [.symbol "->", .var parameter, .var parameter]] ∧
+    ArgumentAlphaVariantsRel scope
+        [.expression [.symbol "->", .var parameter, .var parameter]] [signature] ∧
+    name ∉ RecursiveScope.configurationNames state ∧ name ∉ bindings.names ∧
+    scopedStorageTypeService.candidateScan scope state.space call Atom.undefinedType bindings
+        [signature] (.success (freshPolymorphicPolicy name)
+          (bindings.assign name (.symbol actual))) ∧
+    (Checked.machine dispatch scopedTypes).step state = some (.silent selected) ∧
+    (Checked.machine dispatch scopedTypes).step selected = some (.silent reached) ∧
+    ∀ budget, (Checked.machine dispatch scopedTypes).run (2 + budget) state =
+      (Checked.machine dispatch scopedTypes).run budget reached := by
+  dsimp only
+  let name := instanceName (RecursiveScope.configurationNames state ++ bindings.names)
+    [parameter] 0 parameter
+  let signature := Atom.expression [.symbol "->", .var name, .var name]
+  let call := Atom.expression [.symbol operator, argument]
+  let scope := invocationTypeScope (RecursiveScope.configurationNames state)
+    live call Atom.undefinedType bindings
+  let selected := {state with control := .work (.functions
+    call Atom.undefinedType bindings (depth + 3) [signature] live)}
+  let reached := {state with control := .work (.bindingAlternatives
+    call signature (.var name) (depth + 3)
+      [bindings.assign name (.symbol actual)] live)}
+  have queried : invocationTypes state bindings (.symbol operator) Atom.undefinedType =
+      [signature] := by
+    simp [invocationTypes, getAtomTypesScoped, declared, instantiateTypeSignatures,
+      instantiateTypeSignature, atomVariables, atomListVariables, renameAtom, renameAtomList,
+      List.eraseDups_cons, signature, name]
+  have fresh : name ∉ RecursiveScope.configurationNames state ++ bindings.names :=
+    instanceName_not_mem _ _ _ _
+  have freshClass : bindings.classValues name = [] := by
+    apply List.eq_nil_iff_forall_not_mem.mpr
+    intro value member
+    exact fresh (List.mem_append_right _ (by
+      rw [EquationFreshening.bindings_names_eq_specBindingVars]
+      exact FreshPrivateMerge.class_key_support member))
+  have variants : ArgumentAlphaVariantsRel scope
+      [.expression [.symbol "->", .var parameter, .var parameter]] [signature] := by
+    have instances := EquationFreshening.getAtomTypesScoped_variants
+      (RecursiveScope.configurationNames state) state.space bindings
+      (.symbol operator) Atom.undefinedType (avoid := scope) (fun candidate member => by
+        have retained := expression_invocation_scope_retained state call Atom.undefinedType
+          bindings (depth + 4) live pending candidate member
+        simpa only [EquationFreshening.bindings_names_eq_specBindingVars,
+          TypeSubst.typeVars, List.append_nil, Atom.undefinedType] using retained)
+    change ArgumentAlphaVariantsRel scope (getAtomTypes state.space (.symbol operator))
+      (invocationTypes state bindings (.symbol operator) Atom.undefinedType) at instances
+    simpa only [declared, queried] using instances
+  have first : (Checked.machine dispatch scopedTypes).step state =
+      some (.silent selected) := by
+    have ready : Checked.blocked dispatch state scopedTypes = none := by
+      simp only [Checked.blocked, pending, FirstSuccessRecursiveStrategy.taskReady,
+        RecursiveMachine.Checked.taskReady]
+      rfl
+    simp only [Checked.machine, RecursiveMachine.Checked.guardMachine]
+    rw [ready]
+    simp only [FirstSuccessRecursiveExecution.machine, next, pending, scopedTypes,
+      FirstSuccessRecursiveStrategy.enter, queried, List.nil_append]
+    rfl
+  have second : (Checked.machine dispatch scopedTypes).step selected =
+      some (.silent reached) := by
+    exact fresh_polymorphic_scoped_step selected dispatch (.symbol operator) argument name actual
+      bindings depth [] live rfl argumentTypes notUndefined notAtom freshClass
+  have source := (fresh_polymorphic_scoped_selection selected (.symbol operator) argument
+    name actual bindings depth [] scope argumentTypes notUndefined notAtom freshClass).2.2
+  refine ⟨?_, variants, ?_, ?_, source, first, second, ?_⟩
+  · rw [← declared]
+    exact FirstSuccessSourceReplies.source_types _ _
+  · exact fun member => fresh (List.mem_append_left _ member)
+  · exact fun member => fresh (List.mem_append_right _ member)
+  · intro budget
+    rw [show 2 + budget = (budget + 1) + 1 by omega,
+      (Checked.machine dispatch scopedTypes).run_succ_silent first,
+      (Checked.machine dispatch scopedTypes).run_succ_silent second]
+
+/-- The actual scoped annotation prefix also constructs the independent
+frame after its first applicability assignment. It starts with the saved
+configuration, retains that configuration's stack and emitted prefix, and
+makes one extended table available to every later operand. This is a prefix
+and frame correspondence, not completion of the later function work. -/
+theorem scoped_polymorphic_annotation_frame (state : Configuration)
+    (dispatch : HE.GroundedDispatch) (operator parameter actual : String)
+    (argument : Atom) (native source : Bindings) (table : TypeSubst)
+    (certificate : ReadoutCertificate source table)
+    (related : SourceBindingComparison.semantic.FrameRelated native
+      (.selected source table certificate)) (depth : Nat) (live : List Atom)
+    (pending : state.control = .work (.expression
+      (.expression [.symbol operator, argument]) Atom.undefinedType native (depth + 4) live))
+    (declared : getAtomTypes state.space (.symbol operator) =
+      [.expression [.symbol "->", .var parameter, .var parameter]])
+    (argumentTypes : getAtomTypes state.space argument = [.symbol actual])
+    (notUndefined : actual ≠ "%Undefined%") (notAtom : actual ≠ "Atom") :
+    let name := instanceName (RecursiveScope.configurationNames state ++ native.names)
+      [parameter] 0 parameter
+    let signature := Atom.expression [.symbol "->", .var name, .var name]
+    let reached := {state with control := .work (.bindingAlternatives
+      (.expression [.symbol operator, argument]) signature (.var name) (depth + 3)
+        [native.assign name (.symbol actual)] live)}
+    ∃ nextCertificate : ReadoutCertificate (source.assign name (.symbol actual))
+        (table.bind name (.symbol actual)),
+      SourceBindingComparison.semantic.FrameRelated (native.assign name (.symbol actual))
+        (.selected (source.assign name (.symbol actual)) (table.bind name (.symbol actual))
+          nextCertificate) ∧
+      BindingFrame.Update .renew (.selected source table certificate)
+        (.selected (source.assign name (.symbol actual)) (table.bind name (.symbol actual))
+          nextCertificate) ∧
+      (∀ operands : List Atom, (operands.map table.apply).map
+        (table.bind name (.symbol actual)).apply =
+          operands.map (table.bind name (.symbol actual)).apply) ∧
+      ∀ budget, (Checked.machine dispatch scopedTypes).run (2 + budget) state =
+        (Checked.machine dispatch scopedTypes).run budget reached := by
+  have selectedPrefix := scoped_polymorphic_annotation_prefix state dispatch operator parameter actual
+    argument native depth live pending declared argumentTypes notUndefined notAtom
+  have fresh : instanceName (RecursiveScope.configurationNames state ++ native.names)
+      [parameter] 0 parameter ∉ specBindingVars native := by
+    intro member
+    exact selectedPrefix.2.2.2.1
+      ((EquationFreshening.bindings_names_eq_specBindingVars native).symm ▸ member)
+  obtain ⟨next, nextRelated, renewal, absorbed⟩ := scoped_type_assignment_frame
+    certificate related _ actual fresh
+  exact ⟨next, nextRelated, renewal, absorbed, selectedPrefix.2.2.2.2.2.2.2⟩
+
+namespace ScopedAnnotationControls
+
+private def space : Space := Space.ofList
+  [.expression [.symbol ":", .symbol "ident",
+    .expression [.symbol "->", .var "t", .var "t"]]]
+private def incoming : Bindings := Bindings.empty.assign "t" (.symbol "Number")
+private def argument : Atom := .grounded (.bool true)
+private def call : Atom := .expression [.symbol "ident", argument]
+private def live : List Atom := [.var "held"]
+private def loaded : Configuration :=
+  {Configuration.initial space (.atom call Atom.undefinedType incoming 12 live) with
+    stack := [.functionTerminal (some (.expression [.symbol "caller", .var "t#0"]))]
+    emitted := [(.var "t#1", incoming)]}
+private def entered : Configuration :=
+  {loaded with
+    control := .work (.expression call Atom.undefinedType incoming 11 live)
+    stack := .filter :: loaded.stack}
+private def reached : Configuration :=
+  {entered with control := .work (.bindingAlternatives call
+    (.expression [.symbol "->", .var "t#2", .var "t#2"])
+    (.var "t#2") 10 [incoming.assign "t#2" (.symbol "Bool")] live)}
+
+/-- The initial atom request reaches expression interpretation using the
+actual loader and retains its enclosing caller and emitted prefix. -/
+theorem loader_enters_the_annotated_call :
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).step loaded =
+      some (.silent entered) := by
+  rfl
+
+/-- Names held by both an older caller and an emitted occurrence are skipped.
+The checked prefix reaches the real applicability assignment, preserving the
+caller's independent assignment to the raw declaration name. -/
+theorem annotated_call_reaches_changed_binding :
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).run 3 loaded =
+      ([], .exhausted reached) := by
+  have selected := scoped_polymorphic_annotation_prefix entered HE.GroundedDispatch.none
+    "ident" "t" "Bool" argument incoming 7 live rfl rfl rfl (by decide) (by decide)
+  rw [(Checked.machine HE.GroundedDispatch.none scopedTypes).run_succ_silent
+    loader_enters_the_annotated_call]
+  exact selected.2.2.2.2.2.2.2 0
+
+/-- The source witness starts with the actual annotation; its selected fresh
+signature and changed applicability binding are constructed by the prefix law. -/
+theorem annotated_call_has_scoped_source_selection :
+    StorageTypesRel space (.symbol "ident")
+        [.expression [.symbol "->", .var "t", .var "t"]] ∧
+    ArgumentAlphaVariantsRel
+      (invocationTypeScope (RecursiveScope.configurationNames entered)
+        live call Atom.undefinedType incoming)
+      [.expression [.symbol "->", .var "t", .var "t"]]
+      [.expression [.symbol "->", .var "t#2", .var "t#2"]] ∧
+    scopedStorageTypeService.candidateScan
+      (invocationTypeScope (RecursiveScope.configurationNames entered)
+        live call Atom.undefinedType incoming)
+      space call Atom.undefinedType incoming
+      [.expression [.symbol "->", .var "t#2", .var "t#2"]]
+      (.success (freshPolymorphicPolicy "t#2") (incoming.assign "t#2" (.symbol "Bool"))) := by
+  have selected := scoped_polymorphic_annotation_prefix entered HE.GroundedDispatch.none
+    "ident" "t" "Bool" argument incoming 7 live rfl rfl rfl (by decide) (by decide)
+  exact ⟨selected.1, selected.2.1, selected.2.2.2.2.1⟩
+
+/-- Resumption consumes the retained chosen signature rather than repeating
+the annotation lookup or the changed-binding applicability operation. -/
+theorem annotated_checkpoint_resumes (budget : Nat) :
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).run (3 + budget) loaded =
+      (Checked.machine HE.GroundedDispatch.none scopedTypes).run budget reached := by
+  have selected := scoped_polymorphic_annotation_prefix entered HE.GroundedDispatch.none
+    "ident" "t" "Bool" argument incoming 7 live rfl rfl rfl (by decide) (by decide)
+  rw [show 3 + budget = (2 + budget) + 1 by omega,
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).run_succ_silent
+      loader_enters_the_annotated_call]
+  exact selected.2.2.2.2.2.2.2 budget
+
+/-- The same loaded expression without its annotation has only Undefined
+at the candidate frontier; it cannot fabricate a polymorphic signature. -/
+theorem absent_annotation_does_not_invent_an_arrow :
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).run 2
+        {loaded with space := Space.empty} =
+      ([], .exhausted {entered with
+        space := Space.empty
+        control := .work (.functions call Atom.undefinedType incoming 10 [Atom.undefinedType] live)}) := by
+  rfl
+
+/-- Literal declaration-name reuse is refused by the contrasting raw lookup
+profile, while the annotated scoped prefix above succeeds. -/
+theorem raw_annotation_reuses_the_caller_name :
+    (Checked.machine HE.GroundedDispatch.none rawTypes).run 3 loaded =
+      ([], .exhausted {entered with control := .returning [(mkError call
+        (.badArgType 1 (.var "t") (.symbol "Bool")), incoming)]}) := by
+  rfl
+
+private def applicabilityBindings : Bindings := incoming.assign "t#2" (.symbol "Bool")
+private def applicabilityTable : TypeSubst :=
+  [("t#2", .symbol "Bool"), ("t", .symbol "Number")]
+private def operatorType : Atom := .expression [.symbol "->", .var "t#2", .var "t#2"]
+private def headLive : List Atom := operatorType :: argument :: .var "t#2" :: live
+private def functionRequest : Configuration :=
+  {reached with
+    control := .work (.func call operatorType applicabilityBindings 10 (.var "t#2" :: live))
+    stack := .calls (.var "t#2") 10 live ::
+      .append (.bindingAlternatives call operatorType (.var "t#2") 10 [] live) :: reached.stack}
+private def headRequest : Configuration :=
+  {functionRequest with
+    control := .work (.atom (.symbol "ident") operatorType applicabilityBindings 9 headLive)
+    stack := .heads operatorType [argument] 9 (.var "t#2" :: live) :: functionRequest.stack}
+private def nativeHeadBindings : Bindings :=
+  (applicabilityBindings.addEquality "t#2" "t#3").addEquality "t#2" "t#3"
+private def sourceHeadBindings : Bindings := applicabilityBindings.addEquality "t#2" "t#3"
+private def headTable : TypeSubst := applicabilityTable.bind "t#3" (.symbol "Bool")
+private def afterHead : Configuration :=
+  {headRequest with control := .returning [(.symbol "ident", nativeHeadBindings)]}
+private def exhaustedHead : Configuration :=
+  {headRequest with control := .work (.atom (.symbol "ident") operatorType
+    applicabilityBindings 0 headLive)}
+private def headScope : List String := invocationTypeScope
+  (RecursiveScope.configurationNames headRequest) headLive (.symbol "ident")
+  operatorType applicabilityBindings
+
+private theorem incomingFold : EquationListPresentationRel
+    (bindingAtomEquations incoming) [] incoming.assignments := by
+  change EquationListPresentationRel [(.var "t", .symbol "Number")] [] [("t", .symbol "Number")]
+  have folded : EquationListPresentationRel [(.var "t", .symbol "Number")] []
+      (TypeSubst.bind [] "t" (.symbol "Number")) :=
+    .cons (.ordinary (resolvedLeft := .var "t") (resolvedRight := .symbol "Number")
+      (by simp only [TypeSubst.apply_empty]) (by simp only [TypeSubst.apply_empty])
+      (.bindLeft (by simp [TypeSubst.typeVars]))) (.nil _)
+  simpa [TypeSubst.bind, TypeSubst.apply, TypeSubst.erase] using folded
+
+private theorem incomingCertificate : ReadoutCertificate incoming incoming.assignments :=
+  .of_fold incomingFold
+
+private theorem incomingRelated : SourceBindingComparison.semantic.FrameRelated incoming
+    (.selected incoming incoming.assignments incomingCertificate) := by
+  apply SourceBindingComparison.FrameRelated.semantic (.refl _) incomingCertificate
+  exact FirstSuccessPreparedArguments.applyFull_presented_of_covered incomingFold.bindingTheory.1
+
+private theorem applicabilityCertificate : ReadoutCertificate
+    applicabilityBindings applicabilityTable := by
+  have next := incomingCertificate.fresh_assignment "t#2" (.symbol "Bool") (by decide +kernel)
+    (by simp [TypeSubst.typeVars])
+  simpa [applicabilityBindings, applicabilityTable, incoming, Bindings.assign,
+    Bindings.isBound, Bindings.lookup, Bindings.empty, TypeSubst.bind, TypeSubst.apply,
+    TypeSubst.erase, TypeSubst.applyAssignment] using next
+
+private theorem applicabilityRelated : SourceBindingComparison.semantic.FrameRelated
+    applicabilityBindings
+    (.selected applicabilityBindings applicabilityTable applicabilityCertificate) := by
+  obtain ⟨_certificate, next, _renewal, _absorbed⟩ := scoped_type_assignment_frame
+    incomingCertificate incomingRelated "t#2" "Bool" (by decide +kernel)
+  simpa [applicabilityBindings, applicabilityTable, incoming, Bindings.assign,
+    Bindings.isBound, Bindings.lookup, Bindings.empty, TypeSubst.bind, TypeSubst.apply,
+    TypeSubst.erase, TypeSubst.applyAssignment] using next
+
+private theorem alternatives_enter_function :
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).step reached =
+      some (.silent functionRequest) := by rfl
+
+private theorem function_enters_head :
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).step functionRequest =
+      some (.silent headRequest) := by rfl
+
+/-- The head query instantiates the complete annotation a second time, apart
+from the first instance and every older retained name. The actual cast stores
+both matching occurrences and keeps the old caller and emitted prefix. -/
+theorem annotated_head_uses_second_fresh_instance :
+    invocationTypes headRequest applicabilityBindings (.symbol "ident") operatorType =
+        [.expression [.symbol "->", .var "t#3", .var "t#3"]] ∧
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).step headRequest =
+      some (.silent afterHead) := by
+  exact ⟨rfl, rfl⟩
+
+/-- Starting at the real loader reaches the head's changed-binding reply;
+resumption retains its already selected two signature instances. -/
+theorem annotated_head_checkpoint_resumes (budget : Nat) :
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).run (6 + budget) loaded =
+      (Checked.machine HE.GroundedDispatch.none scopedTypes).run budget afterHead := by
+  rw [show 6 + budget = 3 + (3 + budget) by omega, annotated_checkpoint_resumes,
+    show 3 + budget = ((budget + 1) + 1) + 1 by omega,
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).run_succ_silent alternatives_enter_function,
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).run_succ_silent function_enters_head,
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).run_succ_silent
+      annotated_head_uses_second_fresh_instance.2]
+
+/-- The reached native reply has an independent scoped atom derivation and
+one renewed source table. The source lookup is earned from the same authored
+annotation and actual retained configuration, rather than supplied as a cast. -/
+theorem annotated_head_has_source_and_joint_readout :
+    ∃ certificate : ReadoutCertificate sourceHeadBindings headTable,
+      EvalAtomRawRel space noHost headLive
+        (protectedScope := RecursiveScope.configurationNames headRequest)
+        (typing := scopedStorageTypeService) (.symbol "ident") operatorType
+        (.selected applicabilityBindings applicabilityTable applicabilityCertificate)
+        (.symbol "ident", .selected sourceHeadBindings headTable certificate) ∧
+      SourceBindingComparison.semantic.FrameRelated nativeHeadBindings
+        (.selected sourceHeadBindings headTable certificate) ∧
+      ∀ pending : List Atom, (pending.map applicabilityTable.apply).map headTable.apply =
+        pending.map headTable.apply := by
+  have lookup := FirstSuccessSourceReplies.scoped_source_types headRequest headScope
+    applicabilityBindings (.symbol "ident") operatorType (by
+      change headScope ⊆ RecursiveScope.configurationNames headRequest
+      decide +kernel)
+  change scopedTypeLookup headScope space applicabilityBindings (.symbol "ident") operatorType
+    [.expression [.symbol "->", .var "t#3", .var "t#3"]] at lookup
+  obtain ⟨_, cast, _renewal, _absorbed⟩ := scoped_fresh_arrow_cast space headScope
+    (.symbol "ident") incoming "t#2" "t#3" "Bool" applicabilityTable applicabilityCertificate
+    (by decide +kernel) (by decide +kernel) (by decide +kernel) (by decide +kernel) lookup
+  obtain ⟨certificate, next, renewal, absorbed⟩ := scoped_type_alias_frame
+    applicabilityCertificate applicabilityRelated "t#2" "t#3" "Bool"
+    (by decide +kernel) (by decide +kernel) (by decide +kernel) rfl
+  refine ⟨certificate, ?_, next, absorbed⟩
+  exact EvalAtomRawRel.cast (.symbol "ident") operatorType Atom.symbolType
+    (.selected applicabilityBindings applicabilityTable applicabilityCertificate)
+    (.symbol "ident", .selected sourceHeadBindings headTable certificate)
+    (by simp [IsEmptyOrErrorRel, IsErrorRel, Atom.empty]) (.symbol "ident")
+    (by simp [operatorType, Atom.atomType, Atom.symbolType, Atom.variableType])
+    (Or.inl ⟨"ident", rfl⟩) cast renewal
+
+/-- The general fresh-assignment join also applies after the two native
+head-alias occurrences, without normalizing away either stored occurrence. -/
+theorem fresh_assignment_preserves_repeated_head_aliases :
+    ∃ certificate : ReadoutCertificate (sourceHeadBindings.assign "t#4" (.symbol "String"))
+        (headTable.bind "t#4" (.symbol "String")),
+      SourceBindingComparison.semantic.FrameRelated
+        (nativeHeadBindings.assign "t#4" (.symbol "String"))
+        (.selected (sourceHeadBindings.assign "t#4" (.symbol "String"))
+          (headTable.bind "t#4" (.symbol "String")) certificate) ∧
+      ∀ pending : List Atom, (pending.map headTable.apply).map
+        (headTable.bind "t#4" (.symbol "String")).apply =
+          pending.map (headTable.bind "t#4" (.symbol "String")).apply := by
+  obtain ⟨certificate, _source, related, _absorbed⟩ := annotated_head_has_source_and_joint_readout
+  obtain ⟨next, reached, _renewal, pending⟩ := scoped_type_assignment_frame
+    certificate related "t#4" "String" (by decide +kernel)
+  exact ⟨next, reached, pending⟩
+
+/-- Replacing an already assigned name is not a monotone constraint extension:
+materializing before the replacement cannot be undone by the new table. -/
+theorem assigned_name_cannot_use_fresh_extension_law :
+    let before : TypeSubst := [("t", .symbol "Number")]
+    let after := before.bind "t" (.symbol "Bool")
+    after.apply (before.apply (.var "t")) ≠ after.apply (.var "t") := by
+  simp [TypeSubst.bind, TypeSubst.apply, TypeSubst.lookup, TypeSubst.erase,
+    TypeSubst.applyAssignment]
+
+/-- Native and source physical records differ, and the old table cannot read
+the newly assigned type variable. Both repeated positions use the new table. -/
+theorem annotated_head_requires_renewal :
+    nativeHeadBindings ≠ sourceHeadBindings ∧
+      applicabilityTable.apply (.var "t#3") = .var "t#3" ∧
+      headTable.apply (.var "t#3") = .symbol "Bool" ∧
+      headTable.apply (.expression [.var "t#2", .var "t#3", .var "t#2"]) =
+        .expression [.symbol "Bool", .symbol "Bool", .symbol "Bool"] := by
+  refine ⟨by decide +kernel, ?_, ?_, ?_⟩
+  · simp [applicabilityTable, TypeSubst.apply, TypeSubst.lookup]
+  · simp [headTable, TypeSubst.apply, TypeSubst.lookup_bind]
+  · simp [headTable, applicabilityTable, TypeSubst.apply, TypeSubst.lookup_bind,
+      TypeSubst.lookup, TypeSubst.applyAssignment]
+
+/-- An exhausted head request is retained; it cannot claim that the checked
+cast ran or erase the caller continuation. -/
+theorem exhausted_head_does_not_publish_a_reply :
+    (Checked.machine HE.GroundedDispatch.none scopedTypes).step exhaustedHead =
+      some (.call .evaluationDepth exhaustedHead) := by rfl
+
+/-- Raw head lookup reuses the caller's fixed declaration variable and
+therefore refuses the same head that the independently fresh instance accepts. -/
+theorem raw_head_conflicts_with_the_caller_type :
+    (Checked.machine HE.GroundedDispatch.none rawTypes).step headRequest =
+      some (.silent {headRequest with control := .returning [(mkError (.symbol "ident")
+        (.badType operatorType (.expression [.symbol "->", .var "t", .var "t"])),
+          applicabilityBindings)]}) := by rfl
+
+end ScopedAnnotationControls
+
+#print axioms scoped_type_alias_certificate
+#print axioms fresh_arrow_type_match
+#print axioms scoped_fresh_arrow_cast
+#print axioms scoped_type_alias_frame
+#print axioms ScopedAnnotationControls.annotated_head_has_source_and_joint_readout
+#print axioms ScopedAnnotationControls.annotated_head_checkpoint_resumes
+#print axioms ScopedAnnotationControls.annotated_head_requires_renewal
+#print axioms ScopedAnnotationControls.exhausted_head_does_not_publish_a_reply
+#print axioms ScopedAnnotationControls.raw_head_conflicts_with_the_caller_type
+
+end ScopedPolymorphicInvocation
 
 /-- The independent typed application rule composes an argument endpoint
 with its own call derivation, including changed argument and result bindings. -/
@@ -5490,6 +7003,50 @@ theorem application_retained_spec {space : Space} {name : String} {arguments : L
       (clean_application name arguments typing.cleanOperator).1
       (.expression (.symbol name :: arguments)) notPass ⟨.symbol name, arguments, rfl⟩ interpreted error
 
+/-- An actual Undefined lookup independently licenses the tuple path. No
+failed-arrow applicability or expected-output premise is used. -/
+theorem untyped_tuple_spec (space : Space) (operator : Atom) (arguments : List Atom)
+    (expected : Atom) (incoming : BindingFrame) (tupleResult result : FrameResult)
+    (live : List Atom) (scope : List String)
+    (clean : isEmptyOrError (.expression (operator :: arguments)) = false)
+    (notRaw : expected ≠ Atom.atomType) (notExpression : expected ≠ Atom.expressionType)
+    (types : getAtomTypes space operator = [Atom.undefinedType])
+    (tuple : InterpretTupleRel space noHost (expected :: live) (protectedScope := scope)
+      (.expression (operator :: arguments)) incoming tupleResult)
+    (called : CallRel space noHost live (protectedScope := scope)
+      tupleResult.1 expected tupleResult.2 result) :
+    EvalAtomRawRel space noHost live (protectedScope := scope)
+      (.expression (operator :: arguments)) expected incoming result := by
+  have sourceTypes : StorageTypesRel space operator [Atom.undefinedType] := by
+    rw [← types]
+    exact FirstSuccessSourceReplies.source_types space operator
+  have scan : storageTypeService.candidateScan
+      (invocationTypeScope scope live (.expression (operator :: arguments)) expected incoming)
+      space (.expression (operator :: arguments)) expected incoming [Atom.undefinedType]
+      (.exhausted [] true) :=
+    .nonFunctionExhausted (by simp [FunctionTypeRel, Atom.undefinedType]) .nil
+  have interpreted := InterpretExpressionRel.tuplePath
+    (.expression (operator :: arguments)) expected operator arguments
+    [Atom.undefinedType] [Atom.undefinedType] [] incoming tupleResult result
+    rfl sourceTypes rfl scan tuple called
+  have running : ¬IsEmptyOrErrorRel (.expression (operator :: arguments)) := by
+    intro stopped
+    have := (Conformance.isEmptyOrErrorRel_iff_isEmptyOrError _).mp stopped
+    simp [clean] at this
+  have notPass : ¬(expected = Atom.atomType ∨ expected = Atom.expressionType ∨
+      Atom.expressionType = Atom.variableType) := by
+    rintro (raw | intrinsic | impossible)
+    · exact notRaw raw
+    · exact notExpression intrinsic
+    · simp at impossible
+  by_cases error : IsErrorRel result.1
+  · exact EvalAtomRawRel.interpretError _ _ Atom.expressionType incoming result running
+      (.expression (operator :: arguments)) notPass ⟨operator, arguments, rfl⟩
+      interpreted error
+  · exact EvalAtomRawRel.interpretSuccess _ _ Atom.expressionType incoming result running
+      (.expression (operator :: arguments)) notPass ⟨operator, arguments, rfl⟩
+      interpreted error
+
 mutual
 /-- Every delivered occurrence has an independent scoped evaluator derivation
 from each related input representation. Both endpoints use the declared
@@ -5507,7 +7064,7 @@ theorem AtomDerivation.sound {space : Space} {comparison : SourceBindingComparis
   | leaf live value expected incoming fuel leaf =>
       obtain rfl := List.mem_singleton.mp member
       exact ⟨independentIncoming,
-        leaf_evidence space noHost live publishedTypeService scope value expected independentIncoming leaf,
+        leaf_evidence space noHost live storageTypeService scope value expected independentIncoming leaf,
         related⟩
   | symbolCast live name expected incoming fuel before after actual notEmpty notRaw notMeta types
       expectedClosed actualClosed earlierClosed earlierRejects fits enough =>
@@ -5532,6 +7089,87 @@ theorem AtomDerivation.sound {space : Space} {comparison : SourceBindingComparis
       refine ⟨output, ?_, outputRelated⟩
       exact application_retained_spec typing independentIncoming argumentOutput row.1 live
         (result.1, output) scope argumentSound (by simpa only [← same] using called)
+  | untypedTuple live operator arguments expected incoming fuel rows outputs clean notRaw notExpr
+      types tuple calls =>
+      obtain ⟨request, present, produced⟩ := List.mem_flatMap.mp (mem_of_mem_successPriority member)
+      obtain ⟨middle, tupleSound, middleRelated⟩ :=
+        tuple.sound request present independentIncoming related scope
+      obtain ⟨output, called, outputRelated⟩ :=
+        (calls request present).sound result produced middle middleRelated scope
+      exact ⟨output, untyped_tuple_spec space operator arguments expected independentIncoming
+        (request.1, middle) (result.1, output) live scope clean notRaw notExpr types tupleSound called,
+        outputRelated⟩
+termination_by 2 * fuel
+
+/-- Tuple source meaning follows the actual stopped/singleton/tail receivers,
+with the selected source frame transported at each child occurrence. -/
+theorem TupleDerivation.sound {space : Space} {comparison : SourceBindingComparison}
+    {live : List Atom} {value : Atom} {incoming : Bindings} {fuel : Nat} {results : ResultSet}
+    (derivation : TupleDerivation space comparison live value incoming fuel results)
+    (result : ResultPair) (member : result ∈ results)
+    (independentIncoming : BindingFrame) (related : comparison.FrameRelated incoming independentIncoming)
+    (scope : List String := []) :
+    ∃ independentOutput,
+      InterpretTupleRel space noHost live (protectedScope := scope) value independentIncoming
+        (result.1, independentOutput) ∧ comparison.FrameRelated result.2 independentOutput := by
+  cases derivation with
+  | nil live incoming fuel =>
+      obtain rfl := List.mem_singleton.mp member
+      exact ⟨independentIncoming, .nil independentIncoming, related⟩
+  | singleton live value incoming fuel heads child =>
+      obtain ⟨head, present, rfl⟩ := List.mem_map.mp member
+      obtain ⟨output, source, outputRelated⟩ := child.sound head present scope independentIncoming related
+      cases stopped : isEmptyOrError head.1 with
+      | true =>
+          simpa only [HE.tupleSingleton_failure head stopped] using
+            (show ∃ output, InterpretTupleRel space noHost live (protectedScope := scope)
+                (.expression [value]) independentIncoming (head.1, output) ∧
+                comparison.FrameRelated head.2 output from
+              ⟨output, .singletonError value independentIncoming (head.1, output) source
+                ((Conformance.isEmptyOrErrorRel_iff_isEmptyOrError _).mpr stopped), outputRelated⟩)
+      | false =>
+          have clean : ¬IsEmptyOrErrorRel head.1 := by
+            simp only [Conformance.isEmptyOrErrorRel_iff_isEmptyOrError, stopped,
+              Bool.false_eq_true, not_false_eq_true]
+          simpa only [HE.tupleSingleton_success head stopped] using
+            (show ∃ output, InterpretTupleRel space noHost live (protectedScope := scope)
+                (.expression [value]) independentIncoming (.expression [head.1], output) ∧
+                comparison.FrameRelated head.2 output from
+              ⟨output, .singleton value independentIncoming (head.1, output) source clean, outputRelated⟩)
+  | cons live head second remaining incoming fuel heads tails first children =>
+      obtain ⟨selected, present, outputMember⟩ := List.mem_flatMap.mp member
+      obtain ⟨middle, source, middleRelated⟩ := first.sound selected present scope independentIncoming related
+      cases stopped : isEmptyOrError selected.1 with
+      | true =>
+          simp only [stopped, if_true, List.mem_singleton] at outputMember
+          subst result
+          exact ⟨middle, .headError head (second :: remaining) independentIncoming
+            (selected.1, middle) (by simp) source
+            ((Conformance.isEmptyOrErrorRel_iff_isEmptyOrError _).mpr stopped), middleRelated⟩
+      | false =>
+          simp only [stopped, Bool.false_eq_true, if_false, RecursiveTasks.tupleTail] at outputMember
+          obtain ⟨rest, restMember, rfl⟩ := List.mem_map.mp outputMember
+          obtain ⟨output, tailSource, outputRelated⟩ :=
+            (children selected present stopped).sound rest restMember middle middleRelated scope
+          have clean : ¬IsEmptyOrErrorRel selected.1 := by
+            simp only [Conformance.isEmptyOrErrorRel_iff_isEmptyOrError, stopped,
+              Bool.false_eq_true, not_false_eq_true]
+          cases tailStopped : isEmptyOrError rest.1 with
+          | true =>
+              simp only [if_true]
+              exact ⟨output, .tailError head (second :: remaining) independentIncoming
+                (selected.1, middle) (rest.1, output) (by simp) source clean tailSource
+                ((Conformance.isEmptyOrErrorRel_iff_isEmptyOrError _).mpr tailStopped), outputRelated⟩
+          | false =>
+              simp only [Bool.false_eq_true, if_false]
+              have tailClean : ¬IsEmptyOrErrorRel rest.1 := by
+                simp only [Conformance.isEmptyOrErrorRel_iff_isEmptyOrError, tailStopped,
+                  Bool.false_eq_true, not_false_eq_true]
+              refine ⟨output, ?_, outputRelated⟩
+              have combined := InterpretTupleRel.success head (second :: remaining)
+                independentIncoming (selected.1, middle) (rest.1, output) (by simp)
+                source clean tailSource tailClean
+              cases shape : rest.1 <;> simpa only [shape, atomElements] using combined
 termination_by 2 * fuel
 
 /-- Independent argument interpretation transports both selected head frames
@@ -5580,6 +7218,9 @@ theorem CallDerivation.sound {space : Space} {comparison : SourceBindingComparis
       CallRel space noHost live (protectedScope := scope) query expected independentIncoming (result.1, independentOutput) ∧
       comparison.FrameRelated result.2 independentOutput := by
   cases derivation with
+  | errorPassthrough live value expected incoming fuel error =>
+      obtain rfl := List.mem_singleton.mp member
+      exact ⟨independentIncoming, .errorPassthrough _ expected independentIncoming error, related⟩
   | unreduced live name arguments expected incoming fuel ordinary nonembedded clean _ absent =>
       obtain rfl := List.mem_singleton.mp member
       refine ⟨independentIncoming, ?_, related⟩
@@ -5712,6 +7353,23 @@ statement is a constructor premise. Raw leaves have no bounded leaf calls. -/
       (callsCovered : ∀ request member, CallDerivation.Covered (calls request member)) :
       AtomDerivation.Covered (@AtomDerivation.application space comparison live name arguments expected incoming fuel typing
         rows outputs args calls)
+  | untypedTuple {live operator arguments expected incoming fuel rows outputs clean notRaw notExpr types tuple calls}
+      (tupleCovered : TupleDerivation.Covered tuple)
+      (callsCovered : ∀ request member, CallDerivation.Covered (calls request member)) :
+      AtomDerivation.Covered (@AtomDerivation.untypedTuple space comparison live operator arguments
+        expected incoming fuel rows outputs clean notRaw notExpr types tuple calls)
+ inductive TupleDerivation.Covered {space : Space} {comparison : SourceBindingComparison} :
+    {live : List Atom} → {value : Atom} → {incoming : Bindings} → {fuel : Nat} → {results : ResultSet} →
+    TupleDerivation space comparison live value incoming fuel results → Prop where
+  | nil {live incoming fuel} : TupleDerivation.Covered (@TupleDerivation.nil space comparison live incoming fuel)
+  | singleton {live value incoming fuel heads child}
+      (covered : AtomDerivation.Covered child) :
+      TupleDerivation.Covered (@TupleDerivation.singleton space comparison live value incoming fuel heads child)
+  | cons {live head second remaining incoming fuel heads tails first children}
+      (headCovered : AtomDerivation.Covered first)
+      (tailCovered : ∀ selected member clean, TupleDerivation.Covered (children selected member clean)) :
+      TupleDerivation.Covered (@TupleDerivation.cons space comparison live head second remaining incoming
+        fuel heads tails first children)
  inductive ArgsDerivation.Covered {space : Space} {comparison : SourceBindingComparison} : {live values types : List Atom} →
     {incoming : Bindings} → {fuel : Nat} → {results : ArgumentResults} →
     ArgsDerivation (comparison := comparison) space live values types incoming fuel results → Prop where
@@ -5724,6 +7382,9 @@ statement is a constructor premise. Raw leaves have no bounded leaf calls. -/
  inductive CallDerivation.Covered {space : Space} {comparison : SourceBindingComparison} : {live : List Atom} →
     {value expected : Atom} → {incoming : Bindings} → {fuel : Nat} → {results : ResultSet} →
     CallDerivation (comparison := comparison) space live value expected incoming fuel results → Prop where
+  | errorPassthrough {live value expected incoming fuel error} :
+      CallDerivation.Covered (@CallDerivation.errorPassthrough space comparison live value expected
+        incoming fuel error)
   | embedded {live name arguments expected incoming fuel raw outputs semantic clean instruction child returns}
       (returnsCovered : ∀ result member, ReturnDerivation.Covered (returns result member)) :
       CallDerivation.Covered (@CallDerivation.embedded space comparison live name arguments expected incoming
@@ -5840,6 +7501,33 @@ theorem AtomDerivation.covered_realizes {space : Space} {comparison : SourceBind
       · apply Covered.calls_realizes_map
         intro request member
         exact (calls request member).covered_realizes (callsCovered request member)
+  | @untypedTuple live operator arguments expected incoming fuel rows outputs clean notRaw notExpr
+      types tuple calls tupleCovered callsCovered =>
+      apply Covered.untyped_tuple_realizes space operator arguments expected incoming fuel live rows _
+        clean notRaw notExpr types (tuple.covered_realizes tupleCovered)
+      exact Covered.calls_realizes_map space expected (fuel + 1) live rows outputs
+        (fun request member => (calls request member).covered_realizes (callsCovered request member))
+termination_by 2 * fuel
+
+/-- Local child coverage suffices for the existing tuple task and receivers;
+stopped heads introduce no obligation to execute their abandoned tails. -/
+theorem TupleDerivation.covered_realizes {space : Space} {comparison : SourceBindingComparison}
+    {live : List Atom} {value : Atom} {incoming : Bindings} {fuel : Nat} {results : ResultSet}
+    (derivation : TupleDerivation space comparison live value incoming fuel results)
+    (covered : derivation.Covered) : Covered.Realizes space (.tuple value incoming fuel live) results := by
+  cases covered with
+  | @nil live incoming fuel =>
+      intro stack emitted
+      simpa only [FirstSuccessRecursiveStrategy.enter, RecursiveMachine.enter, Atom.unit,
+        List.nil_append] using Covered.enter_request space
+          (.tuple Atom.unit incoming (fuel + 1) live) stack emitted
+  | @singleton live value incoming fuel heads child childCovered =>
+      exact Covered.tuple_singleton_realizes space value incoming fuel live heads
+        (child.covered_realizes childCovered)
+  | @cons live head second remaining incoming fuel heads tails first children headCovered tailCovered =>
+      exact Covered.tuple_cons_realizes space head second remaining incoming fuel live heads tails
+        (first.covered_realizes headCovered) (fun selected member clean =>
+          (children selected member clean).covered_realizes (tailCovered selected member clean))
 termination_by 2 * fuel
 
 theorem ArgsDerivation.covered_realizes {space : Space} {comparison : SourceBindingComparison} {live values types : List Atom}
@@ -5877,6 +7565,8 @@ theorem CallDerivation.covered_realizes {space : Space} {comparison : SourceBind
     (covered : derivation.Covered) :
     Covered.Realizes space (.call query expected incoming fuel live) results := by
   cases covered with
+  | @errorPassthrough live value expected incoming fuel error =>
+      exact Covered.error_call_realizes space _ expected incoming fuel live error
   | @unreduced live name arguments expected incoming fuel _ nonembedded clean empty _ ready =>
       exact Covered.call_empty_realizes space name arguments expected incoming fuel live
         nonembedded clean ready empty
@@ -6081,7 +7771,7 @@ private theorem leaf_law (space : Space) (bindings : Bindings) (value expected :
   · intro head member live scope
     have same := List.mem_singleton.mp member
     subst head
-    exact leaf_evidence space noHost live publishedTypeService scope value expected bindings leaf
+    exact leaf_evidence space noHost live storageTypeService scope value expected bindings leaf
   · intro head member
     exact Or.inl (List.mem_singleton.mp member)
 
@@ -6569,8 +8259,8 @@ theorem prepared_nonleaf_collect {space : Space} (free : EquationFree space)
     {substitution : TypeSubst} (normal : substitution.Normal)
     (argument : TypedApplyState) (policy : NativeArgumentControlPolicy.Policy) (preparationFuel : Nat)
     (imported : argument.env = FirstSuccessPreparedArguments.presentedBindings substitution)
-    (domainBudget : LeaTTaBridge.atomDepth (NativeArgumentControl.originalDomain argument) + 2 ≤ preparationFuel)
-    (argumentBudget : LeaTTaBridge.atomDepth (NativeArgumentControl.original argument) + 2 ≤ preparationFuel)
+    (domainBudget : BindingComposition.atomDepth (NativeArgumentControl.originalDomain argument) + 2 ≤ preparationFuel)
+    (argumentBudget : BindingComposition.atomDepth (NativeArgumentControl.original argument) + 2 ≤ preparationFuel)
     (fuel : Nat) (heads : List Atom)
     (derivation : ReadOnlyAtomDerivation space argument.env
       (FirstSuccessPreparedArguments.prepareSource argument policy preparationFuel).bound
@@ -7427,11 +9117,11 @@ theorem checked_argument_completion_source {space : Space} {live : List Atom}
     ∀ result ∈ actual, ∀ (independentIncoming : Bindings), BindingRecordPerm incoming independentIncoming →
       ∃ independentOutput : Bindings, BindingRecordPerm result.2 independentOutput ∧
         ((∃ selected,
-          RetainedArgumentSpecification.HistoryRel space noHost live publishedTypeService
+          RetainedArgumentSpecification.HistoryRel space noHost live storageTypeService
             arguments types independentIncoming selected independentOutput ∧
           result.1 = argumentPacket (selected.map Prod.fst)) ∨
         (∃ selected,
-          RetainedArgumentSpecification.FailureHistoryRel space noHost live publishedTypeService
+          RetainedArgumentSpecification.FailureHistoryRel space noHost live storageTypeService
             arguments types independentIncoming selected (result.1, independentOutput))) := by
   obtain ⟨same, endpoint⟩ := realizes_completed_unique realized earned actual budget finished
     (Checked.finished_refines HE.GroundedDispatch.none budget _ actual finished ran)
@@ -7457,11 +9147,11 @@ theorem checked_argument_resume_source {space : Space} {live : List Atom}
     ∀ result ∈ before ++ after, ∀ (independentIncoming : Bindings), BindingRecordPerm incoming independentIncoming →
       ∃ independentOutput : Bindings, BindingRecordPerm result.2 independentOutput ∧
         ((∃ selected,
-          RetainedArgumentSpecification.HistoryRel space noHost live publishedTypeService
+          RetainedArgumentSpecification.HistoryRel space noHost live storageTypeService
             arguments types independentIncoming selected independentOutput ∧
           result.1 = argumentPacket (selected.map Prod.fst)) ∨
         (∃ selected,
-          RetainedArgumentSpecification.FailureHistoryRel space noHost live publishedTypeService
+          RetainedArgumentSpecification.FailureHistoryRel space noHost live storageTypeService
             arguments types independentIncoming selected (result.1, independentOutput))) := by
   apply checked_argument_completion_source realized source earned (before ++ after) (first + second) finished
   rw [Checked.resume_prefix HE.GroundedDispatch.none _ saved first second before paused, completed]
@@ -9818,12 +11508,12 @@ theorem checked_failure_resumed_source :
     ∀ result ∈ failures caller, ∃ independentOutput : Bindings,
       BindingRecordPerm result.2 independentOutput ∧
       ((∃ selected,
-        RetainedArgumentSpecification.HistoryRel rejectedSpace noHost live publishedTypeService
+        RetainedArgumentSpecification.HistoryRel rejectedSpace noHost live storageTypeService
           [.symbol "prefix", bad, untouched] [Atom.atomType, wanted, Atom.undefinedType]
           caller selected independentOutput ∧
         result.1 = argumentPacket (selected.map Prod.fst)) ∨
       (∃ selected,
-        RetainedArgumentSpecification.FailureHistoryRel rejectedSpace noHost live publishedTypeService
+        RetainedArgumentSpecification.FailureHistoryRel rejectedSpace noHost live storageTypeService
           [.symbol "prefix", bad, untouched] [Atom.atomType, wanted, Atom.undefinedType]
           caller selected (result.1, independentOutput))) := by
   have joined := retained_prefix_failure_source caller 7 [untouched] [Atom.undefinedType] live
@@ -9865,10 +11555,10 @@ theorem raw_error_argument_is_data :
         ⟨rejectedSpace, .returning [], [], [(argumentPacket [failure, .symbol "kept"], caller)]⟩) := rfl
 
 theorem raw_error_argument_source :
-    RetainedArgumentSpecification.HistoryRel rejectedSpace noHost live publishedTypeService
+    RetainedArgumentSpecification.HistoryRel rejectedSpace noHost live storageTypeService
       [failure, .symbol "kept"] [Atom.atomType, Atom.atomType] caller
       [(failure, caller), (.symbol "kept", caller)] caller :=
-  RetainedArgumentSpecification.raw_history rejectedSpace noHost live publishedTypeService
+  RetainedArgumentSpecification.raw_history rejectedSpace noHost live storageTypeService
     [failure, .symbol "kept"] caller
 
 theorem failure_occurrences_are_not_one_packet :
@@ -10082,7 +11772,7 @@ theorem EquationBodyEvidence.of_alias_closed_match
       (freshenEquationAvoiding (equationScope live query expected incoming) position left right).1 matchFuel)
     (merged : request.2 ∈ mergeBindings candidate.2 (aliasConstraints incoming) mergeFuel)
     (readout : request.1 = request.2.applyFull candidate.1 readFuel)
-    (enough : LeaTTaBridge.atomDepth candidate.1 + 2 ≤ readFuel) :
+    (enough : BindingComposition.atomDepth candidate.1 + 2 ≤ readFuel) :
     EquationBodyEvidence space live query expected incoming candidate request .semantic := by
   let pattern := (freshenEquationAvoiding
     (equationScope live query expected incoming) position left right).1
@@ -10151,7 +11841,7 @@ theorem EquationBodyEvidence.of_alias_closed_query_hit
       ∀ key ∈ TypeSubst.typeVars right, key ∈ TypeSubst.typeVars left)
     (hit : candidate ∈ equationCandidates space live query expected incoming fuel)
     (input : request ∈ equationInputs incoming fuel candidate)
-    (enough : LeaTTaBridge.atomDepth candidate.1 + 2 ≤ fuel) :
+    (enough : BindingComposition.atomDepth candidate.1 + 2 ≤ fuel) :
     EquationBodyEvidence space live query expected incoming candidate request .semantic := by
   obtain ⟨left, right, position, stored, rhs, matched, _⟩ :=
     queryEquationsAvoiding_matchAtoms_witness hit
@@ -10466,11 +12156,11 @@ theorem selected_empty_replay {out : Bindings}
         simp at impossible
 
 theorem duplicate_admitted : SemanticLoopFree duplicate ∧
-    ∃ valuation,LeaTTaBridge.HEBindingSatisfied valuation duplicate := by
+    ∃ valuation,Spec.Match.SolutionTheory.HEBindingSatisfied valuation duplicate := by
   constructor
   · exact (hasLoop_eq_false_iff_semanticLoopFree _).mp (by decide +kernel)
-  · exact ⟨fun _=>.sym "A",by simp [LeaTTaBridge.HEBindingSatisfied,duplicate,
-      LeaTTaBridge.applyClassSolution,LeaTTaBridge.toLeaTTaAtom]⟩
+  · exact ⟨fun _=>.sym "A",by simp [Spec.Match.SolutionTheory.HEBindingSatisfied,duplicate,
+      Spec.Match.SolutionTheory.applyClassSolution,Spec.Match.SolutionTheory.encodeModelAtom]⟩
 
 theorem selected_empty_constructed :
     MergeRel equalityGroundedSemantic Bindings.empty duplicate single := by
@@ -10566,6 +12256,131 @@ theorem equationInput_open_source_at
       ⟨agreement, model⟩, ?_⟩
     intro _ _
     rfl
+
+/-- A viable independent source occurrence cannot disappear from a fully
+covered query and caller reconciliation. Its private names are first
+transported to the actual retained fresh instance. No restriction on incoming
+aliases or closedness of the query is imposed. This concerns raw RHS work. -/
+theorem source_occurrence_reaches_covered_query
+    {space : Space} {live : List Atom} {query expected left right pattern body emitted : Atom}
+    {incoming matched independent : Bindings} {position fuel : Nat}
+    (source : Spec.Eval.Steps.EquationQueryOccurrenceRel space (expected :: live) query incoming
+      position left right pattern body matched emitted independent)
+    (queryCovered : queryEquationsCovered (equationScope live query expected incoming)
+      space query fuel = true)
+    (inputsCovered : ∀ candidate ∈ equationCandidates space live query expected incoming fuel,
+      matchCovered fuel (.merge candidate.2 (aliasConstraints incoming)) = true) :
+    ∃ request, request ∈ rawQueryResults space query expected incoming fuel live := by
+  let avoid := equationScope live query expected incoming
+  let chosen := freshenEquationAvoiding avoid position left right
+  have variant : Spec.Eval.Steps.AlphaVariantRel (expected :: live) query incoming
+      left right chosen.1 chosen.2 := by
+    apply EquationFreshening.freshenEquationAvoiding_alphaVariant
+    intro name visible
+    have captured := EquationFreshening.equationScope_visible (type_ := expected) visible
+    simp only [avoid,equationScope,atomListVariables,List.mem_append] at captured ⊢
+    tauto
+  obtain ⟨_,_,_,_,_,_,selected,_,_⟩ :=
+    EquationFreshening.occurrence_alpha_transport_logical source variant
+  obtain ⟨valuation,sourceModel,callerModel⟩ := selected.result.1.common_model
+  let observer : String → Metta.Atom := fun name => Spec.Match.SolutionTheory.encodeModelAtom (valuation name)
+  have equation : Spec.Match.SolutionTheory.HEAtomEquationSatisfied observer query chosen.1 :=
+    (Spec.Match.SolutionTheory.matchRel_solution_iff selected.selected.2 observer).mp
+      (Spec.Bindings.ScopeObservation.ModelTransport.heBindingSatisfied_of_specTypeBindingSatisfied sourceModel)
+  obtain ⟨actual,witnessDepth,matching⟩ :=
+    MatchSizeTheory.exists_matchAtoms_of_solution_solutionSize equation
+  have actualModel := (BindingComposition.matchAtoms_solution_iff matching observer).mpr equation
+  have actualShape := matchAtoms_assignmentsNonVariable_model matching
+  have actualAcyclic : actual.hasLoop = false :=
+    (hasLoop_eq_false_iff_semanticLoopFree actual).mpr
+      (semanticLoopFree_of_satisfied_nonvariable actualModel actualShape)
+  have foundLarge : (chosen.2,actual) ∈
+      queryEquationsAvoiding avoid space query (fuel + (witnessDepth + 1)) := by
+    simp only [Nat.add_succ,queryEquationsAvoiding]
+    apply List.mem_flatMap.mpr
+    refine ⟨(.expression [.symbol "=",left,right],position),
+      List.mem_zipIdx_iff_getElem?.mpr source.stored,?_⟩
+    dsimp only
+    apply List.mem_flatMap.mpr
+    refine ⟨actual,?_,?_⟩
+    · simpa only [chosen,Nat.succ_eq_add_one,Nat.add_assoc,Nat.add_comm,Nat.add_left_comm] using
+        DeclMatchSpec.matchAtoms_mono query chosen.1 witnessDepth (fuel + 1) matching
+    · simp [chosen,mergeBindings,Bindings.empty,actualAcyclic]
+  have found : (chosen.2,actual) ∈ equationCandidates space live query expected incoming fuel := by
+    change (chosen.2,actual) ∈ queryEquationsAvoiding avoid space query fuel
+    rw [← queryEquationsCovered_stable avoid space query fuel (witnessDepth + 1) queryCovered]
+    exact foundLarge
+  have callerModel' : Spec.Match.SolutionTheory.HEBindingSatisfied observer (aliasConstraints incoming) :=
+    Spec.Bindings.ScopeObservation.ModelTransport.heBindingSatisfied_of_specTypeBindingSatisfied
+      ((aliasConstraints_models incoming valuation).mpr callerModel)
+  have callerShape : Spec.Match.SolutionTheory.HEAssignmentsNonVariable (aliasConstraints incoming) := by
+    intro key name present
+    have impossible := aliasConstraints_nonvariable incoming key (.var name) present
+    simp [isVariableB] at impossible
+  obtain ⟨output,mergeDepth,occurred⟩ := MatchSizeTheory.exists_mergeBindings_of_common_model
+    actualModel (MatchSizeTheory.heAssignmentsNonVariable_of_matchAtoms matching) callerModel' callerShape
+  have later := DeclMatchSpec.mergeBindings_mono actual (aliasConstraints incoming) mergeDepth fuel occurred
+  have stable := matchCovered_stable fuel mergeDepth (.merge actual (aliasConstraints incoming))
+    (inputsCovered _ found)
+  change mergeBindings actual (aliasConstraints incoming) (fuel + mergeDepth) =
+    mergeBindings actual (aliasConstraints incoming) fuel at stable
+  rw [Nat.add_comm mergeDepth fuel,stable] at later
+  have acyclic : output.hasLoop = false :=
+    (hasLoop_eq_false_iff_semanticLoopFree output).mpr
+      (mergeBindings_semanticLoopFree_of_common_model later actualShape
+        (aliasConstraints_nonvariable incoming) actualModel callerModel')
+  change ∃ request, request ∈ (equationCandidates space live query expected incoming fuel).flatMap
+    (equationInputs incoming fuel)
+  refine ⟨(output.applyFull chosen.2 fuel,output),List.mem_flatMap.mpr ⟨(chosen.2,actual),found,?_⟩⟩
+  exact List.mem_filterMap.mpr ⟨output,later,by simp [acyclic]⟩
+
+/-- Completed query emptiness is exactly an independently covered empty
+physical source frontier. Local coverage includes the actual reached merge
+and readout operations; it is not a whole-evaluator correctness premise. -/
+theorem covered_query_empty_iff_source_frontier
+    {space : Space} {live : List Atom} {query expected : Atom} {incoming : Bindings} {fuel : Nat}
+    (queryCovered : queryEquationsCovered (equationScope live query expected incoming)
+      space query fuel = true)
+    (inputsCovered : ∀ candidate ∈ equationCandidates space live query expected incoming fuel,
+      matchCovered fuel (.merge candidate.2 (aliasConstraints incoming)) = true ∧
+      ∀ merged ∈ mergeBindings candidate.2 (aliasConstraints incoming) fuel, merged.hasLoop = false →
+        merged.applyFullCovered candidate.1 fuel = true) :
+    rawQueryResults space query expected incoming fuel live = [] ↔
+      Spec.Eval.Steps.EquationFrontierRel space (expected :: live) query incoming [] := by
+  constructor
+  · intro empty
+    obtain ⟨works,completed⟩ := EquationFreshening.equationFrontier_exists space (expected :: live) query incoming
+    have absent : ∀ emitted output,
+        ¬Spec.Eval.Steps.EquationQueryCandidateRel space (expected :: live) query incoming emitted output := by
+      intro emitted output candidate
+      obtain ⟨position,left,right,pattern,body,matched,source⟩ :=
+        (Spec.Eval.Steps.equationQueryCandidateRel_iff_occurrence _ _ _ _ _ _).mp candidate
+      obtain ⟨request,present⟩ := source_occurrence_reaches_covered_query source queryCovered
+        (fun item member => (inputsCovered item member).1)
+      rw [empty] at present
+      exact List.not_mem_nil present
+    have none := completed.empty_iff_no_candidate.mpr absent
+    simpa only [none] using completed
+  · intro completed
+    have absent := completed.empty_iff_no_candidate.mp rfl
+    apply List.eq_nil_iff_forall_not_mem.mpr
+    intro request present
+    change request ∈ (equationCandidates space live query expected incoming fuel).flatMap
+      (equationInputs incoming fuel) at present
+    obtain ⟨candidate,selected,input⟩ := List.mem_flatMap.mp present
+    obtain ⟨merged,mergeMember,result⟩ := List.mem_filterMap.mp input
+    split at result
+    · simp at result
+    · rename_i admitted
+      have acyclic : merged.hasLoop = false := by simpa using admitted
+      have pair : (merged.applyFull candidate.1 fuel,merged) = request := Option.some.inj result
+      cases pair
+      obtain ⟨left,right,position,stored,rhs,matching,_⟩ := queryEquationsAvoiding_matchAtoms_witness selected
+      rw [List.mem_zipIdx_iff_getElem?] at stored
+      obtain ⟨_,_,source,_⟩ := equationInput_open_source_at (.refl incoming)
+        position left right stored rhs matching input
+        ((inputsCovered candidate selected).2 merged mergeMember acyclic)
+      exact absent _ _ source.candidate
 
 /-- An actual open-query work item constructs the retained source frame.
 Freshening, matching, reconciliation, principality and the one finite table
@@ -12498,7 +14313,7 @@ theorem unmatched : MinimalDerivation Space.empty .semantic [emptyChain] (some e
   .instruction [emptyChain] (some emptyChain) mismatch Bindings.empty 6 _ rfl
     (by simp [Minimal.IsChain, mismatch])
     (.unifyNoMatch [emptyChain] (some emptyChain) (.symbol "A") (.symbol "B") (.symbol "Yes") Atom.empty
-      Bindings.empty 5 (by decide +kernel) (by decide +kernel) (by intro matched; exact Spec.Match.Merge.symbol_mismatch_not_match (by decide) matched))
+      Bindings.empty 5 (by decide +kernel) (by decide +kernel))
 
 theorem internal_empty_chain : MinimalDerivation Space.empty .semantic [] none emptyChain Bindings.empty 9
     [(seenEmpty, Bindings.empty)] := by
@@ -13369,3 +15184,1351 @@ theorem source_pending_tuple (input : BindingFrame)
 end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution.OpenNonlinearControls
 
 end
+
+section
+set_option autoImplicit false
+set_option maxRecDepth 12000
+set_option maxHeartbeats 4000000
+
+namespace Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution.UntypedTupleControls
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open RecursiveTasks RecursiveMachine FirstSuccessRecursiveExecution
+open Spec.Eval Spec.Eval.Steps Spec.Type.Presentation Spec.Type.Presentation.Theory
+open Spec.Type.Presentation.BindingTheory Spec.Type.RuntimeRefinement QueryBindingProjection
+
+def a : Atom := .symbol "A"
+def done : Atom := .symbol "Done"
+def kept : Atom := .symbol "Kept"
+def incoming : Bindings := ⟨[("keep",kept)],[]⟩
+def pattern : Atom := .expression [.symbol "pick",.var "x",.var "x"]
+def rule : Atom := .expression [.symbol "=",pattern,done]
+def context : Space := Space.ofList [rule,rule]
+def query : Atom := .expression [.symbol "pick",a,a]
+def term : Atom := .expression [.symbol "Box",query]
+def answer : Atom := .expression [.symbol "Box",done]
+def live : List Atom := [.var "held"]
+def innerLive : List Atom := .symbol "Box" :: Atom.undefinedType :: live
+def key (index : Fin 2) : String := "x#" ++ Nat.repr index.val
+def matched (index : Fin 2) : Bindings := ⟨[(key index,a)],[]⟩
+def bindings (index : Fin 2) : Bindings := ⟨[(key index,a),("keep",kept)],[]⟩
+def candidate (index : Fin 2) : ResultPair := (done,matched index)
+def request (index : Fin 2) : ResultPair := (done,bindings index)
+def innerAnswers : ResultSet := [request 0,request 1]
+def answers : ResultSet := [(answer,bindings 0),(answer,bindings 1)]
+
+theorem symbol_lookup (name : String) : getAtomTypes context (.symbol name) = [Atom.undefinedType] := rfl
+
+private theorem symbol_admitted (scope : List Atom) (name : String) (state : Bindings)
+    (fuel : Nat) (clean : name ≠ "Empty") (enough : sizeOf Atom.undefinedType + sizeOf [Atom.undefinedType] + 2 ≤ fuel) :
+    ∃ derived : AtomDerivation context .semantic scope (.symbol name) Atom.undefinedType
+        state (fuel+1) [(.symbol name,state)], derived.Covered := by
+  have sizeBound : sizeOf Atom.undefinedType + sizeOf Atom.undefinedType + 2 ≤ fuel :=
+    Nat.le_trans (by decide) enough
+  let derived := AtomDerivation.symbolCast (space := context) (comparison := .semantic)
+    scope name Atom.undefinedType state fuel [] [] Atom.undefinedType clean
+    (by decide) (by decide) (symbol_lookup name) rfl rfl (by simp) (by simp)
+    (Or.inl rfl) sizeBound
+  have covered : derived.Covered := .symbolCast (before := []) (after := [])
+    (actual := Atom.undefinedType) (notEmpty := clean) (notRaw := by decide) (notMeta := by decide)
+    (types := symbol_lookup name) (expectedClosed := rfl) (actualClosed := rfl)
+    (earlierClosed := by simp) (earlierRejected := by simp) (fits := Or.inl rfl) (enough := sizeBound) (by
+    apply FirstSuccessSourceApplicability.closed_typeCast_covered
+      context (.symbol name) Atom.undefinedType state fuel rfl
+    · intro actual member
+      rw [symbol_lookup] at member
+      obtain rfl := List.mem_singleton.mp member
+      rfl
+    · rw [symbol_lookup]
+      exact enough)
+  exact ⟨derived,covered⟩
+
+private theorem tuple_single (scope : List Atom) (value : Atom) (state : Bindings)
+    (fuel : Nat) (rows : ResultSet)
+    (child : ∃ derived : AtomDerivation context .semantic scope value Atom.undefinedType
+      state fuel rows, derived.Covered) :
+    ∃ derived : TupleDerivation context .semantic scope (.expression [value])
+      state (fuel+1) (rows.map HE.tupleSingleton), derived.Covered := by
+  obtain ⟨derived,covered⟩ := child
+  exact ⟨.singleton scope value state fuel rows derived, .singleton covered⟩
+
+private theorem tuple_cons (scope : List Atom) (head second : Atom) (tail : List Atom)
+    (state next : Bindings) (fuel : Nat) (value : Atom) (rows : ResultSet)
+    (clean : isEmptyOrError value = false)
+    (first : ∃ derived : AtomDerivation context .semantic
+      (.expression (second::tail)::scope) head Atom.undefinedType state fuel [(value,next)],
+      derived.Covered)
+    (rest : ∃ derived : TupleDerivation context .semantic (value::scope)
+      (.expression (second::tail)) next fuel rows, derived.Covered) :
+    ∃ derived : TupleDerivation context .semantic scope (.expression (head::second::tail))
+      state (fuel+1) (RecursiveTasks.tupleTail value rows), derived.Covered := by
+  obtain ⟨first,firstCovered⟩ := first
+  obtain ⟨rest,restCovered⟩ := rest
+  have children : ∀ selected ∈ [(value,next)], isEmptyOrError selected.1 = false →
+      TupleDerivation context .semantic (selected.1::scope) (.expression (second::tail))
+        selected.2 fuel rows := by
+    intro selected member _
+    obtain rfl := List.mem_singleton.mp member
+    exact rest
+  have childrenCovered : ∀ selected member safe, (children selected member safe).Covered := by
+    intro selected member _
+    obtain rfl := List.mem_singleton.mp member
+    exact restCovered
+  have derived := TupleDerivation.cons (space := context) (comparison := .semantic)
+    scope head second tail state fuel [(value,next)] (fun _ => rows) first children
+  have covered := TupleDerivation.Covered.cons firstCovered childrenCovered
+  simpa only [tupleOutputs,List.flatMap_cons,List.flatMap_nil,List.append_nil,clean,
+    Bool.false_eq_true,if_false] using (⟨derived,covered⟩ : ∃ d, d.Covered)
+
+theorem queried : equationCandidates context innerLive query Atom.undefinedType incoming 4099 =
+    [candidate 0,candidate 1] := by decide +kernel
+
+theorem prepared (index : Fin 2) : equationInputs incoming 4099 (candidate index) = [request index] := by
+  fin_cases index <;> decide +kernel
+
+theorem inputs_covered (index : Fin 2) :
+    matchCovered 4099 (.merge (candidate index).2 (aliasConstraints incoming)) = true ∧
+    ∀ out ∈ mergeBindings (candidate index).2 (aliasConstraints incoming) 4099,
+      out.hasLoop = false → out.applyFullCovered (candidate index).1 4099 = true := by
+  constructor
+  · fin_cases index <;> decide +kernel
+  · intro out member _
+    have actual : mergeBindings (candidate index).2 (aliasConstraints incoming) 4099 = [bindings index] := by
+      fin_cases index <;> decide +kernel
+    rw [actual] at member
+    obtain rfl := List.mem_singleton.mp member
+    fin_cases index <;> decide +kernel
+
+theorem selected_request {selected input : ResultPair}
+    (member : selected ∈ equationCandidates context innerLive query Atom.undefinedType incoming 4099)
+    (present : input ∈ equationInputs incoming 4099 selected) :
+    ∃ index : Fin 2, selected = candidate index ∧ input = request index := by
+  rw [queried] at member
+  simp only [List.mem_cons,List.not_mem_nil,or_false] at member
+  rcases member with rfl | rfl
+  · rw [prepared] at present
+    exact ⟨0,rfl,List.mem_singleton.mp present⟩
+  · rw [prepared] at present
+    exact ⟨1,rfl,List.mem_singleton.mp present⟩
+
+theorem inner_call_admitted :
+    ∃ derived : CallDerivation context .semantic innerLive query Atom.undefinedType incoming 4100
+      innerAnswers, derived.Covered := by
+  have producers : ∀ selected ∈ equationCandidates context innerLive query Atom.undefinedType incoming 4099,
+      ∀ input ∈ equationInputs incoming 4099 selected,
+      ProducedDerivation context .semantic (Atom.undefinedType::innerLive) (some query)
+        input.1 input.2 4099 [input] := by
+    intro selected member input present
+    obtain ⟨index,rfl,rfl⟩ := selected_request member present
+    exact .raw _ _ done (bindings index) 4098 (by simp [Minimal.IsFunction,done])
+  have receiver (index : Fin 2) : ∃ derived : ReturnDerivation context .semantic innerLive query
+      Atom.undefinedType done (bindings index) 4099 [request index], derived.Covered := by
+    obtain ⟨child,covered⟩ := symbol_admitted innerLive "Done" (bindings index) 4098 (by decide) (by decide)
+    let derived := ReturnDerivation.evaluate (space := context) (comparison := .semantic)
+      innerLive query Atom.undefinedType done (bindings index) 4099 [request index]
+      (by decide) (by simp [IsEmptyOrErrorRel,IsErrorRel,done,Atom.empty]) child
+    have ready : derived.Covered := .evaluate (accepted := by decide)
+      (running := by simp [IsEmptyOrErrorRel,IsErrorRel,done,Atom.empty]) covered
+    exact ⟨derived,ready⟩
+  have returns : ∀ selected ∈ equationCandidates context innerLive query Atom.undefinedType incoming 4099,
+      ∀ input ∈ equationInputs incoming 4099 selected, ∀ row ∈ [input],
+      ∃ derived : ReturnDerivation context .semantic innerLive query Atom.undefinedType
+        row.1 row.2 4099 [row], derived.Covered := by
+    intro selected member input present row occurred
+    obtain ⟨index,rfl,rfl⟩ := selected_request member present
+    obtain rfl := List.mem_singleton.mp occurred
+    exact receiver index
+  choose returns covered using returns
+  obtain ⟨derived,ready⟩ := CallDerivation.coveredEquations (space := context)
+    innerLive "pick" [a,a] Atom.undefinedType incoming 4099 (fun _ input => [input])
+    (fun _ _ row => [row]) (by decide) (by decide) (by decide) (by decide +kernel)
+    (by
+      intro selected member
+      change selected ∈ equationCandidates context innerLive query Atom.undefinedType incoming 4099 at member
+      rw [queried] at member
+      simp only [List.mem_cons,List.not_mem_nil,or_false] at member
+      rcases member with rfl | rfl
+      · exact inputs_covered 0
+      · exact inputs_covered 1)
+    (by decide +kernel) producers returns covered
+  have joined : ((equationCandidates context innerLive query Atom.undefinedType incoming 4099).flatMap
+      fun selected => (equationInputs incoming 4099 selected).flatMap fun input =>
+        [input].flatMap fun row => [row]) = innerAnswers := by
+    rw [queried]
+    simp only [List.flatMap_cons,List.flatMap_nil,prepared,List.append_nil,List.singleton_append,innerAnswers]
+  rw [← joined]
+  exact ⟨derived,ready⟩
+
+theorem inner_tuple_admitted :
+    ∃ derived : TupleDerivation context .semantic (Atom.undefinedType::innerLive) query incoming 4100
+      [(query,incoming)], derived.Covered := by
+  have last := tuple_single (a::.symbol "pick"::Atom.undefinedType::innerLive) a incoming 4097
+    [(a,incoming)] (symbol_admitted _ "A" incoming 4096 (by decide) (by decide))
+  have rest := tuple_cons (.symbol "pick"::Atom.undefinedType::innerLive) a a [] incoming incoming
+    4098 a [(.expression [a],incoming)] rfl
+    (symbol_admitted _ "A" incoming 4097 (by decide) (by decide)) (by simpa [HE.tupleSingleton,isEmptyOrError,isEmptyAtom,isErrorAtom,a,Atom.empty] using last)
+  have whole := tuple_cons (Atom.undefinedType::innerLive) (.symbol "pick") a [a] incoming incoming
+    4099 (.symbol "pick") [(.expression [a,a],incoming)] rfl
+    (symbol_admitted _ "pick" incoming 4098 (by decide) (by decide))
+    (by simpa [RecursiveTasks.tupleTail,atomElements,isEmptyOrError,isEmptyAtom,isErrorAtom,a,Atom.empty] using rest)
+  simpa [RecursiveTasks.tupleTail,atomElements,query,isEmptyOrError,isEmptyAtom,isErrorAtom,a,Atom.empty] using whole
+
+theorem inner_admitted :
+    ∃ derived : AtomDerivation context .semantic innerLive query Atom.undefinedType incoming 4102
+      innerAnswers, derived.Covered := by
+  obtain ⟨tuple,tupleCovered⟩ := inner_tuple_admitted
+  obtain ⟨call,callCovered⟩ := inner_call_admitted
+  have calls : ∀ row ∈ [(query,incoming)], CallDerivation context .semantic innerLive row.1
+      Atom.undefinedType row.2 4100 innerAnswers := by
+    intro row member
+    obtain rfl := List.mem_singleton.mp member
+    exact call
+  have ready : ∀ row member, (calls row member).Covered := by
+    intro row member
+    obtain rfl := List.mem_singleton.mp member
+    exact callCovered
+  have derived := AtomDerivation.untypedTuple (space := context) (comparison := .semantic)
+    innerLive (.symbol "pick") [a,a] Atom.undefinedType incoming 4099 [(query,incoming)]
+    (fun _ => innerAnswers) rfl (by decide) (by decide) (symbol_lookup "pick") tuple calls
+  have covered : derived.Covered := AtomDerivation.Covered.untypedTuple
+    (clean := rfl) (notRaw := by decide) (notExpr := by decide)
+    (types := symbol_lookup "pick") tupleCovered ready
+  have aggregation : successPriority ([(query,incoming)].flatMap fun _ => innerAnswers) = innerAnswers := by
+    decide +kernel
+  rw [← aggregation]
+  exact ⟨derived,covered⟩
+
+/-- A constructor head remains absent independently of the fresh spellings
+chosen for either stored nonlinear rule. -/
+theorem box_absent (scope : List Atom) (state : Bindings) :
+    EquationQueryNoMatchRel context scope answer state := by
+  rintro freshLeft freshRight matched ⟨rawLeft,rawRight,stored,renamed,matchedRule⟩
+  have storedShape : rawLeft = pattern ∧ rawRight = done := by
+    simpa only [context,Space.ofList,rule,List.mem_cons,List.not_mem_nil,or_false,or_self,
+      Atom.expression.injEq,List.cons.injEq,and_true,true_and] using stored
+  rcases storedShape with ⟨rfl,rfl⟩
+  obtain ⟨rename,_,leftRenamed,_,_⟩ := renamed
+  have shape := EquationFreshening.alphaRename_eq leftRenamed
+  simp only [pattern,renameTypeVars,List.map_cons,List.map_nil] at shape
+  subst freshLeft
+  cases matchedRule with
+  | expression children =>
+    cases children with
+    | cons first _ _ =>
+      exact Spec.Match.Merge.symbol_mismatch_not_match (by decide) _ first
+
+theorem outer_call_admitted (index : Fin 2) :
+    ∃ derived : CallDerivation context .semantic live answer Atom.undefinedType (bindings index) 4104
+      [(answer,bindings index)], derived.Covered := by
+  have empty : equationCandidates context live answer Atom.undefinedType (bindings index) 4103 = [] := by
+    fin_cases index <;> decide +kernel
+  let derived := CallDerivation.unreduced (space := context) (comparison := .semantic)
+    live "Box" [done] Atom.undefinedType (bindings index) 4103 (by decide) rfl (by decide) empty (box_absent _ _)
+  have covered : derived.Covered := .unreduced (ordinary := by decide)
+    (nonembedded := rfl) (clean := by decide) (empty := empty) (absent := box_absent _ _)
+    (by fin_cases index <;> decide +kernel)
+  exact ⟨derived,covered⟩
+
+theorem outer_tuple_admitted :
+    ∃ derived : TupleDerivation context .semantic (Atom.undefinedType::live) term incoming 4104 answers,
+      derived.Covered := by
+  have singleton := tuple_single innerLive query incoming 4102 innerAnswers inner_admitted
+  have whole := tuple_cons (Atom.undefinedType::live) (.symbol "Box") query [] incoming incoming
+    4103 (.symbol "Box") (innerAnswers.map HE.tupleSingleton) rfl
+    (symbol_admitted _ "Box" incoming 4102 (by decide) (by decide)) singleton
+  simpa [RecursiveTasks.tupleTail,innerAnswers,request,HE.tupleSingleton,done,
+    isEmptyOrError,isEmptyAtom,isErrorAtom,Atom.empty,atomElements,term,answer,answers] using whole
+
+/-- Ordinary evaluation traverses an untyped tuple, executes both physical
+nonlinear equations, and rebuilds the enclosing constructor at each reached frame. -/
+theorem admitted : ∃ derived : AtomDerivation context .semantic live term Atom.undefinedType
+    incoming 4106 answers, derived.Covered := by
+  obtain ⟨tuple,tupleCovered⟩ := outer_tuple_admitted
+  have calls : ∀ row ∈ answers, ∃ derived : CallDerivation context .semantic live row.1
+      Atom.undefinedType row.2 4104 [row], derived.Covered := by
+    intro row member
+    simp only [answers,List.mem_cons,List.not_mem_nil,or_false] at member
+    rcases member with rfl | rfl
+    · exact outer_call_admitted 0
+    · exact outer_call_admitted 1
+  choose calls ready using calls
+  have derived := AtomDerivation.untypedTuple (space := context) (comparison := .semantic)
+    live (.symbol "Box") [query] Atom.undefinedType incoming 4103 answers (fun row => [row])
+    rfl (by decide) (by decide) (symbol_lookup "Box") tuple calls
+  have covered : derived.Covered := AtomDerivation.Covered.untypedTuple
+    (clean := rfl) (notRaw := by decide) (notExpr := by decide)
+    (types := symbol_lookup "Box") tupleCovered ready
+  have aggregation : successPriority (answers.flatMap fun row => [row]) = answers := by decide +kernel
+  rw [← aggregation]
+  exact ⟨derived,covered⟩
+
+theorem checked_completion (earned : ResultSet) :
+    ∃ budget, ∀ later, (FirstSuccessRecursiveExecution.Checked.machine HE.GroundedDispatch.none).run
+      (budget+later) ⟨context,.work (.atom term Atom.undefinedType incoming 4106 live),[],earned⟩ =
+      (answers,.finished ⟨context,.returning [],[],earned++answers⟩) := by
+  obtain ⟨derived,covered⟩ := admitted
+  exact derived.checked_completed covered earned
+
+theorem source_occurrence (input : BindingFrame)
+    (related : SourceBindingComparison.semantic.FrameRelated incoming input) (index : Fin 2) :
+    ∃ output, EvalAtomRawRel context noHost live term Atom.undefinedType input (answer,output) ∧
+      SourceBindingComparison.semantic.FrameRelated (bindings index) output := by
+  obtain ⟨derived,_⟩ := admitted
+  exact derived.sound (answer,bindings index) (by fin_cases index <;> simp [answers]) [] input related
+
+theorem multiplicity_and_changed_bindings : answers.length = 2 ∧ bindings 0 ≠ bindings 1 ∧
+    (bindings 0).lookup "x#0" = some a ∧ (bindings 1).lookup "x#1" = some a ∧
+    (bindings 0).lookup "keep" = some kept ∧ (bindings 1).lookup "keep" = some kept := by
+  decide +kernel
+
+theorem initial_certificate : ReadoutCertificate incoming (CurrentStore.normalize incoming.assignments) :=
+  CurrentStore.normalize_certified_of_noLoop (by decide +kernel) (by decide +kernel)
+
+def initialFrame : BindingFrame := .selected incoming (CurrentStore.normalize incoming.assignments)
+  initial_certificate
+
+theorem initial_related : SourceBindingComparison.semantic.FrameRelated incoming initialFrame := by
+  have actual := SourceBindingComparison.FrameRelated.normalized
+    (entries := incoming.assignments) (by decide +kernel) (by decide +kernel)
+  have normalized : CurrentStore.normalize incoming.assignments = incoming.assignments := by
+    simp [CurrentStore.normalize,CurrentStore.normalizeFrom,incoming,kept,
+      TypeSubst.bind,TypeSubst.erase,TypeSubst.applyAssignment]
+  have native : FirstSuccessPreparedArguments.presentedBindings
+      (CurrentStore.normalize incoming.assignments) = incoming := by
+    rw [normalized]
+    rfl
+  rw [native] at actual
+  exact actual
+
+theorem source_from_actual_nonempty_caller (index : Fin 2) :
+    ∃ output, EvalAtomRawRel context noHost live term Atom.undefinedType initialFrame (answer,output) ∧
+      SourceBindingComparison.semantic.FrameRelated (bindings index) output :=
+  source_occurrence initialFrame initial_related index
+
+def initial : Configuration :=
+  ⟨context,.work (.atom term Atom.undefinedType incoming 4106 live),[],[]⟩
+
+def saved : Configuration :=
+  ⟨context,.work (.atom (.symbol "Box") Atom.undefinedType incoming 4103
+      (.expression [query]::Atom.undefinedType::live)),
+    [.tupleHeads (.expression [query]) 4103 (Atom.undefinedType::live),
+      .calls Atom.undefinedType 4104 live,.prepend [],.filter],[]⟩
+
+/-- The pending nonlinear query, ordinary demand and tuple receiver are
+actual retained state, before the first child publishes anything. -/
+theorem actual_saved_checkpoint :
+    (FirstSuccessRecursiveExecution.Checked.machine HE.GroundedDispatch.none).run 5 initial =
+      ([],.exhausted saved) := rfl
+
+theorem saved_pending_scope :
+    saved.control = .work (.atom (.symbol "Box") Atom.undefinedType incoming 4103
+      (.expression [query]::Atom.undefinedType::live)) ∧
+    .tupleHeads (.expression [query]) 4103 (Atom.undefinedType::live) ∈ saved.stack ∧
+    .calls Atom.undefinedType 4104 live ∈ saved.stack := by decide +kernel
+
+theorem saved_resumes : ∃ budget remaining,
+    (FirstSuccessRecursiveExecution.Checked.machine HE.GroundedDispatch.none).run budget saved =
+      (remaining,.finished ⟨context,.returning [],[],answers⟩) ∧ remaining = answers := by
+  obtain ⟨derived,covered⟩ := admitted
+  simpa only [List.nil_append] using
+    derived.checked_resume_completed covered [] 5 [] saved actual_saved_checkpoint
+
+theorem shallow_is_not_finished :
+    (FirstSuccessRecursiveExecution.Checked.machine HE.GroundedDispatch.none).run 5 initial ≠
+      ([],.finished saved) := by
+  rw [actual_saved_checkpoint]
+  intro impossible
+  cases impossible
+
+theorem zero_tuple_depth_suspends :
+    (FirstSuccessRecursiveExecution.Checked.machine HE.GroundedDispatch.none).run 1
+      ⟨context,.work (.tuple term incoming 0 live),[],[]⟩ =
+      ([],.suspended .evaluationDepth ⟨context,.work (.tuple term incoming 0 live),[],[]⟩) := rfl
+
+theorem held_atom_demand :
+    ∃ derived : AtomDerivation context .semantic live term Atom.atomType incoming 1 [(term,incoming)],
+      derived.Covered :=
+  ⟨.leaf live term Atom.atomType incoming 0
+    (Or.inr ⟨Atom.expressionType,.expression _,Or.inl rfl⟩),
+    .leaf (leaf := Or.inr ⟨Atom.expressionType,.expression _,Or.inl rfl⟩)⟩
+
+/-- A missing constructor equation is established by source head mismatch,
+while a nonlinear mismatch is independently covered by the real query service. -/
+theorem genuine_absence :
+    EquationQueryNoMatchRel context (Atom.undefinedType::live) answer incoming ∧
+    equationCandidates context live answer Atom.undefinedType incoming 4099 = [] ∧
+    queryEquationsCovered (equationScope live (.expression [.symbol "pick",a,.symbol "B"])
+      Atom.undefinedType incoming) context (.expression [.symbol "pick",a,.symbol "B"]) 4099 = true ∧
+    equationCandidates context live (.expression [.symbol "pick",a,.symbol "B"])
+      Atom.undefinedType incoming 4099 = [] := by
+  exact ⟨box_absent _ _,by decide +kernel,by decide +kernel,by decide +kernel⟩
+
+theorem annotation_refuses_untyped_guard :
+    getAtomTypes (context.add (.expression [.symbol ":",.symbol "Box",
+      arrow [Atom.atomType] Atom.atomType])) (.symbol "Box") ≠ [Atom.undefinedType] := by
+  decide +kernel
+
+def failed : Atom := .expression [.symbol "Error",.symbol "Stopped"]
+def failedTail : Atom := .expression [.symbol "Box",failed]
+
+theorem stopped_head_admitted (value : Atom) (stopped : IsEmptyOrErrorRel value) :
+    ∃ derived : TupleDerivation context .semantic live (.expression [value,query]) incoming 4
+      [(value,incoming)], derived.Covered := by
+  let first := AtomDerivation.leaf (space := context) (comparison := .semantic)
+    (.expression [query]::live) value Atom.undefinedType incoming 2 (Or.inl stopped)
+  have stop : isEmptyOrError value = true :=
+    (Spec.Type.Conformance.isEmptyOrErrorRel_iff_isEmptyOrError _).mp stopped
+  have children : ∀ selected ∈ [(value,incoming)], isEmptyOrError selected.1 = false →
+      TupleDerivation context .semantic (selected.1::live) (.expression [query]) selected.2 3 [] := by
+    intro selected member clean
+    obtain rfl := List.mem_singleton.mp member
+    simp [stop] at clean
+  have ready : ∀ selected member clean, (children selected member clean).Covered := by
+    intro selected member clean
+    obtain rfl := List.mem_singleton.mp member
+    simp [stop] at clean
+  have derived := TupleDerivation.cons (space := context) (comparison := .semantic)
+    live value query [] incoming 3 [(value,incoming)] (fun _ => []) first children
+  have covered : derived.Covered := .cons (.leaf (leaf := Or.inl stopped)) ready
+  have aggregation : tupleOutputs [(value,incoming)] (fun _ => []) = [(value,incoming)] := by
+    simp [tupleOutputs,stop]
+  rw [← aggregation]
+  exact ⟨derived,covered⟩
+
+theorem empty_head_does_not_run_tail :
+    ∃ derived : TupleDerivation context .semantic live (.expression [Atom.empty,query]) incoming 4
+      [(Atom.empty,incoming)], derived.Covered :=
+  stopped_head_admitted Atom.empty (Or.inl rfl)
+
+theorem error_head_does_not_run_tail :
+    ∃ derived : TupleDerivation context .semantic live (.expression [failed,query]) incoming 4
+      [(failed,incoming)], derived.Covered :=
+  stopped_head_admitted failed (Or.inr ⟨[.symbol "Stopped"],rfl⟩)
+
+theorem error_tail_admitted :
+    ∃ derived : AtomDerivation context .semantic live failedTail Atom.undefinedType incoming 4106
+      [(failed,incoming)], derived.Covered := by
+  have stopped : IsEmptyOrErrorRel failed := Or.inr ⟨[.symbol "Stopped"],rfl⟩
+  have leaf : ∃ derived : AtomDerivation context .semantic innerLive failed Atom.undefinedType incoming 4102
+      [(failed,incoming)], derived.Covered :=
+    ⟨.leaf _ _ _ _ 4101 (Or.inl stopped),.leaf (leaf := Or.inl stopped)⟩
+  have singleton := tuple_single innerLive failed incoming 4102 [(failed,incoming)] leaf
+  have whole := tuple_cons (Atom.undefinedType::live) (.symbol "Box") failed [] incoming incoming
+    4103 (.symbol "Box") [(failed,incoming)] rfl
+    (symbol_admitted _ "Box" incoming 4102 (by decide) (by decide))
+    (by simpa [innerLive,HE.tupleSingleton,failed,isEmptyOrError,isErrorAtom] using singleton)
+  have tupleAdmission : ∃ derived : TupleDerivation context .semantic (Atom.undefinedType::live)
+      failedTail incoming 4104 [(failed,incoming)], derived.Covered := by
+    simpa [RecursiveTasks.tupleTail,failed,failedTail,isEmptyOrError,isErrorAtom] using whole
+  obtain ⟨tuple,tupleCovered⟩ := tupleAdmission
+  have calls : ∀ row ∈ [(failed,incoming)], CallDerivation context .semantic live row.1
+      Atom.undefinedType row.2 4104 [row] := by
+    intro row member
+    obtain rfl := List.mem_singleton.mp member
+    exact .errorPassthrough live failed Atom.undefinedType incoming 4103 ⟨[.symbol "Stopped"],rfl⟩
+  have ready : ∀ row member, (calls row member).Covered := by
+    intro row member
+    obtain rfl := List.mem_singleton.mp member
+    exact .errorPassthrough (error := ⟨[.symbol "Stopped"],rfl⟩)
+  have derived := AtomDerivation.untypedTuple (space := context) (comparison := .semantic)
+    live (.symbol "Box") [failed] Atom.undefinedType incoming 4103 [(failed,incoming)] (fun row => [row])
+    rfl (by decide) (by decide) (symbol_lookup "Box") tuple calls
+  have covered : derived.Covered := .untypedTuple (clean := rfl) (notRaw := by decide)
+    (notExpr := by decide) (types := symbol_lookup "Box") tupleCovered ready
+  have aggregation : successPriority ([(failed,incoming)].flatMap fun row => [row]) = [(failed,incoming)] := rfl
+  rw [← aggregation]
+  exact ⟨derived,covered⟩
+
+theorem stopped_tail_source :
+    ∃ output, EvalAtomRawRel context noHost live failedTail Atom.undefinedType initialFrame (failed,output) ∧
+      SourceBindingComparison.semantic.FrameRelated incoming output := by
+  obtain ⟨derived,_⟩ := error_tail_admitted
+  exact derived.sound (failed,incoming) (by simp) [] initialFrame initial_related
+
+theorem error_is_not_wrapped :
+    [(failed,incoming)] ≠ [(failedTail,incoming)] := by decide +kernel
+
+#print axioms TupleDerivation.realizes
+#print axioms TupleDerivation.sound
+#print axioms TupleDerivation.covered_realizes
+#print axioms AtomDerivation.checked_completed
+#print axioms AtomDerivation.checked_resume_completed
+#print axioms source_from_actual_nonempty_caller
+#print axioms checked_completion
+#print axioms saved_resumes
+#print axioms stopped_tail_source
+#print axioms genuine_absence
+#print axioms annotation_refuses_untyped_guard
+
+end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution.UntypedTupleControls
+end
+
+
+section
+set_option autoImplicit false
+set_option maxRecDepth 14000
+set_option maxHeartbeats 4000000
+
+namespace Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution.NestedPriorityControls
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Eval Spec.Eval.Steps Spec.Type Spec.Type.Presentation
+open RecursiveTasks RecursiveMachine FirstSuccessRecursiveExecution
+
+/-- One child has a success and an error; a later child has only an error.
+The standalone MeTTa discriminator uses these same three equations. -/
+def mixed : Atom := .expression [.symbol "mixed"]
+def later : Atom := .expression [.symbol "later"]
+def earlyError : Atom := .expression [.symbol "Error",.symbol "Early",.symbol "Failed"]
+def lateError : Atom := .expression [.symbol "Error",.symbol "Later",.symbol "Failed"]
+def context : Space := Space.ofList [
+  .expression [.symbol "=",mixed,.symbol "Good"],
+  .expression [.symbol "=",mixed,earlyError],
+  .expression [.symbol "=",later,lateError]]
+def query : Atom := .expression [.symbol "Box",mixed,later]
+
+private theorem symbol_lookup (name : String) :
+    getAtomTypes context (.symbol name) = [Atom.undefinedType] := rfl
+
+private theorem symbol_raw (live : List Atom) (name : String) (clean : name ≠ "Empty") :
+    EvalAtomRawRel context noHost live (.symbol name) Atom.undefinedType Bindings.empty
+      (.symbol name,Bindings.empty) := by
+  exact symbol_cast_spec context name Atom.undefinedType Bindings.empty 4100 [] []
+    Atom.undefinedType clean (by decide) (by decide) (symbol_lookup name)
+    rfl rfl (by simp) (by simp) (Or.inl rfl) (by decide) live []
+
+private theorem mixed_equation (live : List Atom) :
+    EquationQueryCandidateRel context (Atom.undefinedType::live) mixed Bindings.empty
+      earlyError Bindings.empty ∧
+      BindingFrame.Materialization (BindingFrame.historical Bindings.empty) earlyError earlyError := by
+  have evidence : EquationBodyEvidence context live mixed Atom.undefinedType Bindings.empty
+      (earlyError,Bindings.empty) (earlyError,Bindings.empty) := by
+    apply EquationBodyEvidence.of_closed_match 1 mixed earlyError rfl rfl rfl
+      (by simp [earlyError,TypeSubst.typeVars,TypeSubst.typeVarsList]) rfl
+      (by simp [TypeSubst.Normal,TypeSubst.keys,Bindings.empty]) 12 12 12
+    · change Bindings.empty ∈ matchAtoms mixed mixed 12
+      decide +kernel
+    · decide +kernel
+    · rfl
+    · decide +kernel
+  obtain ⟨output,related,⟨position,left,right,matched,_rhs,occurrence⟩,materialized⟩ :=
+    evidence.transport (BindingFrame.historical Bindings.empty) (.refl _)
+  have outputEmpty : output = BindingFrame.historical Bindings.empty := by
+    have assignments := List.perm_nil.mp related.related.assignments.symm
+    have equalities := List.perm_nil.mp related.related.equalities.symm
+    have bindingsEmpty : output.bindings = Bindings.empty :=
+      show (⟨output.bindings.assignments,output.bindings.equalities⟩ : Bindings) = Bindings.empty by
+        rw [assignments,equalities]
+        rfl
+    exact related.historical_eq.trans (congrArg BindingFrame.historical bindingsEmpty)
+  subst output
+  exact ⟨occurrence.candidate,materialized⟩
+
+private theorem untyped_error_raw (live : List Atom) (name : String) (arguments : List Atom)
+    (clean : name ≠ "Error")
+    (tuple : InterpretTupleRel context noHost (Atom.undefinedType::live)
+      (.expression (.symbol name::arguments)) Bindings.empty (earlyError,Bindings.empty)) :
+    EvalAtomRawRel context noHost live (.expression (.symbol name::arguments))
+      Atom.undefinedType Bindings.empty (earlyError,Bindings.empty) := by
+  apply EvalAtomRawRel.interpretError _ _ Atom.expressionType _ _
+  · simp [IsEmptyOrErrorRel,IsErrorRel,Atom.empty,clean]
+  · exact .expression _
+  · decide
+  · exact ⟨_,_,rfl⟩
+  · apply InterpretExpressionRel.tuplePath _ _ (.symbol name) arguments
+      [Atom.undefinedType] [Atom.undefinedType] [] _ _ _ rfl
+    · exact FirstSuccessSourceReplies.source_types context (.symbol name)
+    · rfl
+    · exact .nonFunctionExhausted (by rintro ⟨_,_,impossible⟩; cases impossible) .nil
+    · exact tuple
+    · exact .errorPassthrough _ _ _ ⟨[.symbol "Early",.symbol "Failed"],rfl⟩
+  · exact ⟨[.symbol "Early",.symbol "Failed"],rfl⟩
+
+/-- The historical raw child judgment admits the early error. Its tuple
+parent consumes that raw result before applying success priority. -/
+theorem raw_child_early (live : List Atom) :
+    EvalAtomRawRel context noHost live mixed Atom.undefinedType Bindings.empty
+      (earlyError,Bindings.empty) := by
+  apply EvalAtomRawRel.interpretError _ _ Atom.expressionType _ _
+  · simp [mixed,IsEmptyOrErrorRel,IsErrorRel,Atom.empty]
+  · exact .expression _
+  · decide
+  · exact ⟨_,_,rfl⟩
+  · apply InterpretExpressionRel.tuplePath _ _ (.symbol "mixed") []
+      [Atom.undefinedType] [Atom.undefinedType] [] _ (mixed,Bindings.empty) _ rfl
+    · exact FirstSuccessSourceReplies.source_types context (.symbol "mixed")
+    · rfl
+    · exact .nonFunctionExhausted (by rintro ⟨_,_,impossible⟩; cases impossible) .nil
+    · exact .singleton _ _ _ (symbol_raw _ "mixed" (by decide))
+        (by simp [IsEmptyOrErrorRel,IsErrorRel,Atom.empty])
+    · obtain ⟨selected,materialized⟩ := mixed_equation live
+      apply CallRel.equation mixed Atom.undefinedType earlyError earlyError
+        (BindingFrame.historical Bindings.empty) (BindingFrame.historical Bindings.empty)
+        (earlyError,BindingFrame.historical Bindings.empty)
+        (earlyError,BindingFrame.historical Bindings.empty)
+      · simp [mixed,IsErrorRel]
+      · exact ⟨by rintro ⟨_,_,_,impossible⟩; exact impossible,rfl⟩
+      · exact selected
+      · exact .same .renew _
+      · exact materialized
+      · exact .raw _ _ _ (by simp [Minimal.IsFunction,earlyError])
+      · exact .stopped _ _ _ _ (Or.inr ⟨[.symbol "Early",.symbol "Failed"],rfl⟩)
+  · exact ⟨[.symbol "Early",.symbol "Failed"],rfl⟩
+
+/-- The old outer-only judgment consequently has a raw parent derivation
+that propagates Early without evaluating the later child. -/
+theorem raw_parent_early :
+    EvalAtomRawRel context noHost [] query Atom.undefinedType Bindings.empty
+      (earlyError,Bindings.empty) := by
+  apply untyped_error_raw [] "Box" [mixed,later] (by decide)
+  apply InterpretTupleRel.tailError _ _ _ (.symbol "Box",Bindings.empty)
+    (earlyError,Bindings.empty) (by simp)
+  · exact symbol_raw _ "Box" (by decide)
+  · simp [IsEmptyOrErrorRel,IsErrorRel,Atom.empty]
+  · apply InterpretTupleRel.headError _ _ _ _ (by simp)
+    · exact raw_child_early _
+    · exact Or.inr ⟨[.symbol "Early",.symbol "Failed"],rfl⟩
+  · exact Or.inr ⟨[.symbol "Early",.symbol "Failed"],rfl⟩
+
+def initial : Configuration :=
+  Configuration.initial context (.atom query Atom.undefinedType Bindings.empty 64 [])
+
+private def completedView
+    (result : ResultSet × Mettapedia.GSLT.Distinction.ProductiveBlocks.Outcome
+      Configuration Configuration RecursiveMachine.Checked.ResourceRequest) :
+    Option (ResultSet × Configuration) :=
+  match result with
+  | (events,.finished final) => some (events,final)
+  | _ => none
+
+private theorem completedView_exact (result) (events : ResultSet) (final : Configuration) :
+    completedView result = some (events,final) ↔ result = (events,.finished final) := by
+  rcases result with ⟨actual,outcome⟩
+  cases outcome <;> simp [completedView,Prod.mk.injEq]
+
+/-- Every child publishes before its caller resumes. The checked retained
+machine finishes with Later only, matching the reference engines. -/
+theorem checked_late_only :
+    (FirstSuccessRecursiveExecution.Checked.machine HE.GroundedDispatch.none).run 200 initial =
+      ([(lateError,Bindings.empty)],
+        .finished ⟨context,.returning [],[],[(lateError,Bindings.empty)]⟩) := by
+  apply (completedView_exact _ _ _).mp
+  decide +kernel
+
+/-- The same completed observation holds under HE's scoped invocation-type
+policy; this discriminator does not rely on the literal-annotation profile. -/
+theorem checked_scoped_late_only :
+    (FirstSuccessRecursiveExecution.Checked.machine HE.GroundedDispatch.none scopedTypes).run 200 initial =
+      ([(lateError,Bindings.empty)],
+        .finished ⟨context,.returning [],[],[(lateError,Bindings.empty)]⟩) := by
+  apply (completedView_exact _ _ _).mp
+  decide +kernel
+
+/-- Atom-support completeness against the historical outer-only source
+judgment is impossible for this completed run. No representation or choice
+of binding representatives can repair the missing publication boundary. -/
+theorem outer_only_source_cannot_cover_checked_run :
+    ¬(∀ result, EvalRel context noHost [] query Atom.undefinedType Bindings.empty result →
+      result.1 ∈ ((FirstSuccessRecursiveExecution.Checked.machine
+        HE.GroundedDispatch.none scopedTypes).run 200 initial).1.map Prod.fst) := by
+  rw [checked_scoped_late_only]
+  change ¬(∀ result, EvalRel context noHost [] query Atom.undefinedType Bindings.empty result →
+    result.1 ∈ [lateError])
+  apply EvalRel.not_covered_by_errors raw_parent_early
+  · intro value member
+    obtain rfl := List.mem_singleton.mp member
+    exact ⟨[.symbol "Later",.symbol "Failed"],rfl⟩
+  · decide
+
+end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution.NestedPriorityControls
+
+namespace Mettapedia.Languages.MeTTa.HE.BindingSourceAgreement
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type Spec.Type.RuntimeRefinement Spec.Bindings.ScopeObservation
+open Spec.Type.Presentation.Exact
+open Spec.Eval.Completed (TypeMatchingPolicy)
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+
+/-- The complete ordered family of fresh type instances survives a change of
+binding presentation. The target may protect fewer enclosing names; every
+candidate still avoids all earlier instances and the complete input support. -/
+theorem scopedTypeLookup {native independent : Bindings}
+    (input : BindingSourceAgreement native independent)
+    {outer inner : List String} (included : ∀ name ∈ inner, name ∈ outer)
+    {space : Space} {subject expected : Atom} {candidates : List Atom}
+    (queried : Spec.Eval.scopedTypeLookup outer space native subject expected candidates) :
+    Spec.Eval.scopedTypeLookup inner space independent subject expected candidates := by
+  obtain ⟨raw, types, variants⟩ := queried
+  refine ⟨raw, types, variants.restrict ?_⟩
+  intro name member
+  simp only [Spec.Eval.invocationTypeScope, List.mem_append, or_assoc] at member ⊢
+  rcases member with inherited | syntaxNames | bound
+  · exact Or.inl (included name inherited)
+  · exact Or.inr (Or.inl syntaxNames)
+  · exact Or.inr (Or.inr ((input.support name).mpr bound))
+
+theorem scopedTypeLookup_iff {native independent : Bindings}
+    (input : BindingSourceAgreement native independent)
+    (scope : List String) (space : Space) (subject expected : Atom) (candidates : List Atom) :
+    Spec.Eval.scopedTypeLookup scope space native subject expected candidates ↔
+      Spec.Eval.scopedTypeLookup scope space independent subject expected candidates :=
+  ⟨input.scopedTypeLookup (fun _ member => member),
+    input.symm.scopedTypeLookup (fun _ member => member)⟩
+
+/-- A complete finite cast changes binding representation without changing
+the first successful type occurrence or any failure occurrence. The query
+law concerns the one actual ordered lookup, not evaluator correctness.
+Reached binding theories and their complete freshening support are paired
+occurrence by occurrence; materializer equality remains a separate law. -/
+theorem typeCastBatch_finite {native independent : Bindings}
+    (input : BindingSourceAgreement native independent)
+    (nativeShape : HEAssignmentsNonVariable native)
+    (sourceShape : HEAssignmentsNonVariable independent)
+    {space : Space} {atom expected : Atom} {results : ResultSet}
+    {nativeLookup sourceLookup : TypeLookupRel}
+    (completed : TypeCastBatchRel space atom expected native results
+      (lookup := nativeLookup) (matching := TypeMatchingPolicy.Rel .finite))
+    (query : ∀ types, nativeLookup native atom expected types →
+      sourceLookup independent atom expected types) :
+    ∃ sourceResults,
+      TypeCastBatchRel space atom expected independent sourceResults
+        (lookup := sourceLookup) (matching := TypeMatchingPolicy.Rel .finite) ∧
+      List.Forall₂ (fun left right : ResultPair =>
+        left.1 = right.1 ∧ BindingSourceAgreement left.2 right.2) results sourceResults ∧
+      ∀ result ∈ sourceResults, HEAssignmentsNonVariable result.2 := by
+  cases completed with
+  | @success _ _ types earlier later actual output queried selected rejected matched =>
+      obtain ⟨sourceOutput, sourceMatch, related, shape, model⟩ :=
+        input.typeMatch_finite sourceShape matched.1 matched.2
+      refine ⟨[(atom, sourceOutput)],
+        .success (query types queried) selected ?_ ⟨sourceMatch, model⟩,
+        .cons ⟨rfl, related⟩ .nil, ?_⟩
+      · intro prior member candidate accepted
+        obtain ⟨nativeOutput, nativeMatch, _, _, nativeModel⟩ :=
+          input.symm.typeMatch_finite nativeShape accepted.1 accepted.2
+        exact rejected prior member nativeOutput ⟨nativeMatch, nativeModel⟩
+      · intro result member
+        obtain rfl := List.mem_singleton.mp member
+        exact shape
+  | @failure _ _ types queried rejected =>
+      refine ⟨types.map (fun actual => (mkError atom (.badType expected actual), independent)),
+        .failure (query types queried) ?_, ?_, ?_⟩
+      · intro actual member candidate accepted
+        obtain ⟨nativeOutput, nativeMatch, _, _, nativeModel⟩ :=
+          input.symm.typeMatch_finite nativeShape accepted.1 accepted.2
+        exact rejected actual member nativeOutput ⟨nativeMatch, nativeModel⟩
+      · clear queried rejected
+        induction types with
+        | nil => exact .nil
+        | cons actual types ih => exact .cons ⟨rfl, input⟩ ih
+      · intro result member
+        obtain ⟨actual, _, rfl⟩ := List.mem_map.mp member
+        exact sourceShape
+
+/-- The concrete scoped source service discharges the local query law. This
+preserves its complete mutually fresh candidate family, first success and
+duplicate failures under a changed constraint representation. -/
+theorem typeCastBatch_scoped_finite {native independent : Bindings}
+    (input : BindingSourceAgreement native independent)
+    (nativeShape : HEAssignmentsNonVariable native)
+    (sourceShape : HEAssignmentsNonVariable independent)
+    {outer inner : List String} (included : ∀ name ∈ inner, name ∈ outer)
+    {space : Space} {atom expected : Atom} {results : ResultSet}
+    (completed : TypeCastBatchRel space atom expected native results
+      (lookup := Spec.Eval.scopedTypeLookup outer space)
+      (matching := TypeMatchingPolicy.Rel .finite)) :
+    ∃ sourceResults,
+      TypeCastBatchRel space atom expected independent sourceResults
+        (lookup := Spec.Eval.scopedTypeLookup inner space)
+        (matching := TypeMatchingPolicy.Rel .finite) ∧
+      List.Forall₂ (fun left right : ResultPair =>
+        left.1 = right.1 ∧ BindingSourceAgreement left.2 right.2) results sourceResults ∧
+      ∀ result ∈ sourceResults, HEAssignmentsNonVariable result.2 :=
+  input.typeCastBatch_finite nativeShape sourceShape completed
+    (fun _ queried => input.scopedTypeLookup included queried)
+
+end Mettapedia.Languages.MeTTa.HE.BindingSourceAgreement
+
+namespace Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution.TypeMatchTransportControls
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Eval Spec.Eval.Completed
+open Spec.Type Spec.Type.RuntimeRefinement Spec.Bindings.ScopeObservation
+open Spec.Type.Presentation Spec.Type.Presentation.Theory Spec.Type.Presentation.BindingTheory
+open QueryBindingProjection.AliasReadout.Controls
+
+private def leftTable : TypeSubst := [("a", .var "b")]
+
+private theorem leftPresentation :
+    AppliedTypePresentationMatchRel [] (.var "a") (.var "b") leftTable := by
+  apply AppliedTypePresentationMatchRel.ordinary
+    (TypeSubst.apply_empty (.var "a")) (TypeSubst.apply_empty (.var "b"))
+  simpa [leftTable, TypeSubst.bind, TypeSubst.apply, TypeSubst.lookup, TypeSubst.erase] using
+    (AppliedReducedTypeMatchRel.bindLeft
+      (substitution := []) (name := "a") (right := .var "b") (by decide))
+
+private theorem leftCertificate : ReadoutCertificate forwardAlias leftTable := by
+  apply ReadoutCertificate.of_fold
+  change EquationListPresentationRel [(.var "a", .var "b")] [] leftTable
+  exact .cons leftPresentation (.nil _)
+
+private def leftFrame : Frame := by
+  refine ⟨forwardAlias, [("a", .var "b")], ?_⟩
+  simpa only [Entry.Value.eraseEnvironment, List.map_cons, List.map_nil, Entry.Value.erase,
+    leftTable] using leftCertificate
+
+/-- The maintained matcher really returns this alias class and its literal
+materializer keeps the first representative. The read is locally covered. -/
+theorem actual_variable_match_and_materialization :
+    matchTypes (.var "a") (.var "b") Bindings.empty 8 = [forwardAlias] ∧
+      forwardAlias.applyFull (.var "a") 8 = .var "a" ∧
+      forwardAlias.applyFullCovered (.var "a") 8 = true := by
+  decide +kernel
+
+/-- The independently certified contextual unifier is a real finite state.
+Its left-binding representative is different from the maintained alias read. -/
+theorem contextual_variable_match (policy : Entry.RebuildPolicy) :
+    Entry.Value.UnifyRel policy [] (.var "a") (.var "b") leftFrame.environment := by
+  apply Entry.Value.UnifyRel.ordinary
+  simpa [leftFrame, Entry.Value.substitute, Entry.Value.resolve, Entry.Value.bind,
+    List.lookup] using
+    (Entry.Value.AppliedUnifyRel.bindLeft (policy := policy) (environment := []) (name := "a")
+      (right := .var "b") (by simp [Entry.Value.erase, TypeSubst.typeVars]))
+
+/-- Literal covered-read agreement is too strong for this actual alias
+operation. This refutes a candidate representation relation, not the equality
+of the underlying binding theories or a language implementation. -/
+theorem variable_match_has_no_literal_frame_transport (policy : Entry.RebuildPolicy)
+    (after : Frame)
+    (unified : Entry.Value.UnifyRel policy [] (.var "a") (.var "b") after.environment) :
+    ¬ SourceBindingComparison.semantic.FrameRelated forwardAlias after.source := by
+  have erased : AppliedTypePresentationMatchRel [] (.var "a") (.var "b")
+      (Entry.Value.eraseEnvironment after.environment) := by
+    simpa only [Entry.Value.eraseEnvironment, List.map_nil, Entry.Value.erase] using unified.erases
+  have table := erased.output_eq leftPresentation
+  rcases after with ⟨bindings, environment, certificate⟩
+  intro related
+  cases related with
+  | semantic _ _ reads =>
+      have same := reads (.var "a") 8 actual_variable_match_and_materialization.2.2
+      rw [table, actual_variable_match_and_materialization.2.1] at same
+      simp [leftTable, TypeSubst.apply, TypeSubst.lookup] at same
+
+/-- The actual alias materializer and certified source table have the same
+joint public constraint observation, including the repeated returned variable.
+The representative counterexample does not refute this semantic observer. -/
+theorem variable_match_joint_public_readout :
+    observedTuples forwardAlias
+        ([Atom.var "a", .var "b", .var "a"].map fun atom => forwardAlias.applyFull atom 8) =
+      observedTuples forwardAlias
+        ([Atom.var "a", .var "b", .var "a"].map leftTable.apply) := by
+  have actual :
+      ([Atom.var "a", .var "b", .var "a"].map fun atom => forwardAlias.applyFull atom 8) =
+        [.var "a", .var "a", .var "a"] := by decide +kernel
+  rw [actual]
+  have joint : observedTuples forwardAlias [Atom.var "a", .var "a", .var "a"] =
+      observedTuples forwardAlias [Atom.var "b", .var "b", .var "b"] := by
+    apply observedTuples_congr_models
+    intro model satisfied
+    have aliasEquality := satisfied.2 "a" "b" (by simp [forwardAlias])
+    simp only [List.map_cons, List.map_nil, applyTypeValuation]
+    rw [aliasEquality]
+  simpa [leftTable, TypeSubst.apply, TypeSubst.lookup] using joint
+
+/-- Wildcard matching alone does not certify a finite completed cast: an
+inconsistent caller must not be admitted through the wildcard branch. -/
+theorem wildcard_without_model_is_not_finite :
+    TypeMatchRel Atom.undefinedType (.symbol "A") inconsistent inconsistent ∧
+      ¬ TypeMatchingPolicy.Rel .finite Atom.undefinedType (.symbol "A")
+        inconsistent inconsistent := by
+  refine ⟨.undefinedLeft _ _, ?_⟩
+  rintro ⟨_, model⟩
+  exact inconsistent_has_no_model model
+
+end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution.TypeMatchTransportControls
+end
+
+
+namespace Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution.CompletedQueryControls
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Eval.Steps RecursiveTasks FirstSuccessRecursiveExecution
+
+/-- Independently covered source copies agree with the actual whole query
+and keep their distinct physical origins. -/
+theorem complete_source_and_native_frontier :
+    ∃ works, EquationFrontierRel FrontierControls.context [] (.symbol "a") Bindings.empty works ∧
+      rawQueryResults FrontierControls.context (.symbol "a") Atom.undefinedType Bindings.empty 12 [] =
+        works.map (fun work => (work.body,work.bindings)) ∧
+      works.map EquationWork.position = [0,3] := by
+  refine ⟨[FrontierControls.work 0,FrontierControls.work 3],FrontierControls.complete,?_,rfl⟩
+  decide +kernel
+
+/-- An empty depth-truncated helper result cannot certify source absence.
+The source proof still accounts for both viable stored copies. -/
+theorem truncated_empty_is_not_source_completion :
+    rawQueryResults FrontierControls.context (.symbol "a") Atom.undefinedType Bindings.empty 0 [] = [] ∧
+      ¬EquationFrontierRel FrontierControls.context [] (.symbol "a") Bindings.empty [] :=
+  ⟨by decide +kernel,FrontierControls.live_copy_prevents_empty_completion⟩
+
+/-- The actual checked machine retains the unstarted query as a resource
+request. It does not publish the helper's empty list as completed failure. -/
+theorem checked_query_remains_pending :
+    let initial := Configuration.initial FrontierControls.context
+      (.invocation .raw (.symbol "a") Bindings.empty 0 [] none)
+    (Checked.machine HE.GroundedDispatch.none).run 1 initial =
+      ([],.suspended .evaluationDepth initial) := by
+  dsimp only
+  exact Checked.blocked_run HE.GroundedDispatch.none _ .evaluationDepth 0 rfl
+
+/-- A structural hit rejected by the caller's constraints takes the else
+branch through the actual retained worker, preserving any surrounding
+callers and earlier emissions. Its source absence is earned by coverage. -/
+theorem post_merge_failure_retains_callers (space : Space) (live : List Atom) (caller : Option Atom) :
+    Covered.Realizes space
+      (.primitive (.expression [.symbol "unify",.var "x",.symbol "B",.symbol "yes",.symbol "no"])
+        QueryBindingProjection.AliasReadout.Controls.groundCaller 13 live caller)
+      [(.symbol "no",QueryBindingProjection.AliasReadout.Controls.groundCaller)] := by
+  have derived : PrimitiveDerivation (comparison := .semantic) space live caller
+      (.expression [.symbol "unify",.var "x",.symbol "B",.symbol "yes",.symbol "no"])
+      QueryBindingProjection.AliasReadout.Controls.groundCaller 13
+      [(.symbol "no",QueryBindingProjection.AliasReadout.Controls.groundCaller)] :=
+    .unifyNoMatch live caller (.var "x") (.symbol "B") (.symbol "yes") (.symbol "no")
+      QueryBindingProjection.AliasReadout.Controls.groundCaller 12 (by decide +kernel) (by decide +kernel)
+  exact derived.covered_realizes
+
+def conflictingQuery : Atom := .expression [.symbol "pick",.var "x"]
+def conflictingSpace : Space := Space.ofList
+  [.expression [.symbol "=",.expression [.symbol "pick",.symbol "B"],.symbol "Value"]]
+
+/-- A whole query can have a structural candidate while its caller rejects
+every prepared input. Complete source absence is earned after reconciliation. -/
+theorem post_merge_query_has_complete_empty_frontier :
+    equationCandidates conflictingSpace [] conflictingQuery Atom.undefinedType
+        QueryBindingProjection.AliasReadout.Controls.groundCaller 12 ≠ [] ∧
+      rawQueryResults conflictingSpace conflictingQuery Atom.undefinedType
+        QueryBindingProjection.AliasReadout.Controls.groundCaller 12 [] = [] ∧
+      EquationFrontierRel conflictingSpace [Atom.undefinedType] conflictingQuery
+        QueryBindingProjection.AliasReadout.Controls.groundCaller [] := by
+  let incoming := QueryBindingProjection.AliasReadout.Controls.groundCaller
+  have empty : rawQueryResults conflictingSpace conflictingQuery Atom.undefinedType incoming 12 [] = [] := by
+    decide +kernel
+  refine ⟨by decide +kernel,empty,(covered_query_empty_iff_source_frontier (by decide +kernel) ?_).mp empty⟩
+  have candidates : equationCandidates conflictingSpace [] conflictingQuery Atom.undefinedType incoming 12 =
+      [(.symbol "Value",⟨[("x",.symbol "B")],[]⟩)] := by decide +kernel
+  intro candidate member
+  rw [candidates] at member
+  obtain rfl := List.mem_singleton.mp member
+  refine ⟨by decide +kernel,?_⟩
+  intro merged present
+  have rejected : mergeBindings ⟨[("x",.symbol "B")],[]⟩ (aliasConstraints incoming) 12 = [] := by
+    decide +kernel
+  rw [rejected] at present
+  exact (List.not_mem_nil present).elim
+
+end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution.CompletedQueryControls
+
+namespace Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution.NestedPriorityControls
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Eval Spec.Eval.Steps Spec.Type Spec.Type.Presentation
+open Spec.Match.Merge
+open Spec.Bindings.ScopeObservation FirstSuccessRecursiveExecution
+
+private def frame : BindingFrame := .historical Bindings.empty
+
+private theorem symbol_has_no_variable (symbol : String) (name : String) :
+    ¬AtomOccurs (.symbol symbol) name := by intro occurs; cases occurs
+
+private theorem symbol_list_has_no_variable (symbols : List String) (name : String) :
+    ¬AtomOccurs (.expression (symbols.map Atom.symbol)) name := by
+  intro occurs
+  cases occurs with
+  | expression member child =>
+      obtain ⟨symbol,_,rfl⟩ := List.mem_map.mp member
+      cases child
+
+private theorem closed_instance (live : List Atom) (subject : Atom) (name : String) (rhs : Atom)
+    (closed : ∀ key, ¬AtomOccurs rhs key) :
+    AlphaVariantRel live subject Bindings.empty
+      (.expression [.symbol name]) rhs (.expression [.symbol name]) rhs := by
+  refine ⟨id,Function.injective_id,?_,?_,?_⟩
+  · simpa only [Spec.Type.Presentation.ScopeObservation.renameTypeVars_id] using
+      EquationFreshening.rename_alpha id (.expression [.symbol name])
+  · simpa only [Spec.Type.Presentation.ScopeObservation.renameTypeVars_id] using
+      EquationFreshening.rename_alpha id rhs
+  · intro key occurs
+    rcases occurs with occurs | occurs
+    · exact (symbol_list_has_no_variable [name] key occurs).elim
+    · exact (closed key occurs).elim
+
+private theorem empty_logical_merge : LogicalMergeRel Bindings.empty Bindings.empty Bindings.empty := by
+  refine ⟨BindingSourceAgreement.refl _,fun name => .var name,?_⟩
+  simp [Spec.Type.RuntimeRefinement.TypeBindingSatisfied,Bindings.empty]
+
+private def work (position : Nat) (name : String) (rhs : Atom) : EquationWork :=
+  ⟨position,.expression [.symbol name],rhs,.expression [.symbol name],rhs,Bindings.empty⟩
+
+private theorem row_hit (live : List Atom) (position : Nat) (name : String) (rhs : Atom)
+    (closed : ∀ key, ¬AtomOccurs rhs key) :
+    EquationRowResultsRel live (.expression [.symbol name]) Bindings.empty position
+      (.expression [.symbol "=",.expression [.symbol name],rhs]) [work position name rhs] := by
+  apply EquationRowResultsRel.hit position _ _ _ _ Bindings.empty Bindings.empty
+    (closed_instance _ _ name rhs closed) _ empty_logical_merge
+  exact .expression (.cons (.symSym name semanticLoopFree_empty) (.mk (.refl []) .nil) .nil)
+    semanticLoopFree_empty
+
+private theorem row_miss (live : List Atom) (position : Nat) (subject name : String) (rhs : Atom)
+    (closed : ∀ key, ¬AtomOccurs rhs key) (distinct : subject ≠ name) :
+    EquationRowResultsRel live (.expression [.symbol subject]) Bindings.empty position
+      (.expression [.symbol "=",.expression [.symbol name],rhs]) [] := by
+  apply EquationRowResultsRel.miss position _ _ _ _ (closed_instance _ _ name rhs closed)
+  intro pattern body renamed matched output viable
+  obtain ⟨_,_,patternRenamed,_,_⟩ := renamed
+  have same : pattern = .expression [.symbol name] := by
+    simpa only [Spec.Type.RuntimeRefinement.renameTypeVars,List.map_cons,List.map_nil] using
+      EquationFreshening.alphaRename_eq patternRenamed
+  subst pattern
+  cases viable.1 with
+  | expression children _ =>
+      cases children with
+      | cons first _ _ => exact symbol_mismatch_not_match distinct _ first
+
+/-- Both physical clauses are covered independently before either RHS is
+evaluated. The later clause is a certified miss. -/
+theorem mixed_source_frontier (live : List Atom) :
+    EquationFrontierRel context live mixed Bindings.empty
+      [work 0 "mixed" (.symbol "Good"),work 1 "mixed" earlyError] := by
+  apply EquationFrontierRel.completed (blocks :=
+    [[work 0 "mixed" (.symbol "Good")],[work 1 "mixed" earlyError],[]])
+  exact .cons (row_hit live 0 "mixed" (.symbol "Good") (symbol_has_no_variable "Good"))
+    (.cons (row_hit live 1 "mixed" earlyError (symbol_list_has_no_variable ["Error","Early","Failed"]))
+      (.cons (row_miss live 2 "mixed" "later" lateError
+        (symbol_list_has_no_variable ["Error","Later","Failed"]) (by decide)) .nil))
+
+theorem later_source_frontier (live : List Atom) :
+    EquationFrontierRel context live later Bindings.empty [work 2 "later" lateError] := by
+  apply EquationFrontierRel.completed (blocks := [[],[],[work 2 "later" lateError]])
+  exact .cons (row_miss live 0 "later" "mixed" (.symbol "Good")
+      (symbol_has_no_variable "Good") (by decide))
+    (.cons (row_miss live 1 "later" "mixed" earlyError
+      (symbol_list_has_no_variable ["Error","Early","Failed"]) (by decide))
+      (.cons (row_hit live 2 "later" lateError
+        (symbol_list_has_no_variable ["Error","Later","Failed"])) .nil))
+
+private def SymbolQueries (lookup : Completed.CastLookup) : Prop :=
+  ∀ scope name, lookup scope context Bindings.empty (.symbol name) Atom.undefinedType [Atom.undefinedType]
+
+private theorem raw_symbol_queries : SymbolQueries Completed.rawLookup := by
+  intro scope name
+  exact FirstSuccessSourceReplies.source_types context (.symbol name)
+
+private theorem scoped_symbol_queries : SymbolQueries Completed.scopedLookup := by
+  intro scope name
+  refine ⟨[Atom.undefinedType],FirstSuccessSourceReplies.source_types context (.symbol name),?_⟩
+  exact .cons ⟨id,Function.injective_id,
+    by simp [Atom.undefinedType],
+    by simp [Atom.undefinedType,TypeSubst.typeVars]⟩ (.nil _)
+
+private def completedFrame : Completed.Frame := .empty
+
+private theorem completed_symbol (lookup : Completed.CastLookup) (queries : SymbolQueries lookup)
+    (live : List Atom) (scope : List String) (name : String) (clean : name ≠ "Empty") :
+    Completed.AtomRel context noHost lookup live scope (.symbol name) Atom.undefinedType completedFrame
+      [(.symbol name,completedFrame)] := by
+  apply Completed.AtomRel.cast (raw := [(.symbol name,Bindings.empty)])
+  · simpa only [completedFrame,Completed.Frame.read_empty,Completed.Policy.unmarked,
+      Spec.Eval.Entry.Value.erase,Spec.Eval.Entry.Value.status] using
+      (Spec.Eval.Entry.Rel.cast (policy := .reinterpret) (status := .active)
+        (by simpa [IsEmptyOrErrorRel,IsErrorRel,Atom.empty] using clean)
+        (.symbol name) (by decide) (Or.inl ⟨name,rfl⟩)
+        (by intro impossible; cases impossible))
+  · simp only [completedFrame,Completed.Frame.read_empty,Spec.Eval.Entry.Value.erase]
+    exact TypeCastBatchRel.success (space := context)
+      (earlierTypes := []) (laterTypes := []) (actualType := Atom.undefinedType)
+      (queries _ name) rfl (by simp) (.undefinedLeft _ _)
+  · refine .cons ⟨?_,Completed.Frame.CastRenewRel.same _,?_⟩ .nil
+    · simp [Completed.rawResult,Spec.Eval.Entry.Value.erase,completedFrame,Completed.Frame.empty]
+    · simp [completedFrame,Spec.Eval.Entry.Value.erase]
+
+private theorem ordinary (name : String)
+    (notEmbedded : Minimal.embeddedInstruction (.expression [.symbol name]) = false) :
+    NonGroundedCallRel noHost (.expression [.symbol name]) := by
+  refine ⟨?_,notEmbedded⟩
+  rintro ⟨_,_,_,impossible⟩
+  exact impossible
+
+private theorem unmarked_publication (original : Atom) (results : List Completed.Result)
+    (active : ∀ result ∈ results, result.1.status = .active) :
+    results.map (Completed.publishResult .unmarked original) = results := by
+  calc
+    _ = results.map id := by
+      apply List.map_congr_left
+      intro result present
+      exact congrArg (fun value => (value,result.2))
+        (Spec.Eval.Entry.Value.publish_none_active original result.2.source result.1
+          (active result present))
+    _ = results := List.map_id _
+
+private theorem empty_contextual_match (left right : Spec.Eval.Entry.Value)
+    (same : left.erase = right.erase) :
+    Spec.Eval.Entry.Value.UnifyRel .preserve [] left right [] := by
+  apply Spec.Eval.Entry.Value.UnifyRel.ordinary
+  apply Spec.Eval.Entry.Value.AppliedUnifyRel.identical
+  simpa only [Spec.Eval.Entry.Value.erase_substitute_environment,
+    Spec.Eval.Entry.Value.eraseEnvironment,List.map_nil,TypeSubst.apply_empty] using same
+
+private theorem nullary_completed (lookup : Completed.CastLookup) (queries : SymbolQueries lookup)
+    (live : List Atom) (scope : List String) (name : String)
+    (clean : name ≠ "Empty") (notError : name ≠ "Error")
+    {raw published : List Completed.Result}
+    (call : Completed.CallRel context noHost lookup live scope (.expression .active [.symbol name])
+      Atom.undefinedType completedFrame raw)
+    (priority : Mettapedia.Machines.OrderedProtocol.Completion.SuccessPriorityRel
+      (fun result : Completed.Result => isErrorAtom result.1.erase)
+      (raw.map (Completed.readResult .unmarked)) published)
+    (active : ∀ result ∈ published, result.1.status = .active)
+    (readiness : Spec.Eval.Entry.Status := .active) :
+    Completed.AtomRel context noHost lookup live scope (.expression readiness [.symbol name])
+      Atom.undefinedType completedFrame published := by
+  have built : Completed.AtomRel context noHost lookup live scope
+      (.expression readiness [.symbol name]) Atom.undefinedType completedFrame
+      (published.map (Completed.publishResult .unmarked
+        (completedFrame.read .unmarked (.expression readiness [.symbol name])).erase)) := by
+    apply Completed.AtomRel.tuple (readiness := readiness) (operator := .symbol name) (arguments := [])
+      (rows := [(.expression .active [.symbol name],completedFrame)]) (raw := raw)
+    · simpa only [completedFrame,Completed.Frame.read_empty,Completed.Policy.unmarked,
+        Spec.Eval.Entry.Value.erase,Spec.Eval.Entry.Value.status,List.map_cons,List.map_nil] using
+        (Spec.Eval.Entry.Rel.expression (policy := .reinterpret) (status := readiness)
+          (head := .symbol name) (tail := []) (expected := Atom.undefinedType)
+          (by simp [IsEmptyOrErrorRel,IsErrorRel,Atom.empty,notError])
+          (by decide) (Or.inl rfl))
+    · simp [completedFrame]
+    · simpa only [Spec.Eval.Entry.Value.erase,symbol_lookup,Multiset.coe_singleton] using
+        (FirstSuccessSourceReplies.source_types context (.symbol name)).occurrences
+    · simpa [Completed.tupleSingleton,isEmptyOrError,isEmptyAtom,isErrorAtom,Atom.empty,
+        Spec.Eval.Entry.Value.erase,clean] using
+        Completed.TupleRel.singleton (completed_symbol lookup queries (Atom.undefinedType::live) scope name clean)
+    · simpa using Completed.CallsRel.cons call (.nil)
+    · exact priority
+  simpa only [completedFrame,Completed.Frame.read_empty,Spec.Eval.Entry.Value.erase,
+    List.map_cons,List.map_nil,unmarked_publication _ _ active] using built
+
+private theorem mixed_completed (lookup : Completed.CastLookup) (queries : SymbolQueries lookup)
+    (live : List Atom) (scope : List String) (readiness : Spec.Eval.Entry.Status := .active) :
+    Completed.AtomRel context noHost lookup live scope (.expression readiness [.symbol "mixed"])
+      Atom.undefinedType completedFrame [(.symbol "Good",completedFrame)] := by
+  apply nullary_completed lookup queries live scope "mixed" (by decide) (by decide)
+    (readiness := readiness)
+    (raw := [(.symbol "Good",completedFrame),(Spec.Eval.Entry.Value.ofAtom earlyError,completedFrame)])
+  · apply Completed.CallRel.equations (works :=
+      [work 0 "mixed" (.symbol "Good"),work 1 "mixed" earlyError])
+    · simp [IsErrorRel,Spec.Eval.Entry.Value.erase]
+    · simpa only [Spec.Eval.Entry.Value.erase,List.map_cons,List.map_nil] using ordinary "mixed" rfl
+    · simpa only [Spec.Eval.Entry.Value.erase,List.map_cons,List.map_nil,completedFrame,
+        Completed.Frame.empty,mixed] using mixed_source_frontier (Atom.undefinedType :: live)
+    · simp
+    · apply Completed.EquationBodiesRel.ordinary_cons (output := completedFrame)
+        (children := [(.symbol "Good",completedFrame)]) rfl
+      · exact empty_contextual_match _ _ (by simp [work,Spec.Eval.Entry.Value.erase])
+      · simp [completedFrame,work,Spec.Eval.Entry.Value.ofAtom,Spec.Eval.Entry.Value.erase,Completed.FunctionPending,Minimal.IsFunction]
+      · apply Completed.ReturnRel.evaluate
+        · simp [completedFrame,work,Spec.Eval.Entry.Value.ofAtom,Spec.Eval.Entry.Value.erase,Atom.notReducible]
+        · simp [completedFrame,work,Spec.Eval.Entry.Value.ofAtom,Spec.Eval.Entry.Value.erase,
+            IsEmptyOrErrorRel,IsErrorRel,Atom.empty]
+        · simpa only [work,completedFrame,Completed.Frame.read_empty,Spec.Eval.Entry.Value.ofAtom] using
+            completed_symbol lookup queries live scope "Good" (by decide)
+      · apply Completed.EquationBodiesRel.ordinary_cons (output := completedFrame)
+          (children := [(Spec.Eval.Entry.Value.ofAtom earlyError,completedFrame)]) rfl
+        · exact empty_contextual_match _ _ (by simp [work,Spec.Eval.Entry.Value.erase])
+        · simp [completedFrame,work,Spec.Eval.Entry.Value.ofAtom,Spec.Eval.Entry.Value.erase,
+            Completed.FunctionPending,Minimal.IsFunction,earlyError]
+        · simp only [work,completedFrame,Completed.Frame.read_empty]
+          apply Completed.ReturnRel.stopped
+          simp [Spec.Eval.Entry.Value.erase_ofAtom,IsEmptyOrErrorRel,IsErrorRel,earlyError]
+        · exact .nil
+  · simpa [Completed.readResult,completedFrame,earlyError,isErrorAtom,
+      Spec.Eval.Entry.Value.erase_ofAtom,Spec.Eval.Entry.Value.erase] using
+      (Mettapedia.Machines.OrderedProtocol.Completion.SuccessPriorityRel.successes
+        (isError := fun result : Completed.Result => isErrorAtom result.1.erase)
+        (raw := [(.symbol "Good",completedFrame),(Spec.Eval.Entry.Value.ofAtom earlyError,completedFrame)])
+        ⟨(.symbol "Good",completedFrame),by simp,by simp [Spec.Eval.Entry.Value.erase,isErrorAtom]⟩)
+  · intro result present
+    obtain rfl := List.mem_singleton.mp present
+    rfl
+
+private theorem later_completed (lookup : Completed.CastLookup) (queries : SymbolQueries lookup)
+    (live : List Atom) (scope : List String) :
+    Completed.AtomRel context noHost lookup live scope (Spec.Eval.Entry.Value.ofAtom later)
+      Atom.undefinedType completedFrame [(Spec.Eval.Entry.Value.ofAtom lateError,completedFrame)] := by
+  simp only [later,Spec.Eval.Entry.Value.ofAtom,List.map_cons,List.map_nil]
+  apply nullary_completed lookup queries live scope "later" (by decide) (by decide)
+  · apply Completed.CallRel.equations (works := [work 2 "later" lateError])
+    · simp [IsErrorRel,Spec.Eval.Entry.Value.erase]
+    · simpa only [Spec.Eval.Entry.Value.erase,List.map_cons,List.map_nil] using ordinary "later" rfl
+    · simpa only [Spec.Eval.Entry.Value.erase,List.map_cons,List.map_nil,completedFrame,
+        Completed.Frame.empty,later] using later_source_frontier (Atom.undefinedType :: live)
+    · simp
+    · apply Completed.EquationBodiesRel.ordinary_cons (output := completedFrame)
+        (children := [(Spec.Eval.Entry.Value.ofAtom lateError,completedFrame)]) rfl
+      · exact empty_contextual_match _ _ (by simp [work,Spec.Eval.Entry.Value.erase])
+      · simp [completedFrame,work,Spec.Eval.Entry.Value.ofAtom,Spec.Eval.Entry.Value.erase,
+          Completed.FunctionPending,Minimal.IsFunction,lateError]
+      · simp only [work,completedFrame,Completed.Frame.read_empty]
+        apply Completed.ReturnRel.stopped
+        simp [Spec.Eval.Entry.Value.erase_ofAtom,IsEmptyOrErrorRel,IsErrorRel,lateError]
+      · exact .nil
+  · simp only [List.append_nil,List.map_cons,List.map_nil,Completed.readResult,
+      completedFrame,Completed.Frame.read_empty]
+    apply Mettapedia.Machines.OrderedProtocol.Completion.SuccessPriorityRel.allErrors
+    intro result member
+    simp only [List.mem_singleton] at member
+    subst result
+    simp [Spec.Eval.Entry.Value.erase_ofAtom,lateError,isErrorAtom]
+  · intro result present
+    obtain rfl := List.mem_singleton.mp present
+    simp [Spec.Eval.Entry.Value.ofAtom,lateError,Spec.Eval.Entry.Value.status]
+
+private theorem parent_completed (lookup : Completed.CastLookup) (queries : SymbolQueries lookup)
+    (live : List Atom) (scope : List String) :
+    Completed.AtomRel context noHost lookup live scope (Spec.Eval.Entry.Value.ofAtom query)
+      Atom.undefinedType completedFrame [(Spec.Eval.Entry.Value.ofAtom lateError,completedFrame)] := by
+  have active : ∀ result ∈ [(Spec.Eval.Entry.Value.ofAtom lateError,completedFrame)], result.1.status = .active := by
+    intro result present
+    obtain rfl := List.mem_singleton.mp present
+    simp [Spec.Eval.Entry.Value.ofAtom,lateError,Spec.Eval.Entry.Value.status]
+  rw [←unmarked_publication
+    (completedFrame.read .unmarked (Spec.Eval.Entry.Value.ofAtom query)).erase _ active]
+  apply Completed.AtomRel.tuple (readiness := .active) (operator := .symbol "Box")
+    (arguments := [Spec.Eval.Entry.Value.ofAtom mixed,Spec.Eval.Entry.Value.ofAtom later])
+    (rows := [(Spec.Eval.Entry.Value.ofAtom lateError,completedFrame)])
+    (raw := [(Spec.Eval.Entry.Value.ofAtom lateError,completedFrame)])
+  · simp only [completedFrame,Completed.Frame.read_empty,Spec.Eval.Entry.Value.ofAtom,
+      Spec.Eval.Entry.Value.erase_ofAtom,Spec.Eval.Entry.Value.erase,Spec.Eval.Entry.Value.status,
+      Completed.Policy.unmarked,query,List.map_cons,List.map_nil]
+    apply Spec.Eval.Entry.Rel.expression
+    · simp [IsEmptyOrErrorRel,IsErrorRel,Atom.empty]
+    · decide
+    · exact Or.inl rfl
+  · simp [completedFrame,Spec.Eval.Entry.Value.ofAtom,query]
+  · simpa only [Spec.Eval.Entry.Value.erase,symbol_lookup,Multiset.coe_singleton] using
+      (FirstSuccessSourceReplies.source_types context (.symbol "Box")).occurrences
+  · apply Completed.TupleRel.cons (head := .symbol "Box")
+      (second := Spec.Eval.Entry.Value.ofAtom mixed) (remaining := [Spec.Eval.Entry.Value.ofAtom later])
+      (heads := [(.symbol "Box",completedFrame)])
+      (completed_symbol lookup queries _ scope "Box" (by decide))
+    have laterPart := Completed.TupleRel.singleton (later_completed lookup queries
+      (.symbol "Good" :: .symbol "Box" :: Atom.undefinedType :: live) scope)
+    have laterOne : Completed.TupleRel context noHost lookup
+        (.symbol "Good" :: .symbol "Box" :: Atom.undefinedType :: live) scope
+        [Spec.Eval.Entry.Value.ofAtom later] completedFrame
+        [(Spec.Eval.Entry.Value.ofAtom lateError,completedFrame)] := by
+      simpa [Completed.tupleSingleton,isEmptyOrError,isErrorAtom,lateError,
+        Spec.Eval.Entry.Value.erase_ofAtom] using laterPart
+    have mixedTail : Completed.TupleBranchesRel context noHost lookup
+        (.symbol "Box" :: Atom.undefinedType :: live) scope [Spec.Eval.Entry.Value.ofAtom later]
+        [(.symbol "Good",completedFrame)] [(Spec.Eval.Entry.Value.ofAtom lateError,completedFrame)] := by
+      have continued := Completed.TupleBranchesRel.continuing
+        (space := context) (dispatch := noHost) (lookup := lookup)
+        (live := .symbol "Box" :: Atom.undefinedType :: live) (scope := scope)
+        (tail := [Spec.Eval.Entry.Value.ofAtom later])
+        (head := ((.symbol "Good" : Spec.Eval.Entry.Value),completedFrame)) (heads := [])
+        (children := [(Spec.Eval.Entry.Value.ofAtom lateError,completedFrame)]) (rest := [])
+        (by simp [IsEmptyOrErrorRel,IsErrorRel,Atom.empty,Spec.Eval.Entry.Value.erase])
+        (by simpa only [Spec.Eval.Entry.Value.erase] using laterOne)
+        (Completed.TupleBranchesRel.nil)
+      simpa [Completed.tuplePrepend,isEmptyOrError,isErrorAtom,lateError,
+        Spec.Eval.Entry.Value.erase_ofAtom] using continued
+    have mixedPart : Completed.AtomRel context noHost lookup
+        (.expression [(Spec.Eval.Entry.Value.ofAtom later).erase] ::
+          .symbol "Box" :: Atom.undefinedType :: live) scope
+        (Spec.Eval.Entry.Value.ofAtom mixed) Atom.undefinedType completedFrame
+        [(.symbol "Good",completedFrame)] := by
+      simpa only [mixed,Spec.Eval.Entry.Value.ofAtom,List.map_cons,List.map_nil] using
+        mixed_completed lookup queries _ scope
+    have argsPart := Completed.TupleRel.cons mixedPart mixedTail
+    have continued := Completed.TupleBranchesRel.continuing
+      (space := context) (dispatch := noHost) (lookup := lookup)
+      (live := Atom.undefinedType :: live) (scope := scope)
+      (tail := [Spec.Eval.Entry.Value.ofAtom mixed,Spec.Eval.Entry.Value.ofAtom later])
+      (head := ((.symbol "Box" : Spec.Eval.Entry.Value),completedFrame)) (heads := [])
+      (children := [(Spec.Eval.Entry.Value.ofAtom lateError,completedFrame)]) (rest := [])
+      (by simp [IsEmptyOrErrorRel,IsErrorRel,Atom.empty,Spec.Eval.Entry.Value.erase])
+      (by simpa only [Spec.Eval.Entry.Value.erase] using argsPart)
+      (Completed.TupleBranchesRel.nil)
+    simpa [Completed.tuplePrepend,isEmptyOrError,isErrorAtom,lateError,
+      Spec.Eval.Entry.Value.erase_ofAtom] using continued
+  · simpa using Completed.CallsRel.cons (Completed.CallRel.error (by
+      simpa only [Spec.Eval.Entry.Value.erase_ofAtom] using (show IsErrorRel lateError from ⟨_,rfl⟩))) (.nil)
+  · simp only [List.map_cons,List.map_nil,Completed.readResult,
+      completedFrame,Completed.Frame.read_empty]
+    apply Mettapedia.Machines.OrderedProtocol.Completion.SuccessPriorityRel.allErrors
+    intro result member
+    simp only [List.mem_singleton] at member
+    subst result
+    simp [Spec.Eval.Entry.Value.erase_ofAtom,lateError,isErrorAtom]
+
+/-- The independent contextual source completion supplies a small-step
+machine run and preserves the actual scoped worker's atom observation on
+the permanent nested-priority discriminator. -/
+theorem completed_scoped_source_matches_run :
+    ∃ results, Completed.AtomRel context noHost Completed.scopedLookup [] []
+        (Spec.Eval.Entry.Value.ofAtom query) Atom.undefinedType completedFrame results ∧
+      RecursiveMachine.Contextual.Steps noHost Completed.scopedLookup .unmarked
+        (RecursiveMachine.Contextual.load context query Atom.undefinedType)
+        ⟨context,.returning [],[],results⟩ ∧
+      results.map (fun result => result.1.erase) =
+        ((FirstSuccessRecursiveExecution.Checked.machine HE.GroundedDispatch.none scopedTypes).run 200 initial).1.map Prod.fst ∧
+      earlyError ∉ results.map (fun result => result.1.erase) := by
+  refine ⟨[(Spec.Eval.Entry.Value.ofAtom lateError,completedFrame)],
+    parent_completed _ scoped_symbol_queries [] [],?_,?_,?_⟩
+  · exact (RecursiveExecution.Contextual.task_source_iff_finished context _ _).mp
+      (parent_completed _ scoped_symbol_queries [] [])
+  · rw [checked_scoped_late_only]
+    simp only [List.map_cons,List.map_nil,Spec.Eval.Entry.Value.erase_ofAtom]
+  · simp [Spec.Eval.Entry.Value.erase_ofAtom,earlyError,lateError]
+
+theorem completed_raw_source :
+    Completed.AtomRel context noHost Completed.rawLookup [] []
+      (Spec.Eval.Entry.Value.ofAtom query) Atom.undefinedType completedFrame
+      [(Spec.Eval.Entry.Value.ofAtom lateError,completedFrame)] :=
+  parent_completed _ raw_symbol_queries [] []
+
+/-- One reentry choice separates both the completed source phases and their
+actual contextual machine runs. Equations and recursive rules are shared. -/
+theorem held_call_profile_separation :
+    let heldCall : Spec.Eval.Entry.Value := .expression .held [.symbol "mixed"]
+    let reusePolicy : Completed.Policy := { Completed.Policy.unmarked with reentry := .reuse }
+    Completed.AtomRel context noHost Completed.rawLookup [] [] heldCall Atom.undefinedType completedFrame
+      [(heldCall,completedFrame)] (policy := reusePolicy) ∧
+    Completed.AtomRel context noHost Completed.rawLookup [] [] heldCall Atom.undefinedType completedFrame
+      [(.symbol "Good",completedFrame)] ∧
+    RecursiveMachine.Contextual.Steps noHost Completed.rawLookup reusePolicy
+      (RecursiveTasks.Contextual.Configuration.initial context
+        (.atom [] [] heldCall Atom.undefinedType completedFrame))
+      ⟨context,.returning [],[],[(heldCall,completedFrame)]⟩ ∧
+    RecursiveMachine.Contextual.Steps noHost Completed.rawLookup .unmarked
+      (RecursiveTasks.Contextual.Configuration.initial context
+        (.atom [] [] heldCall Atom.undefinedType completedFrame))
+      ⟨context,.returning [],[],[(.symbol "Good",completedFrame)]⟩ ∧
+    heldCall.erase ≠ (.symbol "Good" : Atom) := by
+  dsimp only
+  have reused : Completed.AtomRel context noHost Completed.rawLookup [] []
+      (.expression .held [.symbol "mixed"]) Atom.undefinedType completedFrame
+      [(.expression .held [.symbol "mixed"],completedFrame)]
+      (policy := { Completed.Policy.unmarked with reentry := .reuse }) := by
+    have read : completedFrame.read { Completed.Policy.unmarked with reentry := .reuse }
+        (.expression .held [.symbol "mixed"]) = .expression .held [.symbol "mixed"] := by
+      simp [completedFrame]
+    have completed := Completed.AtomRel.reuse_expression
+      (space := context) (dispatch := noHost) (lookup := Completed.rawLookup)
+      (live := []) (scope := []) (value := .expression .held [.symbol "mixed"])
+      (expected := Atom.undefinedType) (frame := completedFrame)
+      (policy := { Completed.Policy.unmarked with reentry := .reuse })
+      (children := [.symbol "mixed"]) read rfl
+    simpa only [read] using completed
+  have interpreted := mixed_completed _ raw_symbol_queries [] [] .held
+  refine ⟨reused,interpreted,?_,?_,?_⟩
+  · exact (RecursiveExecution.Contextual.task_source_iff_finished context _ _).mp reused
+  · exact (RecursiveExecution.Contextual.task_source_iff_finished context _ _).mp interpreted
+  · simp [Spec.Eval.Entry.Value.erase]
+
+end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution.NestedPriorityControls

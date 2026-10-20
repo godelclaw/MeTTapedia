@@ -28,8 +28,8 @@ open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.QuantifiedFormula2
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.CategoryTheory.EvidenceFibration
 open scoped ENNReal
 

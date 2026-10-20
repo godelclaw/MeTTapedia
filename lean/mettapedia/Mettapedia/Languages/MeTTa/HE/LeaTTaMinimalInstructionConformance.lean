@@ -2,7 +2,12 @@ import Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal
 import Mettapedia.Languages.MeTTa.HE.LeaTTaBindingTransport
 import Mettapedia.Languages.MeTTa.HE.LeaTTaMinimalControlReturn
 import Mettapedia.Languages.MeTTa.HE.LeaTTaMinimalControlUnify
-import Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
+import Mettapedia.Languages.MeTTa.HE.LeaTTaBindingMaterialization
+import Mettapedia.Languages.MeTTa.HE.LeaTTaScopedQuery
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # LeaTTa minimal-instruction carrier and completion conformance
@@ -37,7 +42,7 @@ inductive AtomRuntimeRel (services : Services) : Atom → Metta.Atom → Prop wh
   | grounded (value : GroundedValue)
       (notPayload : ∀ bindings, value ≠ services.bindingPayload bindings) :
       AtomRuntimeRel services (.grounded value)
-        (.gnd (toLeaTTaGround value))
+        (.gnd (encodeModelGround value))
   | bindingPayload (bindings : Bindings) (runtimeBindings : Metta.Bindings) :
       LeaBindingRelEquiv bindings runtimeBindings →
       AtomRuntimeRel services
@@ -95,7 +100,7 @@ theorem contextPayload_runtime {services : Services}
     (laws : ServiceLaws services) (space : Space) :
     AtomRuntimeRel services
       (.grounded (services.contextPayload space))
-      (.gnd (toLeaTTaGround (services.contextPayload space))) :=
+      (.gnd (encodeModelGround (services.contextPayload space))) :=
   .grounded _ (laws.contextPayload_ne_bindingPayload space)
 
 /-! ## Positive and negative boundary canaries -/
@@ -126,14 +131,14 @@ theorem raw_completion_of_not_function_head {caller : Option Atom}
     (space : Space) (dispatch : Spec.Eval.GroundedDispatch) (live : List Atom)
     (typing : Spec.Eval.EvalTypeService) (value : Atom) (bindings : Bindings)
     (previous : Metta.Minimal.Stack) (native : Metta.Bindings)
-    (raw : ∀ tail, toLeaTTaAtom value ≠ .expr (.sym "function" :: tail)) :
+    (raw : ∀ tail, encodeModelAtom value ≠ .expr (.sym "function" :: tail)) :
     CoreInvocationResultRel space dispatch live value bindings (value, bindings) (typing := typing) (caller := caller) ∧
-      Metta.Minimal.evalResult previous (toLeaTTaAtom value) native =
-        Metta.Minimal.finItem previous (toLeaTTaAtom value) native := by
+      Metta.Minimal.evalResult previous (encodeModelAtom value) native =
+        Metta.Minimal.finItem previous (encodeModelAtom value) native := by
   constructor
   · apply CoreInvocationResultRel.raw
     rintro ⟨body, rfl⟩
-    exact raw [toLeaTTaAtom body] (by simp only [toLeaTTaAtom, toLeaTTaAtoms])
+    exact raw [encodeModelAtom body] (by simp only [encodeModelAtom, encodeModelAtoms])
   · exact evalResult_raw_of_not_function_head previous _ native raw
 
 /-- Completion of an arbitrary returning function body composes its
@@ -161,24 +166,24 @@ theorem function_completion_of_body_prefix {caller : Option Atom}
     (paired : ScopedEquationQuery.BindingInvariant output native)
     (operand : ∀ valuation, HEBindingSatisfied valuation output →
       applyClassSolution valuation nativeOperand =
-        applyClassSolution valuation (toLeaTTaAtom returned))
+        applyClassSolution valuation (encodeModelAtom returned))
     (path : PendingSteps environment
       (initialFuel, initial,
         [Metta.Minimal.evalResult previous
-          (toLeaTTaAtom (.expression [.symbol "function", body])) incoming])
+          (encodeModelAtom (.expression [.symbol "function", body])) incoming])
       (fuel + 1, final,
         ⟨{ atom := .expr [.sym "return", nativeOperand], vars := returnScope, fin := true } ::
-          { atom := toLeaTTaAtom (.expression [.symbol "function", body]),
+          { atom := encodeModelAtom (.expression [.symbol "function", body]),
             ret := .function, vars := Metta.Minimal.varsCopy previous } :: previous, native⟩ :: retained))
     (queued : List Metta.Minimal.Item) (done : List (Metta.Atom × Metta.Bindings)) :
     CoreInvocationResultRel space dispatch live (.expression [.symbol "function", body])
       bindings (returned, output) (typing := typing) (caller := caller) ∧
     (∀ valuation, HEBindingSatisfied valuation output →
       applyClassSolution valuation (Metta.instantiate native nativeOperand) =
-        applyClassSolution valuation (toLeaTTaAtom returned)) ∧
+        applyClassSolution valuation (encodeModelAtom returned)) ∧
     Metta.Minimal.interpretFuel environment initialFuel initial
       (Metta.Minimal.evalResult previous
-        (toLeaTTaAtom (.expression [.symbol "function", body])) incoming :: queued) done =
+        (encodeModelAtom (.expression [.symbol "function", body])) incoming :: queued) done =
       Metta.Minimal.interpretFuel environment fuel final
         (([Metta.Minimal.finItem previous (Metta.instantiate native nativeOperand) native].filter
           (fun result => !Metta.Minimal.isFinal result)) ++ retained ++ queued)
@@ -196,11 +201,11 @@ theorem function_completion_of_body_prefix {caller : Option Atom}
 
 private theorem caller_target_encoding (caller : Option Atom)
     (previous : Metta.Minimal.Stack) (terminal : Atom)
-    (captured : previous.head?.map (fun frame => frame.atom) = caller.map toLeaTTaAtom) :
-    (match previous with | frame :: _ => frame.atom | [] => toLeaTTaAtom terminal) =
-      toLeaTTaAtom (caller.getD terminal) := by
+    (captured : previous.head?.map (fun frame => frame.atom) = caller.map encodeModelAtom) :
+    (match previous with | frame :: _ => frame.atom | [] => encodeModelAtom terminal) =
+      encodeModelAtom (caller.getD terminal) := by
   calc
-    _ = (previous.head?.map (fun frame => frame.atom)).getD (toLeaTTaAtom terminal) := by
+    _ = (previous.head?.map (fun frame => frame.atom)).getD (encodeModelAtom terminal) := by
       cases previous <;> rfl
     _ = _ := by rw [captured]; cases caller <;> rfl
 
@@ -212,29 +217,29 @@ theorem function_terminal_handler_conformance
     (environment : Metta.Minimal.MinEnv) (state : Metta.Minimal.St) (fuel : Nat)
     (previous : Metta.Minimal.Stack) (scope : List String) (parent : Metta.Atom)
     (native : Metta.Bindings) (caller : Option Atom) (terminal : Atom) (operand : Metta.Atom)
-    (captured : previous.head?.map (fun frame => frame.atom) = caller.map toLeaTTaAtom)
-    (materialized : Metta.instantiate native operand = toLeaTTaAtom terminal)
-    (nativeTerminal : Metta.Minimal.isEmbeddedOp (toLeaTTaAtom terminal) = false) :
+    (captured : previous.head?.map (fun frame => frame.atom) = caller.map encodeModelAtom)
+    (materialized : Metta.instantiate native operand = encodeModelAtom terminal)
+    (nativeTerminal : Metta.Minimal.isEmbeddedOp (encodeModelAtom terminal) = false) :
     Metta.Minimal.interpretStack1 environment fuel state
       (Metta.Minimal.finItem
         ({ atom := parent, ret := .function, vars := scope } :: previous)
         operand native) =
-      ([Metta.Minimal.finItem previous (toLeaTTaAtom (functionTerminalResult caller terminal))
+      ([Metta.Minimal.finItem previous (encodeModelAtom (functionTerminalResult caller terminal))
         native], state) := by
   by_cases returning : ∃ value, terminal = .expression [.symbol "return", value]
   · obtain ⟨value, rfl⟩ := returning
     simp only [Metta.Minimal.interpretStack1, Metta.Minimal.finItem, ↓reduceIte,
-      materialized, functionTerminalResult_return, toLeaTTaAtom, toLeaTTaAtoms]
+      materialized, functionTerminalResult_return, encodeModelAtom, encodeModelAtoms]
   · have missing : ∀ value, terminal ≠ .expression [.symbol "return", value] := by
       intro value same
       exact returning ⟨value, same⟩
     have nativeMissing : ∀ value,
-        toLeaTTaAtom terminal ≠ .expr [.sym "return", value] := by
+        encodeModelAtom terminal ≠ .expr [.sym "return", value] := by
       intro value same
-      apply missing (LeaTTaTypeConformance.fromLeaTTaAtom value)
-      have decoded := congrArg LeaTTaTypeConformance.fromLeaTTaAtom same
-      simpa only [LeaTTaTypeConformance.fromLeaTTaAtom_toLeaTTaAtom,
-        LeaTTaTypeConformance.fromLeaTTaAtom, LeaTTaTypeConformance.fromLeaTTaAtoms] using decoded
+      apply missing (Spec.Match.SolutionTheory.decodeModelAtom value)
+      have decoded := congrArg Spec.Match.SolutionTheory.decodeModelAtom same
+      simpa only [Spec.Match.SolutionTheory.decodeModelAtom_encodeModelAtom,
+        Spec.Match.SolutionTheory.decodeModelAtom, Spec.Match.SolutionTheory.decodeModelAtoms] using decoded
     rw [functionTerminalResult_noReturn caller terminal missing]
     have target := caller_target_encoding caller previous terminal captured
     simp only [Metta.Minimal.interpretStack1, Metta.Minimal.finItem, ↓reduceIte, materialized,
@@ -255,27 +260,27 @@ theorem function_materialized_terminal_handler_conformance
     (environment : Metta.Minimal.MinEnv) (state : Metta.Minimal.St) (fuel : Nat)
     (previous : Metta.Minimal.Stack) (scope : List String) (parent : Metta.Atom)
     (caller : Option Atom)
-    (captured : previous.head?.map (fun frame => frame.atom) = caller.map toLeaTTaAtom)
+    (captured : previous.head?.map (fun frame => frame.atom) = caller.map encodeModelAtom)
     (nativeTerminal : Metta.Minimal.isEmbeddedOp
-      (Metta.instantiate native (toLeaTTaAtom raw)) = false) :
+      (Metta.instantiate native (encodeModelAtom raw)) = false) :
     ∃ observed : Atom,
       Spec.Type.Presentation.Alpha.ObservedTypeAlphaRel
         (functionTerminalResult caller terminal) observed ∧
       Metta.Minimal.interpretStack1 environment fuel state
         (Metta.Minimal.finItem
           ({ atom := parent, ret := .function, vars := scope } :: previous)
-          (toLeaTTaAtom raw) native) =
-        ([Metta.Minimal.finItem previous (toLeaTTaAtom observed) native], state) := by
-  let actual := Metta.instantiate native (toLeaTTaAtom raw)
-  let decoded := LeaTTaTypeConformance.fromLeaTTaAtom actual
+          (encodeModelAtom raw) native) =
+        ([Metta.Minimal.finItem previous (encodeModelAtom observed) native], state) := by
+  let actual := Metta.instantiate native (encodeModelAtom raw)
+  let decoded := Spec.Match.SolutionTheory.decodeModelAtom actual
   have image : LeaAtomHEImage actual := instantiate_heImage paired.image _ ⟨raw, rfl⟩
-  have encoded : toLeaTTaAtom decoded = actual :=
-    LeaTTaTypeConformance.toLeaTTaAtom_fromLeaTTaAtom_of_heImage image
+  have encoded : encodeModelAtom decoded = actual :=
+    LeaTTaTypeConformance.encodeModelAtom_decodeModelAtom_of_heImage image
   refine ⟨functionTerminalResult caller decoded, ?_, ?_⟩
   · exact functionTerminalResult_of_observedTypeAlpha caller
       (QueryBindingProjection.binding_materialization_alpha paired.semantic materialization)
   · exact function_terminal_handler_conformance environment state fuel previous scope parent
-      native caller decoded (toLeaTTaAtom raw) captured encoded.symm
+      native caller decoded (encodeModelAtom raw) captured encoded.symm
       (by simpa only [encoded] using nativeTerminal)
 
 /-- At an outermost handler no caller is invented: the terminal itself is
@@ -284,16 +289,16 @@ theorem function_outermost_noReturn_conformance
     (environment : Metta.Minimal.MinEnv) (state : Metta.Minimal.St) (fuel : Nat)
     (scope : List String) (parent : Metta.Atom) (native : Metta.Bindings) (terminal : Atom)
     (missing : ∀ value, terminal ≠ .expression [.symbol "return", value])
-    (materialized : Metta.instantiate native (toLeaTTaAtom terminal) = toLeaTTaAtom terminal)
-    (nativeTerminal : Metta.Minimal.isEmbeddedOp (toLeaTTaAtom terminal) = false) :
+    (materialized : Metta.instantiate native (encodeModelAtom terminal) = encodeModelAtom terminal)
+    (nativeTerminal : Metta.Minimal.isEmbeddedOp (encodeModelAtom terminal) = false) :
     Metta.Minimal.interpretStack1 environment fuel state
       (Metta.Minimal.finItem [{ atom := parent, ret := .function, vars := scope }]
-        (toLeaTTaAtom terminal) native) =
-      ([Metta.Minimal.finItem [] (toLeaTTaAtom (Atom.error terminal (.symbol "NoReturn")))
+        (encodeModelAtom terminal) native) =
+      ([Metta.Minimal.finItem [] (encodeModelAtom (Atom.error terminal (.symbol "NoReturn")))
         native], state) := by
   simpa only [functionTerminalResult_noReturn none terminal missing, Option.getD_none] using
     function_terminal_handler_conformance environment state fuel [] scope parent native none
-      terminal (toLeaTTaAtom terminal) rfl materialized nativeTerminal
+      terminal (encodeModelAtom terminal) rfl materialized nativeTerminal
 
 /-- A finite actual body prefix composes with the contextual observer and
 the real publication split. Saved alternatives, queued work and prior
@@ -304,16 +309,16 @@ theorem function_terminal_after_pending_prefix
     {parent operand : Metta.Atom} {scope returnScope : List String}
     {previous : Metta.Minimal.Stack} {retained : List Metta.Minimal.Item}
     (caller : Option Atom) (terminal : Atom)
-    (captured : previous.head?.map (fun frame => frame.atom) = caller.map toLeaTTaAtom)
-    (materialized : Metta.instantiate native operand = toLeaTTaAtom terminal)
-    (nativeTerminal : Metta.Minimal.isEmbeddedOp (toLeaTTaAtom terminal) = false)
+    (captured : previous.head?.map (fun frame => frame.atom) = caller.map encodeModelAtom)
+    (materialized : Metta.instantiate native operand = encodeModelAtom terminal)
+    (nativeTerminal : Metta.Minimal.isEmbeddedOp (encodeModelAtom terminal) = false)
     (path : PendingSteps environment before
       (fuel + 1, state,
         ⟨{ atom := operand, vars := returnScope, fin := true } ::
           { atom := parent, ret := .function, vars := scope } :: previous, native⟩ :: retained))
     (queued : List Metta.Minimal.Item) (done : List (Metta.Atom × Metta.Bindings)) :
     let completed := Metta.Minimal.finItem previous
-      (toLeaTTaAtom (functionTerminalResult caller terminal)) native
+      (encodeModelAtom (functionTerminalResult caller terminal)) native
     Metta.Minimal.interpretFuel environment before.1 before.2.1
       (before.2.2 ++ queued) done =
       Metta.Minimal.interpretFuel environment fuel state
@@ -347,20 +352,20 @@ theorem function_terminal_completion_of_body_prefix
     (source : CoreFunctionBodyRel space dispatch (.expression [.symbol "function", body] :: live)
       body bindings (terminal, output) (typing := typing)
       (caller := some (.expression [.symbol "function", body])))
-    (captured : previous.head?.map (fun frame => frame.atom) = caller.map toLeaTTaAtom)
-    (materialized : Metta.instantiate native operand = toLeaTTaAtom terminal)
-    (nativeTerminal : Metta.Minimal.isEmbeddedOp (toLeaTTaAtom terminal) = false)
+    (captured : previous.head?.map (fun frame => frame.atom) = caller.map encodeModelAtom)
+    (materialized : Metta.instantiate native operand = encodeModelAtom terminal)
+    (nativeTerminal : Metta.Minimal.isEmbeddedOp (encodeModelAtom terminal) = false)
     (path : PendingSteps environment before
       (fuel + 1, state,
         ⟨{ atom := operand, vars := returnScope, fin := true } ::
-          { atom := toLeaTTaAtom (.expression [.symbol "function", body]),
+          { atom := encodeModelAtom (.expression [.symbol "function", body]),
             ret := .function, vars := scope } :: previous, native⟩ :: retained))
     (queued : List Metta.Minimal.Item) (done : List (Metta.Atom × Metta.Bindings)) :
     CoreInvocationResultRel space dispatch live (.expression [.symbol "function", body])
       bindings (functionTerminalResult caller terminal, output)
       (typing := typing) (caller := caller) ∧
     (let completed := Metta.Minimal.finItem previous
-        (toLeaTTaAtom (functionTerminalResult caller terminal)) native;
+        (encodeModelAtom (functionTerminalResult caller terminal)) native;
       Metta.Minimal.interpretFuel environment before.1 before.2.1
         (before.2.2 ++ queued) done =
         Metta.Minimal.interpretFuel environment fuel state
@@ -385,10 +390,10 @@ theorem aliased_return_marker_handler
       ([Metta.Minimal.finItem [{ atom := .sym "caller" }] (.var "free") native], state) := by
   intro native
   have materialized : Metta.instantiate native (.var "pending") =
-      toLeaTTaAtom (.expression [.symbol "return", .var "free"]) := by
+      encodeModelAtom (.expression [.symbol "return", .var "free"]) := by
     exact Metta.instantiate_singleton_val_var_of_not_mem "pending"
       (.expr [.sym "return", .var "free"]) (by simp [Metta.Atom.vars])
-  simpa only [functionTerminalResult_return, toLeaTTaAtom] using
+  simpa only [functionTerminalResult_return, encodeModelAtom] using
     function_terminal_handler_conformance environment state fuel [{ atom := .sym "caller" }]
       scope parent native (some (.symbol "caller"))
       (.expression [.symbol "return", .var "free"]) (.var "pending") rfl materialized (by rfl)
@@ -410,12 +415,12 @@ theorem captured_caller_keeps_raw_fault_subject
       Metta.Minimal.errAtom (.expr [.sym "terminal"]) "NoReturn" := by
   intro native
   have materialized : Metta.instantiate native (.var "pending") =
-      toLeaTTaAtom (.expression [.symbol "terminal"]) := by
+      encodeModelAtom (.expression [.symbol "terminal"]) := by
     exact Metta.instantiate_singleton_val_var_of_not_mem "pending" (.expr [.sym "terminal"])
       (by simp [Metta.Atom.vars])
   constructor
   · simpa [functionTerminalResult, Atom.error,
-      toLeaTTaAtom, toLeaTTaAtoms, Metta.Minimal.errAtom] using
+      encodeModelAtom, encodeModelAtoms, Metta.Minimal.errAtom] using
       function_terminal_handler_conformance environment state fuel [{ atom := .var "pending" }]
         scope parent native (some (.var "pending")) (.expression [.symbol "terminal"])
         (.var "pending") rfl materialized (by rfl)
@@ -426,9 +431,9 @@ not the same classifier. A body proof must supply the applicable profile
 guard rather than transferring it from syntax alone. -/
 theorem embedded_instruction_surfaces_differ :
     embeddedInstruction (.expression [.symbol "call-native"]) = true ∧
-    Metta.Minimal.isEmbeddedOp (toLeaTTaAtom (.expression [.symbol "call-native"])) = false ∧
+    Metta.Minimal.isEmbeddedOp (encodeModelAtom (.expression [.symbol "call-native"])) = false ∧
     embeddedInstruction (.expression [.symbol "get-type"]) = false ∧
-    Metta.Minimal.isEmbeddedOp (toLeaTTaAtom (.expression [.symbol "get-type"])) = true := by
+    Metta.Minimal.isEmbeddedOp (encodeModelAtom (.expression [.symbol "get-type"])) = true := by
   decide +kernel
 
 /-! ## Primitive instructions at materialized boundaries -/
@@ -453,13 +458,13 @@ theorem unify_step_complete {caller : Option Atom}
     (previous : Metta.Minimal.Stack) (scope : List String) :
     ∃ value merged,
       Metta.Minimal.interpretStack1 environment fuel state
-        ⟨{ atom := toLeaTTaAtom (.expression [.symbol "unify", target, pattern, yes, no]),
+        ⟨{ atom := encodeModelAtom (.expression [.symbol "unify", target, pattern, yes, no]),
             vars := scope } :: previous, native⟩ =
         ([Metta.Minimal.finItem previous value merged], state) ∧
       LeaBindingSolutionTheoryEquiv output merged ∧
       LeaTTaSpecConformance.LeaRuntimeBindingInvariant merged ∧ LeaBindingsHEImage merged ∧
       ∀ valuation, HEBindingSatisfied valuation output →
-        applyClassSolution valuation value = applyClassSolution valuation (toLeaTTaAtom emitted) := by
+        applyClassSolution valuation value = applyClassSolution valuation (encodeModelAtom emitted) := by
   have branch : Spec.Eval.Steps.UnifyStep target pattern yes no bindings emitted output := by
     generalize shape : (Atom.expression [.symbol "unify", target, pattern, yes, no]) = atom at source
     cases source with
@@ -471,9 +476,9 @@ theorem unify_step_complete {caller : Option Atom}
   obtain ⟨value, merged, selected, theory, runtime, image, observed⟩ :=
     unifyStep_complete paired branch previous
   refine ⟨value, merged, ?_, theory, runtime, image, observed⟩
-  simpa only [toLeaTTaAtom, toLeaTTaAtoms, selected] using
-    step_unify environment fuel state previous scope (toLeaTTaAtom target)
-      (toLeaTTaAtom pattern) (toLeaTTaAtom yes) (toLeaTTaAtom no) native
+  simpa only [encodeModelAtom, encodeModelAtoms, selected] using
+    step_unify environment fuel state previous scope (encodeModelAtom target)
+      (encodeModelAtom pattern) (encodeModelAtom yes) (encodeModelAtom no) native
 
 /-- Every actual selected unify item has an independent minimal step and a
 paired output binding frame. Equal visible values do not identify success
@@ -486,7 +491,7 @@ theorem unify_step_item_sound {caller : Option Atom}
     (environment : Metta.Minimal.MinEnv) (fuel : Nat) (state : Metta.Minimal.St)
     (previous : Metta.Minimal.Stack) (scope : List String) {item : Metta.Minimal.Item}
     (member : item ∈ (Metta.Minimal.interpretStack1 environment fuel state
-      ⟨{ atom := toLeaTTaAtom (.expression [.symbol "unify", target, pattern, yes, no]),
+      ⟨{ atom := encodeModelAtom (.expression [.symbol "unify", target, pattern, yes, no]),
           vars := scope } :: previous, native⟩).1) :
     ∃ emitted output value merged,
       item = Metta.Minimal.finItem previous value merged ∧
@@ -495,10 +500,10 @@ theorem unify_step_item_sound {caller : Option Atom}
         (emitted, output) (typing := typing) (caller := caller) ∧
       ScopedEquationQuery.BindingInvariant output merged ∧
       ∀ valuation, HEBindingSatisfied valuation output →
-        applyClassSolution valuation value = applyClassSolution valuation (toLeaTTaAtom emitted) := by
-  have actualMember : item ∈ Metta.Minimal.unifyOp previous (toLeaTTaAtom target)
-      (toLeaTTaAtom pattern) (toLeaTTaAtom yes) (toLeaTTaAtom no) native := by
-    simpa only [toLeaTTaAtom, toLeaTTaAtoms, step_unify] using member
+        applyClassSolution valuation value = applyClassSolution valuation (encodeModelAtom emitted) := by
+  have actualMember : item ∈ Metta.Minimal.unifyOp previous (encodeModelAtom target)
+      (encodeModelAtom pattern) (encodeModelAtom yes) (encodeModelAtom no) native := by
+    simpa only [encodeModelAtom, encodeModelAtoms, step_unify] using member
   obtain ⟨emitted, output, value, merged, same, selected, outputPaired, observed⟩ :=
     unifyOp_item_sound paired previous actualMember
   exact ⟨emitted, output, value, merged, same,
@@ -517,13 +522,13 @@ theorem cons_atom_step_conformance {caller : Option Atom}
       (.expression [.symbol "cons-atom", head, .expression tail]) bindings
       (.expression (head :: tail), bindings) (typing := typing) (caller := caller) ∧
     Metta.Minimal.interpretStack1 environment fuel state
-      ⟨{ atom := toLeaTTaAtom (.expression [.symbol "cons-atom", head, .expression tail]),
+      ⟨{ atom := encodeModelAtom (.expression [.symbol "cons-atom", head, .expression tail]),
           vars := scope } :: previous, native⟩ =
-      ([Metta.Minimal.finItem previous (toLeaTTaAtom (.expression (head :: tail))) native], state) := by
+      ([Metta.Minimal.finItem previous (encodeModelAtom (.expression (head :: tail))) native], state) := by
   refine ⟨.consAtom space head tail bindings, ?_⟩
-  simpa only [toLeaTTaAtom, toLeaTTaAtoms] using
-    step_cons_atom environment fuel state previous scope (toLeaTTaAtom head)
-      (toLeaTTaAtoms tail) native
+  simpa only [encodeModelAtom, encodeModelAtoms] using
+    step_cons_atom environment fuel state previous scope (encodeModelAtom head)
+      (encodeModelAtoms tail) native
 
 theorem decons_atom_step_conformance {caller : Option Atom}
     (space : Space) (dispatch : Spec.Eval.GroundedDispatch) (live : List Atom)
@@ -535,13 +540,13 @@ theorem decons_atom_step_conformance {caller : Option Atom}
       (.expression [.symbol "decons-atom", .expression (head :: tail)]) bindings
       (.expression [head, .expression tail], bindings) (typing := typing) (caller := caller) ∧
     Metta.Minimal.interpretStack1 environment fuel state
-      ⟨{ atom := toLeaTTaAtom (.expression [.symbol "decons-atom", .expression (head :: tail)]),
+      ⟨{ atom := encodeModelAtom (.expression [.symbol "decons-atom", .expression (head :: tail)]),
           vars := scope } :: previous, native⟩ =
-      ([Metta.Minimal.finItem previous (toLeaTTaAtom (.expression [head, .expression tail])) native], state) := by
+      ([Metta.Minimal.finItem previous (encodeModelAtom (.expression [head, .expression tail])) native], state) := by
   refine ⟨.deconsAtom space head tail bindings, ?_⟩
-  simpa only [toLeaTTaAtom, toLeaTTaAtoms] using
-    step_decons_atom environment fuel state previous scope (toLeaTTaAtom head)
-      (toLeaTTaAtoms tail) native
+  simpa only [encodeModelAtom, encodeModelAtoms] using
+    step_decons_atom environment fuel state previous scope (encodeModelAtom head)
+      (encodeModelAtoms tail) native
 
 /-- The paired binding theory earns a normal independent source presentation.
 At the explicitly materialized native entry, cons and that source primitive
@@ -561,13 +566,13 @@ theorem cons_atom_materialized_conformance {caller : Option Atom}
       CoreStepRel space dispatch live (presentation.apply instruction) bindings
         (presentation.apply returned, bindings) (typing := typing) (caller := caller) ∧
       Metta.Minimal.interpretStack1 environment fuel state
-        ⟨{ atom := Metta.instantiate native (toLeaTTaAtom instruction), vars := scope } :: previous,
+        ⟨{ atom := Metta.instantiate native (encodeModelAtom instruction), vars := scope } :: previous,
           native⟩ =
         ([Metta.Minimal.finItem previous
-          (Metta.instantiate native (toLeaTTaAtom returned)) native], state) ∧
+          (Metta.instantiate native (encodeModelAtom returned)) native], state) ∧
       ObservedTypeAlphaRel (presentation.apply returned)
-        (LeaTTaTypeConformance.fromLeaTTaAtom
-          (Metta.instantiate native (toLeaTTaAtom returned))) := by
+        (Spec.Match.SolutionTheory.decodeModelAtom
+          (Metta.instantiate native (encodeModelAtom returned))) := by
   intro instruction returned
   obtain ⟨presentation, normal, exactTheory, observed⟩ :=
     QueryBindingProjection.exists_normal_materialization paired.semantic
@@ -575,7 +580,7 @@ theorem cons_atom_materialized_conformance {caller : Option Atom}
   · simpa only [instruction, returned, TypeSubst.apply, List.map_cons, List.map_nil] using
       (CoreStepRel.consAtom (dispatch := dispatch) (live := live) (typing := typing) (caller := caller)
         space (presentation.apply head) (tail.map presentation.apply) bindings)
-  · simp [instruction, returned, toLeaTTaAtom, toLeaTTaAtoms, Metta.instantiate,
+  · simp [instruction, returned, encodeModelAtom, encodeModelAtoms, Metta.instantiate,
       Metta.Bindings.resolveAtom, Metta.Minimal.interpretStack1]
 
 /-- Decons requires a syntactic nonempty expression at the independent
@@ -596,13 +601,13 @@ theorem decons_atom_materialized_conformance {caller : Option Atom}
       CoreStepRel space dispatch live (presentation.apply instruction) bindings
         (presentation.apply returned, bindings) (typing := typing) (caller := caller) ∧
       Metta.Minimal.interpretStack1 environment fuel state
-        ⟨{ atom := Metta.instantiate native (toLeaTTaAtom instruction), vars := scope } :: previous,
+        ⟨{ atom := Metta.instantiate native (encodeModelAtom instruction), vars := scope } :: previous,
           native⟩ =
         ([Metta.Minimal.finItem previous
-          (Metta.instantiate native (toLeaTTaAtom returned)) native], state) ∧
+          (Metta.instantiate native (encodeModelAtom returned)) native], state) ∧
       ObservedTypeAlphaRel (presentation.apply returned)
-        (LeaTTaTypeConformance.fromLeaTTaAtom
-          (Metta.instantiate native (toLeaTTaAtom returned))) := by
+        (Spec.Match.SolutionTheory.decodeModelAtom
+          (Metta.instantiate native (encodeModelAtom returned))) := by
   intro instruction returned
   obtain ⟨presentation, normal, exactTheory, observed⟩ :=
     QueryBindingProjection.exists_normal_materialization paired.semantic
@@ -610,7 +615,7 @@ theorem decons_atom_materialized_conformance {caller : Option Atom}
   · simpa only [instruction, returned, TypeSubst.apply, List.map_cons, List.map_nil] using
       (CoreStepRel.deconsAtom (dispatch := dispatch) (live := live) (typing := typing) (caller := caller)
         space (presentation.apply head) (tail.map presentation.apply) bindings)
-  · simp [instruction, returned, toLeaTTaAtom, toLeaTTaAtoms, Metta.instantiate,
+  · simp [instruction, returned, encodeModelAtom, encodeModelAtoms, Metta.instantiate,
       Metta.Bindings.resolveAtom, Metta.Minimal.interpretStack1]
 
 /-- A raw primitive result is materialized only by its finished chain
@@ -634,18 +639,18 @@ theorem primitive_chain_function_completion {caller : Option Atom}
     (fuel : Nat)
     (nativeStep : ∀ continuation,
       Metta.Minimal.interpretStack1 environment (fuel + 4) state
-        ⟨Metta.Minimal.atomToStack (toLeaTTaAtom source) continuation, native⟩ =
-        ([Metta.Minimal.finItem continuation (toLeaTTaAtom returned) native], state))
+        ⟨Metta.Minimal.atomToStack (encodeModelAtom source) continuation, native⟩ =
+        ([Metta.Minimal.finItem continuation (encodeModelAtom returned) native], state))
     (queued : List Metta.Minimal.Item) (done : List (Metta.Atom × Metta.Bindings)) :
     let template := Atom.expression [.symbol "return", .var name]
     let body := Atom.expression [.symbol "chain", source, .var name, template]
-    let actual := Metta.instantiate native (toLeaTTaAtom returned)
+    let actual := Metta.instantiate native (encodeModelAtom returned)
     CoreInvocationResultRel space dispatch live (.expression [.symbol "function", body])
       bindings (normalized, bindings) (typing := typing) (caller := caller) ∧
-    ObservedTypeAlphaRel normalized (LeaTTaTypeConformance.fromLeaTTaAtom actual) ∧
+    ObservedTypeAlphaRel normalized (Spec.Match.SolutionTheory.decodeModelAtom actual) ∧
     Metta.Minimal.interpretFuel environment (fuel + 5) state
       (Metta.Minimal.evalResult previous
-        (toLeaTTaAtom (.expression [.symbol "function", body])) native :: queued) done =
+        (encodeModelAtom (.expression [.symbol "function", body])) native :: queued) done =
       Metta.Minimal.interpretFuel environment fuel state
         (([Metta.Minimal.finItem previous actual native].filter
           (fun result => !Metta.Minimal.isFinal result)) ++ queued)
@@ -683,20 +688,20 @@ theorem primitive_chain_function_completion {caller : Option Atom}
     (.functionReturn space body _ bindings bindings ⟨_, rfl⟩ independent),
     QueryBindingProjection.binding_materialization_alpha paired.semantic normalizedResult, ?_⟩
   have nativePath := primitive_chain_return_pending_prefix environment state fuel previous
-    (toLeaTTaAtom source) (toLeaTTaAtom returned) name native nativeStep
+    (encodeModelAtom source) (encodeModelAtom returned) name native nativeStep
   have path : PendingSteps environment
       (fuel + 5, state, [Metta.Minimal.evalResult previous
-        (toLeaTTaAtom (.expression [.symbol "function", body])) native])
+        (encodeModelAtom (.expression [.symbol "function", body])) native])
       (fuel + 1, state,
         [⟨{ atom := .expr [.sym "return", actual], vars := Metta.Minimal.varsCopy previous,
               fin := true } ::
-          { atom := toLeaTTaAtom (.expression [.symbol "function", body]), ret := .function,
+          { atom := encodeModelAtom (.expression [.symbol "function", body]), ret := .function,
             vars := Metta.Minimal.varsCopy previous } :: previous, native⟩]) := by
-    simpa only [body, template, actual, toLeaTTaAtom, toLeaTTaAtoms] using nativePath
+    simpa only [body, template, actual, encodeModelAtom, encodeModelAtoms] using nativePath
   have idempotent : Metta.instantiate native actual = actual :=
     by
       have inert := LeaTTaBridge.instantiate_semantically_inert
-        paired.semantic.runtime.canonical.1 (toLeaTTaAtom returned)
+        paired.semantic.runtime.canonical.1 (encodeModelAtom returned)
       simpa only [applyClassSolution_lea_eq_instantiate] using inert
   simpa only [idempotent, List.cons_append, List.nil_append, List.append_nil] using
     function_return_after_pending_prefix path queued done
@@ -718,12 +723,12 @@ theorem primitive_chain_function_completion_of_fixed {caller : Option Atom}
       let body := Atom.expression [.symbol "chain", source, .var name, template]
       CoreStepRel space dispatch (body :: .expression [.symbol "function", body] :: live)
         source bindings (returned, bindings) (typing := typing) (caller := some body))
-    (fixed : Metta.instantiate native (toLeaTTaAtom returned) = toLeaTTaAtom returned)
+    (fixed : Metta.instantiate native (encodeModelAtom returned) = encodeModelAtom returned)
     (fuel : Nat)
     (nativeStep : ∀ continuation,
       Metta.Minimal.interpretStack1 environment (fuel + 4) state
-        ⟨Metta.Minimal.atomToStack (toLeaTTaAtom source) continuation, native⟩ =
-        ([Metta.Minimal.finItem continuation (toLeaTTaAtom returned) native], state))
+        ⟨Metta.Minimal.atomToStack (encodeModelAtom source) continuation, native⟩ =
+        ([Metta.Minimal.finItem continuation (encodeModelAtom returned) native], state))
     (queued : List Metta.Minimal.Item) (done : List (Metta.Atom × Metta.Bindings)) :
     let template := Atom.expression [.symbol "return", .var name]
     let body := Atom.expression [.symbol "chain", source, .var name, template]
@@ -731,11 +736,11 @@ theorem primitive_chain_function_completion_of_fixed {caller : Option Atom}
       bindings (returned, bindings) (typing := typing) (caller := caller) ∧
     Metta.Minimal.interpretFuel environment (fuel + 5) state
       (Metta.Minimal.evalResult previous
-        (toLeaTTaAtom (.expression [.symbol "function", body])) native :: queued) done =
+        (encodeModelAtom (.expression [.symbol "function", body])) native :: queued) done =
       Metta.Minimal.interpretFuel environment fuel state
-        (([Metta.Minimal.finItem previous (toLeaTTaAtom returned) native].filter
+        (([Metta.Minimal.finItem previous (encodeModelAtom returned) native].filter
           (fun result => !Metta.Minimal.isFinal result)) ++ queued)
-        ((([Metta.Minimal.finItem previous (toLeaTTaAtom returned) native].filter
+        ((([Metta.Minimal.finItem previous (encodeModelAtom returned) native].filter
           Metta.Minimal.isFinal).map Metta.Minimal.finalPair).reverse ++ done) := by
   intro template body
   have completed := primitive_chain_function_completion (caller := caller) space dispatch live typing
@@ -752,8 +757,8 @@ theorem cons_chain_function_completion_of_fixed {caller : Option Atom}
     (head : Atom) (tail : List Atom) (name : String) (bindings : Bindings) (native : Metta.Bindings)
     (paired : ScopedEquationQuery.BindingInvariant bindings native)
     (sourceFixed : BindingMaterializationRel bindings (.expression (head :: tail)) (.expression (head :: tail)))
-    (fixed : Metta.instantiate native (toLeaTTaAtom (.expression (head :: tail))) =
-      toLeaTTaAtom (.expression (head :: tail))) (fuel : Nat)
+    (fixed : Metta.instantiate native (encodeModelAtom (.expression (head :: tail))) =
+      encodeModelAtom (.expression (head :: tail))) (fuel : Nat)
     (queued : List Metta.Minimal.Item) (done : List (Metta.Atom × Metta.Bindings)) :
     let source := Atom.expression [.symbol "cons-atom", head, .expression tail]
     let template := Atom.expression [.symbol "return", .var name]
@@ -763,11 +768,11 @@ theorem cons_chain_function_completion_of_fixed {caller : Option Atom}
       bindings (returned, bindings) (typing := typing) (caller := caller) ∧
     Metta.Minimal.interpretFuel environment (fuel + 5) state
       (Metta.Minimal.evalResult previous
-        (toLeaTTaAtom (.expression [.symbol "function", body])) native :: queued) done =
+        (encodeModelAtom (.expression [.symbol "function", body])) native :: queued) done =
       Metta.Minimal.interpretFuel environment fuel state
-        (([Metta.Minimal.finItem previous (toLeaTTaAtom returned) native].filter
+        (([Metta.Minimal.finItem previous (encodeModelAtom returned) native].filter
           (fun result => !Metta.Minimal.isFinal result)) ++ queued)
-        ((([Metta.Minimal.finItem previous (toLeaTTaAtom returned) native].filter
+        ((([Metta.Minimal.finItem previous (encodeModelAtom returned) native].filter
           Metta.Minimal.isFinal).map Metta.Minimal.finalPair).reverse ++ done) := by
   intro source template body returned
   apply primitive_chain_function_completion_of_fixed space dispatch live typing environment state
@@ -776,7 +781,7 @@ theorem cons_chain_function_completion_of_fixed {caller : Option Atom}
     (by rintro ⟨rest, impossible⟩; simp [source] at impossible)
     (.consAtom space head tail bindings) fixed fuel _ queued done
   intro continuation
-  simp [source, returned, toLeaTTaAtom, toLeaTTaAtoms,
+  simp [source, returned, encodeModelAtom, encodeModelAtoms,
     Metta.Minimal.atomToStack, Metta.Minimal.interpretStack1]
 
 /-- The same independent/actual body construction is available for decons
@@ -788,8 +793,8 @@ theorem decons_chain_function_completion_of_fixed {caller : Option Atom}
     (head : Atom) (tail : List Atom) (name : String) (bindings : Bindings) (native : Metta.Bindings)
     (paired : ScopedEquationQuery.BindingInvariant bindings native)
     (sourceFixed : BindingMaterializationRel bindings (.expression [head, .expression tail]) (.expression [head, .expression tail]))
-    (fixed : Metta.instantiate native (toLeaTTaAtom (.expression [head, .expression tail])) =
-      toLeaTTaAtom (.expression [head, .expression tail])) (fuel : Nat)
+    (fixed : Metta.instantiate native (encodeModelAtom (.expression [head, .expression tail])) =
+      encodeModelAtom (.expression [head, .expression tail])) (fuel : Nat)
     (queued : List Metta.Minimal.Item) (done : List (Metta.Atom × Metta.Bindings)) :
     let source := Atom.expression [.symbol "decons-atom", .expression (head :: tail)]
     let template := Atom.expression [.symbol "return", .var name]
@@ -799,11 +804,11 @@ theorem decons_chain_function_completion_of_fixed {caller : Option Atom}
       bindings (returned, bindings) (typing := typing) (caller := caller) ∧
     Metta.Minimal.interpretFuel environment (fuel + 5) state
       (Metta.Minimal.evalResult previous
-        (toLeaTTaAtom (.expression [.symbol "function", body])) native :: queued) done =
+        (encodeModelAtom (.expression [.symbol "function", body])) native :: queued) done =
       Metta.Minimal.interpretFuel environment fuel state
-        (([Metta.Minimal.finItem previous (toLeaTTaAtom returned) native].filter
+        (([Metta.Minimal.finItem previous (encodeModelAtom returned) native].filter
           (fun result => !Metta.Minimal.isFinal result)) ++ queued)
-        ((([Metta.Minimal.finItem previous (toLeaTTaAtom returned) native].filter
+        ((([Metta.Minimal.finItem previous (encodeModelAtom returned) native].filter
           Metta.Minimal.isFinal).map Metta.Minimal.finalPair).reverse ++ done) := by
   intro source template body returned
   apply primitive_chain_function_completion_of_fixed space dispatch live typing environment state
@@ -812,7 +817,7 @@ theorem decons_chain_function_completion_of_fixed {caller : Option Atom}
     (by rintro ⟨rest, impossible⟩; simp [source] at impossible)
     (.deconsAtom space head tail bindings) fixed fuel _ queued done
   intro continuation
-  simp [source, returned, toLeaTTaAtom, toLeaTTaAtoms,
+  simp [source, returned, encodeModelAtom, encodeModelAtoms,
     Metta.Minimal.atomToStack, Metta.Minimal.interpretStack1]
 
 /-- The previous closed empty-tail construction is a consequence of the
@@ -823,7 +828,7 @@ theorem cons_chain_function_completion {caller : Option Atom}
     (state : Metta.Minimal.St) (previous : Metta.Minimal.Stack) (head : Atom) (name : String)
     (bindings : Bindings) (native : Metta.Bindings)
     (paired : ScopedEquationQuery.BindingInvariant bindings native)
-    (closed : (toLeaTTaAtom head).vars = []) (fuel : Nat)
+    (closed : (encodeModelAtom head).vars = []) (fuel : Nat)
     (queued : List Metta.Minimal.Item) (done : List (Metta.Atom × Metta.Bindings)) :
     let source := Atom.expression [.symbol "cons-atom", head, .expression []]
     let template := Atom.expression [.symbol "return", .var name]
@@ -833,22 +838,22 @@ theorem cons_chain_function_completion {caller : Option Atom}
       bindings (returned, bindings) (typing := typing) (caller := caller) ∧
     Metta.Minimal.interpretFuel environment (fuel + 5) state
       (Metta.Minimal.evalResult previous
-        (toLeaTTaAtom (.expression [.symbol "function", body])) native :: queued) done =
+        (encodeModelAtom (.expression [.symbol "function", body])) native :: queued) done =
       Metta.Minimal.interpretFuel environment fuel state
-        (([Metta.Minimal.finItem previous (toLeaTTaAtom returned) native].filter
+        (([Metta.Minimal.finItem previous (encodeModelAtom returned) native].filter
           (fun result => !Metta.Minimal.isFinal result)) ++ queued)
-        ((([Metta.Minimal.finItem previous (toLeaTTaAtom returned) native].filter
+        ((([Metta.Minimal.finItem previous (encodeModelAtom returned) native].filter
           Metta.Minimal.isFinal).map Metta.Minimal.finalPair).reverse ++ done) := by
   have sourceClosed : TypeSubst.typeVars (.expression [head]) = [] := by
     simpa [TypeSubst.typeVars, TypeSubst.typeVarsList,
-      ← LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars] using closed
+      ← Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars] using closed
   have sourceFixed : BindingMaterializationRel bindings (.expression [head]) (.expression [head]) :=
     (BindingMaterializationRel.closed_iff _ _ _ sourceClosed).mpr
       ⟨rfl, QueryBindingProjection.binding_theory_satisfiable paired.semantic⟩
   exact cons_chain_function_completion_of_fixed space dispatch live typing environment state previous
     head [] name bindings native paired sourceFixed
     (Metta.instantiate_of_closed native _
-      (by simp [toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars, closed])) fuel queued done
+      (by simp [encodeModelAtom, encodeModelAtoms, Metta.Atom.vars, closed])) fuel queued done
 
 /-! ## Open operands and primitive fault controls -/
 
@@ -940,12 +945,12 @@ theorem open_correlated_cons_function_completion {caller : Option Atom}
     CoreInvocationResultRel space dispatch live (.expression [.symbol "function", body])
       bindings (returned, bindings) (typing := typing) (caller := caller) ∧
     Metta.Minimal.interpretFuel environment (fuel + 5) state
-      (Metta.Minimal.evalResult previous (toLeaTTaAtom (.expression [.symbol "function", body]))
+      (Metta.Minimal.evalResult previous (encodeModelAtom (.expression [.symbol "function", body]))
         primitiveControlBindings :: queued) done =
       Metta.Minimal.interpretFuel environment fuel state
-        (([Metta.Minimal.finItem previous (toLeaTTaAtom returned) primitiveControlBindings].filter
+        (([Metta.Minimal.finItem previous (encodeModelAtom returned) primitiveControlBindings].filter
           (fun result => !Metta.Minimal.isFinal result)) ++ queued)
-        ((([Metta.Minimal.finItem previous (toLeaTTaAtom returned) primitiveControlBindings].filter
+        ((([Metta.Minimal.finItem previous (encodeModelAtom returned) primitiveControlBindings].filter
           Metta.Minimal.isFinal).map Metta.Minimal.finalPair).reverse ++ done) := by
   have sourceFixed : BindingMaterializationRel
       (QueryBindingProjection.project primitiveControlBindings)
@@ -962,7 +967,7 @@ theorem open_correlated_cons_function_completion {caller : Option Atom}
     (.symbol "answer") [.var "free", .var "free"] name _ _ primitiveControl_paired
     sourceFixed
     (Metta.instantiate_singleton_val_inert "bound" (.sym "answer") _
-      (by simp [toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars])) fuel queued done
+      (by simp [encodeModelAtom, encodeModelAtoms, Metta.Atom.vars])) fuel queued done
 
 /-- A non-fixed primitive result is resolved by the chain handler, then
 returned by the enclosing function. The two free occurrences remain shared;
@@ -984,21 +989,21 @@ theorem open_cons_function_materializes_binding {caller : Option Atom}
     CoreInvocationResultRel space dispatch live (.expression [.symbol "function", body])
       bindings (returned, bindings) (typing := typing) (caller := caller) ∧
     Metta.Minimal.interpretFuel environment (fuel + 5) state
-      (Metta.Minimal.evalResult previous (toLeaTTaAtom (.expression [.symbol "function", body]))
+      (Metta.Minimal.evalResult previous (encodeModelAtom (.expression [.symbol "function", body]))
         primitiveControlBindings :: queued) done =
       Metta.Minimal.interpretFuel environment fuel state
-        (([Metta.Minimal.finItem previous (toLeaTTaAtom returned) primitiveControlBindings].filter
+        (([Metta.Minimal.finItem previous (encodeModelAtom returned) primitiveControlBindings].filter
           (fun result => !Metta.Minimal.isFinal result)) ++ queued)
-        ((([Metta.Minimal.finItem previous (toLeaTTaAtom returned) primitiveControlBindings].filter
+        ((([Metta.Minimal.finItem previous (encodeModelAtom returned) primitiveControlBindings].filter
           Metta.Minimal.isFinal).map Metta.Minimal.finalPair).reverse ++ done) := by
   intro bindings raw returned source body
-  have nativeResolved : Metta.instantiate primitiveControlBindings (toLeaTTaAtom raw) =
-      toLeaTTaAtom returned := by
+  have nativeResolved : Metta.instantiate primitiveControlBindings (encodeModelAtom raw) =
+      encodeModelAtom returned := by
     have bound := Metta.instantiate_singleton_val_var_of_not_mem "bound" (.sym "answer")
       (by simp [Metta.Atom.vars])
     have free := Metta.instantiate_singleton_val_inert "bound" (.sym "answer") (.var "free")
       (by simp [Metta.Atom.vars])
-    simp only [primitiveControlBindings, raw, returned, toLeaTTaAtom, toLeaTTaAtoms,
+    simp only [primitiveControlBindings, raw, returned, encodeModelAtom, encodeModelAtoms,
       Metta.instantiate, Metta.Bindings.resolveAtom, List.map_cons, List.map_nil]
       at bound free ⊢
     simp only [bound, free]
@@ -1013,7 +1018,7 @@ theorem open_cons_function_materializes_binding {caller : Option Atom}
     intro fixed
     have alpha := QueryBindingProjection.binding_materialization_alpha
       primitiveControl_paired.semantic fixed
-    rw [nativeResolved, LeaTTaTypeConformance.fromLeaTTaAtom_toLeaTTaAtom] at alpha
+    rw [nativeResolved, Spec.Match.SolutionTheory.decodeModelAtom_encodeModelAtom] at alpha
     have wrong := (symbolicHead_of_observedTypeAlpha_iff alpha "answer").mpr
       ⟨[.var "free", .var "free"], rfl⟩
     obtain ⟨tail, impossible⟩ := wrong
@@ -1024,7 +1029,7 @@ theorem open_cons_function_materializes_binding {caller : Option Atom}
     (by rintro ⟨rest, impossible⟩; simp [source] at impossible)
     (by exact .consAtom space _ _ bindings) materialized fuel
     (fun continuation => by
-      simp [source, raw, toLeaTTaAtom, toLeaTTaAtoms,
+      simp [source, raw, encodeModelAtom, encodeModelAtoms,
         Metta.Minimal.atomToStack, Metta.Minimal.interpretStack1]) queued done
   refine ⟨notFixed, completed.1, ?_⟩
   simpa only [nativeResolved] using completed.2.2
@@ -1064,25 +1069,25 @@ theorem cons_tail_alias_needs_materialized_entry
     let instruction := Atom.expression [.symbol "cons-atom", .symbol "a", .var "tail"]
     (∀ result, ¬CoreStepRel space dispatch live instruction bindings result (typing := typing)) ∧
     Metta.Minimal.interpretStack1 environment fuel state
-      ⟨{ atom := toLeaTTaAtom instruction, vars := scope } :: previous, native⟩ =
-      ([Metta.Minimal.finItem previous (Metta.Minimal.errAtom (toLeaTTaAtom instruction)
+      ⟨{ atom := encodeModelAtom instruction, vars := scope } :: previous, native⟩ =
+      ([Metta.Minimal.finItem previous (Metta.Minimal.errAtom (encodeModelAtom instruction)
         "cons-atom: expected (cons-atom <head> <expression>)") native], state) ∧
     Metta.Minimal.interpretStack1 environment fuel state
-      ⟨{ atom := Metta.instantiate native (toLeaTTaAtom instruction), vars := scope } :: previous, native⟩ =
+      ⟨{ atom := Metta.instantiate native (encodeModelAtom instruction), vars := scope } :: previous, native⟩ =
       ([Metta.Minimal.finItem previous (.expr [.sym "a", .sym "b"]) native], state) := by
   intro bindings native instruction
   refine ⟨?_, ?_, ?_⟩
   · intro result step
     generalize equation : instruction = source at step
     cases step <;> simp [instruction] at equation
-  · simpa only [instruction, toLeaTTaAtom, toLeaTTaAtoms] using
+  · simpa only [instruction, encodeModelAtom, encodeModelAtoms] using
       step_cons_atom_invalid_tail environment fuel state previous scope (.sym "a") (.var "tail")
         native (by intro values; simp)
-  · have materialized : Metta.instantiate native (toLeaTTaAtom instruction) =
+  · have materialized : Metta.instantiate native (encodeModelAtom instruction) =
         .expr [.sym "cons-atom", .sym "a", .expr [.sym "b"]] := by
       have tail := Metta.instantiate_singleton_val_var_of_not_mem "tail" (.expr [.sym "b"])
         (by simp [Metta.Atom.vars])
-      simp only [native, instruction, toLeaTTaAtom, toLeaTTaAtoms, Metta.instantiate,
+      simp only [native, instruction, encodeModelAtom, encodeModelAtoms, Metta.instantiate,
         Metta.Bindings.resolveAtom, List.map_cons, List.map_nil] at tail ⊢
       rw [tail]
     rw [materialized]
@@ -1121,7 +1126,7 @@ theorem open_return_operand_is_materialized
   refine ⟨?_, immediate_function_completion_exact.mpr ⟨.symbol "answer", resolved, rfl⟩,
     ?_, by intro impossible; cases impossible⟩
   · simpa [bindings, QueryBindingProjection.project, leaEqualityEdges,
-      LeaTTaTypeConformance.fromLeaTTaAtom] using
+      Spec.Match.SolutionTheory.decodeModelAtom] using
       QueryBindingProjection.solutionTheory [.val "result" (.sym "answer")] image
   ·
     have instantiated : Metta.instantiate [.val "result" (.sym "answer")] (.var "result") =
@@ -1148,11 +1153,11 @@ theorem noReturn_error_subjects_differ
       (typing := typing) (caller := some (.symbol "caller")) ∧
     Metta.Minimal.interpretStack1 environment fuel state
       (Metta.Minimal.finItem
-        [{ atom := toLeaTTaAtom functionValue, ret := .function }, { atom := .sym "caller" }]
-        (toLeaTTaAtom body) []) =
+        [{ atom := encodeModelAtom functionValue, ret := .function }, { atom := .sym "caller" }]
+        (encodeModelAtom body) []) =
       ([Metta.Minimal.finItem [{ atom := .sym "caller" }]
         (Metta.Minimal.errAtom (.sym "caller") "NoReturn") []], state) ∧
-    toLeaTTaAtom (Atom.error body (.symbol "NoReturn")) ≠
+    encodeModelAtom (Atom.error body (.symbol "NoReturn")) ≠
       Metta.Minimal.errAtom (.sym "caller") "NoReturn" := by
   intro body functionValue
   have expression : ∃ atoms, body = .expression atoms := ⟨_, rfl⟩
@@ -1167,13 +1172,13 @@ theorem noReturn_error_subjects_differ
     (function_data_noReturn space dispatch live typing (some (.symbol "caller")) body
       Bindings.empty body (BindingMaterializationRel.empty body) expression data data missing), ?_, ?_⟩
   · simpa [functionTerminalResult, functionValue, body, Atom.error,
-      toLeaTTaAtom, toLeaTTaAtoms, Metta.Minimal.errAtom] using
+      encodeModelAtom, encodeModelAtoms, Metta.Minimal.errAtom] using
       function_terminal_handler_conformance environment state fuel [{ atom := .sym "caller" }]
-        [] (toLeaTTaAtom functionValue) [] (some (.symbol "caller")) body
-        (toLeaTTaAtom body) rfl
-        (Metta.instantiate_of_closed [] _ (by simp [body, toLeaTTaAtom, toLeaTTaAtoms,
+        [] (encodeModelAtom functionValue) [] (some (.symbol "caller")) body
+        (encodeModelAtom body) rfl
+        (Metta.instantiate_of_closed [] _ (by simp [body, encodeModelAtom, encodeModelAtoms,
           Metta.Atom.vars])) (by rfl)
-  · simp [body, Atom.error, toLeaTTaAtom, toLeaTTaAtoms, Metta.Minimal.errAtom]
+  · simp [body, Atom.error, encodeModelAtom, encodeModelAtoms, Metta.Minimal.errAtom]
 
 /-- Two nested function faults use two different saved callers. The source
 derivation and the actual handlers agree at both boundaries. -/
@@ -1187,17 +1192,17 @@ theorem nested_function_fault_contexts
     let innerFault := Atom.error outer (.symbol "NoReturn")
     let result := Atom.error (.symbol "caller") (.symbol "NoReturn")
     let previous : Metta.Minimal.Stack := [{ atom := .sym "caller" }]
-    let outerFrame : Metta.Minimal.Frame := { atom := toLeaTTaAtom outer, ret := .function }
+    let outerFrame : Metta.Minimal.Frame := { atom := encodeModelAtom outer, ret := .function }
     CoreInvocationResultRel space dispatch live outer Bindings.empty
       (result, Bindings.empty) (typing := typing) (caller := some (.symbol "caller")) ∧
     Metta.Minimal.interpretStack1 environment fuel state
       (Metta.Minimal.finItem
-        ({ atom := toLeaTTaAtom inner, ret := .function } :: outerFrame :: previous)
-        (toLeaTTaAtom body) []) =
-      ([Metta.Minimal.finItem (outerFrame :: previous) (toLeaTTaAtom innerFault) []], state) ∧
+        ({ atom := encodeModelAtom inner, ret := .function } :: outerFrame :: previous)
+        (encodeModelAtom body) []) =
+      ([Metta.Minimal.finItem (outerFrame :: previous) (encodeModelAtom innerFault) []], state) ∧
     Metta.Minimal.interpretStack1 environment fuel state
-      (Metta.Minimal.finItem (outerFrame :: previous) (toLeaTTaAtom innerFault) []) =
-      ([Metta.Minimal.finItem previous (toLeaTTaAtom result) []], state) := by
+      (Metta.Minimal.finItem (outerFrame :: previous) (encodeModelAtom innerFault) []) =
+      ([Metta.Minimal.finItem previous (encodeModelAtom result) []], state) := by
   intro body inner outer innerFault result previous outerFrame
   have innerStep : CoreStepRel space dispatch (outer :: live) inner Bindings.empty
       (innerFault, Bindings.empty) (typing := typing) (caller := some outer) :=
@@ -1221,18 +1226,18 @@ theorem nested_function_fault_contexts
       by simp [result, innerFault, Atom.error, functionTerminalResult]⟩
   constructor
   · simpa [body, inner, outer, innerFault, outerFrame, previous,
-      functionTerminalResult, Atom.error, toLeaTTaAtom, toLeaTTaAtoms, Metta.Minimal.errAtom] using
+      functionTerminalResult, Atom.error, encodeModelAtom, encodeModelAtoms, Metta.Minimal.errAtom] using
       function_terminal_handler_conformance environment state fuel (outerFrame :: previous) []
-        (toLeaTTaAtom inner) [] (some outer) body (toLeaTTaAtom body) rfl
-        (Metta.instantiate_of_closed [] _ (by simp [body, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars]))
+        (encodeModelAtom inner) [] (some outer) body (encodeModelAtom body) rfl
+        (Metta.instantiate_of_closed [] _ (by simp [body, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars]))
         (by rfl)
-  · simpa [innerFault, result, functionTerminalResult, Atom.error, toLeaTTaAtom,
-      toLeaTTaAtoms, Metta.Minimal.errAtom] using
+  · simpa [innerFault, result, functionTerminalResult, Atom.error, encodeModelAtom,
+      encodeModelAtoms, Metta.Minimal.errAtom] using
       function_terminal_handler_conformance environment state fuel previous []
-        (toLeaTTaAtom outer) [] (some (.symbol "caller")) innerFault
-        (toLeaTTaAtom innerFault) rfl
+        (encodeModelAtom outer) [] (some (.symbol "caller")) innerFault
+        (encodeModelAtom innerFault) rfl
         (Metta.instantiate_of_closed [] _ (by simp [innerFault, outer, inner, body,
-          Atom.error, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars])) (by rfl)
+          Atom.error, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars])) (by rfl)
 
 /-- Exact function arity matters: the independent raw constructor holds a
 malformed one-token function expression, while the runtime head test routes
@@ -1286,16 +1291,16 @@ theorem materialization_closed_native {bindings : Bindings} {native : Metta.Bind
     (paired : ScopedEquationQuery.BindingInvariant bindings native)
     {raw normalized : Atom} (materialized : BindingMaterializationRel bindings raw normalized)
     (closed : TypeSubst.typeVars normalized = []) :
-    Metta.instantiate native (toLeaTTaAtom raw) = toLeaTTaAtom normalized := by
+    Metta.instantiate native (encodeModelAtom raw) = encodeModelAtom normalized := by
   have model := specTypeBindingSatisfied_of_heBindingSatisfied
     ((paired.semantic.solutionTheory _).mpr paired.semantic.runtime.canonical.1)
   have observed := materialized.preserves_model _ model
   rw [closed_valuation _ normalized closed] at observed
-  rw [← fromLeaTTaAtom_applyClassSolution, applyClassSolution_lea_eq_instantiate] at observed
-  have image : LeaAtomHEImage (Metta.instantiate native (toLeaTTaAtom raw)) :=
+  rw [← decodeModelAtom_applyClassSolution, applyClassSolution_lea_eq_instantiate] at observed
+  have image : LeaAtomHEImage (Metta.instantiate native (encodeModelAtom raw)) :=
     instantiate_heImage paired.image _ ⟨raw, rfl⟩
-  exact (toLeaTTaAtom_fromLeaTTaAtom_of_heImage image).symm.trans
-    (congrArg toLeaTTaAtom observed.symm)
+  exact (encodeModelAtom_decodeModelAtom_of_heImage image).symm.trans
+    (congrArg encodeModelAtom observed.symm)
 
 inductive ControlPhase where
   | run
@@ -1307,7 +1312,7 @@ inductive CoveredControlDerivation :
     Bindings → ControlPhase → Option Atom → Atom → Atom → Bindings → Bool → Prop where
   | data {bindings : Bindings} {caller : Option Atom} (atom : Atom)
       (sourceRaw : embeddedInstruction atom = false)
-      (nativeRaw : Metta.Minimal.isEmbeddedOp (toLeaTTaAtom atom) = false) :
+      (nativeRaw : Metta.Minimal.isEmbeddedOp (encodeModelAtom atom) = false) :
       CoveredControlDerivation bindings .run caller atom atom bindings false
   | cons {bindings : Bindings} {caller : Option Atom} (head : Atom) (tail : List Atom) :
       CoveredControlDerivation bindings .run caller
@@ -1349,7 +1354,7 @@ inductive CoveredControlDerivation :
       (materialized : BindingMaterializationRel output raw normalized)
       (closed : TypeSubst.typeVars normalized = [])
       (sourceTerminal : embeddedInstruction normalized = false)
-      (nativeTerminal : Metta.Minimal.isEmbeddedOp (toLeaTTaAtom normalized) = false) :
+      (nativeTerminal : Metta.Minimal.isEmbeddedOp (encodeModelAtom normalized) = false) :
       CoveredControlDerivation bindings .body caller source normalized output updates
   | resume {bindings middle output : Bindings} {firstUpdates bodyUpdates : Bool}
       {caller : Option Atom} (source raw normalized result : Atom)
@@ -1357,7 +1362,7 @@ inductive CoveredControlDerivation :
       (materialized : BindingMaterializationRel middle raw normalized)
       (closed : TypeSubst.typeVars normalized = [])
       (sourceInstruction : embeddedInstruction normalized = true)
-      (nativeInstruction : Metta.Minimal.isEmbeddedOp (toLeaTTaAtom normalized) = true)
+      (nativeInstruction : Metta.Minimal.isEmbeddedOp (encodeModelAtom normalized) = true)
       (body : CoveredControlDerivation middle .body caller normalized result output bodyUpdates) :
       CoveredControlDerivation bindings .body caller source result output (firstUpdates || bodyUpdates)
 
@@ -1407,8 +1412,8 @@ private theorem unify_output_nonvariable {target pattern yes no emitted : Atom} 
   | noMatch => exact before
   | success successful =>
     obtain ⟨⟨matched, matching, merging, _⟩, _⟩ := successful
-    exact LeaTTaSpecConformance.specMerge_assignmentsNonVariable merging
-      (LeaTTaSpecConformance.specMatch_assignmentsNonVariable matching) before
+    exact Spec.Match.ModelTheory.specMerge_assignmentsNonVariable merging
+      (Spec.Match.ModelTheory.specMatch_assignmentsNonVariable matching) before
 
 private def scopedFinished (previous : Stack) (atom : Metta.Atom) (bindings : Metta.Bindings)
     (scope : List String) : Item :=
@@ -1458,17 +1463,17 @@ private theorem raw_ready (atom : Metta.Atom) (previous : Stack) (bindings : Met
   | _ => rfl
 
 private theorem toLeaTTa_substituteName (name : String) (value atom : Atom) :
-    toLeaTTaAtom (substituteName name value atom) =
-      Metta.Subst.apply [(name, toLeaTTaAtom value)] (toLeaTTaAtom atom) := by
+    encodeModelAtom (substituteName name value atom) =
+      Metta.Subst.apply [(name, encodeModelAtom value)] (encodeModelAtom atom) := by
   induction atom using Atom.rec
-      (motive_2 := fun atoms => toLeaTTaAtoms (atoms.map (substituteName name value)) =
-        (toLeaTTaAtoms atoms).map (Metta.Subst.apply [(name, toLeaTTaAtom value)])) with
-  | symbol symbol => simp [substituteName, toLeaTTaAtom, Metta.Subst.apply]
+      (motive_2 := fun atoms => encodeModelAtoms (atoms.map (substituteName name value)) =
+        (encodeModelAtoms atoms).map (Metta.Subst.apply [(name, encodeModelAtom value)])) with
+  | symbol symbol => simp [substituteName, encodeModelAtom, Metta.Subst.apply]
   | var varName =>
-    by_cases same : varName = name <;> simp [substituteName, Metta.Subst.apply, Metta.Subst.lookup, toLeaTTaAtom, same]
-  | grounded value => simp [substituteName, toLeaTTaAtom, Metta.Subst.apply]
+    by_cases same : varName = name <;> simp [substituteName, Metta.Subst.apply, Metta.Subst.lookup, encodeModelAtom, same]
+  | grounded value => simp [substituteName, encodeModelAtom, Metta.Subst.apply]
   | expression atoms ih =>
-    simpa only [substituteName, toLeaTTaAtom, Metta.Subst.apply] using congrArg Metta.Atom.expr ih
+    simpa only [substituteName, encodeModelAtom, Metta.Subst.apply] using congrArg Metta.Atom.expr ih
   | nil => rfl
   | cons atom atoms first later =>
     exact congrArg₂ List.cons first later
@@ -1479,22 +1484,22 @@ private def ControlRealizes (environment : MinEnv) (state : St) (native : Metta.
     (output : Bindings) (updates : Bool) : Prop :=
   match phase with
   | .run => ∀ (parent : Frame) (previous : Stack),
-      some parent.atom = caller.map toLeaTTaAtom →
+      some parent.atom = caller.map encodeModelAtom →
       ∃ nativeOutput, ScopedEquationQuery.BindingInvariant output nativeOutput ∧
         (updates = false → nativeOutput = native) ∧ ∀ fuel,
       ∃ initial scope operand, CoveredPendingSteps environment
-        (initial, state, [⟨atomToStack (toLeaTTaAtom source) (parent :: previous), native⟩])
+        (initial, state, [⟨atomToStack (encodeModelAtom source) (parent :: previous), native⟩])
         (fuel, state, [scopedFinished (parent :: previous) operand nativeOutput scope]) ∧
-        Metta.instantiate nativeOutput operand = Metta.instantiate nativeOutput (toLeaTTaAtom result)
+        Metta.instantiate nativeOutput operand = Metta.instantiate nativeOutput (encodeModelAtom result)
   | .body => ∀ (parent : Frame) (previous : Stack),
-      some parent.atom = caller.map toLeaTTaAtom → parent.ret = .function →
+      some parent.atom = caller.map encodeModelAtom → parent.ret = .function →
       ∃ nativeOutput, ScopedEquationQuery.BindingInvariant output nativeOutput ∧
         (updates = false → nativeOutput = native) ∧ ∀ fuel,
       ∃ initial scope operand, CoveredPendingSteps environment
-        (initial, state, [⟨atomToStack (toLeaTTaAtom source) (parent :: previous), native⟩])
+        (initial, state, [⟨atomToStack (encodeModelAtom source) (parent :: previous), native⟩])
         (fuel, state, [scopedFinished (parent :: previous) operand nativeOutput scope]) ∧
-        Metta.instantiate nativeOutput operand = toLeaTTaAtom result ∧
-        isEmbeddedOp (toLeaTTaAtom result) = false
+        Metta.instantiate nativeOutput operand = encodeModelAtom result ∧
+        isEmbeddedOp (encodeModelAtom result) = false
 
 private theorem CoveredControlDerivation.realizes {bindings output : Bindings} {native : Metta.Bindings}
     (paired : ScopedEquationQuery.BindingInvariant bindings native)
@@ -1507,7 +1512,7 @@ private theorem CoveredControlDerivation.realizes {bindings output : Bindings} {
     intro parent previous captured
     refine ⟨native, paired, fun _ => rfl, ?_⟩
     intro fuel
-    refine ⟨fuel + 1, varsCopy (parent :: previous), toLeaTTaAtom atom, .single ?_, rfl⟩
+    refine ⟨fuel + 1, varsCopy (parent :: previous), encodeModelAtom atom, .single ?_, rfl⟩
     exact coveredPendingStep_singleton (raw_ready _ _ _ nativeRaw)
       (raw_step environment state fuel _ _ native nativeRaw) (by rfl)
   | cons head tail =>
@@ -1516,14 +1521,14 @@ private theorem CoveredControlDerivation.realizes {bindings output : Bindings} {
     intro fuel
     refine ⟨fuel + 1, [], _, .single ?_, rfl⟩
     apply coveredPendingStep_singleton (by rfl) (pending := by rfl)
-    simp [toLeaTTaAtom, toLeaTTaAtoms, atomToStack, interpretStack1, scopedFinished, finItem]
+    simp [encodeModelAtom, encodeModelAtoms, atomToStack, interpretStack1, scopedFinished, finItem]
   | decons head tail =>
     intro parent previous captured
     refine ⟨native, paired, fun _ => rfl, ?_⟩
     intro fuel
     refine ⟨fuel + 1, [], _, .single ?_, rfl⟩
     apply coveredPendingStep_singleton (by rfl) (pending := by rfl)
-    simp [toLeaTTaAtom, toLeaTTaAtoms, atomToStack, interpretStack1, scopedFinished, finItem]
+    simp [encodeModelAtom, encodeModelAtoms, atomToStack, interpretStack1, scopedFinished, finItem]
   | unify target pattern yes no result selected =>
     intro parent previous captured
     obtain ⟨value, merged, selectedNative, theory, runtime, image, observed⟩ :=
@@ -1534,17 +1539,17 @@ private theorem CoveredControlDerivation.realizes {bindings output : Bindings} {
     intro fuel
     refine ⟨fuel + 1, [], value, .single ?_, observed⟩
     apply coveredPendingStep_singleton (by rfl) (pending := by rfl)
-    simpa only [toLeaTTaAtom, toLeaTTaAtoms, atomToStack, scopedFinished, finItem] using
+    simpa only [encodeModelAtom, encodeModelAtoms, atomToStack, scopedFinished, finItem] using
       (step_unify environment fuel state (parent :: previous) []
-        (toLeaTTaAtom target) (toLeaTTaAtom pattern) (toLeaTTaAtom yes) (toLeaTTaAtom no) native).trans
+        (encodeModelAtom target) (encodeModelAtom pattern) (encodeModelAtom yes) (encodeModelAtom no) native).trans
         (congrArg (fun items => (items, state)) selectedNative)
   | @chain bindings middle output firstUpdates nextUpdates caller source raw normalized template result name
       first materialized closed next ihFirst ihNext =>
     intro parent previous captured
     let chain : Frame :=
-      { atom := toLeaTTaAtom (.expression [.symbol "chain", source, .var name, template])
+      { atom := encodeModelAtom (.expression [.symbol "chain", source, .var name, template])
         ret := .chain
-        vars := chainFrameVars (parent :: previous) (toLeaTTaAtom source) (toLeaTTaAtom template) }
+        vars := chainFrameVars (parent :: previous) (encodeModelAtom source) (encodeModelAtom template) }
     obtain ⟨middleNative, middlePaired, firstReadOnly, firstRun⟩ :=
       ihFirst paired chain (parent :: previous) rfl
     obtain ⟨finalNative, finalPaired, nextReadOnly, laterRun⟩ :=
@@ -1556,32 +1561,32 @@ private theorem CoveredControlDerivation.realizes {bindings output : Bindings} {
     intro fuel
     obtain ⟨laterFuel, scope, finalOperand, later, finalObserved⟩ := laterRun fuel
     obtain ⟨initial, rawScope, rawOperand, firstPath, rawObserved⟩ := firstRun (laterFuel + 2)
-    have normalizedNative : Metta.instantiate middleNative rawOperand = toLeaTTaAtom normalized :=
+    have normalizedNative : Metta.instantiate middleNative rawOperand = encodeModelAtom normalized :=
       rawObserved.trans (materialization_closed_native middlePaired materialized closed)
-    let middleItem : Item := ⟨{ atom := .expr [.sym "chain", toLeaTTaAtom normalized, .var name,
-        toLeaTTaAtom template], ret := .chain, vars := chain.vars } :: parent :: previous, middleNative⟩
+    let middleItem : Item := ⟨{ atom := .expr [.sym "chain", encodeModelAtom normalized, .var name,
+        encodeModelAtom template], ret := .chain, vars := chain.vars } :: parent :: previous, middleNative⟩
     have selected : interpretStack1 environment (laterFuel + 1) state
         (scopedFinished (chain :: parent :: previous) rawOperand middleNative rawScope) =
         ([middleItem], state) := by
       rw [scopedFinished_step]
-      simpa only [chain, middleItem, toLeaTTaAtom, toLeaTTaAtoms, normalizedNative] using
+      simpa only [chain, middleItem, encodeModelAtom, encodeModelAtoms, normalizedNative] using
         step_chain_result environment (laterFuel + 1) state (parent :: previous)
-          chain.vars (toLeaTTaAtom source) rawOperand (toLeaTTaAtom template) name middleNative
+          chain.vars (encodeModelAtom source) rawOperand (encodeModelAtom template) name middleNative
     have applied : interpretStack1 environment laterFuel state middleItem =
-        ([⟨atomToStack (toLeaTTaAtom (substituteName name normalized template))
+        ([⟨atomToStack (encodeModelAtom (substituteName name normalized template))
           (parent :: previous), middleNative⟩], state) := by
       simpa only [middleItem, toLeaTTa_substituteName] using
         step_chain_apply environment laterFuel state (parent :: previous) chain.vars
-          (toLeaTTaAtom normalized) (toLeaTTaAtom template) name middleNative
+          (encodeModelAtom normalized) (encodeModelAtom template) name middleNative
     refine ⟨initial, scope, finalOperand, ?_, finalObserved⟩
     change CoveredPendingSteps environment
-      (initial, state, [⟨atomToStack (toLeaTTaAtom source) (chain :: parent :: previous), native⟩]) _
+      (initial, state, [⟨atomToStack (encodeModelAtom source) (chain :: parent :: previous), native⟩]) _
     exact firstPath.trans (.head (coveredPendingStep_singleton (by rfl) selected (by rfl))
       (.head (coveredPendingStep_singleton (by rfl) applied (atomToStack_pending _ _ _ _)) later))
   | @functionReturn bindings output updates caller body returned expression bodyRun ih =>
     intro parent previous captured
     let function : Frame :=
-      { atom := toLeaTTaAtom (.expression [.symbol "function", body])
+      { atom := encodeModelAtom (.expression [.symbol "function", body])
         ret := .function
         vars := varsCopy (parent :: previous) }
     obtain ⟨finalNative, finalPaired, pureFrame, bodyPath⟩ :=
@@ -1591,22 +1596,22 @@ private theorem CoveredControlDerivation.realizes {bindings output : Bindings} {
     obtain ⟨initial, scope, operand, path, materialized, terminal⟩ := bodyPath (fuel + 1)
     have finished : interpretStack1 environment fuel state
         (scopedFinished (function :: parent :: previous) operand finalNative scope) =
-        ([finItem (parent :: previous) (toLeaTTaAtom returned) finalNative], state) := by
+        ([finItem (parent :: previous) (encodeModelAtom returned) finalNative], state) := by
       rw [scopedFinished_step]
       simpa only [function, functionTerminalResult_return] using
         function_terminal_handler_conformance environment state fuel (parent :: previous)
           function.vars function.atom finalNative caller (.expression [.symbol "return", returned]) operand
           (by simpa using captured) materialized terminal
-    refine ⟨initial, [], toLeaTTaAtom returned, ?_, rfl⟩
+    refine ⟨initial, [], encodeModelAtom returned, ?_, rfl⟩
     obtain ⟨atoms, rfl⟩ := expression
     change CoveredPendingSteps environment
-      (initial, state, [⟨atomToStack (toLeaTTaAtom (.expression atoms))
+      (initial, state, [⟨atomToStack (encodeModelAtom (.expression atoms))
         (function :: parent :: previous), native⟩]) _
     exact path.tail (coveredPendingStep_singleton (by rfl) finished (by rfl))
   | @functionNoReturn bindings output updates caller body terminal expression bodyRun missing ih =>
     intro parent previous captured
     let function : Frame :=
-      { atom := toLeaTTaAtom (.expression [.symbol "function", body])
+      { atom := encodeModelAtom (.expression [.symbol "function", body])
         ret := .function
         vars := varsCopy (parent :: previous) }
     obtain ⟨finalNative, finalPaired, pureFrame, bodyPath⟩ :=
@@ -1616,15 +1621,15 @@ private theorem CoveredControlDerivation.realizes {bindings output : Bindings} {
     obtain ⟨initial, scope, operand, path, materialized, nativeTerminal⟩ := bodyPath (fuel + 1)
     have finished : interpretStack1 environment fuel state
         (scopedFinished (function :: parent :: previous) operand finalNative scope) =
-        ([finItem (parent :: previous) (toLeaTTaAtom (functionTerminalResult caller terminal)) finalNative], state) := by
+        ([finItem (parent :: previous) (encodeModelAtom (functionTerminalResult caller terminal)) finalNative], state) := by
       rw [scopedFinished_step]
       exact function_terminal_handler_conformance environment state fuel (parent :: previous)
         function.vars function.atom finalNative caller terminal operand
         (by simpa using captured) materialized nativeTerminal
-    refine ⟨initial, [], toLeaTTaAtom (functionTerminalResult caller terminal), ?_, rfl⟩
+    refine ⟨initial, [], encodeModelAtom (functionTerminalResult caller terminal), ?_, rfl⟩
     obtain ⟨atoms, rfl⟩ := expression
     change CoveredPendingSteps environment
-      (initial, state, [⟨atomToStack (toLeaTTaAtom (.expression atoms))
+      (initial, state, [⟨atomToStack (encodeModelAtom (.expression atoms))
         (function :: parent :: previous), native⟩]) _
     exact path.tail (coveredPendingStep_singleton (by rfl) finished (by rfl))
   | terminal source raw normalized run materialized closed sourceTerminal nativeTerminal ih =>
@@ -1651,7 +1656,7 @@ private theorem CoveredControlDerivation.realizes {bindings output : Bindings} {
     have normalizedNative := rawObserved.trans (materialization_closed_native middlePaired materialized closed)
     have resumed : interpretStack1 environment laterFuel state
         (scopedFinished (parent :: previous) rawOperand middleNative rawScope) =
-        ([⟨atomToStack (toLeaTTaAtom normalized) (parent :: previous), middleNative⟩], state) := by
+        ([⟨atomToStack (encodeModelAtom normalized) (parent :: previous), middleNative⟩], state) := by
       rw [scopedFinished_step]
       simp only [interpretStack1, finItem, if_true, normalizedNative, isFunction]
       split
@@ -1687,7 +1692,7 @@ def functionConfiguration (depth : Nat) (state : St) (previous : Stack) (body : 
     (completed : List (Metta.Atom × Metta.Bindings)) (receipts : List Receipt) : Configuration :=
   { depth := depth
     runtime := state
-    pending := evalResult previous (toLeaTTaAtom (.expression [.symbol "function", body])) native :: queued
+    pending := evalResult previous (encodeModelAtom (.expression [.symbol "function", body])) native :: queued
     completed := completed
     receipts := receipts }
 
@@ -1700,12 +1705,12 @@ theorem CoveredControlDerivation.invocation_retained {bindings output : Bindings
       (some (.expression [.symbol "function", body])) body terminal output updates)
     (expression : ∃ atoms, body = .expression atoms)
     (environment : MinEnv) (state : St) (previous : Stack) (caller : Option Atom)
-    (captured : previous.head?.map (fun frame => frame.atom) = caller.map toLeaTTaAtom)
+    (captured : previous.head?.map (fun frame => frame.atom) = caller.map encodeModelAtom)
     (fuel : Nat) (queued : List Item) (completed : List (Metta.Atom × Metta.Bindings))
     (receipts : List Receipt) :
     ∃ nativeOutput, ScopedEquationQuery.BindingInvariant output nativeOutput ∧
     (updates = false → nativeOutput = native) ∧
-    let result := finItem previous (toLeaTTaAtom (functionTerminalResult caller terminal)) nativeOutput
+    let result := finItem previous (encodeModelAtom (functionTerminalResult caller terminal)) nativeOutput
     ∃ depth ticks after,
       (machine environment).run ticks
         (functionConfiguration depth state previous body native queued completed receipts) =
@@ -1716,7 +1721,7 @@ theorem CoveredControlDerivation.invocation_retained {bindings output : Bindings
       ∃ added, after.receipts = receipts ++ added ∧
         ∀ receipt ∈ added, Receipt.Valid environment receipt := by
   let function : Frame :=
-    { atom := toLeaTTaAtom (.expression [.symbol "function", body])
+    { atom := encodeModelAtom (.expression [.symbol "function", body])
       ret := .function
       vars := varsCopy previous }
   obtain ⟨nativeOutput, outputPaired, readOnly, bodyPath⟩ :=
@@ -1724,8 +1729,8 @@ theorem CoveredControlDerivation.invocation_retained {bindings output : Bindings
   refine ⟨nativeOutput, outputPaired, readOnly, ?_⟩
   intro result
   obtain ⟨depth, scope, operand, path, materialized, terminalNative⟩ := bodyPath (fuel + 1)
-  have initial : ⟨atomToStack (toLeaTTaAtom body) (function :: previous), native⟩ =
-      evalResult previous (toLeaTTaAtom (.expression [.symbol "function", body])) native := by
+  have initial : ⟨atomToStack (encodeModelAtom body) (function :: previous), native⟩ =
+      evalResult previous (encodeModelAtom (.expression [.symbol "function", body])) native := by
     obtain ⟨atoms, rfl⟩ := expression
     rfl
   rw [initial] at path
@@ -1749,7 +1754,7 @@ theorem CoveredControlDerivation.invocation_retained {bindings output : Bindings
   · rw [(machine environment).run_add]
     change (machine environment).continueRun 1
       ((machine environment).run ticks (ofPending
-        (depth, state, [evalResult previous (toLeaTTaAtom (.expression [.symbol "function", body])) native])
+        (depth, state, [evalResult previous (encodeModelAtom (.expression [.symbol "function", body])) native])
         queued completed receipts)) = _
     rw [retained]
     simpa only [Machine.continueRun, List.nil_append] using last
@@ -1774,18 +1779,18 @@ theorem CoveredControlDerivation.invocation_completed {bindings output : Binding
     ∃ nativeOutput, ScopedEquationQuery.BindingInvariant output nativeOutput ∧
     (updates = false → nativeOutput = native) ∧ ∃ depth ticks final,
       (machine environment).run ticks (functionConfiguration depth state [] body native [] [] []) =
-        (([(Metta.instantiate nativeOutput (toLeaTTaAtom (functionTerminalResult none terminal)), nativeOutput)]).filter
+        (([(Metta.instantiate nativeOutput (encodeModelAtom (functionTerminalResult none terminal)), nativeOutput)]).filter
           (fun pair => pair.1 != emptyA), .finished final) ∧
       final.runtime = state ∧
       ∀ extra, interpretFuel environment (depth + extra) state
-        [evalResult [] (toLeaTTaAtom (.expression [.symbol "function", body])) native] [] =
+        [evalResult [] (encodeModelAtom (.expression [.symbol "function", body])) native] [] =
         (final.published, state) := by
   obtain ⟨nativeOutput, outputPaired, readOnly, depth, ticks, final, ran, finalDepth, world, pending, completed, history⟩ :=
     derivation.invocation_retained paired expression environment state [] none rfl 0 [] [] []
   have empty : final.pending = [] := by simpa [finItem, isFinal] using pending
   have done : (machine environment).run (ticks + 1)
       (functionConfiguration depth state [] body native [] [] []) =
-      (([(Metta.instantiate nativeOutput (toLeaTTaAtom (functionTerminalResult none terminal)), nativeOutput)]).filter
+      (([(Metta.instantiate nativeOutput (encodeModelAtom (functionTerminalResult none terminal)), nativeOutput)]).filter
         (fun pair => pair.1 != emptyA), .finished final) := by
     rw [(machine environment).run_add, ran]
     simp only [Machine.continueRun, empty_finished environment final empty 0, List.append_nil]
@@ -1867,7 +1872,7 @@ theorem nested_completed (bindings : Bindings) (native : Metta.Bindings)
   have unchanged := readOnly rfl
   subst actual
   refine ⟨depth, ticks, final, ?_, world⟩
-  simpa [functionTerminalResult, toLeaTTaAtom, toLeaTTaAtoms, Metta.instantiate,
+  simpa [functionTerminalResult, encodeModelAtom, encodeModelAtoms, Metta.instantiate,
     Metta.Bindings.resolveAtom, emptyA,
     show ((.expr [.sym "A"] : Metta.Atom) != .sym "Empty") = true by decide] using ran
 
@@ -1906,7 +1911,7 @@ private def importRequest : Configuration :=
 #guard status ((machine environment).run 8 importRequest).2 == "nested"
 
 private def duplicate : Configuration :=
-  let item := evalResult [] (toLeaTTaAtom (.expression [.symbol "function", returned])) []
+  let item := evalResult [] (encodeModelAtom (.expression [.symbol "function", returned])) []
   ⟨8, St.init, [item, item], [], []⟩
 #guard ((machine environment).run 2 duplicate).1 == [(.sym "A", [])]
 #guard status ((machine environment).run 2 duplicate).2 == "scheduler"
@@ -1965,12 +1970,12 @@ theorem binding_reuse_body {bindings output : Bindings} (name : String)
   have fixed : ∀ valuation, TypeBindingSatisfied valuation output → valuation name = .symbol "A" := by
     intro valuation modelSatisfied
     have split := (Spec.Match.SolutionTheory.mergeRel_solution_iff merging
-      (fun key => toLeaTTaAtom (valuation key))).mp
+      (fun key => encodeModelAtom (valuation key))).mp
         (heBindingSatisfied_of_specTypeBindingSatisfied modelSatisfied)
     have same := (Spec.Match.SolutionTheory.matchRel_solution_iff matching _).mp split.1
-    have decoded := congrArg fromLeaTTaAtom same
-    simpa only [HEAtomEquationSatisfied, toLeaTTaAtom, applyClassSolution,
-      fromLeaTTaAtom_toLeaTTaAtom, fromLeaTTaAtom] using decoded
+    have decoded := congrArg decodeModelAtom same
+    simpa only [HEAtomEquationSatisfied, encodeModelAtom, applyClassSolution,
+      decodeModelAtom_encodeModelAtom, decodeModelAtom] using decoded
   have selected : Spec.Eval.Steps.UnifyStep (.var name) (.symbol "A") (reuseTemplate name)
       (.expression [.symbol "return", .symbol "refused"]) bindings (reuseTemplate name) output :=
     .success ⟨⟨matched, matching, merging, acyclic, model, satisfied⟩, fun _ _ => rfl⟩
@@ -2022,7 +2027,7 @@ theorem binding_reuse_nested_completed {bindings output : Bindings} {native : Me
   obtain ⟨actual, actualPaired, _, depth, ticks, final, ran, world, _⟩ :=
     (binding_reuse_nested_body name candidate).invocation_completed paired ⟨_, rfl⟩ environment state
   refine ⟨actual, actualPaired, depth, ticks, final, ?_, world⟩
-  simpa [functionTerminalResult, reused, toLeaTTaAtom, toLeaTTaAtoms, Metta.instantiate,
+  simpa [functionTerminalResult, reused, encodeModelAtom, encodeModelAtoms, Metta.instantiate,
     Metta.Bindings.resolveAtom, emptyA,
     show ((.expr [.sym "pair", .sym "A", .sym "A"] : Metta.Atom) != .sym "Empty") = true by decide] using ran
 
@@ -2047,9 +2052,9 @@ theorem reuse_candidate : Spec.Eval.Steps.UnifyCandidateRel (.var "x") (.symbol 
       simp_all [Bindings.isBound, Bindings.lookup]
       rcases member with h | h
       · obtain ⟨rfl, rfl⟩ := h
-        simp [applyClassSolution, toLeaTTaAtom]
+        simp [applyClassSolution, encodeModelAtom]
       · obtain ⟨rfl, rfl⟩ := h
-        simp [applyClassSolution, toLeaTTaAtom]
+        simp [applyClassSolution, encodeModelAtom]
     · intro left right member
       simp [reached, selected, Bindings.assign, Bindings.empty] at member
 
@@ -2071,7 +2076,7 @@ private theorem incoming_paired : ScopedEquationQuery.BindingInvariant incoming 
         Metta.Bindings.addValRaw, Metta.Bindings.removeVal]
     · exact Metta.Bindings.hasLoop_singleton_val_of_not_mem _ _ (by simp [Metta.Atom.vars])
   simpa [incoming, nativeIncoming, QueryBindingProjection.project, Bindings.assign, Bindings.isBound, Bindings.lookup,
-    Bindings.empty, List.filterMap_cons, List.filterMap_nil, leaEqualityEdges, fromLeaTTaAtom] using
+    Bindings.empty, List.filterMap_cons, List.filterMap_nil, leaEqualityEdges, decodeModelAtom] using
     QueryBindingProjection.paired nativeIncoming image runtime
 
 theorem reuse_with_caller_completed (environment : MinEnv) (state : St) :
@@ -2104,7 +2109,7 @@ theorem incompatible_binding_refuses :
   have split := (Spec.Match.SolutionTheory.mergeRel_solution_iff merging valuation).mp satisfied
   have newValue := (Spec.Match.SolutionTheory.matchRel_solution_iff matching valuation).mp split.1
   have oldValue := split.2.1 "x" (.symbol "B") (by decide)
-  simp only [toLeaTTaAtom, applyClassSolution] at newValue oldValue
+  simp only [encodeModelAtom, applyClassSolution] at newValue oldValue
   have impossible := newValue.symm.trans oldValue
   simp at impossible
 
@@ -2130,3 +2135,114 @@ private def refusedLoaded := functionConfiguration 30 St.init [] (reuseNested "x
 end RetainedBindingControls
 
 end Mettapedia.Languages.MeTTa.HE.LeaTTaMinimalInstructionConformance
+
+/-! ## Equation-query completion through this module's carriers
+
+These composites use the raw-completion and covered-control laws above, so
+they live with them rather than in `LeaTTaScopedQuery`. -/
+
+namespace Mettapedia.Languages.MeTTa.HE.LeaTTaScopedQuery
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open LeaTTaBridge LeaTTaTypeConformance LeaTTaSpecConformance
+open Spec.Match.Merge Spec.Eval.Steps
+
+/-- Actual query soundness composes with the guarded raw completion lane.
+No second merge or ordinary evaluation is inserted at this boundary. -/
+theorem queryOpItemsOfRule_raw_completion
+    {space : Space} {previous : Metta.Minimal.Stack} {query lhs rhs : Atom}
+    {incoming : Metta.Bindings} {counter : Nat} {item : Metta.Minimal.Item}
+    (stored : .expression [.symbol "=", lhs, rhs] ∈ space.atoms)
+    (image : LeaBindingsHEImage incoming) (runtime : LeaRuntimeBindingInvariant incoming)
+    (member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query)
+      incoming counter (encodeModelAtom lhs, encodeModelAtom rhs)) :
+    ∃ emitted output merged,
+      EquationQueryCandidateRel space (liveScope previous) query
+        (QueryBindingProjection.project incoming) emitted output ∧
+      ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
+      ((∀ tail, encodeModelAtom emitted ≠ .expr (.sym "function" :: tail)) →
+      ∀ dispatch typing caller,
+        Spec.Eval.Minimal.CoreInvocationResultRel space dispatch (liveScope previous)
+          emitted output (emitted, output) (typing := typing) (caller := caller) ∧
+        item = Metta.Minimal.finItem previous (encodeModelAtom emitted) merged) := by
+  obtain ⟨emitted, output, merged, candidate, itemEq, paired, _, _⟩ :=
+    queryOpItemsOfRule_sound stored image runtime member
+  refine ⟨emitted, output, merged, candidate, paired, ?_⟩
+  intro raw dispatch typing caller
+  have completed := LeaTTaMinimalInstructionConformance.raw_completion_of_not_function_head
+    (caller := caller)
+    space dispatch (liveScope previous) typing emitted output previous merged raw
+  exact ⟨completed.1, itemEq.trans completed.2⟩
+
+open Metta.Minimal
+open LeaTTaMinimalControlExecution LeaTTaMinimalControlExecution.Retained
+open LeaTTaMinimalInstructionConformance
+open Spec.Eval.Minimal Spec.Type.Presentation Spec.Type.RuntimeRefinement
+open Spec.Type.Presentation.BindingTheory
+
+/-- Source evidence for a scanned occurrence composes with the existing
+function-body derivation and actual retained handler. Closed materialization
+is the exact-name boundary here; general open results retain their separate
+alpha observation rather than being identified with a chosen spelling. -/
+theorem queryWork_function_invocation
+    {atoms added imported : List Atom} {previous : Stack} {query : Atom}
+    {incoming : Metta.Bindings} {counter : Nat} {occurrence : QueryOccurrence}
+    (image : LeaBindingsHEImage incoming) (runtime : LeaRuntimeBindingInvariant incoming)
+    (member : occurrence ∈ queryWork previous query incoming counter
+      (candidateRules atoms added imported query)) :
+    ∃ rawRhs output merged,
+      EquationQueryCandidateRel (Space.ofList (atoms ++ added ++ imported))
+        (liveScope previous) query (QueryBindingProjection.project incoming) rawRhs output ∧
+      ScopedEquationQuery.BindingInvariant output merged ∧
+      ∀ body terminal finalBindings updates,
+        BindingMaterializationRel output rawRhs (.expression [.symbol "function", body]) →
+        TypeSubst.typeVars (.expression [.symbol "function", body]) = [] →
+        CoveredControlDerivation output .body (some (.expression [.symbol "function", body]))
+          body terminal finalBindings updates →
+        (∃ entries, body = .expression entries) →
+        ∀ environment state caller,
+        previous.head?.map (fun frame => frame.atom) = caller.map encodeModelAtom →
+        ∀ dispatch typing,
+        ¬HostCall dispatch query → embeddedInstruction query = false →
+        CoreInvocationRel (Space.ofList (atoms ++ added ++ imported)) dispatch (liveScope previous)
+          query (QueryBindingProjection.project incoming)
+          (functionTerminalResult caller terminal, finalBindings) (typing := typing) (caller := caller) ∧
+        ∀ fuel queued completed receipts,
+        ∃ nativeFinal, ScopedEquationQuery.BindingInvariant finalBindings nativeFinal ∧
+        (updates = false → nativeFinal = merged) ∧
+        let result := finItem previous (encodeModelAtom (functionTerminalResult caller terminal)) nativeFinal
+        ∃ depth ticks after,
+          (machine environment).run ticks
+            (⟨depth, state, occurrence.item :: queued, completed, receipts⟩ : Configuration) =
+            ((finals [result]).filter (fun pair => pair.1 != emptyA), .exhausted after) ∧
+          after.depth = fuel ∧ after.runtime = state ∧
+          after.pending = [result].filter (fun item => !isFinal item) ++ queued ∧
+          after.completed = completed ++ finals [result] ∧
+          ∃ appended, after.receipts = receipts ++ appended ∧
+            ∀ receipt ∈ appended, Receipt.Valid environment receipt := by
+  obtain ⟨emitted, output, merged, pattern, rawRhs, matched, source, item, _, paired, emittedEq⟩ :=
+    queryWork_sound image runtime member
+  have candidate : EquationQueryCandidateRel (Space.ofList (atoms ++ added ++ imported))
+      (liveScope previous) query (QueryBindingProjection.project incoming) rawRhs output := by
+    refine ⟨pattern, rawRhs, matched,
+      ⟨occurrence.rule.lhs, occurrence.rule.rhs, List.mem_of_getElem? source.stored, source.selected⟩,
+      source.result.1, source.result.2.1, source.result.2.2.1, ?_⟩
+    intro valuation satisfied
+    rfl
+  refine ⟨rawRhs, output, merged, candidate, paired, ?_⟩
+  intro body terminal finalBindings updates materialized closed derivation expression
+    environment state caller captured dispatch typing notHost ordinary
+  constructor
+  · exact .equation _ query rawRhs _ _ output _ notHost ordinary candidate materialized
+      (derivation.invocation_sound expression _ dispatch typing (liveScope previous) caller)
+  · intro fuel queued completed receipts
+    have readout := materialization_closed_native paired materialized closed
+    rw [emittedEq, readout, decodeModelAtom_encodeModelAtom] at item
+    obtain ⟨nativeFinal, finalPaired, readOnly, depth, ticks, after, ran, depthEq,
+      world, pending, done, history⟩ :=
+      derivation.invocation_retained paired expression environment state previous caller captured
+        fuel queued completed receipts
+    refine ⟨nativeFinal, finalPaired, readOnly, depth, ticks, after, ?_, depthEq, world, pending, done, history⟩
+    simpa only [functionConfiguration, ← item] using ran
+
+end Mettapedia.Languages.MeTTa.HE.LeaTTaScopedQuery

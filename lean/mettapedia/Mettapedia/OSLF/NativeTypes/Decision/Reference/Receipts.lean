@@ -76,7 +76,7 @@ def positiveOutputs {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf 
     (backend : Backend.{u,v} system admitted) (tests : Leaf → Test system admitted)
     (formula : Formula Leaf) (source : system.Term) (budget : Nat) :
     List (Sigma fun receipt : backend.Receipt source =>
-      PLift (denotation tests formula (backend.target source receipt))) :=
+      PLift (denotation tests formula backend.spatial.theory (backend.target source receipt))) :=
   retainPositive (fun receipt => raw backend tests (budget - 1) formula (backend.target source receipt))
     (backend.frontier budget source)
 
@@ -84,7 +84,7 @@ def negativeOutputs {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf 
     (backend : Backend.{u,v} system admitted) (tests : Leaf → Test system admitted)
     (formula : Formula Leaf) (source : system.Term) (budget : Nat) :
     List (Sigma fun receipt : backend.Receipt source =>
-      PLift (¬ denotation tests formula (backend.target source receipt))) :=
+      PLift (¬ denotation tests formula backend.spatial.theory (backend.target source receipt))) :=
   retainNegative (fun receipt => raw backend tests (budget - 1) formula (backend.target source receipt))
     (backend.frontier budget source)
 
@@ -92,20 +92,20 @@ theorem positive_output_native {system : GSLT.{u}} {admitted : system.Term → P
     (backend : Backend.{u,v} system admitted) (tests : Leaf → Test system admitted)
     (formula : Formula Leaf) (source : system.Term) (budget : Nat)
     (family : Sigma fun receipt : backend.Receipt source =>
-      PLift (denotation tests formula (backend.target source receipt)))
+      PLift (denotation tests formula backend.spatial.theory (backend.target source receipt)))
     (selected : family ∈ positiveOutputs backend tests formula source budget) :
-    denotation tests (.possibility formula) source := by
+    denotation tests (.possibility formula) backend.spatial.theory source := by
   have listed := positive_member _ _ family selected
-  exact (gsltDiamond_spec system (denotation tests formula).1 source).mpr
+  exact (gsltDiamond_spec system (denotation tests formula backend.spatial.theory).1 source).mpr
     ⟨backend.target source family.1, backend.sound budget source family.1 listed, family.2.down⟩
 
 theorem negative_output_native {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (backend : Backend.{u,v} system admitted) (tests : Leaf → Test system admitted)
     (formula : Formula Leaf) (source : system.Term) (budget : Nat)
     (family : Sigma fun receipt : backend.Receipt source =>
-      PLift (¬ denotation tests formula (backend.target source receipt)))
+      PLift (¬ denotation tests formula backend.spatial.theory (backend.target source receipt)))
     (selected : family ∈ negativeOutputs backend tests formula source budget) :
-    ¬ denotation tests (.outgoingUniversal formula) source := by
+    ¬ denotation tests (.outgoingUniversal formula) backend.spatial.theory source := by
   intro all
   have listed := negative_member _ _ family selected
   exact family.2.down (all (backend.target source family.1) (backend.sound budget source family.1 listed))

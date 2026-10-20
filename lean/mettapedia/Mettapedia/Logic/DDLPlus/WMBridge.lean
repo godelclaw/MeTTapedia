@@ -30,10 +30,10 @@ WM meta-stability stack (MarkovLogic*, MetaGoalShellPreservation*)
 namespace Mettapedia.Logic.DDLPlus.WMBridge
 
 open Mettapedia.Logic.DDLPlus.Core
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.Ethics
 open Mettapedia.Ethics.Gewirth
 open Mettapedia.Ethics.GewirthBridge
@@ -53,11 +53,6 @@ structure DeonticWMQuery (Ctx World : Type u) where
   [decFormula : DecidablePred formula]
 
 attribute [instance] DeonticWMQuery.decFormula
-
-/-- Evidence type for multisets of pointed deontic states. -/
-noncomputable instance deonticEvidenceType (Ctx World : Type u) :
-    EvidenceType (Multiset (PointedDeontic Ctx World)) :=
-  multisetEvidenceType (PointedDeontic Ctx World)
 
 /-- Atomic evidence: positive if the formula holds, zero otherwise. -/
 noncomputable def deonticAtomicEvidence

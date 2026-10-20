@@ -208,14 +208,8 @@ theorem alpha_beta_equivalent : Relation.EqvGen
 private theorem keeps_done {first second : Pattern}
     (related : Relation.EqvGen (GeneralOccurrenceSemantics.Equation generated.plan [] carrier) first second) :
     first = done ↔ second = done := by
-  induction related with
-  | rel first second equated =>
-      have events := Mettapedia.OSLF.NativeTypes.Modal.Counterexamples.equation_events_for generated.plan
-        (by rw [actual_plan]; rfl) (by rw [actual_plan]; rfl) equated
-      rcases events with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> simp [alpha, beta, done]
-  | refl => exact Iff.rfl
-  | symm _ _ _ ih => exact ih.symm
-  | trans _ _ _ _ _ first second => exact first.trans second
+  exact Mettapedia.OSLF.NativeTypes.Modal.Counterexamples.equation_keeps_nullary generated.plan
+    (by rw [actual_plan]; rfl) "Done" (by decide) (by decide) related
 
 theorem alpha_not_done_class : ¬ Relation.EqvGen
     (GeneralOccurrenceSemantics.Equation generated.plan [] carrier) alpha done := by

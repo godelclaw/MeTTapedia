@@ -183,22 +183,6 @@ theorem TypePresentationPermutationState.theoryEquivAt
     intro name member
     simp [leftModel, scopeFixed name member]
 
-/-- Post-composing a raw-signature runtime simulation with a public-fixed
-signature localization yields the corresponding localized simulation. -/
-theorem TypePresentationPermutationState.composeScopedRuntime
-    {permutation : Equiv.Perm String} {raw localized : TypeSubst}
-    {scope : List String} {runtime : Metta.Bindings}
-    (state : TypePresentationPermutationState permutation raw localized)
-    (scopeFixed : ∀ name, name ∈ scope → permutation name = name)
-    (runtimeState : ScopedTypePresentationSimulationState
-      scope raw runtime) :
-    ScopedTypePresentationSimulationState scope localized runtime := by
-  rcases runtimeState with
-    ⟨_rawNormal, branchPresentation, specBindings,
-      branchState, rawBranchEquiv⟩
-  exact ⟨state.rightNormal, branchPresentation, specBindings, branchState,
-    (state.theoryEquivAt scope scopeFixed).symm.trans rawBranchEquiv⟩
-
 /-- Extending corresponding incoming theories by corresponding type
 constraints preserves semantic permutation equivalence of the exact finite
 outputs. -/

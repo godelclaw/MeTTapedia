@@ -107,7 +107,7 @@ def directDecisionService (model : Model) : Service (target model) :=
   .directDecision (decisionKernel model)
 
 /-- The same authored target has exact direct and intrinsic-proof services. -/
-theorem accepts_iff_meaning (model : Model) (claim : Claim model) :
+theorem decision_accepts_iff_proof_accepted (model : Model) (claim : Claim model) :
     (decisionKernel model).decide claim = true ↔
       ∃ proof, (proofKernel model).decide claim proof = true := by
   rw [(decisionKernel model).correct]

@@ -17,14 +17,20 @@ This module re-exports:
   `forces_imp_level_provider`, `forces_not_level_provider`, and
   `forces_all_level_provider`.
 
-What this buys: a classical-style presentation bridge, conditional on
-`SchedulerProvider`, the honest intuitionistic analogue of the classical
-enumeration/Henkin-enumeration assumptions.  It connects the supported
-canonical membership theorem-map to the older substitutional Kripke-Henkin
+What this buys: a presentation bridge, given a `SchedulerProvider` (one exists
+for every countable signature, `schedulerProviderOfCountable`), connecting the
+supported canonical membership interface to the substitutional Kripke-Henkin
 interface and to the Heyting package.
 
-What this does not buy: it is not the main completeness route.  The
-`FullPresentedUpgrade`, `LocalMembershipClauses`, and
-`FullPresentedIntuitionisticWorld` interfaces remain quarantined hypothesis
-packages.  This module does not discharge, revive, or delete them.
+What this does not buy: completeness for the substitutional Kripke-Henkin
+class.  Its structures have constant domains and force the constant-domain
+sentence, which is not derivable (`KripkeHenkin.not_complete`).  The
+hypothesis packages `LocalMembershipClauses`, `LevelLocalMembershipClauses`
+and `FullPresentedUpgrade` are empty over every countable signature with a
+base type (`KripkeHenkinCanonicalObstruction`), and the conditional
+completeness theorems built on them were removed on 2026-10-20 (listed in the
+`KripkeHenkinCanonical` docstring).  Kripke completeness holds for varying
+domains: `KripkeVarying.Canonical.provable_iff_consequence`.  With constant
+domains, forcing disjunction and the existential on covers gives a complete
+Beth semantics: `provable_iff_bethConsequence_param_free`.
 -/

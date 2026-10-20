@@ -12,7 +12,7 @@ encoding while still remaining easy to reason about.
 
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.Infinite
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 open Mettapedia.Algebra.QuantaleWeakness
 open scoped ENNReal

@@ -40,7 +40,7 @@ open LO LO.Modal
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhoodCompleteness
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 /-- A classical modal logic given by its extra axioms, with the admission of
 its presentation. -/

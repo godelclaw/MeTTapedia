@@ -343,7 +343,7 @@ theorem Code.substLevels_subst (theta : Nat → LevelExpr Nat)
 
 /-- Every tower rule is stable under simultaneous substitution of level
 parameters. -/
-def levelSubstMorphism (theta : Nat → LevelExpr Nat) :
+theorem levelSubstMorphism (theta : Nat → LevelExpr Nat) :
     Tower.rules.Morphism Tower.rules (substLevelsHead theta) where
   headTyping := by
     intro head universeHead typing

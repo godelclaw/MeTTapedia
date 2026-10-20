@@ -18,8 +18,8 @@ Core ideas:
 namespace Mettapedia.PLN.RuleFamilies.Temporal.PLNProbabilisticEventCalculus
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open scoped ENNReal
 

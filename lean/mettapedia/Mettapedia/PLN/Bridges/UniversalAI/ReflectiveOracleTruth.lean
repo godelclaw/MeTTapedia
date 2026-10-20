@@ -52,7 +52,7 @@ namespace Mettapedia.PLN.Bridges.UniversalAI.ReflectiveOracleTruth
 open scoped unitInterval ENNReal
 open Mettapedia.UniversalAI.ReflectiveOracles
 open Mettapedia.PLN.TruthValues.PLNIndefiniteTruth
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 universe u
 

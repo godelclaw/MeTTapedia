@@ -58,7 +58,7 @@ the core evidence module, so no existing typeclass resolution changes.
 namespace Mettapedia.PLN.Bridges.GSLT.EvidenceResolutionAlgebra
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 open Mettapedia.PLN.Bridges.GSLT.EvidenceWeightedScheduler
 open Mettapedia.PLN.Bridges.GSLT.EvidenceCostReadout

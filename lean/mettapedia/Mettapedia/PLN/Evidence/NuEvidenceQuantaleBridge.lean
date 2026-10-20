@@ -4,7 +4,7 @@ import Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions
 
 namespace Mettapedia.PLN.Evidence.NuEvidenceQuantaleBridge
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions
 open scoped ENNReal
 
@@ -456,7 +456,7 @@ The weight-space minimum `w2c(min(c2w(c1), c2w(c2)))` ensures:
 namespace InductionAbductionBridge
 
 open Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Bridge
 
 /-- The weight transform `w = c/(1-c)` is monotone on [0, MAX_CONF].

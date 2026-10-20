@@ -14,7 +14,7 @@ This is generic — it does not assume a concrete OpenClaw payload format yet.
 
 namespace Mettapedia.Hyperseed
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
 
 variable {Obs Source Time State Query : Type*}

@@ -1,4 +1,5 @@
 import Mettapedia.PLN.WorldModel.BinaryWorldModel
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeductionComposition
 
 /-!
 # World-Model Profiles: The Categorical Spine
@@ -28,10 +29,10 @@ into it via evidence extraction.
 0 sorry.
 -/
 
-namespace Mettapedia.PLN.WorldModel.PLNWorldModelProfiles
+namespace Mettapedia.PLN.WorldModel.WorldModelProfiles
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass
 
 /-! ## §0: EvidenceType instance for function types -/
@@ -227,12 +228,12 @@ distinct layers, connected by `toStrength`:
 
 **Bridge A (direct path)**: The quantale tensor `⊗` on evidence gives
 a direct composition with `toStrength(E₁ ⊗ E₂) ≥ toStrength(E₁) · toStrength(E₂)`.
-This is `EvidenceQuantale.toStrength_tensor_ge`.
+This is `BinaryEvidence.toStrength_tensor_ge`.
 
 **Bridge B (full deduction)**: With object-level priors `pB, pC`, the
 full deduction formula produces exact strength:
 `toStrength(deductionEvidence(E_AB, E_BC, pB, pC)) = deductionStrength(s_AB, s_BC, pB, pC)`.
-This is `EvidenceQuantale.deductionEvidence_strength`.
+This is `BinaryEvidence.deductionEvidence_strength`.
 
 The key structural point (GPT-5.4 Pro): these two layers cannot be
 unified into a single quantale functor because `toStrength` is not
@@ -291,4 +292,4 @@ theorem evidence_not_presheaf_classifier :
   trivial  -- The positive localic theorem requires Sh(H) infrastructure
            -- not yet available in mathlib.
 
-end Mettapedia.PLN.WorldModel.PLNWorldModelProfiles
+end Mettapedia.PLN.WorldModel.WorldModelProfiles

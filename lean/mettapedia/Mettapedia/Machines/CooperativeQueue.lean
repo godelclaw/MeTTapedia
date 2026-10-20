@@ -142,4 +142,53 @@ theorem unbounded_service {α : Type u} [DecidableEq α] (demand : Nat)
         List.count_pos_iff.mpr served
       omega
 
+/-- Residual of the existing retiring service policy. A completed head is
+removed before arrivals join the tail. -/
+def rotateRetiring {α : Type u} (keep : Bool) (arrivals queue : List α) : List α :=
+  match queue with
+  | [] => arrivals
+  | head :: tail => tail ++ (if keep then [head] else []) ++ arrivals
+
+/-- Retain the whole queue across the same retiring slots. -/
+def remainingRetiring {α : Type u} : Nat → (Nat → Bool) → (Nat → List α) → List α → List α
+  | 0, _, _, queue => queue
+  | n + 1, keep, arrivals, queue =>
+      remainingRetiring n (fun i => keep (i + 1)) (fun i => arrivals (i + 1))
+        (rotateRetiring (keep 0) (arrivals 0) queue)
+
+theorem retiring_services_add {α : Type u} (first second : Nat)
+    (keep : Nat → Bool) (arrivals : Nat → List α) (queue : List α) :
+    servicesRetiring (first + second) keep arrivals queue =
+      servicesRetiring first keep arrivals queue ++
+        servicesRetiring second (fun i => keep (i + first)) (fun i => arrivals (i + first))
+          (remainingRetiring first keep arrivals queue) := by
+  induction first generalizing keep arrivals queue with
+  | zero => simp [servicesRetiring, remainingRetiring]
+  | succ first ih =>
+      cases queue with
+      | nil =>
+          simpa only [Nat.succ_add, Nat.zero_add, servicesRetiring, remainingRetiring, rotateRetiring,
+            Nat.add_assoc, Nat.add_comm first 1] using
+              ih (fun i => keep (i + 1)) (fun i => arrivals (i + 1)) (arrivals 0)
+      | cons head tail =>
+          simp only [Nat.succ_add, servicesRetiring, remainingRetiring, rotateRetiring, List.cons_append]
+          congr 1
+          simpa only [Nat.add_assoc, Nat.add_comm first 1] using
+            ih (fun i => keep (i + 1)) (fun i => arrivals (i + 1))
+              (tail ++ (if keep 0 then [head] else []) ++ arrivals 0)
+
+theorem retiring_remaining_add {α : Type u} (first second : Nat)
+    (keep : Nat → Bool) (arrivals : Nat → List α) (queue : List α) :
+    remainingRetiring (first + second) keep arrivals queue =
+      remainingRetiring second (fun i => keep (i + first)) (fun i => arrivals (i + first))
+        (remainingRetiring first keep arrivals queue) := by
+  induction first generalizing keep arrivals queue with
+  | zero => simp [remainingRetiring]
+  | succ first ih =>
+      simpa only [Nat.succ_add, Nat.zero_add, remainingRetiring, Nat.add_assoc, Nat.add_comm first 1] using
+        ih (fun i => keep (i + 1)) (fun i => arrivals (i + 1)) (rotateRetiring (keep 0) (arrivals 0) queue)
+
+#print axioms retiring_services_add
+#print axioms retiring_remaining_add
+
 end Mettapedia.Machines.CooperativeQueue

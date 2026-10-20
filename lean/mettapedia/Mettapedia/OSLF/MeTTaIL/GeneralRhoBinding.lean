@@ -125,12 +125,13 @@ theorem compilation_complete : plan.complete = true := by
       snapshot.language.rewrites.length = [] := rfl
   have missingEquations : GeneralExecutionAdmission.missing permissions.equationIndices
       snapshot.language.equations.length = [] := rfl
+  have setChecked : GeneralExecutionAdmission.setDecompositionFree snapshot permissions = true := rfl
   apply List.isEmpty_iff.mpr
   change (GeneralExecutionAdmission.compile snapshot permissions).obligations = []
   dsimp only [GeneralExecutionAdmission.compile]
   rw [show snapshot.language.validate = [] from validated, freeChecked, providerChecked,
     show Reflection.validate snapshot.language permissions.reflection = [] from reflected,
-    missingRules, missingEquations, ruleChecks, equationSelection, strata]
+    missingRules, missingEquations, ruleChecks, equationSelection, strata, setChecked]
   rfl
 
 theorem compilation_has_no_equations : plan.equations = [] := by

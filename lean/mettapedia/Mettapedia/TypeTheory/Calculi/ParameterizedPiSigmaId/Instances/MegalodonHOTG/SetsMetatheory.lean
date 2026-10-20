@@ -4,6 +4,7 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.TowerDecid
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.MegalodonHOTG.SetsModel
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TowerInterpretation.ReductionValues
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Annotated.ConstantFamilies
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.CumulativePreservation
 
 /-!
 # The tower inside the sets has the metatheory of the tower
@@ -150,25 +151,8 @@ and head equality are the tower's: equal levels are cumulative both ways. -/
 theorem headPreserving {R : Rules (Head L)} (contains : Contains R)
     (typingWithin : ∀ {h u : Head L}, R.headTyping h u → LevelTower.HeadTyping h u)
     (headEqWithin : ∀ {h h' : Head L}, R.headEq h h' → LevelTower.HeadEq h h')
-    (P : ChurchRules R) : CHeadPreserving P := by
-  intro n Γ h h' A same typing
-  obtain ⟨u, headTyping, le⟩ := typing.generation
-  have same' := headEqWithin same
-  cases typingWithin headTyping with
-  | legacyGround =>
-      cases h' with
-      | legacyGround => exact CTyped.subsume (.headType headTyping) le
-      | sort _ => exact same'.elim
-  | sort l =>
-      cases h' with
-      | legacyGround => exact same'.elim
-      | sort r =>
-          have raise : R.cumulative (.sort (.succ r)) (.sort (.succ l)) :=
-            contains.cumulative (u := .sort (.succ r)) (v := .sort (.succ l)) fun ν => by
-              show LevelOrder.succ (LevelExpr.eval ν r) ≤ LevelOrder.succ (LevelExpr.eval ν l)
-              exact LevelOrder.succ_le_succ (le_of_eq (same' ν).symm)
-          exact CTyped.subsume
-            (CDerivable.cumul (.headType (contains.headTyping (.sort r))) raise) le
+    (P : ChurchRules R) : CHeadPreserving P :=
+  CHeadPreserving.ofLevelTower contains.headTyping contains.cumulative typingWithin headEqWithin P
 
 /-- Head equality of the tower inside the sets preserves the typing of annotated terms. -/
 theorem bare_headPreserving : CHeadPreserving (bare L) :=

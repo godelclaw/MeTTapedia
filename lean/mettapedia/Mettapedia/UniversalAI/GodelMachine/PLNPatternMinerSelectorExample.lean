@@ -33,7 +33,7 @@ open Mettapedia.Logic.MarkovLogicAbstract.MassState
 open Mettapedia.Logic.MarkovLogicInfiniteVariableNeighborhoodWorldOfViews
 open Mettapedia.Logic.MarkovLogicInfiniteWorldModel
 open Mettapedia.Logic.MarkovLogicTrustTriangleExample
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 abbrev BinString := Mettapedia.UniversalAI.UniversalPrediction.BinString
 abbrev Semimeasure := Mettapedia.UniversalAI.UniversalPrediction.Semimeasure

@@ -1,3 +1,4 @@
+import Mettapedia.PLN.Core.FiniteJointPushforward
 import Mettapedia.PLN.Core.CompletePLN
 import Mettapedia.PLN.Core.PLNCanonicalAPI
 import Mettapedia.PLN.Core.PLNProofCalculus

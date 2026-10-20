@@ -19,7 +19,7 @@ namespace Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLEmpiricalAsso
 open Mettapedia.Logic.HOL
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.KR.ConceptGeometry.IntensionalInheritance
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel
 
 universe u v w
@@ -263,11 +263,7 @@ factored out so the same source can be viewed as formed concepts. -/
 noncomputable def witnessImpliesFeatureMemberEvidence
     (x : MembershipCounts.EmpiricalObject witnessImpliesFeatureCounts)
     (k : MembershipConcept) :
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType
-      (MembershipCounts.EmpiricalState witnessImpliesFeatureCounts) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType
-      (MembershipCounts.EmpiricalObject witnessImpliesFeatureCounts)
+    Mettapedia.PLN.Evidence.BinaryEvidence :=
   MembershipCounts.empiricalMemberEvidence witnessImpliesFeatureCounts
     (MembershipCounts.fullObservationState witnessImpliesFeatureCounts) x k
 
@@ -276,11 +272,7 @@ where witness and feature have the same positive extent. -/
 noncomputable def witnessEquivalentFeatureMemberEvidence
     (x : MembershipCounts.EmpiricalObject witnessEquivalentFeatureCounts)
     (k : MembershipConcept) :
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType
-      (MembershipCounts.EmpiricalState witnessEquivalentFeatureCounts) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType
-      (MembershipCounts.EmpiricalObject witnessEquivalentFeatureCounts)
+    Mettapedia.PLN.Evidence.BinaryEvidence :=
   MembershipCounts.empiricalMemberEvidence witnessEquivalentFeatureCounts
     (MembershipCounts.fullObservationState witnessEquivalentFeatureCounts) x k
 
@@ -322,10 +314,6 @@ theorem witness_inherits_feature_canary :
     (Mettapedia.KR.ConceptGeometry.AbstractInheritance.crispInterpretation
         Mettapedia.KR.ConceptOntology.EvidenceGate.positiveSupport
         (fun x k =>
-          letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType
-              (MembershipCounts.EmpiricalState witnessImpliesFeatureCounts) :=
-            Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType
-              (MembershipCounts.EmpiricalObject witnessImpliesFeatureCounts)
           MembershipCounts.empiricalMemberEvidence witnessImpliesFeatureCounts
             (MembershipCounts.fullObservationState witnessImpliesFeatureCounts) x k)).Inherits
       MembershipConcept.witness MembershipConcept.feature
@@ -336,7 +324,7 @@ theorem witness_inherits_feature_canary :
   | inl n =>
       simp [MembershipCounts.empiricalMemberEvidence_fullObservationState,
         MembershipCounts.empiricalMembershipAtom,
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero,
+        Mettapedia.PLN.Evidence.BinaryEvidence.zero,
         Mettapedia.KR.ConceptOntology.EvidenceGate.positiveSupport] at hx
   | inr rest =>
       cases rest with
@@ -347,12 +335,12 @@ theorem witness_inherits_feature_canary :
           | inl f =>
               simp [MembershipCounts.empiricalMemberEvidence_fullObservationState,
                 MembershipCounts.empiricalMembershipAtom,
-                Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero,
+                Mettapedia.PLN.Evidence.BinaryEvidence.zero,
                 Mettapedia.KR.ConceptOntology.EvidenceGate.positiveSupport] at hx
           | inr b =>
               simp [MembershipCounts.empiricalMemberEvidence_fullObservationState,
                 MembershipCounts.empiricalMembershipAtom,
-                Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.one,
+                Mettapedia.PLN.Evidence.BinaryEvidence.one,
                 Mettapedia.KR.ConceptOntology.EvidenceGate.positiveSupport]
 
 /-- The tiny empirical table supplies a concrete pair-subset fact suitable for
@@ -418,7 +406,7 @@ theorem witnessEquivalentFeature_crispExtensionalInherits_witness_feature :
       simp [witnessEquivalentFeatureMemberEvidence,
         MembershipCounts.empiricalMemberEvidence_fullObservationState,
         MembershipCounts.empiricalMembershipAtom,
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero,
+        Mettapedia.PLN.Evidence.BinaryEvidence.zero,
         Mettapedia.KR.ConceptOntology.EvidenceGate.positiveSupport] at hx
   | inr rest =>
       cases rest with
@@ -432,7 +420,7 @@ theorem witnessEquivalentFeature_crispExtensionalInherits_witness_feature :
               simp [witnessEquivalentFeatureMemberEvidence,
                 MembershipCounts.empiricalMemberEvidence_fullObservationState,
                 MembershipCounts.empiricalMembershipAtom,
-                Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.one,
+                Mettapedia.PLN.Evidence.BinaryEvidence.one,
                 Mettapedia.KR.ConceptOntology.EvidenceGate.positiveSupport]
 
 /-- In the equivalence canary, the feature extent is included in the witness
@@ -449,7 +437,7 @@ theorem witnessEquivalentFeature_crispExtensionalInherits_feature_witness :
       simp [witnessEquivalentFeatureMemberEvidence,
         MembershipCounts.empiricalMemberEvidence_fullObservationState,
         MembershipCounts.empiricalMembershipAtom,
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero,
+        Mettapedia.PLN.Evidence.BinaryEvidence.zero,
         Mettapedia.KR.ConceptOntology.EvidenceGate.positiveSupport] at hx
   | inr rest =>
       cases rest with
@@ -463,7 +451,7 @@ theorem witnessEquivalentFeature_crispExtensionalInherits_feature_witness :
               simp [witnessEquivalentFeatureMemberEvidence,
                 MembershipCounts.empiricalMemberEvidence_fullObservationState,
                 MembershipCounts.empiricalMembershipAtom,
-                Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.one,
+                Mettapedia.PLN.Evidence.BinaryEvidence.one,
                 Mettapedia.KR.ConceptOntology.EvidenceGate.positiveSupport]
 
 /-- Equivalent empirical extents close into mutually-inheriting formed
@@ -2027,7 +2015,7 @@ theorem witnessEquivalentFeature_semanticLayerMixedEvidence_eq_iff_extensionalEv
           patLeftWeight patRightWeight a b)
     (hCancel :
       ∀ {x y assoc pat :
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+          Mettapedia.PLN.Evidence.BinaryEvidence},
         m.combine x assoc pat = m.combine y assoc pat → x = y)
     {W : State} :
     InheritanceQueryBuilder.semanticLayerEvidence
@@ -2120,7 +2108,7 @@ structure FormedConceptMixedSemanticLayerBoundaryProfile where
             patLeftWeight patRightWeight a b)
       (_hCancel :
         ∀ {x y assoc pat :
-            Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+            Mettapedia.PLN.Evidence.BinaryEvidence},
           m.combine x assoc pat = m.combine y assoc pat → x = y)
       {W : State},
       InheritanceQueryBuilder.semanticLayerEvidence
@@ -2385,7 +2373,7 @@ theorem witnessFeature_semanticLayerMixedEvidence_mono_viaFormedConceptCalibrati
           patLeftWeight patRightWeight a b)
     (hCombineMono :
       ∀ {e₁ e₂ a₁ a₂ p₁ p₂ :
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+          Mettapedia.PLN.Evidence.BinaryEvidence},
         e₁ ≤ e₂ → a₁ ≤ a₂ → p₁ ≤ p₂ →
           m.combine e₁ a₁ p₁ ≤ m.combine e₂ a₂ p₂)
     {W : State}
@@ -2483,7 +2471,7 @@ structure FormedConceptMixedSemanticLayerMonotonicityProfile where
             patLeftWeight patRightWeight a b)
       (_hCombineMono :
         ∀ {e₁ e₂ a₁ a₂ p₁ p₂ :
-            Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+            Mettapedia.PLN.Evidence.BinaryEvidence},
           e₁ ≤ e₂ → a₁ ≤ a₂ → p₁ ≤ p₂ →
             m.combine e₁ a₁ p₁ ≤ m.combine e₂ a₂ p₂)
       {W : State}

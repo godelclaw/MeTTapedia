@@ -87,7 +87,7 @@ theorem kernel_translation
     {φ : HOL.ClosedFormula SetSymbol}
     (proof : HOL.ExtDerivation SetSymbol Δ φ) :
     KernelProvable etaAxiomPolicy (hypotheses Δ) (formula φ).term :=
-  EtaCompleteness.kernelProvable_reverse_of_extDerivation rfl
+  EtaCompleteness.kernelProvable_reverse_of_extDerivation (policy := etaAxiomPolicy) rfl
     (translate_derivation proof) Naming.empty
 
 /-- The source theory is passed as hypotheses, not silently admitted into
@@ -102,7 +102,8 @@ theorem formula_isBool (φ : HOL.ClosedFormula SetSymbol) :
 
 /-- A positive control using higher-order function extensionality. -/
 def setFunctionEta : HOL.ClosedFormula SetSymbol :=
-  .all (.eq (.lam (.app (.var (.vs .vz)) (.var .vz))) (.var .vz))
+  .all (σ := ZFSetHenkinInterpretation.mapping)
+    (.eq (.lam (.app (.var (.vs .vz)) (.var .vz))) (.var .vz))
 
 theorem setFunctionEta_proof :
     HOL.ExtDerivation SetSymbol [] setFunctionEta :=
@@ -135,7 +136,10 @@ theorem union_ne_power :
     translate (.const (.core .union) : HOL.ClosedTerm SetSymbol ZFSetHenkinInterpretation.mapping) ≠
       translate (.const (.core .power) : HOL.ClosedTerm SetSymbol ZFSetHenkinInterpretation.mapping) := by
   intro same
-  cases same
+  have translatedNames := congrArg
+    (fun term => reverseTerm Naming.empty term) same
+  simp [translate, HOL.mapTypes, symbolMap, symbolName,
+    reverseTerm, reverseTermWith, reverseSymbol] at translatedNames
 
 /-- Actual primitive-kernel reachability, followed by a membership query in
 the independent observation machine. -/

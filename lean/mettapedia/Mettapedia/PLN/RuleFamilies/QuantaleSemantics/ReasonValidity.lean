@@ -60,7 +60,7 @@ set_option autoImplicit false
 namespace Mettapedia.PLN.RuleFamilies.QuantaleSemantics.ReasonValidity
 
 open Mettapedia.Logic.NonPerception
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.DoubleNegationCorners
 
 universe u

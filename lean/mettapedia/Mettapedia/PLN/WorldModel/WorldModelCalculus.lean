@@ -13,10 +13,10 @@ This module adds the **query-rewrite** layer on top of the WM calculus:
 This is the core template for “PLN rule = query rewrite under Σ”.
 -/
 
-namespace Mettapedia.PLN.WorldModel.PLNWorldModel
+namespace Mettapedia.PLN.WorldModel
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 /-! ## Query equivalence (evidence-level) -/
@@ -623,4 +623,4 @@ noncomputable def strengthRewrite_of_WMQueryEqSigma
 
 end WorldModelSigma
 
-end Mettapedia.PLN.WorldModel.PLNWorldModel
+end Mettapedia.PLN.WorldModel

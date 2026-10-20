@@ -215,9 +215,6 @@ theorem inducedWorldModel_extract_transitionMultiset_eq_rowEvidence_of_summary
     {xs : List (Fin k)} {c : TransCounts k} {last : Fin k}
     (hsum : TransCounts.summary (k := k) xs = some (c, last))
     (q : Fin k) :
-    letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType
-        (Multiset (TransitionObservation k)) :=
-      PLNWorldModelAdditive.multisetEvidenceType (TransitionObservation k)
     letI : PLNWorldModelGeneric.AdditiveWorldModel
       (Multiset (TransitionObservation k)) (Fin k) (MultiEvidence k) :=
       (markovRowStatistic (k := k)).inducedWorldModel
@@ -227,9 +224,6 @@ theorem inducedWorldModel_extract_transitionMultiset_eq_rowEvidence_of_summary
         (Ev := MultiEvidence k)
         (transitionMultiset (k := k) xs) q =
       rowEvidence c q := by
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType
-      (Multiset (TransitionObservation k)) :=
-    PLNWorldModelAdditive.multisetEvidenceType (TransitionObservation k)
   letI : PLNWorldModelGeneric.AdditiveWorldModel
     (Multiset (TransitionObservation k)) (Fin k) (MultiEvidence k) :=
     (markovRowStatistic (k := k)).inducedWorldModel
@@ -242,9 +236,6 @@ theorem inducedWorldModel_queryObservationCount_transitionMultiset_eq_rowTotal_o
     {xs : List (Fin k)} {c : TransCounts k} {last : Fin k}
     (hsum : TransCounts.summary (k := k) xs = some (c, last))
     (q : Fin k) :
-    letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType
-        (Multiset (TransitionObservation k)) :=
-      PLNWorldModelAdditive.multisetEvidenceType (TransitionObservation k)
     letI : PLNWorldModelGeneric.AdditiveWorldModel
       (Multiset (TransitionObservation k)) (Fin k) (MultiEvidence k) :=
       (markovRowStatistic (k := k)).inducedWorldModel
@@ -254,9 +245,6 @@ theorem inducedWorldModel_queryObservationCount_transitionMultiset_eq_rowTotal_o
         (Ev := MultiEvidence k)
         (transitionMultiset (k := k) xs) q =
       c.rowTotal q := by
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType
-      (Multiset (TransitionObservation k)) :=
-    PLNWorldModelAdditive.multisetEvidenceType (TransitionObservation k)
   letI : PLNWorldModelGeneric.AdditiveWorldModel
     (Multiset (TransitionObservation k)) (Fin k) (MultiEvidence k) :=
     (markovRowStatistic (k := k)).inducedWorldModel

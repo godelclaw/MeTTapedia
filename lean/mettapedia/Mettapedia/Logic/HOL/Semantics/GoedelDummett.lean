@@ -164,19 +164,6 @@ theorem ExtDerivation.cut_hyps {Γ : Ctx Base}
         (ih dimp (fun ξ hξ => e ξ (List.mem_cons_of_mem _ hξ)))
         (e ψ List.mem_cons_self)
 
-/-- Instantiating a weakened one-variable formula at the bound variable is the
-identity. -/
-theorem instantiate_var_vz_rename_lift_weaken {σ' : Ty Base}
-    (A : Formula (WithParams Const) [σ']) :
-    instantiate (Base := Base) (.var .vz)
-        (rename (Rename.lift (Rename.weaken (Base := Base) (Γ := ([] : Ctx Base)) (σ := σ'))) A)
-      = A := by
-  unfold instantiate
-  rw [subst_rename (Base := Base) (Const := WithParams Const)]
-  exact ((subst_ext (fun v => by cases v with
-    | vz => rfl
-    | vs v => cases v) A).trans (subst_id (Base := Base) A))
-
 /-- **The crux**: fresh-parameter universal introduction over a parameter-free
 theory extended by the prelinearity schema.  The witnessing derivation is
 abstracted wholesale; parameter-free hypotheses become weakenings, and schema
@@ -238,7 +225,7 @@ theorem lc_all_intro_of_instances
             (Γ := ([] : Ctx Base)) (σ := σ')))
           (abstractConstAt (Base := Base) c₀ [] ψ))
         (.var .vz) (ExtDerivation.hyp hmem)
-      rwa [instantiate_var_vz_rename_lift_weaken] at hall
+      rwa [instantiate_vz_rename_lift_weaken] at hall
     · -- parameter-free hypothesis: its abstraction is its weakening
       have hfresh : NoConstOccurrence c₀ ψ := by
         rcases Set.mem_insert_iff.mp (hΓ ψ hψ) with rfl | hTS

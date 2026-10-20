@@ -70,7 +70,7 @@ def zero : MultiEvidence k := ⟨fun _ => 0⟩
 /-- Total evidence count: n₁ + n₂ + ... + nₖ -/
 def total (e : MultiEvidence k) : ℕ := ∑ i, e.counts i
 
-/-- Aggregation of independent evidence (hplus): coordinatewise addition -/
+/-- Aggregation of evidence from disjoint observations (hplus): coordinatewise addition -/
 def hplus (e₁ e₂ : MultiEvidence k) : MultiEvidence k :=
   ⟨fun i => e₁.counts i + e₂.counts i⟩
 

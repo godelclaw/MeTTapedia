@@ -21,7 +21,7 @@ open Mettapedia.GSLT.Dynamics.IndexedEventValuation
 open Mettapedia.GSLT.Dynamics.WorkSpanObservation
 open Mettapedia.PLN.Bridges.GSLT.EvidenceCostReadout
 open Mettapedia.PLN.Bridges.GSLT.EvidenceWeightedScheduler
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 noncomputable section
 

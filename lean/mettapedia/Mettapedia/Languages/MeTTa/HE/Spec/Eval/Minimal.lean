@@ -1,6 +1,8 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval
-import Mettapedia.Languages.MeTTa.HE.Spec.Eval.StateAlgebra
+import Mettapedia.Machines.OrderedProtocol
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Alpha
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Minimal-instruction semantics
@@ -94,6 +96,63 @@ theorem unify_step_exact {space : Space} {dispatch : GroundedDispatch}
   · rintro (⟨matched, updated, read⟩ | ⟨missing, rfl⟩)
     · exact .unifySuccess _ _ _ _ _ _ _ _ matched updated read
     · exact .unifyNoMatch _ _ _ _ _ _ missing
+
+/-- A contextual unification trace constructs the selected source frame and
+materializes its continuation from the reached values. The source step
+checks the erased constraints; the contextual result retains readiness. -/
+theorem contextual_unify_step {space : Space} {dispatch : GroundedDispatch}
+    {live : List Atom} {typing : EvalTypeService} {caller : Option Atom}
+    {policy : Entry.RebuildPolicy} {environment after : Entry.Value.Environment}
+    {target pattern yes : Entry.Value} {no : Atom} {incoming output : Bindings}
+    (certified : ReadoutCertificate incoming (Entry.Value.eraseEnvironment environment))
+    (selected : UnifyCandidateRel target.erase pattern.erase incoming output)
+    (derived : Entry.Value.UnifyRel policy environment target pattern after) :
+    let reached := derived.certifies certified selected
+    CoreStepRel space dispatch live
+      (.expression [.symbol "unify",target.erase,pattern.erase,yes.erase,no])
+      (.selected incoming (Entry.Value.eraseEnvironment environment) certified)
+      ((Entry.Value.substitute policy (Entry.Value.resolve after) yes).erase,
+        .selected output (Entry.Value.eraseEnvironment after) reached)
+      (typing := typing) (caller := caller) := by
+  dsimp only
+  exact .unifySuccess _ _ _ _ _ _ _ _ selected (.selected certified _)
+    (Entry.Value.selected_materialization policy after output (derived.certifies certified selected) yes)
+
+/-- The contextual source-step join is available for every surviving source
+candidate, rather than only candidates already paired with an annotated run. -/
+theorem contextual_unify_step_exists {space : Space} {dispatch : GroundedDispatch}
+    {live : List Atom} {typing : EvalTypeService} {caller : Option Atom}
+    {policy : Entry.RebuildPolicy} {environment : Entry.Value.Environment}
+    {target pattern yes : Entry.Value} {no : Atom} {incoming output : Bindings}
+    (certified : ReadoutCertificate incoming (Entry.Value.eraseEnvironment environment))
+    (selected : UnifyCandidateRel target.erase pattern.erase incoming output) :
+    ∃ (after : Entry.Value.Environment) (reached : ReadoutCertificate output (Entry.Value.eraseEnvironment after)),
+      Entry.Value.UnifyRel policy environment target pattern after ∧
+      CoreStepRel space dispatch live
+        (.expression [.symbol "unify",target.erase,pattern.erase,yes.erase,no])
+        (.selected incoming (Entry.Value.eraseEnvironment environment) certified)
+        ((Entry.Value.substitute policy (Entry.Value.resolve after) yes).erase,
+          .selected output (Entry.Value.eraseEnvironment after) reached)
+        (typing := typing) (caller := caller) := by
+  obtain ⟨after,derived,reached⟩ := Entry.Value.UnifyRel.of_source_candidate
+    (policy := policy) certified selected
+  exact ⟨after,reached,derived,contextual_unify_step certified selected derived⟩
+
+/-- Completed logical activations project to the same independent primitive
+step. Their certificates and contextual values do not prescribe a binding
+store representation. -/
+theorem completed_contextual_unify_step {space : Space} {dispatch : GroundedDispatch}
+    {live : List Atom} {typing : EvalTypeService} {caller : Option Atom}
+    {policy : Completed.Policy} {before after : Completed.Frame}
+    {target pattern yes : Entry.Value} {no : Atom}
+    (selected : UnifyCandidateRel target.erase pattern.erase before.bindings after.bindings)
+    (derived : Entry.Value.UnifyRel policy.rebuilding before.environment target pattern after.environment) :
+    CoreStepRel space dispatch live
+      (.expression [.symbol "unify",target.erase,pattern.erase,yes.erase,no]) before.source
+      ((after.read policy yes).erase,after.source) (typing := typing) (caller := caller) := by
+  simpa only [Completed.Frame.source,Completed.Frame.read] using
+    (contextual_unify_step (space := space) (dispatch := dispatch) (live := live) (typing := typing) (caller := caller)
+      (yes := yes) (no := no) before.certified selected derived)
 
 theorem unify_run_exact {space : Space} {dispatch : GroundedDispatch}
     {live : List Atom} {typing : EvalTypeService} {caller : Option Atom}
@@ -941,19 +1000,19 @@ private theorem merge_empty_empty :
 
 private theorem empty_frame_satisfiable :
     ∃ valuation : String → Metta.Atom,
-      LeaTTaBridge.HEBindingSatisfied valuation Bindings.empty :=
-  ⟨fun name => .var name, by simp [LeaTTaBridge.HEBindingSatisfied, Bindings.empty]⟩
+      Spec.Match.SolutionTheory.HEBindingSatisfied valuation Bindings.empty :=
+  ⟨fun name => .var name, by simp [Spec.Match.SolutionTheory.HEBindingSatisfied, Bindings.empty]⟩
 
 private theorem probe_invocation
     {live : List Atom} {caller : Option Atom}
     (services : Services)
-    (enumeration : EvalEnumeration probeDispatch [] publishedTypeService)
+    (enumeration : EvalEnumeration probeDispatch [] storageTypeService)
     {operator emitted : Atom}
     (executable : probeDispatch.executable operator)
     (outcome : probeDispatch.outcome operator []
       (.ok [(emitted, Bindings.empty)]))
     (notFunction : ¬IsFunction emitted) :
-    RawInvocationRel services probeDispatch live publishedTypeService enumeration (caller := caller)
+    RawInvocationRel services probeDispatch live storageTypeService enumeration (caller := caller)
       probeSpace (.expression [operator]) Bindings.empty
       (emitted, Bindings.empty) := by
   exact .grounded probeSpace operator [] Bindings.empty Bindings.empty
@@ -965,8 +1024,8 @@ private theorem probe_invocation
 private theorem probe_emit_invocation
     {live : List Atom} {caller : Option Atom}
     (services : Services)
-    (enumeration : EvalEnumeration probeDispatch [] publishedTypeService) :
-    RawInvocationRel services probeDispatch live publishedTypeService enumeration (caller := caller)
+    (enumeration : EvalEnumeration probeDispatch [] storageTypeService) :
+    RawInvocationRel services probeDispatch live storageTypeService enumeration (caller := caller)
       probeSpace (.expression [.symbol "emit"]) Bindings.empty
       (probeMember, Bindings.empty) := by
   apply probe_invocation services enumeration
@@ -978,8 +1037,8 @@ private theorem probe_emit_invocation
 private theorem probe_leaf_invocation
     {live : List Atom} {caller : Option Atom}
     (services : Services)
-    (enumeration : EvalEnumeration probeDispatch [] publishedTypeService) :
-    RawInvocationRel services probeDispatch live publishedTypeService enumeration (caller := caller)
+    (enumeration : EvalEnumeration probeDispatch [] storageTypeService) :
+    RawInvocationRel services probeDispatch live storageTypeService enumeration (caller := caller)
       probeSpace probeMember Bindings.empty (probeValue, Bindings.empty) := by
   apply probe_invocation services enumeration
   · exact Or.inr (Or.inl rfl)
@@ -990,8 +1049,8 @@ private theorem probe_leaf_invocation
 /-- A native callable-looking result stays raw after minimal eval. -/
 theorem native_member_is_raw
     (services : Services)
-    (enumeration : EvalEnumeration probeDispatch [] publishedTypeService) :
-    MinimalRunRel services probeDispatch [] publishedTypeService enumeration
+    (enumeration : EvalEnumeration probeDispatch [] storageTypeService) :
+    MinimalRunRel services probeDispatch [] storageTypeService enumeration
       probeSpace (.expression [.symbol "eval", .expression [.symbol "emit"]])
       Bindings.empty (probeMember, Bindings.empty) :=
   minimal_eval_empty_exact.mpr (probe_emit_invocation services enumeration)
@@ -999,8 +1058,8 @@ theorem native_member_is_raw
 /-- Nesting eval does not reinterpret the already-finished native result. -/
 theorem native_member_nested_eval_is_raw
     (services : Services)
-    (enumeration : EvalEnumeration probeDispatch [] publishedTypeService) :
-    MinimalRunRel services probeDispatch [] publishedTypeService enumeration
+    (enumeration : EvalEnumeration probeDispatch [] storageTypeService) :
+    MinimalRunRel services probeDispatch [] storageTypeService enumeration
       probeSpace (.expression [.symbol "eval", .expression
         [.symbol "eval", .expression [.symbol "emit"]]])
       Bindings.empty (probeMember, Bindings.empty) := by
@@ -1015,8 +1074,8 @@ theorem native_member_nested_eval_is_raw
 /-- A chain explicitly evaluating the selected member does compute it. -/
 theorem native_member_sequential_eval_computes
     (services : Services)
-    (enumeration : EvalEnumeration probeDispatch [] publishedTypeService) :
-    MinimalRunRel services probeDispatch [] publishedTypeService enumeration
+    (enumeration : EvalEnumeration probeDispatch [] storageTypeService) :
+    MinimalRunRel services probeDispatch [] storageTypeService enumeration
       probeSpace (.expression [.symbol "chain",
         .expression [.symbol "eval", .expression [.symbol "emit"]],
         .var "member", .expression [.symbol "eval", .var "member"]])
@@ -1036,7 +1095,7 @@ private theorem probe_arrow_matches :
 
 open Spec.Type in
 private theorem probe_leaf_types :
-    TypesOfRel probeSpace (.symbol "leaf") [probeArrow] :=
+    StorageTypesRel probeSpace (.symbol "leaf") [probeArrow] :=
   .symbolKnown (.hit .nil) (by simp)
 
 open Spec.Type in
@@ -1353,8 +1412,8 @@ theorem completed_native_function_stays_data :
 payload is not treated as a newly emitted function block. -/
 theorem completed_native_raw_function_is_held
     (services : Services)
-    (enumeration : EvalEnumeration completedProbeDispatch [] publishedTypeService) :
-    MinimalRunRel services completedProbeDispatch [] publishedTypeService enumeration
+    (enumeration : EvalEnumeration completedProbeDispatch [] storageTypeService) :
+    MinimalRunRel services completedProbeDispatch [] storageTypeService enumeration
       probeSpace (.expression [.symbol "eval", .expression [.symbol "emit-function"]])
       Bindings.empty (probeFunction, Bindings.empty) := by
   apply minimal_eval_empty_exact.mpr
@@ -1513,8 +1572,8 @@ private theorem equation_probe_candidate :
 uses actual hygienic matching and binding merge, not ordinary EvalRel. -/
 theorem equation_result_is_raw
     (services : Services)
-    (enumeration : EvalEnumeration noHostDispatch [] publishedTypeService) :
-    MinimalRunRel services noHostDispatch [] publishedTypeService enumeration
+    (enumeration : EvalEnumeration noHostDispatch [] storageTypeService) :
+    MinimalRunRel services noHostDispatch [] storageTypeService enumeration
       equationProbeSpace (.expression [.symbol "eval", .symbol "source"])
       Bindings.empty (probeMember, Bindings.empty) := by
   apply minimal_eval_empty_exact.mpr
@@ -1634,7 +1693,7 @@ private theorem completed (space : Space) (dispatch : GroundedDispatch)
       (Atom.error (caller.getD heldBody) (.symbol "NoReturn"), Bindings.empty)
       (caller := caller) := by
   apply CoreInvocationResultRel.function
-  apply function_data_noReturn space dispatch live publishedTypeService caller heldBody
+  apply function_data_noReturn space dispatch live storageTypeService caller heldBody
     Bindings.empty heldBody (BindingMaterializationRel.empty heldBody)
   · exact ⟨_, rfl⟩
   · rfl
@@ -1859,7 +1918,7 @@ theorem full_untyped_equation_refusal_restores_call :
         (types := [Atom.undefinedType]) (errors := [])
         (tupleResult := (sourceCall, Bindings.empty))
       · rfl
-      · exact TypesOfRel.symbolUndefined (noAnnotations _)
+      · exact StorageTypesRel.symbolUndefined (noAnnotations _)
       · rfl
       · exact .nonFunctionExhausted (by simp [FunctionTypeRel, Atom.undefinedType]) .nil
       · exact tupleSource _
@@ -1965,8 +2024,8 @@ end CallReturnControls
 function delimiter. Neither requires evaluating its returned member. -/
 theorem raw_equation_function_returns_member
     (services : Services)
-    (enumeration : EvalEnumeration noHostDispatch [] publishedTypeService) :
-    MinimalRunRel services noHostDispatch [] publishedTypeService enumeration
+    (enumeration : EvalEnumeration noHostDispatch [] storageTypeService) :
+    MinimalRunRel services noHostDispatch [] storageTypeService enumeration
       functionEquationSpace
       (.expression [.symbol "eval", .symbol "source-function"])
       Bindings.empty (probeMember, Bindings.empty) := by
@@ -1980,8 +2039,8 @@ theorem raw_equation_function_returns_member
 that context supplies the raw result even though the caller has no rules. -/
 theorem evalc_uses_supplied_context
     (services : Services)
-    (enumeration : EvalEnumeration noHostDispatch [] publishedTypeService) :
-    MinimalStepRel services noHostDispatch [] publishedTypeService enumeration
+    (enumeration : EvalEnumeration noHostDispatch [] storageTypeService) :
+    MinimalStepRel services noHostDispatch [] storageTypeService enumeration
       Space.empty (.expression [.symbol "evalc", .symbol "source",
         .grounded (services.contextPayload equationProbeSpace)])
       Bindings.empty (probeMember, Bindings.empty) := by
@@ -2001,8 +2060,8 @@ theorem evalc_uses_supplied_context
 which distinguishes context selection from global/default lookup. -/
 theorem empty_context_is_not_reducible
     (services : Services)
-    (enumeration : EvalEnumeration noHostDispatch [] publishedTypeService) :
-    MinimalRunRel services noHostDispatch [] publishedTypeService enumeration
+    (enumeration : EvalEnumeration noHostDispatch [] storageTypeService) :
+    MinimalRunRel services noHostDispatch [] storageTypeService enumeration
       Space.empty (.expression [.symbol "eval", .symbol "source"])
       Bindings.empty (Atom.notReducible, Bindings.empty) := by
   apply minimal_eval_empty_exact.mpr
@@ -2148,8 +2207,8 @@ theorem function_chain_returns_selected_raw
 private theorem probe_empty_invocation
     {live : List Atom} {caller : Option Atom}
     (services : Services)
-    (enumeration : EvalEnumeration probeDispatch [] publishedTypeService) :
-    RawInvocationRel services probeDispatch live publishedTypeService enumeration (caller := caller)
+    (enumeration : EvalEnumeration probeDispatch [] storageTypeService) :
+    RawInvocationRel services probeDispatch live storageTypeService enumeration (caller := caller)
       probeSpace (.expression [.symbol "none"]) Bindings.empty (Atom.empty, Bindings.empty) :=
   .groundedEmpty probeSpace (.symbol "none") [] Bindings.empty
     (Or.inr (Or.inr (Or.inl rfl))) (Or.inr (Or.inr (Or.inl ⟨rfl, rfl, rfl⟩)))
@@ -2159,8 +2218,8 @@ An independent constant return reaches the function boundary normally. This
 positive control prevents confusing minimal chain with a pruning map. -/
 theorem minimal_empty_source_can_activate_constant_return
     (services : Services)
-    (enumeration : EvalEnumeration probeDispatch [] publishedTypeService) :
-    MinimalStepRel services probeDispatch [] publishedTypeService enumeration probeSpace
+    (enumeration : EvalEnumeration probeDispatch [] storageTypeService) :
+    MinimalStepRel services probeDispatch [] storageTypeService enumeration probeSpace
       (.expression [.symbol "function", .expression [.symbol "chain",
         .expression [.symbol "eval", .expression [.symbol "none"]], .var "selected",
         .expression [.symbol "return", .symbol "reached"]]])
@@ -2182,13 +2241,13 @@ but contributes no public result. This differs from the preceding constant
 continuation, which does not return the selected sentinel. -/
 theorem minimal_empty_selected_return_is_filtered
     (services : Services)
-    (enumeration : EvalEnumeration probeDispatch [] publishedTypeService) :
-    MinimalRunRel services probeDispatch [] publishedTypeService enumeration probeSpace
+    (enumeration : EvalEnumeration probeDispatch [] storageTypeService) :
+    MinimalRunRel services probeDispatch [] storageTypeService enumeration probeSpace
       (.expression [.symbol "function", .expression [.symbol "chain",
         .expression [.symbol "eval", .expression [.symbol "none"]], .var "selected",
         .expression [.symbol "return", .var "selected"]]])
       Bindings.empty (Atom.empty, Bindings.empty) ∧
-    ¬MinimalResultRel services probeDispatch [] publishedTypeService enumeration probeSpace
+    ¬MinimalResultRel services probeDispatch [] storageTypeService enumeration probeSpace
       (.expression [.symbol "function", .expression [.symbol "chain",
         .expression [.symbol "eval", .expression [.symbol "none"]], .var "selected",
         .expression [.symbol "return", .var "selected"]]])
@@ -2214,7 +2273,7 @@ theorem collapse_enumeration_omits_final_empty
   exact empty_is_not_observable
     ((laws.support_exact space atom bindings results enumerates _).mp member)
 
-open Spec.Eval.StateAlgebra
+open Mettapedia.Machines.OrderedProtocol.Completion
 
 /-- A deliberately effectful body consumer records one activation and emits
 its selected atom. This is an independent state service, not an evaluator
@@ -2520,7 +2579,7 @@ theorem transported_policy_call :
       (renameTypeVars exchange (mkUnifyBadArityError source),Bindings.empty) := by
   have mapped := (Minimal.ordinary_unify_bad_arity_exact
     (space := Space.empty) (dispatch := dispatch exchange noForeign) (live := [])
-    (typing := publishedTypeService) (expected := Atom.undefinedType)
+    (typing := storageTypeService) (expected := Atom.undefinedType)
     (tail := [.var "b", .symbol "A", .symbol "B"])
     (bindings := BindingFrame.historical Bindings.empty)
     (by simp [Minimal.HostCall, dispatch, noForeign]) (by decide)).mpr rfl
@@ -2712,7 +2771,7 @@ private theorem function_arrow_matches :
   · exact merge_empty_empty
 
 private theorem function_types :
-    TypesOfRel annotatedContext (.symbol "function") [functionArrow] :=
+    StorageTypesRel annotatedContext (.symbol "function") [functionArrow] :=
   .symbolKnown (.hit .nil) (by simp)
 
 private theorem return_seven_type :
@@ -2889,8 +2948,8 @@ theorem raw_invocation_selects_template (live : List Atom) (caller : Option Atom
 
 
 private theorem symbol_types (name : String) :
-    TypesOfRel fContext (.symbol name) [Atom.undefinedType] := by
-  apply TypesOfRel.symbolUndefined
+    StorageTypesRel fContext (.symbol name) [Atom.undefinedType] := by
+  apply StorageTypesRel.symbolUndefined
   exact .skip (by intro type; simp) .nil
 
 theorem symbol_evaluates (live : List Atom) (name : String) :
@@ -3255,7 +3314,7 @@ namespace Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal.EquationFallbackContro
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Eval.Minimal Spec.Eval.Steps Spec.Match.Merge
 open Spec.Type
-open LeaTTaBridge
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 def dispatch : Spec.Eval.GroundedDispatch where
   executable := fun _ => False
@@ -3275,7 +3334,7 @@ theorem singleton_satisfied (symbol : String) :
     HEBindingSatisfied (fun _ => .sym symbol)
       (Bindings.empty.assign "x" (.symbol symbol)) := by
   simp [HEBindingSatisfied, Bindings.assign, Bindings.empty,
-    Bindings.isBound, Bindings.lookup, toLeaTTaAtom, applyClassSolution]
+    Bindings.isBound, Bindings.lookup, encodeModelAtom, applyClassSolution]
 
 private theorem merge_empty (bindings : Bindings) :
     MergeRel equalityGroundedSemantic bindings Bindings.empty bindings :=
@@ -3336,10 +3395,10 @@ theorem all_filtered (live : List Atom) :
   have equates := (Spec.Match.SolutionTheory.matchRel_solution_iff matched valuation).mp both.1
   have bound := both.2.1 "x" (.symbol "B") (by
     simp [caller, Bindings.assign, Bindings.empty, Bindings.isBound, Bindings.lookup])
-  simp only [query, pattern, toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution,
+  simp only [query, pattern, encodeModelAtom, encodeModelAtoms, applyClassSolution,
     List.map_cons, List.map_nil, Metta.Atom.expr.injEq, List.cons.injEq,
     true_and, and_true] at equates
-  simp only [toLeaTTaAtom, applyClassSolution] at bound
+  simp only [encodeModelAtom, applyClassSolution] at bound
   rw [bound] at equates
   simp at equates
 
@@ -3405,7 +3464,7 @@ private theorem materialized_query_has_no_match (live : List Atom) :
         exact symbol_mismatch_not_match (by decide : "B" ≠ "A") _ compared
 
 private theorem symbol_types (name : String) :
-    TypesOfRel context (.symbol name) [Atom.undefinedType] :=
+    StorageTypesRel context (.symbol name) [Atom.undefinedType] :=
   .symbolUndefined (.skip (by intro type; simp) .nil)
 
 private theorem symbol_evaluates (live : List Atom) (name : String) :

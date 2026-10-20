@@ -1,5 +1,11 @@
+import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ScopeObservation
+import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.SelectionEquivariance
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationExactConformance
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationPrincipalAlpha
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Exact finite-presentation simulation of the application type fold
@@ -80,7 +86,7 @@ theorem TypePresentationSimulationState.matchTypeFull
     (state : TypePresentationSimulationState presentation spec lea)
     (expected actual : Atom)
     (success : Metta.Minimal.matchType lea
-      (toLeaTTaAtom expected) (toLeaTTaAtom actual) = some leaOutput) :
+      (encodeModelAtom expected) (encodeModelAtom actual) = some leaOutput) :
     ∃ presentationOutput specOutput,
       CorePlusR2TypePresentationMatchRel
           presentation expected actual presentationOutput ∧
@@ -149,7 +155,7 @@ theorem TypePresentationSimulationState.matchType
     (state : TypePresentationSimulationState presentation spec lea)
     (expected actual : Atom)
     (success : Metta.Minimal.matchType lea
-      (toLeaTTaAtom expected) (toLeaTTaAtom actual) = some leaOutput) :
+      (encodeModelAtom expected) (encodeModelAtom actual) = some leaOutput) :
     ∃ presentationOutput specOutput,
       CorePlusR2TypePresentationMatchRel
           presentation expected actual presentationOutput ∧
@@ -169,11 +175,11 @@ theorem TypePresentationSimulationState.returnAlpha
     (declared : Atom) :
     ObservedTypeAlphaRel
       (presentation.apply declared)
-      (fromLeaTTaAtom
-        (Metta.instantiate lea (toLeaTTaAtom declared))) := by
+      (decodeModelAtom
+        (Metta.instantiate lea (encodeModelAtom declared))) := by
   let leaModel := leaClassSolution lea
   let nativeModel : String → Atom :=
-    fun name => fromLeaTTaAtom (leaModel name)
+    fun name => decodeModelAtom (leaModel name)
   have nativeModelSatisfied :
       TypeSubstSatisfied nativeModel presentation := by
     have specModel : HEBindingSatisfied leaModel spec :=
@@ -187,7 +193,7 @@ theorem TypePresentationSimulationState.returnAlpha
           applyTypeValuation post (nativeModel name) := by
     let presentationModel := presentedValuation presentation
     let leaPresentationModel : String → Metta.Atom :=
-      fun name => toLeaTTaAtom (presentationModel name)
+      fun name => encodeModelAtom (presentationModel name)
     have presentationSatisfied :
         TypeSubstSatisfied presentationModel presentation :=
       normal_presentedValuation_satisfied state.normal
@@ -205,15 +211,15 @@ theorem TypePresentationSimulationState.returnAlpha
     obtain ⟨leaPost, hleaPost⟩ :=
       state.semantic.runtime.canonical.2
         leaPresentationModel leaPresentationSatisfied
-    refine ⟨fun name => fromLeaTTaAtom (leaPost name), ?_⟩
+    refine ⟨fun name => decodeModelAtom (leaPost name), ?_⟩
     intro name
-    have decoded := congrArg fromLeaTTaAtom (hleaPost name)
-    rw [fromLeaTTaAtom_applyClassSolution_any] at decoded
+    have decoded := congrArg decodeModelAtom (hleaPost name)
+    rw [decodeModelAtom_applyClassSolution_any] at decoded
     simpa [leaPresentationModel, presentationModel,
       nativeModel, leaModel] using decoded
   have alpha := observedTypeAlpha_of_mutuallyPrincipal state.normal
     nativeModelSatisfied presentationRefinesModel declared
-  simpa [nativeModel, leaModel, ← fromLeaTTaAtom_applyClassSolution,
+  simpa [nativeModel, leaModel, ← decodeModelAtom_applyClassSolution,
     applyClassSolution_lea_eq_instantiate] using alpha
 
 /-- Repaired LeaTTa's left-to-right argument-type fold is realized by the
@@ -225,7 +231,7 @@ theorem matchApplicationTypeArguments_presentation_sound :
       {lea leaOutput : Metta.Bindings},
       TypePresentationSimulationState presentation spec lea →
       Metta.Minimal.matchApplicationTypeArguments lea
-        (toLeaTTaAtoms expectedTypes) (toLeaTTaAtoms actualTypes) =
+        (encodeModelAtoms expectedTypes) (encodeModelAtoms actualTypes) =
           some leaOutput →
       ∃ presentationOutput specOutput,
         PresentationArgumentListMatchRel expectedTypes actualTypes
@@ -239,25 +245,25 @@ theorem matchApplicationTypeArguments_presentation_sound :
       cases actualTypes with
       | nil =>
           have same : lea = leaOutput := by
-            simpa [toLeaTTaAtoms,
+            simpa [encodeModelAtoms,
               Metta.Minimal.matchApplicationTypeArguments] using success
           subst leaOutput
           exact ⟨presentation, spec,
             PresentationArgumentListMatchRel.nil presentation, state⟩
       | cons actual actualTypes =>
-          simp [toLeaTTaAtoms,
+          simp [encodeModelAtoms,
             Metta.Minimal.matchApplicationTypeArguments] at success
   | cons expected expectedTypes inductionHypothesis =>
       intro actualTypes presentation spec lea leaOutput state success
       cases actualTypes with
       | nil =>
-          simp [toLeaTTaAtoms,
+          simp [encodeModelAtoms,
             Metta.Minimal.matchApplicationTypeArguments] at success
       | cons actual actualTypes =>
-          simp only [toLeaTTaAtoms,
+          simp only [encodeModelAtoms,
             Metta.Minimal.matchApplicationTypeArguments] at success
           generalize nextEquation : Metta.Minimal.matchType lea
-            (toLeaTTaAtom expected) (toLeaTTaAtom actual) = next at success
+            (encodeModelAtom expected) (encodeModelAtom actual) = next at success
           cases next with
           | none => simp at success
           | some leaNext =>
@@ -278,8 +284,8 @@ theorem matchApplicationTypeArguments_exact_return
     {expectedTypes actualTypes : List Atom}
     {leaOutput : Metta.Bindings} {returnType : Atom}
     (success : Metta.Minimal.matchApplicationTypeArguments
-      Metta.Bindings.empty (toLeaTTaAtoms expectedTypes)
-        (toLeaTTaAtoms actualTypes) = some leaOutput) :
+      Metta.Bindings.empty (encodeModelAtoms expectedTypes)
+        (encodeModelAtoms actualTypes) = some leaOutput) :
     ∃ presentation specOutput,
       PresentationArgumentListMatchRel
           expectedTypes actualTypes [] presentation ∧
@@ -287,8 +293,8 @@ theorem matchApplicationTypeArguments_exact_return
           presentation specOutput leaOutput ∧
         ObservedTypeAlphaRel
           (presentation.apply returnType)
-          (fromLeaTTaAtom
-            (Metta.instantiate leaOutput (toLeaTTaAtom returnType))) := by
+          (decodeModelAtom
+            (Metta.instantiate leaOutput (encodeModelAtom returnType))) := by
   obtain ⟨presentation, specOutput, fold, state⟩ :=
     matchApplicationTypeArguments_presentation_sound
       expectedTypes actualTypes typePresentationSimulationState_empty success
@@ -315,5 +321,276 @@ theorem unequal_arity_has_no_presentation
       PresentationArgumentListMatchRel [expected] [] [] output := by
   rintro ⟨output, derivation⟩
   cases derivation
+
+end Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationFoldConformance
+
+namespace Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationFoldConformance
+open Mettapedia.Languages.MeTTa.HE
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Bindings.ScopeObservation Spec.Type.Presentation
+open Spec.Type.Presentation.Alpha Spec.Type.Presentation.ApplicationEquivariance
+open Spec.Type.Presentation.Exact Spec.Type.Presentation.ExactNormal
+open Spec.Type.Presentation.MatchSolutionTheory Spec.Type.Presentation.PrincipalAlpha
+open Spec.Type.Presentation.Theory Spec.Type.Presentation.ScopeObservation
+open Spec.Type.Presentation.SelectionEquivariance Spec.Type.RuntimeRefinement
+open LeaTTaBridge LeaTTaTypeConformance
+
+/-! Runtime binding-list instances of the independent scoped-observation laws. -/
+/-- Runtime-support variant of
+`transport_model_across_presentations_of_target_fresh`.
+
+The exact right presentation may use an independent private spelling, so
+syntactic support inclusion is neither required nor generally true.
+`TypePresentationSimulationState` proves that its complete solution theory
+depends only on the variables occurring in the runtime binding list; the
+runtime candidate is fresh from exactly that support. -/
+theorem PrivateCandidateAlphaRel.transport_model_across_presentations_of_runtime_target_fresh
+    {fixedScope theoryScope observationScope : List String}
+    {leftIncoming rightIncoming : TypeSubst}
+    {rightSpec : Bindings} {runtimeBindings : Metta.Bindings}
+    {expected leftActual rightActual : Atom}
+    (alpha : PrivateCandidateAlphaRel fixedScope leftActual rightActual)
+    (incomingEquiv : TypePresentationTheoryEquivAt
+      theoryScope leftIncoming rightIncoming)
+    (rightState : TypePresentationSimulationState
+      rightIncoming rightSpec runtimeBindings)
+    (rightTargetFresh : ∀ name,
+      name ∈ TypeSubst.typeVars rightActual →
+        name ∉ runtimeBindings.vars)
+    (theoryCovered : ∀ name, name ∈ theoryScope → name ∈ fixedScope)
+    (expectedObserved : ∀ name,
+      name ∈ TypeSubst.typeVars expected → name ∈ theoryScope)
+    (observationObserved : ∀ name,
+      name ∈ observationScope → name ∈ theoryScope)
+    (leftModel : String → Atom)
+    (leftSatisfied : TypeSubstSatisfied leftModel leftIncoming)
+    (leftConsistent : CorePlusR2TypeConsistent
+      leftModel expected leftActual) :
+    ∃ rightModel,
+      TypeSubstSatisfied rightModel rightIncoming ∧
+        CorePlusR2TypeConsistent rightModel expected rightActual ∧
+        ValuationsAgreeOn observationScope leftModel rightModel := by
+  obtain ⟨permutation, fixed, candidateEquation⟩ :=
+    alpha.exists_public_fixed_permutation
+  obtain ⟨rightBase, rightBaseSatisfied, baseAgrees⟩ :=
+    incomingEquiv.leftToRight leftModel leftSatisfied
+  let transported : String → Atom := leftModel ∘ permutation.symm
+  let rightModel : String → Atom := fun name =>
+    if name ∈ TypeSubst.typeVars rightActual then
+      transported name
+    else
+      rightBase name
+  have inverseFixed : ∀ name, name ∈ fixedScope →
+      permutation.symm name = name := by
+    intro name member
+    apply permutation.injective
+    simp [fixed name member]
+  have rightModelAgreesBaseOnRuntime :
+      ValuationsAgreeOn runtimeBindings.vars rightBase rightModel := by
+    intro name member
+    have notCandidate : name ∉ TypeSubst.typeVars rightActual := by
+      intro candidateMember
+      exact rightTargetFresh name candidateMember member
+    simp [rightModel, notCandidate]
+  have rightSatisfied : TypeSubstSatisfied rightModel rightIncoming :=
+    (rightState.satisfied_congr_on_runtimeVars
+      rightModelAgreesBaseOnRuntime).mp rightBaseSatisfied
+  have rightActualAvoids : ∀ name,
+      name ∈ TypeSubst.typeVars rightActual → name ∉ fixedScope :=
+    alpha.vars_avoid_fixedScope.2
+  have expectedFixed :
+      renameTypeVars permutation expected = expected := by
+    calc
+      renameTypeVars permutation expected =
+          renameTypeVars id expected := by
+        apply renameTypeVars_congr_on_typeVars expected
+        intro name member
+        exact fixed name (theoryCovered name (expectedObserved name member))
+      _ = expected := renameTypeVars_id expected
+  have transportedConsistent : CorePlusR2TypeConsistent transported
+      expected rightActual := by
+    have renamedConsistent : CorePlusR2TypeConsistent transported
+        (renameTypeVars permutation expected)
+        (renameTypeVars permutation leftActual) := by
+      apply (corePlusR2TypeConsistent_rename_iff
+        transported permutation expected leftActual).mpr
+      simpa [transported, Function.comp_def] using leftConsistent
+    simpa [expectedFixed, candidateEquation] using renamedConsistent
+  have constraintAgreement : ∀ name,
+      name ∈ TypeSubst.typeVars expected ++
+          TypeSubst.typeVars rightActual →
+        transported name = rightModel name := by
+    intro name member
+    rcases List.mem_append.mp member with expectedMember | actualMember
+    · have theoryMember := expectedObserved name expectedMember
+      have fixedMember := theoryCovered name theoryMember
+      have notCandidate : name ∉ TypeSubst.typeVars rightActual := by
+        intro candidateMember
+        exact rightActualAvoids name candidateMember fixedMember
+      simp [rightModel, notCandidate, transported, Function.comp_apply,
+        inverseFixed name fixedMember, baseAgrees name theoryMember]
+    · simp [rightModel, actualMember]
+  have rightConsistent : CorePlusR2TypeConsistent rightModel
+      expected rightActual :=
+    (corePlusR2TypeConsistent_congr_of_typeVars
+      expected rightActual constraintAgreement).mp transportedConsistent
+  refine ⟨rightModel, rightSatisfied, rightConsistent, ?_⟩
+  intro name member
+  have theoryMember := observationObserved name member
+  have fixedMember := theoryCovered name theoryMember
+  have notCandidate : name ∉ TypeSubst.typeVars rightActual := by
+    intro candidateMember
+    exact rightActualAvoids name candidateMember fixedMember
+  simpa [rightModel, notCandidate] using baseAgrees name theoryMember
+
+
+/-- Cross a scoped specification/runtime boundary without identifying the
+runtime presentation's private syntactic support.  The left candidate is
+fresh from the finite specification presentation; the right candidate is
+fresh from the runtime binding list that semantically supports its exact
+branch presentation. -/
+theorem TypeConstraintTheoryEquivAt.of_scopedIncoming_privateCandidateAlpha_runtimeSupport
+    {fixedScope theoryScope observationScope : List String}
+    {leftIncoming rightIncoming : TypeSubst}
+    {rightSpec : Bindings} {runtimeBindings : Metta.Bindings}
+    {expected leftActual rightActual : Atom}
+    (incomingEquiv : TypePresentationTheoryEquivAt
+      theoryScope leftIncoming rightIncoming)
+    (rightState : TypePresentationSimulationState
+      rightIncoming rightSpec runtimeBindings)
+    (alpha : PrivateCandidateAlphaRel fixedScope leftActual rightActual)
+    (leftTargetFresh : ∀ name,
+      name ∈ TypeSubst.typeVars leftActual →
+        name ∉ specBindingVars ⟨leftIncoming, []⟩)
+    (rightTargetFresh : ∀ name,
+      name ∈ TypeSubst.typeVars rightActual →
+        name ∉ runtimeBindings.vars)
+    (theoryCovered : ∀ name, name ∈ theoryScope → name ∈ fixedScope)
+    (expectedObserved : ∀ name,
+      name ∈ TypeSubst.typeVars expected → name ∈ theoryScope)
+    (observationObserved : ∀ name,
+      name ∈ observationScope → name ∈ theoryScope) :
+    TypeConstraintTheoryEquivAt observationScope
+      leftIncoming expected leftActual
+      rightIncoming expected rightActual := by
+  have reverseAlpha :
+      PrivateCandidateAlphaRel fixedScope rightActual leftActual := by
+    rcases alpha with ⟨source, leftVariant, rightVariant⟩
+    exact ⟨source, rightVariant, leftVariant⟩
+  constructor
+  · exact PrivateCandidateAlphaRel.transport_model_across_presentations_of_runtime_target_fresh
+      alpha incomingEquiv rightState rightTargetFresh theoryCovered
+        expectedObserved observationObserved
+  · intro rightModel rightSatisfied rightConsistent
+    obtain ⟨leftModel, leftSatisfied, leftConsistent, agrees⟩ :=
+      reverseAlpha.transport_model_across_presentations_of_target_fresh
+        incomingEquiv.symm leftTargetFresh theoryCovered expectedObserved
+          observationObserved rightModel rightSatisfied rightConsistent
+    exact ⟨leftModel, leftSatisfied, leftConsistent,
+      fun name member => (agrees name member).symm⟩
+
+
+/-- A static specification presentation and one runtime binding state agree
+through an exact branch-local presentation, with only the comparison between
+the two finite presentations restricted to the declared public scope. -/
+def ScopedTypePresentationSimulationState
+    (scope : List String) (specPresentation : TypeSubst)
+    (runtimeBindings : Metta.Bindings) : Prop :=
+  specPresentation.Normal ∧
+    ∃ branchPresentation specBindings,
+      TypePresentationSimulationState
+          branchPresentation specBindings runtimeBindings ∧
+        TypePresentationTheoryEquivAt
+          scope specPresentation branchPresentation
+
+/-- Exact same-spelling simulation is the reflexive case of scoped
+simulation. -/
+theorem ScopedTypePresentationSimulationState.ofExact
+    {scope : List String} {presentation : TypeSubst}
+    {spec : Bindings} {runtime : Metta.Bindings}
+    (state : TypePresentationSimulationState presentation spec runtime) :
+    ScopedTypePresentationSimulationState scope presentation runtime :=
+  ⟨state.normal, presentation, spec, state,
+    TypePresentationTheoryEquivAt.refl scope presentation⟩
+
+/-- Scoped simulation is contravariant in its observation scope: agreement
+at a larger finite scope immediately gives agreement at every smaller scope.
+This is the boundary used after a private signature scan, where the recursive
+matcher may temporarily observe signature variables that the evaluator seal
+does not expose. -/
+theorem ScopedTypePresentationSimulationState.mono
+    {large small : List String} {presentation : TypeSubst}
+    {runtime : Metta.Bindings}
+    (state : ScopedTypePresentationSimulationState
+      large presentation runtime)
+    (subset : ∀ name, name ∈ small → name ∈ large) :
+    ScopedTypePresentationSimulationState small presentation runtime := by
+  rcases state with
+    ⟨normal, branchPresentation, specBindings,
+      branchState, theory⟩
+  exact ⟨normal, branchPresentation, specBindings, branchState,
+    theory.mono subset⟩
+
+/-- A scoped presentation state observes any declared type whose variables
+lie in the public scope exactly as the repaired runtime does, up to private
+alpha-renaming.  This is the diagnostic/policy projection of the semantic
+state; it does not identify the private finite presentations syntactically. -/
+theorem ScopedTypePresentationSimulationState.returnAlpha
+    {scope : List String} {presentation : TypeSubst}
+    {runtime : Metta.Bindings}
+    (state : ScopedTypePresentationSimulationState
+      scope presentation runtime)
+    (declared : Atom)
+    (declaredCovered : ∀ name,
+      name ∈ TypeSubst.typeVars declared → name ∈ scope) :
+    ObservedTypeAlphaRel
+      (presentation.apply declared)
+      (decodeModelAtom
+        (Metta.instantiate runtime (encodeModelAtom declared))) := by
+  rcases state with
+    ⟨presentationNormal, branchPresentation, specBindings,
+      branchState, presentationEquiv⟩
+  exact ObservedTypeAlphaRel.trans
+    (presentationEquiv.observedTypeAlpha presentationNormal
+      branchState.normal declared declaredCovered)
+    (branchState.returnAlpha declared)
+
+/-- Pointwise scoped simulation for an ordered branch list. -/
+def ScopedTypePresentationSimulationStates
+    (scope : List String) (presentations : List TypeSubst)
+    (runtimeBindings : List Metta.Bindings) : Prop :=
+  List.Forall₂
+    (ScopedTypePresentationSimulationState scope)
+    presentations runtimeBindings
+
+/-- Pointwise scope weakening for an ordered branch list. -/
+theorem scopedTypePresentationSimulationStates_mono
+    {large small : List String} {presentations : List TypeSubst}
+    {runtimeBindings : List Metta.Bindings}
+    (states : ScopedTypePresentationSimulationStates
+      large presentations runtimeBindings)
+    (subset : ∀ name, name ∈ small → name ∈ large) :
+    ScopedTypePresentationSimulationStates
+      small presentations runtimeBindings := by
+  exact states.imp fun _ _ state => state.mono subset
+
+/-! ## Boundary canaries -/
+
+/-- Post-composing a raw-signature runtime simulation with a public-fixed
+signature localization yields the corresponding localized simulation. -/
+theorem TypePresentationPermutationState.composeScopedRuntime
+    {permutation : Equiv.Perm String} {raw localized : TypeSubst}
+    {scope : List String} {runtime : Metta.Bindings}
+    (state : TypePresentationPermutationState permutation raw localized)
+    (scopeFixed : ∀ name, name ∈ scope → permutation name = name)
+    (runtimeState : ScopedTypePresentationSimulationState
+      scope raw runtime) :
+    ScopedTypePresentationSimulationState scope localized runtime := by
+  rcases runtimeState with
+    ⟨_rawNormal, branchPresentation, specBindings,
+      branchState, rawBranchEquiv⟩
+  exact ⟨state.rightNormal, branchPresentation, specBindings, branchState,
+    (state.theoryEquivAt scope scopeFixed).symm.trans rawBranchEquiv⟩
+
 
 end Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationFoldConformance

@@ -37,7 +37,7 @@ the Beta subfamily.
 
 namespace Mettapedia.PLN.Comparisons
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 open Mettapedia.PLN.Evidence.Convergence
 open Mettapedia.ProbabilityTheory.Exchangeability.DeFinetti

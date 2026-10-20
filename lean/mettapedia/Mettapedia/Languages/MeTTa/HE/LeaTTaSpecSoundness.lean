@@ -1,5 +1,9 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaLoopPersistence
 import Mettapedia.Languages.MeTTa.HE.SigmaCanonicalTransfer
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Direct repaired-LeaTTa soundness assembly
@@ -3715,7 +3719,7 @@ solution theory. -/
 theorem leaMatch_observational_sound_of_satisfiable
     {query pattern : Atom} {leaOut : Metta.Bindings}
     (hlea : leaOut ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (hsatisfiable : ∃ valuation : String → Metta.Atom,
       LeaBindingSatisfied valuation leaOut) :
     ∃ specOut,
@@ -3725,17 +3729,17 @@ theorem leaMatch_observational_sound_of_satisfiable
         LeaBindingSolutionTheoryEquiv specOut leaOut := by
   obtain ⟨valuation, hleaSatisfied⟩ := hsatisfiable
   have hmettaEquation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom pattern, toLeaTTaAtom query) :=
+      (encodeModelAtom pattern, encodeModelAtom query) :=
     (leaMatchAtoms_solution_iff valuation
-      (toLeaTTaAtom_noFloat pattern)
-      (toLeaTTaAtom_noFloat query) hlea).mp hleaSatisfied
+      (encodeModelAtom_noFloat pattern)
+      (encodeModelAtom_noFloat query) hlea).mp hleaSatisfied
   have hspecEquation : HEAtomEquationSatisfied valuation query pattern := by
     simpa [HEAtomEquationSatisfied, MettaEquationSatisfied] using
       hmettaEquation.symm
   obtain ⟨specOut, hspec, _hspecSatisfied⟩ :=
     Spec.Match.Completeness.exists_specMatch_of_solution hspecEquation
   exact ⟨specOut, hspec,
-    Spec.Match.SolutionTheory.specMatch_leaMatch_solutionTheoryEquiv
+    LeaTTaSpecConformance.specMatch_leaMatch_solutionTheoryEquiv
       hspec hlea⟩
 
 /-- **Direct repaired-LeaTTa observational soundness.**  Every executable
@@ -3745,7 +3749,7 @@ complete binding solution theory. -/
 theorem leaMatch_observational_sound
     {query pattern : Atom} {leaOut : Metta.Bindings}
     (hlea : leaOut ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query)) :
+      (encodeModelAtom pattern) (encodeModelAtom query)) :
     ∃ specOut,
       Spec.Match.Merge.MatchRel
           Spec.Match.Merge.equalityGroundedSemantic
@@ -3753,8 +3757,8 @@ theorem leaMatch_observational_sound
         LeaBindingSolutionTheoryEquiv specOut leaOut := by
   apply leaMatch_observational_sound_of_satisfiable hlea
   exact leaMatchAtoms_output_satisfiable
-    (toLeaTTaAtom_noFloat pattern)
-    (toLeaTTaAtom_noFloat query) hlea
+    (encodeModelAtom_noFloat pattern)
+    (encodeModelAtom_noFloat query) hlea
 
 /-- **Repaired-LeaTTa ↔ specification observational conformance seal.**  The
 first projection is direct soundness of every public LeaTTa output.  The
@@ -3765,7 +3769,7 @@ theorem specLeaMatch_observational_conformance
     (query pattern : Atom) :
     (∀ {leaOut : Metta.Bindings},
       leaOut ∈ Metta.matchAtoms
-          (toLeaTTaAtom pattern) (toLeaTTaAtom query) →
+          (encodeModelAtom pattern) (encodeModelAtom query) →
         ∃ specOut,
           Spec.Match.Merge.MatchRel
               Spec.Match.Merge.equalityGroundedSemantic
@@ -3778,7 +3782,7 @@ theorem specLeaMatch_observational_conformance
         VarsDisjoint query pattern →
           ∃ leaOut,
             leaOut ∈ Metta.matchAtoms
-                (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
+                (encodeModelAtom pattern) (encodeModelAtom query) ∧
               LeaBindingSolutionTheoryEquiv specOut leaOut) := by
   constructor
   · intro leaOut hlea
@@ -3791,10 +3795,10 @@ spec atom pair outside expression/expression matching. -/
 theorem leaMatch_observational_sound_leaf
     {query pattern : Atom} {leaOut : Metta.Bindings}
     (hlea : leaOut ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (_hleaf : ¬∃ patterns queries,
-      toLeaTTaAtom pattern = .expr patterns ∧
-        toLeaTTaAtom query = .expr queries) :
+      encodeModelAtom pattern = .expr patterns ∧
+        encodeModelAtom query = .expr queries) :
     ∃ specOut,
       Spec.Match.Merge.MatchRel
           Spec.Match.Merge.equalityGroundedSemantic

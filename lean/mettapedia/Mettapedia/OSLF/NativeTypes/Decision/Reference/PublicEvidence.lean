@@ -31,7 +31,7 @@ inductive Report (driver : Driver) (formula : driver.Formula) (raw : Pattern) wh
   | observed (source : driver.Decoded raw)
       (formed : Formed driver.generated.logicFragment driver.leafAdmission formula)
       (profile : driver.profileAdmission = some true)
-      (record : Record (denotation driver.tests formula source.val))
+      (record : Record (denotation driver.tests formula driver.backend.spatial.theory source.val))
 
 def Report.result {driver : Driver} {formula : driver.Formula} {raw : Pattern} :
     Report driver formula raw → Mettapedia.OSLF.NativeTypes.Runtime.Description.Result driver formula raw

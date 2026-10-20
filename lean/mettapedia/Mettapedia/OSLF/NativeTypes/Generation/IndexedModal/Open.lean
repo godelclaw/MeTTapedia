@@ -18,6 +18,10 @@ import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Open.ContextLaws
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Open.ContinuationSemantics
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Open.ContinuationSyntax
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Open.CurriedInterfaces
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Open.Classifying
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Open.ClassifyingControls
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Open.FreeExtensionComparison
+import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Open.PresentationTransport
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Open.ExpressionControls
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Open.Formation
 import Mettapedia.OSLF.NativeTypes.Generation.IndexedModal.Open.FutureResponseControls

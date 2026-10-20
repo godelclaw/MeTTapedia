@@ -19,7 +19,7 @@ This gives:
 namespace Mettapedia.Logic.MarkovLogicRegression
 
 open scoped ENNReal
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.Logic.MarkovLogicAbstract
 open Mettapedia.Logic.MarkovLogicCountable
 open Mettapedia.Logic.MarkovLogicFiniteRestriction
@@ -126,7 +126,7 @@ theorem wm_queryStrength_ideal_eq_two_thirds :
       restrictedTotalMass demoMLN (Finset.univ : Finset DemoWorld) ≠ 0 := by
     rw [demo_restrictedTotalMass_eq_three]
     norm_num
-  unfold restrictedMassSemantics MassSemantics.queryProb
+  unfold restrictedMassSemantics Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   rw [if_neg htotal_ne_zero]
   change
     restrictedQueryMass demoMLN (Finset.univ : Finset DemoWorld) DemoQuery.ideal /
@@ -142,7 +142,7 @@ theorem wm_queryStrength_reachable_eq_one :
       restrictedTotalMass demoMLN (Finset.univ : Finset DemoWorld) ≠ 0 := by
     rw [demo_restrictedTotalMass_eq_three]
     norm_num
-  unfold restrictedMassSemantics MassSemantics.queryProb
+  unfold restrictedMassSemantics Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   rw [if_neg htotal_ne_zero]
   change
     restrictedQueryMass demoMLN (Finset.univ : Finset DemoWorld) DemoQuery.reachable /
@@ -159,7 +159,7 @@ theorem wm_queryStrength_impossible_eq_zero :
       restrictedTotalMass demoMLN (Finset.univ : Finset DemoWorld) ≠ 0 := by
     rw [demo_restrictedTotalMass_eq_three]
     norm_num
-  unfold restrictedMassSemantics MassSemantics.queryProb
+  unfold restrictedMassSemantics Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   rw [if_neg htotal_ne_zero]
   change
     restrictedQueryMass demoMLN (Finset.univ : Finset DemoWorld) DemoQuery.impossible /
@@ -175,12 +175,12 @@ theorem singleton_evidence_ideal_eq_two_one :
       ({compiledMassSemantics demoMLN demo_supportWitness} : MassState DemoQuery)
       DemoQuery.ideal = ⟨2, 1⟩
   rw [MassState.evidence_singleton]
-  unfold MassSemantics.evidenceOfMasses compiledMassSemantics
+  unfold Mettapedia.ProbabilityTheory.MassSemantics.binaryMass compiledMassSemantics
   change
     ({ pos := compiledQueryMass demoMLN (Finset.univ : Finset DemoWorld) DemoQuery.ideal,
        neg := compiledPartition demoMLN (Finset.univ : Finset DemoWorld) -
          compiledQueryMass demoMLN (Finset.univ : Finset DemoWorld) DemoQuery.ideal } :
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) = ⟨2, 1⟩
+      Mettapedia.PLN.Evidence.BinaryEvidence) = ⟨2, 1⟩
   rw [demo_compiledQueryMass_ideal_eq_two, demo_compiledPartition_eq_three]
   ext <;> simp
   exact (ENNReal.eq_sub_of_add_eq (a := (1 : ENNReal)) (b := (3 : ENNReal)) (c := (2 : ENNReal))
@@ -213,16 +213,16 @@ theorem doubled_evidence_ideal_eq_four_two :
             ({compiledMassSemantics demoMLN demo_supportWitness} : MassState DemoQuery)
             DemoQuery.ideal).pos = 2 := by
         simpa using
-          congrArg Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.pos
+          congrArg Mettapedia.PLN.Evidence.BinaryEvidence.pos
             singleton_evidence_ideal_eq_two_one
       have hneg :
           (BinaryWorldModel.evidence
             ({compiledMassSemantics demoMLN demo_supportWitness} : MassState DemoQuery)
             DemoQuery.ideal).neg = 1 := by
         simpa using
-          congrArg Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.neg
+          congrArg Mettapedia.PLN.Evidence.BinaryEvidence.neg
             singleton_evidence_ideal_eq_two_one
-      ext <;> simp [Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.hplus_def, hpos, hneg] <;> norm_num
+      ext <;> simp [Mettapedia.PLN.Evidence.BinaryEvidence.hplus_def, hpos, hneg] <;> norm_num
 
 theorem additive_revision_changes_evidence :
     BinaryWorldModel.evidence
@@ -234,7 +234,7 @@ theorem additive_revision_changes_evidence :
       DemoQuery.ideal := by
   intro hEq
   have hPos :=
-    congrArg Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.pos hEq
+    congrArg Mettapedia.PLN.Evidence.BinaryEvidence.pos hEq
   rw [doubled_evidence_ideal_eq_four_two, singleton_evidence_ideal_eq_two_one] at hPos
   norm_num at hPos
 

@@ -2,6 +2,7 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Annota
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Annotated.Structural
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.AlgebraicSchema
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Normalization.DeclaredComputations
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Annotated.HeadMorphism
 
 /-!
 # Annotated rewrite schemas
@@ -465,6 +466,50 @@ theorem ChurchRules.ofSchemas_requires_iff (S : SchemaFamily Head)
     (ChurchRules.ofSchemas R S present).computation.requires l r premises ↔
       CSchemaRequires (elabDeclarations R.constantType) S l r premises :=
   Iff.rfl
+
+/-- Enlarge the presented schema family while retaining its declaration
+table and the independently supplied universe-policy transport. The target
+retains the source instance's exact premise list. -/
+theorem ChurchRules.ofSchemas_morphism {target : Rules Head}
+    {sourceFamily targetFamily : SchemaFamily Head}
+    (sourcePresentation : Presents R.computation sourceFamily)
+    (targetPresentation : Presents target.computation targetFamily)
+    (base : R.Morphism target (fun head => head))
+    (declarations : target.constantType = R.constantType)
+    (included : ∀ {arity : Nat} {left right : Tm Head arity},
+      sourceFamily left right → targetFamily left right) :
+    (ChurchRules.ofSchemas R sourceFamily sourcePresentation).Morphism
+      (ChurchRules.ofSchemas target targetFamily targetPresentation) (fun head => head) where
+  headTyping := base.headTyping
+  isUniverse := base.isUniverse
+  join := base.join
+  cumulative := base.cumulative
+  headEq := base.headEq
+  constantType := by
+    intro name type declared
+    rw [CTm.mapHead_id]
+    change elabDeclarations target.constantType name = some type
+    rw [declarations]
+    exact declared
+  computation := by
+    intro n left right step
+    rw [CTm.mapHead_id, CTm.mapHead_id]
+    change CSchemaStep (elaborateFamily (elabDeclarations target.constantType) targetFamily) left right
+    rw [declarations]
+    cases step with
+    | instantiate schema assignment =>
+      obtain ⟨L, T, rule, rfl, rfl⟩ := schema
+      exact .instantiate ⟨L, T, included rule, rfl, rfl⟩ assignment
+  requires := by
+    intro n left right premises _ required
+    refine ⟨premises, ?_, ?_⟩
+    · rw [CTm.mapHead_id, CTm.mapHead_id]
+      change CSchemaRequires (elabDeclarations target.constantType) targetFamily left right premises
+      rw [declarations]
+      cases required with
+      | instantiate rule assignment => exact .instantiate (included rule) assignment
+    · intro premise member
+      exact ⟨premise, member, (CPremise.mapHead_id premise).symm⟩
 
 /-- **Root lifting** for a presented rule package with first-order, left-linear
 left sides: every root step of the erasure of an annotated term is the erasure of

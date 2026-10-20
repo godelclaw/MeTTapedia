@@ -10,6 +10,10 @@ import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.ErasureBoundary
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.FilledCode
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.InhabitationBoundary
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.InstitutionBoundary
+import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.HOLComparison
+import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.HOLConversionBubble
+import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.HOLReadingComparison
+import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.HOLTowerModel
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.IntensionalCode
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.NormalForms
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.Normalization

@@ -17,7 +17,7 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst)
 open SpaceSemantics (Program Equation)
 open Eval
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open scoped ProgramQuotation
 
 def source : ProgramQuotation.QuotedProgram :=

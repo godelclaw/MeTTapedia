@@ -5,13 +5,13 @@ import Mettapedia.PLN.WorldModel.BinaryWorldModel
 import Mathlib.Order.ConditionallyCompleteLattice.Finset
 
 /-!
-# EvidenceQuantale Adapter for OSLF Semantics
+# Binary evidence adapter for OSLF semantics
 
 This module is an **adapter layer**: it interprets OSLF formulas in the
-canonical evidence carrier `EvidenceQuantale.BinaryEvidence`.
+canonical evidence carrier `BinaryEvidence`.
 
 Ownership boundary:
-- Canonical evidence semantics lives in `Mettapedia.PLN.Evidence.EvidenceQuantale`
+- Canonical evidence semantics lives in `Mettapedia.PLN.Evidence.BinaryEvidence`
 - This file only lifts that evidence algebra into OSLF formula interpretation
 
 BinaryEvidence-valued formula interpretation uses BinaryEvidence's Frame (complete Heyting
@@ -54,9 +54,9 @@ open Mettapedia.GSLT
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.OSLF.Framework.TypeSynthesis
 open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 open scoped ENNReal
 

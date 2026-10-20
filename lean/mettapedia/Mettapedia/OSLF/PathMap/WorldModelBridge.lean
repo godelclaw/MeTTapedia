@@ -41,18 +41,12 @@ extension is future work; the Multiset case covers the counting evidence.
 namespace Mettapedia.OSLF.PathMap.WorldModelBridge
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.PathMap.PLNBridge
 open scoped ENNReal
 
 /-! ## Section 1: Multiset EvidenceType -/
-
-/-- `Multiset α` is an `EvidenceType` (additive commutative monoid) under multiset sum.
-    The `+` operation represents **independent store revision**: combining two independent
-    sets of PathMap paths into a single (potentially non-deduplicated) multiset store. -/
-instance {α : Type*} : EvidenceType (Multiset α) where
-  toAddCommMonoid := inferInstance
 
 /-! ## Section 2: BinaryEvidence Extraction from Multiset -/
 

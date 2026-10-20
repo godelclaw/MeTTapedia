@@ -13,7 +13,7 @@ This module closes the semantic bridge:
 
 namespace Mettapedia.Logic.MarkovLogicWorldModel
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.Logic.MarkovLogicAbstract
 open Mettapedia.Logic.MarkovLogicCountable
 open Mettapedia.Logic.MarkovLogicFiniteRestriction

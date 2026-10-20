@@ -19,7 +19,7 @@ open LO
 open LO.FirstOrder
 open LO.FirstOrder.SetTheory
 open Mettapedia.Logic.HOL
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLSetBridge
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open scoped ENNReal

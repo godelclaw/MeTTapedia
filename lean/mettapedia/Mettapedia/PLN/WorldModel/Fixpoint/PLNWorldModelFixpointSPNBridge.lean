@@ -17,8 +17,8 @@ trail-free dynamics:
 namespace Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointSPNBridge
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.PLN.InferenceControl.ProtocolDynamics.PLNTrailFreeDampedConvergence
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointPolicy

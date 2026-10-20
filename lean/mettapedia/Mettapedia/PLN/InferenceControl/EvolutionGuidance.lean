@@ -13,7 +13,7 @@ constructed fitness interval strictly dominates a candidate's interval.
 namespace Mettapedia.PLN.InferenceControl.EvolutionGuidance
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder
 open Mettapedia.PLN.TruthValues.PLNIndefiniteTruth
 open Mettapedia.PLN.TruthValues.PLNWeightTV

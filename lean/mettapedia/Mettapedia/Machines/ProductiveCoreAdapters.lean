@@ -1,5 +1,7 @@
 import Mettapedia.Machines.MachineRefinement
 import Mettapedia.GSLT.Distinction.ProductiveBlocks
+import Mettapedia.GSLT.Distinction.SpanTransport
+import Mettapedia.Machines.Cursor.Protocol
 
 /-!
 # Deterministic control cores in the common finite-run interface
@@ -721,5 +723,372 @@ theorem finished_result (consume : Accumulator → Item → Option Accumulator)
   exact (congrArg Work.result ((core consume).produces_unique first second)).trans result
 
 end RetainedFold
+
+/-! ## First-order event machines in the shared cursor scheduler -/
+
+namespace EventCursor
+
+open _root_.CategoryTheory Mettapedia.TypeTheory
+
+variable {State Event Verdict Request : Type}
+
+/-- A request inspects one actual machine configuration. Replies preserve
+all five transition kinds and absence of a transition. -/
+abbrev protocol (State Event Verdict Request : Type) :
+    IndexedPolynomial PUnit (fun _ => PUnit) where
+  Shape _ _ := State
+  Position _ := Option (Transition State Event Verdict Request)
+  next _ _ := .unit
+
+def provider (machine : Machine State Event Verdict Request) :
+    Cursor.Provider (protocol State Event Verdict Request) where
+  State _ _ := PUnit
+  step _ configuration := ⟨machine.step configuration, .unit⟩
+
+/-- The retained control is the existing machine outcome and its event
+history. The adapter adds no host continuation. An external request stays a
+suspended machine outcome; it is never automatically answered by a poll. -/
+abbrev Control (State Event Verdict Request : Type) :=
+  List Event × Outcome State Verdict Request
+
+def accept (events : List Event) (configuration : State) :
+    Option (Transition State Event Verdict Request) → Control State Event Verdict Request
+  | none => (events, .stuck configuration)
+  | some (.silent next) => (events, .exhausted next)
+  | some (.publish added next) => (events ++ added, .exhausted next)
+  | some (.finish verdict) => (events, .finished verdict)
+  | some (.fail faults) => (events ++ faults, .faulted)
+  | some (.call request saved) => (events, .suspended request saved)
+
+def client : Cursor.Client (P := protocol State Event Verdict Request)
+    (Return := fun _ _ => Control State Event Verdict Request) where
+  V _ _ := Control State Event Verdict Request
+  str := fun _ _ => ↾(fun control => match control.2 with
+    | .exhausted configuration => ⟨.inr configuration, accept control.1 configuration⟩
+    | _ => ⟨.inl control, fun impossible => nomatch impossible⟩)
+
+/-- The charge is the machine's declared transition price. Looking for a
+missing transition is uncharged, as in `Machine.spent`; physical polling cost
+is not specified by that account. -/
+def charge (machine : Machine State Event Verdict Request) (price : State → Nat) :
+    Cursor.Charge (provider machine) := fun _ configuration =>
+  match machine.step configuration with | none => 0 | some _ => price configuration
+
+abbrev Result (machine : Machine State Event Verdict Request) :=
+  Cursor.Outcome (provider machine) client .unit
+
+def packet (machine : Machine State Event Verdict Request)
+    (control : Control State Event Verdict Request) : Cursor.Packet (provider machine) client .unit :=
+  ⟨.unit, control, .unit⟩
+
+/-- A terminal reply may already be retained when the scheduling allowance
+ends. Reading it does not need another machine transition. Cursor `done`
+means the client returned; the returned machine outcome still distinguishes
+completion, a request, fault and stuckness. -/
+def read (machine : Machine State Event Verdict Request) :
+    Result machine → Control State Event Verdict Request
+  | .paused ⟨.unit, control, .unit⟩ => control
+  | .done ⟨.unit, control, .unit⟩ => control
+
+theorem advance_inspect (machine : Machine State Event Verdict Request) (price : State → Nat)
+    (fuel : Nat) (configuration : State) (events : List Event) :
+    Cursor.advance (provider machine) client (charge machine price) (fuel + 1)
+        (packet machine (events, .exhausted configuration)) =
+      let rest := Cursor.advance (provider machine) client (charge machine price) fuel
+        (packet machine (accept events configuration (machine.step configuration)))
+      (charge machine price (base := .unit) (index := .unit) .unit configuration + rest.1, rest.2) := rfl
+
+theorem terminal_read (machine : Machine State Event Verdict Request) (price : State → Nat)
+    (fuel : Nat) (events : List Event) (outcome : Outcome State Verdict Request)
+    (terminal : ∀ configuration, outcome ≠ .exhausted configuration) :
+    (Cursor.advance (provider machine) client (charge machine price)
+      fuel (packet machine (events, outcome))).1 = 0 ∧
+    read machine (Cursor.advance (provider machine) client (charge machine price)
+      fuel (packet machine (events, outcome))).2 = (events, outcome) := by
+  cases fuel <;> cases outcome
+  all_goals first | exact ⟨rfl, rfl⟩ | exact (terminal _ rfl).elim
+
+/-- Every cursor visit executes the independently defined machine runner
+with the same budget, reached configuration and event occurrences. Terminal
+client bookkeeping adds no machine transition and no transition charge. -/
+theorem advance_run (machine : Machine State Event Verdict Request) (price : State → Nat)
+    (fuel : Nat) (configuration : State) (events : List Event) :
+    let actual := Cursor.advance (provider machine) client (charge machine price)
+      fuel (packet machine (events, .exhausted configuration))
+    actual.1 = machine.spent price fuel configuration ∧
+      read machine actual.2 =
+        (events ++ (machine.run fuel configuration).1, (machine.run fuel configuration).2) := by
+  induction fuel generalizing configuration events with
+  | zero => simp [Cursor.advance, packet, read, Machine.spent, Machine.run]
+  | succ fuel ih =>
+      dsimp only
+      rw [advance_inspect]
+      cases stepped : machine.step configuration with
+      | none =>
+          have stopped := terminal_read machine price fuel events (.stuck configuration) (by simp)
+          simpa [charge, accept, stepped,
+            Machine.spent, Machine.run] using stopped
+      | some transition =>
+          cases transition with
+          | silent next =>
+              simpa [charge, accept, stepped,
+                Machine.spent, Machine.run] using
+                And.intro (congrArg (price configuration + ·) (ih next events).1) (ih next events).2
+          | publish added next =>
+              simpa [charge, accept, stepped,
+                Machine.spent, Machine.run, List.append_assoc] using
+                And.intro (congrArg (price configuration + ·) (ih next (events ++ added)).1)
+                  (ih next (events ++ added)).2
+          | finish verdict =>
+              have stopped := terminal_read machine price fuel events (.finished verdict) (by simp)
+              simpa [charge, accept, stepped,
+                Machine.spent, Machine.run, stopped.1] using
+                And.intro (congrArg (price configuration + ·) stopped.1) stopped.2
+          | fail faults =>
+              have stopped := terminal_read machine price fuel (events ++ faults) .faulted (by simp)
+              simpa [charge, accept, stepped,
+                Machine.spent, Machine.run, stopped.1] using
+                And.intro (congrArg (price configuration + ·) stopped.1) stopped.2
+          | call request saved =>
+              have stopped := terminal_read machine price fuel events (.suspended request saved) (by simp)
+              simpa [charge, accept, stepped,
+                Machine.spent, Machine.run, stopped.1] using
+                And.intro (congrArg (price configuration + ·) stopped.1) stopped.2
+
+/-- Splitting the scheduler allowance preserves the actual first-order
+residual, terminal reply and accumulated account, before any readback. -/
+theorem advance_split (machine : Machine State Event Verdict Request) (price : State → Nat)
+    (earlier later : Nat) (configuration : State) (events : List Event) :
+    Cursor.advance (provider machine) client (charge machine price) (earlier + later)
+        (packet machine (events, .exhausted configuration)) =
+      Cursor.resume (provider machine) client (charge machine price) later
+        (Cursor.advance (provider machine) client (charge machine price) earlier
+          (packet machine (events, .exhausted configuration))) :=
+  Cursor.advance_add _ _ _ _ _ _
+
+/-- A live source cut is the actual paused cursor packet, including its
+whole reached configuration. No terminal-client inspection is inserted in
+that live prefix. -/
+theorem advance_exhausted (machine : Machine State Event Verdict Request) (price : State → Nat)
+    (fuel : Nat) (configuration : State) (events : List Event)
+    {published : List Event} {saved : State}
+    (reached : machine.run fuel configuration = (published, .exhausted saved)) :
+    Cursor.advance (provider machine) client (charge machine price) fuel
+        (packet machine (events, .exhausted configuration)) =
+      (machine.spent price fuel configuration,
+        .paused (packet machine (events ++ published, .exhausted saved))) := by
+  induction fuel generalizing configuration events published saved with
+  | zero =>
+      simp only [Machine.run] at reached
+      cases reached
+      simp [Cursor.advance, packet, Machine.spent]
+  | succ fuel ih =>
+      rw [advance_inspect]
+      cases stepped : machine.step configuration with
+      | none => simp [Machine.run, stepped] at reached
+      | some transition =>
+          cases transition with
+          | silent next =>
+              have following : machine.run fuel next = (published, .exhausted saved) := by
+                simpa only [Machine.run, stepped] using reached
+              simp only [accept]
+              rw [ih next events following]
+              simp [Machine.spent, stepped, charge]
+          | publish added next =>
+              have publishedRun := reached
+              rw [machine.run_succ_publish stepped] at publishedRun
+              have following : machine.run fuel next =
+                  ((machine.run fuel next).1, .exhausted saved) := by
+                have residual : (machine.run fuel next).2 = .exhausted saved :=
+                  congrArg Prod.snd publishedRun
+                exact Prod.ext rfl residual
+              have history : added ++ (machine.run fuel next).1 = published :=
+                congrArg Prod.fst publishedRun
+              simp only [accept]
+              rw [ih next (events ++ added) following]
+              simp only [Machine.spent, stepped, charge, List.append_assoc, history]
+          | finish verdict => simp [Machine.run, stepped] at reached
+          | fail faults => simp [Machine.run, stepped] at reached
+          | call request saved => simp [Machine.run, stepped] at reached
+
+/-- An unbounded machine execution remains live for every scheduling
+allowance. Silent and reactive divergence are both preserved; fairness is
+not imposed by the cursor adapter. -/
+theorem divergence_pauses (machine : Machine State Event Verdict Request) (price : State → Nat)
+    (configuration : State) (events : List Event) (diverges : machine.DivergesWithin configuration)
+    (fuel : Nat) :
+    ∃ saved, (Cursor.advance (provider machine) client (charge machine price) fuel
+      (packet machine (events, .exhausted configuration))).2 =
+        .paused (packet machine (events ++ (machine.run fuel configuration).1, .exhausted saved)) := by
+  obtain ⟨saved, unfinished⟩ := diverges fuel
+  exact ⟨saved, congrArg Prod.snd (advance_exhausted machine price fuel configuration events
+    (Prod.ext rfl unfinished))⟩
+
+section Relational
+
+variable {Source Target SourceEvent TargetEvent SourceVerdict TargetVerdict SourceRequest TargetRequest
+  PublicEvent PublicVerdict PublicRequest : Type}
+variable (source : Machine Source SourceEvent SourceVerdict SourceRequest)
+  {target : Target → Option (Transition Target TargetEvent TargetVerdict TargetRequest) → Prop}
+  {related : Source → Target → Prop}
+  {sourceRead : ExecutionReadout SourceEvent SourceVerdict SourceRequest PublicEvent PublicVerdict PublicRequest}
+  {targetRead : ExecutionReadout TargetEvent TargetVerdict TargetRequest PublicEvent PublicVerdict PublicRequest}
+
+/-- Scheduling an executable realization preserves its declared relational
+observation, including incomplete and suspended endpoints. Only newly executed
+target blocks contribute new events; the existing public history is retained.
+The scheduler account is the source machine's account, with no assumed ratio
+between source inspections and target work. -/
+theorem advance_simulation
+    (simulation : DerivationSimulation (fun state action => source.step state = action)
+      target related sourceRead targetRead)
+    (price : Source → Nat) (fuel : Nat) (history : List SourceEvent)
+    {state : Source} {state' : Target} (retained : related state state') :
+    let actual := Cursor.advance (provider source) client (charge source price) fuel
+      (packet source (history, .exhausted state))
+    actual.1 = source.spent price fuel state ∧
+      ∃ count events' outcome', Derivation target count state' events' outcome' ∧
+        (read source actual.2).1.flatMap sourceRead.event =
+          history.flatMap sourceRead.event ++ events'.flatMap targetRead.event ∧
+        OutcomeRel related ((read source actual.2).2.relabel sourceRead.verdict sourceRead.request)
+          (outcome'.relabel targetRead.verdict targetRead.request) := by
+  have executed := advance_run source price fuel state history
+  obtain ⟨count, events', outcome', path, publicEvents, publicOutcome⟩ :=
+    source.run_related_to_rule simulation fuel retained
+  refine ⟨executed.1, count, events', outcome', path, ?_, ?_⟩
+  · rw [executed.2, List.flatMap_append, publicEvents]
+  · rw [executed.2]
+    exact publicOutcome
+
+/-- A live scheduler cut and its relational realization resume at their
+actual reached configurations. The target prefix is constructed once; the
+suffix starts at its saved endpoint and appends only new public events.
+Requests, faults and completion remain distinct from an exhausted allowance. -/
+theorem resume_simulation
+    (simulation : DerivationSimulation (fun state action => source.step state = action)
+      target related sourceRead targetRead)
+    (price : Source → Nat) (earlier later : Nat) (history : List SourceEvent)
+    {state saved : Source} {published : List SourceEvent}
+    (cut : source.run earlier state = (published, .exhausted saved))
+    {state' : Target} (retained : related state state') :
+    let actual := Cursor.resume (provider source) client (charge source price) later
+      (Cursor.advance (provider source) client (charge source price) earlier
+        (packet source (history, .exhausted state)))
+    actual.1 = source.spent price earlier state + source.spent price later saved ∧
+      ∃ first second saved' events' later' outcome',
+        Derivation target first state' events' (.exhausted saved') ∧
+        related saved saved' ∧ Derivation target second saved' later' outcome' ∧
+        events'.flatMap targetRead.event = published.flatMap sourceRead.event ∧
+        (read source actual.2).1.flatMap sourceRead.event =
+          history.flatMap sourceRead.event ++ (events' ++ later').flatMap targetRead.event ∧
+        OutcomeRel related ((read source actual.2).2.relabel sourceRead.verdict sourceRead.request)
+          (outcome'.relabel targetRead.verdict targetRead.request) ∧
+        Derivation target (first + second) state' (events' ++ later') outcome' := by
+  have prefixPath := source.execution_derivation earlier state
+  rw [cut] at prefixPath
+  obtain ⟨first, second, saved', events', later', outcome', prefixPath', suffixPath,
+      savedRelated, prefixRead, suffixRead, outcomeRelated, whole⟩ :=
+    simulation.resume prefixPath (source.execution_derivation later saved) retained
+  have reached := advance_exhausted source price earlier state history cut
+  have continued := advance_run source price later saved (history ++ published)
+  dsimp only
+  rw [reached]
+  change _ + _ = _ ∧ _
+  refine ⟨congrArg (source.spent price earlier state + ·) continued.1,
+    first, second, saved', events', later', outcome', prefixPath', savedRelated, suffixPath, prefixRead, ?_, ?_, whole⟩
+  · change (read source (Cursor.advance (provider source) client (charge source price) later
+      (packet source (history ++ published, .exhausted saved))).2).1.flatMap sourceRead.event = _
+    rw [continued.2]
+    simp only [List.flatMap_append, prefixRead, suffixRead, List.append_assoc]
+  · change OutcomeRel related
+      ((read source (Cursor.advance (provider source) client (charge source price) later
+        (packet source (history ++ published, .exhausted saved))).2).2.relabel _ _) _
+    rw [continued.2]
+    exact outcomeRelated
+
+end Relational
+
+/-- When both local rules have executable realizations, the related endpoints
+are actual cursor results on both sides. The target receives its own finite
+allowance and price; equality of public observations imposes neither identical
+instruction schedules nor equal resource accounts. -/
+theorem advance_machines
+    {Source Target SourceEvent TargetEvent SourceVerdict TargetVerdict SourceRequest TargetRequest
+      PublicEvent PublicVerdict PublicRequest : Type}
+    (source : Machine Source SourceEvent SourceVerdict SourceRequest)
+    (target : Machine Target TargetEvent TargetVerdict TargetRequest)
+    {related : Source → Target → Prop}
+    {sourceRead : ExecutionReadout SourceEvent SourceVerdict SourceRequest PublicEvent PublicVerdict PublicRequest}
+    {targetRead : ExecutionReadout TargetEvent TargetVerdict TargetRequest PublicEvent PublicVerdict PublicRequest}
+    (simulation : DerivationSimulation (fun state action => source.step state = action)
+      (fun state action => target.step state = action) related sourceRead targetRead)
+    (sourcePrice : Source → Nat) (targetPrice : Target → Nat) (fuel : Nat)
+    {state : Source} {state' : Target} (retained : related state state') :
+    ∃ count,
+      let first := Cursor.advance (provider source) client (charge source sourcePrice) fuel
+        (packet source ([], .exhausted state))
+      let second := Cursor.advance (provider target) client (charge target targetPrice) count
+        (packet target ([], .exhausted state'))
+      first.1 = source.spent sourcePrice fuel state ∧
+      second.1 = target.spent targetPrice count state' ∧
+      (read source first.2).1.flatMap sourceRead.event = (read target second.2).1.flatMap targetRead.event ∧
+      OutcomeRel related ((read source first.2).2.relabel sourceRead.verdict sourceRead.request)
+        ((read target second.2).2.relabel targetRead.verdict targetRead.request) := by
+  obtain ⟨account, count, events', outcome', path, publicEvents, publicOutcome⟩ :=
+    advance_simulation source simulation sourcePrice fuel [] retained
+  have reached := Derivation.sound target (fun _ _ step => step) path
+  have executed := advance_run target targetPrice count state' []
+  rw [reached] at executed
+  refine ⟨count, account, executed.1, ?_, ?_⟩
+  · rw [executed.2]
+    simpa only [List.nil_append, List.flatMap_nil] using publicEvents
+  · rw [executed.2]
+    exact publicOutcome
+
+namespace Controls
+
+def effectful : Machine (Nat × List String) Nat (List String) String where
+  step state := match state.1 with
+    | 0 => some (.silent (1, state.2 ++ ["write"]))
+    | 1 => some (.publish [7, 7] (2, state.2))
+    | 2 => some (.call "lookup" (3, state.2))
+    | 3 => some (.finish state.2)
+    | _ => none
+
+def initial : Cursor.Packet (provider effectful) client .unit :=
+  packet effectful ([], .exhausted (0, []))
+
+def first := Cursor.advance (provider effectful) client (charge effectful (fun _ => 1)) 1 initial
+
+def requested := Cursor.resume (provider effectful) client (charge effectful (fun _ => 1)) 2 first
+
+theorem pause_retains_reached_world :
+    first.1 = 1 ∧ read effectful first.2 = ([], .exhausted (1, ["write"])) := by
+  exact ⟨rfl, rfl⟩
+
+theorem resumed_keeps_duplicates_and_request :
+    requested.1 = 3 ∧
+      read effectful requested.2 = ([7, 7], .suspended "lookup" (3, ["write"])) := by
+  exact ⟨rfl, rfl⟩
+
+theorem allowance_does_not_answer_request :
+    let later := Cursor.resume (provider effectful) client (charge effectful (fun _ => 1)) 20 requested
+    later.1 = 3 ∧ read effectful later.2 = ([7, 7], .suspended "lookup" (3, ["write"])) := by
+  exact ⟨rfl, rfl⟩
+
+theorem restart_repeats_effect :
+    read effectful (Cursor.advance (provider effectful) client (charge effectful (fun _ => 1)) 1
+      (packet effectful ([], .exhausted (0, ["write"])))).2 =
+        ([], .exhausted (1, ["write", "write"])) ∧
+      read effectful first.2 ≠ ([], .exhausted (1, ["write", "write"])) := by
+  refine ⟨rfl, ?_⟩
+  intro same
+  have states := Outcome.exhausted.inj (congrArg Prod.snd same)
+  have lengths := congrArg (fun state : Nat × List String => state.2.length) states
+  simp at lengths
+
+end Controls
+
+end EventCursor
 
 end Mettapedia.Machines.ProductiveCoreAdapters

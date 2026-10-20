@@ -1,4 +1,6 @@
 import Mettapedia.Machines.EventPump
+import Mettapedia.GSLT.Contracts.RunAccounts
+import Mathlib.Algebra.Order.Monoid.Unbundled.Pow
 
 /-!
 # Bounded native ready order
@@ -14,8 +16,11 @@ with the shared `CooperativeQueue` policy, including retirement, duplicate
 offers and rejected arrivals. Continuing arrivals cannot overtake the existing
 prefix. Bounded slices preserve every visit and the complete residual queue.
 A visit is an opportunity, not a successful effect or goal completion; the
-host must still execute service slots and bound their complete cost. The executable
-contract originates at godelclaw/MeTTapedia commit
+host must still execute service slots and bound their complete cost. The costed
+service adapter accumulates handling, all arrivals and bookkeeping through the
+existing run account, and turns an explicit whole-slot bound into a cumulative
+requested-service bound. It establishes no native timing bound by dispatch
+count alone. The executable contract originates at godelclaw/MeTTapedia commit
 262e6f38993617ba8a438432299e658d3988fe21.
 -/
 
@@ -283,6 +288,183 @@ theorem serviceRun_add (first second : Nat) (keep : Nat → Bool)
     simp only [Nat.succ_add, serviceRun, ih]
     simp only [Nat.add_assoc, Nat.add_comm first 1, List.append_assoc]
 
+/-! ## Whole-slot service accounts
+
+The counter used by `serviceRun` is a count of executed slots. A host cost
+profile separately measures the complete slot: handling the visited task,
+processing all offers (including rejected offers), and queue bookkeeping.
+The costed worker below uses exactly the same transitions and retains the
+whole residual state. Its path account is a mathematical reference only;
+ordinary service need not construct a path, charge record or execution log.
+-/
+
+/-- Three disjoint parts of one complete service slot, in a declared additive
+cost profile. Handling may include a native operation; its dispatch count is
+not its cost. Empty queues can still incur arrival and bookkeeping costs. -/
+structure SlotCharge (Cost : Type*) where
+  handling : Cost
+  arrivals : Cost
+  bookkeeping : Cost
+  deriving DecidableEq, Repr
+
+def SlotCharge.total {Cost : Type*} [AddMonoid Cost] (charge : SlotCharge Cost) : Cost :=
+  charge.handling + charge.arrivals + charge.bookkeeping
+
+abbrev ServiceMeter (Cost : Type*) := State → Bool → List Nat → SlotCharge Cost
+
+/-- Execute the existing service transition and accumulate its complete
+charge. Retired tasks and rejected arrivals follow `service`, not a second
+scheduling policy. -/
+def costedServiceRun {Cost : Type*} [AddMonoid Cost] (meter : ServiceMeter Cost) :
+    Nat → (Nat → Bool) → (Nat → List Nat) → State → (List Nat × State) × Cost
+  | 0, _, _, state => (([], state), 0)
+  | n + 1, keep, offered, state =>
+    let rest := costedServiceRun meter n (fun i => keep (i + 1))
+      (fun i => offered (i + 1)) (service state (keep 0) (offered 0))
+    (((step state .visit).1.visited.toList ++ rest.1.1, rest.1.2),
+      (meter state (keep 0) (offered 0)).total + rest.2)
+
+/-- Cost observation preserves every visit and the complete residual queue. -/
+@[simp] theorem costedServiceRun_erases {Cost : Type*} [AddMonoid Cost]
+    (meter : ServiceMeter Cost) (slots : Nat) (keep : Nat → Bool)
+    (offered : Nat → List Nat) (state : State) :
+    (costedServiceRun meter slots keep offered state).1 =
+      serviceRun slots keep offered state := by
+  induction slots generalizing keep offered state with
+  | zero => rfl
+  | succ slots ih => simp only [costedServiceRun, serviceRun, ih]
+
+/-- Splitting a costed slice preserves the residual queue and adds the actual
+suffix charge. Neither arrivals nor already paid handling are replayed. -/
+theorem costedServiceRun_add {Cost : Type*} [AddMonoid Cost]
+    (meter : ServiceMeter Cost) (first second : Nat) (keep : Nat → Bool)
+    (offered : Nat → List Nat) (state : State) :
+    costedServiceRun meter (first + second) keep offered state =
+      let firstRun := costedServiceRun meter first keep offered state
+      let suffix := costedServiceRun meter second (fun i => keep (i + first))
+        (fun i => offered (i + first)) firstRun.1.2
+      ((firstRun.1.1 ++ suffix.1.1, suffix.1.2), firstRun.2 + suffix.2) := by
+  induction first generalizing keep offered state with
+  | zero =>
+    simp only [costedServiceRun, List.nil_append, zero_add, Nat.add_zero]
+  | succ first ih =>
+    simp only [Nat.succ_add, costedServiceRun, ih]
+    simp only [Nat.add_comm first 1, List.append_assoc, add_assoc]
+
+/-- Edges are actual applications of `service`, including idle slots. -/
+inductive ServiceEdge : State → State → Type where
+  | slot (state : State) (keep : Bool) (offered : List Nat) :
+      ServiceEdge state (service state keep offered)
+
+abbrev serviceQuiver : Quiver State := ⟨ServiceEdge⟩
+
+/-- The existing general `RunAccount`, labelled by each complete slot. -/
+def serviceAccount {Cost : Type*} [AddMonoid Cost] (meter : ServiceMeter Cost) :
+    letI := serviceQuiver
+    Mettapedia.Effects.RunAccount (_root_.CategoryTheory.Paths State) (Multiplicative Cost) := by
+  letI := serviceQuiver
+  let label : ∀ {before after : State}, ServiceEdge before after → Multiplicative Cost :=
+    fun {before _} edge => by
+      cases edge with
+      | slot keep offered => exact Multiplicative.ofAdd (meter before keep offered).total
+  exact Mettapedia.GSLT.Contracts.Accounts.pathAccount label
+
+/-- A reference path of the uncounted execution; no service driver needs to
+allocate this object. -/
+def servicePath : (slots : Nat) → (keep : Nat → Bool) → (offered : Nat → List Nat) →
+    (state : State) →
+    letI := serviceQuiver
+    Quiver.Path state (serviceRun slots keep offered state).2
+  | 0, _, _, _ => by
+    letI := serviceQuiver
+    exact .nil
+  | n + 1, keep, offered, state => by
+    letI := serviceQuiver
+    exact (Quiver.Hom.toPath (ServiceEdge.slot state (keep 0) (offered 0))).comp
+      (servicePath n (fun i => keep (i + 1)) (fun i => offered (i + 1))
+        (service state (keep 0) (offered 0)))
+
+set_option backward.isDefEq.respectTransparency false in
+/-- The directly accumulated charge is the independent path account of the
+existing uncounted service execution. -/
+theorem costedServiceRun_eq_account {Cost : Type*} [AddMonoid Cost]
+    (meter : ServiceMeter Cost) (slots : Nat) (keep : Nat → Bool)
+    (offered : Nat → List Nat) (state : State) :
+    letI := serviceQuiver
+    Multiplicative.ofAdd (costedServiceRun meter slots keep offered state).2 =
+      (serviceAccount meter).of (servicePath slots keep offered state) := by
+  let _ := serviceQuiver
+  induction slots generalizing keep offered state with
+  | zero => rfl
+  | succ slots ih =>
+    change Multiplicative.ofAdd ((meter state (keep 0) (offered 0)).total +
+      (costedServiceRun meter slots (fun i => keep (i + 1))
+        (fun i => offered (i + 1)) (service state (keep 0) (offered 0))).2) = _
+    rw [servicePath]
+    erw [(serviceAccount meter).of_comp]
+    rw [← ih]
+    simp [serviceAccount, Quiver.Hom.toPath,
+      Mettapedia.GSLT.Contracts.Accounts.pathAccount_cons,
+      Mettapedia.GSLT.Contracts.Accounts.pathAccount_nil]
+
+/-- An admission contract on every complete slot actually reached by a
+particular service slice. This includes arrival processing and bookkeeping,
+not just the task's requested quantum or number of native dispatches. -/
+def ServiceCostBound {Cost : Type*} [AddMonoid Cost] [Preorder Cost]
+    (meter : ServiceMeter Cost) (bound : Cost) (slots : Nat) (keep : Nat → Bool)
+    (offered : Nat → List Nat) (state : State) : Prop :=
+  ∀ n, n < slots →
+    (meter (serviceRun n keep offered state).2 (keep n) (offered n)).total ≤ bound
+
+theorem SlotCharge.total_le {Cost : Type*} [AddCommMonoid Cost] [Preorder Cost]
+    [IsOrderedAddMonoid Cost] (charge : SlotCharge Cost)
+    (handling arrivals bookkeeping : Cost)
+    (handle : charge.handling ≤ handling) (arrive : charge.arrivals ≤ arrivals)
+    (maintain : charge.bookkeeping ≤ bookkeeping) :
+    charge.total ≤ handling + arrivals + bookkeeping :=
+  add_le_add (add_le_add handle arrive) maintain
+
+/-- Smaller slices inherit the complete-slot admission contract. -/
+theorem ServiceCostBound.prefix {Cost : Type*} [AddMonoid Cost] [Preorder Cost]
+    {meter : ServiceMeter Cost} {bound : Cost} {first second : Nat}
+    {keep : Nat → Bool} {offered : Nat → List Nat} {state : State}
+    (admitted : ServiceCostBound meter bound second keep offered state)
+    (within : first ≤ second) :
+    ServiceCostBound meter bound first keep offered state :=
+  fun n before => admitted n (Nat.lt_of_lt_of_le before within)
+
+/-- Component bounds imply whole-slot admission. Arrival and queue costs
+cannot disappear into the native handling allowance. -/
+theorem ServiceCostBound.of_components {Cost : Type*} [AddCommMonoid Cost] [Preorder Cost]
+    [IsOrderedAddMonoid Cost] (meter : ServiceMeter Cost)
+    (handling arrivals bookkeeping : Cost) (slots : Nat) (keep : Nat → Bool)
+    (offered : Nat → List Nat) (state : State)
+    (handle : ∀ n, n < slots →
+      (meter (serviceRun n keep offered state).2 (keep n) (offered n)).handling ≤ handling)
+    (arrive : ∀ n, n < slots →
+      (meter (serviceRun n keep offered state).2 (keep n) (offered n)).arrivals ≤ arrivals)
+    (maintain : ∀ n, n < slots →
+      (meter (serviceRun n keep offered state).2 (keep n) (offered n)).bookkeeping ≤ bookkeeping) :
+    ServiceCostBound meter (handling + arrivals + bookkeeping) slots keep offered state :=
+  fun n before => SlotCharge.total_le _ _ _ _
+    (handle n before) (arrive n before) (maintain n before)
+
+/-- Whole-slot admission yields a cumulative bound in any ordered additive
+cost profile. No conversion from a logical dispatch count to time is assumed. -/
+theorem costedServiceRun_cost_le {Cost : Type*} [AddCommMonoid Cost] [Preorder Cost]
+    [IsOrderedAddMonoid Cost] (meter : ServiceMeter Cost) (bound : Cost)
+    (slots : Nat) (keep : Nat → Bool) (offered : Nat → List Nat) (state : State)
+    (admitted : ServiceCostBound meter bound slots keep offered state) :
+    (costedServiceRun meter slots keep offered state).2 ≤ slots • bound := by
+  induction slots with
+  | zero => simp [costedServiceRun]
+  | succ slots ih =>
+    have earlier := ih (fun n within => admitted n (Nat.lt_trans within (Nat.lt_succ_self slots)))
+    have last := admitted slots (Nat.lt_succ_self slots)
+    rw [costedServiceRun_add meter slots 1]
+    simp only [costedServiceRun, Nat.zero_add, add_zero, costedServiceRun_erases]
+    exact (add_le_add earlier last).trans_eq (succ_nsmul bound slots).symm
+
 theorem duplicates_and_full_arrivals_do_not_overtake :
     serviceRun 2 (fun _ => true) (fun _ => [9, 2, 9, 10]) ⟨2, [1, 2]⟩ =
       ([1, 2], ⟨2, [1, 2]⟩) := by decide
@@ -449,6 +631,53 @@ theorem retained_task_gets_repeated_service (demand : Nat)
   exact requested_task_gets_bounded_service demand state target keep offered
     valid member (fun n _ atHead => retained n atHead)
 
+/-- The same requested service theorem with the cumulative account of its
+actual execution. This bounds a declared cost profile only under the complete
+slot admission contract; it does not postulate a wall-clock interpretation. -/
+theorem requested_task_gets_bounded_cost {Cost : Type*} [AddCommMonoid Cost] [Preorder Cost]
+    [IsOrderedAddMonoid Cost] (meter : ServiceMeter Cost) (bound : Cost) (demand : Nat)
+    (state : State) (target : Nat) (keep : Nat → Bool) (offered : Nat → List Nat)
+    (valid : invariant state) (member : target ∈ state.tasks)
+    (retained : ∀ n, (serviceRun (n + 1) keep offered state).1.count target < demand →
+      (serviceRun n keep offered state).2.tasks.head? = some target → keep n = true)
+    (admitted : ServiceCostBound meter bound (demand * state.capacity) keep offered state) :
+    demand ≤ (costedServiceRun meter (demand * state.capacity) keep offered state).1.1.count target ∧
+      (costedServiceRun meter (demand * state.capacity) keep offered state).2 ≤
+        (demand * state.capacity) • bound := by
+  exact ⟨by simpa only [costedServiceRun_erases] using
+      requested_task_gets_bounded_service demand state target keep offered valid member retained,
+    costedServiceRun_cost_le meter bound _ keep offered state admitted⟩
+
+/-- A retained task receives every finite request within its cumulative
+whole-slot bound. Other tasks can retire, and arrivals can fail admission. -/
+theorem retained_task_gets_repeated_bounded_cost {Cost : Type*} [AddCommMonoid Cost]
+    [Preorder Cost] [IsOrderedAddMonoid Cost] (meter : ServiceMeter Cost) (bound : Cost)
+    (demand : Nat) (state : State) (target : Nat) (keep : Nat → Bool)
+    (offered : Nat → List Nat) (valid : invariant state) (member : target ∈ state.tasks)
+    (retained : ∀ n, (serviceRun n keep offered state).2.tasks.head? = some target →
+      keep n = true)
+    (admitted : ServiceCostBound meter bound (demand * state.capacity) keep offered state) :
+    demand ≤ (costedServiceRun meter (demand * state.capacity) keep offered state).1.1.count target ∧
+      (costedServiceRun meter (demand * state.capacity) keep offered state).2 ≤
+        (demand * state.capacity) • bound :=
+  requested_task_gets_bounded_cost meter bound demand state target keep offered valid member
+    (fun n _ atHead => retained n atHead) admitted
+
+/-- The first requested opportunity already has a cost bound at its actual
+prefix, no later than the initial queue length. -/
+theorem queued_task_gets_bounded_cost {Cost : Type*} [AddCommMonoid Cost] [Preorder Cost]
+    [IsOrderedAddMonoid Cost] (meter : ServiceMeter Cost) (bound : Cost)
+    (state : State) (target : Nat) (keep : Nat → Bool) (offered : Nat → List Nat)
+    (valid : invariant state) (member : target ∈ state.tasks)
+    (admitted : ServiceCostBound meter bound state.tasks.length keep offered state) :
+    ∃ slots ≤ state.tasks.length,
+      target ∈ (costedServiceRun meter slots keep offered state).1.1 ∧
+        (costedServiceRun meter slots keep offered state).2 ≤ slots • bound := by
+  obtain ⟨slots, within, served⟩ :=
+    queued_task_gets_bounded_service state target keep offered valid member
+  exact ⟨slots, within, by simpa only [costedServiceRun_erases] using served,
+    costedServiceRun_cost_le meter bound slots keep offered state (admitted.prefix within)⟩
+
 theorem retained_task_survives_retirement_and_rejected_arrivals :
     serviceRun 6 (fun n => decide (n % 2 = 0)) (fun n => [100 + n, 100 + n])
       ⟨2, [1, 2]⟩ = ([1, 2, 1, 101, 1, 103], ⟨2, [1, 105]⟩) := by decide
@@ -486,6 +715,111 @@ theorem admissions_alone_can_leave_the_head_waiting (n : Nat) :
   induction n with
   | zero => rfl
   | succ n ih => simpa [List.replicate_succ, run, step, EventPump.admit] using ih
+
+/-! The following profile is illustrative: a declared per-task handling
+charge, one unit per offered arrival and one plus queue length for maintenance.
+It is not a measurement model of a particular native implementation. -/
+
+private def controlMeter (native : Nat → Nat) : ServiceMeter Nat :=
+  fun state _ offered =>
+    ⟨(state.tasks.head?.map native).getD 0, offered.length, state.tasks.length + 1⟩
+
+theorem zero_service_slots_have_no_cost {Cost : Type*} [AddMonoid Cost]
+    (meter : ServiceMeter Cost) (keep : Nat → Bool) (offered : Nat → List Nat) (state : State) :
+    costedServiceRun meter 0 keep offered state = (([], state), 0) := rfl
+
+/-- Charges use the changing queue: the two visited tasks have different
+handling charges, and every offered occurrence is charged even when rejected. -/
+theorem costed_retirement_and_rejected_arrivals :
+    costedServiceRun (controlMeter id) 2 (fun _ => false) (fun _ => [9, 9, 10])
+      ⟨2, [1, 2]⟩ = (([1, 2], ⟨2, [9, 10]⟩), 15) := by decide
+
+/-- A nontrivial whole-slot instance: handling costs at most two, three
+arrival occurrences are processed, and capacity two bounds maintenance by
+three. Thus every retained request is met within its actual cumulative cost. -/
+theorem bounded_native_arrival_and_queue_profile (demand : Nat) :
+    demand ≤ (costedServiceRun (controlMeter (fun _ => 2)) (demand * 2)
+      (fun _ => true) (fun _ => [9, 9, 10]) ⟨2, [1, 2]⟩).1.1.count 1 ∧
+    (costedServiceRun (controlMeter (fun _ => 2)) (demand * 2)
+      (fun _ => true) (fun _ => [9, 9, 10]) ⟨2, [1, 2]⟩).2 ≤ (demand * 2) • 8 := by
+  apply retained_task_gets_repeated_bounded_cost (controlMeter (fun _ => 2)) 8 demand
+    ⟨2, [1, 2]⟩ 1 (fun _ => true) (fun _ => [9, 9, 10]) (by simp [invariant]) (by decide)
+    (fun _ _ => rfl)
+  apply ServiceCostBound.of_components (controlMeter (fun _ => 2)) 2 3 3
+  · intro n _
+    change ((serviceRun n (fun _ => true) (fun _ => [9, 9, 10]) ⟨2, [1, 2]⟩).2.tasks.head?.map
+      (fun _ => 2)).getD 0 ≤ 2
+    cases (serviceRun n (fun _ => true) (fun _ => [9, 9, 10]) ⟨2, [1, 2]⟩).2.tasks.head? <;>
+      simp
+  · intro n _
+    exact Nat.le_refl 3
+  · intro n _
+    change (serviceRun n (fun _ => true) (fun _ => [9, 9, 10]) ⟨2, [1, 2]⟩).2.tasks.length + 1 ≤ 3
+    have valid := serviceRun_preserves_invariant n (fun _ => true)
+      (fun _ => [9, 9, 10]) ⟨2, [1, 2]⟩ (by simp [invariant])
+    have capacity := serviceRun_preserves_capacity n (fun _ => true)
+      (fun _ => [9, 9, 10]) ⟨2, [1, 2]⟩
+    have lengthBound := valid.2
+    rw [capacity] at lengthBound
+    change _ ≤ 2 at lengthBound
+    omega
+
+/-- A single native dispatch can exceed every proposed cost bound. Logical
+service alone therefore supplies no uniform native-work or elapsed-time bound. -/
+theorem one_dispatch_has_arbitrarily_large_cost (budget : Nat) :
+    (costedServiceRun (controlMeter (fun _ => budget + 1)) 1 (fun _ => true)
+      (fun _ => []) ⟨1, [1]⟩).1.1 = [1] ∧
+    budget < (costedServiceRun (controlMeter (fun _ => budget + 1)) 1 (fun _ => true)
+      (fun _ => []) ⟨1, [1]⟩).2 := by
+  constructor
+  · rfl
+  · change budget < budget + 1 + 0 + (1 + 1) + 0
+    omega
+
+/-- Capacity bounds the ready queue, not the amount of rejected arrival work.
+Even a one-task queue can incur arbitrarily large arrival-processing cost. -/
+theorem rejected_arrivals_have_arbitrarily_large_cost (offers : Nat) :
+    (costedServiceRun (controlMeter (fun _ => 0)) 1 (fun _ => true)
+      (fun _ => List.replicate offers 1) ⟨1, [1]⟩).1.1 = [1] ∧
+    offers < (costedServiceRun (controlMeter (fun _ => 0)) 1 (fun _ => true)
+      (fun _ => List.replicate offers 1) ⟨1, [1]⟩).2 := by
+  constructor
+  · rfl
+  · simp only [costedServiceRun, controlMeter, SlotCharge.total,
+      List.head?_cons, Option.map_some, Option.getD_some, List.length_replicate,
+      List.length_cons, List.length_nil, zero_add, add_zero]
+    omega
+
+/-- Idle slots still pay for rejecting arrivals and maintaining the queue. -/
+theorem zero_capacity_still_has_service_cost :
+    costedServiceRun (controlMeter (fun _ => 100)) 3 (fun _ => true)
+      (fun _ => [9, 9]) ⟨0, []⟩ = (([], ⟨0, []⟩), 9) := by decide
+
+/-- A bound on cost is no substitute for retaining a task until its requested
+service is met. This target retires after its first visit. -/
+theorem bounded_cost_does_not_restore_a_retired_task :
+    (costedServiceRun (controlMeter (fun _ => 1)) 3 (fun _ => false)
+      (fun _ => []) ⟨1, [1]⟩).2 = 5 ∧
+    ¬ 3 ≤ (costedServiceRun (controlMeter (fun _ => 1)) 3 (fun _ => false)
+      (fun _ => []) ⟨1, [1]⟩).1.1.count 1 := by decide
+
+/-- The same worker supports a pair of additive metrics without identifying
+them: handling work and the number of offered arrivals. -/
+theorem product_cost_profile_keeps_distinct_metrics :
+    costedServiceRun (fun state _ offered =>
+      (⟨(state.tasks.length, 0), (0, offered.length), (1, 0)⟩ : SlotCharge (Nat × Nat)))
+      2 (fun _ => false) (fun _ => [9, 9, 10]) ⟨2, [1, 2]⟩ =
+        (([1, 2], ⟨2, [9, 10]⟩), (6, 6)) := by decide
+
+#print axioms costedServiceRun_erases
+#print axioms costedServiceRun_add
+#print axioms costedServiceRun_eq_account
+#print axioms costedServiceRun_cost_le
+#print axioms requested_task_gets_bounded_cost
+#print axioms retained_task_gets_repeated_bounded_cost
+#print axioms bounded_native_arrival_and_queue_profile
+#print axioms one_dispatch_has_arbitrarily_large_cost
+#print axioms rejected_arrivals_have_arbitrarily_large_cost
 
 /-! Recovery uses an exact journal occurrence cursor. A revision alone cannot
 resume a partially discovered batch. The ordered-suffix theorem assumes the

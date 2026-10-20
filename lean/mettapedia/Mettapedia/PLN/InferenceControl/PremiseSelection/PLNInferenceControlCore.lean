@@ -20,7 +20,7 @@ namespace Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlCo
 
 open Mettapedia.PLN.InferenceControl.PremiseSelection
 open Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## Canonical Chapter-13 score channels under selector defaults -/
 

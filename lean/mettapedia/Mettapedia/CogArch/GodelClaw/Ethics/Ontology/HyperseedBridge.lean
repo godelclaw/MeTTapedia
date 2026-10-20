@@ -23,7 +23,7 @@ namespace Mettapedia.CogArch.GodelClaw.Ethics.Ontology
 
 open Mettapedia.CogArch.GodelClaw.Ethics
 open Mettapedia.Hyperseed
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.Logic.MarkovLogicClauseSemantics
 open Mettapedia.Logic.MarkovLogicClauseFactorGraph
 open Mettapedia.Logic.MarkovLogicInfiniteSpecification

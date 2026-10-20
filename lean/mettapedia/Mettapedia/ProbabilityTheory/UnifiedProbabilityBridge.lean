@@ -43,7 +43,7 @@ and inference:
 
 namespace Mettapedia.ProbabilityTheory.UnifiedProbabilityBridge
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 open Mettapedia.PLN.Evidence.HeytingValuationOnEvidence
 open Mettapedia.PLN.Evidence.ConfidenceCompoundingTheorem

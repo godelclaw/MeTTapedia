@@ -22,7 +22,7 @@ namespace Mettapedia.MachineLearning.NeuralNetworks.WorkspaceDecoder
 
 open Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding
 open Mettapedia.PLN.Evidence
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 /-! ## Exact-count chart preservation -/

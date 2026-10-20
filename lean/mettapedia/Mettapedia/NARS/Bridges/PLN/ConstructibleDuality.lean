@@ -28,7 +28,7 @@ namespace Mettapedia.NARS.Bridges.PLN.ConstructibleDuality
 open Mettapedia.NARS.TruthFunctions
 open Mettapedia.NARS.Evidence.EvidenceScopeIncoherence
 open Mettapedia.NARS.Evidence.EvidenceScopeIncoherence.PathWitness
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-- Forget the retained path but keep the two constructive evidence channels
 underlying a NARS truth value. -/

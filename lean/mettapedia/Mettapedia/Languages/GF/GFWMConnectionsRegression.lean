@@ -14,9 +14,9 @@ open Mettapedia.Languages.GF.OSLFBridge
 open Mettapedia.Languages.GF.OSLFToNTT
 open Mettapedia.Languages.GF.Typing
 open Mettapedia.Languages.GF.GFWMConnections
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.CategoryTheory.EvidenceFibration
 open Mettapedia.CategoryTheory.PLNInstance
 open Mettapedia.OSLF.MeTTaIL.Syntax

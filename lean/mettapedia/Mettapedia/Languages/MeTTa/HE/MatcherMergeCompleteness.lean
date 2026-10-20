@@ -1,4 +1,8 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaMatcherCongruence
+import Batteries.Tactic.OpenPrivate
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
 
 /-!
 # Operational completion of the HE matcher/merge kernel
@@ -16,6 +20,9 @@ open Mettapedia.Languages.MeTTa.HE
 open Mettapedia.Languages.MeTTa.HE.DeclMergeSpec
 open Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge (AtomOccurs SemanticLoopFree)
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+open private addVarBindingRel_satisfied addVarEqualityRel_satisfied
+  from Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
 
 /-! ## Embedding expression-frontier certificates -/
 
@@ -463,7 +470,7 @@ noncomputable def
           HEBindingSatisfied valuation matched) ↔
         (HEBindingSatisfied valuation seed ∧
           MettaEquationSatisfied valuation
-            (toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight))) :
+            (encodeModelAtom nextLeft, encodeModelAtom p.nextRight))) :
     HELiveMergeSolutionCertified trace allowed liveSeed matched p.nextSubst := by
   have hheadWorkImage : LeaEquationsInHEImage p.headWork := by
     intro equation hmem
@@ -501,7 +508,7 @@ noncomputable def
       mergeBindings_solution_iff hlive.merge_mem valuation
     _ ↔ HEBindingSatisfied valuation seed ∧
           MettaEquationSatisfied valuation
-            (toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight) :=
+            (encodeModelAtom nextLeft, encodeModelAtom p.nextRight) :=
       hmatchedTheory valuation
     _ ↔ MettaEquationsSatisfied valuation p.headWork ∧
           HEBindingSatisfied valuation seed :=
@@ -585,7 +592,7 @@ noncomputable def
     have hinner := (matchAtoms_solution_iff hmatchMem valuation).mp hmatched
     refine ⟨hseed, ?_⟩
     rw [hright]
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution] using hstored.trans hinner
   · rintro ⟨hseed, hhead⟩
     have hfirstMem : first ∈ seed.classValues key := by
@@ -595,12 +602,12 @@ noncomputable def
       hseed.eq_applyClassSolution_of_mem_classValues hfirstMem
     rw [hright] at hhead
     have hheadEq : valuation key =
-        applyClassSolution valuation (toLeaTTaAtom value) := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
+        applyClassSolution valuation (encodeModelAtom value) := by
+      simpa [MettaEquationSatisfied, encodeModelAtom,
         applyClassSolution] using hhead
     have hinner : MettaEquationSatisfied valuation
-        (toLeaTTaAtom first, toLeaTTaAtom value) := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
+        (encodeModelAtom first, encodeModelAtom value) := by
+      simpa [MettaEquationSatisfied, encodeModelAtom,
         applyClassSolution] using hstored.symm.trans hheadEq
     exact ⟨hseed, (matchAtoms_solution_iff hmatchMem valuation).mpr hinner⟩
 
@@ -645,12 +652,12 @@ noncomputable def
         valuation seed left right).mp hcandidate
     refine ⟨hseed, ?_⟩
     rw [hright]
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution] using hequality
   · rintro ⟨hseed, hhead⟩
     rw [hright] at hhead
     have hequality : valuation left = valuation right := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
+      simpa [MettaEquationSatisfied, encodeModelAtom,
         applyClassSolution] using hhead
     have hcandidate : HEBindingSatisfied valuation
         (seed.addEquality left right) :=
@@ -708,7 +715,7 @@ noncomputable def
     have hinner := (matchAtoms_solution_iff hmatchMem valuation).mp hmatched
     refine ⟨hseed, ?_⟩
     rw [hright]
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution] using hinner.symm.trans hstored.symm
   · rintro ⟨hseed, hhead⟩
     have hfirstMem : first ∈ seed.classValues key := by
@@ -718,13 +725,13 @@ noncomputable def
       hseed.eq_applyClassSolution_of_mem_classValues hfirstMem
     rw [hright] at hhead
     have hheadEq :
-        applyClassSolution valuation (toLeaTTaAtom value) =
+        applyClassSolution valuation (encodeModelAtom value) =
           valuation key := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
+      simpa [MettaEquationSatisfied, encodeModelAtom,
         applyClassSolution] using hhead
     have hinner : MettaEquationSatisfied valuation
-        (toLeaTTaAtom first, toLeaTTaAtom value) := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
+        (encodeModelAtom first, encodeModelAtom value) := by
+      simpa [MettaEquationSatisfied, encodeModelAtom,
         applyClassSolution] using hstored.symm.trans hheadEq.symm
     exact ⟨hseed, (matchAtoms_solution_iff hmatchMem valuation).mpr hinner⟩
 
@@ -735,20 +742,20 @@ theorem reconcileList_satisfied_implies_last
     (valuation : String → Metta.Atom)
     (first value : Atom) (rest : List Atom)
     (h : MettaAtomListsSatisfied valuation
-      (toLeaTTaAtoms (List.replicate (rest.length + 1) first))
-      (toLeaTTaAtoms (rest ++ [value]))) :
-    applyClassSolution valuation (toLeaTTaAtom first) =
-      applyClassSolution valuation (toLeaTTaAtom value) := by
+      (encodeModelAtoms (List.replicate (rest.length + 1) first))
+      (encodeModelAtoms (rest ++ [value]))) :
+    applyClassSolution valuation (encodeModelAtom first) =
+      applyClassSolution valuation (encodeModelAtom value) := by
   have hreplicate : ∀ n,
-      toLeaTTaAtoms (List.replicate n first) =
-        List.replicate n (toLeaTTaAtom first) := by
+      encodeModelAtoms (List.replicate n first) =
+        List.replicate n (encodeModelAtom first) := by
     intro n
     induction n with
     | zero => rfl
     | succ n ih => simp [List.replicate_succ, ih]
   unfold MettaAtomListsSatisfied at h
-  rw [hreplicate, toLeaTTaAtoms_append] at h
-  simp only [toLeaTTaAtoms_cons, toLeaTTaAtoms_nil,
+  rw [hreplicate, encodeModelAtoms_append] at h
+  simp only [encodeModelAtoms_cons, encodeModelAtoms_nil,
     List.map_replicate, List.map_append, List.map_cons,
     List.map_nil] at h
   have hlast := congrArg List.getLast? h
@@ -788,8 +795,8 @@ noncomputable def
   have hlistTheory : ∀ valuation,
       HEBindingSatisfied valuation matched ↔
         MettaAtomListsSatisfied valuation
-          (toLeaTTaAtoms (List.replicate (rest.length + 1) first))
-          (toLeaTTaAtoms (rest ++ [value])) := by
+          (encodeModelAtoms (List.replicate (rest.length + 1) first))
+          (encodeModelAtoms (rest ++ [value])) := by
     intro valuation
     simpa using matchAtomsList_singleton_solution_iff hmatchMem valuation
   apply p.liveMergeWithHeadTheory hlive
@@ -806,13 +813,13 @@ noncomputable def
       hseed.eq_applyClassSolution_of_mem_classValues hfirstMem
     refine ⟨hseed, ?_⟩
     rw [hright]
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution] using hstored.trans hlast
   · rintro ⟨hseed, hhead⟩
     rw [hright] at hhead
     have hheadEq : valuation key =
-        applyClassSolution valuation (toLeaTTaAtom value) := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
+        applyClassSolution valuation (encodeModelAtom value) := by
+      simpa [MettaEquationSatisfied, encodeModelAtom,
         applyClassSolution] using hhead
     have hlists :=
       classValues_reconcileList_satisfied hseed hclass hheadEq
@@ -852,8 +859,8 @@ noncomputable def
   have hlistTheory : ∀ valuation,
       HEBindingSatisfied valuation matched ↔
         MettaAtomListsSatisfied valuation
-          (toLeaTTaAtoms (List.replicate (rest.length + 1) first))
-          (toLeaTTaAtoms (rest ++ [value])) := by
+          (encodeModelAtoms (List.replicate (rest.length + 1) first))
+          (encodeModelAtoms (rest ++ [value])) := by
     intro valuation
     simpa using matchAtomsList_singleton_solution_iff hmatchMem valuation
   apply p.liveMergeWithHeadTheory hlive
@@ -870,14 +877,14 @@ noncomputable def
       hseed.eq_applyClassSolution_of_mem_classValues hfirstMem
     refine ⟨hseed, ?_⟩
     rw [hright]
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution] using hlast.symm.trans hstored.symm
   · rintro ⟨hseed, hhead⟩
     rw [hright] at hhead
     have hheadEq :
-        applyClassSolution valuation (toLeaTTaAtom value) =
+        applyClassSolution valuation (encodeModelAtom value) =
           valuation key := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
+      simpa [MettaEquationSatisfied, encodeModelAtom,
         applyClassSolution] using hhead
     have hlists :=
       classValues_reconcileList_satisfied hseed hclass hheadEq.symm
@@ -923,8 +930,8 @@ noncomputable def
   have hlistTheory : ∀ valuation,
       HEBindingSatisfied valuation matched ↔
         MettaAtomListsSatisfied valuation
-          (toLeaTTaAtoms (List.replicate (rest.length + 2) first))
-          (toLeaTTaAtoms (second :: third :: rest)) := by
+          (encodeModelAtoms (List.replicate (rest.length + 2) first))
+          (encodeModelAtoms (second :: third :: rest)) := by
     intro valuation
     simpa using matchAtomsList_singleton_solution_iff hmatchMem valuation
   apply p.liveMergeWithHeadTheory hlive
@@ -936,12 +943,12 @@ noncomputable def
         valuation seed left right).mp hcandidate
     refine ⟨hseed, ?_⟩
     rw [hright]
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution] using hequality
   · rintro ⟨hseed, hhead⟩
     rw [hright] at hhead
     have hequality : valuation left = valuation right := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
+      simpa [MettaEquationSatisfied, encodeModelAtom,
         applyClassSolution] using hhead
     have hcandidate : HEBindingSatisfied valuation
         (seed.addEquality left right) :=
@@ -1018,13 +1025,13 @@ theorem LeaSubstClassValueRel.traceEntryRealized_of_nonvar
 
 /-- Translation preserves the variable/non-variable distinction used by the
 HE matcher. -/
-theorem toLeaTTaAtom_ne_var_of_isVarB_false
+theorem encodeModelAtom_ne_var_of_isVarB_false
     {value : Atom}
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (target : String) :
-    toLeaTTaAtom value ≠ .var target := by
+    encodeModelAtom value ≠ .var target := by
   cases value <;>
-    simp [DeclMatchSpec.Atom.isVarB, toLeaTTaAtom] at hnonvar ⊢
+    simp [DeclMatchSpec.Atom.isVarB, encodeModelAtom] at hnonvar ⊢
 
 /-- Successful association-list lookup exposes the corresponding stored
 assignment. -/
@@ -1667,8 +1674,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toProjectedStrongTailStateCor
     (hhead : HELiveMatchMergeCoreCongruentCertified trace allowed
       nextLeft p.nextRight seed p.nextSubst) :
     HEProjectedCertifiedListResidualState trace allowed outerFuel
-      (front ++ [(toLeaTTaAtom nextLeft,
-        toLeaTTaAtom p.nextRight)]) outerSubst
+      (front ++ [(encodeModelAtom nextLeft,
+        encodeModelAtom p.nextRight)]) outerSubst
       p.nextRemainingFuel p.nextTailWork p.nextSubst result
       leftRest p.rightRest hhead.liveMerge.after := by
   let hresidual := p.coreResidualOfCoreCongruent hhead
@@ -1928,7 +1935,7 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveHead_of_strongCallback
       nextLeft p.nextRight seed p.nextSubst) := by
   let weak := p.toSolutionPackage
   have hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight) := by
+      (encodeModelAtom nextLeft, encodeModelAtom p.nextRight) := by
     simpa [weak, HEProjectedTailHeadResidualPackage.toSolutionPackage] using
       (weak.headSatisfied_of_trace valuation htrace).2
   cases nextLeft with
@@ -1937,7 +1944,7 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveHead_of_strongCallback
       | symbol rightName =>
           rw [hright] at hequation
           have hname : leftName = rightName := by
-            simpa [MettaEquationSatisfied, toLeaTTaAtom,
+            simpa [MettaEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation
           subst rightName
           simpa only [hright] using p.exists_coreLiveSymbol_congruent hright
@@ -1945,10 +1952,10 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveHead_of_strongCallback
           simpa only [hright] using
             callbacks.nonVarVar state coverage p hright rfl
       | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
   | var leftName =>
       cases hright : p.nextRight with
@@ -1969,7 +1976,7 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveHead_of_strongCallback
   | grounded leftGround =>
       cases hright : p.nextRight with
       | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | var rightName =>
           simpa only [hright] using
@@ -1977,28 +1984,28 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveHead_of_strongCallback
       | grounded rightGround =>
           rw [hright] at hequation
           have hatom :
-              toLeaTTaAtom (.grounded leftGround) =
-                toLeaTTaAtom (.grounded rightGround) := by
-            simpa [MettaEquationSatisfied, toLeaTTaAtom,
+              encodeModelAtom (.grounded leftGround) =
+                encodeModelAtom (.grounded rightGround) := by
+            simpa [MettaEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation
           have hground : leftGround = rightGround := by
-            have heq := toLeaTTaAtom_injective hatom
+            have heq := encodeModelAtom_injective hatom
             injection heq
           subst rightGround
           simpa only [hright] using p.exists_coreLiveGrounded_congruent hright
       | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
   | expression leftAtoms =>
       cases hright : p.nextRight with
       | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | var rightName =>
           simpa only [hright] using
             callbacks.nonVarVar state coverage p hright rfl
       | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | expression rightAtoms =>
           simpa only [hright] using
@@ -2413,14 +2420,14 @@ theorem
     {allowed : List (String × String)} {seed : Bindings}
     {key : String} {value first : Atom} {rest : List Atom}
     (h : HELiveHiddenMatchValueProgressCertified trace allowed
-      first value seed (key, toLeaTTaAtom value))
+      first value seed (key, encodeModelAtom value))
     (hclass : seed.classValues key = first :: rest)
     (hconsistent : Bindings.valuesConsistent (first :: rest) = true)
     (hdifferent : first ≠ value)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬ AtomOccurs value key) :
     Nonempty (HELiveMatchMergeSolutionProgressCertified trace allowed
-      (.var key) value seed (key, toLeaTTaAtom value)) := by
+      (.var key) value seed (key, encodeModelAtom value)) := by
   obtain ⟨hmerge, hafter⟩ :=
     h.live.operational.toAssignmentConflictMergeLive
       hclass hconsistent hdifferent
@@ -2433,10 +2440,10 @@ theorem
     subst_subset_trace := h.subst_subset_trace
     realized_after := by
       change LeaEliminationTraceEntryRealized hmerge.after
-        (key, toLeaTTaAtom value)
+        (key, encodeModelAtom value)
       rw [hafter]
       exact h.realized_of_nonvar
-        (toLeaTTaAtom_ne_var_of_isVarB_false hnonvar)
+        (encodeModelAtom_ne_var_of_isVarB_false hnonvar)
     assignmentsSound := by
       change LeaEliminationTraceAssignmentsSound hmerge.after trace
       rw [hafter]
@@ -2452,13 +2459,13 @@ theorem
     {key : String} {value first : Atom} {rest : List Atom}
     (h : HELiveHiddenListMatchValueProgressCertified trace allowed
       (List.replicate (rest.length + 1) first) (rest ++ [value])
-      seed (key, toLeaTTaAtom value))
+      seed (key, encodeModelAtom value))
     (hclass : seed.classValues key = first :: rest)
     (hinconsistent : Bindings.valuesConsistent (first :: rest) = false)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬ AtomOccurs value key) :
     Nonempty (HELiveMatchMergeSolutionProgressCertified trace allowed
-      (.var key) value seed (key, toLeaTTaAtom value)) := by
+      (.var key) value seed (key, encodeModelAtom value)) := by
   obtain ⟨hmerge, hafter⟩ :=
     h.live.operational.toAssignmentReconcileMergeLive
       hclass hinconsistent
@@ -2471,10 +2478,10 @@ theorem
     subst_subset_trace := h.subst_subset_trace
     realized_after := by
       change LeaEliminationTraceEntryRealized hmerge.after
-        (key, toLeaTTaAtom value)
+        (key, encodeModelAtom value)
       rw [hafter]
       exact h.realized_of_nonvar
-        (toLeaTTaAtom_ne_var_of_isVarB_false hnonvar)
+        (encodeModelAtom_ne_var_of_isVarB_false hnonvar)
     assignmentsSound := by
       change LeaEliminationTraceAssignmentsSound hmerge.after trace
       rw [hafter]
@@ -2588,7 +2595,7 @@ theorem certifiedValueConflictProgress_of_hidden_value_inner
     {trace : List (String × Metta.Atom)} {before : Bindings}
     {key : String} {value first : Atom} {leaValue : Metta.Atom}
     {rest : List Atom}
-    (hvalue : toLeaTTaAtom value = leaValue)
+    (hvalue : encodeModelAtom value = leaValue)
     (hvalueNonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬ AtomOccurs value key)
     (hclass : before.classValues key = first :: rest)
@@ -2611,7 +2618,7 @@ theorem certifiedValueConflictProgress_of_hidden_value_inner
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom (.var key), toLeaTTaAtom value) := by
+        (encodeModelAtom (.var key), encodeModelAtom value) := by
     intro valuation _hbefore htrace
     have hconstraint := htrace (key, leaValue) hentry
     simpa [hvalue, MettaEquationSatisfied, applyClassSolution] using
@@ -2622,7 +2629,7 @@ theorem certifiedValueConflictProgress_of_hidden_value_inner
       have hinner' : HELiveHiddenListMatchValueProgressCertified trace
           (eliminationTraceAliases trace)
           (List.replicate (rest.length + 1) first) (rest ++ [value])
-          before (key, toLeaTTaAtom value) := by
+          before (key, encodeModelAtom value) := by
         simpa only [hvalue] using hinner
       obtain ⟨hprogress⟩ :=
         hinner'.toAssignmentReconcileSolutionProgress
@@ -2663,7 +2670,7 @@ theorem certifiedValueConflictProgress_of_hidden_value_inner
       obtain ⟨hinner⟩ := hatom hconsistent hdifferent
       have hinner' : HELiveHiddenMatchValueProgressCertified trace
           (eliminationTraceAliases trace) first value before
-          (key, toLeaTTaAtom value) := by
+          (key, encodeModelAtom value) := by
         simpa only [hvalue] using hinner
       obtain ⟨hprogress⟩ :=
         hinner'.toAssignmentConflictSolutionProgress
@@ -2717,7 +2724,7 @@ theorem certifiedAliasConflictProgress_of_hidden_value_inner
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom (.var left), toLeaTTaAtom (.var right)) := by
+        (encodeModelAtom (.var left), encodeModelAtom (.var right)) := by
     intro valuation _hbefore htrace
     have hconstraint := htrace (left, .var right) hentry
     simpa [MettaEquationSatisfied, applyClassSolution] using hconstraint
@@ -2767,7 +2774,7 @@ theorem exists_completeSatisfiedCertifiedMatcherMergeChain_of_hidden_value_inner
     {trace : List (String × Metta.Atom)}
     {valuation : String → Metta.Atom}
     (himage : ∀ key term, (key, term) ∈ trace →
-      ∃ atom : Atom, toLeaTTaAtom atom = term)
+      ∃ atom : Atom, encodeModelAtom atom = term)
     (htraceSatisfied : MettaConstraintsSatisfied valuation trace)
     (hvalueInner : ∀
       (before : Bindings) (key : String) (value : Atom)
@@ -2776,7 +2783,7 @@ theorem exists_completeSatisfiedCertifiedMatcherMergeChain_of_hidden_value_inner
       LeaEliminationTraceAssignmentsSound before trace →
       HEEqualityClosureBound before (eliminationTraceAliases trace) →
       HEBindingSatisfied valuation before →
-      toLeaTTaAtom value = leaValue →
+      encodeModelAtom value = leaValue →
       DeclMatchSpec.Atom.isVarB value = false →
       before.classValues key = first :: rest →
       (key, leaValue) ∈ trace →
@@ -3664,7 +3671,7 @@ theorem exists_satisfiedMergeCertified_of_adds
       HEAssignmentsNonVariable seed →
       HEEqualityClosureBound seed allowed →
       DeclMatchSpec.Atom.isVarB value = false →
-      valuation key = applyClassSolution valuation (toLeaTTaAtom value) →
+      valuation key = applyClassSolution valuation (encodeModelAtom value) →
       (valuation key).size < bound →
       HESolutionAtomSize valuation value < bound →
       Nonempty (HESatisfiedAddBindingCertified
@@ -3698,7 +3705,7 @@ theorem exists_satisfiedMergeCertified_of_adds
       HEEqualityClosureBound before allowed →
       (∀ key value, (key, value) ∈ assignments →
         valuation key =
-          applyClassSolution valuation (toLeaTTaAtom value)) →
+          applyClassSolution valuation (encodeModelAtom value)) →
       (∀ key value, (key, value) ∈ assignments →
         DeclMatchSpec.Atom.isVarB value = false) →
       (∀ key value, (key, value) ∈ assignments →
@@ -3727,7 +3734,7 @@ theorem exists_satisfiedMergeCertified_of_adds
         have hrestSat : ∀ restKey restValue,
             (restKey, restValue) ∈ rest →
             valuation restKey = applyClassSolution valuation
-              (toLeaTTaAtom restValue) := by
+              (encodeModelAtom restValue) := by
           intro restKey restValue hmem
           exact hsat restKey restValue (by simp [hmem])
         have hrestValues : ∀ restKey restValue,
@@ -3838,263 +3845,6 @@ theorem exists_satisfiedMergeCertified_of_adds
     equalityBound := hafterBound
   }⟩
 
-/-- Completeness of merging one semantically bounded right record into an
-arbitrary satisfying live seed.  Only the right record is bounded: unrelated
-payloads already present in the seed cannot participate in a conflict unless
-they lie in the class of a bounded right-hand key. -/
-def HESatisfiedMergeRelCompleteBelow
-    (valuation : String → Metta.Atom) (bound : Nat) : Prop :=
-  ∀ {seed right : Bindings},
-    HEBindingSatisfied valuation seed →
-    HEAssignmentsNonVariable seed →
-    HEBindingSatisfied valuation right →
-    HEAssignmentsNonVariable right →
-    HEBindingSolutionSizeBound valuation right bound →
-    ∃ out, MergeRel seed right out ∧
-      HEBindingSatisfied valuation out ∧
-        HEAssignmentsNonVariable out
-
-private theorem matchRel_satisfied_of_equation
-    {valuation : String → Metta.Atom} {left right : Atom} {out : Bindings}
-    (hmatch : DeclMatchSpec.MatchRel left right out)
-    (hequation : HEAtomEquationSatisfied valuation left right) :
-    HEBindingSatisfied valuation out := by
-  obtain ⟨fuel, hmem⟩ := DeclMatchSpec.matchAtoms_complete hmatch
-  apply (matchAtoms_solution_iff hmem valuation).mpr
-  simpa [HEAtomEquationSatisfied, MettaEquationSatisfied] using hequation
-
-/-- Bounded matcher/list-matcher completeness, assuming only bounded merge
-completeness at the same ceiling.  The simultaneous structural recursion is
-the exact shape of `MatchRel.expr` and `MatchListAccRel.cons`: every child is
-matched from empty and merged separately into the live accumulator. -/
-private theorem boundedMatcherPack
-    {valuation : String → Metta.Atom} {bound : Nat}
-    (hmerge : HESatisfiedMergeRelCompleteBelow valuation bound) :
-    (∀ {left right : Atom},
-      HEAtomEquationSatisfied valuation left right →
-      HESolutionAtomSize valuation left < bound →
-      HESolutionAtomSize valuation right < bound →
-      ∃ out, DeclMatchSpec.MatchRel left right out ∧
-        HEBindingSatisfied valuation out ∧
-          HEAssignmentsNonVariable out ∧
-            HEBindingSolutionSizeBound valuation out bound) ∧
-    (∀ {lefts rights : List Atom} {seed : Bindings},
-      HEBindingSatisfied valuation seed →
-      HEAssignmentsNonVariable seed →
-      HEBindingSolutionSizeBound valuation seed bound →
-      MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) →
-      HESolutionAtomsSizeBound valuation lefts bound →
-      HESolutionAtomsSizeBound valuation rights bound →
-      ∃ out, DeclMatchSpec.MatchListAccRel lefts rights seed out ∧
-        HEBindingSatisfied valuation out ∧
-          HEAssignmentsNonVariable out ∧
-            HEBindingSolutionSizeBound valuation out bound) := by
-  let AtomGoal : Atom → Prop := fun left =>
-    ∀ {right : Atom},
-      HEAtomEquationSatisfied valuation left right →
-      HESolutionAtomSize valuation left < bound →
-      HESolutionAtomSize valuation right < bound →
-      ∃ out, DeclMatchSpec.MatchRel left right out ∧
-        HEBindingSatisfied valuation out ∧
-          HEAssignmentsNonVariable out ∧
-            HEBindingSolutionSizeBound valuation out bound
-  let ListGoal : List Atom → Prop := fun lefts =>
-    ∀ {rights : List Atom} {seed : Bindings},
-      HEBindingSatisfied valuation seed →
-      HEAssignmentsNonVariable seed →
-      HEBindingSolutionSizeBound valuation seed bound →
-      MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) →
-      HESolutionAtomsSizeBound valuation lefts bound →
-      HESolutionAtomsSizeBound valuation rights bound →
-      ∃ out, DeclMatchSpec.MatchListAccRel lefts rights seed out ∧
-        HEBindingSatisfied valuation out ∧
-          HEAssignmentsNonVariable out ∧
-            HEBindingSolutionSizeBound valuation out bound
-  have leaf : ∀ {left right : Atom},
-      HEAtomEquationSatisfied valuation left right →
-      ¬ BothExpressions left right →
-      HESolutionAtomSize valuation left < bound →
-      HESolutionAtomSize valuation right < bound →
-      ∃ out, DeclMatchSpec.MatchRel left right out ∧
-        HEBindingSatisfied valuation out ∧
-          HEAssignmentsNonVariable out ∧
-            HEBindingSolutionSizeBound valuation out bound := by
-    intro left right hequation hleaf hleft hright
-    obtain ⟨out, hmatch⟩ :=
-      exists_matchRel_of_solution_leaf ⟨valuation, hequation⟩ hleaf
-    exact ⟨out, hmatch,
-      matchRel_satisfied_of_equation hmatch hequation,
-      heAssignmentsNonVariable_of_matchRel hmatch,
-      matchRel_solutionSizeBound hmatch hleft hright⟩
-  have hrec : ∀ left, AtomGoal left := by
-    apply Atom.rec (motive_1 := AtomGoal) (motive_2 := ListGoal)
-    · intro symbol right hequation hleft hright
-      exact leaf hequation (by simp [BothExpressions]) hleft hright
-    · intro name right hequation hleft hright
-      exact leaf hequation (by simp [BothExpressions]) hleft hright
-    · intro ground right hequation hleft hright
-      exact leaf hequation (by simp [BothExpressions]) hleft hright
-    · intro lefts hlefts right hequation hleft hright
-      cases right with
-      | symbol symbol =>
-          exact leaf hequation (by simp [BothExpressions]) hleft hright
-      | var name =>
-          exact leaf hequation (by simp [BothExpressions]) hleft hright
-      | grounded ground =>
-          exact leaf hequation (by simp [BothExpressions]) hleft hright
-      | expression rights =>
-          have hlists : MettaAtomListsSatisfied valuation
-              (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) := by
-            simpa [HEAtomEquationSatisfied, MettaAtomListsSatisfied,
-              toLeaTTaAtom, applyClassSolution] using hequation
-          obtain ⟨out, hlist, houtSat, houtNonvar, houtBound⟩ :=
-            hlefts (seed := Bindings.empty)
-              ((hesat_empty_iff valuation).mpr trivial)
-              (by simp [HEAssignmentsNonVariable, Bindings.empty])
-              (heBindingSolutionSizeBound_empty valuation bound)
-              hlists
-              (heSolutionAtomsSizeBound_of_expression_lt valuation hleft)
-              (heSolutionAtomsSizeBound_of_expression_lt valuation hright)
-          exact ⟨out, .expr hlist
-      (heSemanticLoopFree_of_satisfied_nonvariable houtSat
-        (fun {key target} => houtNonvar key target)),
-      houtSat, houtNonvar, houtBound⟩
-    · intro rights seed hseed hseedNonvar hseedBound hlists
-        hleftsBound hrightsBound
-      cases rights with
-      | nil =>
-          exact ⟨seed, .nil, hseed, hseedNonvar, hseedBound⟩
-      | cons right rights =>
-          simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
-    · intro left lefts hleft hlefts rights seed hseed hseedNonvar
-        hseedBound hlists hleftsBound hrightsBound
-      cases rights with
-      | nil =>
-          simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
-      | cons right rights =>
-          have hequations :
-              HEAtomEquationSatisfied valuation left right ∧
-                MettaAtomListsSatisfied valuation
-                  (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) := by
-            simpa [HEAtomEquationSatisfied, MettaAtomListsSatisfied,
-              toLeaTTaAtoms] using hlists
-          obtain ⟨matched, hmatched, hmatchedSat, hmatchedNonvar,
-              hmatchedBound⟩ :=
-            hleft hequations.1 hleftsBound.head hrightsBound.head
-          obtain ⟨next, hmergeRel, hnextSat, hnextNonvar⟩ :=
-            hmerge hseed hseedNonvar hmatchedSat hmatchedNonvar
-              hmatchedBound
-          obtain ⟨mergeFuel, hmergeMem⟩ :=
-            mergeBindings_complete hmergeRel
-          have hnextBound :
-              HEBindingSolutionSizeBound valuation next bound :=
-            mergeRel_solutionSizeBound hmergeRel hseedBound hmatchedBound
-          obtain ⟨out, htail, houtSat, houtNonvar, houtBound⟩ :=
-            hlefts hnextSat hnextNonvar hnextBound hequations.2
-              hleftsBound.tail hrightsBound.tail
-          exact ⟨out, .cons hmatched hmergeMem htail,
-            houtSat, houtNonvar, houtBound⟩
-  refine ⟨?_, ?_⟩
-  · intro left right hequation hleft hright
-    exact hrec left hequation hleft hright
-  · intro lefts rights seed hseed hseedNonvar hseedBound hlists
-      hleftsBound hrightsBound
-    induction lefts generalizing rights seed with
-    | nil =>
-        cases rights with
-        | nil => exact ⟨seed, .nil, hseed, hseedNonvar, hseedBound⟩
-        | cons right rights =>
-            simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
-    | cons left lefts ih =>
-        cases rights with
-        | nil =>
-            simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
-        | cons right rights =>
-            have hequations :
-                HEAtomEquationSatisfied valuation left right ∧
-                  MettaAtomListsSatisfied valuation
-                    (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) := by
-              simpa [HEAtomEquationSatisfied, MettaAtomListsSatisfied,
-                toLeaTTaAtoms] using hlists
-            obtain ⟨matched, hmatched, hmatchedSat, hmatchedNonvar,
-                hmatchedBound⟩ :=
-              hrec left hequations.1 hleftsBound.head hrightsBound.head
-            obtain ⟨next, hmergeRel, hnextSat, hnextNonvar⟩ :=
-              hmerge hseed hseedNonvar hmatchedSat hmatchedNonvar
-                hmatchedBound
-            obtain ⟨mergeFuel, hmergeMem⟩ :=
-              mergeBindings_complete hmergeRel
-            have hnextBound :
-                HEBindingSolutionSizeBound valuation next bound :=
-              mergeRel_solutionSizeBound hmergeRel hseedBound hmatchedBound
-            obtain ⟨out, htail, houtSat, houtNonvar, houtBound⟩ :=
-              ih (rights := rights) (seed := next) hnextSat hnextNonvar
-                hnextBound hequations.2 hleftsBound.tail hrightsBound.tail
-            exact ⟨out, .cons hmatched hmergeMem htail,
-              houtSat, houtNonvar, houtBound⟩
-
-/-- Expression-root specialization.  The root itself may sit exactly at the
-ceiling; every child is strictly smaller, so the produced binding record is
-strictly bounded by the semantic size of the interpreted expression. -/
-theorem exists_expressionMatchRel_solutionSizeBound
-    {valuation : String → Metta.Atom} {lefts rights : List Atom}
-    {bound : Nat}
-    (hmerge : HESatisfiedMergeRelCompleteBelow valuation bound)
-    (hequation : HEAtomEquationSatisfied valuation
-      (.expression lefts) (.expression rights))
-    (hleftSize : HESolutionAtomSize valuation (.expression lefts) = bound)
-    (hrightSize : HESolutionAtomSize valuation (.expression rights) = bound) :
-    ∃ out, DeclMatchSpec.MatchRel (.expression lefts) (.expression rights) out ∧
-      HEBindingSatisfied valuation out ∧
-        HEAssignmentsNonVariable out ∧
-          HEBindingSolutionSizeBound valuation out bound := by
-  have hlists : MettaAtomListsSatisfied valuation
-      (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) := by
-    simpa [HEAtomEquationSatisfied, MettaAtomListsSatisfied,
-      toLeaTTaAtom, applyClassSolution] using hequation
-  have hleftBound : HESolutionAtomsSizeBound valuation lefts bound := by
-    intro atom hmem
-    rw [← hleftSize]
-    exact heSolutionAtomSize_lt_expression_of_mem valuation hmem
-  have hrightBound : HESolutionAtomsSizeBound valuation rights bound := by
-    intro atom hmem
-    rw [← hrightSize]
-    exact heSolutionAtomSize_lt_expression_of_mem valuation hmem
-  obtain ⟨out, hlist, houtSat, houtNonvar, houtBound⟩ :=
-    (boundedMatcherPack hmerge).2
-      ((hesat_empty_iff valuation).mpr trivial)
-      (by simp [HEAssignmentsNonVariable, Bindings.empty])
-      (heBindingSolutionSizeBound_empty valuation bound)
-      hlists hleftBound hrightBound
-  exact ⟨out, .expr hlist
-      (heSemanticLoopFree_of_satisfied_nonvariable houtSat
-        (fun {key target} => houtNonvar key target)),
-      houtSat, houtNonvar, houtBound⟩
-
-private theorem addVarBindingRel_satisfied
-    {valuation : String → Metta.Atom} {seed out : Bindings}
-    {key : String} {value : Atom}
-    (hadd : AddVarBindingRel seed key value out)
-    (hseed : HEBindingSatisfied valuation seed)
-    (hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value)) :
-    HEBindingSatisfied valuation out := by
-  obtain ⟨fuel, hmem⟩ := addVarBinding_complete hadd
-  exact (addVarBinding_solution_iff hmem valuation).mpr ⟨hseed, hvalue⟩
-
-private theorem addVarEqualityRel_satisfied
-    {valuation : String → Metta.Atom} {seed out : Bindings}
-    {left right : String}
-    (hadd : AddVarEqualityRel seed left right out)
-    (hseed : HEBindingSatisfied valuation seed)
-    (hequality : valuation left = valuation right) :
-    HEBindingSatisfied valuation out := by
-  obtain ⟨fuel, hmem⟩ := addVarEquality_complete hadd
-  exact (addVarEquality_solution_iff hmem valuation).mpr
-    ⟨hseed, hequality⟩
-
 /-- Certified nonrecursive fresh-assignment branch. -/
 def HESatisfiedAddBindingCertified.fresh
     {valuation : String → Metta.Atom}
@@ -4107,7 +3857,7 @@ def HESatisfiedAddBindingCertified.fresh
     (hseedBound : HEEqualityClosureBound seed allowed)
     (hvalueNonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value)) :
+      applyClassSolution valuation (encodeModelAtom value)) :
     HESatisfiedAddBindingCertified
       valuation trace allowed seed key value := by
   let hadd : AddVarBindingRel seed key value (seed.assign key value) :=
@@ -4217,7 +3967,7 @@ theorem HESatisfiedAddBindingCertified.nonempty_ofLiveSingleton
     (hseedBound : HEEqualityClosureBound seed allowed)
     (hvalueNonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value)) :
+      applyClassSolution valuation (encodeModelAtom value)) :
     Nonempty (HESatisfiedAddBindingCertified
       valuation trace allowed seed key value) := by
   obtain ⟨hadd, haddTrace⟩ :=
@@ -4295,7 +4045,7 @@ theorem HELiveHiddenMatchResidualCertified.nonempty_satisfiedAddBinding_of_confl
     (hseedBound : HEEqualityClosureBound seed allowed)
     (hvalueNonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value)) :
+      applyClassSolution valuation (encodeModelAtom value)) :
     Nonempty (HESatisfiedAddBindingCertified
       valuation trace allowed seed key value) := by
   obtain ⟨hmerge, _hafter⟩ :=
@@ -4321,7 +4071,7 @@ theorem HELiveHiddenListMatchResidualCertified.nonempty_satisfiedAddBinding_of_r
     (hseedBound : HEEqualityClosureBound seed allowed)
     (hvalueNonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value)) :
+      applyClassSolution valuation (encodeModelAtom value)) :
     Nonempty (HESatisfiedAddBindingCertified
       valuation trace allowed seed key value) := by
   obtain ⟨hmerge, _hafter⟩ :=
@@ -4396,7 +4146,7 @@ structure HESatisfiedConflictAddCallbacks
     HEAssignmentsNonVariable seed →
     HEEqualityClosureBound seed allowed →
     DeclMatchSpec.Atom.isVarB value = false →
-    valuation key = applyClassSolution valuation (toLeaTTaAtom value) →
+    valuation key = applyClassSolution valuation (encodeModelAtom value) →
     (valuation key).size < bound →
     HESolutionAtomSize valuation value < bound →
     seed.classValues key = first :: rest →
@@ -4411,7 +4161,7 @@ structure HESatisfiedConflictAddCallbacks
     HEAssignmentsNonVariable seed →
     HEEqualityClosureBound seed allowed →
     DeclMatchSpec.Atom.isVarB value = false →
-    valuation key = applyClassSolution valuation (toLeaTTaAtom value) →
+    valuation key = applyClassSolution valuation (encodeModelAtom value) →
     (valuation key).size < bound →
     HESolutionAtomSize valuation value < bound →
     seed.classValues key = first :: rest →
@@ -4534,496 +4284,6 @@ theorem HESatisfiedConflictAddCallbacks.merge
                       hcurrentNonvar hcurrentBound hallowed hequality
                       hleftSize hrightSize hvalues hclassInconsistent
 
-/-- A co-satisfied pair of non-variable atoms at one semantic size either is
-a reflexive leaf match or is an expression match whose bindings lie strictly
-below that size. -/
-private theorem exists_nonvariableMatchRel_at_solutionSize
-    {valuation : String → Metta.Atom} {bound : Nat}
-    (hmerge : HESatisfiedMergeRelCompleteBelow valuation bound)
-    {left right : Atom}
-    (hequation : HEAtomEquationSatisfied valuation left right)
-    (hleftNonvar : DeclMatchSpec.Atom.isVarB left = false)
-    (hrightNonvar : DeclMatchSpec.Atom.isVarB right = false)
-    (hleftSize : HESolutionAtomSize valuation left = bound)
-    (hrightSize : HESolutionAtomSize valuation right = bound) :
-    ∃ out, DeclMatchSpec.MatchRel left right out ∧
-      HEBindingSatisfied valuation out ∧
-        HEAssignmentsNonVariable out ∧
-          HEBindingSolutionSizeBound valuation out bound := by
-  by_cases hexpressions : BothExpressions left right
-  · rcases hexpressions with ⟨lefts, rights, rfl, rfl⟩
-    exact exists_expressionMatchRel_solutionSizeBound hmerge hequation
-      hleftSize hrightSize
-  · obtain ⟨out, hmatch⟩ :=
-      exists_matchRel_of_solution_leaf ⟨valuation, hequation⟩ hexpressions
-    have houtBound :
-        HEBindingSolutionSizeBound valuation out bound := by
-      cases hmatch with
-      | symSym => exact heBindingSolutionSizeBound_empty valuation bound
-      | varVar => simp [DeclMatchSpec.Atom.isVarB] at hleftNonvar
-      | varNonVar => simp [DeclMatchSpec.Atom.isVarB] at hleftNonvar
-      | nonVarVar => simp [DeclMatchSpec.Atom.isVarB] at hrightNonvar
-      | grounded => exact heBindingSolutionSizeBound_empty valuation bound
-      | expr => exact (hexpressions (by simp [BothExpressions])).elim
-    exact ⟨out, hmatch,
-      matchRel_satisfied_of_equation hmatch hequation,
-      heAssignmentsNonVariable_of_matchRel hmatch,
-      houtBound⟩
-
-/-- Pointwise reconciliation for class values at one semantic size.  Equal
-leaf pairs contribute no bindings; expression pairs contribute only strict
-semantic subterms.  Each resulting child record is merged into the live
-accumulator through the same bounded merge hypothesis. -/
-private theorem exists_nonvariableMatchListAccRel_at_solutionSize
-    {valuation : String → Metta.Atom} {bound : Nat}
-    (hmerge : HESatisfiedMergeRelCompleteBelow valuation bound) :
-    ∀ {lefts rights : List Atom} {seed : Bindings},
-      HEBindingSatisfied valuation seed →
-      HEAssignmentsNonVariable seed →
-      HEBindingSolutionSizeBound valuation seed bound →
-      MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) →
-      (∀ atom ∈ lefts,
-        DeclMatchSpec.Atom.isVarB atom = false ∧
-          HESolutionAtomSize valuation atom = bound) →
-      (∀ atom ∈ rights,
-        DeclMatchSpec.Atom.isVarB atom = false ∧
-          HESolutionAtomSize valuation atom = bound) →
-      ∃ out, DeclMatchSpec.MatchListAccRel lefts rights seed out ∧
-        HEBindingSatisfied valuation out ∧
-          HEAssignmentsNonVariable out ∧
-            HEBindingSolutionSizeBound valuation out bound := by
-  intro lefts
-  induction lefts with
-  | nil =>
-      intro rights seed hseed hseedNonvar hseedBound hlists _ _
-      cases rights with
-      | nil => exact ⟨seed, .nil, hseed, hseedNonvar, hseedBound⟩
-      | cons right rights =>
-          simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
-  | cons left lefts ih =>
-      intro rights seed hseed hseedNonvar hseedBound hlists hlefts hrights
-      cases rights with
-      | nil =>
-          simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
-      | cons right rights =>
-          have hequations :
-              HEAtomEquationSatisfied valuation left right ∧
-                MettaAtomListsSatisfied valuation
-                  (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) := by
-            simpa [HEAtomEquationSatisfied, MettaAtomListsSatisfied,
-              toLeaTTaAtoms] using hlists
-          have hleft := hlefts left (by simp)
-          have hright := hrights right (by simp)
-          obtain ⟨matched, hmatched, hmatchedSat, hmatchedNonvar,
-              hmatchedBound⟩ :=
-            exists_nonvariableMatchRel_at_solutionSize hmerge
-              hequations.1 hleft.1 hright.1 hleft.2 hright.2
-          obtain ⟨next, hmergeRel, hnextSat, hnextNonvar⟩ :=
-            hmerge hseed hseedNonvar hmatchedSat hmatchedNonvar
-              hmatchedBound
-          obtain ⟨mergeFuel, hmergeMem⟩ :=
-            mergeBindings_complete hmergeRel
-          have hnextBound :
-              HEBindingSolutionSizeBound valuation next bound :=
-            mergeRel_solutionSizeBound hmergeRel hseedBound hmatchedBound
-          have hleftTail : ∀ atom ∈ lefts,
-              DeclMatchSpec.Atom.isVarB atom = false ∧
-                HESolutionAtomSize valuation atom = bound := by
-            intro atom hmem
-            exact hlefts atom (by simp [hmem])
-          have hrightTail : ∀ atom ∈ rights,
-              DeclMatchSpec.Atom.isVarB atom = false ∧
-                HESolutionAtomSize valuation atom = bound := by
-            intro atom hmem
-            exact hrights atom (by simp [hmem])
-          obtain ⟨out, htail, houtSat, houtNonvar, houtBound⟩ :=
-            ih hnextSat hnextNonvar hnextBound hequations.2
-              hleftTail hrightTail
-          exact ⟨out, .cons hmatched hmergeMem htail,
-            houtSat, houtNonvar, houtBound⟩
-
-/-- Fold bounded value/equality insertion callbacks into the exact
-assignment-then-equality `MergeRel` prescribed by HE. -/
-private theorem satisfiedMergeRelCompleteBelow_of_adds
-    {valuation : String → Metta.Atom} {bound : Nat}
-    (haddValue : ∀ {seed : Bindings} {key : String} {value : Atom},
-      HEBindingSatisfied valuation seed →
-      HEAssignmentsNonVariable seed →
-      DeclMatchSpec.Atom.isVarB value = false →
-      valuation key = applyClassSolution valuation (toLeaTTaAtom value) →
-      (valuation key).size < bound →
-      HESolutionAtomSize valuation value < bound →
-      ∃ out, AddVarBindingRel seed key value out ∧
-        HEBindingSatisfied valuation out ∧
-          HEAssignmentsNonVariable out)
-    (haddEquality : ∀ {seed : Bindings} {left right : String},
-      HEBindingSatisfied valuation seed →
-      HEAssignmentsNonVariable seed →
-      valuation left = valuation right →
-      (valuation left).size < bound →
-      (valuation right).size < bound →
-      ∃ out, AddVarEqualityRel seed left right out ∧
-        HEBindingSatisfied valuation out ∧
-          HEAssignmentsNonVariable out) :
-    HESatisfiedMergeRelCompleteBelow valuation bound := by
-  intro seed right hseed hseedNonvar hright hrightNonvar hrightBound
-  have foldAssignments : ∀
-      (assignments : List (String × Atom)) (before : Bindings),
-      HEBindingSatisfied valuation before →
-      HEAssignmentsNonVariable before →
-      (∀ key value, (key, value) ∈ assignments →
-        valuation key =
-          applyClassSolution valuation (toLeaTTaAtom value)) →
-      (∀ key value, (key, value) ∈ assignments →
-        DeclMatchSpec.Atom.isVarB value = false) →
-      (∀ key value, (key, value) ∈ assignments →
-        (valuation key).size < bound ∧
-          HESolutionAtomSize valuation value < bound) →
-      ∃ after, MergeAssignsRel before assignments after ∧
-        HEBindingSatisfied valuation after ∧
-          HEAssignmentsNonVariable after := by
-    intro assignments
-    induction assignments with
-    | nil =>
-        intro before hbefore hnonvar _ _ _
-        exact ⟨before, .nil, hbefore, hnonvar⟩
-    | cons assignment rest ih =>
-        rcases assignment with ⟨key, value⟩
-        intro before hbefore hnonvar hsat hvalues hbounds
-        obtain ⟨next, hadd, hnextSat, hnextNonvar⟩ :=
-          haddValue hbefore hnonvar
-            (hvalues key value (by simp))
-            (hsat key value (by simp))
-            (hbounds key value (by simp)).1
-            (hbounds key value (by simp)).2
-        have hrestSat : ∀ restKey restValue,
-            (restKey, restValue) ∈ rest →
-            valuation restKey = applyClassSolution valuation
-              (toLeaTTaAtom restValue) := by
-          intro restKey restValue hmem
-          exact hsat restKey restValue (by simp [hmem])
-        have hrestValues : ∀ restKey restValue,
-            (restKey, restValue) ∈ rest →
-            DeclMatchSpec.Atom.isVarB restValue = false := by
-          intro restKey restValue hmem
-          exact hvalues restKey restValue (by simp [hmem])
-        have hrestBounds : ∀ restKey restValue,
-            (restKey, restValue) ∈ rest →
-            (valuation restKey).size < bound ∧
-              HESolutionAtomSize valuation restValue < bound := by
-          intro restKey restValue hmem
-          exact hbounds restKey restValue (by simp [hmem])
-        obtain ⟨after, htail, hafterSat, hafterNonvar⟩ :=
-          ih next hnextSat hnextNonvar hrestSat hrestValues hrestBounds
-        exact ⟨after, .cons hadd htail, hafterSat, hafterNonvar⟩
-  have foldEqualities : ∀
-      (equalities : List (String × String)) (before : Bindings),
-      HEBindingSatisfied valuation before →
-      HEAssignmentsNonVariable before →
-      (∀ left right, (left, right) ∈ equalities →
-        valuation left = valuation right) →
-      (∀ left right, (left, right) ∈ equalities →
-        (valuation left).size < bound ∧
-          (valuation right).size < bound) →
-      ∃ after, MergeEqsRel before equalities after ∧
-        HEBindingSatisfied valuation after ∧
-          HEAssignmentsNonVariable after := by
-    intro equalities
-    induction equalities with
-    | nil =>
-        intro before hbefore hnonvar _ _
-        exact ⟨before, .nil, hbefore, hnonvar⟩
-    | cons equality rest ih =>
-        rcases equality with ⟨left, right⟩
-        intro before hbefore hnonvar hsat hbounds
-        obtain ⟨next, hadd, hnextSat, hnextNonvar⟩ :=
-          haddEquality hbefore hnonvar
-            (hsat left right (by simp))
-            (hbounds left right (by simp)).1
-            (hbounds left right (by simp)).2
-        have hrestSat : ∀ restLeft restRight,
-            (restLeft, restRight) ∈ rest →
-            valuation restLeft = valuation restRight := by
-          intro restLeft restRight hmem
-          exact hsat restLeft restRight (by simp [hmem])
-        have hrestBounds : ∀ restLeft restRight,
-            (restLeft, restRight) ∈ rest →
-            (valuation restLeft).size < bound ∧
-              (valuation restRight).size < bound := by
-          intro restLeft restRight hmem
-          exact hbounds restLeft restRight (by simp [hmem])
-        obtain ⟨after, htail, hafterSat, hafterNonvar⟩ :=
-          ih next hnextSat hnextNonvar hrestSat hrestBounds
-        exact ⟨after, .cons hadd htail, hafterSat, hafterNonvar⟩
-  obtain ⟨middle, hassignments, hmiddleSat, hmiddleNonvar⟩ :=
-    foldAssignments right.assignments seed hseed hseedNonvar
-      (fun key value hmem => hright.1 key value hmem)
-      (fun key value hmem =>
-        hrightNonvar.isVarB_eq_false_of_assignment hmem)
-      (fun key value hmem => hrightBound.1 key value hmem)
-  obtain ⟨out, hequalities, houtSat, houtNonvar⟩ :=
-    foldEqualities right.equalities middle hmiddleSat hmiddleNonvar
-      (fun left right hmem => hright.2 left right hmem)
-      (fun left right hmem => hrightBound.2 left right hmem)
-  exact ⟨out, .mk hassignments hequalities, houtSat, houtNonvar⟩
-
-/-- The operational keystone.  Strong induction is on the semantic ceiling of
-the right record.  A value/equality insertion at key size `k < bound` invokes
-the original HE matcher at size `k`; expression matching emits only bindings
-strictly below `k`, so its live merge is supplied by the induction hypothesis
-at `k`.  The seed is never measured. -/
-theorem satisfiedMergeRelCompleteBelow
-    (valuation : String → Metta.Atom) :
-    ∀ bound, HESatisfiedMergeRelCompleteBelow valuation bound := by
-  intro bound
-  induction bound using Nat.strong_induction_on with
-  | h bound ih =>
-      apply satisfiedMergeRelCompleteBelow_of_adds
-      · intro seed key value hseed hseedNonvar hvalueNonvar hvalue
-          hkeyBound hvalueBound
-        cases hclass : seed.classValues key with
-        | nil =>
-            let hadd : AddVarBindingRel seed key value
-                (seed.assign key value) := .fresh hclass
-            exact ⟨seed.assign key value, hadd,
-              addVarBindingRel_satisfied hadd hseed hvalue,
-              hseedNonvar.assign hvalueNonvar⟩
-        | cons first rest =>
-            cases hconsistent :
-                Bindings.valuesConsistent (first :: rest) with
-            | true =>
-                by_cases hequal : first = value
-                · let hadd : AddVarBindingRel seed key value seed :=
-                    .same hclass hconsistent hequal
-                  exact ⟨seed, hadd,
-                    addVarBindingRel_satisfied hadd hseed hvalue,
-                    hseedNonvar⟩
-                · have hfirstMem : first ∈ seed.classValues key := by
-                    rw [hclass]
-                    exact List.mem_cons_self ..
-                  have hfirstEquation : HEAtomEquationSatisfied valuation
-                      first value :=
-                    (hseed.eq_applyClassSolution_of_mem_classValues
-                      hfirstMem).symm.trans hvalue
-                  have hfirstSize : HESolutionAtomSize valuation first =
-                      (valuation key).size :=
-                    hseed.solutionAtomSize_classValue hfirstMem
-                  have hvalueSize : HESolutionAtomSize valuation value =
-                      (valuation key).size := by
-                    exact congrArg Metta.Atom.size hvalue.symm
-                  obtain ⟨lefts, rights, hfirstExpr, hvalueExpr⟩ :=
-                    bothExpressions_of_ne_classValue_coSatisfied
-                      hseed hseedNonvar hclass hvalueNonvar hvalue hequal
-                  subst first
-                  subst value
-                  obtain ⟨matched, hmatch, hmatchedSat, hmatchedNonvar,
-                      hmatchedBound⟩ :=
-                    exists_expressionMatchRel_solutionSizeBound
-                      (ih _ hkeyBound) hfirstEquation hfirstSize hvalueSize
-                  obtain ⟨out, hmerge, _houtSat, houtNonvar⟩ :=
-                    ih _ hkeyBound hseed hseedNonvar hmatchedSat
-                      hmatchedNonvar hmatchedBound
-                  let hadd : AddVarBindingRel seed key
-                      (.expression rights) out :=
-                    .conflict hclass hconsistent hequal hmatch hmerge
-                  exact ⟨out, hadd,
-                    addVarBindingRel_satisfied hadd hseed hvalue,
-                    houtNonvar⟩
-            | false =>
-                have hfirstMem : first ∈ seed.classValues key := by
-                  rw [hclass]
-                  exact List.mem_cons_self ..
-                have hfirstSize : HESolutionAtomSize valuation first =
-                    (valuation key).size :=
-                  hseed.solutionAtomSize_classValue hfirstMem
-                have hvalueSize : HESolutionAtomSize valuation value =
-                    (valuation key).size := by
-                  exact congrArg Metta.Atom.size hvalue.symm
-                have hfirstNonvar :
-                    DeclMatchSpec.Atom.isVarB first = false :=
-                  hseedNonvar.isVarB_eq_false_of_classValue hfirstMem
-                have hlists := classValues_reconcileList_satisfied
-                  hseed hclass hvalue
-                have hleftData : ∀ atom ∈
-                    List.replicate (rest.length + 1) first,
-                    DeclMatchSpec.Atom.isVarB atom = false ∧
-                      HESolutionAtomSize valuation atom =
-                        (valuation key).size := by
-                  intro atom hmem
-                  have hatom : atom = first := List.eq_of_mem_replicate hmem
-                  subst atom
-                  exact ⟨hfirstNonvar, hfirstSize⟩
-                have hrightData : ∀ atom ∈ rest ++ [value],
-                    DeclMatchSpec.Atom.isVarB atom = false ∧
-                      HESolutionAtomSize valuation atom =
-                        (valuation key).size := by
-                  intro atom hmem
-                  rcases List.mem_append.mp hmem with hrest | hlast
-                  · have hclassMem : atom ∈ seed.classValues key := by
-                      rw [hclass]
-                      exact List.mem_cons_of_mem first hrest
-                    exact ⟨
-                      hseedNonvar.isVarB_eq_false_of_classValue hclassMem,
-                      hseed.solutionAtomSize_classValue hclassMem⟩
-                  · simp only [List.mem_singleton] at hlast
-                    subst atom
-                    exact ⟨hvalueNonvar, hvalueSize⟩
-                obtain ⟨matched, hmatch, hmatchedSat, hmatchedNonvar,
-                    hmatchedBound⟩ :=
-                  exists_nonvariableMatchListAccRel_at_solutionSize
-                    (ih _ hkeyBound)
-                    ((hesat_empty_iff valuation).mpr trivial)
-                    (by simp [HEAssignmentsNonVariable, Bindings.empty])
-                    (heBindingSolutionSizeBound_empty valuation
-                      (valuation key).size)
-                    hlists hleftData hrightData
-                obtain ⟨out, hmerge, _houtSat, houtNonvar⟩ :=
-                  ih _ hkeyBound hseed hseedNonvar hmatchedSat
-                    hmatchedNonvar hmatchedBound
-                let hadd : AddVarBindingRel seed key value out :=
-                  .reconcile hclass hconsistent hmatch hmerge
-                exact ⟨out, hadd,
-                  addVarBindingRel_satisfied hadd hseed hvalue,
-                  houtNonvar⟩
-      · intro seed left right hseed hseedNonvar hequality hleftBound
-          hrightBound
-        have hcandidateSat : HEBindingSatisfied valuation
-            (seed.addEquality left right) :=
-          (heBindingSatisfied_addEquality_iff valuation seed left right).mpr
-            ⟨hseed, hequality⟩
-        have hcandidateNonvar :
-            HEAssignmentsNonVariable (seed.addEquality left right) :=
-          hseedNonvar.addEquality left right
-        cases hconsistent : Bindings.valuesConsistent
-            ((seed.addEquality left right).classValues left) with
-        | true =>
-            let hadd : AddVarEqualityRel seed left right
-                (seed.addEquality left right) := .consistent hconsistent
-            exact ⟨seed.addEquality left right, hadd,
-              addVarEqualityRel_satisfied hadd hseed hequality,
-              hcandidateNonvar⟩
-        | false =>
-            cases hvalues :
-                (seed.addEquality left right).classValues left with
-            | nil =>
-                rw [hvalues] at hconsistent
-                simp [Bindings.valuesConsistent] at hconsistent
-            | cons first rest =>
-                cases rest with
-                | nil =>
-                    rw [hvalues] at hconsistent
-                    simp [Bindings.valuesConsistent] at hconsistent
-                | cons second tail =>
-                    cases tail with
-                    | nil =>
-                        have hfirstMem : first ∈
-                            (seed.addEquality left right).classValues left := by
-                          rw [hvalues]
-                          simp
-                        have hsecondMem : second ∈
-                            (seed.addEquality left right).classValues left := by
-                          rw [hvalues]
-                          simp
-                        have hequation : HEAtomEquationSatisfied valuation
-                            first second :=
-                          classValues_equationSatisfied hcandidateSat
-                            hfirstMem hsecondMem
-                        have hfirstSize :
-                            HESolutionAtomSize valuation first =
-                              (valuation left).size :=
-                          hcandidateSat.solutionAtomSize_classValue hfirstMem
-                        have hsecondSize :
-                            HESolutionAtomSize valuation second =
-                              (valuation left).size :=
-                          hcandidateSat.solutionAtomSize_classValue hsecondMem
-                        obtain ⟨matched, hmatch, hmatchedSat,
-                            hmatchedNonvar, hmatchedBound⟩ :=
-                          exists_nonvariableMatchRel_at_solutionSize
-                            (ih _ hleftBound) hequation
-                            (hcandidateNonvar.isVarB_eq_false_of_classValue
-                              hfirstMem)
-                            (hcandidateNonvar.isVarB_eq_false_of_classValue
-                              hsecondMem)
-                            hfirstSize hsecondSize
-                        obtain ⟨out, hmerge, _houtSat, houtNonvar⟩ :=
-                          ih _ hleftBound hcandidateSat hcandidateNonvar
-                            hmatchedSat hmatchedNonvar hmatchedBound
-                        have hpairInconsistent :
-                            Bindings.valuesConsistent [first, second] = false := by
-                          simpa [hvalues] using hconsistent
-                        let hadd : AddVarEqualityRel seed left right out :=
-                          .pairConflict hvalues hpairInconsistent hmatch hmerge
-                        exact ⟨out, hadd,
-                          addVarEqualityRel_satisfied hadd hseed hequality,
-                          houtNonvar⟩
-
-                    | cons third rest =>
-                        have hfirstMem : first ∈
-                            (seed.addEquality left right).classValues left := by
-                          rw [hvalues]
-                          simp
-                        have hfirstSize :
-                            HESolutionAtomSize valuation first =
-                              (valuation left).size :=
-                          hcandidateSat.solutionAtomSize_classValue hfirstMem
-                        have hfirstNonvar :
-                            DeclMatchSpec.Atom.isVarB first = false :=
-                          hcandidateNonvar.isVarB_eq_false_of_classValue
-                            hfirstMem
-                        have hlists : MettaAtomListsSatisfied valuation
-                            (toLeaTTaAtoms
-                              (List.replicate (rest.length + 2) first))
-                            (toLeaTTaAtoms (second :: third :: rest)) := by
-                          have h := classValues_replicateTail_satisfied
-                            hcandidateSat hvalues
-                          simpa using h
-                        have hleftData : ∀ atom ∈
-                            List.replicate (rest.length + 2) first,
-                            DeclMatchSpec.Atom.isVarB atom = false ∧
-                              HESolutionAtomSize valuation atom =
-                                (valuation left).size := by
-                          intro atom hmem
-                          have hatom : atom = first :=
-                            List.eq_of_mem_replicate hmem
-                          subst atom
-                          exact ⟨hfirstNonvar, hfirstSize⟩
-                        have hrightData : ∀ atom ∈ second :: third :: rest,
-                            DeclMatchSpec.Atom.isVarB atom = false ∧
-                              HESolutionAtomSize valuation atom =
-                                (valuation left).size := by
-                          intro atom hmem
-                          have hclassMem : atom ∈
-                              (seed.addEquality left right).classValues left := by
-                            rw [hvalues]
-                            exact List.mem_cons_of_mem first hmem
-                          exact ⟨
-                            hcandidateNonvar.isVarB_eq_false_of_classValue
-                              hclassMem,
-                            hcandidateSat.solutionAtomSize_classValue
-                              hclassMem⟩
-                        obtain ⟨matched, hmatch, hmatchedSat,
-                            hmatchedNonvar, hmatchedBound⟩ :=
-                          exists_nonvariableMatchListAccRel_at_solutionSize
-                            (ih _ hleftBound)
-                            ((hesat_empty_iff valuation).mpr trivial)
-                            (by
-                              simp [HEAssignmentsNonVariable, Bindings.empty])
-                            (heBindingSolutionSizeBound_empty valuation
-                              (valuation left).size)
-                            hlists hleftData hrightData
-                        obtain ⟨out, hmerge, _houtSat, houtNonvar⟩ :=
-                          ih _ hleftBound hcandidateSat hcandidateNonvar
-                            hmatchedSat hmatchedNonvar hmatchedBound
-                        have hclassInconsistent : Bindings.valuesConsistent
-                            (first :: second :: third :: rest) = false := by
-                          simpa [hvalues] using hconsistent
-                        let hadd : AddVarEqualityRel seed left right out :=
-                          .classConflict hvalues hclassInconsistent hmatch hmerge
-                        exact ⟨out, hadd,
-                          addVarEqualityRel_satisfied hadd hseed hequality,
-                          houtNonvar⟩
-
 /-- Satisfiable merge-back for every actual HE matcher result.  The finite
 ceiling is obtained from the two source atoms; the matcher size theorem then
 certifies the right record required by `satisfiedMergeRelCompleteBelow`. -/
@@ -5053,25 +4313,6 @@ theorem heSatisfiedMatcherMergeRelComplete_solutionSize :
   heSatisfiedMatcherMergeRelComplete_of_exists
     heSatisfiedMatcherMergeRelExists_solutionSize
 
-/-- Assumption-free semantic completeness of the declarative HE matcher.
-The recursive expression/list proof is the existing representation-free
-construction; semantic-size merge-back supplies its former local premise. -/
-theorem exists_matchRel_of_solution_solutionSize
-    {left right : Atom} {valuation : String → Metta.Atom}
-    (hequation : HEAtomEquationSatisfied valuation left right) :
-    ∃ out, DeclMatchSpec.MatchRel left right out :=
-  exists_matchRel_of_solution_of_merge
-    heSatisfiedMatcherMergeRelComplete_solutionSize hequation
-
-/-- Executable finite-fuel form of assumption-free semantic matcher
-completeness. -/
-theorem exists_matchAtoms_of_solution_solutionSize
-    {left right : Atom} {valuation : String → Metta.Atom}
-    (hequation : HEAtomEquationSatisfied valuation left right) :
-    ∃ out fuel, out ∈ matchAtoms left right fuel :=
-  exists_matchAtoms_of_solution_of_merge
-    heSatisfiedMatcherMergeRelComplete_solutionSize hequation
-
 /-- A stored/proposed class-value pair from successful repaired-LeaTTa
 reconciliation is an actual HE matcher success, with no abstract merge
 completeness argument left at the call site. -/
@@ -5081,7 +4322,7 @@ theorem exists_matchAtoms_classValue_of_reconciliation_solutionSize
     (hbase : LeaBindingCongruence b source)
     (hsourceNoFloat : LeaBindingsNoFloat source)
     (hreconcile : wholeBindingReconciliation source
-      [(.var key, toLeaTTaAtom proposed)] = some result)
+      [(.var key, encodeModelAtom proposed)] = some result)
     (hstored : stored ∈ b.classValues key) :
     ∃ out fuel, out ∈ matchAtoms stored proposed fuel :=
   exists_matchAtoms_classValue_of_reconciliation_of_merge
@@ -5782,7 +5023,7 @@ theorem HECoveredProjectedStateSolutionSizeBound.assignmentConflictPair
       (valuation key).size :=
     hhead.1.solutionAtomSize_classValue hfirstMem
   have hvalueEq : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value) := by
+      applyClassSolution valuation (encodeModelAtom value) := by
     have hequation := hhead.2
     rw [hright] at hequation
     simpa [MettaEquationSatisfied, applyClassSolution] using hequation
@@ -5829,7 +5070,7 @@ theorem HECoveredProjectedStateSolutionSizeBound.assignmentReconcileLists
         (valuation key).size :=
       hhead.1.solutionAtomSize_classValue hclassMem
     have hvalueEq : valuation key =
-        applyClassSolution valuation (toLeaTTaAtom value) := by
+        applyClassSolution valuation (encodeModelAtom value) := by
       have hequation := hhead.2
       rw [hright] at hequation
       simpa [MettaEquationSatisfied, applyClassSolution] using hequation
@@ -5875,7 +5116,7 @@ theorem HECoveredProjectedStateSolutionSizeBound.nonVarVarConflictPair
       (valuation key).size :=
     hhead.1.solutionAtomSize_classValue hfirstMem
   have hvalueEq : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value) := by
+      applyClassSolution valuation (encodeModelAtom value) := by
     have hequation := hhead.2
     rw [hright] at hequation
     simpa [MettaEquationSatisfied, applyClassSolution] using hequation.symm
@@ -5921,7 +5162,7 @@ theorem HECoveredProjectedStateSolutionSizeBound.nonVarVarReconcileLists
         (valuation key).size :=
       hhead.1.solutionAtomSize_classValue hclassMem
     have hvalueEq : valuation key =
-        applyClassSolution valuation (toLeaTTaAtom value) := by
+        applyClassSolution valuation (encodeModelAtom value) := by
       have hequation := hhead.2
       rw [hright] at hequation
       simpa [MettaEquationSatisfied, applyClassSolution] using
@@ -6350,7 +5591,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_hi
       | symbol rightName =>
           rw [hright] at hequation
           have hname : leftName = rightName := by
-            simpa [MettaEquationSatisfied, toLeaTTaAtom,
+            simpa [MettaEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation
           subst rightName
           simpa only [hright] using p.exists_coreResidualSymbol hright
@@ -6367,10 +5608,10 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_hi
                 callbacks.nonVarVarReconcile p hright rfl
                   hclass hinconsistent)
       | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
   | var leftName =>
       cases hright : p.nextRight with
@@ -6425,7 +5666,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_hi
   | grounded leftGround =>
       cases hright : p.nextRight with
       | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | var rightName =>
           simpa only [hright] using
@@ -6442,22 +5683,22 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_hi
       | grounded rightGround =>
           rw [hright] at hequation
           have hatom :
-              toLeaTTaAtom (.grounded leftGround) =
-                toLeaTTaAtom (.grounded rightGround) := by
-            simpa [MettaEquationSatisfied, toLeaTTaAtom,
+              encodeModelAtom (.grounded leftGround) =
+                encodeModelAtom (.grounded rightGround) := by
+            simpa [MettaEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation
           have hground : leftGround = rightGround := by
-            have heq := toLeaTTaAtom_injective hatom
+            have heq := encodeModelAtom_injective hatom
             injection heq
           subst rightGround
           simpa only [hright] using p.exists_coreResidualGrounded hright
       | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
   | expression leftAtoms =>
       cases hright : p.nextRight with
       | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | var rightName =>
           simpa only [hright] using
@@ -6472,7 +5713,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_hi
                 callbacks.nonVarVarReconcile p hright rfl
                   hclass hinconsistent)
       | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | expression rightAtoms =>
           simpa only [hright] using callbacks.expression p hright
@@ -7251,19 +6492,19 @@ theorem externalLiveConflict_structuralTie_satisfiable :
     HEBindingSatisfied sameSizeExternalConflictValuation
         sameSizeExternalConflictSeed ∧
       MettaEquationSatisfied sameSizeExternalConflictValuation
-        (toLeaTTaAtom (.expression [.symbol "f", .var "y"]),
-         toLeaTTaAtom (.expression [.symbol "f", .var "z"])) := by
+        (encodeModelAtom (.expression [.symbol "f", .var "y"]),
+         encodeModelAtom (.expression [.symbol "f", .var "z"])) := by
   constructor
   · constructor
     · intro key value hmem
       simp [sameSizeExternalConflictSeed] at hmem
       rcases hmem with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
-        simp [sameSizeExternalConflictValuation, toLeaTTaAtom,
-          toLeaTTaAtoms, applyClassSolution]
+        simp [sameSizeExternalConflictValuation, encodeModelAtom,
+          encodeModelAtoms, applyClassSolution]
     · intro left right hmem
       simp [sameSizeExternalConflictSeed] at hmem
   · simp [sameSizeExternalConflictValuation, MettaEquationSatisfied,
-      toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution]
+      encodeModelAtom, encodeModelAtoms, applyClassSolution]
 
 /-- POSITIVE: the common-solution size sees through the raw tie.  The live
 class value `g(u)` denotes exactly `y`'s semantic term, which is a strict
@@ -7286,7 +6527,7 @@ theorem externalLiveConflict_solutionSize_strictlyDescends :
     _ = HESolutionAtomSize sameSizeExternalConflictValuation
         (.var "y") := by
       simp [HESolutionAtomSize, sameSizeExternalConflictValuation,
-        toLeaTTaAtom, applyClassSolution]
+        encodeModelAtom, applyClassSolution]
     _ < HESolutionAtomSize sameSizeExternalConflictValuation
         (.expression [.symbol "f", .var "y"]) :=
       heSolutionAtomSize_lt_expression_of_mem _ (by simp)
@@ -7312,7 +6553,7 @@ theorem externalLiveConflict_not_strictStructuralDescent :
     HEAtomSize (.expression [.symbol "f", .var "y"]) =
       HEAtomSize (.expression [.symbol "g", .var "u"]) := by
   refine ⟨by decide, by decide, by decide, ?_⟩
-  simp [HEAtomSize, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.size]
+  simp [HEAtomSize, encodeModelAtom, encodeModelAtoms, Metta.Atom.size]
 
 /-- Bounded companion of the certified pending-cardinality recursion.  The
 finite deficit remains the sole recursion index at this layer; the atom-size

@@ -41,7 +41,7 @@ theorem objectDerivationLooseConcept_selfInheritance_imprecise :
 
 /-- The inheritance truth-coordinate crown specialized to the unstable
 `ObjectDerivation` self-query. -/
-def objectDerivationSelfInheritanceTruthCoordinate :
+theorem objectDerivationSelfInheritanceTruthCoordinate :
     CredalInheritanceTruthCoordinate
       mizarGateFamily articleContext.evidence
       objectDerivationLooseConcept objectDerivationLooseConcept :=
@@ -191,7 +191,7 @@ def totalUnstableConceptCount : Nat :=
 
 theorem mizarFamilyPilotArticle_card :
     Fintype.card MizarFamilyPilotArticle = 13 := by
-  native_decide
+  decide +kernel
 
 theorem sampledThresholds_length_eq_four
     (a : MizarFamilyPilotArticle) :
@@ -210,7 +210,7 @@ theorem unstableConceptCount_pos
 
 theorem totalUnstableConceptCount_eq :
     totalUnstableConceptCount = 917 := by
-  native_decide
+  decide +kernel
 
 theorem unstableConceptCount_le_conlat_1
     (a : MizarFamilyPilotArticle) :
@@ -277,11 +277,11 @@ def bottomMentionCount : MizarFamilyPilotArticle → Nat
 
 theorem mizarFamilyDualityTrackedPair_card :
     Fintype.card MizarFamilyDualityTrackedPair = 3 := by
-  native_decide
+  decide +kernel
 
 theorem dualityGhostCandidateArticles_card :
     dualityGhostCandidateArticles.card = 3 := by
-  native_decide
+  decide +kernel
 
 theorem mem_dualityGhostCandidateArticles_iff
     (a : MizarFamilyPilotArticle) :
@@ -367,7 +367,7 @@ def prefixCompletionTotalUnstableConceptCount : Nat := 1652
 
 theorem prefixCompletionArticleNames_card :
     prefixCompletionArticleNames.card = 31 := by
-  native_decide
+  decide +kernel
 
 theorem prefixCompletionDegenerateHoldouts_eq :
     prefixCompletionDegenerateHoldouts = ["yellow_5"].toFinset := by
@@ -375,7 +375,7 @@ theorem prefixCompletionDegenerateHoldouts_eq :
 
 theorem prefixCompletionNondegenerateArticleCount :
     prefixCompletionArticleNames.card - prefixCompletionDegenerateHoldouts.card = 30 := by
-  native_decide
+  decide +kernel
 
 theorem prefixCompletionAttributePresenceCount_eq :
     prefixCompletionAttributePresenceCount = 269 := by
@@ -396,7 +396,7 @@ theorem prefixCompletionTopUnstableArticles_eq :
 
 theorem prefixCompletionTopUnstableArticles_length :
     prefixCompletionTopUnstableArticles.length = 5 := by
-  native_decide
+  decide +kernel
 
 /-- Review-facing package for the current less-curated prefix-completion slice.
 It records the 31-article expansion, its single degenerate holdout, and the

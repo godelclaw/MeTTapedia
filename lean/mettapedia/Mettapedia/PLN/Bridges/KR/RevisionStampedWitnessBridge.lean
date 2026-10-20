@@ -13,7 +13,7 @@ feed it only when the existing pairwise stamp-disjointness certificate succeeds.
 namespace Mettapedia.PLN.Bridges.KR.RevisionStampedWitnessBridge
 
 open Mettapedia.KR.ConceptGeometry.AbstractInheritance
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 

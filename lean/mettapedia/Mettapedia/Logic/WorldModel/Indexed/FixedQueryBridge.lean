@@ -25,13 +25,13 @@ set_option autoImplicit false
 
 open CategoryTheory Opposite
 
-namespace Mettapedia.Logic.WorldModel.Indexed.FixedQuery
+namespace Mettapedia.Logic.WorldModel.Indexed.FixedQueryBridge
 
 open scoped ENNReal
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelProfiles
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelProfiles
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 
 /-- A binary world model over a fixed question type, with its state type
@@ -167,4 +167,4 @@ theorem jointProfile_profileHom :
         (Query := Query) W q :=
   ⟨AddMonoidHom.id _, fun _ _ => rfl⟩
 
-end Mettapedia.Logic.WorldModel.Indexed.FixedQuery
+end Mettapedia.Logic.WorldModel.Indexed.FixedQueryBridge

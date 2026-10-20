@@ -7,7 +7,9 @@
       "(= (f a) b)"
     ],
     "query": "!(f a)",
-    "expected": ["b"],
+    "expected": [
+      "b"
+    ],
     "source_note": "SimpleHE simple parity case"
   },
   {
@@ -19,7 +21,9 @@
       "(= (f a) b)"
     ],
     "query": "!(g a)",
-    "expected": ["b"],
+    "expected": [
+      "b"
+    ],
     "source_note": "SimpleHE nested parity case"
   },
   {
@@ -31,7 +35,10 @@
       "(= (choose) blue)"
     ],
     "query": "!(choose)",
-    "expected": ["red", "blue"],
+    "expected": [
+      "red",
+      "blue"
+    ],
     "source_note": "Order-insensitive nondeterministic result set"
   },
   {
@@ -40,7 +47,9 @@
     "lean_theorem": "he_io_anchor_he_unknown_expr_preserved",
     "setup": [],
     "query": "!(unknown arg)",
-    "expected": ["(unknown arg)"],
+    "expected": [
+      "(unknown arg)"
+    ],
     "source_note": "No rewrite path preserves expression"
   },
   {
@@ -51,7 +60,9 @@
       "(= (f $x) (result $x))"
     ],
     "query": "!(f hello)",
-    "expected": ["(result hello)"],
+    "expected": [
+      "(result hello)"
+    ],
     "source_note": "Variable binding substitution"
   },
   {
@@ -63,7 +74,10 @@
       "(= (dup) x)"
     ],
     "query": "!(dup)",
-    "expected": ["x", "x"],
+    "expected": [
+      "x",
+      "x"
+    ],
     "source_note": "Bag semantics: multiplicity must be preserved"
   },
   {
@@ -73,7 +87,9 @@
     "implementation_group": "if",
     "setup": [],
     "query": "!(if True alpha beta)",
-    "expected": ["alpha"],
+    "expected": [
+      "alpha"
+    ],
     "source_note": "stdlib if rule"
   },
   {
@@ -83,7 +99,9 @@
     "implementation_group": "if",
     "setup": [],
     "query": "!(if False alpha beta)",
-    "expected": ["beta"],
+    "expected": [
+      "beta"
+    ],
     "source_note": "stdlib if rule"
   },
   {
@@ -93,7 +111,9 @@
     "implementation_group": "case",
     "setup": [],
     "query": "!(case Empty ((ok ok) (Empty nok)))",
-    "expected": ["nok"],
+    "expected": [
+      "nok"
+    ],
     "source_note": "stdlib case on Empty"
   },
   {
@@ -103,7 +123,9 @@
     "implementation_group": "case",
     "setup": [],
     "query": "!(case 5 ((4 False) (5 (+ 1 2))))",
-    "expected": ["3"],
+    "expected": [
+      "3"
+    ],
     "source_note": "case should evaluate selected branch"
   },
   {
@@ -113,8 +135,84 @@
     "implementation_group": "collapse",
     "setup": [],
     "query": "!(collapse (superpose (a b a)))",
-    "expected": ["(a b a)"],
+    "expected": [
+      "(a b a)"
+    ],
     "source_note": "collapse collects nondet outcomes preserving duplicates"
+  },
+  {
+    "id": "he_ext_tv_conjunction_reduces",
+    "tier": "extension_impl_target",
+    "implementation_priority": "P1",
+    "implementation_group": "pln_tv",
+    "setup": [
+      "(= (min $a $b) (if (< $a $b) $a $b))",
+      "(= (s-tv (stv $s $c)) $s)",
+      "(= (c-tv (stv $s $c)) $c)",
+      "(= (TV $x) (match &self (.tv $x $stv) $stv))",
+      "(= (TV (And $a $b)) (stv (min (s-tv (TV $a)) (s-tv (TV $b))) (min (c-tv (TV $a)) (c-tv (TV $b)))))",
+      "(.tv aa (stv 0.5 0.8))",
+      "(.tv bb (stv 0.3 0.9))"
+    ],
+    "query": "!(TV (And aa bb))",
+    "expected": [
+      "(stv 0.3 0.8)"
+    ],
+    "source_note": "Minimal witness extracted from he_c3_pln_stv.metta: conjunction truth-value reduction must re-enter nested TV/min projections applicatively"
+  },
+  {
+    "id": "he_ext_tv_implication_reduces",
+    "tier": "extension_impl_target",
+    "implementation_priority": "P1",
+    "implementation_group": "pln_tv",
+    "setup": [
+      "(= (s-tv (stv $s $c)) $s)",
+      "(= (c-tv (stv $s $c)) $c)",
+      "(= (TV $x) (match &self (.tv $x $stv) $stv))",
+      "(= (TV $x) (match &self (.tv (Implication $y $x) (stv $s $c)) (stv (* $s (s-tv (TV $y))) (* $c (c-tv (TV $y))))))",
+      "(.tv aa (stv 0.5 0.8))",
+      "(.tv (Implication aa ff) (stv 0.8 1.0))"
+    ],
+    "query": "!(TV ff)",
+    "expected": [
+      "(stv 0.4 0.8)"
+    ],
+    "source_note": "Minimal witness extracted from he_c3_pln_stv.metta: implication truth-value reduction must recurse through antecedent TV lookup"
+  },
+  {
+    "id": "he_ext_type_prop_application_type",
+    "tier": "extension_impl_target",
+    "implementation_priority": "P1",
+    "implementation_group": "type_prop",
+    "setup": [
+      "(: Entity Type)",
+      "(: Socrates Entity)",
+      "(: Human (-> Entity Type))",
+      "(: Mortal (-> Entity Type))",
+      "(: HumansAreMortal (-> (Human $t) (Mortal $t)))",
+      "(: SocratesIsHuman (Human Socrates))"
+    ],
+    "query": "!(get-type (HumansAreMortal SocratesIsHuman))",
+    "expected": [
+      "(Mortal Socrates)"
+    ],
+    "source_note": "Minimal witness extracted from he_d4_type_prop.metta: proof-object application carries the instantiated proposition family"
+  },
+  {
+    "id": "he_ext_type_prop_bad_proof_rejected",
+    "tier": "extension_impl_target",
+    "implementation_priority": "P1",
+    "implementation_group": "type_prop",
+    "setup": [
+      "(: Entity Type)",
+      "(: Socrates Entity)",
+      "(: Human (-> Entity Type))",
+      "(: Mortal (-> Entity Type))",
+      "(: HumansAreMortal (-> (Human $t) (Mortal $t)))"
+    ],
+    "query": "!(get-type (HumansAreMortal (Human Socrates)))",
+    "expected": [],
+    "source_note": "Minimal witness extracted from he_d4_type_prop.metta: proposition shape is not itself a proof object"
   },
   {
     "id": "he_ext_assert_true_unit",
@@ -123,7 +221,9 @@
     "implementation_group": "assert",
     "setup": [],
     "query": "!(assert True)",
-    "expected": ["()"],
+    "expected": [
+      "()"
+    ],
     "source_note": "assert success returns unit"
   },
   {
@@ -133,7 +233,9 @@
     "implementation_group": "assertEqual",
     "setup": [],
     "query": "!(assertEqual (+ 1 2) 3)",
-    "expected": ["()"],
+    "expected": [
+      "()"
+    ],
     "source_note": "assertEqual success"
   },
   {
@@ -143,7 +245,9 @@
     "implementation_group": "assertEqualToResult",
     "setup": [],
     "query": "!(assertEqualToResult (+ 1 2) (3))",
-    "expected": ["()"],
+    "expected": [
+      "()"
+    ],
     "source_note": "assertEqualToResult success"
   },
   {
@@ -153,7 +257,9 @@
     "implementation_group": "assert",
     "setup": [],
     "query": "!(assert (and True False))",
-    "expected": ["(Error (assert (and True False)) ((and True False) not True))"],
+    "expected": [
+      "(Error (assert (and True False)) ((and True False) not True))"
+    ],
     "source_note": "assert failure error form"
   },
   {
@@ -163,7 +269,9 @@
     "implementation_group": "assertEqualMsg",
     "setup": [],
     "query": "!(assertEqualMsg (+ 1 2) 4 \"Test message\")",
-    "expected": ["(Error (assertEqualMsg (+ 1 2) 4) \"Test message\")"],
+    "expected": [
+      "(Error (assertEqualMsg (+ 1 2) 4) \"Test message\")"
+    ],
     "source_note": "message-preserving assert failure"
   },
   {
@@ -173,7 +281,9 @@
     "implementation_group": "assertEqualToResultMsg",
     "setup": [],
     "query": "!(assertEqualToResultMsg (+ 1 2) (4) \"Oops\")",
-    "expected": ["(Error (assertEqualToResultMsg (+ 1 2) (4)) \"Oops\")"],
+    "expected": [
+      "(Error (assertEqualToResultMsg (+ 1 2) (4)) \"Oops\")"
+    ],
     "source_note": "message-preserving result-mode assert failure"
   },
   {
@@ -183,7 +293,9 @@
     "implementation_group": "assertIncludes",
     "setup": [],
     "query": "!(assertIncludes (superpose (41 42 43)) (42))",
-    "expected": ["()"],
+    "expected": [
+      "()"
+    ],
     "source_note": "assertIncludes success"
   },
   {
@@ -193,7 +305,245 @@
     "implementation_group": "assertIncludes",
     "setup": [],
     "query": "!(assertIncludes (superpose (41 42 43)) (A))",
-    "expected": ["(Error (assertIncludes (superpose (41 42 43)) (A)) (assertIncludes error: (A) not included in result: (41 42 43)))"],
+    "expected": [
+      "(Error (assertIncludes (superpose (41 42 43)) (A)) (assertIncludes error: (A) not included in result: (41 42 43)))"
+    ],
     "source_note": "assertIncludes failure error form"
+  },
+  {
+    "id": "he_nested_equation_call",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.EquationScopeControls.NestedCalls.inc_twice",
+    "setup": [
+      "(= (inc $x) (S $x))"
+    ],
+    "query": "!(inc (inc Z))",
+    "expected": [
+      "(S (S Z))"
+    ],
+    "source_note": "one equation called inside its own argument"
+  },
+  {
+    "id": "he_nested_equation_call_triple",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.EquationScopeControls.NestedCalls.inc_three_times",
+    "setup": [
+      "(= (inc $x) (S $x))"
+    ],
+    "query": "!(inc (inc (inc Z)))",
+    "expected": [
+      "(S (S (S Z)))"
+    ],
+    "source_note": "one equation nested three deep"
+  },
+  {
+    "id": "he_recursive_peano_add",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.EquationScopeControls.NestedCalls.add_two_three",
+    "setup": [
+      "(= (add Z $y) $y)",
+      "(= (add (S $x) $y) (S (add $x $y)))"
+    ],
+    "query": "!(add (S (S Z)) (S (S (S Z))))",
+    "expected": [
+      "(S (S (S (S (S Z)))))"
+    ],
+    "source_note": "recursive equation on Peano numerals"
+  },
+  {
+    "id": "he_nested_recursive_add",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.EquationScopeControls.NestedCalls.add_nested_argument",
+    "setup": [
+      "(= (add Z $y) $y)",
+      "(= (add (S $x) $y) (S (add $x $y)))"
+    ],
+    "query": "!(add (S (S Z)) (add (S Z) Z))",
+    "expected": [
+      "(S (S (S Z)))"
+    ],
+    "source_note": "recursive call in argument position"
+  },
+  {
+    "id": "he_mutual_recursion_even",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.EquationScopeControls.NestedCalls.three_is_not_even",
+    "setup": [
+      "(= (even Z) True)",
+      "(= (even (S $n)) (odd $n))",
+      "(= (odd Z) False)",
+      "(= (odd (S $n)) (even $n))"
+    ],
+    "query": "!(even (S (S (S Z))))",
+    "expected": [
+      "False"
+    ],
+    "source_note": "mutual recursion"
+  },
+  {
+    "id": "he_mutual_recursion_odd",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.EquationScopeControls.NestedCalls.three_is_odd",
+    "setup": [
+      "(= (even Z) True)",
+      "(= (even (S $n)) (odd $n))",
+      "(= (odd Z) False)",
+      "(= (odd (S $n)) (even $n))"
+    ],
+    "query": "!(odd (S (S (S Z))))",
+    "expected": [
+      "True"
+    ],
+    "source_note": "mutual recursion"
+  },
+  {
+    "id": "he_nested_nondet_twin",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.EquationScopeControls.NestedCalls.twin_of_twin_coin",
+    "setup": [
+      "(= (coin) H)",
+      "(= (coin) T)",
+      "(= (twin $x) ($x $x))"
+    ],
+    "query": "!(twin (twin (coin)))",
+    "expected": [
+      "((H H) (H H))",
+      "((T T) (T T))"
+    ],
+    "source_note": "nondeterministic argument copied by nested calls"
+  },
+  {
+    "id": "he_nested_nondet_argument",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.EquationScopeControls.NestedCalls.side_of_side",
+    "setup": [
+      "(= (side $x) (L $x))",
+      "(= (side $x) (R $x))"
+    ],
+    "query": "!(side (side Z))",
+    "expected": [
+      "(L (R Z))",
+      "(R (R Z))",
+      "(L (L Z))",
+      "(R (L Z))"
+    ],
+    "source_note": "two equations nested twice; four combinations"
+  },
+  {
+    "id": "he_existential_rhs_instances_distinct",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.EquationScopeControls.NestedCalls.separate_instances_unify_separately",
+    "setup": [
+      "(= (mk) (S $y))",
+      "(= (probe $p) (unify $p (pair (S A) (S B)) ok no))"
+    ],
+    "query": "!(probe (pair (mk) (mk)))",
+    "expected": [
+      "ok"
+    ],
+    "source_note": "each call of an equation gets its own copy of a right-hand-side-only variable"
+  },
+  {
+    "id": "he_shared_variable_unify_refused",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.EquationScopeControls.NestedCalls.shared_variable_refuses_two_values",
+    "setup": [
+      "(= (mk) (S $y))",
+      "(= (probe $p) (unify $p (pair (S A) (S B)) ok no))"
+    ],
+    "query": "!(probe (pair (S $v) (S $v)))",
+    "expected": [
+      "no"
+    ],
+    "source_note": "negative partner of the distinct-instance case"
+  },
+  {
+    "id": "he_equation_function_caller_raw",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal.InvocationCallerControls.raw_equation_keeps_invocation",
+    "setup": [
+      "(= (foo) (function (SomeValue)))"
+    ],
+    "query": "!(eval (foo))",
+    "expected": [
+      "(Error (foo) NoReturn)"
+    ],
+    "source_note": "Raw invocation retains the actual equation call as the function diagnostic origin."
+  },
+  {
+    "id": "he_equation_function_caller_full",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal.InvocationCallerControls.typed_equation_keeps_invocation",
+    "setup": [
+      "(= (foo) (function (SomeValue)))"
+    ],
+    "query": "!(foo)",
+    "expected": [
+      "(Error (foo) NoReturn)"
+    ],
+    "source_note": "Typed call-boundary theorem; full evaluation is separately exercised against Rust HE."
+  },
+  {
+    "id": "he_ordinary_embedded_function_return",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal.OrdinaryInvocationControls.public_evaluation_returns_seven",
+    "setup": [],
+    "query": "!(function (return 7))",
+    "expected": [
+      "7"
+    ],
+    "source_note": "The standard-library Atom-to-Atom function annotation supplies the independently constructed public evaluation policy."
+  },
+  {
+    "id": "he_ordinary_unify_return_evaluates",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal.OrdinaryInvocationControls.ordinary_unify_computes_template",
+    "setup": [
+      "(= (f) Value)"
+    ],
+    "query": "!(unify X X (f) Fail)",
+    "expected": [
+      "Value"
+    ],
+    "source_note": "Ordinary call completion evaluates the raw selected template at Undefined demand."
+  },
+  {
+    "id": "he_raw_unify_return_is_syntax",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal.OrdinaryInvocationControls.raw_invocation_selects_template",
+    "setup": [
+      "(= (f) Value)"
+    ],
+    "query": "!(eval (unify X X (f) Fail))",
+    "expected": [
+      "(f)"
+    ],
+    "source_note": "The raw invocation theorem retains the selected template and binding frame; the runtime fixture exercises its explicit eval entry."
+  },
+  {
+    "id": "he_atom_demand_holds_embedded_source",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal.full_atom_expected_exact",
+    "setup": [
+      "(= (f) Value)"
+    ],
+    "query": "!(metta (unify X X (f) Fail) Atom &self)",
+    "expected": [
+      "(unify X X (f) Fail)"
+    ],
+    "source_note": "An Atom demand holds the complete source expression before invocation, independently of the ordinary call return demand."
+  },
+  {
+    "id": "he_unify_selected_bindings_precede_equation_dispatch",
+    "tier": "core_anchor",
+    "lean_theorem": "Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal.EquationFallbackControls.ordinary_unify_from_empty_materializes_before_call",
+    "setup": [
+      "(= (f A) Hit)"
+    ],
+    "query": "!(unify $x B (f $x) Fail)",
+    "expected": [
+      "(f B)"
+    ],
+    "source_note": "Successful primitive selection reads its template through the reached binding frame before the ordinary continuation. The incompatible equation does not discard the result."
   }
 ]

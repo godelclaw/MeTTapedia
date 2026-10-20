@@ -4,13 +4,13 @@ import Mettapedia.OSLF.NativeTypes.Modal.ContextEquations
 open Mettapedia.OSLF.Framework
 
 /-!
-# Context permissions matter for equation-invariant modalities
+# Equations lift through contexts independently of reduction permissions
 
-The actual root-only profile admits Alpha = Beta, but does not lift that
-equation beneath Wrap. Its base rewrite Wrap(Alpha) to Done gives the Alpha
-focus an exact modal implementation. The equivalent Beta focus has none.
-This distinguishes a quotient of whole programs from a quotient of a selected
-focus when its surrounding context is not admitted for equation execution.
+The reduction profile remains root-only. Its Alpha = Beta equation still
+lifts through Wrap, so Wrap(Beta) can reach Done through equation conversion
+and the original Wrap(Alpha) rule. Both equivalent focus representatives
+inhabit the specified-contractum modality. The retained source receipt makes
+its administrative conversion and primitive origin explicit.
 -/
 
 set_option autoImplicit false
@@ -42,7 +42,7 @@ def language : LanguageDef :=
       [{label := "Wrap", category := "Term", params := [.simple "term" carrier], syntaxPattern := []}]
     rewrites := [rule]}
 
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨language, [], ⟨[], [], []⟩⟩
 def declaration : RulePlan := ⟨0, rule, binding⟩
 def runtimePlan : Plan :=
   ⟨snapshot, permissions, [declaration], [oriented .forward, oriented .reverse], []⟩
@@ -92,30 +92,33 @@ theorem focus_equivalent : Relation.EqvGen
     (GeneralOccurrenceSemantics.Equation runtimePlan [] carrier) alpha beta :=
   .rel _ _ ⟨equationReceipt, equation_completed, rfl⟩
 
-private theorem equation_keeps (distinguished : Pattern)
-    (excludesAlpha : distinguished ≠ alpha) (excludesBeta : distinguished ≠ beta)
-    {source target : Pattern}
-    (equivalent : Relation.EqvGen
-      (GeneralOccurrenceSemantics.Equation runtimePlan [] carrier) source target) :
-    source = distinguished ↔ target = distinguished := by
-  induction equivalent with
-  | rel source target equated =>
-      rcases Mettapedia.OSLF.NativeTypes.Modal.Counterexamples.equation_events_for runtimePlan rfl rfl equated with
-        ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      · simp only [Ne.symm excludesAlpha, Ne.symm excludesBeta]
-      · simp only [Ne.symm excludesAlpha, Ne.symm excludesBeta]
-  | refl => rfl
-  | symm _ _ _ ih => exact ih.symm
-  | trans _ _ _ _ _ first second => exact first.trans second
+def wrappedEquationReceipt : GeneralEquationJobs.Receipt :=
+  {equationReceipt with
+    job := {equationReceipt.job with
+      site := equationReceipt.job.site.wrapApplication 4 "Wrap" [alpha] 0}
+    target := wrap beta}
 
-theorem disabled_context_does_not_preserve_equations :
+theorem wrapped_equation_completed :
+    GeneralEquationJobs.Completion runtimePlan [] carrier (wrap alpha) wrappedEquationReceipt := by
+  apply GeneralEquationJobs.finish_sound (job := wrappedEquationReceipt.job)
+    (trace := []) (captured := []) (completed := []) (history := [])
+  · refine ⟨List.mem_cons_self, ?_⟩
+    apply generate_sound
+    cbv
+    exact List.mem_cons_of_mem _ List.mem_cons_self
+  · exact (GeneralPlanEnvironment.typing_iff runtimePlan [] carrier (wrap alpha)).mpr wrap_alpha_typed
+  · have left : wrappedEquationReceipt.job.equation.rule.left = alpha := by cbv
+    have focus : wrappedEquationReceipt.job.site.focus.eraseBinderMetadata = alpha := by cbv
+    rw [left, focus]
+    exact .constructor .nil
+  · exact .nil
+  · cbv
+
+theorem context_equations_preserved :
     Relation.EqvGen (GeneralOccurrenceSemantics.Equation runtimePlan [] carrier) alpha beta ∧
-      ¬ Relation.EqvGen (GeneralOccurrenceSemantics.Equation runtimePlan [] carrier)
-        (wrap alpha) (wrap beta) := by
-  refine ⟨focus_equivalent, ?_⟩
-  intro converted
-  have preserved := equation_keeps (wrap alpha) (by decide) (by decide) converted
-  exact (by decide : wrap beta ≠ wrap alpha) (preserved.mp rfl)
+      Relation.EqvGen (GeneralOccurrenceSemantics.Equation runtimePlan [] carrier)
+        (wrap alpha) (wrap beta) :=
+  ⟨focus_equivalent, .rel _ _ ⟨wrappedEquationReceipt, wrapped_equation_completed, rfl⟩⟩
 
 private theorem wrap_matching {actual : RewriteRule} {spec : RuleBindingSpec}
     {ambient : Nat} {site : RulePatternSite} {path : List Nat} {depth : Nat}
@@ -132,12 +135,9 @@ private theorem wrap_matching {actual : RewriteRule} {spec : RuleBindingSpec}
           cases same
           rfl
 
-theorem wrap_beta_has_no_step :
-    ¬ (GeneralOccurrenceSemantics.gslt runtimePlan [] carrier).Step (wrap beta) done := by
-  rintro ⟨representative, firing, before, valid, _⟩
-  have same : representative = wrap beta :=
-    (equation_keeps (wrap beta) (by decide) (by decide) before).mp rfl
-  subst representative
+theorem wrap_beta_has_no_primitive_step :
+    ¬ ∃ firing : GeneralRuleJobs.Receipt, firing.Valid runtimePlan [] carrier (wrap beta) := by
+  rintro ⟨firing, valid⟩
   have root := Mettapedia.OSLF.NativeTypes.Modal.Counterexamples.root_only_site valid.1.2
   have selected := firing.job.selected_rule valid.1
   have declared : firing.job.declaration = declaration := by
@@ -245,20 +245,45 @@ def alphaEvidence : Evidence schema (fun _ _ => False) continuation alpha :=
 
 theorem alpha_inhabits : Inhabits schema (fun _ _ => False) continuation alpha := ⟨alphaEvidence⟩
 
-theorem beta_not_inhabits : ¬ Inhabits schema (fun _ _ => False) continuation beta := by
-  rintro ⟨implementation⟩
-  obtain ⟨source, target, filling, rhs, step⟩ := m_step implementation [] (request_nil implementation.anchor)
+def betaEvidence : Evidence schema (fun _ _ => False) continuation beta where
+  carrier := beta_typed.1
+  anchor := alphaEvidence.anchor
+  anchorTyped := alphaEvidence.anchorTyped
+  anchorPresent := alphaEvidence.anchorPresent
+  respond assignment request := by
+    let outcome := alphaEvidence.respond assignment request
+    have sourceEq : outcome.source = wrap alpha :=
+      Option.some.inj (outcome.filling.symm.trans (schema_fill assignment alpha))
+    have path : GeneralOccurrenceSemantics.ConversionPath runtimePlan [] carrier
+        (wrap beta) outcome.source [.reverse wrappedEquationReceipt] := by
+      rw [sourceEq]
+      exact .back wrapped_equation_completed rfl (.nil (wrap alpha))
+    exact
+      { source := wrap beta
+        target := outcome.target
+        filling := schema_fill assignment beta
+        rhs := outcome.rhs
+        receipt := Equations.rebase [.reverse wrappedEquationReceipt] outcome.receipt
+        valid := Equations.rebase_valid path outcome.valid
+        targetConversion := outcome.targetConversion
+        certificate := outcome.certificate }
+
+theorem beta_inhabits : Inhabits schema (fun _ _ => False) continuation beta := ⟨betaEvidence⟩
+
+theorem wrap_beta_steps_done :
+    (GeneralOccurrenceSemantics.gslt runtimePlan [] carrier).Step (wrap beta) done := by
+  obtain ⟨source, target, filling, rhs, step⟩ := m_step betaEvidence [] (request_nil betaEvidence.anchor)
   have sourceEq : source = wrap beta := Option.some.inj (filling.symm.trans (schema_fill [] beta))
   have targetEq : target = done := Option.some.inj (rhs.symm.trans (schema_rhs []))
-  rw [sourceEq, targetEq] at step
-  exact wrap_beta_has_no_step step
+  change (GeneralOccurrenceSemantics.gslt runtimePlan [] carrier).Step source target at step
+  simpa only [sourceEq, targetEq] using step
 
-/-- A checked separator for lifting the whole-program equation quotient to
-an arbitrary selected focus without its context-admission condition. -/
-theorem modal_focus_equation_invariance_refuted :
+/-- The same declared equation preserves both contextual native inhabitants,
+while root-only reduction still excludes a primitive rewrite at Wrap(Beta). -/
+theorem modal_focus_equation_invariance :
     Relation.EqvGen (GeneralOccurrenceSemantics.Equation runtimePlan [] carrier) alpha beta ∧
       Inhabits schema (fun _ _ => False) continuation alpha ∧
-      ¬ Inhabits schema (fun _ _ => False) continuation beta :=
-  ⟨focus_equivalent, alpha_inhabits, beta_not_inhabits⟩
+      Inhabits schema (fun _ _ => False) continuation beta :=
+  ⟨focus_equivalent, alpha_inhabits, beta_inhabits⟩
 
 end Mettapedia.OSLF.NativeTypes.Modal.ContextControls

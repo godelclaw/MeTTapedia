@@ -24,8 +24,8 @@ open Mettapedia.Languages.GF.UGCommonViewCore
 open Mettapedia.Languages.GF.WorldModelSemantics
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open scoped ENNReal
 
 universe u v

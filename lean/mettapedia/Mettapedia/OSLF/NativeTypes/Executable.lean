@@ -2,11 +2,15 @@ import Mettapedia.OSLF.NativeTypes.Instances.Local.Driver
 import Mettapedia.OSLF.NativeTypes.Instances.Lambda.Driver
 import Mettapedia.OSLF.NativeTypes.Instances.Partrec.Driver
 import Mettapedia.OSLF.NativeTypes.Instances.Rho.Driver
+import Mettapedia.OSLF.NativeTypes.Instances.Normalized.Profile
 import Mettapedia.OSLF.NativeTypes.Runtime.QuerySyntax
 import Mettapedia.OSLF.NativeTypes.Runtime.Search
 import Mettapedia.OSLF.NativeTypes.Runtime.Query
 import Mettapedia.OSLF.NativeTypes.Runtime.Profiles
 import Mettapedia.OSLF.NativeTypes.Runtime.Local
+import Mettapedia.OSLF.NativeTypes.Executable.FiniteMaterial
+import Mettapedia.OSLF.NativeTypes.Executable.Successor
+import Mettapedia.OSLF.NativeTypes.Decision.ModalEmbedding
 import Mettapedia.OSLF.MeTTaIL.GeneralOccurrenceCoverageClaims
 
 open Mettapedia.OSLF.Framework
@@ -16,7 +20,9 @@ open Mettapedia.OSLF.Framework
 
 One generation request selects an earned execution profile. The authored
 local profile accepts arbitrary presentations satisfying its computed local
-admission checks. The proper-child lambda, canonical rho and original
+admission checks. Certified normalized profiles derive finite coverage modulo
+the selected authored or presented equality from local firing coherence and
+primitive coverage. The proper-child lambda, canonical rho and original
 machine profiles check the entire supplied snapshot and operational fragment
 against the presentation for which their independent comparisons were proved.
 No language name chooses an algorithm and no supplied presentation is replaced.
@@ -26,6 +32,11 @@ suspended operational and formula work. The native checker and named query
 interpreter consume one retained work account.
 Generation refusal is separate from source or formula refusal, semantic
 falsehood, and unfinished budgeted search.
+
+`Executable.Finite` additionally accepts certified complete finite span tables
+and the existing modal μ-calculus formulas. Its covered source and material
+interfaces preserve native meaning. This strategy has a coarse admission
+allowance; it does not reuse the retained formula cursor of the local driver.
 -/
 
 set_option autoImplicit false
@@ -58,6 +69,13 @@ inductive Request where
         (Mettapedia.OSLF.NativeTypes.Generation.selectedSnapshot snapshot fragment).language)
       (bound : List TypeExpr) (expected : TypeExpr)
       (mask : List TypeExpr → TypeExpr → ModalHypercube.HSort → Pattern → Bool)
+  | normalized (snapshot : Snapshot) (fragment : LanguageFragment)
+      (logic : Mettapedia.OSLF.NativeTypes.Structural.ConnectiveFragment)
+      (vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex
+        (Mettapedia.OSLF.NativeTypes.Generation.selectedSnapshot snapshot fragment).language)
+      (bound : List TypeExpr) (expected : TypeExpr)
+      (profile : Mettapedia.OSLF.NativeTypes.Instances.Normalized.Profile
+        (Mettapedia.OSLF.NativeTypes.Generation.generate snapshot fragment logic vertex) bound expected)
   | scopedLambda (snapshot : Snapshot) (fragment : LanguageFragment)
       (configuration : Mettapedia.OSLF.NativeTypes.Instances.Lambda.Driver.Configuration)
       (context : Ctx LambdaContextualRung.sig)
@@ -68,18 +86,21 @@ inductive Request where
 
 def Request.snapshot : Request → Snapshot
   | .authored snapshot _ _ _ _ _ _ => snapshot
+  | .normalized snapshot _ _ _ _ _ _ => snapshot
   | .scopedLambda snapshot _ _ _ => snapshot
   | .canonicalRho snapshot _ _ => snapshot
   | .originalMachine snapshot _ _ _ => snapshot
 
 def Request.fragment : Request → LanguageFragment
   | .authored _ fragment _ _ _ _ _ => fragment
+  | .normalized _ fragment _ _ _ _ _ => fragment
   | .scopedLambda _ fragment _ _ => fragment
   | .canonicalRho _ fragment _ => fragment
   | .originalMachine _ fragment _ _ => fragment
 
 def Request.logic : Request → Mettapedia.OSLF.NativeTypes.Structural.ConnectiveFragment
   | .authored _ _ logic _ _ _ _ => logic
+  | .normalized _ _ logic _ _ _ _ => logic
   | .scopedLambda _ _ configuration _ => configuration.logic
   | .canonicalRho _ _ configuration => configuration.logic
   | .originalMachine _ _ configuration _ => configuration.logic
@@ -109,6 +130,7 @@ def generate : Request → Except GenerationIssue Installed
           else .error (.authoredLocal .premiseCoverageRequired)
         else .error (.authoredLocal .equationCoverageRequired)
       else .error (.authoredLocal (.operationalObligations output.plan.obligations))
+  | .normalized _ _ _ _ _ _ profile => .ok profile.installed
   | .scopedLambda snapshot fragment configuration context =>
       authorize .scopedLambda snapshot Mettapedia.OSLF.NativeTypes.Instances.Lambda.Generated.snapshot
         fragment (Mettapedia.OSLF.NativeTypes.Instances.Lambda.Driver.fragment configuration)
@@ -153,6 +175,10 @@ theorem generate_success_inputs {request : Request} {output : Installed}
           · cases success
         · cases success
       · cases success
+  | normalized snapshot fragment logic vertex bound expected profile =>
+      have same := Except.ok.inj success
+      subst output
+      exact ⟨rfl, rfl, rfl⟩
   | scopedLambda snapshot fragment configuration context =>
       obtain ⟨rfl, rfl, rfl⟩ := authorize_success success
       exact ⟨rfl, rfl, rfl⟩

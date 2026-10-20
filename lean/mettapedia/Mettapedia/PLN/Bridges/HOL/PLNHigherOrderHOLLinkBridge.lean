@@ -8,7 +8,7 @@ universe u v w
 open Mettapedia.Logic.HOL
 open Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCore (HOLState HOLProvable HOLProvImp HOLProvEq)
 open Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLRules (HOLProvIff)
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open scoped ENNReal
 
 variable {Base : Type u} {Const : Ty Base → Type v}

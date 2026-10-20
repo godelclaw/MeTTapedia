@@ -710,45 +710,45 @@ theorem genericITV_credibility_does_not_determine_width :
 
 /-- A constructor semantics for indefinite truth values.  The `Source` is the
 load-bearing input data for this semantics; the raw `ITV` is its projection. -/
-structure ITVSemantics where
+structure ITVConstructor where
   Source : Type u
   toITV : Source → ITV
 
 /-- An ITV tagged by the constructor semantics that produced it.  Consumers can
 require the same semantics parameter to avoid silently mixing generic, Bayesian,
 and Walley-style interval interpretations. -/
-structure TypedITV (Sem : ITVSemantics.{u}) where
+structure TypedITV (Sem : ITVConstructor.{u}) where
   source : Sem.Source
 
 namespace TypedITV
 
 /-- Forget constructor provenance and recover the raw ITV view. -/
-noncomputable def value {Sem : ITVSemantics} (x : TypedITV Sem) : ITV :=
+noncomputable def value {Sem : ITVConstructor} (x : TypedITV Sem) : ITV :=
   Sem.toITV x.source
 
-noncomputable def lower {Sem : ITVSemantics} (x : TypedITV Sem) : ℝ :=
+noncomputable def lower {Sem : ITVConstructor} (x : TypedITV Sem) : ℝ :=
   x.value.lower
 
-noncomputable def upper {Sem : ITVSemantics} (x : TypedITV Sem) : ℝ :=
+noncomputable def upper {Sem : ITVConstructor} (x : TypedITV Sem) : ℝ :=
   x.value.upper
 
-noncomputable def width {Sem : ITVSemantics} (x : TypedITV Sem) : ℝ :=
+noncomputable def width {Sem : ITVConstructor} (x : TypedITV Sem) : ℝ :=
   x.value.width
 
-noncomputable def credibility {Sem : ITVSemantics} (x : TypedITV Sem) : ℝ :=
+noncomputable def credibility {Sem : ITVConstructor} (x : TypedITV Sem) : ℝ :=
   x.value.credibility
 
 /-- The current midpoint point-estimate view of a typed ITV.  This is a
 projection of the interval, not extra constructor provenance. -/
-noncomputable def midpoint {Sem : ITVSemantics} (x : TypedITV Sem) : ℝ :=
+noncomputable def midpoint {Sem : ITVConstructor} (x : TypedITV Sem) : ℝ :=
   x.value.strength
 
-@[simp] theorem midpoint_eq_strength {Sem : ITVSemantics} (x : TypedITV Sem) :
+@[simp] theorem midpoint_eq_strength {Sem : ITVConstructor} (x : TypedITV Sem) :
     x.midpoint = x.value.strength :=
   rfl
 
 /-- The lower endpoint is below the midpoint point-estimate view. -/
-theorem lower_le_midpoint {Sem : ITVSemantics} (x : TypedITV Sem) :
+theorem lower_le_midpoint {Sem : ITVConstructor} (x : TypedITV Sem) :
     x.lower ≤ x.midpoint := by
   let y := x.value
   change y.lower ≤ (y.lower + y.upper) / 2
@@ -760,7 +760,7 @@ theorem lower_le_midpoint {Sem : ITVSemantics} (x : TypedITV Sem) :
       · norm_num
 
 /-- The midpoint point-estimate view is below the upper endpoint. -/
-theorem midpoint_le_upper {Sem : ITVSemantics} (x : TypedITV Sem) :
+theorem midpoint_le_upper {Sem : ITVConstructor} (x : TypedITV Sem) :
     x.midpoint ≤ x.upper := by
   let y := x.value
   change (y.lower + y.upper) / 2 ≤ y.upper
@@ -772,14 +772,14 @@ theorem midpoint_le_upper {Sem : ITVSemantics} (x : TypedITV Sem) :
     _ = y.upper := by ring
 
 /-- The midpoint point-estimate view lies in the unit interval. -/
-theorem midpoint_in_unit {Sem : ITVSemantics} (x : TypedITV Sem) :
+theorem midpoint_in_unit {Sem : ITVConstructor} (x : TypedITV Sem) :
     x.midpoint ∈ Set.Icc (0 : ℝ) 1 := by
   simpa [midpoint] using x.value.strength_in_unit
 
 /-- A same-semantics comparison.  The shared `Sem` parameter is the compatibility
 guard; differently constructed ITVs need an explicit bridge before using this
 operation. -/
-def credibilityLE {Sem : ITVSemantics} (x y : TypedITV Sem) : Prop :=
+def credibilityLE {Sem : ITVConstructor} (x y : TypedITV Sem) : Prop :=
   x.credibility ≤ y.credibility
 
 end TypedITV
@@ -811,8 +811,8 @@ noncomputable def implicationOperation : ITVBinaryOperation where
 /-- Provenance for a typed ITV obtained by applying a unary operation to a
 typed ITV.  The result is not claimed to have the same constructor semantics;
 its source explicitly records the operation and input. -/
-noncomputable def derivedUnaryITVSemantics
-    (Sem : ITVSemantics) (op : ITVUnaryOperation) : ITVSemantics where
+noncomputable def derivedUnaryITVConstructor
+    (Sem : ITVConstructor) (op : ITVUnaryOperation) : ITVConstructor where
   Source := TypedITV Sem
   toITV := fun x => op.eval x.value
 
@@ -820,24 +820,24 @@ noncomputable def derivedUnaryITVSemantics
 typed ITVs with the same semantics.  The shared `Sem` parameter is the
 compatibility guard; the output is a derived-operation semantics, not a silent
 reuse of `Sem`. -/
-noncomputable def derivedBinaryITVSemantics
-    (Sem : ITVSemantics) (op : ITVBinaryOperation) : ITVSemantics where
+noncomputable def derivedBinaryITVConstructor
+    (Sem : ITVConstructor) (op : ITVBinaryOperation) : ITVConstructor where
   Source := TypedITV Sem × TypedITV Sem
   toITV := fun xy => op.eval xy.1.value xy.2.value
 
 /-- The fully generic ITV semantics carries a raw ITV as its source. -/
-def genericITVSemantics : ITVSemantics where
+def genericITVConstructor : ITVConstructor where
   Source := ITV
   toITV := id
 
 /-- Source data for Bayesian credible-interval ITV semantics at fixed level. -/
 structure BayesCredibleITVSource (level : ℝ) where
-  evidence : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+  evidence : Mettapedia.PLN.Evidence.BinaryEvidence
   level_ok : 0 < level ∧ level < 1
 
 /-- Source data for Walley binary-IDM ITV semantics at fixed IDM strength. -/
 structure WalleyBinaryITVSource (s : ℝ) where
-  evidence : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+  evidence : Mettapedia.PLN.Evidence.BinaryEvidence
   s_pos : 0 < s
 
 /-- Source data for Walley categorical-IDM ITV semantics at fixed IDM context.
@@ -935,32 +935,32 @@ theorem walleyCategoricalITV_width_eq_credal_width_of_other {k : ℕ}
 /-- Bayesian credible-interval semantics at fixed backend, prior context, and
 credible level.  The source contains evidence plus the proof that the level is
 admissible. -/
-noncomputable def bayesCredibleITVSemantics
+noncomputable def bayesCredibleITVConstructor
     (backend : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta.CredibleIntervalBackend)
     (ctx : Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext)
-    (level : ℝ) : ITVSemantics where
+    (level : ℝ) : ITVConstructor where
   Source := BayesCredibleITVSource level
   toITV := fun src =>
     ITV.fromBayesCredibleWithBackend backend src.evidence ctx level src.level_ok
 
 /-- Walley binary-IDM predictive semantics at fixed IDM strength `s`.  The
 source contains evidence plus the proof that `s` is positive. -/
-noncomputable def walleyBinaryITVSemantics (s : ℝ) : ITVSemantics where
+noncomputable def walleyBinaryITVConstructor (s : ℝ) : ITVConstructor where
   Source := WalleyBinaryITVSource s
   toITV := fun src => ITV.fromWalleyIDMPredictive src.evidence s src.s_pos
 
 /-- Walley categorical-IDM predictive semantics at fixed IDM context and
 outcome carrier size. -/
-noncomputable def walleyCategoricalITVSemantics
+noncomputable def walleyCategoricalITVConstructor
     (k : ℕ) (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext) :
-    ITVSemantics where
+    ITVConstructor where
   Source := WalleyCategoricalITVSource k
   toITV := fun src => walleyCategoricalITV ctx src.evidence src.category
 
 namespace TypedITV
 
 /-- Tag a raw ITV with the generic semantics. -/
-def fromGeneric (itv : ITV) : TypedITV genericITVSemantics :=
+def fromGeneric (itv : ITV) : TypedITV genericITVConstructor :=
   ⟨itv⟩
 
 /-- Build a typed Bayesian credible-interval ITV from evidence. -/
@@ -968,15 +968,15 @@ noncomputable def fromBayesCredible
     (backend : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta.CredibleIntervalBackend)
     (ctx : Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext)
     (level : ℝ) (hlevel : 0 < level ∧ level < 1)
-    (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) :
-    TypedITV (bayesCredibleITVSemantics backend ctx level) :=
+    (e : Mettapedia.PLN.Evidence.BinaryEvidence) :
+    TypedITV (bayesCredibleITVConstructor backend ctx level) :=
   ⟨⟨e, hlevel⟩⟩
 
 /-- Build a typed Walley binary-IDM ITV from evidence. -/
 noncomputable def fromWalleyBinary
     (s : ℝ) (hs : 0 < s)
-    (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) :
-    TypedITV (walleyBinaryITVSemantics s) :=
+    (e : Mettapedia.PLN.Evidence.BinaryEvidence) :
+    TypedITV (walleyBinaryITVConstructor s) :=
   ⟨⟨e, hs⟩⟩
 
 /-- Build a typed Walley categorical-IDM ITV from evidence and a queried
@@ -984,7 +984,7 @@ category. -/
 noncomputable def fromWalleyCategorical {k : ℕ}
     (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
     (e : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.MultiEvidence k) (i : Fin k) :
-    TypedITV (walleyCategoricalITVSemantics k ctx) :=
+    TypedITV (walleyCategoricalITVConstructor k ctx) :=
   ⟨⟨e, i⟩⟩
 
 @[simp] theorem value_fromGeneric (itv : ITV) :
@@ -995,14 +995,14 @@ noncomputable def fromWalleyCategorical {k : ℕ}
     (backend : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta.CredibleIntervalBackend)
     (ctx : Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext)
     (level : ℝ) (hlevel : 0 < level ∧ level < 1)
-    (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) :
+    (e : Mettapedia.PLN.Evidence.BinaryEvidence) :
     (fromBayesCredible backend ctx level hlevel e).value =
       ITV.fromBayesCredibleWithBackend backend e ctx level hlevel :=
   rfl
 
 @[simp] theorem value_fromWalleyBinary
     (s : ℝ) (hs : 0 < s)
-    (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) :
+    (e : Mettapedia.PLN.Evidence.BinaryEvidence) :
     (fromWalleyBinary s hs e).value =
       ITV.fromWalleyIDMPredictive e s hs :=
   rfl
@@ -1016,66 +1016,66 @@ noncomputable def fromWalleyCategorical {k : ℕ}
 
 /-- Apply a raw unary operation while keeping its derived-operation provenance
 visible in the result type. -/
-noncomputable def applyUnary {Sem : ITVSemantics}
+noncomputable def applyUnary {Sem : ITVConstructor}
     (op : ITVUnaryOperation) (x : TypedITV Sem) :
-    TypedITV (derivedUnaryITVSemantics Sem op) :=
+    TypedITV (derivedUnaryITVConstructor Sem op) :=
   ⟨x⟩
 
 /-- Apply a raw binary operation to same-semantics typed ITVs.  Cross-semantics
 use requires an explicit bridge. -/
-noncomputable def applyBinarySameSemantics {Sem : ITVSemantics}
+noncomputable def applyBinarySameSemantics {Sem : ITVConstructor}
     (op : ITVBinaryOperation) (x y : TypedITV Sem) :
-    TypedITV (derivedBinaryITVSemantics Sem op) :=
+    TypedITV (derivedBinaryITVConstructor Sem op) :=
   ⟨(x, y)⟩
 
 /-- Typed negation, with operation provenance. -/
-noncomputable def negation {Sem : ITVSemantics} (x : TypedITV Sem) :
-    TypedITV (derivedUnaryITVSemantics Sem negationOperation) :=
+noncomputable def negation {Sem : ITVConstructor} (x : TypedITV Sem) :
+    TypedITV (derivedUnaryITVConstructor Sem negationOperation) :=
   applyUnary negationOperation x
 
 /-- Typed conjunction for same-semantics inputs. -/
-noncomputable def conjunctionSameSemantics {Sem : ITVSemantics}
+noncomputable def conjunctionSameSemantics {Sem : ITVConstructor}
     (x y : TypedITV Sem) :
-    TypedITV (derivedBinaryITVSemantics Sem conjunctionOperation) :=
+    TypedITV (derivedBinaryITVConstructor Sem conjunctionOperation) :=
   applyBinarySameSemantics conjunctionOperation x y
 
 /-- Typed disjunction for same-semantics inputs. -/
-noncomputable def disjunctionSameSemantics {Sem : ITVSemantics}
+noncomputable def disjunctionSameSemantics {Sem : ITVConstructor}
     (x y : TypedITV Sem) :
-    TypedITV (derivedBinaryITVSemantics Sem disjunctionOperation) :=
+    TypedITV (derivedBinaryITVConstructor Sem disjunctionOperation) :=
   applyBinarySameSemantics disjunctionOperation x y
 
 /-- Typed implication for same-semantics inputs. -/
-noncomputable def implicationSameSemantics {Sem : ITVSemantics}
+noncomputable def implicationSameSemantics {Sem : ITVConstructor}
     (x y : TypedITV Sem) :
-    TypedITV (derivedBinaryITVSemantics Sem implicationOperation) :=
+    TypedITV (derivedBinaryITVConstructor Sem implicationOperation) :=
   applyBinarySameSemantics implicationOperation x y
 
-@[simp] theorem value_applyUnary {Sem : ITVSemantics}
+@[simp] theorem value_applyUnary {Sem : ITVConstructor}
     (op : ITVUnaryOperation) (x : TypedITV Sem) :
     (applyUnary op x).value = op.eval x.value :=
   rfl
 
-@[simp] theorem value_applyBinarySameSemantics {Sem : ITVSemantics}
+@[simp] theorem value_applyBinarySameSemantics {Sem : ITVConstructor}
     (op : ITVBinaryOperation) (x y : TypedITV Sem) :
     (applyBinarySameSemantics op x y).value = op.eval x.value y.value :=
   rfl
 
-@[simp] theorem value_negation {Sem : ITVSemantics} (x : TypedITV Sem) :
+@[simp] theorem value_negation {Sem : ITVConstructor} (x : TypedITV Sem) :
     (negation x).value = ITV.negation x.value :=
   rfl
 
-@[simp] theorem value_conjunctionSameSemantics {Sem : ITVSemantics}
+@[simp] theorem value_conjunctionSameSemantics {Sem : ITVConstructor}
     (x y : TypedITV Sem) :
     (conjunctionSameSemantics x y).value = ITV.conjunction x.value y.value :=
   rfl
 
-@[simp] theorem value_disjunctionSameSemantics {Sem : ITVSemantics}
+@[simp] theorem value_disjunctionSameSemantics {Sem : ITVConstructor}
     (x y : TypedITV Sem) :
     (disjunctionSameSemantics x y).value = ITV.disjunction x.value y.value :=
   rfl
 
-@[simp] theorem value_implicationSameSemantics {Sem : ITVSemantics}
+@[simp] theorem value_implicationSameSemantics {Sem : ITVConstructor}
     (x y : TypedITV Sem) :
     (implicationSameSemantics x y).value = ITV.implication x.value y.value :=
   rfl
@@ -1083,18 +1083,18 @@ noncomputable def implicationSameSemantics {Sem : ITVSemantics}
 /-- An explicit bridge converts two source semantics into a shared target
 semantics before a binary operation may combine them. -/
 structure Bridge
-    (Sem₁ : ITVSemantics.{u}) (Sem₂ : ITVSemantics.{v})
-    (Target : ITVSemantics.{w}) where
+    (Sem₁ : ITVConstructor.{u}) (Sem₂ : ITVConstructor.{v})
+    (Target : ITVConstructor.{w}) where
   left : TypedITV Sem₁ → TypedITV Target
   right : TypedITV Sem₂ → TypedITV Target
 
 /-- Forget constructor provenance into the generic raw-ITV semantics.  This is
 always available, but it is an explicit bridge rather than a silent coercion. -/
-noncomputable def forgetToGeneric {Sem : ITVSemantics}
-    (x : TypedITV Sem) : TypedITV genericITVSemantics :=
+noncomputable def forgetToGeneric {Sem : ITVConstructor}
+    (x : TypedITV Sem) : TypedITV genericITVConstructor :=
   fromGeneric x.value
 
-@[simp] theorem value_forgetToGeneric {Sem : ITVSemantics}
+@[simp] theorem value_forgetToGeneric {Sem : ITVConstructor}
     (x : TypedITV Sem) :
     (forgetToGeneric x).value = x.value :=
   rfl
@@ -1102,35 +1102,35 @@ noncomputable def forgetToGeneric {Sem : ITVSemantics}
 /-- The canonical explicit bridge that discards constructor provenance from two
 possibly different source semantics. -/
 noncomputable def genericBridge
-    (Sem₁ : ITVSemantics.{u}) (Sem₂ : ITVSemantics.{v}) :
-    Bridge Sem₁ Sem₂ genericITVSemantics where
+    (Sem₁ : ITVConstructor.{u}) (Sem₂ : ITVConstructor.{v}) :
+    Bridge Sem₁ Sem₂ genericITVConstructor where
   left := forgetToGeneric
   right := forgetToGeneric
 
 /-- Apply a binary operation across two source semantics only after an explicit
 bridge has converted both inputs to a shared target semantics. -/
 noncomputable def applyBinaryViaBridge
-    {Sem₁ Sem₂ Target : ITVSemantics} (op : ITVBinaryOperation)
+    {Sem₁ Sem₂ Target : ITVConstructor} (op : ITVBinaryOperation)
     (B : Bridge Sem₁ Sem₂ Target) (x : TypedITV Sem₁) (y : TypedITV Sem₂) :
-    TypedITV (derivedBinaryITVSemantics Target op) :=
+    TypedITV (derivedBinaryITVConstructor Target op) :=
   applyBinarySameSemantics op (B.left x) (B.right y)
 
 /-- Conjunction across source semantics, via an explicit bridge. -/
 noncomputable def conjunctionViaBridge
-    {Sem₁ Sem₂ Target : ITVSemantics} (B : Bridge Sem₁ Sem₂ Target)
+    {Sem₁ Sem₂ Target : ITVConstructor} (B : Bridge Sem₁ Sem₂ Target)
     (x : TypedITV Sem₁) (y : TypedITV Sem₂) :
-    TypedITV (derivedBinaryITVSemantics Target conjunctionOperation) :=
+    TypedITV (derivedBinaryITVConstructor Target conjunctionOperation) :=
   applyBinaryViaBridge conjunctionOperation B x y
 
 @[simp] theorem value_applyBinaryViaBridge
-    {Sem₁ Sem₂ Target : ITVSemantics} (op : ITVBinaryOperation)
+    {Sem₁ Sem₂ Target : ITVConstructor} (op : ITVBinaryOperation)
     (B : Bridge Sem₁ Sem₂ Target) (x : TypedITV Sem₁) (y : TypedITV Sem₂) :
     (applyBinaryViaBridge op B x y).value =
       op.eval (B.left x).value (B.right y).value :=
   rfl
 
 @[simp] theorem value_conjunctionViaBridge
-    {Sem₁ Sem₂ Target : ITVSemantics} (B : Bridge Sem₁ Sem₂ Target)
+    {Sem₁ Sem₂ Target : ITVConstructor} (B : Bridge Sem₁ Sem₂ Target)
     (x : TypedITV Sem₁) (y : TypedITV Sem₂) :
     (conjunctionViaBridge B x y).value =
       ITV.conjunction (B.left x).value (B.right y).value :=
@@ -1139,7 +1139,7 @@ noncomputable def conjunctionViaBridge
 /-- The Walley binary typed constructor carries the width-complement law. -/
 theorem walleyBinary_width_add_credibility
     (s : ℝ) (hs : 0 < s)
-    (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) :
+    (e : Mettapedia.PLN.Evidence.BinaryEvidence) :
     (fromWalleyBinary s hs e).width +
       (fromWalleyBinary s hs e).credibility = 1 := by
   exact ITV.fromWalleyIDMPredictive_width_add_credibility e s hs
@@ -1184,9 +1184,9 @@ theorem bayesCredible_credibility_eq
     (backend : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta.CredibleIntervalBackend)
     (ctx : Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext)
     (level : ℝ) (hlevel : 0 < level ∧ level < 1)
-    (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) :
+    (e : Mettapedia.PLN.Evidence.BinaryEvidence) :
     (fromBayesCredible backend ctx level hlevel e).credibility =
-      (Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toConfidence
+      (Mettapedia.PLN.Evidence.BinaryEvidence.toConfidence
         (ctx.α₀ + ctx.β₀) e).toReal := by
   exact ITV.fromBayesCredibleWithBackend_credibility backend e ctx level hlevel
 
@@ -1195,16 +1195,16 @@ The type tag records which constructor semantics is being used; raw field
 equality alone is not provenance equality. -/
 theorem generic_and_walley_zero_can_share_raw_fields :
     let raw := ITV.fullWidthWithCredibility 0 (by norm_num)
-    let generic : TypedITV genericITVSemantics := fromGeneric raw
-    let walley : TypedITV (walleyBinaryITVSemantics 1) :=
+    let generic : TypedITV genericITVConstructor := fromGeneric raw
+    let walley : TypedITV (walleyBinaryITVConstructor 1) :=
       fromWalleyBinary 1 (by norm_num)
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero
+        Mettapedia.PLN.Evidence.BinaryEvidence.zero
     generic.lower = walley.lower ∧
       generic.upper = walley.upper ∧
         generic.credibility = walley.credibility := by
   dsimp [fromGeneric, fromWalleyBinary, value, lower, upper, credibility,
-    genericITVSemantics, walleyBinaryITVSemantics,
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero]
+    genericITVConstructor, walleyBinaryITVConstructor,
+    Mettapedia.PLN.Evidence.BinaryEvidence.zero]
   simp [ITV.fullWidthWithCredibility, ITV.fromWalleyIDMPredictive]
 
 end TypedITV
@@ -1228,16 +1228,16 @@ for that query. -/
 theorem worldModel_queryStrength_forced_by_evidence
     {State Query : Type*}
     [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-    [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
+    [Mettapedia.PLN.WorldModel.BinaryWorldModel State Query]
     {W₁ W₂ : State} {q : Query}
     (h :
-      Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.evidence
+      Mettapedia.PLN.WorldModel.BinaryWorldModel.evidence
           (State := State) (Query := Query) W₁ q =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.evidence
+        Mettapedia.PLN.WorldModel.BinaryWorldModel.evidence
           (State := State) (Query := Query) W₂ q) :
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryStrength
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryStrength
         (State := State) (Query := Query) W₁ q =
-      Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryStrength
+      Mettapedia.PLN.WorldModel.BinaryWorldModel.queryStrength
         (State := State) (Query := Query) W₂ q :=
   Mettapedia.PLN.TruthValues.PLNForcedQueries.queryStrength_eq_of_same_evidence h
 
@@ -1246,16 +1246,16 @@ theorem worldModel_queryStrength_forced_by_evidence
 theorem worldModel_queryConfidence_forced_by_evidence
     {State Query : Type*}
     [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-    [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
+    [Mettapedia.PLN.WorldModel.BinaryWorldModel State Query]
     (κ : ℝ≥0∞) {W₁ W₂ : State} {q : Query}
     (h :
-      Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.evidence
+      Mettapedia.PLN.WorldModel.BinaryWorldModel.evidence
           (State := State) (Query := Query) W₁ q =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.evidence
+        Mettapedia.PLN.WorldModel.BinaryWorldModel.evidence
           (State := State) (Query := Query) W₂ q) :
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryConfidence
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryConfidence
         (State := State) (Query := Query) κ W₁ q =
-      Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryConfidence
+      Mettapedia.PLN.WorldModel.BinaryWorldModel.queryConfidence
         (State := State) (Query := Query) κ W₂ q :=
   Mettapedia.PLN.TruthValues.PLNForcedQueries.queryConfidence_eq_of_same_evidence κ h
 
@@ -1444,8 +1444,8 @@ noncomputable def credalEnvelopeITV {Ω : Type u} [Fintype Ω]
   rfl
 
 /-- The typed semantics whose source is the full finite credal envelope data. -/
-noncomputable def credalEnvelopeITVSemantics
-    (Ω : Type u) [Fintype Ω] : ITVSemantics.{u} where
+noncomputable def credalEnvelopeITVConstructor
+    (Ω : Type u) [Fintype Ω] : ITVConstructor.{u} where
   Source := CredalEnvelopeITVSource Ω
   toITV := credalEnvelopeITV
 
@@ -1454,13 +1454,13 @@ namespace TypedITV
 /-- Build a typed ITV from a finite credal-set envelope. -/
 noncomputable def fromCredalEnvelope {Ω : Type u} [Fintype Ω]
     (src : CredalEnvelopeITVSource Ω) :
-    TypedITV (credalEnvelopeITVSemantics Ω) :=
+    TypedITV (credalEnvelopeITVConstructor Ω) :=
   ⟨src⟩
 
 @[simp] theorem value_fromCredalEnvelope {Ω : Type u} [Fintype Ω]
     (src : CredalEnvelopeITVSource Ω) :
     (fromCredalEnvelope src).value = credalEnvelopeITV src :=
-  by simp [fromCredalEnvelope, TypedITV.value, credalEnvelopeITVSemantics]
+  by simp [fromCredalEnvelope, TypedITV.value, credalEnvelopeITVConstructor]
 
 @[simp] theorem fromCredalEnvelope_lower {Ω : Type u} [Fintype Ω]
     (src : CredalEnvelopeITVSource Ω) :
@@ -1468,7 +1468,7 @@ noncomputable def fromCredalEnvelope {Ω : Type u} [Fintype Ω]
       Mettapedia.ProbabilityTheory.ImpreciseProbability.DesirableGambles.lowerProb
         src.credal src.gamble :=
   by simp [fromCredalEnvelope, TypedITV.lower, TypedITV.value,
-    credalEnvelopeITVSemantics, credalEnvelopeITV]
+    credalEnvelopeITVConstructor, credalEnvelopeITV]
 
 @[simp] theorem fromCredalEnvelope_upper {Ω : Type u} [Fintype Ω]
     (src : CredalEnvelopeITVSource Ω) :
@@ -1476,13 +1476,13 @@ noncomputable def fromCredalEnvelope {Ω : Type u} [Fintype Ω]
       Mettapedia.ProbabilityTheory.ImpreciseProbability.DesirableGambles.upperProb
         src.credal src.gamble :=
   by simp [fromCredalEnvelope, TypedITV.upper, TypedITV.value,
-    credalEnvelopeITVSemantics, credalEnvelopeITV]
+    credalEnvelopeITVConstructor, credalEnvelopeITV]
 
 @[simp] theorem fromCredalEnvelope_credibility {Ω : Type u} [Fintype Ω]
     (src : CredalEnvelopeITVSource Ω) :
     (fromCredalEnvelope src).credibility = src.credibility :=
   by simp [fromCredalEnvelope, TypedITV.credibility, TypedITV.value,
-    credalEnvelopeITVSemantics, credalEnvelopeITV]
+    credalEnvelopeITVConstructor, credalEnvelopeITV]
 
 end TypedITV
 
@@ -1599,9 +1599,9 @@ theorem projectiveCredalWidthComplementITV_width_add_credibility
 
 /-- The typed semantics for projective credal envelopes with the
 width-complement credibility convention. -/
-noncomputable def projectiveCredalWidthComplementITVSemantics
+noncomputable def projectiveCredalWidthComplementITVConstructor
     (Window : Type u) (Global : Type v) [LE Window] :
-    ITVSemantics.{max u (v + 1)} where
+    ITVConstructor.{max u (v + 1)} where
   Source := ProjectiveCredalWidthComplementITVSource.{u, v} Window Global
   toITV := projectiveCredalWidthComplementITV
 
@@ -1612,7 +1612,7 @@ width-complement bridge law. -/
 noncomputable def fromProjectiveCredalWidthComplement
     {Window : Type u} {Global : Type v} [LE Window]
     (src : ProjectiveCredalWidthComplementITVSource.{u, v} Window Global) :
-    TypedITV (projectiveCredalWidthComplementITVSemantics.{u, v} Window Global) :=
+    TypedITV (projectiveCredalWidthComplementITVConstructor.{u, v} Window Global) :=
   ⟨src⟩
 
 @[simp] theorem value_fromProjectiveCredalWidthComplement
@@ -1621,7 +1621,7 @@ noncomputable def fromProjectiveCredalWidthComplement
     (fromProjectiveCredalWidthComplement src).value =
       projectiveCredalWidthComplementITV src := by
   simp [fromProjectiveCredalWidthComplement, TypedITV.value,
-    projectiveCredalWidthComplementITVSemantics]
+    projectiveCredalWidthComplementITVConstructor]
 
 @[simp] theorem fromProjectiveCredalWidthComplement_lower
     {Window : Type u} {Global : Type v} [LE Window]
@@ -1629,7 +1629,7 @@ noncomputable def fromProjectiveCredalWidthComplement
     (fromProjectiveCredalWidthComplement src).lower =
       src.spec.globalNaturalExtension src.gamble := by
   simp [fromProjectiveCredalWidthComplement, TypedITV.lower, TypedITV.value,
-    projectiveCredalWidthComplementITVSemantics,
+    projectiveCredalWidthComplementITVConstructor,
     projectiveCredalWidthComplementITV]
 
 @[simp] theorem fromProjectiveCredalWidthComplement_upper
@@ -1638,7 +1638,7 @@ noncomputable def fromProjectiveCredalWidthComplement
     (fromProjectiveCredalWidthComplement src).upper =
       upperEnvelope src.spec.projectiveLimitCredalSet src.gamble := by
   simp [fromProjectiveCredalWidthComplement, TypedITV.upper, TypedITV.value,
-    projectiveCredalWidthComplementITVSemantics,
+    projectiveCredalWidthComplementITVConstructor,
     projectiveCredalWidthComplementITV]
 
 @[simp] theorem fromProjectiveCredalWidthComplement_credibility
@@ -1647,7 +1647,7 @@ noncomputable def fromProjectiveCredalWidthComplement
     (fromProjectiveCredalWidthComplement src).credibility =
       src.spec.globalEnvelopeWidthComplement src.gamble := by
   simp [fromProjectiveCredalWidthComplement, TypedITV.credibility,
-    TypedITV.value, projectiveCredalWidthComplementITVSemantics,
+    TypedITV.value, projectiveCredalWidthComplementITVConstructor,
     projectiveCredalWidthComplementITV]
 
 @[simp] theorem fromProjectiveCredalWidthComplement_width
@@ -1656,7 +1656,7 @@ noncomputable def fromProjectiveCredalWidthComplement
     (fromProjectiveCredalWidthComplement src).width =
       src.spec.globalEnvelopeWidth src.gamble := by
   simp [fromProjectiveCredalWidthComplement, TypedITV.width, TypedITV.value,
-    projectiveCredalWidthComplementITVSemantics]
+    projectiveCredalWidthComplementITVConstructor]
 
 @[simp] theorem fromProjectiveCredalWidthComplement_midpoint
     {Window : Type u} {Global : Type v} [LE Window]
@@ -1664,7 +1664,7 @@ noncomputable def fromProjectiveCredalWidthComplement
     (fromProjectiveCredalWidthComplement src).midpoint =
       src.spec.globalEnvelopeMidpoint src.gamble := by
   simp [fromProjectiveCredalWidthComplement, TypedITV.midpoint, TypedITV.value,
-    projectiveCredalWidthComplementITVSemantics]
+    projectiveCredalWidthComplementITVConstructor]
 
 end TypedITV
 
@@ -1677,7 +1677,7 @@ theorem credalEnvelope_bounds_do_not_force_credibility
     (hK : K.Nonempty)
     (f : Mettapedia.ProbabilityTheory.ImpreciseProbability.DesirableGambles.Gamble Ω)
     (hf : ∀ ω, f ω ∈ Set.Icc 0 1) :
-    let x : TypedITV (credalEnvelopeITVSemantics Ω) :=
+    let x : TypedITV (credalEnvelopeITVConstructor Ω) :=
       TypedITV.fromCredalEnvelope
         { credal := K
           gamble := f
@@ -1685,7 +1685,7 @@ theorem credalEnvelope_bounds_do_not_force_credibility
           gamble_in_unit := hf
           credibility := 0
           credibility_in_unit := by norm_num }
-    let y : TypedITV (credalEnvelopeITVSemantics Ω) :=
+    let y : TypedITV (credalEnvelopeITVConstructor Ω) :=
       TypedITV.fromCredalEnvelope
         { credal := K
           gamble := f
@@ -1792,8 +1792,8 @@ noncomputable def lowerPrevisionITV {Ω : Type u}
 
 /-- The typed semantics whose source is an abstract lower prevision plus the
 queried gamble. -/
-noncomputable def lowerPrevisionITVSemantics
-    (Ω : Type u) : ITVSemantics.{u} where
+noncomputable def lowerPrevisionITVConstructor
+    (Ω : Type u) : ITVConstructor.{u} where
   Source := LowerPrevisionITVSource Ω
   toITV := lowerPrevisionITV
 
@@ -1802,31 +1802,31 @@ namespace TypedITV
 /-- Build a typed ITV from an abstract lower-prevision envelope. -/
 noncomputable def fromLowerPrevision {Ω : Type u}
     (src : LowerPrevisionITVSource Ω) :
-    TypedITV (lowerPrevisionITVSemantics Ω) :=
+    TypedITV (lowerPrevisionITVConstructor Ω) :=
   ⟨src⟩
 
 @[simp] theorem value_fromLowerPrevision {Ω : Type u}
     (src : LowerPrevisionITVSource Ω) :
     (fromLowerPrevision src).value = lowerPrevisionITV src :=
-  by simp [fromLowerPrevision, TypedITV.value, lowerPrevisionITVSemantics]
+  by simp [fromLowerPrevision, TypedITV.value, lowerPrevisionITVConstructor]
 
 @[simp] theorem fromLowerPrevision_lower {Ω : Type u}
     (src : LowerPrevisionITVSource Ω) :
     (fromLowerPrevision src).lower = src.prevision src.gamble :=
   by simp [fromLowerPrevision, TypedITV.lower, TypedITV.value,
-    lowerPrevisionITVSemantics, lowerPrevisionITV]
+    lowerPrevisionITVConstructor, lowerPrevisionITV]
 
 @[simp] theorem fromLowerPrevision_upper {Ω : Type u}
     (src : LowerPrevisionITVSource Ω) :
     (fromLowerPrevision src).upper = src.prevision.conjugate src.gamble :=
   by simp [fromLowerPrevision, TypedITV.upper, TypedITV.value,
-    lowerPrevisionITVSemantics, lowerPrevisionITV]
+    lowerPrevisionITVConstructor, lowerPrevisionITV]
 
 @[simp] theorem fromLowerPrevision_credibility {Ω : Type u}
     (src : LowerPrevisionITVSource Ω) :
     (fromLowerPrevision src).credibility = src.credibility :=
   by simp [fromLowerPrevision, TypedITV.credibility, TypedITV.value,
-    lowerPrevisionITVSemantics, lowerPrevisionITV]
+    lowerPrevisionITVConstructor, lowerPrevisionITV]
 
 end TypedITV
 
@@ -1837,14 +1837,14 @@ theorem lowerPrevision_bounds_do_not_force_credibility
     (P : Mettapedia.ProbabilityTheory.ImpreciseProbability.LowerPrevision Ω)
     (X : Mettapedia.ProbabilityTheory.ImpreciseProbability.Gamble Ω)
     (hX : ∀ ω, X ω ∈ Set.Icc (0 : ℝ) 1) :
-    let x : TypedITV (lowerPrevisionITVSemantics Ω) :=
+    let x : TypedITV (lowerPrevisionITVConstructor Ω) :=
       TypedITV.fromLowerPrevision
         { prevision := P
           gamble := X
           gamble_in_unit := hX
           credibility := 0
           credibility_in_unit := by norm_num }
-    let y : TypedITV (lowerPrevisionITVSemantics Ω) :=
+    let y : TypedITV (lowerPrevisionITVConstructor Ω) :=
       TypedITV.fromLowerPrevision
         { prevision := P
           gamble := X
@@ -1968,22 +1968,22 @@ theorem typedLowerPrevision_agrees_with_singletonCredalEnvelope
     (P : ProbDist Ω) (X : Gamble Ω)
     (hX : ∀ ω, X ω ∈ Set.Icc (0 : ℝ) 1)
     (credibility : ℝ) (hc : credibility ∈ Set.Icc (0 : ℝ) 1) :
-    let lp : TypedITV (lowerPrevisionITVSemantics Ω) :=
+    let lp : TypedITV (lowerPrevisionITVConstructor Ω) :=
       TypedITV.fromLowerPrevision (source P X hX credibility hc);
-    let ce : TypedITV (credalEnvelopeITVSemantics Ω) :=
+    let ce : TypedITV (credalEnvelopeITVConstructor Ω) :=
       TypedITV.fromCredalEnvelope (credalEnvelopeSource P X hX credibility hc);
     lp.lower = ce.lower ∧ lp.upper = ce.upper ∧
       lp.credibility = ce.credibility := by
   dsimp
   constructor
-  · dsimp [TypedITV.lower, TypedITV.value, lowerPrevisionITVSemantics,
-      credalEnvelopeITVSemantics, lowerPrevisionITV, credalEnvelopeITV,
+  · dsimp [TypedITV.lower, TypedITV.value, lowerPrevisionITVConstructor,
+      credalEnvelopeITVConstructor, lowerPrevisionITV, credalEnvelopeITV,
       TypedITV.fromLowerPrevision, TypedITV.fromCredalEnvelope, source,
       credalEnvelopeSource]
     rw [lowerProb_singleton_eq_expectedValue]
   constructor
-  · dsimp [TypedITV.upper, TypedITV.value, lowerPrevisionITVSemantics,
-      credalEnvelopeITVSemantics, lowerPrevisionITV, credalEnvelopeITV,
+  · dsimp [TypedITV.upper, TypedITV.value, lowerPrevisionITVConstructor,
+      credalEnvelopeITVConstructor, lowerPrevisionITV, credalEnvelopeITV,
       TypedITV.fromLowerPrevision, TypedITV.fromCredalEnvelope, source,
       credalEnvelopeSource]
     rw [probDistLowerPrevision_conjugate_apply, upperProb_singleton_eq_expectedValue]
@@ -2149,9 +2149,9 @@ theorem typedLowerPrevision_agrees_with_credalEnvelope
     (K : CredalSetFinite Ω) (hK : K.Nonempty) (X : Gamble Ω)
     (hX : ∀ ω, X ω ∈ Set.Icc (0 : ℝ) 1)
     (credibility : ℝ) (hc : credibility ∈ Set.Icc (0 : ℝ) 1) :
-    let lp : TypedITV (lowerPrevisionITVSemantics Ω) :=
+    let lp : TypedITV (lowerPrevisionITVConstructor Ω) :=
       TypedITV.fromLowerPrevision (source K hK X hX credibility hc);
-    let ce : TypedITV (credalEnvelopeITVSemantics Ω) :=
+    let ce : TypedITV (credalEnvelopeITVConstructor Ω) :=
       TypedITV.fromCredalEnvelope
         { credal := K
           gamble := X
@@ -2165,8 +2165,8 @@ theorem typedLowerPrevision_agrees_with_credalEnvelope
   constructor
   · rfl
   constructor
-  · dsimp [TypedITV.upper, TypedITV.value, lowerPrevisionITVSemantics,
-      credalEnvelopeITVSemantics, lowerPrevisionITV, credalEnvelopeITV,
+  · dsimp [TypedITV.upper, TypedITV.value, lowerPrevisionITVConstructor,
+      credalEnvelopeITVConstructor, lowerPrevisionITV, credalEnvelopeITV,
       TypedITV.fromLowerPrevision, TypedITV.fromCredalEnvelope, source]
     rw [credalLowerPrevision_conjugate_apply]
   · rfl
@@ -3523,7 +3523,7 @@ noncomputable def toEnvelopeSource {Ω : Type u} [Fintype Ω]
 /-- Project the tower to a typed ITV. -/
 noncomputable def toTypedITV {Ω : Type u} [Fintype Ω]
     (t : CredalProjectionTower Ω) :
-    TypedITV (credalEnvelopeITVSemantics Ω) :=
+    TypedITV (credalEnvelopeITVConstructor Ω) :=
   TypedITV.fromCredalEnvelope t.toEnvelopeSource
 
 @[simp] theorem lower_toTypedITV {Ω : Type u} [Fintype Ω]
@@ -3561,7 +3561,7 @@ the forced lower/upper envelope. -/
         Mettapedia.ProbabilityTheory.ImpreciseProbability.DesirableGambles.upperProb
           t.credal t.gamble) / 2 := by
   simp [midpointDisplay, TypedITV.midpoint, TypedITV.value, toTypedITV,
-    toEnvelopeSource, TypedITV.fromCredalEnvelope, credalEnvelopeITVSemantics,
+    toEnvelopeSource, TypedITV.fromCredalEnvelope, credalEnvelopeITVConstructor,
     credalEnvelopeITV, ITV.strength]
 
 /-- The forced lower envelope is below the tower's midpoint view. -/
@@ -3569,14 +3569,14 @@ theorem lower_le_midpointDisplay {Ω : Type u} [Fintype Ω]
     (t : CredalProjectionTower Ω) :
     t.toTypedITV.lower ≤ t.midpointDisplay := by
   simpa [midpointDisplay] using
-    (TypedITV.lower_le_midpoint (Sem := credalEnvelopeITVSemantics Ω) t.toTypedITV)
+    (TypedITV.lower_le_midpoint (Sem := credalEnvelopeITVConstructor Ω) t.toTypedITV)
 
 /-- The tower's midpoint view is below the forced upper envelope. -/
 theorem midpointDisplay_le_upper {Ω : Type u} [Fintype Ω]
     (t : CredalProjectionTower Ω) :
     t.midpointDisplay ≤ t.toTypedITV.upper := by
   simpa [midpointDisplay] using
-    (TypedITV.midpoint_le_upper (Sem := credalEnvelopeITVSemantics Ω) t.toTypedITV)
+    (TypedITV.midpoint_le_upper (Sem := credalEnvelopeITVConstructor Ω) t.toTypedITV)
 
 /-- The bridge law that identifies evidence credibility with the complement of
 credal imprecision.  It is deliberately an explicit hypothesis, not a generic
@@ -3633,7 +3633,7 @@ theorem same_weight_can_display_different_credibility
       x.typedConfidence.weight = y.typedConfidence.weight := by
   dsimp [toTypedITV, toEnvelopeSource, credibilityDisplay, typedConfidence,
     TypedITV.lower, TypedITV.upper, TypedITV.credibility, TypedITV.value,
-    TypedITV.fromCredalEnvelope, credalEnvelopeITVSemantics, credalEnvelopeITV,
+    TypedITV.fromCredalEnvelope, credalEnvelopeITVConstructor, credalEnvelopeITV,
     TypedConfidence.weight, TypedConfidence.ofWeight, plnOddsCoordinate,
     reserveHalfCoordinate]
   norm_num
@@ -3671,7 +3671,7 @@ theorem same_coordinate_weight_forces_same_confidence
       x.typedConfidence.weight = y.typedConfidence.weight := by
   dsimp [toTypedITV, toEnvelopeSource, credibilityDisplay, typedConfidence,
     TypedITV.credibility, TypedITV.value, TypedITV.fromCredalEnvelope,
-    credalEnvelopeITVSemantics, credalEnvelopeITV, TypedConfidence.weight,
+    credalEnvelopeITVConstructor, credalEnvelopeITV, TypedConfidence.weight,
     TypedConfidence.ofWeight]
   exact ⟨rfl, by simp [χ.decode_encode_of_nonneg hw]⟩
 
@@ -3713,7 +3713,7 @@ theorem same_confidence_can_have_different_credal_envelope
         x.toTypedITV.lower ≠ y.toTypedITV.lower := by
   dsimp [toTypedITV, toEnvelopeSource, credibilityDisplay, typedConfidence,
     TypedITV.lower, TypedITV.credibility, TypedITV.value,
-    TypedITV.fromCredalEnvelope, credalEnvelopeITVSemantics, credalEnvelopeITV,
+    TypedITV.fromCredalEnvelope, credalEnvelopeITVConstructor, credalEnvelopeITV,
     TypedConfidence.weight, TypedConfidence.ofWeight]
   exact ⟨rfl, by simp [χ.decode_encode_of_nonneg hw], hLower⟩
 
@@ -3783,7 +3783,7 @@ theorem concreteBool_same_confidence_different_credal_envelope :
       x.toTypedITV.lower ≠ y.toTypedITV.lower := by
   dsimp [toTypedITV, toEnvelopeSource, credibilityDisplay, typedConfidence,
     TypedITV.lower, TypedITV.credibility, TypedITV.value,
-    TypedITV.fromCredalEnvelope, credalEnvelopeITVSemantics, credalEnvelopeITV,
+    TypedITV.fromCredalEnvelope, credalEnvelopeITVConstructor, credalEnvelopeITV,
     TypedConfidence.weight, TypedConfidence.ofWeight]
   refine ⟨rfl, ?_, ?_, ?_, ?_⟩
   · simp [plnOddsCoordinate]
@@ -3807,7 +3807,7 @@ theorem thetaSingleton_collapses_to_point
 of the binary IDM credal set.  The ITV's `credibility` field remains a separate
 evidence-concentration coordinate. -/
 theorem walleyCredalEnvelope_matches_ITV_bounds
-    (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) (s : ℝ) (hs : 0 < s) :
+    (e : Mettapedia.PLN.Evidence.BinaryEvidence) (s : ℝ) (hs : 0 < s) :
     Mettapedia.ProbabilityTheory.ImpreciseProbability.DesirableGambles.lowerProb
         (Mettapedia.ProbabilityTheory.ImpreciseProbability.WalleyBinaryIDM.credalSetOfEvidence e s hs)
         Mettapedia.ProbabilityTheory.ImpreciseProbability.WalleyBinaryIDM.trueGamble =

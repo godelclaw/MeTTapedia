@@ -4,7 +4,7 @@ import Mettapedia.PLN.Evidence.BinaryEvidence
 # PLN Revision Rule
 
 This file formalizes the PLN **Revision Rule** which combines evidence from
-independent sources.
+disjoint observations.
 
 ## Key Insight
 
@@ -36,7 +36,7 @@ The Revision Rule corresponds to Beta conjugate updating:
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open BinaryEvidence
 
 /-! ## Revision as hplus -/

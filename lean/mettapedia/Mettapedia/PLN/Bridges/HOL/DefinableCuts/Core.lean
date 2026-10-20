@@ -44,7 +44,7 @@ noncomputable def ExtensionalDefinableCut.intervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     Interval :=
   extensionalTheoryCredalHOLFormulaIntervalOfConsistent
     (Base := Base) (Const := Const) T enum henum hCons hT0 hEM C.formula
@@ -58,7 +58,7 @@ theorem ExtensionalDefinableCut.lower_eq_one_iff_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (C.intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 1 ↔
       ClosedTheorySet.Provable (Const := WithParams Const) T C.formula := by
@@ -76,7 +76,7 @@ theorem ExtensionalDefinableCut.upper_eq_zero_iff_provable_not
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (C.intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).upper = 0 ↔
       ClosedTheorySet.Provable (Const := WithParams Const) T (.not C.formula) := by
@@ -95,7 +95,7 @@ theorem ExtensionalDefinableCut.lower_eq_zero_of_not_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hNotProv : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T C.formula) :
     (C.intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 0 := by
@@ -114,7 +114,7 @@ theorem ExtensionalDefinableCut.upper_eq_one_of_not_provable_not
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hNotProvNot : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T (.not C.formula)) :
     (C.intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).upper = 1 := by
@@ -132,7 +132,7 @@ theorem ExtensionalDefinableCut.lower_eq_zero_iff_not_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (C.intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 0 ↔
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T C.formula := by
@@ -151,7 +151,7 @@ theorem ExtensionalDefinableCut.upper_eq_one_iff_not_provable_not
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (C.intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).upper = 1 ↔
       ¬ ClosedTheorySet.Provable (Const := WithParams Const) T (.not C.formula) := by
@@ -169,7 +169,7 @@ theorem ExtensionalDefinableCut.width_eq_zero_iff_decides
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (C.intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).width = 0 ↔
       ClosedTheorySet.Provable (Const := WithParams Const) T C.formula ∨
@@ -188,7 +188,7 @@ theorem ExtensionalDefinableCut.lower_eq_one_iff_forall_ge
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (C.intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 1 ↔
       ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -227,7 +227,7 @@ theorem ExtensionalDefinableCut.upper_eq_zero_iff_forall_not_ge
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (C.intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).upper = 0 ↔
       ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -295,7 +295,7 @@ theorem ExtensionalDefinableCut.posAffineRescale_intervalOfConsistent
     (henum : ∀ body : Body Const, ∃ n, enum n = body)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (C.posAffineRescale (Base := Base) (Const := Const) a b ha).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM =
       C.intervalOfConsistent
@@ -350,7 +350,7 @@ theorem ExtensionalDefinableCut.booleanPositiveThreshold_intervalOfConsistent
     (henum : ∀ body : Body Const, ∃ n, enum n = body)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (C.booleanPositiveThreshold
       (Base := Base) (Const := Const) τ hτpos hτle hThreshold hBoolean).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM =
@@ -608,7 +608,7 @@ theorem ExtensionalDefinableCut.andCut_lower_eq_one_iff_forall_both_ge
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ((C.andCut (Base := Base) (Const := Const) D).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 1 ↔
       ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -630,7 +630,7 @@ theorem ExtensionalDefinableCut.orCut_lower_eq_one_iff_forall_either_ge
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ((C.orCut (Base := Base) (Const := Const) D).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 1 ↔
       ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -651,7 +651,7 @@ theorem ExtensionalDefinableCut.notCut_lower_eq_one_iff_forall_not_ge
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ((C.notCut (Base := Base) (Const := Const)).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 1 ↔
       ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -673,7 +673,7 @@ theorem ExtensionalDefinableCut.impCut_lower_eq_one_iff_forall_imp_ge
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ((C.impCut (Base := Base) (Const := Const) D).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 1 ↔
       ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -695,7 +695,7 @@ theorem ExtensionalDefinableCut.andCut_upper_eq_zero_iff_forall_not_both_ge
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ((C.andCut (Base := Base) (Const := Const) D).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).upper = 0 ↔
       ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -717,7 +717,7 @@ theorem ExtensionalDefinableCut.orCut_upper_eq_zero_iff_forall_not_either_ge
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ((C.orCut (Base := Base) (Const := Const) D).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).upper = 0 ↔
       ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -739,7 +739,7 @@ theorem ExtensionalDefinableCut.notCut_upper_eq_zero_iff_forall_ge
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ((C.notCut (Base := Base) (Const := Const)).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).upper = 0 ↔
       ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -762,7 +762,7 @@ theorem ExtensionalDefinableCut.impCut_upper_eq_zero_iff_forall_counterexample_g
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ((C.impCut (Base := Base) (Const := Const) D).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).upper = 0 ↔
       ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -864,7 +864,7 @@ theorem ExtensionalDefinableCut.allCut_lower_eq_one_iff_forall_all_ge
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ((C.allCut (Base := Base) (Const := Const) Cs).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 1 ↔
       ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -888,7 +888,7 @@ theorem ExtensionalDefinableCut.allCut_upper_eq_zero_iff_forall_not_all_ge
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ((C.allCut (Base := Base) (Const := Const) Cs).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).upper = 0 ↔
       ∀ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -918,7 +918,7 @@ theorem ExtensionalDefinableCut.allCut_impCut_lower_eq_one_iff_forall_all_imp_ge
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (((C.allCut (Base := Base) (Const := Const) Cs).impCut
         (Base := Base) (Const := Const) D).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 1 ↔
@@ -948,7 +948,7 @@ theorem ExtensionalDefinableCut.allCut_impCut_upper_eq_zero_iff_forall_all_count
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (((C.allCut (Base := Base) (Const := Const) Cs).impCut
         (Base := Base) (Const := Const) D).intervalOfConsistent
       (Base := Base) (Const := Const) enum henum hCons hT0 hEM).upper = 0 ↔
@@ -980,7 +980,7 @@ theorem ExtensionalDefinableCut.lower_eq_one_of_impCut_lower_eq_one_of_lower_eq_
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hRule :
       ((C.impCut (Base := Base) (Const := Const) D).intervalOfConsistent
         (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 1)
@@ -1019,7 +1019,7 @@ theorem ExtensionalDefinableCut.lower_eq_one_of_allCut_impCut_lower_eq_one_of_al
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hRule :
       (((C.allCut (Base := Base) (Const := Const) Cs).impCut
           (Base := Base) (Const := Const) D).intervalOfConsistent
@@ -1047,7 +1047,7 @@ theorem ExtensionalDefinableCut.notCut_lower_eq_one_of_impCut_lower_eq_one_of_no
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hRule :
       ((C.impCut (Base := Base) (Const := Const) D).intervalOfConsistent
         (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 1)
@@ -1084,7 +1084,7 @@ theorem ExtensionalDefinableCut.impCut_upper_eq_zero_of_lower_eq_one_of_upper_eq
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hPrem :
       (C.intervalOfConsistent
         (Base := Base) (Const := Const) enum henum hCons hT0 hEM).lower = 1)
@@ -1166,7 +1166,7 @@ theorem formulaIndicatorPositiveThresholdCut_intervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (formulaIndicatorPositiveThresholdCut (T := T) φ hφ0 τ hτpos hτle)
@@ -1187,7 +1187,7 @@ theorem formulaIndicatorPositiveThresholdCut_lower_eq_one_iff_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (formulaIndicatorPositiveThresholdCut (T := T) φ hφ0 τ hτpos hτle)
@@ -1210,7 +1210,7 @@ theorem formulaIndicatorPositiveThresholdCut_upper_eq_zero_iff_provable_not
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (formulaIndicatorPositiveThresholdCut (T := T) φ hφ0 τ hτpos hτle)
@@ -1233,7 +1233,7 @@ theorem formulaIndicatorPositiveThresholdCut_width_eq_zero_iff_decides
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (formulaIndicatorPositiveThresholdCut (T := T) φ hφ0 τ hτpos hτle)

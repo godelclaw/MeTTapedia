@@ -1,5 +1,4 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval
-import MettaHyperonFull.Core.Bindings
 
 /-!
 # Evaluator outcome boundary
@@ -27,14 +26,6 @@ inductive ExecutionOutcome (AtomT BindingsT : Type) where
 result lane.  Other error atoms remain semantic results. -/
 def classifyHEResult : ResultPair → ExecutionOutcome Atom Bindings
   | (.expression [.symbol "Error", source, .symbol "StackOverflow"], bindings) =>
-      .resourceExhausted source bindings
-  | result => .semantic result
-
-/-- Classify the exact LeaTTa stack-depth exhaustion shape outside the
-semantic result lane.  Other error atoms remain semantic results. -/
-def classifyLeaTTaResult :
-    Metta.Atom × Metta.Bindings → ExecutionOutcome Metta.Atom Metta.Bindings
-  | (.expr [.sym "Error", source, .sym "StackOverflow"], bindings) =>
       .resourceExhausted source bindings
   | result => .semantic result
 
@@ -71,15 +62,5 @@ example :
       .semantic
         (.expression [.symbol "Error", .symbol "a", .symbol "DivisionByZero"],
           Bindings.empty) := rfl
-
-/-- Positive: the documented LeaTTa exhaustion shape is classified as a
-resource outcome. -/
-example :
-    classifyLeaTTaResult
-        (.expr [.sym "Error", .sym "a", .sym "StackOverflow"], []) =
-      .resourceExhausted (.sym "a") [] := rfl
-
-/-- Negative boundary canary: an ordinary LeaTTa result remains semantic. -/
-example : classifyLeaTTaResult (.sym "a", []) = .semantic (.sym "a", []) := rfl
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Eval.Outcome

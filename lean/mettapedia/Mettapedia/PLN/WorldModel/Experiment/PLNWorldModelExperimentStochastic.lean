@@ -16,9 +16,9 @@ Finite stochastic extension of the experiment WM layer:
 
 namespace Mettapedia.PLN.WorldModel.Experiment.PLNWorldModelExperimentStochastic
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 universe u v w

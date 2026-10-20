@@ -174,6 +174,7 @@ private def putObligation : Obligation → Data
   | .equationBound index direction => .pair (.atom 12) (.pair (.atom index) (orientationCodec.put direction))
   | .childStratification  => .atom 13
   | .derivedEquationCoverage  => .atom 14
+  | .setDecomposition  => .atom 15
 private def getObligation : Data → Option Obligation
   | .atom 0 => some .invalidLanguage
   | .atom 1 => some .invalidFreeContext
@@ -190,6 +191,7 @@ private def getObligation : Data → Option Obligation
   | .pair (.atom 12) (.pair (.atom index) direction) => (orientationCodec.get direction).map (.equationBound index)
   | .atom 13 => some .childStratification
   | .atom 14 => some .derivedEquationCoverage
+  | .atom 15 => some .setDecomposition
   | _ => none
 
 def obligationCodec : Codec Obligation := ⟨putObligation, getObligation, fun value => by

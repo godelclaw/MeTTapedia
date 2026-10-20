@@ -120,6 +120,16 @@ theorem pool_vs_chain_lr3 :
 
 /-! ## Bundle and runtime parity metadata -/
 
+/-- A paired PeTTa/CeTTa runtime canary for a Lean result.  `peTTaPath` is
+relative to the PeTTa repository root; `ceTTaPath` is a test file name in the
+CeTTa test directory (`CETTA_TEST_DIR`), resolved as
+`Mettapedia.Languages.MeTTa.HE.resolveCoreFile` resolves it.  The check is run by
+the build agent, not by Lean. -/
+structure RuntimeParityCheck where
+  peTTaPath : String
+  ceTTaPath : String
+  expectedChecks : Nat
+
 /-- Proof-carrying bundle for the paper-facing didactic witnesses, together
 with the paired PeTTa/CeTTa runtime canary locations. -/
 structure DidacticWitnessProfile where
@@ -161,9 +171,7 @@ structure DidacticWitnessProfile where
       bernoulliNaturalToMean (Real.log 9) = (9 / 10 : ℝ) ∧
       bernoulliMixtureGeodesic (3 / 4) (3 / 4) (1 / 2) ≠
         bernoulliNaturalToMean (Real.log 9)
-  peTTaPath : String
-  ceTTaPath : String
-  expectedChecks : Nat
+  runtimeParity : RuntimeParityCheck
 
 /-- The current theorem/runtime bundle for the five didactic witnesses. -/
 noncomputable def didacticWitnessProfile : DidacticWitnessProfile where
@@ -174,10 +182,9 @@ noncomputable def didacticWitnessProfile : DidacticWitnessProfile where
   halfConfidenceDistinct := halfConfidence_revision_values_distinct
   goldilocksCarrier := goldilocks_phase_carrier_ablation
   poolVsChain := pool_vs_chain_lr3
-  peTTaPath :=
-    "lean/externals/PeTTa/examples/pln_didactic_witnesses.metta"
-  ceTTaPath :=
-    "lean/externals/CeTTa/tests/test_wmpln_didactic_witnesses.metta"
-  expectedChecks := 23
+  runtimeParity :=
+    { peTTaPath := "examples/pln_didactic_witnesses.metta"
+      ceTTaPath := "test_wmpln_didactic_witnesses.metta"
+      expectedChecks := 23 }
 
 end Mettapedia.PLN.TruthValues.PLNDidacticWitnesses

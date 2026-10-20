@@ -1,4 +1,4 @@
-import Mettapedia.InformationTheory.ConditionalMutualInformation
+import Mettapedia.InformationTheory.MarkovProjection
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 
 /-!
@@ -79,13 +79,7 @@ theorem markovProjectionAC_cond_eq_plnDeductionStrength (p : Ω → ℝ)
   have hAC : markovProjectionAC p f g h (true, true) =
       law2 p f g (true, true) * law2 p g h (true, true) / pushforward p g true +
       law2 p f g (true, false) * law2 p g h (false, true) / pushforward p g false := by
-    unfold markovProjectionAC
-    rw [pushforward_eq_sum_ite]
-    rw [Fintype.sum_prod_type, Fintype.sum_bool]
-    simp only [Fintype.sum_prod_type, Fintype.sum_bool, Prod.mk.injEq, if_true, if_false,
-      true_and, false_and, add_zero, Bool.false_eq_true]
-    unfold markovProjection
-    simp only [if_neg hB.ne', if_neg hnB.ne']
+    exact markovProjectionAC_bool_true_true p f g h
   rw [hAC]
   unfold plnDeductionStrength
   have h1 : 1 - law2 p f g (true, true) / pushforward p f true =
@@ -140,34 +134,6 @@ theorem chainLoss_eq_zero_of_condIndep (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω
   rw [markovProjectionAC_eq_law2_of_condIndep p hp f g h hci]
   exact klSum_self_eq_zero _ fun x => pushforward_nonneg p hp _ x
 
-theorem markovProjectionAC_nonneg (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (f : Ω → α) (g : Ω → β)
-    (h : Ω → γ) (x : α × γ) : 0 ≤ markovProjectionAC p f g h x :=
-  pushforward_nonneg _ (fun y => markovProjection_nonneg p hp f g h y) _ x
-
-theorem sum_markovProjectionAC (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (f : Ω → α) (g : Ω → β)
-    (h : Ω → γ) : ∑ x, markovProjectionAC p f g h x = ∑ ω, p ω := by
-  unfold markovProjectionAC
-  rw [sum_pushforward, sum_markovProjection p hp f g h]
-
-/-- Wherever the true `(A, C)` law is positive, so is the projected one. -/
-theorem markovProjectionAC_pos_of_law2_pos (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (f : Ω → α)
-    (g : Ω → β) (h : Ω → γ) {x : α × γ} (hx : 0 < law2 p f h x) :
-    0 < markovProjectionAC p f g h x := by
-  rw [law2_fh_eq_pushforward_law3 p f g h] at hx
-  unfold markovProjectionAC
-  -- some triple with positive `law3` lies over `x`; the Markov projection is positive there
-  unfold pushforward at hx ⊢
-  obtain ⟨y, hy, hpos⟩ : ∃ y ∈ Finset.univ.filter (fun y : α × β × γ => (y.1, y.2.2) = x),
-      0 < law3 p f g h y := by
-    by_contra hcon
-    have hall : ∀ y ∈ Finset.univ.filter (fun y : α × β × γ => (y.1, y.2.2) = x),
-        law3 p f g h y = 0 := fun y hy =>
-      le_antisymm (not_lt.1 fun hlt => hcon ⟨y, hy, hlt⟩) (pushforward_nonneg p hp _ y)
-    rw [Finset.sum_eq_zero hall] at hx
-    exact lt_irrefl _ hx
-  exact lt_of_lt_of_le (markovProjection_pos_of_law3_pos p hp f g h hpos)
-    (Finset.single_le_sum (f := markovProjection p f g h)
-      (fun y _ => markovProjection_nonneg p hp f g h y) hy)
 
 theorem chainLoss_nonneg (p : Ω → ℝ) (hp : ∀ ω, 0 ≤ p ω) (f : Ω → α) (g : Ω → β) (h : Ω → γ) :
     0 ≤ chainLoss p f g h := by

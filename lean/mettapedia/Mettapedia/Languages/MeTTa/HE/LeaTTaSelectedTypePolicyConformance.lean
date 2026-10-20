@@ -1,5 +1,9 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.CandidateLocalization
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationFoldConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Selected type-policy correspondence
@@ -41,11 +45,11 @@ theorem matchApplicationTypeArguments_expectedGate_presentation_sound
     {expectedType returnType : Atom}
     {argumentBindings output : Metta.Bindings}
     (arguments : Metta.Minimal.matchApplicationTypeArguments
-      Metta.Bindings.empty (toLeaTTaAtoms expectedTypes)
-        (toLeaTTaAtoms actualTypes) = some argumentBindings)
+      Metta.Bindings.empty (encodeModelAtoms expectedTypes)
+        (encodeModelAtoms actualTypes) = some argumentBindings)
     (returnGate : Metta.Minimal.matchType argumentBindings
-      (toLeaTTaAtom expectedType)
-      (toLeaTTaAtom returnType) = some output) :
+      (encodeModelAtom expectedType)
+      (encodeModelAtom returnType) = some output) :
     ∃ presentation specOutput,
       PresentationArgumentListMatchRel
         (expectedTypes ++ [expectedType])
@@ -73,10 +77,10 @@ theorem matchApplicationTypeArguments_localized_expected
     {policy : SelectedTypePolicy}
     {argumentBindings output : Metta.Bindings}
     (arguments : Metta.Minimal.matchApplicationTypeArguments
-      Metta.Bindings.empty (toLeaTTaAtoms policy.argumentTypes)
-        (toLeaTTaAtoms actualTypes) = some argumentBindings)
+      Metta.Bindings.empty (encodeModelAtoms policy.argumentTypes)
+        (encodeModelAtoms actualTypes) = some argumentBindings)
     (returnGate : Metta.Minimal.matchType argumentBindings
-      (toLeaTTaAtom expectedType) (toLeaTTaAtom policy.returnType) =
+      (encodeModelAtom expectedType) (encodeModelAtom policy.returnType) =
         some output)
     (expectedFresh : AtomsAvoid
       (policy.argumentTypes ++ [expectedType])
@@ -90,8 +94,8 @@ theorem matchApplicationTypeArguments_localized_expected
         ⟨incoming.assignments ++ substitution, incoming.equalities⟩ ∧
       ObservedTypeAlphaRel
         (substitution.apply policy.returnType)
-        (fromLeaTTaAtom
-          (Metta.instantiate output (toLeaTTaAtom policy.returnType))) := by
+        (decodeModelAtom
+          (Metta.instantiate output (encodeModelAtom policy.returnType))) := by
   obtain ⟨substitution, _specOutput, constraints, state⟩ :=
     matchApplicationTypeArguments_expectedGate_presentation_sound
       arguments returnGate
@@ -111,10 +115,10 @@ theorem matchApplicationTypeArguments_expected_scanSuccessCorrespond
     {policy : SelectedTypePolicy}
     {argumentBindings leaTypeBindings : Metta.Bindings}
     (arguments : Metta.Minimal.matchApplicationTypeArguments
-      Metta.Bindings.empty (toLeaTTaAtoms policy.argumentTypes)
-        (toLeaTTaAtoms actualTypes) = some argumentBindings)
+      Metta.Bindings.empty (encodeModelAtoms policy.argumentTypes)
+        (encodeModelAtoms actualTypes) = some argumentBindings)
     (returnGate : Metta.Minimal.matchType argumentBindings
-      (toLeaTTaAtom expectedType) (toLeaTTaAtom policy.returnType) =
+      (encodeModelAtom expectedType) (encodeModelAtom policy.returnType) =
         some leaTypeBindings) :
     ∃ substitution output,
       output =
@@ -125,9 +129,9 @@ theorem matchApplicationTypeArguments_expected_scanSuccessCorrespond
           leaTypeBindings) ∧
       ObservedTypeAlphaRel
         (substitution.apply policy.returnType)
-        (fromLeaTTaAtom
+        (decodeModelAtom
           (Metta.instantiate leaTypeBindings
-            (toLeaTTaAtom policy.returnType))) := by
+            (encodeModelAtom policy.returnType))) := by
   obtain ⟨substitution, privateBindings, constraints, state⟩ :=
     matchApplicationTypeArguments_expectedGate_presentation_sound
       arguments returnGate
@@ -146,8 +150,8 @@ theorem matchApplicationTypeArguments_localized_unconstrained
     {expectedType : Atom} {actualTypes : List Atom}
     {policy : SelectedTypePolicy} {leaOutput : Metta.Bindings}
     (run : Metta.Minimal.matchApplicationTypeArguments
-      Metta.Bindings.empty (toLeaTTaAtoms policy.argumentTypes)
-        (toLeaTTaAtoms actualTypes) = some leaOutput)
+      Metta.Bindings.empty (encodeModelAtoms policy.argumentTypes)
+        (encodeModelAtoms actualTypes) = some leaOutput)
     (unconstrained : ExpectedReturnUnconstrained expectedType)
     (expectedFresh : AtomsAvoid
       (policy.argumentTypes ++ [expectedType])
@@ -161,9 +165,9 @@ theorem matchApplicationTypeArguments_localized_unconstrained
         ⟨incoming.assignments ++ substitution, incoming.equalities⟩ ∧
       ObservedTypeAlphaRel
         (substitution.apply policy.returnType)
-        (fromLeaTTaAtom
+        (decodeModelAtom
           (Metta.instantiate leaOutput
-            (toLeaTTaAtom policy.returnType))) := by
+            (encodeModelAtom policy.returnType))) := by
   obtain ⟨substitution, _specOutput, fold, _state, returnAlpha⟩ :=
     matchApplicationTypeArguments_exact_return
       (returnType := policy.returnType) run
@@ -180,8 +184,8 @@ theorem matchApplicationTypeArguments_scoped_inert
     {expectedType : Atom} {actualTypes : List Atom}
     {policy : SelectedTypePolicy} {leaOutput : Metta.Bindings}
     (run : Metta.Minimal.matchApplicationTypeArguments
-      Metta.Bindings.empty (toLeaTTaAtoms policy.argumentTypes)
-        (toLeaTTaAtoms actualTypes) = some leaOutput)
+      Metta.Bindings.empty (encodeModelAtoms policy.argumentTypes)
+        (encodeModelAtoms actualTypes) = some leaOutput)
     (unconstrained : ExpectedReturnUnconstrained expectedType)
     (expectedFresh : AtomsAvoid
       (policy.argumentTypes ++ [expectedType])
@@ -211,7 +215,7 @@ theorem empty_runtime_fold_localizes :
         ⟨Bindings.empty.assignments ++ substitution,
           Bindings.empty.equalities⟩ ∧
       ObservedTypeAlphaRel (substitution.apply (.symbol "R"))
-        (fromLeaTTaAtom
+        (decodeModelAtom
           (Metta.instantiate Metta.Bindings.empty (.sym "R"))) := by
   apply matchApplicationTypeArguments_localized_unconstrained
       (policy := closedPolicy) (leaOutput := Metta.Bindings.empty)

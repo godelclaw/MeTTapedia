@@ -18,7 +18,7 @@ The general closure, order-equivalence, and additive-slack boundary remain in
 the imported concept-formation and inheritance bridges.
 -/
 
-namespace Mettapedia.Logic.WorldModel.AlgorithmicConceptFormationExamples
+namespace Mettapedia.Logic.WorldModel.AlgorithmicConceptFormation
 
 open KolmogorovComplexity
 open Mettapedia.KR.ConceptGeometry.Bridges.UniversalAI.AlgorithmicFeatureInheritance
@@ -140,4 +140,4 @@ section AxiomAudit
 
 end AxiomAudit
 
-end Mettapedia.Logic.WorldModel.AlgorithmicConceptFormationExamples
+end Mettapedia.Logic.WorldModel.AlgorithmicConceptFormation

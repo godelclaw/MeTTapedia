@@ -51,10 +51,10 @@ namespace Mettapedia.Examples.PLN.MapleCourtDemo
 
 open Mettapedia.PLN.Bridges.ProbabilityTheory
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceNormalGamma
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 /-! ## §1: Apartment State Type
 

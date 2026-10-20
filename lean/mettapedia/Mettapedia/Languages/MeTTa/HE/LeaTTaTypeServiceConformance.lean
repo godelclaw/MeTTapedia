@@ -1,9 +1,14 @@
+import Mettapedia.Languages.MeTTa.HE.EvaluatorBindingExtension
 import Mettapedia.Languages.MeTTa.HE.LeaTTaSpecTypeService
 import Mettapedia.Languages.MeTTa.HE.LeaTTaBranchLocalTypeScanConformance
 import Mettapedia.Languages.MeTTa.HE.LeaTTaSelectedTypePolicyConformance
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationSelectionConformance
 import Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.SelectionEquivariance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Exact prepared type-service instance for repaired LeaTTa
@@ -25,6 +30,7 @@ theorem, never in the relations below.
 namespace Mettapedia.Languages.MeTTa.HE.LeaTTaTypeServiceConformance
 
 open Mettapedia.Languages.MeTTa.HE
+open EvaluatorBindingExtension
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Bindings.ScopeObservation
 open Spec.Eval
@@ -72,10 +78,10 @@ theorem typeServiceRuntimeSeedScope_eq_expectedApplicationVisibleScope
     (expression expectedType : Atom) :
     typeServiceRuntimeSeedScope expression expectedType =
       Metta.Minimal.expectedApplicationVisibleScope
-        (toLeaTTaAtom expression) (toLeaTTaAtom expectedType) := by
+        (encodeModelAtom expression) (encodeModelAtom expectedType) := by
   simp [typeServiceRuntimeSeedScope,
     Metta.Minimal.expectedApplicationVisibleScope,
-    LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+    Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
 
 /-- Runtime seeding observes only the post-instantiation expression and
 expected type.  Every such name lies in the larger type-service scope, which
@@ -87,7 +93,7 @@ theorem typeServiceRuntimeSeedScope_subset_observationScope
   intro name member
   simp only [typeServiceRuntimeSeedScope, List.mem_eraseDups,
     List.mem_append] at member
-  rw [typeServiceObservationScope, typeVarsList_append]
+  rw [typeServiceObservationScope, TypeSubst.typeVarsList_append]
   apply List.mem_append_right
   simp only [TypeSubst.typeVarsList, List.append_nil,
     List.mem_append]
@@ -147,7 +153,7 @@ theorem matchType_none_no_corePlusR2
     (state : TypePresentationSimulationState presentation incoming runtime)
     (disjoint : VarsDisjoint expected actual)
     (failure : Metta.Minimal.matchType runtime
-      (toLeaTTaAtom expected) (toLeaTTaAtom actual) = none) :
+      (encodeModelAtom expected) (encodeModelAtom actual) = none) :
     ∀ output, ¬CorePlusR2TypeMatchRel expected actual incoming output := by
   have noPresentation :=
     (matchType_eq_none_iff_no_presentation state expected actual disjoint).mp
@@ -174,8 +180,8 @@ theorem matchExpectedType_success_corePlusR2_exact
     (expected : Atom) :
     ∀ candidates : List Atom,
       (∀ candidate ∈ candidates, VarsDisjoint expected candidate) →
-      Metta.Minimal.matchExpectedType runtime (toLeaTTaAtom expected)
-          (toLeaTTaAtoms candidates) = .inr runtimeOutput →
+      Metta.Minimal.matchExpectedType runtime (encodeModelAtom expected)
+          (encodeModelAtoms candidates) = .inr runtimeOutput →
       ∃ before actual after presentationOutput output,
         candidates = before ++ actual :: after ∧
           (∀ earlier ∈ before, ∀ candidateOutput,
@@ -186,22 +192,22 @@ theorem matchExpectedType_success_corePlusR2_exact
             presentationOutput output runtimeOutput := by
   intro candidates
   induction candidates with
-  | nil => simp [Metta.Minimal.matchExpectedType, toLeaTTaAtoms]
+  | nil => simp [Metta.Minimal.matchExpectedType, encodeModelAtoms]
   | cons candidate candidates ih =>
       intro disjoint selected
       cases runtimeEquation : Metta.Minimal.matchType runtime
-          (toLeaTTaAtom expected) (toLeaTTaAtom candidate) with
+          (encodeModelAtom expected) (encodeModelAtom candidate) with
       | some headOutput =>
           change
             (match Metta.Minimal.matchType runtime
-                (toLeaTTaAtom expected) (toLeaTTaAtom candidate) with
+                (encodeModelAtom expected) (encodeModelAtom candidate) with
               | some output => Sum.inr output
               | none =>
                   match Metta.Minimal.matchExpectedType runtime
-                      (toLeaTTaAtom expected) (toLeaTTaAtoms candidates) with
+                      (encodeModelAtom expected) (encodeModelAtoms candidates) with
                   | Sum.inr output => Sum.inr output
                   | Sum.inl rejected =>
-                      Sum.inl (toLeaTTaAtom candidate :: rejected)) =
+                      Sum.inl (encodeModelAtom candidate :: rejected)) =
               Sum.inr runtimeOutput at selected
           have outputEquation : headOutput = runtimeOutput := by
             rw [runtimeEquation] at selected
@@ -216,17 +222,17 @@ theorem matchExpectedType_success_corePlusR2_exact
       | none =>
           change
             (match Metta.Minimal.matchType runtime
-                (toLeaTTaAtom expected) (toLeaTTaAtom candidate) with
+                (encodeModelAtom expected) (encodeModelAtom candidate) with
               | some output => Sum.inr output
               | none =>
                   match Metta.Minimal.matchExpectedType runtime
-                      (toLeaTTaAtom expected) (toLeaTTaAtoms candidates) with
+                      (encodeModelAtom expected) (encodeModelAtoms candidates) with
                   | Sum.inr output => Sum.inr output
                   | Sum.inl rejected =>
-                      Sum.inl (toLeaTTaAtom candidate :: rejected)) =
+                      Sum.inl (encodeModelAtom candidate :: rejected)) =
               Sum.inr runtimeOutput at selected
           cases tailEquation : Metta.Minimal.matchExpectedType runtime
-              (toLeaTTaAtom expected) (toLeaTTaAtoms candidates) with
+              (encodeModelAtom expected) (encodeModelAtoms candidates) with
           | inl rejected =>
               rw [runtimeEquation, tailEquation] at selected
               contradiction
@@ -260,55 +266,55 @@ theorem matchExpectedType_failure_corePlusR2_exact
     (expected : Atom) :
     ∀ candidates : List Atom, ∀ rejected : List Metta.Atom,
       (∀ candidate ∈ candidates, VarsDisjoint expected candidate) →
-      Metta.Minimal.matchExpectedType runtime (toLeaTTaAtom expected)
-          (toLeaTTaAtoms candidates) = .inl rejected →
-      rejected = toLeaTTaAtoms candidates ∧
+      Metta.Minimal.matchExpectedType runtime (encodeModelAtom expected)
+          (encodeModelAtoms candidates) = .inl rejected →
+      rejected = encodeModelAtoms candidates ∧
         ∀ candidate ∈ candidates, ∀ output,
           ¬CorePlusR2TypeMatchRel expected candidate incoming output := by
   intro candidates
   induction candidates with
   | nil =>
       intro rejected _ failed
-      simpa [Metta.Minimal.matchExpectedType, toLeaTTaAtoms] using failed.symm
+      simpa [Metta.Minimal.matchExpectedType, encodeModelAtoms] using failed.symm
   | cons headCandidate candidates ih =>
       intro rejected disjoint failed
       cases runtimeEquation : Metta.Minimal.matchType runtime
-          (toLeaTTaAtom expected) (toLeaTTaAtom headCandidate) with
+          (encodeModelAtom expected) (encodeModelAtom headCandidate) with
       | some output =>
           change
             (match Metta.Minimal.matchType runtime
-                (toLeaTTaAtom expected) (toLeaTTaAtom headCandidate) with
+                (encodeModelAtom expected) (encodeModelAtom headCandidate) with
               | some output => Sum.inr output
               | none =>
                   match Metta.Minimal.matchExpectedType runtime
-                      (toLeaTTaAtom expected) (toLeaTTaAtoms candidates) with
+                      (encodeModelAtom expected) (encodeModelAtoms candidates) with
                   | Sum.inr output => Sum.inr output
                   | Sum.inl tailRejected =>
-                      Sum.inl (toLeaTTaAtom headCandidate :: tailRejected)) =
+                      Sum.inl (encodeModelAtom headCandidate :: tailRejected)) =
               Sum.inl rejected at failed
           rw [runtimeEquation] at failed
           contradiction
       | none =>
           change
             (match Metta.Minimal.matchType runtime
-                (toLeaTTaAtom expected) (toLeaTTaAtom headCandidate) with
+                (encodeModelAtom expected) (encodeModelAtom headCandidate) with
               | some output => Sum.inr output
               | none =>
                   match Metta.Minimal.matchExpectedType runtime
-                      (toLeaTTaAtom expected) (toLeaTTaAtoms candidates) with
+                      (encodeModelAtom expected) (encodeModelAtoms candidates) with
                   | Sum.inr output => Sum.inr output
                   | Sum.inl tailRejected =>
-                      Sum.inl (toLeaTTaAtom headCandidate :: tailRejected)) =
+                      Sum.inl (encodeModelAtom headCandidate :: tailRejected)) =
               Sum.inl rejected at failed
           cases tailEquation : Metta.Minimal.matchExpectedType runtime
-              (toLeaTTaAtom expected) (toLeaTTaAtoms candidates) with
+              (encodeModelAtom expected) (encodeModelAtoms candidates) with
           | inr output =>
               rw [runtimeEquation, tailEquation] at failed
               contradiction
           | inl tailRejected =>
               rw [runtimeEquation, tailEquation] at failed
               have rejectedEquation :
-                  rejected = toLeaTTaAtom headCandidate :: tailRejected :=
+                  rejected = encodeModelAtom headCandidate :: tailRejected :=
                 (Sum.inl.inj failed).symm
               obtain ⟨tailExact, tailFailed⟩ := ih tailRejected
                 (fun item member => disjoint item (by simp [member]))
@@ -349,7 +355,7 @@ inductive PreparedTypeCastOutcomeRuntimeRel
         ¬CorePlusR2TypeMatchRel
           expectedType candidateType incoming candidate) →
       PreparedTypeCastOutcomeRuntimeRel oracle space atom expectedType incoming
-        (.inl (toLeaTTaAtoms candidates)) protectedScope
+        (.inl (encodeModelAtoms candidates)) protectedScope
 
 /-! ## Prepared argument-package seam -/
 
@@ -374,8 +380,8 @@ def TypePreparationRuntimeRealization
     (world : Metta.Minimal.World) : Prop :=
   ∀ atom, ∃ prepared,
     oracle.prepare space atom prepared ∧
-      Metta.Minimal.typePrep world (toLeaTTaAtom atom) =
-        toLeaTTaAtom prepared
+      Metta.Minimal.typePrep world (encodeModelAtom atom) =
+        encodeModelAtom prepared
 
 /-- Exact package and preparation evidence for one argument before its
 ordered candidate family is alpha-localized. -/
@@ -385,11 +391,11 @@ def RuntimePreparedArgumentFamilyRel
     (argument : Atom) (rawCandidates : List Atom) : Prop :=
   ∃ prepared packages,
     oracle.prepare space argument prepared ∧
-      Metta.Minimal.typePrep world (toLeaTTaAtom argument) =
-        toLeaTTaAtom prepared ∧
+      Metta.Minimal.typePrep world (encodeModelAtom argument) =
+        encodeModelAtom prepared ∧
       RuntimeTypePackagesRel space prepared packages ∧
-      rawCandidates = fromLeaTTaAtoms
-        (Metta.Minimal.getTypes env (toLeaTTaAtom prepared)) ∧
+      rawCandidates = decodeModelAtoms
+        (Metta.Minimal.getTypes env (encodeModelAtom prepared)) ∧
       List.Forall₂ ObservedTypeAlphaRel
         (observedTypes packages) rawCandidates
 
@@ -482,20 +488,20 @@ side and is consumed only by cross-family separation. -/
 theorem freshenOperatorTypes_generatedAt
     (avoid : List String) (position : Nat) (sources : List Atom) :
     CandidateFamilyGeneratedAt position
-      (fromLeaTTaAtoms
-        ((toLeaTTaAtoms sources).map
+      (decodeModelAtoms
+        ((encodeModelAtoms sources).map
           (Metta.Minimal.freshenTypeCandidate avoid position))) := by
   intro candidate candidateMember
   induction sources with
   | nil => simp at candidateMember
   | cons source sources inductionHypothesis =>
-      simp only [toLeaTTaAtoms, List.map_cons, fromLeaTTaAtoms,
+      simp only [encodeModelAtoms, List.map_cons, decodeModelAtoms,
         List.mem_cons] at candidateMember
       rcases candidateMember with rfl | tailMember
       · refine ⟨avoid, source, ?_⟩
         simp only [Metta.Minimal.freshenTypeCandidate]
-        rw [← LeaTTaTypePresentationExactConformance.toLeaTTaAtom_renameTypeVars,
-          fromLeaTTaAtom_toLeaTTaAtom]
+        rw [← LeaTTaTypePresentationExactConformance.encodeModelAtom_renameTypeVars,
+          decodeModelAtom_encodeModelAtom]
       · exact inductionHypothesis tailMember
 
 /-- A candidate localized away from a finite name scope is separated from
@@ -527,40 +533,10 @@ theorem FreshFamiliesSeparated.append_right
     (secondSeparated : FreshFamiliesSeparated left second) :
     FreshFamiliesSeparated left (first ++ second) := by
   intro name leftOccurrence rightOccurrence
-  rw [typeVarsList_append, List.mem_append] at rightOccurrence
+  rw [TypeSubst.typeVarsList_append, List.mem_append] at rightOccurrence
   rcases rightOccurrence with firstOccurrence | secondOccurrence
   · exact firstSeparated name leftOccurrence firstOccurrence
   · exact secondSeparated name leftOccurrence secondOccurrence
-
-/-- Every formal-variable occurrence is an occurrence of the complete arrow
-atom that contains it. -/
-theorem FunctionTypeRel.argumentVars_subset
-    {functionType returnType : Atom} {argumentTypes : List Atom}
-    (function : FunctionTypeRel functionType argumentTypes returnType) :
-    ∀ name, name ∈ TypeSubst.typeVarsList argumentTypes →
-      name ∈ TypeSubst.typeVars functionType := by
-  intro name member
-  rw [FunctionTypeRel] at function
-  rw [function]
-  rw [TypeSubst.typeVars, TypeSubst.typeVarsList, List.mem_append]
-  apply Or.inr
-  rw [typeVarsList_append, List.mem_append]
-  exact Or.inl member
-
-/-- The return-variable support is also contained in the complete arrow. -/
-theorem FunctionTypeRel.returnVars_subset
-    {functionType returnType : Atom} {argumentTypes : List Atom}
-    (function : FunctionTypeRel functionType argumentTypes returnType) :
-    ∀ name, name ∈ TypeSubst.typeVars returnType →
-      name ∈ TypeSubst.typeVars functionType := by
-  intro name member
-  rw [FunctionTypeRel] at function
-  rw [function]
-  rw [TypeSubst.typeVars, TypeSubst.typeVarsList, List.mem_append]
-  apply Or.inr
-  rw [typeVarsList_append, List.mem_append]
-  apply Or.inr
-  simpa [TypeSubst.typeVarsList] using member
 
 /-- Runtime preparation, exact package lookup, and the two independent
 operator-localization passes share one ordered raw candidate list.
@@ -579,35 +555,35 @@ theorem runtimePreparedOperatorCandidates_avoiding_exists
     (incoming : Bindings) (liveAvoid : List String) :
     let expression := Atom.expression (operator :: arguments)
     let rawRuntime := Metta.Minimal.getTypes env
-      (Metta.Minimal.typePrep world (toLeaTTaAtom operator))
+      (Metta.Minimal.typePrep world (encodeModelAtom operator))
     let runtimeCandidates :=
       Metta.Minimal.freshenFunctionTypeCandidatesAvoiding env
-        (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-        (toLeaTTaAtom expectedType) liveAvoid rawRuntime
+        (encodeModelAtom expression) (encodeModelAtoms arguments)
+        (encodeModelAtom expectedType) liveAvoid rawRuntime
     let specAvoid := typeServicePrivateAvoid space expression expectedType incoming
     let runtimeAvoid := Metta.Minimal.functionTypeSelectionAvoiding env
-      (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-      (toLeaTTaAtom expectedType) liveAvoid rawRuntime
+      (encodeModelAtom expression) (encodeModelAtoms arguments)
+      (encodeModelAtom expectedType) liveAvoid rawRuntime
     ∃ prepared packages rawCandidates specCandidates,
       oracle.prepare space operator prepared ∧
-      Metta.Minimal.typePrep world (toLeaTTaAtom operator) =
-        toLeaTTaAtom prepared ∧
+      Metta.Minimal.typePrep world (encodeModelAtom operator) =
+        encodeModelAtom prepared ∧
       RuntimeTypePackagesRel space prepared packages ∧
-      rawCandidates = fromLeaTTaAtoms rawRuntime ∧
+      rawCandidates = decodeModelAtoms rawRuntime ∧
       List.Forall₂ ObservedTypeAlphaRel
         (observedTypes packages) rawCandidates ∧
-      specCandidates = fromLeaTTaAtoms
-        ((toLeaTTaAtoms rawCandidates).map
+      specCandidates = decodeModelAtoms
+        ((encodeModelAtoms rawCandidates).map
           (Metta.Minimal.freshenTypeCandidate specAvoid arguments.length)) ∧
       OperatorAlphaVariantsRel specAvoid rawCandidates specCandidates ∧
       OperatorAlphaVariantsRel specAvoid
         (observedTypes packages) specCandidates ∧
       OperatorAlphaVariantsRel runtimeAvoid rawCandidates
-        (fromLeaTTaAtoms runtimeCandidates) ∧
+        (decodeModelAtoms runtimeCandidates) ∧
       CandidateFamilyGeneratedAt arguments.length specCandidates ∧
       CandidateFamilyGeneratedAt arguments.length
-        (fromLeaTTaAtoms runtimeCandidates) ∧
-      toLeaTTaAtoms (fromLeaTTaAtoms runtimeCandidates) =
+        (decodeModelAtoms runtimeCandidates) ∧
+      encodeModelAtoms (decodeModelAtoms runtimeCandidates) =
         runtimeCandidates := by
   dsimp only
   obtain ⟨prepared, preparation, preparationEquation⟩ :=
@@ -616,14 +592,14 @@ theorem runtimePreparedOperatorCandidates_avoiding_exists
     runtimeGetTypes_has_exact_package_presentation index prepared
   let expression := Atom.expression (operator :: arguments)
   let rawRuntime := Metta.Minimal.getTypes env
-    (Metta.Minimal.typePrep world (toLeaTTaAtom operator))
-  let rawCandidates := fromLeaTTaAtoms rawRuntime
+    (Metta.Minimal.typePrep world (encodeModelAtom operator))
+  let rawCandidates := decodeModelAtoms rawRuntime
   let specAvoid := typeServicePrivateAvoid space expression expectedType incoming
   let runtimeAvoid := Metta.Minimal.functionTypeSelectionAvoiding env
-    (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-    (toLeaTTaAtom expectedType) liveAvoid rawRuntime
-  let specCandidates := fromLeaTTaAtoms
-    ((toLeaTTaAtoms rawCandidates).map
+    (encodeModelAtom expression) (encodeModelAtoms arguments)
+    (encodeModelAtom expectedType) liveAvoid rawRuntime
+  let specCandidates := decodeModelAtoms
+    ((encodeModelAtoms rawCandidates).map
       (Metta.Minimal.freshenTypeCandidate specAvoid arguments.length))
   have packageAlpha' : List.Forall₂ ObservedTypeAlphaRel
       (observedTypes packages) rawCandidates := by
@@ -633,29 +609,29 @@ theorem runtimePreparedOperatorCandidates_avoiding_exists
     simpa [specCandidates] using
       (freshenOperatorTypes_alphaVariants specAvoid arguments.length
         rawCandidates)
-  have rawRoundtrip : toLeaTTaAtoms rawCandidates = rawRuntime := by
+  have rawRoundtrip : encodeModelAtoms rawCandidates = rawRuntime := by
     dsimp [rawCandidates, rawRuntime]
     rw [preparationEquation]
     exact runtimeOperatorTypes_roundtrip index prepared
   have runtimeCandidatesEquation :
       Metta.Minimal.freshenFunctionTypeCandidatesAvoiding env
-          (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) liveAvoid rawRuntime =
-        (toLeaTTaAtoms rawCandidates).map
+          (encodeModelAtom expression) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) liveAvoid rawRuntime =
+        (encodeModelAtoms rawCandidates).map
           (Metta.Minimal.freshenTypeCandidate runtimeAvoid arguments.length) := by
     dsimp only [Metta.Minimal.freshenFunctionTypeCandidatesAvoiding]
     have avoidEquation :
         Metta.Minimal.functionTypeSelectionAvoiding env
-            (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-            (toLeaTTaAtom expectedType) liveAvoid rawRuntime = runtimeAvoid := rfl
-    have argumentsLength : (toLeaTTaAtoms arguments).length = arguments.length := by
-      rw [toLeaTTaAtoms_eq_map, List.length_map]
+            (encodeModelAtom expression) (encodeModelAtoms arguments)
+            (encodeModelAtom expectedType) liveAvoid rawRuntime = runtimeAvoid := rfl
+    have argumentsLength : (encodeModelAtoms arguments).length = arguments.length := by
+      rw [encodeModelAtoms_eq_map, List.length_map]
     rw [avoidEquation, argumentsLength, rawRoundtrip]
   have runtimeVariants : OperatorAlphaVariantsRel runtimeAvoid rawCandidates
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (Metta.Minimal.freshenFunctionTypeCandidatesAvoiding env
-          (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) liveAvoid rawRuntime)) := by
+          (encodeModelAtom expression) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) liveAvoid rawRuntime)) := by
     rw [runtimeCandidatesEquation]
     exact freshenOperatorTypes_alphaVariants runtimeAvoid arguments.length
       rawCandidates
@@ -665,22 +641,22 @@ theorem runtimePreparedOperatorCandidates_avoiding_exists
     exact freshenOperatorTypes_generatedAt specAvoid arguments.length
       rawCandidates
   have runtimeGenerated : CandidateFamilyGeneratedAt arguments.length
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (Metta.Minimal.freshenFunctionTypeCandidatesAvoiding env
-          (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) liveAvoid rawRuntime)) := by
+          (encodeModelAtom expression) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) liveAvoid rawRuntime)) := by
     rw [runtimeCandidatesEquation]
     exact freshenOperatorTypes_generatedAt runtimeAvoid arguments.length
       rawCandidates
   have runtimeRoundtrip :
-      toLeaTTaAtoms
-          (fromLeaTTaAtoms
+      encodeModelAtoms
+          (decodeModelAtoms
             (Metta.Minimal.freshenFunctionTypeCandidatesAvoiding env
-              (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-              (toLeaTTaAtom expectedType) liveAvoid rawRuntime)) =
+              (encodeModelAtom expression) (encodeModelAtoms arguments)
+              (encodeModelAtom expectedType) liveAvoid rawRuntime)) =
         Metta.Minimal.freshenFunctionTypeCandidatesAvoiding env
-          (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) liveAvoid rawRuntime := by
+          (encodeModelAtom expression) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) liveAvoid rawRuntime := by
     rw [runtimeCandidatesEquation, rawRoundtrip]
     dsimp [rawRuntime]
     rw [preparationEquation]
@@ -801,7 +777,7 @@ def PreparedArgumentPackageCandidates
           (observedTypes packageList) candidates)
       packageLists candidateLists ∧
     PreparedArgumentCandidateLists formals [] candidateLists
-      (candidateLists.map toLeaTTaAtoms)
+      (candidateLists.map encodeModelAtoms)
 
 /-- Choosing the realization-side generated families discharges the whole
 static prepared-package seam without strengthening the specification. -/
@@ -1062,7 +1038,7 @@ private theorem candidateAlphaVariantFamilies_avoid
   | @cons package family packages families head tail inductionHypothesis =>
       have headAvoids := candidateFamilyAlphaVariants_avoids head
       intro name occurrence avoidMember
-      simp only [List.flatten_cons, typeVarsList_append,
+      simp only [List.flatten_cons, TypeSubst.typeVarsList_append,
         List.mem_append] at occurrence
       rcases occurrence with headOccurrence | tailOccurrence
       · exact headAvoids name headOccurrence avoidMember
@@ -1364,11 +1340,11 @@ theorem preparedApplicationChoicePermutation
       alignedChoice_exists_family rightChoiceMembers atomMember
     exact List.mem_flatten.mpr ⟨family, familyMember, member⟩
   have leftStatic : PreparedArgumentCandidateLists formals []
-      leftCandidates (leftCandidates.map toLeaTTaAtoms) := by
+      leftCandidates (leftCandidates.map encodeModelAtoms) := by
     rcases leftPrepared with ⟨_, _, _, _, _, static⟩
     exact static
   have rightStatic : PreparedArgumentCandidateLists formals []
-      rightCandidates (rightCandidates.map toLeaTTaAtoms) := by
+      rightCandidates (rightCandidates.map encodeModelAtoms) := by
     rcases rightPrepared with ⟨_, _, _, _, _, static⟩
     exact static
   have leftPairwise : (candidate :: leftChoices).Pairwise
@@ -1419,7 +1395,7 @@ theorem PreparedArgumentPackageCandidates.staticPrepared
     (prepared : PreparedArgumentPackageCandidates oracle space forbidden
       formals arguments candidateLists) :
     PreparedArgumentCandidateLists formals [] candidateLists
-      (candidateLists.map toLeaTTaAtoms) := by
+      (candidateLists.map encodeModelAtoms) := by
   obtain ⟨_, _, _, _, _, staticPrepared⟩ := prepared
   exact staticPrepared
 
@@ -1521,44 +1497,44 @@ theorem RuntimeArgumentCandidatesAt.decode_generated
     {remaining : List Atom} {runtimeCandidates : List Metta.Atom}
     {prepared : Atom}
     (preparationEquation :
-      Metta.Minimal.typePrep world (toLeaTTaAtom argument) =
-        toLeaTTaAtom prepared)
+      Metta.Minimal.typePrep world (encodeModelAtom argument) =
+        encodeModelAtom prepared)
     (candidatesAt : RuntimeArgumentCandidatesAt env world runtimeFormals
       boundaryScope position runtimeBindings argument remaining
         runtimeCandidates) :
     ∃ rawCandidates runtimeAvoid decodedRuntimeCandidates,
-      rawCandidates = fromLeaTTaAtoms
-        (Metta.Minimal.getTypes env (toLeaTTaAtom prepared)) ∧
+      rawCandidates = decodeModelAtoms
+        (Metta.Minimal.getTypes env (encodeModelAtom prepared)) ∧
       runtimeAvoid = boundaryScope ++ Metta.Minimal.typeInferenceAvoid env
-        (.expr (toLeaTTaAtom argument :: toLeaTTaAtoms remaining))
+        (.expr (encodeModelAtom argument :: encodeModelAtoms remaining))
         (runtimeFormals ++
-          Metta.Minimal.getTypes env (toLeaTTaAtom prepared)) ++
+          Metta.Minimal.getTypes env (encodeModelAtom prepared)) ++
           runtimeBindings.vars ∧
       decodedRuntimeCandidates = freshenCandidateFamily runtimeAvoid
         position rawCandidates ∧
-      toLeaTTaAtoms decodedRuntimeCandidates = runtimeCandidates ∧
+      encodeModelAtoms decodedRuntimeCandidates = runtimeCandidates ∧
       CandidateFamilyGeneratedAt position decodedRuntimeCandidates := by
   unfold RuntimeArgumentCandidatesAt at candidatesAt
   dsimp only at candidatesAt
   rw [preparationEquation] at candidatesAt
-  let rawCandidates := fromLeaTTaAtoms
-    (Metta.Minimal.getTypes env (toLeaTTaAtom prepared))
+  let rawCandidates := decodeModelAtoms
+    (Metta.Minimal.getTypes env (encodeModelAtom prepared))
   let runtimeAvoid := boundaryScope ++ Metta.Minimal.typeInferenceAvoid env
-    (.expr (toLeaTTaAtom argument :: toLeaTTaAtoms remaining))
+    (.expr (encodeModelAtom argument :: encodeModelAtoms remaining))
     (runtimeFormals ++ Metta.Minimal.getTypes env
-      (toLeaTTaAtom prepared)) ++ runtimeBindings.vars
+      (encodeModelAtom prepared)) ++ runtimeBindings.vars
   let decodedRuntimeCandidates := freshenCandidateFamily runtimeAvoid
     position rawCandidates
   refine ⟨rawCandidates, runtimeAvoid, decodedRuntimeCandidates,
     rfl, rfl, rfl, ?_, ?_⟩
   · calc
-      toLeaTTaAtoms decodedRuntimeCandidates =
-          (toLeaTTaAtoms rawCandidates).map
+      encodeModelAtoms decodedRuntimeCandidates =
+          (encodeModelAtoms rawCandidates).map
             (Metta.Minimal.freshenTypeCandidate runtimeAvoid position) :=
-        toLeaTTaAtoms_freshenCandidateFamily runtimeAvoid position
+        encodeModelAtoms_freshenCandidateFamily runtimeAvoid position
           rawCandidates
       _ = (Metta.Minimal.getTypes env
-            (toLeaTTaAtom prepared)).map
+            (encodeModelAtom prepared)).map
               (Metta.Minimal.freshenTypeCandidate runtimeAvoid position) := by
         rw [runtimeOperatorTypes_roundtrip index prepared]
       _ = runtimeCandidates := candidatesAt
@@ -1642,9 +1618,9 @@ theorem realizedPreparedArgumentCandidateCoverage
       (Nat.ne_of_gt positionBound) signatureGenerated
         (generated candidate candidateMember)
     apply disjoint name
-    · rw [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+    · rw [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
       exact signatureOccurrence
-    · rw [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+    · rw [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
       exact candidateVariable
   have staticAvoidsSignature : AtomsAvoid specCandidates
       (TypeSubst.typeVars terminalSignature) :=
@@ -1704,12 +1680,12 @@ theorem realizedPreparedArgumentCandidateCoverage
     intro name occurrence formalOccurrence
     apply runtimeAvoidsAll name occurrence
     have formalRuntimeOccurrence :
-        name ∈ (toLeaTTaAtom formal).vars := by
-      rw [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+        name ∈ (encodeModelAtom formal).vars := by
+      rw [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
       exact formalOccurrence
     have runtimeFormalOccurrence :
         name ∈ runtimeFormals.flatMap Metta.Atom.vars :=
-      List.mem_flatMap.mpr ⟨toLeaTTaAtom formal, formalRuntimeMember,
+      List.mem_flatMap.mpr ⟨encodeModelAtom formal, formalRuntimeMember,
         formalRuntimeOccurrence⟩
     exact runtimeCoveredInAvoid name
       (Or.inr (Or.inl runtimeFormalOccurrence))
@@ -1769,7 +1745,7 @@ theorem PreparedArgumentPackageCandidates.staticPreparedFrom
       name ∈ specBindingVars (⟨initial, []⟩ : Bindings) →
         name ∈ forbidden) :
     PreparedArgumentCandidateLists formals initial candidateLists
-      (candidateLists.map toLeaTTaAtoms) := by
+      (candidateLists.map encodeModelAtoms) := by
   have base := prepared.staticPrepared
   refine
     { link := base.link
@@ -1808,7 +1784,7 @@ theorem preparedArgumentBranches_runtimeConformance
       formals arguments candidateLists)
     (coverage : TwoHistoryNodeLocalArgumentCandidateCoverage
       (fun _ => PreparedArgumentCandidateFamilyRel oracle space forbidden)
-      invariant env world (toLeaTTaAtoms formals) boundaryScope theoryScope
+      invariant env world (encodeModelAtoms formals) boundaryScope theoryScope
         publicScope)
     (initialState : TwoHistoryScopedTypePresentationSimulationState theoryScope
       publicScope 0 [] [] specIncoming branchIncoming runtimeIncoming)
@@ -1825,10 +1801,10 @@ theorem preparedArgumentBranches_runtimeConformance
           specOutcome ∧
         ScopedArgumentBranchOutcomeRuntimeRel theoryScope specOutcome
           (Metta.Minimal.typeCheckArgsBranchesScoped env world
-            (toLeaTTaAtoms formals) boundaryScope 0 runtimeIncoming
-              (toLeaTTaAtoms arguments)) := by
+            (encodeModelAtoms formals) boundaryScope 0 runtimeIncoming
+              (encodeModelAtoms arguments)) := by
   have runtimeScan := typeCheckArgsBranchesScoped_runtimeBranchLocal env world
-    (toLeaTTaAtoms formals) boundaryScope arguments formals 0
+    (encodeModelAtoms formals) boundaryScope arguments formals 0
       runtimeIncoming (by simp)
   exact runtimeBranchLocalArgumentScan_twoHistory coverage
     formalsObserved formalsPublic initialState initialInvariant (by simp)
@@ -1852,7 +1828,7 @@ theorem runtimePreparedArgumentBranches_runtimeConformance
       env world forbidden formals arguments candidateLists)
     (coverage : TwoHistoryNodeLocalArgumentCandidateCoverage
       (RealizedPreparedArgumentCandidateFamilyRel oracle space forbidden)
-      invariant env world (toLeaTTaAtoms formals) boundaryScope theoryScope
+      invariant env world (encodeModelAtoms formals) boundaryScope theoryScope
         publicScope)
     (initialState : TwoHistoryScopedTypePresentationSimulationState theoryScope
       publicScope 0 [] [] specIncoming branchIncoming runtimeIncoming)
@@ -1869,10 +1845,10 @@ theorem runtimePreparedArgumentBranches_runtimeConformance
           specOutcome ∧
         ScopedArgumentBranchOutcomeRuntimeRel theoryScope specOutcome
           (Metta.Minimal.typeCheckArgsBranchesScoped env world
-            (toLeaTTaAtoms formals) boundaryScope 0 runtimeIncoming
-              (toLeaTTaAtoms arguments)) := by
+            (encodeModelAtoms formals) boundaryScope 0 runtimeIncoming
+              (encodeModelAtoms arguments)) := by
   have runtimeScan := typeCheckArgsBranchesScoped_runtimeBranchLocal env world
-    (toLeaTTaAtoms formals) boundaryScope arguments formals 0
+    (encodeModelAtoms formals) boundaryScope arguments formals 0
       runtimeIncoming (by simp)
   exact runtimeBranchLocalArgumentScan_twoHistory coverage
     formalsObserved formalsPublic initialState initialInvariant (by simp)
@@ -1910,12 +1886,12 @@ theorem runtimePreparedArgumentBranches_exactConformance
       name ∈ forbidden ∨ name ∈ TypeSubst.typeVars terminalSignature)
     (publicRuntimeCovered : ∀ name, name ∈ publicScope →
       (name ∈ boundaryScope ∨
-        name ∈ (toLeaTTaAtoms formals).flatMap Metta.Atom.vars ∨
+        name ∈ (encodeModelAtoms formals).flatMap Metta.Atom.vars ∨
         name ∈ env.atoms.flatMap Metta.Atom.vars) ∨
           name ∈ TypeSubst.typeVars terminalSignature)
     (theoryRuntimeCovered : ∀ name, name ∈ theoryScope →
       (name ∈ boundaryScope ∨
-        name ∈ (toLeaTTaAtoms formals).flatMap Metta.Atom.vars ∨
+        name ∈ (encodeModelAtoms formals).flatMap Metta.Atom.vars ∨
         name ∈ env.atoms.flatMap Metta.Atom.vars) ∨
           name ∈ TypeSubst.typeVars terminalSignature)
     (formalsObserved : ∀ name,
@@ -1927,11 +1903,11 @@ theorem runtimePreparedArgumentBranches_exactConformance
           specOutcome ∧
         ScopedArgumentBranchOutcomeRuntimeRel theoryScope specOutcome
           (Metta.Minimal.typeCheckArgsBranchesScoped env world
-            (toLeaTTaAtoms formals) boundaryScope 0 runtimeIncoming
-              (toLeaTTaAtoms arguments)) := by
+            (encodeModelAtoms formals) boundaryScope 0 runtimeIncoming
+              (encodeModelAtoms arguments)) := by
   have signatureGeneratedRuntime : CandidateGeneratedAt
-      (toLeaTTaAtoms formals).length terminalSignature := by
-    simpa [toLeaTTaAtoms_eq_map] using signatureGenerated
+      (encodeModelAtoms formals).length terminalSignature := by
+    simpa [encodeModelAtoms_eq_map] using signatureGenerated
   exact runtimePreparedArgumentBranches_runtimeConformance runtimePrepared
     (realizedPreparedArgumentCandidateCoverage functional index realization
       signatureGeneratedRuntime publicStaticProtected theoryStaticProtected
@@ -2041,7 +2017,8 @@ theorem localizedStates_compose_scopedRuntime
       cases runtimeStates with
       | cons runtimeHead runtimeTail =>
           exact .cons
-            (head.composeScopedRuntime scopeFixed runtimeHead)
+            (LeaTTaTypePresentationFoldConformance.TypePresentationPermutationState.composeScopedRuntime
+              head scopeFixed runtimeHead)
             (inductionHypothesis runtimeTail)
 
 /-- The complete localized argument outcome composes with the raw-signature
@@ -2082,8 +2059,12 @@ theorem localizedReturnOutcome_compose_scopedRuntime
     ScopedExpectedReturnBranchOutcomeRuntimeRel scope localized runtime := by
   constructor
   · exact optionRel_fork_comp
+      (R := TypePresentationPermutationState permutation)
+      (S := ScopedTypePresentationSimulationState scope)
+      (T := ScopedTypePresentationSimulationState scope)
       (fun localizedState rawRuntime =>
-        localizedState.composeScopedRuntime scopeFixed rawRuntime)
+        LeaTTaTypePresentationFoldConformance.TypePresentationPermutationState.composeScopedRuntime
+          localizedState scopeFixed rawRuntime)
       localization.selected runtimeRel.selected
   · exact forall₂_fork_comp
       (R := ExpectedReturnDiagnosticAlphaRel)
@@ -2135,7 +2116,8 @@ theorem CoherentLocalizedExpectedReturnRuntimeRel.toScoped
       (fun state => by
         rcases state with
           ⟨scopeInTheory, raw, localization, rawRuntime⟩
-        exact localization.composeScopedRuntime scopeFixed
+        exact LeaTTaTypePresentationFoldConformance.TypePresentationPermutationState.composeScopedRuntime
+          localization scopeFixed
           (rawRuntime.mono scopeInTheory))
       relation.selected
   · exact relation.errors
@@ -2210,12 +2192,12 @@ theorem localizedPreparedApplicationBranches_exactConformance
       name ∈ forbidden ∨ name ∈ TypeSubst.typeVars terminalSignature)
     (publicRuntimeCovered : ∀ name, name ∈ publicScope →
       (name ∈ boundaryScope ∨
-        name ∈ (toLeaTTaAtoms rawFormals).flatMap Metta.Atom.vars ∨
+        name ∈ (encodeModelAtoms rawFormals).flatMap Metta.Atom.vars ∨
         name ∈ env.atoms.flatMap Metta.Atom.vars) ∨
           name ∈ TypeSubst.typeVars terminalSignature)
     (theoryRuntimeCovered : ∀ name, name ∈ rawTheoryScope →
       (name ∈ boundaryScope ∨
-        name ∈ (toLeaTTaAtoms rawFormals).flatMap Metta.Atom.vars ∨
+        name ∈ (encodeModelAtoms rawFormals).flatMap Metta.Atom.vars ∨
         name ∈ env.atoms.flatMap Metta.Atom.vars) ∨
           name ∈ TypeSubst.typeVars terminalSignature)
     (formalsObserved : ∀ name,
@@ -2242,18 +2224,18 @@ theorem localizedPreparedApplicationBranches_exactConformance
           localizedArguments ∧
         ScopedArgumentBranchOutcomeRuntimeRel observationScope localizedArguments
           (Metta.Minimal.typeCheckArgsBranchesScoped env world
-            (toLeaTTaAtoms rawFormals) boundaryScope 0 runtimeInitial
-              (toLeaTTaAtoms arguments)) ∧
+            (encodeModelAtoms rawFormals) boundaryScope 0 runtimeInitial
+              (encodeModelAtoms arguments)) ∧
         ExpectedReturnBranchScanRel expected
           (renameTypeVars permutation rawReturn)
           localizedArguments.successes localizedReturn ∧
         CoherentLocalizedExpectedReturnRuntimeRel permutation rawTheoryScope
           observationScope localizedReturn
           (Metta.Minimal.scanExpectedReturnBranches
-            (toLeaTTaAtom expected) (toLeaTTaAtom rawReturn)
+            (encodeModelAtom expected) (encodeModelAtom rawReturn)
             (Metta.Minimal.typeCheckArgsBranchesScoped env world
-              (toLeaTTaAtoms rawFormals) boundaryScope 0 runtimeInitial
-                (toLeaTTaAtoms arguments)).successes) := by
+              (encodeModelAtoms rawFormals) boundaryScope 0 runtimeInitial
+                (encodeModelAtoms arguments)).successes) := by
   obtain ⟨rawArguments, rawArgumentScan, rawArgumentRuntime⟩ :=
     runtimePreparedArgumentBranches_exactConformance functional index
       realization runtimePrepared initialState initialStaticCovered
@@ -2268,16 +2250,16 @@ theorem localizedPreparedApplicationBranches_exactConformance
   have rawArgumentRuntimeObserved : ScopedArgumentBranchOutcomeRuntimeRel
       observationScope rawArguments
       (Metta.Minimal.typeCheckArgsBranchesScoped env world
-        (toLeaTTaAtoms rawFormals) boundaryScope 0 runtimeInitial
-          (toLeaTTaAtoms arguments)) :=
+        (encodeModelAtoms rawFormals) boundaryScope 0 runtimeInitial
+          (encodeModelAtoms arguments)) :=
     { successes := scopedTypePresentationSimulationStates_mono
         rawArgumentRuntime.successes observationInTheory
       errors := rawArgumentRuntime.errors }
   have localizedArgumentRuntime : ScopedArgumentBranchOutcomeRuntimeRel
       observationScope localizedArguments
       (Metta.Minimal.typeCheckArgsBranchesScoped env world
-        (toLeaTTaAtoms rawFormals) boundaryScope 0 runtimeInitial
-          (toLeaTTaAtoms arguments)) :=
+        (encodeModelAtoms rawFormals) boundaryScope 0 runtimeInitial
+          (encodeModelAtoms arguments)) :=
     localizedArgumentOutcome_compose_scopedRuntime scopeFixed
       argumentPermutation rawArgumentRuntimeObserved
   obtain ⟨rawReturnOutcome, rawReturnScan, rawReturnRuntime⟩ :=
@@ -2290,10 +2272,10 @@ theorem localizedPreparedApplicationBranches_exactConformance
   have localizedReturnRuntime : CoherentLocalizedExpectedReturnRuntimeRel
       permutation rawTheoryScope observationScope localizedReturn
       (Metta.Minimal.scanExpectedReturnBranches
-        (toLeaTTaAtom expected) (toLeaTTaAtom rawReturn)
+        (encodeModelAtom expected) (encodeModelAtom rawReturn)
         (Metta.Minimal.typeCheckArgsBranchesScoped env world
-          (toLeaTTaAtoms rawFormals) boundaryScope 0 runtimeInitial
-            (toLeaTTaAtoms arguments)).successes) :=
+          (encodeModelAtoms rawFormals) boundaryScope 0 runtimeInitial
+            (encodeModelAtoms arguments)).successes) :=
     localizedReturnOutcome_compose_coherentRuntime
       observationInTheory returnPermutation rawReturnRuntime
   exact ⟨localizedArguments, localizedReturn, localizedArgumentScan,
@@ -2632,12 +2614,12 @@ structure SelectedTypePolicyRuntimeRel
     (policy : SelectedTypePolicy)
     (runtime : Metta.Minimal.SelectedFunctionType) : Prop where
   arrow : ObservedTypeAlphaRel policy.functionType
-    (fromLeaTTaAtom runtime.functionType)
+    (decodeModelAtom runtime.functionType)
   runtimeShape :
-    fromLeaTTaAtom runtime.functionType =
+    decodeModelAtom runtime.functionType =
       .expression (.symbol "->" ::
-        (fromLeaTTaAtoms runtime.argumentTypes ++
-          [fromLeaTTaAtom runtime.returnType]))
+        (decodeModelAtoms runtime.argumentTypes ++
+          [decodeModelAtom runtime.returnType]))
 
 /-- Literal agreement of the selected specification policy with the decoded
 runtime record.  This stronger evaluator-facing boundary is available only
@@ -2647,13 +2629,13 @@ structure SelectedTypePolicyRuntimeExactRel
     (policy : SelectedTypePolicy)
     (runtime : Metta.Minimal.SelectedFunctionType) : Prop where
   functionType :
-    policy.functionType = fromLeaTTaAtom runtime.functionType
+    policy.functionType = decodeModelAtom runtime.functionType
   runtimeFunctionType :
-    toLeaTTaAtom policy.functionType = runtime.functionType
+    encodeModelAtom policy.functionType = runtime.functionType
   argumentTypes :
-    policy.argumentTypes = fromLeaTTaAtoms runtime.argumentTypes
+    policy.argumentTypes = decodeModelAtoms runtime.argumentTypes
   returnType :
-    policy.returnType = fromLeaTTaAtom runtime.returnType
+    policy.returnType = decodeModelAtom runtime.returnType
 
 /-- A selected arrow and its output presentation share one producer-owned
 localization witness.  This is stronger than pairing an arrow-level alpha
@@ -2666,20 +2648,20 @@ def SelectedTypePolicyPresentationRuntimeRel
   ∃ permutation : Equiv.Perm String, ∃ theoryScope : List String,
     ∃ rawPresentation : TypeSubst,
     FunctionTypeRel
-        (fromLeaTTaAtom runtime.functionType)
-        (fromLeaTTaAtoms runtime.argumentTypes)
-        (fromLeaTTaAtom runtime.returnType) ∧
+        (decodeModelAtom runtime.functionType)
+        (decodeModelAtoms runtime.argumentTypes)
+        (decodeModelAtom runtime.returnType) ∧
       policy.functionType =
-        renameTypeVars permutation (fromLeaTTaAtom runtime.functionType) ∧
+        renameTypeVars permutation (decodeModelAtom runtime.functionType) ∧
       policy.argumentTypes =
-        (fromLeaTTaAtoms runtime.argumentTypes).map
+        (decodeModelAtoms runtime.argumentTypes).map
           (renameTypeVars permutation) ∧
       policy.returnType =
-        renameTypeVars permutation (fromLeaTTaAtom runtime.returnType) ∧
+        renameTypeVars permutation (decodeModelAtom runtime.returnType) ∧
       (∀ name, name ∈ scope → permutation name = name) ∧
       (∀ name, name ∈ scope → name ∈ theoryScope) ∧
       (∀ name,
-        name ∈ TypeSubst.typeVars (fromLeaTTaAtom runtime.functionType) →
+        name ∈ TypeSubst.typeVars (decodeModelAtom runtime.functionType) →
           name ∈ theoryScope) ∧
       TypePresentationPermutationState permutation rawPresentation
         presentation ∧
@@ -2702,7 +2684,7 @@ theorem SelectedTypePolicyPresentationRuntimeRel.policyRuntime
       _runtimePresentation⟩
   constructor
   · rw [functionType]
-    exact ⟨fromLeaTTaAtom runtime.functionType,
+    exact ⟨decodeModelAtom runtime.functionType,
       ⟨permutation, permutation.injective, rfl⟩,
       TypeVariableRenamingOf.refl _⟩
   · exact runtimeFunction
@@ -2722,7 +2704,8 @@ theorem SelectedTypePolicyPresentationRuntimeRel.scopedPresentation
       _functionType, _argumentTypes, _returnType, scopeFixed,
       scopeInTheory, _functionTypeObserved, presentationState,
       runtimePresentation⟩
-  exact presentationState.composeScopedRuntime scopeFixed
+  exact LeaTTaTypePresentationFoldConformance.TypePresentationPermutationState.composeScopedRuntime
+    presentationState scopeFixed
     (runtimePresentation.mono scopeInTheory)
 
 /-- The selected producer retains scoped equivalence at every variable of
@@ -2738,7 +2721,7 @@ theorem SelectedTypePolicyPresentationRuntimeRel.functionTypePresentation
     ∃ theoryScope rawPresentation permutation,
       (∀ name, name ∈ scope → name ∈ theoryScope) ∧
       (∀ name,
-        name ∈ TypeSubst.typeVars (fromLeaTTaAtom runtime.functionType) →
+        name ∈ TypeSubst.typeVars (decodeModelAtom runtime.functionType) →
           name ∈ theoryScope) ∧
       TypePresentationPermutationState permutation rawPresentation
         presentation ∧
@@ -2780,9 +2763,9 @@ theorem SelectedTypePolicyRuntimeRel.runtimeFunctionType
     {policy : SelectedTypePolicy}
     {runtime : Metta.Minimal.SelectedFunctionType}
     (relation : SelectedTypePolicyRuntimeRel policy runtime) :
-    FunctionTypeRel (fromLeaTTaAtom runtime.functionType)
-      (fromLeaTTaAtoms runtime.argumentTypes)
-      (fromLeaTTaAtom runtime.returnType) := by
+    FunctionTypeRel (decodeModelAtom runtime.functionType)
+      (decodeModelAtoms runtime.argumentTypes)
+      (decodeModelAtom runtime.returnType) := by
   simpa [FunctionTypeRel] using relation.runtimeShape
 
 /-- One arrow-level alpha witness determines both selected projections.
@@ -2794,11 +2777,11 @@ theorem SelectedTypePolicyRuntimeRel.exists_coherent_permutation
     {runtime : Metta.Minimal.SelectedFunctionType}
     (relation : SelectedTypePolicyRuntimeRel policy runtime) :
     ∃ permutation : Equiv.Perm String,
-      fromLeaTTaAtom runtime.functionType =
+      decodeModelAtom runtime.functionType =
           renameTypeVars permutation policy.functionType ∧
-        fromLeaTTaAtoms runtime.argumentTypes =
+        decodeModelAtoms runtime.argumentTypes =
           policy.argumentTypes.map (renameTypeVars permutation) ∧
-        fromLeaTTaAtom runtime.returnType =
+        decodeModelAtom runtime.returnType =
           renameTypeVars permutation policy.returnType := by
   obtain ⟨permutation, functionEquation⟩ :=
     Spec.Type.Presentation.ScopeObservation.ObservedTypeAlphaRel.exists_permutation
@@ -2806,15 +2789,15 @@ theorem SelectedTypePolicyRuntimeRel.exists_coherent_permutation
   have renamedFunction :
       FunctionTypeRel
         (renameTypeVars permutation policy.functionType)
-        (fromLeaTTaAtoms runtime.argumentTypes)
-        (fromLeaTTaAtom runtime.returnType) := by
+        (decodeModelAtoms runtime.argumentTypes)
+        (decodeModelAtom runtime.returnType) := by
     rw [← functionEquation]
     exact relation.runtimeFunctionType
   obtain ⟨sourceArguments, sourceReturn, sourceFunction,
       argumentsEquation, returnEquation⟩ :=
     (functionTypeRel_renameTypeVars_iff permutation
-      policy.functionType (fromLeaTTaAtoms runtime.argumentTypes)
-        (fromLeaTTaAtom runtime.returnType)).mp renamedFunction
+      policy.functionType (decodeModelAtoms runtime.argumentTypes)
+        (decodeModelAtom runtime.returnType)).mp renamedFunction
   have partsEquation :
       policy.argumentTypes ++ [policy.returnType] =
         sourceArguments ++ [sourceReturn] := by
@@ -2849,16 +2832,16 @@ theorem selectedTypePolicyRuntimeRel_of_permutation
           (argumentTypes.map (renameTypeVars permutation))
           (renameTypeVars permutation returnType)).2
             ⟨argumentTypes, returnType, isFunction, rfl, rfl⟩⟩
-      ⟨toLeaTTaAtom functionType, toLeaTTaAtoms argumentTypes,
-        toLeaTTaAtom returnType, runtimeBindings⟩ := by
+      ⟨encodeModelAtom functionType, encodeModelAtoms argumentTypes,
+        encodeModelAtom returnType, runtimeBindings⟩ := by
   constructor
   · exact ⟨functionType,
       ⟨permutation, permutation.injective, rfl⟩,
       by simpa using (TypeVariableRenamingOf.refl functionType)⟩
   · dsimp
-    rw [fromLeaTTaAtom_toLeaTTaAtom,
-      fromLeaTTaAtoms_toLeaTTaAtoms,
-      fromLeaTTaAtom_toLeaTTaAtom]
+    rw [decodeModelAtom_encodeModelAtom,
+      decodeModelAtoms_encodeModelAtoms,
+      decodeModelAtom_encodeModelAtom]
     exact isFunction
 
 /-- A normal finite presentation denotes exactly one specification binding
@@ -3885,26 +3868,26 @@ theorem scanFunctionTypeCandidatesForExpectedFrom_singleton_nonFunction
       FunctionTypeRel candidate argumentTypes returnType) :
     Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom env world
       runtimeExpression runtimeArguments runtimeExpected allowExtraArguments
-        runtimeInitial [toLeaTTaAtom candidate] = .exhausted [] true := by
+        runtimeInitial [encodeModelAtom candidate] = .exhausted [] true := by
   cases candidate with
     | symbol name =>
         simp [Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom,
           Metta.Minimal.ExpectedFunctionTypeScanOutcome.markTupleEligible,
-          toLeaTTaAtom]
+          encodeModelAtom]
     | var name =>
         simp [Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom,
           Metta.Minimal.ExpectedFunctionTypeScanOutcome.markTupleEligible,
-          toLeaTTaAtom]
+          encodeModelAtom]
     | grounded value =>
         simp [Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom,
           Metta.Minimal.ExpectedFunctionTypeScanOutcome.markTupleEligible,
-          toLeaTTaAtom]
+          encodeModelAtom]
     | expression atoms =>
         cases atoms with
         | nil =>
             simp [Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom,
               Metta.Minimal.ExpectedFunctionTypeScanOutcome.markTupleEligible,
-              toLeaTTaAtom, toLeaTTaAtoms]
+              encodeModelAtom, encodeModelAtoms]
         | cons head signature =>
             cases head with
             | symbol name =>
@@ -3914,25 +3897,25 @@ theorem scanFunctionTypeCandidatesForExpectedFrom_singleton_nonFunction
                     ⟨argumentTypes, returnType, rfl⟩
                   · simp [Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom,
                       Metta.Minimal.ExpectedFunctionTypeScanOutcome.markTupleEligible,
-                      toLeaTTaAtom, toLeaTTaAtoms]
+                      encodeModelAtom, encodeModelAtoms]
                   · exfalso
                     apply notFunction
                     exact ⟨argumentTypes, returnType, by simp [FunctionTypeRel]⟩
                 · simp [Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom,
                     Metta.Minimal.ExpectedFunctionTypeScanOutcome.markTupleEligible,
-                    toLeaTTaAtom, toLeaTTaAtoms, arrowHead]
+                    encodeModelAtom, encodeModelAtoms, arrowHead]
             | var name =>
                 simp [Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom,
                   Metta.Minimal.ExpectedFunctionTypeScanOutcome.markTupleEligible,
-                  toLeaTTaAtom, toLeaTTaAtoms]
+                  encodeModelAtom, encodeModelAtoms]
             | grounded value =>
                 simp [Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom,
                   Metta.Minimal.ExpectedFunctionTypeScanOutcome.markTupleEligible,
-                  toLeaTTaAtom, toLeaTTaAtoms]
+                  encodeModelAtom, encodeModelAtoms]
             | expression nested =>
                 simp [Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom,
                   Metta.Minimal.ExpectedFunctionTypeScanOutcome.markTupleEligible,
-                  toLeaTTaAtom, toLeaTTaAtoms]
+                  encodeModelAtom, encodeModelAtoms]
 
 /-- A private alpha presentation cannot create or destroy arrow structure. -/
 theorem TypeCandidateAlphaVariantRel.notFunction
@@ -3967,7 +3950,7 @@ theorem PreparedCandidateSingletonRuntimeRel.ofTranslatedNonFunction
     PreparedCandidateSingletonRuntimeRel oracle space observationScope
       expression expectedType incoming initialPresentation env world
       runtimeInitial runtimeExpression runtimeArguments runtimeExpected
-      allowExtraArguments candidate (toLeaTTaAtom candidate) := by
+      allowExtraArguments candidate (encodeModelAtom candidate) := by
   exact PreparedCandidateSingletonRuntimeRel.ofNonFunction
     (scanFunctionTypeCandidatesForExpectedFrom_singleton_nonFunction notFunction)
     notFunction
@@ -3995,7 +3978,7 @@ theorem PreparedCandidateSingletonRuntimeRel.ofAlphaNonFunction
     PreparedCandidateSingletonRuntimeRel oracle space observationScope
       expression expectedType incoming initialPresentation env world
       runtimeInitial runtimeExpression runtimeArguments runtimeExpected
-      allowExtraArguments specCandidate (toLeaTTaAtom runtimeCandidate) := by
+      allowExtraArguments specCandidate (encodeModelAtom runtimeCandidate) := by
   have runtimeNotFunction :=
     TypeCandidateAlphaVariantRel.notFunction runtimeVariant notFunction
   exact PreparedCandidateSingletonRuntimeRel.ofNonFunction
@@ -4046,21 +4029,21 @@ theorem scanFunctionTypeCandidatesForExpectedFrom_singleton_wrongArity
     (functionType : FunctionTypeRel candidate argumentTypes returnType)
     (arity : arguments.length ≠ argumentTypes.length) :
     Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom env world
-      (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-      (toLeaTTaAtom expectedType) false runtimeInitial
-        [toLeaTTaAtom candidate] =
+      (encodeModelAtom expression) (encodeModelAtoms arguments)
+      (encodeModelAtom expectedType) false runtimeInitial
+        [encodeModelAtom candidate] =
         .exhausted [.ordinary .incorrectArity] false := by
   have candidateEquation :
-      toLeaTTaAtom candidate =
+      encodeModelAtom candidate =
         .expr (.sym "->" ::
-          (toLeaTTaAtoms argumentTypes ++ [toLeaTTaAtom returnType])) := by
+          (encodeModelAtoms argumentTypes ++ [encodeModelAtom returnType])) := by
     rw [FunctionTypeRel] at functionType
     rw [functionType]
-    simp [toLeaTTaAtom, toLeaTTaAtoms, List.map_append]
+    simp [encodeModelAtom, encodeModelAtoms, List.map_append]
   simp [Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom,
     candidateEquation, arity,
     Metta.Minimal.ExpectedFunctionTypeScanOutcome.prependError,
-    toLeaTTaAtoms_eq_map]
+    encodeModelAtoms_eq_map]
 
 /-- Under strict arity, structural translation exposes the same singleton
 incorrect-arity block as the published classifier. -/
@@ -4078,8 +4061,8 @@ theorem PreparedCandidateSingletonRuntimeRel.ofTranslatedWrongArity
     (arity : arguments.length ≠ argumentTypes.length) :
     PreparedCandidateSingletonRuntimeRel oracle space observationScope
       expression expectedType incoming initialPresentation env world
-      runtimeInitial (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-      (toLeaTTaAtom expectedType) false candidate (toLeaTTaAtom candidate) := by
+      runtimeInitial (encodeModelAtom expression) (encodeModelAtoms arguments)
+      (encodeModelAtom expectedType) false candidate (encodeModelAtom candidate) := by
   apply PreparedCandidateSingletonRuntimeRel.ofWrongArity
     (operator := operator) (arguments := arguments)
     (argumentTypes := argumentTypes) (returnType := returnType)
@@ -4109,9 +4092,9 @@ theorem PreparedCandidateSingletonRuntimeRel.ofAlphaWrongArity
       runtimeCandidate) :
     PreparedCandidateSingletonRuntimeRel oracle space observationScope
       expression expectedType incoming initialPresentation env world
-      runtimeInitial (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-      (toLeaTTaAtom expectedType) false specCandidate
-      (toLeaTTaAtom runtimeCandidate) := by
+      runtimeInitial (encodeModelAtom expression) (encodeModelAtoms arguments)
+      (encodeModelAtom expectedType) false specCandidate
+      (encodeModelAtom runtimeCandidate) := by
   rcases specVariant with
     ⟨specRename, _specInjective, rfl, _specFresh⟩
   rcases runtimeVariant with
@@ -4248,16 +4231,16 @@ theorem PreparedCandidateSingletonRuntimeRel.ofStrictFunction
         name ∈ TypeSubst.typeVars incomingFunction)
     (publicRuntimeCovered : ∀ name, name ∈ publicScope →
       (name ∈ Metta.Minimal.applicationTypeInferenceScopeFrom
-          (toLeaTTaAtom expectedType) (toLeaTTaAtoms arguments)
+          (encodeModelAtom expectedType) (encodeModelAtoms arguments)
             runtimeInitial ∨
-        name ∈ (toLeaTTaAtoms argumentTypes).flatMap Metta.Atom.vars ∨
+        name ∈ (encodeModelAtoms argumentTypes).flatMap Metta.Atom.vars ∨
         name ∈ env.atoms.flatMap Metta.Atom.vars) ∨
           name ∈ TypeSubst.typeVars incomingFunction)
     (theoryRuntimeCovered : ∀ name, name ∈ rawTheoryScope →
       (name ∈ Metta.Minimal.applicationTypeInferenceScopeFrom
-          (toLeaTTaAtom expectedType) (toLeaTTaAtoms arguments)
+          (encodeModelAtom expectedType) (encodeModelAtoms arguments)
             runtimeInitial ∨
-        name ∈ (toLeaTTaAtoms argumentTypes).flatMap Metta.Atom.vars ∨
+        name ∈ (encodeModelAtoms argumentTypes).flatMap Metta.Atom.vars ∨
         name ∈ env.atoms.flatMap Metta.Atom.vars) ∨
           name ∈ TypeSubst.typeVars incomingFunction)
     (formalsObserved : ∀ name,
@@ -4288,10 +4271,10 @@ theorem PreparedCandidateSingletonRuntimeRel.ofStrictFunction
     (returnDisjoint : VarsDisjoint expectedType returnType) :
     PreparedCandidateSingletonRuntimeRel oracle space observationScope
       expression expectedType incoming initialPresentation env world
-      runtimeInitial (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-      (toLeaTTaAtom expectedType) false
+      runtimeInitial (encodeModelAtom expression) (encodeModelAtoms arguments)
+      (encodeModelAtom expectedType) false
       (renameTypeVars permutation incomingFunction)
-      (toLeaTTaAtom incomingFunction) := by
+      (encodeModelAtom incomingFunction) := by
   have initialStaticCovered : ∀ name,
       name ∈ specBindingVars (⟨initialPresentation, []⟩ : Bindings) →
         name ∈ typeServicePrivateAvoid space expression expectedType incoming := by
@@ -4332,22 +4315,22 @@ theorem PreparedCandidateSingletonRuntimeRel.ofStrictFunction
         (argumentTypes.map (renameTypeVars permutation)).length := by
     simpa using arity
   have runtimeFunctionEquation :
-      toLeaTTaAtom incomingFunction =
+      encodeModelAtom incomingFunction =
         .expr (.sym "->" ::
-          (toLeaTTaAtoms argumentTypes ++ [toLeaTTaAtom returnType])) := by
+          (encodeModelAtoms argumentTypes ++ [encodeModelAtom returnType])) := by
     rw [FunctionTypeRel] at functionType
     rw [functionType]
-    simp [toLeaTTaAtoms, toLeaTTaAtom, List.map_append]
+    simp [encodeModelAtoms, encodeModelAtom, List.map_append]
   let runtimeArgumentOutcome :=
     Metta.Minimal.typeCheckArgsBranchesScoped env world
-      (toLeaTTaAtoms argumentTypes)
+      (encodeModelAtoms argumentTypes)
       (Metta.Minimal.applicationTypeInferenceScopeFrom
-        (toLeaTTaAtom expectedType) (toLeaTTaAtoms arguments)
+        (encodeModelAtom expectedType) (encodeModelAtoms arguments)
           runtimeInitial)
-      0 runtimeInitial (toLeaTTaAtoms arguments)
+      0 runtimeInitial (encodeModelAtoms arguments)
   let runtimeReturnOutcome :=
     Metta.Minimal.scanExpectedReturnBranches
-      (toLeaTTaAtom expectedType) (toLeaTTaAtom returnType)
+      (encodeModelAtom expectedType) (encodeModelAtom returnType)
       runtimeArgumentOutcome.successes
   change ScopedArgumentBranchOutcomeRuntimeRel observationScope
       argumentOutcome runtimeArgumentOutcome at argumentRuntime
@@ -4363,22 +4346,22 @@ theorem PreparedCandidateSingletonRuntimeRel.ofStrictFunction
       | none =>
           have runtimeSelectedDirect :
               (Metta.Minimal.scanExpectedReturnBranches
-                (toLeaTTaAtom expectedType) (toLeaTTaAtom returnType)
+                (encodeModelAtom expectedType) (encodeModelAtom returnType)
                 (Metta.Minimal.typeCheckArgsBranchesScoped env world
-                  (toLeaTTaAtoms argumentTypes)
+                  (encodeModelAtoms argumentTypes)
                   (Metta.Minimal.applicationTypeInferenceScopeFrom
-                    (toLeaTTaAtom expectedType) (toLeaTTaAtoms arguments)
+                    (encodeModelAtom expectedType) (encodeModelAtoms arguments)
                       runtimeInitial)
                   0 runtimeInitial
-                  (toLeaTTaAtoms arguments)).successes).selected = none := by
+                  (encodeModelAtoms arguments)).successes).selected = none := by
             simpa [runtimeReturnOutcome, runtimeArgumentOutcome] using
               runtimeSelected
-          simp only [toLeaTTaAtoms_eq_map] at runtimeSelectedDirect
+          simp only [encodeModelAtoms_eq_map] at runtimeSelectedDirect
           have scanEquation :
               Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom env world
-                (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-                (toLeaTTaAtom expectedType) false
-                runtimeInitial [toLeaTTaAtom incomingFunction] =
+                (encodeModelAtom expression) (encodeModelAtoms arguments)
+                (encodeModelAtom expectedType) false
+                runtimeInitial [encodeModelAtom incomingFunction] =
               .exhausted
                 ((runtimeArgumentOutcome.errors.map fun diagnostic =>
                     .ordinary diagnostic.toFunctionTypeError) ++
@@ -4389,7 +4372,7 @@ theorem PreparedCandidateSingletonRuntimeRel.ofStrictFunction
             rw [runtimeSelectedDirect]
             simp [Metta.Minimal.ExpectedFunctionTypeScanOutcome.prependErrors,
               runtimeReturnOutcome, runtimeArgumentOutcome,
-              toLeaTTaAtoms_eq_map]
+              encodeModelAtoms_eq_map]
           exact PreparedCandidateSingletonRuntimeRel.ofInapplicable
             functional initial index scanEquation expressionEquation
             localizedFunction localizedArity localizedPrepared separated
@@ -4406,31 +4389,31 @@ theorem PreparedCandidateSingletonRuntimeRel.ofStrictFunction
       | some runtimeBindings =>
           have runtimeSelectedDirect :
               (Metta.Minimal.scanExpectedReturnBranches
-                (toLeaTTaAtom expectedType) (toLeaTTaAtom returnType)
+                (encodeModelAtom expectedType) (encodeModelAtom returnType)
                 (Metta.Minimal.typeCheckArgsBranchesScoped env world
-                  (toLeaTTaAtoms argumentTypes)
+                  (encodeModelAtoms argumentTypes)
                   (Metta.Minimal.applicationTypeInferenceScopeFrom
-                    (toLeaTTaAtom expectedType) (toLeaTTaAtoms arguments)
+                    (encodeModelAtom expectedType) (encodeModelAtoms arguments)
                       runtimeInitial)
                   0 runtimeInitial
-                  (toLeaTTaAtoms arguments)).successes).selected =
+                  (encodeModelAtoms arguments)).successes).selected =
                 some runtimeBindings := by
             simpa [runtimeReturnOutcome, runtimeArgumentOutcome] using
               runtimeSelected
-          simp only [toLeaTTaAtoms_eq_map] at runtimeSelectedDirect
+          simp only [encodeModelAtoms_eq_map] at runtimeSelectedDirect
           let runtime : Metta.Minimal.SelectedFunctionType :=
-            ⟨toLeaTTaAtom incomingFunction, toLeaTTaAtoms argumentTypes,
-              toLeaTTaAtom returnType, runtimeBindings⟩
+            ⟨encodeModelAtom incomingFunction, encodeModelAtoms argumentTypes,
+              encodeModelAtom returnType, runtimeBindings⟩
           have scanEquation :
               Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom env world
-                (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-                (toLeaTTaAtom expectedType) false
-                runtimeInitial [toLeaTTaAtom incomingFunction] =
+                (encodeModelAtom expression) (encodeModelAtoms arguments)
+                (encodeModelAtom expectedType) false
+                runtimeInitial [encodeModelAtom incomingFunction] =
                   .selected runtime := by
             simp [Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom,
               runtimeFunctionEquation, arity]
             rw [runtimeSelectedDirect]
-            simp [runtime, toLeaTTaAtoms_eq_map, runtimeFunctionEquation]
+            simp [runtime, encodeModelAtoms_eq_map, runtimeFunctionEquation]
           rw [specSelected, runtimeSelected] at selectedRelation
           cases selectedRelation with
           | some selectedCoherent =>
@@ -4448,12 +4431,12 @@ theorem PreparedCandidateSingletonRuntimeRel.ofStrictFunction
                   ?_, ?_, ?_, ?_, scopeFixed, scopeInTheory, ?_,
                   presentationPermutation, ?_⟩
                 · change FunctionTypeRel
-                    (fromLeaTTaAtom (toLeaTTaAtom incomingFunction))
-                    (fromLeaTTaAtoms (toLeaTTaAtoms argumentTypes))
-                    (fromLeaTTaAtom (toLeaTTaAtom returnType))
-                  rw [fromLeaTTaAtom_toLeaTTaAtom,
-                    fromLeaTTaAtoms_toLeaTTaAtoms,
-                    fromLeaTTaAtom_toLeaTTaAtom]
+                    (decodeModelAtom (encodeModelAtom incomingFunction))
+                    (decodeModelAtoms (encodeModelAtoms argumentTypes))
+                    (decodeModelAtom (encodeModelAtom returnType))
+                  rw [decodeModelAtom_encodeModelAtom,
+                    decodeModelAtoms_encodeModelAtoms,
+                    decodeModelAtom_encodeModelAtom]
                   exact functionType
                 · simp [runtime]
                 · simp [runtime]
@@ -4469,7 +4452,7 @@ theorem PreparedCandidateSingletonRuntimeRel.ofStrictFunction
                       TypeSubst.typeVarsList (argumentTypes ++ [returnType]) := by
                     simpa [TypeSubst.typeVars, TypeSubst.typeVarsList] using
                       incomingMember
-                  rw [typeVarsList_append, List.mem_append] at tailMember
+                  rw [TypeSubst.typeVarsList_append, List.mem_append] at tailMember
                   rcases tailMember with argumentMember | returnMember
                   · exact formalsObserved name argumentMember
                   · exact returnObserved name (by
@@ -4529,16 +4512,16 @@ theorem PreparedCandidateSingletonRuntimeRel.ofAlphaStrictFunction
       name ∈ runtimeAvoid)
     (runtimeObservationProtected : ∀ name, name ∈ observationScope →
       name ∈ Metta.Minimal.applicationTypeInferenceScope
-          (toLeaTTaAtom expectedType) (toLeaTTaAtoms arguments) ∨
+          (encodeModelAtom expectedType) (encodeModelAtoms arguments) ∨
         name ∈ env.atoms.flatMap Metta.Atom.vars)
     (specGenerated : CandidateGeneratedAt arguments.length specCandidate)
     (runtimeGenerated : CandidateGeneratedAt arguments.length
       runtimeCandidate) :
     PreparedCandidateSingletonRuntimeRel oracle space observationScope
       expression expectedType incoming initialPresentation env world
-      runtimeInitial (toLeaTTaAtom expression)
-      (toLeaTTaAtoms arguments) (toLeaTTaAtom expectedType) false
-      specCandidate (toLeaTTaAtom runtimeCandidate) := by
+      runtimeInitial (encodeModelAtom expression)
+      (encodeModelAtoms arguments) (encodeModelAtom expectedType) false
+      specCandidate (encodeModelAtom runtimeCandidate) := by
   let applicationScope :=
     TypeSubst.typeVars expectedType ++ TypeSubst.typeVarsList arguments
   let callScope := applicationScope ++
@@ -4656,7 +4639,7 @@ theorem PreparedCandidateSingletonRuntimeRel.ofAlphaStrictFunction
   have returnDisjoint : VarsDisjoint expectedType
       (renameTypeVars runtimeRename returnType) := by
     intro name expectedOccurrence returnOccurrence
-    rw [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+    rw [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
       at expectedOccurrence returnOccurrence
     have returnInSignature : name ∈ TypeSubst.typeVars runtimeCandidate :=
       FunctionTypeRel.returnVars_subset runtimeFunction name returnOccurrence
@@ -4665,12 +4648,12 @@ theorem PreparedCandidateSingletonRuntimeRel.ofAlphaStrictFunction
       (runtimeCallCovered name (List.mem_append_left _ expectedOccurrence))
   have applicationBoundaryEquation :
       Metta.Minimal.applicationTypeInferenceScope
-          (toLeaTTaAtom expectedType) (toLeaTTaAtoms arguments) =
+          (encodeModelAtom expectedType) (encodeModelAtoms arguments) =
         applicationScope := by
     simp only [Metta.Minimal.applicationTypeInferenceScope, applicationScope,
-      LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+      Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
     exact congrArg₂ (· ++ ·) rfl
-      (LeaTTaTypePresentationExactConformance.toLeaTTaAtoms_vars_eq_typeVars
+      (Spec.Type.Presentation.encodeModelAtoms_vars_eq_typeVars
         arguments)
   have localizedSeparated : FreshFamiliesSeparated
       [renameTypeVars permutation runtimeCandidate] candidateLists.flatten := by
@@ -4684,10 +4667,10 @@ theorem PreparedCandidateSingletonRuntimeRel.ofAlphaStrictFunction
   have classified : PreparedCandidateSingletonRuntimeRel oracle space
       observationScope
       expression expectedType incoming initialPresentation env world
-      runtimeInitial (toLeaTTaAtom expression)
-      (toLeaTTaAtoms arguments) (toLeaTTaAtom expectedType) false
+      runtimeInitial (encodeModelAtom expression)
+      (encodeModelAtoms arguments) (encodeModelAtom expectedType) false
       (renameTypeVars permutation runtimeCandidate)
-      (toLeaTTaAtom runtimeCandidate) := by
+      (encodeModelAtom runtimeCandidate) := by
     apply PreparedCandidateSingletonRuntimeRel.ofStrictFunction
       (permutation := permutation) functional index
       realization initial inputState expressionEquation runtimeFunction
@@ -4726,7 +4709,7 @@ theorem PreparedCandidateSingletonRuntimeRel.ofAlphaStrictFunction
           exact List.mem_append_right _
             (runtimeInitialBindingCovered name initialMember)
       · exact Or.inl (Or.inr (Or.inl (by
-          rw [LeaTTaTypePresentationExactConformance.toLeaTTaAtoms_vars_eq_typeVars]
+          rw [Spec.Type.Presentation.encodeModelAtoms_vars_eq_typeVars]
           exact formalMember)))
     · intro name member
       rcases List.mem_append.mp member with observedOrCall | signatureMember
@@ -4811,7 +4794,7 @@ theorem alphaPreparedSingletonClassifications
       name ∈ runtimeAvoid)
     (runtimeObservationProtected : ∀ name, name ∈ observationScope →
       name ∈ Metta.Minimal.applicationTypeInferenceScope
-          (toLeaTTaAtom expectedType) (toLeaTTaAtoms arguments) ∨
+          (encodeModelAtom expectedType) (encodeModelAtoms arguments) ∨
         name ∈ env.atoms.flatMap Metta.Atom.vars)
     (runtimeInitialAvoidCovered : ∀ name,
       name ∈ specBindingVars (⟨initialPresentation, []⟩ : Bindings) →
@@ -4834,9 +4817,9 @@ theorem alphaPreparedSingletonClassifications
       (PreparedCandidateSingletonRuntimeRel oracle space
         observationScope
         expression expectedType incoming initialPresentation env world
-        runtimeInitial (toLeaTTaAtom expression)
-        (toLeaTTaAtoms arguments) (toLeaTTaAtom expectedType) false)
-      specCandidates (toLeaTTaAtoms runtimeCandidates) := by
+        runtimeInitial (encodeModelAtom expression)
+        (encodeModelAtoms arguments) (encodeModelAtom expectedType) false)
+      specCandidates (encodeModelAtoms runtimeCandidates) := by
   induction specVariants generalizing runtimeCandidates with
   | nil =>
       cases runtimeVariants
@@ -4864,9 +4847,9 @@ theorem alphaPreparedSingletonClassifications
               oracle space observationScope
               expression expectedType incoming initialPresentation env world
               runtimeInitial
-              (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-              (toLeaTTaAtom expectedType) false specCandidate
-              (toLeaTTaAtom runtimeCandidate) := by
+              (encodeModelAtom expression) (encodeModelAtoms arguments)
+              (encodeModelAtom expectedType) false specCandidate
+              (encodeModelAtom runtimeCandidate) := by
             by_cases functionShape : ∃ argumentTypes returnType,
                 FunctionTypeRel source argumentTypes returnType
             · obtain ⟨argumentTypes, returnType, functionType⟩ := functionShape
@@ -5024,15 +5007,15 @@ theorem FunctionCandidateScanOutcomeRuntimeRelWith.successBindingAtFunctionType
               runtimePresentation⟩
           have rawFixed :
               renameTypeVars permutation
-                  (fromLeaTTaAtom runtime.functionType) =
-                fromLeaTTaAtom runtime.functionType :=
+                  (decodeModelAtom runtime.functionType) =
+                decodeModelAtom runtime.functionType :=
             functionType.symm.trans aligned.functionType
           have functionVarsFixed : ∀ name,
               name ∈ TypeSubst.typeVars policy.functionType →
                 permutation name = name := by
             intro name member
             apply renameTypeVars_eq_self_fixed_on_typeVars permutation
-              (fromLeaTTaAtom runtime.functionType) rawFixed
+              (decodeModelAtom runtime.functionType) rawFixed
             simpa [aligned.functionType] using member
           have combinedFixed : ∀ name,
               name ∈ observationScope ++
@@ -5052,7 +5035,8 @@ theorem FunctionCandidateScanOutcomeRuntimeRelWith.successBindingAtFunctionType
             · apply functionTypeObserved
               simpa [aligned.functionType] using typeMember
           exact ⟨_, solutions,
-            presentationState.composeScopedRuntime combinedFixed
+            LeaTTaTypePresentationFoldConformance.TypePresentationPermutationState.composeScopedRuntime
+              presentationState combinedFixed
               (runtimePresentation.mono combinedInTheory)⟩
 
 /-- Pointwise singleton classifications assemble into the complete ordered
@@ -5215,7 +5199,7 @@ theorem selectedTypePolicyRuntimeExactRel_of_aligned_singleton
     {candidate : Atom} {runtimeCandidate : Metta.Atom}
     {policy : SelectedTypePolicy} {output : Bindings}
     {runtime : Metta.Minimal.SelectedFunctionType}
-    (aligned : runtimeCandidate = toLeaTTaAtom candidate)
+    (aligned : runtimeCandidate = encodeModelAtom candidate)
     (scan : Metta.Minimal.scanFunctionTypeCandidatesForExpectedFrom env world
       runtimeExpression runtimeArguments runtimeExpected allowExtraArguments
         runtimeInitial [runtimeCandidate] = .selected runtime)
@@ -5229,13 +5213,13 @@ theorem selectedTypePolicyRuntimeExactRel_of_aligned_singleton
       runtime.functionType = runtimeCandidate :=
     scanFunctionTypeCandidatesForExpectedFrom_singleton_functionType scan
   have decodedFunctionType :
-      fromLeaTTaAtom runtime.functionType = candidate := by
+      decodeModelAtom runtime.functionType = candidate := by
     rw [runtimeCandidateEquation, aligned,
-      fromLeaTTaAtom_toLeaTTaAtom]
+      decodeModelAtom_encodeModelAtom]
   have policyFields := PreparedCandidateSuccessRel.policyFields applicable
   have runtimeArrow : FunctionTypeRel candidate
-      (fromLeaTTaAtoms runtime.argumentTypes)
-      (fromLeaTTaAtom runtime.returnType) := by
+      (decodeModelAtoms runtime.argumentTypes)
+      (decodeModelAtom runtime.returnType) := by
     cases outcome with
     | success coherent _extension _solutions =>
         rw [← decodedFunctionType]
@@ -5381,15 +5365,15 @@ theorem preparedPackageCandidateScan_runtime_aligned
     (initial : InitialTypeBindingPresentationRel initialPresentation incoming)
     (variants : OperatorAlphaVariantsRel
       (typeServicePrivateAvoid space expression expectedType incoming)
-      (observedTypes packages) (fromLeaTTaAtoms runtimeCandidates))
+      (observedTypes packages) (decodeModelAtoms runtimeCandidates))
     (classifications : List.Forall₂
       (PreparedCandidateSingletonRuntimeRel oracle space observationScope
         expression expectedType incoming initialPresentation env world
         runtimeInitial runtimeExpression
         runtimeArguments runtimeExpected allowExtraArguments)
-      (fromLeaTTaAtoms runtimeCandidates) runtimeCandidates)
+      (decodeModelAtoms runtimeCandidates) runtimeCandidates)
     (roundtrip :
-      toLeaTTaAtoms (fromLeaTTaAtoms runtimeCandidates) = runtimeCandidates) :
+      encodeModelAtoms (decodeModelAtoms runtimeCandidates) = runtimeCandidates) :
     ∃ outcome,
       PreparedPackageCandidateScanRel oracle space expression expectedType
           incoming packages outcome ∧
@@ -5401,14 +5385,14 @@ theorem preparedPackageCandidateScan_runtime_aligned
             allowExtraArguments runtimeInitial runtimeCandidates) := by
   have pairs : List.Forall₂
       (fun candidate runtimeCandidate =>
-        runtimeCandidate = toLeaTTaAtom candidate)
-      (fromLeaTTaAtoms runtimeCandidates) runtimeCandidates := by
+        runtimeCandidate = encodeModelAtom candidate)
+      (decodeModelAtoms runtimeCandidates) runtimeCandidates := by
     have mapped : List.Forall₂
         (fun candidate runtimeCandidate =>
-          runtimeCandidate = toLeaTTaAtom candidate)
-        (fromLeaTTaAtoms runtimeCandidates)
-        (toLeaTTaAtoms (fromLeaTTaAtoms runtimeCandidates)) := by
-      induction fromLeaTTaAtoms runtimeCandidates with
+          runtimeCandidate = encodeModelAtom candidate)
+        (decodeModelAtoms runtimeCandidates)
+        (encodeModelAtoms (decodeModelAtoms runtimeCandidates)) := by
+      induction decodeModelAtoms runtimeCandidates with
       | nil => exact .nil
       | cons candidate candidates inductionHypothesis =>
           exact .cons rfl inductionHypothesis
@@ -5421,7 +5405,7 @@ theorem preparedPackageCandidateScan_runtime_aligned
         selectedTypePolicyRuntimeExactRel_of_aligned_singleton aligned
           singleton applicable relation)
   exact ⟨outcome, ⟨initialPresentation,
-    fromLeaTTaAtoms runtimeCandidates, initial, variants, scan⟩, runtime⟩
+    decodeModelAtoms runtimeCandidates, initial, variants, scan⟩, runtime⟩
 
 /-- The concrete repaired selector realizes the prepared package scan at any
 observation scope protected by the runtime's public-call or environment
@@ -5450,7 +5434,7 @@ theorem preparedPackageCandidateScan_runtime_scoped_avoiding
         (.expression (operator :: arguments)) expectedType incoming)
     (runtimeObservationProtected : ∀ name, name ∈ observationScope →
       name ∈ Metta.Minimal.applicationTypeInferenceScope
-          (toLeaTTaAtom expectedType) (toLeaTTaAtoms arguments) ∨
+          (encodeModelAtom expectedType) (encodeModelAtoms arguments) ∨
         name ∈ env.atoms.flatMap Metta.Atom.vars) :
     let expression := Atom.expression (operator :: arguments)
     ∃ prepared packages outcome,
@@ -5462,19 +5446,19 @@ theorem preparedPackageCandidateScan_runtime_scoped_avoiding
         observationScope
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env world
-          (toLeaTTaAtom operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (encodeModelAtom operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   dsimp only
   let expression := Atom.expression (operator :: arguments)
   let rawRuntime := Metta.Minimal.getTypes env
-    (Metta.Minimal.typePrep world (toLeaTTaAtom operator))
+    (Metta.Minimal.typePrep world (encodeModelAtom operator))
   let runtimeCandidates :=
     Metta.Minimal.freshenFunctionTypeCandidatesAvoiding env
-      (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-      (toLeaTTaAtom expectedType) runtimeInitial.vars rawRuntime
+      (encodeModelAtom expression) (encodeModelAtoms arguments)
+      (encodeModelAtom expectedType) runtimeInitial.vars rawRuntime
   let runtimeAvoid := Metta.Minimal.functionTypeSelectionAvoiding env
-    (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-    (toLeaTTaAtom expectedType) runtimeInitial.vars rawRuntime
+    (encodeModelAtom expression) (encodeModelAtoms arguments)
+    (encodeModelAtom expectedType) runtimeInitial.vars rawRuntime
   obtain ⟨prepared, packages, rawCandidates, specCandidates,
       preparation, _preparationEquation, packageRelation, _rawEquation,
       _packageAlpha, _specEquation, specVariants, packageVariants,
@@ -5490,8 +5474,8 @@ theorem preparedPackageCandidateScan_runtime_scoped_avoiding
     apply List.mem_append_right
     apply List.mem_append_left
     simpa only [Metta.Minimal.applicationTypeInferenceScope,
-      LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars,
-      LeaTTaTypePresentationExactConformance.toLeaTTaAtoms_vars_eq_typeVars]
+      Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars,
+      Spec.Type.Presentation.encodeModelAtoms_vars_eq_typeVars]
       using member
   have runtimeInitialBindingCovered : ∀ name,
       name ∈ specBindingVars
@@ -5526,7 +5510,7 @@ theorem preparedPackageCandidateScan_runtime_scoped_avoiding
     (observedTypes packages) specCandidates := by
     simpa [expression] using packageVariants
   have runtimeVariants' : OperatorAlphaVariantsRel runtimeAvoid
-      rawCandidates (fromLeaTTaAtoms runtimeCandidates) := by
+      rawCandidates (decodeModelAtoms runtimeCandidates) := by
     simpa [runtimeCandidates, runtimeAvoid, expression, rawRuntime] using
       runtimeVariants
   have classifications :=
@@ -5536,7 +5520,7 @@ theorem preparedPackageCandidateScan_runtime_scoped_avoiding
       (incoming := incoming) (runtimeAvoid := runtimeAvoid)
       (observationScope := observationScope)
       (rawCandidates := rawCandidates) (specCandidates := specCandidates)
-      (runtimeCandidates := fromLeaTTaAtoms runtimeCandidates)
+      (runtimeCandidates := decodeModelAtoms runtimeCandidates)
       initial inputState rfl runtimeCallCovered
       specObservationCovered runtimeObservationCovered
       runtimeObservationProtected
@@ -5550,8 +5534,8 @@ theorem preparedPackageCandidateScan_runtime_scoped_avoiding
       classifications
   refine ⟨prepared, packages, outcome, preparation, packageRelation,
     packageScan, ?_⟩
-  simpa [expression, rawRuntime, runtimeCandidates, toLeaTTaAtom,
-    toLeaTTaAtoms,
+  simpa [expression, rawRuntime, runtimeCandidates, encodeModelAtom,
+    encodeModelAtoms,
     Metta.Minimal.selectFunctionTypeForExpectedFrom] using runtime
 
 /-- Evaluator-aligned specialization of the scoped selector realization.
@@ -5580,17 +5564,17 @@ theorem preparedPackageCandidateScan_runtime_scoped_aligned
         (.expression (operator :: arguments)) expectedType incoming)
     (runtimeObservationProtected : ∀ name, name ∈ observationScope →
       name ∈ Metta.Minimal.applicationTypeInferenceScope
-          (toLeaTTaAtom expectedType) (toLeaTTaAtoms arguments) ∨
+          (encodeModelAtom expectedType) (encodeModelAtoms arguments) ∨
         name ∈ env.atoms.flatMap Metta.Atom.vars)
     (runtimePrivateAvoidCovered :
       let expression := Atom.expression (operator :: arguments)
       let rawRuntime := Metta.Minimal.getTypes env
-        (Metta.Minimal.typePrep world (toLeaTTaAtom operator))
+        (Metta.Minimal.typePrep world (encodeModelAtom operator))
       ∀ name,
         name ∈ typeServicePrivateAvoid space expression expectedType incoming →
           name ∈ Metta.Minimal.functionTypeSelectionAvoiding env
-            (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-            (toLeaTTaAtom expectedType) runtimeInitial.vars rawRuntime) :
+            (encodeModelAtom expression) (encodeModelAtoms arguments)
+            (encodeModelAtom expectedType) runtimeInitial.vars rawRuntime) :
     let expression := Atom.expression (operator :: arguments)
     ∃ prepared packages outcome,
       oracle.prepare space operator prepared ∧
@@ -5601,19 +5585,19 @@ theorem preparedPackageCandidateScan_runtime_scoped_aligned
         SelectedTypePolicyRuntimeExactRel observationScope expression incoming
         outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env world
-          (toLeaTTaAtom operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (encodeModelAtom operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   dsimp only at runtimePrivateAvoidCovered ⊢
   let expression := Atom.expression (operator :: arguments)
   let rawRuntime := Metta.Minimal.getTypes env
-    (Metta.Minimal.typePrep world (toLeaTTaAtom operator))
+    (Metta.Minimal.typePrep world (encodeModelAtom operator))
   let runtimeCandidates :=
     Metta.Minimal.freshenFunctionTypeCandidatesAvoiding env
-      (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-      (toLeaTTaAtom expectedType) runtimeInitial.vars rawRuntime
+      (encodeModelAtom expression) (encodeModelAtoms arguments)
+      (encodeModelAtom expectedType) runtimeInitial.vars rawRuntime
   let runtimeAvoid := Metta.Minimal.functionTypeSelectionAvoiding env
-    (toLeaTTaAtom expression) (toLeaTTaAtoms arguments)
-    (toLeaTTaAtom expectedType) runtimeInitial.vars rawRuntime
+    (encodeModelAtom expression) (encodeModelAtoms arguments)
+    (encodeModelAtom expectedType) runtimeInitial.vars rawRuntime
   obtain ⟨prepared, packages, rawCandidates, _specCandidates,
       preparation, _preparationEquation, packageRelation, _rawEquation,
       packageAlpha, _specEquation, _specVariants, _packageVariants,
@@ -5629,8 +5613,8 @@ theorem preparedPackageCandidateScan_runtime_scoped_aligned
     apply List.mem_append_right
     apply List.mem_append_left
     simpa only [Metta.Minimal.applicationTypeInferenceScope,
-      LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars,
-      LeaTTaTypePresentationExactConformance.toLeaTTaAtoms_vars_eq_typeVars]
+      Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars,
+      Spec.Type.Presentation.encodeModelAtoms_vars_eq_typeVars]
       using member
   have runtimeInitialBindingCovered : ∀ name,
       name ∈ specBindingVars
@@ -5657,18 +5641,18 @@ theorem preparedPackageCandidateScan_runtime_scoped_aligned
       exact List.mem_append_left _
         (List.mem_append_left _ environmentMember)
   have runtimeVariants' : OperatorAlphaVariantsRel runtimeAvoid
-      rawCandidates (fromLeaTTaAtoms runtimeCandidates) := by
+      rawCandidates (decodeModelAtoms runtimeCandidates) := by
     simpa [runtimeCandidates, runtimeAvoid, expression, rawRuntime] using
       runtimeVariants
   have alignedVariants : OperatorAlphaVariantsRel
       (typeServicePrivateAvoid space expression expectedType incoming)
-      rawCandidates (fromLeaTTaAtoms runtimeCandidates) :=
+      rawCandidates (decodeModelAtoms runtimeCandidates) :=
     operatorAlphaVariantsRel_mono runtimeVariants'
       (by simpa [runtimeAvoid, expression, rawRuntime] using
         runtimePrivateAvoidCovered)
   have packageVariants : OperatorAlphaVariantsRel
       (typeServicePrivateAvoid space expression expectedType incoming)
-      (observedTypes packages) (fromLeaTTaAtoms runtimeCandidates) :=
+      (observedTypes packages) (decodeModelAtoms runtimeCandidates) :=
     operatorAlphaVariants_transport_sources packageAlpha alignedVariants
   have classifications :=
     alphaPreparedSingletonClassifications functional index realization
@@ -5677,8 +5661,8 @@ theorem preparedPackageCandidateScan_runtime_scoped_aligned
       (incoming := incoming) (runtimeAvoid := runtimeAvoid)
       (observationScope := observationScope)
       (rawCandidates := rawCandidates)
-      (specCandidates := fromLeaTTaAtoms runtimeCandidates)
-      (runtimeCandidates := fromLeaTTaAtoms runtimeCandidates)
+      (specCandidates := decodeModelAtoms runtimeCandidates)
+      (runtimeCandidates := decodeModelAtoms runtimeCandidates)
       initial inputState rfl runtimeCallCovered
       specObservationCovered runtimeObservationCovered
       runtimeObservationProtected
@@ -5692,8 +5676,8 @@ theorem preparedPackageCandidateScan_runtime_scoped_aligned
       classifications runtimeRoundtrip
   refine ⟨prepared, packages, outcome, preparation, packageRelation,
     packageScan, ?_⟩
-  simpa [expression, rawRuntime, runtimeCandidates, toLeaTTaAtom,
-    toLeaTTaAtoms,
+  simpa [expression, rawRuntime, runtimeCandidates, encodeModelAtom,
+    encodeModelAtoms,
     Metta.Minimal.selectFunctionTypeForExpectedFrom] using runtime
 
 /-- Public-call specialization of
@@ -5726,8 +5710,8 @@ theorem preparedPackageCandidateScan_runtime_callScope
           TypeSubst.typeVarsList arguments)
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env world
-          (toLeaTTaAtom operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (encodeModelAtom operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   apply preparedPackageCandidateScan_runtime_scoped_avoiding functional index
     realization operator expectedType arguments incoming initial inputState
       bindingSupport
@@ -5752,8 +5736,8 @@ theorem preparedPackageCandidateScan_runtime_callScope
   · intro name member
     apply Or.inl
     simpa only [Metta.Minimal.applicationTypeInferenceScope,
-      LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars,
-      LeaTTaTypePresentationExactConformance.toLeaTTaAtoms_vars_eq_typeVars]
+      Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars,
+      Spec.Type.Presentation.encodeModelAtoms_vars_eq_typeVars]
       using member
 
 /-- At a symbol-headed application, the complete type-service observation
@@ -5764,28 +5748,28 @@ variables.  Keeping the atom-list equation explicit is important:
 entire stored atom list. -/
 theorem typeServiceObservationScope_symbol_runtimeProtected
     {space : Space} {env : Metta.Minimal.MinEnv}
-    (atomsEquation : env.atoms = toLeaTTaAtoms space.atoms)
+    (atomsEquation : env.atoms = encodeModelAtoms space.atoms)
     (operator : String) (arguments : List Atom) (expectedType : Atom) :
     ∀ name,
       name ∈ typeServiceObservationScope space
           (.expression (.symbol operator :: arguments)) expectedType →
         name ∈ Metta.Minimal.applicationTypeInferenceScope
-            (toLeaTTaAtom expectedType) (toLeaTTaAtoms arguments) ∨
+            (encodeModelAtom expectedType) (encodeModelAtoms arguments) ∨
           name ∈ env.atoms.flatMap Metta.Atom.vars := by
   intro name member
-  rw [typeServiceObservationScope, typeVarsList_append,
+  rw [typeServiceObservationScope, TypeSubst.typeVarsList_append,
     List.mem_append] at member
   rcases member with spaceMember | boundaryMember
   · apply Or.inr
     rw [atomsEquation,
-      LeaTTaTypePresentationExactConformance.toLeaTTaAtoms_vars_eq_typeVars]
+      Spec.Type.Presentation.encodeModelAtoms_vars_eq_typeVars]
     exact spaceMember
   · apply Or.inl
     simp only [TypeSubst.typeVarsList, TypeSubst.typeVars,
       List.nil_append, List.append_nil, List.mem_append] at boundaryMember
     simp only [Metta.Minimal.applicationTypeInferenceScope,
-      LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars,
-      LeaTTaTypePresentationExactConformance.toLeaTTaAtoms_vars_eq_typeVars,
+      Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars,
+      Spec.Type.Presentation.encodeModelAtoms_vars_eq_typeVars,
       List.mem_append]
     exact boundaryMember.symm
 
@@ -5795,7 +5779,7 @@ by the stored environment and public application scope; incoming binding
 support is covered by the live-avoid prefix added by repair #18. -/
 theorem typeServicePrivateAvoid_symbol_runtimeSelectionProtected
     {space : Space} {env : Metta.Minimal.MinEnv}
-    (atomsEquation : env.atoms = toLeaTTaAtoms space.atoms)
+    (atomsEquation : env.atoms = encodeModelAtoms space.atoms)
     {incoming : Bindings} {runtimeInitial : Metta.Bindings}
     (bindingSupport : ∀ name, name ∈ specBindingVars incoming →
       name ∈ runtimeInitial.vars)
@@ -5806,8 +5790,8 @@ theorem typeServicePrivateAvoid_symbol_runtimeSelectionProtected
           (.expression (.symbol operator :: arguments)) expectedType
           incoming →
         name ∈ Metta.Minimal.functionTypeSelectionAvoiding env
-          (toLeaTTaAtom (.expression (.symbol operator :: arguments)))
-          (toLeaTTaAtoms arguments) (toLeaTTaAtom expectedType)
+          (encodeModelAtom (.expression (.symbol operator :: arguments)))
+          (encodeModelAtoms arguments) (encodeModelAtom expectedType)
           runtimeInitial.vars rawCandidates := by
   intro name member
   rw [typeServicePrivateAvoid, List.mem_append] at member
@@ -5834,7 +5818,7 @@ theorem preparedPackageCandidateScan_runtime_symbol_avoiding
     (functional : TypePreparationFunctional oracle)
     {space : Space} {env : Metta.Minimal.MinEnv}
     (index : TypeEnvironmentRel space env)
-    (atomsEquation : env.atoms = toLeaTTaAtoms space.atoms)
+    (atomsEquation : env.atoms = encodeModelAtoms space.atoms)
     {world : Metta.Minimal.World}
     (realization : TypePreparationRuntimeRealization oracle space world)
     (operator : String) (expectedType : Atom) (arguments : List Atom)
@@ -5855,8 +5839,8 @@ theorem preparedPackageCandidateScan_runtime_symbol_avoiding
         (typeServiceObservationScope space expression expectedType)
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env world
-          (.sym operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (.sym operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   apply preparedPackageCandidateScan_runtime_scoped_avoiding functional index
     realization (.symbol operator) expectedType arguments incoming initial
       inputState bindingSupport
@@ -5874,7 +5858,7 @@ theorem preparedPackageCandidateScan_runtime_symbol_aligned
     (functional : TypePreparationFunctional oracle)
     {space : Space} {env : Metta.Minimal.MinEnv}
     (index : TypeEnvironmentRel space env)
-    (atomsEquation : env.atoms = toLeaTTaAtoms space.atoms)
+    (atomsEquation : env.atoms = encodeModelAtoms space.atoms)
     {world : Metta.Minimal.World}
     (realization : TypePreparationRuntimeRealization oracle space world)
     (operator : String) (expectedType : Atom) (arguments : List Atom)
@@ -5896,8 +5880,8 @@ theorem preparedPackageCandidateScan_runtime_symbol_aligned
         (typeServiceObservationScope space expression expectedType)
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env world
-          (.sym operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (.sym operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   apply preparedPackageCandidateScan_runtime_scoped_aligned functional index
     realization (.symbol operator) expectedType arguments incoming initial
       inputState bindingSupport
@@ -5927,7 +5911,7 @@ theorem preparedPackageCandidateScan_runtime_ofAtomsGT_avoiding
     (bindingSupport : ∀ name, name ∈ specBindingVars incoming →
       name ∈ runtimeInitial.vars) :
     let env := Metta.Minimal.MinEnv.ofAtomsGT
-      (toLeaTTaAtoms space.atoms) groundingTable
+      (encodeModelAtoms space.atoms) groundingTable
     let expression := Atom.expression (.symbol operator :: arguments)
     ∃ prepared packages outcome,
       oracle.prepare space (.symbol operator) prepared ∧
@@ -5938,8 +5922,8 @@ theorem preparedPackageCandidateScan_runtime_ofAtomsGT_avoiding
         (typeServiceObservationScope space expression expectedType)
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env world
-          (.sym operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (.sym operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   dsimp only
   exact preparedPackageCandidateScan_runtime_symbol_avoiding functional
     (typeEnvironmentRel_ofAtomsGT space groundingTable) rfl realization
@@ -5963,7 +5947,7 @@ theorem preparedPackageCandidateScan_runtime_ofAtomsGT_aligned
     (bindingSupport : ∀ name, name ∈ specBindingVars incoming →
       name ∈ runtimeInitial.vars) :
     let env := Metta.Minimal.MinEnv.ofAtomsGT
-      (toLeaTTaAtoms space.atoms) groundingTable
+      (encodeModelAtoms space.atoms) groundingTable
     let expression := Atom.expression (.symbol operator :: arguments)
     ∃ prepared packages outcome,
       oracle.prepare space (.symbol operator) prepared ∧
@@ -5975,8 +5959,8 @@ theorem preparedPackageCandidateScan_runtime_ofAtomsGT_aligned
         (typeServiceObservationScope space expression expectedType)
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env world
-          (.sym operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (.sym operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   dsimp only
   exact preparedPackageCandidateScan_runtime_symbol_aligned functional
     (typeEnvironmentRel_ofAtomsGT space groundingTable) rfl realization
@@ -5991,7 +5975,7 @@ premise is binding support: native binding variables must occur in the
 runtime binding carrier paired with them by the surrounding simulation. -/
 theorem typeServicePrivateAvoid_runtimeTypeCastProtected
     {space : Space} {env : Metta.Minimal.MinEnv}
-    (atomsEquation : env.atoms = toLeaTTaAtoms space.atoms)
+    (atomsEquation : env.atoms = encodeModelAtoms space.atoms)
     {atom expectedType : Atom} {incoming : Bindings}
     {runtimeBindings : Metta.Bindings}
     (bindingSupport : ∀ name, name ∈ specBindingVars incoming →
@@ -6000,18 +5984,18 @@ theorem typeServicePrivateAvoid_runtimeTypeCastProtected
     ∀ name,
       name ∈ typeServicePrivateAvoid space atom expectedType incoming →
       name ∈ Metta.Minimal.typeCastInferenceAvoid env
-        (toLeaTTaAtom prepared) (toLeaTTaAtom atom)
-        (toLeaTTaAtom expectedType) runtimeBindings rawTypes := by
+        (encodeModelAtom prepared) (encodeModelAtom atom)
+        (encodeModelAtom expectedType) runtimeBindings rawTypes := by
   intro name member
   rw [typeServicePrivateAvoid, List.mem_append] at member
   rcases member with observationMember | bindingMember
-  · rw [typeServiceObservationScope, typeVarsList_append,
+  · rw [typeServiceObservationScope, TypeSubst.typeVarsList_append,
       List.mem_append] at observationMember
     rcases observationMember with spaceMember | boundaryMember
     · have runtimeSpaceMember :
           name ∈ env.atoms.flatMap Metta.Atom.vars := by
         rw [atomsEquation,
-          LeaTTaTypePresentationExactConformance.toLeaTTaAtoms_vars_eq_typeVars]
+          Spec.Type.Presentation.encodeModelAtoms_vars_eq_typeVars]
         exact spaceMember
       simp [Metta.Minimal.typeCastInferenceAvoid,
         Metta.Minimal.typeInferenceAvoid, runtimeSpaceMember]
@@ -6019,14 +6003,14 @@ theorem typeServicePrivateAvoid_runtimeTypeCastProtected
         List.append_nil, List.mem_append] at boundaryMember
       rcases boundaryMember with atomMember | expectedMember
       · have runtimeAtomMember :
-            name ∈ (toLeaTTaAtom atom).vars := by
-          simpa [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+            name ∈ (encodeModelAtom atom).vars := by
+          simpa [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
             using atomMember
         simp [Metta.Minimal.typeCastInferenceAvoid,
           Metta.Minimal.typeInferenceAvoid, runtimeAtomMember]
       · have runtimeExpectedMember :
-            name ∈ (toLeaTTaAtom expectedType).vars := by
-          simpa [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+            name ∈ (encodeModelAtom expectedType).vars := by
+          simpa [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
             using expectedMember
         simp [Metta.Minimal.typeCastInferenceAvoid,
           Metta.Minimal.typeInferenceAvoid, runtimeExpectedMember]
@@ -6044,7 +6028,7 @@ theorem preparedTypeCast_runtime
     {oracle : TypePreparationOracle}
     {space : Space} {env : Metta.Minimal.MinEnv}
     (index : TypeEnvironmentRel space env)
-    (atomsEquation : env.atoms = toLeaTTaAtoms space.atoms)
+    (atomsEquation : env.atoms = encodeModelAtoms space.atoms)
     {world : Metta.Minimal.World}
     (realization : TypePreparationRuntimeRealization oracle space world)
     {presentation : TypeSubst} {incoming : Bindings}
@@ -6056,27 +6040,27 @@ theorem preparedTypeCast_runtime
     (atom expectedType : Atom) (protectedScope : List String := []) :
     PreparedTypeCastOutcomeRuntimeRel oracle space atom expectedType incoming
       (Metta.Minimal.mettaTypeCastAvoiding protectedScope env world
-        runtimeBindings (toLeaTTaAtom atom) (toLeaTTaAtom expectedType))
+        runtimeBindings (encodeModelAtom atom) (encodeModelAtom expectedType))
       protectedScope := by
   obtain ⟨prepared, preparation, preparationEquation⟩ := realization atom
   let rawRuntimeTypes :=
-    Metta.Minimal.getTypes env (toLeaTTaAtom prepared)
+    Metta.Minimal.getTypes env (encodeModelAtom prepared)
   let runtimeAvoid := protectedScope ++
     Metta.Minimal.typeCastInferenceAvoid env
-      (toLeaTTaAtom prepared) (toLeaTTaAtom atom)
-      (toLeaTTaAtom expectedType) runtimeBindings rawRuntimeTypes
+      (encodeModelAtom prepared) (encodeModelAtom atom)
+      (encodeModelAtom expectedType) runtimeBindings rawRuntimeTypes
   let runtimeCandidates := Metta.Minimal.freshenArgumentTypes
     runtimeAvoid 0 rawRuntimeTypes
-  let sourceCandidates := fromLeaTTaAtoms rawRuntimeTypes
-  let candidates := fromLeaTTaAtoms runtimeCandidates
+  let sourceCandidates := decodeModelAtoms rawRuntimeTypes
+  let candidates := decodeModelAtoms runtimeCandidates
   have sourcePresentation : PreparedPackagesPresent oracle space atom
       sourceCandidates := by
     refine ⟨prepared, preparation, ?_⟩
     exact packagesPresent_runtimeGetTypes index prepared
-  have rawRoundtrip : toLeaTTaAtoms sourceCandidates = rawRuntimeTypes := by
+  have rawRoundtrip : encodeModelAtoms sourceCandidates = rawRuntimeTypes := by
     exact runtimeOperatorTypes_roundtrip index prepared
   have candidateRoundtrip :
-      toLeaTTaAtoms candidates = runtimeCandidates := by
+      encodeModelAtoms candidates = runtimeCandidates := by
     exact runtimeFreshenedArgumentTypes_roundtrip
       index prepared runtimeAvoid 0
   have runtimeVariants : ArgumentAlphaVariantsRel runtimeAvoid
@@ -6105,7 +6089,7 @@ theorem preparedTypeCast_runtime
     intro candidate candidateMember name expectedMember candidateOccurrence
     have candidateNativeOccurrence :
         name ∈ TypeSubst.typeVars candidate := by
-      simpa [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+      simpa [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
         using candidateOccurrence
     have allCandidateOccurrence :
         name ∈ TypeSubst.typeVarsList candidates :=
@@ -6121,7 +6105,7 @@ theorem preparedTypeCast_runtime
         (atoms := space.atoms ++ [atom, expectedType])
         (atom := expectedType) (by simp) name
         (by
-          simpa [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+          simpa [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
             using expectedMember)
     exact
       LeaTTaTypePresentationApplicationExact.ArgumentAlphaVariantsRel.targets_fresh
@@ -6131,7 +6115,7 @@ theorem preparedTypeCast_runtime
     have runtimeEmpty : rawRuntimeTypes = [] := by
       rw [← rawRoundtrip, empty]
       rfl
-    exact Metta.getTypes_ne_nil env (toLeaTTaAtom prepared) runtimeEmpty
+    exact Metta.getTypes_ne_nil env (encodeModelAtom prepared) runtimeEmpty
   have candidatesNonempty : candidates ≠ [] := by
     intro empty
     have lengthEquation := argumentAlphaVariantsRel_length_eq variants
@@ -6139,14 +6123,14 @@ theorem preparedTypeCast_runtime
     exact sourceNonempty (List.eq_nil_of_length_eq_zero lengthEquation)
   have castShape :
       Metta.Minimal.mettaTypeCastAvoiding protectedScope env world
-          runtimeBindings (toLeaTTaAtom atom) (toLeaTTaAtom expectedType) =
+          runtimeBindings (encodeModelAtom atom) (encodeModelAtom expectedType) =
         Metta.Minimal.matchExpectedType runtimeBindings
-          (toLeaTTaAtom expectedType) runtimeCandidates := by
+          (encodeModelAtom expectedType) runtimeCandidates := by
     simp [Metta.Minimal.mettaTypeCastAvoiding, preparationEquation,
       rawRuntimeTypes, runtimeAvoid, runtimeCandidates]
   rw [castShape, ← candidateRoundtrip]
   cases castEquation : Metta.Minimal.matchExpectedType runtimeBindings
-      (toLeaTTaAtom expectedType) (toLeaTTaAtoms candidates) with
+      (encodeModelAtom expectedType) (encodeModelAtoms candidates) with
   | inr runtimeOutput =>
       obtain ⟨before, actualType, after, presentationOutput, output,
           split, beforeFailed, selectedMatch, outputState⟩ :=
@@ -6193,14 +6177,14 @@ theorem preparedPackageTypeService_typesOf_runtime_ofAtomsGT
     (realization : TypePreparationRuntimeRealization oracle space world)
     (atom : Atom) :
     let env := Metta.Minimal.MinEnv.ofAtomsGT
-      (toLeaTTaAtoms space.atoms) groundingTable
+      (encodeModelAtoms space.atoms) groundingTable
     (preparedPackageTypeService oracle).typesOf space atom
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (Metta.Minimal.getTypes env
-          (Metta.Minimal.typePrep world (toLeaTTaAtom atom)))) := by
+          (Metta.Minimal.typePrep world (encodeModelAtom atom)))) := by
   dsimp only
   let env := Metta.Minimal.MinEnv.ofAtomsGT
-    (toLeaTTaAtoms space.atoms) groundingTable
+    (encodeModelAtoms space.atoms) groundingTable
   obtain ⟨prepared, preparation, preparationEquation⟩ := realization atom
   exact preparedPackagesPresent_runtimeGetTypes
     (typeEnvironmentRel_ofAtomsGT space groundingTable) world atom prepared
@@ -6224,10 +6208,10 @@ theorem preparedPackageTypeService_typeCast_runtime_ofAtomsGT
       name ∈ runtimeBindings.vars)
     (protectedScope : List String) (atom expectedType : Atom) :
     let env := Metta.Minimal.MinEnv.ofAtomsGT
-      (toLeaTTaAtoms space.atoms) groundingTable
+      (encodeModelAtoms space.atoms) groundingTable
     PreparedTypeCastOutcomeRuntimeRel oracle space atom expectedType incoming
       (Metta.Minimal.mettaTypeCastAvoiding protectedScope env world
-        runtimeBindings (toLeaTTaAtom atom) (toLeaTTaAtom expectedType))
+        runtimeBindings (encodeModelAtom atom) (encodeModelAtom expectedType))
       protectedScope := by
   dsimp only
   exact preparedTypeCast_runtime
@@ -6256,9 +6240,9 @@ theorem preparedPackageTypeService_candidateScan_runtime_ofAtomsGT_avoiding
     (bindingSupport : ∀ name, name ∈ specBindingVars incoming →
       name ∈ runtimeInitial.vars) :
     let env := Metta.Minimal.MinEnv.ofAtomsGT
-      (toLeaTTaAtoms space.atoms) groundingTable
+      (encodeModelAtoms space.atoms) groundingTable
     let expression := Atom.expression (.symbol operator :: arguments)
-    let presented := fromLeaTTaAtoms
+    let presented := decodeModelAtoms
       (Metta.Minimal.getTypes env
         (Metta.Minimal.typePrep world (.sym operator)))
     ∃ outcome,
@@ -6268,11 +6252,11 @@ theorem preparedPackageTypeService_candidateScan_runtime_ofAtomsGT_avoiding
         (typeServiceObservationScope space expression expectedType)
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env world
-          (.sym operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (.sym operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   dsimp only
   let env := Metta.Minimal.MinEnv.ofAtomsGT
-    (toLeaTTaAtoms space.atoms) groundingTable
+    (encodeModelAtoms space.atoms) groundingTable
   have index : TypeEnvironmentRel space env := by
     exact typeEnvironmentRel_ofAtomsGT space groundingTable
   obtain ⟨prepared, packages, outcome, preparation, packageRelation,
@@ -6287,20 +6271,20 @@ theorem preparedPackageTypeService_candidateScan_runtime_ofAtomsGT_avoiding
       preparation realizedPreparation
   subst realizedPrepared
   have runtimePresentation : PackagesPresent space prepared
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (Metta.Minimal.getTypes env
           (Metta.Minimal.typePrep world (.sym operator)))) := by
     have preparationEquation' :
         Metta.Minimal.typePrep world (.sym operator) =
-          toLeaTTaAtom prepared := by
-      simpa [toLeaTTaAtom] using preparationEquation
+          encodeModelAtom prepared := by
+      simpa [encodeModelAtom] using preparationEquation
     rw [preparationEquation']
     exact packagesPresent_runtimeGetTypes index prepared
   obtain ⟨runtimePackages, runtimePackageRelation, runtimeAlpha⟩ :=
     runtimePresentation
   have packageAlpha : List.Forall₂ ObservedTypeAlphaRel
       (observedTypes packages)
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (Metta.Minimal.getTypes env
           (Metta.Minimal.typePrep world (.sym operator)))) :=
     observedTypeAlphaList_trans
@@ -6329,9 +6313,9 @@ theorem preparedPackageTypeService_candidateScan_runtime_ofAtomsGT_aligned
     (bindingSupport : ∀ name, name ∈ specBindingVars incoming →
       name ∈ runtimeInitial.vars) :
     let env := Metta.Minimal.MinEnv.ofAtomsGT
-      (toLeaTTaAtoms space.atoms) groundingTable
+      (encodeModelAtoms space.atoms) groundingTable
     let expression := Atom.expression (.symbol operator :: arguments)
-    let presented := fromLeaTTaAtoms
+    let presented := decodeModelAtoms
       (Metta.Minimal.getTypes env
         (Metta.Minimal.typePrep world (.sym operator)))
     ∃ outcome,
@@ -6342,11 +6326,11 @@ theorem preparedPackageTypeService_candidateScan_runtime_ofAtomsGT_aligned
         (typeServiceObservationScope space expression expectedType)
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env world
-          (.sym operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (.sym operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   dsimp only
   let env := Metta.Minimal.MinEnv.ofAtomsGT
-    (toLeaTTaAtoms space.atoms) groundingTable
+    (encodeModelAtoms space.atoms) groundingTable
   have index : TypeEnvironmentRel space env := by
     exact typeEnvironmentRel_ofAtomsGT space groundingTable
   obtain ⟨prepared, packages, outcome, preparation, packageRelation,
@@ -6361,20 +6345,20 @@ theorem preparedPackageTypeService_candidateScan_runtime_ofAtomsGT_aligned
       preparation realizedPreparation
   subst realizedPrepared
   have runtimePresentation : PackagesPresent space prepared
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (Metta.Minimal.getTypes env
           (Metta.Minimal.typePrep world (.sym operator)))) := by
     have preparationEquation' :
         Metta.Minimal.typePrep world (.sym operator) =
-          toLeaTTaAtom prepared := by
-      simpa [toLeaTTaAtom] using preparationEquation
+          encodeModelAtom prepared := by
+      simpa [encodeModelAtom] using preparationEquation
     rw [preparationEquation']
     exact packagesPresent_runtimeGetTypes index prepared
   obtain ⟨runtimePackages, runtimePackageRelation, runtimeAlpha⟩ :=
     runtimePresentation
   have packageAlpha : List.Forall₂ ObservedTypeAlphaRel
       (observedTypes packages)
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (Metta.Minimal.getTypes env
           (Metta.Minimal.typePrep world (.sym operator)))) :=
     observedTypeAlphaList_trans
@@ -6398,11 +6382,11 @@ structure PreparedPackageTypeServiceRuntimeConformance
     (world : Metta.Minimal.World) : Prop where
   typesOf : ∀ atom,
     let env := Metta.Minimal.MinEnv.ofAtomsGT
-      (toLeaTTaAtoms space.atoms) groundingTable
+      (encodeModelAtoms space.atoms) groundingTable
     (preparedPackageTypeService oracle).typesOf space atom
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (Metta.Minimal.getTypes env
-          (Metta.Minimal.typePrep world (toLeaTTaAtom atom))))
+          (Metta.Minimal.typePrep world (encodeModelAtom atom))))
   typeCast : ∀ {presentation : TypeSubst} {incoming : Bindings}
       {runtimeBindings : Metta.Bindings},
     TypePresentationSimulationState presentation incoming runtimeBindings →
@@ -6410,10 +6394,10 @@ structure PreparedPackageTypeServiceRuntimeConformance
       name ∈ runtimeBindings.vars) →
     ∀ protectedScope atom expectedType,
       let env := Metta.Minimal.MinEnv.ofAtomsGT
-        (toLeaTTaAtoms space.atoms) groundingTable
+        (encodeModelAtoms space.atoms) groundingTable
       PreparedTypeCastOutcomeRuntimeRel oracle space atom expectedType incoming
         (Metta.Minimal.mettaTypeCastAvoiding protectedScope env world
-          runtimeBindings (toLeaTTaAtom atom) (toLeaTTaAtom expectedType))
+          runtimeBindings (encodeModelAtom atom) (encodeModelAtom expectedType))
         protectedScope
   candidateScan : ∀ operator expectedType arguments incoming
       {initialPresentation : TypeSubst}
@@ -6424,9 +6408,9 @@ structure PreparedPackageTypeServiceRuntimeConformance
     (∀ name, name ∈ specBindingVars incoming →
       name ∈ runtimeInitial.vars) →
     let env := Metta.Minimal.MinEnv.ofAtomsGT
-      (toLeaTTaAtoms space.atoms) groundingTable
+      (encodeModelAtoms space.atoms) groundingTable
     let expression := Atom.expression (.symbol operator :: arguments)
-    let presented := fromLeaTTaAtoms
+    let presented := decodeModelAtoms
       (Metta.Minimal.getTypes env
         (Metta.Minimal.typePrep world (.sym operator)))
     ∃ outcome,
@@ -6436,8 +6420,8 @@ structure PreparedPackageTypeServiceRuntimeConformance
         (typeServiceObservationScope space expression expectedType)
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env world
-          (.sym operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial)
+          (.sym operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial)
 
 /-- **A1 capstone.** One functional preparation realization supplies the
 complete repaired runtime type-service boundary over a canonical environment.
@@ -6507,7 +6491,7 @@ private theorem nullaryOperatorLocalization :
       [nullaryFunctionType] := by
   apply OperatorAlphaVariantsRel.cons
   · refine ⟨id, fun {_ _} equality => equality, ?_, ?_⟩
-    · simp [nullaryFunctionType, renameTypeVars]
+    · simp [nullaryFunctionType]
     · simp [nullaryFunctionType, TypeSubst.typeVars]
   · exact .nil
 
@@ -6541,7 +6525,7 @@ theorem prepared_package_scan_rejects_bare_arrow :
   have localized : OperatorAlphaVariantsRel [] [bareArrow] [bareArrow] := by
     apply OperatorAlphaVariantsRel.cons
     · refine ⟨id, fun {_ _} equality => equality, ?_, ?_⟩
-      · simp [bareArrow, renameTypeVars]
+      · simp [bareArrow]
       · simp [bareArrow, TypeSubst.typeVars]
     · exact .nil
   refine ⟨[], [bareArrow],
@@ -6556,5 +6540,93 @@ theorem prepared_package_scan_rejects_bare_arrow :
     · rintro ⟨argumentTypes, returnType, function⟩
       simp [bareArrow, FunctionTypeRel] at function
     · exact .nil
+
+/-! ## Binding extension of this prepared service instance -/
+
+/-- First-success type casting inherits extension from the selected match. -/
+theorem firstTypeCastSuccessRel_bindingTheoryExtends
+    {expectedType : Atom} {input output : Bindings} {candidates : List Atom}
+    (selected : FirstTypeCastSuccessRel
+      expectedType input candidates output) :
+    BindingTheoryExtends input output := by
+  induction selected with
+  | head matched => exact corePlusR2TypeMatchRel_bindingTheoryExtends matched
+  | tail _ _ ih => exact ih
+
+/-- The repaired prepared cast either returns a selected extension or leaves
+the incoming binding record unchanged in every diagnostic result. -/
+theorem preparedTypeCastRel_bindingTheoryExtends
+    {oracle : TypePreparationOracle} {space : Space}
+    {atom expectedType : Atom} {input : Bindings} {result : ResultPair}
+    {protectedScope : List String}
+    (cast : PreparedTypeCastRel oracle space atom expectedType input result
+      protectedScope) :
+    BindingTheoryExtends input result.2 := by
+  cases cast with
+  | success _ _ selected =>
+      exact firstTypeCastSuccessRel_bindingTheoryExtends selected
+  | failure => exact BindingTheoryExtends.refl input
+
+/-- Every successful prepared package scan carries the exact presentation
+extension selected by its winning candidate. -/
+theorem preparedPackageCandidateScanRel_bindingTheoryExtends
+    {oracle : TypePreparationOracle} {space : Space}
+    {expression expectedType : Atom} {input : Bindings}
+    {packages : List Spec.Type.Presentation.Exact.TypePackage}
+    {policy : SelectedTypePolicy}
+    {output : Bindings}
+    (scan : PreparedPackageCandidateScanRel oracle space expression
+      expectedType input packages (.success policy output)) :
+    BindingTheoryExtends input output := by
+  rcases scan with
+    ⟨initialPresentation, candidates, _initial, _variants, candidatesScan⟩
+  obtain ⟨candidate, _member, applicable⟩ := candidatesScan.success_candidate
+  rcases applicable with
+    ⟨_operator, _arguments, _argumentTypes, _returnType, _candidateLists,
+      _argumentOutcome, _returnOutcome, presentation, _expressionShape,
+      _functionType, _arity, _prepared, _separated, _argumentScan,
+      _returnScan, _selected, _policy, extension⟩
+  exact BindingTheoryExtends.of_presentationExtension extension
+
+/-- The package-recovery wrapper preserves the extension theorem of its
+package scan. -/
+theorem recoveredPackageCandidateScanRel_bindingTheoryExtends
+    {oracle : TypePreparationOracle} {space : Space}
+    {expression expectedType : Atom} {input : Bindings}
+    {presented : List Atom} {policy : SelectedTypePolicy}
+    {output : Bindings}
+    (scan : RecoveredPackageCandidateScanRel oracle
+      (PreparedPackageCandidateScanRel oracle) space expression expectedType
+        input presented (.success policy output)) :
+    BindingTheoryExtends input output := by
+  rcases scan with
+    ⟨_operator, _arguments, _prepared, _packages, _shape,
+      _preparation, _packagesRelation, _alpha, packageScan⟩
+  exact preparedPackageCandidateScanRel_bindingTheoryExtends packageScan
+
+/-- The exact prepared package service satisfies both primitive extension
+laws without any additional freshness assumption. -/
+theorem preparedPackageTypeService_bindingLaws
+    (oracle : TypePreparationOracle) :
+    EvalTypeServiceBindingLaws (preparedPackageTypeService oracle) := by
+  constructor
+  · intro protectedScope space atom expectedType input result cast
+    exact preparedTypeCastRel_bindingTheoryExtends cast
+  · intro _ space expression expectedType input candidates policy output scan
+    exact recoveredPackageCandidateScanRel_bindingTheoryExtends scan
+
+/-- The repaired evaluator service therefore preserves every incoming
+binding constraint across the shared full/minimal semantic judgments. -/
+theorem prepared_evalAtomRawRel_bindingTheoryExtends
+    {oracle : TypePreparationOracle}
+    {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
+    {live : List Atom}
+    {atom expectedType : Atom} {input : BindingFrame} {result : FrameResult}
+    (derivation : EvalAtomRawRel space dispatch live
+      (typing := preparedPackageTypeService oracle)
+      atom expectedType input result) :
+    BindingTheoryExtends input result.2 :=
+  evalAtomRawRel_bindingTheoryExtends
+    (preparedPackageTypeService_bindingLaws oracle) derivation
 
 end Mettapedia.Languages.MeTTa.HE.LeaTTaTypeServiceConformance

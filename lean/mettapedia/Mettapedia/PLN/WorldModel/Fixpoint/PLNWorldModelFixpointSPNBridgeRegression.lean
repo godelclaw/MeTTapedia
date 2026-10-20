@@ -9,7 +9,7 @@ Concrete fixtures for the orbit-to-closure bridge.
 
 namespace Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointSPNBridgeRegression
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.PLN.InferenceControl.ProtocolDynamics.PLNTrailFreeDampedConvergence
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointSPNBridge

@@ -4,6 +4,10 @@ import Mettapedia.Languages.MeTTa.HE.LeaTTaMinimalControlContinuation
 import Mettapedia.Languages.MeTTa.HE.LeaTTaMinimalControlReturn
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaExpressionScope
 import MettaHyperonFull.Runtime.Parser
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # The emitted fuel guard in the existing minimal interpreter
@@ -27,14 +31,14 @@ open Metta.Minimal
 actual reader. The emitter must choose that atom before execution proofs. -/
 theorem boolean_guard_reader :
     Metta.Runtime.parseAtomToken (render (.grounded (.bool true))) =
-      toLeaTTaAtom (.grounded (.bool true)) ∧
+      encodeModelAtom (.grounded (.bool true)) ∧
     Metta.Runtime.parseAtomToken (render (.symbol "True")) ≠
-      toLeaTTaAtom (.symbol "True") ∧
+      encodeModelAtom (.symbol "True") ∧
     render (.grounded (.bool true)) = render (.symbol "True") := by
   refine ⟨?_, ?_, ?_⟩
-  · simp [render, Metta.Runtime.parseAtomToken, toLeaTTaAtom, toLeaTTaGround,
+  · simp [render, Metta.Runtime.parseAtomToken, encodeModelAtom, encodeModelGround,
       Mettapedia.Languages.MeTTa.OSLFCore.GroundedValue.toString]
-  · simp [render, Metta.Runtime.parseAtomToken, toLeaTTaAtom]
+  · simp [render, Metta.Runtime.parseAtomToken, encodeModelAtom]
   · simp [render, Mettapedia.Languages.MeTTa.OSLFCore.GroundedValue.toString]
 
 /-- The actual emitted guard produces exactly one exhaustion result at zero
@@ -47,13 +51,13 @@ theorem withFuel_zero_execution (environment : Metta.Minimal.MinEnv)
     (acyclic : bindings.hasLoop = false) :
     Metta.Minimal.interpretFuel environment (fuel + 5) state
         [⟨Metta.Minimal.atomToStack
-            (toLeaTTaAtom (call "function"
+            (encodeModelAtom (call "function"
               [(withFuel (.grounded (.int 0)) build first).1])) [], bindings⟩] [] =
       ([(.sym "nik:Exhausted", bindings)], state) := by
   let emitted := build (.var ("nik" ++ toString first)) (first + 1)
   exact integer_zero_guard_returns environment state bindings
     ("nik" ++ toString emitted.2) "nik:Exhausted"
-    (toLeaTTaAtom (call "chain"
+    (encodeModelAtom (call "chain"
       [call "eval" [call "-" [.grounded (.int 0), .grounded (.int 1)]],
         .var ("nik" ++ toString first), emitted.1]))
     fuel groundings acyclic (by decide)
@@ -68,7 +72,7 @@ theorem expression_zero_execution (program : Program) (names : Names) (source : 
     (acyclic : bindings.hasLoop = false) :
     Metta.Minimal.interpretFuel environment (fuel + 5) state
         [⟨Metta.Minimal.atomToStack
-            (toLeaTTaAtom (call "function"
+            (encodeModelAtom (call "function"
               [(expression program names (.grounded (.int 0)) source first).1])) [], bindings⟩] [] =
       ([(.sym "nik:Exhausted", bindings)], state) := by
   rw [expression]
@@ -78,9 +82,9 @@ theorem expression_zero_execution (program : Program) (names : Names) (source : 
 theorem withFuel_remaining_occurs (fuel : Atom) (build : Atom → Emit Atom)
     (first : Nat) (rename : String → String) :
     rename (freshName first) ∈
-      (renBy rename (toLeaTTaAtom (withFuel fuel build first).1)).vars := by
+      (renBy rename (encodeModelAtom (withFuel fuel build first).1)).vars := by
   let emitted := build (.var (freshName first)) (first + 1)
-  change rename (freshName first) ∈ (renBy rename (toLeaTTaAtom
+  change rename (freshName first) ∈ (renBy rename (encodeModelAtom
     (call "chain" [call "eval" [call "==" [fuel, .grounded (.int 0)]],
       .var (freshName emitted.2),
       call "unify" [.var (freshName emitted.2), .grounded (.bool true),
@@ -89,13 +93,13 @@ theorem withFuel_remaining_occurs (fuel : Atom) (build : Atom → Emit Atom)
           .var (freshName first), emitted.1]]]))).vars
   simp only [renBy_vars, List.mem_map]
   refine ⟨freshName first, ?_, rfl⟩
-  simp [call, returned, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars]
+  simp [call, returned, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars]
 
 /-- Every compiled expression retains its own guard variable. -/
 theorem expression_remaining_occurs (program : Program) (names : Names) (sourceFuel : Atom)
     (source : Term) (first : Nat) (rename : String → String) :
     rename (freshName first) ∈
-      (renBy rename (toLeaTTaAtom (expression program names sourceFuel source first).1)).vars := by
+      (renBy rename (encodeModelAtom (expression program names sourceFuel source first).1)).vars := by
   rw [expression]
   exact withFuel_remaining_occurs _ _ _ _
 
@@ -109,7 +113,7 @@ theorem renamed_withFuel_zero_enters_handler (environment : MinEnv) (state : St)
     (acyclic : bindings.hasLoop = false) :
     let parent : Frame := { atom := parentBody, ret := .function, vars := scope }
     interpretFuel environment (fuel + 4) state
-      (⟨atomToStack (renBy rename (toLeaTTaAtom (withFuel (.grounded (.int 0)) build first).1))
+      (⟨atomToStack (renBy rename (encodeModelAtom (withFuel (.grounded (.int 0)) build first).1))
         (parent :: continuation), bindings⟩ :: rest) done =
     interpretFuel environment fuel state
       (finItem (parent :: continuation) (.expr [.sym "return", .sym "nik:Exhausted"])
@@ -123,11 +127,11 @@ theorem renamed_withFuel_zero_enters_handler (environment : MinEnv) (state : St)
           returned (.symbol "nik:Exhausted"),
           call "chain" [call "eval" [call "-" [.grounded (.int 0), .grounded (.int 1)]],
             .var (freshName first), emitted.1]]] := rfl
-  simpa only [emittedShape, call, returned, toLeaTTaAtom, toLeaTTaAtoms,
-    toLeaTTaGround, renBy, List.map_cons, List.map_nil] using
+  simpa only [emittedShape, call, returned, encodeModelAtom, encodeModelAtoms,
+    encodeModelGround, renBy, List.map_cons, List.map_nil] using
     integer_zero_guard_selects_in_frame environment state bindings
     (rename (freshName emitted.2)) "nik:Exhausted"
-    (renBy rename (toLeaTTaAtom (call "chain"
+    (renBy rename (encodeModelAtom (call "chain"
       [call "eval" [call "-" [.grounded (.int 0), .grounded (.int 1)]],
         .var (freshName first), emitted.1]))) fuel parent continuation rest done groundings acyclic
 
@@ -145,7 +149,7 @@ theorem renamed_withFuel_zero_to_caller_in_frame (environment : Metta.Minimal.Mi
     let parent : Metta.Minimal.Frame := { atom := parentBody, ret := .function, vars := scope }
     Metta.Minimal.interpretFuel environment (fuel + 5) state
         (⟨Metta.Minimal.atomToStack
-          (renBy rename (toLeaTTaAtom (withFuel (.grounded (.int 0)) build first).1))
+          (renBy rename (encodeModelAtom (withFuel (.grounded (.int 0)) build first).1))
           (parent :: caller :: continuation), bindings⟩ :: rest) done =
       Metta.Minimal.interpretFuel environment fuel state
         (Metta.Minimal.finItem (caller :: continuation) (.sym "nik:Exhausted")
@@ -159,11 +163,11 @@ theorem renamed_withFuel_zero_to_caller_in_frame (environment : Metta.Minimal.Mi
           returned (.symbol "nik:Exhausted"),
           call "chain" [call "eval" [call "-" [.grounded (.int 0), .grounded (.int 1)]],
             .var (freshName first), emitted.1]]] := rfl
-  simpa only [parent, emittedShape, call, returned, toLeaTTaAtom, toLeaTTaAtoms,
-    toLeaTTaGround, renBy, List.map_cons, List.map_nil] using
+  simpa only [parent, emittedShape, call, returned, encodeModelAtom, encodeModelAtoms,
+    encodeModelGround, renBy, List.map_cons, List.map_nil] using
     integer_zero_guard_to_caller_in_frame environment state bindings
       (rename (freshName emitted.2)) "nik:Exhausted"
-      (renBy rename (toLeaTTaAtom (call "chain"
+      (renBy rename (encodeModelAtom (call "chain"
         [call "eval" [call "-" [.grounded (.int 0), .grounded (.int 1)]],
           .var (freshName first), emitted.1])))
       fuel parentBody scope caller continuation rest done groundings acyclic
@@ -178,21 +182,21 @@ theorem renamed_withFuel_zero_to_caller (environment : Metta.Minimal.MinEnv)
     (acyclic : bindings.hasLoop = false) :
     Metta.Minimal.interpretFuel environment (fuel + 5) state
         (⟨Metta.Minimal.atomToStack
-          (renBy rename (toLeaTTaAtom (call "function"
+          (renBy rename (encodeModelAtom (call "function"
             [(withFuel (.grounded (.int 0)) build first).1])))
           (caller :: continuation), bindings⟩ :: rest) done =
       Metta.Minimal.interpretFuel environment fuel state
         (Metta.Minimal.finItem (caller :: continuation) (.sym "nik:Exhausted")
           bindings :: rest) done := by
-  let function := renBy rename (toLeaTTaAtom (call "function"
+  let function := renBy rename (encodeModelAtom (call "function"
     [(withFuel (.grounded (.int 0)) build first).1]))
   have shape : ∃ items, renBy rename
-      (toLeaTTaAtom (withFuel (.grounded (.int 0)) build first).1) = .expr items := by
-    change ∃ items, renBy rename (toLeaTTaAtom (call "chain" [_, _, _])) = .expr items
-    simp only [call, toLeaTTaAtom, renBy]
+      (encodeModelAtom (withFuel (.grounded (.int 0)) build first).1) = .expr items := by
+    change ∃ items, renBy rename (encodeModelAtom (call "chain" [_, _, _])) = .expr items
+    simp only [call, encodeModelAtom, renBy]
     exact ⟨_, rfl⟩
   obtain ⟨items, shape⟩ := shape
-  simpa only [function, call, toLeaTTaAtom, toLeaTTaAtoms, renBy,
+  simpa only [function, call, encodeModelAtom, encodeModelAtoms, renBy,
     List.map_cons, List.map_nil, shape, Metta.Minimal.atomToStack] using
     renamed_withFuel_zero_to_caller_in_frame environment state bindings rename build first fuel
       function (Metta.Minimal.varsCopy (caller :: continuation)) caller continuation rest done
@@ -211,7 +215,7 @@ theorem renamed_expression_zero_to_caller_in_frame (program : Program) (names : 
     let parent : Metta.Minimal.Frame := { atom := parentBody, ret := .function, vars := scope }
     Metta.Minimal.interpretFuel environment (fuel + 5) state
         (⟨Metta.Minimal.atomToStack
-          (renBy rename (toLeaTTaAtom
+          (renBy rename (encodeModelAtom
             (expression program names (.grounded (.int 0)) source first).1))
           (parent :: caller :: continuation), bindings⟩ :: rest) done =
       Metta.Minimal.interpretFuel environment fuel state
@@ -232,7 +236,7 @@ theorem renamed_expression_zero_to_caller (program : Program) (names : Names)
     (acyclic : bindings.hasLoop = false) :
     Metta.Minimal.interpretFuel environment (fuel + 5) state
         (⟨Metta.Minimal.atomToStack
-          (renBy rename (toLeaTTaAtom (call "function"
+          (renBy rename (encodeModelAtom (call "function"
             [(expression program names (.grounded (.int 0)) source first).1])))
           (caller :: continuation), bindings⟩ :: rest) done =
       Metta.Minimal.interpretFuel environment fuel state
@@ -262,13 +266,13 @@ theorem renamed_withFuel_positive_execution_in_frame (environment : Metta.Minima
     let parent : Metta.Minimal.Frame := { atom := parentBody, ret := .function, vars := scope }
     Metta.Minimal.interpretFuel environment (fuel + 8) state
         (⟨Metta.Minimal.atomToStack
-          (renBy rename (toLeaTTaAtom
+          (renBy rename (encodeModelAtom
             (withFuel (.grounded (.int (remaining + 1))) build first).1))
           (parent :: continuation), bindings⟩ :: rest) done =
       Metta.Minimal.interpretFuel environment fuel state
         (⟨Metta.Minimal.atomToStack
           (Metta.Subst.apply [(rename (freshName first), .gnd (.int remaining))]
-            (Metta.instantiate bindings (renBy rename (toLeaTTaAtom emitted.1))))
+            (Metta.instantiate bindings (renBy rename (encodeModelAtom emitted.1))))
           (parent :: continuation), bindings⟩ :: rest) done := by
   intro emitted parent
   change first + 1 ≤ emitted.2 ∧ UsesBefore emitted.2 emitted.1 at bodyBound
@@ -277,7 +281,7 @@ theorem renamed_withFuel_positive_execution_in_frame (environment : Metta.Minima
     have equalIndex := freshName_injective (injective same)
     omega
   have privateGuard : rename (freshName emitted.2) ∉
-      (renBy rename (toLeaTTaAtom emitted.1)).vars := by
+      (renBy rename (encodeModelAtom emitted.1)).vars := by
     intro occurrence
     rw [renBy_vars] at occurrence
     obtain ⟨name, member, same⟩ := List.mem_map.mp occurrence
@@ -297,9 +301,9 @@ theorem renamed_withFuel_positive_execution_in_frame (environment : Metta.Minima
             [.grounded (.int (remaining + 1)), .grounded (.int 1)]],
             .var (freshName first), emitted.1]]] := rfl
   simpa only [parent, emittedShape, call, returned,
-    toLeaTTaAtom, toLeaTTaAtoms, toLeaTTaGround, renBy, List.map_cons, List.map_nil, predecessor] using
+    encodeModelAtom, encodeModelAtoms, encodeModelGround, renBy, List.map_cons, List.map_nil, predecessor] using
     integer_nonzero_guard_enters_in_frame environment state bindings (rename (freshName emitted.2))
-      (rename (freshName first)) "nik:Exhausted" (renBy rename (toLeaTTaAtom emitted.1))
+      (rename (freshName first)) "nik:Exhausted" (renBy rename (encodeModelAtom emitted.1))
       (remaining + 1) fuel parentBody scope continuation rest done groundings (by omega)
       different privateGuard privateRemaining
 
@@ -317,7 +321,7 @@ theorem renamed_withFuel_positive_execution (environment : Metta.Minimal.MinEnv)
       UsesBefore (build (.var (freshName first)) (first + 1)).2
         (build (.var (freshName first)) (first + 1)).1) :
     let emitted := build (.var (freshName first)) (first + 1)
-    let function := renBy rename (toLeaTTaAtom (call "function"
+    let function := renBy rename (encodeModelAtom (call "function"
       [(withFuel (.grounded (.int (remaining + 1))) build first).1]))
     let parent : Metta.Minimal.Frame := { atom := function, ret := .function, vars := Metta.Minimal.varsCopy continuation }
     Metta.Minimal.interpretFuel environment (fuel + 8) state
@@ -325,17 +329,17 @@ theorem renamed_withFuel_positive_execution (environment : Metta.Minimal.MinEnv)
       Metta.Minimal.interpretFuel environment fuel state
         (⟨Metta.Minimal.atomToStack
           (Metta.Subst.apply [(rename (freshName first), .gnd (.int remaining))]
-            (Metta.instantiate bindings (renBy rename (toLeaTTaAtom emitted.1))))
+            (Metta.instantiate bindings (renBy rename (encodeModelAtom emitted.1))))
           (parent :: continuation), bindings⟩ :: rest) done := by
   intro emitted function parent
   have shape : ∃ items, renBy rename
-      (toLeaTTaAtom (withFuel (.grounded (.int (remaining + 1))) build first).1) =
+      (encodeModelAtom (withFuel (.grounded (.int (remaining + 1))) build first).1) =
       .expr items := by
-    change ∃ items, renBy rename (toLeaTTaAtom (call "chain" [_, _, _])) = .expr items
-    simp only [call, toLeaTTaAtom, renBy]
+    change ∃ items, renBy rename (encodeModelAtom (call "chain" [_, _, _])) = .expr items
+    simp only [call, encodeModelAtom, renBy]
     exact ⟨_, rfl⟩
   obtain ⟨items, shape⟩ := shape
-  simpa only [function, parent, emitted, call, toLeaTTaAtom, toLeaTTaAtoms, renBy,
+  simpa only [function, parent, emitted, call, encodeModelAtom, encodeModelAtoms, renBy,
     List.map_cons, List.map_nil, shape, Metta.Minimal.atomToStack] using
     renamed_withFuel_positive_execution_in_frame environment state bindings rename injective
       build first remaining fuel function (Metta.Minimal.varsCopy continuation)
@@ -356,7 +360,7 @@ theorem withFuel_positive_execution (environment : Metta.Minimal.MinEnv)
       UsesBefore (build (.var (freshName first)) (first + 1)).2
         (build (.var (freshName first)) (first + 1)).1) :
     let emitted := build (.var (freshName first)) (first + 1)
-    let function := toLeaTTaAtom (call "function"
+    let function := encodeModelAtom (call "function"
       [(withFuel (.grounded (.int (remaining + 1))) build first).1])
     let parent : Metta.Minimal.Frame := { atom := function, ret := .function, vars := Metta.Minimal.varsCopy continuation }
     Metta.Minimal.interpretFuel environment (fuel + 8) state
@@ -364,7 +368,7 @@ theorem withFuel_positive_execution (environment : Metta.Minimal.MinEnv)
       Metta.Minimal.interpretFuel environment fuel state
         (⟨Metta.Minimal.atomToStack
           (Metta.Subst.apply [(freshName first, .gnd (.int remaining))]
-            (Metta.instantiate bindings (toLeaTTaAtom emitted.1)))
+            (Metta.instantiate bindings (encodeModelAtom emitted.1)))
           (parent :: continuation), bindings⟩ :: rest) done := by
   have identity (atom : Metta.Atom) : renBy id atom = atom := by
     change renBy (applyRen []) atom = atom
@@ -376,7 +380,7 @@ theorem withFuel_positive_execution (environment : Metta.Minimal.MinEnv)
 
 /-- Closed generated data remains inert under the target's runtime bindings. -/
 theorem data_atom_runtime_closed {atom : Atom} (data : MeTTaData.DataAtom atom) :
-    (toLeaTTaAtom atom).vars = [] := by
+    (encodeModelAtom atom).vars = [] := by
   apply List.eq_nil_iff_forall_not_mem.mpr
   intro name member
   exact data_has_no_variables data name
@@ -384,7 +388,7 @@ theorem data_atom_runtime_closed {atom : Atom} (data : MeTTaData.DataAtom atom) 
 
 /-- Generated data tags cannot be mistaken for the driver's empty-result marker. -/
 theorem data_atom_runtime_visible {atom : Atom} (data : MeTTaData.DataAtom atom) :
-    (toLeaTTaAtom atom != Metta.Minimal.emptyA) = true := by
+    (encodeModelAtom atom != Metta.Minimal.emptyA) = true := by
   cases data with
   | symbol tag =>
       rename_i name
@@ -405,10 +409,10 @@ theorem withFuel_return_execution (environment : Metta.Minimal.MinEnv)
     (privateRemaining : Metta.instantiate bindings (.var (freshName first)) =
       .var (freshName first)) :
     Metta.Minimal.interpretFuel environment (fuel + 10) state
-        [⟨Metta.Minimal.atomToStack (toLeaTTaAtom (call "function"
+        [⟨Metta.Minimal.atomToStack (encodeModelAtom (call "function"
           [(withFuel (.grounded (.int (remaining + 1)))
             (fun _ => pure (returned result)) first).1])) [], bindings⟩] [] =
-      ([(toLeaTTaAtom result, bindings)], state) := by
+      ([(encodeModelAtom result, bindings)], state) := by
   have resultScope : UsesBefore (first + 1) result := by
     intro name occurrence
     exact False.elim (data_has_no_variables data name occurrence)
@@ -422,8 +426,8 @@ theorem withFuel_return_execution (environment : Metta.Minimal.MinEnv)
     change first + 1 ≤ first + 1 ∧ UsesBefore (first + 1) (returned result)
     simpa [returned] using resultScope
   have closed := data_atom_runtime_closed data
-  have returnedClosed : (toLeaTTaAtom (returned result)).vars = [] := by
-    simp [returned, call, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars, closed]
+  have returnedClosed : (encodeModelAtom (returned result)).vars = [] := by
+    simp [returned, call, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars, closed]
   have computation := withFuel_positive_execution environment state bindings
     (fun _ => pure (returned result)) first remaining (fuel + 2) [] [] []
     groundings privateRemaining bodyBound
@@ -431,7 +435,7 @@ theorem withFuel_return_execution (environment : Metta.Minimal.MinEnv)
   rw [show ((pure (returned result) : Emit Atom) (first + 1)).1 = returned result from rfl]
   rw [Metta.instantiate_of_closed bindings _ returnedClosed,
     Metta.Subst.apply_of_closed _ _ returnedClosed]
-  exact closed_return_finishes environment state bindings _ (toLeaTTaAtom result) [] fuel
+  exact closed_return_finishes environment state bindings _ (encodeModelAtom result) [] fuel
     closed (data_atom_runtime_visible data)
 
 private theorem encoded_value_data (term : Term) :
@@ -452,10 +456,10 @@ theorem expression_symbol_execution (program : Program) (names : Names) (name : 
     (privateRemaining : Metta.instantiate bindings (.var (freshName first)) =
       .var (freshName first)) :
     Metta.Minimal.interpretFuel environment (fuel + 10) state
-        [⟨Metta.Minimal.atomToStack (toLeaTTaAtom (call "function"
+        [⟨Metta.Minimal.atomToStack (encodeModelAtom (call "function"
           [(expression program names (.grounded (.int (remaining + 1)))
             (.sym name) first).1])) [], bindings⟩] [] =
-      ([(toLeaTTaAtom (value (MeTTaData.encode (.sym name))), bindings)], state) := by
+      ([(encodeModelAtom (value (MeTTaData.encode (.sym name))), bindings)], state) := by
   simpa only [expression] using withFuel_return_execution environment state bindings
     (value (MeTTaData.encode (.sym name))) (encoded_value_data (.sym name))
     first remaining fuel groundings privateRemaining
@@ -470,11 +474,11 @@ theorem expression_missing_variable_execution (program : Program) (names : Names
     (privateRemaining : Metta.instantiate bindings (.var (freshName first)) =
       .var (freshName first)) :
     Metta.Minimal.interpretFuel environment (fuel + 10) state
-        [⟨Metta.Minimal.atomToStack (toLeaTTaAtom (call "function"
+        [⟨Metta.Minimal.atomToStack (encodeModelAtom (call "function"
           [(expression program names (.grounded (.int (remaining + 1)))
             (.var name) first).1])) [], bindings⟩] [] =
       ([(.sym "nik:Failure", bindings)], state) := by
-  simpa only [expression, missing, toLeaTTaAtom] using
+  simpa only [expression, missing, encodeModelAtom] using
     withFuel_return_execution environment state bindings (.symbol "nik:Failure")
       (.symbol (by simp [MeTTaData.dataSymbols])) first remaining fuel
       groundings privateRemaining

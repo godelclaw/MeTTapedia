@@ -59,6 +59,32 @@ partial def path (atom : Atom) : Decode Path := do
 
 /-! ## Rows -/
 
+partial def inductiveTerm (atom : Atom) : Decode InductiveSyntax.Term := do
+  match ← node atom with
+  | ("ITName", [name]) => pure (.name (← token name))
+  | ("ITApp", [function, argument]) => pure (.app (← inductiveTerm function) (← inductiveTerm argument))
+  | ("ITArrow", [domain, codomain]) => pure (.arrow (← inductiveTerm domain) (← inductiveTerm codomain))
+  | (label, _) => throw s!"unexpected inductive term {label}"
+
+def inductiveBinder (atom : Atom) : Decode InductiveSyntax.Binder := do
+  match ← node atom with
+  | ("IBinder", [name, type]) => pure ⟨← token name, ← inductiveTerm type⟩
+  | (label, _) => throw s!"unexpected inductive binder {label}"
+
+def inductiveConstructor (atom : Atom) : Decode InductiveSyntax.Constructor := do
+  match ← node atom with
+  | ("IConstructor", [name, fields, result]) =>
+      pure ⟨← token name, ← (← list fields).mapM inductiveBinder, ← inductiveTerm result⟩
+  | (label, _) => throw s!"unexpected inductive constructor {label}"
+
+def inductiveFamily (atom : Atom) : Decode InductiveSyntax.Family := do
+  match ← node atom with
+  | ("IFamily", [name, parameters, indices, sort, constructors]) =>
+      pure ⟨← token name, ← (← list parameters).mapM inductiveBinder,
+        ← (← list indices).mapM inductiveBinder, ← inductiveTerm sort,
+        ← (← list constructors).mapM inductiveConstructor⟩
+  | (label, _) => throw s!"unexpected inductive family {label}"
+
 partial def typeExpr (atom : Atom) : Decode TypeExpr := do
   match ← node atom with
   | ("TyBase", [name]) => pure (.base (← token name))
@@ -183,6 +209,7 @@ def block (atom : Atom) : Numbered Block := do
         | (label, _) => throw s!"unexpected replacement {label}"))
   | ("BEquations", [rows]) => pure (.equations (← (← list rows).mapM equationRow))
   | ("BRewrites", [rows]) => pure (.rewrites (← ((← list rows).mapM rewriteRow : Decode _)))
+  | ("BInductives", [rows]) => pure (.inductives (← ((← list rows).mapM inductiveFamily : Decode _)))
   | (label, _) => throw s!"unexpected block {label}"
 
 partial def expr (atom : Atom) : Numbered Expr := do

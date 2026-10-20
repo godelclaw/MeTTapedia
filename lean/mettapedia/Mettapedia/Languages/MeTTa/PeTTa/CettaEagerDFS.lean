@@ -1,7 +1,7 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.BindingTheory
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ApplicationEquivariance
 import Mettapedia.Languages.MeTTa.PeTTa.ProgramReplay
-import Mettapedia.Logic.LP.TotalUnification
+import Mettapedia.Logic.LP.UnificationIdempotence
 import Mettapedia.GSLT.Distinction.ProductiveBlocks
 import Mettapedia.Util.LinearHash
 
@@ -17,10 +17,12 @@ output, input and the named-space store belong to the whole execution.
 that scope exhausts, then receives one expression containing all inner answer
 occurrences in order. The scope boundary does not discard performed effects.
 
-The profile describes CeTTa's eager-value behavior. It does not assert equality
+The initial section specifies an explicit eager-value source profile. Its
+historical module name does not make a native runtime authoritative. Equality
 with the existing list-valued evaluator, SWI's static output unification, native
-operation registries, native fault-as-value policies or compiled C execution.
-External callback latency is outside the transition-count contract.
+operation registries, native fault-as-value policies or compiled C execution
+requires separate conformance evidence. External callback latency is outside
+the transition-count contract.
 
 The `Destination` component below separately states the finite structural
 relational and eager destination policies. It retains reached equations,
@@ -1566,6 +1568,25 @@ observations. Repeated variables use one substitution, so sharing is retained. -
 def observations (source : Equations) (atoms : List Atom) : Option (List Atom) :=
   (resolve source).map fun environment => atoms.map (read environment)
 
+/-- All joint readouts licensed by the source equations, independently of
+the solver's chosen residual presentation. One model reads every position. -/
+def solutionTuples (source : Equations) (atoms : List Atom) : Set (List Atom) :=
+  {values | ∃ environment, Solves environment source ∧
+    atoms.map (read environment) = values}
+
+/-- Packet transformations justified in every model preserve the complete
+joint observer, including repeated positions and shared open variables. -/
+theorem solutionTuples_congr_models (source : Equations) (before after : List Atom)
+    (preserved : ∀ environment, Solves environment source →
+      after.map (read environment) = before.map (read environment)) :
+    solutionTuples source after = solutionTuples source before := by
+  ext values
+  constructor
+  · rintro ⟨environment,solved,returned⟩
+    exact ⟨environment,solved,(preserved environment solved).symm.trans returned⟩
+  · rintro ⟨environment,solved,returned⟩
+    exact ⟨environment,solved,(preserved environment solved).trans returned⟩
+
 theorem one_joint_environment {source : Equations} {environment : Environment}
     (resolved : resolve source = some environment) (atoms : List Atom) :
     observations source atoms = some (atoms.map (read environment)) := by
@@ -1622,12 +1643,16 @@ inductive Goal where
   | equate (value destination : Atom)
   | invoke (head : String) (arguments : List Atom) (destination : Atom)
   | argumentReturn (value destination : Atom) (callerDepth : Nat)
+  | openCommit
+  | commit
+  | restoreCommit (olderBoundary : Nat)
   deriving DecidableEq, Repr
 
 def Goal.atoms : Goal → List Atom
   | .evaluate expression destination | .equate expression destination => [expression, destination]
   | .invoke _ arguments destination => destination :: arguments
   | .argumentReturn value destination _ => [value, destination]
+  | .openCommit | .commit | .restoreCommit _ => []
 
 /-- A saved continuation delimiter selects an older suffix. The list-split
 source rules below give its meaning independently of this finite index. -/
@@ -1641,6 +1666,9 @@ structure Control where
   destination : Atom
   /-- Names retained by sibling scopes, source declarations and caller frames. -/
   reserved : Finset String := ∅
+  /-- Number of older alternatives outside the current predicate/meta-call.
+  This is a logical choice-stack delimiter, independent of native storage. -/
+  cutBoundary : Nat := 0
   deriving DecidableEq
 
 /-- Admission concerns the complete reached branch, including pending caller
@@ -1742,6 +1770,8 @@ inductive Boundary where
   | invoke (head : String) (arguments : List Atom) (destination : Atom)
   | invalidEnvironment
   | invalidDelimiter (callerDepth available : Nat)
+  | openCommit
+  | commit (retained : Nat)
   deriving DecidableEq, Repr
 
 inductive Result where
@@ -1760,6 +1790,10 @@ def prepare (policy : Policy) (program : SpaceSemantics.Program)
   | .expression [.symbol "let", pattern, producer, body] =>
       resume (letGoals policy program pattern producer body destination
         (.var (freshName control 0)))
+  | .expression [.symbol "cut"] =>
+      resume [.commit,.equate (Effects.boolean true) destination]
+  | .expression [.symbol "once", child] =>
+      resume [.openCommit,.evaluate child destination,.commit,.restoreCommit control.cutBoundary]
   | .expression (.symbol head :: arguments) =>
       if callable program head then
         let (pending, ready) := callArguments program head arguments
@@ -1783,6 +1817,10 @@ def machine {Context : Type} (policy : Policy) (program : SpaceSemantics.Program
     Machine (Cursor Context) Empty (Result × Cursor Context) Boundary where
   step cursor := some <|
     match cursor.control.goals with
+    | .openCommit :: _ => .call .openCommit cursor
+    | .commit :: _ => .call (.commit cursor.control.cutBoundary) cursor
+    | .restoreCommit boundary :: older =>
+        .silent {cursor with control := {cursor.control with goals := older,cutBoundary := boundary}}
     | [] =>
         match resolve cursor.control.bindings with
         | none => .call .invalidEnvironment cursor
@@ -2089,6 +2127,46 @@ theorem resolve_mostGeneral {source : Equations} {environment : Environment}
   unifyTotal_mgu (equations source) environment resolved candidate
     ((solves_iff_unifies candidate source).mp solved)
 
+/-- Materializing a returned value through the actual solved presentation
+preserves its meaning in every model of the reached equations. This also
+holds for open values; selecting one ground solution is unnecessary. -/
+theorem resolve_read_preserves {source : Equations} {environment : Environment}
+    (resolved : resolve source = some environment) (candidate : Environment)
+    (solved : Solves candidate source) (atom : Atom) :
+    read candidate (read environment atom) = read candidate atom := by
+  have idempotent := (unifyTotal_relevantIdempotent
+    (equations source) environment resolved).absorbs
+  have absorbs := Subst.absorbs_of_moreGeneral idempotent
+    (resolve_mostGeneral resolved candidate solved)
+  simpa only [read, encode_decode] using
+    congrArg decode (absorbs.applyTerm (encode atom))
+
+/-- The same later model reads the entire saved packet. In particular,
+materializing a head does not detach its aliases from pending siblings. -/
+theorem resolve_packet_preserves {source : Equations} {environment : Environment}
+    (resolved : resolve source = some environment) (candidate : Environment)
+    (solved : Solves candidate source) (atoms : List Atom) :
+    (atoms.map (read environment)).map (read candidate) = atoms.map (read candidate) := by
+  rw [List.map_map]
+  exact List.map_congr_left fun atom _ => resolve_read_preserves resolved candidate solved atom
+
+/-- Solved presentation and source packet have exactly the same complete
+joint observations. This is stronger than agreement at the chosen unifier. -/
+theorem solutionTuples_resolved {source : Equations} {environment : Environment}
+    (resolved : resolve source = some environment) (atoms : List Atom) :
+    solutionTuples source (atoms.map (read environment)) = solutionTuples source atoms :=
+  solutionTuples_congr_models source atoms _
+    (fun candidate solved => resolve_packet_preserves resolved candidate solved atoms)
+
+/-- An earlier materialized head remains valid when its caller adds further
+constraints. The extension premise is about models, not evaluator results. -/
+theorem resolve_read_preserved_by_extension {source later : Equations}
+    {environment : Environment} (resolved : resolve source = some environment)
+    (extension : ∀ candidate, Solves candidate later → Solves candidate source)
+    (candidate : Environment) (solved : Solves candidate later) (atom : Atom) :
+    read candidate (read environment atom) = read candidate atom :=
+  resolve_read_preserves resolved candidate (extension candidate solved) atom
+
 private theorem moreGeneral_read {first second : Environment}
     (factor : first.moreGeneral second) :
     ∃ post : String → Atom, ∀ atom,
@@ -2138,6 +2216,9 @@ def Goal.readout (table : TypeSubst) : Goal → Goal
   | .equate value destination => .equate (table.apply value) (table.apply destination)
   | .invoke head arguments destination => .invoke head (arguments.map table.apply) (table.apply destination)
   | .argumentReturn value destination depth => .argumentReturn (table.apply value) (table.apply destination) depth
+  | .openCommit => .openCommit
+  | .commit => .commit
+  | .restoreCommit boundary => .restoreCommit boundary
 
 @[simp] theorem Goal.readout_atoms (table : TypeSubst) (goal : Goal) :
     (goal.readout table).atoms = goal.atoms.map table.apply := by
@@ -2572,6 +2653,8 @@ theorem prepare_wellDelimited (policy : Policy) (program : SpaceSemantics.Progra
   · exact prefix_wellDelimited _ _ (by simp [noDelimiter]) valid
   · exact prefix_wellDelimited _ _ (by simp [noDelimiter]) valid
   · exact prefix_wellDelimited _ _ (letGoals_plain _ _ _ _ _ _ _) valid
+  · exact prefix_wellDelimited _ _ (by simp [noDelimiter]) valid
+  · exact prefix_wellDelimited _ _ (by simp [noDelimiter]) valid
   · split
     · apply prefix_wellDelimited _ _ ?_ valid
       intro goal occurs
@@ -2612,6 +2695,11 @@ theorem step_wellDelimited {Context : Type} (policy : Policy) (program : SpaceSe
   | cons goal older =>
       rw [goals] at valid
       cases goal with
+      | openCommit | commit => simp [machine, goals] at advanced
+      | restoreCommit boundary =>
+          simp only [machine, goals, Option.some.injEq, Transition.silent.injEq] at advanced
+          subst target
+          exact valid
       | evaluate expression destination =>
           simp only [machine, goals, Option.some.injEq, Transition.silent.injEq] at advanced
           subst target
@@ -2664,6 +2752,7 @@ theorem no_invalidDelimiter_step {Context : Type} (policy : Policy) (program : S
   | cons goal older =>
       rw [goals] at valid
       cases goal with
+      | openCommit | commit | restoreCommit _ => simp [machine, goals] at bad
       | evaluate => simp [machine, goals] at bad
       | equate value destination =>
           simp only [machine, goals] at bad
@@ -3273,14 +3362,18 @@ def attempt (control : Control) (head : String) (arguments : List Atom)
       goals := .evaluate (freshBody control occurrence equation) destination :: older }
   else none
 
+/-- One source position is looked up and attempted without executing its body. -/
+def trial (program : Program) (control : Control) (head : String) (arguments : List Atom)
+    (destination : Atom) (older : List Goal) (occurrence : Nat) : Option Control := do
+  let equation ← program.equations[occurrence]?
+  attempt control head arguments destination older occurrence equation
+
 /-- A physical source position survives filtering. Identical equation rows
 are attempted separately, in their original order. -/
 def choices (program : Program) (control : Control) (head : String) (arguments : List Atom)
     (destination : Atom) (older : List Goal) : List (Nat × Control) :=
-  (List.range program.equations.length).filterMap fun occurrence => do
-    let equation ← program.equations[occurrence]?
-    let next ← attempt control head arguments destination older occurrence equation
-    pure (occurrence, next)
+  (List.range program.equations.length).filterMap fun occurrence =>
+    (trial program control head arguments destination older occurrence).map (occurrence, ·)
 
 /-- The source validity condition is the independent common-solution judgment;
 no candidate environment or accepted result is supplied to `attempt`. -/
@@ -3322,7 +3415,7 @@ theorem mem_choices_iff (program : Program) (control : Control) (head : String)
     (occurrence, next) ∈ choices program control head arguments destination older ↔
       ∃ equation, program.equations[occurrence]? = some equation ∧
         attempt control head arguments destination older occurrence equation = some next := by
-  simp only [choices, List.mem_filterMap, List.mem_range]
+  simp only [choices, trial, List.mem_filterMap, List.mem_range]
   constructor
   · rintro ⟨index, _bound, selected⟩
     cases row : program.equations[index]? with
@@ -5255,14 +5348,42 @@ theorem enterSuperpose_constructs {Context : Type} (world : World)
       some ⟨world, {scope with frontier := superposeWork control context origins alternatives destination older ++ pending} :: parents⟩ := by
   simp only [enterSuperpose?, frontier, head]
 
+/-- A predicate body has its own cut delimiter. The caller's delimiter is
+restored before its older goals resume; neither marker changes bindings. -/
+def predicateEntry (retained : Nat) (selected : Control) : Control :=
+  {selected with cutBoundary := retained,goals := match selected.goals with
+    | [] => [.restoreCommit selected.cutBoundary]
+    | body :: older => body :: .restoreCommit selected.cutBoundary :: older}
+
+theorem predicateEntry_injective (retained : Nat) : Function.Injective (predicateEntry retained) := by
+  intro first second same
+  cases first with
+  | mk firstBindings firstGoals firstDestination firstReserved firstBoundary =>
+    cases second with
+    | mk secondBindings secondGoals secondDestination secondReserved secondBoundary =>
+      simp only [predicateEntry,Control.mk.injEq] at same
+      obtain ⟨bindings,goals,destination,reserved,boundary⟩ := same
+      subst secondBindings
+      subst secondDestination
+      subst secondReserved
+      cases firstGoals <;> cases secondGoals <;> simp_all
+
+theorem predicateEntry_wellDelimited (retained : Nat) (selected : Control)
+    (valid : WellDelimited selected.goals) : WellDelimited (predicateEntry retained selected).goals := by
+  cases goals : selected.goals with
+  | nil => simp [predicateEntry,goals,WellDelimited]
+  | cons goal older =>
+      cases goal <;> simp_all [predicateEntry,WellDelimited]
+      all_goals omega
+
 /-- Install equation alternatives without erasing their physical source index.
 The single allocation boundary includes all retained scopes. -/
 def equationWork {Context : Type} (program : SpaceSemantics.Program)
     (control : Control) (boundary : Finset String) (context : Context) (origins : List Nat)
-    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal) :
+    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal) (retained : Nat) :
     List (CollectionWork Context) :=
   (ClauseChoice.choices program (protectControl control boundary) head arguments destination older).map
-    fun (occurrence, selected) => (selected, context, origins ++ [occurrence])
+    fun (occurrence, selected) => (predicateEntry retained selected, context, origins ++ [occurrence])
 
 /-- Equation entry executes actual finite source selection under the reached
 constraint environment. Native/primitive requests remain outside this operation. -/
@@ -5278,7 +5399,7 @@ def enterEquations? {Context : Type} (program : SpaceSemantics.Program)
           if !(program.equations.any (·.head == head)) then none else do
             let environment ← resolve control.bindings
             let children := equationWork program control (collectionSupport configuration) context origins
-              head (arguments.map (read environment)) destination older
+              head (arguments.map (read environment)) destination older pending.length
             pure {configuration with scopes := {scope with frontier := children ++ pending} :: parents}
       | _ => none
     | [] => none
@@ -5330,14 +5451,14 @@ theorem enterSuperpose_preserves_world {Context : Type} (before after : Collecti
 solution judgment, with the exact fresh pattern/body and source occurrence. -/
 theorem equationWork_source_iff {Context : Type} (program : SpaceSemantics.Program)
     (control : Control) (boundary : Finset String) (context : Context) (origins : List Nat)
-    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal)
+    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal) (retained : Nat)
     (work : CollectionWork Context) :
-    work ∈ equationWork program control boundary context origins head arguments destination older ↔
+    work ∈ equationWork program control boundary context origins head arguments destination older retained ↔
       ∃ occurrence next equation, program.equations[occurrence]? = some equation ∧
         ClauseChoice.Selection program (protectControl control boundary) head arguments destination older
           occurrence (ClauseChoice.freshPattern (protectControl control boundary) occurrence equation)
           (ClauseChoice.freshBody (protectControl control boundary) occurrence equation) next ∧
-        work = (next, context, origins ++ [occurrence]) := by
+        work = (predicateEntry retained next, context, origins ++ [occurrence]) := by
   simp only [equationWork, List.mem_map]
   constructor
   · rintro ⟨⟨occurrence, next⟩, present, rfl⟩
@@ -5362,7 +5483,7 @@ theorem enterEquations_constructs {Context : Type} (program : SpaceSemantics.Pro
     enterEquations? program ⟨world, scope :: parents⟩ =
       some ⟨world, {scope with frontier := (equationWork program control
         (collectionSupport ⟨world, scope :: parents⟩) context origins head
-        (arguments.map (read environment)) destination older ++ pending)} :: parents⟩ := by
+        (arguments.map (read environment)) destination older pending.length ++ pending)} :: parents⟩ := by
   simp only [enterEquations?, frontier, atCall, ordinary, Bool.false_eq_true, ↓reduceIte,
     declared, Bool.not_true, resolved, pure]
   rfl
@@ -5379,7 +5500,7 @@ theorem enterEquations_origin {Context : Type} (program : SpaceSemantics.Program
       resolve control.bindings = some environment ∧
       after = ⟨before.world, {scope with frontier := (equationWork program control
         (collectionSupport before) context origins head (arguments.map (read environment))
-        destination older ++ pending)} :: parents⟩ := by
+        destination older pending.length ++ pending)} :: parents⟩ := by
   unfold enterEquations? at entered
   split at entered
   · rename_i scope parents scopes
@@ -5406,12 +5527,13 @@ theorem enterEquations_origin {Context : Type} (program : SpaceSemantics.Program
 
 theorem equationWork_wellDelimited {Context : Type} (program : SpaceSemantics.Program)
     (control : Control) (boundary : Finset String) (context : Context) (origins : List Nat)
-    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal)
+    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal) (retained : Nat)
     (valid : WellDelimited older) (work : CollectionWork Context)
-    (member : work ∈ equationWork program control boundary context origins head arguments destination older) :
+    (member : work ∈ equationWork program control boundary context origins head arguments destination older retained) :
     WellDelimited work.1.goals := by
   obtain ⟨occurrence, next, equation, row, selected, rfl⟩ :=
-    (equationWork_source_iff program control boundary context origins head arguments destination older work).mp member
+    (equationWork_source_iff program control boundary context origins head arguments destination older retained work).mp member
+  apply predicateEntry_wellDelimited
   exact ClauseChoice.attempt_wellDelimited _ _ _ _ _ _ _ _
     ((ClauseChoice.selection_iff_attempt program _ head arguments destination older occurrence equation next row).mp selected) valid
 
@@ -5419,34 +5541,35 @@ theorem equationWork_wellDelimited {Context : Type} (program : SpaceSemantics.Pr
 additional allocation boundary changes no world, context or argument read. -/
 theorem equationWork_invocation {Context : Type} (policy : Policy) (program : SpaceSemantics.Program)
     (cursor : Cursor Context) (boundary : Finset String) (origins : List Nat)
-    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal)
+    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal) (retained : Nat)
     (environment : Environment)
     (ordinary : (Eval.ioHead head || StdLib.known head) = false)
     (atCall : cursor.control.goals = .invoke head arguments destination :: older)
     (resolved : resolve cursor.control.bindings = some environment)
     (work : CollectionWork Context)
     (member : work ∈ equationWork program cursor.control boundary cursor.context origins head
-      (arguments.map (read environment)) destination older) :
+      (arguments.map (read environment)) destination older retained) :
     (machine policy program).step cursor = some (.call
       (.invoke head (arguments.map (read environment)) destination) cursor) ∧
     work.2.1 = cursor.context ∧
     ∃ environment, resolve work.1.bindings = some environment := by
   obtain ⟨occurrence, next, equation, _row, selected, rfl⟩ :=
     (equationWork_source_iff program cursor.control boundary cursor.context origins head
-      (arguments.map (read environment)) destination older work).mp member
+      (arguments.map (read environment)) destination older retained work).mp member
   have notPrint : head ≠ "println!" := by
     intro same
     subst head
     simp [Eval.ioHead] at ordinary
-  exact ⟨by simp [machine, atCall, resolved, notPrint], rfl, ClauseChoice.selected_resolves selected⟩
+  exact ⟨by simp [machine, atCall, resolved, notPrint], rfl,
+    by simpa only [predicateEntry] using ClauseChoice.selected_resolves selected⟩
 
 /-- Both source pattern and body use one earned fresh instance outside every
 retained source name, not independent pointwise renamings. -/
 theorem equationWork_fresh {Context : Type} (program : SpaceSemantics.Program)
     (control : Control) (boundary : Finset String) (context : Context) (origins : List Nat)
-    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal)
+    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal) (retained : Nat)
     (work : CollectionWork Context)
-    (member : work ∈ equationWork program control boundary context origins head arguments destination older) :
+    (member : work ∈ equationWork program control boundary context origins head arguments destination older retained) :
     ∃ occurrence equation,
       program.equations[occurrence]? = some equation ∧
       ClauseChoice.FreshInstance (protectControl control boundary) equation
@@ -5455,7 +5578,7 @@ theorem equationWork_fresh {Context : Type} (program : SpaceSemantics.Program)
       (∀ name, ClauseChoice.rename (protectControl control boundary) occurrence
         (ClauseChoice.clauseAtoms equation) name ∉ control.support ∪ boundary) := by
   obtain ⟨occurrence, next, equation, row, _selected, _same⟩ :=
-    (equationWork_source_iff program control boundary context origins head arguments destination older work).mp member
+    (equationWork_source_iff program control boundary context origins head arguments destination older retained work).mp member
   refine ⟨occurrence, equation, row, ClauseChoice.fresh_clause_instance _ _ _, ?_⟩
   intro name
   rw [← protectControl_support]
@@ -5770,7 +5893,7 @@ theorem enterEquations_wellDelimited {Context : Type} (program : SpaceSemantics.
   · refine ⟨?_, parentValid.2⟩
     intro work member
     rcases List.mem_append.mp member with chosen | pending
-    · exact equationWork_wellDelimited _ _ _ _ _ _ _ _ _ olderValid work chosen
+    · exact equationWork_wellDelimited _ _ _ _ _ _ _ _ _ _ olderValid work chosen
     · exact parentValid.1 work pending
   · exact parentsValid target present
 
@@ -6579,24 +6702,35 @@ theorem unlisted_reference_spelling_not_identity (token : Token) (frame : Metava
   rw [CurrentStore.nameIn_external token frame _ absent]
   exact (CurrentStore.referenceName_ne_freeName reference _).symm
 
-/-- Generative named-syntax source result. The raw reader supplies authored
-syntax; the independent copy condition supplies fresh logical variables and
-preserves all sharing within it. Anonymous occurrence policy is deliberately
-outside this named-syntax rule. -/
+/-- Generative named-syntax source result after source occurrence binding.
+The reader expands anonymous markers before this boundary; the independent
+copy condition preserves the resulting variable identities and correlations.
+The named inventory is earned by every successful read. -/
 inductive NamedParseResult (protectedNames : Finset String) (text loaded : Atom) : Prop where
   | parsed (raw : Atom) (read : StdLib.parseAtom text = .ok raw)
       (named : "_" ∉ TypeSubst.typeVars raw)
       (copy : IsCopy protectedNames raw [] (loaded, []))
 
+private theorem typeVars_eq_atomFreeVars (atom : Atom) :
+    TypeSubst.typeVars atom = Mettapedia.Languages.ProcessCalculi.MORK.atomFreeVars atom := by
+  induction atom using Atom.rec
+      (motive_2 := fun atoms => TypeSubst.typeVarsList atoms =
+        Mettapedia.Languages.ProcessCalculi.MORK.atomFreeVars.atomFreeVarsList atoms) with
+  | symbol | var | grounded => rfl
+  | expression atoms ih => exact ih
+  | nil => rfl
+  | cons atom atoms head tail =>
+      simp only [TypeSubst.typeVarsList,
+        Mettapedia.Languages.ProcessCalculi.MORK.atomFreeVars.atomFreeVarsList,head,tail]
+
+/-- The successful reader and owned copy earn the source result together;
+no post-reader variable inventory is supplied by the caller. -/
 theorem loadParsed_named_result {allocator next : Allocator} {token : Token}
-    {protectedNames : Finset String} {text raw loaded : Atom}
-    (success : loadParsed? allocator protectedNames text = .ok (some (next, token, loaded)))
-    (parsed : StdLib.parseAtom text = .ok raw) (named : "_" ∉ TypeSubst.typeVars raw) :
+    {protectedNames : Finset String} {text loaded : Atom}
+    (success : loadParsed? allocator protectedNames text = .ok (some (next, token, loaded))) :
     NamedParseResult protectedNames text loaded := by
-  obtain ⟨value, actual, copied⟩ := loadParsed_isCopy success
-  rw [parsed] at actual
-  cases Except.ok.inj actual
-  exact .parsed raw parsed named copied
+  obtain ⟨raw, parsed, copied⟩ := loadParsed_isCopy success
+  exact .parsed raw parsed (by simpa only [typeVars_eq_atomFreeVars] using StdLib.parseAtom_no_marker parsed) copied
 
 end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Collection.SyntaxLoading
 
@@ -6661,6 +6795,22 @@ def installChild {Context : Type} (program : SpaceSemantics.Program)
       let answer : CollectedAnswer := ⟨value, bindings, origins, []⟩
       let next := (source.1, ⟨reached.world, Scope.record scope pending answer :: parents⟩)
       if scope.caller.isNone then .publish [answer] next else .silent next
+  | .call .openCommit reached =>
+      match reached.control.goals with
+      | .openCommit :: older =>
+          let resumed := {reached.control with goals := older,cutBoundary := pending.length}
+          .silent (source.1, ⟨reached.world,
+            {scope with frontier := (resumed,reached.context,origins) :: pending} :: parents⟩)
+      | _ => .call .invalidScope source
+  | .call (.commit retained) reached =>
+      match reached.control.goals with
+      | .commit :: older =>
+          if retained ≤ pending.length then
+            let kept := pending.drop (pending.length - retained)
+            .silent (source.1, ⟨reached.world, {scope with frontier :=
+              ({reached.control with goals := older},reached.context,origins) :: kept} :: parents⟩)
+          else .call (.branch (.invalidDelimiter retained pending.length)) source
+      | _ => .call .invalidScope source
   | .call (.invoke head arguments destination) reached =>
       match reached.control.goals with
       | .invoke _ _ _ :: older =>
@@ -7001,6 +7151,9 @@ def Goal.rename (rename : String → String) : Goal → Goal
   | .invoke head arguments destination => .invoke head (arguments.map (renameTypeVars rename)) (renameTypeVars rename destination)
   | .argumentReturn value destination depth =>
       .argumentReturn (renameTypeVars rename value) (renameTypeVars rename destination) depth
+  | .openCommit => .openCommit
+  | .commit => .commit
+  | .restoreCommit boundary => .restoreCommit boundary
 
 def Control.atoms (control : Control) : List Atom :=
   control.destination :: control.bindings.flatMap (fun pair => [pair.1, pair.2]) ++
@@ -7010,7 +7163,8 @@ def Control.rename (rename : String → String) (control : Control) : Control :=
   {bindings := control.bindings.map (fun pair => (renameTypeVars rename pair.1, renameTypeVars rename pair.2))
    goals := control.goals.map (Goal.rename rename)
    destination := renameTypeVars rename control.destination
-   reserved := control.reserved.image rename}
+   reserved := control.reserved.image rename
+   cutBoundary := control.cutBoundary}
 
 theorem Goal.rename_atoms (rename : String → String) (goal : Goal) :
     (goal.rename rename).atoms = goal.atoms.map (renameTypeVars rename) := by
@@ -7272,6 +7426,14 @@ theorem installChild_published_origin {Context : Type} (program : SpaceSemantics
       · contradiction
   | call request reached =>
     cases request with
+    | openCommit =>
+        simp only [installChild] at published
+        split at published <;> cases published
+    | commit retained =>
+        simp only [installChild] at published
+        split at published
+        · split at published <;> cases published
+        · cases published
     | invalidEnvironment => contradiction
     | invalidDelimiter => contradiction
     | invoke head arguments destination =>
@@ -7481,6 +7643,18 @@ private theorem installChild_scopes_valid {Context : Type} (program : SpaceSeman
       split <;> exact headValid.replace_head _ _
   | call request reached =>
     cases request with
+    | openCommit =>
+        simp only [installChild]
+        split
+        · exact headValid.replace_head _ _
+        · exact valid
+    | commit retained =>
+        simp only [installChild]
+        split
+        · split
+          · exact headValid.replace_head _ _
+          · exact valid
+        · exact valid
     | invalidEnvironment => exact valid
     | invalidDelimiter => exact valid
     | invoke head arguments destination =>
@@ -7800,13 +7974,11 @@ theorem scope_parse_named_source {Context : Type} (policy : Policy) (program : S
     (allocator : Allocator) (world : World) (scope : CollectionScope Context)
     (parents : List (CollectionScope Context)) (control : Control) (context : Context)
     (origins : List Nat) (pending : List (CollectionWork Context))
-    (text raw destination : Atom) (older : List Goal) (environment : Environment)
+    (text destination : Atom) (older : List Goal) (environment : Environment)
     (after : ScopedCursor Context)
     (frontier : scope.frontier = (control, context, origins) :: pending)
     (atCall : control.goals = .invoke "parse" [text] destination :: older)
     (resolved : resolve control.bindings = some environment)
-    (parsed : StdLib.parseAtom (read environment text) = .ok raw)
-    (named : "_" ∉ TypeSubst.typeVars raw)
     (stepped : scopeStep policy program (allocator, ⟨world, scope :: parents⟩) = .silent after) :
     ∃ next token value,
       Collection.SyntaxLoading.NamedParseResult
@@ -7818,7 +7990,7 @@ theorem scope_parse_named_source {Context : Type} (policy : Policy) (program : S
   obtain ⟨next, token, value, _, loaded, _, _, same⟩ :=
     scope_parse_silent_origin policy program allocator world scope parents control context origins pending
       text destination older environment after frontier atCall resolved stepped
-  exact ⟨next, token, value, Collection.SyntaxLoading.loadParsed_named_result loaded parsed named, loaded, same⟩
+  exact ⟨next, token, value, Collection.SyntaxLoading.loadParsed_named_result loaded, loaded, same⟩
 
 /-- The allocator operation earns both the next result's identity provenance
 and preservation of every previously represented world cell. -/
@@ -7841,5 +8013,1642 @@ theorem scope_parse_world_represented {Context : Type} (policy : Policy) (progra
   obtain ⟨⟨handle, actual⟩, _⟩ := Collection.allocateCopy_origin allocated
   rw [same]
   exact ⟨rfl, Collection.represented_world_allocation actual before⟩
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination
+
+/-! ## Collection freshness: a model counterexample
+
+PeTTa renames every collected answer apart. For
+`(let ($a $b) (collapse (superpose ($x $x))) (== $a $b))` the SWI reference
+implementation prints `false`: the two components come from independently
+renamed copies of `$x`. This model keeps one variable for the whole collected
+list, so the same comparison returns `true`. The theorems record the model's
+actual behaviour; they are a negative control for collection, not a target. -/
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.CollectionFreshness
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+private def program : SpaceSemantics.Program := { equations := [], declarations := [] }
+private def collected : Atom := .expression [.symbol "collapse", .expression
+  [.symbol "superpose", .expression [.var "x", .var "x"]]]
+
+theorem source_collection_shares_across_answers :
+    answers (advance program 8 (start Effects.empty collected)) =
+      [.expression [.var "x", .var "x"]] := by
+  with_unfolding_all rfl
+
+private def compared : Atom := .expression [.symbol "let", .expression [.var "a", .var "b"],
+  collected, .expression [.symbol "==", .var "a", .var "b"]]
+
+theorem source_collection_ground_comparison :
+    answers (advance program 32 (start Effects.empty compared)) = [Effects.boolean true] := by
+  with_unfolding_all rfl
+
+theorem source_does_not_match_independent_answer_comparison :
+    answers (advance program 32 (start Effects.empty compared)) ≠ [Effects.boolean false] := by
+  rw [source_collection_ground_comparison]
+  decide
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.CollectionFreshness
+
+/-!
+## Complete ordered equation frontiers
+
+The independent source decisions below account for every stored occurrence.
+A refusal needs an incompatible head or a proof that the reached constraints
+and fresh clause instance have no common finite-term solution. Selection
+retains that same instance and its caller. The frontier judgment scans the
+declared source positions; it never invokes the executable matcher or driver.
+-/
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.ClauseChoice
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open SpaceSemantics (Equation Program)
+
+/-- A complete decision at one physical equation position. Fresh spelling is
+the declared source allocation policy; matching is the logical refinement
+judgment, including its explicit no-solution case. -/
+inductive Decision (program : Program) (control : Control) (head : String)
+    (arguments : List Atom) (destination : Atom) (older : List Goal)
+    (occurrence : Nat) : Option Control → Prop where
+  | other (equation : Equation)
+      (row : program.equations[occurrence]? = some equation)
+      (different : equation.head ≠ head) :
+      Decision program control head arguments destination older occurrence none
+  | refused (equation : Equation)
+      (row : program.equations[occurrence]? = some equation)
+      (sameHead : equation.head = head)
+      (incompatible : Refinement control.bindings (.expression (.symbol head :: arguments))
+        (freshPattern control occurrence equation) none) :
+      Decision program control head arguments destination older occurrence none
+  | selected (equation : Equation) (bindings : Equations)
+      (row : program.equations[occurrence]? = some equation)
+      (sameHead : equation.head = head)
+      (compatible : Refinement control.bindings (.expression (.symbol head :: arguments))
+        (freshPattern control occurrence equation) (some bindings)) :
+      Decision program control head arguments destination older occurrence
+        (some { control with bindings := bindings, goals := .evaluate (freshBody control occurrence equation) destination :: older })
+
+/-- A source scan keeps every accepted position in its original order.
+Omitted positions carry an actual refusal, not merely a missing output. -/
+inductive Frontier (program : Program) (control : Control) (head : String)
+    (arguments : List Atom) (destination : Atom) (older : List Goal) :
+    List Nat → List (Nat × Control) → Prop where
+  | nil : Frontier program control head arguments destination older [] []
+  | skip {occurrence : Nat} {remaining : List Nat} {answers : List (Nat × Control)}
+      (decision : Decision program control head arguments destination older occurrence none)
+      (rest : Frontier program control head arguments destination older remaining answers) :
+      Frontier program control head arguments destination older (occurrence :: remaining) answers
+  | keep {occurrence : Nat} {remaining : List Nat} {next : Control}
+      {answers : List (Nat × Control)}
+      (decision : Decision program control head arguments destination older occurrence (some next))
+      (rest : Frontier program control head arguments destination older remaining answers) :
+      Frontier program control head arguments destination older
+        (occurrence :: remaining) ((occurrence, next) :: answers)
+
+theorem decision_iff_trial (program : Program) (control : Control) (head : String)
+    (arguments : List Atom) (destination : Atom) (older : List Goal)
+    (occurrence : Nat) (bound : occurrence < program.equations.length) (result : Option Control) :
+    Decision program control head arguments destination older occurrence result ↔
+      trial program control head arguments destination older occurrence = result := by
+  have row : program.equations[occurrence]? = some program.equations[occurrence] :=
+    List.getElem?_eq_getElem bound
+  constructor
+  · intro source
+    cases source with
+    | other equation actual different =>
+        simp only [trial, actual]
+        exact wrong_head_not_selected control head arguments destination older occurrence equation different
+    | refused equation actual sameHead incompatible =>
+        simp only [trial, actual]
+        exact (attempt_refused_iff control head arguments destination older occurrence equation sameHead).mpr incompatible
+    | selected equation bindings actual sameHead compatible =>
+        simp only [trial, actual]
+        exact (attempt_iff control head arguments destination older occurrence equation sameHead _).mpr
+          ⟨bindings, compatible, rfl⟩
+  · intro computed
+    simp only [trial, row] at computed
+    change attempt control head arguments destination older occurrence _ = result at computed
+    by_cases sameHead : program.equations[occurrence].head = head
+    · cases result with
+      | none =>
+          exact .refused _ row sameHead
+            ((attempt_refused_iff control head arguments destination older occurrence _ sameHead).mp computed)
+      | some next =>
+          obtain ⟨bindings, compatible, rfl⟩ :=
+            (attempt_iff control head arguments destination older occurrence _ sameHead next).mp computed
+          exact .selected _ bindings row sameHead compatible
+    · rw [wrong_head_not_selected control head arguments destination older occurrence _ sameHead] at computed
+      cases computed
+      exact .other _ row sameHead
+
+theorem frontier_iff_scan (program : Program) (control : Control) (head : String)
+    (arguments : List Atom) (destination : Atom) (older : List Goal)
+    (positions : List Nat) (valid : ∀ occurrence ∈ positions, occurrence < program.equations.length)
+    (answers : List (Nat × Control)) :
+    Frontier program control head arguments destination older positions answers ↔
+      positions.filterMap (fun occurrence =>
+        (trial program control head arguments destination older occurrence).map (occurrence, ·)) = answers := by
+  induction positions generalizing answers with
+  | nil =>
+      constructor
+      · intro source; cases source; rfl
+      · intro same; cases same; exact .nil
+  | cons occurrence remaining ih =>
+      have bound := valid occurrence List.mem_cons_self
+      have restValid : ∀ index ∈ remaining, index < program.equations.length :=
+        fun index member => valid index (List.mem_cons_of_mem _ member)
+      constructor
+      · intro source
+        cases source with
+        | skip decision rest =>
+            have actual := (decision_iff_trial program control head arguments destination older
+              occurrence bound none).mp decision
+            simpa only [List.filterMap_cons, actual, Option.map_none] using (ih restValid _).mp rest
+        | keep decision rest =>
+            have actual := (decision_iff_trial program control head arguments destination older
+              occurrence bound _).mp decision
+            simpa only [List.filterMap_cons, actual, Option.map_some] using
+              congrArg ((occurrence, _) :: ·) ((ih restValid _).mp rest)
+      · intro same
+        cases actual : trial program control head arguments destination older occurrence with
+        | none =>
+            simp only [List.filterMap_cons, actual, Option.map_none] at same
+            exact .skip ((decision_iff_trial program control head arguments destination older
+              occurrence bound none).mpr actual) ((ih restValid _).mpr same)
+        | some next =>
+            simp only [List.filterMap_cons, actual, Option.map_some] at same
+            cases same
+            exact .keep ((decision_iff_trial program control head arguments destination older
+              occurrence bound (some next)).mpr actual) ((ih restValid _).mpr rfl)
+
+/-- The entire executable frontier, including order and duplicate occurrences,
+is equivalent to independently justified source coverage. -/
+theorem choices_iff_frontier (program : Program) (control : Control) (head : String)
+    (arguments : List Atom) (destination : Atom) (older : List Goal)
+    (answers : List (Nat × Control)) :
+    choices program control head arguments destination older = answers ↔
+      Frontier program control head arguments destination older
+        (List.range program.equations.length) answers := by
+  exact (frontier_iff_scan program control head arguments destination older _
+    (fun _ member => List.mem_range.mp member) answers).symm
+
+theorem Frontier.occurrences {program : Program} {control : Control} {head : String}
+    {arguments : List Atom} {destination : Atom} {older : List Goal}
+    {positions : List Nat} {answers : List (Nat × Control)}
+    (source : Frontier program control head arguments destination older positions answers) :
+    (answers.map Prod.fst).Sublist positions := by
+  induction source with
+  | nil => exact .slnil
+  | skip _ _ ih => exact .cons _ ih
+  | keep _ _ ih => exact .cons_cons _ ih
+
+/-- Completed empty search requires refusal at every source position. -/
+theorem Frontier.empty_iff (program : Program) (control : Control) (head : String)
+    (arguments : List Atom) (destination : Atom) (older : List Goal) (positions : List Nat) :
+    Frontier program control head arguments destination older positions [] ↔
+      ∀ occurrence ∈ positions,
+        Decision program control head arguments destination older occurrence none := by
+  induction positions with
+  | nil =>
+      constructor
+      · intro _; simp
+      · intro _; exact .nil
+  | cons occurrence remaining ih =>
+      constructor
+      · intro source
+        cases source with
+        | skip decision rest =>
+            intro index member
+            rcases List.mem_cons.mp member with rfl | member
+            · exact decision
+            · exact ih.mp rest index member
+      · intro refused
+        exact .skip (refused occurrence List.mem_cons_self)
+          (ih.mpr (fun index member => refused index (List.mem_cons_of_mem _ member)))
+
+/-- No reordering or duplicate source identity can be introduced by a complete
+frontier. Equal payloads may still occupy distinct accepted positions. -/
+theorem choices_ordered (program : Program) (control : Control) (head : String)
+    (arguments : List Atom) (destination : Atom) (older : List Goal) :
+    ((choices program control head arguments destination older).map Prod.fst).Pairwise (· < ·) := by
+  have source := (choices_iff_frontier program control head arguments destination older _).mp rfl
+  exact List.pairwise_lt_range.sublist source.occurrences
+
+/-- A completed empty frontier is justified by a refusal at every stored row. -/
+theorem choices_empty_iff (program : Program) (control : Control) (head : String)
+    (arguments : List Atom) (destination : Atom) (older : List Goal) :
+    choices program control head arguments destination older = [] ↔
+      ∀ occurrence < program.equations.length,
+        Decision program control head arguments destination older occurrence none := by
+  rw [choices_iff_frontier, Frontier.empty_iff]
+  simp only [List.mem_range]
+
+/-- Complete source scans agree as lists, including occurrences and reached
+constraints. This does not identify different fresh-name policies literally. -/
+theorem Frontier.unique {program : Program} {control : Control} {head : String}
+    {arguments : List Atom} {destination : Atom} {older : List Goal}
+    {positions : List Nat} {first second : List (Nat × Control)}
+    (valid : ∀ occurrence ∈ positions, occurrence < program.equations.length)
+    (left : Frontier program control head arguments destination older positions first)
+    (right : Frontier program control head arguments destination older positions second) :
+    first = second :=
+  ((frontier_iff_scan program control head arguments destination older positions valid first).mp left).symm.trans
+    ((frontier_iff_scan program control head arguments destination older positions valid second).mp right)
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.ClauseChoice
+
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+
+/-- An actual ordinary invocation installs its complete source frontier ahead
+of older work. Every child retains the reached caller and its source origin;
+selection does not alter the shared world or consume an answer-copy identity. -/
+theorem scope_equation_frontier {Context : Type} (policy : Policy) (program : SpaceSemantics.Program)
+    (allocator : Allocator) (world : World) (scope : CollectionScope Context)
+    (parents : List (CollectionScope Context)) (control : Control) (context : Context)
+    (origins : List Nat) (pending : List (CollectionWork Context))
+    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal)
+    (environment : Environment)
+    (frontier : scope.frontier = (control, context, origins) :: pending)
+    (atCall : control.goals = .invoke head arguments destination :: older)
+    (ordinary : (Eval.ioHead head || StdLib.known head) = false)
+    (declared : program.equations.any (·.head == head) = true)
+    (resolved : resolve control.bindings = some environment) :
+    let boundary := collectionSupport (⟨world, scope :: parents⟩ : CollectionConfiguration Context)
+    let selected := ClauseChoice.choices program (protectControl control boundary) head
+      (arguments.map (read environment)) destination older
+    ClauseChoice.Frontier program (protectControl control boundary) head
+      (arguments.map (read environment)) destination older
+      (List.range program.equations.length) selected ∧
+    scopeStep policy program (allocator, ⟨world, scope :: parents⟩) =
+      .silent (allocator, ⟨world,
+        {scope with frontier := selected.map (fun row => (predicateEntry pending.length row.2, context, origins ++ [row.1])) ++ pending} :: parents⟩) := by
+  dsimp only
+  have entered := enterEquations_constructs program world scope parents control context origins pending
+    head arguments destination older environment frontier atCall ordinary declared resolved
+  have notPrint : head ≠ "println!" := by
+    intro same; subst head; simp [Eval.ioHead] at ordinary
+  have notParse : head ≠ "parse" := by
+    intro same; subst head; simp [StdLib.known] at ordinary
+  have notPrimitive : StdLib.known head = false := (Bool.or_eq_false_iff.mp ordinary).2
+  have invoked := invoke_request_step policy program (⟨world, control, context⟩ : Cursor Context)
+    head arguments destination older atCall notPrint resolved
+  refine ⟨(ClauseChoice.choices_iff_frontier _ _ _ _ _ _ _).mp rfl, ?_⟩
+  simp only [scopeStep, frontier, enterCollapse?, atCall, enterSuperpose?, invoked,
+    installChild, scopedInvocation, notParse, notPrimitive, Bool.false_eq_true,
+    ↓reduceIte, entered, equationWork]
+
+/-- Reflection of ordinary invocation recovers a complete source scan, rather
+than only per-child membership evidence. The reached configuration itself
+fixes all older work and the unchanged world. -/
+theorem scope_equation_frontier_iff {Context : Type} (policy : Policy) (program : SpaceSemantics.Program)
+    (allocator : Allocator) (world : World) (scope : CollectionScope Context)
+    (parents : List (CollectionScope Context)) (control : Control) (context : Context)
+    (origins : List Nat) (pending : List (CollectionWork Context))
+    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal)
+    (environment : Environment)
+    (frontier : scope.frontier = (control, context, origins) :: pending)
+    (atCall : control.goals = .invoke head arguments destination :: older)
+    (ordinary : (Eval.ioHead head || StdLib.known head) = false)
+    (declared : program.equations.any (·.head == head) = true)
+    (resolved : resolve control.bindings = some environment)
+    (selected : List (Nat × Control)) :
+    let boundary := collectionSupport (⟨world, scope :: parents⟩ : CollectionConfiguration Context)
+    ClauseChoice.Frontier program (protectControl control boundary) head
+      (arguments.map (read environment)) destination older
+      (List.range program.equations.length) selected ↔
+    scopeStep policy program (allocator, ⟨world, scope :: parents⟩) =
+      .silent (allocator, ⟨world,
+        {scope with frontier := selected.map (fun row => (predicateEntry pending.length row.2, context, origins ++ [row.1])) ++ pending} :: parents⟩) := by
+  dsimp only
+  have actual := (scope_equation_frontier policy program allocator world scope parents control context
+    origins pending head arguments destination older environment frontier atCall ordinary declared resolved).2
+  constructor
+  · intro source
+    have exactChoices := (ClauseChoice.choices_iff_frontier _ _ _ _ _ _ selected).mpr source
+    simpa only [exactChoices] using actual
+  · intro reached
+    have same := congrArg (fun result => match result with
+      | .silent (next : ScopedCursor Context) => next.2.scopes.head?.map (fun (current : CollectionScope Context) => current.frontier)
+      | _ => none) (actual.symm.trans reached)
+    simp only [List.head?_cons, Option.map_some, Option.some.injEq] at same
+    have mapped := List.append_cancel_right same
+    have injective : Function.Injective (fun row : Nat × Control =>
+        (predicateEntry pending.length row.2, context, origins ++ [row.1])) := by
+      rintro ⟨first, left⟩ ⟨second, right⟩ equal
+      simp only [Prod.mk.injEq] at equal
+      exact Prod.ext (List.singleton_inj.mp (List.append_cancel_left equal.2.2))
+        (predicateEntry_injective pending.length equal.1)
+    have selectedEq := (List.map_inj_right (fun _ _ same => injective same)).mp mapped
+    exact (ClauseChoice.choices_iff_frontier _ _ _ _ _ _ selected).mp selectedEq
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.ClauseChoice
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open SpaceSemantics (Program)
+
+/-- A certified applicable source occurrence cannot be discarded by a
+completed frontier, including when another occurrence has the same payload. -/
+theorem selected_cannot_be_omitted {program : Program} {control : Control} {head : String}
+    {arguments : List Atom} {destination : Atom} {older : List Goal}
+    {occurrence : Nat} {equation : SpaceSemantics.Equation} {next : Control}
+    {answers : List (Nat × Control)}
+    (row : program.equations[occurrence]? = some equation)
+    (selected : Selection program control head arguments destination older occurrence
+      (freshPattern control occurrence equation) (freshBody control occurrence equation) next)
+    (missing : (occurrence, next) ∉ answers) :
+    ¬Frontier program control head arguments destination older
+      (List.range program.equations.length) answers := by
+  intro source
+  have member := (choices_source_iff program control head arguments destination older occurrence next).mpr
+    ⟨equation, row, selected⟩
+  rw [(choices_iff_frontier program control head arguments destination older answers).mpr source] at member
+  exact missing member
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.ClauseChoice
+
+/-! ## Depth-first divergence with retained alternatives -/
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.DFSLoop
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared
+open Mettapedia.Languages.MeTTa.HE.Spec.Type.RuntimeRefinement
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+
+/-- One genuine recursive equation, with no effect or primitive request. -/
+def term : Atom := .expression [.symbol "dfs-loop"]
+
+def program : SpaceSemantics.Program :=
+  {equations := [{head := "dfs-loop", arguments := [], body := term}], declarations := []}
+
+/-- The active recursive call precedes the same saved siblings and parents.
+The invariant admits arbitrary solvable caller equations and caller scopes. -/
+def Active {Context : Type} (allocator : Allocator) (world : World)
+    (scope : CollectionScope Context) (parents : List (CollectionScope Context))
+    (pending : List (CollectionWork Context)) (destination : Atom) (older : List Goal)
+    (source : ScopedCursor Context) : Prop :=
+  ∃ control context origins,
+    source = (allocator, ⟨world, {scope with frontier := (control, context, origins) :: pending} :: parents⟩) ∧
+    (∃ saved : List Nat,
+      control.goals = .invoke "dfs-loop" [] destination :: saved.map Goal.restoreCommit ++ older ∨
+      control.goals = .evaluate term destination :: saved.map Goal.restoreCommit ++ older) ∧
+    ∃ environment, Solves environment control.bindings
+
+/-- The recursive head always takes a real source step, with no publication.
+Later alternatives and all collection boundaries stay saved. -/
+theorem progress {Context : Type} (policy : Policy)
+    (allocator : Allocator) (world : World) (scope : CollectionScope Context)
+    (parents : List (CollectionScope Context)) (pending : List (CollectionWork Context))
+    (destination : Atom) (older : List Goal) (source : ScopedCursor Context)
+    (active : Active allocator world scope parents pending destination older source) :
+    ∃ next, scopeStep policy program source = .silent next ∧
+      Active allocator world scope parents pending destination older next := by
+  obtain ⟨control, context, origins, rfl, ⟨saved,location⟩, model, solves⟩ := active
+  rcases location with atCall | atBody
+  · let boundary := collectionSupport (⟨world,
+      {scope with frontier := (control, context, origins) :: pending} :: parents⟩ : CollectionConfiguration Context)
+    let bindings := control.bindings ++ [(term, term)]
+    let nextControl : Control :=
+      {protectControl control boundary with
+        bindings := bindings
+        goals := .evaluate term destination :: saved.map Goal.restoreCommit ++ older}
+    have accepted : refine control.bindings term term = some bindings :=
+      (refine_iff control.bindings bindings term term).mpr ⟨rfl, model, solves, rfl⟩
+    obtain ⟨environment, resolved⟩ := resolve_complete ⟨model, solves⟩
+    simp only [term] at accepted
+    have selected : ClauseChoice.choices program (protectControl control boundary)
+        "dfs-loop" [] destination (saved.map Goal.restoreCommit ++ older) = [(0, nextControl)] := by
+      simp [ClauseChoice.choices, ClauseChoice.trial, ClauseChoice.attempt,
+        ClauseChoice.freshPattern, ClauseChoice.freshBody, ClauseChoice.pattern,
+        program, term, renameTypeVars, protectControl, accepted, nextControl,
+        List.range_succ]
+    have stepped := (scope_equation_frontier policy program allocator world
+      {scope with frontier := (control, context, origins) :: pending} parents control context origins
+      pending "dfs-loop" [] destination (saved.map Goal.restoreCommit ++ older) environment rfl atCall
+      (by decide) (by decide) resolved).2
+    change scopeStep policy program _ = .silent (allocator, ⟨world, {scope with frontier :=
+      ((ClauseChoice.choices program (protectControl control boundary) "dfs-loop" [] destination
+        (saved.map Goal.restoreCommit ++ older)).map
+          (fun row => (predicateEntry pending.length row.2, context, origins ++ [row.1])) ++ pending)} :: parents⟩) at stepped
+    rw [selected] at stepped
+    refine ⟨_, stepped, predicateEntry pending.length nextControl, context, origins ++ [0], ?_,
+      ⟨control.cutBoundary :: saved,Or.inr ?_⟩,model,?_⟩
+    · rfl
+    · simp [predicateEntry,nextControl,protectControl]
+    · intro pair member
+      rcases List.mem_append.mp member with previous | added
+      · exact solves pair previous
+      · cases List.mem_singleton.mp added
+        rfl
+  · let nextControl : Control := {control with goals := .invoke "dfs-loop" [] destination :: saved.map Goal.restoreCommit ++ older}
+    have prepared : prepare policy program control term destination (saved.map Goal.restoreCommit ++ older) = nextControl := by
+      cases policy <;> simp [prepare, term, callable, program, Eval.ioHead, StdLib.known,
+        callArguments, freshSlots, replace, nextControl]
+    refine ⟨(allocator, ⟨world, {scope with frontier := (nextControl, context, origins) :: pending} :: parents⟩),
+      ?_, nextControl, context, origins, rfl, ⟨saved,Or.inl rfl⟩, model, solves⟩
+    simp only [scopeStep, enterCollapse?, atBody, enterSuperpose?, machine,
+      installChild, retainChild]
+    change (.silent (allocator, ⟨world, {scope with frontier :=
+      (prepare policy program control term destination (saved.map Goal.restoreCommit ++ older), context, origins) :: pending} :: parents⟩) :
+        Mettapedia.GSLT.Distinction.ProductiveBlocks.Transition (ScopedCursor Context) CollectedAnswer
+          (ScopedCursor Context) ScopeBoundary) = _
+    rw [prepared]
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.DFSLoop
+
+/-!
+## Independent local body expansion
+
+These judgments describe the ordinary goal component. The enclosing scope
+rules license entry: collapse, superpose and empty are handled at their own
+boundaries before this component is called. Local expansion creates pending
+work, never a recursively evaluated child result.
+-/
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
+open SpaceSemantics (Program)
+
+/-- Lexical forms expanded before ordinary fixed-head applications. -/
+def lexicalForm : Atom → Bool
+  | .expression [.symbol "quote", _]
+  | .expression [.symbol "let", _, _, _]
+  | .expression [.symbol "cut"]
+  | .expression [.symbol "once", _] => true
+  | _ => false
+
+/-- A syntax-directed worklist rule, independent of `prepare`, the branch
+step function and the runner. Local demand/scheduling policies are shared
+finite operations; no child evaluation is a premise or callback. -/
+inductive Prepared (policy : Policy) (program : Program) (control : Control)
+    (destination : Atom) (older : List Goal) : Atom → Control → Prop where
+  | variableValue (name : String) :
+      Prepared policy program control destination older (.var name)
+        (replace control (.equate (.var name) destination :: older))
+  | symbol (name : String) :
+      Prepared policy program control destination older (.symbol name)
+        (replace control (.equate (.symbol name) destination :: older))
+  | grounded (value : GroundedValue) :
+      Prepared policy program control destination older (.grounded value)
+        (replace control (.equate (.grounded value) destination :: older))
+  | quotation (value : Atom) :
+      Prepared policy program control destination older (.expression [.symbol "quote", value])
+        (replace control (.equate value destination :: older))
+  | binding (pattern producer body : Atom) :
+      Prepared policy program control destination older (.expression [.symbol "let", pattern, producer, body])
+        (replace control (letGoals policy program pattern producer body destination
+          (.var (freshName control 0)) ++ older))
+  | cut :
+      Prepared policy program control destination older (.expression [.symbol "cut"])
+        (replace control (.commit :: .equate (Effects.boolean true) destination :: older))
+  | once (child : Atom) :
+      Prepared policy program control destination older (.expression [.symbol "once",child])
+        (replace control (.openCommit :: .evaluate child destination :: .commit ::
+          .restoreCommit control.cutBoundary :: older))
+  | application (head : String) (arguments : List Atom)
+      (ordinary : lexicalForm (.expression (.symbol head :: arguments)) = false)
+      (declared : callable program head = true) :
+      Prepared policy program control destination older (.expression (.symbol head :: arguments))
+        (replace control (((callArguments program head arguments (freshSlots control arguments.length)).1 ++
+          [.invoke head (callArguments program head arguments (freshSlots control arguments.length)).2 destination]) ++ older))
+  | construction (head : String) (arguments : List Atom)
+      (ordinary : lexicalForm (.expression (.symbol head :: arguments)) = false)
+      (data : callable program head = false) :
+      Prepared policy program control destination older (.expression (.symbol head :: arguments))
+        (replace control ((match policy with
+          | .relational => .equate (.expression (.symbol head :: freshSlots control arguments.length)) destination ::
+              (arguments.zip (freshSlots control arguments.length)).map (fun row => .evaluate row.1 row.2)
+          | .eagerValue => (arguments.zip (freshSlots control arguments.length)).map (fun row => .evaluate row.1 row.2) ++
+              [.equate (.expression (.symbol head :: freshSlots control arguments.length)) destination]) ++ older))
+  | tuple (children : List Atom)
+      (noHead : ∀ head arguments, children ≠ .symbol head :: arguments) :
+      Prepared policy program control destination older (.expression children)
+        (replace control (dataGoals policy children (freshSlots control children.length) destination ++ older))
+
+/-- Every independent expansion has the stated executable continuation,
+with all incoming equations and the root destination retained. -/
+theorem Prepared.execution {policy : Policy} {program : Program} {control : Control}
+    {destination : Atom} {older : List Goal} {expression : Atom} {next : Control}
+    (source : Prepared policy program control destination older expression next) :
+    prepare policy program control expression destination older = next := by
+  cases source with
+  | variableValue _ => rfl
+  | symbol _ => rfl
+  | grounded _ => rfl
+  | quotation _ => rfl
+  | binding _ _ _ => rfl
+  | cut => rfl
+  | once _ => rfl
+  | application head arguments ordinary declared =>
+      unfold prepare
+      split <;> simp_all [lexicalForm, replace, List.append_assoc]
+      all_goals
+        rename_i _ children noHead same
+        exact (noHead head arguments same.symm).elim
+  | construction head arguments ordinary data =>
+      unfold prepare
+      split <;> simp_all [lexicalForm, replace]
+      all_goals
+        rename_i _ children noHead same
+        exact (noHead head arguments same.symm).elim
+  | tuple children noHead =>
+      unfold prepare
+      split <;> simp_all [replace]
+
+/-- Reflection is by the source syntax, not by an assumed evaluator result. -/
+theorem prepare_has_source (policy : Policy) (program : Program) (control : Control)
+    (expression destination : Atom) (older : List Goal) :
+    Prepared policy program control destination older expression
+      (prepare policy program control expression destination older) := by
+  unfold prepare
+  split
+  · exact .variableValue _
+  · exact .symbol _
+  · exact .grounded _
+  · exact .quotation _
+  · exact .binding _ _ _
+  · exact .cut
+  · exact .once _
+  · split
+    · apply Prepared.application
+      · unfold lexicalForm
+        split <;> simp_all
+      · assumption
+    · apply Prepared.construction
+      · unfold lexicalForm
+        split <;> simp_all
+      · simpa using ‹¬callable program _ = true›
+  · apply Prepared.tuple
+    intro head arguments same
+    subst same
+    simp_all
+
+/-- Exact source/continuation correspondence for arbitrary incoming bindings,
+source expressions and surrounding goal suffixes. -/
+theorem prepare_iff_source (policy : Policy) (program : Program) (control : Control)
+    (expression destination : Atom) (older : List Goal) (next : Control) :
+    prepare policy program control expression destination older = next ↔
+      Prepared policy program control destination older expression next := by
+  constructor
+  · rintro rfl
+    exact prepare_has_source policy program control expression destination older
+  · exact Prepared.execution
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open SpaceSemantics (Program)
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+
+abbrev Action (Context : Type) :=
+  Mettapedia.GSLT.Distinction.ProductiveBlocks.Transition
+    (Cursor Context) Empty (Result × Cursor Context) Boundary
+
+/-- These forms own a scope boundary, before ordinary local expansion. -/
+def scopedForm : Atom → Bool
+  | .expression [.symbol "collapse", _]
+  | .expression [.symbol "superpose", .expression _]
+  | .expression [.symbol "empty"] => true
+  | _ => false
+
+/-- Entry to the local component is licensed by the active goal, not by an
+arbitrary syntax position. Older goals remain saved until their own entry. -/
+inductive Licensed (control : Control) : Prop where
+  | ended (atEnd : control.goals = []) : Licensed control
+  | evaluation (expression destination : Atom) (older : List Goal)
+      (atGoal : control.goals = .evaluate expression destination :: older)
+      (ordinary : scopedForm expression = false) : Licensed control
+  | equation (value destination : Atom) (older : List Goal)
+      (atGoal : control.goals = .equate value destination :: older) : Licensed control
+  | argument (value destination : Atom) (depth : Nat) (remaining : List Goal)
+      (atGoal : control.goals = .argumentReturn value destination depth :: remaining) : Licensed control
+  | invocation (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal)
+      (atGoal : control.goals = .invoke head arguments destination :: older) : Licensed control
+  | opening (older : List Goal) (atGoal : control.goals = .openCommit :: older) : Licensed control
+  | committing (older : List Goal) (atGoal : control.goals = .commit :: older) : Licensed control
+  | restoring (boundary : Nat) (older : List Goal)
+      (atGoal : control.goals = .restoreCommit boundary :: older) : Licensed control
+
+/-- Only return, invocation and end-of-branch inspect a solved presentation.
+The finite-term solver is the existing proved logical operation. -/
+inductive ReadSite (control : Control) : Prop where
+  | ended (atEnd : control.goals = []) : ReadSite control
+  | argument (value destination : Atom) (depth : Nat) (remaining : List Goal)
+      (atGoal : control.goals = .argumentReturn value destination depth :: remaining) : ReadSite control
+  | invocation (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal)
+      (atGoal : control.goals = .invoke head arguments destination :: older) : ReadSite control
+
+/-- Independent local branch rules. No constructor calls the branch stepper,
+runner, or a recursive language evaluator. Requests retain the entire cursor;
+failed refinement is a branch refusal with its reached world. -/
+inductive Step {Context : Type} (policy : Policy) (program : Program)
+    (cursor : Cursor Context) : Action Context → Prop where
+  | opening (older : List Goal) (atGoal : cursor.control.goals = .openCommit :: older) :
+      Step policy program cursor (.call .openCommit cursor)
+  | committing (older : List Goal) (atGoal : cursor.control.goals = .commit :: older) :
+      Step policy program cursor (.call (.commit cursor.control.cutBoundary) cursor)
+  | restoring (boundary : Nat) (older : List Goal)
+      (atGoal : cursor.control.goals = .restoreCommit boundary :: older) :
+      Step policy program cursor
+        (.silent {cursor with control := {cursor.control with goals := older,cutBoundary := boundary}})
+  | expanded (expression destination : Atom) (older : List Goal) (next : Control)
+      (atGoal : cursor.control.goals = .evaluate expression destination :: older)
+      (ordinary : scopedForm expression = false)
+      (source : Prepared policy program cursor.control destination older expression next) :
+      Step policy program cursor (.silent {cursor with control := next})
+  | accepted (value destination : Atom) (older : List Goal) (after : Equations)
+      (atGoal : cursor.control.goals = .equate value destination :: older)
+      (source : Refinement cursor.control.bindings value destination (some after)) :
+      Step policy program cursor (.silent {cursor with control := {cursor.control with bindings := after, goals := older}})
+  | refused (value destination : Atom) (older : List Goal)
+      (atGoal : cursor.control.goals = .equate value destination :: older)
+      (source : Refinement cursor.control.bindings value destination none) :
+      Step policy program cursor (.finish (.noValue cursor.control.bindings, cursor))
+  | returned (environment : Environment) (atEnd : cursor.control.goals = [])
+      (resolved : resolve cursor.control.bindings = some environment) :
+      Step policy program cursor
+        (.finish (.value (read environment cursor.control.destination) cursor.control.bindings, cursor))
+  | inconsistent (site : ReadSite cursor.control)
+      (noSolution : ¬∃ environment, Solves environment cursor.control.bindings) :
+      Step policy program cursor (.call .invalidEnvironment cursor)
+  | argument (value destination : Atom) (younger older : List Goal) (action : Action Context)
+      (atGoal : cursor.control.goals = .argumentReturn value destination older.length :: younger ++ older)
+      (source : ArgumentReturn cursor value destination younger older action) :
+      Step policy program cursor action
+  | invalidDelimiter (value destination : Atom) (depth : Nat) (remaining : List Goal)
+      (environment : Environment)
+      (atGoal : cursor.control.goals = .argumentReturn value destination depth :: remaining)
+      (tooShort : remaining.length < depth)
+      (resolved : resolve cursor.control.bindings = some environment) :
+      Step policy program cursor (.call (.invalidDelimiter depth remaining.length) cursor)
+  | printed (arguments : List Atom) (destination : Atom) (older : List Goal)
+      (environment : Environment) (value : Atom)
+      (atGoal : cursor.control.goals = .invoke "println!" arguments destination :: older)
+      (resolved : resolve cursor.control.bindings = some environment)
+      (readout : arguments.map (read environment) = [value]) :
+      Step policy program cursor (.silent
+        ⟨{cursor.world with output := cursor.world.output ++ [value]},
+          replace cursor.control (.equate (Effects.boolean true) destination :: older), cursor.context⟩)
+  | requested (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal)
+      (environment : Environment)
+      (atGoal : cursor.control.goals = .invoke head arguments destination :: older)
+      (resolved : resolve cursor.control.bindings = some environment)
+      (notPrint : ∀ value, head = "println!" → arguments.map (read environment) ≠ [value]) :
+      Step policy program cursor (.call (.invoke head (arguments.map (read environment)) destination) cursor)
+
+/-- Soundness covers the complete reached cursor, including context and world. -/
+theorem Step.execution {Context : Type} {policy : Policy} {program : Program}
+    {cursor : Cursor Context} {action : Action Context} (source : Step policy program cursor action) :
+    (machine policy program).step cursor = some action := by
+  cases source with
+  | opening _ atGoal | committing _ atGoal | restoring _ _ atGoal => simp only [machine,atGoal]
+  | expanded expression destination older next atGoal _ source =>
+      simp only [machine, atGoal, source.execution]
+  | accepted value destination older after atGoal source =>
+      simp only [machine, atGoal, (refinement_iff _ _ _ _).mp source]
+  | refused value destination older atGoal source =>
+      simp only [machine, atGoal, (refinement_iff _ _ _ _).mp source]
+  | returned environment atEnd resolved => simp only [machine, atEnd, resolved]
+  | inconsistent site noSolution =>
+      have invalid := (resolve_none_iff _).mpr noSolution
+      cases site <;> simp_all only [machine]
+  | argument value destination younger older action atGoal source =>
+      exact argumentReturn_source_step policy program cursor value destination younger older atGoal source
+  | invalidDelimiter value destination depth remaining environment atGoal tooShort resolved =>
+      simp [machine, atGoal, resolved, callerSuffix?, Nat.not_le.mpr tooShort]
+  | printed arguments destination older environment value atGoal resolved readout =>
+      simp only [machine, atGoal, resolved, readout]
+  | requested head arguments destination older environment atGoal resolved notPrint =>
+      simp only [machine, atGoal, resolved]
+
+/-- Every licensed inspection is justified by the source rules. The proof
+constructs refinements, delimiter splits and requests at the actual reached
+state; an unavailable response never becomes a completed answer. -/
+theorem step_has_source {Context : Type} (policy : Policy) (program : Program)
+    (cursor : Cursor Context) (licensed : Licensed cursor.control) :
+    ∃ action, Step policy program cursor action ∧ (machine policy program).step cursor = some action := by
+  classical
+  cases licensed with
+  | opening older atGoal => exact ⟨_,.opening older atGoal,by simp only [machine,atGoal]⟩
+  | committing older atGoal => exact ⟨_,.committing older atGoal,by simp only [machine,atGoal]⟩
+  | restoring boundary older atGoal => exact ⟨_,.restoring boundary older atGoal,by simp only [machine,atGoal]⟩
+  | ended atEnd =>
+      cases resolved : resolve cursor.control.bindings with
+      | none =>
+          refine ⟨_, .inconsistent (.ended atEnd) ((resolve_none_iff _).mp resolved), ?_⟩
+          simp only [machine, atEnd, resolved]
+      | some environment =>
+          exact ⟨_, .returned environment atEnd resolved, by simp only [machine, atEnd, resolved]⟩
+  | evaluation expression destination older atGoal ordinary =>
+      exact ⟨_, .expanded expression destination older _ atGoal ordinary
+        (prepare_has_source policy program cursor.control expression destination older),
+        by simp only [machine, atGoal]⟩
+  | equation value destination older atGoal =>
+      cases refined : refine cursor.control.bindings value destination with
+      | none =>
+          exact ⟨_, .refused value destination older atGoal ((refinement_iff _ _ _ _).mpr refined),
+            by simp only [machine, atGoal, refined]⟩
+      | some after =>
+          exact ⟨_, .accepted value destination older after atGoal ((refinement_iff _ _ _ _).mpr refined),
+            by simp only [machine, atGoal, refined]⟩
+  | argument value destination depth remaining atGoal =>
+      by_cases valid : depth ≤ remaining.length
+      · let older := remaining.drop (remaining.length - depth)
+        let younger := remaining.take (remaining.length - depth)
+        have width : older.length = depth := by simp only [older, List.length_drop]; omega
+        have partition : younger ++ older = remaining := by simp only [younger, older, List.take_append_drop]
+        have atSplit : cursor.control.goals =
+            .argumentReturn value destination older.length :: younger ++ older := by
+          simpa only [List.cons_append, width, partition] using atGoal
+        obtain ⟨action, actual⟩ : ∃ action, (machine policy program).step cursor = some action := ⟨_, rfl⟩
+        exact ⟨action, .argument value destination younger older action atSplit
+          (argumentReturn_step_source policy program cursor value destination younger older atSplit actual), actual⟩
+      · cases resolved : resolve cursor.control.bindings with
+        | none =>
+            refine ⟨_, .inconsistent (.argument value destination depth remaining atGoal)
+              ((resolve_none_iff _).mp resolved), ?_⟩
+            simp only [machine, atGoal, resolved]
+        | some environment =>
+            refine ⟨_, .invalidDelimiter value destination depth remaining environment atGoal
+              (by omega) resolved, ?_⟩
+            simp [machine, atGoal, resolved, callerSuffix?, valid]
+  | invocation head arguments destination older atGoal =>
+      cases resolved : resolve cursor.control.bindings with
+      | none =>
+          refine ⟨_, .inconsistent (.invocation head arguments destination older atGoal)
+            ((resolve_none_iff _).mp resolved), ?_⟩
+          simp only [machine, atGoal, resolved]
+      | some environment =>
+          by_cases printing : ∃ value, head = "println!" ∧ arguments.map (read environment) = [value]
+          · obtain ⟨value, rfl, readout⟩ := printing
+            exact ⟨_, .printed arguments destination older environment value atGoal resolved readout,
+              by simp only [machine, atGoal, resolved, readout]⟩
+          · have notPrint : ∀ value, head = "println!" → arguments.map (read environment) ≠ [value] := by
+              intro value same sameArgs
+              exact printing ⟨value, same, sameArgs⟩
+            refine ⟨_, .requested head arguments destination older environment atGoal resolved notPrint, ?_⟩
+            simp only [machine, atGoal, resolved]
+
+/-- A successful source return retains its reached cursor and equations.
+The destination readout is earned by the actual solved presentation. -/
+theorem Step.returned_iff {Context : Type} (policy : Policy) (program : SpaceSemantics.Program)
+    (cursor reached : Cursor Context) (value : Atom) (bindings : Equations) :
+    Step policy program cursor (.finish (.value value bindings, reached)) ↔
+      reached = cursor ∧ bindings = cursor.control.bindings ∧ cursor.control.goals = [] ∧
+        ∃ environment, resolve cursor.control.bindings = some environment ∧
+          read environment cursor.control.destination = value := by
+  constructor
+  · intro source
+    cases source with
+    | returned environment atEnd resolved =>
+        exact ⟨rfl, rfl, atEnd, environment, resolved, rfl⟩
+    | argument _ _ _ _ _ _ source => cases source
+  · rintro ⟨rfl, rfl, atEnd, environment, resolved, rfl⟩
+    exact .returned environment atEnd resolved
+
+/-- The local source/AM square is exact under the driver's explicit license. -/
+theorem step_iff_source {Context : Type} (policy : Policy) (program : Program)
+    (cursor : Cursor Context) (licensed : Licensed cursor.control) (action : Action Context) :
+    (machine policy program).step cursor = some action ↔ Step policy program cursor action := by
+  constructor
+  · intro actual
+    obtain ⟨selected, source, computed⟩ := step_has_source policy program cursor licensed
+    cases Option.some.inj (computed.symm.trans actual)
+    exact source
+  · exact Step.execution
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared
+open Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
+
+/-- Generative source operations have an opaque supply carrier. Their inputs
+are finite syntax packets and protected names; they cannot evaluate a body,
+advance a continuation, or change the observable world. -/
+structure FreshOperations (Supply : Type) where
+  copies : Supply → Finset String → List (Atom × List Atom) →
+    Option (Supply × List (Atom × List Atom))
+  parsed : Supply → Finset String → Atom → Except Effects.Fault (Option (Supply × Atom))
+
+namespace FreshOperations
+
+/-- The maintained finite identity implementation is one operation instance.
+Tokens stay inside it; source collection observes only the copied packets. -/
+def owned : FreshOperations Allocator where
+  copies allocator protectedNames source := do
+    let (next, copied) ← Collection.copyOwnedAnswers? allocator protectedNames source
+    pure (next, copied.map Prod.snd)
+  parsed allocator protectedNames text :=
+    match Collection.SyntaxLoading.loadParsed? allocator protectedNames text with
+    | .error reason => .error reason
+    | .ok none => .ok none
+    | .ok (some (next, _token, value)) => .ok (some (next, value))
+
+theorem owned_copies_iff (allocator next : Allocator) (protectedNames : Finset String)
+    (source copied : List (Atom × List Atom)) :
+    owned.copies allocator protectedNames source = some (next, copied) ↔
+      ∃ tagged, Collection.copyOwnedAnswers? allocator protectedNames source = some (next, tagged) ∧
+        copied = tagged.map Prod.snd := by
+  cases actual : Collection.copyOwnedAnswers? allocator protectedNames source with
+  | none => simp [owned, actual]
+  | some packet =>
+      rcases packet with ⟨after, tagged⟩
+      simp [owned, actual, eq_comm]
+
+/-- Erasing implementation tokens preserves the complete source copy contract,
+including occurrence count and independence of distinct copied answers. -/
+theorem owned_copies_valid {allocator next : Allocator} {protectedNames : Finset String}
+    {source copied : List (Atom × List Atom)}
+    (actual : owned.copies allocator protectedNames source = some (next, copied)) :
+    Collection.Copies protectedNames source copied := by
+  obtain ⟨tagged, computed, rfl⟩ := (owned_copies_iff _ _ _ _ _).mp actual
+  have trace := Collection.copyOwnedAnswers_trace computed
+  have checked : List.Forall₂ (fun raw fresh => Collection.IsCopy protectedNames raw.1 raw.2 fresh)
+      source (tagged.map Prod.snd) :=
+    List.forall₂_map_right_iff.mpr (Collection.copyOwnedAnswers_valid computed)
+  have independent : (tagged.map Prod.snd).Pairwise (fun first second =>
+      ∀ atom ∈ first.1 :: first.2, ∀ other ∈ second.1 :: second.2,
+        ∀ name ∈ TypeSubst.typeVars atom, name ∉ TypeSubst.typeVars other) := by
+    simpa only [List.pairwise_map] using trace.independent_rows
+  refine ⟨checked.length_eq.symm, ?_, ?_⟩
+  · intro index before after
+    exact checked.get before after
+  · intro first second firstBound secondBound different name present otherPresent
+    by_cases order : first < second
+    · have separated := independent.rel_get_of_lt
+        (a := ⟨first, firstBound⟩) (b := ⟨second, secondBound⟩) order
+      exact separated _ (by simp) _ (by simp) name present otherPresent
+    · have reverse : second < first := by omega
+      have separated := independent.rel_get_of_lt
+        (a := ⟨second, secondBound⟩) (b := ⟨first, firstBound⟩) reverse
+      exact separated _ (by simp) _ (by simp) name otherPresent present
+
+theorem owned_parsed_iff (allocator next : Allocator) (protectedNames : Finset String)
+    (text value : Atom) :
+    owned.parsed allocator protectedNames text = .ok (some (next, value)) ↔
+      ∃ token, Collection.SyntaxLoading.loadParsed? allocator protectedNames text =
+        .ok (some (next, token, value)) := by
+  cases actual : Collection.SyntaxLoading.loadParsed? allocator protectedNames text with
+  | error reason => simp [owned, actual]
+  | ok result =>
+      cases result with
+      | none => simp [owned, actual]
+      | some packet =>
+          rcases packet with ⟨after, token, loaded⟩
+          simp [owned, actual, eq_comm]
+
+/-- The existing named-syntax result is preserved by the abstract operation.
+Anonymous expansion is supplied by the source reader before owned copying. -/
+theorem owned_named_parse {allocator next : Allocator} {protectedNames : Finset String}
+    {text value : Atom}
+    (actual : owned.parsed allocator protectedNames text = .ok (some (next, value))) :
+    Collection.SyntaxLoading.NamedParseResult protectedNames text value := by
+  obtain ⟨token, parsed⟩ := (owned_parsed_iff _ _ _ _ _).mp actual
+  exact Collection.SyntaxLoading.loadParsed_named_result parsed
+
+end FreshOperations
+
+abbrev ScopeState (Supply Context : Type) := Supply × CollectionConfiguration Context
+
+/-- The caller consumes copied syntax, not the child's binding record. -/
+def resumeCopies {Context : Type} (copied : List (Atom × List Atom))
+    (caller : CollectionCaller Context) : CollectionWork Context :=
+  (replace caller.1 (.equate (.expression (copied.map Prod.fst)) caller.2.1 :: caller.1.goals),
+    caller.2.2.1, caller.2.2.2)
+
+/-- Source collection completion is defined only at an exhausted child
+frontier. The generative operation is independent of the saved search/caller
+representation, and receives the actual completed ordered packets. -/
+inductive CollectionReturn {Supply Context : Type} (fresh : FreshOperations Supply) :
+    ScopeState Supply Context → ScopeState Supply Context → Prop where
+  | complete (supply after : Supply) (world : World) (answers : List CollectedAnswer)
+      (caller : CollectionCaller Context) (parent : CollectionScope Context)
+      (parents : List (CollectionScope Context)) (copied : List (Atom × List Atom))
+      (ready : ∀ answer ∈ answers, answer.associated = [])
+      (returned : fresh.copies supply
+        (collectionSupport (⟨world, ⟨[], answers, some caller⟩ :: parent :: parents⟩ : CollectionConfiguration Context))
+        (answers.map fun answer => (answer.value, answer.associated)) = some (after, copied))
+      (valid : Collection.Copies
+        (collectionSupport (⟨world, ⟨[], answers, some caller⟩ :: parent :: parents⟩ : CollectionConfiguration Context))
+        (answers.map fun answer => (answer.value, answer.associated)) copied) :
+      CollectionReturn fresh (supply, ⟨world, ⟨[], answers, some caller⟩ :: parent :: parents⟩)
+        (after, ⟨world, {parent with frontier := resumeCopies copied caller :: parent.frontier} :: parents⟩)
+
+theorem resumeCopies_erase {Context : Type} (copied : List (Token × (Atom × List Atom)))
+    (caller : CollectionCaller Context) :
+    resumeCopies (copied.map Prod.snd) caller = allocatedWork copied caller := by
+  simp only [resumeCopies, allocatedWork, replace, List.map_map, Function.comp_def]
+
+theorem CollectionReturn.preserves_world {Supply Context : Type} {fresh : FreshOperations Supply}
+    {before after : ScopeState Supply Context} (source : CollectionReturn fresh before after) :
+    after.2.world = before.2.world := by cases source; rfl
+
+/-- Both directions of the maintained generative completion square. Source
+completion never assumes a completed evaluator reply or a supplied answer bag. -/
+theorem collection_return_iff {Context : Type} (before after : ScopedCursor Context) :
+    finishAllocated? before = some after ↔ CollectionReturn FreshOperations.owned before after := by
+  constructor
+  · intro actual
+    rcases before with ⟨supply, ⟨world, scopes⟩⟩
+    rcases after with ⟨next, ⟨afterWorld, afterScopes⟩⟩
+    obtain ⟨answers, caller, parent, parents, tagged, scopeEq, ready, copied, _trace, afterEq⟩ :=
+      finishAllocated_origin _ _ actual
+    have worldEq : afterWorld = world := congrArg Configuration.world afterEq
+    have scopesEq : afterScopes =
+        {parent with frontier := allocatedWork tagged caller :: parent.frontier} :: parents :=
+      congrArg Configuration.scopes afterEq
+    change scopes = ⟨[], answers, some caller⟩ :: parent :: parents at scopeEq
+    subst scopes
+    subst afterWorld
+    subst afterScopes
+    have returned := (FreshOperations.owned_copies_iff _ _ _ _ _).mpr ⟨tagged, copied, rfl⟩
+    simpa only [resumeCopies_erase] using
+      CollectionReturn.complete supply next world answers caller parent parents (tagged.map Prod.snd)
+        ready returned (FreshOperations.owned_copies_valid returned)
+  · intro source
+    cases source with
+    | complete supply after world answers caller parent parents copied ready returned _valid =>
+      obtain ⟨tagged, actual, rfl⟩ := (FreshOperations.owned_copies_iff _ _ _ _ _).mp returned
+      have allReady : answers.all (fun answer => answer.associated.isEmpty) = true := by
+        exact List.all_eq_true.mpr (fun answer present => by simp [ready answer present])
+      simp only [finishAllocated?, allReady, Bool.not_true, Bool.false_eq_true, ↓reduceIte,
+        actual, pure, resumeCopies_erase]
+      rfl
+
+/-- Partial aggregates cannot be source collection completions. -/
+theorem collection_return_no_pending {Supply Context : Type} (fresh : FreshOperations Supply)
+    (supply : Supply) (world : World) (scope : CollectionScope Context)
+    (parents : List (CollectionScope Context)) (work : CollectionWork Context)
+    (pending : List (CollectionWork Context)) (frontier : scope.frontier = work :: pending)
+    (after : ScopeState Supply Context) :
+    ¬CollectionReturn fresh (supply, ⟨world, scope :: parents⟩) after := by
+  intro source
+  cases source
+  simp at frontier
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared
+open SpaceSemantics (Program)
+
+/-- Source rules enter ordinary expansion only at a licensed active goal. -/
+theorem Step.licensed {Context : Type} {policy : Policy} {program : Program}
+    {cursor : Cursor Context} {action : Action Context} (source : Step policy program cursor action) :
+    Licensed cursor.control := by
+  cases source with
+  | opening older atGoal => exact .opening older atGoal
+  | committing older atGoal => exact .committing older atGoal
+  | restoring boundary older atGoal => exact .restoring boundary older atGoal
+  | expanded expression destination older next atGoal ordinary _ =>
+      exact .evaluation expression destination older atGoal ordinary
+  | accepted value destination older _ atGoal _ | refused value destination older atGoal _ =>
+      exact .equation value destination older atGoal
+  | returned _ atEnd _ => exact .ended atEnd
+  | inconsistent site _ =>
+      cases site with
+      | ended atEnd => exact .ended atEnd
+      | argument value destination depth remaining atGoal => exact .argument value destination depth remaining atGoal
+      | invocation head arguments destination older atGoal => exact .invocation head arguments destination older atGoal
+  | argument value destination younger older action atGoal _ =>
+      exact .argument value destination older.length (younger ++ older) (by simpa only [List.cons_append] using atGoal)
+  | invalidDelimiter value destination depth remaining _ atGoal _ _ =>
+      exact .argument value destination depth remaining atGoal
+  | printed arguments destination older _ _ atGoal _ _ =>
+      exact .invocation "println!" arguments destination older atGoal
+  | requested head arguments destination older _ atGoal _ _ =>
+      exact .invocation head arguments destination older atGoal
+
+theorem Licensed.ordinary {control : Control} (licensed : Licensed control)
+    {expression destination : Atom} {older : List Goal}
+    (atGoal : control.goals = .evaluate expression destination :: older) :
+    scopedForm expression = false := by
+  cases licensed <;> simp_all
+
+/-- The actual scope dispatcher respects the source license. Neither a child
+collection nor source choice nor empty search is delegated as ordinary work. -/
+theorem licensed_scope_guards {Context : Type} (world : World) (scope : CollectionScope Context)
+    (parents : List (CollectionScope Context)) (control : Control) (context : Context)
+    (origins : List Nat) (pending : List (CollectionWork Context))
+    (frontier : scope.frontier = (control, context, origins) :: pending)
+    (licensed : Licensed control) :
+    enterCollapse? (⟨world, scope :: parents⟩ : CollectionConfiguration Context) = none ∧
+    enterSuperpose? (⟨world, scope :: parents⟩ : CollectionConfiguration Context) = none ∧
+    (∀ destination older,
+      control.goals ≠ .evaluate (.expression [.symbol "empty"]) destination :: older) := by
+  refine ⟨?_, ?_, ?_⟩
+  · unfold enterCollapse?
+    simp only [frontier]
+    split
+    · rename_i expression destination older atGoal
+      have impossible := licensed.ordinary atGoal
+      simp [scopedForm] at impossible
+    · rfl
+  · unfold enterSuperpose?
+    simp only [frontier]
+    split
+    · rename_i alternatives destination older atGoal
+      have impossible := licensed.ordinary atGoal
+      simp [scopedForm] at impossible
+    · rfl
+  · intro destination older atGoal
+    have impossible := licensed.ordinary atGoal
+    simp [scopedForm] at impossible
+
+/-- A complete source local action enters the existing retained scope
+operation with its actual world, context, origins and older work. This law
+holds before serving a request; it does not assume a recursive child answer. -/
+theorem source_step_scope {Context : Type} (policy : Policy) (program : Program)
+    (allocator : Allocator) (world : World) (scope : CollectionScope Context)
+    (parents : List (CollectionScope Context)) (control : Control) (context : Context)
+    (origins : List Nat) (pending : List (CollectionWork Context))
+    (frontier : scope.frontier = (control, context, origins) :: pending)
+    (action : Action Context) (source : Step policy program (⟨world, control, context⟩ : Cursor Context) action) :
+    scopeStep policy program (allocator, ⟨world, scope :: parents⟩) =
+      installChild program (allocator, ⟨world, scope :: parents⟩) scope parents origins pending action := by
+  obtain ⟨notCollapse, notSuperpose, notEmpty⟩ :=
+    licensed_scope_guards world scope parents control context origins pending frontier source.licensed
+  have actual := source.execution
+  simp only [scopeStep, frontier, notCollapse, notSuperpose, actual]
+
+/-- Reflection constructs a source local action at the actual active cursor.
+Outer services and collection completion are separate source boundaries. -/
+theorem scope_has_local_source {Context : Type} (policy : Policy) (program : Program)
+    (allocator : Allocator) (world : World) (scope : CollectionScope Context)
+    (parents : List (CollectionScope Context)) (control : Control) (context : Context)
+    (origins : List Nat) (pending : List (CollectionWork Context))
+    (frontier : scope.frontier = (control, context, origins) :: pending)
+    (licensed : Licensed control) :
+    ∃ action, Step policy program (⟨world, control, context⟩ : Cursor Context) action ∧
+      scopeStep policy program (allocator, ⟨world, scope :: parents⟩) =
+        installChild program (allocator, ⟨world, scope :: parents⟩) scope parents origins pending action := by
+  obtain ⟨action, source, _actual⟩ := step_has_source policy program (⟨world, control, context⟩ : Cursor Context) licensed
+  exact ⟨action, source, source_step_scope policy program allocator world scope parents control context origins
+    pending frontier action source⟩
+
+/-- A retained source body cannot discard its surrounding binding record while
+it is merely being expanded into pending work. -/
+theorem Prepared.retains_frame {policy : Policy} {program : Program} {control next : Control}
+    {destination expression : Atom} {older : List Goal}
+    (source : Prepared policy program control destination older expression next) :
+    next.bindings = control.bindings ∧ next.destination = control.destination ∧ next.reserved = control.reserved := by
+  cases source <;> exact ⟨rfl, rfl, rfl⟩
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
+open SpaceSemantics (Program)
+
+/-- A source scope boundary cannot be passed off as ordinary body work. -/
+theorem scoped_form_has_no_local_step {Context : Type} {policy : Policy} {program : Program}
+    {cursor : Cursor Context} {expression destination : Atom} {older : List Goal}
+    (atGoal : cursor.control.goals = .evaluate expression destination :: older)
+    (captured : scopedForm expression = true) (action : Action Context) :
+    ¬Step policy program cursor action := by
+  intro source
+  have ordinary := source.licensed.ordinary atGoal
+  rw [captured] at ordinary
+  cases ordinary
+
+/-- Equal open answer payloads must still have independent copied variables.
+The result contract rejects one shared residual name across both occurrences. -/
+theorem shared_residual_copies_refused (protectedNames : Finset String)
+    (source : List (Atom × List Atom)) (name : String) :
+    ¬Collection.Copies protectedNames source [(.var name, []), (.var name, [])] := by
+  intro valid
+  have separated := valid.2.2 0 1 (by simp) (by simp) (by simp) name
+    (by simp [TypeSubst.typeVars])
+  exact separated (by simp [TypeSubst.typeVars])
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+
+/-!
+## Scoped source execution
+
+The source rules compose pending bodies, complete equation frontiers and
+collection delimiters. Generative operations remain local parameters. Neither
+an invocation nor a collection rule assumes a recursively evaluated reply.
+-/
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared
+open SpaceSemantics (Program)
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+
+abbrev ScopeAction (Supply Context : Type) :=
+  Mettapedia.GSLT.Distinction.ProductiveBlocks.Transition
+    (ScopeState Supply Context) CollectedAnswer (ScopeState Supply Context) ScopeBoundary
+
+/-- Invocation schedules a complete source frontier or the results of a local
+operation. All callers, older alternatives and occurrence paths stay explicit.
+The environment is the reached readout at the invocation boundary. -/
+inductive Invocation {Supply Context : Type} (fresh : FreshOperations Supply) (program : Program)
+    (supply : Supply) (world : World) (scope : CollectionScope Context)
+    (parents : List (CollectionScope Context)) (control : Control) (context : Context)
+    (origins : List Nat) (pending : List (CollectionWork Context))
+    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal)
+    (environment : Environment) : ScopeAction Supply Context → Prop where
+  | parsed (text value : Atom) (after : Supply) (parseHead : head = "parse")
+      (input : arguments.map (read environment) = [text])
+      (returned : fresh.parsed supply (collectionSupport ⟨world, scope :: parents⟩) text =
+        .ok (some (after, value))) :
+      Invocation fresh program supply world scope parents control context origins pending head arguments destination older environment
+        (.silent (after, ⟨world, {scope with frontier := (primitiveWork control context origins destination older [value] ++ pending)} :: parents⟩))
+  | parseFault (text : Atom) (reason : Effects.Fault) (parseHead : head = "parse")
+      (input : arguments.map (read environment) = [text])
+      (returned : fresh.parsed supply (collectionSupport ⟨world, scope :: parents⟩) text = .error reason) :
+      Invocation fresh program supply world scope parents control context origins pending head arguments destination older environment
+        (.call (.fault reason) (supply, ⟨world, scope :: parents⟩))
+  | parseAllocation (text : Atom) (parseHead : head = "parse")
+      (input : arguments.map (read environment) = [text])
+      (returned : fresh.parsed supply (collectionSupport ⟨world, scope :: parents⟩) text = .ok none) :
+      Invocation fresh program supply world scope parents control context origins pending head arguments destination older environment
+        (.call .allocation (supply, ⟨world, scope :: parents⟩))
+  | parseArity (parseHead : head = "parse")
+      (input : ∀ text, arguments.map (read environment) ≠ [text]) :
+      Invocation fresh program supply world scope parents control context origins pending head arguments destination older environment
+        (.call (.fault (.invalidArguments "parse")) (supply, ⟨world, scope :: parents⟩))
+  | primitive (state : Effects.State) (values : List Atom) (ordinary : head ≠ "parse")
+      (known : StdLib.known head = true)
+      (returned : StdLib.apply world.state head (arguments.map (read environment)) = .ok (state, values)) :
+      Invocation fresh program supply world scope parents control context origins pending head arguments destination older environment
+        (.silent (supply, ⟨{world with state}, {scope with frontier := (primitiveWork control context origins destination older values ++ pending)} :: parents⟩))
+  | primitiveFault (reason : Effects.Fault) (ordinary : head ≠ "parse")
+      (known : StdLib.known head = true)
+      (returned : StdLib.apply world.state head (arguments.map (read environment)) = .error reason) :
+      Invocation fresh program supply world scope parents control context origins pending head arguments destination older environment
+        (.call (.fault reason) (supply, ⟨world, scope :: parents⟩))
+  | equations (selected : List (Nat × Control)) (ordinary : head ≠ "parse")
+      (known : StdLib.known head = false) (notIO : Eval.ioHead head = false)
+      (declared : program.equations.any (·.head == head) = true)
+      (frontier : ClauseChoice.Frontier program
+        (protectControl control (collectionSupport ⟨world, scope :: parents⟩)) head
+        (arguments.map (read environment)) destination older
+        (List.range program.equations.length) selected) :
+      Invocation fresh program supply world scope parents control context origins pending head arguments destination older environment
+        (.silent (supply, ⟨world, {scope with frontier := (selected.map (fun row => (predicateEntry pending.length row.2, context, origins ++ [row.1])) ++ pending)} :: parents⟩))
+  | unserved (ordinary : head ≠ "parse") (known : StdLib.known head = false)
+      (unavailable : Eval.ioHead head = true ∨ program.equations.any (·.head == head) = false) :
+      Invocation fresh program supply world scope parents control context origins pending head arguments destination older environment
+        (.call (.branch (.invoke head (arguments.map (read environment)) destination))
+          (supply, ⟨world, scope :: parents⟩))
+
+/-- The maintained invocation implements the independent local source cases.
+Equation children are installed, not evaluated inside this operation. -/
+theorem Invocation.execution {Context : Type} {program : Program}
+    {supply : Allocator} {world : World} {scope : CollectionScope Context}
+    {parents : List (CollectionScope Context)} {control : Control} {context : Context}
+    {origins : List Nat} {pending : List (CollectionWork Context)}
+    {head : String} {arguments : List Atom} {destination : Atom} {older : List Goal}
+    {environment : Environment} {action : ScopeAction Allocator Context}
+    (source : Invocation FreshOperations.owned program supply world scope parents control context origins pending
+      head arguments destination older environment action)
+    (frontier : scope.frontier = (control, context, origins) :: pending)
+    (atCall : control.goals = .invoke head arguments destination :: older)
+    (resolved : resolve control.bindings = some environment) :
+    scopedInvocation program (supply, ⟨world, scope :: parents⟩) scope parents control context origins pending
+      head (arguments.map (read environment)) destination older = action := by
+  cases source with
+  | parsed text value after parseHead input returned =>
+      obtain ⟨token, actual⟩ := (FreshOperations.owned_parsed_iff _ _ _ _ _).mp returned
+      simp [scopedInvocation, parseHead, input, actual]
+  | parseFault text reason parseHead input returned =>
+      cases actual : Collection.SyntaxLoading.loadParsed? supply (collectionSupport ⟨world, scope :: parents⟩) text with
+      | error found =>
+          have same : found = reason := by simpa only [FreshOperations.owned, actual, Except.error.injEq] using returned
+          subst found
+          simp only [scopedInvocation, parseHead, ↓reduceIte, input, actual]
+      | ok packet =>
+          rcases packet with _ | ⟨after, token, value⟩ <;> simp [FreshOperations.owned, actual] at returned
+  | parseAllocation text parseHead input returned =>
+      cases actual : Collection.SyntaxLoading.loadParsed? supply (collectionSupport ⟨world, scope :: parents⟩) text with
+      | error found => simp [FreshOperations.owned, actual] at returned
+      | ok packet =>
+          rcases packet with _ | ⟨after, token, value⟩
+          · simp only [scopedInvocation, parseHead, ↓reduceIte, input, actual]
+          · simp [FreshOperations.owned, actual] at returned
+  | parseArity parseHead input =>
+      subst head
+      unfold scopedInvocation
+      split <;> simp_all
+  | primitive state values ordinary known returned => simp [scopedInvocation, ordinary, known, returned]
+  | primitiveFault reason ordinary known returned => simp [scopedInvocation, ordinary, known, returned]
+  | equations selected ordinary known notIO declared rows =>
+      have entered := enterEquations_constructs program world scope parents control context origins pending
+        head arguments destination older environment frontier atCall (by simp [notIO, known]) declared resolved
+      have exactRows := (ClauseChoice.choices_iff_frontier _ _ _ _ _ _ _).mpr rows
+      simp [scopedInvocation, ordinary, known, entered, equationWork, exactRows]
+  | unserved ordinary known unavailable =>
+      have notEntered : enterEquations? program (⟨world, scope :: parents⟩ : CollectionConfiguration Context) = none := by
+        rcases unavailable with notIO | notDeclared
+        · simp [enterEquations?, frontier, atCall, notIO]
+        · simp [enterEquations?, frontier, atCall, known, notDeclared]
+      simp [scopedInvocation, ordinary, known, notEntered]
+
+/-- Every local invocation has source evidence, including explicit faults or
+unserved requests. Complete equation coverage uses the independently proved
+frontier theorem; no successful evaluator response is assumed. -/
+theorem invocation_has_source {Supply Context : Type} (fresh : FreshOperations Supply) (program : Program)
+    (supply : Supply) (world : World) (scope : CollectionScope Context)
+    (parents : List (CollectionScope Context)) (control : Control) (context : Context)
+    (origins : List Nat) (pending : List (CollectionWork Context))
+    (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal)
+    (environment : Environment) :
+    ∃ action, Invocation fresh program supply world scope parents control context origins pending
+      head arguments destination older environment action := by
+  by_cases parseHead : head = "parse"
+  · by_cases input : ∃ text, arguments.map (read environment) = [text]
+    · obtain ⟨text, input⟩ := input
+      cases returned : fresh.parsed supply (collectionSupport ⟨world, scope :: parents⟩) text with
+      | error reason => exact ⟨_, .parseFault text reason parseHead input returned⟩
+      | ok packet =>
+        cases packet with
+        | none => exact ⟨_, .parseAllocation text parseHead input returned⟩
+        | some packet => exact ⟨_, .parsed text packet.2 packet.1 parseHead input returned⟩
+    · exact ⟨_, .parseArity parseHead (by simpa using input)⟩
+  · by_cases known : StdLib.known head = true
+    · cases returned : StdLib.apply world.state head (arguments.map (read environment)) with
+      | error reason => exact ⟨_, .primitiveFault reason parseHead known returned⟩
+      | ok packet => exact ⟨_, .primitive packet.1 packet.2 parseHead known returned⟩
+    · have unknown : StdLib.known head = false := by simpa using known
+      by_cases notIO : Eval.ioHead head = false
+      · by_cases declared : program.equations.any (·.head == head) = true
+        · exact ⟨_, .equations _ parseHead unknown notIO declared
+            ((ClauseChoice.choices_iff_frontier _ _ _ _ _ _ _).mp rfl)⟩
+        · exact ⟨_, .unserved parseHead unknown (Or.inr (by simpa using declared))⟩
+      · exact ⟨_, .unserved parseHead unknown (Or.inl (by simpa using notIO))⟩
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared
+open SpaceSemantics (Program)
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+
+/-- Source control at one focused work item. Local rules earn their action;
+invocations earn a complete operation frontier. Child scope entry is a
+structural continuation rule, with the parent's unfinished work saved. -/
+inductive ActiveStep {Supply Context : Type} (fresh : FreshOperations Supply)
+    (policy : Policy) (program : Program) (supply : Supply) (world : World)
+    (scope : CollectionScope Context) (parents : List (CollectionScope Context))
+    (control : Control) (context : Context) (origins : List Nat)
+    (pending : List (CollectionWork Context)) : ScopeAction Supply Context → Prop where
+  | opening (older : List Goal) (atGoal : control.goals = .openCommit :: older) :
+      ActiveStep fresh policy program supply world scope parents control context origins pending
+        (.silent (supply, ⟨world, {scope with frontier :=
+          ({control with goals := older,cutBoundary := pending.length},context,origins) :: pending} :: parents⟩))
+  | committing (older : List Goal) (younger kept : List (CollectionWork Context))
+      (atGoal : control.goals = .commit :: older)
+      (partition : pending = younger ++ kept) (boundary : kept.length = control.cutBoundary) :
+      ActiveStep fresh policy program supply world scope parents control context origins pending
+        (.silent (supply, ⟨world, {scope with frontier :=
+          ({control with goals := older},context,origins) :: kept} :: parents⟩))
+  | invalidCommit (older : List Goal) (atGoal : control.goals = .commit :: older)
+      (tooShort : pending.length < control.cutBoundary) :
+      ActiveStep fresh policy program supply world scope parents control context origins pending
+        (.call (.branch (.invalidDelimiter control.cutBoundary pending.length))
+          (supply, ⟨world, scope :: parents⟩))
+  | next (reached : Cursor Context)
+      (source : Step policy program ⟨world, control, context⟩ (.silent reached)) :
+      ActiveStep fresh policy program supply world scope parents control context origins pending
+        (.silent (supply, ⟨reached.world, retainChild scope pending origins reached :: parents⟩))
+  | refused (bindings : Equations) (reached : Cursor Context)
+      (source : Step policy program ⟨world, control, context⟩ (.finish (.noValue bindings, reached))) :
+      ActiveStep fresh policy program supply world scope parents control context origins pending
+        (.silent (supply, ⟨reached.world, {scope with frontier := pending} :: parents⟩))
+  | answered (value : Atom) (bindings : Equations) (reached : Cursor Context)
+      (source : Step policy program ⟨world, control, context⟩ (.finish (.value value bindings, reached))) :
+      ActiveStep fresh policy program supply world scope parents control context origins pending
+        (let answer : CollectedAnswer := ⟨value, bindings, origins, []⟩
+         let after := (supply, ⟨reached.world, Scope.record scope pending answer :: parents⟩)
+         if scope.caller.isNone then .publish [answer] after else .silent after)
+  | boundary (request : Boundary) (saved : Cursor Context)
+      (source : Step policy program ⟨world, control, context⟩ (.call request saved))
+      (notInvocation : ∀ head arguments destination, request ≠ .invoke head arguments destination)
+      (notOpening : request ≠ .openCommit) (notCommit : ∀ retained, request ≠ .commit retained) :
+      ActiveStep fresh policy program supply world scope parents control context origins pending
+        (.call (.branch request) (supply, ⟨world, scope :: parents⟩))
+  | invocation (head : String) (arguments : List Atom) (destination : Atom) (older : List Goal)
+      (environment : Environment) (action : ScopeAction Supply Context)
+      (atCall : control.goals = .invoke head arguments destination :: older)
+      (resolved : resolve control.bindings = some environment)
+      (notPrint : ∀ value, head = "println!" → arguments.map (read environment) ≠ [value])
+      (served : Invocation fresh program supply world scope parents control context origins pending
+        head arguments destination older environment action) :
+      ActiveStep fresh policy program supply world scope parents control context origins pending action
+  | collapsed (expression destination : Atom) (older : List Goal)
+      (atGoal : control.goals = .evaluate (.expression [.symbol "collapse", expression]) destination :: older) :
+      ActiveStep fresh policy program supply world scope parents control context origins pending
+        (.silent (supply, Scope.enter world scope pending parents
+          (collapseChild control (collectionSupport ⟨world, scope :: parents⟩) expression, context, origins)
+          ({control with goals := older}, destination, context, origins)))
+  | choice (alternatives : List Atom) (destination : Atom) (older : List Goal)
+      (atGoal : control.goals = .evaluate (.expression [.symbol "superpose", .expression alternatives]) destination :: older) :
+      ActiveStep fresh policy program supply world scope parents control context origins pending
+        (.silent (supply, ⟨world, {scope with frontier :=
+          (superposeWork control context origins alternatives destination older ++ pending)} :: parents⟩))
+  | empty (destination : Atom) (older : List Goal)
+      (atGoal : control.goals = .evaluate (.expression [.symbol "empty"]) destination :: older) :
+      ActiveStep fresh policy program supply world scope parents control context origins pending
+        (.silent (supply, ⟨world, {scope with frontier := pending} :: parents⟩))
+
+/-- Focused source rules implement one actual retained scope step. -/
+theorem ActiveStep.execution {Context : Type} {policy : Policy} {program : Program}
+    {supply : Allocator} {world : World} {scope : CollectionScope Context}
+    {parents : List (CollectionScope Context)} {control : Control} {context : Context}
+    {origins : List Nat} {pending : List (CollectionWork Context)} {action : ScopeAction Allocator Context}
+    (source : ActiveStep FreshOperations.owned policy program supply world scope parents control context origins pending action)
+    (frontier : scope.frontier = (control, context, origins) :: pending) :
+    scopeStep policy program (supply, ⟨world, scope :: parents⟩) = action := by
+  cases source with
+  | opening older atGoal =>
+      rw [source_step_scope policy program supply world scope parents control context origins pending frontier _
+        (.opening older atGoal)]
+      simp only [installChild,atGoal]
+  | committing older younger kept atGoal partition boundary =>
+      rw [source_step_scope policy program supply world scope parents control context origins pending frontier _
+        (.committing older atGoal)]
+      simp [installChild,atGoal,partition,←boundary]
+  | invalidCommit older atGoal tooShort =>
+      rw [source_step_scope policy program supply world scope parents control context origins pending frontier _
+        (.committing older atGoal)]
+      simp [installChild,atGoal,Nat.not_le.mpr tooShort]
+  | next reached localStep =>
+      rw [source_step_scope policy program supply world scope parents control context origins pending frontier _ localStep]
+      rfl
+  | refused bindings reached localStep =>
+      rw [source_step_scope policy program supply world scope parents control context origins pending frontier _ localStep]
+      rfl
+  | answered value bindings reached localStep =>
+      rw [source_step_scope policy program supply world scope parents control context origins pending frontier _ localStep]
+      rfl
+  | boundary request saved localStep notInvocation notOpening notCommit =>
+      rw [source_step_scope policy program supply world scope parents control context origins pending frontier _ localStep]
+      cases request <;> simp_all [installChild]
+  | invocation head arguments destination older environment action atCall resolved notPrint served =>
+      have localStep := Step.requested (cursor := (⟨world, control, context⟩ : Cursor Context))
+        (policy := policy) (program := program) head arguments destination older environment atCall resolved notPrint
+      rw [source_step_scope policy program supply world scope parents control context origins pending frontier _ localStep]
+      simpa only [installChild, atCall] using served.execution frontier atCall resolved
+  | collapsed expression destination older atGoal =>
+      exact scope_collapse_entry policy program supply world scope parents control context origins pending
+        expression destination older frontier atGoal
+  | choice alternatives destination older atGoal =>
+      exact scope_superpose_entry policy program supply world scope parents control context origins pending
+        alternatives destination older frontier atGoal
+  | empty destination older atGoal =>
+      simp [scopeStep, frontier, enterCollapse?, atGoal, enterSuperpose?]
+
+/-- The full source scope step. Empty root search completes; empty child
+search must perform fresh collection return. Pending associated work or an
+unserved allocation remains a request with the same complete saved state. -/
+inductive ScopedStep {Supply Context : Type} (fresh : FreshOperations Supply)
+    (policy : Policy) (program : Program) : ScopeState Supply Context → ScopeAction Supply Context → Prop where
+  | active (supply : Supply) (world : World) (scope : CollectionScope Context)
+      (parents : List (CollectionScope Context)) (control : Control) (context : Context)
+      (origins : List Nat) (pending : List (CollectionWork Context)) (action : ScopeAction Supply Context)
+      (frontier : scope.frontier = (control, context, origins) :: pending)
+      (source : ActiveStep fresh policy program supply world scope parents control context origins pending action) :
+      ScopedStep fresh policy program (supply, ⟨world, scope :: parents⟩) action
+  | finished (supply : Supply) (world : World) (answers : List CollectedAnswer) :
+      ScopedStep fresh policy program (supply, ⟨world, [⟨[], answers, none⟩]⟩)
+        (.finish (supply, ⟨world, [⟨[], answers, none⟩]⟩))
+  | collected {before after : ScopeState Supply Context} (source : CollectionReturn fresh before after) :
+      ScopedStep fresh policy program before (.silent after)
+  | associated (supply : Supply) (world : World) (answers : List CollectedAnswer)
+      (caller : CollectionCaller Context) (parent : CollectionScope Context)
+      (parents : List (CollectionScope Context)) (answer : CollectedAnswer)
+      (member : answer ∈ answers) (pending : answer.associated ≠ []) :
+      ScopedStep fresh policy program (supply, ⟨world, ⟨[], answers, some caller⟩ :: parent :: parents⟩)
+        (.call .associatedWork (supply, ⟨world, ⟨[], answers, some caller⟩ :: parent :: parents⟩))
+  | allocation (supply : Supply) (world : World) (answers : List CollectedAnswer)
+      (caller : CollectionCaller Context) (parent : CollectionScope Context)
+      (parents : List (CollectionScope Context)) (ready : ∀ answer ∈ answers, answer.associated = [])
+      (unserved : fresh.copies supply
+        (collectionSupport (⟨world, ⟨[], answers, some caller⟩ :: parent :: parents⟩ : CollectionConfiguration Context))
+        (answers.map fun answer => (answer.value, answer.associated)) = none) :
+      ScopedStep fresh policy program (supply, ⟨world, ⟨[], answers, some caller⟩ :: parent :: parents⟩)
+        (.call .allocation (supply, ⟨world, ⟨[], answers, some caller⟩ :: parent :: parents⟩))
+
+/-- Soundness of the complete scoped rule family, including recursive child
+entry, publication, branch refusal and the reached collection return. -/
+theorem ScopedStep.execution {Context : Type} {policy : Policy} {program : Program}
+    {before : ScopedCursor Context} {action : ScopeAction Allocator Context}
+    (source : ScopedStep FreshOperations.owned policy program before action) :
+    scopeStep policy program before = action := by
+  cases source with
+  | active _ _ _ _ _ _ _ _ _ frontier source => exact source.execution frontier
+  | finished supply world answers => rfl
+  | collected source =>
+      cases source with
+      | complete supply after world answers caller parent parents copied ready returned valid =>
+          obtain ⟨tagged, actual, rfl⟩ := (FreshOperations.owned_copies_iff _ _ _ _ _).mp returned
+          simpa only [resumeCopies_erase] using
+            scopeStep_copied_return policy program supply after world answers caller parent parents tagged ready actual
+  | associated supply world answers caller parent parents answer member pending =>
+      exact scopeStep_pending_associated policy program supply world answers caller parent parents answer member pending
+  | allocation supply world answers caller parent parents ready unserved =>
+      have actual : Collection.copyOwnedAnswers? supply
+          (collectionSupport (⟨world, ⟨[], answers, some caller⟩ :: parent :: parents⟩ : CollectionConfiguration Context))
+          (answers.map fun answer => (answer.value, answer.associated)) = none := by
+        cases copied : Collection.copyOwnedAnswers? supply _ _ with
+        | none => rfl
+        | some packet => simp [FreshOperations.owned, copied] at unserved
+      have allReady : answers.all (fun answer => answer.associated.isEmpty) = true :=
+        List.all_eq_true.mpr (fun answer member => by simp [ready answer member])
+      simp [scopeStep, allReady, finishAllocated?, actual]
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared
+open SpaceSemantics (Program)
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+
+/-- Every focused source goal is ordinary licensed work or an explicit scope
+boundary. The classification inspects syntax, never a completed child result. -/
+theorem active_has_source {Supply Context : Type} (fresh : FreshOperations Supply)
+    (policy : Policy) (program : Program) (supply : Supply) (world : World)
+    (scope : CollectionScope Context) (parents : List (CollectionScope Context))
+    (control : Control) (context : Context) (origins : List Nat)
+    (pending : List (CollectionWork Context)) :
+    ∃ action, ActiveStep fresh policy program supply world scope parents control context origins pending action := by
+  classical
+  by_cases collapse : ∃ expression destination older,
+      control.goals = .evaluate (.expression [.symbol "collapse", expression]) destination :: older
+  · obtain ⟨expression, destination, older, atGoal⟩ := collapse
+    exact ⟨_, .collapsed expression destination older atGoal⟩
+  by_cases choice : ∃ alternatives destination older,
+      control.goals = .evaluate (.expression [.symbol "superpose", .expression alternatives]) destination :: older
+  · obtain ⟨alternatives, destination, older, atGoal⟩ := choice
+    exact ⟨_, .choice alternatives destination older atGoal⟩
+  by_cases empty : ∃ destination older,
+      control.goals = .evaluate (.expression [.symbol "empty"]) destination :: older
+  · obtain ⟨destination, older, atGoal⟩ := empty
+    exact ⟨_, .empty destination older atGoal⟩
+  have licensed : Licensed control := by
+    cases atGoal : control.goals with
+    | nil => exact .ended atGoal
+    | cons goal older =>
+      cases goal with
+      | openCommit => exact .opening older atGoal
+      | commit => exact .committing older atGoal
+      | restoreCommit boundary => exact .restoring boundary older atGoal
+      | equate value destination => exact .equation value destination older atGoal
+      | invoke head arguments destination => exact .invocation head arguments destination older atGoal
+      | argumentReturn value destination depth => exact .argument value destination depth older atGoal
+      | evaluate expression destination =>
+        apply Licensed.evaluation expression destination older atGoal
+        unfold scopedForm
+        split <;> simp_all
+  obtain ⟨action, source, _actual⟩ := step_has_source policy program (⟨world, control, context⟩ : Cursor Context) licensed
+  have original := source
+  cases source with
+  | opening older atGoal => exact ⟨_,.opening older atGoal⟩
+  | committing older atGoal =>
+      by_cases bound : control.cutBoundary ≤ pending.length
+      · let kept := pending.drop (pending.length - control.cutBoundary)
+        let younger := pending.take (pending.length - control.cutBoundary)
+        refine ⟨_,.committing older younger kept atGoal (List.take_append_drop _ _).symm ?_⟩
+        simp only [kept,List.length_drop]
+        omega
+      · exact ⟨_,.invalidCommit older atGoal (by omega)⟩
+  | restoring => exact ⟨_,.next _ original⟩
+  | expanded => exact ⟨_, .next _ original⟩
+  | accepted => exact ⟨_, .next _ original⟩
+  | refused => exact ⟨_, .refused _ _ original⟩
+  | returned => exact ⟨_, .answered _ _ _ original⟩
+  | inconsistent => exact ⟨_, .boundary _ _ original (by simp) (by simp) (by simp)⟩
+  | invalidDelimiter => exact ⟨_, .boundary _ _ original (by simp) (by simp) (by simp)⟩
+  | printed => exact ⟨_, .next _ original⟩
+  | argument value destination younger older action atGoal returned =>
+      cases returned with
+      | ordinary => exact ⟨_, .next _ original⟩
+      | propagated => exact ⟨_, .next _ original⟩
+      | refused => exact ⟨_, .refused _ _ original⟩
+      | invalid => exact ⟨_, .boundary _ _ original (by simp) (by simp) (by simp)⟩
+  | requested head arguments destination older environment atGoal resolved notPrint =>
+      obtain ⟨action, served⟩ := invocation_has_source fresh program supply world scope parents control context origins pending
+        head arguments destination older environment
+      exact ⟨_, .invocation head arguments destination older environment action atGoal resolved notPrint served⟩
+
+/-- Reflection constructs the complete source scope step from any properly
+nested retained configuration. Successful, refused and incomplete boundaries
+all remain distinct; no source answer is supplied by a driver callback. -/
+theorem scoped_has_source {Context : Type} (policy : Policy) (program : Program)
+    (before : ScopedCursor Context) (valid : ScopesValid before.2.scopes) :
+    ∃ action, ScopedStep FreshOperations.owned policy program before action := by
+  classical
+  rcases before with ⟨supply, world, scopes⟩
+  cases valid with
+  | root work answers =>
+      cases work with
+      | nil => exact ⟨_, .finished supply world answers⟩
+      | cons work pending =>
+          rcases work with ⟨control, context, origins⟩
+          obtain ⟨action, source⟩ := active_has_source FreshOperations.owned policy program supply world
+            ⟨(control, context, origins) :: pending, answers, none⟩ [] control context origins pending
+          exact ⟨_, .active supply world _ [] control context origins pending action rfl source⟩
+  | @nested parents work answers caller valid =>
+      cases work with
+      | cons work pending =>
+          rcases work with ⟨control, context, origins⟩
+          obtain ⟨action, source⟩ := active_has_source FreshOperations.owned policy program supply world
+            ⟨(control, context, origins) :: pending, answers, some caller⟩ parents control context origins pending
+          exact ⟨_, .active supply world _ parents control context origins pending action rfl source⟩
+      | nil =>
+          cases parents with
+          | nil => exact False.elim (valid.nonempty rfl)
+          | cons parent parents =>
+              by_cases ready : ∀ answer ∈ answers, answer.associated = []
+              · cases copied : FreshOperations.owned.copies supply
+                    (collectionSupport (⟨world, ⟨[], answers, some caller⟩ :: parent :: parents⟩ : CollectionConfiguration Context))
+                    (answers.map fun answer => (answer.value, answer.associated)) with
+                | none => exact ⟨_, .allocation supply world answers caller parent parents ready copied⟩
+                | some packet =>
+                    exact ⟨_, .collected (.complete supply packet.1 world answers caller parent parents packet.2
+                      ready copied (FreshOperations.owned_copies_valid copied))⟩
+              · obtain ⟨answer, member, pending⟩ : ∃ answer ∈ answers, answer.associated ≠ [] := by
+                  simpa only [not_forall, Classical.not_imp, exists_prop] using ready
+                exact ⟨_, .associated supply world answers caller parent parents answer member pending⟩
+
+/-- Exact source/AM correspondence for the entire retained scope dispatcher,
+not merely successful local branches or closed calls. -/
+theorem scoped_step_iff_source {Context : Type} (policy : Policy) (program : Program)
+    (before : ScopedCursor Context) (valid : ScopesValid before.2.scopes)
+    (action : ScopeAction Allocator Context) :
+    scopeStep policy program before = action ↔ ScopedStep FreshOperations.owned policy program before action := by
+  constructor
+  · intro actual
+    obtain ⟨selected, source⟩ := scoped_has_source policy program before valid
+    have same : selected = action := source.execution.symm.trans actual
+    cases same
+    exact source
+  · exact ScopedStep.execution
+
+end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination.Source
+
+namespace Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.MeTTa.MetavariableFrameStore.Shared
+
+/-- Cut discards precisely the younger prefix, keeping the current bindings,
+reached world, outer alternatives, scope stack and source origins. -/
+theorem scope_commit_split {Context : Type} (policy : Policy) (program : SpaceSemantics.Program)
+    (allocator : Allocator) (world : World) (scope : CollectionScope Context)
+    (parents : List (CollectionScope Context)) (control : Control) (context : Context)
+    (origins : List Nat) (younger kept : List (CollectionWork Context)) (older : List Goal)
+    (frontier : scope.frontier = (control,context,origins) :: younger ++ kept)
+    (atGoal : control.goals = .commit :: older) (boundary : control.cutBoundary = kept.length) :
+    scopeStep policy program (allocator,⟨world,scope :: parents⟩) =
+      .silent (allocator,⟨world,{scope with frontier :=
+        ({control with goals := older},context,origins) :: kept} :: parents⟩) :=
+  (Source.ActiveStep.committing older younger kept atGoal rfl boundary.symm).execution frontier
+
+/-- An invalid saved delimiter is a retained control request, never a
+completed refusal or an authorization to discard all remaining work. -/
+theorem scope_commit_invalid {Context : Type} (policy : Policy) (program : SpaceSemantics.Program)
+    (allocator : Allocator) (world : World) (scope : CollectionScope Context)
+    (parents : List (CollectionScope Context)) (control : Control) (context : Context)
+    (origins : List Nat) (pending : List (CollectionWork Context)) (older : List Goal)
+    (frontier : scope.frontier = (control,context,origins) :: pending)
+    (atGoal : control.goals = .commit :: older) (invalid : pending.length < control.cutBoundary) :
+    scopeStep policy program (allocator,⟨world,scope :: parents⟩) =
+      .call (.branch (.invalidDelimiter control.cutBoundary pending.length))
+        (allocator,⟨world,scope :: parents⟩) :=
+  (Source.ActiveStep.invalidCommit older atGoal invalid).execution frontier
 
 end Mettapedia.Languages.MeTTa.PeTTa.CettaEagerDFS.Destination

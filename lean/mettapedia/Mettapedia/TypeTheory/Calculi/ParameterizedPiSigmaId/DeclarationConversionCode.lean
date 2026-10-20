@@ -24,6 +24,22 @@ open Declaration StructuralConversionCode
 
 variable {Head : Type} {n : Nat} {BaseCode DeclaredCode : Nat → Type}
 
+/-- With a root-free base and opaque values, declaration extension adds
+exactly its declared roots. This statement concerns computation only. -/
+theorem opaque_roots_iff (base : Rules Head) (signature : Signature Head)
+    (emptyBase : ∀ {ambient : Nat} {left right : Tm Head ambient},
+      base.computation.step left right → False)
+    (opaqueValues : ∀ name, signature.valueOf? name = none) {left right : Tm Head n} :
+    (extendRules base signature).computation.step left right ↔
+      signature.computation.step left right := by
+  constructor
+  · intro step
+    cases step with
+    | inherited original => exact (emptyBase original).elim
+    | delta found => simp only [opaqueValues] at found; cases found
+    | declared declared => exact declared
+  · exact RootStep.declared
+
 inductive RootCode (BaseCode DeclaredCode : Nat → Type) (n : Nat) where
   | inherited (code : BaseCode n)
   | delta (name : DeclName)

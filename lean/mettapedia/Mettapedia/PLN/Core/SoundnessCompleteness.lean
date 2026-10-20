@@ -44,7 +44,7 @@ properties, including:
 
 namespace Mettapedia.PLN.Core.SoundnessCompleteness
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.Soundness
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.CDLogic

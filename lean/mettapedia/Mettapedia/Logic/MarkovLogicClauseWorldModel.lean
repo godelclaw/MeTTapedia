@@ -23,9 +23,9 @@ open Mettapedia.Logic.MarkovLogicAbstract
 open Mettapedia.Logic.MarkovLogicCountable
 open Mettapedia.Logic.MarkovLogicClauseSemantics
 open Mettapedia.Logic.MarkovLogicClauseFactorGraph
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.ProbabilityTheory.BayesianNetworks
 
 variable {Atom ClauseId : Type*} [DecidableEq Atom] [Fintype Atom]
@@ -50,7 +50,7 @@ noncomputable def clauseWMState
 noncomputable def clauseMassSemantics
     (M : GroundMLN Atom ClauseId)
     (support : Finset ClauseId) :
-    MassSemantics (ConstraintQuery Atom) :=
+    Mettapedia.ProbabilityTheory.MassSemantics (ConstraintQuery Atom) :=
   (M.toCountableMLNSemantics (Query := ConstraintQuery Atom) support constraintQueryHolds).toMassSemantics
 
 /-- The `BinaryWorldModel` instance for clause WM state over constraint queries.
@@ -126,29 +126,29 @@ theorem clauseWM_total_eq_totalMass
   intro c hc; exact absurd hc List.not_mem_nil
 
 /-- Source evidence from the clause WM matches the semantic mass evidence. -/
-theorem clauseWM_sourceEvidence_eq_evidenceOfMasses
+theorem clauseWM_sourceEvidence_eq_binaryMass
     (M : GroundMLN Atom ClauseId)
     (support : Finset ClauseId)
     (constraints : ConstraintQuery Atom) :
     ValuationWorldModel.sourceEvidence (fg := compiledClauseFactorGraph M support)
       (W := clauseWMSource M support) constraints =
-      (clauseMassSemantics M support).evidenceOfMasses constraints := by
-  unfold ValuationWorldModel.sourceEvidence MassSemantics.evidenceOfMasses
+      (clauseMassSemantics M support).binaryMass constraints := by
+  unfold ValuationWorldModel.sourceEvidence Mettapedia.ProbabilityTheory.MassSemantics.binaryMass
   rw [clauseWM_weight_eq_queryMass, clauseWM_total_eq_totalMass]
 
 /-- BinaryEvidence from the singleton clause WM state matches the semantic mass evidence. -/
-theorem clauseWM_evidence_eq_evidenceOfMasses
+theorem clauseWM_evidence_eq_binaryMass
     (M : GroundMLN Atom ClauseId)
     (support : Finset ClauseId)
     (constraints : ConstraintQuery Atom) :
     BinaryWorldModel.evidence (clauseWMState M support) constraints =
-      (clauseMassSemantics M support).evidenceOfMasses constraints := by
+      (clauseMassSemantics M support).binaryMass constraints := by
   show ValuationWorldModel.evidence
     (fg := compiledClauseFactorGraph M support)
     (clauseWMState M support) constraints = _
   unfold clauseWMState ValuationWorldModel.evidence
   simp [Multiset.map_singleton, Multiset.sum_singleton]
-  exact clauseWM_sourceEvidence_eq_evidenceOfMasses M support constraints
+  exact clauseWM_sourceEvidence_eq_binaryMass M support constraints
 
 /-- **Main theorem:** `queryStrength` on the clause WM state equals the MLN `queryProb`. -/
 theorem clauseWM_queryStrength_eq_queryProb
@@ -160,7 +160,7 @@ theorem clauseWM_queryStrength_eq_queryProb
   queryStrength_eq_queryProb_of_evidence_eq
     (clauseWMState M support)
     (clauseMassSemantics M support)
-    (clauseWM_evidence_eq_evidenceOfMasses M support)
+    (clauseWM_evidence_eq_binaryMass M support)
     q
 
 end Mettapedia.Logic.MarkovLogicClauseWorldModel

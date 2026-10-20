@@ -171,7 +171,7 @@ class WorldModel (State : Type*) (Query : Type*) [EvidenceType State] where
 Here \code{EvidenceType} means: revision is an additive commutative monoid on \code{State}.
 Standard PLN event/link queries are represented by \code{PLNQuery Atom}; all truth-value
 quantities are derived by mapping extracted \Evidence{} to strengths/weights.
-See \codepath{Mettapedia/Logic/PLNWorldModel.lean}.
+See \codepath{Mettapedia/PLN/WorldModel/BinaryWorldModel.lean}.
 
 \subsection{Reference complete instance: Dirichlet over worlds}
 
@@ -192,7 +192,7 @@ Formally, the Lean prototype proves:
 \[
   \mathrm{evidence}(E_1+E_2, q) = \mathrm{evidence}(E_1,q) \hplus \mathrm{evidence}(E_2,q)
 \]
-for all queries $q$.  See \codepath{Mettapedia/Logic/PLNJointEvidence.lean}.
+for all queries $q$.  See \codepath{Mettapedia/PLN/Evidence/PLNJointEvidence.lean}.
 
 \subsection{Probability views}
 
@@ -202,7 +202,7 @@ From \Evidence{} we obtain posterior-mean probabilities (improper-prior strength
   P(B\mid A) = \frac{\#(A\wedge B)}{\#(A)}
 \]
 where $\#(\cdot)$ is a world-count sum in \JointEvidence{}.
-The Lean file \codepath{Mettapedia/Logic/PLNJointEvidenceProbability.lean} proves the exact ratio
+The Lean file \codepath{Mettapedia/PLN/Evidence/PLNJointEvidenceProbability.lean} proves the exact ratio
 forms for these views.
 
 \section{A Sequent-Calculus View: World Models and Links}
@@ -291,7 +291,7 @@ positivity), then one may rewrite a hard query $\code{linkCond([A,B],C)}$ into s
 \]
 
 \paragraph{Lean status.}
-\codepath{Mettapedia/Logic/PLNBayesNetFastRules.lean} proves this admissibility in the simplest
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNBayesNetFastRules.lean} proves this admissibility in the simplest
 nontrivial BN instance, the chain $A\to B\to C$: the theorem
 \code{chainBN\_plnDeductionStrength\_exact} shows the PLN deduction strength formula computes the
 exact $P(C\mid A)$ in the chain BN under explicit positivity side conditions.
@@ -341,12 +341,56 @@ from only the local premises $\Evidence(A),\Evidence(B),\Evidence(C),\Evidence(A
 
 The Lean proof constructs two different joint evidence states on three atoms that agree on all
 these premises but disagree on the conclusion \code{linkEvidence(A,C)}.
-See \codepath{Mettapedia/Logic/PLNJointEvidenceNoGo.lean}.
+See \codepath{Mettapedia/PLN/Evidence/PLNJointEvidenceNoGo.lean}.
 
 \paragraph{Interpretation.}
 This theorem is the formal core of ``you must carry correlations''.
 It does not make fast PLN useless; it tells us exactly what fast PLN \emph{cannot} claim:
 completeness for arbitrary world models without structural assumptions.
+
+\section{Case Study: Markov Carriers and the Screening No-Go}
+
+We instantiate the \xiPLN{} carrier framework for Markov transition evidence,
+revealing a fundamental incompatibility between PLN's additive deduction and
+Markov transition composition.
+
+\subsection{Single-Step Semantics: Success}
+
+The \code{markovDirichletQueryCarrier}
+(\codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/PLNXiCarrierScreening.lean:483})
+provides query-indexed projection from row evidence to binary ``target vs rest''
+evidence. Single-step queries work correctly: the atom \code{(markov-transition i j)}
+evaluates to row-$i$ evidence projected at coordinate $j$.
+
+\subsection{Multi-Step Screening: Failure}
+
+The screening condition for PLN deduction is:
+\[
+  \mathrm{proj}(A{\to}C, \mathrm{rowA} + \mathrm{rowB}) = \mathrm{proj}(A{\to}C, \mathrm{rowA})
+\]
+This requires rowB to contribute zero at coordinate C---false in general.
+The additive carrier is \emph{structurally wrong} for Markov composition.
+
+\subsection{Honest Alternative: Predictive Chaining}
+
+We formalize the correct algebra via \code{markovWMPosteriorChain}
+(\codepath{MarkovPredictiveChaining.lean:32}):
+\begin{enumerate}
+\item Singleton \code{Mettapedia.ProbabilityTheory.MassSemantics} state (not additive)
+\item Query mass = Chapman-Kolmogorov product over paths
+\item Path atoms compile to predictive chain, not additive pooling
+\end{enumerate}
+
+The \code{markov-transition*} atom family (\codepath{MarkovPathXi.lean:43})
+provides the OSLF API with concrete binary examples proving end-to-end
+correctness (\code{bit001\_queryStrength\_transitionMultiset\_eq\_of\_summary}).
+
+\subsection{Lesson for PLN Design}
+
+When evidence doesn't compose additively, don't force it through additive
+carriers. Design specialized interfaces with honest semantics. The PeTTaChainer
+implementation validates this: its \code{MpFormula} uses strength multiplication
+$s_{AB} \cdot s_{BC}$, not addition---consistent with our mathematical finding.
 
 \section{Tractable Sublayers: Bayesian Networks as Restricted World Models}
 
@@ -373,7 +417,7 @@ We have implemented the \emph{evidence plumbing} part of this sublayer:
 See \codepath{Mettapedia/PLN/WorldModel/BayesNet/PLNBayesNetWorldModel.lean}.
 
 We have also begun the ``fast rule exactness'' bridge in the simplest nontrivial case:
-\codepath{Mettapedia/Logic/PLNBayesNetFastRules.lean} sets up the chain BN $A \to B \to C$,
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNBayesNetFastRules.lean} sets up the chain BN $A \to B \to C$,
 proves the required sink-factorization and normalization lemmas, derives the screening-off
 hypotheses, and applies \code{PLNDerivation.pln\_deduction\_from\_total\_probability} to obtain an
 \emph{exactness theorem}: in the chain BN, the standard PLN deduction strength formula computes the
@@ -462,7 +506,7 @@ In \xiPLN{}, this plays two roles:
   proved in \code{PLNJointEvidenceProbability}.
 \item \emph{Evidence as Heyting-valued semantics.} At the evidence/algebraic layer, \Evidence{}
   forms a rich (non-Boolean) lattice.  K\&S-style valuation rules persist but Boolean equalities
-  can weaken to inequalities; see \codepath{Mettapedia/Logic/EvidenceIntuitionisticProbability.lean}.
+  can weaken to inequalities; see \codepath{Mettapedia/PLN/Evidence/EvidenceIntuitionisticProbability.lean}.
 \end{enumerate}
 
 We also bridge K\&S additive regraduations to valuation-algebra factor graphs, so VE can be run
@@ -473,20 +517,20 @@ end-to-end on KS-valued factors without assuming probability normalization; see
 An important cautionary fact---the ``totality gate''---is already formalized:
 because \Evidence{} has incomparable elements, it admits no faithful order-embedding into the
 reals.  Thus one should not expect a single real-valued map to capture all evidence information.
-See \codepath{Mettapedia/Logic/PLN_KS_Bridge.lean}.
+See \codepath{Mettapedia/PLN/Evidence/PLN\_KS\_Bridge.lean}.
 
 \section{Roadmap and Deliverables}
 
 The core Lean artifacts supporting \xiPLN{} are:
 \begin{itemize}
-\item \codepath{Mettapedia/Logic/PLNWorldModel.lean}: the world-model interface and derived views;
-\item \codepath{Mettapedia/Logic/PLNJointEvidence.lean}: the reference complete instance and revision-commutes-with-extraction;
+\item \codepath{Mettapedia/PLN/WorldModel/BinaryWorldModel.lean}: the world-model interface and derived views;
+\item \codepath{Mettapedia/PLN/Evidence/PLNJointEvidence.lean}: the reference complete instance and revision-commutes-with-extraction;
 \item \codepath{Mettapedia/PLN/WorldModel/BayesNet/PLNBayesNetWorldModel.lean}: BN-style CPT evidence states and the additive projection from \JointEvidence{};
-\item \codepath{Mettapedia/Logic/PLNBayesNetFastRules.lean}: chain BN proof that the PLN deduction strength formula is exact in $A\to B\to C$;
-\item \codepath{Mettapedia/Logic/PLNJointEvidenceProbability.lean}: posterior-mean probability views (ratio theorems);
+\item \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNBayesNetFastRules.lean}: chain BN proof that the PLN deduction strength formula is exact in $A\to B\to C$;
+\item \codepath{Mettapedia/PLN/Evidence/PLNJointEvidenceProbability.lean}: posterior-mean probability views (ratio theorems);
 \item \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/BayesNet/PLNBNCompilation.lean}: BN query compilation, \code{linkCond} queries, and Σ-guarded screening-off rewrites;
-\item \codepath{Mettapedia/Logic/PLNWorldModelITV.lean}: explicit ITV semantics layer (Bayes-normal, Bayes-exact, Walley-IDM);
-\item \codepath{Mettapedia/Logic/PLNWorldModelITVHypercube.lean}: interval-selector transport and typed ITV judgment plumbing;
+\item \codepath{Mettapedia/PLN/WorldModel/WorldModelITV.lean}: explicit ITV semantics layer (Bayes-normal, Bayes-exact, Walley-IDM);
+\item \codepath{Mettapedia/PLN/WorldModel/WorldModelITVHypercube.lean}: interval-selector transport and typed ITV judgment plumbing;
 \item \codepath{Mettapedia/PLN/Bridges/Languages/PLNWMOSLFBridgeITV.lean}: typed OSLF ITV bridge and selector-specialized coherence theorems;
 \item \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNXiDerivedBNRules.lean}: typed BN constructor lifts (unit/constant/dependent/native/sort-tagged);
 \item \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean}: canonical one-call end-to-end endpoints and final bundle APIs;
@@ -495,7 +539,7 @@ The core Lean artifacts supporting \xiPLN{} are:
 \item \codepath{Mettapedia/ProbabilityTheory/BayesianNetworks/ValuationAlgebra.lean}: valuation-algebra semantics + VE correctness spine;
 \item \codepath{Mettapedia/ProbabilityTheory/BayesianNetworks/VEBridge.lean}: joint-measure $\leftrightarrow$ VE probability bridge;
 \item \codepath{Mettapedia/ProbabilityTheory/KnuthSkilling/Bridges/ValuationAlgebra.lean}: KS → valuation-algebra bridge;
-\item \codepath{Mettapedia/Logic/PLNJointEvidenceNoGo.lean}: the local-completeness no-go theorem.
+\item \codepath{Mettapedia/PLN/Evidence/PLNJointEvidenceNoGo.lean}: the local-completeness no-go theorem.
 \end{itemize}
 
 Recent ITV/typed-bridge deliverables now in the Lean stack:
@@ -505,8 +549,8 @@ Recent ITV/typed-bridge deliverables now in the Lean stack:
 \item typed WM-to-OSLF bridge theorems that expose coordinate-wise threshold transport (lower/upper/credibility/width/strength);
 \item one-call composed endpoints that chain selector transport, rewrite/query transport, and quantale coherence for chain/fork/collider BN constructors.
 \item intensional inheritance now has a typed WM/query layer and Solomonoff-linked semantic transport:
-  \codepath{Mettapedia/Logic/PLNIntensionalWorldModel.lean},
-  \codepath{Mettapedia/Logic/IntensionalInheritanceSolomonoffBridge.lean},
+  \codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalWorldModel.lean},
+  \codepath{Mettapedia/KR/ConceptGeometry/Bridges/UniversalAI/IntensionalInheritanceSolomonoffBridge.lean},
   and linked one-call final-bundle endpoints in
   \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean}.
 \end{enumerate}
@@ -556,35 +600,37 @@ Coverage labels are:
 \hline
 Ch.\ 1 & Introduction & Conceptual framing is encoded as an explicit semantic stack split:
 world-model posterior semantics vs evidence algebra vs operational truth-value views
-(this paper; \codepath{Mettapedia/PLN/Core/PLNCore.lean},
-\codepath{Mettapedia/Logic/SemanticsDecisionTree.lean}). & Formalized \\
+(this paper; \codepath{Mettapedia/PLN.lean},
+\codepath{Mettapedia/PLN/Comparisons/SemanticsDecisionTree.lean}). & Formalized \\
 \hline
 Ch.\ 2 & Knowledge representation & Query-level KR via \code{PLNQuery}, \code{WorldModel},
 \code{WorldModelSigma}, and WM rewrite judgments:
-\codepath{Mettapedia/Logic/PLNWorldModel.lean},
-\codepath{Mettapedia/Logic/PLNWorldModelCalculus.lean},
+\codepath{Mettapedia/PLN/WorldModel/BinaryWorldModel.lean},
+\codepath{Mettapedia/PLN/WorldModel/WorldModelCalculus.lean},
 \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/BayesNet/PLNBNCompilation.lean}. & Formalized \\
 \hline
 Ch.\ 3 & Experiential semantics & Evidence-as-counts carrier and revision algebra:
-\codepath{Mettapedia/Logic/EvidenceClass.lean},
-\codepath{Mettapedia/Logic/EvidenceQuantale.lean}; complete posterior state semantics via
-\codepath{Mettapedia/Logic/PLNJointEvidence.lean}. & Formalized \\
+\codepath{Mettapedia/PLN/Evidence/EvidenceClass.lean},
+\codepath{Mettapedia/PLN/Evidence/BinaryEvidence.lean}; complete posterior state semantics via
+\codepath{Mettapedia/PLN/Evidence/PLNJointEvidence.lean}. & Formalized \\
 \hline
 Ch.\ 4 & Indefinite truth values & ITV core plus explicit semantics split:
-\codepath{Mettapedia/Logic/PLNIndefiniteTruth.lean}
+\codepath{Mettapedia/PLN/TruthValues/PLNIndefiniteTruth.lean}
 (including Walley IDM predictive interval constructors),
-\codepath{Mettapedia/Logic/PLNWorldModelITV.lean},
-\codepath{Mettapedia/Logic/PLNWorldModelITVHypercube.lean}. & Formalized \\
+\codepath{Mettapedia/PLN/WorldModel/WorldModelITV.lean},
+\codepath{Mettapedia/PLN/WorldModel/WorldModelITVHypercube.lean}. & Formalized \\
 \hline
 Ch.\ 5 & FO extensional inference (rules/strength formulas) & Core deduction/induction/abduction
 formulas and derived rules:
-\codepath{Mettapedia/Logic/PLNDeduction.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNDeduction.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNDerivation.lean},
-\codepath{Mettapedia/Logic/PLNInferenceRules.lean},
-\codepath{Mettapedia/Logic/PLNMettaTruthFunctions.lean}; BN exactness anchors:
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNInferenceRules.lean},
+\codepath{Mettapedia/PLN/TruthValues/PeTTaLibPLNTruthFunctions.lean},
+\codepath{Mettapedia/PLN/TruthValues/WMPLNJustifiedTruthFunctions.lean},
+\codepath{Mettapedia/PLN/Comparisons/PeTTa/PeTTaLibPLNFormalAnalysis.lean}; BN exactness anchors:
 \code{chainBN\_plnDeductionStrength\_exact},
 \code{forkBN\_plnDeductionStrength\_exact} in
-\codepath{Mettapedia/Logic/PLNBayesNetFastRules.lean}. & Formalized \\
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNBayesNetFastRules.lean}. & Formalized \\
 \hline
 Ch.\ 6 & FO extensional inference with ITV & ITV semantics are transported through WM rewrites,
 typed OSLF bridge, and one-call API bundles:
@@ -592,11 +638,11 @@ typed OSLF bridge, and one-call API bundles:
 \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean}. & Formalized \\
 \hline
 Ch.\ 7 & Distributional truth values & Beta/Dirichlet distributional layer:
-\codepath{Mettapedia/Logic/PLNDistributional.lean},
+\codepath{Mettapedia/PLN/TruthValues/PLNDistributional.lean},
 \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/EvidenceBeta.lean},
 \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/EvidenceDirichlet.lean}; Kyburg higher-order flattening and
 decision-equivalence bridge is theorem-level and exposed at
-\codepath{Mettapedia/Logic/HigherOrder/PLNKyburgReduction.lean}
+\codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/PLNKyburgReduction.lean}
 with canonical aliases in \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean}. & Formalized (core + Kyburg bridge) \\
 \hline
 Ch.\ 8 & Error magnification & Confidence-level WM transport and OSLF-threshold grounding:
@@ -604,8 +650,8 @@ Ch.\ 8 & Error magnification & Confidence-level WM transport and OSLF-threshold 
 canonical one-call endpoints in \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean}
 (including \code{wm\_rewrite\_oslf\_threshold\_acceptance\_of\_interval});
 diagnostic/characterization layers remain in
-\codepath{Mettapedia/Logic/PLNBugAnalysis.lean},
-\codepath{Mettapedia/Logic/Comparison/ErrorCharacterization.lean}. & Formalized (core) \\
+\codepath{Mettapedia/PLN/TruthValues/PLNBugAnalysis.lean},
+\codepath{Mettapedia/PLN/Comparisons/ErrorCharacterization.lean}. & Formalized (core) \\
 \hline
 Ch.\ 9 & Large-scale inference strategies & Two tracks:
 (i) structural BN compilation/rewrite pipeline
@@ -624,8 +670,8 @@ are pending operational Lean-MeTTa runtime developments in this chapter map.
 \hline
 Ch.\ 10 & Higher-order extensional inference & HOI$\to$FOI reduction formalized:
 \codepath{Mettapedia/Logic/HigherOrder/Basic.lean},
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean},
-\codepath{Mettapedia/Logic/HigherOrder.lean}. & Formalized (core) \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder.lean}. & Formalized (core) \\
 \hline
 Ch.\ 11 & Crisp/fuzzy quantifiers with indefinite TVs & Quantifier semantics and weakness connection:
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers.lean},
@@ -638,19 +684,19 @@ bridge:
 \code{canary\_existentialConjunction\_not\_equivalent\_itvPath},
 \code{fuzzyIntervalHolds\_strength\_of\_lower\_upper},
 \code{canary\_itv\_strength\_interval\_of\_lower\_upper}; crisp operators:
-\codepath{Mettapedia/Logic/PLNCrispEvidence.lean},
-\codepath{Mettapedia/Logic/PLNNoisyOr.lean}; regression target:
+\codepath{Mettapedia/PLN/Evidence/PLNCrispEvidence.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNNoisyOr.lean}; regression target:
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierRegression.lean},
 \code{lake build}\ \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression}. & Formalized (core + fuzzy/QFM + regressions) \\
 \hline
 Ch.\ 12 & Intensional inference & Information-theoretic bridge and typed WM grounding:
-\codepath{Mettapedia/Logic/IntensionalInheritance.lean},
-\codepath{Mettapedia/Logic/IntensionalInheritanceSolomonoffBridge.lean},
-\codepath{Mettapedia/Logic/PLNIntensionalWorldModel.lean},
+\codepath{Mettapedia/KR/ConceptGeometry/IntensionalInheritance.lean},
+\codepath{Mettapedia/KR/ConceptGeometry/Bridges/UniversalAI/IntensionalInheritanceSolomonoffBridge.lean},
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalWorldModel.lean},
 semantic and linked one-call endpoints in
 \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean}, plus executable canary/regression targets:
-\codepath{Mettapedia/Logic/PLNIntensionalCanary.lean},
-\codepath{Mettapedia/Logic/PLNIntensionalRegression.lean},
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalCanary.lean},
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalRegression.lean},
 \code{lake build}\ \codepath{Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression}. & Formalized (ASSOC core) \\
 \hline
 Ch.\ 13 & Aspects of inference control & Formal inference-control components via selector
@@ -699,13 +745,13 @@ Context-aware strength as Beta posterior mean coordinates \newline
 \textit{Tags: [PLNBook-Ch7], [Beta], [distributional]} &
 \code{strengthWith\_eq\_beta\_posterior\_meanENN},
 \code{evidence\_encodes\_beta\_parameters} &
-\codepath{Mettapedia/Logic/HigherOrder/PLNKyburgReduction.lean} \\
+\codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/PLNKyburgReduction.lean} \\
 \hline
 Evidence aggregation as conjugate update \newline
 \textit{Tags: [PLNBook-Ch7], [conjugacy], [revision]} &
 \code{hplus\_is\_bayesian\_update},
 \code{evidence\_aggregation\_is\_conjugate\_update} &
-\codepath{Mettapedia/Logic/HigherOrder/PLNKyburgReduction.lean},
+\codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/PLNKyburgReduction.lean},
 \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/EvidenceBeta.lean} \\
 \hline
 Kyburg flattening and expectation-preserving reduction \newline
@@ -714,7 +760,7 @@ Kyburg flattening and expectation-preserving reduction \newline
 \code{expectation\_consistency},
 \code{kyburg\_no\_advantage},
 \code{kyburg\_no\_advantage\_via\_monad} &
-\codepath{Mettapedia/Logic/HigherOrder/PLNKyburgReduction.lean},
+\codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/PLNKyburgReduction.lean},
 \codepath{Mettapedia/ProbabilityTheory/HigherOrderProbability/KyburgFlattening.lean},
 \codepath{Mettapedia/ProbabilityTheory/HigherOrderProbability/GiryMonad.lean} \\
 \hline
@@ -731,12 +777,12 @@ De Finetti singleton bridge into Kyburg flattening \newline
 \textit{Tags: [PLNBook-Ch7], [DeFinetti], [mixture]} &
 \code{deFinetti\_flatten\_apply\_singleton},
 \code{evidenceAggregation\_and\_kyburgFlattening} &
-\codepath{Mettapedia/Logic/HigherOrder/PLNKyburgReduction.lean} \\
+\codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/PLNKyburgReduction.lean} \\
 \hline
 Concrete worked posterior-mean fixture (uniform prior, evidence 3:1) \newline
 \textit{Tags: [PLNBook-Ch7], [worked-example], [Beta]} &
 \code{uniformPrior\_strength\_threePositive\_oneNegative} &
-\codepath{Mettapedia/Logic/HigherOrder/PLNKyburgReduction.lean} \\
+\codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/PLNKyburgReduction.lean} \\
 \hline
 \end{longtable}
 
@@ -758,7 +804,7 @@ View transport under WM query equivalence (confidence / strengthWith / interpret
 \code{WMQueryEqSigma.to\_queryConfidence},
 \code{WMQueryEqSigma.to\_queryConfidence\_threshold},
 \code{WMQueryEqSigma.to\_queryInterpret} &
-\codepath{Mettapedia/Logic/PLNWorldModelCalculus.lean} \\
+\codepath{Mettapedia/PLN/WorldModel/WorldModelCalculus.lean} \\
 \hline
 Weaker bridge notions (evidence preorder + view equivalence) \newline
 \textit{Tags: [PLNBook-Ch8], [bridge], [evidence-order], [viewEq]} &
@@ -768,7 +814,7 @@ Weaker bridge notions (evidence preorder + view equivalence) \newline
 \code{WMQueryEqSigma.to\_evidenceLE},
 \code{WMEvidenceLESigma.antisymm\_to\_WMQueryEqSigma},
 \code{WMQueryEqSigma.to\_viewEq} &
-\codepath{Mettapedia/Logic/PLNWorldModelCalculus.lean} \\
+\codepath{Mettapedia/PLN/WorldModel/WorldModelCalculus.lean} \\
 \hline
 Confidence-threshold atom semantics and rewrite soundness \newline
 \textit{Tags: [PLNBook-Ch8], [threshold-semantics], [OSLF]} &
@@ -813,7 +859,7 @@ WM consequence-rule layer and Kripke deontic lifts (strength inequalities) \newl
 \code{wm\_dts\_ob\_pe\_strength\_le},
 \code{wmRexistReflexiveConsequenceRule},
 \code{wmDtsObPeConsequenceRule} &
-\codepath{Mettapedia/Logic/PLNWorldModelCalculus.lean},
+\codepath{Mettapedia/PLN/WorldModel/WorldModelCalculus.lean},
 \codepath{Mettapedia/PLN/Bridges/Logic/WorldModel/PLNWorldModelKripkeConsequence.lean} \\
 \hline
 WM shell clarifiers (state-level permissive, query-level deterministic) \newline
@@ -821,7 +867,7 @@ WM shell clarifiers (state-level permissive, query-level deterministic) \newline
 \code{WMJudgment.trivial},
 \code{WMJudgment.query\_deterministic},
 \code{WMJudgmentCtx.query\_deterministic} &
-\codepath{Mettapedia/Logic/PLNWorldModel.lean} \\
+\codepath{Mettapedia/PLN/WorldModel/BinaryWorldModel.lean} \\
 \hline
 Categorical WM transport layer (institution satisfaction + hyperdoctrine Beck-Chevalley + unified endpoint) \newline
 \textit{Tags: [PLNBook-Ch8], [WM], [institution], [hyperdoctrine], [Beck-Chevalley], [transport]} &
@@ -837,7 +883,7 @@ Categorical WM transport layer (institution satisfaction + hyperdoctrine Beck-Ch
 \code{institution\_beckChevalley\_endpoint\_id\_fixture},
 \code{ch8\_hol\_categorical\_wrapper\_bool\_fixture},
 \code{ch8\_fol\_categorical\_consequence\_singleton\_fixture} &
-\codepath{Mettapedia/Logic/PLNWorldModelInstitution.lean},
+\codepath{Mettapedia/PLN/WorldModel/WorldModelInstitution.lean},
 \codepath{Mettapedia/PLN/Bridges/CategoryTheory/WorldModel/PLNWorldModelHyperdoctrine.lean},
 \codepath{Mettapedia/PLN/Bridges/CategoryTheory/WorldModel/PLNWorldModelCategoricalBridge.lean},
 \codepath{Mettapedia/PLN/Bridges/CategoryTheory/WorldModel/PLNWorldModelCategoricalRegression.lean} \\
@@ -880,15 +926,15 @@ HOL/FOL implication consequence-transfer wrappers into WM consequence rules \new
 \code{wmConsequenceRule\_of\_pointwise},
 \code{wmConsequenceRuleOn\_of\_pointwise},
 \code{wmConsequenceRuleOn\_of\_singletonStrengthLE},
-\code{externalImplication\_iff\_singletonConsequence\_of\_sound\_complete},
+\code{externalImplication\_iff\_singletonStrengthLE\_of\_sound\_complete},
 \code{multiset\_strength\_le\_of\_pointwise\_categorical},
 \code{multiset\_strength\_le\_of\_singletonStrengthLE\_categorical},
 \code{wmConsequenceRuleOn\_of\_pointwise\_categorical},
 \code{wmConsequenceRuleOn\_of\_singletonStrengthLE\_categorical},
-\code{pointwiseImpliesOnTheory\_of\_consequence},
-\code{pointwiseImpliesOnTheory\_iff\_singletonStrengthLEOnTheory},
-\code{consequence\_iff\_singletonStrengthLEOnTheory},
-\code{provable\_imp\_iff\_singletonStrengthLEOnTheory},
+\code{pointwiseImpliesOn\_of\_consequence},
+\code{pointwiseImpliesOn\_iff\_singletonStrengthLEOn},
+\code{consequence\_iff\_singletonStrengthLEOn},
+\code{provable\_imp\_iff\_singletonStrengthLEOn},
 \code{multiset\_strength\_le\_of\_consequence},
 \code{wmConsequenceRuleOn\_of\_consequence},
 \code{multiset\_strength\_le\_of\_provable\_imp},
@@ -897,16 +943,16 @@ HOL/FOL implication consequence-transfer wrappers into WM consequence rules \new
 \code{wmConsequenceRuleOn\_of\_consequence\_categorical},
 \code{multiset\_strength\_le\_of\_provable\_imp\_categorical},
 \code{wmConsequenceRuleOn\_of\_provable\_imp\_categorical} &
-\codepath{Mettapedia/Logic/PLNWorldModelHOLCompleteness.lean},
+\codepath{Mettapedia/PLN/Bridges/HOL/PLNWorldModelHOLCompleteness.lean},
 \codepath{Mettapedia/PLN/Bridges/Logic/WorldModel/PLNWorldModelFOLCompleteness.lean} \\
 \hline
 Singleton iff-consequence adequacy and multiset lifting \newline
 \textit{Tags: [PLNBook-Ch8], [Kripke], [Neighborhood], [adequacy], [singleton], [multiset]} &
 \code{singleton\_adequacy\_strength\_one},
 \code{pointwiseImplies\_iff\_singletonStrengthLE},
-\code{multiset\_strength\_le\_of\_singletonStrengthLE},
-\code{singleton\_consequence\_schema\_parallel},
-\code{multiset\_lift\_schema\_parallel} &
+\code{multiset\_strength\_le\_of\_singletonStrengthLE}
+(one generic family, instantiated by both semantics) &
+\codepath{Mettapedia/PLN/WorldModel/PLNWorldModelCrispSpecialization.lean},
 \codepath{Mettapedia/PLN/Bridges/Logic/WorldModel/PLNWorldModelKripke.lean},
 \codepath{Mettapedia/PLN/Bridges/Logic/WorldModel/PLNWorldModelNeighborhood.lean} \\
 \hline
@@ -914,7 +960,7 @@ Kripke proof-theoretic closure (sound/complete implication bridge) \newline
 \textit{Tags: [PLNBook-Ch8], [Kripke], [Sound], [Complete], [K], [KT], [KD], [K4]} &
 \code{pointwiseImpliesOn\_iff\_singletonStrengthLEOn},
 \code{provable\_imp\_iff\_singletonStrengthLEOn},
-\code{provable\_imp\_iff\_singletonConsequenceOn},
+\code{provable\_imp\_iff\_singletonStrengthLEOn},
 \code{multiset\_strength\_le\_of\_provable\_imp},
 \code{multiset\_consequence\_of\_provable\_imp},
 \code{provable\_imp\_iff\_singletonStrengthLEOn\_K},
@@ -973,7 +1019,7 @@ Neighborhood proof-theoretic closure (sound/complete implication bridge) \newlin
 \textit{Tags: [PLNBook-Ch8], [Neighborhood], [Sound], [Complete], [E], [EMN], [EMT], [ED]} &
 \code{pointwiseImpliesOn\_iff\_singletonStrengthLEOn},
 \code{provable\_imp\_iff\_singletonStrengthLEOn},
-\code{provable\_imp\_iff\_singletonConsequenceOn},
+\code{provable\_imp\_iff\_singletonStrengthLEOn},
 \code{multiset\_strength\_le\_of\_provable\_imp},
 \code{multiset\_consequence\_of\_provable\_imp},
 \code{provable\_imp\_iff\_singletonStrengthLEOn\_E},
@@ -1070,7 +1116,7 @@ Two-term inclusion-exclusion is not identifiable for union mass \newline
 \textit{Tags: [PLNBook-Ch9], [multideduction], [identifiability-no-go]} &
 \code{same\_first\_two\_terms\_different\_union},
 \code{ie\_sameFirstTwo\_differentUnion} &
-\codepath{Mettapedia/Logic/PLNInclusionExclusionIdentifiability.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNInclusionExclusionIdentifiability.lean},
 \codepath{Mettapedia/PLN/InferenceControl/Counterexamples/PLNLargeScaleInferenceCounterexamples.lean} \\
 \hline
 No universal predictor from first-two-term statistics \newline
@@ -1079,7 +1125,7 @@ No universal predictor from first-two-term statistics \newline
 \code{ie\_noUniversalPredictor},
 \code{no\_single\_additive\_correction\_for\_both\_models},
 \code{ie\_noSingleAdditiveCorrection} &
-\codepath{Mettapedia/Logic/PLNInclusionExclusionIdentifiability.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNInclusionExclusionIdentifiability.lean},
 \codepath{Mettapedia/PLN/InferenceControl/Counterexamples/PLNLargeScaleInferenceCounterexamples.lean} \\
 \hline
 Multideduction residual decomposition + indexed agreement endpoint \newline
@@ -1088,14 +1134,14 @@ Multideduction residual decomposition + indexed agreement endpoint \newline
 \code{correctedEstimate\_agrees\_of\_residualAssumption},
 \code{repeatedDeductionRevision\_agrees\_of\_residualAssumption},
 \code{no\_universal\_constant\_correction} &
-\codepath{Mettapedia/Logic/PLNMultideductionResidual.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNMultideductionResidual.lean} \\
 \hline
 Indexed n-way residual decomposition + indexed agreement family \newline
 \textit{Tags: [PLNBook-Ch9], [multideduction], [n-way], [positive-core]} &
 \code{unionCardN\_eq\_twoTerm\_plus\_residualNZ},
 \code{correctedEstimateN\_agrees\_of\_residualAssumptionN},
 \code{repeatedDeductionRevisionN\_agrees\_of\_residualAssumptionN} &
-\codepath{Mettapedia/Logic/PLNMultideductionResidual.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNMultideductionResidual.lean} \\
 \hline
 Trail-free deterministic update can fail to stabilize (2-cycle) \newline
 \textit{Tags: [PLNBook-Ch9], [protocol-dynamics], [counterexample]} &
@@ -1187,7 +1233,7 @@ Independent-cause union canary (``at least one head in $n$ biased flips'') \newl
 \code{atLeastOneHeadProb\_eq\_noisyOr\_replicate},
 \code{atLeastOneHeadProb\_coin4\_p06},
 \code{atLeastOneHeadProb\_coin4\_p01} &
-\codepath{Mettapedia/Logic/PLNNoisyOr.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNNoisyOr.lean} \\
 \hline
 Stochastic experiment layer: Blackwell factorization, weighted source policies, trusted-gate transfer \newline
 \textit{Tags: [PLNBook-Ch9], [experiment], [Blackwell], [weighted-policy], [trusted-gate]} &
@@ -1250,12 +1296,12 @@ fixture_trustedPolicy_optimalValue_mono
 SatisfyingSet bridge: higher-order evaluation to first-order membership \newline
 \textit{Tags: [PLNBook-Ch10], [HOI-FOI-bridge], [SatisfyingSet]} &
 \code{member\_eq\_evaluation} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 Extensional implication as subset relation \newline
 \textit{Tags: [PLNBook-Ch10], [Implication], [Subset]} &
 \code{extensional\_implication\_reduces\_to\_subset} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 Implication-conditioned inheritance value reduction \newline
 \textit{Tags: [PLNBook-Ch10], [Implication], [Inheritance], [value-level]} &
@@ -1264,29 +1310,29 @@ Implication-conditioned inheritance value reduction \newline
 \code{implication\_reduces\_to\_perfect\_inheritance},
 \code{pointwiseImplicationPred},
 \code{forAll\_himp\_to\_inheritance\_ratio\_of\_bridge} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 Unconditional chapter implication-value equality is false (counterexample) \newline
 \textit{Tags: [PLNBook-Ch10], [Implication], [counterexample], [boundary]} &
 \code{forAll\_himp\_not\_equal\_inheritance\_ratio\_unconditional} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 Unconditional chapter equivalence-value equality is false (counterexample) \newline
 \textit{Tags: [PLNBook-Ch10], [Equivalence], [counterexample], [boundary]} &
 \code{forAll\_equivalence\_not\_equal\_similarity\_ratio\_unconditional} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 Exact self-division fixed-point characterization (four p-bit corners) \newline
 \textit{Tags: [PLNBook-Ch10], [value-level], [fixed-point], [corners]} &
 \code{ennreal\_self\_div\_component\_fixed\_iff},
 \code{self\_div\_fixed\_iff\_pbit\_corner} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 Piecewise iff closures for chapter implication/equivalence ratio endpoints \newline
 \textit{Tags: [PLNBook-Ch10], [Implication], [Equivalence], [iff], [piecewise]} &
 \code{forAll\_himp\_ratio\_iff\_piecewise},
 \code{forAll\_equivalence\_ratio\_iff\_piecewise} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 Side-condition packaging and endpoint ergonomics (single bundled assumptions) \newline
 \textit{Tags: [PLNBook-Ch10], [API], [side-conditions], [ergonomics]} &
@@ -1296,7 +1342,7 @@ Side-condition packaging and endpoint ergonomics (single bundled assumptions) \n
 \code{equivalence\_sideConditions\_of\_true\_or\_bot},
 \code{forAll\_himp\_to\_inheritance\_ratio\_of\_sideConditions},
 \code{forAll\_equivalence\_to\_similarity\_ratio\_of\_sideConditions} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 Inference-rule wrappers tied to ratio-endpoint soundness \newline
 \textit{Tags: [PLNBook-Ch10], [inference-rule], [soundness], [API]} &
@@ -1306,7 +1352,7 @@ Inference-rule wrappers tied to ratio-endpoint soundness \newline
 \code{EquivalenceReductionRule},
 \code{EquivalenceReductionRule.conclusion},
 \code{EquivalenceReductionRule.sound} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 Equivalence-conditioned similarity value reduction (first proved bridge) \newline
 \textit{Tags: [PLNBook-Ch10], [Equivalence], [Similarity], [value-level]} &
@@ -1315,7 +1361,7 @@ Equivalence-conditioned similarity value reduction (first proved bridge) \newlin
 \code{equivalence\_reduces\_to\_similarity\_value},
 \code{forAll\_equivalence\_to\_similarity\_ratio\_of\_bridge},
 \code{similarity\_symmetric} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 Constructive corner fixtures and worked endpoint instantiation \newline
 \textit{Tags: [PLNBook-Ch10], [fixtures], [corners], [worked-example]} &
@@ -1323,7 +1369,7 @@ Constructive corner fixtures and worked endpoint instantiation \newline
 \code{corner\_source\_unit\_bot},
 \code{implication\_ratio\_fixture\_unit\_false},
 \code{equivalence\_ratio\_fixture\_unit\_both} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 HOJ/HOS/Hyp/Context micro-semantics and soundness layer \newline
 \textit{Tags: [PLNBook-Ch10], [HOJ], [HOS], [Hyp], [Context], [soundness]} &
@@ -1342,7 +1388,7 @@ HOJ/HOS/Hyp/Context micro-semantics and soundness layer \newline
 \code{hosSemantics\_andExt\_of\_srcTruthClean},
 \code{context\_macro\_sound\_of\_hos\_srcTruthClean},
 \code{context\_macro\_sound\_of\_hoj\_alignment\_srcTruthClean} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 Concrete Context/Hyp fixtures (math/juggling + mismatch boundary) \newline
 \textit{Tags: [PLNBook-Ch10], [Context], [Hyp], [fixtures], [boundary]} &
@@ -1353,12 +1399,12 @@ Concrete Context/Hyp fixtures (math/juggling + mismatch boundary) \newline
 \code{context\_hyp\_fixture\_math\_sound},
 \code{context\_hyp\_fixture\_juggling\_sound},
 \code{context\_hyp\_fixture\_mismatch\_not\_sound} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 Subset-conditioned inheritance structural collapse \newline
 \textit{Tags: [PLNBook-Ch10], [Subset], [Inheritance], [structural]} &
 \code{subset\_implies\_strong\_inheritance} &
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean} \\
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean} \\
 \hline
 \end{longtable}
 
@@ -1519,9 +1565,7 @@ Non-multiplicative QFM instance theorem families \newline
 \hline
 Regression entrypoint &
 \code{lake build}\ \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression},
-\code{lake build}\ \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression} \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegressionFin},
-\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierRegression.lean},
-\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzySyllogismRegression.lean} &
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierRegression.lean} &
 \codepath{.github/workflows/lean\_action\_ci.yml} \\
 \hline
 \end{longtable}
@@ -1556,7 +1600,7 @@ Chapter 11 quantifier layer & Finite-model FO + fuzzy/QFM endpoint families with
 \code{qfm\_composedInterval\_iff\_of\_signatureEq} \\
 \hline
 HOL/FOL consequence transfer into WM/PLN transport (categorical contract) & Besides concrete HOL/FOL categorical fixtures, FOL now has a full implication bridge \code{T |- (phi -> psi) <-> singleton consequence on T-models} & \code{multiset\_strength\_le\_of\_pointwise\_categorical},
-\code{provable\_imp\_iff\_singletonStrengthLEOnTheory},
+\code{provable\_imp\_iff\_singletonStrengthLEOn},
 \code{ch8\_hol\_categorical\_wrapper\_bool\_fixture},
 \code{ch8\_fol\_categorical\_consequence\_singleton\_fixture} \\
 \hline
@@ -1579,7 +1623,7 @@ Information-theoretic bridge to universal-mixture conditionals \newline
 \code{intensionalFromConditional\_eq\_log2\_ratio},
 \code{intensionalFromXiSemimeasure\_eq\_log2\_ratio},
 \code{intensionalFromXiGeom\_eq\_log2\_ratio} &
-\codepath{Mettapedia/Logic/IntensionalInheritanceSolomonoffBridge.lean} \\
+\codepath{Mettapedia/KR/ConceptGeometry/Bridges/UniversalAI/IntensionalInheritanceSolomonoffBridge.lean} \\
 \hline
 Typed WM ASSOC/PAT channel grounding \newline
 \textit{Tags: [PLNBook-Ch12], [WM-typed], [OSLF-bridge]} &
@@ -1587,7 +1631,7 @@ Typed WM ASSOC/PAT channel grounding \newline
 \code{PATScoreCorrespondence},
 \code{mixedPolicyAssoc\_of\_assocScoreCorrespondence},
 \code{mixedPolicyAssocPat\_of\_assocPatScoreCorrespondence} &
-\codepath{Mettapedia/Logic/PLNIntensionalWorldModel.lean} \\
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalWorldModel.lean} \\
 \hline
 Canonical semantic packaging for concrete mixed policies \newline
 \textit{Tags: [PLNBook-Ch12], [ASSOC-core], [semantic-packaging]} &
@@ -1597,7 +1641,7 @@ Canonical semantic packaging for concrete mixed policies \newline
 \code{mixedPolicyAssocPat\_of\_assocPatSemanticModel},
 \code{mixedRewriteRule\_assocSemantic\_of\_model},
 \code{mixedRewriteRule\_assocPatSemantic\_of\_model} &
-\codepath{Mettapedia/Logic/PLNIntensionalWorldModel.lean} \\
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalWorldModel.lean} \\
 \hline
 Threshold-truth transport (semantic linked strong endpoint) \newline
 \textit{Tags: [PLNBook-Ch12], [ITV], [selector-transport]} &
@@ -1620,12 +1664,12 @@ Concrete ASSOC+PAT semantic fixture endpoints \newline
 \code{end\_to\_end\_assocPat\_bayesNormal\_lower},
 \code{end\_to\_end\_assocPat\_bayesExact\_lower},
 \code{end\_to\_end\_assocPat\_walley\_lower} &
-\codepath{Mettapedia/Logic/PLNIntensionalAssocPatClosure.lean} \\
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalAssocPatClosure.lean} \\
 \hline
 Canonicality no-go witness for binary collapse \newline
 \textit{Tags: [PLNBook-Ch12], [ASSOC+PAT], [no-go], [canonicality]} &
 \code{no\_binary\_mixed\_policy\_for\_assocPat\_fixture} &
-\codepath{Mettapedia/Logic/PLNIntensionalAssocPatClosure.lean} \\
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalAssocPatClosure.lean} \\
 \hline
 Executable canaries (positive + non-equivalence) \newline
 \textit{Tags: [PLNBook-Ch12], [canary], [non-equivalence]} &
@@ -1635,10 +1679,10 @@ Executable canaries (positive + non-equivalence) \newline
 \code{canary\_end\_to\_end\_bayesNormal\_lower\_threshold},
 \code{canary\_end\_to\_end\_bayesExact\_lower\_threshold},
 \code{canary\_end\_to\_end\_walley\_lower\_threshold} &
-\codepath{Mettapedia/Logic/PLNIntensionalCanary.lean} \\
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalCanary.lean} \\
 \hline
 Regression entrypoint &
-\codepath{Mettapedia/Logic/PLNIntensionalRegression.lean},
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalRegression.lean},
 \code{lake build}\ \codepath{Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression} &
 \codepath{Mettapedia/Logic/README.md} \\
 \hline
@@ -1785,39 +1829,41 @@ To make explicit that coverage is not limited to recent additions, this index li
 the principal \emph{legacy and current} modules in Mettapedia that track PLN-book content.
 
 \paragraph{Ch.\ 3--4 (experiential semantics, indefinite truth values).}
-\codepath{Mettapedia/Logic/EvidenceClass.lean},
-\codepath{Mettapedia/Logic/EvidenceQuantale.lean},
-\codepath{Mettapedia/Logic/PLNIndefiniteTruth.lean},
-\codepath{Mettapedia/Logic/PLNWorldModelITV.lean},
-\codepath{Mettapedia/Logic/PLNWorldModelITVHypercube.lean}.
+\codepath{Mettapedia/PLN/Evidence/EvidenceClass.lean},
+\codepath{Mettapedia/PLN/Evidence/BinaryEvidence.lean},
+\codepath{Mettapedia/PLN/TruthValues/PLNIndefiniteTruth.lean},
+\codepath{Mettapedia/PLN/WorldModel/WorldModelITV.lean},
+\codepath{Mettapedia/PLN/WorldModel/WorldModelITVHypercube.lean}.
 
 \paragraph{Ch.\ 5 (FO extensional inference: rules and formulas).}
-\codepath{Mettapedia/Logic/PLNDeduction.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNDeduction.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNDerivation.lean},
-\codepath{Mettapedia/Logic/PLNInferenceRules.lean},
-\codepath{Mettapedia/Logic/PLNConjunction.lean},
-\codepath{Mettapedia/Logic/PLNRevision.lean},
-\codepath{Mettapedia/Logic/PLNImplicantConjunction.lean},
-\codepath{Mettapedia/Logic/PLNMettaTruthFunctions.lean},
-\codepath{Mettapedia/Logic/PLNBayesNetFastRules.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNInferenceRules.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNConjunction.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNRevision.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNImplicantConjunction.lean},
+\codepath{Mettapedia/PLN/TruthValues/PeTTaLibPLNTruthFunctions.lean},
+\codepath{Mettapedia/PLN/TruthValues/WMPLNJustifiedTruthFunctions.lean},
+\codepath{Mettapedia/PLN/Comparisons/PeTTa/PeTTaLibPLNFormalAnalysis.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNBayesNetFastRules.lean},
 \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/BayesNet/PLNBNCompilation.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNXiDerivedBNRules.lean}.
 
 \paragraph{Ch.\ 6--7 (ITV/distributional truth-value layers).}
-\codepath{Mettapedia/Logic/PLNDistributional.lean},
+\codepath{Mettapedia/PLN/TruthValues/PLNDistributional.lean},
 \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/EvidenceBeta.lean},
 \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/EvidenceDirichlet.lean},
-\codepath{Mettapedia/Logic/HigherOrder/PLNKyburgReduction.lean},
+\codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/PLNKyburgReduction.lean},
 \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/EvidenceNormalGamma.lean},
 \codepath{Mettapedia/PLN/Bridges/Languages/PLNWMOSLFBridgeITV.lean},
 \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean}.
 
 \paragraph{Ch.\ 8 (error magnification / diagnostics).}
-\codepath{Mettapedia/Logic/PLNBugAnalysis.lean},
-\codepath{Mettapedia/Logic/Comparison/ErrorCharacterization.lean},
+\codepath{Mettapedia/PLN/TruthValues/PLNBugAnalysis.lean},
+\codepath{Mettapedia/PLN/Comparisons/ErrorCharacterization.lean},
 \codepath{Mettapedia/PLN/Core/SoundnessCompleteness.lean},
-\codepath{Mettapedia/Logic/PLNSoundnessCounterexample.lean},
-\codepath{Mettapedia/Logic/PLNSoundnessDiagnosis.lean}.
+\codepath{Mettapedia/PLN/TruthValues/PLNSoundnessCounterexample.lean},
+\codepath{Mettapedia/PLN/TruthValues/PLNSoundnessDiagnosis.lean}.
 
 \paragraph{Ch.\ 9 and Ch.\ 13 (large-scale inference + inference control).}
 \codepath{Mettapedia/PLN/InferenceControl/PremiseSelection/KNN.lean},
@@ -1833,9 +1879,9 @@ the principal \emph{legacy and current} modules in Mettapedia that track PLN-boo
 \code{lake build}\ \codepath{Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression}.
 
 \paragraph{Ch.\ 10--11 (higher-order, quantifiers, crisp/fuzzy operators).}
-\codepath{Mettapedia/Logic/HigherOrder.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder.lean},
 \codepath{Mettapedia/Logic/HigherOrder/Basic.lean},
-\codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzyQuantifierSemantics.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/FuzzyITVBridge.lean},
@@ -1843,24 +1889,24 @@ the principal \emph{legacy and current} modules in Mettapedia that track PLN-boo
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierWorkedExamples.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierRegression.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/Quantifiers/Soundness.lean},
-\codepath{Mettapedia/Logic/PLNCrispEvidence.lean},
-\codepath{Mettapedia/Logic/PLNNoisyOr.lean},
-\codepath{Mettapedia/Logic/PLNNegation.lean},
-\codepath{Mettapedia/Logic/PLNDisjunction.lean},
+\codepath{Mettapedia/PLN/Evidence/PLNCrispEvidence.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNNoisyOr.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNNegation.lean},
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNDisjunction.lean},
 \code{lake build}\ \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression}.
 
 \paragraph{Ch.\ 12 (intensional inference).}
-\codepath{Mettapedia/Logic/IntensionalInheritance.lean},
-\codepath{Mettapedia/Logic/IntensionalInheritanceSolomonoffBridge.lean},
-\codepath{Mettapedia/Logic/PLNIntensionalWorldModel.lean},
+\codepath{Mettapedia/KR/ConceptGeometry/IntensionalInheritance.lean},
+\codepath{Mettapedia/KR/ConceptGeometry/Bridges/UniversalAI/IntensionalInheritanceSolomonoffBridge.lean},
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalWorldModel.lean},
 \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean},
-\codepath{Mettapedia/Logic/PLNIntensionalCanary.lean},
-\codepath{Mettapedia/Logic/PLNIntensionalRegression.lean},
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalCanary.lean},
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalRegression.lean},
 \code{lake build}\ \codepath{Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression}.
 
 \paragraph{Ch.\ 14 (temporal/causal; event calculus; OSLF/GSLT grounding).}
 \codepath{Mettapedia/PLN/RuleFamilies/Temporal/PLNTemporal.lean},
-\codepath{Mettapedia/Logic/TemporalQuantale.lean},
+\codepath{Mettapedia/Algebra/TemporalQuantale.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/Temporal/PLNTemporalCausalInference.lean},
 \codepath{Mettapedia/PLN/RuleFamilies/Temporal/PLNProbabilisticEventCalculus.lean},
 \codepath{Mettapedia/OSLF/Framework/VertexTemporalRewriteRules.lean},

@@ -1,6 +1,7 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ApplicationEquivariance
-import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationFoldConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Scoped observation of finite type presentations
@@ -30,9 +31,8 @@ open Spec.Type.Presentation.PrincipalAlpha
 open Spec.Type.Presentation.Theory
 open Spec.Type.Presentation.ExactNormal
 open Spec.Type.RuntimeRefinement
-open LeaTTaBridge
-open LeaTTaTypeConformance
-open LeaTTaTypePresentationFoldConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-- Satisfaction of a finite presentation depends only on the names that its
 assignment theory mentions. -/
@@ -254,6 +254,56 @@ theorem PrivateCandidateAlphaRel.exists_public_fixed_permutation
     exact (extensionLaw
       (Sum.inr (α := PublicVariable)
         (⟨name, member⟩ : PrivateVariable))).symm
+
+/-- Two independently freshened ordered families admit one coherent
+permutation fixing the public scope. Repeated variables within a candidate
+stay correlated; variables in different candidate occurrences remain apart. -/
+theorem argumentAlphaVariants_public_fixed_permutation
+    {fixedScope : List String} {sources left right : List Atom}
+    (first : ArgumentAlphaVariantsRel fixedScope sources left)
+    (second : ArgumentAlphaVariantsRel fixedScope sources right) :
+    ∃ permutation : Equiv.Perm String,
+      (∀ name ∈ fixedScope, permutation name = name) ∧
+      right = left.map (renameTypeVars permutation) := by
+  induction sources generalizing fixedScope left right with
+  | nil =>
+      cases first
+      cases second
+      exact ⟨Equiv.refl String,by simp,rfl⟩
+  | cons source sources ih =>
+      cases first with
+      | @cons _ _ leftHead _ leftTail firstHead firstTail =>
+          cases second with
+          | @cons _ _ rightHead _ rightTail secondHead secondTail =>
+              obtain ⟨headNames,publicFixed,headEqual⟩ :=
+                (show PrivateCandidateAlphaRel fixedScope leftHead rightHead from
+                  ⟨source,firstHead,secondHead⟩).exists_public_fixed_permutation
+              have fixedList : fixedScope.map headNames = fixedScope := by
+                calc
+                  _ = fixedScope.map id := List.map_congr_left publicFixed
+                  _ = fixedScope := List.map_id _
+              have movedTail : ArgumentAlphaVariantsRel
+                  (fixedScope ++ TypeSubst.typeVars rightHead) sources
+                  (leftTail.map (renameTypeVars headNames)) := by
+                simpa only [List.map_append,fixedList,headEqual,
+                  typeVars_renameTypeVars] using firstTail.rename_targets headNames
+              obtain ⟨tailNames,tailFixed,tailEqual⟩ := ih movedTail secondTail
+              have headFixed : renameTypeVars tailNames rightHead = rightHead := by
+                calc
+                  _ = renameTypeVars id rightHead := renameTypeVars_congr_on_typeVars rightHead
+                    (fun name member => tailFixed name (List.mem_append_right _ member))
+                  _ = rightHead := renameTypeVars_id rightHead
+              refine ⟨headNames.trans tailNames,?_,?_⟩
+              · intro name member
+                change tailNames (headNames name) = name
+                rw [publicFixed name member,tailFixed name (List.mem_append_left _ member)]
+              · simp only [List.map_cons,List.cons.injEq]
+                constructor
+                · change rightHead = renameTypeVars (tailNames ∘ headNames) leftHead
+                  rw [←renameTypeVars_comp,←headEqual,headFixed]
+                · change rightTail = leftTail.map (renameTypeVars (tailNames ∘ headNames))
+                  rw [←renameTypeVarsList_comp]
+                  exact tailEqual
 
 /-- Every variable in either private candidate presentation lies outside the
 protected public scope. -/
@@ -704,113 +754,6 @@ theorem PrivateCandidateAlphaRel.transport_model_across_presentations_of_target_
     exact rightActualAvoids name candidateMember fixedMember
   simpa [rightModel, notCandidate] using baseAgrees name theoryMember
 
-/-- Runtime-support variant of
-`transport_model_across_presentations_of_target_fresh`.
-
-The exact right presentation may use an independent private spelling, so
-syntactic support inclusion is neither required nor generally true.
-`TypePresentationSimulationState` proves that its complete solution theory
-depends only on the variables occurring in the runtime binding list; the
-runtime candidate is fresh from exactly that support. -/
-theorem PrivateCandidateAlphaRel.transport_model_across_presentations_of_runtime_target_fresh
-    {fixedScope theoryScope observationScope : List String}
-    {leftIncoming rightIncoming : TypeSubst}
-    {rightSpec : Bindings} {runtimeBindings : Metta.Bindings}
-    {expected leftActual rightActual : Atom}
-    (alpha : PrivateCandidateAlphaRel fixedScope leftActual rightActual)
-    (incomingEquiv : TypePresentationTheoryEquivAt
-      theoryScope leftIncoming rightIncoming)
-    (rightState : TypePresentationSimulationState
-      rightIncoming rightSpec runtimeBindings)
-    (rightTargetFresh : ∀ name,
-      name ∈ TypeSubst.typeVars rightActual →
-        name ∉ runtimeBindings.vars)
-    (theoryCovered : ∀ name, name ∈ theoryScope → name ∈ fixedScope)
-    (expectedObserved : ∀ name,
-      name ∈ TypeSubst.typeVars expected → name ∈ theoryScope)
-    (observationObserved : ∀ name,
-      name ∈ observationScope → name ∈ theoryScope)
-    (leftModel : String → Atom)
-    (leftSatisfied : TypeSubstSatisfied leftModel leftIncoming)
-    (leftConsistent : CorePlusR2TypeConsistent
-      leftModel expected leftActual) :
-    ∃ rightModel,
-      TypeSubstSatisfied rightModel rightIncoming ∧
-        CorePlusR2TypeConsistent rightModel expected rightActual ∧
-        ValuationsAgreeOn observationScope leftModel rightModel := by
-  obtain ⟨permutation, fixed, candidateEquation⟩ :=
-    alpha.exists_public_fixed_permutation
-  obtain ⟨rightBase, rightBaseSatisfied, baseAgrees⟩ :=
-    incomingEquiv.leftToRight leftModel leftSatisfied
-  let transported : String → Atom := leftModel ∘ permutation.symm
-  let rightModel : String → Atom := fun name =>
-    if name ∈ TypeSubst.typeVars rightActual then
-      transported name
-    else
-      rightBase name
-  have inverseFixed : ∀ name, name ∈ fixedScope →
-      permutation.symm name = name := by
-    intro name member
-    apply permutation.injective
-    simp [fixed name member]
-  have rightModelAgreesBaseOnRuntime :
-      ValuationsAgreeOn runtimeBindings.vars rightBase rightModel := by
-    intro name member
-    have notCandidate : name ∉ TypeSubst.typeVars rightActual := by
-      intro candidateMember
-      exact rightTargetFresh name candidateMember member
-    simp [rightModel, notCandidate]
-  have rightSatisfied : TypeSubstSatisfied rightModel rightIncoming :=
-    (rightState.satisfied_congr_on_runtimeVars
-      rightModelAgreesBaseOnRuntime).mp rightBaseSatisfied
-  have rightActualAvoids : ∀ name,
-      name ∈ TypeSubst.typeVars rightActual → name ∉ fixedScope :=
-    alpha.vars_avoid_fixedScope.2
-  have expectedFixed :
-      renameTypeVars permutation expected = expected := by
-    calc
-      renameTypeVars permutation expected =
-          renameTypeVars id expected := by
-        apply renameTypeVars_congr_on_typeVars expected
-        intro name member
-        exact fixed name (theoryCovered name (expectedObserved name member))
-      _ = expected := renameTypeVars_id expected
-  have transportedConsistent : CorePlusR2TypeConsistent transported
-      expected rightActual := by
-    have renamedConsistent : CorePlusR2TypeConsistent transported
-        (renameTypeVars permutation expected)
-        (renameTypeVars permutation leftActual) := by
-      apply (corePlusR2TypeConsistent_rename_iff
-        transported permutation expected leftActual).mpr
-      simpa [transported, Function.comp_def] using leftConsistent
-    simpa [expectedFixed, candidateEquation] using renamedConsistent
-  have constraintAgreement : ∀ name,
-      name ∈ TypeSubst.typeVars expected ++
-          TypeSubst.typeVars rightActual →
-        transported name = rightModel name := by
-    intro name member
-    rcases List.mem_append.mp member with expectedMember | actualMember
-    · have theoryMember := expectedObserved name expectedMember
-      have fixedMember := theoryCovered name theoryMember
-      have notCandidate : name ∉ TypeSubst.typeVars rightActual := by
-        intro candidateMember
-        exact rightActualAvoids name candidateMember fixedMember
-      simp [rightModel, notCandidate, transported, Function.comp_apply,
-        inverseFixed name fixedMember, baseAgrees name theoryMember]
-    · simp [rightModel, actualMember]
-  have rightConsistent : CorePlusR2TypeConsistent rightModel
-      expected rightActual :=
-    (corePlusR2TypeConsistent_congr_of_typeVars
-      expected rightActual constraintAgreement).mp transportedConsistent
-  refine ⟨rightModel, rightSatisfied, rightConsistent, ?_⟩
-  intro name member
-  have theoryMember := observationObserved name member
-  have fixedMember := theoryCovered name theoryMember
-  have notCandidate : name ∉ TypeSubst.typeVars rightActual := by
-    intro candidateMember
-    exact rightActualAvoids name candidateMember fixedMember
-  simpa [rightModel, notCandidate] using baseAgrees name theoryMember
-
 /-! ## One matched constraint under scoped observation -/
 
 /-- Two incoming finite theories extended by one type-consistency constraint
@@ -1026,51 +969,6 @@ theorem TypeConstraintTheoryEquivAt.of_scopedIncoming_privateCandidateAlpha_sepa
     exact ⟨leftModel, leftSatisfied, leftConsistent,
       fun name member => (agrees name member).symm⟩
 
-/-- Cross a scoped specification/runtime boundary without identifying the
-runtime presentation's private syntactic support.  The left candidate is
-fresh from the finite specification presentation; the right candidate is
-fresh from the runtime binding list that semantically supports its exact
-branch presentation. -/
-theorem TypeConstraintTheoryEquivAt.of_scopedIncoming_privateCandidateAlpha_runtimeSupport
-    {fixedScope theoryScope observationScope : List String}
-    {leftIncoming rightIncoming : TypeSubst}
-    {rightSpec : Bindings} {runtimeBindings : Metta.Bindings}
-    {expected leftActual rightActual : Atom}
-    (incomingEquiv : TypePresentationTheoryEquivAt
-      theoryScope leftIncoming rightIncoming)
-    (rightState : TypePresentationSimulationState
-      rightIncoming rightSpec runtimeBindings)
-    (alpha : PrivateCandidateAlphaRel fixedScope leftActual rightActual)
-    (leftTargetFresh : ∀ name,
-      name ∈ TypeSubst.typeVars leftActual →
-        name ∉ specBindingVars ⟨leftIncoming, []⟩)
-    (rightTargetFresh : ∀ name,
-      name ∈ TypeSubst.typeVars rightActual →
-        name ∉ runtimeBindings.vars)
-    (theoryCovered : ∀ name, name ∈ theoryScope → name ∈ fixedScope)
-    (expectedObserved : ∀ name,
-      name ∈ TypeSubst.typeVars expected → name ∈ theoryScope)
-    (observationObserved : ∀ name,
-      name ∈ observationScope → name ∈ theoryScope) :
-    TypeConstraintTheoryEquivAt observationScope
-      leftIncoming expected leftActual
-      rightIncoming expected rightActual := by
-  have reverseAlpha :
-      PrivateCandidateAlphaRel fixedScope rightActual leftActual := by
-    rcases alpha with ⟨source, leftVariant, rightVariant⟩
-    exact ⟨source, rightVariant, leftVariant⟩
-  constructor
-  · exact alpha.transport_model_across_presentations_of_runtime_target_fresh
-      incomingEquiv rightState rightTargetFresh theoryCovered
-        expectedObserved observationObserved
-  · intro rightModel rightSatisfied rightConsistent
-    obtain ⟨leftModel, leftSatisfied, leftConsistent, agrees⟩ :=
-      reverseAlpha.transport_model_across_presentations_of_target_fresh
-        incomingEquiv.symm leftTargetFresh theoryCovered expectedObserved
-          observationObserved rightModel rightSatisfied rightConsistent
-    exact ⟨leftModel, leftSatisfied, leftConsistent,
-      fun name member => (agrees name member).symm⟩
-
 /-- Finite presentation derivations expose exactly their incoming theory
 conjoined with one consistency constraint.  Therefore a scoped equivalence of
 those conjunctions transports directly to the two output presentations. -/
@@ -1112,92 +1010,6 @@ theorem CorePlusR2TypePresentationMatchRel.outputTheoryEquivAt
         leftDerivation leftNormal leftModel).mpr
         ⟨leftIncomingSatisfied, leftConsistent⟩,
       agrees⟩
-
-/-- A static specification presentation and one runtime binding state agree
-through an exact branch-local presentation, with only the comparison between
-the two finite presentations restricted to the declared public scope. -/
-def ScopedTypePresentationSimulationState
-    (scope : List String) (specPresentation : TypeSubst)
-    (runtimeBindings : Metta.Bindings) : Prop :=
-  specPresentation.Normal ∧
-    ∃ branchPresentation specBindings,
-      TypePresentationSimulationState
-          branchPresentation specBindings runtimeBindings ∧
-        TypePresentationTheoryEquivAt
-          scope specPresentation branchPresentation
-
-/-- Exact same-spelling simulation is the reflexive case of scoped
-simulation. -/
-theorem ScopedTypePresentationSimulationState.ofExact
-    {scope : List String} {presentation : TypeSubst}
-    {spec : Bindings} {runtime : Metta.Bindings}
-    (state : TypePresentationSimulationState presentation spec runtime) :
-    ScopedTypePresentationSimulationState scope presentation runtime :=
-  ⟨state.normal, presentation, spec, state,
-    TypePresentationTheoryEquivAt.refl scope presentation⟩
-
-/-- Scoped simulation is contravariant in its observation scope: agreement
-at a larger finite scope immediately gives agreement at every smaller scope.
-This is the boundary used after a private signature scan, where the recursive
-matcher may temporarily observe signature variables that the evaluator seal
-does not expose. -/
-theorem ScopedTypePresentationSimulationState.mono
-    {large small : List String} {presentation : TypeSubst}
-    {runtime : Metta.Bindings}
-    (state : ScopedTypePresentationSimulationState
-      large presentation runtime)
-    (subset : ∀ name, name ∈ small → name ∈ large) :
-    ScopedTypePresentationSimulationState small presentation runtime := by
-  rcases state with
-    ⟨normal, branchPresentation, specBindings,
-      branchState, theory⟩
-  exact ⟨normal, branchPresentation, specBindings, branchState,
-    theory.mono subset⟩
-
-/-- A scoped presentation state observes any declared type whose variables
-lie in the public scope exactly as the repaired runtime does, up to private
-alpha-renaming.  This is the diagnostic/policy projection of the semantic
-state; it does not identify the private finite presentations syntactically. -/
-theorem ScopedTypePresentationSimulationState.returnAlpha
-    {scope : List String} {presentation : TypeSubst}
-    {runtime : Metta.Bindings}
-    (state : ScopedTypePresentationSimulationState
-      scope presentation runtime)
-    (declared : Atom)
-    (declaredCovered : ∀ name,
-      name ∈ TypeSubst.typeVars declared → name ∈ scope) :
-    ObservedTypeAlphaRel
-      (presentation.apply declared)
-      (fromLeaTTaAtom
-        (Metta.instantiate runtime (toLeaTTaAtom declared))) := by
-  rcases state with
-    ⟨presentationNormal, branchPresentation, specBindings,
-      branchState, presentationEquiv⟩
-  exact ObservedTypeAlphaRel.trans
-    (presentationEquiv.observedTypeAlpha presentationNormal
-      branchState.normal declared declaredCovered)
-    (branchState.returnAlpha declared)
-
-/-- Pointwise scoped simulation for an ordered branch list. -/
-def ScopedTypePresentationSimulationStates
-    (scope : List String) (presentations : List TypeSubst)
-    (runtimeBindings : List Metta.Bindings) : Prop :=
-  List.Forall₂
-    (ScopedTypePresentationSimulationState scope)
-    presentations runtimeBindings
-
-/-- Pointwise scope weakening for an ordered branch list. -/
-theorem scopedTypePresentationSimulationStates_mono
-    {large small : List String} {presentations : List TypeSubst}
-    {runtimeBindings : List Metta.Bindings}
-    (states : ScopedTypePresentationSimulationStates
-      large presentations runtimeBindings)
-    (subset : ∀ name, name ∈ small → name ∈ large) :
-    ScopedTypePresentationSimulationStates
-      small presentations runtimeBindings := by
-  exact states.imp fun _ _ state => state.mono subset
-
-/-! ## Boundary canaries -/
 
 private def privateA : TypeSubst := [("t", .var "uA")]
 private def privateB : TypeSubst := [("t", .var "uB")]

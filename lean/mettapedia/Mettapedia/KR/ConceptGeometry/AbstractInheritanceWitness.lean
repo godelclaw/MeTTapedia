@@ -16,7 +16,7 @@ finite evidence semantics of the abstract interpretation.
 
 namespace Mettapedia.KR.ConceptGeometry.AbstractInheritance
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.NARS.Logic.Inheritance
 open scoped ENNReal
 

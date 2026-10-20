@@ -1,12 +1,3 @@
-/-
-LLM Context:
-- T_P_K_LP at ℝ≥0∞ ≠ distribution semantics (bag vs set semantics)
-- Correct architecture: total-choice → residual KB → least Herbrand model → queryHolds
-- For function-free signatures: g.groundAtom ga.toAtom = ga (ground atoms are invariant)
-- leastHerbrandModel_least: pre-fixpoint ⊇ least model
-- T_P_LP_le_iff: I is pre-fixpoint ↔ contains EDB + closed under rules
-- worldToAssignment is in Mettapedia.PLN.Core.CompletePLN
--/
 import Mettapedia.PLN.Bridges.Languages.ProbLog.DistributionSemantics
 import Mettapedia.Examples.PLN.BioHypothesisGeneration
 import Mettapedia.Logic.LP.Core
@@ -43,12 +34,18 @@ The correct compilation routes through total-choice → residual model → `quer
 
 ## Scope
 
-This module covers the **finite ground, definite (no negation), OR-pattern** fragment:
+The program and residual least-model definitions accept general definite
+programs. The specialized compilation theorems here cover the
+**finite ground, definite (no negation), OR-pattern** fragment:
 programs where each rule derives a single query atom from a single probabilistic fact.
 This covers the rejuve-bio benchmark and a large class of practical ProbLog programs.
 
-**Not covered**: recursion, negation-as-failure, overlapping non-OR derivations,
-knowledge compilation (BDD/SDD), the provenance polynomial approach.
+These compilation theorems do not provide an executable general recursive
+compiler, negation-as-failure, or BDD/SDD construction. The separate
+`FunctionalExtension` and `ClauseExtension` modules interpret selected
+least-model observations, including recursive programs, through exact finite
+factor and clause semantics. Their semantic construction is not an efficient
+saturation algorithm.
 
 ## References
 
@@ -768,7 +765,7 @@ theorem T_P_K_LP_or_eq_sum {σ : LPSignature} {n : ℕ}
       Finset.univ.sum (fun i : Fin n => prog.probs i) := by
   simp only [T_P_K_LP, ProbLogProgram.toFinKB]
   simp only [show ¬(q ∈ (∅ : Finset (GroundAtom σ))) from by simp, ite_false, zero_add]
-  haveI : Unique (Grounding σ) := uniqueGroundingOfVarsEmpty
+  have : Unique (Grounding σ) := uniqueGroundingOfVarsEmpty
   rw [Fintype.sum_unique]
   have hg : ∀ ga : GroundAtom σ, (default : Grounding σ).groundAtom ga.toAtom = ga :=
     Grounding.groundAtom_toAtom_self default
@@ -805,7 +802,7 @@ theorem T_P_K_LP_or_eq_which_profile {σ : LPSignature} {n : ℕ}
       if active.Nonempty then Which.wset active else 0 := by
   simp only [T_P_K_LP, ProbLogProgram.toFinKB]
   simp only [show ¬(q ∈ (∅ : Finset (GroundAtom σ))) from by simp, ite_false, zero_add]
-  haveI : Unique (Grounding σ) := uniqueGroundingOfVarsEmpty
+  have : Unique (Grounding σ) := uniqueGroundingOfVarsEmpty
   rw [Fintype.sum_unique]
   have hg : ∀ ga : GroundAtom σ, (default : Grounding σ).groundAtom ga.toAtom = ga :=
     Grounding.groundAtom_toAtom_self default
@@ -817,7 +814,7 @@ theorem T_P_K_LP_or_eq_which_profile {σ : LPSignature} {n : ℕ}
         if i ∈ active
         then (Which.wset ({i} : Finset (Fin n)) : Which (Fin n))
         else 0)).sum =
-      _ 
+      _
   · congr 1
     apply List.map_congr_left
     intro i _
@@ -828,19 +825,5 @@ theorem T_P_K_LP_or_eq_which_profile {σ : LPSignature} {n : ℕ}
   · rw [← List.ofFn_eq_map]
     simpa [Finset.sum] using (sum_ite_which_singletons_eq_wset active)
 
-#check @queryHolds_or_pattern
-#check @compilation_or_noisyOr
-#check @compilation_or_toReal
-#check @wm_pln_revision_changes_evidence
-#check @bag_set_separation
-#check @T_P_K_LP_or_eq_sum
-#check @T_P_K_LP_or_eq_which_profile
-#check @noisyOr_gap_ge_prod_pair
-
--- Axiom footprint for key theorems
-#print axioms T_P_K_LP_or_eq_sum
-#print axioms bag_set_separation
-#print axioms compilation_or_noisyOr
-#print axioms noisyOr_gap_ge_prod_pair
 
 end Mettapedia.PLN.Bridges.Languages.ProbLog.Compilation

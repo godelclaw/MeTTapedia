@@ -1,5 +1,9 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaPatternSemantics
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypeConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Fresh equation instances preserve computational matching
@@ -19,6 +23,7 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.MeTTa.HE (Bindings Space)
 open Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 open Mettapedia.Languages.MeTTa.HE.LeaTTaSpecConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.ModelTheory
 open Mettapedia.Languages.MeTTa.HE.LeaTTaTypeConformance
 open Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge
 open Mettapedia.Languages.MeTTa.HE.Spec.Eval.Steps
@@ -29,25 +34,25 @@ mutual
 theorem alpha_solution {rename : String → String} {source target : Atom}
     (renamed : AlphaRenameAtomRel rename source target)
     (valuation : String → Metta.Atom) :
-    applyClassSolution valuation (toLeaTTaAtom target) =
-      applyClassSolution (valuation ∘ rename) (toLeaTTaAtom source) := by
+    applyClassSolution valuation (encodeModelAtom target) =
+      applyClassSolution (valuation ∘ rename) (encodeModelAtom source) := by
   cases renamed with
   | symbol | «variable» | grounded =>
-      simp only [toLeaTTaAtom, applyClassSolution, Function.comp_apply]
+      simp only [encodeModelAtom, applyClassSolution, Function.comp_apply]
   | expression items =>
-      simp only [toLeaTTaAtom, applyClassSolution, Metta.Atom.expr.injEq]
+      simp only [encodeModelAtom, applyClassSolution, Metta.Atom.expr.injEq]
       exact alpha_solutions items valuation
 termination_by sizeOf source
 
 theorem alpha_solutions {rename : String → String} {source target : List Atom}
     (renamed : AlphaRenameAtomsRel rename source target)
     (valuation : String → Metta.Atom) :
-    (toLeaTTaAtoms target).map (applyClassSolution valuation) =
-      (toLeaTTaAtoms source).map (applyClassSolution (valuation ∘ rename)) := by
+    (encodeModelAtoms target).map (applyClassSolution valuation) =
+      (encodeModelAtoms source).map (applyClassSolution (valuation ∘ rename)) := by
   cases renamed with
   | nil => rfl
   | cons head tail =>
-      simp only [toLeaTTaAtoms, List.map_cons]
+      simp only [encodeModelAtoms, List.map_cons]
       rw [alpha_solution head valuation, alpha_solutions tail valuation]
 termination_by sizeOf source
 
@@ -89,8 +94,8 @@ theorem alpha_extend_model_range {live : List Atom} {query raw fresh : Atom}
     (sourceModel base : String → Metta.Atom)
     (satisfied : HEBindingSatisfied base incoming) :
     ∃ extended,
-      applyClassSolution extended (toLeaTTaAtom fresh) =
-        applyClassSolution sourceModel (toLeaTTaAtom raw) ∧
+      applyClassSolution extended (encodeModelAtom fresh) =
+        applyClassSolution sourceModel (encodeModelAtom raw) ∧
       HEBindingSatisfied extended incoming ∧
       (∀ name, QueryVisibleName live query incoming name →
         extended name = base name) ∧
@@ -130,8 +135,8 @@ theorem alpha_extend_model {live : List Atom} {query raw fresh : Atom}
     (sourceModel base : String → Metta.Atom)
     (satisfied : HEBindingSatisfied base incoming) :
     ∃ extended,
-      applyClassSolution extended (toLeaTTaAtom fresh) =
-        applyClassSolution sourceModel (toLeaTTaAtom raw) ∧
+      applyClassSolution extended (encodeModelAtom fresh) =
+        applyClassSolution sourceModel (encodeModelAtom raw) ∧
       HEBindingSatisfied extended incoming ∧
       ∀ name, QueryVisibleName live query incoming name →
         extended name = base name := by
@@ -142,8 +147,8 @@ theorem alpha_extend_model {live : List Atom} {query raw fresh : Atom}
 theorem query_visible_solution {live : List Atom} {query : Atom} {incoming : Bindings}
     {base extended : String → Metta.Atom}
     (agrees : ∀ name, QueryVisibleName live query incoming name → extended name = base name) :
-    applyClassSolution extended (toLeaTTaAtom query) =
-      applyClassSolution base (toLeaTTaAtom query) := by
+    applyClassSolution extended (encodeModelAtom query) =
+      applyClassSolution base (encodeModelAtom query) := by
   apply applyClassSolution_congr_on_atom_vars
   intro name occurrence
   exact agrees name (.inl (atomOccurs_of_mem_translated_vars occurrence))
@@ -160,8 +165,8 @@ theorem alpha_patterns_unify_iff_observed (source values : List Term) (first : N
     (frameValues : HEAssignmentsNonVariable incoming)
     (hasModel : ∃ base, HEBindingSatisfied base incoming)
     (queryValue : ∀ valuation, HEBindingSatisfied valuation incoming →
-      applyClassSolution valuation (toLeaTTaAtom query) =
-        toLeaTTaAtom (MeTTaData.encodeItems values)) :
+      applyClassSolution valuation (encodeModelAtom query) =
+        encodeModelAtom (MeTTaData.encodeItems values)) :
     (∃ output, UnifyCandidateRel query fresh incoming output) ↔
       ∃ environment, matchTerms source values = some environment := by
   rw [unify_iff_common_model query fresh incoming frameValues]
@@ -178,8 +183,8 @@ theorem alpha_patterns_unify_iff_observed (source values : List Term) (first : N
     obtain ⟨extended, patternValue, extendedSatisfied, agrees⟩ :=
       alpha_extend_model injective renamed privateNames sourceModel base satisfied
     refine ⟨extended, ?_, extendedSatisfied⟩
-    change applyClassSolution extended (toLeaTTaAtom query) =
-      applyClassSolution extended (toLeaTTaAtom fresh)
+    change applyClassSolution extended (encodeModelAtom query) =
+      applyClassSolution extended (encodeModelAtom fresh)
     rw [query_visible_solution agrees, queryValue base satisfied, patternValue]
     simpa only [HEAtomEquationSatisfied, encoded_items_solution_fixed] using same
 
@@ -189,16 +194,14 @@ theorem alpha_patterns_binding_observation_observed (source values : List Term) 
     {query fresh : Atom} {incoming output : Bindings} {rename : String → String}
     (renamed : AlphaRenameAtomRel rename (patterns source first).1.1 fresh)
     (queryValue : ∀ valuation, HEBindingSatisfied valuation incoming →
-      applyClassSolution valuation (toLeaTTaAtom query) =
-        toLeaTTaAtom (MeTTaData.encodeItems values))
+      applyClassSolution valuation (encodeModelAtom query) =
+        encodeModelAtom (MeTTaData.encodeItems values))
     (candidate : UnifyCandidateRel query fresh incoming output)
     (valuation : String → Metta.Atom) (satisfied : HEBindingSatisfied valuation output) :
     ∃ environment, matchTerms source values = some environment ∧
       ValuationFor (valuation ∘ rename) first environment := by
-  obtain ⟨matched, matchProof, mergeProof, _, _⟩ := candidate
-  have inputs :=
-    (Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.mergeRel_solution_iff
-      mergeProof valuation).mp satisfied
+  obtain ⟨matched, matchProof, mergeProof⟩ := candidate
+  have inputs := (Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_solutions mergeProof valuation).mp satisfied
   have same :=
     (Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.matchRel_solution_iff
       matchProof valuation).mp inputs.1
@@ -209,8 +212,8 @@ theorem alpha_patterns_binding_observation_observed (source values : List Term) 
 same fresh pattern matches as the original pattern in an empty frame. -/
 theorem alpha_unify_iff_closed_model {live : List Atom} {query raw fresh : Atom}
     {incoming : Bindings} {rename : String → String}
-    (closed : ∀ valuation, applyClassSolution valuation (toLeaTTaAtom query) =
-      toLeaTTaAtom query)
+    (closed : ∀ valuation, applyClassSolution valuation (encodeModelAtom query) =
+      encodeModelAtom query)
     (injective : Function.Injective rename)
     (renamed : AlphaRenameAtomRel rename raw fresh)
     (privateNames : ∀ name, AtomOccurs raw name →
@@ -271,10 +274,8 @@ theorem alpha_patterns_binding_observation (source values : List Term) (first : 
     (valuation : String → Metta.Atom) (satisfied : HEBindingSatisfied valuation output) :
     ∃ environment, matchTerms source values = some environment ∧
       ValuationFor (valuation ∘ rename) first environment := by
-  obtain ⟨matched, matchProof, mergeProof, _, _⟩ := viable
-  have inputSatisfied :=
-    (Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.mergeRel_solution_iff
-      mergeProof valuation).mp satisfied
+  obtain ⟨matched, matchProof, mergeProof⟩ := viable
+  have inputSatisfied := (Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_solutions mergeProof valuation).mp satisfied
   have same :=
     (Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.matchRel_solution_iff
       matchProof valuation).mp inputSatisfied.1
@@ -287,8 +288,8 @@ theorem equation_variant_has_candidate {space : Space} {live : List Atom}
     {query rawLhs rawRhs freshLhs freshRhs : Atom} {incoming : Bindings}
     (member : .expression [.symbol "=", rawLhs, rawRhs] ∈ space.atoms)
     (variant : AlphaVariantRel live query incoming rawLhs rawRhs freshLhs freshRhs)
-    (closed : ∀ valuation, applyClassSolution valuation (toLeaTTaAtom query) =
-      toLeaTTaAtom query)
+    (closed : ∀ valuation, applyClassSolution valuation (encodeModelAtom query) =
+      encodeModelAtom query)
     (values : HEAssignmentsNonVariable incoming)
     (hasModel : ∃ base, HEBindingSatisfied base incoming)
     (sourceMatch : ∃ model, HEAtomEquationSatisfied model query rawLhs) :
@@ -305,29 +306,28 @@ theorem equation_variant_has_candidate {space : Space} {live : List Atom}
     Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness.exists_specMatch_of_solution queryMatch
   obtain ⟨output, mergeProof, outputSatisfied, outputValues⟩ :=
     Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness.exists_specMerge_of_solution
-      extendedSatisfied values matchSatisfied (specMatch_assignmentsNonVariable matchProof)
+      matchSatisfied (specMatch_assignmentsNonVariable matchProof) extendedSatisfied values
   exact ⟨output, freshLhs, freshRhs, matched,
     ⟨rawLhs, rawRhs, member,
-      ⟨rename, injective, leftRenamed, rightRenamed, privateNames⟩, matchProof⟩, mergeProof,
-    semanticLoopFree_of_satisfied_nonvariable outputSatisfied outputValues,
-    ⟨extended, outputSatisfied⟩, fun _ _ => rfl⟩
+      ⟨rename, injective, leftRenamed, rightRenamed, privateNames⟩, matchProof⟩,
+    mergeProof.logicalMerge
+      ⟨_, Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_of_heBindingSatisfied
+        outputSatisfied⟩, fun _ _ => rfl⟩
 
 /-- Equation selection from a closed query cannot create a rule or invent a
 match by choosing private names or a redundant binding representation. -/
 theorem equation_candidate_reflects_closed_query {space : Space} {live : List Atom}
     {query emitted : Atom} {incoming output : Bindings}
-    (closed : ∀ valuation, applyClassSolution valuation (toLeaTTaAtom query) =
-      toLeaTTaAtom query)
+    (closed : ∀ valuation, applyClassSolution valuation (encodeModelAtom query) =
+      encodeModelAtom query)
     (candidate : EquationQueryCandidateRel space live query incoming emitted output) :
     ∃ rawLhs rawRhs, .expression [.symbol "=", rawLhs, rawRhs] ∈ space.atoms ∧
       ∃ model, HEAtomEquationSatisfied model query rawLhs := by
-  obtain ⟨freshLhs, freshRhs, matched, ruleMatch, mergeProof, _,
-    ⟨valuation, satisfied⟩, _⟩ := candidate
+  obtain ⟨freshLhs, freshRhs, matched, ruleMatch, mergeProof, _⟩ := candidate
+  obtain ⟨valuation, satisfied⟩ := Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_model mergeProof
   obtain ⟨rawLhs, rawRhs, member, variant, matchProof⟩ := ruleMatch
   obtain ⟨rename, _, leftRenamed, _, _⟩ := variant
-  have matchedSatisfied :=
-    (Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.mergeRel_solution_iff
-      mergeProof valuation).mp satisfied |>.2
+  have matchedSatisfied := (Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_solutions mergeProof valuation).mp satisfied |>.1
   have same :=
     (Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.matchRel_solution_iff
       matchProof valuation).mp matchedSatisfied
@@ -344,7 +344,7 @@ private theorem callerAlias_values : HEAssignmentsNonVariable callerAlias := by
     Bindings.lookup, Bindings.addEquality, MeTTaData.encode] at member
 
 private theorem callerAlias_model :
-    HEBindingSatisfied (fun _ => toLeaTTaAtom (MeTTaData.encode (.sym "old"))) callerAlias := by
+    HEBindingSatisfied (fun _ => encodeModelAtom (MeTTaData.encode (.sym "old"))) callerAlias := by
   constructor
   · intro name value member
     simp only [callerAlias, Bindings.assign, Bindings.isBound, Bindings.lookup,
@@ -359,7 +359,7 @@ private theorem callerAlias_fresh :
   rintro (occurrence | ⟨atom, member, _⟩ | ⟨value, member⟩ |
     ⟨name, value, member, occurrence⟩ | ⟨left, right, member, endpoint⟩)
   · have impossible := mem_translated_vars_of_atomOccurs occurrence
-    simp [MeTTaData.encode, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars] at impossible
+    simp [MeTTaData.encode, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars] at impossible
   · simp at member
   · simp [callerAlias, Bindings.empty, Bindings.assign, Bindings.isBound,
       Bindings.lookup, Bindings.addEquality] at member
@@ -368,7 +368,7 @@ private theorem callerAlias_fresh :
       Bool.false_eq_true, if_false, List.nil_append, List.mem_singleton, Prod.mk.injEq] at member
     rw [member.2] at occurrence
     have impossible := mem_translated_vars_of_atomOccurs occurrence
-    simp [MeTTaData.encode, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars] at impossible
+    simp [MeTTaData.encode, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars] at impossible
   · simp [callerAlias, Bindings.empty, Bindings.assign, Bindings.isBound,
       Bindings.lookup, Bindings.addEquality, freshName] at member
     obtain ⟨rfl, rfl⟩ := member
@@ -409,7 +409,7 @@ theorem merging_pattern_names_loses_valid_match :
   · intro output viable
     obtain ⟨valuation, same⟩ := (unify_empty_iff_model _ _).mp ⟨output, viable⟩
     simp [HEAtomEquationSatisfied, MeTTaData.encodeItems, MeTTaData.encode,
-      toLeaTTaAtom, toLeaTTaAtoms, toLeaTTaGround, applyClassSolution, call] at same
+      encodeModelAtom, encodeModelAtoms, encodeModelGround, applyClassSolution, call] at same
     have impossible := same.1.trans same.2.symm
     simp at impossible
 

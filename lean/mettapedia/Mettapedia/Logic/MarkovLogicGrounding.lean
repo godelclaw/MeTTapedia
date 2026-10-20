@@ -212,7 +212,7 @@ deriving DecidableEq
 
 instance : Fintype X where
   elems := {.x}
-  complete value := by cases value <;> simp
+  complete value := by cases value; simp
 
 /-- The clause template `¬Smokes(x) ∨ Cancer(x)` (i.e., `Smokes(x) → Cancer(x)`)
 with satisfied potential 1, unsatisfied potential 0 (hard constraint). -/
@@ -276,7 +276,7 @@ theorem smoke_bob_clause_unsatisfied_when_smokes_no_cancer
     (hNoCancer : W ⟨1, .cancer, fun _ => .bob⟩ = false) :
     ¬ (groundClauseTemplate (Pred := SmokePred) (fun _ : X => Person.bob) smokesCancerWT.clause).holds W := by
   rw [groundClauseTemplate_holds_iff]
-  push_neg
+  push Not
   intro l hl
   simp [smokesCancerWT] at hl
   rcases hl with rfl | rfl
@@ -298,7 +298,7 @@ We resolve this by providing a local equivalence
 
 section SmokesQueryStrength
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 /-! ### Local Fintype for grounded smoke atoms -/
 
@@ -307,9 +307,8 @@ private instance : Fintype (SmokePred 1) :=
   ⟨{.smokes, .cancer}, fun p => by cases p <;> simp⟩
 
 /-- Every `SmokePred n` value witnesses `n = 1` (since both constructors target arity 1). -/
-private def smokePredArityOne : SmokePred n → n = 1
-  | .smokes => rfl
-  | .cancer => rfl
+private theorem smokePredArityOne (predicate : SmokePred n) : n = 1 := by
+  cases predicate <;> rfl
 
 /-- Canonical equivalence: every ground smoke atom has arity 1,
 so the type is in bijection with `SmokePred 1 × Person`. -/
@@ -634,7 +633,7 @@ theorem smoke_queryProb_cancerAlice_eq_two_thirds :
       (2 : ENNReal) / 3 := by
   have htotal : (clauseMassSemantics smokeGroundMLN smokeFullSupport).totalMass ≠ 0 := by
     rw [smoke_totalMass_eq_nine]; norm_num
-  unfold MassSemantics.queryProb
+  unfold Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   rw [if_neg htotal, smoke_queryMass_cancerAlice_eq_six, smoke_totalMass_eq_nine]
   have hr : (6 : ℝ) / 9 = (2 : ℝ) / 3 := by
     ring_nf
@@ -656,7 +655,7 @@ theorem smoke_queryStrength_impossible_eq_zero :
   rw [clauseWM_queryStrength_eq_queryProb]
   have htotal : (clauseMassSemantics smokeGroundMLN smokeFullSupport).totalMass ≠ 0 := by
     rw [smoke_totalMass_eq_nine]; norm_num
-  unfold MassSemantics.queryProb
+  unfold Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   rw [if_neg htotal, smoke_queryMass_impossible_eq_zero, smoke_totalMass_eq_nine]
   simp
 
@@ -826,11 +825,11 @@ theorem groundMixedTemplate_existential_eval_eq [Fintype Dom]
 For finite-domain MLNs with mixed universal/existential templates, the compiled
 WM world-model state's `queryStrength` equals the exact MLN `queryProb`.
 This composes the full chain:
-  mixed templates → GroundMLN → CountableMLNSemantics → MassSemantics → BinaryWorldModel
+  mixed templates → GroundMLN → CountableMLNSemantics → Mettapedia.ProbabilityTheory.MassSemantics → BinaryWorldModel
 -/
 
 open MarkovLogicClauseWorldModel MarkovLogicClauseFactorGraph
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 /-- **Semantic subsumption theorem:** For any finite-domain MLN with mixed
 universal/existential templates, the compiled WM `queryStrength` equals the
@@ -954,8 +953,9 @@ private def relBBAtom : GroundAtom RelPred Elem := ⟨2, .rel, ![.b, .b]⟩
 
 /-! ### Fintype instance for GroundAtom RelPred Elem -/
 
-private def relPredArityTwo : RelPred n → n = 2
-  | .rel => rfl
+private theorem relPredArityTwo (predicate : RelPred n) : n = 2 := by
+  cases predicate
+  rfl
 
 private noncomputable def existGroundAtomEquiv :
     GroundAtom RelPred Elem ≃ Elem × Elem where
@@ -1166,7 +1166,7 @@ theorem exist_queryProb_relAB_eq_two_thirds :
       (2 : ENNReal) / 3 := by
   have htotal : (clauseMassSemantics existGroundMLN existFullSupport).totalMass ≠ 0 := by
     rw [exist_totalMass_eq_nine]; norm_num
-  unfold MassSemantics.queryProb
+  unfold Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   rw [if_neg htotal, exist_queryMass_relAB_eq_six, exist_totalMass_eq_nine]
   have hr : (6 : ℝ) / 9 = (2 : ℝ) / 3 := by ring_nf
   simpa [ENNReal.ofReal_div_of_pos] using congrArg ENNReal.ofReal hr

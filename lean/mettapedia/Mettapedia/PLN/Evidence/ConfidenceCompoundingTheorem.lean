@@ -39,7 +39,7 @@ confidence for a conclusion.
 
 namespace Mettapedia.PLN.Evidence.ConfidenceCompoundingTheorem
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 open Mettapedia.PLN.Evidence.HeytingValuationOnEvidence
 

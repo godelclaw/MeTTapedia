@@ -1,6 +1,10 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaEvaluatorConfigurationConformance
 import Mettapedia.Languages.MeTTa.HE.LeaTTaExpectedBindingThreadingConformance
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.BindingTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Service-aware evaluator binding observation
@@ -39,10 +43,10 @@ def bindingScopeProbe (scope : List String) : Atom :=
   .expression (scope.map Atom.var)
 
 /-- Exact runtime syntax corresponding to a scope probe. -/
-@[simp] theorem toLeaTTaAtom_bindingScopeProbe (scope : List String) :
-    toLeaTTaAtom (bindingScopeProbe scope) =
+@[simp] theorem encodeModelAtom_bindingScopeProbe (scope : List String) :
+    encodeModelAtom (bindingScopeProbe scope) =
       .expr (scope.map Metta.Atom.var) := by
-  simp [bindingScopeProbe, toLeaTTaAtom, toLeaTTaAtoms_eq_map]
+  simp [bindingScopeProbe, encodeModelAtom, encodeModelAtoms_eq_map]
 
 /-! ## Runtime alpha algebra -/
 
@@ -692,7 +696,7 @@ structure ScopedPresentationRuntimeObservationRel
       AlphaAtomRuntimeRel services
         (presentation.apply (bindingScopeProbe observedScope))
         (Metta.instantiate runtimeBindings
-          (toLeaTTaAtom (bindingScopeProbe observedScope)))
+          (encodeModelAtom (bindingScopeProbe observedScope)))
 
 /-- Exact native binding theory plus service-aware scoped runtime
 observation.  Exactness is intra-specification; only the observation field
@@ -755,7 +759,7 @@ theorem restrictBnd
         (Metta.instantiate runtimeBindings
           (.expr (observedScope.map Metta.Atom.var)))) := by
     simpa using renamedRuntime
-  rw [toLeaTTaAtom_bindingScopeProbe, projectedEquation]
+  rw [encodeModelAtom_bindingScopeProbe, projectedEquation]
   exact renamedRuntime'
 
 /-- Merging a semantically extending output back into its input preserves
@@ -788,7 +792,7 @@ theorem merge_extending
     Spec.Type.Presentation.ScopeObservation.ObservedTypeAlphaRel.trans
       alpha ⟨observed, TypeVariableRenamingOf.refl observed,
         ⟨permutation, permutation.injective, rfl⟩⟩, ?_⟩
-  rw [toLeaTTaAtom_bindingScopeProbe, mergedEquation]
+  rw [encodeModelAtom_bindingScopeProbe, mergedEquation]
   simpa using renamedRuntime
 
 /-- The expected-application order is merge first, project second.  Its
@@ -847,7 +851,7 @@ theorem merge_restrictBnd_retaining
     Spec.Type.Presentation.ScopeObservation.ObservedTypeAlphaRel.trans
       alpha ⟨observed, TypeVariableRenamingOf.refl observed,
         ⟨permutation, permutation.injective, rfl⟩⟩, ?_⟩
-  rw [toLeaTTaAtom_bindingScopeProbe, mergedEquation]
+  rw [encodeModelAtom_bindingScopeProbe, mergedEquation]
   simpa using renamedRuntime
 
 /-- Specialization in which the public observation scope is also the
@@ -1446,7 +1450,7 @@ theorem serviceAwareBindingRuntimeRel_empty
     refine ⟨bindingScopeProbe observedScope,
       ObservedTypeAlphaRel.refl _, ?_⟩
     rw [show Metta.Bindings.empty = [] from rfl,
-      Metta.instantiate_nil, toLeaTTaAtom_bindingScopeProbe]
+      Metta.instantiate_nil, encodeModelAtom_bindingScopeProbe]
     unfold bindingScopeProbe
     apply AtomRuntimeRel.expression
     induction observedScope with
@@ -1611,9 +1615,9 @@ private theorem payloadRuntimeBindings_instantiate_probe
     (scope : List String)
     (onlyX : ∀ name, name ∈ scope → name = "x") :
     Metta.instantiate payloadRuntimeBindings
-        (toLeaTTaAtom (bindingScopeProbe scope)) =
+        (encodeModelAtom (bindingScopeProbe scope)) =
       .expr (scope.map fun _ => .gnd (.bindings [])) := by
-  rw [toLeaTTaAtom_bindingScopeProbe]
+  rw [encodeModelAtom_bindingScopeProbe]
   unfold Metta.instantiate
   simp only [Metta.Bindings.resolveAtom, List.map_map]
   apply congrArg Metta.Atom.expr

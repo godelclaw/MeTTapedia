@@ -25,9 +25,9 @@ prior context. (Hawthorne, "The Lockean Thesis and the Logic of Belief";
 Foley, "Degrees of Belief".)
 -/
 
-namespace Mettapedia.PLN.WorldModel.PLNWorldModelPreorder
+namespace Mettapedia.PLN.WorldModel.WorldModelPreorder
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass
 open scoped ENNReal
 
@@ -99,4 +99,4 @@ theorem supportConfidenceLE_trans
     supportConfidenceLE ctx κ e₁ e₃ :=
   ⟨le_trans h₁₂.1 h₂₃.1, le_trans h₁₂.2 h₂₃.2⟩
 
-end Mettapedia.PLN.WorldModel.PLNWorldModelPreorder
+end Mettapedia.PLN.WorldModel.WorldModelPreorder

@@ -70,7 +70,7 @@ joint ITV supplied by the deduction interval layer. -/
 noncomputable def HODeductionPlannerShadow.jointInterval
     {xs : Fin 5 → ℝ} (shadow : HODeductionPlannerShadow xs) :
     Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVSemantics
+      (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVConstructor
         Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction.DeductionAtom) :=
   Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction.deductionAllocationJointTypedITV
     (xs 0) (xs 1) (xs 2) (xs 3) (xs 4)

@@ -26,10 +26,10 @@ corresponds to tensor composition, which has provable monotonicity properties.
 
 namespace Mettapedia.PLN.RuleFamilies.QuantaleSemantics.Soundness
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.CDLogic
-open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.Model
+open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNModel
 open scoped ENNReal
 
 /-! ## Monotonicity of Tensor -/
@@ -97,7 +97,7 @@ the strength of the composed evidence.
 /-- The strength of a tensor product is at least the product of strengths.
     This is the mathematical foundation for PLN's deduction formula.
 
-    Proof: Uses the existing `toStrength_tensor_ge` from EvidenceQuantale.
+    Proof: Uses the existing `toStrength_tensor_ge` from `BinaryEvidence`.
 -/
 theorem tensor_strength_ge (a b : BinaryEvidence) :
     BinaryEvidence.toStrength (a ⊙ b) ≥ BinaryEvidence.toStrength a * BinaryEvidence.toStrength b := by

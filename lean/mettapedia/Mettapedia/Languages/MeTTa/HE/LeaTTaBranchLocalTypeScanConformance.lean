@@ -1,5 +1,9 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ScopeObservation
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationSelectionConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Branch-local freshening boundary for argument applicability
@@ -298,16 +302,6 @@ theorem corePlusR2TypePresentationMatch_output_support
   exact (typeSubst_avoids_singleton_iff output name).mp outputAvoids
     outputMember
 
-/-- Variable support distributes over list append. -/
-theorem typeVarsList_append (left right : List Atom) :
-    TypeSubst.typeVarsList (left ++ right) =
-      TypeSubst.typeVarsList left ++ TypeSubst.typeVarsList right := by
-  induction left with
-  | nil => rfl
-  | cons atom left inductionHypothesis =>
-      simp only [List.cons_append, TypeSubst.typeVarsList,
-        inductionHypothesis, List.append_assoc]
-
 /-- Matching one selected candidate extends a presentation's support history
 by exactly that candidate.  No unselected alternative is added to the proof
 state. -/
@@ -331,13 +325,13 @@ theorem TypePresentationSupportedByCandidateHistory.step
     rcases previous with publicMember | earlier
     · exact Or.inl publicMember
     · exact Or.inr (by
-        rw [typeVarsList_append, List.mem_append]
+        rw [TypeSubst.typeVarsList_append, List.mem_append]
         exact Or.inl earlier)
   · simp only [argumentPresentationSupport, List.mem_append]
     exact Or.inl (formalPublic name formalMember)
   · simp only [argumentPresentationSupport, List.mem_append]
     exact Or.inr (by
-      rw [typeVarsList_append, List.mem_append]
+      rw [TypeSubst.typeVarsList_append, List.mem_append]
       exact Or.inr (by
         simpa [TypeSubst.typeVarsList] using candidateOccurrence))
 
@@ -366,17 +360,17 @@ def freshenArgumentCandidateFamilies :
 
 /-- One realization-side family translates exactly to pointwise runtime
 freshening of the translated source family. -/
-theorem toLeaTTaAtoms_freshenCandidateFamily
+theorem encodeModelAtoms_freshenCandidateFamily
     (avoid : List String) (position : Nat) (sources : List Atom) :
-    toLeaTTaAtoms (freshenCandidateFamily avoid position sources) =
-      (toLeaTTaAtoms sources).map
+    encodeModelAtoms (freshenCandidateFamily avoid position sources) =
+      (encodeModelAtoms sources).map
         (Metta.Minimal.freshenTypeCandidate avoid position) := by
   induction sources with
   | nil => rfl
   | cons source sources inductionHypothesis =>
-      simp only [freshenCandidateFamily, List.map_cons, toLeaTTaAtoms]
+      simp only [freshenCandidateFamily, List.map_cons, encodeModelAtoms]
       exact congrArg₂ List.cons
-        (LeaTTaTypePresentationExactConformance.toLeaTTaAtom_renameTypeVars
+        (LeaTTaTypePresentationExactConformance.encodeModelAtom_renameTypeVars
           (Metta.Minimal.captureAvoidingName avoid position) source)
         inductionHypothesis
 
@@ -643,7 +637,7 @@ theorem CandidateGeneratedAt.varsDisjoint_of_position_ne
   obtain ⟨leftAvoid, leftSource, rfl⟩ := leftGenerated
   obtain ⟨rightAvoid, rightSource, rfl⟩ := rightGenerated
   intro name leftMember rightMember
-  rw [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars,
+  rw [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars,
       Spec.Type.Presentation.ScopeObservation.typeVars_renameTypeVars]
     at leftMember rightMember
   obtain ⟨leftName, _leftNameMember, leftEquation⟩ :=
@@ -703,9 +697,9 @@ theorem CandidateGenerationHistory.currentFamily_avoids
   have disjoint := historyGenerated.member_varsDisjoint_current
     (currentGenerated current currentMember) earlierMember
   apply disjoint name
-  · rw [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+  · rw [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
     exact earlierAtomOccurrence
-  · rw [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+  · rw [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
     exact currentAtomOccurrence
 
 /-- Pointwise alpha variants make the complete target family avoid their
@@ -723,7 +717,7 @@ theorem candidateFamilyAlphaVariants_avoids
       rw [TypeSubst.typeVarsList, List.mem_append] at occurrence
       rcases occurrence with headOccurrence | tailOccurrence
       · exact
-          LeaTTaTypePresentationExactConformance.TypeCandidateAlphaVariantRel.target_vars_fresh
+          Spec.Type.Presentation.Exact.TypeCandidateAlphaVariantRel.target_vars_fresh
             headVariant name headOccurrence avoidMember
       · exact inductionHypothesis name tailOccurrence avoidMember
 
@@ -906,7 +900,7 @@ theorem freshenArgumentCandidateFamilies_prepared
     let avoid := forbidden ++ TypeSubst.typeVarsList formals
     let targets := freshenArgumentCandidateFamilies avoid 0 sources
     PreparedArgumentCandidateLists formals [] targets
-      (targets.map toLeaTTaAtoms) := by
+      (targets.map encodeModelAtoms) := by
   dsimp only
   let avoid := forbidden ++ TypeSubst.typeVarsList formals
   let targets := freshenArgumentCandidateFamilies avoid 0 sources
@@ -933,7 +927,7 @@ theorem PrivateCandidateAlphaRel.formal_runtime_disjoint
       name ∈ TypeSubst.typeVars formal → name ∈ fixedScope) :
     VarsDisjoint formal runtimeCandidate := by
   intro name formalMember candidateMember
-  rw [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+  rw [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
     at formalMember candidateMember
   exact alpha.vars_avoid_fixedScope.2 name candidateMember
     (formalCovered name formalMember)
@@ -977,7 +971,7 @@ theorem matchType_privateCandidate_scoped
     (formalObserved : ∀ name,
       name ∈ TypeSubst.typeVars formal → name ∈ theoryScope)
     (runtimeEquation : Metta.Minimal.matchType runtimeIncoming
-      (toLeaTTaAtom formal) (toLeaTTaAtom runtimeCandidate) =
+      (encodeModelAtom formal) (encodeModelAtom runtimeCandidate) =
         some runtimeOutput) :
     ∃ specOutput branchOutput, ∃ bindingOutput : Bindings,
       CorePlusR2TypePresentationMatchRel
@@ -1038,7 +1032,7 @@ theorem matchType_privateCandidate_twoHistory
     (formalPublic : ∀ name,
       name ∈ TypeSubst.typeVars formal → name ∈ publicScope)
     (runtimeEquation : Metta.Minimal.matchType runtimeIncoming
-      (toLeaTTaAtom formal) (toLeaTTaAtom runtimeCandidate) =
+      (encodeModelAtom formal) (encodeModelAtom runtimeCandidate) =
         some runtimeOutput) :
     ∃ specOutput branchOutput,
       CorePlusR2TypePresentationMatchRel
@@ -1107,7 +1101,7 @@ theorem matchType_privateCandidate_none
     (formalObserved : ∀ name,
       name ∈ TypeSubst.typeVars formal → name ∈ theoryScope)
     (runtimeFailure : Metta.Minimal.matchType runtimeIncoming
-      (toLeaTTaAtom formal) (toLeaTTaAtom runtimeCandidate) = none) :
+      (encodeModelAtom formal) (encodeModelAtom runtimeCandidate) = none) :
     ∀ specOutput,
       ¬CorePlusR2TypePresentationMatchRel
         presentationIncoming formal specCandidate specOutput := by
@@ -1155,7 +1149,7 @@ theorem matchType_privateCandidate_none_twoHistory
     (formalObserved : ∀ name,
       name ∈ TypeSubst.typeVars formal → name ∈ theoryScope)
     (runtimeFailure : Metta.Minimal.matchType runtimeIncoming
-      (toLeaTTaAtom formal) (toLeaTTaAtom runtimeCandidate) = none) :
+      (encodeModelAtom formal) (encodeModelAtom runtimeCandidate) = none) :
     ∀ specOutput,
       ¬CorePlusR2TypePresentationMatchRel
         specIncoming formal specCandidate specOutput := by
@@ -1241,16 +1235,16 @@ theorem scanActualTypeBranches_privateCandidates_scoped
           ScopedTypePresentationCandidateBranchStates theoryScope
             presentationIncoming formal specCandidates specOutputs
             (Metta.Minimal.scanActualTypeBranches runtimeIncoming
-              (toLeaTTaAtom formal)
-              (toLeaTTaAtoms runtimeCandidates)).successes ∧
+              (encodeModelAtom formal)
+              (encodeModelAtoms runtimeCandidates)).successes ∧
           List.Forall₂
             (fun specCandidate runtimeCandidate =>
               ObservedTypeAlphaRel specCandidate
-                (fromLeaTTaAtom runtimeCandidate))
+                (decodeModelAtom runtimeCandidate))
             failedSpecCandidates
             (Metta.Minimal.scanActualTypeBranches runtimeIncoming
-              (toLeaTTaAtom formal)
-              (toLeaTTaAtoms runtimeCandidates)).failures := by
+              (encodeModelAtom formal)
+              (encodeModelAtoms runtimeCandidates)).failures := by
   intro specCandidates runtimeCandidates candidatesAlpha
   induction candidatesAlpha with
   | nil =>
@@ -1258,7 +1252,7 @@ theorem scanActualTypeBranches_privateCandidates_scoped
   | @cons specCandidate runtimeCandidate specCandidates runtimeCandidates
       candidateAlpha _ inductionHypothesis =>
       cases runtimeEquation : Metta.Minimal.matchType runtimeIncoming
-          (toLeaTTaAtom formal) (toLeaTTaAtom runtimeCandidate) with
+          (encodeModelAtom formal) (encodeModelAtom runtimeCandidate) with
       | some runtimeOutput =>
           obtain ⟨specOutput, branchOutput, specBindingOutput,
               specDerivation, _branchDerivation, outputState,
@@ -1277,8 +1271,8 @@ theorem scanActualTypeBranches_privateCandidates_scoped
                 presentationIncoming formal (specCandidate :: specCandidates)
                 specOutputs
                 (Metta.Minimal.scanActualTypeBranches runtimeIncoming
-                  (toLeaTTaAtom formal)
-                  (toLeaTTaAtoms runtimeCandidates)).successes := by
+                  (encodeModelAtom formal)
+                  (encodeModelAtoms runtimeCandidates)).successes := by
             apply tailStates.imp
             intro presentation runtimeBindings witness
             obtain ⟨candidate, member, matched, scopedState⟩ := witness
@@ -1304,8 +1298,8 @@ theorem scanActualTypeBranches_privateCandidates_scoped
                 presentationIncoming formal (specCandidate :: specCandidates)
                 specOutputs
                 (Metta.Minimal.scanActualTypeBranches runtimeIncoming
-                  (toLeaTTaAtom formal)
-                  (toLeaTTaAtoms runtimeCandidates)).successes := by
+                  (encodeModelAtom formal)
+                  (encodeModelAtoms runtimeCandidates)).successes := by
             apply tailStates.imp
             intro presentation runtimeBindings witness
             obtain ⟨candidate, member, matched, scopedState⟩ := witness
@@ -1315,14 +1309,14 @@ theorem scanActualTypeBranches_privateCandidates_scoped
           · simpa [Metta.Minimal.scanActualTypeBranches, runtimeEquation]
               using tailStates'
           · have headAlpha : ObservedTypeAlphaRel specCandidate
-                (fromLeaTTaAtom (toLeaTTaAtom runtimeCandidate)) := by
+                (decodeModelAtom (encodeModelAtom runtimeCandidate)) := by
               simpa using PrivateCandidateAlphaRel.toObservedTypeAlphaRel
                 candidateAlpha
             simpa [Metta.Minimal.scanActualTypeBranches, runtimeEquation]
               using List.Forall₂.cons
                 (R := fun specCandidate runtimeCandidate =>
                   ObservedTypeAlphaRel specCandidate
-                    (fromLeaTTaAtom runtimeCandidate))
+                    (decodeModelAtom runtimeCandidate))
                 headAlpha tailFailures
 
 /-! ## Two-history candidate scan -/
@@ -1417,16 +1411,16 @@ theorem scanActualTypeBranches_privateCandidates_twoHistory
             specIncoming branchIncoming formal specCandidates
             runtimeCandidates specOutputs
             (Metta.Minimal.scanActualTypeBranches runtimeIncoming
-              (toLeaTTaAtom formal)
-              (toLeaTTaAtoms runtimeCandidates)).successes ∧
+              (encodeModelAtom formal)
+              (encodeModelAtoms runtimeCandidates)).successes ∧
           List.Forall₂
             (fun specCandidate runtimeCandidate =>
               ObservedTypeAlphaRel specCandidate
-                (fromLeaTTaAtom runtimeCandidate))
+                (decodeModelAtom runtimeCandidate))
             failedSpecCandidates
             (Metta.Minimal.scanActualTypeBranches runtimeIncoming
-              (toLeaTTaAtom formal)
-              (toLeaTTaAtoms runtimeCandidates)).failures := by
+              (encodeModelAtom formal)
+              (encodeModelAtoms runtimeCandidates)).failures := by
   intro specCandidates runtimeCandidates candidatesAlpha
   induction candidatesAlpha with
   | nil =>
@@ -1434,7 +1428,7 @@ theorem scanActualTypeBranches_privateCandidates_twoHistory
   | @cons specCandidate runtimeCandidate specCandidates runtimeCandidates
       candidateAlpha _ inductionHypothesis =>
       cases runtimeEquation : Metta.Minimal.matchType runtimeIncoming
-          (toLeaTTaAtom formal) (toLeaTTaAtom runtimeCandidate) with
+          (encodeModelAtom formal) (encodeModelAtom runtimeCandidate) with
       | some runtimeOutput =>
           obtain ⟨specOutput, branchOutput, specDerivation, nextState⟩ :=
             matchType_privateCandidate_twoHistory state candidateAlpha
@@ -1448,8 +1442,8 @@ theorem scanActualTypeBranches_privateCandidates_twoHistory
                 (specCandidate :: specCandidates)
                 (runtimeCandidate :: runtimeCandidates) specOutputs
                 (Metta.Minimal.scanActualTypeBranches runtimeIncoming
-                  (toLeaTTaAtom formal)
-                  (toLeaTTaAtoms runtimeCandidates)).successes := by
+                  (encodeModelAtom formal)
+                  (encodeModelAtoms runtimeCandidates)).successes := by
             apply tailStates.imp
             intro presentation runtimeBinding witness
             obtain ⟨selectedSpec, selectedSpecMember, selectedRuntime,
@@ -1482,8 +1476,8 @@ theorem scanActualTypeBranches_privateCandidates_twoHistory
                 (specCandidate :: specCandidates)
                 (runtimeCandidate :: runtimeCandidates) specOutputs
                 (Metta.Minimal.scanActualTypeBranches runtimeIncoming
-                  (toLeaTTaAtom formal)
-                  (toLeaTTaAtoms runtimeCandidates)).successes := by
+                  (encodeModelAtom formal)
+                  (encodeModelAtoms runtimeCandidates)).successes := by
             apply tailStates.imp
             intro presentation runtimeBinding witness
             obtain ⟨selectedSpec, selectedSpecMember, selectedRuntime,
@@ -1498,14 +1492,14 @@ theorem scanActualTypeBranches_privateCandidates_twoHistory
           · simpa [Metta.Minimal.scanActualTypeBranches, runtimeEquation]
               using tailStates'
           · have headAlpha : ObservedTypeAlphaRel specCandidate
-                (fromLeaTTaAtom (toLeaTTaAtom runtimeCandidate)) := by
+                (decodeModelAtom (encodeModelAtom runtimeCandidate)) := by
               simpa using PrivateCandidateAlphaRel.toObservedTypeAlphaRel
                 candidateAlpha
             simpa [Metta.Minimal.scanActualTypeBranches, runtimeEquation]
               using List.Forall₂.cons
                 (R := fun specCandidate runtimeCandidate =>
                   ObservedTypeAlphaRel specCandidate
-                    (fromLeaTTaAtom runtimeCandidate))
+                    (decodeModelAtom runtimeCandidate))
                 headAlpha tailFailures
 
 /-! ## Evidence-free runtime recursion seam -/
@@ -1519,10 +1513,10 @@ def RuntimeArgumentCandidatesAt
     (position : Nat)
     (bindings : Metta.Bindings) (argument : Atom)
     (remaining : List Atom) (candidates : List Metta.Atom) : Prop :=
-  let prepared := Metta.Minimal.typePrep world (toLeaTTaAtom argument)
+  let prepared := Metta.Minimal.typePrep world (encodeModelAtom argument)
   let rawActuals := Metta.Minimal.getTypes env prepared
   let avoid := boundaryScope ++ Metta.Minimal.typeInferenceAvoid env
-    (.expr (toLeaTTaAtom argument :: toLeaTTaAtoms remaining))
+    (.expr (encodeModelAtom argument :: encodeModelAtoms remaining))
     (runtimeFormals ++ rawActuals) ++ bindings.vars
   rawActuals.map
       (Metta.Minimal.freshenTypeCandidate avoid position) = candidates
@@ -1559,7 +1553,7 @@ def NodeLocalArgumentCandidateCoverage
       RuntimeArgumentCandidatesAt env world runtimeFormals boundaryScope position
         runtimeIncoming argument remaining runtimeCandidates →
       ∃ decodedRuntimeCandidates,
-        toLeaTTaAtoms decodedRuntimeCandidates = runtimeCandidates ∧
+        encodeModelAtoms decodedRuntimeCandidates = runtimeCandidates ∧
           PrivateCandidateFamilyAlphaRel
             (argumentCandidateNodeScope presentationIncoming branchIncoming
               theoryScope formal)
@@ -1586,12 +1580,12 @@ def TwoHistoryNodeLocalArgumentCandidateCoverage
       invariant position staticHistory runtimeHistory specIncoming
         runtimeIncoming →
       position < runtimeFormals.length →
-      toLeaTTaAtom formal ∈ runtimeFormals →
+      encodeModelAtom formal ∈ runtimeFormals →
       AtomsAvoid specCandidates (TypeSubst.typeVars formal) →
       RuntimeArgumentCandidatesAt env world runtimeFormals boundaryScope position
         runtimeIncoming argument remaining runtimeCandidates →
       ∃ decodedRuntimeCandidates,
-        toLeaTTaAtoms decodedRuntimeCandidates = runtimeCandidates ∧
+        encodeModelAtoms decodedRuntimeCandidates = runtimeCandidates ∧
           PrivateCandidateFamilyAlphaRel
             (twoHistoryCandidateNodeScope specIncoming branchIncoming
               theoryScope formal)
@@ -1647,7 +1641,7 @@ mutual
         RuntimeArgumentCandidatesAt env world runtimeFormals boundaryScope position
           bindings argument remaining runtimeCandidates →
         Metta.Minimal.scanActualTypeBranches bindings
-            (toLeaTTaAtom formal) runtimeCandidates = head →
+            (encodeModelAtom formal) runtimeCandidates = head →
         RuntimeBranchLocalArgumentTailsRel env world runtimeFormals boundaryScope
           formals remaining (position + 1) head.successes tailOutcomes →
         RuntimeBranchLocalArgumentScanRel env world runtimeFormals boundaryScope
@@ -1691,11 +1685,11 @@ theorem typeCheckArgsBranchesScoped_runtimeBranchLocal
     (runtimeFormals : List Metta.Atom) (boundaryScope : List String) :
     ∀ (arguments formals : List Atom) (position : Nat)
         (bindings : Metta.Bindings),
-      runtimeFormals.drop position = toLeaTTaAtoms formals →
+      runtimeFormals.drop position = encodeModelAtoms formals →
       RuntimeBranchLocalArgumentScanRel env world runtimeFormals boundaryScope
         formals arguments position bindings
         (Metta.Minimal.typeCheckArgsBranchesScoped env world runtimeFormals
-          boundaryScope position bindings (toLeaTTaAtoms arguments)) := by
+          boundaryScope position bindings (encodeModelAtoms arguments)) := by
   intro arguments
   induction arguments with
   | nil =>
@@ -1718,24 +1712,24 @@ theorem typeCheckArgsBranchesScoped_runtimeBranchLocal
               argument remaining position bindings)
       | cons formal formals =>
           have lookup : runtimeFormals[position]? =
-              some (toLeaTTaAtom formal) := by
+              some (encodeModelAtom formal) := by
             have atHead := congrArg (fun types => types[0]?) alignment
-            simpa [List.getElem?_drop, toLeaTTaAtoms] using atHead
+            simpa [List.getElem?_drop, encodeModelAtoms] using atHead
           have tailAlignment : runtimeFormals.drop (position + 1) =
-              toLeaTTaAtoms formals := by
+              encodeModelAtoms formals := by
             rw [← List.drop_drop]
             · rw [alignment]
               rfl
           let prepared := Metta.Minimal.typePrep world
-            (toLeaTTaAtom argument)
+            (encodeModelAtom argument)
           let rawActuals := Metta.Minimal.getTypes env prepared
           let avoid := boundaryScope ++ Metta.Minimal.typeInferenceAvoid env
-              (.expr (toLeaTTaAtom argument :: toLeaTTaAtoms remaining))
+              (.expr (encodeModelAtom argument :: encodeModelAtoms remaining))
               (runtimeFormals ++ rawActuals) ++ bindings.vars
           let candidates := rawActuals.map
             (Metta.Minimal.freshenTypeCandidate avoid position)
           let checked := Metta.Minimal.scanActualTypeBranches bindings
-            (toLeaTTaAtom formal) candidates
+            (encodeModelAtom formal) candidates
           have preparationEquation : RuntimeArgumentCandidatesAt env world
               runtimeFormals boundaryScope position bindings argument remaining
                 candidates := by
@@ -1745,7 +1739,7 @@ theorem typeCheckArgsBranchesScoped_runtimeBranchLocal
               checked.successes
               (checked.successes.map fun next =>
                 Metta.Minimal.typeCheckArgsBranchesScoped env world runtimeFormals
-                  boundaryScope (position + 1) next (toLeaTTaAtoms remaining)) := by
+                  boundaryScope (position + 1) next (encodeModelAtoms remaining)) := by
             induction checked.successes with
             | nil => exact .nil
             | cons next nexts tailInduction =>
@@ -1758,7 +1752,7 @@ theorem typeCheckArgsBranchesScoped_runtimeBranchLocal
             (runtimeFormals := runtimeFormals)
             preparationEquation (show
               Metta.Minimal.scanActualTypeBranches bindings
-                (toLeaTTaAtom formal) candidates = checked by rfl)
+                (encodeModelAtom formal) candidates = checked by rfl)
             runtimeTails
           simpa [Metta.Minimal.typeCheckArgsBranchesScoped, lookup, prepared,
               rawActuals, avoid, candidates, checked,
@@ -1770,16 +1764,16 @@ theorem typeCheckArgsBranches_runtimeBranchLocal
     (env : Metta.Minimal.MinEnv) (world : Metta.Minimal.World)
     (runtimeFormals : List Metta.Atom) (arguments formals : List Atom)
     (position : Nat) (bindings : Metta.Bindings)
-    (alignment : runtimeFormals.drop position = toLeaTTaAtoms formals) :
+    (alignment : runtimeFormals.drop position = encodeModelAtoms formals) :
     RuntimeBranchLocalArgumentScanRel env world runtimeFormals
       (Metta.Minimal.applicationTypeInferenceScope (.sym "%Undefined%")
-        (toLeaTTaAtoms arguments))
+        (encodeModelAtoms arguments))
       formals arguments position bindings
       (Metta.Minimal.typeCheckArgsBranches env world runtimeFormals
-        position bindings (toLeaTTaAtoms arguments)) := by
+        position bindings (encodeModelAtoms arguments)) := by
   exact typeCheckArgsBranchesScoped_runtimeBranchLocal env world runtimeFormals
     (Metta.Minimal.applicationTypeInferenceScope (.sym "%Undefined%")
-      (toLeaTTaAtoms arguments)) arguments formals position bindings alignment
+      (encodeModelAtoms arguments)) arguments formals position bindings alignment
 
 /-! ## Scoped outcome observation -/
 
@@ -1809,7 +1803,7 @@ theorem matchType_scoped
       name ∈ TypeSubst.typeVars expected ++ TypeSubst.typeVars actual →
         name ∈ theoryScope)
     (runtimeEquation : Metta.Minimal.matchType runtimeIncoming
-      (toLeaTTaAtom expected) (toLeaTTaAtom actual) = some runtimeOutput) :
+      (encodeModelAtom expected) (encodeModelAtom actual) = some runtimeOutput) :
     ∃ specOutput,
       CorePlusR2TypePresentationMatchRel
           specIncoming expected actual specOutput ∧
@@ -1857,7 +1851,7 @@ theorem matchType_scoped_none
         name ∈ theoryScope)
     (disjoint : VarsDisjoint expected actual)
     (runtimeFailure : Metta.Minimal.matchType runtimeIncoming
-      (toLeaTTaAtom expected) (toLeaTTaAtom actual) = none) :
+      (encodeModelAtom expected) (encodeModelAtom actual) = none) :
     ∀ specOutput,
       ¬CorePlusR2TypePresentationMatchRel
         specIncoming expected actual specOutput := by
@@ -1921,7 +1915,7 @@ theorem scanExpectedReturnBranches_presentation_scoped
             specOutcome ∧
           ScopedExpectedReturnBranchOutcomeRuntimeRel theoryScope specOutcome
             (Metta.Minimal.scanExpectedReturnBranches
-              (toLeaTTaAtom expected) (toLeaTTaAtom returnType)
+              (encodeModelAtom expected) (encodeModelAtom returnType)
               runtimeBindings) := by
   intro presentations runtimeBindings states
   induction states with
@@ -1932,7 +1926,7 @@ theorem scanExpectedReturnBranches_presentation_scoped
   | @cons presentation runtimeBinding presentations runtimeBindings
       head tail inductionHypothesis =>
       cases runtimeEquation : Metta.Minimal.matchType runtimeBinding
-          (toLeaTTaAtom expected) (toLeaTTaAtom returnType) with
+          (encodeModelAtom expected) (encodeModelAtom returnType) with
       | some runtimeOutput =>
           obtain ⟨presentationOutput, matched, outputState⟩ :=
             matchType_scoped head constraintObserved runtimeEquation
@@ -1979,7 +1973,7 @@ theorem argumentTypeDiagnosticBlock_runtime_scoped
     (failedAlpha : List.Forall₂
       (fun specCandidate runtimeCandidate =>
         ObservedTypeAlphaRel specCandidate
-          (fromLeaTTaAtom runtimeCandidate))
+          (decodeModelAtom runtimeCandidate))
       specFailed runtimeFailed)
     (position : Nat) :
     List.Forall₂ ArgumentTypeDiagnosticRuntimeRel
@@ -1993,8 +1987,8 @@ theorem argumentTypeDiagnosticBlock_runtime_scoped
     specNormal branchState.normal formal formalObserved
   have expectedAlpha : ObservedTypeAlphaRel
       (specIncoming.apply formal)
-      (fromLeaTTaAtom
-        (Metta.instantiate runtimeIncoming (toLeaTTaAtom formal))) :=
+      (decodeModelAtom
+        (Metta.instantiate runtimeIncoming (encodeModelAtom formal))) :=
     ObservedTypeAlphaRel.trans specBranchAlpha
       (branchState.returnAlpha formal)
   induction failedAlpha with
@@ -2091,7 +2085,7 @@ mutual
       (state : ScopedTypePresentationSimulationState theoryScope
         specIncoming runtimeIncoming)
       (prepared : PreparedArgumentCandidateLists formals specIncoming
-        candidateLists (candidateLists.map toLeaTTaAtoms))
+        candidateLists (candidateLists.map encodeModelAtoms))
       (families : List.Forall₂ candidateFamily arguments candidateLists)
       (runtimeScan : RuntimeBranchLocalArgumentScanRel env world
         runtimeFormals boundaryScope formals arguments position runtimeIncoming
@@ -2141,8 +2135,8 @@ mutual
                 exact Or.inr member)
             have decodedScan :
                 Metta.Minimal.scanActualTypeBranches runtimeIncoming
-                    (toLeaTTaAtom formal)
-                    (toLeaTTaAtoms decodedRuntimeCandidates) = head := by
+                    (encodeModelAtom formal)
+                    (encodeModelAtoms decodedRuntimeCandidates) = head := by
               rw [decodedEquation]
               exact scanEquation
             obtain ⟨headPresentations, failedCandidates, headRel,
@@ -2209,7 +2203,7 @@ mutual
       (prepared : PreparedArgumentCandidateLists
         (parentFormal :: formals) parentIncoming
         (parentCandidates :: candidateLists)
-        ((parentCandidates :: candidateLists).map toLeaTTaAtoms))
+        ((parentCandidates :: candidateLists).map encodeModelAtoms))
       (states : ScopedTypePresentationCandidateBranchStates theoryScope
         parentIncoming parentFormal parentCandidates presentations
           runtimeBindings)
@@ -2280,9 +2274,9 @@ mutual
           branchIncoming runtimeIncoming)
       (stateInvariant : invariant position staticHistory runtimeHistory
         specIncoming runtimeIncoming)
-      (alignment : runtimeFormals.drop position = toLeaTTaAtoms formals)
+      (alignment : runtimeFormals.drop position = encodeModelAtoms formals)
       (prepared : PreparedArgumentCandidateLists formals specIncoming
-        candidateLists (candidateLists.map toLeaTTaAtoms))
+        candidateLists (candidateLists.map encodeModelAtoms))
       (families : PositionedArgumentCandidateFamiliesRel candidateFamily
         position arguments candidateLists)
       (runtimeScan : RuntimeBranchLocalArgumentScanRel env world
@@ -2311,22 +2305,22 @@ mutual
         cases families with
         | @cons _ _ _ specCandidates _ headFamily tailFamilies =>
             have formalRuntimeMember :
-                toLeaTTaAtom formal ∈ runtimeFormals := by
+                encodeModelAtom formal ∈ runtimeFormals := by
               apply List.mem_of_mem_drop
               rw [alignment]
-              simp [toLeaTTaAtoms]
+              simp [encodeModelAtoms]
             have positionBound : position < runtimeFormals.length := by
               have dropLengthPositive :
                   0 < (runtimeFormals.drop position).length := by
                 rw [alignment]
-                simp [toLeaTTaAtoms_eq_map]
+                simp [encodeModelAtoms_eq_map]
               simpa [List.length_drop] using dropLengthPositive
             have specCandidatesAvoidFormal :
                 AtomsAvoid specCandidates (TypeSubst.typeVars formal) := by
               intro name candidateOccurrence formalOccurrence
               exact prepared.avoidFormals name
                 (by
-                  simp only [List.flatten_cons, typeVarsList_append,
+                  simp only [List.flatten_cons, TypeSubst.typeVarsList_append,
                     List.mem_append]
                   exact Or.inl candidateOccurrence)
                 (by
@@ -2366,8 +2360,8 @@ mutual
                 exact Or.inr member)
             have decodedScan :
                 Metta.Minimal.scanActualTypeBranches runtimeIncoming
-                    (toLeaTTaAtom formal)
-                    (toLeaTTaAtoms decodedRuntimeCandidates) = head := by
+                    (encodeModelAtom formal)
+                    (encodeModelAtoms decodedRuntimeCandidates) = head := by
               rw [decodedEquation]
               exact scanEquation
             obtain ⟨headPresentations, failedCandidates, headRel,
@@ -2438,11 +2432,11 @@ mutual
       (formalsPublic : ∀ name,
         name ∈ TypeSubst.typeVarsList formals → name ∈ publicScope)
       (parentAlignment : runtimeFormals.drop parentPosition =
-        toLeaTTaAtoms (parentFormal :: formals))
+        encodeModelAtoms (parentFormal :: formals))
       (prepared : PreparedArgumentCandidateLists
         (parentFormal :: formals) parentIncoming
         (parentCandidates :: candidateLists)
-        ((parentCandidates :: candidateLists).map toLeaTTaAtoms))
+        ((parentCandidates :: candidateLists).map encodeModelAtoms))
       (states : TwoHistoryInvariantCandidateBranchStates invariant
         theoryScope publicScope parentPosition staticHistory runtimeHistory
         parentIncoming branchIncoming parentFormal parentCandidates
@@ -2471,8 +2465,8 @@ mutual
               specCandidateMember matched
             have tailPrepared := prepared.tail nextAvoids
             have tailAlignment : runtimeFormals.drop (parentPosition + 1) =
-                toLeaTTaAtoms formals := by
-              simpa [List.tail_drop, toLeaTTaAtoms] using
+                encodeModelAtoms formals := by
+              simpa [List.tail_drop, encodeModelAtoms] using
                 congrArg List.tail parentAlignment
             obtain ⟨specOutcome, specScan, outcomeCorrespondence⟩ :=
               runtimeBranchLocalArgumentScan_twoHistory coverage
@@ -2499,7 +2493,7 @@ theorem closed_candidate_family_alpha (fixedScope : List String) :
       [.symbol "B"] [.symbol "B"] := by
   apply List.Forall₂.cons
   · refine ⟨.symbol "B", ?_, ?_⟩ <;>
-      exact ⟨id, Function.injective_id, by simp [renameTypeVars], by
+      exact ⟨id, Function.injective_id, by simp, by
         simp [TypeSubst.typeVars]⟩
   · exact .nil
 

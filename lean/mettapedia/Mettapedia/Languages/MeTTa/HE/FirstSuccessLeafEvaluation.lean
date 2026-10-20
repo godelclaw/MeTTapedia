@@ -1,5 +1,9 @@
 import Mettapedia.Languages.MeTTa.HE.FirstSuccessPreparedArguments
 import Mettapedia.Languages.MeTTa.HE.FirstSuccessRawExecution
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Earned prepared evaluation replies
@@ -125,8 +129,8 @@ theorem prepared_leaf_reply
     {substitution : Spec.Type.Presentation.TypeSubst} (normal : substitution.Normal)
     (argument : TypedApplyState) (policy : NativeArgumentControlPolicy.Policy) (prepareBudget : Nat)
     (imported : argument.env = presentedBindings substitution)
-    (domainBudget : LeaTTaBridge.atomDepth (originalDomain argument) + 2 ≤ prepareBudget)
-    (argumentBudget : LeaTTaBridge.atomDepth (original argument) + 2 ≤ prepareBudget)
+    (domainBudget : BindingComposition.atomDepth (originalDomain argument) + 2 ≤ prepareBudget)
+    (argumentBudget : BindingComposition.atomDepth (original argument) + 2 ≤ prepareBudget)
     (space : Space) (source : HE.GroundedDispatch) (dispatch : Spec.Eval.GroundedDispatch)
     (live : List Atom) (typing : EvalTypeService) (fuel : Nat)
     (leaf : LeafRel (prepareSource argument policy prepareBudget).bound

@@ -16,7 +16,7 @@ module at this semantics.
 namespace Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripke
 
 open LO.Modal
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 
 

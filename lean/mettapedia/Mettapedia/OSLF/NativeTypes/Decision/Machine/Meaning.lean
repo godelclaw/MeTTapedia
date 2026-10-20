@@ -14,21 +14,31 @@ open Mettapedia.OSLF.NativeTypes.Decision.Reference.Core
 universe u w
 
 def denotation {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
-    (leaves : Leaf → LeafBackend system admitted) : Formula Leaf → EquationPredicate system
+    (leaves : Leaf → LeafBackend system admitted) (formula : Formula Leaf)
+    (spatial : Mettapedia.OSLF.NativeTypes.Decision.Spatial.SpatialTheory system := .empty system) :
+    EquationPredicate system :=
+  match formula with
   | .atom leaf => (leaves leaf).predicate
   | .top => ⟨fun _ => True, by intro _ _ _; rfl⟩
   | .bottom => ⟨fun _ => False, by intro _ _ _; rfl⟩
-  | .conj left right => meet system (denotation leaves left) (denotation leaves right)
-  | .disj left right => join system (denotation leaves left) (denotation leaves right)
-  | .neg formula => complement system (denotation leaves formula)
-  | .imp left right => implies system (denotation leaves left) (denotation leaves right)
-  | .possibility formula => semanticDiamond system (denotation leaves formula)
-  | .outgoingUniversal formula => Mettapedia.OSLF.NativeTypes.Semantics.Operational.outgoingUniversal system (denotation leaves formula)
+  | .conj left right => meet system (denotation leaves left spatial) (denotation leaves right spatial)
+  | .disj left right => join system (denotation leaves left spatial) (denotation leaves right spatial)
+  | .neg formula => complement system (denotation leaves formula spatial)
+  | .imp left right => implies system (denotation leaves left spatial) (denotation leaves right spatial)
+  | .possibility formula => semanticDiamond system (denotation leaves formula spatial)
+  | .outgoingUniversal formula => Mettapedia.OSLF.NativeTypes.Semantics.Operational.outgoingUniversal
+      system (denotation leaves formula spatial)
+  | .separating index left right =>
+      Mettapedia.OSLF.NativeTypes.Decision.Spatial.spatialPredicate spatial index
+        (denotation leaves left spatial) (denotation leaves right spatial)
 
 theorem denotation_comparison {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (leaves : Leaf → LeafBackend system admitted) (tests : Leaf → Test system admitted)
     (leaf_meaning : ∀ leaf, (leaves leaf).predicate = (tests leaf).predicate)
-    (formula : Formula Leaf) : denotation leaves formula = Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation tests formula := by
+    (formula : Formula Leaf)
+    (spatial : Mettapedia.OSLF.NativeTypes.Decision.Spatial.SpatialTheory system := .empty system) :
+    denotation leaves formula spatial =
+      Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation tests formula spatial := by
   induction formula with
   | atom leaf => exact leaf_meaning leaf
   | top | bottom => rfl
@@ -36,5 +46,7 @@ theorem denotation_comparison {system : GSLT.{u}} {admitted : system.Term → Pr
     simp only [denotation, Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation, ihl, ihr]
   | neg formula ih | possibility formula ih | outgoingUniversal formula ih =>
     simp only [denotation, Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation, ih]
+  | separating index left right ihl ihr =>
+    simp only [denotation, Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation, ihl, ihr]
 
 end Mettapedia.OSLF.NativeTypes.Decision.Machine

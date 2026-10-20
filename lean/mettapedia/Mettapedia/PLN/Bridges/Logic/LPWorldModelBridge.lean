@@ -26,8 +26,8 @@ namespace Mettapedia.PLN.Bridges.Logic.LPWorldModelBridge
 
 open Mettapedia.Logic.LP
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.PathMap.WorldModelBridge
 open Mettapedia.OSLF.PathMap.PLNBridge
 

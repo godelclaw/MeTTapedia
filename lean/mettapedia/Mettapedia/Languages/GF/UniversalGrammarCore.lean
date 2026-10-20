@@ -32,7 +32,7 @@ open Mettapedia.OSLF.Framework.TypeSynthesis
 open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open scoped ENNReal
 
 universe u
@@ -173,7 +173,7 @@ section GenericWM
 variable {State : Type u} [EvidenceType State] [BinaryWorldModel State Pattern]
 
 /-- World-model evidence as a semantic-core view. -/
-noncomputable def evidenceView (W : State) : GrammarInterface Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence where
+noncomputable def evidenceView (W : State) : GrammarInterface Mettapedia.PLN.Evidence.BinaryEvidence where
   observe := fun t => gfEvidenceDenote W t
 
 theorem evidenceView_factorsThrough_semanticCore (W : State) :
@@ -184,7 +184,7 @@ theorem evidenceView_factorsThrough_semanticCore (W : State) :
 
 /-- BinaryEvidence extraction at a fixed state is a semantics-preserving interface. -/
 noncomputable def evidenceInterface (W : State) :
-    SemanticsPreservingInterface Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence where
+    SemanticsPreservingInterface Mettapedia.PLN.Evidence.BinaryEvidence where
   observe := (evidenceView W).observe
   factorsThroughSemanticCore := evidenceView_factorsThrough_semanticCore W
 

@@ -4,6 +4,7 @@ import Mettapedia.OSLF.MeTTaIL.GeneralEquationCanonicalSyntax
 import Mettapedia.OSLF.MeTTaIL.GeneralPremiseAdmission
 import Mettapedia.OSLF.MeTTaIL.GeneralTypedSitesGenerator
 import Mettapedia.OSLF.MeTTaIL.ScopedReflectiveExecution
+import Mettapedia.OSLF.MeTTaIL.SetFree
 
 /-!
 # Admission plans compiled from authored language snapshots
@@ -64,6 +65,7 @@ inductive Obligation where
   | equationBound (index : Nat) (direction : ScopedEquationExecution.Orientation)
   | childStratification
   | derivedEquationCoverage
+  | setDecomposition
   deriving DecidableEq, Repr
 
 structure RulePlan where
@@ -171,6 +173,17 @@ def equations (snapshot : Snapshot) (permissions : Permissions) : List EquationP
 def executionLanguage (snapshot : Snapshot) (permissions : Permissions) : LanguageDef :=
   { snapshot.language with rewrites := (rules snapshot permissions).map RulePlan.rule }
 
+/-- Matching inside sets is not yet modulo their repetition, so an admitted plan decomposes no set. In a
+language whose grammar carries a set: no selected rule matches a set-kinded collection (its left side and
+premises; its right side may build one), no selected equation holds one on either side, and no reduction
+context enters one. A set met by a metavariable is still captured whole. -/
+def setDecompositionFree (snapshot : Snapshot) (permissions : Permissions) : Bool :=
+  !snapshot.language.usesCollection .hashSet ||
+    ((selectedRules snapshot permissions).all (fun (rule, _) => CanonicalBags.setFreeRule rule) &&
+      (selectedEquations snapshot permissions).all
+        (fun (equation, _, _) => CanonicalBags.setFreeEquation equation) &&
+      !permissions.sites.collectionKinds.contains .hashSet)
+
 def compile (snapshot : Snapshot) (permissions : Permissions) : Plan where
   snapshot := snapshot
   permissions := permissions
@@ -193,9 +206,11 @@ def compile (snapshot : Snapshot) (permissions : Permissions) : Plan where
     (if permissions.includeDerivedEquations &&
         (snapshot.language.usesCollection .hashBag || snapshot.language.usesCollection .hashSet ||
           snapshot.language.hasAlgebraDeclarations)
-      then [.derivedEquationCoverage] else [])
+      then [.derivedEquationCoverage] else []) ++
+    (if setDecompositionFree snapshot permissions then [] else [.setDecomposition])
 
 def Plan.complete (plan : Plan) : Bool := plan.obligations.isEmpty
+
 
 theorem rulePlan_readout {snapshot : Snapshot} {index : Nat} {rule : RewriteRule} {plan : RulePlan}
     (compiled : rulePlan? snapshot index rule = some plan) :
@@ -362,9 +377,9 @@ theorem complete_rule_coverage {snapshot : Snapshot} {permissions : Permissions}
     have flatMember : obligation ∈ (selectedRules snapshot permissions).flatMap
         (fun (rule, index) => ruleObligations snapshot index rule) :=
       List.mem_flatMap.mpr ⟨(rule, index), selectedMember, member⟩
-    have total : obligation ∈ (compile snapshot permissions).obligations := by
-      simp only [compile, List.mem_append]
-      tauto
+    have total : obligation ∈ (compile snapshot permissions).obligations :=
+      List.mem_append_left _ (List.mem_append_left _ (List.mem_append_left _ (List.mem_append_left _
+        (List.mem_append_right _ flatMember))))
     rw [empty] at total
     cases total
   obtain ⟨plan, checked⟩ := (ruleObligations_empty_iff snapshot index rule).mp obligationsEmpty
@@ -388,9 +403,9 @@ theorem complete_equation_coverage {snapshot : Snapshot} {permissions : Permissi
     have flatMember : obligation ∈ (selectedEquations snapshot permissions).flatMap
         (fun (equation, index, direction) => equationObligations snapshot index equation direction) :=
       List.mem_flatMap.mpr ⟨(equation, index, direction), selectedMember, member⟩
-    have total : obligation ∈ (compile snapshot permissions).obligations := by
-      simp only [compile, List.mem_append]
-      tauto
+    have total : obligation ∈ (compile snapshot permissions).obligations :=
+      List.mem_append_left _ (List.mem_append_left _ (List.mem_append_left _
+        (List.mem_append_right _ flatMember)))
     rw [empty] at total
     cases total
   obtain ⟨plan, checked, finite⟩ :=
@@ -458,6 +473,17 @@ theorem complete_derived_equation_boundary {snapshot : Snapshot} {permissions : 
   cases bag : snapshot.language.usesCollection .hashBag <;>
     cases set : snapshot.language.usesCollection .hashSet <;>
       cases algebra : snapshot.language.hasAlgebraDeclarations <;> simp_all
+
+theorem complete_set_decomposition {snapshot : Snapshot} {permissions : Permissions}
+    (complete : (compile snapshot permissions).complete = true) :
+    setDecompositionFree snapshot permissions = true := by
+  have empty : (compile snapshot permissions).obligations = [] := List.isEmpty_iff.mp complete
+  by_contra failed
+  have rejected : setDecompositionFree snapshot permissions = false := Bool.eq_false_iff.mpr failed
+  have bad : Obligation.setDecomposition ∈ (compile snapshot permissions).obligations := by
+    simp [compile, rejected]
+  rw [empty] at bad
+  cases bad
 
 theorem complete_reflection {snapshot : Snapshot} {permissions : Permissions}
     (complete : (compile snapshot permissions).complete = true) :

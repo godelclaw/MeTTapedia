@@ -1,3 +1,4 @@
+import Mathlib.Tactic
 import Mathlib.Algebra.Order.Quantale
 import Mathlib.Data.ENNReal.Basic
 import Mathlib.Data.ENNReal.Operations
@@ -5,9 +6,7 @@ import Mathlib.Data.ENNReal.Inv
 import Mathlib.Data.NNReal.Defs
 import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 import Mathlib.Analysis.SpecialFunctions.Log.Basic
-import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 import Mettapedia.PLN.Evidence.EvidenceClass
-import Mettapedia.PLN.TruthValues.PLNWeightTV
 import Mettapedia.Algebra.QuantaleWeakness
 
 open scoped NNReal
@@ -36,17 +35,19 @@ readouts.
 What this module is not: it does not decide which combination is sound for a
 given body of observations (that is the observation contract), and a count
 pair is not a truth value; `toSTV` and `ofSTV` are charts to and from the
-strength/confidence view.
+strength/confidence view.  It imports no rule and no truth-value module: the
+deduction formula computed on evidence is in
+`Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeductionComposition`, and the
+weight-primary chart `toWTV` is in `Mettapedia.PLN.TruthValues.PLNWeightTV`.
 
 ## References
 
 - Goertzel, Iklé, Goertzel and Heljakka, *Probabilistic Logic Networks* (2009).
 -/
 
-namespace Mettapedia.PLN.Evidence.EvidenceQuantale
+namespace Mettapedia.PLN.Evidence
 
 open scoped ENNReal
-open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 
 /-! ## The BinaryEvidence Type
 
@@ -158,17 +159,17 @@ noncomputable instance : CommMonoid BinaryEvidence where
   mul_one := tensor_one
   mul_comm := tensor_comm
 
-/-! ### Parallel Aggregation (Independent BinaryEvidence)
+/-! ### Parallel Aggregation
 
-When we have independent sources of evidence, they combine additively.
+Evidence from disjoint observations combines additively.
 This is the ⊕ operation (separate from the lattice join).
 -/
 
-/-- Parallel combination: independent evidence sources add
+/-- Parallel combination: evidence from disjoint observations adds
     (n⁺₁, n⁻₁) ⊕ (n⁺₂, n⁻₂) = (n⁺₁ + n⁺₂, n⁻₁ + n⁻₂)
 
-    Interpretation: Two independent observations supporting/refuting a proposition
-    contribute additively to the total evidence.
+    Interpretation: two disjoint sets of observations supporting/refuting a
+    proposition contribute additively to the total evidence.
 -/
 noncomputable def hplus (x y : BinaryEvidence) : BinaryEvidence :=
   ⟨x.pos + y.pos, x.neg + y.neg⟩
@@ -720,7 +721,6 @@ noncomputable def ofSTV (s c : ℝ) (_hc : c < 1) : BinaryEvidence :=
 
 /-! ### Weight-Primary Truth Value Bridge -/
 
-open Mettapedia.PLN.TruthValues.PLNWeightTV
 
 /-- Diagnostic: odds-style ratio `n⁺/n⁻` (extended to `⊤` when `n⁻ = 0`).
 
@@ -906,38 +906,6 @@ lemma toStrength_le_one (e : BinaryEvidence) : toStrength e ≤ 1 := by
     · apply ENNReal.div_le_div_right
       exact le_self_add
     · simp
-
-/-- Convert evidence to weight-primary truth value.
-This is the natural representation: strength from `toStrength`, and weight computed
-so that `WTV.confidence` matches `toConfidence κ` (up to the `c2w` saturation at `c = 1`). -/
-noncomputable def toWTV (κ : ℝ≥0∞) (e : BinaryEvidence) : WTV where
-  strength := (toStrength e).toReal
-  weight := c2w (toConfidence κ e).toReal
-  strength_nonneg := by
-    apply ENNReal.toReal_nonneg
-  strength_le_one := by
-    have h := toStrength_le_one e
-    have : (1 : ℝ≥0∞) = ENNReal.ofReal 1 := by simp
-    rw [this] at h
-    exact ENNReal.toReal_le_of_le_ofReal (by norm_num) h
-  weight_nonneg := by
-    by_cases hconf : (toConfidence κ e).toReal < 1
-    · -- Main case: use the `c/(1-c)` branch.
-      exact Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.c2w_nonneg _ (by
-        exact ENNReal.toReal_nonneg) hconf
-    · -- Saturation branch (`c ≥ 1`) returns a positive constant.
-      unfold c2w
-      simp [hconf]
-
-theorem toWTV_confidence_eq_toConfidence (κ : ℝ≥0∞) (e : BinaryEvidence)
-    (hconf : (toConfidence κ e).toReal < 1) :
-    (toWTV κ e).confidence = (toConfidence κ e).toReal := by
-  -- Expand the definitions: confidence = w2c(weight) and weight = c2w(confidence).
-  simp [toWTV, WTV.confidence, w2c, c2w, hconf]
-  -- Goal is the standard identity: w2c(c2w(c)) = c for c < 1.
-  have h1 : (1 - (toConfidence κ e).toReal) ≠ 0 := by linarith
-  field_simp [h1]
-  ring
 
 /-! ### Key Lemmas for the View
 
@@ -1159,94 +1127,6 @@ theorem residuate_adjoint (x y z : BinaryEvidence)
       rw [ENNReal.le_div_iff_mul_le (Or.inl hx_neg) (Or.inr hz_neg), mul_comm] at h_neg
       exact h_neg
 
-/-! ### The Full Deduction Formula via Quantale Operations
-
-The PLN deduction formula can be expressed in terms of evidence operations:
-
-```
-P(C|A) = P(B|A) · P(C|B) + (1 - P(B|A)) · P(C|¬B)
-       = sAB · sBC + (1 - sAB) · (pC - pB·sBC)/(1 - pB)
-```
-
-In evidence terms:
-- Direct path: strength sAB · sBC (computed below on strengths)
-- Indirect path: the complement conditional gives the strength of C|¬B
-
-The full formula requires:
-1. Marginals P(A), P(B), P(C) as context
-2. BinaryEvidence E_AB for A→B and E_BC for B→C
-3. Computation of P(C|¬B) via the complement formula
--/
-
-/-- Strength of the "indirect path" P(C|¬B) = (P(C) - P(B)·P(C|B)) / (1 - P(B))
-
-    This is the complement term in the deduction formula.
-    It represents the probability of C given that we went through ¬B.
--/
-noncomputable def complementStrength (pB pC sBC : ℝ≥0∞) : ℝ≥0∞ :=
-  if pB = 1 then 0  -- Degenerate case: no ¬B path
-  else (pC - pB * sBC) / (1 - pB)
-
-/-- The full deduction formula expressed in evidence terms.
-
-    Given:
-    - E_AB: BinaryEvidence for A → B (with strength sAB = toStrength E_AB)
-    - E_BC: BinaryEvidence for B → C (with strength sBC = toStrength E_BC)
-    - pB: Prior probability P(B)
-    - pC: Prior probability P(C)
-
-    Returns evidence for A → C combining direct and indirect paths.
-
-    Note: This is a simplified version that computes the strength directly.
-    A full formalization would also track confidence through the computation.
--/
-noncomputable def deductionEvidence
-    (E_AB E_BC : BinaryEvidence)
-    (pB pC : ℝ≥0∞)
-    (_hE_AB : E_AB.total ≠ 0) (_hE_BC : E_BC.total ≠ 0)
-    (_hpB : pB ≠ 1) : BinaryEvidence :=
-  let sAB := toStrength E_AB
-  let sBC := toStrength E_BC
-  let direct := sAB * sBC
-  let indirect := (1 - sAB) * complementStrength pB pC sBC
-  let total_strength := direct + indirect
-  -- Create evidence with this strength and combined total evidence
-  let total_ev := E_AB.total + E_BC.total
-  ⟨total_strength * total_ev, (1 - total_strength) * total_ev⟩
-
-/-! ### Connecting BinaryEvidence to the Real-Valued Deduction Formula
-
-The key connection between BinaryEvidence and PLNDeduction.simpleDeductionStrengthFormula:
-- BinaryEvidence operations work on (n⁺, n⁻) ∈ ℝ≥0∞ × ℝ≥0∞
-- The deduction formula works on strengths s ∈ ℝ (in [0,1])
-- The toStrength map connects them: s = n⁺ / (n⁺ + n⁻)
-
-The main insight is that the deduction formula:
-  sAC = sAB * sBC + (1 - sAB) * (pC - pB * sBC) / (1 - pB)
-
-Can be decomposed into:
-  sAC = [direct path contribution] + [indirect path contribution]
-
-Where:
-- Direct path: A → B → C (the sAB * sBC term)
-- Indirect path: A → ¬B → C (the (1-sAB) * P(C|¬B) term)
--/
-
-/-- The direct path strength: sAB * sBC
-    This is the first term in the deduction formula. -/
-noncomputable def directPathStrength (sAB sBC : ℝ≥0∞) : ℝ≥0∞ := sAB * sBC
-
-/-- The indirect path strength: (1 - sAB) * P(C|¬B)
-    This is the second term in the deduction formula. -/
-noncomputable def indirectPathStrength (sAB pB pC sBC : ℝ≥0∞) : ℝ≥0∞ :=
-  (1 - sAB) * complementStrength pB pC sBC
-
-/-- The full deduction strength from component strengths.
-    sAC = sAB * sBC + (1 - sAB) * (pC - pB * sBC) / (1 - pB)
--/
-noncomputable def deductionStrength (sAB sBC pB pC : ℝ≥0∞) : ℝ≥0∞ :=
-  directPathStrength sAB sBC + indirectPathStrength sAB pB pC sBC
-
 /-- Helper: toStrength of a constructed evidence is just the strength.
     If we construct evidence with pos = s*t and neg = (1-s)*t where s ≤ 1,
     then toStrength returns s.
@@ -1259,106 +1139,6 @@ theorem toStrength_of_scaled (s t : ℝ≥0∞) (hs : s ≤ 1) (ht0 : t ≠ 0) (
     rw [← add_mul, add_tsub_cancel_of_le hs, one_mul]
   rw [h_sum, if_neg ht0]
   exact ENNReal.mul_div_cancel_right ht0 htT
-
-/-- Finite, ordered ENNReal residual strengths read out as the real residual
-conditional used by the PLN deduction formula. -/
-theorem complementStrength_toReal_eq_complementConditionalFromMarginal
-    (pB pC sBC : ℝ≥0∞)
-    (hpB_le_one : pB ≤ 1)
-    (hprod_le : pB * sBC ≤ pC)
-    (hpB_ne_one : pB ≠ 1)
-    (hpC_ne_top : pC ≠ ⊤) :
-    (complementStrength pB pC sBC).toReal =
-      complementConditionalFromMarginal pB.toReal pC.toReal sBC.toReal := by
-  unfold complementStrength complementConditionalFromMarginal
-  rw [if_neg hpB_ne_one]
-  rw [ENNReal.toReal_div]
-  rw [ENNReal.toReal_sub_of_le hprod_le hpC_ne_top]
-  rw [ENNReal.toReal_sub_of_le hpB_le_one ENNReal.one_ne_top]
-  simp [ENNReal.toReal_mul]
-
-/-- Under explicit finiteness, order, and PLN consistency hypotheses, the
-BinaryEvidence deduction-strength expression projects to the classic real
-`simpleDeductionStrengthFormula`.
-
-This theorem is intentionally a `toReal` bridge: exact evidence statements live
-over `BinaryEvidence`; the real-valued PLN formula is recovered only after the
-lossy strength projection and its admissibility side conditions are named. -/
-theorem deductionStrength_toReal_eq_simpleDeductionStrengthFormula
-    (pA : ℝ) (sAB sBC pB pC : ℝ≥0∞)
-    (hsAB_le_one : sAB ≤ 1)
-    (hpB_le_one : pB ≤ 1)
-    (hprod_le : pB * sBC ≤ pC)
-    (hpC_ne_top : pC ≠ ⊤)
-    (hdirect_ne_top : directPathStrength sAB sBC ≠ ⊤)
-    (hindirect_ne_top : indirectPathStrength sAB pB pC sBC ≠ ⊤)
-    (hpB_small : pB.toReal ≤ 0.99)
-    (h_consist :
-      conditionalProbabilityConsistency pA pB.toReal sAB.toReal ∧
-        conditionalProbabilityConsistency pB.toReal pC.toReal sBC.toReal) :
-    (deductionStrength sAB sBC pB pC).toReal =
-      simpleDeductionStrengthFormula pA pB.toReal pC.toReal sAB.toReal sBC.toReal := by
-  have hpB_ne_one : pB ≠ 1 := by
-    intro h
-    have hpB_toReal : pB.toReal = 1 := by simp [h]
-    linarith
-  have hcomp :
-      (complementStrength pB pC sBC).toReal =
-        complementConditionalFromMarginal pB.toReal pC.toReal sBC.toReal :=
-    complementStrength_toReal_eq_complementConditionalFromMarginal
-      pB pC sBC hpB_le_one hprod_le hpB_ne_one hpC_ne_top
-  calc
-    (deductionStrength sAB sBC pB pC).toReal
-        = (directPathStrength sAB sBC).toReal +
-            (indirectPathStrength sAB pB pC sBC).toReal := by
-          unfold deductionStrength
-          exact ENNReal.toReal_add hdirect_ne_top hindirect_ne_top
-    _ = sAB.toReal * sBC.toReal +
-          (1 - sAB.toReal) *
-            complementConditionalFromMarginal pB.toReal pC.toReal sBC.toReal := by
-          unfold directPathStrength indirectPathStrength
-          rw [ENNReal.toReal_mul, ENNReal.toReal_mul, hcomp]
-          rw [ENNReal.toReal_sub_of_le hsAB_le_one ENNReal.one_ne_top]
-          simp
-    _ = simpleDeductionStrengthFormula
-          pA pB.toReal pC.toReal sAB.toReal sBC.toReal := by
-          exact (simpleDeductionStrengthFormula_eq_total_probability_residual
-            pA pB.toReal pC.toReal sAB.toReal sBC.toReal
-            hpB_small h_consist).symm
-
-/-- When converted to strengths, deductionEvidence produces the deduction formula.
-
-    This is the key theorem connecting BinaryEvidence-based computation to the
-    real-valued formula in PLNDeduction.simpleDeductionStrengthFormula.
-
-    The strength of deductionEvidence E_AB E_BC is:
-      toStrength (deductionEvidence E_AB E_BC pB pC)
-      = toStrength E_AB * toStrength E_BC
-        + (1 - toStrength E_AB) * complementStrength pB pC (toStrength E_BC)
-
-    Note: We require the total_strength ≤ 1 condition for the ENNReal arithmetic
-    to work correctly (otherwise `a + (1 - a)` might not equal 1).
--/
-theorem deductionEvidence_strength
-    (E_AB E_BC : BinaryEvidence)
-    (pB pC : ℝ≥0∞)
-    (hE_AB : E_AB.total ≠ 0) (hE_BC : E_BC.total ≠ 0)
-    (hpB : pB ≠ 1)
-    (h_total_ne_zero : (E_AB.total + E_BC.total) ≠ 0)
-    (h_total_ne_top : (E_AB.total + E_BC.total) ≠ ⊤)
-    (h_strength_le_1 : deductionStrength (toStrength E_AB) (toStrength E_BC) pB pC ≤ 1) :
-    toStrength (deductionEvidence E_AB E_BC pB pC hE_AB hE_BC hpB) =
-    deductionStrength (toStrength E_AB) (toStrength E_BC) pB pC := by
-  -- The deductionEvidence constructs evidence with structure:
-  --   pos = s * total_ev
-  --   neg = (1 - s) * total_ev
-  -- where s = deductionStrength and total_ev = E_AB.total + E_BC.total
-  set s := deductionStrength (toStrength E_AB) (toStrength E_BC) pB pC with hs_def
-  set t := E_AB.total + E_BC.total with ht_def
-  -- Show that deductionEvidence produces ⟨s * t, (1 - s) * t⟩
-  have h_ev_eq : deductionEvidence E_AB E_BC pB pC hE_AB hE_BC hpB = ⟨s * t, (1 - s) * t⟩ := rfl
-  rw [h_ev_eq]
-  exact toStrength_of_scaled s t h_strength_le_1 h_total_ne_zero h_total_ne_top
 
 end BinaryEvidence
 
@@ -1396,7 +1176,7 @@ precisely the composition law in this enriched category.
 We now have:
 
 1. `BinaryEvidence` : A proper commutative monoid with tensor product
-2. `BinaryEvidence.hplus` : Parallel aggregation for independent evidence
+2. `BinaryEvidence.hplus` : Parallel aggregation of evidence from disjoint observations
 3. `toSTV` / `ofSTV` : Views to/from SimpleTruthValue
 4. `QRel` : Q-weighted relations with composition
 5. `BinaryEvidence.residuate` : Right adjoint to tensor (for ¬B path)
@@ -1718,4 +1498,4 @@ theorem evidenceWeakness_mono {U : Type*} [Fintype U]
 
 end BinaryEvidence
 
-end Mettapedia.PLN.Evidence.EvidenceQuantale
+end Mettapedia.PLN.Evidence

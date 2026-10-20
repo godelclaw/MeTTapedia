@@ -33,7 +33,7 @@ World-Model Calculus paper for the semantic motivation.
 namespace Mettapedia.OSLF.PathMap.SolomonoffBridge
 
 open Mettapedia.PathMap
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.OSLF.PathMap.PLNBridge
 open scoped ENNReal
 open Finset BigOperators

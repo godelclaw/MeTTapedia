@@ -14,8 +14,8 @@ These examples show the intended semantic separation:
 namespace Mettapedia.KR.ConceptOntology.Examples
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.KR.ConceptOntology
 
 /-- Tiny object domain for ontology examples. -/

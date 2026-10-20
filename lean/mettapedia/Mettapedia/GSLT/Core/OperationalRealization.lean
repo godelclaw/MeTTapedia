@@ -37,6 +37,43 @@ structure OperationalRealization
 
 namespace OperationalRealization
 
+private theorem prependExecution {system : GSLT.{uTerm}}
+    {first middle last : system.Term} (route : ExecutionPath system first middle)
+    (rest : system.MultiStep middle last) : system.MultiStep first last := by
+  induction route with
+  | refl => exact rest
+  | cons edge tail ih => exact .step edge.down (ih rest)
+
+/-- The existing path realization preserves finite reachability even when
+fusion erases steps or lowering expands them. -/
+theorem mapMultiStep {source : GSLT.{uSourceTerm}} {target : GSLT.{uTargetTerm}}
+    (realization : OperationalRealization source target)
+    {first last : source.Term} (path : source.MultiStep first last) :
+    target.MultiStep (realization.mapTerm first) (realization.mapTerm last) := by
+  induction path with
+  | refl => exact .refl _
+  | step edge rest ih => exact prependExecution (realization.mapStep edge) ih
+
+/-- Path-valued routes act on semantic predicates through their existing
+equation law, without introducing another translation interface. -/
+def equationMap {source target : GSLT.{uTerm}}
+    (realization : OperationalRealization source target) :
+    Mettapedia.OSLF.Framework.GSLTTypeSynthesis.EquationRespectingMap source target :=
+  ⟨realization.mapTerm, realization.mapEquiv⟩
+
+/-- Lowering preserves the reachable native observation. This does not assert
+one-step, cost, or reverse preservation. Those need independent contracts. -/
+theorem preserves_semanticReach {source target : GSLT.{uTerm}}
+    (realization : OperationalRealization source target)
+    (predicate : Mettapedia.OSLF.Framework.GSLTTypeSynthesis.EquationPredicate target)
+    (term : source.Term) :
+    Mettapedia.OSLF.Framework.GSLTTypeSynthesis.semanticReach source
+        (realization.equationMap.pullback predicate) term →
+      realization.equationMap.pullback
+        (Mettapedia.OSLF.Framework.GSLTTypeSynthesis.semanticReach target predicate) term := by
+  rintro ⟨last, path, holds⟩
+  exact ⟨realization.mapTerm last, realization.mapMultiStep path, holds⟩
+
 /-- Map a complete source execution by expanding each retained source step
 to its admitted target path. -/
 def mapRoute {source : GSLT.{uSourceTerm}} {target : GSLT.{uTargetTerm}}
@@ -194,6 +231,17 @@ theorem no_strict_operational_translation :
     ¬ Nonempty (OperationalTranslation source target) := by
   rintro ⟨translation⟩
   exact translation.mapStep source_step
+
+/-- The same actual fusion preserves reachability while destroying the
+one-step diamond. Native observation preservation must name its granularity. -/
+theorem fusion_changes_one_step_diamond :
+    Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltDiamond source
+      (fun term => term = true) false ∧
+    ¬ Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltDiamond target
+      (fun term => term = ()) () := by
+  rw [Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltDiamond_spec,
+    Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltDiamond_spec]
+  exact ⟨⟨true, source_step, rfl⟩, by rintro ⟨_, impossible, _⟩; exact impossible⟩
 
 end FusionCanary
 

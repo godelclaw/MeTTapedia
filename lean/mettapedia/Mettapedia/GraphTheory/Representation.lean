@@ -23,6 +23,14 @@ import Mettapedia.GraphTheory.Representation.MatrixBridge
 import Mettapedia.GraphTheory.Representation.MatrixSemantics
 import Mettapedia.GraphTheory.Representation.MatrixOperationalTranslation
 import Mettapedia.GraphTheory.Representation.FrontierAffine
+import Mettapedia.GraphTheory.Representation.NeighborTraversal
+import Mettapedia.GraphTheory.Representation.SparseFrontier
+import Mettapedia.GraphTheory.Representation.MaterializedSparseFrontier
+import Mettapedia.GraphTheory.Representation.SparseFrontierControls
+import Mettapedia.GraphTheory.Representation.WeightedSparseFrontier
+import Mettapedia.GraphTheory.Representation.SparseTraversalModule
+import Mettapedia.GraphTheory.Representation.ArraySparseFrontier
+import Mettapedia.GraphTheory.Representation.SparseBackendChoice
 import Mettapedia.GraphTheory.Representation.Hypergraph
 import Mettapedia.GraphTheory.Representation.Metagraph
 import Mettapedia.GraphTheory.Representation.DistinctionBridge
@@ -45,4 +53,10 @@ authored module quotation and a checked canonical text/UTF-8 transport.
 Conversions carry actual vertex colorings, including prescribed boundary
 colors and their counts, and the lookup machines are related by explicit
 operational translation contracts.
+Ordered neighbor enumeration connects sparse row and CSR folds to the same
+matrix frontiers and walk counts. Shared fold paths retain exact entry visits
+and finalization, and the module's constructed matrix feeds those sparse queries.
+Weighted sparse operators retain repeated coefficients through composition;
+an authored traversal module, indexed array lowering and amortized backend
+choice connect their operational and matrix meanings.
 -/

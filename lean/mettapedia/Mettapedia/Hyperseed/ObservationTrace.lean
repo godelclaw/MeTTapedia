@@ -11,7 +11,7 @@ This is the basic "OpenClaw keeps exploring and appending observations" layer.
 
 namespace Mettapedia.Hyperseed
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
 
 variable {Obs State Query : Type*}

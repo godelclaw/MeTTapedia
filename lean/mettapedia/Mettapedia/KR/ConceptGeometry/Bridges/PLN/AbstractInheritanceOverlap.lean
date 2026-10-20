@@ -16,7 +16,7 @@ This is the missing theorem-level bridge between inheritance provenance and the
 generic WM overlap layer.
 -/
 
-namespace Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+namespace Mettapedia.PLN.Evidence.BinaryEvidence
 
 open scoped ENNReal
 
@@ -32,12 +32,12 @@ noncomputable instance : Sub BinaryEvidence where
   · simp [sub_def]
   · simp [sub_def]
 
-end Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+end Mettapedia.PLN.Evidence.BinaryEvidence
 
 namespace Mettapedia.KR.ConceptGeometry.AbstractInheritance
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 open Mettapedia.PLN.WorldModel.WorldModelOverlap
@@ -294,7 +294,7 @@ theorem correctedMerge_stampSetPacket_evidence_eq_union
       (Finset.sum_union_inter (s₁ := S) (s₂ := T)
         (f := stampContribution))
     simp [stampSetEvidence, stampSetPacket, correctedMerge, overlapEvidence,
-      BinaryEvidence.hplus_def, Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.sub_def] at h ⊢
+      BinaryEvidence.hplus_def, Mettapedia.PLN.Evidence.BinaryEvidence.sub_def] at h ⊢
     rw [← h]
     exact ENNReal.add_sub_cancel_right
       (sum_stampContribution_pos_coord_ne_top (S ∩ T))
@@ -302,7 +302,7 @@ theorem correctedMerge_stampSetPacket_evidence_eq_union
       (Finset.sum_union_inter (s₁ := S) (s₂ := T)
         (f := stampContribution))
     simp [stampSetEvidence, stampSetPacket, correctedMerge, overlapEvidence,
-      BinaryEvidence.hplus_def, Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.sub_def] at h ⊢
+      BinaryEvidence.hplus_def, Mettapedia.PLN.Evidence.BinaryEvidence.sub_def] at h ⊢
     rw [← h]
     exact ENNReal.add_sub_cancel_right
       (sum_stampContribution_neg_coord_ne_top (S ∩ T))
@@ -949,7 +949,7 @@ theorem correctedMerge_selfCanary_evidence_eq_single :
   apply BinaryEvidence.ext' <;>
     simp [correctedMerge, overlapEvidence, revisionOverlapCanaryLeftPacket,
       stampContribution, BinaryEvidence.hplus_def,
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.sub_def]
+      Mettapedia.PLN.Evidence.BinaryEvidence.sub_def]
 
 /-- Raw additive revision is deliberately exposed as over-counting at overlapping
 provenance: the same one-witness packet would count as two positive witnesses. -/
@@ -978,7 +978,7 @@ theorem correctedMerge_selfCanary_evidence_ne_rawAdd :
   simp [correctedMerge, overlapEvidence, revisionOverlapCanaryLeftPacket,
     stampContribution, StampedBinaryEvidence.rawAdd,
     StampedBinaryEvidence.revise, BinaryEvidence.hplus_def,
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.sub_def] at hpos
+    Mettapedia.PLN.Evidence.BinaryEvidence.sub_def] at hpos
   norm_num at hpos
 
 theorem correctedMerge_positive_negative_eq_finiteInheritanceStampedEvidence

@@ -46,7 +46,7 @@ $$(n_A^+, n_A^-) ⊗ (n_B^+, n_B^-) = (n_A^+ × n_B^+, n_A^- × n_B^-)$$
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.PLNConjunction
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open BinaryEvidence
 
 /-! ## Discrete Hypergeometric Distribution

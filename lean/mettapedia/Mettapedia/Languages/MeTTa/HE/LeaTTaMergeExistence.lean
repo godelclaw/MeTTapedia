@@ -1,4 +1,6 @@
 import Mettapedia.Languages.MeTTa.HE.UnificationCompleteness
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
 
 /-!
 # Semantic existence of repaired-LeaTTa binding merges

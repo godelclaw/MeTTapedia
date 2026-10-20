@@ -109,6 +109,24 @@ theorem exists_perm_of_same_pattern (fixed : Set α) :
             · exact known ⟨later, (naming.injective ((maps later).trans same)).symm⟩
             · exact known ⟨later, ((pattern later.succ 0).mpr same).symm⟩
 
+/-- A renaming injective on one finite name packet extends to a permutation
+of all names. Values of the original function outside the packet are irrelevant. -/
+theorem exists_perm_extending_injOn (names : List α) (rename : α → α)
+    (injective : Set.InjOn rename {name | name ∈ names}) :
+    ∃ naming : Equiv.Perm α, ∀ name ∈ names, naming name = rename name := by
+  obtain ⟨naming,_fixes,maps⟩ := exists_perm_of_same_pattern (∅ : Set α)
+    (fun index : Fin names.length => names[index])
+    (fun index => rename names[index])
+    (by intro index; simp) (by intro index; simp)
+    (by
+      intro first second
+      exact ⟨congrArg rename,
+        injective (List.getElem_mem first.isLt) (List.getElem_mem second.isLt)⟩)
+  refine ⟨naming,?_⟩
+  intro name member
+  obtain ⟨index,bound,same⟩ := List.getElem_of_mem member
+  simpa only [Fin.getElem_fin,same] using maps ⟨index,bound⟩
+
 /-- **A relation on names that is closed under the permutations fixing a set
 is a set of equality patterns**: it holds of both or of neither of two lists
 of names outside the set with one equality pattern. -/

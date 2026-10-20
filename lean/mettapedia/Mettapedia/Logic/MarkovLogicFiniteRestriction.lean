@@ -82,7 +82,7 @@ theorem totalMass_eq_restrictedTotalMass_of_finiteSupport
 /-- The finite restriction inherits a mass semantics structure. -/
 noncomputable def restrictedMassSemantics
     (M : CountableMLNSemantics World Query Feature)
-    {support : Finset World} (hs : FiniteSupportWitness M support) : MassSemantics Query where
+    {support : Finset World} (hs : FiniteSupportWitness M support) : Mettapedia.ProbabilityTheory.MassSemantics Query where
   queryMass := restrictedQueryMass M support
   totalMass := restrictedTotalMass M support
   queryMass_le_total := by
@@ -107,7 +107,7 @@ theorem restricted_queryProb_eq_full_queryProb_of_finite_support
     symm
     exact totalMass_eq_restrictedTotalMass_of_finiteSupport M hs
   simp [restrictedMassSemantics, CountableMLNSemantics.toMassSemantics,
-    MassSemantics.queryProb, hmass, htotal]
+    Mettapedia.ProbabilityTheory.MassSemantics.queryProb, hmass, htotal]
   rfl
 
 end Mettapedia.Logic.MarkovLogicFiniteRestriction

@@ -807,7 +807,7 @@ def entries : List RuleEntry := core.rewrites.mapIdx fun index rule =>
 def source : Source := ⟨"ordered-module-control-v1", .structuralView,
   entries.toFinset, entries, core⟩
 
-def noProvider : GeneralPremise.ProviderSnapshot := ⟨[], []⟩
+def noProvider : GeneralPremise.ProviderSnapshot := ⟨[], [], []⟩
 
 theorem duplicate_outputs_admitted : (admit? source noProvider).isSome = true := by
   rw [admit_isSome_iff]
@@ -853,7 +853,7 @@ def querySource : Source := ⟨"ordered-query-control-v1", .structuralView,
 def duplicateProvider : GeneralPremise.ProviderSnapshot :=
   ⟨[⟨"next", [.base "Nat", .base "Nat"], [.input, .output]⟩],
    [⟨"next", [.apply "NatZ" [], .apply "NatS" [.apply "NatZ" []]]⟩,
-    ⟨"next", [.apply "NatZ" [], .apply "NatS" [.apply "NatZ" []]]⟩]⟩
+    ⟨"next", [.apply "NatZ" [], .apply "NatS" [.apply "NatZ" []]]⟩], []⟩
 
 theorem duplicate_provider_rows_admitted : (admit? querySource duplicateProvider).isSome = true := by
   rw [admit_isSome_iff]
@@ -923,7 +923,7 @@ def equalityRule : RewriteRule := {queryRule with
 equality under the existing provider-only query profile. -/
 def equalityProvider : GeneralPremise.ProviderSnapshot :=
   ⟨[⟨"eq", [.base "Nat", .base "Nat"], [.input, .output]⟩],
-   [⟨"eq", [.apply "NatZ" [], .apply "NatS" [.apply "NatZ" []]]⟩]⟩
+   [⟨"eq", [.apply "NatZ" [], .apply "NatS" [.apply "NatZ" []]]⟩], []⟩
 
 theorem builtin_equality_query_refused : admit? (withRule equalityRule) equalityProvider = none := by
   rw [admit_none_iff_issues_nonempty]
@@ -1075,7 +1075,7 @@ def typedEscapeSource : Source := ⟨"typed-provider-escape-v1", .structuralView
 
 def typedLambdaProvider : GeneralPremise.ProviderSnapshot :=
   ⟨[⟨"value", [.arrow (.base "Nat") (.base "Nat")], [.output]⟩],
-    [⟨"value", [ClosureControls.escapingPayload.eraseBinderMetadata]⟩]⟩
+    [⟨"value", [ClosureControls.escapingPayload.eraseBinderMetadata]⟩], []⟩
 
 /-- Typing and closedness permit this value; the literal syntax check supplies
 the independent first-order boundary. -/

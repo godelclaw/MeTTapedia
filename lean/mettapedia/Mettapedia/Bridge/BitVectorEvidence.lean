@@ -18,13 +18,13 @@ combinatorial interpretation of uncertainty in PLN.
 
 1. `completions_card`: |completions(v)| = 2^(countUnknown v)
 2. `completions_mean_weight`: Average Hamming weight equals (pos + unknown/2) / n
-3. `toEvidence_strength`: BinaryEvidence.strength = expected fraction of 1s
+3. `toEvidence_strength`: the Beta mean = expected fraction of 1s
 
 ## Connection to PLNDistributional
 
-The BinaryEvidence structure from PLNDistributional is the continuous generalization:
+The Beta parameters of PLNDistributional (`BetaParams`) are the continuous generalization:
 - Discrete: countPositive, countNegative are natural numbers
-- Continuous: BinaryEvidence.positive, BinaryEvidence.negative are reals (virtual evidence)
+- Continuous: `BetaParams.alpha`, `BetaParams.betaParam` are reals (virtual evidence)
 
 The Beta distribution emerges as the limit distribution when N → ∞.
 
@@ -518,35 +518,35 @@ theorem completions_mean_weight (v : PartialVector n) (h : 0 < countUnknown v) :
 
 /-! ## Connection to PLN BinaryEvidence
 
-The BinaryEvidence structure from PLNDistributional is the "continuous" version of
+The Beta parameters of PLNDistributional are the "continuous" version of
 our discrete counts. The key insight is that the discrete combinatorics
-(completions, Hamming weights) give an exact semantics for BinaryEvidence.
+(completions, Hamming weights) give an exact semantics for Beta parameters.
 -/
 
-open Mettapedia.PLN.TruthValues.Distributional
+open Mettapedia.PLN.TruthValues.PLNDistributional
 
 /-- Convert a partial vector to discrete evidence.
 
 Note: We add 1 to get proper Beta distribution parameters (Laplace smoothing).
 Without the +1, a vector with all bits known would have degenerate evidence.
 -/
-def toDiscreteEvidence (v : PartialVector n) : BinaryEvidence where
-  positive := countPositive v + 1
-  negative := countNegative v + 1
-  positive_pos := by
+def toDiscreteEvidence (v : PartialVector n) : BetaParams where
+  alpha := countPositive v + 1
+  betaParam := countNegative v + 1
+  alpha_pos := by
     have : (0 : ℝ) < 1 := one_pos
     have h : (countPositive v : ℝ) ≥ 0 := Nat.cast_nonneg _
     linarith
-  negative_pos := by
+  beta_pos := by
     have : (0 : ℝ) < 1 := one_pos
     have h : (countNegative v : ℝ) ≥ 0 := Nat.cast_nonneg _
     linarith
 
 /-- The evidence strength equals the Laplace-smoothed proportion. -/
 theorem toDiscreteEvidence_strength (v : PartialVector n) :
-    (toDiscreteEvidence v).strength =
+    (toDiscreteEvidence v).expectedValue =
     (countPositive v + 1 : ℝ) / (countPositive v + countNegative v + 2) := by
-  simp only [toDiscreteEvidence, BinaryEvidence.strength, BinaryEvidence.total]
+  simp only [toDiscreteEvidence, BetaParams.expectedValue, BetaParams.n]
   ring_nf
 
 /-! ## Bennett Weakness Connection

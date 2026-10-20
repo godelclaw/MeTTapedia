@@ -242,7 +242,7 @@ theorem patch_mem_localQueryEvent_gridOriginCornerTripleLocalQuery_iff
         patch Λ x ξ gridOriginEast = bEast ∧
         patch Λ x ξ gridOriginNorth = bNorth := by
   simp only [localQueryEvent, worldRestriction, satisfiesConstraints,
-    gridOriginCornerTripleLocalQuery, gridOriginCornerTripleRegion, Set.mem_setOf_eq]
+    gridOriginCornerTripleLocalQuery, gridOriginCornerTripleRegion, Set.mem_ofPred_eq]
   constructor
   · intro h
     exact ⟨h _ List.mem_cons_self,
@@ -728,14 +728,11 @@ theorem gridClauseDualAdjacent_symm
 
 theorem reflTransGen_symm_of_symmetric
     {α : Type*} {R : α → α → Prop}
-    (hR : Symmetric R) {a b : α}
+    (hR : ∀ ⦃a b⦄, R a b → R b a) {a b : α}
     (hreach : Relation.ReflTransGen R a b) :
     Relation.ReflTransGen R b a := by
-  induction hreach with
-  | refl =>
-      exact Relation.ReflTransGen.refl
-  | @tail b c hreach hstep ih =>
-      exact Relation.ReflTransGen.head (hR hstep) ih
+  let : Std.Symm R := ⟨fun _ _ step => hR step⟩
+  exact (inferInstance : Std.Symm (Relation.ReflTransGen R)).symm a b hreach
 
 theorem reflTransGen_gridClauseDualAdjacent_symm
     {j₁ j₂ : GridClauseId}
@@ -1732,7 +1729,7 @@ def gridClauseStarAdjacentIn
 
 theorem gridClauseStarAdjacentIn_symm
     {s : Finset GridClauseId} :
-    Symmetric (gridClauseStarAdjacentIn s) := by
+    ∀ ⦃a b⦄, gridClauseStarAdjacentIn s a b → gridClauseStarAdjacentIn s b a := by
   intro a b hab
   exact ⟨hab.2.1, hab.1, gridClauseStarAdjacent_symm hab.2.2⟩
 
@@ -2162,7 +2159,7 @@ theorem Connected.exists_closedWalk_cover_length_le
     | h n ih =>
         intro V _ _ G hcard hconn root
         by_cases hcardOne : Fintype.card V = 1
-        · haveI : Subsingleton V :=
+        · have : Subsingleton V :=
             Fintype.card_le_one_iff_subsingleton.mp (by omega)
           refine ⟨SimpleGraph.Walk.nil, ?_, ?_⟩
           · intro x
@@ -2170,10 +2167,10 @@ theorem Connected.exists_closedWalk_cover_length_le
             subst x
             simp
           · simp
-        · haveI : Nonempty V := hconn.nonempty
+        · have : Nonempty V := hconn.nonempty
           have hpos : 0 < Fintype.card V := Fintype.card_pos
           have hcardGt : 1 < Fintype.card V := by omega
-          haveI : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.mp hcardGt
+          have : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.mp hcardGt
           rcases hconn.exists_preconnected_induce_compl_singleton_of_finite with
             ⟨v, hpre⟩
           rcases hconn.preconnected.exists_adj_of_nontrivial v with ⟨y, hvy⟩
@@ -2185,7 +2182,7 @@ theorem Connected.exists_closedWalk_cover_length_le
               show y ≠ root
               exact hvy.ne.symm
             let ySub : S := ⟨y, hyS⟩
-            haveI : Nonempty S := ⟨ySub⟩
+            have : Nonempty S := ⟨ySub⟩
             have hconnSub : H.Connected := by
               exact ⟨by simpa [H, S] using hpre⟩
             have hcardS : Fintype.card S = Fintype.card V - 1 := by
@@ -2251,7 +2248,7 @@ theorem Connected.exists_closedWalk_cover_length_le
               show y ≠ v
               exact hvy.ne.symm
             let rootSub : S := ⟨root, hrootS⟩
-            haveI : Nonempty S := ⟨rootSub⟩
+            have : Nonempty S := ⟨rootSub⟩
             have hconnSub : H.Connected := by
               exact ⟨by simpa [H, S] using hpre⟩
             have hcardS : Fintype.card S = Fintype.card V - 1 := by
@@ -2320,7 +2317,7 @@ theorem exists_clauseChain_of_simpleGraph_closedWalk
             (∀ x ∈ s, x = root ∨ x ∈ tail) := by
   let tail := p.support.tail
   have hsupport : p.support = root :: tail := by
-    simpa [tail] using p.support_eq_cons
+    exact p.cons_tail_support.symm
   refine ⟨tail, ?_, ?_, ?_, ?_⟩
   · have hlen := p.length_support
     rw [hsupport] at hlen
@@ -2642,7 +2639,7 @@ theorem gridAdjacentRegionGraph_connected_of_reflTransGen
       ∀ a b : {p // p ∈ inside},
         Relation.ReflTransGen (gridAdjacentRegionRel inside) a b) :
     (gridAdjacentRegionGraph inside).Connected := by
-  haveI : Nonempty {p // p ∈ inside} := hnonempty
+  have : Nonempty {p // p ∈ inside} := hnonempty
   refine ⟨?_⟩
   intro a b
   rw [gridAdjacentRegionGraph_reachable_eq_reflTransGen]
@@ -3047,7 +3044,7 @@ theorem GridConnectedRegion.exists_delete_vertex_gridConnectedRegion_adjacent_re
     Finset.card_pos.1 hcardErase
   have hconnErase : GridConnectedRegion (inside.erase v.1) :=
     ⟨hnonemptyErase, fun a ha b hb => hpre ha hb⟩
-  haveI : Nontrivial {p // p ∈ inside} := by
+  have : Nontrivial {p // p ∈ inside} := by
     rcases (Finset.one_lt_card_iff_nontrivial.1 hcard) with
       ⟨a, ha, b, hb, hab⟩
     exact ⟨⟨⟨a, ha⟩, ⟨b, hb⟩, fun h => hab (congrArg Subtype.val h)⟩⟩
@@ -4381,7 +4378,7 @@ theorem visibleOuterBoundaryStarGraph_connected_of_reflTransGen_gridAdjacent
           (fun p q : {p // p ∈ visibleOuterBoundary n hull} =>
             gridAdjacent p.1 q.1) a b) :
     (visibleOuterBoundaryStarGraph n hull).Connected := by
-  haveI : Nonempty {p // p ∈ visibleOuterBoundary n hull} := hnonempty
+  have : Nonempty {p // p ∈ visibleOuterBoundary n hull} := hnonempty
   refine ⟨?_⟩
   intro a b
   exact visibleOuterBoundaryStarGraph_reachable_of_reflTransGen_gridAdjacent
@@ -4436,7 +4433,7 @@ theorem visibleOuterBoundaryStarGraph_connected_of_starConnected
   have hnonemptySubtype : Nonempty {p // p ∈ visibleOuterBoundary n hull} := by
     rcases hnonempty with ⟨p, hp⟩
     exact ⟨⟨p, hp⟩⟩
-  haveI : Nonempty {p // p ∈ visibleOuterBoundary n hull} := hnonemptySubtype
+  have : Nonempty {p // p ∈ visibleOuterBoundary n hull} := hnonemptySubtype
   refine ⟨?_⟩
   intro a b
   rw [visibleOuterBoundaryStarGraph_reachable_eq_reflTransGen]
@@ -4541,7 +4538,7 @@ theorem simpleGraph_connected_of_forall_partition_adj
         (∃ a, U a) → (∃ b, ¬ U b) →
           ∃ a b, U a ∧ ¬ U b ∧ G.Adj a b) :
     G.Connected := by
-  haveI : Nonempty α := hnonempty
+  have : Nonempty α := hnonempty
   refine ⟨?_⟩
   intro u v
   by_contra huv
@@ -5318,7 +5315,7 @@ theorem visibleOuterBoundaryStarGraph_connected_of_erase_connected_of_deleted_fa
     x ∈ visibleOuterBoundary n (hull.erase v.1) ∧
       y ∈ visibleOuterBoundary n (hull.erase v.1) ∧ gridNodeStarAdjacent x y
   have hsymm :
-      Symmetric Rorig := by
+      ∀ ⦃x y⦄, Rorig x y → Rorig y x := by
     intro x y hxy
     exact ⟨hxy.2.1, hxy.1, gridNodeStarAdjacent_symm hxy.2.2⟩
   refine visibleOuterBoundaryStarGraph_connected_of_starConnected hnonempty ?_
@@ -5406,7 +5403,7 @@ theorem visibleOuterBoundaryStarGraph_connected_of_erase_connected_of_deleted_re
     x ∈ visibleOuterBoundary n (hull.erase v.1) ∧
       y ∈ visibleOuterBoundary n (hull.erase v.1) ∧ gridNodeStarAdjacent x y
   have hsymm :
-      Symmetric Rorig := by
+      ∀ ⦃x y⦄, Rorig x y → Rorig y x := by
     intro x y hxy
     exact ⟨hxy.2.1, hxy.1, gridNodeStarAdjacent_symm hxy.2.2⟩
   refine visibleOuterBoundaryStarGraph_connected_of_starConnected hnonempty ?_
@@ -8635,7 +8632,7 @@ theorem visibleBoundaryChoiceStarGraph_connected_of_visibleOuterBoundaryStarGrap
     (visibleBoundaryChoiceStarGraph
       (visibleStage := visibleStage) (cutStage := cutStage)
       (hull := hull) (s := s) hsEq hHull).Connected := by
-  haveI : Nonempty {p // p ∈ visibleOuterBoundary visibleStage hull} :=
+  have : Nonempty {p // p ∈ visibleOuterBoundary visibleStage hull} :=
     hvis.nonempty
   refine ⟨?_⟩
   intro p q
@@ -8789,7 +8786,7 @@ theorem visibleOuterBoundaryStarGraph_connected_of_originConnected_stageCoConnec
       (visibleOuterBoundary m hull).Nonempty :=
     visibleOuterBoundary_nonempty_of_originConnected_stageCoConnected
       hm hHull hconn hco
-  haveI : Nonempty {p // p ∈ visibleOuterBoundary m hull} := by
+  have : Nonempty {p // p ∈ visibleOuterBoundary m hull} := by
     rcases hnonempty with ⟨p, hp⟩
     exact ⟨⟨p, hp⟩⟩
   refine ⟨?_⟩
@@ -18560,7 +18557,7 @@ theorem RootedStarConnectedCutSet.subtype_starGraph_connected
     (SimpleGraph.fromEdgeSet (Sym2.fromRel hRsymm)).Connected := by
   intro R hRsymm
   let rootSub : {c // c ∈ s} := ⟨root, hstar.root_mem⟩
-  haveI : Nonempty {c // c ∈ s} := ⟨rootSub⟩
+  have : Nonempty {c // c ∈ s} := ⟨rootSub⟩
   have hrootReach :
       ∀ x : {c // c ∈ s},
         (SimpleGraph.fromEdgeSet (Sym2.fromRel hRsymm)).Reachable rootSub x := by
@@ -18807,7 +18804,7 @@ theorem cutSetStarGraph_connected_of_originConnected_stageCoConnected_cut_eq
   rcases visibleBoundarySeparatorEdges_nonempty_of_visibleOuterBoundary_nonempty
       hvisNonempty with
     ⟨rootEdge, hrootEdge⟩
-  haveI : Nonempty {c // c ∈ s} :=
+  have : Nonempty {c // c ∈ s} :=
     ⟨⟨gridAdjacentClauseId rootEdge.1 rootEdge.2,
       gridAdjacentClauseId_mem_cutSet_of_visibleBoundarySeparatorEdge
         hsEq hHull hrootEdge⟩⟩
@@ -19157,9 +19154,9 @@ theorem cutSetStarGraph_connected_of_visibleBoundaryChoiceStarGraph_connected
               (hull := hull) (s := s) hsEq hHull hab)
         _ _ hvisReach
     exact hcollapse hchain
-  haveI : Nonempty {p // p ∈ visibleOuterBoundary visibleStage hull} :=
+  have : Nonempty {p // p ∈ visibleOuterBoundary visibleStage hull} :=
     hvis.nonempty
-  haveI : Nonempty {c // c ∈ s} := Nonempty.map choice inferInstance
+  have : Nonempty {c // c ∈ s} := Nonempty.map choice inferInstance
   refine ⟨?_⟩
   intro a b
   rcases hcover a with ⟨pa, hpa⟩
@@ -19214,9 +19211,9 @@ theorem cutSetStarGraph_connected_of_visibleBoundaryStarGraph_connected_of_edge_
               q.1 ∈ gridClausePrimalEndpoints d.1 ∧
                 gridClauseStarAdjacent c.1 d.1) :
     (cutSetStarGraph s).Connected := by
-  haveI : Nonempty {p // p ∈ visibleOuterBoundary visibleStage hull} :=
+  have : Nonempty {p // p ∈ visibleOuterBoundary visibleStage hull} :=
     hvis.nonempty
-  haveI : Nonempty {c // c ∈ s} := by
+  have : Nonempty {c // c ∈ s} := by
     let p0 : {p // p ∈ visibleOuterBoundary visibleStage hull} :=
       Classical.choice inferInstance
     rcases hedge (p := p0) (q := p0) (gridNodeStarAdjacent_refl p0.1) with
@@ -19346,9 +19343,9 @@ theorem cutSetStarGraph_connected_of_visibleBoundaryStarGraph_connected_of_choic
           exact hstep (by simpa [visibleOuterBoundaryStarRel] using hab))
         _ _ hvisReach
     exact hcollapse hchain
-  haveI : Nonempty {p // p ∈ visibleOuterBoundary visibleStage hull} :=
+  have : Nonempty {p // p ∈ visibleOuterBoundary visibleStage hull} :=
     hvis.nonempty
-  haveI : Nonempty {c // c ∈ s} := Nonempty.map choice inferInstance
+  have : Nonempty {c // c ∈ s} := Nonempty.map choice inferInstance
   refine ⟨?_⟩
   intro a b
   rcases hcover a with ⟨pa, hpa⟩
@@ -23632,7 +23629,7 @@ theorem symmetricGridZeroField_originSpin_queryProb_spinFlip
         (symmetricGridZeroFieldClassicalSpec w).toStrictlyPositiveInfiniteGroundMLNSpec.toInfiniteGroundMLNSpec
         Λ ξ).queryProb
         (gridOriginSpinLocalQueryInRegion Λ hOrigin (!b)) := by
-  unfold finiteVolumeMassSemantics MassSemantics.queryProb
+  unfold finiteVolumeMassSemantics Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   simp [symmetricGridZeroField_originSpin_queryMass_spinFlip,
     symmetricGridZeroField_finiteVolumePartition_spinFlip]
 
@@ -23674,7 +23671,7 @@ theorem symmetricGridZeroField_originSpin_queryProb_add_complement
       Msp Λ ξ
   have htop : Msp.finiteVolumePartition Λ ξ ≠ ⊤ := by
     simpa using finiteVolumePartition_ne_top Msp.toInfiniteGroundMLNSpec Λ ξ
-  unfold finiteVolumeMassSemantics MassSemantics.queryProb
+  unfold finiteVolumeMassSemantics Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   simp [Msp, hZ]
   rw [ENNReal.div_add_div_same]
   rw [symmetricGridZeroField_originSpin_queryMass_add_complement]
@@ -25065,11 +25062,11 @@ theorem symmetricGridZeroField_originSpinUp_plnStrictInterval_of_uniformFiniteVo
     fun I =>
       ((PplusFamily I : ProbabilityMeasure (LocalAssignment GridNode I)) :
         Measure (LocalAssignment GridNode I))
-  haveI hPminusProb : ∀ I : Finset GridNode, IsProbabilityMeasure (Pminus I) := by
+  have hPminusProb : ∀ I : Finset GridNode, IsProbabilityMeasure (Pminus I) := by
     intro I
     dsimp [Pminus]
     infer_instance
-  haveI hPplusProb : ∀ I : Finset GridNode, IsProbabilityMeasure (Pplus I) := by
+  have hPplusProb : ∀ I : Finset GridNode, IsProbabilityMeasure (Pplus I) := by
     intro I
     dsimp [Pplus]
     infer_instance
@@ -25479,7 +25476,7 @@ theorem symmetricGridZeroFieldBoundaryCompletion_originSpinUp_queryProb_le_of_un
           ((symmetricGridZeroFieldBoundaryMarginalFamily w ξ)
             originRegion originEvent)) :=
     symmetricGridZeroFieldBoundaryStageMarginal_tendsto w ξ originRegion originEvent hmeasOrigin
-  letI :
+  let :
       IsProbabilityMeasure
         ((symmetricGridZeroFieldBoundaryMarginalFamily w ξ) originRegion) := by
     dsimp [symmetricGridZeroFieldBoundaryMarginalFamily]
@@ -25554,7 +25551,7 @@ theorem symmetricGridZeroFieldBoundaryCompletion_originSpinUp_queryProb_ge_of_un
           ((symmetricGridZeroFieldBoundaryMarginalFamily w ξ)
             originRegion originEvent)) :=
     symmetricGridZeroFieldBoundaryStageMarginal_tendsto w ξ originRegion originEvent hmeasOrigin
-  letI :
+  let :
       IsProbabilityMeasure
         ((symmetricGridZeroFieldBoundaryMarginalFamily w ξ) originRegion) := by
     dsimp [symmetricGridZeroFieldBoundaryMarginalFamily]
@@ -25616,7 +25613,7 @@ theorem symmetricGridZeroField_queryEnvelope_precise_of_dobrushin
     (q : ConstraintQuery GridNode) :
     infiniteMLNLowerQueryEnvelope (symmetricGridZeroFieldClassicalSpec w) q =
       infiniteMLNUpperQueryEnvelope (symmetricGridZeroFieldClassicalSpec w) q := by
-  letI : Nonempty (DLRCompletion (symmetricGridZeroFieldClassicalSpec w)) :=
+  let : Nonempty (DLRCompletion (symmetricGridZeroFieldClassicalSpec w)) :=
     symmetricGridZeroField_dlrCompletion_nonempty w
   exact infiniteMLN_queryEnvelope_precise_of_uniform
     (symmetricGridZeroFieldClassicalSpec w) hM q

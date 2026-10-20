@@ -1,3 +1,4 @@
+import Mettapedia.Logic.MarkovLogicPolynomialReadout
 import Mettapedia.PLN.Bridges.Languages.PLNDistinctionCredalOSLFBridge
 import Mettapedia.PLN.Bridges.Languages.PLNContextGuardOSLFDescentBridge
 import Mettapedia.PLN.Bridges.Languages.PLNErrorMagnificationGrounding

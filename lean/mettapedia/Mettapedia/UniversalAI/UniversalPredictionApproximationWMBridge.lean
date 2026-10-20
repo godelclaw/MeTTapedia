@@ -26,7 +26,7 @@ namespace Mettapedia.UniversalAI.UniversalPrediction
 open scoped Classical
 open scoped BigOperators
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-- WM-style evidence view of a finite universal-mixture approximant.
 The evidence is chosen so that `toStrength` recovers the approximate mass. -/

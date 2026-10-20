@@ -1,4 +1,5 @@
 import Mettapedia.OSLF.MeTTaIL.Syntax
+import Mettapedia.GSLT.LanguageDef.ModuleSource.InductiveSyntax
 
 /-!
 # The `.module` format, as data
@@ -47,6 +48,7 @@ inductive Block where
   | replacements (rows : List Replacement)
   | equations (rows : List Equation)
   | rewrites (rows : List RewriteRule)
+  | inductives (families : List InductiveSyntax.Family)
   deriving Repr
 
 /-- A theory expression. -/

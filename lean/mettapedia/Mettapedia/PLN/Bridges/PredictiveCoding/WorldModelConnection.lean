@@ -27,8 +27,8 @@ namespace Mettapedia.PLN.Bridges.PredictiveCoding
 
 open Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.TruthValues.PLNTruthTower
 open Mettapedia.PLN.TruthValues.PLNWeightTV
 open scoped ENNReal

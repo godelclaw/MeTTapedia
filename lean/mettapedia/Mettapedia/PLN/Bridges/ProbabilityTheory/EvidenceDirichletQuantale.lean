@@ -34,7 +34,7 @@ This closes the limitation noted in the book (Ch 5, line 2145):
 namespace Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichletQuantale
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet
 
 /-! ## 1. The Dirichlet evidence type
@@ -76,7 +76,7 @@ theorem tensor_one (e : DirichletEv k) : e * 1 = e :=
 /-! ## 4. Hplus = coordinatewise addition
 
 The hplus `e₁ + e₂` gives `(e₁ + e₂) i = e₁ i + e₂ i`.
-This models independent evidence aggregation (parallel composition). -/
+This models aggregation of evidence from disjoint observations (parallel composition). -/
 
 theorem hplus_apply (e₁ e₂ : DirichletEv k) (i : Fin k) :
     (e₁ + e₂) i = e₁ i + e₂ i := rfl

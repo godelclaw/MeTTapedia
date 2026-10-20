@@ -81,7 +81,7 @@ end Templates
 
 section SocialSmoking
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 /-- Clause identifiers for the social-smoking ground MLN. -/
 inductive SocialClauseId where
@@ -107,9 +107,8 @@ private def cBob   : GroundAtom SmokePred Person := ⟨1, .cancer, fun _ => .bob
 private instance : Fintype (SmokePred 1) :=
   ⟨{.smokes, .cancer}, fun p => by cases p <;> simp⟩
 
-private def smokePredArityOne' : SmokePred n → n = 1
-  | .smokes => rfl
-  | .cancer => rfl
+private theorem smokePredArityOne' (predicate : SmokePred n) : n = 1 := by
+  cases predicate <;> rfl
 
 private noncomputable def socialGroundAtomEquiv :
     GroundAtom SmokePred Person ≃ SmokePred 1 × Person where
@@ -287,7 +286,7 @@ theorem social_worldWeight_fullSupport_eq
     by_cases hbad : W sAlice = true ∧ W cAlice = false
     · rw [if_pos hbad]
       exact eval_unsat _ (clause_not_holds_2 sAlice cAlice hbad.1 hbad.2)
-    · rw [if_neg hbad]; push_neg at hbad
+    · rw [if_neg hbad]; push Not at hbad
       by_cases hs : W sAlice = true
       · exact eval_sat _ (clause_holds_pos sAlice cAlice
           (by cases h : W cAlice <;> simp_all))
@@ -300,7 +299,7 @@ theorem social_worldWeight_fullSupport_eq
     by_cases hbad : W sBob = true ∧ W cBob = false
     · rw [if_pos hbad]
       exact eval_unsat _ (clause_not_holds_2 sBob cBob hbad.1 hbad.2)
-    · rw [if_neg hbad]; push_neg at hbad
+    · rw [if_neg hbad]; push Not at hbad
       by_cases hs : W sBob = true
       · exact eval_sat _ (clause_holds_pos sBob cBob
           (by cases h : W cBob <;> simp_all))
@@ -313,7 +312,7 @@ theorem social_worldWeight_fullSupport_eq
     by_cases hbad : W sAlice = true ∧ W sBob = false
     · rw [if_pos hbad]
       exact eval_unsat _ (clause_not_holds_2 sAlice sBob hbad.1 hbad.2)
-    · rw [if_neg hbad]; push_neg at hbad
+    · rw [if_neg hbad]; push Not at hbad
       by_cases hs : W sAlice = true
       · exact eval_sat _ (clause_holds_pos sAlice sBob
           (by cases h : W sBob <;> simp_all))
@@ -491,7 +490,7 @@ theorem social_queryProb_smokesBob_eq_three_fifths :
       (3 : ENNReal) / 5 := by
   have htotal : (clauseMassSemantics socialGroundMLN socialFullSupport).totalMass ≠ 0 := by
     rw [social_totalMass_eq_five]; norm_num
-  unfold MassSemantics.queryProb
+  unfold Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   rw [if_neg htotal, social_queryMass_smokesBob_eq_three, social_totalMass_eq_five]
 
 theorem social_queryProb_cancerBob_eq_four_fifths :
@@ -499,7 +498,7 @@ theorem social_queryProb_cancerBob_eq_four_fifths :
       (4 : ENNReal) / 5 := by
   have htotal : (clauseMassSemantics socialGroundMLN socialFullSupport).totalMass ≠ 0 := by
     rw [social_totalMass_eq_five]; norm_num
-  unfold MassSemantics.queryProb
+  unfold Mettapedia.ProbabilityTheory.MassSemantics.queryProb
   rw [if_neg htotal, social_queryMass_cancerBob_eq_four, social_totalMass_eq_five]
 
 /-! ### Canary theorems -/

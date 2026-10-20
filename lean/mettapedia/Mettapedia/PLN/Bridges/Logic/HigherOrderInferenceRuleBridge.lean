@@ -36,7 +36,7 @@ when the HO measure bridge is formalized.
 namespace Mettapedia.PLN.Bridges.Logic.HigherOrderInferenceRuleBridge
 
 open Mettapedia.PLN.RuleFamilies.HigherOrder.Reduction
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers
 open Mettapedia.Algebra.QuantaleWeakness
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNInferenceRules
@@ -79,8 +79,8 @@ theorem inheritance_uses_conditional_prob_structure
 To prove that our Inheritance exactly matches `memberToInheritance`, we need:
 
 1. **BinaryEvidence ↔ SimpleTruthValue bridge use**:
-   - Reuse `EvidenceSTVBridge.stvEquiv`
-   - Reuse `EvidenceQuantale.toSTV` / `EvidenceQuantale.ofSTV`
+   - Reuse `EvidenceSTVBridge.evidenceToSTV`
+   - Reuse `BinaryEvidence.toSTV` / `BinaryEvidence.ofSTV`
    - Instantiate bridge at the exact rule inputs in this file
 
 2. **Singleton SatisfyingSet interpretation**:

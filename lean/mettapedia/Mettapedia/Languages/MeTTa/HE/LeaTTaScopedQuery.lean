@@ -1,6 +1,11 @@
-import Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
-import Mettapedia.Languages.MeTTa.HE.LeaTTaMinimalInstructionConformance
-import Mettapedia.Languages.MeTTa.HE.LeaTTaExpectedBindingThreadingConformance
+import Mettapedia.Languages.MeTTa.HE.LeaTTaBindingMaterialization
+import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationExactConformance
+import Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal
+import Mettapedia.Languages.MeTTa.HE.LeaTTaMinimalControlReturn
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Independent query derivations for the actual LeaTTa work-item generator
@@ -15,9 +20,8 @@ The scope view contains names only; it is not a representation of the whole
 interpreter state. The complete scan preserves physical declaration positions, freshening
 counters and local branch ordinals through the actual static, added and
 imported candidate tables. Its full spawned list enters the existing retained
-machine with the original world and callers. Independent function-body
-completion composes at its stated materialization boundary; no native C
-implementation refinement or universal source grammar is claimed.
+machine with the original world and callers. No native C implementation
+refinement or universal source grammar is claimed.
 -/
 
 set_option autoImplicit false
@@ -32,18 +36,18 @@ def liveScope (previous : Metta.Minimal.Stack) : List Atom :=
   (Metta.Minimal.liveStackVars previous).map Atom.var
 
 theorem liveScope_name_mem {previous : Metta.Minimal.Stack} {atom : Atom} {name : String}
-    (member : atom ∈ liveScope previous) (occurrence : name ∈ (toLeaTTaAtom atom).vars) :
+    (member : atom ∈ liveScope previous) (occurrence : name ∈ (encodeModelAtom atom).vars) :
     name ∈ Metta.Minimal.liveStackVars previous := by
   obtain ⟨original, originalMember, rfl⟩ := List.mem_map.mp member
   have equal : name = original := by
-    simpa only [toLeaTTaAtom, Metta.Atom.vars, List.mem_singleton] using occurrence
+    simpa only [encodeModelAtom, Metta.Atom.vars, List.mem_singleton] using occurrence
   subst name
   exact originalMember
 
 theorem actual_scope_covers (previous : Metta.Minimal.Stack) (query : Atom)
     (incoming : Metta.Bindings) (image : LeaBindingsHEImage incoming) :
     ∀ name, QueryVisibleName (liveScope previous) query (QueryBindingProjection.project incoming) name →
-      name ∈ Metta.Minimal.queryOpAvoid previous (toLeaTTaAtom query) incoming := by
+      name ∈ Metta.Minimal.queryOpAvoid previous (encodeModelAtom query) incoming := by
   intro name visible
   have member := (EquationScope.mem_visibleNames_iff _ _ _ name).mpr visible
   simp only [EquationScope.visibleNames, List.mem_append, List.mem_flatMap] at member
@@ -56,15 +60,16 @@ theorem actual_scope_covers (previous : Metta.Minimal.Stack) (query : Atom)
 
 def freshRule (previous : Metta.Minimal.Stack) (query : Atom) (incoming : Metta.Bindings)
     (counter : Nat) (lhs rhs : Atom) : Atom × Atom :=
-  EquationFreshening.freshRule
-    (Metta.Minimal.queryOpAvoid previous (toLeaTTaAtom query) incoming) counter lhs rhs
+  LeaTTaTypePresentationExactConformance.EquationFreshening.freshRule
+    (Metta.Minimal.queryOpAvoid previous (encodeModelAtom query) incoming) counter lhs rhs
 
 theorem freshRule_alphaVariant (previous : Metta.Minimal.Stack) (query : Atom)
     (incoming : Metta.Bindings) (image : LeaBindingsHEImage incoming) (counter : Nat) (lhs rhs : Atom) :
     AlphaVariantRel (liveScope previous) query (QueryBindingProjection.project incoming) lhs rhs
       (freshRule previous query incoming counter lhs rhs).1
       (freshRule previous query incoming counter lhs rhs).2 :=
-  EquationFreshening.freshRule_alphaVariant_of_covers _ _ _ _ _ _ _
+  LeaTTaTypePresentationExactConformance.EquationFreshening.freshRule_alphaVariant_of_covers
+    _ _ _ _ _ _ _
     (actual_scope_covers previous query incoming image)
 
 /-- Each emitted item carries the exact stored row, fresh rule and reached
@@ -75,53 +80,52 @@ theorem queryOpItemsOfRule_occurrence_sound
     {incoming : Metta.Bindings} {counter position : Nat} {item : Metta.Minimal.Item}
     (stored : space.atoms[position]? = some (.expression [.symbol "=", lhs, rhs]))
     (image : LeaBindingsHEImage incoming) (runtime : LeaRuntimeBindingInvariant incoming)
-    (member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query)
-      incoming counter (toLeaTTaAtom lhs, toLeaTTaAtom rhs)) :
+    (member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query)
+      incoming counter (encodeModelAtom lhs, encodeModelAtom rhs)) :
     ∃ emitted output merged freshPattern freshRhs matched,
       EquationQueryOccurrenceRel space (liveScope previous) query
         (QueryBindingProjection.project incoming) position lhs rhs freshPattern freshRhs
         matched emitted output ∧
-      item = Metta.Minimal.evalResult previous (toLeaTTaAtom emitted) merged ∧
+      item = Metta.Minimal.evalResult previous (encodeModelAtom emitted) merged ∧
       ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
       ScopedEquationQuery.BindingInvariant output merged ∧
-      emitted = fromLeaTTaAtom (Metta.instantiate merged (toLeaTTaAtom freshRhs)) := by
+      emitted = decodeModelAtom (Metta.instantiate merged (encodeModelAtom freshRhs)) := by
   obtain ⟨matched, matchedMember, merged, mergedMember, loopFree, itemEq⟩ :=
     (mem_queryOpItemsOfRule_iff _ _ _ _ _ _).mp member
   let fresh := freshRule previous query incoming counter lhs rhs
-  have translation := EquationFreshening.freshRule_translation
-    (Metta.Minimal.queryOpAvoid previous (toLeaTTaAtom query) incoming) counter lhs rhs
+  have translation := LeaTTaTypePresentationExactConformance.EquationFreshening.freshRule_translation
+    (Metta.Minimal.queryOpAvoid previous (encodeModelAtom query) incoming) counter lhs rhs
   have patternTranslation := congrArg Prod.fst translation
   have rhsTranslation := congrArg Prod.snd translation
   simp only at patternTranslation rhsTranslation
-  change toLeaTTaAtom fresh.1 = _ at patternTranslation
-  change toLeaTTaAtom fresh.2 = _ at rhsTranslation
+  change encodeModelAtom fresh.1 = _ at patternTranslation
+  change encodeModelAtom fresh.2 = _ at rhsTranslation
   rw [← patternTranslation] at matchedMember
   obtain ⟨specMatched, output, matchDerivation, mergeDerivation, next, observation⟩ :=
-    queryOp_hit_observational_sound (rhs := toLeaTTaAtom fresh.2)
+    queryOp_hit_observational_sound (rhs := encodeModelAtom fresh.2)
       (QueryBindingProjection.paired incoming image runtime).semantic matchedMember mergedMember loopFree
   have matchedImage : LeaBindingsHEImage matched :=
-    leaMatchAtoms_result_heImage (leaAtomHEImage_toLeaTTaAtom fresh.1)
-      (leaAtomHEImage_toLeaTTaAtom query) matchedMember
+    leaMatchAtoms_result_heImage (leaAtomHEImage_encodeModelAtom fresh.1)
+      (leaAtomHEImage_encodeModelAtom query) matchedMember
   have mergedImage : LeaBindingsHEImage merged :=
     leaMerge_result_image image matchedImage mergedMember
-  have emittedImage : LeaAtomHEImage (Metta.instantiate merged (toLeaTTaAtom fresh.2)) :=
-    instantiate_heImage mergedImage _ (leaAtomHEImage_toLeaTTaAtom fresh.2)
-  let emitted := fromLeaTTaAtom (Metta.instantiate merged (toLeaTTaAtom fresh.2))
+  have emittedImage : LeaAtomHEImage (Metta.instantiate merged (encodeModelAtom fresh.2)) :=
+    instantiate_heImage mergedImage _ (leaAtomHEImage_encodeModelAtom fresh.2)
+  let emitted := decodeModelAtom (Metta.instantiate merged (encodeModelAtom fresh.2))
   have projected := QueryBindingProjection.paired merged mergedImage next.runtime
   have satisfied : HEBindingSatisfied (leaClassSolution merged) output :=
     (next.solutionTheory (leaClassSolution merged)).mpr next.runtime.canonical.1
   refine ⟨emitted, output, merged, fresh.1, fresh.2, specMatched, ?_, ?_,
     projected, ⟨next, mergedImage⟩, rfl⟩
   · refine ⟨stored, ⟨freshRule_alphaVariant _ _ _ image _ _ _, matchDerivation⟩,
-      mergeDerivation,
-      semanticLoopFree_of_satisfied_nonvariable satisfied next.specAssignmentsNonVariable,
-      ⟨leaClassSolution merged, satisfied⟩, ?_⟩
+      (mergeDerivation.logicalMerge
+        ⟨_, specTypeBindingSatisfied_of_heBindingSatisfied satisfied⟩).comm, ?_⟩
     intro valuation outputSatisfied
     unfold HEAtomEquationSatisfied
-    rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage emittedImage]
+    rw [encodeModelAtom_decodeModelAtom_of_heImage emittedImage]
     exact observation valuation outputSatisfied
   · rw [itemEq, ← rhsTranslation]
-    rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage emittedImage]
+    rw [encodeModelAtom_decodeModelAtom_of_heImage emittedImage]
 
 /-- A returned work item constructs its independent equation-query derivation,
 exact executable continuation and next representable, paired binding state. -/
@@ -129,12 +133,12 @@ private theorem queryOpItemsOfRule_sound_witness {space : Space} {previous : Met
     {query lhs rhs : Atom} {incoming : Metta.Bindings} {counter : Nat} {item : Metta.Minimal.Item}
     (stored : .expression [.symbol "=", lhs, rhs] ∈ space.atoms)
     (image : LeaBindingsHEImage incoming) (runtime : LeaRuntimeBindingInvariant incoming)
-    (member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query)
-      incoming counter (toLeaTTaAtom lhs, toLeaTTaAtom rhs)) :
+    (member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query)
+      incoming counter (encodeModelAtom lhs, encodeModelAtom rhs)) :
     ∃ emitted output merged,
       EquationQueryCandidateRel space (liveScope previous) query
           (QueryBindingProjection.project incoming) emitted output ∧
-        item = Metta.Minimal.evalResult previous (toLeaTTaAtom emitted) merged ∧
+        item = Metta.Minimal.evalResult previous (encodeModelAtom emitted) merged ∧
         ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
         (∀ valuation,
           HEBindingSatisfied valuation output ↔
@@ -143,7 +147,7 @@ private theorem queryOpItemsOfRule_sound_witness {space : Space} {previous : Met
         ∃ rawRhs,
           EquationQueryCandidateRel space (liveScope previous) query
             (QueryBindingProjection.project incoming) rawRhs output ∧
-          emitted = fromLeaTTaAtom (Metta.instantiate merged (toLeaTTaAtom rawRhs)) := by
+          emitted = decodeModelAtom (Metta.instantiate merged (encodeModelAtom rawRhs)) := by
   obtain ⟨position, storedAt⟩ := List.mem_iff_getElem?.mp stored
   obtain ⟨emitted, output, merged, pattern, rawRhs, matched, occurrence, itemEq,
     projected, paired, emittedEq⟩ :=
@@ -155,7 +159,7 @@ private theorem queryOpItemsOfRule_sound_witness {space : Space} {previous : Met
       (projected.semantic.solutionTheory valuation).symm
   · refine ⟨pattern, rawRhs, matched,
       ⟨lhs, rhs, stored, occurrence.selected⟩,
-      occurrence.result.1, occurrence.result.2.1, occurrence.result.2.2.1, ?_⟩
+      occurrence.result.1, ?_⟩
     intro valuation satisfied
     rfl
 
@@ -163,12 +167,12 @@ theorem queryOpItemsOfRule_sound {space : Space} {previous : Metta.Minimal.Stack
     {query lhs rhs : Atom} {incoming : Metta.Bindings} {counter : Nat} {item : Metta.Minimal.Item}
     (stored : .expression [.symbol "=", lhs, rhs] ∈ space.atoms)
     (image : LeaBindingsHEImage incoming) (runtime : LeaRuntimeBindingInvariant incoming)
-    (member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query)
-      incoming counter (toLeaTTaAtom lhs, toLeaTTaAtom rhs)) :
+    (member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query)
+      incoming counter (encodeModelAtom lhs, encodeModelAtom rhs)) :
     ∃ emitted output merged,
       EquationQueryCandidateRel space (liveScope previous) query
           (QueryBindingProjection.project incoming) emitted output ∧
-        item = Metta.Minimal.evalResult previous (toLeaTTaAtom emitted) merged ∧
+        item = Metta.Minimal.evalResult previous (encodeModelAtom emitted) merged ∧
         ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
         (∀ valuation,
           HEBindingSatisfied valuation output ↔
@@ -190,15 +194,15 @@ theorem queryOpItemsOfRule_producer_materialization
     {incoming : Metta.Bindings} {counter : Nat} {item : Metta.Minimal.Item}
     (stored : .expression [.symbol "=", lhs, rhs] ∈ space.atoms)
     (image : LeaBindingsHEImage incoming) (runtime : LeaRuntimeBindingInvariant incoming)
-    (member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query)
-      incoming counter (toLeaTTaAtom lhs, toLeaTTaAtom rhs)) :
+    (member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query)
+      incoming counter (encodeModelAtom lhs, encodeModelAtom rhs)) :
     ∃ rawRhs normalized emitted output merged,
       EquationQueryCandidateRel space (liveScope previous) query
         (QueryBindingProjection.project incoming) rawRhs output ∧
       ScopedEquationQuery.BindingInvariant output merged ∧
       ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
-      item = Metta.Minimal.evalResult previous (toLeaTTaAtom emitted) merged ∧
-      emitted = fromLeaTTaAtom (Metta.instantiate merged (toLeaTTaAtom rawRhs)) ∧
+      item = Metta.Minimal.evalResult previous (encodeModelAtom emitted) merged ∧
+      emitted = decodeModelAtom (Metta.instantiate merged (encodeModelAtom rawRhs)) ∧
       Spec.Type.Presentation.BindingTheory.BindingMaterializationRel output rawRhs normalized ∧
       Spec.Type.Presentation.Alpha.ObservedTypeAlphaRel normalized emitted ∧
       (Spec.Eval.Minimal.IsFunction normalized ↔ Spec.Eval.Minimal.IsFunction emitted) ∧
@@ -209,7 +213,7 @@ theorem queryOpItemsOfRule_producer_materialization
         ¬Spec.Eval.Minimal.HostCall dispatch query →
         Spec.Eval.Minimal.embeddedInstruction query = false →
         Spec.Eval.Minimal.CoreInvocationResultRel space dispatch (liveScope previous)
-          normalized output result (typing := typing) (caller := caller) →
+          normalized output result (typing := typing) (caller := some query) →
         Spec.Eval.Minimal.CoreInvocationRel space dispatch (liveScope previous)
           query (QueryBindingProjection.project incoming) result (typing := typing) (caller := caller)) ∧
       ((∀ tail, normalized ≠ .expression (.symbol "function" :: tail)) →
@@ -219,7 +223,7 @@ theorem queryOpItemsOfRule_producer_materialization
           Spec.Eval.Minimal.CoreInvocationRel space dispatch (liveScope previous)
             query (QueryBindingProjection.project incoming) (normalized, output)
             (typing := typing) (caller := caller)) ∧
-        item = Metta.Minimal.finItem previous (toLeaTTaAtom emitted) merged) := by
+        item = Metta.Minimal.finItem previous (encodeModelAtom emitted) merged) := by
   obtain ⟨emitted, output, merged, _, itemEq, projected, _, paired, rawRhs, candidate, emittedEq⟩ :=
     queryOpItemsOfRule_sound_witness stored image runtime member
   obtain ⟨normalized, materialized, alpha⟩ :=
@@ -229,12 +233,12 @@ theorem queryOpItemsOfRule_producer_materialization
       ¬Spec.Eval.Minimal.HostCall dispatch query →
       Spec.Eval.Minimal.embeddedInstruction query = false →
       Spec.Eval.Minimal.CoreInvocationResultRel space dispatch (liveScope previous)
-        normalized output result (typing := typing) (caller := caller) →
+        normalized output result (typing := typing) (caller := some query) →
       Spec.Eval.Minimal.CoreInvocationRel space dispatch (liveScope previous)
         query (QueryBindingProjection.project incoming) result (typing := typing) (caller := caller) := by
     intro dispatch typing caller result notHost notEmbedded completed
     exact .equation space query rawRhs normalized (QueryBindingProjection.project incoming)
-      output result notHost notEmbedded candidate materialized completed
+      output result notHost notEmbedded candidate (.historical _ _) materialized completed
   refine ⟨rawRhs, normalized, emitted, output, merged, candidate, paired, projected,
     itemEq, emittedEq, materialized, alpha,
     Spec.Eval.Minimal.isFunction_of_observedTypeAlpha_iff alpha,
@@ -244,17 +248,17 @@ theorem queryOpItemsOfRule_producer_materialization
   · intro dispatch typing caller notHost notEmbedded
     exact invoke dispatch typing caller (normalized, output) notHost notEmbedded
       (.raw space normalized output (fun ⟨body, shape⟩ => raw [body] shape))
-  have actualRaw : ∀ tail, toLeaTTaAtom emitted ≠ .expr (.sym "function" :: tail) := by
+  have actualRaw : ∀ tail, encodeModelAtom emitted ≠ .expr (.sym "function" :: tail) := by
     intro tail shape
-    have decoded := congrArg fromLeaTTaAtom shape
+    have decoded := congrArg decodeModelAtom shape
     have actualHead : ∃ values, emitted = .expression (.symbol "function" :: values) :=
-      ⟨fromLeaTTaAtoms tail, by simpa only [fromLeaTTaAtom_toLeaTTaAtom,
-        fromLeaTTaAtom, fromLeaTTaAtoms] using decoded⟩
+      ⟨decodeModelAtoms tail, by simpa only [decodeModelAtom_encodeModelAtom,
+        decodeModelAtom, decodeModelAtoms] using decoded⟩
     obtain ⟨sourceTail, sourceHead⟩ :=
       (Spec.Eval.Minimal.functionHead_of_observedTypeAlpha_iff alpha).mpr actualHead
     exact raw sourceTail sourceHead
   exact itemEq.trans (LeaTTaMinimalControlExecution.evalResult_raw_of_not_function_head
-    previous (toLeaTTaAtom emitted) merged actualRaw)
+    previous (encodeModelAtom emitted) merged actualRaw)
 
 /-- Any legal independent fresh variant of the same physical raw equation
 produces an actual query work item. Its original saved continuation is passed
@@ -277,13 +281,13 @@ private theorem queryOpItemsOfRule_occurrence_arbitrary_alpha_witness
       (∀ name, QueryVisibleName (liveScope previous) query
         (QueryBindingProjection.project incoming) name → permutation name = name) ∧
       nativeMatched ∈ Metta.matchAtoms
-        (toLeaTTaAtom (freshRule previous query incoming counter lhs rhs).1)
-        (toLeaTTaAtom query) ∧
+        (encodeModelAtom (freshRule previous query incoming counter lhs rhs).1)
+        (encodeModelAtom query) ∧
       merged ∈ Metta.Bindings.merge incoming nativeMatched ∧
       merged.hasLoop = false ∧
-      item ∈ Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query) incoming counter
-        (toLeaTTaAtom lhs, toLeaTTaAtom rhs) ∧
-      item = Metta.Minimal.evalResult previous (toLeaTTaAtom actualEmitted) merged ∧
+      item ∈ Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query) incoming counter
+        (encodeModelAtom lhs, encodeModelAtom rhs) ∧
+      item = Metta.Minimal.evalResult previous (encodeModelAtom actualEmitted) merged ∧
       EquationQueryOccurrenceRel space (liveScope previous) query
         (QueryBindingProjection.project incoming) position lhs rhs
         (freshRule previous query incoming counter lhs rhs).1
@@ -293,8 +297,8 @@ private theorem queryOpItemsOfRule_occurrence_arbitrary_alpha_witness
       (∀ valuation,
         HEBindingSatisfied valuation (QueryBindingProjection.project merged) ↔
           HEBindingSatisfied (valuation ∘ permutation) output) ∧
-      actualEmitted = fromLeaTTaAtom (Metta.instantiate merged
-        (toLeaTTaAtom (freshRule previous query incoming counter lhs rhs).2)) ∧
+      actualEmitted = decodeModelAtom (Metta.instantiate merged
+        (encodeModelAtom (freshRule previous query incoming counter lhs rhs).2)) ∧
       ∀ valuation, HEBindingSatisfied valuation (QueryBindingProjection.project merged) →
         HEAtomEquationSatisfied valuation actualEmitted
           (Spec.Type.RuntimeRefinement.renameTypeVars permutation emitted) := by
@@ -306,27 +310,39 @@ private theorem queryOpItemsOfRule_occurrence_arbitrary_alpha_witness
   let fresh := freshRule previous query incoming counter lhs rhs
   have disjoint : VarsDisjoint query fresh.1 := by
     intro name queryName freshName
-    have avoided := EquationFreshening.freshRule_variables_avoid
-      (Metta.Minimal.queryOpAvoid previous (toLeaTTaAtom query) incoming)
+    have avoided := LeaTTaTypePresentationExactConformance.EquationFreshening.freshRule_variables_avoid
+      (Metta.Minimal.queryOpAvoid previous (encodeModelAtom query) incoming)
       counter lhs rhs name (List.mem_append_left _ freshName)
     exact avoided (by simp only [Metta.Minimal.queryOpAvoid, List.mem_append]; tauto)
-  obtain ⟨nativeMatched, merged, matchMember, mergeMember, loopFree, equivalent⟩ :=
+  obtain ⟨sourceModel, sourceSatisfied⟩ := target.result.1.he_model
+  have common := (target.result.1.he_solutions sourceModel).mp sourceSatisfied
+  obtain ⟨callerFirst, callerFirstMerge, callerFirstSatisfied, _callerFirstShape⟩ :=
+    Spec.Match.Completeness.exists_specMerge_of_solution
+      common.2 paired.semantic.specAssignmentsNonVariable
+      common.1 (Spec.Match.ModelTheory.specMatch_assignmentsNonVariable target.selected.2)
+  have callerFirstTheory (valuation : String → Metta.Atom) :
+      HEBindingSatisfied valuation targetOutput ↔ HEBindingSatisfied valuation callerFirst := by
+    rw [target.result.1.he_solutions,
+      Spec.Match.SolutionTheory.mergeRel_solution_iff callerFirstMerge, and_comm]
+  obtain ⟨nativeMatched, merged, matchMember, mergeMember, loopFree, callerFirstEquivalent⟩ :=
     queryOp_hit_exists_of_spec paired.semantic.solutionTheory runtime.noFloat
       runtime.assignmentsNonVariable runtime.equalitiesIrreflexive disjoint
-      target.selected.2 target.result.1 target.result.2.2.1
+      target.selected.2 callerFirstMerge ⟨sourceModel, callerFirstSatisfied⟩
+  have equivalent : LeaBindingSolutionTheoryEquiv targetOutput merged :=
+    fun valuation => (callerFirstTheory valuation).trans (callerFirstEquivalent valuation)
   have matchedImage : LeaBindingsHEImage nativeMatched :=
-    leaMatchAtoms_result_heImage (leaAtomHEImage_toLeaTTaAtom fresh.1)
-      (leaAtomHEImage_toLeaTTaAtom query) matchMember
+    leaMatchAtoms_result_heImage (leaAtomHEImage_encodeModelAtom fresh.1)
+      (leaAtomHEImage_encodeModelAtom query) matchMember
   have mergedImage := leaMerge_result_image image matchedImage mergeMember
   have mergedRuntime := runtime.merge_matchOutput
-    (toLeaTTaAtom_noFloat fresh.1) (toLeaTTaAtom_noFloat query)
+    (encodeModelAtom_noFloat fresh.1) (encodeModelAtom_noFloat query)
     matchMember mergeMember loopFree
-  let actualEmitted := fromLeaTTaAtom (Metta.instantiate merged (toLeaTTaAtom fresh.2))
-  let item := Metta.Minimal.evalResult previous (toLeaTTaAtom actualEmitted) merged
-  have emittedImage := instantiate_heImage mergedImage _ (leaAtomHEImage_toLeaTTaAtom fresh.2)
-  have emittedTranslation : toLeaTTaAtom actualEmitted =
-      Metta.instantiate merged (toLeaTTaAtom fresh.2) :=
-    toLeaTTaAtom_fromLeaTTaAtom_of_heImage emittedImage
+  let actualEmitted := decodeModelAtom (Metta.instantiate merged (encodeModelAtom fresh.2))
+  let item := Metta.Minimal.evalResult previous (encodeModelAtom actualEmitted) merged
+  have emittedImage := instantiate_heImage mergedImage _ (leaAtomHEImage_encodeModelAtom fresh.2)
+  have emittedTranslation : encodeModelAtom actualEmitted =
+      Metta.instantiate merged (encodeModelAtom fresh.2) :=
+    encodeModelAtom_decodeModelAtom_of_heImage emittedImage
   have projected := QueryBindingProjection.paired merged mergedImage mergedRuntime
   have projectedTheory (valuation : String → Metta.Atom) :
       HEBindingSatisfied valuation (QueryBindingProjection.project merged) ↔
@@ -338,29 +354,29 @@ private theorem queryOpItemsOfRule_occurrence_arbitrary_alpha_witness
         (Spec.Type.RuntimeRefinement.renameTypeVars permutation emitted) := by
     unfold HEAtomEquationSatisfied
     rw [emittedTranslation]
-    exact (anchored_observable_inert equivalent satisfied (toLeaTTaAtom fresh.2)).trans
-      (target.result.2.2.2 valuation satisfied).symm
-  have translation := EquationFreshening.freshRule_translation
-    (Metta.Minimal.queryOpAvoid previous (toLeaTTaAtom query) incoming) counter lhs rhs
+    exact (anchored_observable_inert equivalent satisfied (encodeModelAtom fresh.2)).trans
+      (target.result.2 valuation satisfied).symm
+  have translation := LeaTTaTypePresentationExactConformance.EquationFreshening.freshRule_translation
+    (Metta.Minimal.queryOpAvoid previous (encodeModelAtom query) incoming) counter lhs rhs
   have patternTranslation := congrArg Prod.fst translation
   have rhsTranslation := congrArg Prod.snd translation
-  change toLeaTTaAtom fresh.1 = _ at patternTranslation
-  change toLeaTTaAtom fresh.2 = _ at rhsTranslation
-  have member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query)
-      incoming counter (toLeaTTaAtom lhs, toLeaTTaAtom rhs) := by
+  change encodeModelAtom fresh.1 = _ at patternTranslation
+  change encodeModelAtom fresh.2 = _ at rhsTranslation
+  have member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query)
+      incoming counter (encodeModelAtom lhs, encodeModelAtom rhs) := by
     apply (mem_queryOpItemsOfRule_iff _ _ _ _ _ _).mpr
     refine ⟨nativeMatched, ?_, merged, mergeMember, loopFree, ?_⟩
     · simpa only [← patternTranslation] using matchMember
-    · change Metta.Minimal.evalResult previous (toLeaTTaAtom actualEmitted) merged = _
+    · change Metta.Minimal.evalResult previous (encodeModelAtom actualEmitted) merged = _
       rw [emittedTranslation, rhsTranslation]
   refine ⟨permutation, actualEmitted, targetMatched, targetOutput, nativeMatched, merged, item,
     fixed, matchMember, mergeMember, loopFree, member, rfl,
     ⟨target.stored, target.selected,
-      ⟨target.result.1, target.result.2.1, target.result.2.2.1, ?_⟩⟩,
+      ⟨target.result.1, ?_⟩⟩,
     projected, (fun valuation => (projectedTheory valuation).trans (theory valuation)), rfl,
     fun valuation satisfied => observation valuation ((projectedTheory valuation).mp satisfied)⟩
   intro valuation satisfied
-  exact (observation valuation satisfied).trans (target.result.2.2.2 valuation satisfied)
+  exact (observation valuation satisfied).trans (target.result.2 valuation satisfied)
 
 /-- Arbitrary legal variants realize the actual query continuation, retaining
 the physical occurrence, native bindings and complete reindexed theory. -/
@@ -376,13 +392,13 @@ theorem queryOpItemsOfRule_occurrence_arbitrary_alpha_complete
       (∀ name, QueryVisibleName (liveScope previous) query
         (QueryBindingProjection.project incoming) name → permutation name = name) ∧
       nativeMatched ∈ Metta.matchAtoms
-        (toLeaTTaAtom (freshRule previous query incoming counter lhs rhs).1)
-        (toLeaTTaAtom query) ∧
+        (encodeModelAtom (freshRule previous query incoming counter lhs rhs).1)
+        (encodeModelAtom query) ∧
       merged ∈ Metta.Bindings.merge incoming nativeMatched ∧
       merged.hasLoop = false ∧
-      item ∈ Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query) incoming counter
-        (toLeaTTaAtom lhs, toLeaTTaAtom rhs) ∧
-      item = Metta.Minimal.evalResult previous (toLeaTTaAtom actualEmitted) merged ∧
+      item ∈ Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query) incoming counter
+        (encodeModelAtom lhs, encodeModelAtom rhs) ∧
+      item = Metta.Minimal.evalResult previous (encodeModelAtom actualEmitted) merged ∧
       EquationQueryOccurrenceRel space (liveScope previous) query
         (QueryBindingProjection.project incoming) position lhs rhs
         (freshRule previous query incoming counter lhs rhs).1
@@ -416,35 +432,36 @@ theorem queryOpItemsOfRule_occurrence_materialized_complete
     ∃ permutation : Equiv.Perm String, ∃ actualEmitted merged item,
       (∀ name, QueryVisibleName (liveScope previous) query
         (QueryBindingProjection.project incoming) name → permutation name = name) ∧
-      item ∈ Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query) incoming counter
-        (toLeaTTaAtom lhs, toLeaTTaAtom rhs) ∧
-      item = Metta.Minimal.evalResult previous (toLeaTTaAtom actualEmitted) merged ∧
+      item ∈ Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query) incoming counter
+        (encodeModelAtom lhs, encodeModelAtom rhs) ∧
+      item = Metta.Minimal.evalResult previous (encodeModelAtom actualEmitted) merged ∧
       item = Metta.Minimal.evalResult previous
-        (Metta.instantiate merged (toLeaTTaAtom
+        (Metta.instantiate merged (encodeModelAtom
           (Spec.Type.RuntimeRefinement.renameTypeVars permutation emitted))) merged ∧
       ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
       (∀ valuation, HEBindingSatisfied valuation (QueryBindingProjection.project merged) ↔
         HEBindingSatisfied (valuation ∘ permutation) output) ∧
       ∀ environment state,
-        Metta.Minimal.evalOp environment state previous (toLeaTTaAtom actualEmitted) merged =
+        Metta.Minimal.evalOp environment state previous (encodeModelAtom actualEmitted) merged =
           Metta.Minimal.evalOp environment state previous
-            (toLeaTTaAtom (Spec.Type.RuntimeRefinement.renameTypeVars permutation emitted)) merged := by
+            (encodeModelAtom (Spec.Type.RuntimeRefinement.renameTypeVars permutation emitted)) merged := by
   obtain ⟨permutation, actualEmitted, _, _, nativeMatched, merged, item,
     fixed, matchMember, mergeMember, _, member, itemEq, _, paired, theory, emittedEq, observed⟩ :=
     queryOpItemsOfRule_occurrence_arbitrary_alpha_witness (counter := counter) image runtime source
   have matchedImage : LeaBindingsHEImage nativeMatched :=
     leaMatchAtoms_result_heImage
-      (leaAtomHEImage_toLeaTTaAtom (freshRule previous query incoming counter lhs rhs).1)
-      (leaAtomHEImage_toLeaTTaAtom query) matchMember
+      (leaAtomHEImage_encodeModelAtom (freshRule previous query incoming counter lhs rhs).1)
+      (leaAtomHEImage_encodeModelAtom query) matchMember
   have mergedImage := leaMerge_result_image image matchedImage mergeMember
   have emittedImage := instantiate_heImage mergedImage _
-    (leaAtomHEImage_toLeaTTaAtom (freshRule previous query incoming counter lhs rhs).2)
+    (leaAtomHEImage_encodeModelAtom (freshRule previous query incoming counter lhs rhs).2)
   have sameMaterialized := paired.semantic.materializes_observation observed
-  have fixedEmission : Metta.instantiate merged (toLeaTTaAtom actualEmitted) =
-      toLeaTTaAtom actualEmitted := by
-    rw [emittedEq, toLeaTTaAtom_fromLeaTTaAtom_of_heImage emittedImage]
-    exact LeaTTaExpectedBindingThreadingConformance.instantiate_idempotent_of_runtimeInvariant
-      paired.semantic.runtime _
+  have fixedEmission : Metta.instantiate merged (encodeModelAtom actualEmitted) =
+      encodeModelAtom actualEmitted := by
+    rw [emittedEq, encodeModelAtom_decodeModelAtom_of_heImage emittedImage]
+    have inert := instantiate_semantically_inert paired.semantic.runtime.canonical.1
+      (encodeModelAtom (freshRule previous query incoming counter lhs rhs).2)
+    simpa only [applyClassSolution_lea_eq_instantiate] using inert
   refine ⟨permutation, actualEmitted, merged, item, fixed, member, itemEq, ?_, paired, theory, ?_⟩
   · rw [← sameMaterialized, fixedEmission]
     exact itemEq
@@ -467,9 +484,9 @@ theorem queryOpItemsOfRule_occurrence_normal_presentation_complete
     ∃ presentation : Spec.Type.Presentation.TypeSubst, ∃ value merged item,
       (∀ name, QueryVisibleName (liveScope previous) query
         (QueryBindingProjection.project incoming) name → permutation name = name) ∧
-      item ∈ Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query) incoming counter
-        (toLeaTTaAtom lhs, toLeaTTaAtom rhs) ∧
-      item = Metta.Minimal.evalResult previous (toLeaTTaAtom value) merged ∧
+      item ∈ Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query) incoming counter
+        (encodeModelAtom lhs, encodeModelAtom rhs) ∧
+      item = Metta.Minimal.evalResult previous (encodeModelAtom value) merged ∧
       ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
       presentation.Normal ∧
       (∀ valuation, Spec.Type.Presentation.Theory.TypeSubstSatisfied valuation presentation ↔
@@ -499,7 +516,7 @@ theorem queryOpItemsOfRule_occurrence_normal_presentation_complete
             (QueryBindingProjection.project merged)
             (presentation.apply (Spec.Type.RuntimeRefinement.renameTypeVars permutation emitted),
               QueryBindingProjection.project merged) (typing := typing) (caller := caller)) ∧
-        item = Metta.Minimal.finItem previous (toLeaTTaAtom value) merged) ∧
+        item = Metta.Minimal.finItem previous (encodeModelAtom value) merged) ∧
       Spec.Type.Presentation.BindingTheory.EquationListPresentationRel
         (Spec.Type.Presentation.BindingTheory.bindingAtomEquations (QueryBindingProjection.project merged))
         [] presentation ∧
@@ -517,14 +534,14 @@ theorem queryOpItemsOfRule_occurrence_normal_presentation_complete
   have exactTheory := fold.bindingTheory.2
   have alpha := QueryBindingProjection.normal_materialization_alpha paired.semantic normal exactTheory
   let renamed := Spec.Type.RuntimeRefinement.renameTypeVars permutation emitted
-  let materialized := Metta.instantiate merged (toLeaTTaAtom renamed)
-  let value := fromLeaTTaAtom materialized
+  let materialized := Metta.instantiate merged (encodeModelAtom renamed)
+  let value := decodeModelAtom materialized
   have valueImage : LeaAtomHEImage materialized :=
-    instantiate_heImage paired.image _ (leaAtomHEImage_toLeaTTaAtom renamed)
-  have entry : item = Metta.Minimal.evalResult previous (toLeaTTaAtom value) merged := by
+    instantiate_heImage paired.image _ (leaAtomHEImage_encodeModelAtom renamed)
+  have entry : item = Metta.Minimal.evalResult previous (encodeModelAtom value) merged := by
     change item = Metta.Minimal.evalResult previous
-      (toLeaTTaAtom (fromLeaTTaAtom materialized)) merged
-    rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage valueImage]
+      (encodeModelAtom (decodeModelAtom materialized)) merged
+    rw [encodeModelAtom_decodeModelAtom_of_heImage valueImage]
     exact materializedItem
   have observed := alpha renamed
   have functionHead := Spec.Eval.Minimal.functionHead_of_observedTypeAlpha_iff observed
@@ -538,50 +555,21 @@ theorem queryOpItemsOfRule_occurrence_normal_presentation_complete
   refine ⟨?_, ?_⟩
   · intro dispatch typing caller
     exact .raw space _ _ (fun ⟨body, function⟩ => raw [body] function)
-  have actualRaw : ∀ tail, toLeaTTaAtom value ≠ .expr (.sym "function" :: tail) := by
+  have actualRaw : ∀ tail, encodeModelAtom value ≠ .expr (.sym "function" :: tail) := by
     intro tail function
-    have decoded := congrArg fromLeaTTaAtom function
+    have decoded := congrArg decodeModelAtom function
     have valueHead : ∃ values, value = .expression (.symbol "function" :: values) :=
-      ⟨fromLeaTTaAtoms tail, by simpa only [fromLeaTTaAtom_toLeaTTaAtom,
-        fromLeaTTaAtom, fromLeaTTaAtoms] using decoded⟩
+      ⟨decodeModelAtoms tail, by simpa only [decodeModelAtom_encodeModelAtom,
+        decodeModelAtom, decodeModelAtoms] using decoded⟩
     obtain ⟨sourceTail, sourceHead⟩ := functionHead.mpr valueHead
     exact raw sourceTail sourceHead
   exact entry.trans (LeaTTaMinimalControlExecution.evalResult_raw_of_not_function_head
-    previous (toLeaTTaAtom value) merged actualRaw)
-
-/-- Actual query soundness composes with the guarded raw completion lane.
-No second merge or ordinary evaluation is inserted at this boundary. -/
-theorem queryOpItemsOfRule_raw_completion
-    {space : Space} {previous : Metta.Minimal.Stack} {query lhs rhs : Atom}
-    {incoming : Metta.Bindings} {counter : Nat} {item : Metta.Minimal.Item}
-    (stored : .expression [.symbol "=", lhs, rhs] ∈ space.atoms)
-    (image : LeaBindingsHEImage incoming) (runtime : LeaRuntimeBindingInvariant incoming)
-    (member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query)
-      incoming counter (toLeaTTaAtom lhs, toLeaTTaAtom rhs)) :
-    ∃ emitted output merged,
-      EquationQueryCandidateRel space (liveScope previous) query
-        (QueryBindingProjection.project incoming) emitted output ∧
-      ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
-      ((∀ tail, toLeaTTaAtom emitted ≠ .expr (.sym "function" :: tail)) →
-      ∀ dispatch typing caller,
-        Spec.Eval.Minimal.CoreInvocationResultRel space dispatch (liveScope previous)
-          emitted output (emitted, output) (typing := typing) (caller := caller) ∧
-        item = Metta.Minimal.finItem previous (toLeaTTaAtom emitted) merged) := by
-  obtain ⟨emitted, output, merged, candidate, itemEq, paired, _, _⟩ :=
-    queryOpItemsOfRule_sound stored image runtime member
-  refine ⟨emitted, output, merged, candidate, paired, ?_⟩
-  intro raw dispatch typing caller
-  have completed := LeaTTaMinimalInstructionConformance.raw_completion_of_not_function_head
-    (caller := caller)
-    space dispatch (liveScope previous) typing emitted output previous merged raw
-  exact ⟨completed.1, itemEq.trans completed.2⟩
-
+    previous (encodeModelAtom value) merged actualRaw)
 
 /-! ## Source occurrences through the complete retained query scan -/
 
 open Metta.Minimal
 open LeaTTaMinimalControlExecution LeaTTaMinimalControlExecution.Retained
-open LeaTTaMinimalInstructionConformance
 open Spec.Eval.Minimal Spec.Type.Presentation Spec.Type.RuntimeRefinement
 open Spec.Type.Presentation.BindingTheory
 open Mettapedia.GSLT.Distinction.ProductiveBlocks
@@ -593,7 +581,7 @@ structure RuleOccurrence where
   deriving Repr, DecidableEq
 
 def RuleOccurrence.native (rule : RuleOccurrence) : Metta.Atom × Metta.Atom :=
-  (toLeaTTaAtom rule.lhs, toLeaTTaAtom rule.rhs)
+  (encodeModelAtom rule.lhs, encodeModelAtom rule.rhs)
 
 def storedRules (offset : Nat) : List Atom → List RuleOccurrence
   | [] => []
@@ -605,19 +593,19 @@ def storedRules (offset : Nat) : List Atom → List RuleOccurrence
 
 theorem storedRules_native (offset : Nat) (atoms : List Atom) :
     (storedRules offset atoms).map RuleOccurrence.native =
-      extractRules (toLeaTTaAtoms atoms) := by
+      extractRules (encodeModelAtoms atoms) := by
   induction atoms generalizing offset with
   | nil => rfl
   | cons atom atoms ih =>
     cases atom with
-    | symbol name => simpa [storedRules, extractRules, toLeaTTaAtoms, toLeaTTaAtom] using ih (offset+1)
-    | var name => simpa [storedRules, extractRules, toLeaTTaAtoms, toLeaTTaAtom] using ih (offset+1)
-    | grounded value => simpa [storedRules, extractRules, toLeaTTaAtoms, toLeaTTaAtom] using ih (offset+1)
+    | symbol name => simpa [storedRules, extractRules, encodeModelAtoms, encodeModelAtom] using ih (offset+1)
+    | var name => simpa [storedRules, extractRules, encodeModelAtoms, encodeModelAtom] using ih (offset+1)
+    | grounded value => simpa [storedRules, extractRules, encodeModelAtoms, encodeModelAtom] using ih (offset+1)
     | expression entries =>
       cases entries with
-      | nil => simpa [storedRules, extractRules, toLeaTTaAtoms, toLeaTTaAtom] using ih (offset+1)
+      | nil => simpa [storedRules, extractRules, encodeModelAtoms, encodeModelAtom] using ih (offset+1)
       | cons head tail =>
-        cases head <;> cases tail <;> simp_all [storedRules, extractRules, toLeaTTaAtoms, toLeaTTaAtom]
+        cases head <;> cases tail <;> simp_all [storedRules, extractRules, encodeModelAtoms, encodeModelAtom]
         all_goals rename_i a b c
         all_goals cases c <;> simp_all
         all_goals rename_i rest
@@ -653,12 +641,12 @@ def dynamicCandidate (query : Metta.Atom) (rule : Metta.Atom × Metta.Atom) : Bo
 
 def candidateRules (atoms added imported : List Atom) (query : Atom) : List RuleOccurrence :=
   let base := storedRules 0 atoms
-  (match headKey (toLeaTTaAtom query) with
+  (match headKey (encodeModelAtom query) with
     | some key => base.filter (fun rule => headKey rule.native.1 == some key)
     | none => []) ++
   base.filter (fun rule => (headKey rule.native.1).isNone) ++
   (storedRules atoms.length (added ++ imported)).filter
-    (fun rule => dynamicCandidate (toLeaTTaAtom query) rule.native)
+    (fun rule => dynamicCandidate (encodeModelAtom query) rule.native)
 
 theorem dynamicCandidates_extract (atoms : List Metta.Atom) (query : Metta.Atom) :
     (extractRules atoms).filter (dynamicCandidate query) =
@@ -690,25 +678,25 @@ theorem dynamicCandidates_extract (atoms : List Metta.Atom) (query : Metta.Atom)
 
 theorem candidateRules_native (atoms added imported : List Atom) (query : Atom)
     (grounded : Metta.GroundingTable) (world : World)
-    (extra : world.selfExtra = toLeaTTaAtoms added)
-    (imports : world.selfImports = toLeaTTaAtoms imported) :
+    (extra : world.selfExtra = encodeModelAtoms added)
+    (imports : world.selfImports = encodeModelAtoms imported) :
     (candidateRules atoms added imported query).map RuleOccurrence.native =
-      candidatesW (MinEnv.ofAtomsGT (toLeaTTaAtoms atoms) grounded) world (toLeaTTaAtom query) := by
+      candidatesW (MinEnv.ofAtomsGT (encodeModelAtoms atoms) grounded) world (encodeModelAtom query) := by
   unfold candidateRules candidatesW MinEnv.candidates
   rw [extra, imports]
   simp only [List.map_append]
   have filtered (offset : Nat) (source : List Atom) (predicate : (Metta.Atom × Metta.Atom) → Bool) :
       ((storedRules offset source).filter (fun rule => predicate rule.native)).map RuleOccurrence.native =
-        (extractRules (toLeaTTaAtoms source)).filter predicate := by
+        (extractRules (encodeModelAtoms source)).filter predicate := by
     change ((storedRules offset source).filter (predicate ∘ RuleOccurrence.native)).map RuleOccurrence.native = _
     rw [← List.filter_map, storedRules_native]
   rw [filtered 0 atoms (fun pair => (headKey pair.1).isNone),
-    filtered atoms.length (added ++ imported) (dynamicCandidate (toLeaTTaAtom query))]
+    filtered atoms.length (added ++ imported) (dynamicCandidate (encodeModelAtom query))]
   rw [dynamicCandidates_extract]
-  have appendAtoms : toLeaTTaAtoms (added ++ imported) = toLeaTTaAtoms added ++ toLeaTTaAtoms imported := by
-    simp only [toLeaTTaAtoms_eq_map, List.map_append]
+  have appendAtoms : encodeModelAtoms (added ++ imported) = encodeModelAtoms added ++ encodeModelAtoms imported := by
+    simp only [encodeModelAtoms_eq_map, List.map_append]
   rw [appendAtoms]
-  cases key : headKey (toLeaTTaAtom query) with
+  cases key : headKey (encodeModelAtom query) with
   | none => simp only [List.map_nil, Metta.ofAtomsGT_varRules]; rfl
   | some value =>
     simp only [Metta.ruleIndex_getD, Metta.ofAtomsGT_varRules]
@@ -722,7 +710,7 @@ theorem candidateRules_stored {atoms added imported : List Atom} {query : Atom}
   have source : rule ∈ storedRules 0 atoms ∨ rule ∈ storedRules atoms.length (added ++ imported) := by
     simp only [candidateRules, List.mem_append, List.mem_filter] at member
     rcases member with (selected | unkeyed) | dynamic
-    · cases key : headKey (toLeaTTaAtom query) <;> simp only [key] at selected
+    · cases key : headKey (encodeModelAtom query) <;> simp only [key] at selected
       · simp at selected
       · exact Or.inl (List.mem_filter.mp selected).1
     · exact Or.inl unkeyed.1
@@ -747,7 +735,7 @@ structure QueryOccurrence where
 
 def ruleWork (previous : Stack) (query : Atom) (incoming : Metta.Bindings)
     (counter : Nat) (rule : RuleOccurrence) : List QueryOccurrence :=
-  (Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query) incoming counter rule.native).zipIdx.map
+  (Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query) incoming counter rule.native).zipIdx.map
     (fun pair => ⟨rule, counter, pair.2, pair.1⟩)
 
 def queryWork (previous : Stack) (query : Atom) (incoming : Metta.Bindings) :
@@ -759,7 +747,7 @@ def queryWork (previous : Stack) (query : Atom) (incoming : Metta.Bindings) :
 theorem ruleWork_items (previous : Stack) (query : Atom) (incoming : Metta.Bindings)
     (counter : Nat) (rule : RuleOccurrence) :
     (ruleWork previous query incoming counter rule).map QueryOccurrence.item =
-      Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query) incoming counter rule.native := by
+      Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query) incoming counter rule.native := by
   simp only [ruleWork, List.map_map]
   exact List.zipIdx_map_fst 0 _
 
@@ -768,7 +756,7 @@ its counter advanced even across candidates that produced no work. -/
 theorem queryWork_fold (previous : Stack) (query : Atom) (incoming : Metta.Bindings)
     (rules : List RuleOccurrence) (accumulated : List Item) (state : St) :
     (rules.map RuleOccurrence.native).foldl
-      (Metta.Minimal.queryOpFoldStep previous (toLeaTTaAtom query) incoming) (accumulated, state) =
+      (Metta.Minimal.queryOpFoldStep previous (encodeModelAtom query) incoming) (accumulated, state) =
       (accumulated ++ (queryWork previous query incoming state.counter rules).map QueryOccurrence.item,
        {state with counter := state.counter + rules.length}) := by
   induction rules generalizing accumulated state with
@@ -785,7 +773,7 @@ theorem queryWork_member {previous : Stack} {query : Atom} {incoming : Metta.Bin
     (member : occurrence ∈ queryWork previous query incoming counter rules) :
     ∃ before after, rules = before ++ occurrence.rule :: after ∧
       occurrence.counter = counter + before.length ∧
-      (Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query)
+      (Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query)
         incoming occurrence.counter occurrence.rule.native)[occurrence.branch]? = some occurrence.item := by
   induction rules generalizing counter with
   | nil => simp [queryWork] at member
@@ -800,7 +788,7 @@ theorem queryWork_member {previous : Stack} {query : Atom} {incoming : Metta.Bin
 theorem queryWork_of_branch (previous : Stack) (query : Atom) (incoming : Metta.Bindings)
     (counter : Nat) (before after : List RuleOccurrence) (rule : RuleOccurrence)
     (branch : Nat) (item : Item)
-    (selected : (Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query) incoming
+    (selected : (Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query) incoming
       (counter + before.length) rule.native)[branch]? = some item) :
     (⟨rule, counter + before.length, branch, item⟩ : QueryOccurrence) ∈
       queryWork previous query incoming counter (before ++ rule :: after) := by
@@ -833,7 +821,7 @@ theorem queryWork_occurrence_complete
       occurrence.rule = rule ∧ ∃ permutation : Equiv.Perm String, ∃ actualEmitted merged,
       (∀ name, QueryVisibleName (liveScope previous) query
         (QueryBindingProjection.project incoming) name → permutation name = name) ∧
-      occurrence.item = evalResult previous (toLeaTTaAtom actualEmitted) merged ∧
+      occurrence.item = evalResult previous (encodeModelAtom actualEmitted) merged ∧
       ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
       (∀ valuation, HEBindingSatisfied valuation (QueryBindingProjection.project merged) ↔
         HEBindingSatisfied (valuation ∘ permutation) output) ∧
@@ -863,10 +851,10 @@ theorem queryWork_sound {atoms added imported : List Atom} {previous : Stack}
         (liveScope previous) query (QueryBindingProjection.project incoming)
         occurrence.rule.position occurrence.rule.lhs occurrence.rule.rhs freshPattern freshRhs
         matched emitted output ∧
-      occurrence.item = evalResult previous (toLeaTTaAtom emitted) merged ∧
+      occurrence.item = evalResult previous (encodeModelAtom emitted) merged ∧
       ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
       ScopedEquationQuery.BindingInvariant output merged ∧
-      emitted = fromLeaTTaAtom (Metta.instantiate merged (toLeaTTaAtom freshRhs)) := by
+      emitted = decodeModelAtom (Metta.instantiate merged (encodeModelAtom freshRhs)) := by
   obtain ⟨before, after, list, _, native⟩ := queryWork_member member
   have ruleMember : occurrence.rule ∈ candidateRules atoms added imported query := by simp [list]
   exact queryOpItemsOfRule_occurrence_sound (candidateRules_stored ruleMember) image runtime
@@ -876,12 +864,12 @@ theorem queryWork_sound {atoms added imported : List Atom} {previous : Stack}
 that case retains the native NotReducible marker and the advanced counter. -/
 theorem queryWork_queryOp (atoms added imported : List Atom) (previous : Stack)
     (query : Atom) (incoming : Metta.Bindings) (grounded : Metta.GroundingTable) (state : St)
-    (extra : state.world.selfExtra = toLeaTTaAtoms added)
-    (imports : state.world.selfImports = toLeaTTaAtoms imported)
-    (notVariable : isVariableHeaded (toLeaTTaAtom query) = false) :
+    (extra : state.world.selfExtra = encodeModelAtoms added)
+    (imports : state.world.selfImports = encodeModelAtoms imported)
+    (notVariable : isVariableHeaded (encodeModelAtom query) = false) :
     let rules := candidateRules atoms added imported query
     let work := queryWork previous query incoming state.counter rules
-    queryOp (MinEnv.ofAtomsGT (toLeaTTaAtoms atoms) grounded) state previous (toLeaTTaAtom query) incoming =
+    queryOp (MinEnv.ofAtomsGT (encodeModelAtoms atoms) grounded) state previous (encodeModelAtom query) incoming =
       ((if work.isEmpty then [finItem previous notReducibleA incoming] else work.map QueryOccurrence.item),
         {state with counter := state.counter + rules.length}) := by
   intro rules work
@@ -920,22 +908,22 @@ theorem queryWork_retained
     (atoms added imported : List Atom) (previous : Stack) (scope : List String)
     (argument query : Atom) (incoming : Metta.Bindings)
     (grounded : Metta.GroundingTable) (state : St)
-    (extra : state.world.selfExtra = toLeaTTaAtoms added)
-    (imports : state.world.selfImports = toLeaTTaAtoms imported)
-    (materialized : Metta.instantiate incoming (toLeaTTaAtom argument) = toLeaTTaAtom query)
-    (ordinary : isEmbeddedOp (toLeaTTaAtom query) = false)
-    (notVariable : isVariableHeaded (toLeaTTaAtom query) = false)
-    (host : ∀ name args, toLeaTTaAtom query = .expr (.sym name :: args) →
+    (extra : state.world.selfExtra = encodeModelAtoms added)
+    (imports : state.world.selfImports = encodeModelAtoms imported)
+    (materialized : Metta.instantiate incoming (encodeModelAtom argument) = encodeModelAtom query)
+    (ordinary : isEmbeddedOp (encodeModelAtom query) = false)
+    (notVariable : isVariableHeaded (encodeModelAtom query) = false)
+    (host : ∀ name args, encodeModelAtom query = .expr (.sym name :: args) →
       Metta.callGrounded grounded name
         (args.map (fun atom => resolveStates state.world (subTokens state.world atom))) = .noReduce)
     (fuel : Nat) (queued : List Item) (completed : List (Metta.Atom × Metta.Bindings))
     (receipts : List Receipt) :
-    let environment := MinEnv.ofAtomsGT (toLeaTTaAtoms atoms) grounded
+    let environment := MinEnv.ofAtomsGT (encodeModelAtoms atoms) grounded
     let rules := candidateRules atoms added imported query
     let work := queryWork previous query incoming state.counter rules
     let spawned := if work.isEmpty then [finItem previous notReducibleA incoming] else work.map QueryOccurrence.item
     let nextState := {state with counter := state.counter + rules.length}
-    let instruction : Item := ⟨{atom := .expr [.sym "eval", toLeaTTaAtom argument], vars := scope} :: previous, incoming⟩
+    let instruction : Item := ⟨{atom := .expr [.sym "eval", encodeModelAtom argument], vars := scope} :: previous, incoming⟩
     let before : Configuration := ⟨fuel + 1, state, instruction :: queued, completed, receipts⟩
     let after : Configuration :=
       ⟨fuel, nextState, spawned.filter (fun item => !isFinal item) ++ queued,
@@ -945,79 +933,14 @@ theorem queryWork_retained
       Receipt.Valid environment ⟨state, instruction, spawned, nextState⟩ := by
   intro environment rules work spawned nextState instruction before after
   have step (depth : Nat) : interpretStack1 environment depth state instruction = (spawned, nextState) := by
-    rw [step_eval, evalOp_query environment state previous (toLeaTTaAtom argument)
-      (toLeaTTaAtom query) incoming materialized ordinary host]
+    rw [step_eval, evalOp_query environment state previous (encodeModelAtom argument)
+      (encodeModelAtom query) incoming materialized ordinary host]
     exact queryWork_queryOp atoms added imported previous query incoming grounded state extra imports notVariable
   constructor
   · rw [run_succ_ready environment before instruction queued rfl fuel rfl (by rfl) 0]
     simp only [Machine.run, emitted, advance, before, step, List.append_nil]
     rfl
   · exact ⟨by rfl, step⟩
-
-/-- Source evidence for a scanned occurrence composes with the existing
-function-body derivation and actual retained handler. Closed materialization
-is the exact-name boundary here; general open results retain their separate
-alpha observation rather than being identified with a chosen spelling. -/
-theorem queryWork_function_invocation
-    {atoms added imported : List Atom} {previous : Stack} {query : Atom}
-    {incoming : Metta.Bindings} {counter : Nat} {occurrence : QueryOccurrence}
-    (image : LeaBindingsHEImage incoming) (runtime : LeaRuntimeBindingInvariant incoming)
-    (member : occurrence ∈ queryWork previous query incoming counter
-      (candidateRules atoms added imported query)) :
-    ∃ rawRhs output merged,
-      EquationQueryCandidateRel (Space.ofList (atoms ++ added ++ imported))
-        (liveScope previous) query (QueryBindingProjection.project incoming) rawRhs output ∧
-      ScopedEquationQuery.BindingInvariant output merged ∧
-      ∀ body terminal finalBindings updates,
-        BindingMaterializationRel output rawRhs (.expression [.symbol "function", body]) →
-        TypeSubst.typeVars (.expression [.symbol "function", body]) = [] →
-        CoveredControlDerivation output .body (some (.expression [.symbol "function", body]))
-          body terminal finalBindings updates →
-        (∃ entries, body = .expression entries) →
-        ∀ environment state caller,
-        previous.head?.map (fun frame => frame.atom) = caller.map toLeaTTaAtom →
-        ∀ dispatch typing,
-        ¬HostCall dispatch query → embeddedInstruction query = false →
-        CoreInvocationRel (Space.ofList (atoms ++ added ++ imported)) dispatch (liveScope previous)
-          query (QueryBindingProjection.project incoming)
-          (functionTerminalResult caller terminal, finalBindings) (typing := typing) (caller := caller) ∧
-        ∀ fuel queued completed receipts,
-        ∃ nativeFinal, ScopedEquationQuery.BindingInvariant finalBindings nativeFinal ∧
-        (updates = false → nativeFinal = merged) ∧
-        let result := finItem previous (toLeaTTaAtom (functionTerminalResult caller terminal)) nativeFinal
-        ∃ depth ticks after,
-          (machine environment).run ticks
-            (⟨depth, state, occurrence.item :: queued, completed, receipts⟩ : Configuration) =
-            ((finals [result]).filter (fun pair => pair.1 != emptyA), .exhausted after) ∧
-          after.depth = fuel ∧ after.runtime = state ∧
-          after.pending = [result].filter (fun item => !isFinal item) ++ queued ∧
-          after.completed = completed ++ finals [result] ∧
-          ∃ appended, after.receipts = receipts ++ appended ∧
-            ∀ receipt ∈ appended, Receipt.Valid environment receipt := by
-  obtain ⟨emitted, output, merged, pattern, rawRhs, matched, source, item, _, paired, emittedEq⟩ :=
-    queryWork_sound image runtime member
-  have candidate : EquationQueryCandidateRel (Space.ofList (atoms ++ added ++ imported))
-      (liveScope previous) query (QueryBindingProjection.project incoming) rawRhs output := by
-    refine ⟨pattern, rawRhs, matched,
-      ⟨occurrence.rule.lhs, occurrence.rule.rhs, List.mem_of_getElem? source.stored, source.selected⟩,
-      source.result.1, source.result.2.1, source.result.2.2.1, ?_⟩
-    intro valuation satisfied
-    rfl
-  refine ⟨rawRhs, output, merged, candidate, paired, ?_⟩
-  intro body terminal finalBindings updates materialized closed derivation expression
-    environment state caller captured dispatch typing notHost ordinary
-  constructor
-  · exact .equation _ query rawRhs _ _ output _ notHost ordinary candidate materialized
-      (derivation.invocation_sound expression _ dispatch typing (liveScope previous) caller)
-  · intro fuel queued completed receipts
-    have readout := materialization_closed_native paired materialized closed
-    rw [emittedEq, readout, fromLeaTTaAtom_toLeaTTaAtom] at item
-    obtain ⟨nativeFinal, finalPaired, readOnly, depth, ticks, after, ran, depthEq,
-      world, pending, done, history⟩ :=
-      derivation.invocation_retained paired expression environment state previous caller captured
-        fuel queued completed receipts
-    refine ⟨nativeFinal, finalPaired, readOnly, depth, ticks, after, ?_, depthEq, world, pending, done, history⟩
-    simpa only [functionConfiguration, ← item] using ran
 
 namespace RetainedQueryControls
 
@@ -1031,13 +954,13 @@ def equation : Atom := .expression [.symbol "=",
 def atoms : List Atom := [.symbol "declaration", equation, equation]
 def added : List Atom := [equation]
 def imported : List Atom := [equation]
-def environment : MinEnv := MinEnv.ofAtomsGT (toLeaTTaAtoms atoms) Metta.Builtins.table
+def environment : MinEnv := MinEnv.ofAtomsGT (encodeModelAtoms atoms) Metta.Builtins.table
 def state : St := {St.init with world := {St.init.world with
-  selfExtra := toLeaTTaAtoms added, selfImports := toLeaTTaAtoms imported}}
+  selfExtra := encodeModelAtoms added, selfImports := encodeModelAtoms imported}}
 def incoming : Metta.Bindings := [.val "caller" (.sym "kept")]
 def work := queryWork [] query incoming state.counter (candidateRules atoms added imported query)
 def loaded : Configuration := ⟨40, state,
-  [⟨atomToStack (.expr [.sym "eval", toLeaTTaAtom query]) [], incoming⟩], [], []⟩
+  [⟨atomToStack (.expr [.sym "eval", encodeModelAtom query]) [], incoming⟩], [], []⟩
 
 #guard (candidateRules atoms added imported query).map RuleOccurrence.position == [1, 2, 3, 4]
 #guard work.map (fun occurrence => (occurrence.rule.position, occurrence.counter, occurrence.branch)) ==
@@ -1093,10 +1016,10 @@ theorem every_repeated_declaration_has_source (occurrence : QueryOccurrence)
       EquationQueryOccurrenceRel (Space.ofList (atoms ++ added ++ imported)) [] query
         (QueryBindingProjection.project incoming) occurrence.rule.position occurrence.rule.lhs
         occurrence.rule.rhs freshPattern freshRhs matched emitted output ∧
-      occurrence.item = evalResult [] (toLeaTTaAtom emitted) merged ∧
+      occurrence.item = evalResult [] (encodeModelAtom emitted) merged ∧
       ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
       ScopedEquationQuery.BindingInvariant output merged ∧
-      emitted = fromLeaTTaAtom (Metta.instantiate merged (toLeaTTaAtom freshRhs)) :=
+      emitted = decodeModelAtom (Metta.instantiate merged (encodeModelAtom freshRhs)) :=
   queryWork_sound incoming_image incoming_runtime member
 
 end RetainedQueryControls

@@ -39,8 +39,8 @@ private def emptyEnv : Metta.Minimal.MinEnv :=
 
 /-- Published-core lookup sees no direct annotation for the forged expression. -/
 theorem published_forged_stateValue_undefined :
-    TypesOfRel Space.empty forgedStateValue [Atom.undefinedType] := by
-  exact TypesOfRel.expressionUndefined AnnotationTypesRel.nil
+    StorageTypesRel Space.empty forgedStateValue [Atom.undefinedType] := by
+  exact StorageTypesRel.expressionUndefined AnnotationTypesRel.nil
 
 /-- Negative core witness: synthesized state-monad typing is not a published
 type-lookup derivation for the forgeable expression. -/
@@ -56,7 +56,7 @@ private theorem forged_content_number_evidence :
       (.symbol "Number") := by
   apply RuntimeTypeEvidenceRel.published
   refine ⟨[.symbol "Number"], ?_, by simp⟩
-  exact TypesOfRel.groundedKnown
+  exact StorageTypesRel.groundedKnown
     (IntrinsicGroundedTypeRel.int 1) (by decide)
 
 /-- Positive R3 witness: the rule applies to source-forged syntax exactly as
@@ -202,7 +202,7 @@ theorem leatta_ordered_state_type_rejects_number_parameter :
         .failure ⟨1, .sym "Number", .expr [.sym "StateMonad", .sym "Number"]⟩ [] := by
     simp [Metta.Minimal.typeCheckArgsDetailedOutcome,
       Metta.Minimal.typeCheckArgsDetailedOutcomeScoped, Metta.Minimal.scanActualTypes, hprep, htypes, hmatch, hfreshened,
-      Metta.instantiate]
+      Metta.instantiate, Metta.Bindings.resolveAtom]
   rw [Metta.Minimal.typeMismatch, Metta.Minimal.selectFunctionType, hopPrep, hopTypes]
   simp [Metta.Minimal.scanFunctionTypeCandidates, hcheck,
     Metta.Minimal.FunctionTypeScanOutcome.prependErrors,

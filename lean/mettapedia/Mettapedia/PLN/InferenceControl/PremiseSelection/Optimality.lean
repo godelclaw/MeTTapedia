@@ -23,7 +23,7 @@ namespace Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality
 
 open scoped Classical ENNReal
 open Mettapedia.PLN.InferenceControl.PremiseSelection
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## Basic notions -/
 

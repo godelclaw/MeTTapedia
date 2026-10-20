@@ -26,9 +26,9 @@ namespace Mettapedia.OSLF.Framework.DistinctionGraph.WorldModel
 open Mettapedia.OSLF.Framework.DistinctionGraph
 open Mettapedia.OSLF.Framework.DistinctionGraph.Weighted
 open Mettapedia.OSLF.Framework.EvidenceSemantics
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.Framework.KSUnificationSketch
 open Mettapedia.OSLF.Formula
 open KnuthSkilling.TotalityImprecision

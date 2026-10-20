@@ -47,8 +47,8 @@ namespace Mettapedia.CogArch.GodelClaw.Ethics
 open scoped ENNReal
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.Hyperseed
 open Mettapedia.Logic.MarkovLogicClauseSemantics
 open Mettapedia.Logic.MarkovLogicClauseFactorGraph
@@ -127,7 +127,7 @@ is the smallest honest WM landing zone for the first restricted
 source-semantics-to-WM correctness theorem. -/
 noncomputable def regionSupportMassSemantics
     {Atom : Type*} (Γ : Region Atom) :
-    MassSemantics (ConstraintQuery Atom) := by
+    Mettapedia.ProbabilityTheory.MassSemantics (ConstraintQuery Atom) := by
   classical
   refine
     { queryMass := fun q => if querySupportedByRegion Γ q then 1 else 0
@@ -166,7 +166,7 @@ theorem WMPositiveQuerySupport.of_regionSupportedConstraintQuery
   apply WMPositiveQuerySupport.of_positiveEvidence
   rw [show BinaryWorldModel.evidence
       ({regionSupportMassSemantics Γ} : MassState (ConstraintQuery Atom)) q =
-        (regionSupportMassSemantics Γ).evidenceOfMasses q by
+        (regionSupportMassSemantics Γ).binaryMass q by
       exact MassState.evidence_singleton (regionSupportMassSemantics Γ) q]
   change (regionSupportMassSemantics Γ).queryMass q ≠ 0
   rw [regionSupportMassSemantics_queryMass_eq_one_of_supported hsupp]
@@ -185,7 +185,7 @@ theorem not_WMPositiveQuerySupport_of_not_regionSupportedConstraintQuery
   rw [hj.2] at hpos
   rw [show BinaryWorldModel.evidence
       ({regionSupportMassSemantics Γ} : MassState (ConstraintQuery Atom)) q =
-        (regionSupportMassSemantics Γ).evidenceOfMasses q by
+        (regionSupportMassSemantics Γ).binaryMass q by
       exact MassState.evidence_singleton (regionSupportMassSemantics Γ) q] at hpos
   change (regionSupportMassSemantics Γ).queryMass q ≠ 0 at hpos
   rw [regionSupportMassSemantics_queryMass_eq_zero_of_not_supported hnot] at hpos
@@ -225,7 +225,7 @@ structure FoundationalMeaningState
 
 /-- A fully grounded meaning state contains the agency kernel as one side of the
 same process. -/
-def FoundationalMeaningState.toAgencyKernel
+theorem FoundationalMeaningState.toAgencyKernel
     {State Query : Type*} [EvidenceType State] [BinaryWorldModel State Query]
     {W : State} {profile : FoundationalMeaningProfile Query}
     (hMeaning : FoundationalMeaningState W profile) :

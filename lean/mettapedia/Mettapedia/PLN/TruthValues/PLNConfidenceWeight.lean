@@ -71,7 +71,7 @@ This file explains the PLN bug discovered in early 2025 where
 namespace Mettapedia.PLN.TruthValues.PLNConfidenceWeight
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNConjunction
 
 /-! ## The Confidence-Weight Bijection

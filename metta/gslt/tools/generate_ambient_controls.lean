@@ -21,7 +21,7 @@ equations, states of sort `Proc`. -/
 def spec : Spec :=
   ⟨GeneralExecutionAdmission.compile ⟨AmbientTests.conformanceLanguage, AmbientTests.free,
       { signatures := [], rows := [] }⟩
-    { sites := .rootOnly, includeDerivedEquations := false }, [], .base "Proc"⟩
+    { sites := .rootOnly, includeDerivedEquations := false }, [], .base "Proc", .standard⟩
 
 def work : Nat := 400
 

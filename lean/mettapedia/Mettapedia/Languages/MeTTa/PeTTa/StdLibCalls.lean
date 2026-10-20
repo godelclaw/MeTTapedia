@@ -52,6 +52,13 @@ theorem less_equal_comparison (state : State) (left right : Int) :
 theorem cons_call (state : State) (first : Atom) (rest : List Atom) :
     apply state "cons" [first, .expression rest] = .ok (state, [.expression (first :: rest)]) := rfl
 
+/-- The native name denotes ordered concatenation, retaining duplicate
+occurrences. This equation concerns expression-valued arguments. -/
+@[simp high]
+theorem union_atom_call (state : State) (left right : List Atom) :
+    apply state "union-atom" [.expression left, .expression right] =
+      .ok (state, [.expression (left ++ right)]) := rfl
+
 @[simp high]
 theorem size_of_expression (state : State) (items : List Atom) :
     apply state "size-atom" [.expression items] =

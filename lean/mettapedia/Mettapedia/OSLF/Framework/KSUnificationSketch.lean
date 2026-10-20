@@ -35,8 +35,8 @@ open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.Framework.CategoryBridge
 open Mettapedia.OSLF.Framework.ConstructorCategory
 open Mettapedia.OSLF.MeTTaIL.Syntax
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open KnuthSkilling.Heyting
 open KnuthSkilling.TotalityImprecision
 

@@ -29,7 +29,7 @@ open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceNormalGamma
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceWeightedNormalGamma
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceWeightedNormalGamma.WeightedNormalGammaEvidence
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 
 variable {Obs Query : Type*}
@@ -91,7 +91,6 @@ theorem weightedGaussianStatistic_queryObservationCount
     (responsibility : Obs → Query → NNReal)
     (value : Obs → Query → ℝ)
     (σ : Multiset Obs) (q : Query) :
-    letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
     letI : AdditiveWorldModel (Multiset Obs) Query WeightedNormalGammaEvidence :=
       (weightedGaussianStatistic responsibility value).inducedWorldModel
     AdditiveWorldModel.queryObservationCount
@@ -99,7 +98,6 @@ theorem weightedGaussianStatistic_queryObservationCount
       genAdditiveExtension
         (Ev := ℝ≥0∞)
         (fun o q => (responsibility o q : ℝ≥0∞)) σ q := by
-  letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
   letI : AdditiveWorldModel (Multiset Obs) Query WeightedNormalGammaEvidence :=
     (weightedGaussianStatistic responsibility value).inducedWorldModel
   rw [queryObservationCount_inducedWorldModel_eq_aggregate_observationCount
@@ -113,14 +111,12 @@ theorem weightedGaussianStatistic_queryObservationConfidence
     (responsibility : Obs → Query → NNReal)
     (value : Obs → Query → ℝ)
     (σ : Multiset Obs) (q : Query) :
-    letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
     letI : AdditiveWorldModel (Multiset Obs) Query WeightedNormalGammaEvidence :=
       (weightedGaussianStatistic responsibility value).inducedWorldModel
     AdditiveWorldModel.queryObservationConfidence
         (State := Multiset Obs) (Query := Query) (Ev := WeightedNormalGammaEvidence) κ σ q =
       observationConfidence κ
         (aggregate (weightedGaussianStatistic responsibility value) σ q) := by
-  letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
   letI : AdditiveWorldModel (Multiset Obs) Query WeightedNormalGammaEvidence :=
     (weightedGaussianStatistic responsibility value).inducedWorldModel
   exact
@@ -160,7 +156,6 @@ observation count. -/
 theorem weightedGaussianStatistic_one_queryObservationCount
     (value : Obs → Query → ℝ)
     (σ : Multiset Obs) (q : Query) :
-    letI : EvidenceType (Multiset Obs) := multisetEvidenceType Obs
     letI : AdditiveWorldModel (Multiset Obs) Query WeightedNormalGammaEvidence :=
       (weightedGaussianStatistic (fun _ _ => (1 : NNReal)) value).inducedWorldModel
     AdditiveWorldModel.queryObservationCount

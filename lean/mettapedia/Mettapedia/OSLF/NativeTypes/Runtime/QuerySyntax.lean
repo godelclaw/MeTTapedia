@@ -29,6 +29,7 @@ inductive Query where
   | imp (left right : Query)
   | possibility (inner : Query)
   | outgoingUniversal (inner : Query)
+  | separating (name : String) (left right : Query)
   deriving DecidableEq, Repr
 
 private def combine {Item : Type} (operation : Item → Item → Item)
@@ -50,6 +51,9 @@ def elaborate (driver : Driver) : Query → Except String driver.Formula
   | .imp left right => combine Formula.imp (elaborate driver left) (elaborate driver right)
   | .possibility inner => (elaborate driver inner).map Formula.possibility
   | .outgoingUniversal inner => (elaborate driver inner).map Formula.outgoingUniversal
+  | .separating name left right => match driver.spatialLookup name with
+    | none => .error name
+    | some index => combine (Formula.separating index) (elaborate driver left) (elaborate driver right)
 
 /-- Independent compositional interpretation of catalogue names. -/
 inductive Resolves (driver : Driver) : Query → driver.Formula → Prop where
@@ -68,6 +72,9 @@ inductive Resolves (driver : Driver) : Query → driver.Formula → Prop where
       Resolves driver (.possibility inner) (.possibility result)
   | outgoingUniversal {inner result} (resolved : Resolves driver inner result) :
       Resolves driver (.outgoingUniversal inner) (.outgoingUniversal result)
+  | separating {name index left right first second} (lookup : driver.spatialLookup name = some index)
+      (leftProof : Resolves driver left first) (rightProof : Resolves driver right second) :
+      Resolves driver (.separating name left right) (.separating index first second)
 
 private theorem combine_ok {Item : Type} (operation : Item → Item → Item)
     (left right : Except String Item) (result : Item) :
@@ -157,6 +164,20 @@ theorem elaborate_exact (driver : Driver) (query : Query) (formula : driver.Form
     · intro resolved
       cases resolved with
       | outgoingUniversal inner => exact ⟨_, (ih _).mpr inner, rfl⟩
+  | separating name left right leftIH rightIH =>
+    constructor
+    · intro output
+      cases found : driver.spatialLookup name with
+      | none => simp [elaborate, found] at output
+      | some index =>
+        rw [elaborate, found, combine_ok] at output
+        obtain ⟨first, second, firstOk, secondOk, rfl⟩ := output
+        exact .separating found ((leftIH first).mp firstOk) ((rightIH second).mp secondOk)
+    · intro resolved
+      cases resolved with
+      | separating found first second =>
+        rw [elaborate, found, combine_ok]
+        exact ⟨_, _, (leftIH _).mpr first, (rightIH _).mpr second, rfl⟩
 
 theorem resolution_unique {driver : Driver} {query : Query} {first second : driver.Formula}
     (left : Resolves driver query first) (right : Resolves driver query second) : first = second :=

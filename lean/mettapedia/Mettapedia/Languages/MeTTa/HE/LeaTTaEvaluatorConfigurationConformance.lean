@@ -2,6 +2,10 @@ import Mettapedia.Languages.MeTTa.HE.LeaTTaGroundedDispatchConformance
 import Mettapedia.Languages.MeTTa.HE.LeaTTaMinimalInstructionConformance
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypeServiceConformance
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval.Outcome
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # LeaTTa evaluator configuration boundary
@@ -45,7 +49,7 @@ open Spec.Type.RuntimeRefinement
 /-- The specification and runtime recognize exactly the same syntactic error
 results across the atom carrier.  The extra runtime-only grounded-error
 constructor cannot occur in `AtomRuntimeRel`; ordinary specification grounded
-values translate through `toLeaTTaGround`, while binding payloads use their
+values translate through `encodeModelGround`, while binding payloads use their
 separate opaque constructor. -/
 theorem atomRuntimeRel_isError_iff
     {services : Services} {atom : Atom} {runtimeAtom : Metta.Atom}
@@ -65,7 +69,7 @@ theorem atomRuntimeRel_isError_iff
     · simp [Metta.Atom.isError] at runtimeError
     · rename_i value notPayload
       cases value <;>
-        simp [toLeaTTaGround, Metta.Atom.isError] at runtimeError
+        simp [encodeModelGround, Metta.Atom.isError] at runtimeError
     · simp [Metta.Atom.isError] at runtimeError
     · rename_i atoms runtimeAtoms related
       cases related with
@@ -130,10 +134,10 @@ theorem atomRuntimeRel_metaType
     {runtimeAtom : Metta.Atom}
     (relation : AtomRuntimeRel services atom runtimeAtom)
     (metaTypeRelation : Spec.Eval.MetaTypeRel atom metaType) :
-    toLeaTTaAtom metaType =
+    encodeModelAtom metaType =
       Metta.Atom.typeAtomOfMetaType runtimeAtom.metaType := by
   cases relation <;> cases metaTypeRelation <;>
-    simp [toLeaTTaAtom, Atom.symbolType, Atom.variableType,
+    simp [encodeModelAtom, Atom.symbolType, Atom.variableType,
       Atom.groundedType, Atom.expressionType,
       Metta.Atom.symbolType, Metta.Atom.variableType,
       Metta.Atom.groundedType, Metta.Atom.expressionType,
@@ -182,7 +186,7 @@ theorem atomRuntimeRel_typePass_iff
   cases atomRelation <;> cases metaTypeRelation <;>
     cases expectedRelation <;>
       simp [Atom.atomType, Atom.symbolType, Atom.variableType,
-        Atom.groundedType, Atom.expressionType, toLeaTTaGround,
+        Atom.groundedType, Atom.expressionType, encodeModelGround,
         Metta.Atom.atomType, Metta.Atom.symbolType,
         Metta.Atom.variableType, Metta.Atom.groundedType,
         Metta.Atom.expressionType, Metta.Atom.typeAtomOfMetaType,
@@ -219,7 +223,7 @@ literal while permitting only generated type-variable spellings to differ. -/
 def StructuralAtomObservationRel
     (_presentation : TypeSubst) (_runtimeBindings : Metta.Bindings)
     (atom : Atom) (runtimeAtom : Metta.Atom) : Prop :=
-  ObservedTypeAlphaRel atom (fromLeaTTaAtom runtimeAtom)
+  ObservedTypeAlphaRel atom (decodeModelAtom runtimeAtom)
 
 /-- Context-specific observation of structured evaluator diagnostics.
 Ordinary evaluator atoms keep `AtomRuntimeRel`; only diagnostic fields use
@@ -910,9 +914,9 @@ theorem structuralAtom
     {runtimeBindings : Metta.Bindings}
     (atom : Atom) :
     StructuralAtomObservationRel presentation runtimeBindings atom
-      (toLeaTTaAtom atom) := by
+      (encodeModelAtom atom) := by
   unfold StructuralAtomObservationRel
-  rw [fromLeaTTaAtom_toLeaTTaAtom]
+  rw [decodeModelAtom_encodeModelAtom]
 
 /-- A private-alpha sibling is observed structurally under every result
 presentation.  Its freshness scope remains explicit in the alpha witness;
@@ -923,9 +927,9 @@ theorem structuralPrivateCandidate
     {left right : Atom}
     (alpha : PrivateCandidateAlphaRel fixedScope left right) :
     StructuralAtomObservationRel presentation runtimeBindings left
-      (toLeaTTaAtom right) := by
+      (encodeModelAtom right) := by
   unfold StructuralAtomObservationRel
-  rw [fromLeaTTaAtom_toLeaTTaAtom]
+  rw [decodeModelAtom_encodeModelAtom]
   exact PrivateCandidateAlphaRel.toObservedTypeAlphaRel alpha
 
 /-- Construct a structured `BadType` result without treating its expected
@@ -1145,10 +1149,10 @@ structure RuntimeConfigurationRel
     (env : Metta.Minimal.MinEnv) (state : Metta.Minimal.St) : Prop where
   serviceLaws : ServiceLaws services
   environment : env = Metta.Minimal.MinEnv.ofAtomsGT
-    (toLeaTTaAtoms space.atoms) groundingTable
+    (encodeModelAtoms space.atoms) groundingTable
   emptyWorld : state.world = Metta.Minimal.World.empty
   contextPayload :
-    toLeaTTaGround (services.contextPayload space) =
+    encodeModelGround (services.contextPayload space) =
       .external "SpaceType" env.contextName
   preparationFunctional : TypePreparationFunctional oracle
   preparationRuntime : TypePreparationRuntimeRealization oracle space state.world
@@ -1179,9 +1183,9 @@ theorem typesOf
     (configuration : RuntimeConfigurationRel services oracle space
       groundingTable env state) (atom : Atom) :
     (preparedPackageTypeService oracle).typesOf space atom
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (Metta.Minimal.getTypes env
-          (Metta.Minimal.typePrep state.world (toLeaTTaAtom atom)))) := by
+          (Metta.Minimal.typePrep state.world (encodeModelAtom atom)))) := by
   have lookup := configuration.typeService.typesOf atom
   simpa [configuration.environment] using lookup
 
@@ -1205,7 +1209,7 @@ theorem candidateScanFrom
     (bindingSupport : ∀ name, name ∈ specBindingVars incoming →
       name ∈ runtimeInitial.vars) :
     let expression := Atom.expression (.symbol operator :: arguments)
-    let presented := fromLeaTTaAtoms
+    let presented := decodeModelAtoms
       (Metta.Minimal.getTypes env
         (Metta.Minimal.typePrep state.world (.sym operator)))
     ∃ outcome,
@@ -1215,8 +1219,8 @@ theorem candidateScanFrom
         (typeServiceObservationScope space expression expectedType)
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env state.world
-          (.sym operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (.sym operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   have scan := configuration.typeService.candidateScan operator expectedType
     arguments incoming initial inputState bindingSupport
   simpa [configuration.environment] using scan
@@ -1240,7 +1244,7 @@ theorem candidateScanFrom_aligned
     (bindingSupport : ∀ name, name ∈ specBindingVars incoming →
       name ∈ runtimeInitial.vars) :
     let expression := Atom.expression (.symbol operator :: arguments)
-    let presented := fromLeaTTaAtoms
+    let presented := decodeModelAtoms
       (Metta.Minimal.getTypes env
         (Metta.Minimal.typePrep state.world (.sym operator)))
     ∃ outcome,
@@ -1251,8 +1255,8 @@ theorem candidateScanFrom_aligned
         (typeServiceObservationScope space expression expectedType)
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env state.world
-          (.sym operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (.sym operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   have scan :=
     preparedPackageTypeService_candidateScan_runtime_ofAtomsGT_aligned
     configuration.preparationFunctional space groundingTable
@@ -1279,7 +1283,7 @@ theorem candidateScanFrom_seedScope
     (bindingSupport : ∀ name, name ∈ specBindingVars incoming →
       name ∈ runtimeInitial.vars) :
     let expression := Atom.expression (.symbol operator :: arguments)
-    let presented := fromLeaTTaAtoms
+    let presented := decodeModelAtoms
       (Metta.Minimal.getTypes env
         (Metta.Minimal.typePrep state.world (.sym operator)))
     ∃ outcome,
@@ -1289,8 +1293,8 @@ theorem candidateScanFrom_seedScope
         (typeServiceRuntimeSeedScope expression expectedType)
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env state.world
-          (.sym operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (.sym operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   dsimp only
   obtain ⟨outcome, scan, runtime⟩ :=
     configuration.candidateScanFrom operator expectedType arguments incoming
@@ -1315,7 +1319,7 @@ theorem candidateScanFrom_seedScope_aligned
     (bindingSupport : ∀ name, name ∈ specBindingVars incoming →
       name ∈ runtimeInitial.vars) :
     let expression := Atom.expression (.symbol operator :: arguments)
-    let presented := fromLeaTTaAtoms
+    let presented := decodeModelAtoms
       (Metta.Minimal.getTypes env
         (Metta.Minimal.typePrep state.world (.sym operator)))
     ∃ outcome,
@@ -1326,8 +1330,8 @@ theorem candidateScanFrom_seedScope_aligned
         (typeServiceRuntimeSeedScope expression expectedType)
         expression incoming outcome
         (Metta.Minimal.selectFunctionTypeForExpectedFrom env state.world
-          (.sym operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeInitial) := by
+          (.sym operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeInitial) := by
   dsimp only
   obtain ⟨outcome, scan, runtime⟩ :=
     configuration.candidateScanFrom_aligned operator expectedType arguments
@@ -1352,7 +1356,7 @@ theorem typeCast
     (protectedScope : List String) (atom expectedType : Atom) :
     PreparedTypeCastOutcomeRuntimeRel oracle space atom expectedType incoming
       (Metta.Minimal.mettaTypeCastAvoiding protectedScope env state.world
-        runtimeBindings (toLeaTTaAtom atom) (toLeaTTaAtom expectedType))
+        runtimeBindings (encodeModelAtom atom) (encodeModelAtom expectedType))
       protectedScope := by
   have cast := configuration.typeService.typeCast simulation bindingSupport
     protectedScope atom expectedType

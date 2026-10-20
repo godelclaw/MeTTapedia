@@ -23,7 +23,7 @@ Negative example:
 namespace Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelPeTTaCoreBridge
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelRuntimeBridge
 open Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelPeTTaRuntimeBridge
 open Mettapedia.Languages.MeTTa.PeTTa

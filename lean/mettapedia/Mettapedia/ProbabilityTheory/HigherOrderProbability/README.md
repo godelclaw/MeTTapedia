@@ -51,7 +51,7 @@ flattening, so PLN's compact strength/confidence pair *is* a flattened second-or
 belief. That reduction is formalized in the PLN/probability bridge
 `Mettapedia/PLN/Bridges/ProbabilityTheory/PLNKyburgReduction.lean`, which builds
 on the flattening API here together with
-`Mettapedia/PLN/Evidence/EvidenceQuantale.lean`. It is out of scope for this
+`Mettapedia/PLN/Evidence/BinaryEvidence.lean`. It is out of scope for this
 directory and not counted in the file totals below.
 
 ## Formalization status

@@ -18,7 +18,7 @@ We intentionally do **not** claim anything about weights here: weight/evidence s
 separate meta-level story.
 -/
 
-namespace Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Soundness
+namespace Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculusSoundness
 
 open MeasureTheory ProbabilityTheory Set
 
@@ -336,4 +336,4 @@ theorem truth_sinkRule_sound
     condProb_mem_unit (μ := μ) (A := interp A) (C := interp C) ctx.hA_pos
   simpa using (clamp01_of_mem_unit hmem)
 
-end Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus.Soundness
+end Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculusSoundness

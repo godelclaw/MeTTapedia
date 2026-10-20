@@ -170,7 +170,7 @@ machinery. -/
 noncomputable def regionFactorGraphMassSemantics
     (M : InfiniteGroundMLNSpec Atom ClauseId)
     (Λ : Region Atom) (ξ : BoundaryCondition Atom) :
-    MassSemantics (LocalConstraintQuery Atom Λ) where
+    Mettapedia.ProbabilityTheory.MassSemantics (LocalConstraintQuery Atom Λ) where
   queryMass := fun q =>
     ValuationWorldModel.scopedWeight (fg := regionFactorGraph M Λ ξ)
       (W := regionFactorGraphWMSource M Λ ξ) q
@@ -190,7 +190,7 @@ theorem regionFactorGraph_queryProb_eq_finiteVolume_queryProb
     (q : LocalConstraintQuery Atom Λ) :
     (regionFactorGraphMassSemantics M Λ ξ).queryProb q =
       (finiteVolumeMassSemantics M Λ ξ).queryProb q := by
-  simp [regionFactorGraphMassSemantics, finiteVolumeMassSemantics, MassSemantics.queryProb,
+  simp [regionFactorGraphMassSemantics, finiteVolumeMassSemantics, Mettapedia.ProbabilityTheory.MassSemantics.queryProb,
     regionFactorGraph_scopedWeight_eq_queryMass,
     regionFactorGraph_partitionFunction_eq_finiteVolumePartition]
   rfl

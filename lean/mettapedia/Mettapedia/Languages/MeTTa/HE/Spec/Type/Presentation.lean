@@ -1,4 +1,6 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.RuntimeRefinement
+import Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 /-!
 # Presentation-preserving spec type substitutions
@@ -42,6 +44,14 @@ def typeVarsList : List Atom → List String
   | atom :: atoms => typeVars atom ++ typeVarsList atoms
 
 end
+
+/-- Variable support distributes over list append, preserving occurrences. -/
+theorem typeVarsList_append (left right : List Atom) :
+    typeVarsList (left ++ right) = typeVarsList left ++ typeVarsList right := by
+  induction left with
+  | nil => rfl
+  | cons atom left inductionHypothesis =>
+      simp only [List.cons_append, typeVarsList, inductionHypothesis, List.append_assoc]
 
 /-- First-hit lookup in a finite type substitution. -/
 def lookup : TypeSubst → String → Option Atom
@@ -412,6 +422,12 @@ theorem applyTypeValuation_eq_iff_on_typeVars (left right : String → Atom) (at
       ∀ name ∈ TypeSubst.typeVars atom, left name = right name := by
   simp only [applyTypeValuation_eq_subst, TypeSubst.typeVars_eq_vars,
     subst_eq_iff_on_vars, subst, Function.comp_apply, Option.getD_some]
+
+/-- Closed source data is fixed by every simultaneous valuation. -/
+theorem applyTypeValuation_of_typeVars_eq_nil (valuation : String → Atom) (atom : Atom)
+    (closed : TypeSubst.typeVars atom = []) : applyTypeValuation valuation atom = atom := by
+  rw [applyTypeValuation_eq_subst]
+  exact subst_of_vars_eq_nil _ atom ((TypeSubst.typeVars_eq_vars atom).symm.trans closed)
 
 /-- Equal solutions of a pattern give equal readouts for every template whose
 variables are covered by that pattern. -/
@@ -1051,5 +1067,46 @@ theorem AppliedReducedTypeListMatchRel.output_eq
     (one : AppliedReducedTypeListMatchRel incoming left right first)
     (two : AppliedReducedTypeListMatchRel incoming left right second) : first = second :=
   functional_family.2.2 one two
+
+
+/-! ## Variable support in the shared structural atom model -/
+
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+
+mutual
+
+/-- Variable collection is preserved literally by the structural atom
+translation used by the type layer. -/
+theorem encodeModelAtom_vars_eq_typeVars (atom : Atom) :
+    (encodeModelAtom atom).vars = TypeSubst.typeVars atom := by
+  cases atom with
+  | symbol name => simp [encodeModelAtom, Metta.Atom.vars, TypeSubst.typeVars]
+  | var name => simp [encodeModelAtom, Metta.Atom.vars, TypeSubst.typeVars]
+  | grounded value =>
+      simp [encodeModelAtom, Metta.Atom.vars, TypeSubst.typeVars]
+  | expression atoms =>
+      simp only [encodeModelAtom, Metta.Atom.vars, TypeSubst.typeVars]
+      exact encodeModelAtoms_vars_eq_typeVars atoms
+termination_by 2 * sizeOf atom
+
+/-- List companion of `encodeModelAtom_vars_eq_typeVars`. -/
+theorem encodeModelAtoms_vars_eq_typeVars (atoms : List Atom) :
+    (encodeModelAtoms atoms).flatMap Metta.Atom.vars =
+      TypeSubst.typeVarsList atoms := by
+  cases atoms with
+  | nil => rfl
+  | cons atom atoms =>
+      simp only [encodeModelAtoms, List.flatMap_cons,
+        TypeSubst.typeVarsList]
+      exact congrArg₂ List.append
+        (encodeModelAtom_vars_eq_typeVars atom)
+        (encodeModelAtoms_vars_eq_typeVars atoms)
+termination_by 2 * sizeOf atoms + 1
+decreasing_by
+  all_goals simp_wf
+  all_goals omega
+
+end
+
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation

@@ -48,7 +48,7 @@ open SelfModification BayesianAgents Classical
 open Mettapedia.UniversalAI.SolomonoffPrior
 open Mettapedia.UniversalAI.SolomonoffExchangeable
 open Mettapedia.ProbabilityTheory.Exchangeability
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 
 /-! ## Part 1: PLN BinaryEvidence as Sufficient Statistic

@@ -197,7 +197,7 @@ theorem selected_public_binding_is_not_seeded_into_evaluation :
       simp [resolveAtom, instantiate_nil]
     simp [restrictBnd, restrictBndRaw, resolveEmpty, Metta.Bindings.merge]
   simp [evaluateExpectedApplication, evaluateExpectedApplicationFrom,
-    policies, returnsNotAtom,
+    expectedApplicationRetentionScope, policies, returnsNotAtom,
     echoExpected, emitUnresolvedT, instantiate_nil, variableNotSelf,
     variableNotError, variableNotNotReducible, variableNotApplication,
     emptyA,

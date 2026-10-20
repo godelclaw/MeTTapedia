@@ -8,7 +8,7 @@ Links the WM query-rewrite calculus (`WMRewriteRule`, `WMStrengthRule`) to
 OSLF evidence semantics (`semE`, `sem`) via a generic `Query`-type bridge.
 
 This file is a bridge layer. Canonical evidence semantics remains in
-`Mettapedia.PLN.Evidence.EvidenceQuantale`; `OSLFEvidenceSemantics` provides the
+`Mettapedia.PLN.Evidence.BinaryEvidence`; `OSLFEvidenceSemantics` provides the
 OSLF adapter over that carrier.
 
 ## Core Bridge (§1)
@@ -32,8 +32,8 @@ namespace Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
 open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.Framework.EvidenceSemantics
 
 open scoped ENNReal
@@ -425,8 +425,8 @@ namespace Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridgeTyped
 open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.Framework.EvidenceSemantics
 
 open scoped ENNReal

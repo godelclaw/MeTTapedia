@@ -2,7 +2,6 @@ import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.CDLogic
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNModel
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.Soundness
-import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNQuantaleConnection
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNQuantaleDivergence
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.DoubleNegationCorners
 import Mettapedia.PLN.RuleFamilies.QuantaleSemantics.TwistNegation

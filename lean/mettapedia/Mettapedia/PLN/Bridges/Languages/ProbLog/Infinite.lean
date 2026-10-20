@@ -1,6 +1,7 @@
 import Mathlib.Probability.ProductMeasure
 import Mathlib.Probability.ProbabilityMassFunction.Constructions
 import Mathlib.Probability.ProbabilityMassFunction.Basic
+import Mathlib.Probability.Distributions.Bernoulli
 import Mettapedia.Logic.MarkovLogicAbstract
 
 /-!
@@ -45,7 +46,7 @@ namespace Mettapedia.PLN.Bridges.Languages.ProbLog.Infinite
 
 open MeasureTheory Measure
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open scoped ENNReal NNReal
 
 /-! ## §1 Bernoulli Measure on Bool
@@ -53,14 +54,32 @@ open scoped ENNReal NNReal
 Each probabilistic fact `i` with probability `pᵢ` induces a Bernoulli
 measure on `Bool`: probability `pᵢ` for `true`, `1-pᵢ` for `false`. -/
 
-/-- Bernoulli probability measure on Bool from an NNReal probability.
-    This is `PMF.bernoulli` lifted to a measure. -/
+/-- Bernoulli probability measure on Bool from an NNReal probability. -/
 noncomputable def bernoulliMeasure (p : ℝ≥0) (hp : p ≤ 1) : Measure Bool :=
-  (PMF.bernoulli p hp).toMeasure
+  _root_.ProbabilityTheory.bernoulliMeasure true false
+    ⟨(p : ℝ), p.coe_nonneg, by exact_mod_cast hp⟩
 
 instance bernoulliMeasure_prob (p : ℝ≥0) (hp : p ≤ 1) :
-    IsProbabilityMeasure (bernoulliMeasure p hp) :=
-  PMF.toMeasure.isProbabilityMeasure _
+    IsProbabilityMeasure (bernoulliMeasure p hp) := by
+  unfold bernoulliMeasure
+  infer_instance
+
+@[simp] theorem bernoulliMeasure_true (p : ℝ≥0) (hp : p ≤ 1) :
+    bernoulliMeasure p hp {true} = (p : ℝ≥0∞) := by
+  unfold bernoulliMeasure
+  rw [_root_.ProbabilityTheory.bernoulliMeasure_apply _ (measurableSet_singleton true)]
+  simp [unitInterval.toNNReal]
+  rfl
+
+@[simp] theorem bernoulliMeasure_false (p : ℝ≥0) (hp : p ≤ 1) :
+    bernoulliMeasure p hp {false} = ((1 - p : ℝ≥0) : ℝ≥0∞) := by
+  unfold bernoulliMeasure
+  rw [_root_.ProbabilityTheory.bernoulliMeasure_apply _ (measurableSet_singleton false)]
+  simp [unitInterval.toNNReal]
+  rw [← ENNReal.coe_one, ← ENNReal.coe_sub]
+  congr 1
+  apply Subtype.ext
+  simp [NNReal.coe_sub hp]
 
 /-! ## §2 Infinite Product Measure for Independent Facts
 
@@ -129,17 +148,17 @@ theorem infiniteFactMeasure_total (p : ℕ → ℝ≥0) (hp : ∀ i, p i ≤ 1) 
     infiniteFactMeasure p hp Set.univ = 1 :=
   measure_univ
 
-/-! ## §5 Bridge to MassSemantics
+/-! ## §5 Bridge to Mettapedia.ProbabilityTheory.MassSemantics
 
-The infinite product measure induces a `MassSemantics` object (from
+The infinite product measure induces a `Mettapedia.ProbabilityTheory.MassSemantics` object (from
 `MarkovLogicAbstract.lean`), which bridges to WM-PLN via
 `queryStrength_eq_queryProb_of_evidence_eq`. -/
 
-/-- Convert the infinite product measure semantics into a `MassSemantics`
+/-- Convert the infinite product measure semantics into a `Mettapedia.ProbabilityTheory.MassSemantics`
     for a specific measurable query. -/
 noncomputable def infiniteMassSemantics (p : ℕ → ℝ≥0) (hp : ∀ i, p i ≤ 1)
     (Q : Set (ℕ → Bool)) (_hQ : MeasurableSet Q) :
-    Mettapedia.Logic.MarkovLogicAbstract.MassSemantics Unit where
+    Mettapedia.ProbabilityTheory.MassSemantics Unit where
   queryMass := fun _ => infiniteFactMeasure p hp Q
   totalMass := 1
   queryMass_le_total := fun _ =>
@@ -150,7 +169,7 @@ noncomputable def infiniteMassSemantics (p : ℕ → ℝ≥0) (hp : ∀ i, p i �
 theorem infiniteMassSemantics_queryProb (p : ℕ → ℝ≥0) (hp : ∀ i, p i ≤ 1)
     (Q : Set (ℕ → Bool)) (hQ : MeasurableSet Q) :
     (infiniteMassSemantics p hp Q hQ).queryProb () = infiniteFactMeasure p hp Q := by
-  simp [Mettapedia.Logic.MarkovLogicAbstract.MassSemantics.queryProb, infiniteMassSemantics,
+  simp [Mettapedia.ProbabilityTheory.MassSemantics.queryProb, infiniteMassSemantics,
         div_one]
 
 /-! ## §6 Crown Theorem

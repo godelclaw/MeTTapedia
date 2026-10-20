@@ -23,6 +23,24 @@ open Spec.Eval
 open Spec.Eval.Outcome
 open Spec.Type
 
+/-- Classify the exact LeaTTa stack-depth exhaustion shape outside the
+semantic result lane.  Other error atoms remain semantic results. -/
+def classifyLeaTTaResult :
+    Metta.Atom × Metta.Bindings → ExecutionOutcome Metta.Atom Metta.Bindings
+  | (.expr [.sym "Error", source, .sym "StackOverflow"], bindings) =>
+      .resourceExhausted source bindings
+  | result => .semantic result
+
+/-- Positive: the documented LeaTTa exhaustion shape is classified as a
+resource outcome. -/
+example :
+    classifyLeaTTaResult
+        (.expr [.sym "Error", .sym "a", .sym "StackOverflow"], []) =
+      .resourceExhausted (.sym "a") [] := rfl
+
+/-- Negative boundary canary: an ordinary LeaTTa result remains semantic. -/
+example : classifyLeaTTaResult (.sym "a", []) = .semantic (.sym "a", []) := rfl
+
 private def q4LeaEnv : Metta.Minimal.MinEnv :=
   Metta.Minimal.MinEnv.ofAtomsGT [] []
 
@@ -51,7 +69,8 @@ theorem fuelOne_symbol_normal :
   simp [q4LeaEnv, Metta.Minimal.mettaEval, Metta.instantiate_nil,
     Metta.Minimal.MinEnv.ofAtomsGT, Metta.Minimal.extractRules,
     Metta.Minimal.emptyA, Metta.Minimal.headKey,
-    Metta.Minimal.World.empty, Metta.Minimal.St.init]
+    Metta.Minimal.World.empty, Metta.Minimal.St.init,
+    Metta.Minimal.prioritizeSemanticResults, Metta.Atom.isError]
 
 /-- Fuel is observable even on an inert closed symbol. -/
 theorem symbol_results_depend_on_fuel :

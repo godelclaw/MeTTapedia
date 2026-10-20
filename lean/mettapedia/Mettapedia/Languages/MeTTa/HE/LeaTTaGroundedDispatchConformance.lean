@@ -1,6 +1,9 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval
 import Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 import MettaHyperonFull.Core.Grounding
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # LeaTTa grounded-dispatch conformance
@@ -31,7 +34,7 @@ inductive GroundedResultRuntimeRel : GroundedResult → Metta.ReduceResult → P
   | ok (atoms : List Atom) :
       GroundedResultRuntimeRel
         (.ok (atoms.map fun atom => (atom, Bindings.empty)))
-        (.ok (toLeaTTaAtoms atoms))
+        (.ok (encodeModelAtoms atoms))
   | noReduce : GroundedResultRuntimeRel .noReduce .noReduce
   | incorrectArgument (message : String) :
       GroundedResultRuntimeRel .incorrectArgument (.incorrectArgument message)
@@ -55,7 +58,7 @@ def groundingTableDispatch (table : Metta.GroundingTable) :
     ∃ name,
       operator = .symbol name ∧
         GroundedResultRuntimeRel outcome
-          (Metta.callGrounded table name (toLeaTTaAtoms arguments))
+          (Metta.callGrounded table name (encodeModelAtoms arguments))
 
 /-- Characterization of the concrete executable-head boundary. -/
 theorem groundingTableDispatch_executable_iff
@@ -74,7 +77,7 @@ theorem groundingTableDispatch_outcome_iff
       ∃ name,
         operator = .symbol name ∧
           GroundedResultRuntimeRel outcome
-            (Metta.callGrounded table name (toLeaTTaAtoms arguments)) :=
+            (Metta.callGrounded table name (encodeModelAtoms arguments)) :=
   Iff.rfl
 
 private def identityGrounding : Metta.Grounding where
@@ -100,7 +103,7 @@ example :
       (.ok [(.symbol "a", Bindings.empty)]) := by
   refine ⟨"identity", rfl, ?_⟩
   simpa [Metta.callGrounded, Metta.GroundingTable.lookup,
-    identityGrounding, toLeaTTaAtoms, toLeaTTaAtom] using
+    identityGrounding, encodeModelAtoms, encodeModelAtom] using
       (GroundedResultRuntimeRel.ok [.symbol "a"])
 
 /-- Negative: an absent name is not executable, even though asking the raw

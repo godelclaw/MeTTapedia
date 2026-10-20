@@ -1,4 +1,5 @@
 import Mettapedia.OSLF.NativeTypes.Semantics.Operational
+import Mettapedia.OSLF.NativeTypes.Decision.Spatial.Semantics
 import Mathlib.Data.List.NatAntidiagonal
 
 open Mettapedia.OSLF.Framework
@@ -18,6 +19,7 @@ namespace Mettapedia.OSLF.NativeTypes.Decision.Reference.Core
 
 open GSLTTypeSynthesis
 open Mettapedia.GSLT
+open Mettapedia.OSLF.NativeTypes.Decision.Spatial
 
 universe u v w
 
@@ -279,6 +281,7 @@ structure Backend (system : GSLT.{u}) (admitted : system.Term → Prop) where
     frontier budget source = frontier (completionBudget source) source
   closed_stable : ∀ source budget, completionBudget source ≤ budget →
     closed budget source = closed (completionBudget source) source
+  spatial : SplitBackend system admitted := .empty system admitted
 
 inductive Formula (Leaf : Type w) : Type w where
   | atom : Leaf → Formula Leaf
@@ -290,6 +293,7 @@ inductive Formula (Leaf : Type w) : Type w where
   | imp : Formula Leaf → Formula Leaf → Formula Leaf
   | possibility : Formula Leaf → Formula Leaf
   | outgoingUniversal : Formula Leaf → Formula Leaf
+  | separating : Nat → Formula Leaf → Formula Leaf → Formula Leaf
 
 def meet (system : GSLT.{u}) (first second : EquationPredicate system) :
     EquationPredicate system where
@@ -312,22 +316,46 @@ def implies (system : GSLT.{u}) (first second : EquationPredicate system) :
   property := by intro _ _ related; exact imp_congr (first.2 related) (second.2 related)
 
 def denotation {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
-    (tests : Leaf → Test system admitted) : Formula Leaf → EquationPredicate system
+    (tests : Leaf → Test system admitted) (formula : Formula Leaf)
+    (spatial : SpatialTheory system := .empty system) : EquationPredicate system :=
+  match formula with
   | .atom leaf => (tests leaf).predicate
   | .top => ⟨fun _ => True, by intro _ _ _; rfl⟩
   | .bottom => ⟨fun _ => False, by intro _ _ _; rfl⟩
-  | .conj first second => meet system (denotation tests first) (denotation tests second)
-  | .disj first second => join system (denotation tests first) (denotation tests second)
-  | .neg formula => complement system (denotation tests formula)
-  | .imp first second => implies system (denotation tests first) (denotation tests second)
-  | .possibility formula => semanticDiamond system (denotation tests formula)
-  | .outgoingUniversal formula =>
-      Mettapedia.OSLF.NativeTypes.Semantics.Operational.outgoingUniversal system (denotation tests formula)
+  | .conj first second => meet system (denotation tests first spatial) (denotation tests second spatial)
+  | .disj first second => join system (denotation tests first spatial) (denotation tests second spatial)
+  | .neg inner => complement system (denotation tests inner spatial)
+  | .imp first second => implies system (denotation tests first spatial) (denotation tests second spatial)
+  | .possibility inner => semanticDiamond system (denotation tests inner spatial)
+  | .outgoingUniversal inner =>
+      Mettapedia.OSLF.NativeTypes.Semantics.Operational.outgoingUniversal system
+        (denotation tests inner spatial)
+  | .separating index first second =>
+      spatialPredicate spatial index (denotation tests first spatial) (denotation tests second spatial)
 
 def nativeType {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
-    (tests : Leaf → Test system admitted) (formula : Formula Leaf) : GSLTNativeType system where
+    (tests : Leaf → Test system admitted) (formula : Formula Leaf)
+    (spatial : SpatialTheory system := .empty system) : GSLTNativeType system where
   sort := ()
-  pred := denotation tests formula
+  pred := denotation tests formula spatial
+
+def separatingOutcome {system : GSLT.{u}} {admitted : system.Term → Prop}
+    (spatial : SplitBackend system admitted) (index : Nat)
+    (left right : EquationPredicate system) (source : system.Term)
+    (check : ∀ parts : system.Term × system.Term, Outcome (left parts.1 ∧ right parts.2)) :
+    Outcome (spatialPredicate spatial.theory index left right source) :=
+  Outcome.map (spatial.spatial_iff index left right source).symm
+    (Outcome.existsIn (fun parts => left parts.1 ∧ right parts.2) check
+      (spatial.enumerate index source))
+
+theorem separatingOutcome_decided {system : GSLT.{u}} {admitted : system.Term → Prop}
+    (spatial : SplitBackend system admitted) (index : Nat)
+    (left right : EquationPredicate system) (source : system.Term)
+    (check : ∀ parts : system.Term × system.Term, Outcome (left parts.1 ∧ right parts.2))
+    (complete : ∀ parts, parts ∈ spatial.enumerate index source → (check parts).Decided) :
+    (separatingOutcome spatial index left right source check).Decided := by
+  apply Outcome.map_decided
+  exact Outcome.existsIn_decided _ check _ complete
 
 def possibilityOutcome {system : GSLT.{u}} {admitted : system.Term → Prop}
     (backend : Backend.{u,v} system admitted) (predicate : EquationPredicate system)
@@ -394,7 +422,7 @@ theorem universalOutcome_decided {system : GSLT.{u}} {admitted : system.Term →
 def raw {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (backend : Backend.{u,v} system admitted) (tests : Leaf → Test system admitted) :
     (budget : Nat) → (formula : Formula Leaf) → (source : system.Term) →
-      Outcome (denotation tests formula source)
+      Outcome (denotation tests formula backend.spatial.theory source)
   | 0, _, _ => .unknown
   | budget + 1, .atom leaf, source => (tests leaf).run (budget + 1) source
   | _ + 1, .top, _ => .proved trivial
@@ -407,11 +435,16 @@ def raw {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
   | budget + 1, .imp first second, source =>
       Outcome.lazyImplication (raw backend tests budget first source) (fun _ => raw backend tests budget second source)
   | budget + 1, .possibility formula, source =>
-      possibilityOutcome backend (denotation tests formula) (budget + 1) source
+      possibilityOutcome backend (denotation tests formula backend.spatial.theory) (budget + 1) source
         (fun receipt => raw backend tests budget formula (backend.target source receipt))
   | budget + 1, .outgoingUniversal formula, source =>
-      universalOutcome backend (denotation tests formula) (budget + 1) source
+      universalOutcome backend (denotation tests formula backend.spatial.theory) (budget + 1) source
         (fun receipt => raw backend tests budget formula (backend.target source receipt))
+  | budget + 1, .separating index first second, source =>
+      separatingOutcome backend.spatial index
+        (denotation tests first backend.spatial.theory) (denotation tests second backend.spatial.theory)
+        source (fun parts => Outcome.lazyConjunction
+          (raw backend tests budget first parts.1) (fun _ => raw backend tests budget second parts.2))
 
 /-- The bound inspects only complete local frontiers along the finite formula.
 It does not enumerate an ambient term universe. -/
@@ -431,6 +464,9 @@ def workBound {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type
   | .outgoingUniversal formula, source => 1 + backend.completionBudget source +
       ((backend.frontier (backend.completionBudget source) source).map
         (fun receipt => workBound backend tests formula (backend.target source receipt))).sum
+  | .separating index first second, source => 1 +
+      ((backend.spatial.enumerate index source).map (fun parts =>
+        max (workBound backend tests first parts.1) (workBound backend tests second parts.2))).sum
 
 private theorem member_le_sum {Item : Type v} (weight : Item → Nat)
     (items : List Item) (item : Item) (listed : item ∈ items) :
@@ -532,13 +568,34 @@ theorem raw_complete {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf
           (fun receipt => workBound backend tests formula (backend.target source receipt))
           (backend.frontier (backend.completionBudget source) source) receipt listed
         omega
+  | separating index first second left right =>
+    cases budget with
+    | zero => simp [workBound] at enough
+    | succ budget =>
+      simp only [workBound] at enough
+      apply separatingOutcome_decided
+      intro parts listed
+      rw [Outcome.lazyConjunction_eq]
+      apply Outcome.conjunction_decided
+      · apply left parts.1 (backend.spatial.components_admitted index source sourceAdmitted parts listed).1
+        have bound := member_le_sum
+          (fun parts => max (workBound backend tests first parts.1)
+            (workBound backend tests second parts.2))
+          (backend.spatial.enumerate index source) parts listed
+        omega
+      · apply right parts.2 (backend.spatial.components_admitted index source sourceAdmitted parts listed).2
+        have bound := member_le_sum
+          (fun parts => max (workBound backend tests first parts.1)
+            (workBound backend tests second parts.2))
+          (backend.spatial.enumerate index source) parts listed
+        omega
 
 /-- Keep the first conclusive result. Its compiled implementation is the
 tail-recursive stream below, which starts at one unit of actual local work. -/
 def check {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (backend : Backend.{u,v} system admitted) (tests : Leaf → Test system admitted)
     (formula : Formula Leaf) (source : system.Term) :
-    Nat → Outcome (denotation tests formula source)
+    Nat → Outcome (denotation tests formula backend.spatial.theory source)
   | 0 => .unknown
   | budget + 1 => match check backend tests formula source budget with
     | .proved proof => .proved proof
@@ -596,7 +653,7 @@ end Outcome
 def stream {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (backend : Backend.{u,v} system admitted) (tests : Leaf → Test system admitted)
     (formula : Formula Leaf) (source : system.Term) (budget : Nat) :
-    Outcome (denotation tests formula source) :=
+    Outcome (denotation tests formula backend.spatial.theory source) :=
   Outcome.streamFrom (fun work => raw backend tests work formula source) 1 budget
 
 theorem stream_eq_check {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
@@ -618,14 +675,14 @@ theorem checked_positive {system : GSLT.{u}} {admitted : system.Term → Prop} {
     (backend : Backend.{u,v} system admitted) (tests : Leaf → Test system admitted)
     (formula : Formula Leaf) (source : system.Term) (budget : Nat)
     (read : (check backend tests formula source budget).answer = some true) :
-    denotation tests formula source :=
+    denotation tests formula backend.spatial.theory source :=
   Outcome.positive _ read
 
 theorem checked_negative {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (backend : Backend.{u,v} system admitted) (tests : Leaf → Test system admitted)
     (formula : Formula Leaf) (source : system.Term) (budget : Nat)
     (read : (check backend tests formula source budget).answer = some false) :
-    ¬ denotation tests formula source :=
+    ¬ denotation tests formula backend.spatial.theory source :=
   Outcome.negative _ read
 
 theorem checked_complete {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
@@ -655,8 +712,9 @@ theorem conclusive_mono {system : GSLT.{u}} {admitted : system.Term → Prop} {L
     cases previous <;> simp_all [Outcome.answer]
 
 theorem native_membership {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
-    (tests : Leaf → Test system admitted) (formula : Formula Leaf) (source : system.Term) :
-    (gsltOSLF system).satisfies source (nativeType tests formula).pred ↔
-      denotation tests formula source := Iff.rfl
+    (tests : Leaf → Test system admitted) (formula : Formula Leaf) (source : system.Term)
+    (spatial : SpatialTheory system := .empty system) :
+    (gsltOSLF system).satisfies source (nativeType tests formula spatial).pred ↔
+      denotation tests formula spatial source := Iff.rfl
 
 end Mettapedia.OSLF.NativeTypes.Decision.Reference.Core

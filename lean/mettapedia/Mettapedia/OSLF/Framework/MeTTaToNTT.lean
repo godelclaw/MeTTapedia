@@ -19,9 +19,9 @@ open Mettapedia.OSLF.MeTTaIL.Engine
 open Mettapedia.OSLF.Framework.TypeSynthesis
 open Mettapedia.OSLF.Framework.MeTTaFullInstance
 open Mettapedia.OSLF.Formula
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.OSLF.Framework.EvidenceSemantics
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.CategoryTheory.PLNInstance
 open Mettapedia.PLN.Bridges.CategoryTheory.EvidenceFibration
 
@@ -52,7 +52,7 @@ section WMBridge
 
 variable {State : Type*}
 variable [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-variable [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Pattern]
+variable [Mettapedia.PLN.WorldModel.BinaryWorldModel State Pattern]
 
 /-- BinaryEvidence semantics for MeTTaFullLegacy formulas from a world-model state. -/
 noncomputable def mettaSemE

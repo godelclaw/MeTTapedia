@@ -19,11 +19,11 @@ The world model reindexed from the target is one construction that satisfies it
 signature give a whole institution (`WMInstitution.overTop`).
 -/
 
-namespace Mettapedia.PLN.WorldModel.PLNWorldModelInstitution
+namespace Mettapedia.PLN.WorldModel.WorldModelInstitution
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 universe x
@@ -286,8 +286,8 @@ def overTop (State : Type) [EvidenceType State] (top : WMSignature)
   Sig := ι
   sigData := sigOf
   Hom := OverTopHom top sigOf toTop
-  id i := ⟨PLNWorldModelInstitution.id (sigOf i), fun phi => by rw [mapSentence_id]⟩
-  comp h k := ⟨PLNWorldModelInstitution.comp h.1 k.1, fun phi => by
+  id i := ⟨WorldModelInstitution.id (sigOf i), fun phi => by rw [mapSentence_id]⟩
+  comp h k := ⟨WorldModelInstitution.comp h.1 k.1, fun phi => by
     rw [mapSentence_comp, k.2, h.2]⟩
   mapHom h := h.1
   worldModel i := @reindexWorldModelSigma State _ (sigOf i) top (toTop i) wm
@@ -383,4 +383,4 @@ theorem profilePrecomp_comp
       profilePrecomp sigma12 (profilePrecomp sigma23 F) := by
   funext phi; simp [profilePrecomp]
 
-end Mettapedia.PLN.WorldModel.PLNWorldModelInstitution
+end Mettapedia.PLN.WorldModel.WorldModelInstitution

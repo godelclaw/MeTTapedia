@@ -43,6 +43,75 @@ open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 universe uTerm uSourceTerm uMiddleTerm uTargetTerm
   uIndex vIndex uObservation uCell
 
+/-! ## Conversion observations of an authored relation -/
+
+/-- Conversion is observed as finite, oriented evidence. Equations of this
+observation theory are syntax equality; they do not hide the conversion steps. -/
+abbrev conversionTheory {Term : Type uTerm} (step : Term → Term → Prop) : GSLT :=
+  equalityGSLT Term (fun left right => step left right ∨ step right left)
+
+private theorem conversionPathAppend {Term : Type uTerm} {step : Term → Term → Prop}
+    {first middle last : Term}
+    (firstPath : (conversionTheory step).MultiStep first middle)
+    (suffix : (conversionTheory step).MultiStep middle last) :
+    (conversionTheory step).MultiStep first last := by
+  exact GSLT.MultiStep.rec (S := conversionTheory step)
+    (motive := fun first middle _ =>
+      (conversionTheory step).MultiStep middle last →
+        (conversionTheory step).MultiStep first last)
+    (fun _ remaining => remaining)
+    (fun edge _ ih remaining => .step edge (ih remaining)) firstPath suffix
+
+private theorem conversionPathReverse {Term : Type uTerm} {step : Term → Term → Prop}
+    {first last : Term} (path : (conversionTheory step).MultiStep first last) :
+    (conversionTheory step).MultiStep last first := by
+  exact GSLT.MultiStep.rec (S := conversionTheory step)
+    (motive := fun first last _ => (conversionTheory step).MultiStep last first)
+    (fun _ => .refl _)
+    (fun edge _ ih => conversionPathAppend ih (.step edge.symm (.refl _))) path
+
+/-- The observation presents precisely the original relation's equivalence
+closure. It neither requires normalization nor provides a search procedure. -/
+theorem conversionTheory_path_iff {Term : Type uTerm} (step : Term → Term → Prop)
+    (left right : Term) :
+    (conversionTheory step).MultiStep left right ↔ Relation.EqvGen step left right := by
+  constructor
+  · intro path
+    exact GSLT.MultiStep.rec (S := conversionTheory step)
+      (motive := fun first last _ => Relation.EqvGen step first last)
+      (fun term => .refl term)
+      (fun edge _ ih => .trans _ _ _
+        (edge.elim (fun step => .rel _ _ step) (fun step => .symm _ _ (.rel _ _ step))) ih)
+      path
+  · intro converted
+    induction converted with
+    | rel _ _ edge => exact .step (.inl edge) (.refl _)
+    | refl term => exact GSLT.MultiStep.refl (S := conversionTheory step) term
+    | symm _ _ _ ih => exact conversionPathReverse ih
+    | trans _ _ _ _ _ first second => exact conversionPathAppend first second
+
+def conversionNativeType {Term : Type uTerm} (step : Term → Term → Prop) (target : Term) :
+    GSLTNativeType (conversionTheory step) where
+  sort := ()
+  pred := semanticReach (conversionTheory step)
+    (saturatePredicate (conversionTheory step) (fun term => term = target))
+
+/-- The OSLF observation has exactly the declared conversion meaning. A client
+may separately connect it to a checker for its admitted computational fragment. -/
+theorem satisfies_conversionNativeType_iff {Term : Type uTerm} (step : Term → Term → Prop)
+    (left right : Term) :
+    (gsltOSLF (conversionTheory step)).satisfies (S := ()) left
+      (conversionNativeType step right).pred ↔ Relation.EqvGen step left right := by
+  change (∃ last, (conversionTheory step).MultiStep left last ∧
+    saturatePredicate (conversionTheory step) (fun term => term = right) last) ↔ _
+  constructor
+  · rintro ⟨last, path, representative, equivalent, same⟩
+    change last = representative at equivalent
+    have endpoint : last = right := equivalent.trans same
+    exact (conversionTheory_path_iff step left right).mp (endpoint ▸ path)
+  · intro converted
+    exact ⟨right, (conversionTheory_path_iff step left right).mpr converted, right, rfl, rfl⟩
+
 /-! ## Forward and covered operational translations -/
 
 /-- A term translation that respects equations and preserves one-step
@@ -161,6 +230,73 @@ def toOperational {source target : GSLT.{uTerm}}
   mapTerm := translation.mapTerm
   mapEquiv := translation.mapEquiv
   mapStep := translation.cover.mapStep
+
+end CoveredTranslation
+
+/-! ## Semantic predicate action of the existing operational routes -/
+
+namespace OperationalTranslation
+
+/-- Equation preservation earns the already maintained OSLF change of base. -/
+def equationMap {source target : GSLT.{uTerm}}
+    (translation : OperationalTranslation source target) :
+    EquationRespectingMap source target :=
+  ⟨translation.mapTerm, translation.mapEquiv⟩
+
+/-- A strict forward simulation preserves existential one-step observations.
+It need not reflect additional target behavior. -/
+theorem preserves_semanticDiamond {source target : GSLT.{uTerm}}
+    (translation : OperationalTranslation source target)
+    (predicate : EquationPredicate target) (term : source.Term) :
+    semanticDiamond source (translation.equationMap.pullback predicate) term →
+      translation.equationMap.pullback (semanticDiamond target predicate) term := by
+  change gsltDiamond source (translation.equationMap.pullback predicate).1 term →
+    gsltDiamond target predicate.1 (translation.mapTerm term)
+  rw [gsltDiamond_spec, gsltDiamond_spec]
+  rintro ⟨next, step, holds⟩
+  exact ⟨translation.mapTerm next, translation.mapStep step, holds⟩
+
+/-- Semantic route agreement yields identical predicate reindexing. The
+agreement law deliberately retains the target's declared equation policy. -/
+theorem pullback_eq_of_equiv {source target : GSLT.{uTerm}}
+    (first second : OperationalTranslation source target)
+    (agreement : ∀ term, target.Equiv (first.mapTerm term) (second.mapTerm term))
+    (predicate : EquationPredicate target) :
+    first.equationMap.pullback predicate = second.equationMap.pullback predicate :=
+  EquationRespectingMap.pullback_eq_of_equiv _ _ agreement predicate
+
+end OperationalTranslation
+
+namespace CoveredTranslation
+
+/-- Local coverage supplies the missing reverse existential-modal law. -/
+theorem semanticDiamond_iff {source target : GSLT.{uTerm}}
+    (translation : CoveredTranslation source target)
+    (predicate : EquationPredicate target) (term : source.Term) :
+    semanticDiamond source (translation.toOperational.equationMap.pullback predicate) term ↔
+      translation.toOperational.equationMap.pullback (semanticDiamond target predicate) term := by
+  constructor
+  · exact translation.toOperational.preserves_semanticDiamond predicate term
+  · change gsltDiamond target predicate.1 (translation.mapTerm term) →
+      gsltDiamond source (translation.toOperational.equationMap.pullback predicate).1 term
+    rw [gsltDiamond_spec, gsltDiamond_spec]
+    rintro ⟨next, step, holds⟩
+    obtain ⟨previous, lifted, rfl⟩ := translation.cover.liftStep step
+    exact ⟨previous, lifted, holds⟩
+
+/-- Coverage of finite paths preserves and reflects reachability native
+types. Neither direction states a bound on the cost of finding a path. -/
+theorem semanticReach_iff {source target : GSLT.{uTerm}}
+    (translation : CoveredTranslation source target)
+    (predicate : EquationPredicate target) (term : source.Term) :
+    semanticReach source (translation.toOperational.equationMap.pullback predicate) term ↔
+      translation.toOperational.equationMap.pullback (semanticReach target predicate) term := by
+  constructor
+  · rintro ⟨last, path, holds⟩
+    exact ⟨translation.mapTerm last, translation.cover.mapMultiStep path, holds⟩
+  · rintro ⟨last, path, holds⟩
+    obtain ⟨previous, rfl, lifted⟩ := translation.cover.liftMultiStep path
+    exact ⟨previous, lifted, holds⟩
 
 end CoveredTranslation
 

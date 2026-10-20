@@ -33,7 +33,7 @@ open Mettapedia.PLN.Bridges.GSLT.ProbabilityDisplayedDischarge
 open Mettapedia.PLN.Bridges.ProbabilityTheory.BayesNet.PLNBNCompilation
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.WorldModel.DisplayedConsequence
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.ProbabilityTheory.BayesianNetworks
 open Mettapedia.TypeTheory.CertificateGSLTDisplayedAnytimeEvidence
 

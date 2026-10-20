@@ -24,7 +24,7 @@ namespace Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelSetTheoryBridge
 open LO
 open LO.FirstOrder
 open LO.FirstOrder.SetTheory
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization

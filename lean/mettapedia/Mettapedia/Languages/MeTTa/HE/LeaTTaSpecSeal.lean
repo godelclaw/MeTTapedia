@@ -1,4 +1,8 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaQueryObservationalAnchor
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Repaired LeaTTa specification seal
@@ -34,7 +38,7 @@ theorem repairedLeaTTa_match_merge_equationQueryStep_seal
     (query pattern : Atom) :
     ((∀ {leaOut : Metta.Bindings},
         leaOut ∈ Metta.matchAtoms
-            (toLeaTTaAtom pattern) (toLeaTTaAtom query) →
+            (encodeModelAtom pattern) (encodeModelAtom query) →
           ∃ specOut,
             Spec.Match.Merge.MatchRel
                 Spec.Match.Merge.equalityGroundedSemantic
@@ -47,22 +51,22 @@ theorem repairedLeaTTa_match_merge_equationQueryStep_seal
           VarsDisjoint query pattern →
             ∃ leaOut,
               leaOut ∈ Metta.matchAtoms
-                  (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
+                  (encodeModelAtom pattern) (encodeModelAtom query) ∧
                 LeaBindingSolutionTheoryEquiv specOut leaOut)) ∧
     ∀ {specIncoming : Bindings} {incoming : Metta.Bindings}
       {prev : Metta.Minimal.Stack} {counter : Nat}
       {rawLhs rawRhs : Metta.Atom} {item : Metta.Minimal.Item},
       LeaQueryOpBindingInvariant specIncoming incoming →
       (Metta.Minimal.freshenRuleAvoiding counter
-        (Metta.Minimal.queryOpAvoid prev (toLeaTTaAtom query) incoming)
-        rawLhs rawRhs).1.1 = toLeaTTaAtom pattern →
+        (Metta.Minimal.queryOpAvoid prev (encodeModelAtom query) incoming)
+        rawLhs rawRhs).1.1 = encodeModelAtom pattern →
       item ∈ Metta.Minimal.queryOpItemsOfRule
-        prev (toLeaTTaAtom query) incoming counter (rawLhs, rawRhs) →
+        prev (encodeModelAtom query) incoming counter (rawLhs, rawRhs) →
         ∃ merged specMerged freshRhs,
           freshRhs =
               (Metta.Minimal.freshenRuleAvoiding counter
                 (Metta.Minimal.queryOpAvoid prev
-                  (toLeaTTaAtom query) incoming)
+                  (encodeModelAtom query) incoming)
                 rawLhs rawRhs).1.2 ∧
             item = Metta.Minimal.evalResult prev
               (Metta.instantiate merged freshRhs) merged ∧

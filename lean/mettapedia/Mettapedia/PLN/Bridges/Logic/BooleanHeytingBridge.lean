@@ -175,7 +175,7 @@ def addPositive (c : ObservationCounts) : ObservationCounts :=
 def addNegative (c : ObservationCounts) : ObservationCounts :=
   ⟨c.positive, c.negative + 1⟩
 
-/-- Combine counts from two independent sources -/
+/-- Combine the counts of two disjoint sets of observations -/
 def combine (c₁ c₂ : ObservationCounts) : ObservationCounts :=
   ⟨c₁.positive + c₂.positive, c₁.negative + c₂.negative⟩
 

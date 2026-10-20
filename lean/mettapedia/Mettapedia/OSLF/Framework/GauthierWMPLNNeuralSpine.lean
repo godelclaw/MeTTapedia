@@ -19,9 +19,9 @@ open Mettapedia.OSLF.Framework.GauthierOEISModKPruning
 open Mettapedia.OSLF.Framework.GSLTEvidence
 open Mettapedia.OSLF.Framework.GSLTWorldModel
 open Mettapedia.OSLF.Framework.InferenceQuantale
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
-abbrev PLNEvidence := Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+abbrev PLNEvidence := Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-! ## Certified properties as WM-PLN evidence queries -/
 
@@ -79,18 +79,18 @@ theorem certifiedPropertyEvidence_add
     certifiedPropertyEvidence (W₁ + W₂) q =
       certifiedPropertyEvidence W₁ q + certifiedPropertyEvidence W₂ q := by
   classical
-  apply Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.ext'
+  apply Mettapedia.PLN.Evidence.BinaryEvidence.ext'
   · simp [certifiedPropertyEvidence,
       Multiset.countP_add,
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.hplus_def]
+      Mettapedia.PLN.Evidence.BinaryEvidence.hplus_def]
   · simp [certifiedPropertyEvidence,
       Multiset.countP_add,
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.hplus_def]
+      Mettapedia.PLN.Evidence.BinaryEvidence.hplus_def]
 
 theorem certifiedPropertyEvidence_zero (q : CertifiedPropertyQuery) :
     certifiedPropertyEvidence (0 : Multiset Prog) q = 0 := by
   classical
-  apply Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.ext' <;>
+  apply Mettapedia.PLN.Evidence.BinaryEvidence.ext' <;>
     simp [certifiedPropertyEvidence]
 
 noncomputable def certifiedPropertyEvidenceAssignment :
@@ -123,14 +123,14 @@ theorem certifiedPropertyEvidence_singleton_of_holds
     {p : Prog} {q : CertifiedPropertyQuery} (h : q.holds p) :
     certifiedPropertyEvidenceAssignment.extract ({p} : Multiset Prog) q = ⟨1, 0⟩ := by
   classical
-  apply Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.ext' <;>
+  apply Mettapedia.PLN.Evidence.BinaryEvidence.ext' <;>
     simp [certifiedPropertyEvidenceAssignment, certifiedPropertyEvidence, ← Multiset.cons_zero, h]
 
 theorem certifiedPropertyEvidence_singleton_of_refutes
     {p : Prog} {q : CertifiedPropertyQuery} (h : ¬ q.holds p) :
     certifiedPropertyEvidenceAssignment.extract ({p} : Multiset Prog) q = ⟨0, 1⟩ := by
   classical
-  apply Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.ext' <;>
+  apply Mettapedia.PLN.Evidence.BinaryEvidence.ext' <;>
     simp [certifiedPropertyEvidenceAssignment, certifiedPropertyEvidence, ← Multiset.cons_zero, h]
 
 /-- A proof-carrying PLN truth-value/evidence object for a certified semantic

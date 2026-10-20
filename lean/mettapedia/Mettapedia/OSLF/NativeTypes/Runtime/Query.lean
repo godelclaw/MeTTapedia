@@ -43,6 +43,12 @@ def NamedSession.observations {driver : Driver} {runtime : Engine driver} {query
   | .unknownConstructor _ => []
   | .checked _ _ session => session.observations
 
+def NamedSession.spatialObservations {driver : Driver} {runtime : Engine driver} {query : Query} {raw : Pattern} :
+    NamedSession driver runtime query raw →
+      List (Mettapedia.OSLF.NativeTypes.Decision.Machine.SpatialObservation runtime.cursor)
+  | .unknownConstructor _ => []
+  | .checked _ _ session => session.spatialObservations
+
 def startQuery (driver : Driver) (runtime : Engine driver) (query : Query) (raw : Pattern) :
     NamedSession driver runtime query raw :=
   match compiled : elaborate driver query with

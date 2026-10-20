@@ -43,7 +43,7 @@ noncomputable section
 
 namespace Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PLNQuantaleDivergence
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 /-! ## Counterexample 1: Revision ≠ Supremum

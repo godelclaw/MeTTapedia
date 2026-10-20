@@ -22,57 +22,6 @@ namespace Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation
 namespace StructuralTypingReplay
 namespace TowerDecisions
 
-def headTarget : Tower.Head → Tower.Head
-  | .legacyGround => .sort Tower.zero
-  | .sort level => .sort (.succ level)
-
-theorem headTyping_iff (head target : Tower.Head) :
-    Tower.HeadTyping head target ↔ target = headTarget head := by
-  cases head with
-  | legacyGround =>
-      constructor
-      · intro typing; cases typing; rfl
-      · intro same; subst target; exact .legacyGround
-  | sort level =>
-      constructor
-      · intro typing; cases typing; rfl
-      · intro same; subst target; exact .sort level
-
-instance (head target : Tower.Head) : Decidable (Tower.HeadTyping head target) :=
-  decidable_of_iff (target = headTarget head) (headTyping_iff head target).symm
-
-instance (head : Tower.Head) : Decidable (Tower.IsUniverse head) := by
-  cases head with
-  | legacyGround => exact .isFalse (by intro impossible; cases impossible)
-  | sort level => exact .isTrue (.sort level)
-
-instance (first second result : Tower.Head) : Decidable (Tower.Join first second result) := by
-  cases first with
-  | legacyGround => exact .isFalse (by intro impossible; cases impossible)
-  | sort u =>
-      cases second with
-      | legacyGround => exact .isFalse (by intro impossible; cases impossible)
-      | sort v =>
-          cases result with
-          | legacyGround => exact .isFalse (by intro impossible; cases impossible)
-          | sort w =>
-              apply decidable_of_iff (w = .max u v)
-              constructor
-              · intro same; subst w; exact .sorts u v
-              · intro joined; cases joined; rfl
-
-instance : ∀ h u, Decidable (Tower.rules.headTyping h u) :=
-  fun h u => inferInstanceAs (Decidable (Tower.HeadTyping h u))
-
-instance : ∀ h, Decidable (Tower.rules.isUniverse h) :=
-  fun h => inferInstanceAs (Decidable (Tower.IsUniverse h))
-
-instance : ∀ u v w, Decidable (Tower.rules.join u v w) :=
-  fun u v w => inferInstanceAs (Decidable (Tower.Join u v w))
-
-instance : ∀ u v, Decidable (Tower.rules.cumulative u v) :=
-  fun u v => LevelTower.instDecidableCumulative u v
-
 /-- Declaration extension inherits these same constructive primitive
 decisions; it neither reinterprets universe rules nor admits conversions. -/
 instance (signature : Declaration.Signature Tower.Head) :

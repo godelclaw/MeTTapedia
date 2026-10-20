@@ -16,8 +16,8 @@ namespace Mettapedia.PLN.Bridges.HOL.Introspection
 
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.WithParams
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.Bridges.HOL.HeytingWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.Bridges.HOL.PLNHeytingHOLWorldModelBridge
 open Mettapedia.PLN.InferenceControl.CertifiedChaining.EstimatorEnvelope
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 open scoped ENNReal

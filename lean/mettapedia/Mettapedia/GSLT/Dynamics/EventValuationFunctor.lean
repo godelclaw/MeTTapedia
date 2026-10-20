@@ -27,7 +27,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.GSLT.Dynamics.EventValuationFunctor
 
-open CategoryTheory
+open _root_.CategoryTheory
 open Mettapedia.GSLT
 open Mettapedia.GSLT.Dynamics.IndexedEventValuation
 

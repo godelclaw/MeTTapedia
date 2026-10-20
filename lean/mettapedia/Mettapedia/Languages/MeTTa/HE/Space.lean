@@ -2,14 +2,15 @@ import Mettapedia.Languages.MeTTa.HE.Matching
 import Provenance.Util.ValueTypeString
 
 /-!
-# HE MeTTa Space
+# A list representation of HE spaces
 
 Atomspace and grounded dispatch for the HE interpreter formalization.
 Uses computable (List-based) representation to enable `decide` proofs.
 
-## Source Precedence
-1. `interpreter.rs` (ground truth)
-2. `metta.md` (spec)
+The list order is a representation and traversal profile. It does not specify
+a language-level enumeration order. Independent type-occurrence contracts
+and admissible enumeration policies are in `Spec.Type`; executable profiles
+must be related to those contracts rather than supplying their authority.
 
 ## Main Definitions
 * `Space` - Computable atomspace (List-based)
@@ -92,7 +93,7 @@ end Space
 /-! ## Type Queries
 
 Ref: metta.md line 287 `<list of the types of the $atom from the $space>`.
-Ref: `types.rs:get_atom_types` (ground truth).
+`types.rs:get_atom_types` motivates the executable profile below.
 
 Type resolution dispatches by atom kind:
 1. **Variables** → no type (falls back to `%Undefined%`)
@@ -1232,12 +1233,30 @@ We parameterize over a `GroundedDispatch` structure. -/
 
 /-- Result of executing a grounded operation.
     Ref: metta.md lines 529-536, `ExecError` in interpreter.rs. -/
-inductive GroundedResult where
-  | ok : ResultSet → GroundedResult
-  | runtimeError : String → GroundedResult
-  | noReduce : GroundedResult
-  | incorrectArgument : GroundedResult
+inductive GroundedResult (Value : Type := Atom) where
+  | ok : List (Value × Bindings) → GroundedResult Value
+  | runtimeError : String → GroundedResult Value
+  | noReduce : GroundedResult Value
+  | incorrectArgument : GroundedResult Value
   deriving Repr, Inhabited, DecidableEq
+
+/-- Change only the value representation. Binding records and host outcome
+classes retain their original meaning and occurrence order. -/
+def GroundedResult.map {Value Other : Type} (f : Value → Other) :
+    GroundedResult Value → GroundedResult Other
+  | .ok values => .ok (values.map fun row => (f row.1,row.2))
+  | .runtimeError message => .runtimeError message
+  | .noReduce => .noReduce
+  | .incorrectArgument => .incorrectArgument
+
+theorem GroundedResult.map_id {Value : Type} (result : GroundedResult Value) :
+    result.map id = result := by
+  cases result <;> simp [map]
+
+theorem GroundedResult.map_comp {Value Middle Other : Type}
+    (first : Value → Middle) (second : Middle → Other) (result : GroundedResult Value) :
+    (result.map first).map second = result.map (second ∘ first) := by
+  cases result <;> simp [map,List.map_map]
 
 /-- Grounded operation dispatch table.
     Ref: metta.md lines 527-536.
@@ -1311,7 +1330,7 @@ example : simpleMatch (.symbol "a") (.symbol "b") Bindings.empty 10 =
     none := rfl
 
 -- GroundedResult
-example : GroundedResult.ok [] = GroundedResult.ok [] := rfl
+example : (GroundedResult.ok [] : GroundedResult) = GroundedResult.ok [] := rfl
 
 end Tests
 

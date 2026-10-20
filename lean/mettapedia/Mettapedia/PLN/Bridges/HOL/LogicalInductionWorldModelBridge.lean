@@ -24,7 +24,7 @@ namespace Mettapedia.PLN.Bridges.HOL.LogicalInductionWorldModelBridge
 
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.LogicalInduction
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 universe u v

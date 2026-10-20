@@ -265,7 +265,7 @@ theorem assoc_pat_evidence_bird_bird_ne_pat_evidence_bird_bird :
 which ignores its extensional coordinate can equate mixed evidence while
 extensional evidence differs. -/
 theorem assoc_pat_ignore_extensional_combiner_collapses_extensional_channel :
-    ∃ x y assoc pat : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence,
+    ∃ x y assoc pat : Mettapedia.PLN.Evidence.BinaryEvidence,
       (fun _ assoc pat => assoc + pat) x assoc pat =
           (fun _ assoc pat => assoc + pat) y assoc pat ∧
         x ≠ y :=
@@ -275,7 +275,7 @@ theorem assoc_pat_ignore_extensional_combiner_collapses_extensional_channel :
 ASSOC/PAT-only mixed combiner is not left-cancellable in the extensional
 coordinate. -/
 theorem assoc_pat_ignore_extensional_combiner_not_left_cancellable :
-    ¬ (∀ {x y assoc pat : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+    ¬ (∀ {x y assoc pat : Mettapedia.PLN.Evidence.BinaryEvidence},
       (fun _ assoc pat => assoc + pat) x assoc pat =
           (fun _ assoc pat => assoc + pat) y assoc pat →
         x = y) :=
@@ -286,7 +286,7 @@ monotonicity alone does not force mixed-channel monotonicity when the
 extensional coordinate drops. -/
 theorem assoc_pat_mixed_monotonicity_requires_extensional_monotonicity :
     ∃ ext₁ ext₂ assoc₁ assoc₂ pat₁ pat₂ :
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence,
+        Mettapedia.PLN.Evidence.BinaryEvidence,
       assoc₁ ≤ assoc₂ ∧
         pat₁ ≤ pat₂ ∧
         ¬ ext₁ ≤ ext₂ ∧
@@ -444,18 +444,18 @@ structure AssocPatConsumerProfile where
         Mettapedia.KR.ConceptOntology.Examples.Concept.bird
         Mettapedia.KR.ConceptOntology.Examples.Concept.bird
   ignoreExtensionalCombinerCollapsesExtensionalChannel :
-    ∃ x y assoc pat : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence,
+    ∃ x y assoc pat : Mettapedia.PLN.Evidence.BinaryEvidence,
       (fun _ assoc pat => assoc + pat) x assoc pat =
           (fun _ assoc pat => assoc + pat) y assoc pat ∧
         x ≠ y
   ignoreExtensionalCombinerNotLeftCancellable :
-    ¬ (∀ {x y assoc pat : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+    ¬ (∀ {x y assoc pat : Mettapedia.PLN.Evidence.BinaryEvidence},
       (fun _ assoc pat => assoc + pat) x assoc pat =
           (fun _ assoc pat => assoc + pat) y assoc pat →
         x = y)
   mixedMonotonicityRequiresExtensionalMonotonicity :
     ∃ ext₁ ext₂ assoc₁ assoc₂ pat₁ pat₂ :
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence,
+        Mettapedia.PLN.Evidence.BinaryEvidence,
       assoc₁ ≤ assoc₂ ∧
         pat₁ ≤ pat₂ ∧
         ¬ ext₁ ≤ ext₂ ∧

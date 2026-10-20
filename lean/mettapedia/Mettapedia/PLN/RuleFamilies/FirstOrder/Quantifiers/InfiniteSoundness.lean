@@ -11,7 +11,7 @@ without reintroducing any finiteness assumptions.
 
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.Infinite
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.Algebra.QuantaleWeakness
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 open scoped ENNReal

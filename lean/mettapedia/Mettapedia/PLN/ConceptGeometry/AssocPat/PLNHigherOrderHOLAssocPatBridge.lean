@@ -15,7 +15,7 @@ namespace Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLAssocPatBridg
 
 open Mettapedia.Logic.HOL
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel
 
 universe u v w
@@ -1225,10 +1225,10 @@ theorem mixedEvidence_eq_of_extensional_assoc_pat_channel_eq
     (model : InheritanceQueryBuilder.IntensionalScoreModel
       (State := State) (Atom := Pred) (Query := PairQuery) pairEnc)
     (combine :
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-            Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+      Mettapedia.PLN.Evidence.BinaryEvidence →
+        Mettapedia.PLN.Evidence.BinaryEvidence →
+          Mettapedia.PLN.Evidence.BinaryEvidence →
+            Mettapedia.PLN.Evidence.BinaryEvidence)
     (hMixed :
       InheritanceQueryBuilder.MixedAssocPatScoreCorrespondence
         (State := State) (Atom := Pred) (Query := PairQuery)
@@ -1472,10 +1472,10 @@ theorem mixedEvidence_eq_of_predicateVocabularyWeightedPairOrderRankScore_sameIn
     (model : InheritanceQueryBuilder.IntensionalScoreModel
       (State := State) (Atom := Pred) (Query := PairQuery) pairEnc)
     (combine :
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-            Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+      Mettapedia.PLN.Evidence.BinaryEvidence →
+        Mettapedia.PLN.Evidence.BinaryEvidence →
+          Mettapedia.PLN.Evidence.BinaryEvidence →
+            Mettapedia.PLN.Evidence.BinaryEvidence)
     (hMixed :
       InheritanceQueryBuilder.MixedAssocPatScoreCorrespondence
         (State := State) (Atom := Pred) (Query := PairQuery)
@@ -1599,10 +1599,10 @@ theorem mixedEvidence_eq_of_predicateVocabularyPairOrderRankScore_sameIntent
     (model : InheritanceQueryBuilder.IntensionalScoreModel
       (State := State) (Atom := Pred) (Query := PairQuery) pairEnc)
     (combine :
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-            Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+      Mettapedia.PLN.Evidence.BinaryEvidence →
+        Mettapedia.PLN.Evidence.BinaryEvidence →
+          Mettapedia.PLN.Evidence.BinaryEvidence →
+            Mettapedia.PLN.Evidence.BinaryEvidence)
     (hMixed :
       InheritanceQueryBuilder.MixedAssocPatScoreCorrespondence
         (State := State) (Atom := Pred) (Query := PairQuery)
@@ -1709,10 +1709,10 @@ theorem extensionalEvidence_eq_of_mixedEvidence_eq_predicateVocabularyPairOrderR
     (model : InheritanceQueryBuilder.IntensionalScoreModel
       (State := State) (Atom := Pred) (Query := PairQuery) pairEnc)
     (combine :
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-            Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+      Mettapedia.PLN.Evidence.BinaryEvidence →
+        Mettapedia.PLN.Evidence.BinaryEvidence →
+          Mettapedia.PLN.Evidence.BinaryEvidence →
+            Mettapedia.PLN.Evidence.BinaryEvidence)
     (hMixed :
       InheritanceQueryBuilder.MixedAssocPatScoreCorrespondence
         (State := State) (Atom := Pred) (Query := PairQuery)
@@ -1727,7 +1727,7 @@ theorem extensionalEvidence_eq_of_mixedEvidence_eq_predicateVocabularyPairOrderR
           (Base := Base) (Const := Const) M σ decode a b)
     (hCancel :
       ∀ {x y assoc pat :
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+          Mettapedia.PLN.Evidence.BinaryEvidence},
         combine x assoc pat = combine y assoc pat → x = y)
     {W : State} {a b c d : Pred}
     (hMixedEq :
@@ -1842,10 +1842,10 @@ theorem extensionalEvidence_eq_of_mixedEvidence_eq_predicateVocabularyWeightedPa
     (model : InheritanceQueryBuilder.IntensionalScoreModel
       (State := State) (Atom := Pred) (Query := PairQuery) pairEnc)
     (combine :
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-            Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+      Mettapedia.PLN.Evidence.BinaryEvidence →
+        Mettapedia.PLN.Evidence.BinaryEvidence →
+          Mettapedia.PLN.Evidence.BinaryEvidence →
+            Mettapedia.PLN.Evidence.BinaryEvidence)
     (hMixed :
       InheritanceQueryBuilder.MixedAssocPatScoreCorrespondence
         (State := State) (Atom := Pred) (Query := PairQuery)
@@ -1867,7 +1867,7 @@ theorem extensionalEvidence_eq_of_mixedEvidence_eq_predicateVocabularyWeightedPa
           patLeftWeight patRightWeight a b)
     (hCancel :
       ∀ {x y assoc pat :
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+          Mettapedia.PLN.Evidence.BinaryEvidence},
         combine x assoc pat = combine y assoc pat → x = y)
     {W : State} {a b c d : Pred}
     (hMixedEq :
@@ -1985,10 +1985,10 @@ theorem mixedEvidence_eq_iff_extensionalEvidence_eq_of_predicateVocabularyWeight
     (model : InheritanceQueryBuilder.IntensionalScoreModel
       (State := State) (Atom := Pred) (Query := PairQuery) pairEnc)
     (combine :
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-            Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+      Mettapedia.PLN.Evidence.BinaryEvidence →
+        Mettapedia.PLN.Evidence.BinaryEvidence →
+          Mettapedia.PLN.Evidence.BinaryEvidence →
+            Mettapedia.PLN.Evidence.BinaryEvidence)
     (hMixed :
       InheritanceQueryBuilder.MixedAssocPatScoreCorrespondence
         (State := State) (Atom := Pred) (Query := PairQuery)
@@ -2010,7 +2010,7 @@ theorem mixedEvidence_eq_iff_extensionalEvidence_eq_of_predicateVocabularyWeight
           patLeftWeight patRightWeight a b)
     (hCancel :
       ∀ {x y assoc pat :
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+          Mettapedia.PLN.Evidence.BinaryEvidence},
         combine x assoc pat = combine y assoc pat → x = y)
     {W : State} {a b c d : Pred}
     (hLeft :
@@ -2046,15 +2046,15 @@ extensional, ASSOC, and PAT channels are each monotone, then their BinaryEvidenc
 sum is monotone. -/
 theorem assocPatSumCombiner_mono
     {ext₁ ext₂ assoc₁ assoc₂ pat₁ pat₂ :
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence}
+      Mettapedia.PLN.Evidence.BinaryEvidence}
     (hExt : ext₁ ≤ ext₂)
     (hAssoc : assoc₁ ≤ assoc₂)
     (hPat : pat₁ ≤ pat₂) :
     ext₁ + assoc₁ + pat₁ ≤ ext₂ + assoc₂ + pat₂ := by
   constructor
-  · simp [Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.hplus_def]
+  · simp [Mettapedia.PLN.Evidence.BinaryEvidence.hplus_def]
     exact add_le_add (add_le_add hExt.1 hAssoc.1) hPat.1
-  · simp [Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.hplus_def]
+  · simp [Mettapedia.PLN.Evidence.BinaryEvidence.hplus_def]
     exact add_le_add (add_le_add hExt.2 hAssoc.2) hPat.2
 
 /-- If a mixed combiner ignores its extensional coordinate, mixed equality can
@@ -2066,30 +2066,30 @@ The witness uses real `BinaryEvidence` values: zero evidence and one unit of
 positive evidence are extensionally distinct, but an ASSOC/PAT-only combiner
 cannot see the difference. -/
 theorem ignoreExtensionalCombiner_mixedEvidence_eq_without_extensionalEvidence_eq :
-    ∃ x y assoc pat : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence,
+    ∃ x y assoc pat : Mettapedia.PLN.Evidence.BinaryEvidence,
       (fun _ assoc pat => assoc + pat) x assoc pat =
           (fun _ assoc pat => assoc + pat) y assoc pat ∧
         x ≠ y := by
-  let x : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero
-  let y : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
+  let x : Mettapedia.PLN.Evidence.BinaryEvidence :=
+    Mettapedia.PLN.Evidence.BinaryEvidence.zero
+  let y : Mettapedia.PLN.Evidence.BinaryEvidence :=
     { pos := 1, neg := 0 }
-  let assoc : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero
-  let pat : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero
+  let assoc : Mettapedia.PLN.Evidence.BinaryEvidence :=
+    Mettapedia.PLN.Evidence.BinaryEvidence.zero
+  let pat : Mettapedia.PLN.Evidence.BinaryEvidence :=
+    Mettapedia.PLN.Evidence.BinaryEvidence.zero
   refine ⟨x, y, assoc, pat, ?_, ?_⟩
   · rfl
   · intro h
     have hpos :=
-      congrArg Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.pos h
-    norm_num [x, y, Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero] at hpos
+      congrArg Mettapedia.PLN.Evidence.BinaryEvidence.pos h
+    norm_num [x, y, Mettapedia.PLN.Evidence.BinaryEvidence.zero] at hpos
 
 /-- The ASSOC/PAT-only mixed combiner is not left-cancellable in the
 extensional coordinate.  Therefore the cancellativity assumption in the mixed
 iff theorem is load-bearing, not proof boilerplate. -/
 theorem ignoreExtensionalCombiner_not_leftCancellable :
-    ¬ (∀ {x y assoc pat : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+    ¬ (∀ {x y assoc pat : Mettapedia.PLN.Evidence.BinaryEvidence},
       (fun _ assoc pat => assoc + pat) x assoc pat =
           (fun _ assoc pat => assoc + pat) y assoc pat →
         x = y) := by
@@ -2108,33 +2108,33 @@ extensional monotonicity premise in
 is load-bearing, not proof boilerplate. -/
 theorem mixedEvidence_mono_requires_extensional_mono_counterexample :
     ∃ ext₁ ext₂ assoc₁ assoc₂ pat₁ pat₂ :
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence,
+        Mettapedia.PLN.Evidence.BinaryEvidence,
       assoc₁ ≤ assoc₂ ∧
         pat₁ ≤ pat₂ ∧
         ¬ ext₁ ≤ ext₂ ∧
         ¬ (ext₁ + assoc₁ + pat₁ ≤ ext₂ + assoc₂ + pat₂) := by
-  let ext₁ : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
+  let ext₁ : Mettapedia.PLN.Evidence.BinaryEvidence :=
     { pos := 10, neg := 0 }
-  let ext₂ : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
+  let ext₂ : Mettapedia.PLN.Evidence.BinaryEvidence :=
     { pos := 0, neg := 0 }
-  let assoc₁ : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
+  let assoc₁ : Mettapedia.PLN.Evidence.BinaryEvidence :=
     { pos := 11, neg := 0 }
-  let assoc₂ : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
+  let assoc₂ : Mettapedia.PLN.Evidence.BinaryEvidence :=
     { pos := 13, neg := 0 }
-  let pat₁ : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
+  let pat₁ : Mettapedia.PLN.Evidence.BinaryEvidence :=
     { pos := 17, neg := 0 }
-  let pat₂ : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
+  let pat₂ : Mettapedia.PLN.Evidence.BinaryEvidence :=
     { pos := 19, neg := 0 }
   refine ⟨ext₁, ext₂, assoc₁, assoc₂, pat₁, pat₂, ?_, ?_, ?_, ?_⟩
-  · norm_num [assoc₁, assoc₂, Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.le_def]
-  · norm_num [pat₁, pat₂, Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.le_def]
+  · norm_num [assoc₁, assoc₂, Mettapedia.PLN.Evidence.BinaryEvidence.le_def]
+  · norm_num [pat₁, pat₂, Mettapedia.PLN.Evidence.BinaryEvidence.le_def]
   · intro h
     have hpos := h.1
     norm_num [ext₁, ext₂] at hpos
   · intro h
     have hpos := h.1
     norm_num [ext₁, ext₂, assoc₁, assoc₂, pat₁, pat₂,
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.hplus_def] at hpos
+      Mettapedia.PLN.Evidence.BinaryEvidence.hplus_def] at hpos
 
 end Evidence
 

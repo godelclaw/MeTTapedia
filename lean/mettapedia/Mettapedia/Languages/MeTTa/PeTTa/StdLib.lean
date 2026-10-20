@@ -37,7 +37,7 @@ def known (head : String) : Bool :=
     "index-atom", "new-space", "add-atom", "remove-atom", "get-atoms", "match",
     "get-state", "change-state!", "reverse", "is-member", "get-metatype", "get-type",
     "str:byte-length", "str:byte-slice", "str:concat", "str:join", "str:from-codepoints",
-    "parse", "cons-atom", "sort-atom"]
+    "parse", "cons-atom", "union-atom", "sort-atom"]
 
 /-- Recognize exactly the closed string-list fragment of native sorting. -/
 def strings : List Atom → Option (List String)
@@ -160,6 +160,37 @@ def parseAtom (value : Atom) : Except Fault Atom := do
     MeTTailCore.MeTTaSyntax.petta text).mapError fun _ => Fault.invalidArguments "parse"
   SpaceSemantics.readExpression expression |>.mapError fun _ => Fault.invalidArguments "parse"
 
+/-- Dynamic parsing uses the same occurrence-binding boundary as source
+loading. A successful result has no unexpanded anonymous marker. -/
+theorem parseAtom_no_marker {value atom : Atom} (parsed : parseAtom value = .ok atom) :
+    "_" ∉ Mettapedia.Languages.ProcessCalculi.MORK.atomFreeVars atom := by
+  have text_case (text : String)
+      (success : (do
+        let expression ← (Algorithms.MeTTa.Simple.Parser.parseSExprWithDetailed
+          MeTTailCore.MeTTaSyntax.petta text).mapError fun _ => Fault.invalidArguments "parse"
+        SpaceSemantics.readExpression expression |>.mapError fun _ => Fault.invalidArguments "parse") =
+          .ok atom) : "_" ∉ Mettapedia.Languages.ProcessCalculi.MORK.atomFreeVars atom := by
+    cases lexical : (Algorithms.MeTTa.Simple.Parser.parseSExprWithDetailed
+        MeTTailCore.MeTTaSyntax.petta text).mapError (fun _ => Fault.invalidArguments "parse") with
+    | error reason => simp only [lexical,bind,Except.bind] at success; cases success
+    | ok expression =>
+        simp only [lexical,bind,Except.bind] at success
+        cases converted : SpaceSemantics.readExpression expression with
+        | error reason => simp only [converted,Except.mapError] at success; cases success
+        | ok raw =>
+            have same : raw = atom := Except.ok.inj (by
+              simpa only [converted,Except.mapError] using success)
+            cases same
+            exact SpaceSemantics.readExpression_no_marker converted
+  cases value with
+  | symbol text => exact text_case text parsed
+  | var | expression => simp only [parseAtom,bind,Except.bind] at parsed; cases parsed
+  | grounded value =>
+      cases value with
+      | string text => exact text_case text parsed
+      | int number => exact text_case (toString number) parsed
+      | bool | custom => simp only [parseAtom,bind,Except.bind] at parsed; cases parsed
+
 private def booleanBinary (state : State) (head : String)
     (operation : Bool → Bool → Bool) (arguments : List Atom) : Result :=
   match arguments with
@@ -190,6 +221,8 @@ def apply (state : State) (head : String) (arguments : List Atom) : Result :=
     | "==", [left, right] => answer (boolean (left == right))
     | "cons", [first, .expression rest] => answer (.expression (first :: rest))
     | "cons-atom", [first, .expression rest] => answer (.expression (first :: rest))
+    | "union-atom", [.expression left, .expression right] =>
+        answer (.expression (left ++ right))
     | "sort-atom", [.expression items] =>
         match strings items with
         | some texts => answer (.expression (stringAtoms (texts.mergeSort (· ≤ ·))))

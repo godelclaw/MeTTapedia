@@ -13,7 +13,7 @@ explicit the approximation family that the existence step will quantify over:
 - an increasing exhaustion `Λ₀ ⊆ Λ₁ ⊆ ...` of the atom space,
 - eventual containment of every finite query support,
 - the corresponding sequence of boundary-conditioned finite-volume measures,
-- the induced sequence of local `MassSemantics` objects.
+- the induced sequence of local `Mettapedia.ProbabilityTheory.MassSemantics` objects.
 -/
 
 namespace Mettapedia.Logic.MarkovLogicInfiniteExhaustion
@@ -125,13 +125,13 @@ instance finiteVolumeKernelSequence_isProbability
   unfold finiteVolumeKernelSequence
   infer_instance
 
-/-- The local `MassSemantics` induced by the finite-volume kernels along an
+/-- The local `Mettapedia.ProbabilityTheory.MassSemantics` induced by the finite-volume kernels along an
 exhaustion. -/
 noncomputable def massSemanticsSequence
     (E : RegionExhaustion Atom)
     (M : StrictlyPositiveInfiniteGroundMLNSpec Atom ClauseId)
     (ξ : BoundaryCondition Atom) :
-    (n : ℕ) → MassSemantics (LocalConstraintQuery Atom (E.region n)) :=
+    (n : ℕ) → Mettapedia.ProbabilityTheory.MassSemantics (LocalConstraintQuery Atom (E.region n)) :=
   fun n =>
     (StrictlyPositiveInfiniteGroundMLNSpec.finiteVolumeSpecification M).kernelMassSemantics
       (E.region n) ξ
@@ -152,7 +152,7 @@ theorem massSemanticsSequence_queryStrength_eq_finiteVolume
     (M : StrictlyPositiveInfiniteGroundMLNSpec Atom ClauseId)
     (ξ : BoundaryCondition Atom)
     (n : ℕ) (q : LocalConstraintQuery Atom (E.region n)) :
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryStrength
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryStrength
       ({massSemanticsSequence E M ξ n} :
         MassState (LocalConstraintQuery Atom (E.region n))) q =
       (finiteVolumeMassSemantics M.toInfiniteGroundMLNSpec (E.region n) ξ).queryProb q := by

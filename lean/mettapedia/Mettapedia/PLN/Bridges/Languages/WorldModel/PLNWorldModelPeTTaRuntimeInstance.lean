@@ -16,8 +16,8 @@ The side condition `PeTTaStepMonotone` cleanly separates:
 namespace Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelPeTTaRuntimeInstance
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelRuntimeBridge
 open Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelPeTTaRuntimeBridge
 open Mettapedia.Languages.MeTTa.RuntimeSpec

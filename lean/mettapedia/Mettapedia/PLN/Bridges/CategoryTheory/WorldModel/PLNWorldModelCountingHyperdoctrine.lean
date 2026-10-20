@@ -47,8 +47,8 @@ namespace Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCounting
 open _root_.CategoryTheory Opposite
 open Mettapedia.GSLT.Topos
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine
 open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge
 open scoped ENNReal
