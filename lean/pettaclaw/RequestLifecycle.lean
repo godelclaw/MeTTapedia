@@ -35,6 +35,9 @@ deriving Repr, DecidableEq
 structure Boundary where
   providerSucceeded : Bool
   historyDurable : Bool
+  /-- The local checkpoint durably owns the input handover. Transport
+  acknowledgement may follow it; recovery can finish that acknowledgement
+  without presenting the input to cognition again. -/
   handoverDurable : Bool
 deriving Repr, DecidableEq
 
