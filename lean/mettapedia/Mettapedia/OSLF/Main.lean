@@ -533,6 +533,8 @@ import Mettapedia.OSLF.Syntax.TransitionsAreEvents
 import Mettapedia.OSLF.MeTTaIL.ScopedStepPremise
 import Mettapedia.OSLF.MeTTaIL.ScopedRuleExecution
 import Mettapedia.GSLT.LanguageDef.TypedScopedStepPremise
+import Mettapedia.GSLT.LanguageDef.TypedScopedStepPremiseControls
+import Mettapedia.GSLT.LanguageDef.CanonicalScopedPremiseControls
 import Mettapedia.GSLT.LanguageDef.CanonicalScopedPremise
 import Mettapedia.OSLF.Syntax.ScopedPremiseElaborationExecution
 import Mettapedia.OSLF.Syntax.CanonicalScopedRuleExecution

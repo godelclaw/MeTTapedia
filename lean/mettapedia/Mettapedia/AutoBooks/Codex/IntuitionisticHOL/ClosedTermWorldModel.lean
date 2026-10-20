@@ -6,9 +6,9 @@ import Mettapedia.PLN.WorldModel.BinaryWorldModel
 namespace Mettapedia.AutoBooks.Codex.IntuitionisticHOL
 
 open Mettapedia.Logic.HOL
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 universe u v
@@ -35,8 +35,6 @@ closed saturated carrier. -/
 def canonicalWorldSatisfies
     (W : ClosedTheorySet.World Const) (φ : CanonicalQuery Const) : Prop :=
   φ ∈ W.carrier
-
-instance : EvidenceType (Multiset (ClosedTheorySet.World Const)) where
 
 /-- Binary evidence extracted from a multiset of canonical worlds.  Positive
 evidence counts worlds containing the query; negative evidence counts worlds

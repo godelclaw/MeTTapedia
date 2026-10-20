@@ -128,6 +128,40 @@ def ChurchRules.sum {R₁ R₂ : Rules Head} (P₁ : ChurchRules R₁) (P₂ : C
     intro n l r step
     exact step.elim (fun h => Or.inl (P₁.erase_step h)) (fun h => Or.inr (P₂.erase_step h))
 
+/-- An opaque package with the same reading may add declarations while
+retaining the first package's actual computation. Shadowed second declarations
+do not contribute constants; the first declarations keep their original types.
+This is semantic validity, not a conservativity or adequacy theorem. -/
+theorem ReadingValid.sum_opaque {R₁ R₂ : Rules Head} {Rd : Impredicative.Domain.Reading Head}
+    {P₁ : ChurchRules R₁} {P₂ : ChurchRules R₂}
+    (first : ReadingValid Rd P₁) (second : ReadingValid Rd P₂)
+    (noSteps : ∀ {n : Nat} {left right : CTm Head n}, ¬ P₂.computation.step left right) :
+    ReadingValid Rd (P₁.sum P₂) where
+  universes := first.universes
+  headTyping := first.headTyping
+  join := first.join
+  cumulative := first.cumulative
+  headEq := first.headEq
+  constants := by
+    intro name type known generated
+    cases original : P₁.constantType name with
+    | some originalType =>
+        rw [show (P₁.sum P₂).constantType name = some originalType from
+          sumDecls_left original] at known
+        cases known
+        exact first.constants original generated
+    | none =>
+        rw [show (P₁.sum P₂).constantType name = P₂.constantType name from
+          sumDecls_right original] at known
+        exact second.constants known generated
+  roots := by
+    intro n left right type ρ root generated leftTyped leftFacts rightTyped rightFacts
+    rcases root with original | impossible
+    · exact first.roots original generated leftTyped
+        (SpineFacts.of_decl_inclusion (fun known => sumDecls_left known) leftFacts)
+        rightTyped (SpineFacts.of_decl_inclusion (fun known => sumDecls_left known) rightFacts)
+    · exact (noSteps impossible).elim
+
 variable {R₁ R₂ : Rules Head}
 
 /-- **The first package is contained in the sum.** -/

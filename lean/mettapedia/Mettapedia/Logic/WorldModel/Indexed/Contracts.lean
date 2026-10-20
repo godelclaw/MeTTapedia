@@ -231,7 +231,7 @@ end Views
 
 namespace CountContracts
 
-open FixedQuery
+open FixedQueryBridge
 
 /-- Counts as the answer profile of the one-world base. -/
 def countProfiles : Pointᵒᵖ ⥤ AddCommMonCat := (Functor.const _).obj (AddCommMonCat.of ℕ)

@@ -40,7 +40,7 @@ def language : LanguageDef where
   equations := []
   rewrites := [rule]
 
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨language, [], ⟨[], [], []⟩⟩
 def permissions : Permissions where
   equationIndices := some []
   includeDerivedEquations := false

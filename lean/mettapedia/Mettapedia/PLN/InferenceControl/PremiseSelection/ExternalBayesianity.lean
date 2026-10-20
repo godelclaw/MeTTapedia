@@ -20,7 +20,7 @@ This is the finite algebraic core of an external-Bayesianity style statement.
 namespace Mettapedia.PLN.InferenceControl.PremiseSelection
 
 open scoped Classical ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-- Extensionality for premise scorers. -/
 @[ext] theorem Scorer.ext {Goal Fact : Type*}

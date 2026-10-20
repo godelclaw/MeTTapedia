@@ -178,7 +178,7 @@ theorem predicateFuzzyForAllCrispEndpointPositiveThresholdCut_intervalOfConsiste
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (k : Nat), NoConstOccurrence (param ρ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCrispEndpointPositiveThresholdCut
@@ -215,7 +215,7 @@ theorem predicateFuzzyForAllCrispEndpointPositiveThresholdCut_lower_eq_one_iff_p
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (k : Nat), NoConstOccurrence (param ρ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCrispEndpointPositiveThresholdCut
@@ -256,7 +256,7 @@ theorem predicateFuzzyForAllCrispEndpointPositiveThresholdCut_upper_eq_zero_iff_
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (k : Nat), NoConstOccurrence (param ρ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCrispEndpointPositiveThresholdCut
@@ -298,7 +298,7 @@ theorem predicateFuzzyForAllCrispEndpointPositiveThresholdCut_width_eq_zero_iff_
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (k : Nat), NoConstOccurrence (param ρ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyForAllCrispEndpointPositiveThresholdCut
@@ -601,7 +601,7 @@ theorem predicateFuzzyThereExistsCrispEndpointPositiveThresholdCut_intervalOfCon
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (k : Nat), NoConstOccurrence (param ρ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCrispEndpointPositiveThresholdCut
@@ -638,7 +638,7 @@ theorem predicateFuzzyThereExistsCrispEndpointPositiveThresholdCut_lower_eq_one_
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (k : Nat), NoConstOccurrence (param ρ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCrispEndpointPositiveThresholdCut
@@ -679,7 +679,7 @@ theorem predicateFuzzyThereExistsCrispEndpointPositiveThresholdCut_upper_eq_zero
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (k : Nat), NoConstOccurrence (param ρ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCrispEndpointPositiveThresholdCut
@@ -721,7 +721,7 @@ theorem predicateFuzzyThereExistsCrispEndpointPositiveThresholdCut_width_eq_zero
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (k : Nat), NoConstOccurrence (param ρ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateFuzzyThereExistsCrispEndpointPositiveThresholdCut

@@ -25,7 +25,7 @@ namespace Mettapedia.PLN.Bridges.ProbabilityTheory.PLNKyburgReduction
 
 open scoped ENNReal
 open MeasureTheory
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass (BinaryContext)
 open Mettapedia.ProbabilityTheory.HigherOrderProbability (ParametrizedDistribution)
 
@@ -34,9 +34,9 @@ open Mettapedia.ProbabilityTheory.HigherOrderProbability (ParametrizedDistributi
 /-- Context-aware PLN strength is exactly a Beta posterior-mean form over
 shifted pseudo-count coordinates in `ℝ≥0∞`. -/
 theorem strengthWith_eq_beta_posterior_meanENN (e : BinaryEvidence) (ctx : BinaryContext) :
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.strengthWith ctx e =
+    Mettapedia.PLN.Evidence.BinaryEvidence.strengthWith ctx e =
       (ctx.α₀ + e.pos) / ((ctx.α₀ + e.pos) + (ctx.β₀ + e.neg)) := by
-  simp [Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.strengthWith, add_comm, add_left_comm]
+  simp [Mettapedia.PLN.Evidence.BinaryEvidence.strengthWith, add_comm, add_left_comm]
 
 /-- BinaryEvidence determines the shifted Beta pseudo-count coordinates used by
 `strengthWith`; this is the compact sufficient-statistic encoding view. -/
@@ -44,7 +44,7 @@ theorem evidence_encodes_beta_parameters (e : BinaryEvidence) (ctx : BinaryConte
     ∃ α β : ℝ≥0∞,
       α = ctx.α₀ + e.pos ∧
       β = ctx.β₀ + e.neg ∧
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.strengthWith ctx e = α / (α + β) := by
+      Mettapedia.PLN.Evidence.BinaryEvidence.strengthWith ctx e = α / (α + β) := by
   refine ⟨ctx.α₀ + e.pos, ctx.β₀ + e.neg, rfl, rfl, ?_⟩
   simpa [add_assoc, add_comm, add_left_comm] using
     strengthWith_eq_beta_posterior_meanENN (e := e) (ctx := ctx)
@@ -55,7 +55,7 @@ theorem evidence_encodes_beta_parameters (e : BinaryEvidence) (ctx : BinaryConte
 with uniform Beta prior `(α₀,β₀)=(1,1)` and observed evidence `(n⁺,n⁻)=(3,1)`,
 the context-aware PLN strength is exactly the corresponding posterior-mean ratio. -/
 theorem uniformPrior_strength_threePositive_oneNegative :
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.strengthWith
+    Mettapedia.PLN.Evidence.BinaryEvidence.strengthWith
         Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform
         ({ pos := (3 : ℝ≥0∞), neg := (1 : ℝ≥0∞) } : BinaryEvidence) =
       ((1 : ℝ≥0∞) + 3) / (((1 : ℝ≥0∞) + 3) + ((1 : ℝ≥0∞) + 1)) := by

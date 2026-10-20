@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.Core.InferenceControl
+import Mettapedia.GSLT.Core.DemandExecution
 import Mettapedia.GSLT.Core.InferenceRecordingPrefix
 import Mettapedia.GSLT.Causality.HistoryMonad
 
@@ -1434,6 +1435,205 @@ end Translation
 
 end Replay
 
+/-! ## Entry-selected demand execution
+
+Both workers use the existing demand loop. Entry selection only chooses
+whether that loop carries the maintained bounded Prefix consumer. The goal
+is fixed for one request and its allowance slices; a later goal is a new
+request at the actual retained boundary.
+-/
+
+private theorem plain_demand_included (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (goal : List Answer → Bool) (fuel : Nat) (snapshot : Snapshot Node Answer Memory) :
+    (DemandExecution.run system base goal fuel snapshot).mapMemory (fun memory => (memory, none)) =
+      DemandExecution.run system (controller base observe none) goal fuel
+        (snapshot.mapMemory (fun memory => (memory, none))) :=
+  DemandExecution.run_mapMemory _ system base (controller base observe none) goal
+    (plain_tick_included system base observe) fuel snapshot
+
+private theorem bounded_demand_included (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (record : Prefix Event) (goal : List Answer → Bool) (fuel : Nat)
+    (snapshot : Snapshot Node Answer (Memory × Prefix Event)) :
+    (DemandExecution.run system (boundedController base observe record) goal fuel snapshot).mapMemory
+        (fun memory => (memory.1, some memory.2)) =
+      DemandExecution.run system (controller base observe none) goal fuel
+        (snapshot.mapMemory (fun memory => (memory.1, some memory.2))) :=
+  DemandExecution.run_mapMemory _ system (boundedController base observe record)
+    (controller base observe none) goal (bounded_tick_included system base observe record) fuel snapshot
+
+/-- Disabled recording enters the ordinary demand runner directly. Enabled
+recording uses that same demand loop and the existing bounded consumer. -/
+def runDemandSelected (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (goal : List Answer → Bool) (fuel : Nat)
+    (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    Snapshot Node Answer (Memory × Option (Prefix Event)) :=
+  match snapshot.memory.2 with
+  | none =>
+      (DemandExecution.run system base goal fuel (erase snapshot)).mapMemory (fun memory => (memory, none))
+  | some record =>
+      (DemandExecution.run system (boundedController base observe record) goal fuel
+        ⟨snapshot.search, (snapshot.memory.1, record)⟩).mapMemory
+          (fun memory => (memory.1, some memory.2))
+
+theorem runDemandSelected_eq_reference (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (goal : List Answer → Bool) (fuel : Nat)
+    (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    runDemandSelected system base observe goal fuel snapshot =
+      DemandExecution.run system (controller base observe none) goal fuel snapshot := by
+  rcases snapshot with ⟨search, memory, record⟩
+  cases record with
+  | none => exact plain_demand_included system base observe goal fuel ⟨search, memory⟩
+  | some record => exact bounded_demand_included system base observe record goal fuel ⟨search, memory, record⟩
+
+/-- Exhaustive demand has the existing complete-run behavior, including
+its whole bounded record. Closure only removes inert terminal iterations. -/
+theorem runDemandSelected_all (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (fuel : Nat) (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    runDemandSelected system base observe (fun _ => false) fuel snapshot =
+      runSelected system base observe fuel snapshot := by
+  rw [runDemandSelected_eq_reference, runSelected_eq_reference]
+  exact DemandExecution.unsatisfied_eq_full_run system (controller base observe none) (fun _ => false) fuel snapshot rfl
+
+theorem runDemandSelected_erasure (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (goal : List Answer → Bool) (fuel : Nat)
+    (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    erase (runDemandSelected system base observe goal fuel snapshot) =
+      DemandExecution.run system base goal fuel (erase snapshot) := by
+  rw [runDemandSelected_eq_reference]
+  exact DemandExecution.run_mapMemory Prod.fst system (controller base observe none) base goal
+    (tick_erasure system base observe none) fuel snapshot
+
+theorem runDemandSelected_unrecorded (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (goal : List Answer → Bool) (fuel : Nat) (snapshot : Snapshot Node Answer Memory) :
+    runDemandSelected system base observe goal fuel (start snapshot none) =
+      start (DemandExecution.run system base goal fuel snapshot) none := by
+  cases snapshot
+  rfl
+
+theorem runDemandSelected_split (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (goal : List Answer → Bool) (earlier later : Nat)
+    (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    runDemandSelected system base observe goal (earlier + later) snapshot =
+      runDemandSelected system base observe goal later
+        (runDemandSelected system base observe goal earlier snapshot) := by
+  simp only [runDemandSelected_eq_reference]
+  exact DemandExecution.run_add _ _ _ _ _ _
+
+theorem runDemandSelected_zero (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (goal : List Answer → Bool) (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    runDemandSelected system base observe goal 0 snapshot = snapshot := by
+  rw [runDemandSelected_eq_reference]
+  rfl
+
+theorem runDemandSelected_of_stopped (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node →Option Answer → List Node → Event)
+    (goal : List Answer → Bool) (fuel : Nat)
+    (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event)))
+    (done : DemandExecution.stopped goal (erase snapshot) = true) :
+    runDemandSelected system base observe goal fuel snapshot = snapshot := by
+  rw [runDemandSelected_eq_reference]
+  exact DemandExecution.run_of_stopped system (controller base observe none) goal fuel snapshot done
+
+/-- The witness is proof-only: neither worker evaluates a future stream to
+determine its stopping point. One actual prefix determines state and record. -/
+theorem runDemandSelected_prefix (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (goal : List Answer → Bool) (fuel : Nat)
+    (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    ∃ used ≤ fuel, runDemandSelected system base observe goal fuel snapshot =
+      runSelected system base observe used snapshot := by
+  rw [runDemandSelected_eq_reference]
+  obtain ⟨used, bound, same⟩ := DemandExecution.run_prefix system (controller base observe none) goal fuel snapshot
+  exact ⟨used, bound, same.trans (runSelected_eq_reference system base observe used snapshot).symm⟩
+
+theorem runDemandSelected_record (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (goal : List Answer → Bool) (fuel : Nat)
+    (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    ∃ used ≤ fuel,
+      erase (runDemandSelected system base observe goal fuel snapshot) = Snapshot.run system base used (erase snapshot) ∧
+      (runDemandSelected system base observe goal fuel snapshot).memory.2 =
+        append snapshot.memory.2 (stream system base observe used (erase snapshot)) := by
+  obtain ⟨used, bound, actual⟩ := runDemandSelected_prefix system base observe goal fuel snapshot
+  refine ⟨used, bound, ?_, ?_⟩
+  · rw [actual, runSelected_erasure]
+  · rw [actual, runSelected_record]
+
+theorem runDemandSelected_forget (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (goal : List Answer → Bool) (earlier later : Nat)
+    (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event))) :
+    DemandExecution.run system base goal later
+        (erase (runDemandSelected system base observe goal earlier snapshot)) =
+      erase (runDemandSelected system base observe goal (earlier + later) snapshot) := by
+  rw [runDemandSelected_erasure, runDemandSelected_erasure, DemandExecution.run_add]
+
+theorem runDemandSelected_late (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (goal : List Answer → Bool) (capacity : Option Nat) (earlier later : Nat)
+    (snapshot : Snapshot Node Answer Memory) :
+    erase (runDemandSelected system base observe goal later
+        (start (DemandExecution.run system base goal earlier snapshot) capacity)) =
+      DemandExecution.run system base goal (earlier + later) snapshot := by
+  rw [runDemandSelected_erasure, erase_start, DemandExecution.run_add]
+
+/-- Demand satisfaction is an exact occurrence count when approached from
+below. It makes no assertion that the residual frontier is empty. -/
+theorem runDemandSelected_exact_count (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory)
+    (observe : Memory → Node → Option Answer → List Node → Event)
+    (requested fuel : Nat) (snapshot : Snapshot Node Answer (Memory × Option (Prefix Event)))
+    (before : snapshot.search.events.length ≤ requested)
+    (enough : DemandExecution.satisfied (DemandExecution.atLeast requested)
+      (runDemandSelected system base observe (DemandExecution.atLeast requested) fuel snapshot) = true) :
+    (runDemandSelected system base observe (DemandExecution.atLeast requested) fuel snapshot).search.events.length = requested := by
+  have actual := runDemandSelected_erasure system base observe (DemandExecution.atLeast requested) fuel snapshot
+  change DemandExecution.satisfied (DemandExecution.atLeast requested)
+    (erase (runDemandSelected system base observe (DemandExecution.atLeast requested) fuel snapshot)) = true at enough
+  rw [actual] at enough
+  change (erase (runDemandSelected system base observe (DemandExecution.atLeast requested) fuel snapshot)).search.events.length = requested
+  rw [actual]
+  exact DemandExecution.atLeast_satisfied_exact system base requested fuel (erase snapshot) before enough
+
+/-- A complete demanded recording is an authentic history of its actual
+interval; a short satisfied prefix is not relabelled as source closure. -/
+theorem runDemandSelected_history (system : BranchingSystem Node Answer)
+    (base : Controller Node Answer Memory) (goal : List Answer → Bool)
+    (capacity fuel : Nat) (snapshot : Snapshot Node Answer Memory)
+    (record : Prefix (Preparation.Capture Node Answer))
+    (retained : (runDemandSelected system base Replay.observe goal fuel (start snapshot (some capacity))).memory.2 = some record)
+    (complete : record.omitted = 0) :
+    (Mettapedia.GSLT.Causality.HistoryMonad.history (Replay.labels system base)).MultiStep
+      (snapshot, 1)
+      (erase (runDemandSelected system base Replay.observe goal fuel (start snapshot (some capacity))),
+        FreeMonoid.ofList record.items) := by
+  obtain ⟨used, _, same⟩ := runDemandSelected_prefix system base Replay.observe goal fuel (start snapshot (some capacity))
+  rw [same] at retained ⊢
+  exact Replay.selected_recorded_history system base capacity used snapshot record retained complete
+
 namespace Controls
 
 private abbrev TestNode := WorkOccurrence OccurrenceMachineCore.DuplicateExampleState
@@ -2046,5 +2246,19 @@ end Controls
 #print axioms Controls.Translation.target_behavior_outside_image_is_not_source_behavior
 #print axioms Controls.Translation.collapsed_input_preserves_forward_steps
 #print axioms Controls.Translation.collapsed_input_accepts_a_refused_source_frame
+
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_eq_reference
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_all
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_erasure
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_unrecorded
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_split
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_zero
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_of_stopped
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_prefix
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_record
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_forget
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_late
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_exact_count
+#print axioms Mettapedia.GSLT.Core.InferenceControl.Recording.runDemandSelected_history
 
 end Mettapedia.GSLT.Core.InferenceControl.Recording

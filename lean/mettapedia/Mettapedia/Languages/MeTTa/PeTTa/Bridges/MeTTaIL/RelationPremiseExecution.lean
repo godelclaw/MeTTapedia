@@ -24,7 +24,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.OSLF.MeTTaIL.Engine
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval RuleExecutionProgram
 open MatchAutomataBindingExecution (bindingsTerm bindingTerm patternOptionTerm bindingsOptionTerm)
 

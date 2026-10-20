@@ -108,7 +108,7 @@ theorem strength_only_is_not_quality :
       fusedQuality (1 : ℚ) 0 1 ≠ fusedQuality 100 0 1 := by
   constructor <;> norm_num [fusedQuality]
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-- The reference score on the project's canonical evidence carrier. -/
 noncomputable def binaryEvidenceReferenceQuality
@@ -296,8 +296,8 @@ structure AdditiveScorer (World : Type uWorld) (Key : Type uKey)
     score (first + second) key = score first key + score second key
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 
 /-- Every admitted binary world model supplies an additive scorer directly. -/
 noncomputable def ofBinaryWorldModel

@@ -21,7 +21,7 @@ open Mettapedia.ProbabilityTheory.Exchangeability.DeFinetti
 open Mettapedia.ProbabilityTheory.Exchangeability.DeFinettiProjectiveCredalBridge
 open Mettapedia.ProbabilityTheory.ImpreciseProbability.ProjectiveCredal
 open Mettapedia.PLN.Bridges.KR.ConceptFormationDeFinettiBridge
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.KR.ConceptFormationITVBridge
 open scoped ENNReal
 

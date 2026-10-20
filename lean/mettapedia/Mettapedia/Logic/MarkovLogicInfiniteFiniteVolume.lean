@@ -149,12 +149,12 @@ theorem finiteVolumePartition_ne_top
     intro x hx
     exact M.finiteVolumeWeight_ne_top Λ x ξ)
 
-/-- Local finite-volume probabilities packaged as `MassSemantics`. -/
+/-- Local finite-volume probabilities packaged as `Mettapedia.ProbabilityTheory.MassSemantics`. -/
 noncomputable def finiteVolumeMassSemantics
     {Atom ClauseId : Type*} [DecidableEq Atom] [DecidableEq ClauseId]
     (M : InfiniteGroundMLNSpec Atom ClauseId)
     (Λ : Region Atom) (ξ : BoundaryCondition Atom) :
-    MassSemantics (LocalConstraintQuery Atom Λ) where
+    Mettapedia.ProbabilityTheory.MassSemantics (LocalConstraintQuery Atom Λ) where
   queryMass := finiteVolumeQueryMass M Λ ξ
   totalMass := M.finiteVolumePartition Λ ξ
   queryMass_le_total := finiteVolumeQueryMass_le_partition M Λ ξ

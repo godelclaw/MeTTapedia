@@ -159,7 +159,7 @@ end Sources
 
 section LocalCompleteness
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.PLNJointEvidence
 open Mettapedia.PLN.Evidence.PLNJointEvidence.JointEvidence
 open Mettapedia.PLN.Evidence.PLNJointEvidenceNoGo

@@ -26,7 +26,7 @@ def descentSource : ProgramQuotation.QuotedProgram :=
 def completeSource : ProgramQuotation.QuotedProgram :=
   petta_source_file%
     "../../../../../../../../../metta/gslt/lib/gslt_complete.metta"
-    sha256 "503c714291195474a128b7ab120972e690af8ae4b3ed78552b6a7490db4df0ac"
+    sha256 "cb2a0d48692a75fc555f4a2276b99bda8b60e98782742a370f59589311ac3ed0"
 
 /-- The empty program. -/
 def emptyProgram : Program := ⟨[], [], [], [], []⟩

@@ -68,6 +68,8 @@ import Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.HEFragmentBridge
 import Mettapedia.Languages.MeTTa.DTTSeedProofPath
 import Mettapedia.Languages.MeTTa.DTTTutorialStatus
 import Mettapedia.Languages.MeTTa.Experimental.NoValueZoo
+import Mettapedia.Languages.MeTTa.Experimental.NoValueCBPV
+import Mettapedia.Languages.MeTTa.Experimental.NoValueCBPVZero
 import Mettapedia.Languages.MeTTa.Experimental.NullDesigns
 import Mettapedia.Logic.Query.MultisetAscription
 import Mettapedia.TypeTheory.Calculi.StagedScopedReflective.SuperpositionOccurrencePressure
@@ -81,6 +83,7 @@ import Mettapedia.Machines.BranchLocalNeed.InteractionValuation
 import Mettapedia.Machines.DemandBoundary
 import Mettapedia.Languages.FiniteChoice.FrontierAlgebra
 import Mettapedia.Languages.MeTTa.SubstitutionAlgebra
+import Mettapedia.Languages.MeTTa.SequenceProjection
 import Mettapedia.Languages.MeTTa.EquationKernel
 import Mettapedia.Languages.MeTTa.Seal
 import Mettapedia.Languages.MeTTa.MetavariableFrame
@@ -88,6 +91,8 @@ import Mettapedia.Languages.MeTTa.MetavariableFrameStore
 import Mettapedia.Languages.MeTTa.MetavariableFrameStoreEscape
 import Mettapedia.Languages.MeTTa.MetavariableFrameLineage
 import Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaFrameWriteback
+import Mettapedia.Languages.MeTTa.MetavariableFrameStoreGrowth
+import Mettapedia.Languages.MeTTa.MetavariableFrameReclamation
 import Mettapedia.Languages.MeTTa.Bridges.GSLT.CeTTaNeedHistory
 import Mettapedia.Languages.MeTTa.FreshFrameOccursCheck
 import Mettapedia.Languages.MeTTa.PatternSelection

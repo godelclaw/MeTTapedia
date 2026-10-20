@@ -2,6 +2,10 @@ import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaExecutionCorrespo
 import Mettapedia.Languages.MM0.Presentation.ServiceProgram
 import Mettapedia.Languages.MM0.Kernel.ProofSharing
 import Mettapedia.Languages.MM0.Presentation.SpecificationCorrespondence
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Execution of the MM0 service in independent MeTTa semantics
@@ -29,8 +33,8 @@ Name separation follows from the shared UTF-8 encoding theorem. -/
 def environment (library : List Metta.Atom) : MinEnv :=
   MinEnv.ofAtomsGT
     (((programAtoms program).flatMap fun pair =>
-      [Mettapedia.Languages.MeTTa.HE.LeaTTaBridge.toLeaTTaAtom pair.1,
-       Mettapedia.Languages.MeTTa.HE.LeaTTaBridge.toLeaTTaAtom pair.2]) ++ library)
+      [Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.encodeModelAtom pair.1,
+       Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.encodeModelAtom pair.2]) ++ library)
     Metta.Builtins.table
 
 theorem program_loaded (library : List Metta.Atom)

@@ -25,7 +25,7 @@ open Mettapedia.OSLF.Framework.EvidenceSemantics
 open Mettapedia.OSLF.Framework.OSLFNTTWMBridge
 open Mettapedia.CategoryTheory.PLNInstance
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge.WMHyperdoctrine
 
 universe u v x
@@ -478,7 +478,7 @@ def wmConsequenceRuleOn_of_oslfTheoryStepStar_viaEvidence
 section FormulaEvidenceFragment
 
 /-- Pointwise evidence model used for semE-induced closure in this fragment. -/
-abbrev SemEState := Pattern → Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+abbrev SemEState := Pattern → Mettapedia.PLN.Evidence.BinaryEvidence
 /-- Query type for the semE pointwise model. -/
 abbrev SemEQuery := Pattern
 
@@ -1072,29 +1072,29 @@ theorem semEState_evidence_mono_not_strength_mono :
         (semEState relEnv I (.atom "a")) p q := by
   let p : Pattern := .fvar "p"
   let q : Pattern := .fvar "q"
-  let hi : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence := ⟨1, 0⟩
-  let lo : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence := ⟨1, 1⟩
+  let hi : Mettapedia.PLN.Evidence.BinaryEvidence := ⟨1, 0⟩
+  let lo : Mettapedia.PLN.Evidence.BinaryEvidence := ⟨1, 1⟩
   let I : EvidenceAtomSem :=
-    fun _ r => if r = p then hi else if r = q then lo else (⊥ : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+    fun _ r => if r = p then hi else if r = q then lo else (⊥ : Mettapedia.PLN.Evidence.BinaryEvidence)
   let relEnv : RelationEnv := RelationEnv.empty
   refine ⟨relEnv, I, p, q, ?_, ?_⟩
   · change hi ≤ lo
-    simp [hi, lo, Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.le_def]
+    simp [hi, lo, Mettapedia.PLN.Evidence.BinaryEvidence.le_def]
   · intro h
     have hle' :
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength hi ≤
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength lo := by
+        Mettapedia.PLN.Evidence.BinaryEvidence.toStrength hi ≤
+          Mettapedia.PLN.Evidence.BinaryEvidence.toStrength lo := by
       have h' := h
       change
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength
+        Mettapedia.PLN.Evidence.BinaryEvidence.toStrength
             ((semEState relEnv I (.atom "a")) p) ≤
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength
+          Mettapedia.PLN.Evidence.BinaryEvidence.toStrength
             ((semEState relEnv I (.atom "a")) q) at h'
       simpa [semEState, semE_atom, I, p, q, hi, lo] using h'
     have hnum : ((1 : ENNReal) + 1) ≤ (1 : ENNReal) := by
       simpa [hi, lo,
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength,
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.total] using hle'
+        Mettapedia.PLN.Evidence.BinaryEvidence.toStrength,
+        Mettapedia.PLN.Evidence.BinaryEvidence.total] using hle'
     have hfalse : ¬ (((1 : ENNReal) + 1) ≤ (1 : ENNReal)) := by
       norm_num
     exact hfalse hnum
@@ -1105,7 +1105,7 @@ section ConcretePointwiseModel
 
 /-- Concrete state/query model for closure testing:
 state is a pointwise evidence assignment over patterns, and queries are patterns. -/
-abbrev StepState := Pattern → Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+abbrev StepState := Pattern → Mettapedia.PLN.Evidence.BinaryEvidence
 abbrev StepQuery := Pattern
 
 noncomputable instance stepStateEvidenceType : EvidenceType StepState := by
@@ -1144,10 +1144,10 @@ theorem pointwiseStepSide_not_automatic
     (hstep : OSLFTheoryStep relEnv p q) :
     ∃ W : StepState, ¬ pointwiseStepSide relEnv W := by
   classical
-  let hi : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence := ⟨1, 0⟩
-  let lo : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence := ⟨1, 1⟩
+  let hi : Mettapedia.PLN.Evidence.BinaryEvidence := ⟨1, 0⟩
+  let lo : Mettapedia.PLN.Evidence.BinaryEvidence := ⟨1, 1⟩
   let W : StepState :=
-    fun r => if r = p then hi else if r = q then lo else (⊥ : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+    fun r => if r = p then hi else if r = q then lo else (⊥ : Mettapedia.PLN.Evidence.BinaryEvidence)
   refine ⟨W, ?_⟩
   intro hmono
   have hle :
@@ -1162,16 +1162,16 @@ theorem pointwiseStepSide_not_automatic
   have hWq : W q = lo := by
     simp [W, hneq']
   have hle' :
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength hi ≤
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength lo := by
+      Mettapedia.PLN.Evidence.BinaryEvidence.toStrength hi ≤
+        Mettapedia.PLN.Evidence.BinaryEvidence.toStrength lo := by
     have hle₀ := hle
-    change Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength (W p) ≤
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength (W q) at hle₀
+    change Mettapedia.PLN.Evidence.BinaryEvidence.toStrength (W p) ≤
+      Mettapedia.PLN.Evidence.BinaryEvidence.toStrength (W q) at hle₀
     simpa [hWp, hWq] using hle₀
   have hnum : ((1 : ENNReal) + 1) ≤ (1 : ENNReal) := by
     simpa [hi, lo,
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength,
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.total] using hle'
+      Mettapedia.PLN.Evidence.BinaryEvidence.toStrength,
+      Mettapedia.PLN.Evidence.BinaryEvidence.total] using hle'
   have hfalse : ¬ (((1 : ENNReal) + 1) ≤ (1 : ENNReal)) := by
     norm_num
   exact hfalse hnum

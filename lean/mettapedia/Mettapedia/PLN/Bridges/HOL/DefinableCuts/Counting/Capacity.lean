@@ -284,7 +284,7 @@ theorem predicateCountingCapacityExistsPositiveThresholdCut_intervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsPositiveThresholdCut
@@ -322,7 +322,7 @@ theorem predicateCountingCapacityExistsPositiveThresholdCut_lower_eq_one_iff_pro
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsPositiveThresholdCut
@@ -366,7 +366,7 @@ theorem predicateCountingCapacityExistsPositiveThresholdCut_upper_eq_zero_iff_pr
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsPositiveThresholdCut
@@ -411,7 +411,7 @@ theorem predicateCountingCapacityExistsPositiveThresholdCut_lower_eq_zero_iff_no
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsPositiveThresholdCut
@@ -455,7 +455,7 @@ theorem predicateCountingCapacityExistsPositiveThresholdCut_upper_eq_one_iff_not
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsPositiveThresholdCut
@@ -500,7 +500,7 @@ theorem predicateCountingCapacityExistsPositiveThresholdCut_width_eq_zero_iff_de
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsPositiveThresholdCut
@@ -611,7 +611,7 @@ theorem predicateCountingCapacityExistsExactThresholdCut_intervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsExactThresholdCut
@@ -646,7 +646,7 @@ theorem predicateCountingCapacityExistsExactThresholdCut_lower_eq_one_iff_provab
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsExactThresholdCut
@@ -687,7 +687,7 @@ theorem predicateCountingCapacityExistsExactThresholdCut_upper_eq_zero_iff_prova
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsExactThresholdCut
@@ -729,7 +729,7 @@ theorem predicateCountingCapacityExistsExactThresholdCut_lower_eq_zero_iff_not_p
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsExactThresholdCut
@@ -771,7 +771,7 @@ theorem predicateCountingCapacityExistsExactThresholdCut_upper_eq_one_iff_not_pr
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsExactThresholdCut
@@ -813,7 +813,7 @@ theorem predicateCountingCapacityExistsExactThresholdCut_width_eq_zero_iff_decid
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsExactThresholdCut
@@ -935,7 +935,7 @@ theorem predicateCountingCapacityCardinalityThresholdCut_intervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityCardinalityThresholdCut
@@ -976,7 +976,7 @@ theorem predicateCountingCapacityCardinalityThresholdCut_lower_eq_one_iff_provab
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityCardinalityThresholdCut
@@ -1023,7 +1023,7 @@ theorem predicateCountingCapacityCardinalityThresholdCut_upper_eq_zero_iff_prova
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityCardinalityThresholdCut
@@ -1070,7 +1070,7 @@ theorem predicateCountingCapacityCardinalityThresholdCut_lower_eq_zero_iff_not_p
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityCardinalityThresholdCut
@@ -1117,7 +1117,7 @@ theorem predicateCountingCapacityCardinalityThresholdCut_upper_eq_one_iff_not_pr
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityCardinalityThresholdCut
@@ -1164,7 +1164,7 @@ theorem predicateCountingCapacityCardinalityThresholdCut_width_eq_zero_iff_decid
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityCardinalityThresholdCut
@@ -1246,7 +1246,7 @@ theorem predicateCountingCapacityAtLeastNBaseCut_width_eq_zero_iff_decides
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : Nat), NoConstOccurrence (param ρ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastNBaseCut
@@ -1336,7 +1336,7 @@ theorem predicateCountingCapacityAtLeastTwoBaseCut_intervalOfConsistent
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastTwoBaseCut
@@ -1372,7 +1372,7 @@ theorem predicateCountingCapacityAtLeastTwoBaseCut_lower_eq_one_iff_provable
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastTwoBaseCut
@@ -1414,7 +1414,7 @@ theorem predicateCountingCapacityAtLeastTwoBaseCut_upper_eq_zero_iff_provable_no
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastTwoBaseCut
@@ -1456,7 +1456,7 @@ theorem predicateCountingCapacityAtLeastTwoBaseCut_lower_eq_zero_iff_not_provabl
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastTwoBaseCut
@@ -1498,7 +1498,7 @@ theorem predicateCountingCapacityAtLeastTwoBaseCut_upper_eq_one_iff_not_provable
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastTwoBaseCut
@@ -1540,7 +1540,7 @@ theorem predicateCountingCapacityAtLeastTwoBaseCut_width_eq_zero_iff_decides
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastTwoBaseCut
@@ -1622,7 +1622,7 @@ theorem predicateCountingCapacityAtLeastThreeBaseCut_intervalOfConsistent
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastThreeBaseCut
@@ -1658,7 +1658,7 @@ theorem predicateCountingCapacityAtLeastThreeBaseCut_lower_eq_one_iff_provable
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastThreeBaseCut
@@ -1700,7 +1700,7 @@ theorem predicateCountingCapacityAtLeastThreeBaseCut_upper_eq_zero_iff_provable_
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastThreeBaseCut
@@ -1742,7 +1742,7 @@ theorem predicateCountingCapacityAtLeastThreeBaseCut_lower_eq_zero_iff_not_prova
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastThreeBaseCut
@@ -1784,7 +1784,7 @@ theorem predicateCountingCapacityAtLeastThreeBaseCut_upper_eq_one_iff_not_provab
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastThreeBaseCut
@@ -1826,7 +1826,7 @@ theorem predicateCountingCapacityAtLeastThreeBaseCut_width_eq_zero_iff_decides
     (henum : ∀ bdy : Body Const, ∃ n, enum n = bdy)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityAtLeastThreeBaseCut
@@ -1950,7 +1950,7 @@ theorem predicateCountingCapacityComplementCardinalityThresholdCut_intervalOfCon
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityComplementCardinalityThresholdCut
@@ -1991,7 +1991,7 @@ theorem predicateCountingCapacityComplementCardinalityThresholdCut_lower_eq_one_
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityComplementCardinalityThresholdCut
@@ -2038,7 +2038,7 @@ theorem predicateCountingCapacityComplementCardinalityThresholdCut_upper_eq_zero
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityComplementCardinalityThresholdCut
@@ -2085,7 +2085,7 @@ theorem predicateCountingCapacityComplementCardinalityThresholdCut_lower_eq_zero
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityComplementCardinalityThresholdCut
@@ -2132,7 +2132,7 @@ theorem predicateCountingCapacityComplementCardinalityThresholdCut_upper_eq_one_
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityComplementCardinalityThresholdCut
@@ -2179,7 +2179,7 @@ theorem predicateCountingCapacityComplementCardinalityThresholdCut_width_eq_zero
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityComplementCardinalityThresholdCut
@@ -2259,7 +2259,7 @@ theorem predicateCountingCapacityExistsNotComplementCut_intervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsNotComplementCut
@@ -2294,7 +2294,7 @@ theorem predicateCountingCapacityExistsNotComplementCut_lower_eq_one_iff_provabl
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsNotComplementCut
@@ -2335,7 +2335,7 @@ theorem predicateCountingCapacityExistsNotComplementCut_upper_eq_zero_iff_provab
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsNotComplementCut
@@ -2376,7 +2376,7 @@ theorem predicateCountingCapacityExistsNotComplementCut_lower_eq_zero_iff_not_pr
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsNotComplementCut
@@ -2417,7 +2417,7 @@ theorem predicateCountingCapacityExistsNotComplementCut_upper_eq_one_iff_not_pro
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsNotComplementCut
@@ -2458,7 +2458,7 @@ theorem predicateCountingCapacityExistsNotComplementCut_width_eq_zero_iff_decide
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityExistsNotComplementCut
@@ -2655,7 +2655,7 @@ theorem predicateCountingCapacityCardinalityBandCut_intervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityCardinalityBandCut
@@ -2712,7 +2712,7 @@ theorem predicateCountingCapacityCardinalityBandCut_lower_eq_one_iff_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityCardinalityBandCut
@@ -2771,7 +2771,7 @@ theorem predicateCountingCapacityCardinalityBandCut_upper_eq_zero_iff_provable_n
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityCardinalityBandCut
@@ -2830,7 +2830,7 @@ theorem predicateCountingCapacityCardinalityBandCut_lower_eq_zero_iff_not_provab
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityCardinalityBandCut
@@ -2889,7 +2889,7 @@ theorem predicateCountingCapacityCardinalityBandCut_upper_eq_one_iff_not_provabl
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityCardinalityBandCut
@@ -2948,7 +2948,7 @@ theorem predicateCountingCapacityCardinalityBandCut_width_eq_zero_iff_decides
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : Nat), NoConstOccurrence (param σ i) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (ExtensionalDefinableCut.intervalOfConsistent
       (Base := Base) (Const := Const)
       (predicateCountingCapacityCardinalityBandCut

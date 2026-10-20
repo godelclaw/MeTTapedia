@@ -4,6 +4,8 @@ import Mettapedia.GSLT.LanguageDef.ModuleSource.Printer
 import Mettapedia.GSLT.LanguageDef.ModuleSource.Commands
 import Mettapedia.GSLT.LanguageDef.ModuleSource.Controls
 import Mettapedia.GSLT.LanguageDef.ModuleSource.LbnfDecode
+import Mettapedia.GSLT.LanguageDef.ModuleSource.IndexedNatVecSource
+import Mettapedia.GSLT.LanguageDef.ModuleSource.IndexedNatVecSourceControls
 
 /-!
 # The `.module` format
@@ -14,4 +16,9 @@ origins, replacements and renamed exports, imports, and an entry theory. `#modul
 `ModuleSource.Printer.print` writes it back. The same format is LBNF data
 (`metta/gslt/module/module_v1.cf`) for grammar-driven readers; `ModuleSource.LbnfDecode` reads
 their trees as the same module data.
+
+`Inductives` retains dependent declarations as source data. The selected Nat/Vec
+route resolves their names and enters indexed admission; the ordinary regular
+LanguageDef projection refuses this block rather than dropping it. General
+typed module composition and textual operation elaboration remain separate.
 -/

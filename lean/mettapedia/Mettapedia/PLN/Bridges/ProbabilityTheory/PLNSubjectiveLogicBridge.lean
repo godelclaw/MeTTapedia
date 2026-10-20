@@ -18,7 +18,7 @@ namespace Mettapedia.PLN.Bridges.ProbabilityTheory.PLNSubjectiveLogicBridge
 
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 open Mettapedia.PLN.Bridges.Languages.PLNMeTTaCore
-open Mettapedia.PLN.Evidence.EvidenceSTVBridge (DeductionSTV)
+open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction (STV)
 
 /-- Minimal binomial-opinion record: belief, disbelief, uncertainty, base rate. -/
 structure BinomialOpinion where
@@ -178,7 +178,7 @@ keeps that boundary theorem-visible.
 
 /-- Prior-loaded projected readout for `(6,0)` evidence:
 `(6 + 1) / (6 + 0 + 2) = 7/8`, confidence `6/(6+1)`. -/
-noncomputable def priorLoadedProjectionSTV_6_0 : DeductionSTV where
+noncomputable def priorLoadedProjectionSTV_6_0 : STV where
   strength := (7 / 8 : ℝ)
   confidence := (6 / 7 : ℝ)
   strength_nonneg := by norm_num
@@ -188,7 +188,7 @@ noncomputable def priorLoadedProjectionSTV_6_0 : DeductionSTV where
 
 /-- Prior-loaded projected readout for `(0,2)` evidence:
 `(0 + 1) / (0 + 2 + 2) = 1/4`, confidence `2/(2+1)`. -/
-noncomputable def priorLoadedProjectionSTV_0_2 : DeductionSTV where
+noncomputable def priorLoadedProjectionSTV_0_2 : STV where
   strength := (1 / 4 : ℝ)
   confidence := (2 / 3 : ℝ)
   strength_nonneg := by norm_num

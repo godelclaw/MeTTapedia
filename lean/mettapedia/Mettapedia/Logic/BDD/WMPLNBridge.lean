@@ -98,7 +98,7 @@ The revised strength is the weighted average by evidence count.
 The revised confidence is HIGHER than either individual source.
 ProbLog has no mechanism for this combination. -/
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-- Concrete revision example: two independent sensors combined.
     ProbLog computes P(alarm) = 0.6 from one source.

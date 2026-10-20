@@ -4,13 +4,16 @@ import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
 /-!
 # Completeness-Tight Higher-Order HOL Credal Envelopes
 
-This module starts the endpoint-first weld between classical Henkin completeness
-and the higher-order WM-PLN credal layer.
+This module connects classical Henkin completeness to the higher-order WM-PLN
+credal layer, at the level of single formulas: it builds the canonical family of
+all Henkin models of a classical theory, maps each model to a Dirac hierarchical
+ProbHOL state, and exposes the countermodel and model witnesses supplied by
+`ClosedTheorySet.henkin_model_exists_of_consistent_classical`.
 
-The first tranche is intentionally formula-level: it builds the canonical family
-of all Henkin models of a classical theory, maps each model to a Dirac
-hierarchical ProbHOL state, and exposes the countermodel/model witnesses supplied
-by the already-landed Henkin completeness theorem.
+The completeness-dependent theorems assume a surjective enumeration of the
+one-variable bodies, consistency, parameter-freeness of the theory (and of the
+query where a countermodel is needed), and provability of the excluded-middle
+schema. `PLNHigherOrderHOLCompletenessControls` instantiates them.
 -/
 
 namespace Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCompletenessTightness
@@ -46,15 +49,15 @@ def ExtensionalTheoryModel (T : ClosedTheorySet (WithParams Const)) :=
     (∀ ψ ∈ T, HenkinModel.models M ψ) ∧ HenkinModel.FunctionsRespectEqv M}
 
 /-- Classical Henkin completeness makes the canonical theory-model family
-nonempty under the real param-free + EM-closed hypotheses of the term-model
-theorem. -/
+nonempty for a consistent parameter-free theory that proves every
+excluded-middle instance. -/
 theorem nonempty_theoryModel_of_consistent_classical
     {T : ClosedTheorySet (WithParams Const)}
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     Nonempty (TheoryModel (Base := Base) (Const := Const) T) := by
   obtain ⟨M, hM⟩ :=
     exists_model_of_consistent_classicalTheory
@@ -62,15 +65,14 @@ theorem nonempty_theoryModel_of_consistent_classical
   exact ⟨⟨M, hM⟩⟩
 
 /-- Classical Henkin completeness makes the proof-tight extensional
-theory-model family nonempty under the same real param-free + EM-closed
-hypotheses. -/
+theory-model family nonempty under the same hypotheses. -/
 theorem nonempty_extensionalTheoryModel_of_consistent_classical
     {T : ClosedTheorySet (WithParams Const)}
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) := by
   obtain ⟨M, hM, hExt⟩ :=
     exists_extensional_model_of_consistent_classicalTheory
@@ -228,7 +230,7 @@ noncomputable def theoryCredalHOLFormulaIntervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (φ : ClosedFormula (WithParams Const)) :
     Interval :=
   letI : Nonempty (TheoryModel (Base := Base) (Const := Const) T) :=
@@ -245,7 +247,7 @@ noncomputable def extensionalTheoryCredalHOLFormulaIntervalOfConsistent
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (φ : ClosedFormula (WithParams Const)) :
     Interval :=
   letI : Nonempty (ExtensionalTheoryModel (Base := Base) (Const := Const) T) :=
@@ -408,7 +410,7 @@ theorem exists_theoryModel_dirac_value_zero_of_not_provable
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProv : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T χ) :
     ∃ M : TheoryModel (Base := Base) (Const := Const) T,
@@ -432,7 +434,7 @@ theorem exists_theoryModel_dirac_value_one_of_not_provable_not
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProvNot : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ)) :
     ∃ M : TheoryModel (Base := Base) (Const := Const) T,
@@ -456,7 +458,7 @@ theorem exists_extensionalTheoryModel_dirac_value_zero_of_not_provable
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProv : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T χ) :
     ∃ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -480,7 +482,7 @@ theorem exists_extensionalTheoryModel_dirac_value_one_of_not_provable_not
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProvNot : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ)) :
     ∃ M : ExtensionalTheoryModel (Base := Base) (Const := Const) T,
@@ -506,7 +508,7 @@ theorem theoryCredalHOLFormulaInterval_lower_eq_zero_of_not_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProv : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T χ) :
     (theoryCredalHOLFormulaIntervalOfConsistent
@@ -536,7 +538,7 @@ theorem theoryCredalHOLFormulaInterval_upper_eq_one_of_not_provable_not
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProvNot : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ)) :
     (theoryCredalHOLFormulaIntervalOfConsistent
@@ -565,7 +567,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_lower_eq_zero_of_not_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProv : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T χ) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
@@ -594,7 +596,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_upper_eq_one_of_not_provable_n
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProvNot : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ)) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
@@ -623,7 +625,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_lower_eq_one_of_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hProv : ClosedTheorySet.Provable (Const := WithParams Const) T χ) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).lower = 1 := by
@@ -651,7 +653,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_upper_eq_zero_of_provable_not
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hProvNot : ClosedTheorySet.Provable (Const := WithParams Const) T (.not χ)) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).upper = 0 := by
@@ -680,7 +682,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_lower_eq_zero_iff_not_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).lower = 0 ↔
@@ -710,7 +712,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_upper_eq_one_iff_not_provable_
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).upper = 1 ↔
@@ -771,7 +773,7 @@ theorem provable_of_extensionalTheoryCredalHOLFormulaInterval_lower_eq_one
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hLower :
       (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
@@ -796,7 +798,7 @@ theorem provable_not_of_extensionalTheoryCredalHOLFormulaInterval_upper_eq_zero
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hUpper :
       (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
@@ -821,7 +823,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_lower_eq_one_iff_provable
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).lower = 1 ↔
@@ -845,7 +847,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_upper_eq_zero_iff_provable_not
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).upper = 0 ↔
@@ -870,7 +872,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_width_eq_zero_iff_decides
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM χ).width = 0 ↔
@@ -928,7 +930,7 @@ theorem provable_of_theoryCredalHOLFormulaInterval_lower_eq_one
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hLower :
       (theoryCredalHOLFormulaIntervalOfConsistent
@@ -953,7 +955,7 @@ theorem provable_not_of_theoryCredalHOLFormulaInterval_upper_eq_zero
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hUpper :
       (theoryCredalHOLFormulaIntervalOfConsistent
@@ -982,7 +984,7 @@ theorem decides_of_theoryCredalHOLFormulaInterval_width_eq_zero
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hWidth :
       (theoryCredalHOLFormulaIntervalOfConsistent
@@ -1021,7 +1023,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_top_width_eq_zero
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ) :
     (extensionalTheoryCredalHOLFormulaIntervalOfConsistent
       (Base := Base) (Const := Const) T enum henum hCons hT0 hEM
         (.top : ClosedFormula (WithParams Const))).width = 0 := by
@@ -1052,7 +1054,7 @@ theorem extensionalTheoryCredalHOLFormulaInterval_width_eq_one_of_undecided
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : ClosedTheorySet.Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T)
+    (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ)
     (hχ0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
     (hNotProv : ¬ ClosedTheorySet.Provable (Const := WithParams Const) T χ)
     (hNotProvNot :

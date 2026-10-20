@@ -417,15 +417,15 @@ theorem step_renumber {f : Slot → Slot'} (injective : Function.Injective f)
       step name instruction (pullSlots f state) := by
   cases instruction with
   | bindSlot source slot =>
-      simp only [step, renumber, pullSlots]
+      simp only [CompiledTwoSidedHeadProgram.step, renumber, pullSlots]
       cases state.registers source <;>
         simp [pullSlots, Function.update_comp_eq_of_injective _ injective]
   | equateSlot source slot =>
-      simp only [step, renumber, pullSlots, Function.comp_apply]
+      simp only [CompiledTwoSidedHeadProgram.step, renumber, pullSlots, Function.comp_apply]
       cases state.registers source <;> cases state.slots (f slot) <;> simp [Option.map_map]
       rfl
   | constant source value =>
-      simp only [step, renumber, pullSlots]
+      simp only [CompiledTwoSidedHeadProgram.step, renumber, pullSlots]
       cases loaded : state.registers source with
       | none => rfl
       | some term =>
@@ -434,7 +434,7 @@ theorem step_renumber {f : Slot → Slot'} (injective : Function.Injective f)
           | const actual => by_cases same : value = actual <;> simp [read, same, pullSlots]
           | app _ _ => simp [read]
   | node source function target =>
-      simp only [step, renumber, pullSlots]
+      simp only [CompiledTwoSidedHeadProgram.step, renumber, pullSlots]
       cases loaded : state.registers source with
       | none => rfl
       | some term =>

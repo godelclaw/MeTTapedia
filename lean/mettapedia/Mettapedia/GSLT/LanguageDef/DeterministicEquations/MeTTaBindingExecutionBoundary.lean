@@ -1,15 +1,20 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaControlBinders
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaControlCorrespondence
 import Mettapedia.Languages.MeTTa.HE.LeaTTaBindingMaterialization
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Binding observations at the native-argument boundary
 
 The independent selector permits any emitted atom with the same observation
 under the result bindings. Native dispatch, however, consumes syntactic
-arguments. The example below separates these two contracts even for a
-satisfiable frame containing only integer data. An execution correspondence
-must account for binding materialization before native invocation.
+arguments. The minimal `eval` instruction therefore materializes its atom
+under the current frame before invoking the host. The controls below show the
+boundary from both sides: a bound scrutinee reaches the host as closed data,
+while an unbound one reaches it unresolved and is refused.
 -/
 
 set_option autoImplicit false
@@ -44,58 +49,49 @@ theorem integer_equality_symbolic_refusal (name : String) (right : Int) :
       [.var name, .grounded (.int right)] .incorrectArgument :=
   ⟨rfl, rfl⟩
 
-/-- The minimal evaluator does not inspect the binding frame before passing
-these symbolic arguments to the host. -/
-theorem unresolved_integer_equality_run (name : String) (right : Int)
-    (bindings : Bindings) :
+/-- The empty frame materializes every atom to itself. -/
+theorem empty_frame_materialization (raw : Atom) :
+    BindingFrame.Materialization (BindingFrame.historical Bindings.empty) raw raw :=
+  ⟨[], .nil _, (Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.TypeSubst.apply_empty raw).symm⟩
+
+/-- Negative control: with no binding for the scrutinee, the materialized call
+is still open, and the host refuses its unresolved argument. -/
+theorem unbound_integer_equality_run (name : String) (right : Int) :
     CoreRunRel Space.empty integerEqualityDispatch []
-      (call "eval" [call "==" [.var name, .grounded (.int right)]]) bindings
-      (Atom.notReducible, bindings) := by
+      (call "eval" [call "==" [.var name, .grounded (.int right)]]) Bindings.empty
+      (Atom.notReducible, Bindings.empty) := by
   apply CoreRunRel.instruction
   · simp [call, embeddedInstruction]
   · simp [call, Minimal.IsChain]
-  · apply CoreStepRel.eval
+  · apply CoreStepRel.eval _ _ _ _ _ (empty_frame_materialization _)
     exact CoreInvocationRel.groundedIncorrectArgument Space.empty (.symbol "==")
-      [.var name, .grounded (.int right)] bindings rfl
+      [.var name, .grounded (.int right)] Bindings.empty rfl
       (integer_equality_symbolic_refusal name right)
 
-/-- Matching a concrete zero may leave its variable in an emitted native
-call, although every model assigns zero to that variable. The host call then
-refuses its syntactic argument. Binding observation alone therefore cannot
-be used as an execution-substitution theorem. -/
-theorem observed_zero_need_not_be_materialized :
-    ∃ output : Bindings,
-      UnifySuccessRel (.grounded (.int 0)) (.var "fuel")
-        (call "eval" [call "==" [.grounded (.int 0), .grounded (.int 0)]])
-        Bindings.empty
-        (call "eval" [call "==" [.var "fuel", .grounded (.int 0)]]) output ∧
-      (∃ valuation, HEBindingSatisfied valuation output) ∧
-      (∀ valuation, HEBindingSatisfied valuation output →
-        HEAtomEquationSatisfied valuation (.var "fuel") (.grounded (.int 0))) ∧
-      CoreRunRel Space.empty integerEqualityDispatch []
-        (call "eval" [call "==" [.var "fuel", .grounded (.int 0)]]) output
-        (Atom.notReducible, output) ∧
-      (∀ valuation, HEBindingSatisfied valuation output →
-        ¬HEAtomEquationSatisfied valuation Atom.notReducible (.symbol "True")) := by
-  obtain ⟨output, candidate⟩ :=
-    (unify_empty_iff_model (.grounded (.int 0)) (.var "fuel")).mpr
-      ⟨fun _ => toLeaTTaAtom (.grounded (.int 0)), by
-        simp only [HEAtomEquationSatisfied, toLeaTTaAtom, applyClassSolution]⟩
-  have zero : ∀ valuation, HEBindingSatisfied valuation output →
-      HEAtomEquationSatisfied valuation (.var "fuel") (.grounded (.int 0)) := by
-    intro valuation satisfied
-    exact ((candidate_solution_iff candidate valuation).mp satisfied).2.symm
-  refine ⟨output, ⟨candidate, ?_⟩, ?_, zero,
-    unresolved_integer_equality_run "fuel" 0 output, ?_⟩
-  · intro valuation satisfied
-    have assigned := zero valuation satisfied
-    simp only [HEAtomEquationSatisfied, toLeaTTaAtom, applyClassSolution] at assigned
-    simp [HEAtomEquationSatisfied, call, toLeaTTaAtom, toLeaTTaAtoms,
-      applyClassSolution, assigned]
-  · obtain ⟨_, _, _, _, satisfiable⟩ := candidate
-    exact satisfiable
-  · intro valuation _
-    simp [HEAtomEquationSatisfied, Atom.notReducible, toLeaTTaAtom, applyClassSolution]
+/-- A frame binding the scrutinee to zero. -/
+def zeroFrame : Bindings := ⟨[("fuel", .grounded (.int 0))], []⟩
+
+/-- Positive control: under a frame binding the scrutinee, every materialization
+of the emitted call is the closed call, so the host receives data and decides
+it. The unresolved spelling never reaches the host through `eval`. -/
+theorem materializing_eval_resolves_bound_variable :
+    BindingFrame.Materialization (BindingFrame.historical zeroFrame)
+        (call "==" [.var "fuel", .grounded (.int 0)])
+        (call "==" [.grounded (.int 0), .grounded (.int 0)]) ∧
+      (∀ materialized, BindingFrame.Materialization (BindingFrame.historical zeroFrame)
+        (call "==" [.var "fuel", .grounded (.int 0)]) materialized →
+          materialized = call "==" [.grounded (.int 0), .grounded (.int 0)]) ∧
+      integerEqualityDispatch.outcome (.symbol "==")
+        [.grounded (.int 0), .grounded (.int 0)] (.ok [(.symbol "True", Bindings.empty)]) := by
+  have resolved : BindingFrame.Materialization (BindingFrame.historical zeroFrame)
+      (call "==" [.var "fuel", .grounded (.int 0)])
+      (call "==" [.grounded (.int 0), .grounded (.int 0)]) := by
+    have single := Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.BindingTheory.BindingMaterializationRel.single_assignment
+      "fuel" (.grounded (.int 0)) (call "==" [.var "fuel", .grounded (.int 0)])
+      (by simp [Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.TypeSubst.typeVars])
+    simpa [zeroFrame, call, Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.TypeSubst.apply,
+      Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.TypeSubst.lookup] using single
+  exact ⟨resolved, fun _ other => other.output_eq resolved, by simpa using integer_equality_closed 0 0⟩
 
 /-- The two fuel operations emitted by `withFuel` have the exact closed-call
 execution after actual binding materialization. The raw selector observation
@@ -108,23 +104,23 @@ theorem materialized_fuel_operations
     (observed : ∀ valuation, HEBindingSatisfied valuation spec →
       HEAtomEquationSatisfied valuation fuel (.grounded (.int remaining))) :
     Metta.Minimal.evalOp environment state continuation
-        (toLeaTTaAtom (call "==" [fuel, .grounded (.int 0)])) runtime =
+        (encodeModelAtom (call "==" [fuel, .grounded (.int 0)])) runtime =
       Metta.Minimal.evalOp environment state continuation
-        (toLeaTTaAtom (call "==" [.grounded (.int remaining), .grounded (.int 0)])) runtime ∧
+        (encodeModelAtom (call "==" [.grounded (.int remaining), .grounded (.int 0)])) runtime ∧
     Metta.Minimal.evalOp environment state continuation
-        (toLeaTTaAtom (call "-" [fuel, .grounded (.int 1)])) runtime =
+        (encodeModelAtom (call "-" [fuel, .grounded (.int 1)])) runtime =
       Metta.Minimal.evalOp environment state continuation
-        (toLeaTTaAtom (call "-" [.grounded (.int remaining), .grounded (.int 1)])) runtime := by
+        (encodeModelAtom (call "-" [.grounded (.int remaining), .grounded (.int 1)])) runtime := by
   have invocation (head : String) (argument : Atom) :
       Metta.Minimal.evalOp environment state continuation
-          (toLeaTTaAtom (call head [fuel, argument])) runtime =
+          (encodeModelAtom (call head [fuel, argument])) runtime =
         Metta.Minimal.evalOp environment state continuation
-          (toLeaTTaAtom (call head [.grounded (.int remaining), argument])) runtime := by
+          (encodeModelAtom (call head [.grounded (.int remaining), argument])) runtime := by
     apply invariant.evalOp_observation environment state continuation
     intro valuation satisfied
     have same := observed valuation satisfied
     simp only [HEAtomEquationSatisfied] at same
-    simp [HEAtomEquationSatisfied, call, toLeaTTaAtom, toLeaTTaAtoms,
+    simp [HEAtomEquationSatisfied, call, encodeModelAtom, encodeModelAtoms,
       applyClassSolution, same]
   exact ⟨invocation "==" _, invocation "-" _⟩
 
@@ -134,13 +130,13 @@ theorem actual_zero_alias_materializes
     (environment : Metta.Minimal.MinEnv) (state : Metta.Minimal.St)
     (continuation : Metta.Minimal.Stack) :
     Metta.Minimal.evalOp environment state continuation
-        (toLeaTTaAtom (call "==" [.var "fuel", .grounded (.int 0)]))
-        [.val "fuel" (toLeaTTaAtom (.grounded (.int 0)))] =
+        (encodeModelAtom (call "==" [.var "fuel", .grounded (.int 0)]))
+        [.val "fuel" (encodeModelAtom (.grounded (.int 0)))] =
       Metta.Minimal.evalOp environment state continuation
-        (toLeaTTaAtom (call "==" [.grounded (.int 0), .grounded (.int 0)]))
-        [.val "fuel" (toLeaTTaAtom (.grounded (.int 0)))] := by
+        (encodeModelAtom (call "==" [.grounded (.int 0), .grounded (.int 0)]))
+        [.val "fuel" (encodeModelAtom (.grounded (.int 0)))] := by
   apply evalOp_eq_of_instantiate_eq
-  simp [call, toLeaTTaAtom, toLeaTTaAtoms, toLeaTTaGround,
+  simp [call, encodeModelAtom, encodeModelAtoms, encodeModelGround,
     Metta.instantiate, Metta.Bindings.resolveAtom,
     Metta.Bindings.resolve_singleton_val_self_of_not_mem, Metta.Atom.vars]
 

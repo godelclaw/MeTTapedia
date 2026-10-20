@@ -1,6 +1,10 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
-import Mettapedia.Languages.MeTTa.HE.LeaTTaSpecConformance
+import Mettapedia.Languages.MeTTa.HE.Spec.Match.ModelTheory
 import Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Semantic completeness of the spec HE matcher/merge relation
@@ -13,8 +17,8 @@ matchers and both executable binding mergers.
 namespace Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
 
 open Mettapedia.Languages.MeTTa.HE
-open Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
-open Mettapedia.Languages.MeTTa.HE.LeaTTaSpecConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.ModelTheory
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 
 private abbrev Spec.Match := Spec.Match.Merge.MatchRel
@@ -40,41 +44,41 @@ theorem bothExpressions_of_ne_nonvariable_solution
       cases right with
       | symbol rightName =>
           have : leftName = rightName := by
-            simpa [HEAtomEquationSatisfied, toLeaTTaAtom,
+            simpa [HEAtomEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation
           exact (hne (congrArg Atom.symbol this)).elim
       | var rightName => simp [DeclMatchSpec.Atom.isVarB] at hright
       | grounded rightGround =>
-          simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+          simp [HEAtomEquationSatisfied, encodeModelAtom,
             applyClassSolution] at hequation
       | expression rightAtoms =>
-          simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+          simp [HEAtomEquationSatisfied, encodeModelAtom,
             applyClassSolution] at hequation
   | var leftName => simp [DeclMatchSpec.Atom.isVarB] at hleft
   | grounded leftGround =>
       cases right with
       | symbol rightName =>
-          simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+          simp [HEAtomEquationSatisfied, encodeModelAtom,
             applyClassSolution] at hequation
       | var rightName => simp [DeclMatchSpec.Atom.isVarB] at hright
       | grounded rightGround =>
           have : leftGround = rightGround := by
             cases leftGround <;> cases rightGround <;>
-              simp [HEAtomEquationSatisfied, toLeaTTaAtom,
-                toLeaTTaGround, applyClassSolution] at hequation ⊢ <;>
+              simp [HEAtomEquationSatisfied, encodeModelAtom,
+                encodeModelGround, applyClassSolution] at hequation ⊢ <;>
               simp_all
           exact (hne (congrArg Atom.grounded this)).elim
       | expression rightAtoms =>
-          simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+          simp [HEAtomEquationSatisfied, encodeModelAtom,
             applyClassSolution] at hequation
   | expression leftAtoms =>
       cases right with
       | symbol rightName =>
-          simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+          simp [HEAtomEquationSatisfied, encodeModelAtom,
             applyClassSolution] at hequation
       | var rightName => simp [DeclMatchSpec.Atom.isVarB] at hright
       | grounded rightGround =>
-          simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+          simp [HEAtomEquationSatisfied, encodeModelAtom,
             applyClassSolution] at hequation
       | expression rightAtoms => exact ⟨leftAtoms, rightAtoms, rfl, rfl⟩
 
@@ -83,7 +87,7 @@ private theorem specVarNonVar_of_solution
     {bound : Nat}
     (hnonvar : Spec.Match.Merge.isVariableB value = false)
     (hequation : valuation varName =
-      applyClassSolution valuation (toLeaTTaAtom value))
+      applyClassSolution valuation (encodeModelAtom value))
     (hvarBound : (valuation varName).size < bound)
     (hvalueBound : HESolutionAtomSize valuation value < bound) :
     ∃ out, Spec.Match (.var varName) value out ∧
@@ -103,7 +107,8 @@ private theorem specVarNonVar_of_solution
   have hnonvariable : HEAssignmentsNonVariable out :=
     assignmentsNonVariable_empty.assign hdeclNonvar
   have hadmissible : Spec.Match.Merge.SemanticLoopFree out :=
-    semanticLoopFree_of_satisfied_nonvariable hsatisfied hnonvariable
+    Spec.Match.ModelTheory.semanticLoopFree_of_satisfied_nonvariable hsatisfied
+      (fun _ _ stored => hnonvariable.isVarB_eq_false_of_assignment stored)
   have hbound : HEBindingSolutionSizeBound valuation out bound :=
     (heBindingSolutionSizeBound_empty valuation bound).assign
       hvarBound hvalueBound
@@ -114,7 +119,7 @@ private theorem specNonVarVar_of_solution
     {valuation : String → Metta.Atom} {value : Atom} {varName : String}
     {bound : Nat}
     (hnonvar : Spec.Match.Merge.isVariableB value = false)
-    (hequation : applyClassSolution valuation (toLeaTTaAtom value) =
+    (hequation : applyClassSolution valuation (encodeModelAtom value) =
       valuation varName)
     (hvalueBound : HESolutionAtomSize valuation value < bound)
     (hvarBound : (valuation varName).size < bound) :
@@ -135,7 +140,8 @@ private theorem specNonVarVar_of_solution
   have hnonvariable : HEAssignmentsNonVariable out :=
     assignmentsNonVariable_empty.assign hdeclNonvar
   have hadmissible : Spec.Match.Merge.SemanticLoopFree out :=
-    semanticLoopFree_of_satisfied_nonvariable hsatisfied hnonvariable
+    Spec.Match.ModelTheory.semanticLoopFree_of_satisfied_nonvariable hsatisfied
+      (fun _ _ stored => hnonvariable.isVarB_eq_false_of_assignment stored)
   have hbound : HEBindingSolutionSizeBound valuation out bound :=
     (heBindingSolutionSizeBound_empty valuation bound).assign
       hvarBound hvalueBound
@@ -159,7 +165,7 @@ theorem exists_specMatch_leaf_of_solution
       cases right with
       | symbol rightName =>
           have hname : leftName = rightName := by
-            simpa [HEAtomEquationSatisfied, toLeaTTaAtom,
+            simpa [HEAtomEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation
           subst rightName
           exact ⟨Bindings.empty,
@@ -169,21 +175,21 @@ theorem exists_specMatch_leaf_of_solution
       | var rightName =>
           exact specNonVarVar_of_solution
             (by simp [Spec.Match.Merge.isVariableB])
-            (by simpa [HEAtomEquationSatisfied, toLeaTTaAtom,
+            (by simpa [HEAtomEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation)
             hleftBound (by simpa [HESolutionAtomSize] using hrightBound)
       | grounded rightGround =>
-          simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+          simp [HEAtomEquationSatisfied, encodeModelAtom,
             applyClassSolution] at hequation
       | expression rightAtoms =>
-          simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+          simp [HEAtomEquationSatisfied, encodeModelAtom,
             applyClassSolution] at hequation
   | var leftName =>
       cases right with
       | symbol rightName =>
           exact specVarNonVar_of_solution
             (by simp [Spec.Match.Merge.isVariableB])
-            (by simpa [HEAtomEquationSatisfied, toLeaTTaAtom,
+            (by simpa [HEAtomEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation)
             (by simpa [HESolutionAtomSize] using hleftBound) hrightBound
       | var rightName =>
@@ -191,7 +197,7 @@ theorem exists_specMatch_leaf_of_solution
           have hsatisfied : HEBindingSatisfied valuation out := by
             apply (hesat_addEquality valuation).mpr
             exact ⟨hesat_empty valuation, by
-              simpa [HEAtomEquationSatisfied, toLeaTTaAtom,
+              simpa [HEAtomEquationSatisfied, encodeModelAtom,
                 applyClassSolution] using hequation⟩
           have hnonvariable : HEAssignmentsNonVariable out :=
             assignmentsNonVariable_empty.addEquality leftName rightName
@@ -201,36 +207,36 @@ theorem exists_specMatch_leaf_of_solution
               (by simpa [HESolutionAtomSize] using hrightBound)
           exact ⟨out, .varVar leftName rightName
               (semanticLoopFree_of_satisfied_nonvariable
-                hsatisfied hnonvariable),
+                hsatisfied (fun _ _ stored => hnonvariable.isVarB_eq_false_of_assignment stored)),
             hsatisfied, hnonvariable, hbound⟩
       | grounded rightGround =>
           exact specVarNonVar_of_solution
             (by simp [Spec.Match.Merge.isVariableB])
-            (by simpa [HEAtomEquationSatisfied, toLeaTTaAtom,
+            (by simpa [HEAtomEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation)
             (by simpa [HESolutionAtomSize] using hleftBound) hrightBound
       | expression rightAtoms =>
           exact specVarNonVar_of_solution
             (by simp [Spec.Match.Merge.isVariableB])
-            (by simpa [HEAtomEquationSatisfied, toLeaTTaAtom,
+            (by simpa [HEAtomEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation)
             (by simpa [HESolutionAtomSize] using hleftBound) hrightBound
   | grounded leftGround =>
       cases right with
       | symbol rightName =>
-          simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+          simp [HEAtomEquationSatisfied, encodeModelAtom,
             applyClassSolution] at hequation
       | var rightName =>
           exact specNonVarVar_of_solution
             (by simp [Spec.Match.Merge.isVariableB])
-            (by simpa [HEAtomEquationSatisfied, toLeaTTaAtom,
+            (by simpa [HEAtomEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation)
             hleftBound (by simpa [HESolutionAtomSize] using hrightBound)
       | grounded rightGround =>
           have hground : leftGround = rightGround := by
             cases leftGround <;> cases rightGround <;>
-              simp [HEAtomEquationSatisfied, toLeaTTaAtom,
-                toLeaTTaGround, applyClassSolution] at hequation ⊢ <;>
+              simp [HEAtomEquationSatisfied, encodeModelAtom,
+                encodeModelGround, applyClassSolution] at hequation ⊢ <;>
               simp_all
           subst rightGround
           exact ⟨Bindings.empty,
@@ -241,21 +247,21 @@ theorem exists_specMatch_leaf_of_solution
             hesat_empty valuation, assignmentsNonVariable_empty,
             heBindingSolutionSizeBound_empty valuation bound⟩
       | expression rightAtoms =>
-          simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+          simp [HEAtomEquationSatisfied, encodeModelAtom,
             applyClassSolution] at hequation
   | expression leftAtoms =>
       cases right with
       | symbol rightName =>
-          simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+          simp [HEAtomEquationSatisfied, encodeModelAtom,
             applyClassSolution] at hequation
       | var rightName =>
           exact specNonVarVar_of_solution
             (by simp [Spec.Match.Merge.isVariableB])
-            (by simpa [HEAtomEquationSatisfied, toLeaTTaAtom,
+            (by simpa [HEAtomEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation)
             hleftBound (by simpa [HESolutionAtomSize] using hrightBound)
       | grounded rightGround =>
-          simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+          simp [HEAtomEquationSatisfied, encodeModelAtom,
             applyClassSolution] at hequation
       | expression rightAtoms =>
           exact (hleaf ⟨leftAtoms, rightAtoms, rfl, rfl⟩).elim
@@ -298,7 +304,7 @@ private theorem specBoundedMatcherPack
       HEAssignmentsNonVariable seed →
       HEBindingSolutionSizeBound valuation seed bound →
       MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) →
+        (encodeModelAtoms lefts) (encodeModelAtoms rights) →
       HESolutionAtomsSizeBound valuation lefts bound →
       HESolutionAtomsSizeBound valuation rights bound →
       ∃ out,
@@ -323,7 +329,7 @@ private theorem specBoundedMatcherPack
       HEAssignmentsNonVariable seed →
       HEBindingSolutionSizeBound valuation seed bound →
       MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) →
+        (encodeModelAtoms lefts) (encodeModelAtoms rights) →
       HESolutionAtomsSizeBound valuation lefts bound →
       HESolutionAtomsSizeBound valuation rights bound →
       ∃ out,
@@ -357,9 +363,9 @@ private theorem specBoundedMatcherPack
             (by simp [BothExpressions]) hleft hright
       | expression rights =>
           have hlists : MettaAtomListsSatisfied valuation
-              (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) := by
+              (encodeModelAtoms lefts) (encodeModelAtoms rights) := by
             simpa [HEAtomEquationSatisfied, MettaAtomListsSatisfied,
-              toLeaTTaAtom, applyClassSolution] using hequation
+              encodeModelAtom, applyClassSolution] using hequation
           obtain ⟨out, hitems, hsatisfied, hnonvariable, hbound⟩ :=
             hlefts (seed := Bindings.empty)
               (hesat_empty valuation) assignmentsNonVariable_empty
@@ -369,26 +375,26 @@ private theorem specBoundedMatcherPack
               (heSolutionAtomsSizeBound_of_expression_lt valuation hright)
           exact ⟨out, .expression hitems
               (semanticLoopFree_of_satisfied_nonvariable
-                hsatisfied hnonvariable),
+                hsatisfied (fun _ _ stored => hnonvariable.isVarB_eq_false_of_assignment stored)),
             hsatisfied, hnonvariable, hbound⟩
     · intro rights seed hseed hseedNonvariable hseedBound hlists
         hleftBound hrightBound
       cases rights with
       | nil => exact ⟨seed, .nil, hseed, hseedNonvariable, hseedBound⟩
       | cons right rights =>
-          simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
+          simp [MettaAtomListsSatisfied, encodeModelAtoms] at hlists
     · intro left lefts hleft hlefts rights seed hseed hseedNonvariable
         hseedBound hlists hleftBound hrightBound
       cases rights with
       | nil =>
-          simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
+          simp [MettaAtomListsSatisfied, encodeModelAtoms] at hlists
       | cons right rights =>
           have hequations :
               HEAtomEquationSatisfied valuation left right ∧
               MettaAtomListsSatisfied valuation
-                (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) := by
+                (encodeModelAtoms lefts) (encodeModelAtoms rights) := by
             simpa [HEAtomEquationSatisfied, MettaAtomListsSatisfied,
-              toLeaTTaAtoms] using hlists
+              encodeModelAtoms] using hlists
           obtain ⟨matched, hmatched, hmatchedSatisfied,
               hmatchedNonvariable, hmatchedBound⟩ :=
             hleft hequations.1 hleftBound.head hrightBound.head
@@ -412,18 +418,18 @@ private theorem specBoundedMatcherPack
         cases rights with
         | nil => exact ⟨seed, .nil, hseed, hseedNonvariable, hseedBound⟩
         | cons right rights =>
-            simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
+            simp [MettaAtomListsSatisfied, encodeModelAtoms] at hlists
     | cons left lefts ih =>
         cases rights with
         | nil =>
-            simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
+            simp [MettaAtomListsSatisfied, encodeModelAtoms] at hlists
         | cons right rights =>
             have hequations :
                 HEAtomEquationSatisfied valuation left right ∧
                 MettaAtomListsSatisfied valuation
-                  (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) := by
+                  (encodeModelAtoms lefts) (encodeModelAtoms rights) := by
               simpa [HEAtomEquationSatisfied, MettaAtomListsSatisfied,
-                toLeaTTaAtoms] using hlists
+                encodeModelAtoms] using hlists
             obtain ⟨matched, hmatched, hmatchedSatisfied,
                 hmatchedNonvariable, hmatchedBound⟩ :=
               hrec left hequations.1 hleftBound.head hrightBound.head
@@ -451,7 +457,7 @@ private theorem specMergeCompleteBelow_of_adds
       HEAssignmentsNonVariable seed →
       HEBindingSolutionSizeBound valuation seed ambientBound →
       DeclMatchSpec.Atom.isVarB value = false →
-      valuation key = applyClassSolution valuation (toLeaTTaAtom value) →
+      valuation key = applyClassSolution valuation (encodeModelAtom value) →
       (valuation key).size < bound →
       HESolutionAtomSize valuation value < bound →
       ∃ out,
@@ -615,9 +621,9 @@ private theorem exists_specExpressionMatch_at_solutionSize
       HEAssignmentsNonVariable out ∧
       HEBindingSolutionSizeBound valuation out bound := by
   have hlists : MettaAtomListsSatisfied valuation
-      (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) := by
+      (encodeModelAtoms lefts) (encodeModelAtoms rights) := by
     simpa [HEAtomEquationSatisfied, MettaAtomListsSatisfied,
-      toLeaTTaAtom, applyClassSolution] using hequation
+      encodeModelAtom, applyClassSolution] using hequation
   have hleftBound : HESolutionAtomsSizeBound valuation lefts bound := by
     intro atom hmem
     rw [← hleftSize]
@@ -633,7 +639,8 @@ private theorem exists_specExpressionMatch_at_solutionSize
       (heBindingSolutionSizeBound_empty valuation bound)
       hlists hleftBound hrightBound
   exact ⟨out, .expression hitems
-      (semanticLoopFree_of_satisfied_nonvariable hsatisfied hnonvariable),
+      (Spec.Match.ModelTheory.semanticLoopFree_of_satisfied_nonvariable hsatisfied
+      (fun _ _ stored => hnonvariable.isVarB_eq_false_of_assignment stored)),
     hsatisfied, hnonvariable, hbound⟩
 
 /-- Equal scalar heads close immediately; every unequal co-satisfied
@@ -689,7 +696,7 @@ private theorem exists_specNonvariableMatchList_at_solutionSize
       HEAssignmentsNonVariable seed →
       HEBindingSolutionSizeBound valuation seed bound →
       MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) →
+        (encodeModelAtoms lefts) (encodeModelAtoms rights) →
       (∀ atom ∈ lefts,
         DeclMatchSpec.Atom.isVarB atom = false ∧
           HESolutionAtomSize valuation atom = bound) →
@@ -710,20 +717,20 @@ private theorem exists_specNonvariableMatchList_at_solutionSize
       cases rights with
       | nil => exact ⟨seed, .nil, hseed, hseedNonvariable, hseedBound⟩
       | cons right rights =>
-          simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
+          simp [MettaAtomListsSatisfied, encodeModelAtoms] at hlists
   | cons left lefts ih =>
       intro rights seed hseed hseedNonvariable hseedBound hlists
         hleftData hrightData
       cases rights with
       | nil =>
-          simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
+          simp [MettaAtomListsSatisfied, encodeModelAtoms] at hlists
       | cons right rights =>
           have hequations :
               HEAtomEquationSatisfied valuation left right ∧
               MettaAtomListsSatisfied valuation
-                (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) := by
+                (encodeModelAtoms lefts) (encodeModelAtoms rights) := by
             simpa [HEAtomEquationSatisfied, MettaAtomListsSatisfied,
-              toLeaTTaAtoms] using hlists
+              encodeModelAtoms] using hlists
           have hleftHead := hleftData left (by simp)
           have hrightHead := hrightData right (by simp)
           obtain ⟨matched, hmatched, hmatchedSatisfied,
@@ -776,7 +783,7 @@ theorem specSatisfiedMergeRelCompleteBelow
                 seed key value out := .fresh hclass
             have houtSatisfied : HEBindingSatisfied valuation out := by
               apply (hesat_assign_of_not_isBound
-                (isBound_eq_false_of_classValues_nil hclass) valuation).mpr
+                (EqualityClosure.isBound_eq_false_of_classValues_nil hclass) valuation).mpr
               exact ⟨hseed, hvalue⟩
             have houtNonvariable : HEAssignmentsNonVariable out :=
               hseedNonvariable.assign hvalueNonvariable
@@ -1091,7 +1098,7 @@ example : ∃ out, Spec.Match
     (valuation := valuation)
     (left := .expression [.var "x", .symbol "a"])
     (right := .expression [.symbol "b", .var "y"])
-    (by simp [HEAtomEquationSatisfied, valuation, toLeaTTaAtom,
+    (by simp [HEAtomEquationSatisfied, valuation, encodeModelAtom,
       applyClassSolution])
   exact ⟨out, hmatch⟩
 
@@ -1102,7 +1109,7 @@ example : ¬∃ valuation : String → Metta.Atom,
     HEAtomEquationSatisfied valuation (.symbol "a") (.symbol "b") := by
   intro h
   rcases h with ⟨valuation, hequation⟩
-  simp [HEAtomEquationSatisfied, toLeaTTaAtom,
+  simp [HEAtomEquationSatisfied, encodeModelAtom,
     applyClassSolution] at hequation
 
 
@@ -1155,9 +1162,9 @@ theorem both_orders_constructed :
       ∀ valuation, HEBindingSatisfied valuation original ↔ HEBindingSatisfied valuation swapped := by
   let model : String → Metta.Atom := fun _ => .sym "A"
   have leftModel : HEBindingSatisfied model left := by
-    simp [HEBindingSatisfied, left, model, toLeaTTaAtom, applyClassSolution]
+    simp [HEBindingSatisfied, left, model, encodeModelAtom, applyClassSolution]
   have rightModel : HEBindingSatisfied model right := by
-    simp [HEBindingSatisfied, right, model, toLeaTTaAtom, applyClassSolution]
+    simp [HEBindingSatisfied, right, model, encodeModelAtom, applyClassSolution]
   obtain ⟨original, merged, satisfied, _shape⟩ :=
     exists_specMerge_of_solution leftModel leftShape rightModel rightShape
   obtain ⟨swapped, reversed, _shape, _model, theory⟩ :=
@@ -1180,7 +1187,7 @@ theorem inconsistent_seed_has_no_model :
   have first := satisfied.1 "x" (.symbol "A") (by simp [inconsistent])
   have second := satisfied.1 "x" (.symbol "B") (by simp [inconsistent])
   have impossible := first.symm.trans second
-  simp [toLeaTTaAtom, applyClassSolution] at impossible
+  simp [encodeModelAtom, applyClassSolution] at impossible
 
 end MergeSwapControls
 end Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
@@ -1191,7 +1198,7 @@ open Mettapedia.Languages.MeTTa.HE
 open Spec.Type.Presentation Spec.Type.Presentation.BindingTheory
 open Spec.Type.RuntimeRefinement Spec.Bindings.ScopeObservation
 open Spec.Match.Merge Spec.Match.ModelTheory
-open LeaTTaBridge LeaTTaTypeConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 /-- Exposing bare aliases constructs an old finite merge implementing the
 logical contract. The resulting representative is not prescribed by this law. -/
 theorem exists_alias_specMerge_of_common_model {left right : Bindings}

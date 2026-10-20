@@ -1,5 +1,9 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Instantiation
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypeConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Finite presentations of LeaTTa type-binding resolution
@@ -30,7 +34,7 @@ or changing any equality-class representative. -/
 def leaCanonicalTypeSubstOn
     (bindings : Metta.Bindings) (scope : List String) : TypeSubst :=
   scope.eraseDups.map fun name =>
-    (name, fromLeaTTaAtom (leaClassSolution bindings name))
+    (name, decodeModelAtom (leaClassSolution bindings name))
 
 private theorem lookup_map_self
     (value : String → Atom) : ∀ (names : List String) (name : String),
@@ -53,7 +57,7 @@ theorem leaCanonicalTypeSubstOn_lookup
     (bindings : Metta.Bindings) (scope : List String) (name : String) :
     TypeSubst.lookup (leaCanonicalTypeSubstOn bindings scope) name =
       if name ∈ scope then
-        some (fromLeaTTaAtom (leaClassSolution bindings name))
+        some (decodeModelAtom (leaClassSolution bindings name))
       else none := by
   unfold leaCanonicalTypeSubstOn
   rw [lookup_map_self]
@@ -94,12 +98,12 @@ theorem leaCanonicalTypeSubstOn_apply_eq
     (hscope : ∀ name, name ∈ TypeSubst.typeVars atom → name ∈ scope) :
     (leaCanonicalTypeSubstOn bindings scope).apply atom =
       applyTypeValuation
-        (fun name => fromLeaTTaAtom (leaClassSolution bindings name)) atom := by
+        (fun name => decodeModelAtom (leaClassSolution bindings name)) atom := by
   suffices key : ∀ n (current : Atom), sizeOf current ≤ n →
       (∀ name, name ∈ TypeSubst.typeVars current → name ∈ scope) →
       (leaCanonicalTypeSubstOn bindings scope).apply current =
         applyTypeValuation
-          (fun name => fromLeaTTaAtom (leaClassSolution bindings name))
+          (fun name => decodeModelAtom (leaClassSolution bindings name))
           current by
     exact key (sizeOf atom) atom le_rfl hscope
   intro n
@@ -141,9 +145,9 @@ theorem leaCanonicalTypeSubstOn_apply_eq_instantiate
     (bindings : Metta.Bindings) (scope : List String) (atom : Atom)
     (hscope : ∀ name, name ∈ TypeSubst.typeVars atom → name ∈ scope) :
     (leaCanonicalTypeSubstOn bindings scope).apply atom =
-      fromLeaTTaAtom (Metta.instantiate bindings (toLeaTTaAtom atom)) := by
+      decodeModelAtom (Metta.instantiate bindings (encodeModelAtom atom)) := by
   rw [leaCanonicalTypeSubstOn_apply_eq bindings scope atom hscope]
-  rw [← fromLeaTTaAtom_applyClassSolution]
+  rw [← decodeModelAtom_applyClassSolution]
   rw [applyClassSolution_lea_eq_instantiate]
 
 /-! ## Boundary examples -/
@@ -154,9 +158,9 @@ theorem scoped_alias_presentation :
     (leaCanonicalTypeSubstOn
         [Metta.BindingRel.eq "x" "y"] ["x", "y"]).apply
           (.expression [.var "x", .var "y"]) =
-      fromLeaTTaAtom
+      decodeModelAtom
         (Metta.instantiate [Metta.BindingRel.eq "x" "y"]
-          (toLeaTTaAtom (.expression [.var "x", .var "y"]))) := by
+          (encodeModelAtom (.expression [.var "x", .var "y"]))) := by
   apply leaCanonicalTypeSubstOn_apply_eq_instantiate
   intro name hname
   simp [TypeSubst.typeVars, TypeSubst.typeVarsList] at hname ⊢
@@ -167,11 +171,11 @@ valid presentation of a binding that resolves that variable. -/
 theorem omitted_alias_scope_changes_observation :
     (leaCanonicalTypeSubstOn
         [Metta.BindingRel.eq "x" "y"] []).apply (.var "x") ≠
-      fromLeaTTaAtom
+      decodeModelAtom
         (Metta.instantiate [Metta.BindingRel.eq "x" "y"]
-          (toLeaTTaAtom (.var "x"))) := by
+          (encodeModelAtom (.var "x"))) := by
   simp [leaCanonicalTypeSubstOn,
-    toLeaTTaAtom, fromLeaTTaAtom, Metta.instantiate,
+    encodeModelAtom, decodeModelAtom, Metta.instantiate,
     Metta.Bindings.resolveAtom, leaClassSolution, Metta.Bindings.resolve,
     Metta.Bindings.eqClassOrdered, Metta.Bindings.eqVarsInOrder,
     Metta.Bindings.classValues, Metta.Bindings.lookupVal,

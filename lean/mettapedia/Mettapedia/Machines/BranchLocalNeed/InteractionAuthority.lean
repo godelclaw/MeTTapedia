@@ -224,7 +224,7 @@ section Discovery
 
 set_option autoImplicit false
 
-open CategoryTheory
+open _root_.CategoryTheory
 open Mettapedia.Machines.Cursor
 open Mettapedia.TypeTheory
 open Mettapedia.TypeTheory.IndexedPolynomial

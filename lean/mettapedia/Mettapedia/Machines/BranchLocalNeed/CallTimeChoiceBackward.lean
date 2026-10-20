@@ -593,29 +593,6 @@ theorem observe_backward {P : Program} {M : Comp} {n : Nat} {leaves : List MMach
 
 /-! ## Answers -/
 
-theorem leafOutcomes_rel {φ : List CellId} {w : MWorld} {L : List Result}
-    {leaves : List MMachine} (h : List.Forall₂ (ResRel φ w []) L leaves) :
-    List.Forall₂ (fun (r : Result) (o : MOutcome) => ∃ φ', OutRel φ' r.1 o) L
-      (leaves.filterMap leafOutcome) := by
-  induction h with
-  | nil => exact .nil
-  | @cons r l L' ls hr _ ih =>
-      obtain ⟨φ', _, _, _, _, o, ho, hor⟩ := hr
-      have : leafOutcome l = some o := by simp [leafOutcome, ho]
-      simp only [List.filterMap_cons, this]
-      exact .cons ⟨φ', hor⟩ ih
-
-theorem answers_of_frontier {P : Program} {m : MMachine} {n : Nat} {leaves : List MMachine}
-    (h : Returns (machineSpec P) [] n [m] leaves) {fuel : Nat}
-    (hfr : runFrontier (machineSpec P) fuel [m] = leaves.map haltOf) :
-    answers (machineSpec P) fuel m = leaves.filterMap leafOutcome := by
-  unfold answers
-  rw [hfr, List.filterMap_map]
-  apply List.filterMap_congr
-  intro l hl
-  obtain ⟨o, ho⟩ := h.leaves_returned l hl
-  simp [Function.comp_apply, haltedOutcome_haltOf l o ho, leafOutcome, ho]
-
 /-- The machine's frontier for the observation of `M` has halted at `fuel`. -/
 def Halted (P : Program) (M : Comp) (fuel : Nat) : Prop :=
   ∀ x ∈ runFrontier (machineSpec (observed P)) fuel [initialMachine (observe M)],

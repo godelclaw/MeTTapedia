@@ -67,15 +67,19 @@ theorem application_types :
       .expr [.sym ":", .sym "f", arrowA],
       .expr [.sym ":", .sym "f", arrowB],
       .expr [.sym ":", .sym "a", .sym "A"]] := rfl
+  have emptyMerge : Metta.Bindings.merge [] [] = [[]] := by
+    rfl
+  have emptyLoop : Metta.Bindings.hasLoop ([] : Metta.Bindings) = false := by
+    rfl
   rw [show application = .expr [.sym "f", .sym "a"] from rfl,
     Metta.Minimal.getTypes.eq_10 _ _ _ (by simp)]
-  simp [hf, ha, hexpr, hatoms, arrowA, arrowB,
+  simp [hf, ha, hexpr, hatoms, arrowA, arrowB, emptyMerge, emptyLoop,
     Metta.Minimal.typeInferenceAvoid, Metta.Atom.vars, Metta.Minimal.cartesian,
     Metta.Minimal.freshenArgumentTypes,
     Metta.Minimal.freshenTypeCandidate, Metta.Minimal.renameAllVars,
     Metta.Minimal.matchApplicationTypeArguments, Metta.Minimal.matchType,
     Metta.Minimal.matchReduced, Metta.matchAtoms, Metta.matchAtomsWith,
-    Metta.instantiate_nil, BEq.beq, Metta.Atom.beq]
+    Metta.instantiate_nil, BEq.beq, Metta.Atom.beq, List.filterMap_cons, List.filterMap_nil]
 
 private theorem application_type_prep :
     Metta.Minimal.typePrep Metta.Minimal.World.empty application = application := by
@@ -204,7 +208,7 @@ private theorem RBDoesNotMatchArrowAReturn
 private theorem aType :
     TypeOfRel specSpace (.symbol "a") (.symbol "A") := by
   refine ⟨[.symbol "A"], ?_, by simp⟩
-  apply TypesOfRel.symbolKnown
+  apply StorageTypesRel.symbolKnown
   · exact AnnotationTypesRel.skip (by simp)
       (AnnotationTypesRel.skip (by simp)
         (AnnotationTypesRel.hit AnnotationTypesRel.nil))
@@ -414,11 +418,18 @@ private theorem dependentArgument_match (name : String) : Metta.Minimal.matchTyp
       ([.val name (.sym "Atom")] : Metta.Bindings) = false := by
     simpa using Metta.Bindings.hasLoop_singleton_val_of_not_mem
       name (.sym "Atom") (by simp [Metta.Atom.vars])
+  have hocc : Metta.Subst.occurs name (Metta.Atom.sym "Atom") = false := by
+    simp [Metta.Subst.occurs]
+  have hclass : Metta.Bindings.eqClassOrdered [] name = [name] := by
+    rfl
+  have hfold : List.foldl Metta.Bindings.mergeOne [[]]
+      [Metta.BindingRel.val name (Metta.Atom.sym "Atom")] =
+        [[Metta.BindingRel.val name (Metta.Atom.sym "Atom")]] := by
+    simp [Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding, Metta.Bindings.classValues,
+      hclass, Metta.Bindings.lookupVal, Metta.Bindings.addValRaw, Metta.Bindings.removeVal]
   simp [Metta.Minimal.matchType, Metta.Minimal.matchReduced,
     Metta.Minimal.matchReducedList, Metta.matchAtoms,
-    Metta.matchAtomsWith, Metta.Bindings.merge,
-    Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
-    Metta.Bindings.addValRaw, Metta.Bindings.removeVal,
+    Metta.matchAtomsWith, Metta.Bindings.merge, hocc, hfold,
     Metta.Atom.beq, BEq.beq, hloop]
 
 /-- The repaired raw-return gate rejects the candidate and retains the

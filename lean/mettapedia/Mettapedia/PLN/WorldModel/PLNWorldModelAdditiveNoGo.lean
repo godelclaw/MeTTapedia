@@ -13,7 +13,7 @@ This module records the first basic incompatibility theorem for additive world m
 This does **not** say that every additive world model is trivial. It isolates the exact
 conflict between:
 
-- additive accumulation of independent evidence, and
+- additive accumulation of evidence from disjoint observations, and
 - globally idempotent revision at the state layer.
 
 Positive example:
@@ -28,10 +28,10 @@ namespace Mettapedia.PLN.WorldModel.PLNWorldModelAdditiveNoGo
 
 open scoped ENNReal
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 
-namespace EvidenceQuantale.BinaryEvidence
+namespace BinaryEvidence
 
 /-- Finite evidence excludes the `∞` idempotence corner case in `ℝ≥0∞`. -/
 def IsFinite (e : BinaryEvidence) : Prop :=
@@ -49,7 +49,7 @@ theorem finite_coord_add_idempotent_eq_zero
   · exact False.elim (hfin hx)
 
 theorem eq_zero_of_hplus_idempotent
-    {e : BinaryEvidence} (hfin : EvidenceQuantale.BinaryEvidence.IsFinite e) (hidem : e + e = e) :
+    {e : BinaryEvidence} (hfin : BinaryEvidence.IsFinite e) (hidem : e + e = e) :
     e = 0 := by
   rcases hfin with ⟨hposFin, hnegFin⟩
   apply BinaryEvidence.ext'
@@ -60,7 +60,7 @@ theorem eq_zero_of_hplus_idempotent
       simpa [BinaryEvidence.hplus_def] using congrArg BinaryEvidence.neg hidem
     exact finite_coord_add_idempotent_eq_zero hnegFin hneg
 
-end EvidenceQuantale.BinaryEvidence
+end BinaryEvidence
 
 section BinaryWorldModel
 
@@ -71,7 +71,7 @@ finite extracted evidence value to vanish. -/
 theorem evidence_eq_zero_of_revision_idempotent
     (W : State) (q : Query)
     (hidem : W + W = W)
-    (hfin : EvidenceQuantale.BinaryEvidence.IsFinite
+    (hfin : BinaryEvidence.IsFinite
       (BinaryWorldModel.evidence (State := State) (Query := Query) W q)) :
     BinaryWorldModel.evidence (State := State) (Query := Query) W q = 0 := by
   have hEvidenceIdem :
@@ -86,7 +86,7 @@ theorem evidence_eq_zero_of_revision_idempotent
               (BinaryWorldModel.evidence_add' (State := State) (Query := Query) W W q).symm
       _ = BinaryWorldModel.evidence (State := State) (Query := Query) W q := by
             simp [hidem]
-  exact EvidenceQuantale.BinaryEvidence.eq_zero_of_hplus_idempotent hfin hEvidenceIdem
+  exact BinaryEvidence.eq_zero_of_hplus_idempotent hfin hEvidenceIdem
 
 /-- No additive world model with globally idempotent revision can exhibit nonzero
 finite evidence on any query. -/
@@ -94,7 +94,7 @@ theorem not_exists_nonzero_finite_evidence_of_revision_idempotent
     (hidem : ∀ W : State, W + W = W) :
     ¬ ∃ (W : State) (q : Query),
         let e := BinaryWorldModel.evidence (State := State) (Query := Query) W q
-        EvidenceQuantale.BinaryEvidence.IsFinite e ∧ e ≠ 0 := by
+        BinaryEvidence.IsFinite e ∧ e ≠ 0 := by
   intro hExists
   rcases hExists with ⟨W, q, hfin, hne⟩
   have hzero :

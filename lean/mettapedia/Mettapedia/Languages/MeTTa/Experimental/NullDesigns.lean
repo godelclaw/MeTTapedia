@@ -69,7 +69,7 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.Experimental.NullDesigns
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.DoubleNegationCorners
 open Mettapedia.Languages.MeTTa.Experimental.NoValueZoo (Kind sym)
 

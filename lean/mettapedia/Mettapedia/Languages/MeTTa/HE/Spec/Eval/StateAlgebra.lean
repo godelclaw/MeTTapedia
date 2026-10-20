@@ -1,76 +1,16 @@
+import Mettapedia.Machines.OrderedProtocol
+
 /-!
-# Ordered state/list evaluation algebra
+# HE completed-publication controls
 
-The published evaluator describes ordered loops whose bodies may emit many
-results.  A stateful implementation must therefore thread one state through
-the source list: later alternatives observe effects produced by earlier
-alternatives.  A per-result may relation cannot express that chronology.
-
-`OrderedStateFlatMapRel` is the executable-independent relational boundary
-for those loops.  It mentions neither a concrete evaluator state nor a
-concrete scheduler.  The state type and one-source transition relation remain
-parameters; the relation records only source order, concatenation of emitted
-results, and the final state.
+Ordered source alternatives share their reached world. These controls
+instantiate the common traversal and publication algebra, including error
+priority, duplicate occurrences, and child publication before resumption.
 -/
 
 namespace Mettapedia.Languages.MeTTa.HE.Spec.Eval.StateAlgebra
 
-/-- Relational `StateT state List` traversal in source order.  Each source
-element sees the state returned by its predecessor, may emit any finite list
-of results, and contributes those results before the tail's results. -/
-inductive OrderedStateFlatMapRel
-    (step : source → state → List result → state → Prop) :
-    List source → state → List result → state → Prop where
-  | nil (initial : state) :
-      OrderedStateFlatMapRel step [] initial [] initial
-  | cons {head : source} {tail : List source}
-      {initial middle final : state}
-      {headResults tailResults : List result} :
-      step head initial headResults middle →
-      OrderedStateFlatMapRel step tail middle tailResults final →
-      OrderedStateFlatMapRel step (head :: tail) initial
-        (headResults ++ tailResults) final
-
-/-- One source transition is the singleton traversal. -/
-theorem OrderedStateFlatMapRel.singleton
-    {step : source → state → List result → state → Prop}
-    {source : source} {initial final : state} {results : List result}
-    (transition : step source initial results final) :
-    OrderedStateFlatMapRel step [source] initial results final := by
-  simpa using OrderedStateFlatMapRel.cons transition
-    (OrderedStateFlatMapRel.nil final)
-
-/-- Adjacent traversals compose without reordering their result blocks. -/
-theorem OrderedStateFlatMapRel.append
-    {step : source → state → List result → state → Prop}
-    {left right : List source} {initial middle final : state}
-    {leftResults rightResults : List result}
-    (leftRun : OrderedStateFlatMapRel step left initial leftResults middle)
-    (rightRun : OrderedStateFlatMapRel step right middle rightResults final) :
-    OrderedStateFlatMapRel step (left ++ right) initial
-      (leftResults ++ rightResults) final := by
-  induction leftRun with
-  | nil => simpa using rightRun
-  | @cons head tail initial firstMiddle middle headResults tailResults
-      headStep tailRun inductionHypothesis =>
-      simpa [List.append_assoc] using
-        OrderedStateFlatMapRel.cons headStep
-          (inductionHypothesis rightRun)
-
-/-- A traversal of no sources is forced to emit no results and preserve the
-state.  This is the negative boundary that rules out hidden empty-input
-effects. -/
-theorem OrderedStateFlatMapRel.nil_iff
-    {step : source → state → List result → state → Prop}
-    {initial final : state} {results : List result} :
-    OrderedStateFlatMapRel step [] initial results final ↔
-      results = [] ∧ final = initial := by
-  constructor
-  · intro run
-    cases run
-    exact ⟨rfl, rfl⟩
-  · rintro ⟨rfl, rfl⟩
-    exact OrderedStateFlatMapRel.nil _
+open Mettapedia.Machines.OrderedProtocol.Completion
 
 /-! ## Chronology canaries -/
 
@@ -111,5 +51,74 @@ theorem branch_isolated_state_is_rejected :
   intro run
   have finalState := addStep_final_state run
   simp at finalState
+
+/-- Discarding an error result retains the effects of the completed branch
+that produced it, before the next branch is evaluated. -/
+theorem publication_keeps_discarded_branch_state :
+    PublishedTraversalRel addStep (fun value => value == 1) [1, 2] 0 [3] 3 := by
+  apply PublishedTraversalRel.completed ordered_state_threads_across_alternatives
+  exact .successes ⟨3, by simp, rfl⟩
+
+theorem publication_cannot_rewind_discarded_branch :
+    ¬PublishedTraversalRel addStep (fun value => value == 1) [1, 2] 0 [3] 2 := by
+  intro closed
+  obtain ⟨raw, traversed, _⟩ := closed.decompose
+  have finalState := addStep_final_state traversed
+  simp at finalState
+
+private def priorityError (value : Nat) : Bool := value != 0
+
+/-- A completed all-error phase publishes both physical occurrences. -/
+theorem completed_errors_keep_occurrences :
+    SuccessPriorityRel priorityError [1, 1] [1, 1] :=
+  .allErrors (by
+    intro item member
+    have same : item = 1 := by simpa using member
+    subst item
+    rfl)
+
+/-- Selecting successes also preserves separate equal occurrences. -/
+theorem completed_successes_keep_occurrences :
+    SuccessPriorityRel priorityError [0,1,0] [0,0] :=
+  .successes ⟨0,by simp,rfl⟩
+
+/-- The same error prefix does not license publication after a success has
+arrived. Completion is a semantic boundary, not a prefix membership test. -/
+theorem an_error_prefix_is_not_completed_failure :
+    SuccessPriorityRel priorityError [1] [1] ∧
+      SuccessPriorityRel priorityError [1, 0] [0] ∧
+      ¬SuccessPriorityRel priorityError [1, 0] [1] := by
+  have finished : SuccessPriorityRel priorityError [1, 0] [0] :=
+    .successes ⟨0, by simp, rfl⟩
+  refine ⟨.allErrors (by
+    intro item member
+    have same : item = 1 := by simpa using member
+    subst item
+    rfl), finished, ?_⟩
+  intro falseCompletion
+  have impossible := falseCompletion.functional finished
+  cases impossible
+
+/-- Filtering a child before resuming its caller differs from filtering only
+after that caller fails. Tags 0, 1 and 2 are success, early error and later
+error. The earlier error cannot be resurrected at the parent's boundary. -/
+theorem nested_priority_cannot_be_delayed :
+    let resume : Nat → List Nat := fun value => if value = 0 then [2] else [value]
+    SuccessPriorityRel priorityError [0, 1] [0] ∧
+      SuccessPriorityRel priorityError ([0].flatMap resume) [2] ∧
+      SuccessPriorityRel priorityError ([0, 1].flatMap resume) [2, 1] ∧
+      ¬SuccessPriorityRel priorityError ([0, 1].flatMap resume) [2] := by
+  dsimp only
+  have delayed : SuccessPriorityRel priorityError [2, 1] [2, 1] :=
+    .allErrors (by intro item member; simp only [List.mem_cons, List.not_mem_nil, or_false] at member
+                   rcases member with rfl | rfl <;> rfl)
+  refine ⟨.successes ⟨0, by simp, rfl⟩, .allErrors ?_, delayed, ?_⟩
+  · intro item member
+    have same : item = 2 := by simpa using member
+    subst item
+    rfl
+  · intro lost
+    have impossible := lost.functional delayed
+    cases impossible
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Eval.StateAlgebra

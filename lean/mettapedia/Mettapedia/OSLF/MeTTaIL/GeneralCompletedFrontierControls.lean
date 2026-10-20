@@ -212,6 +212,9 @@ private theorem no_rows_premises {context : GeneralPremise.Context}
         change ([] : List GeneralPremise.ProviderRow)[_]? = some _ at selected
         simp only [List.getElem?_nil] at selected
         cases selected
+      | dynamicRow registered _ _ _ _ _ _ _ =>
+        change "allow" ∈ ([] : List String) at registered
+        cases registered
 
 /-- A provider with no rows cannot justify an equation query, even when its
 signature exists and a matching schema has been found. -/

@@ -1,9 +1,14 @@
 import Mettapedia.Languages.MeTTa.HE.RecursiveDataExecution
+import Mettapedia.Languages.MeTTa.HE.RecursiveScope
 import Mettapedia.Languages.MeTTa.HE.ExecutableBoundary
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval.Minimal
 import Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
 import Mettapedia.Languages.MeTTa.HE.FirstSuccessPreparedArguments
 import Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceExecution
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Independent selected invocation and completed-worker stability
@@ -181,7 +186,7 @@ namespace Mettapedia.Languages.MeTTa.HE.RecursiveSemanticSoundness.Invocation
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Eval Spec.Eval.Steps Spec.Match.Merge Spec.Match.ModelTheory
 open Spec.Type.Presentation Spec.Type.RuntimeRefinement Spec.Bindings.ScopeObservation
-open LeaTTaBridge LeaTTaTypeConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-- A real match/merge occurrence earns its next finite readout table. The
 independent merge may use different rows; full solution theory and support
@@ -297,7 +302,7 @@ arbitrary; the read occurs in the reached body frame. -/
 theorem normalized_immediate_function_realizes
     (space : Space) (table : TypeSubst) (normal : table.Normal)
     (payload : Atom) (fuel : Nat) (live : List Atom) (caller : Option Atom)
-    (enough : LeaTTaBridge.atomDepth (.expression [.symbol "return", payload]) + 2 ≤ fuel + 1)
+    (enough : BindingComposition.atomDepth (.expression [.symbol "return", payload]) + 2 ≤ fuel + 1)
     (covered : (presentedBindings table).applyFullCovered
       (.expression [.symbol "return", payload]) (fuel + 1) = true) :
     Covered.Realizes space
@@ -364,7 +369,7 @@ normal-presentation theorem. This is a sufficient resource bound for the
 constructed request, not a limit on the language. -/
 def normalizedFunctionDepth (table : TypeSubst) (payload : Atom) : Nat :=
   (presentedBindings table).resolutionFuel (.expression [.symbol "return", payload]) +
-    LeaTTaBridge.atomDepth (.expression [.symbol "return", payload]) + 4
+    BindingComposition.atomDepth (.expression [.symbol "return", payload]) + 4
 
 theorem normalized_immediate_function_constructed
     (space : Space) (table : TypeSubst) (normal : table.Normal)
@@ -374,8 +379,8 @@ theorem normalized_immediate_function_constructed
         (presentedBindings table) (normalizedFunctionDepth table payload) live caller)
       [(table.apply payload, presentedBindings table)] := by
   let body := Atom.expression [.symbol "return", payload]
-  let fuel := (presentedBindings table).resolutionFuel body + LeaTTaBridge.atomDepth body + 1
-  have enough : LeaTTaBridge.atomDepth body + 2 ≤ fuel + 1 := by dsimp [fuel]; omega
+  let fuel := (presentedBindings table).resolutionFuel body + BindingComposition.atomDepth body + 1
+  have enough : BindingComposition.atomDepth body + 2 ≤ fuel + 1 := by dsimp [fuel]; omega
   have covered : (presentedBindings table).applyFullCovered body (fuel + 1) = true := by
     apply Bindings.queryRank_covers
     simp only [Bindings.queryRank, fuel, Bindings.resolutionFuel]
@@ -414,7 +419,7 @@ theorem normalized_immediate_function_source_and_path
         (presentedBindings table) (normalizedFunctionDepth table payload) live caller)
       [(table.apply payload, presentedBindings table)] := by
   refine ⟨?_, normalized_immediate_function_constructed space table certificate.normal payload live caller⟩
-  exact (immediate_function_selected_iff space noHost live caller Spec.Eval.publishedTypeService
+  exact (immediate_function_selected_iff space noHost live caller Spec.Eval.storageTypeService
     bindings table certificate payload _).mpr rfl
 
 /-- Exact continuation handoff: the function's administrative path produces no
@@ -1796,3 +1801,36 @@ theorem zero_depth_still_suspends :
 end Mettapedia.Languages.MeTTa.HE.RecursiveSemanticSoundness.TypedInvocation.NestedControls
 
 end RecursiveTypedApplicationControls
+
+/-! ## Invocation instances avoid the retained configuration -/
+
+set_option autoImplicit false
+
+namespace Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability.InvocationSignature
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type.Presentation Spec.Match.Merge RecursiveTasks
+
+/-- The existing complete retained-state scan, extended only by type-query
+syntax not yet stored in that state. -/
+def retainedAvoid (state : Configuration) (argumentTypes : List Atom) : List String :=
+  RecursiveScope.configurationNames state ++ TypeSubst.typeVarsList argumentTypes
+
+theorem instance_retained_fresh (state : Configuration) (argumentTypes : List Atom)
+    (position : Nat) (signature : Atom) {name : String}
+    (occurs : name ∈ TypeSubst.typeVars (instantiate (retainedAvoid state argumentTypes) position signature))
+    {atom : Atom} (retained : atom ∈ RecursiveScope.liveAtoms state) :
+    ¬AtomOccurs atom name := by
+  intro observed
+  exact instance_avoids _ position signature occurs
+    (List.mem_append_left _ (RecursiveScope.retained_atom_name_mem retained observed))
+
+theorem instance_saved_frame_fresh (state : Configuration) (argumentTypes : List Atom)
+    (position : Nat) (signature : Atom) {name : String}
+    (occurs : name ∈ TypeSubst.typeVars (instantiate (retainedAvoid state argumentTypes) position signature))
+    {frame : Frame} (saved : frame ∈ state.stack) {atom : Atom}
+    (field : atom ∈ RecursiveScope.frameAtoms frame) : ¬AtomOccurs atom name :=
+  instance_retained_fresh state argumentTypes position signature occurs
+    (RecursiveScope.continuation_atom_mem saved field)
+
+end Mettapedia.Languages.MeTTa.HE.FirstSuccessSourceApplicability.InvocationSignature

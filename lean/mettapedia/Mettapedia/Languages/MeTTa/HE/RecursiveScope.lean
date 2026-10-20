@@ -1,5 +1,9 @@
 import Mettapedia.Languages.MeTTa.HE.RecursiveEncoding
 import Mettapedia.Languages.MeTTa.HE.EquationFreshening
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Live scope of retained recursive configurations
@@ -22,7 +26,7 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.HE.RecursiveScope
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
-open RecursiveTasks RecursiveEncoding LeaTTaBridge
+open RecursiveTasks RecursiveEncoding Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 open Spec.Match.Merge Spec.Match.ModelTheory Spec.Eval.Steps
 
 open private atomVariables_eq_typeVars
@@ -31,19 +35,19 @@ open private atomVariables_eq_typeVars
 /-- The low structural inventory agrees with the existing translated reading. -/
 theorem configurationNames_translated (configuration : Configuration) :
     configurationNames configuration =
-      (liveAtoms configuration).flatMap (fun atom => (toLeaTTaAtom atom).vars) := by
+      (liveAtoms configuration).flatMap (fun atom => (encodeModelAtom atom).vars) := by
   unfold configurationNames
   rw [atomListVariables_eq_flatMap]
   apply congrArg (fun read => (liveAtoms configuration).flatMap read)
   funext atom
   exact (atomVariables_eq_typeVars atom).trans
-    (LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars atom).symm
+    (Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars atom).symm
 
 theorem bindingAtoms_names (bindings : Bindings) :
-    (bindingAtoms bindings).flatMap (fun atom => (toLeaTTaAtom atom).vars) =
+    (bindingAtoms bindings).flatMap (fun atom => (encodeModelAtom atom).vars) =
       EquationScope.bindingNames bindings := by
   simp [bindingAtoms, EquationScope.bindingNames, List.flatMap_append,
-    List.flatMap_assoc, toLeaTTaAtom, Metta.Atom.vars]
+    List.flatMap_assoc, encodeModelAtom, Metta.Atom.vars]
 
 theorem retained_atom_name_mem {configuration : Configuration} {atom : Atom} {name : String}
     (member : atom ∈ liveAtoms configuration) (occurrence : AtomOccurs atom name) :

@@ -26,10 +26,10 @@ universe u v
 can be carried under different typed semantics. -/
 theorem raw_itv_fields_do_not_identify_constructor_provenance :
     let raw := ITV.fullWidthWithCredibility 0 (by norm_num)
-    let generic : TypedITV genericITVSemantics := TypedITV.fromGeneric raw
-    let walley : TypedITV (walleyBinaryITVSemantics 1) :=
+    let generic : TypedITV genericITVConstructor := TypedITV.fromGeneric raw
+    let walley : TypedITV (walleyBinaryITVConstructor 1) :=
       TypedITV.fromWalleyBinary 1 (by norm_num)
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero
+        Mettapedia.PLN.Evidence.BinaryEvidence.zero
     generic.lower = walley.lower ∧
       generic.upper = walley.upper ∧
         generic.credibility = walley.credibility :=
@@ -38,7 +38,7 @@ theorem raw_itv_fields_do_not_identify_constructor_provenance :
 /-- The typed Walley binary constructor carries the width-complement law. -/
 theorem typed_walley_binary_has_width_complement
     (s : ℝ) (hs : 0 < s)
-    (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) :
+    (e : Mettapedia.PLN.Evidence.BinaryEvidence) :
     (TypedITV.fromWalleyBinary s hs e).width +
       (TypedITV.fromWalleyBinary s hs e).credibility = 1 :=
   TypedITV.walleyBinary_width_add_credibility s hs e
@@ -49,9 +49,9 @@ theorem typed_bayes_credible_credibility_is_evidence_concentration
     (backend : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta.CredibleIntervalBackend)
     (ctx : Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext)
     (level : ℝ) (hlevel : 0 < level ∧ level < 1)
-    (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) :
+    (e : Mettapedia.PLN.Evidence.BinaryEvidence) :
     (TypedITV.fromBayesCredible backend ctx level hlevel e).credibility =
-      (Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toConfidence
+      (Mettapedia.PLN.Evidence.BinaryEvidence.toConfidence
         (ctx.α₀ + ctx.β₀) e).toReal :=
   TypedITV.bayesCredible_credibility_eq backend ctx level hlevel e
 
@@ -96,7 +96,7 @@ theorem typed_walley_categorical_width_matches_credal_envelope
 provenance, but its result has derived-operation provenance rather than
 pretending to be a fresh value of the original constructor semantics. -/
 theorem typed_itv_same_semantics_conjunction_raw_value
-    {Sem : ITVSemantics} (x y : TypedITV Sem) :
+    {Sem : ITVConstructor} (x y : TypedITV Sem) :
     (TypedITV.conjunctionSameSemantics x y).value =
       ITV.conjunction x.value y.value :=
   TypedITV.value_conjunctionSameSemantics x y
@@ -104,7 +104,7 @@ theorem typed_itv_same_semantics_conjunction_raw_value
 /-- Same-semantics typed implication is also a derived-operation value, not a
 silent reuse of the input constructor semantics. -/
 theorem typed_itv_same_semantics_implication_raw_value
-    {Sem : ITVSemantics} (x y : TypedITV Sem) :
+    {Sem : ITVConstructor} (x y : TypedITV Sem) :
     (TypedITV.implicationSameSemantics x y).value =
       ITV.implication x.value y.value :=
   TypedITV.value_implicationSameSemantics x y
@@ -113,14 +113,14 @@ theorem typed_itv_same_semantics_implication_raw_value
 but it is an explicit operation so constructor provenance is not silently
 mixed. -/
 theorem typed_itv_forget_to_generic_preserves_raw_value
-    {Sem : ITVSemantics} (x : TypedITV Sem) :
+    {Sem : ITVConstructor} (x : TypedITV Sem) :
     (TypedITV.forgetToGeneric x).value = x.value :=
   TypedITV.value_forgetToGeneric x
 
 /-- Cross-semantics conjunction is routed through an explicit bridge to a
 shared target semantics. -/
 theorem typed_itv_cross_semantics_conjunction_via_bridge_raw_value
-    {Sem₁ Sem₂ Target : ITVSemantics}
+    {Sem₁ Sem₂ Target : ITVConstructor}
     (B : TypedITV.Bridge Sem₁ Sem₂ Target)
     (x : TypedITV Sem₁) (y : TypedITV Sem₂) :
     (TypedITV.conjunctionViaBridge B x y).value =
@@ -181,52 +181,52 @@ structure SufficientStatisticQueryProfile where
   binaryWorldStrengthForced :
     ∀ {State Query : Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
+      [Mettapedia.PLN.WorldModel.BinaryWorldModel State Query]
       {W₁ W₂ : State} {q : Query},
-      Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.evidence
+      Mettapedia.PLN.WorldModel.BinaryWorldModel.evidence
           (State := State) (Query := Query) W₁ q =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.evidence
+        Mettapedia.PLN.WorldModel.BinaryWorldModel.evidence
           (State := State) (Query := Query) W₂ q →
-        Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryStrength
+        Mettapedia.PLN.WorldModel.BinaryWorldModel.queryStrength
             (State := State) (Query := Query) W₁ q =
-          Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryStrength
+          Mettapedia.PLN.WorldModel.BinaryWorldModel.queryStrength
             (State := State) (Query := Query) W₂ q
   binaryWorldConfidenceForced :
     ∀ {State Query : Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
+      [Mettapedia.PLN.WorldModel.BinaryWorldModel State Query]
       (κ : ℝ≥0∞) {W₁ W₂ : State} {q : Query},
-      Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.evidence
+      Mettapedia.PLN.WorldModel.BinaryWorldModel.evidence
           (State := State) (Query := Query) W₁ q =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.evidence
+        Mettapedia.PLN.WorldModel.BinaryWorldModel.evidence
           (State := State) (Query := Query) W₂ q →
-        Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryConfidence
+        Mettapedia.PLN.WorldModel.BinaryWorldModel.queryConfidence
             (State := State) (Query := Query) κ W₁ q =
-          Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryConfidence
+          Mettapedia.PLN.WorldModel.BinaryWorldModel.queryConfidence
             (State := State) (Query := Query) κ W₂ q
   binaryEncoderStrengthForced :
     ∀ {Obs Query : Type}
       (S :
         Mettapedia.PLN.WorldModel.SufficientStatisticEncoder Obs Query
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+          Mettapedia.PLN.Evidence.BinaryEvidence)
       {σ₁ σ₂ : Multiset Obs} {q : Query},
       Mettapedia.PLN.WorldModel.SufficientStatisticEncoder.aggregate S σ₁ q =
         Mettapedia.PLN.WorldModel.SufficientStatisticEncoder.aggregate S σ₂ q →
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength
+        Mettapedia.PLN.Evidence.BinaryEvidence.toStrength
             (Mettapedia.PLN.WorldModel.SufficientStatisticEncoder.aggregate S σ₁ q) =
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength
+          Mettapedia.PLN.Evidence.BinaryEvidence.toStrength
             (Mettapedia.PLN.WorldModel.SufficientStatisticEncoder.aggregate S σ₂ q)
   binaryEncoderConfidenceForced :
     ∀ {Obs Query : Type}
       (S :
         Mettapedia.PLN.WorldModel.SufficientStatisticEncoder Obs Query
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+          Mettapedia.PLN.Evidence.BinaryEvidence)
       (κ : ℝ≥0∞) {σ₁ σ₂ : Multiset Obs} {q : Query},
       Mettapedia.PLN.WorldModel.SufficientStatisticEncoder.aggregate S σ₁ q =
         Mettapedia.PLN.WorldModel.SufficientStatisticEncoder.aggregate S σ₂ q →
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toConfidence κ
+        Mettapedia.PLN.Evidence.BinaryEvidence.toConfidence κ
             (Mettapedia.PLN.WorldModel.SufficientStatisticEncoder.aggregate S σ₁ q) =
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toConfidence κ
+          Mettapedia.PLN.Evidence.BinaryEvidence.toConfidence κ
             (Mettapedia.PLN.WorldModel.SufficientStatisticEncoder.aggregate S σ₂ q)
   categoricalMeanForced :
     ∀ {Obs Query : Type} {k : ℕ}
@@ -423,7 +423,7 @@ theorem credal_envelope_bounds_do_not_force_confidence_coordinate
     (f : Mettapedia.ProbabilityTheory.ImpreciseProbability.DesirableGambles.Gamble Ω)
     (hf : ∀ ω, f ω ∈ Set.Icc 0 1) :
     let x : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-        (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVSemantics Ω) :=
+        (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVConstructor Ω) :=
       Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromCredalEnvelope
         { credal := K
           gamble := f
@@ -432,7 +432,7 @@ theorem credal_envelope_bounds_do_not_force_confidence_coordinate
           credibility := 0
           credibility_in_unit := by norm_num }
     let y : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-        (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVSemantics Ω) :=
+        (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVConstructor Ω) :=
       Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromCredalEnvelope
         { credal := K
           gamble := f
@@ -480,7 +480,7 @@ theorem lower_prevision_bounds_do_not_force_confidence_coordinate
     (X : Mettapedia.ProbabilityTheory.ImpreciseProbability.Gamble Ω)
     (hX : ∀ ω, X ω ∈ Set.Icc (0 : ℝ) 1) :
     let x : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-        (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVSemantics Ω) :=
+        (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVConstructor Ω) :=
       Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromLowerPrevision
         { prevision := P
           gamble := X
@@ -488,7 +488,7 @@ theorem lower_prevision_bounds_do_not_force_confidence_coordinate
           credibility := 0
           credibility_in_unit := by norm_num }
     let y : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-        (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVSemantics Ω) :=
+        (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVConstructor Ω) :=
       Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromLowerPrevision
         { prevision := P
           gamble := X
@@ -508,12 +508,12 @@ theorem singleton_credal_lower_prevision_itv_agrees
     (hX : ∀ ω, X ω ∈ Set.Icc (0 : ℝ) 1)
     (credibility : ℝ) (hc : credibility ∈ Set.Icc (0 : ℝ) 1) :
     let lp : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-        (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVSemantics Ω) :=
+        (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVConstructor Ω) :=
       Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromLowerPrevision
         (Mettapedia.PLN.TruthValues.PLNTruthTower.SingletonCredalLowerPrevision.source
           P X hX credibility hc);
     let ce : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-        (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVSemantics Ω) :=
+        (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVConstructor Ω) :=
       Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromCredalEnvelope
         (Mettapedia.PLN.TruthValues.PLNTruthTower.SingletonCredalLowerPrevision.credalEnvelopeSource
           P X hX credibility hc);
@@ -533,12 +533,12 @@ theorem finite_credal_lower_prevision_itv_agrees
     (hX : ∀ ω, X ω ∈ Set.Icc (0 : ℝ) 1)
     (credibility : ℝ) (hc : credibility ∈ Set.Icc (0 : ℝ) 1) :
     let lp : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-        (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVSemantics Ω) :=
+        (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVConstructor Ω) :=
       Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromLowerPrevision
         (Mettapedia.PLN.TruthValues.PLNTruthTower.FiniteCredalLowerPrevision.source
           K hK X hX credibility hc);
     let ce : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-        (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVSemantics Ω) :=
+        (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVConstructor Ω) :=
       Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromCredalEnvelope
         { credal := K
           gamble := X

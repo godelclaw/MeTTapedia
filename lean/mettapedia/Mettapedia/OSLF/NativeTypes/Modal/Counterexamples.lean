@@ -159,75 +159,104 @@ private theorem oriented_reverse : (oriented .reverse).rule.left = beta ∧
 
 def Eqv : Pattern → Pattern → Prop := GeneralOccurrenceSemantics.Equation runtimePlan [] carrier
 
-/-- Every contextual equation event in this root-only profile is one of the
-actual two authored orientations. This is independent of frontier endpoints. -/
+/-- Filling alpha-equal holes preserves alpha equality in every structural
+context, independently of reduction permissions. -/
+theorem erase_fill_congr (context : DerivedContexts.OneHoleContext) (left right : Pattern)
+    (same : left.eraseBinderMetadata = right.eraseBinderMetadata) :
+    (context.fill left).eraseBinderMetadata = (context.fill right).eraseBinderMetadata := by
+  induction context <;> simp_all [DerivedContexts.OneHoleContext.fill,
+    Pattern.eraseBinderMetadata, List.map_append]
+
+/-- Each selected equation replaces its actual literal focus in a licensed
+context. Equational contexts are independent of reduction permissions. -/
 theorem equation_events_for (plan : Plan)
-    (sites : plan.permissions.sites = .rootOnly)
     (equations : plan.equations = [oriented .forward, oriented .reverse])
     {source target : Pattern} (equated : GeneralOccurrenceSemantics.Equation plan [] carrier source target) :
-    (source = alpha ∧ target = beta) ∨ (source = beta ∧ target = alpha) := by
+    ∃ context : DerivedContexts.OneHoleContext,
+      (source = (context.fill alpha).eraseBinderMetadata ∧
+        target = (context.fill beta).eraseBinderMetadata) ∨
+      (source = (context.fill beta).eraseBinderMetadata ∧
+        target = (context.fill alpha).eraseBinderMetadata) := by
   obtain ⟨receipt, complete, endpoint⟩ := equated
-  have licensed := complete.job.2
-  rw [sites] at licensed
-  have root := root_only_site licensed
   have declared := List.fst_mem_of_mem_zipIdx complete.job.1
   have selected : receipt.job.equation = oriented .forward ∨ receipt.job.equation = oriented .reverse := by
     simpa only [equations, List.mem_cons, List.not_mem_nil, or_false] using declared
   have matched := complete.matched
-  rw [root] at matched
   have reduct := complete.reduct
-  have targetEq := complete.endpoint
-  rw [root] at targetEq
+  refine ⟨receipt.job.site.context, ?_⟩
   rcases selected with forward | backward
   · rw [forward, oriented_forward.1] at matched
-    have sourceEq : source = alpha := by
-      have erased : source.eraseBinderMetadata = alpha := nullary_matching matched
-      have canonical := complete.sourceTyped.2.1
-      rwa [Pattern.eraseBinderMetadata_eq_self_of_canonical canonical] at erased
+    have focusEq : receipt.job.site.focus.eraseBinderMetadata = alpha := nullary_matching matched
+    have sourceEq : source = (receipt.job.site.context.fill alpha).eraseBinderMetadata := by
+      calc
+        source = source.eraseBinderMetadata :=
+          (Pattern.eraseBinderMetadata_eq_self_of_canonical complete.sourceTyped.2.1).symm
+        _ = (receipt.job.site.context.fill receipt.job.site.focus).eraseBinderMetadata :=
+          congrArg Pattern.eraseBinderMetadata complete.job.2.source_eq.symm
+        _ = (receipt.job.site.context.fill alpha).eraseBinderMetadata :=
+          erase_fill_congr _ _ _ (by simpa only [alpha, beta, Pattern.eraseBinderMetadata, List.map_nil] using focusEq)
     have actual := nullary_reduct Substitution.instantiateBVar
       receipt.job.equation.rule receipt.job.equation.binding.spec receipt.job.site.focusBound.length
       receipt.completed "Beta" (forward ▸ oriented_forward.2)
     have rawEq : receipt.rawReduct = beta := Option.some.inj (reduct.symm.trans actual)
-    have final : target = beta := by
-      rw [← endpoint, targetEq, rawEq]
-      simp only [SiteData.here, DerivedContexts.OneHoleContext.fill, beta,
-        Pattern.eraseBinderMetadata, List.map_nil]
-    exact Or.inl ⟨sourceEq, final⟩
+    refine Or.inl ⟨sourceEq, ?_⟩
+    rw [← endpoint, complete.endpoint, rawEq]
+    simp only [beta, Pattern.eraseBinderMetadata, List.map_nil]
   · rw [backward, oriented_reverse.1] at matched
-    have sourceEq : source = beta := by
-      have erased : source.eraseBinderMetadata = beta := nullary_matching matched
-      have canonical := complete.sourceTyped.2.1
-      rwa [Pattern.eraseBinderMetadata_eq_self_of_canonical canonical] at erased
+    have focusEq : receipt.job.site.focus.eraseBinderMetadata = beta := nullary_matching matched
+    have sourceEq : source = (receipt.job.site.context.fill beta).eraseBinderMetadata := by
+      calc
+        source = source.eraseBinderMetadata :=
+          (Pattern.eraseBinderMetadata_eq_self_of_canonical complete.sourceTyped.2.1).symm
+        _ = (receipt.job.site.context.fill receipt.job.site.focus).eraseBinderMetadata :=
+          congrArg Pattern.eraseBinderMetadata complete.job.2.source_eq.symm
+        _ = (receipt.job.site.context.fill beta).eraseBinderMetadata :=
+          erase_fill_congr _ _ _ (by simpa only [alpha, beta, Pattern.eraseBinderMetadata, List.map_nil] using focusEq)
     have actual := nullary_reduct Substitution.instantiateBVar
       receipt.job.equation.rule receipt.job.equation.binding.spec receipt.job.site.focusBound.length
       receipt.completed "Alpha" (backward ▸ oriented_reverse.2)
     have rawEq : receipt.rawReduct = alpha := Option.some.inj (reduct.symm.trans actual)
-    have final : target = alpha := by
-      rw [← endpoint, targetEq, rawEq]
-      simp only [SiteData.here, DerivedContexts.OneHoleContext.fill, alpha,
-        Pattern.eraseBinderMetadata, List.map_nil]
-    exact Or.inr ⟨sourceEq, final⟩
+    refine Or.inr ⟨sourceEq, ?_⟩
+    rw [← endpoint, complete.endpoint, rawEq]
+    simp only [alpha, Pattern.eraseBinderMetadata, List.map_nil]
 
 theorem equation_events {source target : Pattern} (equated : Eqv source target) :
-    (source = alpha ∧ target = beta) ∨ (source = beta ∧ target = alpha) :=
-  equation_events_for runtimePlan rfl rfl equated
+    ∃ context : DerivedContexts.OneHoleContext,
+      (source = (context.fill alpha).eraseBinderMetadata ∧
+        target = (context.fill beta).eraseBinderMetadata) ∨
+      (source = (context.fill beta).eraseBinderMetadata ∧
+        target = (context.fill alpha).eraseBinderMetadata) :=
+  equation_events_for runtimePlan rfl equated
 
-private theorem equation_keeps (distinguished : Pattern)
-    (excludesAlpha : distinguished ≠ alpha) (excludesBeta : distinguished ≠ beta)
-    {source target : Pattern} (equivalent : Relation.EqvGen Eqv source target) :
-    source = distinguished ↔ target = distinguished := by
+/-- A nullary literal can only be the result of a hole context. Replacing
+Alpha by Beta therefore cannot create or destroy a third nullary literal. -/
+theorem fill_preserves_nullary (context : DerivedContexts.OneHoleContext) (label : String)
+    (excludesAlpha : label ≠ "Alpha") (excludesBeta : label ≠ "Beta") :
+    (context.fill alpha).eraseBinderMetadata = .apply label [] ↔
+      (context.fill beta).eraseBinderMetadata = .apply label [] := by
+  cases context <;> simp [DerivedContexts.OneHoleContext.fill, Pattern.eraseBinderMetadata,
+    List.map_append, alpha, beta, Ne.symm excludesAlpha, Ne.symm excludesBeta]
+
+theorem equation_keeps_nullary (plan : Plan)
+    (equations : plan.equations = [oriented .forward, oriented .reverse]) (label : String)
+    (excludesAlpha : label ≠ "Alpha") (excludesBeta : label ≠ "Beta")
+    {source target : Pattern}
+    (equivalent : Relation.EqvGen (GeneralOccurrenceSemantics.Equation plan [] carrier) source target) :
+    source = .apply label [] ↔ target = .apply label [] := by
   induction equivalent with
   | rel source target equated =>
-      rcases equation_events equated with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-      · simp only [Ne.symm excludesAlpha, Ne.symm excludesBeta]
-      · simp only [Ne.symm excludesAlpha, Ne.symm excludesBeta]
+      obtain ⟨context, first | second⟩ := equation_events_for plan equations equated
+      · rw [first.1, first.2]
+        exact fill_preserves_nullary context label excludesAlpha excludesBeta
+      · rw [second.1, second.2]
+        exact (fill_preserves_nullary context label excludesAlpha excludesBeta).symm
   | refl => rfl
   | symm _ _ _ ih => exact ih.symm
   | trans _ _ _ _ _ ihFirst ihSecond => exact ihFirst.trans ihSecond
 
 theorem alpha_not_done_class : ¬ Relation.EqvGen Eqv alpha done := by
   intro equivalent
-  have preserved := equation_keeps done (by decide) (by decide) equivalent
+  have preserved := equation_keeps_nullary runtimePlan rfl "Done" (by decide) (by decide) equivalent
   exact (by decide : alpha ≠ done) (preserved.mpr rfl)
 
 /-- A checked actual local execution supplies the independent primitive. -/
@@ -288,7 +317,7 @@ theorem other_not_steps_done :
     ¬ (GeneralOccurrenceSemantics.gslt runtimePlan [] carrier).Step other done := by
   rintro ⟨representative, firing, before, fired, after⟩
   have representativeEq : representative = other :=
-    (equation_keeps other (by decide) (by decide) before).mp rfl
+    (equation_keeps_nullary runtimePlan rfl "Other" (by decide) (by decide) before).mp rfl
   subst representative
   rw [primitive_other_target fired] at after
   exact alpha_not_done_class after

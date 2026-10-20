@@ -82,7 +82,7 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralScopedMatchExe
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst)
 open SpaceSemantics (Program Equation)
-open Eval Effects
+open Eval _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects
 
 def sourceProgram : Program := RuleExecutionProgram.scopedMatcherProgram
 
@@ -334,7 +334,7 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralScopedMatchExe
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst)
-open Eval Effects
+open Eval _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects
 
 private theorem MatcherAgreement_bodies_tail_160 :
     (RuleExecutionProgram.program.equations.drop 160).all (fun equation => !baseHead equation.head || codeWithin baseHead equation.body) = true := by
@@ -509,7 +509,7 @@ open Mettapedia.GSLT.LanguageDef CettaWire
 open Mettapedia.OSLF.MeTTaIL Syntax RuleBinding ScopedRuleMatching
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval GeneralScopedMatchExecution
 
 abbrev a (head : String) (arguments : List Atom) : Atom := .expression (.symbol head :: arguments)
@@ -691,7 +691,7 @@ open Mettapedia.GSLT.LanguageDef CettaWire
 open Mettapedia.OSLF.MeTTaIL Syntax RuleBinding ScopedRuleMatching
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval GeneralScopedMatchExecution MachineProofs
 
 
@@ -833,7 +833,7 @@ open Mettapedia.GSLT.LanguageDef CettaWire
 open Mettapedia.OSLF.MeTTaIL Syntax RuleBinding ScopedRuleMatching
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval GeneralScopedMatchExecution MachineProofs
 
 attribute [local simp] a v encoded number
@@ -980,7 +980,7 @@ open Mettapedia.GSLT.LanguageDef CettaWire
 open Mettapedia.OSLF.MeTTaIL Syntax RuleBinding ScopedRuleMatching
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval GeneralScopedMatchExecution MachineProofs
 
 attribute [local simp] a v encoded number patternValue patternsValue assignmentValue requestValue stateValue
@@ -1080,7 +1080,7 @@ open Mettapedia.GSLT.LanguageDef CettaWire
 open Mettapedia.OSLF.MeTTaIL Syntax RuleBinding ScopedRuleMatching
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval GeneralScopedMatchExecution MachineProofs
 
 attribute [local simp] a v encoded number patternValue patternsValue assignmentValue requestValue stateValue
@@ -1240,7 +1240,7 @@ open Mettapedia.GSLT.LanguageDef CettaWire
 open Mettapedia.OSLF.MeTTaIL Syntax RuleBinding ScopedRuleMatching
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval GeneralScopedMatchExecution MachineProofs
 
 attribute [local simp] a v encoded number patternValue patternsValue assignmentValue requestValue stateValue

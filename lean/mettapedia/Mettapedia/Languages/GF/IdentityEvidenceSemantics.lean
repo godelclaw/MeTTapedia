@@ -17,8 +17,8 @@ open Mettapedia.Languages.GF.WorldModelSemantics
 open Mettapedia.Languages.GF.OSLFBridge
 open Mettapedia.Languages.GF.EquationCanonicalSection
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.IdentityEvidence
 open Mettapedia.OSLF.Framework.EvidenceSemantics
 open Mettapedia.OSLF.Formula

@@ -183,7 +183,7 @@ theorem scale_toITV
 evidence horizon.  Finiteness is reflected by `ENNReal.toReal`; infinite
 evidence belongs to a different semantic layer. -/
 noncomputable def ofBinaryEvidence
-    (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+    (e : Mettapedia.PLN.Evidence.BinaryEvidence)
     (horizon : ℝ) (horizon_pos : 0 < horizon) : EvidenceHorizon where
   counts :=
     { nPlus := e.pos.toReal
@@ -196,7 +196,7 @@ noncomputable def ofBinaryEvidence
 /-- The existing Walley-IDM constructor is an instance of the general finite
 evidence-horizon interval. -/
 theorem ofBinaryEvidence_toITV_eq_fromWalleyIDMPredictive
-    (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+    (e : Mettapedia.PLN.Evidence.BinaryEvidence)
     (horizon : ℝ) (horizon_pos : 0 < horizon) :
     (ofBinaryEvidence e horizon horizon_pos).toITV =
       ITV.fromWalleyIDMPredictive e horizon horizon_pos := by

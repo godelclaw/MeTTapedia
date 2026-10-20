@@ -17,7 +17,7 @@ marks the corresponding negative boundary.
 namespace Mettapedia.MachineLearning.NeuralNetworks.WorkspaceDecoder
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric.AdditiveWorldModel
 open Mettapedia.PLN.WorldModel.CertifiedMaskHook

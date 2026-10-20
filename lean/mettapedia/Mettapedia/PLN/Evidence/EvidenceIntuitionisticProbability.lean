@@ -26,7 +26,7 @@ PLN's 2D BinaryEvidence keeps BOTH (n⁺, n⁻), avoiding the precision loss.
 
 namespace Mettapedia.PLN.Evidence.EvidenceIntuitionisticProbability
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open KnuthSkilling
 
 /-! ## K&S Valuations on BinaryEvidence

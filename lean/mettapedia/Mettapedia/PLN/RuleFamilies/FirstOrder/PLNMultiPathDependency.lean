@@ -174,13 +174,9 @@ theorem sourceEvent_measurable (S : Finset ℕ) :
   exact MeasurableSet.pi (Finset.countable_toSet S)
     (by intro _ _; exact measurableSet_singleton true)
 
-set_option linter.deprecated false in
 theorem probLogBernoulliMeasure_true (p : ℝ≥0) (hp : p ≤ 1) :
-    probLogBernoulliMeasure p hp ({true} : Set Bool) = (p : ℝ≥0∞) := by
-  rw [probLogBernoulliMeasure,
-    Mettapedia.PLN.Bridges.Languages.ProbLog.Infinite.bernoulliMeasure]
-  rw [PMF.toMeasure_apply_singleton _ _ (measurableSet_singleton true)]
-  simp [PMF.bernoulli_apply]
+    probLogBernoulliMeasure p hp ({true} : Set Bool) = (p : ℝ≥0∞) :=
+  Mettapedia.PLN.Bridges.Languages.ProbLog.Infinite.bernoulliMeasure_true p hp
 
 theorem sourceEvent_measure
     (p : ℕ → ℝ≥0) (hp : ∀ s, p s ≤ 1) (S : Finset ℕ) :

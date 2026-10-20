@@ -35,7 +35,7 @@ open Mettapedia.OSLF.MeTTaIL.GeneralPremise (ProviderRow)
 open Mettapedia.OSLF.Framework.TypeSynthesis
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval RuleExecutionProgram
 open RootRuleExecution
 open RelationPremiseExecution (providerEnv providerTuples VariableSourceProgram)

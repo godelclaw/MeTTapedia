@@ -18,6 +18,19 @@ namespace FormationSensitive
 
 variable {Head : Type} {R : Rules Head} {n k : Nat}
 
+/-- An observed closed-telescope application retains a typing derivation
+for its actual head, including beneath conversion and cumulativity tails. -/
+theorem Typing.applyClosed_head {Γ : Ctx Head n} (telescope : Ctx Head k) :
+    ∀ (assignment : Sub Head k n) {function displayed : Tm Head n},
+      Typing R Γ (TelescopeAbstraction.applyClosed telescope assignment function) displayed →
+        ∃ headType, Typing R Γ function headType := by
+  induction telescope with
+  | nil => intro assignment function displayed observed; exact ⟨displayed, observed⟩
+  | snoc prior domain ih =>
+      intro assignment function displayed observed
+      obtain ⟨_, _, previous, _, _, _⟩ := observed.appGeneration
+      exact ih (fun index => assignment index.succ) previous
+
 theorem CtxMor.extend {Γ : Ctx Head k} {Δ : Ctx Head n}
     {substitution : Sub Head k n} {type : Tm Head k} {term : Tm Head n}
     (typed : CtxMor R Γ Δ substitution)
@@ -41,6 +54,59 @@ theorem CtxMor.dropNewest {Γ : Ctx Head k} {Δ : Ctx Head n} {type : Tm Head k}
 namespace DeclarationSpine
 
 open TelescopeAbstraction
+
+/-- The declaration head of an observed telescope application supplies its
+original closed formation certificate. Its declared type is checked by the
+lookup, rather than inferred from the shape of an arbitrary function. -/
+theorem ofObservedTelescope {Γ : Ctx Head n} (telescope : Ctx Head k)
+    (result : Tm Head k) (assignment : Sub Head k n) {name : DeclName}
+    {displayed : Tm Head n}
+    (lookup : R.constantType name = some (closeType telescope result))
+    (observed : Typing R Γ (applyClosed telescope assignment (.const name)) displayed) :
+    DeclarationSpine R Γ (.const name) (liftClosed (closeType telescope result)) := by
+  obtain ⟨_, head⟩ := observed.applyClosed_head telescope assignment
+  obtain ⟨declared, level, known, formed, universeWitness⟩ := head.constFormation
+  have same : declared = closeType telescope result :=
+    Option.some.inj (known.symm.trans lookup)
+  subst declared
+  exact .constant lookup formed universeWitness
+
+theorem constant_formed {Γ : Ctx Head n} {name : DeclName} {declared : Tm Head 0}
+    {displayed : Tm Head n} (spine : DeclarationSpine R Γ (.const name) displayed)
+    (lookup : R.constantType name = some declared) :
+    ∃ level, Typing R .nil declared (.head level) ∧ R.isUniverse level := by
+  cases spine with
+  | constant known formed universeWitness =>
+      have same := Option.some.inj (known.symm.trans lookup)
+      subst declared
+      exact ⟨_, formed, universeWitness⟩
+
+/-- Applying a declaration along an independently typed simultaneous
+substitution constructs its principal dependent spine. -/
+theorem applyTelescope {Γ : Ctx Head n} (telescope : Ctx Head k) :
+    ∀ (result : Tm Head k) (substitution : Sub Head k n) {function : Tm Head n},
+      DeclarationSpine R Γ function (liftClosed (closeType telescope result)) →
+      CtxMor R telescope Γ substitution →
+      DeclarationSpine R Γ (applyClosed telescope substitution function)
+        (subst substitution result) := by
+  induction telescope with
+  | nil =>
+      intro result substitution function spine _
+      rw [subst_empty substitution result]
+      exact spine
+  | @snoc k telescope domain ih =>
+      intro result substitution function spine typed
+      have previous := ih (.pi domain result) (fun i => substitution i.succ) spine typed.dropNewest
+      have argument : Typing R Γ (substitution 0)
+          (subst (fun i => substitution i.succ) domain) := by
+        simpa only [Ctx.lookup_snoc_zero, subst_rename, wk] using typed 0
+      have current := DeclarationSpine.app previous argument
+      have opened : inst0 (substitution 0)
+          (subst (liftSub (fun i => substitution i.succ)) result) =
+          subst substitution result := by
+        rw [← subst_consSub, consSub_eta]
+      rw [opened] at current
+      exact current
 
 /-- An arbitrary observed declaration application supplies a typed
 substitution for every declared parameter, plus replay at its exact displayed
@@ -83,11 +149,15 @@ theorem recoverTelescope
       exact ⟨typed, nextSpine, adjustment, replay⟩
 
 #print axioms recoverTelescope
+#print axioms applyTelescope
+#print axioms ofObservedTelescope
+#print axioms constant_formed
 
 end DeclarationSpine
 
 #print axioms CtxMor.extend
 #print axioms CtxMor.dropNewest
+#print axioms Typing.applyClosed_head
 
 end FormationSensitive
 end Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation

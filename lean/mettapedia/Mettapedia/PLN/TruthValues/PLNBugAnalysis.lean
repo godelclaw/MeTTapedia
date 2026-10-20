@@ -21,7 +21,7 @@ formula interfaces and provides computationally tractable corrections.
 - historical/raw-min MeTTa implementation interface, retained here as a
   bug witness after the local PeTTa mirror moved to the corrected
   weight-space-min formula
-- Lean PLN BinaryEvidence: `Mettapedia.PLN.Evidence.EvidenceQuantale`
+- Lean PLN BinaryEvidence: `Mettapedia.PLN.Evidence.BinaryEvidence`
 
 This file analyzes the raw confidence-space-min line `w2c(min(c1, c2))`.
 The current local mirror in `Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions`

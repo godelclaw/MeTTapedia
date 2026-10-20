@@ -1,5 +1,11 @@
 import Mettapedia.AutoBooks.Codex.IntuitionisticHOL.AwodeyButzCompletenessBridge
 
+/-!
+On 2026-10-20 the `awodey_butz_completeness*` theorems used here were renamed
+to `awodey_butz_not_derivable_of_*`, since they state soundness; the mapping is
+recorded in `AwodeyButzCompletenessBridge`.
+-/
+
 namespace Mettapedia.AutoBooks.Codex.IntuitionisticHOL.AwodeyButzCompletenessBridgeRegression
 
 open Mettapedia.Logic.HOL
@@ -12,13 +18,13 @@ theorem soundLocalCountermodel_path
     {F : CompletenessFrontier Const Γ}
     (C : SoundLocalCountermodel (Base := Base) (Const := Const) F) :
     ¬ Derivable (Base := Base) (Const := Const) F.antecedents F.succedent := by
-  exact C.awodey_butz_completeness
+  exact C.awodey_butz_not_derivable_of_countermodel
 
 theorem exists_soundLocalCountermodel_path
     {F : CompletenessFrontier Const Γ}
     (C : SoundLocalCountermodel (Base := Base) (Const := Const) F) :
     ¬ Derivable (Base := Base) (Const := Const) F.antecedents F.succedent := by
-  exact awodey_butz_completeness_of_exists_soundLocalCountermodel
+  exact awodey_butz_not_derivable_of_exists_soundLocalCountermodel
     (Base := Base) (Const := Const) (F := F) ⟨C⟩
 
 theorem derivation_exists_semantics_path
@@ -37,7 +43,7 @@ theorem derivation_exists_semantics_path
               SemilocalModel.formulaTruth M env φ ≠ ⊤) ∧
         SemilocalModel.SupportsUniformRelativization M) :
     ¬ Derivable (Base := Base) (Const := Const) F.antecedents F.succedent := by
-  exact awodey_butz_completeness_of_exists_semantics
+  exact awodey_butz_not_derivable_of_exists_semantics
     (Base := Base) (Const := Const) D terminal branchClosed hSem
 
 theorem derivation_candidate_semantics_path
@@ -52,7 +58,7 @@ theorem derivation_candidate_semantics_path
     (global : SemilocalModel.IsGlobalEnv M env)
     (hM : SemilocalModel.SupportsUniformRelativization M) :
     ¬ Derivable (Base := Base) (Const := Const) F.antecedents F.succedent := by
-  exact S.awodey_butz_completeness global hM
+  exact S.awodey_butz_not_derivable_of_semantics global hM
 
 theorem completion_candidate_semantics_path
     {F : CompletenessFrontier Const Γ}
@@ -63,7 +69,7 @@ theorem completion_candidate_semantics_path
     (global : SemilocalModel.IsGlobalEnv M env)
     (hM : SemilocalModel.SupportsUniformRelativization M) :
     ¬ Derivable (Base := Base) (Const := Const) F.antecedents F.succedent := by
-  exact S.awodey_butz_completeness C global hM
+  exact S.awodey_butz_not_derivable_of_semantics C global hM
 
 theorem completion_exists_semantics_path
     {F : CompletenessFrontier Const Γ}
@@ -79,7 +85,7 @@ theorem completion_exists_semantics_path
               SemilocalModel.formulaTruth M env φ ≠ ⊤) ∧
         SemilocalModel.SupportsUniformRelativization M) :
     ¬ Derivable (Base := Base) (Const := Const) F.antecedents F.succedent := by
-  exact C.awodey_butz_completeness_of_exists_semantics hSem
+  exact C.awodey_butz_not_derivable_of_exists_semantics hSem
 
 theorem headPriorityCompletion_exists_semantics_path
     {F : CompletenessFrontier Const Γ}
@@ -97,7 +103,7 @@ theorem headPriorityCompletion_exists_semantics_path
               SemilocalModel.formulaTruth M env φ ≠ ⊤) ∧
         SemilocalModel.SupportsUniformRelativization M) :
     ¬ Derivable (Base := Base) (Const := Const) F.antecedents F.succedent := by
-  exact C.awodey_butz_completeness_of_exists_semantics hInitial hCompat hSem
+  exact C.awodey_butz_not_derivable_of_exists_semantics hInitial hCompat hSem
 
 theorem derivation_candidate_beta_exists_truth_counterexample_path
     {F : CompletenessFrontier Const Γ}
@@ -123,7 +129,7 @@ theorem derivation_candidate_beta_exists_truth_counterexample_path
           HigherOrderPointTopologicalGlobalModelBridge.basicInterp.truthEval
             (M := G) (instantiate t φ) γ ≠ ⊤) :
     ¬ Derivable (Base := Base) (Const := Const) F.antecedents (.app (.lam φ) t) := by
-  exact S.awodey_butz_completeness_of_exists_beta_truth_counterexample
+  exact S.awodey_butz_not_derivable_of_exists_beta_truth_counterexample
     global hM t φ hCounter
 
 theorem derivation_candidate_and_witness_top_of_truthValidSequent_path
@@ -249,7 +255,7 @@ theorem certified_candidate_semantics_path
     (hM : SemilocalModel.SupportsUniformRelativization M) :
     ¬ Derivable (Base := Base) (Const := Const)
       C.frontier.antecedents C.frontier.succedent := by
-  exact S.awodey_butz_completeness global hM
+  exact S.awodey_butz_not_derivable_of_semantics global hM
 
 theorem completion_candidate_and_witness_top_of_truthValidSequent_path
     {F : CompletenessFrontier Const Γ}
@@ -365,7 +371,7 @@ theorem certified_candidate_exists_semantics_path
         SemilocalModel.SupportsUniformRelativization M) :
     ¬ Derivable (Base := Base) (Const := Const)
       C.frontier.antecedents C.frontier.succedent := by
-  exact C.awodey_butz_completeness_of_exists_candidateClosedHintikkaSemantics hSem
+  exact C.awodey_butz_not_derivable_of_exists_candidateClosedHintikkaSemantics hSem
 
 theorem certified_candidate_raw_exists_semantics_path
     (C : CertifiedCountermodelCandidate Const Γ)
@@ -381,7 +387,7 @@ theorem certified_candidate_raw_exists_semantics_path
         SemilocalModel.SupportsUniformRelativization M) :
     ¬ Derivable (Base := Base) (Const := Const)
       C.frontier.antecedents C.frontier.succedent := by
-  exact C.awodey_butz_completeness_of_exists_semantics hSem
+  exact C.awodey_butz_not_derivable_of_exists_semantics hSem
 
 theorem completion_candidate_beta_exists_truth_counterexample_path
     {F : CompletenessFrontier Const Γ}
@@ -404,7 +410,7 @@ theorem completion_candidate_beta_exists_truth_counterexample_path
           HigherOrderPointTopologicalGlobalModelBridge.basicInterp.truthEval
             (M := G) (instantiate t φ) γ ≠ ⊤) :
     ¬ Derivable (Base := Base) (Const := Const) F.antecedents (.app (.lam φ) t) := by
-  exact S.awodey_butz_completeness_of_exists_beta_truth_counterexample
+  exact S.awodey_butz_not_derivable_of_exists_beta_truth_counterexample
     C global hM t φ hCounter
 
 theorem beta_exists_truth_counterexample_path
@@ -421,7 +427,7 @@ theorem beta_exists_truth_counterexample_path
           HigherOrderPointTopologicalGlobalModelBridge.basicInterp.truthEval
             (M := M) (instantiate t φ) γ ≠ ⊤) :
     ¬ Derivable (Base := Base) (Const := Const) Δ (.app (.lam φ) t) := by
-  exact awodey_butz_completeness_of_exists_beta_truth_counterexample
+  exact awodey_butz_not_derivable_of_exists_beta_truth_counterexample
     (Base := Base) (Const := Const) t φ hCounter
 
 theorem beta_exists_truth_counterexample_bridge_path
@@ -438,7 +444,7 @@ theorem beta_exists_truth_counterexample_bridge_path
           HigherOrderPointTopologicalGlobalModelBridge.basicInterp.truthEval
             (M := M) (instantiate t φ) γ ≠ ⊤) :
     ¬ Derivable (Base := Base) (Const := Const) Δ (.app (.lam φ) t) := by
-  exact awodey_butz_completeness_bridge_of_exists_beta_truth_counterexample
+  exact awodey_butz_not_derivable_of_exists_beta_truth_counterexample
     (Base := Base) (Const := Const) t φ hCounter
 
 theorem frontier_beta_exists_truth_counterexample_path
@@ -456,7 +462,7 @@ theorem frontier_beta_exists_truth_counterexample_path
           HigherOrderPointTopologicalGlobalModelBridge.basicInterp.truthEval
             (M := M) (instantiate t φ) γ ≠ ⊤) :
     ¬ Derivable (Base := Base) (Const := Const) F.antecedents (.app (.lam φ) t) := by
-  exact F.awodey_butz_completeness_of_exists_beta_truth_counterexample
+  exact F.awodey_butz_not_derivable_of_exists_beta_truth_counterexample
     (Base := Base) (Const := Const) t φ hCounter
 
 theorem soundLocalCountermodel_beta_exists_truth_counterexample_path
@@ -475,7 +481,7 @@ theorem soundLocalCountermodel_beta_exists_truth_counterexample_path
           HigherOrderPointTopologicalGlobalModelBridge.basicInterp.truthEval
             (M := M) (instantiate t φ) γ ≠ ⊤) :
     ¬ Derivable (Base := Base) (Const := Const) F.antecedents (.app (.lam φ) t) := by
-  exact C.awodey_butz_completeness_of_exists_beta_truth_counterexample
+  exact C.awodey_butz_not_derivable_of_exists_beta_truth_counterexample
     (Base := Base) (Const := Const) t φ hCounter
 
 theorem frontier_and_witness_top_of_truthValidSequent_path
@@ -758,7 +764,7 @@ theorem certifiedCandidate_beta_exists_truth_counterexample_path
             (M := M) (instantiate t φ) γ ≠ ⊤) :
     ¬ Derivable (Base := Base) (Const := Const)
       C.frontier.antecedents (.app (.lam φ) t) := by
-  exact C.awodey_butz_completeness_of_exists_beta_truth_counterexample
+  exact C.awodey_butz_not_derivable_of_exists_beta_truth_counterexample
     (Base := Base) (Const := Const) t φ hCounter
 
 theorem closedCertifiedCandidate_beta_exists_truth_counterexample_path
@@ -777,7 +783,7 @@ theorem closedCertifiedCandidate_beta_exists_truth_counterexample_path
             (M := M) (instantiate t φ) γ ≠ ⊤) :
     ¬ Derivable (Base := Base) (Const := Const)
       C.frontier.antecedents (.app (.lam φ) t) := by
-  exact C.awodey_butz_completeness_of_exists_closed_beta_truth_counterexample
+  exact C.awodey_butz_not_derivable_of_exists_closed_beta_truth_counterexample
     (Base := Base) (Const := Const) t φ hCounter
 
 theorem closedCertifiedCandidate_exists_beta_succedent_counterexample_path
@@ -797,7 +803,7 @@ theorem closedCertifiedCandidate_exists_beta_succedent_counterexample_path
             (M := M) (instantiate t φ) γ ≠ ⊤) :
     ¬ Derivable (Base := Base) (Const := Const)
       C.frontier.antecedents C.frontier.succedent := by
-  exact C.awodey_butz_completeness_of_exists_closed_beta_succedent_counterexample
+  exact C.awodey_butz_not_derivable_of_exists_closed_beta_succedent_counterexample
     (Base := Base) (Const := Const) t φ hSucc hCounter
 
 theorem closedCertifiedCandidate_exists_semantics_of_not_closedTheorySetProvable_path
@@ -817,7 +823,7 @@ theorem closedCertifiedCandidate_exists_semantics_of_not_closedTheorySetProvable
         SemilocalModel.SupportsUniformRelativization M) :
     ¬ Derivable (Base := Base) (Const := Const)
       C.frontier.antecedents C.frontier.succedent := by
-  exact C.awodey_butz_completeness_of_exists_semantics_of_not_closedTheorySetProvable
+  exact C.awodey_butz_not_derivable_of_exists_semantics_of_not_closedTheorySetProvable
     (Base := Base) (Const := Const) hNot hSem
 
 theorem closedCertifiedCandidate_exists_semantics_of_primeSeparatingExtension_path
@@ -837,7 +843,7 @@ theorem closedCertifiedCandidate_exists_semantics_of_primeSeparatingExtension_pa
         SemilocalModel.SupportsUniformRelativization M) :
     ¬ Derivable (Base := Base) (Const := Const)
       C.frontier.antecedents C.frontier.succedent := by
-  exact C.awodey_butz_completeness_of_exists_semantics_of_primeSeparatingExtension
+  exact C.awodey_butz_not_derivable_of_exists_semantics_of_primeSeparatingExtension
     (Base := Base) (Const := Const) hFU hSem
 
 end Mettapedia.AutoBooks.Codex.IntuitionisticHOL.AwodeyButzCompletenessBridgeRegression

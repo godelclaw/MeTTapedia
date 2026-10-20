@@ -32,6 +32,7 @@ def queryText : Query → String
   | .imp first second => "(" ++ queryText first ++ " implies " ++ queryText second ++ ")"
   | .possibility inner => "exists-next(" ++ queryText inner ++ ")"
   | .outgoingUniversal inner => "all-next(" ++ queryText inner ++ ")"
+  | .separating name left right => "split[" ++ name ++ "](" ++ queryText left ++ ", " ++ queryText right ++ ")"
 
 def readoutText : Mettapedia.OSLF.NativeTypes.Runtime.Description.Readout → String
   | .sourceRefused .outsideProfile => "refused: source outside the admitted profile"
@@ -63,12 +64,19 @@ def report (installed : Installed) (formula : installed.native.Formula)
       "; " ++ renderPattern (installed.native.render observation.source) ++ " -> " ++
       renderPattern (installed.native.render
         (installed.runtime.cursor.target observation.source observation.receipt))
+  let splitLines := actual.spatialObservations.zipIdx.map fun (observation, ordinal) =>
+    "  split " ++ toString ordinal ++ "; declaration=" ++ toString observation.index ++
+      "; formula position=" ++ reprStr observation.location ++ "; " ++
+      renderPattern (installed.native.render observation.source) ++ " = " ++
+      renderPattern (installed.native.render observation.parts.1) ++ " * " ++
+      renderPattern (installed.native.render observation.parts.2)
   String.intercalate "\n" <|
     ["  source: " ++ renderPattern source,
      "  result: " ++ readoutText actual.readout ++
        "; budget=" ++ toString budget ++ "; work=" ++ toString actual.spent ++
        "; query settled=" ++ toString actual.settled,
-     "  retained receipts=" ++ toString actual.observations.length] ++ receiptLines
+     "  retained receipts=" ++ toString actual.observations.length ++
+       "; structural splits=" ++ toString actual.spatialObservations.length] ++ receiptLines ++ splitLines
 
 def query (installed : Installed) (title : String) (question : Query) (source : Pattern) (budget : Nat) : String :=
   title ++ ": " ++ queryText question ++ "\n" ++

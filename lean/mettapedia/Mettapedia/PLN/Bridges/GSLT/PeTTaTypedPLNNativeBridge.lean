@@ -29,7 +29,7 @@ open Mettapedia.OSLF.Framework.GSLTTypeSynthesis
 open Mettapedia.Languages.MeTTa.PeTTa.MainlineTypeQueryGSLT
 open Mettapedia.Languages.MeTTa.PeTTa.CallGuardNativeKernel
 open Mettapedia.Logic.MarkovLogicSocialSmoking
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.RuleFamilies.FirstOrder
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 open Mettapedia.PLN.RuleFamilies.FirstOrder.RavenAsymmetricInduction
@@ -122,13 +122,13 @@ theorem typed_bayes_inversion_values :
     (gsltOSLF callGuardGSLT).satisfies
         (⟨claim, .pending⟩ : CallMachine)
         (typedCallNTT claim declaration).pred ∧
-      (Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength
+      (Mettapedia.PLN.Evidence.BinaryEvidence.toStrength
           (ravenBlackEvidence 5)).toReal = (1 : ℝ) ∧
-      (Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength
+      (Mettapedia.PLN.Evidence.BinaryEvidence.toStrength
           (blackRavenEvidence 5 95)).toReal = (1 / 20 : ℝ) ∧
       ravenObservationBaseRate 5 95 = (1 / 20 : ℝ) ∧
       plnInversionBayesStrength
-          (Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength
+          (Mettapedia.PLN.Evidence.BinaryEvidence.toStrength
             (ravenBlackEvidence 5)).toReal
           (ravenObservationBaseRate 5 95)
           1 = (1 / 20 : ℝ) :=

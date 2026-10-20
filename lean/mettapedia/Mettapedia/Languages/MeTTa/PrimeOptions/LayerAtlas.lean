@@ -586,7 +586,7 @@ independence and a uniform prior; its zero divisor is total conflict; fusing
 posteriors counts a non-uniform prior twice; and it is not the deduction direct
 path. -/
 theorem cell_evidence_testimony :
-    (∀ x y : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence,
+    (∀ x y : Mettapedia.PLN.Evidence.BinaryEvidence,
         toPaired (x * y) = fuse (toPaired x) (toPaired y)) ∧
       (∀ (c : ℝ) (first second : Bool → Bool → ℝ), c ≠ 0 → Stochastic first → Stochastic second →
         Evidence.strength (fuse (firstReport (fun _ => c) first second)
@@ -613,7 +613,7 @@ theorem cell_negation_presence :
     (∀ a b : Mettapedia.PLN.WorldModel.EvidenceSpaces.Evidence ℕ, a ≤ b → against a ≤ against b) ∧
       (∀ a a' b b' : Mettapedia.PLN.WorldModel.EvidenceSpaces.Evidence ℕ, a ≤ a' → b ≤ b' →
         tmeet a b ≤ tmeet a' b' ∧ tjoin a b ≤ tjoin a' b') ∧
-      ¬ Monotone fun a : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence => a ⇨ ⊥ :=
+      ¬ Monotone fun a : Mettapedia.PLN.Evidence.BinaryEvidence => a ⇨ ⊥ :=
   ⟨fun _ _ le => against_mono le, fun _ _ _ _ ha hb => ⟨tmeet_mono ha hb, tjoin_mono ha hb⟩,
     binaryEvidence_hnot_not_monotone⟩
 

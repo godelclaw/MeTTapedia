@@ -14,7 +14,7 @@ namespace Mettapedia.PLN.ConceptGeometry.AssocPat.PLNHigherOrderHOLAssocPatBridg
 
 open Mettapedia.Logic.HOL
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel
 
 universe u v w
@@ -363,7 +363,7 @@ theorem semanticLayerMixedEvidence_mono_of_predicateVocabularyWeightedPairOrderR
           patLeftWeight patRightWeight a b)
     (hCombineMono :
       ∀ {e₁ e₂ a₁ a₂ p₁ p₂ :
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+          Mettapedia.PLN.Evidence.BinaryEvidence},
         e₁ ≤ e₂ → a₁ ≤ a₂ → p₁ ≤ p₂ →
           m.combine e₁ a₁ p₁ ≤ m.combine e₂ a₂ p₂)
     {W : State} {a b c d : Pred}
@@ -561,7 +561,7 @@ theorem semanticLayerExtensionalEvidence_eq_of_mixedEvidence_eq_predicateVocabul
           patLeftWeight patRightWeight a b)
     (hCancel :
       ∀ {x y assoc pat :
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+          Mettapedia.PLN.Evidence.BinaryEvidence},
         m.combine x assoc pat = m.combine y assoc pat → x = y)
     {W : State} {a b c d : Pred}
     (hMixedEq :
@@ -632,7 +632,7 @@ theorem semanticLayerMixedEvidence_eq_iff_extensionalEvidence_eq_of_predicateVoc
           patLeftWeight patRightWeight a b)
     (hCancel :
       ∀ {x y assoc pat :
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence},
+          Mettapedia.PLN.Evidence.BinaryEvidence},
         m.combine x assoc pat = m.combine y assoc pat → x = y)
     {W : State} {a b c d : Pred}
     (hLeft :

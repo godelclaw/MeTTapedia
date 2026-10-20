@@ -31,7 +31,7 @@ open scoped Classical
 
 open Mettapedia.GSLT.Core.BranchingTemporal
 open Mettapedia.GSLT.Core.InferenceControl
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.InferenceControl.PremiseSelection
 open Mettapedia.PLN.Bridges.GSLT.InferenceControl
 

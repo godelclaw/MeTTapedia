@@ -14,7 +14,7 @@ It is intentionally separate from the Church-style HOL layer.
 
 namespace Mettapedia.PLN.Bridges.HOL.PLNWorldModelPredCodeInfinitary
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open Mettapedia.PLN.Bridges.HOL.PLNWorldModelPredCode
 

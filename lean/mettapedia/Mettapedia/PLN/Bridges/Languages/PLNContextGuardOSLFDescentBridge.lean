@@ -18,9 +18,9 @@ guarding itself performs syntactic context descent.
 
 namespace Mettapedia.PLN.Bridges.Languages.PLNContextGuardOSLFDescentBridge
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.HigherOrder.PLNContextGuardBridge
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.MeTTaIL.Syntax (Pattern)
 
 /-- Proof-carrying profile for the honest boundary between WM-PLN context

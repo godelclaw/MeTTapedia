@@ -44,8 +44,8 @@ open Mettapedia.OSLF.Framework.GSLTWorldModel
 open Mettapedia.OSLF.Framework.WMCalculusSemantics
 open Mettapedia.OSLF.Framework.WMCalculusOSLFBridge
 open Mettapedia.OSLF.Framework.WMCalculusContextEncoding
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.WMCalculusAdditiveReading
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.Canonical
 open Mettapedia.Languages.ProcessCalculi.RhoCalculus.LanguageDefRewriteSystem

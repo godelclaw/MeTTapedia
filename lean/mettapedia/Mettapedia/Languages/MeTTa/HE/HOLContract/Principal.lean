@@ -760,15 +760,15 @@ theorem solve_absorbed {candidate : Candidate} {unifier δ : Unifier}
     (solved : solve candidate = some unifier) (unifies : Unifies δ candidate.equations) :
     δ.Absorbs unifier :=
   Mettapedia.Logic.LP.Subst.absorbs_of_moreGeneral
-    (Mettapedia.Logic.LP.unifyTotal_relevantIdempotent _ _ solved).absorbs
+    (Mettapedia.Logic.LP.unifyTotal_relevantIdempotent (σ := sig) candidate.equations unifier solved).absorbs
     (Mettapedia.Logic.LP.unifyTotal_mgu _ _ solved δ unifies)
 
 /-- The most general unifier introduces no variable outside its equations. -/
 theorem solve_freeVars {candidate : Candidate} {unifier : Unifier}
     (solved : solve candidate = some unifier) (term : TypeTerm) :
     (unifier.applyTerm term).freeVars ⊆
-      term.freeVars ∪ Mettapedia.Logic.LP.eqVars candidate.equations :=
-  (Mettapedia.Logic.LP.unifyTotal_relevantIdempotent _ _ solved).freeVars_applyTerm_subset term
+      term.freeVars ∪ Mettapedia.Logic.LP.eqVars (σ := sig) candidate.equations :=
+  (Mettapedia.Logic.LP.unifyTotal_relevantIdempotent (σ := sig) candidate.equations unifier solved).freeVars_applyTerm_subset term
 
 /-! ## Shapes of principal types -/
 
@@ -789,7 +789,7 @@ theorem applyTerm_ofList_cons (unifier : Unifier) (first : TypeTerm) (rest : Lis
 theorem mem_freeVars_ofList {elements : List TypeTerm} {key : sig.vars} :
     key ∈ (ofList elements).freeVars ↔ ∃ element ∈ elements, key ∈ element.freeVars := by
   unfold ofList
-  rw [Mettapedia.Logic.LP.Term.mem_freeVars_app]
+  rw [Mettapedia.Logic.LP.Term.mem_freeVars_app (σ := sig)]
   constructor
   · rintro ⟨index, member⟩
     exact ⟨elements.get index, List.get_mem _ _, member⟩
@@ -1172,7 +1172,7 @@ theorem mem_varList (term : TypeTerm) (key : sig.vars) :
       simp [varList, Mettapedia.Logic.LP.Term.freeVars]
   | const _ => simp [varList, Mettapedia.Logic.LP.Term.freeVars]
   | app n arguments ih =>
-      rw [Mettapedia.Logic.LP.Term.mem_freeVars_app]
+      rw [Mettapedia.Logic.LP.Term.mem_freeVars_app (σ := sig)]
       simp only [varList, List.mem_flatten, List.mem_ofFn]
       constructor
       · rintro ⟨_, ⟨index, rfl⟩, member⟩
@@ -1199,7 +1199,7 @@ theorem rigid_decode_applyTerm {σ : Unifier} :
       intro element member
       obtain ⟨index, rfl⟩ := List.mem_ofFn.mp member
       exact ih index (fun key keyMember =>
-        values key (Mettapedia.Logic.LP.Term.mem_freeVars_app.mpr ⟨index, keyMember⟩))
+        values key ((Mettapedia.Logic.LP.Term.mem_freeVars_app (σ := sig)).mpr ⟨index, keyMember⟩))
 
 /-- **Substituting clean values keeps type atoms.** -/
 theorem typeAtom_decode_applyTerm {σ : Unifier} :
@@ -1228,7 +1228,7 @@ theorem typeAtom_decode_applyTerm {σ : Unifier} :
           ∀ key ∈ element.freeVars, CleanTerm (σ key) := by
         intro element member key keyMember
         obtain ⟨index, rfl⟩ := List.mem_ofFn.mp member
-        exact values key (Mettapedia.Logic.LP.Term.mem_freeVars_app.mpr ⟨index, keyMember⟩)
+        exact values key ((Mettapedia.Logic.LP.Term.mem_freeVars_app (σ := sig)).mpr ⟨index, keyMember⟩)
       rw [app_eq_ofList] at atomic ⊢
       rw [applyTerm_ofList, decode_ofList, List.map_map]
       rw [decode_ofList] at atomic
@@ -1411,7 +1411,7 @@ theorem schemeVars_of_head {head : Candidate} {unifier : Unifier}
   have := solve_freeVars solved head.type member
   rcases Finset.mem_union.mp this with typeMember | equationMember
   · exact headVars key (.inl typeMember)
-  · exact headVars key (.inr (Mettapedia.Logic.LP.mem_eqVars.mp equationMember))
+  · exact headVars key (.inr ((Mettapedia.Logic.LP.mem_eqVars (σ := sig)).mp equationMember))
 
 theorem exists_of_forall₂_mem {choice : List Candidate} {lists : List (List Candidate)}
     (all : List.Forall₂ (· ∈ ·) choice lists) {chosen : Candidate} (member : chosen ∈ choice) :
@@ -2388,7 +2388,7 @@ theorem principal_sound {space : Space} {expression : Atom} {answers : List Type
             intro key keyMember
             simp only [cleaned, if_pos keyMember]
           let δ : Unifier := cleaned ∘ₛ unifier
-          have relevant := Mettapedia.Logic.LP.unifyTotal_relevantIdempotent _ _ solved
+          have relevant := Mettapedia.Logic.LP.unifyTotal_relevantIdempotent (σ := sig) candidate.equations unifier solved
           have schemeVars := candidates_schemeVars space expression [] found foundEq
             candidate candidateMember
           have safe : ∀ key, Safe (δ key) := by
@@ -2399,10 +2399,10 @@ theorem principal_sound {space : Space} {expression : Atom} {answers : List Type
             · obtain ⟨scheme, schemeMember, keyMember⟩ := inScheme
               exact (typeAtom_decode_applyTerm (unifier key) (fun other _ => cleanedClean other)
                 ((admissible_parts admissible schemeMember).2 key keyMember)).1
-            · have notEquation : key ∉ Mettapedia.Logic.LP.eqVars candidate.equations := by
+            · have notEquation : key ∉ Mettapedia.Logic.LP.eqVars (σ := sig) candidate.equations := by
                 intro equationMember
                 exact inScheme (schemeVars key
-                  (.inr (Mettapedia.Logic.LP.mem_eqVars.mp equationMember)))
+                  (.inr ((Mettapedia.Logic.LP.mem_eqVars (σ := sig)).mp equationMember)))
               have fixed : unifier key = .var key := relevant.fixes key notEquation
               show TypeAtom (decode (cleaned.applyTerm (unifier key)))
               rw [fixed]
@@ -2460,7 +2460,7 @@ theorem principal_complete {space : Space} {expression : Atom} {answers : List T
     · have := atoms key ((mem_varList scheme key).mp keyMember)
       rw [factor key] at this
       exact (typeAtom_of_decode_applyTerm _ this).1
-  have relevant := Mettapedia.Logic.LP.unifyTotal_relevantIdempotent _ _ solved
+  have relevant := Mettapedia.Logic.LP.unifyTotal_relevantIdempotent (σ := sig) candidate.equations unifier solved
   have schemeVars := candidates_schemeVars space expression [] found foundEq candidate
     candidateMember
   refine ⟨unifier.applyTerm candidate.type, List.mem_filterMap.mpr ⟨candidate, candidateMember, ?_⟩,
@@ -2470,7 +2470,7 @@ theorem principal_complete {space : Space} {expression : Atom} {answers : List T
     simp only [admissible, if_true]
   · rw [← through, typeEq]
   · obtain ⟨original, originalMember, inValue⟩ :=
-      Mettapedia.Logic.LP.Subst.mem_freeVars_applyTerm.mp keyMember
+      (Mettapedia.Logic.LP.Subst.mem_freeVars_applyTerm (σ := sig)).mp keyMember
     have fixed : unifier key = .var key := relevant.unbound original key inValue
     have value : ρ key = δ key := by rw [factor key, fixed]; rfl
     rw [value]
@@ -2478,7 +2478,7 @@ theorem principal_complete {space : Space} {expression : Atom} {answers : List T
     obtain ⟨scheme, schemeMember, inScheme⟩ : ∃ scheme ∈ candidate.schemes, key ∈ scheme.freeVars := by
       rcases Finset.mem_union.mp inPrincipal with typeMember | equationMember
       · exact schemeVars key (.inl typeMember)
-      · exact schemeVars key (.inr (Mettapedia.Logic.LP.mem_eqVars.mp equationMember))
+      · exact schemeVars key (.inr ((Mettapedia.Logic.LP.mem_eqVars (σ := sig)).mp equationMember))
     exact (schemes scheme schemeMember).2 key inScheme
 
 /-- A value of a variable inside a clean instance is clean when it is a type atom. -/
@@ -2497,7 +2497,7 @@ theorem clean_of_applyTerm {ρ : Unifier} :
       simp [Mettapedia.Logic.LP.Term.freeVars] at member
   | app n arguments ih =>
       intro clean key member atomic
-      obtain ⟨index, inArgument⟩ := Mettapedia.Logic.LP.Term.mem_freeVars_app.mp member
+      obtain ⟨index, inArgument⟩ := (Mettapedia.Logic.LP.Term.mem_freeVars_app (σ := sig)).mp member
       have elementClean : CleanTerm (ρ.applyTerm (arguments index)) → CleanTerm (ρ key) :=
         fun elementClean => ih index elementClean key inArgument atomic
       rw [app_eq_ofList, applyTerm_ofList] at clean

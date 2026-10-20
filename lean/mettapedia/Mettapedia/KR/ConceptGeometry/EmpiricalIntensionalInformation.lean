@@ -24,7 +24,7 @@ namespace Mettapedia.KR.ConceptGeometry.IntensionalInheritance
 
 open Mettapedia.InformationTheory
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.KR.ConceptOntology
 
 /-- The two concept positions in the empirical 2×2 table. -/
@@ -91,12 +91,8 @@ noncomputable def empiricalMemberEvidence
 /-- The empirical 2×2 table as an evidence-membership context. -/
 noncomputable def empiricalMembershipContext
     (c : MembershipCounts) :
-    letI : EvidenceType (EmpiricalState c) :=
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType (EmpiricalObject c)
     EvidenceMembershipContext
       (EmpiricalState c) (EmpiricalObject c) MembershipConcept BinaryEvidence := by
-  letI : EvidenceType (EmpiricalState c) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType (EmpiricalObject c)
   exact
   { memberEvidence := empiricalMemberEvidence c
     memberEvidence_add := by
@@ -115,12 +111,8 @@ noncomputable def fullObservationState (c : MembershipCounts) : EmpiricalState c
 own single-object membership evidence. -/
 theorem empiricalMemberEvidence_fullObservationState
     (c : MembershipCounts) (x : EmpiricalObject c) (k : MembershipConcept) :
-    letI : EvidenceType (EmpiricalState c) :=
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType (EmpiricalObject c)
     empiricalMemberEvidence c (fullObservationState c) x k =
       empiricalMembershipAtom c x k := by
-  letI : EvidenceType (EmpiricalState c) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType (EmpiricalObject c)
   classical
   simp [empiricalMemberEvidence, fullObservationState]
 
@@ -132,8 +124,6 @@ noncomputable def semanticInterpretation
   AbstractInheritance.crispInterpretation
     EvidenceGate.positiveSupport
     (fun x k =>
-      letI : EvidenceType (EmpiricalState c) :=
-        Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType (EmpiricalObject c)
       empiricalMemberEvidence c (fullObservationState c) x k)
 
 theorem mem_semanticInterpretation_witness_extent_iff_pos
@@ -416,7 +406,7 @@ theorem witnessOnly_eq_zero_iff_semanticInterpretation_extensionalInherits
     cases x with
     | inl n =>
         simp [empiricalMembershipAtom,
-          Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero] at hxWitness
+          Mettapedia.PLN.Evidence.BinaryEvidence.zero] at hxWitness
     | inr rest =>
         cases rest with
         | inl w =>
@@ -425,10 +415,10 @@ theorem witnessOnly_eq_zero_iff_semanticInterpretation_extensionalInherits
             cases rest with
             | inl f =>
                 simp [empiricalMembershipAtom,
-                  Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero] at hxWitness
+                  Mettapedia.PLN.Evidence.BinaryEvidence.zero] at hxWitness
             | inr b =>
                 simp [empiricalMembershipAtom,
-                  Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.one]
+                  Mettapedia.PLN.Evidence.BinaryEvidence.one]
   · intro hExt
     by_contra hNonzero
     have hPos : 0 < c.witnessOnly := Nat.pos_of_ne_zero hNonzero
@@ -438,14 +428,14 @@ theorem witnessOnly_eq_zero_iff_semanticInterpretation_extensionalInherits
           ((semanticInterpretation c).meaning MembershipConcept.witness).extent := by
       simp [mem_semanticInterpretation_witness_extent_iff_pos,
         empiricalMembershipAtom,
-        Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.one]
+        Mettapedia.PLN.Evidence.BinaryEvidence.one]
     have hf :
         (Sum.inr (Sum.inl w) : EmpiricalObject c) ∈
           ((semanticInterpretation c).meaning MembershipConcept.feature).extent :=
       hExt hw
     simp [mem_semanticInterpretation_feature_extent_iff_pos,
       empiricalMembershipAtom,
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero] at hf
+      Mettapedia.PLN.Evidence.BinaryEvidence.zero] at hf
 
 theorem finitePointwiseLogRatioBits_semanticInterpretation_feature_witness
     (c : MembershipCounts) :

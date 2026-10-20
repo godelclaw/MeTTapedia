@@ -90,10 +90,26 @@ theorem forallMeaning_decided {system : GSLT.{u}} {admitted : system.Term → Pr
     (decided : result.Decided) : (forallMeaning backend predicate source sourceAdmitted result).Decided := by
   cases result <;> simp_all [forallMeaning, Outcome.Decided, Outcome.answer]
 
+theorem separationMeaning {system : GSLT.{u}} {admitted : system.Term → Prop}
+    (backend : CursorBackend.{u,v} system admitted) (index : Nat)
+    (left right : EquationPredicate system) (source : system.Term) :
+    (∃ parts, parts ∈ (backend.splitTasks index source).flatten ∧ left parts.1 ∧ right parts.2) ↔
+      Mettapedia.OSLF.NativeTypes.Decision.Spatial.spatialPredicate
+        backend.spatial.theory index left right source := by
+  constructor
+  · rintro ⟨parts, listed, first, second⟩
+    exact ⟨parts.1, parts.2, backend.spatial.sound index source parts (by
+      rw [← backend.splitTasks_exact]; exact listed), first, second⟩
+  · rintro ⟨first, second, split, leftHolds, rightHolds⟩
+    obtain ⟨parts, listed, leftSame, rightSame⟩ :=
+      backend.spatial.coverage index source first second split
+    exact ⟨parts, by rw [backend.splitTasks_exact]; exact listed,
+      (left.2 leftSame).mp leftHolds, (right.2 rightSame).mp rightHolds⟩
+
 def tasks {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (backend : CursorBackend.{u,v} system admitted) (leaves : Leaf → LeafBackend system admitted) :
     (formula : Formula Leaf) → (source : system.Term) → admitted source →
-      List Nat → Stream (Event (Observation backend) (denotation leaves formula source))
+      List Nat → Stream (Event (Evidence backend) (denotation leaves formula backend.spatial.theory source))
   | formula, source, sourceAdmitted, location => .pause fun _ => match formula with
     | .atom leaf => bindReply (answerStream ((leaves leaf).tasks source)) finish
     | .top => finish (.proved True.intro)
@@ -118,19 +134,37 @@ def tasks {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
         | _ => mapReply (Outcome.implication first)
             (tasks backend leaves right source sourceAdmitted (location ++ [1]))
     | .possibility formula =>
-      mapReply (existsMeaning backend (denotation leaves formula) source sourceAdmitted)
-        (existsTasks (fun receipt => denotation leaves formula (backend.target source receipt))
+      mapReply (existsMeaning backend (denotation leaves formula backend.spatial.theory) source sourceAdmitted)
+        (existsTasks (fun receipt => denotation leaves formula backend.spatial.theory (backend.target source receipt))
           (backend.tasks source)
-          (fun receipt listed => ⟨source, receipt, listed, location⟩)
+          (fun receipt listed => .operational ⟨source, receipt, listed, location⟩)
           (fun receipt listed => tasks backend leaves formula (backend.target source receipt)
             (backend.target_admitted source sourceAdmitted receipt listed) (location ++ [0])))
     | .outgoingUniversal formula =>
-      mapReply (forallMeaning backend (denotation leaves formula) source sourceAdmitted)
-        (forallTasks (fun receipt => denotation leaves formula (backend.target source receipt))
+      mapReply (forallMeaning backend (denotation leaves formula backend.spatial.theory) source sourceAdmitted)
+        (forallTasks (fun receipt => denotation leaves formula backend.spatial.theory (backend.target source receipt))
           (backend.tasks source)
-          (fun receipt listed => ⟨source, receipt, listed, location⟩)
+          (fun receipt listed => .operational ⟨source, receipt, listed, location⟩)
           (fun receipt listed => tasks backend leaves formula (backend.target source receipt)
             (backend.target_admitted source sourceAdmitted receipt listed) (location ++ [0])))
+    | .separating index left right =>
+      mapReply (Outcome.map (separationMeaning backend index
+        (denotation leaves left backend.spatial.theory)
+        (denotation leaves right backend.spatial.theory) source))
+        (existsTasks
+          (fun parts => denotation leaves left backend.spatial.theory parts.1 ∧
+            denotation leaves right backend.spatial.theory parts.2)
+          (backend.splitTasks index source)
+          (fun parts listed => .separation ⟨index, source, parts, listed, location⟩)
+          (fun parts listed =>
+            have admittedParts := backend.spatial.components_admitted index source sourceAdmitted
+              parts (by rw [← backend.splitTasks_exact]; exact listed)
+            bindReply
+              (tasks backend leaves left parts.1 admittedParts.1 (location ++ [0])) fun first =>
+              match first with
+              | .refuted refutation => finish (.refuted (fun holds => refutation holds.1))
+              | _ => mapReply (Outcome.conjunction first)
+                  (tasks backend leaves right parts.2 admittedParts.2 (location ++ [1]))))
 termination_by formula => formula
 
 theorem tasks_complete {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
@@ -187,28 +221,47 @@ theorem tasks_complete {system : GSLT.{u}} {admitted : system.Term → Prop} {Le
   | possibility formula ih =>
     rw [tasks]
     apply mapReply_decides
-    · exact existsMeaning_decided backend (denotation leaves formula) source sourceAdmitted
+    · exact existsMeaning_decided backend (denotation leaves formula backend.spatial.theory) source sourceAdmitted
     · apply existsTasks_complete
       exact fun receipt listed => ih (backend.target source receipt)
         (backend.target_admitted source sourceAdmitted receipt listed) _
   | outgoingUniversal formula ih =>
     rw [tasks]
     apply mapReply_decides
-    · exact forallMeaning_decided backend (denotation leaves formula) source sourceAdmitted
+    · exact forallMeaning_decided backend (denotation leaves formula backend.spatial.theory) source sourceAdmitted
     · apply forallTasks_complete
       exact fun receipt listed => ih (backend.target source receipt)
         (backend.target_admitted source sourceAdmitted receipt listed) _
+  | separating index left right ihl ihr =>
+    rw [tasks]
+    apply mapReply_decides
+    · exact fun result decided => Outcome.map_decided _ result decided
+    · apply existsTasks_complete
+      intro parts listed
+      apply bindReply_decides
+      · exact ihl _ (backend.spatial.components_admitted index source sourceAdmitted parts
+          (by rw [← backend.splitTasks_exact]; exact listed)).1 _
+      · intro first decided
+        cases first with
+        | proved proof =>
+          apply mapReply_decides
+          · exact fun other settled =>
+              Outcome.conjunction_decided (.proved proof) other ⟨true, rfl⟩ settled
+          · exact ihr _ (backend.spatial.components_admitted index source sourceAdmitted parts
+              (by rw [← backend.splitTasks_exact]; exact listed)).2 _
+        | refuted refutation => exact finish_decides _ ⟨false, rfl⟩
+        | unknown => obtain ⟨_, read⟩ := decided; cases read
 
 def start {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (backend : CursorBackend.{u,v} system admitted) (leaves : Leaf → LeafBackend system admitted)
     (formula : Formula Leaf) (source : system.Term) (sourceAdmitted : admitted source) :
-    State (Observation backend) (denotation leaves formula source) :=
+    State (Evidence backend) (denotation leaves formula backend.spatial.theory source) :=
   startStream (tasks backend leaves formula source sourceAdmitted [])
 
 def run {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (backend : CursorBackend.{u,v} system admitted) (leaves : Leaf → LeafBackend system admitted)
     (formula : Formula Leaf) (source : system.Term) (sourceAdmitted : admitted source) (budget : Nat) :
-    State (Observation backend) (denotation leaves formula source) :=
+    State (Evidence backend) (denotation leaves formula backend.spatial.theory source) :=
   resume budget (start backend leaves formula source sourceAdmitted)
 
 /-- This exhaustive operation is separate from starting or resuming work. -/
@@ -242,14 +295,14 @@ theorem positive {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : T
     (backend : CursorBackend.{u,v} system admitted) (leaves : Leaf → LeafBackend system admitted)
     (formula : Formula Leaf) (source : system.Term) (sourceAdmitted : admitted source) (budget : Nat)
     (read : (run backend leaves formula source sourceAdmitted budget).outcome.answer = some true) :
-    denotation leaves formula source :=
+    denotation leaves formula backend.spatial.theory source :=
   (run backend leaves formula source sourceAdmitted budget).outcome.positive read
 
 theorem negative {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (backend : CursorBackend.{u,v} system admitted) (leaves : Leaf → LeafBackend system admitted)
     (formula : Formula Leaf) (source : system.Term) (sourceAdmitted : admitted source) (budget : Nat)
     (read : (run backend leaves formula source sourceAdmitted budget).outcome.answer = some false) :
-    ¬ denotation leaves formula source :=
+    ¬ denotation leaves formula backend.spatial.theory source :=
   (run backend leaves formula source sourceAdmitted budget).outcome.negative read
 
 end Mettapedia.OSLF.NativeTypes.Decision.Machine

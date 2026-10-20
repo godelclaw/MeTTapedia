@@ -23,7 +23,7 @@ set_option autoImplicit false
 
 open CategoryTheory Opposite
 
-namespace Mettapedia.Logic.WorldModel.Indexed.Potentialist
+namespace Mettapedia.Logic.WorldModel.Indexed.PotentialistBase
 
 open Mettapedia.Logic.HOL.Embedding.ZFSetUniverseClosure
 open Mettapedia.SetTheory.OpenTower.Potentialism
@@ -31,7 +31,7 @@ open Mettapedia.SetTheory.OpenTower.InternalTower
 open Mettapedia.SetTheory.OpenTower.Strength.AdmittedTheories
 open Mettapedia.SetTheory.OpenTower.Strength.StageFamilies
 open Mettapedia.SetTheory.OpenTower.Strength.InaccessibleLevels
-open Mettapedia.Logic.WorldModel.Indexed.Modal
+open Mettapedia.Logic.WorldModel.Indexed.Modalities
 open scoped ZFSet
 
 universe u
@@ -112,4 +112,4 @@ theorem admitted_not_directed_at_empty : ¬ Directed AdmittedWorld.{u} := by
     (homOfLE (Set.empty_subset _))
   exact no_common_admitted_extension (leOfHom hc) (leOfHom hd) e.2
 
-end Mettapedia.Logic.WorldModel.Indexed.Potentialist
+end Mettapedia.Logic.WorldModel.Indexed.PotentialistBase

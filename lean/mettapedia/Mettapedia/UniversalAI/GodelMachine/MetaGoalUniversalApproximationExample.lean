@@ -39,7 +39,7 @@ open Mettapedia.Logic.MarkovLogicInfiniteFixedRegionDLR
 open Mettapedia.Logic.MarkovLogicInfiniteVariableNeighborhoodWorldOfViews
 open Mettapedia.Logic.MarkovLogicInfiniteWorldModel
 open Mettapedia.Logic.MarkovLogicTrustTriangleExample
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 /-- A tiny semimeasure concentrating all first-step mass on `false`. -/
 def falseFirstBitSemimeasure : Semimeasure where

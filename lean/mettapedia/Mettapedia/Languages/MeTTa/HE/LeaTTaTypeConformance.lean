@@ -6,6 +6,10 @@ import Mettapedia.Languages.MeTTa.HE.LeaTTaTypeImage
 import MettaHyperonFull.Minimal.Interpreter
 import MettaHyperonFull.Proofs.TypeSoundness
 import Std.Data.HashMap.Lemmas
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # LeaTTa conformance to the named spec type refinements
@@ -76,27 +80,27 @@ symbol bucket, on top of any pre-existing accumulator bucket. -/
 private theorem leaSymbolTypeIndexFold_getD
     (atoms : List Atom) (initial : Std.HashMap String (List Metta.Atom))
     (name : String) :
-    ((toLeaTTaAtoms atoms).foldl leaSymbolTypeIndexStep initial).getD name [] =
+    ((encodeModelAtoms atoms).foldl leaSymbolTypeIndexStep initial).getD name [] =
       initial.getD name [] ++
-        toLeaTTaAtoms (atoms.filterMap (directSymbolAnnotationType? name)) := by
+        encodeModelAtoms (atoms.filterMap (directSymbolAnnotationType? name)) := by
   induction atoms generalizing initial with
-  | nil => simp [ toLeaTTaAtoms]
+  | nil => simp [ encodeModelAtoms]
   | cons atom atoms ih =>
-      rw [toLeaTTaAtoms, List.foldl_cons, ih]
+      rw [encodeModelAtoms, List.foldl_cons, ih]
       cases atom with
       | symbol | var | grounded =>
           simp [List.filterMap_cons, leaSymbolTypeIndexStep, directSymbolAnnotationType?,
-            toLeaTTaAtom]
+            encodeModelAtom]
       | expression children =>
           rcases children with _ | ⟨first, children⟩
           · simp [List.filterMap_cons, leaSymbolTypeIndexStep, directSymbolAnnotationType?,
-              toLeaTTaAtom]
+              encodeModelAtom]
           rcases children with _ | ⟨annotated, children⟩
           · simp [ leaSymbolTypeIndexStep, directSymbolAnnotationType?,
-              toLeaTTaAtom]
+              encodeModelAtom]
           rcases children with _ | ⟨type, children⟩
           · simp [ leaSymbolTypeIndexStep, directSymbolAnnotationType?,
-              toLeaTTaAtom]
+              encodeModelAtom]
           rcases children with _ | ⟨extra, children⟩
           · cases first with
             | symbol firstName =>
@@ -107,21 +111,21 @@ private theorem leaSymbolTypeIndexFold_getD
                       by_cases hname : annotatedName = name
                       · subst annotatedName
                         simp [ leaSymbolTypeIndexStep,
-                          directSymbolAnnotationType?, toLeaTTaAtom,
+                          directSymbolAnnotationType?, encodeModelAtom,
                           List.append_assoc]
                       · simp [ leaSymbolTypeIndexStep,
-                          directSymbolAnnotationType?, toLeaTTaAtom,
+                          directSymbolAnnotationType?, encodeModelAtom,
                           Std.HashMap.getD_insert, hname]
                   | var | grounded | expression =>
                       simp [ leaSymbolTypeIndexStep,
-                        directSymbolAnnotationType?, toLeaTTaAtom]
+                        directSymbolAnnotationType?, encodeModelAtom]
                 · simp [ leaSymbolTypeIndexStep,
-                    directSymbolAnnotationType?, toLeaTTaAtom, hcolon]
+                    directSymbolAnnotationType?, encodeModelAtom, hcolon]
             | var | grounded | expression =>
                 simp [List.filterMap_cons, leaSymbolTypeIndexStep,
-                  directSymbolAnnotationType?, toLeaTTaAtom]
+                  directSymbolAnnotationType?, encodeModelAtom]
           · simp [ leaSymbolTypeIndexStep, directSymbolAnnotationType?,
-              toLeaTTaAtom]
+              encodeModelAtom]
 
 /-- The expression annotation retained by LeaTTa's linear expression index. -/
 private def leaExpressionAnnotation?
@@ -149,31 +153,31 @@ private theorem getAnnotatedTypes_expression_eq_filterMap
 annotation lookup in the published spec space. -/
 private theorem leaExpressionTypeIndexQuery
     (atoms : List Atom) (head : Atom) (tail : List Atom) :
-    (((toLeaTTaAtoms atoms).filterMap leaExpressionAnnotation?).filter
+    (((encodeModelAtoms atoms).filterMap leaExpressionAnnotation?).filter
         (fun entry =>
-          entry.1 == toLeaTTaAtom (.expression (head :: tail)))).map (·.2) =
-      toLeaTTaAtoms
+          entry.1 == encodeModelAtom (.expression (head :: tail)))).map (·.2) =
+      encodeModelAtoms
         (atoms.filterMap
           (directExpressionAnnotationType?
             (.expression (head :: tail)))) := by
   induction atoms with
   | nil => rfl
   | cons atom atoms ih =>
-      rw [toLeaTTaAtoms]
+      rw [encodeModelAtoms]
       cases atom with
       | symbol | var | grounded =>
           simpa [List.filterMap_cons, List.filterMap_cons,leaExpressionAnnotation?,
-            directExpressionAnnotationType?, toLeaTTaAtom] using ih
+            directExpressionAnnotationType?, encodeModelAtom] using ih
       | expression children =>
           rcases children with _ | ⟨first, children⟩
           · simpa [List.filterMap_cons, List.filterMap_cons,leaExpressionAnnotation?,
-              directExpressionAnnotationType?, toLeaTTaAtom] using ih
+              directExpressionAnnotationType?, encodeModelAtom] using ih
           rcases children with _ | ⟨annotated, children⟩
           · simpa [List.filterMap_cons, List.filterMap_cons,leaExpressionAnnotation?,
-              directExpressionAnnotationType?, toLeaTTaAtom] using ih
+              directExpressionAnnotationType?, encodeModelAtom] using ih
           rcases children with _ | ⟨type, children⟩
           · simpa [List.filterMap_cons, List.filterMap_cons,leaExpressionAnnotation?,
-              directExpressionAnnotationType?, toLeaTTaAtom] using ih
+              directExpressionAnnotationType?, encodeModelAtom] using ih
           rcases children with _ | ⟨extra, children⟩
           · cases first with
             | symbol firstName =>
@@ -185,28 +189,28 @@ private theorem leaExpressionTypeIndexQuery
                       · subst annotatedChildren
                         have htranslated :
                             Metta.Atom.beq
-                              (toLeaTTaAtom (.expression (head :: tail)))
-                              (toLeaTTaAtom (.expression (head :: tail))) =
+                              (encodeModelAtom (.expression (head :: tail)))
+                              (encodeModelAtom (.expression (head :: tail))) =
                                 true :=
-                          (toLeaTTaAtom_beq_eq_true_iff _ _).2 rfl
+                          (encodeModelAtom_beq_eq_true_iff _ _).2 rfl
                         have hfilter :
                             ((.expr
-                                (toLeaTTaAtom head ::
-                                  tail.map toLeaTTaAtom) : Metta.Atom) ==
+                                (encodeModelAtom head ::
+                                  tail.map encodeModelAtom) : Metta.Atom) ==
                               (.expr
-                                (toLeaTTaAtom head ::
-                                  tail.map toLeaTTaAtom))) = true := by
+                                (encodeModelAtom head ::
+                                  tail.map encodeModelAtom))) = true := by
                           change Metta.Atom.beq _ _ = true
-                          simpa [List.filterMap_cons, List.filterMap_cons,toLeaTTaAtom, toLeaTTaAtoms_eq_map] using
+                          simpa [List.filterMap_cons, List.filterMap_cons,encodeModelAtom, encodeModelAtoms_eq_map] using
                             htranslated
                         simp [ leaExpressionAnnotation?,
-                          directExpressionAnnotationType?, toLeaTTaAtom]
+                          directExpressionAnnotationType?, encodeModelAtom]
                         simp only [List.filter_cons, hfilter, if_true,
                           List.map_cons]
-                        simpa [List.filterMap_cons, List.filterMap_cons,toLeaTTaAtom, toLeaTTaAtoms_eq_map,
+                        simpa [List.filterMap_cons, List.filterMap_cons,encodeModelAtom, encodeModelAtoms_eq_map,
                           leaExpressionAnnotation?,
                           directExpressionAnnotationType?] using
-                            congrArg (List.cons (toLeaTTaAtom type)) ih
+                            congrArg (List.cons (encodeModelAtom type)) ih
                       · have hatomNe :
                             Atom.expression annotatedChildren ≠
                               Atom.expression (head :: tail) := by
@@ -220,43 +224,43 @@ private theorem leaExpressionTypeIndexQuery
                           exact hatomNe (beq_iff_eq.mp htrue)
                         have htranslated :
                             Metta.Atom.beq
-                              (toLeaTTaAtom
+                              (encodeModelAtom
                                 (.expression annotatedChildren))
-                              (toLeaTTaAtom
+                              (encodeModelAtom
                                 (.expression (head :: tail))) = false := by
                           apply Bool.eq_false_iff.mpr
                           intro htrue
                           exact hatomNe
-                            ((toLeaTTaAtom_beq_eq_true_iff _ _).mp htrue)
+                            ((encodeModelAtom_beq_eq_true_iff _ _).mp htrue)
                         have hfilter :
                             ((.expr
-                                (annotatedChildren.map toLeaTTaAtom) :
+                                (annotatedChildren.map encodeModelAtom) :
                                   Metta.Atom) ==
                               (.expr
-                                (toLeaTTaAtom head ::
-                                  tail.map toLeaTTaAtom))) = false := by
+                                (encodeModelAtom head ::
+                                  tail.map encodeModelAtom))) = false := by
                           change Metta.Atom.beq _ _ = false
-                          simpa [List.filterMap_cons, List.filterMap_cons,toLeaTTaAtom, toLeaTTaAtoms_eq_map] using
+                          simpa [List.filterMap_cons, List.filterMap_cons,encodeModelAtom, encodeModelAtoms_eq_map] using
                             htranslated
                         simp [ leaExpressionAnnotation?,
-                          directExpressionAnnotationType?, toLeaTTaAtom,
+                          directExpressionAnnotationType?, encodeModelAtom,
                           hatomNe]
                         simp only [List.filter_cons, hfilter,
                           Bool.false_eq_true, if_false]
-                        simpa [List.filterMap_cons, List.filterMap_cons,toLeaTTaAtom, toLeaTTaAtoms_eq_map,
+                        simpa [List.filterMap_cons, List.filterMap_cons,encodeModelAtom, encodeModelAtoms_eq_map,
                           leaExpressionAnnotation?,
                           directExpressionAnnotationType?, hatomNe] using ih
                   | symbol | var | grounded =>
                       simpa [List.filterMap_cons, List.filterMap_cons,leaExpressionAnnotation?,
-                        directExpressionAnnotationType?, toLeaTTaAtom] using ih
+                        directExpressionAnnotationType?, encodeModelAtom] using ih
                 · simpa [List.filterMap_cons, List.filterMap_cons,leaExpressionAnnotation?,
-                    directExpressionAnnotationType?, toLeaTTaAtom,
+                    directExpressionAnnotationType?, encodeModelAtom,
                     hcolon] using ih
             | var | grounded | expression =>
                 simpa [List.filterMap_cons, List.filterMap_cons,leaExpressionAnnotation?,
-                  directExpressionAnnotationType?, toLeaTTaAtom] using ih
+                  directExpressionAnnotationType?, encodeModelAtom] using ih
           · simpa [List.filterMap_cons, List.filterMap_cons,leaExpressionAnnotation?,
-              directExpressionAnnotationType?, toLeaTTaAtom] using ih
+              directExpressionAnnotationType?, encodeModelAtom] using ih
 
 /-- The two type indexes observed by `getTypes` contain exactly the direct
 published annotations of the corresponding spec space.  This relation keeps
@@ -266,11 +270,11 @@ structure TypeEnvironmentRel
     (space : Space) (env : Metta.Minimal.MinEnv) : Prop where
   symbolTypes : ∀ name,
     env.types.getD name [] =
-      toLeaTTaAtoms (getAnnotatedTypes space (.symbol name))
+      encodeModelAtoms (getAnnotatedTypes space (.symbol name))
   expressionTypes : ∀ head tail,
     (env.exprTypes.filter (fun entry =>
-      entry.1 == toLeaTTaAtom (.expression (head :: tail)))).map (·.2) =
-      toLeaTTaAtoms
+      entry.1 == encodeModelAtom (.expression (head :: tail)))).map (·.2) =
+      encodeModelAtoms
         (getAnnotatedTypes space (.expression (head :: tail)))
 
 /-- Filtering a proof-carrying list and erasing the proofs is the ordinary
@@ -308,15 +312,15 @@ theorem typeEnvironmentRel_ofAtomsGT
     (space : Space) (groundingTable : Metta.GroundingTable) :
     TypeEnvironmentRel space
       (Metta.Minimal.MinEnv.ofAtomsGT
-        (toLeaTTaAtoms space.atoms) groundingTable) := by
+        (encodeModelAtoms space.atoms) groundingTable) := by
   cases space with
   | mk atoms =>
       constructor
       · intro name
         change
-          ((toLeaTTaAtoms atoms).foldl leaSymbolTypeIndexStep
+          ((encodeModelAtoms atoms).foldl leaSymbolTypeIndexStep
               Std.HashMap.emptyWithCapacity).getD name [] =
-            toLeaTTaAtoms
+            encodeModelAtoms
               (getAnnotatedTypes (Space.ofList atoms) (.symbol name))
         rw [leaSymbolTypeIndexFold_getD,
           Std.HashMap.getD_emptyWithCapacity]
@@ -324,12 +328,12 @@ theorem typeEnvironmentRel_ofAtomsGT
         rw [getAnnotatedTypes_symbol_eq_filterMap]
       · intro head tail
         change
-          (((toLeaTTaAtoms atoms).filterMap
+          (((encodeModelAtoms atoms).filterMap
               leaExpressionAnnotation?).filter
               (fun entry =>
                 entry.1 ==
-                  toLeaTTaAtom (.expression (head :: tail)))).map (·.2) =
-            toLeaTTaAtoms
+                  encodeModelAtom (.expression (head :: tail)))).map (·.2) =
+            encodeModelAtoms
               (getAnnotatedTypes (Space.ofList atoms)
                 (.expression (head :: tail)))
         rw [leaExpressionTypeIndexQuery,
@@ -343,29 +347,29 @@ theorem getTypes_grounded_runtimeEvidence
     (space : Space) (env : Metta.Minimal.MinEnv) (value : GroundedValue)
     {leaType : Metta.Atom}
     (hmem : leaType ∈
-      Metta.Minimal.getTypes env (toLeaTTaAtom (.grounded value))) :
+      Metta.Minimal.getTypes env (encodeModelAtom (.grounded value))) :
     RuntimeTypeEvidenceRel space (.grounded value)
-      (fromLeaTTaAtom leaType) := by
+      (decodeModelAtom leaType) := by
   cases value with
   | int | bool | string =>
-      simp [Metta.Minimal.getTypes, toLeaTTaAtom,
-        toLeaTTaGround] at hmem
+      simp [Metta.Minimal.getTypes, encodeModelAtom,
+        encodeModelGround] at hmem
       subst leaType
       apply RuntimeTypeEvidenceRel.published
       apply (typeOfRel_iff_mem_getAtomTypes _ _ _).mpr
-      simp [getAtomTypes, getGroundedType, fromLeaTTaAtom,
+      simp [getAtomTypes, getGroundedType, decodeModelAtom,
         Atom.undefinedType]
   | custom typeName payload =>
-      simp [Metta.Minimal.getTypes, toLeaTTaAtom,
-        toLeaTTaGround] at hmem
+      simp [Metta.Minimal.getTypes, encodeModelAtom,
+        encodeModelGround] at hmem
       subst leaType
       apply RuntimeTypeEvidenceRel.published
       apply (typeOfRel_iff_mem_getAtomTypes _ _ _).mpr
       by_cases hundefined : typeName = "%Undefined%"
       · subst typeName
-        simp [getAtomTypes, getGroundedType, fromLeaTTaAtom,
+        simp [getAtomTypes, getGroundedType, decodeModelAtom,
           Atom.undefinedType]
-      · simp [getAtomTypes, getGroundedType, fromLeaTTaAtom,
+      · simp [getAtomTypes, getGroundedType, decodeModelAtom,
           Atom.undefinedType, hundefined]
 
 /-- Variables receive exactly the published gradual `%Undefined%` type. -/
@@ -373,52 +377,52 @@ theorem getTypes_variable_runtimeEvidence
     (space : Space) (env : Metta.Minimal.MinEnv) (name : String)
     {leaType : Metta.Atom}
     (hmem : leaType ∈
-      Metta.Minimal.getTypes env (toLeaTTaAtom (.var name))) :
-    RuntimeTypeEvidenceRel space (.var name) (fromLeaTTaAtom leaType) := by
-  simp [Metta.Minimal.getTypes, toLeaTTaAtom] at hmem
+      Metta.Minimal.getTypes env (encodeModelAtom (.var name))) :
+    RuntimeTypeEvidenceRel space (.var name) (decodeModelAtom leaType) := by
+  simp [Metta.Minimal.getTypes, encodeModelAtom] at hmem
   subst leaType
   apply RuntimeTypeEvidenceRel.published
   apply (typeOfRel_iff_mem_getAtomTypes _ _ _).mpr
-  simp [getAtomTypes, fromLeaTTaAtom, Atom.undefinedType]
+  simp [getAtomTypes, decodeModelAtom, Atom.undefinedType]
 
 /-- The empty expression receives exactly the published gradual fallback. -/
 theorem getTypes_emptyExpression_runtimeEvidence
     (space : Space) (env : Metta.Minimal.MinEnv) {leaType : Metta.Atom}
     (hmem : leaType ∈
-      Metta.Minimal.getTypes env (toLeaTTaAtom (.expression []))) :
+      Metta.Minimal.getTypes env (encodeModelAtom (.expression []))) :
     RuntimeTypeEvidenceRel space (.expression [])
-      (fromLeaTTaAtom leaType) := by
-  simp [Metta.Minimal.getTypes, toLeaTTaAtom, toLeaTTaAtoms] at hmem
+      (decodeModelAtom leaType) := by
+  simp [Metta.Minimal.getTypes, encodeModelAtom, encodeModelAtoms] at hmem
   subst leaType
   apply RuntimeTypeEvidenceRel.published
   apply (typeOfRel_iff_mem_getAtomTypes _ _ _).mpr
-  simp [getAtomTypes, fromLeaTTaAtom, Atom.undefinedType]
+  simp [getAtomTypes, decodeModelAtom, Atom.undefinedType]
 
 /-- The unrestricted R3 branch is exactly LeaTTa's `StateValue` lookup rule;
 the recursive content-type evidence is exposed as an explicit premise. -/
 theorem getTypes_stateValue_runtimeEvidence
     {space : Space} {env : Metta.Minimal.MinEnv} (value : Atom)
     (contentEvidence : ∀ {leaType},
-      leaType ∈ Metta.Minimal.getTypes env (toLeaTTaAtom value) →
-        RuntimeTypeEvidenceRel space value (fromLeaTTaAtom leaType))
+      leaType ∈ Metta.Minimal.getTypes env (encodeModelAtom value) →
+        RuntimeTypeEvidenceRel space value (decodeModelAtom leaType))
     {leaType : Metta.Atom}
     (hmem : leaType ∈ Metta.Minimal.getTypes env
-      (toLeaTTaAtom
+      (encodeModelAtom
         (.expression [.symbol "StateValue", value]))) :
     RuntimeTypeEvidenceRel space
       (.expression [.symbol "StateValue", value])
-      (fromLeaTTaAtom leaType) := by
+      (decodeModelAtom leaType) := by
   obtain ⟨contentType, rest, htypes⟩ := List.exists_cons_of_ne_nil
-    (Metta.getTypes_ne_nil env (toLeaTTaAtom value))
+    (Metta.getTypes_ne_nil env (encodeModelAtom value))
   have hcontent : contentType ∈
-      Metta.Minimal.getTypes env (toLeaTTaAtom value) := by
+      Metta.Minimal.getTypes env (encodeModelAtom value) := by
     rw [htypes]
     simp
   have hevidence := contentEvidence hcontent
-  simp [Metta.Minimal.getTypes, toLeaTTaAtom, toLeaTTaAtoms,
+  simp [Metta.Minimal.getTypes, encodeModelAtom, encodeModelAtoms,
     htypes] at hmem
   subst leaType
-  simpa [fromLeaTTaAtom, fromLeaTTaAtoms] using
+  simpa [decodeModelAtom, decodeModelAtoms] using
     (RuntimeTypeEvidenceRel.stateValue
       (R3StateValueTypeRel.mk hevidence))
 
@@ -427,16 +431,16 @@ for the particular head type selected by LeaTTa's R1 inference. -/
 theorem getTypes_head_runtimeEvidence
     {space : Space} {env : Metta.Minimal.MinEnv} {atom : Atom}
     (evidence : ∀ {leaType},
-      leaType ∈ Metta.Minimal.getTypes env (toLeaTTaAtom atom) →
-        RuntimeTypeEvidenceRel space atom (fromLeaTTaAtom leaType)) :
+      leaType ∈ Metta.Minimal.getTypes env (encodeModelAtom atom) →
+        RuntimeTypeEvidenceRel space atom (decodeModelAtom leaType)) :
     RuntimeTypeEvidenceRel space atom
-      (fromLeaTTaAtom
-        (((Metta.Minimal.getTypes env (toLeaTTaAtom atom)).head?).getD
+      (decodeModelAtom
+        (((Metta.Minimal.getTypes env (encodeModelAtom atom)).head?).getD
           (.sym "%Undefined%"))) := by
   obtain ⟨head, tail, htypes⟩ := List.exists_cons_of_ne_nil
-    (Metta.getTypes_ne_nil env (toLeaTTaAtom atom))
+    (Metta.getTypes_ne_nil env (encodeModelAtom atom))
   have hhead : head ∈
-      Metta.Minimal.getTypes env (toLeaTTaAtom atom) := by
+      Metta.Minimal.getTypes env (encodeModelAtom atom) := by
     rw [htypes]
     simp
   simpa [htypes] using evidence hhead
@@ -446,19 +450,19 @@ type selected at every application argument. -/
 theorem getTypes_argumentHeads_runtimeEvidence
     {space : Space} {env : Metta.Minimal.MinEnv} (arguments : List Atom)
     (evidence : ∀ argument ∈ arguments, ∀ {leaType},
-      leaType ∈ Metta.Minimal.getTypes env (toLeaTTaAtom argument) →
+      leaType ∈ Metta.Minimal.getTypes env (encodeModelAtom argument) →
         RuntimeTypeEvidenceRel space argument
-          (fromLeaTTaAtom leaType)) :
+          (decodeModelAtom leaType)) :
     List.Forall₂ (RuntimeTypeEvidenceRel space) arguments
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (arguments.map fun argument =>
           ((Metta.Minimal.getTypes env
-            (toLeaTTaAtom argument)).head?).getD
+            (encodeModelAtom argument)).head?).getD
               (.sym "%Undefined%"))) := by
   induction arguments with
   | nil => exact .nil
   | cons argument arguments ih =>
-      rw [List.map_cons, fromLeaTTaAtoms]
+      rw [List.map_cons, decodeModelAtoms]
       apply List.Forall₂.cons
       · apply getTypes_head_runtimeEvidence
         intro leaType hmem
@@ -472,18 +476,18 @@ for the head type selected by application inference. -/
 theorem getTypes_head_roundtrip
     {env : Metta.Minimal.MinEnv} {atom : Atom}
     (roundtrip : ∀ {leaType},
-      leaType ∈ Metta.Minimal.getTypes env (toLeaTTaAtom atom) →
-        toLeaTTaAtom (fromLeaTTaAtom leaType) = leaType) :
-    toLeaTTaAtom
-        (fromLeaTTaAtom
-          (((Metta.Minimal.getTypes env (toLeaTTaAtom atom)).head?).getD
+      leaType ∈ Metta.Minimal.getTypes env (encodeModelAtom atom) →
+        encodeModelAtom (decodeModelAtom leaType) = leaType) :
+    encodeModelAtom
+        (decodeModelAtom
+          (((Metta.Minimal.getTypes env (encodeModelAtom atom)).head?).getD
             (.sym "%Undefined%"))) =
-      ((Metta.Minimal.getTypes env (toLeaTTaAtom atom)).head?).getD
+      ((Metta.Minimal.getTypes env (encodeModelAtom atom)).head?).getD
         (.sym "%Undefined%") := by
   obtain ⟨head, tail, htypes⟩ := List.exists_cons_of_ne_nil
-    (Metta.getTypes_ne_nil env (toLeaTTaAtom atom))
+    (Metta.getTypes_ne_nil env (encodeModelAtom atom))
   have hhead : head ∈
-      Metta.Minimal.getTypes env (toLeaTTaAtom atom) := by
+      Metta.Minimal.getTypes env (encodeModelAtom atom) := by
     rw [htypes]
     simp
   simpa [htypes] using roundtrip hhead
@@ -508,22 +512,22 @@ list selected by application inference. -/
 theorem getTypes_argumentHeads_roundtrip
     {env : Metta.Minimal.MinEnv} (arguments : List Atom)
     (roundtrip : ∀ argument ∈ arguments, ∀ {leaType},
-      leaType ∈ Metta.Minimal.getTypes env (toLeaTTaAtom argument) →
-        toLeaTTaAtom (fromLeaTTaAtom leaType) = leaType) :
-    toLeaTTaAtoms
-        (fromLeaTTaAtoms
+      leaType ∈ Metta.Minimal.getTypes env (encodeModelAtom argument) →
+        encodeModelAtom (decodeModelAtom leaType) = leaType) :
+    encodeModelAtoms
+        (decodeModelAtoms
           (arguments.map fun argument =>
             ((Metta.Minimal.getTypes env
-              (toLeaTTaAtom argument)).head?).getD
+              (encodeModelAtom argument)).head?).getD
                 (.sym "%Undefined%"))) =
       arguments.map fun argument =>
         ((Metta.Minimal.getTypes env
-          (toLeaTTaAtom argument)).head?).getD
+          (encodeModelAtom argument)).head?).getD
             (.sym "%Undefined%") := by
   induction arguments with
   | nil => rfl
   | cons argument arguments ih =>
-      simp only [List.map_cons, fromLeaTTaAtoms, toLeaTTaAtoms]
+      simp only [List.map_cons, decodeModelAtoms, encodeModelAtoms]
       apply congrArg₂ List.cons
       · apply getTypes_head_roundtrip
         intro leaType hmem
@@ -555,13 +559,13 @@ theorem TypeEnvironmentRel.symbolPublished
     (index : TypeEnvironmentRel space env)
     {name : String} {leaType : Metta.Atom}
     (hmem : leaType ∈ env.types.getD name []) :
-    TypeOfRel space (.symbol name) (fromLeaTTaAtom leaType) := by
+    TypeOfRel space (.symbol name) (decodeModelAtom leaType) := by
   have htranslated : leaType ∈
-      toLeaTTaAtoms (getAnnotatedTypes space (.symbol name)) := by
+      encodeModelAtoms (getAnnotatedTypes space (.symbol name)) := by
     simpa [index.symbolTypes name] using hmem
-  rw [toLeaTTaAtoms_eq_map] at htranslated
+  rw [encodeModelAtoms_eq_map] at htranslated
   obtain ⟨type, htype, rfl⟩ := List.mem_map.mp htranslated
-  rw [fromLeaTTaAtom_toLeaTTaAtom]
+  rw [decodeModelAtom_encodeModelAtom]
   apply (typeOfRel_iff_mem_getAtomTypes space (.symbol name) type).mpr
   have hnonempty : getAnnotatedTypes space (.symbol name) ≠ [] := by
     intro hempty
@@ -577,11 +581,11 @@ theorem TypeEnvironmentRel.symbolHEImage
     (hmem : leaType ∈ env.types.getD name []) :
     LeaAtomHEImage leaType := by
   have htranslated : leaType ∈
-      toLeaTTaAtoms (getAnnotatedTypes space (.symbol name)) := by
+      encodeModelAtoms (getAnnotatedTypes space (.symbol name)) := by
     simpa [index.symbolTypes name] using hmem
-  rw [toLeaTTaAtoms_eq_map] at htranslated
+  rw [encodeModelAtoms_eq_map] at htranslated
   obtain ⟨type, _, rfl⟩ := List.mem_map.mp htranslated
-  exact leaAtomHEImage_toLeaTTaAtom type
+  exact leaAtomHEImage_encodeModelAtom type
 
 /-- Every indexed nonempty-expression type is published-core type evidence. -/
 theorem TypeEnvironmentRel.expressionPublished
@@ -590,16 +594,16 @@ theorem TypeEnvironmentRel.expressionPublished
     {head : Atom} {tail : List Atom} {leaType : Metta.Atom}
     (hmem : leaType ∈
       (env.exprTypes.filter (fun entry =>
-        entry.1 == toLeaTTaAtom (.expression (head :: tail)))).map (·.2)) :
+        entry.1 == encodeModelAtom (.expression (head :: tail)))).map (·.2)) :
     TypeOfRel space (.expression (head :: tail))
-      (fromLeaTTaAtom leaType) := by
+      (decodeModelAtom leaType) := by
   have htranslated : leaType ∈
-      toLeaTTaAtoms
+      encodeModelAtoms
         (getAnnotatedTypes space (.expression (head :: tail))) := by
     simpa [index.expressionTypes head tail] using hmem
-  rw [toLeaTTaAtoms_eq_map] at htranslated
+  rw [encodeModelAtoms_eq_map] at htranslated
   obtain ⟨type, htype, rfl⟩ := List.mem_map.mp htranslated
-  rw [fromLeaTTaAtom_toLeaTTaAtom]
+  rw [decodeModelAtom_encodeModelAtom]
   apply (typeOfRel_iff_mem_getAtomTypes space
     (.expression (head :: tail)) type).mpr
   have hnonempty :
@@ -616,15 +620,15 @@ theorem TypeEnvironmentRel.expressionHEImage
     {head : Atom} {tail : List Atom} {leaType : Metta.Atom}
     (hmem : leaType ∈
       (env.exprTypes.filter (fun entry =>
-        entry.1 == toLeaTTaAtom (.expression (head :: tail)))).map (·.2)) :
+        entry.1 == encodeModelAtom (.expression (head :: tail)))).map (·.2)) :
     LeaAtomHEImage leaType := by
   have htranslated : leaType ∈
-      toLeaTTaAtoms
+      encodeModelAtoms
         (getAnnotatedTypes space (.expression (head :: tail))) := by
     simpa [index.expressionTypes head tail] using hmem
-  rw [toLeaTTaAtoms_eq_map] at htranslated
+  rw [encodeModelAtoms_eq_map] at htranslated
   obtain ⟨type, _, rfl⟩ := List.mem_map.mp htranslated
-  exact leaAtomHEImage_toLeaTTaAtom type
+  exact leaAtomHEImage_encodeModelAtom type
 
 /-- Symbol lookup is exactly the ordered published annotation list, with the
 same `%Undefined%` fallback when its index bucket is empty. -/
@@ -633,27 +637,27 @@ theorem getTypes_symbol_runtimeEvidence
     (index : TypeEnvironmentRel space env) (name : String)
     {leaType : Metta.Atom}
     (hmem : leaType ∈
-      Metta.Minimal.getTypes env (toLeaTTaAtom (.symbol name))) :
+      Metta.Minimal.getTypes env (encodeModelAtom (.symbol name))) :
     RuntimeTypeEvidenceRel space (.symbol name)
-      (fromLeaTTaAtom leaType) := by
+      (decodeModelAtom leaType) := by
   cases hbucket : env.types.getD name [] with
   | nil =>
       have hannotations :
           getAnnotatedTypes space (.symbol name) = [] := by
         have htranslated := index.symbolTypes name
         rw [hbucket] at htranslated
-        have hdecoded := congrArg fromLeaTTaAtoms htranslated
+        have hdecoded := congrArg decodeModelAtoms htranslated
         simpa using hdecoded.symm
-      simp [Metta.Minimal.getTypes, toLeaTTaAtom, hbucket] at hmem
+      simp [Metta.Minimal.getTypes, encodeModelAtom, hbucket] at hmem
       subst leaType
       apply RuntimeTypeEvidenceRel.published
       apply (typeOfRel_iff_mem_getAtomTypes _ _ _).mpr
-      simp [getAtomTypes, hannotations, fromLeaTTaAtom,
+      simp [getAtomTypes, hannotations, decodeModelAtom,
         Atom.undefinedType]
   | cons first rest =>
       apply RuntimeTypeEvidenceRel.published
       apply index.symbolPublished
-      simpa [Metta.Minimal.getTypes, toLeaTTaAtom, hbucket] using hmem
+      simpa [Metta.Minimal.getTypes, encodeModelAtom, hbucket] using hmem
 
 /-- When a direct expression annotation is present, LeaTTa returns that
 published-core evidence before considering R1 inference. -/
@@ -662,29 +666,29 @@ theorem getTypes_directExpression_runtimeEvidence
     (index : TypeEnvironmentRel space env) (head : Atom) (tail : List Atom)
     {leaType : Metta.Atom}
     (hnotState : ∀ leaValue,
-      toLeaTTaAtom head = .sym "StateValue" →
-      toLeaTTaAtoms tail = [leaValue] → False)
+      encodeModelAtom head = .sym "StateValue" →
+      encodeModelAtoms tail = [leaValue] → False)
     (hdirect :
       (env.exprTypes.filter (fun entry =>
-        entry.1 == toLeaTTaAtom (.expression (head :: tail)))) ≠ [])
+        entry.1 == encodeModelAtom (.expression (head :: tail)))) ≠ [])
     (hmem : leaType ∈
       Metta.Minimal.getTypes env
-        (toLeaTTaAtom (.expression (head :: tail)))) :
+        (encodeModelAtom (.expression (head :: tail)))) :
     RuntimeTypeEvidenceRel space (.expression (head :: tail))
-      (fromLeaTTaAtom leaType) := by
+      (decodeModelAtom leaType) := by
   obtain ⟨first, rest, hquery⟩ := List.exists_cons_of_ne_nil hdirect
   have hquery' :
       env.exprTypes.filter (fun entry =>
         entry.1 == .expr
-          (toLeaTTaAtom head :: tail.map toLeaTTaAtom)) = first :: rest := by
-    simpa [toLeaTTaAtom, toLeaTTaAtoms_eq_map] using hquery
+          (encodeModelAtom head :: tail.map encodeModelAtom)) = first :: rest := by
+    simpa [encodeModelAtom, encodeModelAtoms_eq_map] using hquery
   apply RuntimeTypeEvidenceRel.published
   apply index.expressionPublished
   rw [hquery]
   change leaType ∈ Metta.Minimal.getTypes env
-    (.expr (toLeaTTaAtom head :: toLeaTTaAtoms tail)) at hmem
+    (.expr (encodeModelAtom head :: encodeModelAtoms tail)) at hmem
   rw [Metta.Minimal.getTypes.eq_10 env
-    (toLeaTTaAtom head) (toLeaTTaAtoms tail) hnotState] at hmem
+    (encodeModelAtom head) (encodeModelAtoms tail) hnotState] at hmem
   simpa [hquery'] using hmem
 
 /-- Homomorphic valuation of a runtime atom depends only on its finite
@@ -786,7 +790,7 @@ theorem TypeBindingState.specSatisfiable
     state.runtime.canonical.1
   have hspec : HEBindingSatisfied leaValuation spec :=
     (state.theory leaValuation).mpr hlea
-  exact ⟨fun name => fromLeaTTaAtom (leaValuation name),
+  exact ⟨fun name => decodeModelAtom (leaValuation name),
     specTypeBindingSatisfied_of_heBindingSatisfied hspec⟩
 
 /-- The native side of a reachable type-binding state has the runtime
@@ -800,13 +804,13 @@ theorem TypeBindingState.specSatisfied_congr_on_runtimeVars
     TypeBindingSatisfied left spec ↔
       TypeBindingSatisfied right spec := by
   let leftRuntime : String → Metta.Atom :=
-    fun name => toLeaTTaAtom (left name)
+    fun name => encodeModelAtom (left name)
   let rightRuntime : String → Metta.Atom :=
-    fun name => toLeaTTaAtom (right name)
+    fun name => encodeModelAtom (right name)
   have runtimeAgrees : ∀ name, name ∈ lea.vars →
       leftRuntime name = rightRuntime name := by
     intro name member
-    exact congrArg toLeaTTaAtom (agrees name member)
+    exact congrArg encodeModelAtom (agrees name member)
   calc
     TypeBindingSatisfied left spec ↔
         HEBindingSatisfied leftRuntime spec :=
@@ -828,22 +832,22 @@ theorem TypeBindingState.returnObserved
     {spec : Bindings} {lea : Metta.Bindings}
     (state : TypeBindingState spec lea) (declared : Atom) :
     R1ReturnTypeObserved spec declared
-      (fromLeaTTaAtom (Metta.instantiate lea (toLeaTTaAtom declared))) := by
+      (decodeModelAtom (Metta.instantiate lea (encodeModelAtom declared))) := by
   constructor
   · exact state.specSatisfiable
   · intro valuation hspec
     let leaValuation : String → Metta.Atom :=
-      fun name => toLeaTTaAtom (valuation name)
+      fun name => encodeModelAtom (valuation name)
     have hhe : HEBindingSatisfied leaValuation spec :=
       (specTypeBindingSatisfied_iff_heBindingSatisfied_translated
         valuation spec).mp hspec
     have hlea : LeaBindingSatisfied leaValuation lea :=
       (state.theory leaValuation).mp hhe
     have hinert := instantiate_semantically_inert hlea
-      (toLeaTTaAtom declared)
-    have hdecoded := congrArg fromLeaTTaAtom hinert
-    rw [fromLeaTTaAtom_applyClassSolution_any,
-      fromLeaTTaAtom_applyClassSolution_any] at hdecoded
+      (encodeModelAtom declared)
+    have hdecoded := congrArg decodeModelAtom hinert
+    rw [decodeModelAtom_applyClassSolution_any,
+      decodeModelAtom_applyClassSolution_any] at hdecoded
     simpa [leaValuation] using hdecoded.symm
 
 /-- Empty spec and LeaTTa binding presentations establish the base state. -/
@@ -866,7 +870,7 @@ theorem TypeBindingState.mergeMatchOutput
     {expected actual : Atom}
     (state : TypeBindingState specIncoming leaIncoming)
     (hmatch : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom expected) (toLeaTTaAtom actual))
+      (encodeModelAtom expected) (encodeModelAtom actual))
     (hmerge : leaOutput ∈ Metta.Bindings.merge leaIncoming matched)
     (hloop : leaOutput.hasLoop = false) :
     ∃ specMatched specOutput,
@@ -881,12 +885,12 @@ theorem TypeBindingState.mergeMatchOutput
     leaMatch_observational_sound hmatch
   have hmatchedNoFloat : LeaBindingsNoFloat matched :=
     leaMatchAtoms_result_noFloat
-      (toLeaTTaAtom_noFloat expected)
-      (toLeaTTaAtom_noFloat actual) hmatch
+      (encodeModelAtom_noFloat expected)
+      (encodeModelAtom_noFloat actual) hmatch
   have houtputRuntime : LeaRuntimeBindingInvariant leaOutput :=
     state.runtime.merge_matchOutput
-      (toLeaTTaAtom_noFloat expected)
-      (toLeaTTaAtom_noFloat actual) hmatch hmerge hloop
+      (encodeModelAtom_noFloat expected)
+      (encodeModelAtom_noFloat actual) hmatch hmerge hloop
   let valuation := leaClassSolution leaOutput
   have houtputSatisfied : LeaBindingSatisfied valuation leaOutput :=
     houtputRuntime.canonical.1
@@ -904,7 +908,7 @@ theorem TypeBindingState.mergeMatchOutput
     Spec.Match.Completeness.exists_specMerge_of_solution
       hspecIncoming state.specAssignmentsNonVariable
       hspecMatched
-      (LeaTTaSpecConformance.specMatch_assignmentsNonVariable hspecMatch)
+      (Spec.Match.ModelTheory.specMatch_assignmentsNonVariable hspecMatch)
   refine ⟨specMatched, specOutput, hspecMatch, hspecMerge, ?_⟩
   refine ⟨?_, hspecOutputNonVariable, houtputRuntime⟩
   intro otherValuation
@@ -913,9 +917,9 @@ theorem TypeBindingState.mergeMatchOutput
     leaMerge_solution_iff otherValuation state.runtime.noFloat
       hmatchedNoFloat hmerge]
 
-private theorem toLeaTTaAtom_beq_undefined_eq_false
+private theorem encodeModelAtom_beq_undefined_eq_false
     (atom : Atom) (hneq : atom ≠ Atom.undefinedType) :
-    (toLeaTTaAtom atom == Metta.Atom.sym "%Undefined%") = false := by
+    (encodeModelAtom atom == Metta.Atom.sym "%Undefined%") = false := by
   cases atom with
   | symbol name =>
       simp [Atom.undefinedType] at hneq
@@ -924,9 +928,9 @@ private theorem toLeaTTaAtom_beq_undefined_eq_false
   | var | grounded | expression =>
       rfl
 
-private theorem toLeaTTaAtom_beq_atomType_eq_false
+private theorem encodeModelAtom_beq_atomType_eq_false
     (atom : Atom) (hneq : atom ≠ Atom.atomType) :
-    (toLeaTTaAtom atom == Metta.Atom.sym "Atom") = false := by
+    (encodeModelAtom atom == Metta.Atom.sym "Atom") = false := by
   cases atom with
   | symbol name =>
       simp [Atom.atomType] at hneq
@@ -945,14 +949,14 @@ private theorem matchReduced_leaf_success
     (hleftUndefined : left ≠ Atom.undefinedType)
     (hrightUndefined : right ≠ Atom.undefinedType)
     (hsuccess : Metta.Minimal.matchReduced leaIncoming
-      (toLeaTTaAtom left) (toLeaTTaAtom right) = some leaOutput) :
+      (encodeModelAtom left) (encodeModelAtom right) = some leaOutput) :
     ∃ matched,
       matched ∈ Metta.matchAtoms
-          (toLeaTTaAtom left) (toLeaTTaAtom right) ∧
+          (encodeModelAtom left) (encodeModelAtom right) ∧
         leaOutput ∈ Metta.Bindings.merge leaIncoming matched ∧
         leaOutput.hasLoop = false := by
-  have hleftBeq := toLeaTTaAtom_beq_undefined_eq_false left hleftUndefined
-  have hrightBeq := toLeaTTaAtom_beq_undefined_eq_false right hrightUndefined
+  have hleftBeq := encodeModelAtom_beq_undefined_eq_false left hleftUndefined
+  have hrightBeq := encodeModelAtom_beq_undefined_eq_false right hrightUndefined
   rw [Metta.Minimal.matchReduced, hleftBeq, hrightBeq] at hsuccess
   · cases left <;> cases right
     all_goals
@@ -968,8 +972,8 @@ private theorem matchReduced_leaf_success
       refine ⟨matched, hmatch, hmerge, ?_⟩
       simpa using hparts.2
   · intro expectedAtoms actualAtoms hleftExpression hrightExpression
-    cases left <;> simp [toLeaTTaAtom] at hleftExpression
-    cases right <;> simp [toLeaTTaAtom] at hrightExpression
+    cases left <;> simp [encodeModelAtom] at hleftExpression
+    cases right <;> simp [encodeModelAtom] at hrightExpression
     exact hnotBothExpressions _ _ rfl rfl
 
 /-- One repaired non-expression reduced-type step realizes the observational
@@ -983,7 +987,7 @@ private theorem matchReduced_leaf_r2_sound
     (hleftUndefined : left ≠ Atom.undefinedType)
     (hrightUndefined : right ≠ Atom.undefinedType)
     (hsuccess : Metta.Minimal.matchReduced leaIncoming
-      (toLeaTTaAtom left) (toLeaTTaAtom right) = some leaOutput) :
+      (encodeModelAtom left) (encodeModelAtom right) = some leaOutput) :
     ∃ specOutput,
       R2ReducedTypeMatchRel left right specIncoming specOutput ∧
         TypeBindingState specOutput leaOutput := by
@@ -997,7 +1001,7 @@ private theorem matchReduced_leaf_r2_sound
   · exact outputState.specSatisfiable
   · intro valuation
     let translated : String → Metta.Atom :=
-      fun name => toLeaTTaAtom (valuation name)
+      fun name => encodeModelAtom (valuation name)
     constructor
     · intro houtput
       have houtputHE : HEBindingSatisfied translated specOutput :=
@@ -1015,9 +1019,9 @@ private theorem matchReduced_leaf_r2_sound
       have hequationNative :
           applyTypeValuation valuation right =
             applyTypeValuation valuation left := by
-        apply toLeaTTaAtom_injective
-        rw [toLeaTTaAtom_applyTypeValuation,
-          toLeaTTaAtom_applyTypeValuation]
+        apply encodeModelAtom_injective
+        rw [encodeModelAtom_applyTypeValuation,
+          encodeModelAtom_applyTypeValuation]
         exact hequation
       exact ⟨hincoming,
         (reducedTypeConsistent_iff_applyTypeValuation_eq_of_leaf
@@ -1034,11 +1038,11 @@ private theorem matchReduced_leaf_r2_sound
           valuation left right hnotBothExpressions hleftUndefined
           hrightUndefined).mp hconsistent
       have hequation :
-          applyClassSolution translated (toLeaTTaAtom right) =
-            applyClassSolution translated (toLeaTTaAtom left) := by
-        rw [← toLeaTTaAtom_applyTypeValuation,
-          ← toLeaTTaAtom_applyTypeValuation]
-        exact congrArg toLeaTTaAtom hequationNative.symm
+          applyClassSolution translated (encodeModelAtom right) =
+            applyClassSolution translated (encodeModelAtom left) := by
+        rw [← encodeModelAtom_applyTypeValuation,
+          ← encodeModelAtom_applyTypeValuation]
+        exact congrArg encodeModelAtom hequationNative.symm
       have hmatchedHE : HEBindingSatisfied translated specMatched :=
         (Spec.Match.SolutionTheory.matchRel_solution_iff
           hspecMatch translated).mpr hequation
@@ -1071,7 +1075,7 @@ theorem matchReduced_r2_sound
     {specIncoming : Bindings} {leaIncoming leaOutput : Metta.Bindings}
     (state : TypeBindingState specIncoming leaIncoming)
     (hsuccess : Metta.Minimal.matchReduced leaIncoming
-      (toLeaTTaAtom left) (toLeaTTaAtom right) = some leaOutput) :
+      (encodeModelAtom left) (encodeModelAtom right) = some leaOutput) :
     ∃ specOutput,
       R2ReducedTypeMatchRel left right specIncoming specOutput ∧
         TypeBindingState specOutput leaOutput := by
@@ -1081,7 +1085,7 @@ theorem matchReduced_r2_sound
         (Metta.Atom.sym "%Undefined%" == Metta.Atom.sym "%Undefined%") =
           true := by decide
     have hsame : leaIncoming = leaOutput := by
-      simpa [Metta.Minimal.matchReduced, toLeaTTaAtom,
+      simpa [Metta.Minimal.matchReduced, encodeModelAtom,
         Atom.undefinedType, hundefinedBeq] using hsuccess
     subst leaOutput
     refine ⟨specIncoming, ?_, state⟩
@@ -1097,7 +1101,7 @@ theorem matchReduced_r2_sound
         (Metta.Atom.sym "%Undefined%" == Metta.Atom.sym "%Undefined%") =
           true := by decide
     have hsame : leaIncoming = leaOutput := by
-      simpa [Metta.Minimal.matchReduced, toLeaTTaAtom,
+      simpa [Metta.Minimal.matchReduced, encodeModelAtom,
         Atom.undefinedType, hundefinedBeq] using hsuccess
     subst leaOutput
     refine ⟨specIncoming, ?_, state⟩
@@ -1115,16 +1119,16 @@ theorem matchReduced_r2_sound
       left = .expression lefts ∧ right = .expression rights
   · obtain ⟨lefts, rights, rfl, rfl⟩ := hexpressions
     have hleftBeq :
-        (Metta.Atom.expr (toLeaTTaAtoms lefts) ==
+        (Metta.Atom.expr (encodeModelAtoms lefts) ==
           Metta.Atom.sym "%Undefined%") = false := rfl
     have hrightBeq :
-        (Metta.Atom.expr (toLeaTTaAtoms rights) ==
+        (Metta.Atom.expr (encodeModelAtoms rights) ==
           Metta.Atom.sym "%Undefined%") = false := rfl
     have hlistSuccess :
         Metta.Minimal.matchReducedList leaIncoming
-            (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) =
+            (encodeModelAtoms lefts) (encodeModelAtoms rights) =
           some leaOutput := by
-      simp only [toLeaTTaAtom] at hsuccess
+      simp only [encodeModelAtom] at hsuccess
       rw [Metta.Minimal.matchReduced.eq_1, hleftBeq, hrightBeq] at hsuccess
       exact hsuccess
     obtain ⟨specOutput, hlistRel, outputState⟩ :=
@@ -1149,7 +1153,7 @@ private theorem matchReducedList_r2_sound
     {specIncoming : Bindings} {leaIncoming leaOutput : Metta.Bindings}
     (state : TypeBindingState specIncoming leaIncoming)
     (hsuccess : Metta.Minimal.matchReducedList leaIncoming
-      (toLeaTTaAtoms left) (toLeaTTaAtoms right) = some leaOutput) :
+      (encodeModelAtoms left) (encodeModelAtoms right) = some leaOutput) :
     ∃ specOutput,
       R2ReducedTypeListMatchRel left right specIncoming specOutput ∧
         TypeBindingState specOutput leaOutput := by
@@ -1166,23 +1170,23 @@ private theorem matchReducedList_r2_sound
           · intro valuation
             simp [ReducedTypeListConsistent]
       | cons rightHead rightTail =>
-          simp [toLeaTTaAtoms, Metta.Minimal.matchReducedList] at hsuccess
+          simp [encodeModelAtoms, Metta.Minimal.matchReducedList] at hsuccess
   | cons leftHead leftTail =>
       cases right with
       | nil =>
-          simp [toLeaTTaAtoms, Metta.Minimal.matchReducedList] at hsuccess
+          simp [encodeModelAtoms, Metta.Minimal.matchReducedList] at hsuccess
       | cons rightHead rightTail =>
           cases hnext : Metta.Minimal.matchReduced leaIncoming
-              (toLeaTTaAtom leftHead) (toLeaTTaAtom rightHead) with
+              (encodeModelAtom leftHead) (encodeModelAtom rightHead) with
           | none =>
-              simp [toLeaTTaAtoms, Metta.Minimal.matchReducedList,
+              simp [encodeModelAtoms, Metta.Minimal.matchReducedList,
                 hnext] at hsuccess
           | some leaNext =>
               have htailSuccess :
                   Metta.Minimal.matchReducedList leaNext
-                      (toLeaTTaAtoms leftTail) (toLeaTTaAtoms rightTail) =
+                      (encodeModelAtoms leftTail) (encodeModelAtoms rightTail) =
                     some leaOutput := by
-                simpa [toLeaTTaAtoms, Metta.Minimal.matchReducedList,
+                simpa [encodeModelAtoms, Metta.Minimal.matchReducedList,
                   hnext] using hsuccess
               obtain ⟨specNext, hheadRel, nextState⟩ :=
                 matchReduced_r2_sound state hnext
@@ -1212,7 +1216,7 @@ theorem matchType_corePlusR2_sound
     {specIncoming : Bindings} {leaIncoming leaOutput : Metta.Bindings}
     (state : TypeBindingState specIncoming leaIncoming)
     (hsuccess : Metta.Minimal.matchType leaIncoming
-      (toLeaTTaAtom left) (toLeaTTaAtom right) = some leaOutput) :
+      (encodeModelAtom left) (encodeModelAtom right) = some leaOutput) :
     ∃ specOutput,
       CorePlusR2TypeMatchRel left right specIncoming specOutput ∧
         TypeBindingState specOutput leaOutput := by
@@ -1222,7 +1226,7 @@ theorem matchType_corePlusR2_sound
         (Metta.Atom.sym "%Undefined%" == Metta.Atom.sym "%Undefined%") =
           true := by decide
     have hsame : leaIncoming = leaOutput := by
-      simpa [Metta.Minimal.matchType, toLeaTTaAtom,
+      simpa [Metta.Minimal.matchType, encodeModelAtom,
         Atom.undefinedType, hundefinedBeq] using hsuccess
     subst leaOutput
     refine ⟨specIncoming, ?_, state⟩
@@ -1239,7 +1243,7 @@ theorem matchType_corePlusR2_sound
         (Metta.Atom.sym "%Undefined%" == Metta.Atom.sym "%Undefined%") =
           true := by decide
     have hsame : leaIncoming = leaOutput := by
-      simpa [Metta.Minimal.matchType, toLeaTTaAtom,
+      simpa [Metta.Minimal.matchType, encodeModelAtom,
         Atom.undefinedType, hundefinedBeq] using hsuccess
     subst leaOutput
     refine ⟨specIncoming, ?_, state⟩
@@ -1256,7 +1260,7 @@ theorem matchType_corePlusR2_sound
         (Metta.Atom.sym "Atom" == Metta.Atom.sym "Atom") = true := by
       decide
     have hsame : leaIncoming = leaOutput := by
-      simpa [Metta.Minimal.matchType, toLeaTTaAtom,
+      simpa [Metta.Minimal.matchType, encodeModelAtom,
         Atom.atomType, hatomBeq] using hsuccess
     subst leaOutput
     refine ⟨specIncoming, ?_, state⟩
@@ -1273,7 +1277,7 @@ theorem matchType_corePlusR2_sound
         (Metta.Atom.sym "Atom" == Metta.Atom.sym "Atom") = true := by
       decide
     have hsame : leaIncoming = leaOutput := by
-      simpa [Metta.Minimal.matchType, toLeaTTaAtom,
+      simpa [Metta.Minimal.matchType, encodeModelAtom,
         Atom.atomType, hatomBeq] using hsuccess
     subst leaOutput
     refine ⟨specIncoming, ?_, state⟩
@@ -1285,15 +1289,15 @@ theorem matchType_corePlusR2_sound
         exact Or.inr (Or.inr (Or.inr (Or.inl rfl)))
       tauto
   have hleftUndefinedBeq :=
-    toLeaTTaAtom_beq_undefined_eq_false left hleftUndefined
+    encodeModelAtom_beq_undefined_eq_false left hleftUndefined
   have hrightUndefinedBeq :=
-    toLeaTTaAtom_beq_undefined_eq_false right hrightUndefined
+    encodeModelAtom_beq_undefined_eq_false right hrightUndefined
   have hleftAtomBeq :=
-    toLeaTTaAtom_beq_atomType_eq_false left hleftAtom
+    encodeModelAtom_beq_atomType_eq_false left hleftAtom
   have hrightAtomBeq :=
-    toLeaTTaAtom_beq_atomType_eq_false right hrightAtom
+    encodeModelAtom_beq_atomType_eq_false right hrightAtom
   have hreduced : Metta.Minimal.matchReduced leaIncoming
-      (toLeaTTaAtom left) (toLeaTTaAtom right) = some leaOutput := by
+      (encodeModelAtom left) (encodeModelAtom right) = some leaOutput := by
     rw [Metta.Minimal.matchType, hleftUndefinedBeq,
       hrightUndefinedBeq, hleftAtomBeq, hrightAtomBeq] at hsuccess
     exact hsuccess
@@ -1323,7 +1327,7 @@ private theorem matchApplicationTypeArguments_r1_alpha_sound
       {leaIncoming leaOutput : Metta.Bindings},
       TypeBindingState specIncoming leaIncoming →
       Metta.Minimal.matchApplicationTypeArguments leaIncoming
-        (toLeaTTaAtoms expectedTypes) (toLeaTTaAtoms actualTypes) =
+        (encodeModelAtoms expectedTypes) (encodeModelAtoms actualTypes) =
           some leaOutput →
       ∃ specOutput,
         RuntimeArgumentsApplicableRel space arguments expectedTypes
@@ -1335,24 +1339,24 @@ private theorem matchApplicationTypeArguments_r1_alpha_sound
       cases expectedTypes with
       | nil =>
           have hsame : leaIncoming = leaOutput := by
-            simpa [toLeaTTaAtoms,
+            simpa [encodeModelAtoms,
               Metta.Minimal.matchApplicationTypeArguments] using hsuccess
           subst leaOutput
           exact ⟨specIncoming, .nil specIncoming, state⟩
       | cons expected expectedTypes =>
-          simp [toLeaTTaAtoms,
+          simp [encodeModelAtoms,
             Metta.Minimal.matchApplicationTypeArguments] at hsuccess
   | @cons argument actualType arguments actualTypes hactual htail ih =>
       intro expectedTypes specIncoming leaIncoming leaOutput state hsuccess
       cases expectedTypes with
       | nil =>
-          simp [toLeaTTaAtoms,
+          simp [encodeModelAtoms,
             Metta.Minimal.matchApplicationTypeArguments] at hsuccess
       | cons expected expectedTypes =>
-          simp only [toLeaTTaAtoms,
+          simp only [encodeModelAtoms,
             Metta.Minimal.matchApplicationTypeArguments] at hsuccess
           generalize hnext : Metta.Minimal.matchType leaIncoming
-            (toLeaTTaAtom expected) (toLeaTTaAtom actualType) = next at hsuccess
+            (encodeModelAtom expected) (encodeModelAtom actualType) = next at hsuccess
           cases next with
           | none => simp at hsuccess
           | some leaNext =>
@@ -1376,7 +1380,7 @@ theorem matchApplicationTypeArguments_r1_sound
       {leaIncoming leaOutput : Metta.Bindings},
       TypeBindingState specIncoming leaIncoming →
       Metta.Minimal.matchApplicationTypeArguments leaIncoming
-        (toLeaTTaAtoms expectedTypes) (toLeaTTaAtoms actualTypes) =
+        (encodeModelAtoms expectedTypes) (encodeModelAtoms actualTypes) =
           some leaOutput →
       ∃ specOutput,
         RuntimeArgumentsApplicableRel space arguments expectedTypes
@@ -1392,13 +1396,13 @@ theorem matchApplicationTypeArguments_r1_sound
 member at its corresponding position. -/
 private theorem atom_roundtrip_of_atoms_roundtrip
     {atoms : List Metta.Atom}
-    (roundtrip : toLeaTTaAtoms (fromLeaTTaAtoms atoms) = atoms) :
+    (roundtrip : encodeModelAtoms (decodeModelAtoms atoms) = atoms) :
     ∀ {atom}, atom ∈ atoms →
-      toLeaTTaAtom (fromLeaTTaAtom atom) = atom := by
+      encodeModelAtom (decodeModelAtom atom) = atom := by
   induction atoms with
   | nil => simp
   | cons head tail ih =>
-      simp only [fromLeaTTaAtoms, toLeaTTaAtoms,
+      simp only [decodeModelAtoms, encodeModelAtoms,
         List.cons.injEq] at roundtrip
       intro atom hmem
       rcases roundtrip with ⟨hhead, htail⟩
@@ -1505,14 +1509,14 @@ private theorem undefined_expression_runtimeEvidence
     (index : TypeEnvironmentRel space env) (head : Atom) (tail : List Atom)
     (hdirect :
       env.exprTypes.filter (fun entry =>
-        entry.1 == toLeaTTaAtom (.expression (head :: tail))) = []) :
+        entry.1 == encodeModelAtom (.expression (head :: tail))) = []) :
     RuntimeTypeEvidenceRel space (.expression (head :: tail))
       Atom.undefinedType := by
   have hannotations :
       getAnnotatedTypes space (.expression (head :: tail)) = [] := by
     have htranslated := index.expressionTypes head tail
     rw [hdirect] at htranslated
-    have hdecoded := congrArg fromLeaTTaAtoms htranslated
+    have hdecoded := congrArg decodeModelAtoms htranslated
     simpa using hdecoded.symm
   apply RuntimeTypeEvidenceRel.published
   apply (typeOfRel_iff_mem_getAtomTypes _ _ _).mpr
@@ -1530,38 +1534,38 @@ demanded by the α-premises of the extended R1 layer. -/
 mutual
 
 /-- Decoding commutes with total variable renaming. -/
-private theorem fromLeaTTaAtom_renameAllVars
+private theorem decodeModelAtom_renameAllVars
     (rename : Metta.VarName → Metta.VarName) (atom : Metta.Atom) :
-    fromLeaTTaAtom (Metta.Minimal.renameAllVars rename atom) =
-      renameTypeVars rename (fromLeaTTaAtom atom) := by
+    decodeModelAtom (Metta.Minimal.renameAllVars rename atom) =
+      renameTypeVars rename (decodeModelAtom atom) := by
   cases atom with
   | sym name =>
-      simp [Metta.Minimal.renameAllVars, fromLeaTTaAtom,
+      simp [Metta.Minimal.renameAllVars, decodeModelAtom,
         renameTypeVars]
   | var name =>
-      simp [Metta.Minimal.renameAllVars, fromLeaTTaAtom,
+      simp [Metta.Minimal.renameAllVars, decodeModelAtom,
         renameTypeVars]
   | gnd value =>
-      simp [Metta.Minimal.renameAllVars, fromLeaTTaAtom,
+      simp [Metta.Minimal.renameAllVars, decodeModelAtom,
         renameTypeVars]
   | expr atoms =>
-      simp only [Metta.Minimal.renameAllVars, fromLeaTTaAtom,
+      simp only [Metta.Minimal.renameAllVars, decodeModelAtom,
         renameTypeVars]
       exact congrArg Atom.expression
-        (fromLeaTTaAtoms_renameAllVars rename atoms)
+        (decodeModelAtoms_renameAllVars rename atoms)
 termination_by 2 * sizeOf atom
 
-/-- List companion of `fromLeaTTaAtom_renameAllVars`. -/
-private theorem fromLeaTTaAtoms_renameAllVars
+/-- List companion of `decodeModelAtom_renameAllVars`. -/
+private theorem decodeModelAtoms_renameAllVars
     (rename : Metta.VarName → Metta.VarName) (atoms : List Metta.Atom) :
-    fromLeaTTaAtoms (atoms.map (Metta.Minimal.renameAllVars rename)) =
-      (fromLeaTTaAtoms atoms).map (renameTypeVars rename) := by
+    decodeModelAtoms (atoms.map (Metta.Minimal.renameAllVars rename)) =
+      (decodeModelAtoms atoms).map (renameTypeVars rename) := by
   cases atoms with
   | nil => rfl
   | cons atom atoms =>
       exact congrArg₂ List.cons
-        (fromLeaTTaAtom_renameAllVars rename atom)
-        (fromLeaTTaAtoms_renameAllVars rename atoms)
+        (decodeModelAtom_renameAllVars rename atom)
+        (decodeModelAtoms_renameAllVars rename atoms)
 termination_by 2 * sizeOf atoms + 1
 decreasing_by
   all_goals simp_wf
@@ -1572,38 +1576,38 @@ end
 mutual
 
 /-- Encoding commutes with total variable renaming. -/
-private theorem toLeaTTaAtom_renameTypeVars
+private theorem encodeModelAtom_renameTypeVars
     (rename : String → String) (atom : Atom) :
-    toLeaTTaAtom (renameTypeVars rename atom) =
-      Metta.Minimal.renameAllVars rename (toLeaTTaAtom atom) := by
+    encodeModelAtom (renameTypeVars rename atom) =
+      Metta.Minimal.renameAllVars rename (encodeModelAtom atom) := by
   cases atom with
   | symbol name =>
-      simp [renameTypeVars, toLeaTTaAtom,
+      simp [renameTypeVars, encodeModelAtom,
         Metta.Minimal.renameAllVars]
   | var name =>
-      simp [renameTypeVars, toLeaTTaAtom,
+      simp [renameTypeVars, encodeModelAtom,
         Metta.Minimal.renameAllVars]
   | grounded value =>
-      simp [renameTypeVars, toLeaTTaAtom,
+      simp [renameTypeVars, encodeModelAtom,
         Metta.Minimal.renameAllVars]
   | expression atoms =>
-      simp only [renameTypeVars, toLeaTTaAtom,
+      simp only [renameTypeVars, encodeModelAtom,
         Metta.Minimal.renameAllVars]
       exact congrArg Metta.Atom.expr
-        (toLeaTTaAtoms_renameTypeVars rename atoms)
+        (encodeModelAtoms_renameTypeVars rename atoms)
 termination_by 2 * sizeOf atom
 
-/-- List companion of `toLeaTTaAtom_renameTypeVars`. -/
-private theorem toLeaTTaAtoms_renameTypeVars
+/-- List companion of `encodeModelAtom_renameTypeVars`. -/
+private theorem encodeModelAtoms_renameTypeVars
     (rename : String → String) (atoms : List Atom) :
-    toLeaTTaAtoms (atoms.map (renameTypeVars rename)) =
-      (toLeaTTaAtoms atoms).map (Metta.Minimal.renameAllVars rename) := by
+    encodeModelAtoms (atoms.map (renameTypeVars rename)) =
+      (encodeModelAtoms atoms).map (Metta.Minimal.renameAllVars rename) := by
   cases atoms with
   | nil => rfl
   | cons atom atoms =>
       exact congrArg₂ List.cons
-        (toLeaTTaAtom_renameTypeVars rename atom)
-        (toLeaTTaAtoms_renameTypeVars rename atoms)
+        (encodeModelAtom_renameTypeVars rename atom)
+        (encodeModelAtoms_renameTypeVars rename atoms)
 termination_by 2 * sizeOf atoms + 1
 decreasing_by
   all_goals simp_wf
@@ -1615,24 +1619,24 @@ end
 decoded raw candidate: capture-avoiding renaming is injective. -/
 private theorem typeVariableRenamingOf_freshenTypeCandidate
     (avoid : List Metta.VarName) (position : Nat) (atom : Metta.Atom) :
-    TypeVariableRenamingOf (fromLeaTTaAtom atom)
-      (fromLeaTTaAtom
+    TypeVariableRenamingOf (decodeModelAtom atom)
+      (decodeModelAtom
         (Metta.Minimal.freshenTypeCandidate avoid position atom)) :=
   ⟨Metta.Minimal.captureAvoidingName avoid position,
     Metta.Minimal.captureAvoidingName_injective avoid position,
-    fromLeaTTaAtom_renameAllVars
+    decodeModelAtom_renameAllVars
       (Metta.Minimal.captureAvoidingName avoid position) atom⟩
 
 /-- Exact round trips transport across capture-avoiding freshening. -/
 private theorem roundtrip_freshenTypeCandidate
     {atom : Metta.Atom}
-    (roundtrip : toLeaTTaAtom (fromLeaTTaAtom atom) = atom)
+    (roundtrip : encodeModelAtom (decodeModelAtom atom) = atom)
     (avoid : List Metta.VarName) (position : Nat) :
-    toLeaTTaAtom (fromLeaTTaAtom
+    encodeModelAtom (decodeModelAtom
       (Metta.Minimal.freshenTypeCandidate avoid position atom)) =
       Metta.Minimal.freshenTypeCandidate avoid position atom := by
   simp only [Metta.Minimal.freshenTypeCandidate]
-  rw [fromLeaTTaAtom_renameAllVars, toLeaTTaAtom_renameTypeVars,
+  rw [decodeModelAtom_renameAllVars, encodeModelAtom_renameTypeVars,
     roundtrip]
 
 /-- Exact image provenance transports across capture-avoiding freshening. -/
@@ -1644,7 +1648,7 @@ private theorem leaAtomHEImage_freshenTypeCandidate
   obtain ⟨native, rfl⟩ := himage
   exact ⟨renameTypeVars
       (Metta.Minimal.captureAvoidingName avoid position) native,
-    toLeaTTaAtom_renameTypeVars
+    encodeModelAtom_renameTypeVars
       (Metta.Minimal.captureAvoidingName avoid position) native⟩
 
 /-- Every freshened argument type is a capture-avoiding freshening of some
@@ -1739,19 +1743,19 @@ its choices. -/
 private theorem freshened_argument_evidence
     {space : Space} {env : Metta.Minimal.MinEnv} (tail : List Atom)
     (tailEvidence : ∀ argument ∈ tail, ∀ {leaType},
-      leaType ∈ Metta.Minimal.getTypes env (toLeaTTaAtom argument) →
+      leaType ∈ Metta.Minimal.getTypes env (encodeModelAtom argument) →
         RuntimeTypeEvidenceRel space argument
-          (fromLeaTTaAtom leaType))
+          (decodeModelAtom leaType))
     (rawTypes : List Metta.Atom)
     (rawMember : rawTypes ∈ Metta.Minimal.cartesian
       (tail.map (fun argument =>
-        Metta.Minimal.getTypes env (toLeaTTaAtom argument))))
+        Metta.Minimal.getTypes env (encodeModelAtom argument))))
     (avoid : List Metta.VarName) (position : Nat) :
     List.Forall₂ (fun argument actualType => ∃ actualBase,
         RuntimeTypeEvidenceRel space argument actualBase ∧
           TypeVariableRenamingOf actualBase actualType)
       tail
-      (fromLeaTTaAtoms (Metta.Minimal.freshenArgumentTypes avoid position
+      (decodeModelAtoms (Metta.Minimal.freshenArgumentTypes avoid position
         rawTypes)) := by
   induction tail generalizing rawTypes avoid position with
   | nil =>
@@ -1764,9 +1768,9 @@ private theorem freshened_argument_evidence
       obtain ⟨rawType, rawTypeMember, rawTail, rawTailMember, rfl⟩ :=
         rawMember
       simp only [Metta.Minimal.freshenArgumentTypes,
-        fromLeaTTaAtoms]
+        decodeModelAtoms]
       apply List.Forall₂.cons
-      · refine ⟨fromLeaTTaAtom rawType, ?_, ?_⟩
+      · refine ⟨decodeModelAtom rawType, ?_, ?_⟩
         · exact tailEvidence argument (by simp) rawTypeMember
         · exact typeVariableRenamingOf_freshenTypeCandidate avoid position _
       · apply inductionHypothesis
@@ -1779,14 +1783,14 @@ argument-type choice. -/
 private theorem freshened_argument_roundtrip
     {env : Metta.Minimal.MinEnv} (tail : List Atom)
     (tailRoundtrip : ∀ argument ∈ tail, ∀ {leaType},
-      leaType ∈ Metta.Minimal.getTypes env (toLeaTTaAtom argument) →
-        toLeaTTaAtom (fromLeaTTaAtom leaType) = leaType)
+      leaType ∈ Metta.Minimal.getTypes env (encodeModelAtom argument) →
+        encodeModelAtom (decodeModelAtom leaType) = leaType)
     (rawTypes : List Metta.Atom)
     (rawMember : rawTypes ∈ Metta.Minimal.cartesian
       (tail.map (fun argument =>
-        Metta.Minimal.getTypes env (toLeaTTaAtom argument))))
+        Metta.Minimal.getTypes env (encodeModelAtom argument))))
     (avoid : List Metta.VarName) (position : Nat) :
-    toLeaTTaAtoms (fromLeaTTaAtoms
+    encodeModelAtoms (decodeModelAtoms
       (Metta.Minimal.freshenArgumentTypes avoid position rawTypes)) =
     Metta.Minimal.freshenArgumentTypes avoid position rawTypes := by
   induction tail generalizing rawTypes avoid position with
@@ -1799,8 +1803,8 @@ private theorem freshened_argument_roundtrip
         List.mem_flatMap, List.mem_map] at rawMember
       obtain ⟨rawType, rawTypeMember, rawTail, rawTailMember, rfl⟩ :=
         rawMember
-      simp only [Metta.Minimal.freshenArgumentTypes, fromLeaTTaAtoms,
-        toLeaTTaAtoms]
+      simp only [Metta.Minimal.freshenArgumentTypes, decodeModelAtoms,
+        encodeModelAtoms]
       rw [roundtrip_freshenTypeCandidate
         (tailRoundtrip argument (by simp) rawTypeMember),
         inductionHypothesis]
@@ -1816,37 +1820,37 @@ theorem getTypes_inferredExpression_runtimeEvidence
     {space : Space} {env : Metta.Minimal.MinEnv}
     (index : TypeEnvironmentRel space env) (head : Atom) (tail : List Atom)
     (hnotState : ∀ leaValue,
-      toLeaTTaAtom head = .sym "StateValue" →
-      toLeaTTaAtoms tail = [leaValue] → False)
+      encodeModelAtom head = .sym "StateValue" →
+      encodeModelAtoms tail = [leaValue] → False)
     (hdirect :
       env.exprTypes.filter (fun entry =>
-        entry.1 == toLeaTTaAtom (.expression (head :: tail))) = [])
+        entry.1 == encodeModelAtom (.expression (head :: tail))) = [])
     (headEvidence : ∀ {leaType},
-      leaType ∈ Metta.Minimal.getTypes env (toLeaTTaAtom head) →
-        RuntimeTypeEvidenceRel space head (fromLeaTTaAtom leaType))
+      leaType ∈ Metta.Minimal.getTypes env (encodeModelAtom head) →
+        RuntimeTypeEvidenceRel space head (decodeModelAtom leaType))
     (tailEvidence : ∀ argument ∈ tail, ∀ {leaType},
-      leaType ∈ Metta.Minimal.getTypes env (toLeaTTaAtom argument) →
+      leaType ∈ Metta.Minimal.getTypes env (encodeModelAtom argument) →
         RuntimeTypeEvidenceRel space argument
-          (fromLeaTTaAtom leaType))
+          (decodeModelAtom leaType))
     (headRoundtrip : ∀ {leaType},
-      leaType ∈ Metta.Minimal.getTypes env (toLeaTTaAtom head) →
-        toLeaTTaAtom (fromLeaTTaAtom leaType) = leaType)
+      leaType ∈ Metta.Minimal.getTypes env (encodeModelAtom head) →
+        encodeModelAtom (decodeModelAtom leaType) = leaType)
     (tailRoundtrip : ∀ argument ∈ tail, ∀ {leaType},
-      leaType ∈ Metta.Minimal.getTypes env (toLeaTTaAtom argument) →
-        toLeaTTaAtom (fromLeaTTaAtom leaType) = leaType)
+      leaType ∈ Metta.Minimal.getTypes env (encodeModelAtom argument) →
+        encodeModelAtom (decodeModelAtom leaType) = leaType)
     {leaType : Metta.Atom}
     (hmem : leaType ∈ Metta.Minimal.getTypes env
-      (toLeaTTaAtom (.expression (head :: tail)))) :
+      (encodeModelAtom (.expression (head :: tail)))) :
     RuntimeTypeEvidenceRel space (.expression (head :: tail))
-      (fromLeaTTaAtom leaType) := by
+      (decodeModelAtom leaType) := by
   have hdirect' :
       env.exprTypes.filter (fun entry =>
-        entry.1 == .expr (toLeaTTaAtom head :: toLeaTTaAtoms tail)) = [] := by
-    simpa [toLeaTTaAtom] using hdirect
+        entry.1 == .expr (encodeModelAtom head :: encodeModelAtoms tail)) = [] := by
+    simpa [encodeModelAtom] using hdirect
   change leaType ∈ Metta.Minimal.getTypes env
-    (.expr (toLeaTTaAtom head :: toLeaTTaAtoms tail)) at hmem
+    (.expr (encodeModelAtom head :: encodeModelAtoms tail)) at hmem
   rw [Metta.Minimal.getTypes.eq_10 env
-    (toLeaTTaAtom head) (toLeaTTaAtoms tail) hnotState,
+    (encodeModelAtom head) (encodeModelAtoms tail) hnotState,
     hdirect'] at hmem
   simp only at hmem
   split at hmem
@@ -1854,7 +1858,7 @@ theorem getTypes_inferredExpression_runtimeEvidence
       have htype : leaType = Metta.Atom.sym "%Undefined%" := by
         simpa using hmem
       subst leaType
-      simpa [fromLeaTTaAtom, Atom.undefinedType] using
+      simpa [decodeModelAtom, Atom.undefinedType] using
         undefined_expression_runtimeEvidence index head tail hdirect
   next hinferred =>
       obtain ⟨functionFresh, hfreshMem, functionResults⟩ :=
@@ -1889,7 +1893,7 @@ theorem getTypes_inferredExpression_runtimeEvidence
                       next leaBindings hmatch =>
                         obtain rfl := Option.some.inj hfunctionResult
                         have hfreshRoundtrip :
-                            toLeaTTaAtom (fromLeaTTaAtom
+                            encodeModelAtom (decodeModelAtom
                               (Metta.Atom.expr
                                 (Metta.Atom.sym "->" :: types))) =
                               Metta.Atom.expr
@@ -1898,28 +1902,28 @@ theorem getTypes_inferredExpression_runtimeEvidence
                           exact roundtrip_freshenTypeCandidate
                             (headRoundtrip hrawMem) _ _
                         have htypesRoundtrip :
-                            toLeaTTaAtoms (fromLeaTTaAtoms types) = types := by
-                          simpa [fromLeaTTaAtom, toLeaTTaAtom,
-                            fromLeaTTaAtoms, toLeaTTaAtoms] using
+                            encodeModelAtoms (decodeModelAtoms types) = types := by
+                          simpa [decodeModelAtom, encodeModelAtom,
+                            decodeModelAtoms, encodeModelAtoms] using
                               Metta.Atom.expr.inj hfreshRoundtrip
                         have hexpectedRoundtrip :
-                            toLeaTTaAtoms
-                                (fromLeaTTaAtoms types.dropLast) =
+                            encodeModelAtoms
+                                (decodeModelAtoms types.dropLast) =
                               types.dropLast := by
                           have hdrop := congrArg List.dropLast htypesRoundtrip
-                          simpa [toLeaTTaAtoms_eq_map,
-                            fromLeaTTaAtoms_eq_map] using hdrop
+                          simpa [encodeModelAtoms_eq_map,
+                            decodeModelAtoms_eq_map] using hdrop
                         rw [← hexpectedRoundtrip,
                           ← freshened_argument_roundtrip tail
                             tailRoundtrip rawArgTypes
-                            (by simpa [toLeaTTaAtoms_eq_map,
+                            (by simpa [encodeModelAtoms_eq_map,
                               List.map_map, Function.comp_def] using
                                 hrawArgTypes) _ 0] at hmatch
                         obtain ⟨specBindings, harguments, outputState⟩ :=
                           matchApplicationTypeArguments_r1_alpha_sound
                             (freshened_argument_evidence tail
                               tailEvidence rawArgTypes
-                              (by simpa [toLeaTTaAtoms_eq_map,
+                              (by simpa [encodeModelAtoms_eq_map,
                                 List.map_map, Function.comp_def] using
                                   hrawArgTypes) _ 0)
                             typeBindingState_empty hmatch
@@ -1931,29 +1935,29 @@ theorem getTypes_inferredExpression_runtimeEvidence
                           simpa using List.dropLast_append_getLast htypes
                         have hfunctionType :
                             FunctionTypeRel
-                              (fromLeaTTaAtom
+                              (decodeModelAtom
                                 (.expr (.sym "->" :: types)))
-                              (fromLeaTTaAtoms types.dropLast)
-                              (fromLeaTTaAtom
+                              (decodeModelAtoms types.dropLast)
+                              (decodeModelAtom
                                 ((types.getLast?).getD
                                   (.sym "%Undefined%"))) := by
                           change Atom.expression
-                              (.symbol "->" :: fromLeaTTaAtoms types) =
+                              (.symbol "->" :: decodeModelAtoms types) =
                             Atom.expression
                               (.symbol "->" ::
-                                (fromLeaTTaAtoms types.dropLast ++
-                                  [fromLeaTTaAtom
+                                (decodeModelAtoms types.dropLast ++
+                                  [decodeModelAtom
                                     ((types.getLast?).getD
                                       (.sym "%Undefined%"))]))
                           apply congrArg Atom.expression
                           exact congrArg (List.cons (Atom.symbol "->"))
                             (by
-                              simpa [fromLeaTTaAtoms_eq_map] using
-                                congrArg (List.map fromLeaTTaAtom)
+                              simpa [decodeModelAtoms_eq_map] using
+                                congrArg (List.map decodeModelAtom)
                                   hsplit.symm)
                         have hreturnRoundtrip :
-                            toLeaTTaAtom
-                                (fromLeaTTaAtom
+                            encodeModelAtom
+                                (decodeModelAtom
                                   ((types.getLast?).getD
                                     (.sym "%Undefined%"))) =
                               (types.getLast?).getD (.sym "%Undefined%") := by
@@ -1963,21 +1967,21 @@ theorem getTypes_inferredExpression_runtimeEvidence
                           simp
                         have hrenaming :
                             TypeVariableRenamingOf
-                              (fromLeaTTaAtom functionRaw)
-                              (fromLeaTTaAtom
+                              (decodeModelAtom functionRaw)
+                              (decodeModelAtom
                                 (.expr (.sym "->" :: types))) := by
                           rw [← hfreshEq]
                           exact typeVariableRenamingOf_freshenTypeCandidate
                             _ _ functionRaw
                         have hreturn :=
                           outputState.returnObserved
-                            (fromLeaTTaAtom
+                            (decodeModelAtom
                               ((types.getLast?).getD (.sym "%Undefined%")))
                         rw [hreturnRoundtrip] at hreturn
                         have hreturn' : R1ReturnTypeObserved specBindings
-                            (fromLeaTTaAtom
+                            (decodeModelAtom
                               ((types.getLast?).getD (.sym "%Undefined%")))
-                            (fromLeaTTaAtom
+                            (decodeModelAtom
                               (Metta.instantiate leaBindings
                                 (types.getLast htypes))) := by
                           simpa [hlast] using hreturn
@@ -2060,13 +2064,13 @@ theorem getTypes_result_heImage
       simpa [hquery'] using hmem
     have parts := heImage_expression_roundtrip_parts inputImage
     apply index.expressionHEImage
-      (head := fromLeaTTaAtom head)
-      (tail := fromLeaTTaAtoms arguments)
+      (head := decodeModelAtom head)
+      (tail := decodeModelAtoms arguments)
     change leaType ∈
       (env.exprTypes.filter (fun entry =>
         entry.1 == .expr
-          (toLeaTTaAtom (fromLeaTTaAtom head) ::
-            toLeaTTaAtoms (fromLeaTTaAtoms arguments)))).map (·.2)
+          (encodeModelAtom (decodeModelAtom head) ::
+            encodeModelAtoms (decodeModelAtoms arguments)))).map (·.2)
     rw [parts.1, parts.2]
     exact hindexed
   case case12 head arguments hnotState hquery _rawArgTypeLists
@@ -2163,88 +2167,88 @@ theorem getTypes_runtimeEvidence_of_heImage
     ∀ atom leaType,
       LeaAtomHEImage atom →
       leaType ∈ Metta.Minimal.getTypes env atom →
-      RuntimeTypeEvidenceRel space (fromLeaTTaAtom atom)
-        (fromLeaTTaAtom leaType) := by
+      RuntimeTypeEvidenceRel space (decodeModelAtom atom)
+        (decodeModelAtom leaType) := by
   intro atom
   fun_induction Metta.Minimal.getTypes env atom <;>
     intro leaType inputImage hmem
   case case1 value =>
     apply getTypes_grounded_runtimeEvidence space env (.int value)
-    simpa [Metta.Minimal.getTypes, toLeaTTaAtom, toLeaTTaGround] using hmem
+    simpa [Metta.Minimal.getTypes, encodeModelAtom, encodeModelGround] using hmem
   case case2 value =>
     obtain ⟨native, hnative⟩ := inputImage
     cases native with
-    | symbol name => simp [toLeaTTaAtom] at hnative
-    | var name => simp [toLeaTTaAtom] at hnative
-    | expression atoms => simp [toLeaTTaAtom] at hnative
+    | symbol name => simp [encodeModelAtom] at hnative
+    | var name => simp [encodeModelAtom] at hnative
+    | expression atoms => simp [encodeModelAtom] at hnative
     | grounded grounded =>
         cases grounded <;>
-          simp [toLeaTTaAtom, toLeaTTaGround] at hnative
+          simp [encodeModelAtom, encodeModelGround] at hnative
   case case3 value =>
     apply getTypes_grounded_runtimeEvidence space env (.string value)
-    simpa [Metta.Minimal.getTypes, toLeaTTaAtom, toLeaTTaGround] using hmem
+    simpa [Metta.Minimal.getTypes, encodeModelAtom, encodeModelGround] using hmem
   case case4 value =>
     apply getTypes_grounded_runtimeEvidence space env (.bool value)
-    simpa [Metta.Minimal.getTypes, toLeaTTaAtom, toLeaTTaGround] using hmem
+    simpa [Metta.Minimal.getTypes, encodeModelAtom, encodeModelGround] using hmem
   case case5 typeName payload =>
     apply getTypes_grounded_runtimeEvidence space env
       (.custom typeName payload)
-    simpa [Metta.Minimal.getTypes, toLeaTTaAtom, toLeaTTaGround] using hmem
+    simpa [Metta.Minimal.getTypes, encodeModelAtom, encodeModelGround] using hmem
   case case6 grounded hInt hFloat hString hBool hExternal =>
     obtain ⟨native, hnative⟩ := inputImage
     cases native with
-    | symbol name => simp [toLeaTTaAtom] at hnative
-    | var name => simp [toLeaTTaAtom] at hnative
-    | expression atoms => simp [toLeaTTaAtom] at hnative
+    | symbol name => simp [encodeModelAtom] at hnative
+    | var name => simp [encodeModelAtom] at hnative
+    | expression atoms => simp [encodeModelAtom] at hnative
     | grounded nativeGrounded =>
         cases nativeGrounded with
         | int value =>
             have : grounded = .int value := by
-              simpa [toLeaTTaAtom, toLeaTTaGround] using hnative.symm
+              simpa [encodeModelAtom, encodeModelGround] using hnative.symm
             exact (hInt value this).elim
         | bool value =>
             have : grounded = .bool value := by
-              simpa [toLeaTTaAtom, toLeaTTaGround] using hnative.symm
+              simpa [encodeModelAtom, encodeModelGround] using hnative.symm
             exact (hBool value this).elim
         | string value =>
             have : grounded = .str value := by
-              simpa [toLeaTTaAtom, toLeaTTaGround] using hnative.symm
+              simpa [encodeModelAtom, encodeModelGround] using hnative.symm
             exact (hString value this).elim
         | custom typeName payload =>
             have : grounded = .external typeName payload := by
-              simpa [toLeaTTaAtom, toLeaTTaGround] using hnative.symm
+              simpa [encodeModelAtom, encodeModelGround] using hnative.symm
             exact (hExternal typeName payload this).elim
   case case7 name =>
     apply getTypes_variable_runtimeEvidence space env name
-    simpa [Metta.Minimal.getTypes, toLeaTTaAtom] using hmem
+    simpa [Metta.Minimal.getTypes, encodeModelAtom] using hmem
   case case8 name hbucket =>
     apply getTypes_symbol_runtimeEvidence index name
-    simpa [Metta.Minimal.getTypes, toLeaTTaAtom, hbucket] using hmem
+    simpa [Metta.Minimal.getTypes, encodeModelAtom, hbucket] using hmem
   case case9 name hbucket =>
     apply getTypes_symbol_runtimeEvidence index name
-    simpa [Metta.Minimal.getTypes, toLeaTTaAtom, hbucket] using hmem
+    simpa [Metta.Minimal.getTypes, encodeModelAtom, hbucket] using hmem
   case case10 value ih =>
     have valueImage : LeaAtomHEImage value :=
       leaAtomHEImage_children inputImage value (by simp)
     have valueRoundtrip :=
-      toLeaTTaAtom_fromLeaTTaAtom_of_heImage valueImage
+      encodeModelAtom_decodeModelAtom_of_heImage valueImage
     have inputRoundtrip :=
-      toLeaTTaAtom_fromLeaTTaAtom_of_heImage inputImage
+      encodeModelAtom_decodeModelAtom_of_heImage inputImage
     have translatedInput :
-        toLeaTTaAtom
-            (.expression [.symbol "StateValue", fromLeaTTaAtom value]) =
+        encodeModelAtom
+            (.expression [.symbol "StateValue", decodeModelAtom value]) =
           .expr [.sym "StateValue", value] := by
-      simpa [fromLeaTTaAtom, fromLeaTTaAtoms] using inputRoundtrip
+      simpa [decodeModelAtom, decodeModelAtoms] using inputRoundtrip
     have contentEvidence : ∀ {type},
         type ∈ Metta.Minimal.getTypes env
-            (toLeaTTaAtom (fromLeaTTaAtom value)) →
-          RuntimeTypeEvidenceRel space (fromLeaTTaAtom value)
-            (fromLeaTTaAtom type) := by
+            (encodeModelAtom (decodeModelAtom value)) →
+          RuntimeTypeEvidenceRel space (decodeModelAtom value)
+            (decodeModelAtom type) := by
       intro type htype
       apply ih type valueImage
       simpa [valueRoundtrip] using htype
     have result := getTypes_stateValue_runtimeEvidence
-      (value := fromLeaTTaAtom value) contentEvidence
+      (value := decodeModelAtom value) contentEvidence
       (leaType := leaType)
     apply result
     rw [translatedInput]
@@ -2252,13 +2256,13 @@ theorem getTypes_runtimeEvidence_of_heImage
   case case11 head arguments hnotState first rest hquery =>
     have parts := heImage_expression_roundtrip_parts inputImage
     have inputRoundtrip :=
-      toLeaTTaAtom_fromLeaTTaAtom_of_heImage inputImage
+      encodeModelAtom_decodeModelAtom_of_heImage inputImage
     have translatedInput :
-        toLeaTTaAtom
+        encodeModelAtom
             (.expression
-              (fromLeaTTaAtom head :: fromLeaTTaAtoms arguments)) =
+              (decodeModelAtom head :: decodeModelAtoms arguments)) =
           .expr (head :: arguments) := by
-      simpa [fromLeaTTaAtom, fromLeaTTaAtoms] using inputRoundtrip
+      simpa [decodeModelAtom, decodeModelAtoms] using inputRoundtrip
     have hquery' :
         env.exprTypes.filter (fun entry =>
           entry.1 == .expr (head :: arguments)) = first :: rest := by
@@ -2266,27 +2270,27 @@ theorem getTypes_runtimeEvidence_of_heImage
         (fun entry => entry.1 == .expr (head :: arguments))] at hquery
       exact hquery
     have hnotState' : ∀ leaValue,
-        toLeaTTaAtom (fromLeaTTaAtom head) = .sym "StateValue" →
-        toLeaTTaAtoms (fromLeaTTaAtoms arguments) = [leaValue] → False := by
+        encodeModelAtom (decodeModelAtom head) = .sym "StateValue" →
+        encodeModelAtoms (decodeModelAtoms arguments) = [leaValue] → False := by
       intro leaValue hhead harguments
       apply hnotState leaValue
       · exact parts.1.symm.trans hhead
       · exact parts.2.symm.trans harguments
     have hdirect :
         env.exprTypes.filter (fun entry =>
-          entry.1 == toLeaTTaAtom
+          entry.1 == encodeModelAtom
             (.expression
-              (fromLeaTTaAtom head :: fromLeaTTaAtoms arguments))) ≠ [] := by
+              (decodeModelAtom head :: decodeModelAtoms arguments))) ≠ [] := by
       intro hempty
       have hempty' := hempty
       change env.exprTypes.filter (fun entry =>
-        entry.1 == toLeaTTaAtom
-          (fromLeaTTaAtom (.expr (head :: arguments)))) = [] at hempty'
+        entry.1 == encodeModelAtom
+          (decodeModelAtom (.expr (head :: arguments)))) = [] at hempty'
       rw [inputRoundtrip] at hempty'
       rw [hquery'] at hempty'
       simp at hempty'
     apply getTypes_directExpression_runtimeEvidence index
-      (fromLeaTTaAtom head) (fromLeaTTaAtoms arguments)
+      (decodeModelAtom head) (decodeModelAtoms arguments)
       hnotState' hdirect
     rw [translatedInput]
     simpa [Metta.Minimal.getTypes] using hmem
@@ -2295,13 +2299,13 @@ theorem getTypes_runtimeEvidence_of_heImage
       _functionAvoid _functionTypes _inferred ihArguments ihHead =>
     have parts := heImage_expression_roundtrip_parts inputImage
     have inputRoundtrip :=
-      toLeaTTaAtom_fromLeaTTaAtom_of_heImage inputImage
+      encodeModelAtom_decodeModelAtom_of_heImage inputImage
     have translatedInput :
-        toLeaTTaAtom
+        encodeModelAtom
             (.expression
-              (fromLeaTTaAtom head :: fromLeaTTaAtoms arguments)) =
+              (decodeModelAtom head :: decodeModelAtoms arguments)) =
           .expr (head :: arguments) := by
-      simpa [fromLeaTTaAtom, fromLeaTTaAtoms] using inputRoundtrip
+      simpa [decodeModelAtom, decodeModelAtoms] using inputRoundtrip
     have headImage : LeaAtomHEImage head :=
       leaAtomHEImage_children inputImage head (by simp)
     have argumentsImage :
@@ -2316,50 +2320,50 @@ theorem getTypes_runtimeEvidence_of_heImage
         (fun entry => entry.1 == .expr (head :: arguments))] at hquery
       exact hquery
     have hnotState' : ∀ leaValue,
-        toLeaTTaAtom (fromLeaTTaAtom head) = .sym "StateValue" →
-        toLeaTTaAtoms (fromLeaTTaAtoms arguments) = [leaValue] → False := by
+        encodeModelAtom (decodeModelAtom head) = .sym "StateValue" →
+        encodeModelAtoms (decodeModelAtoms arguments) = [leaValue] → False := by
       intro leaValue hhead harguments
       exact hnotState leaValue
         (parts.1.symm.trans hhead)
         (parts.2.symm.trans harguments)
     have hdirect :
         env.exprTypes.filter (fun entry =>
-          entry.1 == toLeaTTaAtom
+          entry.1 == encodeModelAtom
             (.expression
-              (fromLeaTTaAtom head :: fromLeaTTaAtoms arguments))) = [] := by
+              (decodeModelAtom head :: decodeModelAtoms arguments))) = [] := by
       change env.exprTypes.filter (fun entry =>
-        entry.1 == toLeaTTaAtom
-          (fromLeaTTaAtom (.expr (head :: arguments)))) = []
+        entry.1 == encodeModelAtom
+          (decodeModelAtom (.expr (head :: arguments)))) = []
       rw [inputRoundtrip]
       exact hquery'
     apply getTypes_inferredExpression_runtimeEvidence index
-      (fromLeaTTaAtom head) (fromLeaTTaAtoms arguments)
+      (decodeModelAtom head) (decodeModelAtoms arguments)
       hnotState' hdirect
     · intro type htype
       rw [parts.1] at htype
       apply ihHead type headImage
       exact htype
     · intro argument hargument type htype
-      rw [fromLeaTTaAtoms_eq_map] at hargument
+      rw [decodeModelAtoms_eq_map] at hargument
       obtain ⟨leaArgument, hleaArgument, rfl⟩ :=
         List.mem_map.mp hargument
-      rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage
+      rw [encodeModelAtom_decodeModelAtom_of_heImage
         (argumentsImage leaArgument hleaArgument)] at htype
       apply ihArguments leaArgument hleaArgument type
         (argumentsImage leaArgument hleaArgument)
       exact htype
     · intro type htype
       rw [parts.1] at htype
-      apply toLeaTTaAtom_fromLeaTTaAtom_of_heImage
+      apply encodeModelAtom_decodeModelAtom_of_heImage
       apply getTypes_result_heImage index head type headImage
       exact htype
     · intro argument hargument type htype
-      rw [fromLeaTTaAtoms_eq_map] at hargument
+      rw [decodeModelAtoms_eq_map] at hargument
       obtain ⟨leaArgument, hleaArgument, rfl⟩ :=
         List.mem_map.mp hargument
-      rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage
+      rw [encodeModelAtom_decodeModelAtom_of_heImage
         (argumentsImage leaArgument hleaArgument)] at htype
-      apply toLeaTTaAtom_fromLeaTTaAtom_of_heImage
+      apply encodeModelAtom_decodeModelAtom_of_heImage
       apply getTypes_result_heImage index leaArgument type
         (argumentsImage leaArgument hleaArgument)
       exact htype
@@ -2370,13 +2374,13 @@ theorem getTypes_runtimeEvidence_of_heImage
       _functionAvoid _functionTypes _inferred ihArguments ihHead =>
     have parts := heImage_expression_roundtrip_parts inputImage
     have inputRoundtrip :=
-      toLeaTTaAtom_fromLeaTTaAtom_of_heImage inputImage
+      encodeModelAtom_decodeModelAtom_of_heImage inputImage
     have translatedInput :
-        toLeaTTaAtom
+        encodeModelAtom
             (.expression
-              (fromLeaTTaAtom head :: fromLeaTTaAtoms arguments)) =
+              (decodeModelAtom head :: decodeModelAtoms arguments)) =
           .expr (head :: arguments) := by
-      simpa [fromLeaTTaAtom, fromLeaTTaAtoms] using inputRoundtrip
+      simpa [decodeModelAtom, decodeModelAtoms] using inputRoundtrip
     have headImage : LeaAtomHEImage head :=
       leaAtomHEImage_children inputImage head (by simp)
     have argumentsImage :
@@ -2391,50 +2395,50 @@ theorem getTypes_runtimeEvidence_of_heImage
         (fun entry => entry.1 == .expr (head :: arguments))] at hquery
       exact hquery
     have hnotState' : ∀ leaValue,
-        toLeaTTaAtom (fromLeaTTaAtom head) = .sym "StateValue" →
-        toLeaTTaAtoms (fromLeaTTaAtoms arguments) = [leaValue] → False := by
+        encodeModelAtom (decodeModelAtom head) = .sym "StateValue" →
+        encodeModelAtoms (decodeModelAtoms arguments) = [leaValue] → False := by
       intro leaValue hhead harguments
       exact hnotState leaValue
         (parts.1.symm.trans hhead)
         (parts.2.symm.trans harguments)
     have hdirect :
         env.exprTypes.filter (fun entry =>
-          entry.1 == toLeaTTaAtom
+          entry.1 == encodeModelAtom
             (.expression
-              (fromLeaTTaAtom head :: fromLeaTTaAtoms arguments))) = [] := by
+              (decodeModelAtom head :: decodeModelAtoms arguments))) = [] := by
       change env.exprTypes.filter (fun entry =>
-        entry.1 == toLeaTTaAtom
-          (fromLeaTTaAtom (.expr (head :: arguments)))) = []
+        entry.1 == encodeModelAtom
+          (decodeModelAtom (.expr (head :: arguments)))) = []
       rw [inputRoundtrip]
       exact hquery'
     apply getTypes_inferredExpression_runtimeEvidence index
-      (fromLeaTTaAtom head) (fromLeaTTaAtoms arguments)
+      (decodeModelAtom head) (decodeModelAtoms arguments)
       hnotState' hdirect
     · intro type htype
       rw [parts.1] at htype
       apply ihHead type headImage
       exact htype
     · intro argument hargument type htype
-      rw [fromLeaTTaAtoms_eq_map] at hargument
+      rw [decodeModelAtoms_eq_map] at hargument
       obtain ⟨leaArgument, hleaArgument, rfl⟩ :=
         List.mem_map.mp hargument
-      rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage
+      rw [encodeModelAtom_decodeModelAtom_of_heImage
         (argumentsImage leaArgument hleaArgument)] at htype
       apply ihArguments leaArgument hleaArgument type
         (argumentsImage leaArgument hleaArgument)
       exact htype
     · intro type htype
       rw [parts.1] at htype
-      apply toLeaTTaAtom_fromLeaTTaAtom_of_heImage
+      apply encodeModelAtom_decodeModelAtom_of_heImage
       apply getTypes_result_heImage index head type headImage
       exact htype
     · intro argument hargument type htype
-      rw [fromLeaTTaAtoms_eq_map] at hargument
+      rw [decodeModelAtoms_eq_map] at hargument
       obtain ⟨leaArgument, hleaArgument, rfl⟩ :=
         List.mem_map.mp hargument
-      rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage
+      rw [encodeModelAtom_decodeModelAtom_of_heImage
         (argumentsImage leaArgument hleaArgument)] at htype
-      apply toLeaTTaAtom_fromLeaTTaAtom_of_heImage
+      apply encodeModelAtom_decodeModelAtom_of_heImage
       apply getTypes_result_heImage index leaArgument type
         (argumentsImage leaArgument hleaArgument)
       exact htype
@@ -2442,7 +2446,7 @@ theorem getTypes_runtimeEvidence_of_heImage
       simpa [Metta.Minimal.getTypes] using hmem
   case case14 =>
     apply getTypes_emptyExpression_runtimeEvidence space env
-    simpa [Metta.Minimal.getTypes, toLeaTTaAtom, toLeaTTaAtoms] using hmem
+    simpa [Metta.Minimal.getTypes, encodeModelAtom, encodeModelAtoms] using hmem
 
 /-- Public recursive lookup seal on native inputs: every repaired-LeaTTa
 output remains representable natively and carries published-core or named
@@ -2452,14 +2456,14 @@ theorem getTypes_runtimeOutput_sound
     (index : TypeEnvironmentRel space env) (atom : Atom)
     {leaType : Metta.Atom}
     (hmem : leaType ∈
-      Metta.Minimal.getTypes env (toLeaTTaAtom atom)) :
+      Metta.Minimal.getTypes env (encodeModelAtom atom)) :
     LeaAtomHEImage leaType ∧
-      RuntimeTypeEvidenceRel space atom (fromLeaTTaAtom leaType) := by
+      RuntimeTypeEvidenceRel space atom (decodeModelAtom leaType) := by
   constructor
-  · exact getTypes_result_heImage index (toLeaTTaAtom atom) leaType
-      (leaAtomHEImage_toLeaTTaAtom atom) hmem
+  · exact getTypes_result_heImage index (encodeModelAtom atom) leaType
+      (leaAtomHEImage_encodeModelAtom atom) hmem
   · simpa using getTypes_runtimeEvidence_of_heImage index
-      (toLeaTTaAtom atom) leaType
-      (leaAtomHEImage_toLeaTTaAtom atom) hmem
+      (encodeModelAtom atom) leaType
+      (leaAtomHEImage_encodeModelAtom atom) hmem
 
 end Mettapedia.Languages.MeTTa.HE.LeaTTaTypeConformance

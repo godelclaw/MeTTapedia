@@ -229,7 +229,7 @@ def emla_state3_inverse : GrammarState :=
 /-- Auto-assembly (surface): `storeToQFormula2` on the surface-scoped state
     agrees with the manual `surfaceScope` formula.
 
-    Proof: rewrite store to literal form, apply `scopeOrderedQuants_two_surface_spec`,
+    Proof: rewrite store to literal form, apply `scopeOrderedQuants_two_source_order_spec`,
     then reduce `assembleFromQuants`. -/
 theorem emla_surface_auto_assembly :
     storeToQFormula2 emla_state3_surface = surfaceScope := by
@@ -245,7 +245,7 @@ theorem emla_surface_auto_assembly :
       StoreAtom.scope "q1" "q2"} : Multiset StoreAtom) := by
     simp [Multiset.singleton_add, Multiset.cons_add]
   rw [hstore]
-  rw [scopeOrderedQuants_two_surface_spec
+  rw [scopeOrderedQuants_two_source_order_spec
     "q1" (.fvar "every_Det") (.apply "UseN" [.fvar "man_N"])
     "q2" (.fvar "someSg_Det") (.apply "UseN" [.fvar "woman_N"])
     (by simp) (by simp)]
@@ -266,7 +266,7 @@ theorem emla_inverse_auto_assembly :
     simp [Multiset.singleton_add, Multiset.cons_add]
     exact Multiset.cons_swap _ _ _
   rw [hstore]
-  rw [scopeOrderedQuants_two_surface_spec
+  rw [scopeOrderedQuants_two_source_order_spec
     "q2" (.fvar "someSg_Det") (.apply "UseN" [.fvar "woman_N"])
     "q1" (.fvar "every_Det") (.apply "UseN" [.fvar "man_N"])
     (by simp) (by simp)]

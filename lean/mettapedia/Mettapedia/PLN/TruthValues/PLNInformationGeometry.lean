@@ -612,12 +612,12 @@ theorem binaryRevisionStrength_is_mixture_coordinate
 /-- Tensor/deductive composition is additive in the natural/e-coordinate:
 log support-odds add under evidence tensor in the finite nonzero regime. -/
 theorem binaryTruthLogOdds_tensor_is_natural_coordinate
-    (x y : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+    (x y : Mettapedia.PLN.Evidence.BinaryEvidence)
     (hx_neg : x.neg ≠ 0) (hy_neg : y.neg ≠ 0)
     (hx_odds0 : x.truthOdds ≠ 0) (hy_odds0 : y.truthOdds ≠ 0)
     (hx_oddsTop : x.truthOdds ≠ ⊤) (hy_oddsTop : y.truthOdds ≠ ⊤) :
     (x * y).truthLogOdds = x.truthLogOdds + y.truthLogOdds :=
-  Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.truthLogOdds_tensor_add
+  Mettapedia.PLN.Evidence.BinaryEvidence.truthLogOdds_tensor_add
     x y hx_neg hy_neg hx_odds0 hy_odds0 hx_oddsTop hy_oddsTop
 
 /-- Binary Beta-style coordinates: posterior mean/strength together with

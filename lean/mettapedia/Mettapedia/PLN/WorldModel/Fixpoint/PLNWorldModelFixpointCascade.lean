@@ -17,7 +17,7 @@ Conceptual note:
 
 namespace Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointCascade
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open scoped ENNReal

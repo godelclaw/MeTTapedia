@@ -438,7 +438,7 @@ noncomputable def conceptFormationDeFinettiPrefixTypedWidthComplementITV
     (S : ObservationEncoder Obs Obj Attr Q)
     (Γ : (Fin n → Bool) → EvidenceGate Q) (σ : Multiset Obs)
     (A : DualConcept Obj Attr) :
-    TypedITV (projectiveCredalWidthComplementITVSemantics PUnit (Fin n → Bool)) :=
+    TypedITV (projectiveCredalWidthComplementITVConstructor PUnit (Fin n → Bool)) :=
   TypedITV.fromProjectiveCredalWidthComplement
     (conceptFormationDeFinettiPrefixWidthComplementITVSource
       C n hLaw hC S Γ σ A)

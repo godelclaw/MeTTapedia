@@ -5,7 +5,7 @@ import Mettapedia.KR.ConceptOntology.BenchmarkControl
 namespace Mettapedia.KR.ConceptOntology.Generated.MizarConlat1
 
 open Mettapedia.KR.ConceptOntology
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 inductive Item where

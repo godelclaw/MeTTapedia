@@ -194,7 +194,7 @@ theorem upperProb_trueGamble_eq
 
 /-! ## Bridge to the existing `ITV.fromWalleyIDMPredictive` constructor -/
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-- The binary IDM credal set induced by existing `BinaryEvidence` counts. -/
 noncomputable def credalSetOfEvidence (e : BinaryEvidence) (s : ℝ) (hs : 0 < s) :

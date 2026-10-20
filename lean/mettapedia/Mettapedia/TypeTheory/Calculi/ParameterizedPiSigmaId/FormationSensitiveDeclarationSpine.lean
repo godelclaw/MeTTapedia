@@ -1,4 +1,5 @@
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitiveBeta
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.DeclarationSpine
 
 /-!
 # Recovering dependent arguments of declared application spines
@@ -17,32 +18,12 @@ namespace FormationSensitive
 
 variable {Head : Type} {R : Rules Head} {n : Nat}
 
-private theorem constantAdjustmentAux {Γ : Ctx Head n} {term displayed : Tm Head n}
-    (typing : Typing R Γ term displayed) :
-    ∀ {name : DeclName} {declared : Tm Head 0}, term = .const name →
-      R.constantType name = some declared →
-        TypeAdjustment R (liftClosed declared) displayed := by
-  induction typing with
-  | const known _ _ _ =>
-      intro name declared equality lookup
-      cases equality
-      rw [known] at lookup
-      cases lookup
-      exact .refl _
-  | cumul _ order ih =>
-      intro name declared equality lookup
-      exact .trans (ih equality lookup) (.cumulative order)
-  | conv _ _ _ conversion ih _ =>
-      intro name declared equality lookup
-      exact .trans (ih equality lookup) (.conversion conversion)
-  | _ => intro name declared equality; cases equality
-
 theorem Typing.constantAdjustment {Γ : Ctx Head n} {name : DeclName}
     {declared : Tm Head 0} {displayed : Tm Head n}
     (typing : Typing R Γ (.const name) displayed)
     (known : R.constantType name = some declared) :
     TypeAdjustment R (liftClosed declared) displayed :=
-  constantAdjustmentAux typing rfl known
+  typing.toRaw.constantAdjustment known
 
 private theorem constantReplayAux {Γ : Ctx Head n} {term displayed : Tm Head n}
     (typing : Typing R Γ term displayed) :
@@ -77,6 +58,14 @@ inductive DeclarationSpine (R : Rules Head) (Γ : Ctx Head n) :
       Typing R Γ argument domain →
         DeclarationSpine R Γ (.app function argument) (inst0 argument codomain)
 
+/-- Forgetting formation evidence supplies the common raw spine view. This
+is theorem-level transport, not an encoding of retained proof data. -/
+theorem DeclarationSpine.toRaw {Γ : Ctx Head n} {term type : Tm Head n}
+    (spine : DeclarationSpine R Γ term type) : HasType.DeclarationSpine R Γ term type := by
+  induction spine with
+  | constant known _ _ => exact .constant known
+  | app _ argumentTyped ih => exact .app ih argumentTyped.toRaw
+
 theorem DeclarationSpine.typing {Γ : Ctx Head n} {term type : Tm Head n}
     (spine : DeclarationSpine R Γ term type) : Typing R Γ term type := by
   induction spine with
@@ -88,17 +77,8 @@ by the actual directed conversion/cumulativity adjustment. -/
 theorem DeclarationSpine.adjustment (boundary : PiConversionBoundary R)
     {Γ : Ctx Head n} {term type : Tm Head n}
     (spine : DeclarationSpine R Γ term type) :
-    ∀ {displayed}, Typing R Γ term displayed → TypeAdjustment R type displayed := by
-  induction spine with
-  | constant known _ _ =>
-      intro displayed observed
-      exact observed.constantAdjustment known
-  | @app function argument domain codomain previous argumentTyped ih =>
-      intro displayed observed
-      obtain ⟨observedDomain, observedCodomain, observedFunction, _, adjustment, _⟩ :=
-        observed.appGeneration
-      have components := boundary.components ((ih observedFunction).toConvOfPiTarget boundary)
-      exact .trans (.conversion (components.2.substitute (subst0 argument))) adjustment
+    ∀ {displayed}, Typing R Γ term displayed → TypeAdjustment R type displayed :=
+  fun observed => spine.toRaw.adjustment boundary observed.toRaw
 
 /-- Recover a dependent argument and the principal next spine from an
 arbitrary observed application. Replay retains the original formed result
@@ -150,6 +130,7 @@ theorem DeclarationSpine.replay
 
 #print axioms Typing.constantAdjustment
 #print axioms DeclarationSpine.typing
+#print axioms DeclarationSpine.toRaw
 #print axioms DeclarationSpine.adjustment
 #print axioms DeclarationSpine.recoverApplication
 #print axioms DeclarationSpine.replay

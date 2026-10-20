@@ -3,6 +3,8 @@ import Mettapedia.Languages.MeTTa.HE.CanonAbsorbsFreshening
 import Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 import Mettapedia.Languages.MeTTa.HE.VariantQueryCorrectness
 import Provenance.Util.ValueTypeString
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
 
 namespace Mettapedia.Languages.MeTTa.HE.CanonicalEquationBridge
 
@@ -468,9 +470,9 @@ private theorem freshMapping_applyRen_injOn_of_nodup
     simpa using hpairs
   exact this.1
 
-private theorem collectVars_eq_toLeaTTaAtom_vars_of_depth :
+private theorem collectVars_eq_encodeModelAtom_vars_of_depth :
     ∀ fuel (a : OSLFCore.Atom), atomDepth a + 1 ≤ fuel →
-      collectVars a fuel = (toLeaTTaAtom a).vars := by
+      collectVars a fuel = (encodeModelAtom a).vars := by
   intro fuel
   induction fuel with
   | zero =>
@@ -480,24 +482,24 @@ private theorem collectVars_eq_toLeaTTaAtom_vars_of_depth :
       intro a hdepth
       cases a with
       | symbol s =>
-          simp [collectVars, toLeaTTaAtom, Metta.Atom.vars]
+          simp [collectVars, encodeModelAtom, Metta.Atom.vars]
       | var v =>
-          simp [collectVars, toLeaTTaAtom, Metta.Atom.vars]
+          simp [collectVars, encodeModelAtom, Metta.Atom.vars]
       | grounded g =>
-          simp [collectVars, toLeaTTaAtom, Metta.Atom.vars]
+          simp [collectVars, encodeModelAtom, Metta.Atom.vars]
       | expression es =>
           have hlist :
               ∀ es : List OSLFCore.Atom, listDepth es + 1 ≤ fuel →
                 collectVars.collectVarsList es fuel =
-                  ((toLeaTTaAtoms es).map Metta.Atom.vars).flatten := by
+                  ((encodeModelAtoms es).map Metta.Atom.vars).flatten := by
             intro es
             induction es with
             | nil =>
                 intro _
-                simp [collectVars.collectVarsList, toLeaTTaAtoms]
+                simp [collectVars.collectVarsList, encodeModelAtoms]
             | cons e es ihEs =>
                 intro hes
-                simp [collectVars.collectVarsList, toLeaTTaAtoms, listDepth] at hes ⊢
+                simp [collectVars.collectVarsList, encodeModelAtoms, listDepth] at hes ⊢
                 have hhead : atomDepth e + 1 ≤ fuel := by
                   omega
                 have htail : listDepth es + 1 ≤ fuel := by
@@ -506,62 +508,62 @@ private theorem collectVars_eq_toLeaTTaAtom_vars_of_depth :
           have hes : listDepth es + 1 ≤ fuel := by
             simp [atomDepth] at hdepth
             omega
-          simpa [collectVars, toLeaTTaAtom, Metta.Atom.vars] using hlist es hes
+          simpa [collectVars, encodeModelAtom, Metta.Atom.vars] using hlist es hes
 
 theorem freshenEquation_alphaEq_fst
     (idx : Nat) (lhs rhs : OSLFCore.Atom) (fuel : Nat)
     (hdepth : atomDepth lhs + 1 ≤ fuel) :
-    Metta.AlphaEq (toLeaTTaAtom (freshenEquation idx lhs rhs fuel).1) (toLeaTTaAtom lhs) := by
+    Metta.AlphaEq (encodeModelAtom (freshenEquation idx lhs rhs fuel).1) (encodeModelAtom lhs) := by
   unfold Metta.AlphaEq
   let vars := (collectVars lhs fuel ++ collectVars rhs fuel).eraseDups
   have hrename :=
-    toLeaTTaAtom_freshenEquation_fst idx lhs rhs fuel hdepth
-  have hvarsEq : collectVars lhs fuel = (toLeaTTaAtom lhs).vars :=
-    collectVars_eq_toLeaTTaAtom_vars_of_depth fuel lhs hdepth
-  have hsubset : ∀ v ∈ (toLeaTTaAtom lhs).vars, v ∈ vars := by
+    encodeModelAtom_freshenEquation_fst idx lhs rhs fuel hdepth
+  have hvarsEq : collectVars lhs fuel = (encodeModelAtom lhs).vars :=
+    collectVars_eq_encodeModelAtom_vars_of_depth fuel lhs hdepth
+  have hsubset : ∀ v ∈ (encodeModelAtom lhs).vars, v ∈ vars := by
     intro v hv
     apply List.mem_eraseDups.mpr
     rw [← hvarsEq] at hv
     exact List.mem_append_left _ hv
   have hnd : vars.Nodup := nodup_eraseDups _
   have hinj :
-      Set.InjOn (applyRen (freshMapping idx vars).1) {v | v ∈ (toLeaTTaAtom lhs).vars} := by
+      Set.InjOn (applyRen (freshMapping idx vars).1) {v | v ∈ (encodeModelAtom lhs).vars} := by
     intro u hu v hv huv
     exact freshMapping_applyRen_injOn_of_nodup hnd idx (hsubset u hu) (hsubset v hv) huv
   calc
-    canonicalizeVars (toLeaTTaAtom (freshenEquation idx lhs rhs fuel).1)
+    canonicalizeVars (encodeModelAtom (freshenEquation idx lhs rhs fuel).1)
         = canonicalizeVars
-            (Metta.renameVars (freshMapping idx vars).1 (toLeaTTaAtom lhs)) := by
+            (Metta.renameVars (freshMapping idx vars).1 (encodeModelAtom lhs)) := by
               simpa [vars] using congrArg canonicalizeVars hrename
-    _ = canonicalizeVars (toLeaTTaAtom lhs) :=
+    _ = canonicalizeVars (encodeModelAtom lhs) :=
           canonicalizeVars_renameVars_of_injOn_vars hinj
 
 theorem freshenEquation_alphaEq_snd
     (idx : Nat) (lhs rhs : OSLFCore.Atom) (fuel : Nat)
     (hdepth : atomDepth rhs + 1 ≤ fuel) :
-    Metta.AlphaEq (toLeaTTaAtom (freshenEquation idx lhs rhs fuel).2) (toLeaTTaAtom rhs) := by
+    Metta.AlphaEq (encodeModelAtom (freshenEquation idx lhs rhs fuel).2) (encodeModelAtom rhs) := by
   unfold Metta.AlphaEq
   let vars := (collectVars lhs fuel ++ collectVars rhs fuel).eraseDups
   have hrename :=
-    toLeaTTaAtom_freshenEquation_snd idx lhs rhs fuel hdepth
-  have hvarsEq : collectVars rhs fuel = (toLeaTTaAtom rhs).vars :=
-    collectVars_eq_toLeaTTaAtom_vars_of_depth fuel rhs hdepth
-  have hsubset : ∀ v ∈ (toLeaTTaAtom rhs).vars, v ∈ vars := by
+    encodeModelAtom_freshenEquation_snd idx lhs rhs fuel hdepth
+  have hvarsEq : collectVars rhs fuel = (encodeModelAtom rhs).vars :=
+    collectVars_eq_encodeModelAtom_vars_of_depth fuel rhs hdepth
+  have hsubset : ∀ v ∈ (encodeModelAtom rhs).vars, v ∈ vars := by
     intro v hv
     apply List.mem_eraseDups.mpr
     rw [← hvarsEq] at hv
     exact List.mem_append_right _ hv
   have hnd : vars.Nodup := nodup_eraseDups _
   have hinj :
-      Set.InjOn (applyRen (freshMapping idx vars).1) {v | v ∈ (toLeaTTaAtom rhs).vars} := by
+      Set.InjOn (applyRen (freshMapping idx vars).1) {v | v ∈ (encodeModelAtom rhs).vars} := by
     intro u hu v hv huv
     exact freshMapping_applyRen_injOn_of_nodup hnd idx (hsubset u hu) (hsubset v hv) huv
   calc
-    canonicalizeVars (toLeaTTaAtom (freshenEquation idx lhs rhs fuel).2)
+    canonicalizeVars (encodeModelAtom (freshenEquation idx lhs rhs fuel).2)
         = canonicalizeVars
-            (Metta.renameVars (freshMapping idx vars).1 (toLeaTTaAtom rhs)) := by
+            (Metta.renameVars (freshMapping idx vars).1 (encodeModelAtom rhs)) := by
               simpa [vars] using congrArg canonicalizeVars hrename
-    _ = canonicalizeVars (toLeaTTaAtom rhs) :=
+    _ = canonicalizeVars (encodeModelAtom rhs) :=
           canonicalizeVars_renameVars_of_injOn_vars hinj
 
 /-- The two independent freshening conventions already agree at the canonical
@@ -572,11 +574,11 @@ theorem freshenRule_alphaEq_freshenEquation_fst
     (counter idx : Nat) (lhs rhs : OSLFCore.Atom) (fuel : Nat)
     (hdepth : atomDepth lhs + 1 ≤ fuel) :
     Metta.AlphaEq
-      (Metta.Minimal.freshenRule counter (toLeaTTaAtom lhs) (toLeaTTaAtom rhs)).1
-      (toLeaTTaAtom (freshenEquation idx lhs rhs fuel).1) := by
+      (Metta.Minimal.freshenRule counter (encodeModelAtom lhs) (encodeModelAtom rhs)).1
+      (encodeModelAtom (freshenEquation idx lhs rhs fuel).1) := by
   unfold Metta.AlphaEq
   exact
-    (freshenRule_alphaEq_fst counter (toLeaTTaAtom lhs) (toLeaTTaAtom rhs)).trans
+    (freshenRule_alphaEq_fst counter (encodeModelAtom lhs) (encodeModelAtom rhs)).trans
       (freshenEquation_alphaEq_fst idx lhs rhs fuel hdepth).symm
 
 /-- RHS companion to `freshenRule_alphaEq_freshenEquation_fst`. This is the
@@ -586,43 +588,43 @@ theorem freshenRule_alphaEq_freshenEquation_snd
     (counter idx : Nat) (lhs rhs : OSLFCore.Atom) (fuel : Nat)
     (hdepth : atomDepth rhs + 1 ≤ fuel) :
     Metta.AlphaEq
-      (Metta.Minimal.freshenRule counter (toLeaTTaAtom lhs) (toLeaTTaAtom rhs)).2
-      (toLeaTTaAtom (freshenEquation idx lhs rhs fuel).2) := by
+      (Metta.Minimal.freshenRule counter (encodeModelAtom lhs) (encodeModelAtom rhs)).2
+      (encodeModelAtom (freshenEquation idx lhs rhs fuel).2) := by
   unfold Metta.AlphaEq
   exact
-    (freshenRule_alphaEq_snd counter (toLeaTTaAtom lhs) (toLeaTTaAtom rhs)).trans
+    (freshenRule_alphaEq_snd counter (encodeModelAtom lhs) (encodeModelAtom rhs)).trans
       (freshenEquation_alphaEq_snd idx lhs rhs fuel hdepth).symm
 
-private theorem toLeaTTaAtom_applyAtomTotal_eq_renBy
+private theorem encodeModelAtom_applyAtomTotal_eq_renBy
     (r : VarRenaming) :
-    ∀ a : OSLFCore.Atom, toLeaTTaAtom (applyAtomTotal r a) = renBy r.rename (toLeaTTaAtom a)
-  | .symbol _ => by simp [applyAtomTotal, toLeaTTaAtom, renBy]
-  | .var _ => by simp [applyAtomTotal, toLeaTTaAtom]
-  | .grounded _ => by simp [applyAtomTotal, toLeaTTaAtom, renBy]
+    ∀ a : OSLFCore.Atom, encodeModelAtom (applyAtomTotal r a) = renBy r.rename (encodeModelAtom a)
+  | .symbol _ => by simp [applyAtomTotal, encodeModelAtom, renBy]
+  | .var _ => by simp [applyAtomTotal, encodeModelAtom]
+  | .grounded _ => by simp [applyAtomTotal, encodeModelAtom, renBy]
   | .expression es =>
       by
-        simp [applyAtomTotal, toLeaTTaAtom, toLeaTTaAtoms_applyAtomTotal_eq_map_renBy r es]
+        simp [applyAtomTotal, encodeModelAtom, encodeModelAtoms_applyAtomTotal_eq_map_renBy r es]
 where
-  toLeaTTaAtoms_applyAtomTotal_eq_map_renBy
+  encodeModelAtoms_applyAtomTotal_eq_map_renBy
       (r : VarRenaming) :
       ∀ es : List OSLFCore.Atom,
-        toLeaTTaAtoms (es.map (applyAtomTotal r)) =
-          (toLeaTTaAtoms es).map (renBy r.rename)
+        encodeModelAtoms (es.map (applyAtomTotal r)) =
+          (encodeModelAtoms es).map (renBy r.rename)
     | [] => rfl
     | e :: es => by
-        simp [toLeaTTaAtoms_applyAtomTotal_eq_map_renBy r es,
-          toLeaTTaAtom_applyAtomTotal_eq_renBy r e]
+        simp [encodeModelAtoms_applyAtomTotal_eq_map_renBy r es,
+          encodeModelAtom_applyAtomTotal_eq_renBy r e]
 
 /-- Any injective HE variable renaming is invisible to LeaTTa's canonical
 interface after translation: the renamed HE atom is alpha-equivalent to the
 original one. This is the free-metavariable half of the canonical-hub story,
 separate from the binder-level de Bruijn layer. -/
-private theorem alphaEq_toLeaTTaAtom_applyAtomTotal_of_injective
+private theorem alphaEq_encodeModelAtom_applyAtomTotal_of_injective
     (r : VarRenaming) (hr : r.Injective) (a : OSLFCore.Atom) :
-    Metta.AlphaEq (toLeaTTaAtom (applyAtomTotal r a)) (toLeaTTaAtom a) := by
+    Metta.AlphaEq (encodeModelAtom (applyAtomTotal r a)) (encodeModelAtom a) := by
   unfold Metta.AlphaEq
-  rw [toLeaTTaAtom_applyAtomTotal_eq_renBy]
-  exact canonicalizeVars_renBy_of_injective hr (toLeaTTaAtom a)
+  rw [encodeModelAtom_applyAtomTotal_eq_renBy]
+  exact canonicalizeVars_renBy_of_injective hr (encodeModelAtom a)
 
 mutual
 
@@ -665,11 +667,11 @@ theorem visible_successor_of_keyRenamed_instantiated_item
     (hdepthRenamed : atomDepth (applyAtomTotal r rhs) + 2 ≤ fuel)
     (hitem :
       Metta.Minimal.evalResult prev
-          (Metta.instantiate (toLeaTTaMatchBindings qb') (toLeaTTaAtom (applyAtomTotal r rhs)))
+          (Metta.instantiate (toLeaTTaMatchBindings qb') (encodeModelAtom (applyAtomTotal r rhs)))
           (toLeaTTaMatchBindings qb') ∈ items) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈ items ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.apply rhs fuel)) := by
+      Metta.AlphaEq emitted (encodeModelAtom (qb.apply rhs fuel)) := by
   obtain ⟨emitted, m, hmem, halphaRenamed⟩ :=
     visible_successor_of_instantiated_item
       (rhs := applyAtomTotal r rhs) (qb := qb') (fuel := fuel)
@@ -680,10 +682,10 @@ theorem visible_successor_of_keyRenamed_instantiated_item
     apply_keysRenamed r hr hrel hfix fuel rhs
   have halphaApply :
       Metta.AlphaEq
-        (toLeaTTaAtom (qb'.apply (applyAtomTotal r rhs) fuel))
-        (toLeaTTaAtom (qb.apply rhs fuel)) := by
+        (encodeModelAtom (qb'.apply (applyAtomTotal r rhs) fuel))
+        (encodeModelAtom (qb.apply rhs fuel)) := by
     rw [happly]
-    exact alphaEq_toLeaTTaAtom_applyAtomTotal_of_injective r hr (qb.apply rhs fuel)
+    exact alphaEq_encodeModelAtom_applyAtomTotal_of_injective r hr (qb.apply rhs fuel)
   refine ⟨emitted, m, hmem, ?_⟩
   unfold Metta.AlphaEq at halphaRenamed halphaApply ⊢
   exact halphaRenamed.trans halphaApply
@@ -706,11 +708,11 @@ theorem visible_successor_of_keyRenamed_instantiated_item_of_match
     (hdepth : atomDepth rhs + 2 ≤ fuel)
     (hitem :
       Metta.Minimal.evalResult prev
-          (Metta.instantiate (toLeaTTaMatchBindings qb') (toLeaTTaAtom (applyAtomTotal r rhs)))
+          (Metta.instantiate (toLeaTTaMatchBindings qb') (encodeModelAtom (applyAtomTotal r rhs)))
           (toLeaTTaMatchBindings qb') ∈ items) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈ items ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.apply rhs fuel)) := by
+      Metta.AlphaEq emitted (encodeModelAtom (qb.apply rhs fuel)) := by
   have hkeys' : AssignmentsNodup qb' :=
     simpleMatch_assignmentsNodup hmatch'
   have hdepthRenamed : atomDepth (applyAtomTotal r rhs) + 2 ≤ fuel := by
@@ -761,11 +763,11 @@ theorem visible_successor_of_keyRenamed_instantiated_item_of_matches_targetFixed
     (hdepth : atomDepth rhs + 2 ≤ fuel)
     (hitem :
       Metta.Minimal.evalResult prev
-          (Metta.instantiate (toLeaTTaMatchBindings qb') (toLeaTTaAtom (applyAtomTotal r rhs)))
+          (Metta.instantiate (toLeaTTaMatchBindings qb') (encodeModelAtom (applyAtomTotal r rhs)))
           (toLeaTTaMatchBindings qb') ∈ items) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈ items ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.apply rhs fuel)) := by
+      Metta.AlphaEq emitted (encodeModelAtom (qb.apply rhs fuel)) := by
   have hfix :
       ∀ {v val}, qb.lookup v = some val → applyAtomTotal r val = val :=
     applyAtomTotal_lookup_fixed_of_target_fixed_match r hr htarget hmatch

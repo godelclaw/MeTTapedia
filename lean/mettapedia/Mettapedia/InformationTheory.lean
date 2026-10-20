@@ -1,3 +1,5 @@
+import Mettapedia.InformationTheory.MarkovProjectionMarginals
+import Mettapedia.InformationTheory.MarkovProjection
 import Mettapedia.InformationTheory.Main
 
 /-!

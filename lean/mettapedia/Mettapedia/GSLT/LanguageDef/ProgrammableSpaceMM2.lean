@@ -128,7 +128,8 @@ theorem selected_source_step (scope : Scope) (space : List Atom) (request : Requ
       simp [cRuleScopedSourceWorkQueueStep, selected]
   | consume =>
       obtain ⟨raw, selected, decoded⟩ := selected
-      simp [cRuleScopedSourceWorkQueueStep, selected, decoded]
+      simp [cRuleScopedSourceWorkQueueStep, selected,
+        cConsumeRuleScopedRawExecFact_supported space raw request.directive decoded]
 
 /-- Every admitted-language event is an actual source execution step. -/
 theorem advance_source_step {scope : Scope} {space target : List Atom}

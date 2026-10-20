@@ -73,13 +73,13 @@ section Generic
 
 variable {State Query : Type*}
 variable [_root_.Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-variable [PLNWorldModel.BinaryWorldModel State Query]
+variable [BinaryWorldModel State Query]
 
 theorem wmRewriteRuleCtx
-    {r : PLNWorldModel.WMRewriteRule State Query} {Γ : Set State} {W : State}
-    (hSide : r.side) (hW : PLNWorldModel.WMJudgmentCtx Γ W) :
-    PLNWorldModel.WMQueryJudgmentCtx Γ W r.conclusion (r.derive W) :=
-  PLNWorldModel.WMRewriteRule.applyCtx hSide hW
+    {r : WMRewriteRule State Query} {Γ : Set State} {W : State}
+    (hSide : r.side) (hW : WMJudgmentCtx Γ W) :
+    WMQueryJudgmentCtx Γ W r.conclusion (r.derive W) :=
+  WMRewriteRule.applyCtx hSide hW
 
 end Generic
 

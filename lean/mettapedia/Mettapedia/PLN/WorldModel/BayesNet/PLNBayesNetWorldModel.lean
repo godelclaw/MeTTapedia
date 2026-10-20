@@ -5,7 +5,7 @@ import Mettapedia.ProbabilityTheory.BayesianNetworks.DirectedGraph
 /-!
 # Bayesian-Network-Style World Models for PLN (Boolean CPT BinaryEvidence)
 
-This module adds a first tractable sublayer under the `PLNWorldModel.BinaryWorldModel` interface:
+This module adds a first tractable sublayer under the `BinaryWorldModel` interface:
 
 * A Bayesian-network-style posterior state is represented by **CPT evidence**:
   for each node `v` and each configuration of its parents, we store binary `BinaryEvidence`
@@ -26,8 +26,8 @@ namespace Mettapedia.PLN.WorldModel.BayesNet.PLNBayesNetWorldModel
 open scoped Classical ENNReal
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Core.CompletePLN
 open Mettapedia.PLN.Evidence.PLNJointEvidence
 open Mettapedia.PLN.Evidence.PLNJointEvidence.JointEvidence

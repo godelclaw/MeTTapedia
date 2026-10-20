@@ -19,7 +19,7 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.MatchAutomataSourceEx
 open Mettapedia.GSLT.LanguageDef.CettaWire
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst applySubst_nil matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval MatchAutomataProgram
 
 private abbrev a (head : String) (arguments : List Atom) : Atom :=

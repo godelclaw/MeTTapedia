@@ -125,23 +125,6 @@ theorem ext {source : GSLT.{uSourceTerm}} {target : GSLT.{uTargetTerm}}
           cases mapStep
           rfl
 
-/-- Map a proposition-valued source run by retaining each realization path
-until the final, explicitly lossy erasure into proposition-valued target
-reachability.  No inverse is claimed: a proposition does not determine which
-proof occurrence produced it. -/
-theorem mapMultiStep
-    {source : GSLT.{uSourceTerm}} {target : GSLT.{uTargetTerm}}
-    (realization : OperationalRealization source target) :
-    {sourceTerm targetTerm : source.Term} ->
-      source.MultiStep sourceTerm targetTerm ->
-        target.MultiStep (realization.mapTerm sourceTerm)
-          (realization.mapTerm targetTerm)
-  | _, _, .refl object => .refl (realization.mapTerm object)
-  | _, _, .step step remaining =>
-      multiStepAppend
-        (executionPathToMultiStep (realization.mapStep step))
-        (realization.mapMultiStep remaining)
-
 /-- A path-valued realization is a strict one-step translation when the
 target regards a finite runtime path as one reachability-scale macro-step. -/
 def toClosureTranslation

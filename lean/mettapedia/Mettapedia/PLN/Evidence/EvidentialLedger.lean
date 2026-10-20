@@ -12,8 +12,8 @@ compositionality, source forgetting, and AdditiveWorldModel integration.
 
 ## Architecture
 
-**Additive WM is the base evidence-composition layer.**
-It is not supposed to encode every aspect of trust, dependence, or governance
+**This component implements the additive specialization of the general WM interface.**
+It does not encode every aspect of trust, dependence, or governance
 by itself. Source reliability, dependence management, and governance policy
 sit above it as extension layers.
 
@@ -37,7 +37,7 @@ namespace Mettapedia.PLN.Evidence.EvidentialLedger
 
 open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 open scoped ENNReal
 
@@ -56,7 +56,7 @@ structure SourceItem (Source Candidate : Type*) where
 /-! ## 2. Aggregation: fold support vectors by candidate -/
 
 /-- Aggregate evidence from a ledger for a given candidate.
-    This IS the hplus aggregation — independent sources contribute additively.
+    This is the hplus aggregation: sources with disjoint observations contribute additively.
     The fold is the explicit, auditable aggregation policy. -/
 def aggregate [BEq Candidate] (items : List (SourceItem Source Candidate))
     (c : Candidate) : BinEvNat :=
@@ -265,12 +265,12 @@ theorem DataBackedState.revise_compressed (s₁ s₂ : DataBackedState) :
 /-! ## 8. Bridge to formal BinaryEvidence (ℝ≥0∞) -/
 
 noncomputable def BinEvNat.toBinaryEvidence (e : BinEvNat) :
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence :=
+    Mettapedia.PLN.Evidence.BinaryEvidence :=
   ⟨↑e.pos, ↑e.neg⟩
 
 @[simp] theorem BinEvNat.toBinaryEvidence_zero :
     BinEvNat.toBinaryEvidence 0 =
-      (0 : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) := by
+      (0 : Mettapedia.PLN.Evidence.BinaryEvidence) := by
   ext <;> simp [BinEvNat.toBinaryEvidence]
 
 @[simp] theorem BinEvNat.toBinaryEvidence_add (e₁ e₂ : BinEvNat) :
@@ -286,7 +286,7 @@ noncomputable def BinEvNat.toBinaryEvidence (e : BinEvNat) :
 
 @[simp] theorem BinEvNat.toBinaryEvidence_one :
     BinEvNat.toBinaryEvidence 1 =
-      (1 : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) := by
+      (1 : Mettapedia.PLN.Evidence.BinaryEvidence) := by
   ext <;> change ((1 : Nat) : ℝ≥0∞) = 1
   all_goals exact Nat.cast_one
 

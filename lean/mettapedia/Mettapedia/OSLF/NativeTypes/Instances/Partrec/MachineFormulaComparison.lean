@@ -36,6 +36,7 @@ def lift : Formula Empty → Formula Mettapedia.OSLF.NativeTypes.Instances.Partr
   | .imp left right => .imp (lift left) (lift right)
   | .possibility inner => .possibility (lift inner)
   | .outgoingUniversal inner => .outgoingUniversal (lift inner)
+  | .separating index left right => .separating index (lift left) (lift right)
 
 theorem lifted_meaning (configuration : Mettapedia.OSLF.NativeTypes.Instances.Partrec.Driver.Configuration) (bound : List TypeExpr)
     (formula : Formula Empty) :
@@ -51,6 +52,7 @@ theorem lifted_meaning (configuration : Mettapedia.OSLF.NativeTypes.Instances.Pa
   | imp left right leftIH rightIH => simp only [lift, denotation, leftIH, rightIH]
   | possibility inner ih => simp only [lift, denotation, ih]
   | outgoingUniversal inner ih => simp only [lift, denotation, ih]
+  | separating index left right leftIH rightIH => simp only [lift, denotation, leftIH, rightIH]
 
 def run (configuration : Mettapedia.OSLF.NativeTypes.Instances.Partrec.Driver.Configuration) (bound : List TypeExpr)
     (formula : Formula Empty) (source : Pattern) (typed : Source bound source) (budget : Nat) : Option Bool :=
@@ -66,7 +68,7 @@ theorem whole_fragment_meaning (configuration : Mettapedia.OSLF.NativeTypes.Inst
     (interpretation : AtomSem) {original : OSLFFormula} {formula : Formula Empty}
     (translated : fromLegacy? original = some formula) (source : Pattern) (typed : Source bound source) :
     Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation
-        (Mettapedia.OSLF.NativeTypes.Runtime.Local.partrecRuntime configuration bound).leaves (lift formula) source ↔
+        (Mettapedia.OSLF.NativeTypes.Runtime.Local.partrecRuntime configuration bound).leaves (lift formula) (.empty _) source ↔
       sem Mettapedia.Languages.PartrecMachine.Reduces interpretation original source := by
   have equal := Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation_comparison
     (Mettapedia.OSLF.NativeTypes.Runtime.Local.partrecRuntime configuration bound).leaves

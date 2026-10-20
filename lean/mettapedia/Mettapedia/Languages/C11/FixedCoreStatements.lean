@@ -2949,4 +2949,337 @@ theorem machine_run_add (first second : Nat) (configuration : Executable model) 
 
 end Machine
 
+/-! ## Explicit choices on the common retained runner -/
+
+namespace Scheduled
+
+open Mettapedia.GSLT.Distinction.ProductiveBlocks
+
+/-- A finite choice supply belongs to the retained state. Repeated visits to
+the same C configuration may therefore receive different choices. -/
+structure State (model : Model) where
+  configuration : Executable model
+  choices : List Choice
+
+/-- A missing scheduler choice is distinct from an external C call. -/
+inductive Request (model : Model) where
+  | choice
+  | external (request : FixedCore.Request model)
+
+variable (model : Model) (policy : SignedConversionPolicy)
+  (abi : IntegerType IntegerExtension → ObjectLayout.Layout) (program : Program model)
+
+/-- One supplied choice is consumed by one actual C step. An empty supply
+suspends; a supplied choice that cannot execute remains stuck with its state
+and choice intact. Neither case is a source undefined behavior. -/
+def machine : Machine (State model) (Event model) (Option (Value model)) (Request model) where
+  step state :=
+    match state.configuration.status with
+    | .running =>
+        match state.choices with
+        | [] => some (.call .choice state)
+        | choice :: rest =>
+            (FixedCore.step model policy abi program choice state.configuration).map fun next =>
+              .publish [.occurrence state.configuration next] ⟨next, rest⟩
+    | .waiting service arguments => some (.call (.external ⟨service, arguments⟩) state)
+    | .finished value => some (.finish value)
+    | .faulted reason => some (.fail [.fault reason])
+
+/-- Append future choices without replacing the unused suffix or the C state. -/
+def supply (state : State model) (choices : List Choice) : State model :=
+  { state with choices := state.choices ++ choices }
+
+/-- External replies use the existing C operation and preserve the choice tape. -/
+def reply (value : Value model) (state : State model) : Option (State model) :=
+  (FixedCore.reply model policy value state.configuration).map fun next => ⟨next, state.choices⟩
+
+theorem reply_iff (value : Value model) (state saved : State model) :
+    reply model policy value state = some saved ↔
+      FixedCore.reply model policy value state.configuration = some saved.configuration ∧
+      saved.choices = state.choices := by
+  rcases saved with ⟨configuration, choices⟩
+  simp only [reply, Option.map_eq_some_iff, State.mk.injEq]
+  constructor
+  · rintro ⟨next, executed, rfl, rfl⟩
+    exact ⟨executed, rfl⟩
+  · rintro ⟨executed, rfl⟩
+    exact ⟨configuration, executed, rfl, rfl⟩
+
+theorem step_cons {before after : Executable model} (choice : Choice) (rest : List Choice)
+    (stepped : FixedCore.step model policy abi program choice before = some after) :
+    (machine model policy abi program).step ⟨before, choice :: rest⟩ =
+      some (.publish [.occurrence before after] ⟨after, rest⟩) := by
+  have running : before.status = .running := by
+    cases status : before.status <;> simp_all [FixedCore.step]
+  simp only [machine, running, stepped, Option.map_some]
+
+/-- The source relation retains all choices, rather than only the canonical
+allocation policy of `FixedCore.machine`. -/
+theorem step_iff (before : Executable model) (target : Semantic model) (rest : List Choice) :
+    (∃ choice after,
+      (machine model policy abi program).step ⟨before, choice :: rest⟩ =
+        some (.publish [.occurrence before after] ⟨after, rest⟩) ∧
+      after.represent = target) ↔
+      Step model policy abi program before.represent target := by
+  constructor
+  · rintro ⟨choice, after, executed, represented⟩
+    have stepped : FixedCore.step model policy abi program choice before = some after := by
+      cases status : before.status <;> simp only [machine, status] at executed
+      · obtain ⟨next, stepped, same⟩ := Option.map_eq_some_iff.mp executed
+        cases same
+        exact stepped
+      all_goals cases executed
+    exact represented ▸ FixedCore.step_sound model policy abi program choice before after stepped
+  · intro independent
+    obtain ⟨choice, after, stepped, represented⟩ :=
+      FixedCore.step_complete model policy abi program before target independent
+    exact ⟨choice, after, step_cons model policy abi program choice rest stepped, represented⟩
+
+theorem empty_supply_requests (configuration : Executable model)
+    (running : configuration.status = .running) :
+    (machine model policy abi program).run 1 ⟨configuration, []⟩ =
+      ([], .suspended .choice ⟨configuration, []⟩) := by
+  simp only [Machine.run, machine, running]
+
+theorem call_iff (state saved : State model) (request : Request model) :
+    (machine model policy abi program).step state = some (.call request saved) ↔
+      saved = state ∧ match request with
+        | .choice => state.configuration.status = .running ∧ state.choices = []
+        | .external request => state.configuration.status = .waiting request.service request.arguments := by
+  rcases state with ⟨configuration, choices⟩
+  cases status : configuration.status <;> cases request with
+  | choice =>
+      cases choices <;> simp [machine, status, eq_comm]
+  | external request =>
+      cases choices <;> cases request <;>
+        simp [machine, status, eq_comm, and_assoc, and_comm]
+
+theorem finish_iff (state : State model) (value : Option (Value model)) :
+    (machine model policy abi program).step state = some (.finish value) ↔
+      state.configuration.status = .finished value := by
+  rcases state with ⟨configuration, choices⟩
+  cases status : configuration.status <;> cases choices <;>
+    simp [machine, status, Option.map_eq_some_iff]
+
+/-- An invalid supplied choice cannot be mistaken for an empty supply. -/
+theorem stuck_iff (state : State model) :
+    (machine model policy abi program).step state = none ↔
+      state.configuration.status = .running ∧
+        ∃ choice rest, state.choices = choice :: rest ∧
+          FixedCore.step model policy abi program choice state.configuration = none := by
+  rcases state with ⟨configuration, choices⟩
+  cases status : configuration.status <;> cases choices <;>
+    simp [machine, status]
+
+/-- Every finite independent path constructs a tape and its actual receipts.
+The proof works from any executable representation of the initial semantic
+state, and leaves an arbitrary following choice suffix untouched. -/
+theorem source_path_realized {source target : Semantic model}
+    (history : Relation.ReflTransGen (Step model policy abi program) source target) :
+    ∀ initial : Executable model, initial.represent = source →
+      ∃ choices final events, final.represent = target ∧ events.length = choices.length ∧
+        ∀ rest, (machine model policy abi program).run choices.length ⟨initial, choices ++ rest⟩ =
+          (events, .exhausted ⟨final, rest⟩) := by
+  induction history with
+  | refl =>
+      intro initial represented
+      exact ⟨[], initial, [], represented, rfl, fun _ => rfl⟩
+  | @tail middle target history edge ih =>
+      intro initial represented
+      obtain ⟨choices, intermediate, events, representedMiddle, length, executed⟩ := ih initial represented
+      have nextStep : Step model policy abi program intermediate.represent target := by
+        simpa only [representedMiddle] using edge
+      obtain ⟨choice, final, stepped, representedFinal⟩ :=
+        FixedCore.step_complete model policy abi program intermediate target nextStep
+      refine ⟨choices ++ [choice], final, events ++ [.occurrence intermediate final], representedFinal,
+        by simp only [List.length_append, List.length_singleton, length], ?_⟩
+      intro rest
+      rw [List.length_append, List.length_singleton, (machine model policy abi program).run_add]
+      have prefixRun := executed (choice :: rest)
+      rw [List.append_assoc, List.singleton_append, prefixRun]
+      simp only [Machine.continueRun]
+      rw [(machine model policy abi program).run_succ_publish
+        (step_cons model policy abi program choice rest stepped)]
+      simp only [Machine.run, List.append_nil]
+
+/-- Every exhausted prefix is a genuine source path, with exactly the consumed
+tape prefix and one ordered occurrence per C step. -/
+theorem exhausted_source {budget : Nat} {initial final : State model} {events : List (Event model)}
+    (executed : (machine model policy abi program).run budget initial = (events, .exhausted final)) :
+    ∃ consumed, initial.choices = consumed ++ final.choices ∧ consumed.length = budget ∧
+      events.length = budget ∧
+      Relation.ReflTransGen (Step model policy abi program)
+        initial.configuration.represent final.configuration.represent ∧
+      ∀ event ∈ events, match event with
+        | .occurrence before after => Step model policy abi program before.represent after.represent
+        | .fault _ => False := by
+  induction budget generalizing initial events final with
+  | zero =>
+      simp only [Machine.run, Prod.mk.injEq, Outcome.exhausted.injEq] at executed
+      obtain ⟨rfl, rfl⟩ := executed
+      exact ⟨[], rfl, rfl, rfl, .refl, by simp⟩
+  | succ budget ih =>
+      rcases initial with ⟨configuration, choices⟩
+      cases status : configuration.status with
+      | running =>
+          cases choices with
+          | nil => simp only [Machine.run, machine, status, Prod.mk.injEq, reduceCtorEq, and_false] at executed
+          | cons choice rest =>
+              cases advance : FixedCore.step model policy abi program choice configuration with
+              | none => simp only [Machine.run, machine, status, advance, Option.map_none,
+                  Prod.mk.injEq, reduceCtorEq, and_false] at executed
+              | some next =>
+                  rw [(machine model policy abi program).run_succ_publish
+                    (step_cons model policy abi program choice rest advance)] at executed
+                  rcases suffix : (machine model policy abi program).run budget ⟨next, rest⟩ with
+                    ⟨later, outcome⟩
+                  rw [suffix] at executed
+                  have sameOutcome : outcome = .exhausted final := congrArg Prod.snd executed
+                  subst outcome
+                  have sameEvents : [.occurrence configuration next] ++ later = events := congrArg Prod.fst executed
+                  subst events
+                  obtain ⟨consumed, tape, count, length, history, sound⟩ := ih suffix
+                  have edge := FixedCore.step_sound model policy abi program choice configuration next advance
+                  refine ⟨choice :: consumed, ?_, ?_, ?_, .head edge history, ?_⟩
+                  · change choice :: rest = (choice :: consumed) ++ final.choices
+                    change rest = consumed ++ final.choices at tape
+                    rw [tape]
+                    rfl
+                  · simp only [List.length_cons, count]
+                  · simp only [List.length_append, List.length_singleton, length, Nat.add_comm]
+                  · intro event present
+                    simp only [List.singleton_append, List.mem_cons] at present
+                    rcases present with rfl | present
+                    · exact edge
+                    · exact sound event present
+      | waiting service arguments | finished value | faulted reason =>
+          simp only [Machine.run, machine, status, Prod.mk.injEq, reduceCtorEq, and_false] at executed
+
+/-- Choice-complete finite execution, including the full represented endpoint. -/
+theorem source_path_iff (initial : Executable model) (target : Semantic model) :
+    Relation.ReflTransGen (Step model policy abi program) initial.represent target ↔
+      ∃ choices final events, final.represent = target ∧
+        (machine model policy abi program).run choices.length ⟨initial, choices⟩ =
+          (events, .exhausted ⟨final, []⟩) := by
+  constructor
+  · intro history
+    obtain ⟨choices, final, events, represented, _, executed⟩ :=
+      source_path_realized model policy abi program history initial rfl
+    exact ⟨choices, final, events, represented, by simpa only [List.append_nil] using executed []⟩
+  · rintro ⟨choices, final, events, represented, executed⟩
+    obtain ⟨_, _, _, _, history, _⟩ := exhausted_source model policy abi program executed
+    simpa only [represented] using history
+
+/-- All non-budget outcomes have an earned source prefix followed by the
+actual boundary operation. Its final fault event is kept separately from
+the C-step occurrences. Requests retain the same configuration and suffix. -/
+theorem boundary_source {budget : Nat} {initial : State model} {events : List (Event model)}
+    {outcome : Outcome (State model) (Option (Value model)) (Request model)}
+    (executed : (machine model policy abi program).run budget initial = (events, outcome))
+    (boundary : ∀ saved, outcome ≠ .exhausted saved) :
+    ∃ count < budget, ∃ consumed saved earlier last,
+      initial.choices = consumed ++ saved.choices ∧ consumed.length = count ∧
+      earlier.length = count ∧
+      Relation.ReflTransGen (Step model policy abi program)
+        initial.configuration.represent saved.configuration.represent ∧
+      (machine model policy abi program).run 1 saved = (last, outcome) ∧
+      events = earlier ++ last ∧
+      ∀ event ∈ earlier, match event with
+        | .occurrence before after => Step model policy abi program before.represent after.represent
+        | .fault _ => False := by
+  obtain ⟨count, bound, saved, earlier, last, prefixRun, ending, emissions⟩ :=
+    (machine model policy abi program).run_boundary_prefix executed boundary
+  obtain ⟨consumed, tape, length, eventLength, history, sound⟩ :=
+    exhausted_source model policy abi program prefixRun
+  exact ⟨count, bound, consumed, saved, earlier, last, tape, length, eventLength,
+    history, ending, emissions, sound⟩
+
+/-- A completed scheduled result exists exactly when the independent core has
+a finite path to that result. The tape is constructed from the source path. -/
+theorem finished_source_iff (initial : Executable model) (value : Option (Value model)) :
+    (∃ budget choices events,
+      (machine model policy abi program).run budget ⟨initial, choices⟩ =
+        (events, .finished value)) ↔
+      ∃ target, Relation.ReflTransGen (Step model policy abi program) initial.represent target ∧
+        target.status = .finished value := by
+  constructor
+  · rintro ⟨budget, choices, events, executed⟩
+    obtain ⟨_, _, _, saved, _, last, _, _, _, history, ending, _, _⟩ :=
+      boundary_source model policy abi program executed (by intro saved; simp)
+    have finish := ((machine model policy abi program).run_one_finished_iff saved last value).mp ending
+    exact ⟨saved.configuration.represent, history, (finish_iff model policy abi program saved value).mp finish.2⟩
+  · rintro ⟨target, history, finished⟩
+    obtain ⟨choices, final, events, represented, _, executed⟩ :=
+      source_path_realized model policy abi program history initial rfl
+    have finalStatus : final.status = .finished value := by
+      change final.represent.status = .finished value
+      rw [represented]
+      exact finished
+    have prefixRun := executed []
+    simp only [List.append_nil] at prefixRun
+    refine ⟨choices.length + 1, choices, events, ?_⟩
+    rw [(machine model policy abi program).run_add, prefixRun]
+    simp only [Machine.continueRun, Machine.run, machine, finalStatus, List.append_nil]
+
+theorem resume_after_prefix (first second : Nat) (initial saved : State model) (events : List (Event model))
+    (paused : (machine model policy abi program).run first initial = (events, .exhausted saved)) :
+    (machine model policy abi program).run (first + second) initial =
+      (events ++ ((machine model policy abi program).run second saved).1,
+        ((machine model policy abi program).run second saved).2) :=
+  (machine model policy abi program).established_and_pending first second initial saved events paused
+
+/-- Supplying later choices changes no executed step or receipt. The unused
+suffix is extended at the retained endpoint, rather than replaying the prefix. -/
+theorem exhausted_supply {budget : Nat} {initial final : State model} {events : List (Event model)}
+    (executed : (machine model policy abi program).run budget initial = (events, .exhausted final))
+    (extra : List Choice) :
+    (machine model policy abi program).run budget (supply model initial extra) =
+      (events, .exhausted (supply model final extra)) := by
+  induction budget generalizing initial events final with
+  | zero =>
+      simp only [Machine.run, Prod.mk.injEq, Outcome.exhausted.injEq] at executed
+      obtain ⟨rfl, rfl⟩ := executed
+      rfl
+  | succ budget ih =>
+      rcases initial with ⟨configuration, choices⟩
+      cases status : configuration.status with
+      | running =>
+          cases choices with
+          | nil => simp only [Machine.run, machine, status, Prod.mk.injEq, reduceCtorEq, and_false] at executed
+          | cons choice rest =>
+              cases advance : FixedCore.step model policy abi program choice configuration with
+              | none => simp only [Machine.run, machine, status, advance, Option.map_none,
+                  Prod.mk.injEq, reduceCtorEq, and_false] at executed
+              | some next =>
+                  rw [(machine model policy abi program).run_succ_publish
+                    (step_cons model policy abi program choice rest advance)] at executed
+                  rcases suffix : (machine model policy abi program).run budget ⟨next, rest⟩ with
+                    ⟨later, outcome⟩
+                  rw [suffix] at executed
+                  have sameOutcome : outcome = .exhausted final := congrArg Prod.snd executed
+                  subst outcome
+                  have sameEvents : [.occurrence configuration next] ++ later = events := congrArg Prod.fst executed
+                  subst events
+                  change (machine model policy abi program).run (budget + 1)
+                    ⟨configuration, choice :: (rest ++ extra)⟩ = _
+                  rw [(machine model policy abi program).run_succ_publish
+                    (step_cons model policy abi program choice (rest ++ extra) advance)]
+                  have supplied := ih suffix
+                  change (machine model policy abi program).run budget ⟨next, rest ++ extra⟩ = _ at supplied
+                  rw [supplied]
+      | waiting service arguments | finished value | faulted reason =>
+          simp only [Machine.run, machine, status, Prod.mk.injEq, reduceCtorEq, and_false] at executed
+
+/-- A replenished run continues at the exact saved C state and event prefix. -/
+theorem resume_with_supply (first second : Nat) (initial saved : State model)
+    (events : List (Event model)) (extra : List Choice)
+    (paused : (machine model policy abi program).run first initial = (events, .exhausted saved)) :
+    (machine model policy abi program).run (first + second) (supply model initial extra) =
+      (events ++ ((machine model policy abi program).run second (supply model saved extra)).1,
+        ((machine model policy abi program).run second (supply model saved extra)).2) :=
+  resume_after_prefix model policy abi program first second _ _ events
+    (exhausted_supply model policy abi program paused extra)
+
+end Scheduled
+
 end Mettapedia.Languages.C11.FixedCore

@@ -21,7 +21,7 @@ namespace Mettapedia.MachineLearning.NeuralNetworks.WorkspaceDecoder
 
 open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidentialLedger
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.TruthValues.PLNConfidenceWeight.EvidenceWeightCoordinate
 open Mettapedia.PLN.TruthValues.PLNTruthTheoryIndex
 open scoped ENNReal

@@ -134,7 +134,7 @@ theorem unit_context_occurrences_unbounded (base : BasePremiseEvaluator) (patter
 
 theorem unit_equation_not_finite_admitted : checkEquation unitEquation = false := by
   simp [checkEquation, unitEquation, ScopedEquationExecution.orientedRule, checkRule,
-    balanced, constantContribution, evaluate, evaluateList]
+    balancedSides, balanced, constantContribution, evaluate, evaluateList]
 
 /-- Literal repeated captures distinguish raw display names. -/
 def repeatRule : RewriteRule where

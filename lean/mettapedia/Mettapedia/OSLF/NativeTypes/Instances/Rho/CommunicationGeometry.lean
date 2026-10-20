@@ -29,7 +29,7 @@ open Mettapedia.OSLF.NativeTypes.SortProfiles.Slots
 
 def language : LanguageDef := {rhoCalc with rewrites := [rhoCommPaper]}
 
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨language, [], ⟨[], [], []⟩⟩
 
 def fragment : Mettapedia.OSLF.NativeTypes.Generation.LanguageFragment := {}
 

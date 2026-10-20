@@ -2,6 +2,9 @@ import Mettapedia.Languages.MeTTa.HE.Spec.Type.Conformance
 import Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 import MettaHyperonFull.Minimal.Interpreter
 import MettaHyperonFull.Proofs.TypeSoundness
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # External-ground type-tag counterexample
@@ -24,7 +27,7 @@ open Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 /-- Translation-tag contract: the first external component is exactly the
 intrinsic type of the source custom grounded value. -/
 theorem nativeCustom_externalTag_contract (typeName payload : String) :
-    toLeaTTaGround (.custom typeName payload) =
+    encodeModelGround (.custom typeName payload) =
         .external typeName payload ∧
       IntrinsicGroundedTypeRel (.custom typeName payload)
         (.symbol typeName) := by
@@ -53,12 +56,12 @@ intrinsic type rather than its grounded meta-type. -/
 theorem spec_custom_ground_has_carried_type :
     TypeOfRel Space.empty customNative (.symbol "T") := by
   refine ⟨[.symbol "T"], ?_, by simp⟩
-  exact TypesOfRel.groundedKnown
+  exact StorageTypesRel.groundedKnown
     (IntrinsicGroundedTypeRel.custom "T" "payload") (by decide)
 
 /-- The translated witness really is the external payload named above. -/
 theorem customNative_translates_to_customLea :
-    toLeaTTaAtom customNative = customLea := by
+    encodeModelAtom customNative = customLea := by
   rfl
 
 private def emptyEnv : Metta.Minimal.MinEnv :=

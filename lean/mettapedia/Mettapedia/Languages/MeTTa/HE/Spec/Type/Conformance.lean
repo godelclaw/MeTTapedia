@@ -111,23 +111,6 @@ theorem annotationTypesRel_getAnnotatedTypes
           rw [List.filterMap_cons, hopt]
           exact hshape ▸ AnnotationTypesRel.hit ih
 
-private theorem AnnotationTypesRel.unique
-    {target : Atom} {atoms left right : List Atom}
-    (hleft : AnnotationTypesRel target atoms left)
-    (hright : AnnotationTypesRel target atoms right) : left = right := by
-  induction hleft generalizing right with
-  | nil =>
-      cases hright
-      rfl
-  | hit htail ih =>
-      cases hright with
-      | hit hright => exact congrArg (List.cons _) (ih hright)
-      | skip hskip _ => exact (hskip _ rfl).elim
-  | skip hskip htail ih =>
-      cases hright with
-      | hit _ => exact (hskip _ rfl).elim
-      | skip _ hright => exact ih hright
-
 theorem annotationTypesRel_eq_getAnnotatedTypes
     {target : Atom} {atoms types : List Atom}
     (h : AnnotationTypesRel target atoms types) :
@@ -145,7 +128,7 @@ theorem intrinsicGroundedTypeRel_iff_getGroundedType
 
 theorem typesOfRel_eq_getAtomTypes
     {space : Space} {atom : Atom} {types : List Atom}
-    (h : TypesOfRel space atom types) :
+    (h : StorageTypesRel space atom types) :
     getAtomTypes space atom = types := by
   cases h with
   | «variable» => rfl
@@ -189,32 +172,32 @@ theorem typeOfRel_iff_mem_getAtomTypes
   · intro hmem
     refine ⟨getAtomTypes space atom, ?_, hmem⟩
     cases atom with
-    | var name => exact TypesOfRel.variable space name
+    | var name => exact StorageTypesRel.variable space name
     | grounded value =>
         cases value with
         | int value =>
             simpa [getAtomTypes, getGroundedType, Atom.undefinedType] using
-              TypesOfRel.groundedKnown (space := space)
+              StorageTypesRel.groundedKnown (space := space)
                 (IntrinsicGroundedTypeRel.int value)
                 (by simp [Atom.undefinedType])
         | bool value =>
             simpa [getAtomTypes, getGroundedType, Atom.undefinedType] using
-              TypesOfRel.groundedKnown (space := space)
+              StorageTypesRel.groundedKnown (space := space)
                 (IntrinsicGroundedTypeRel.bool value)
                 (by simp [Atom.undefinedType])
         | string value =>
             simpa [getAtomTypes, getGroundedType, Atom.undefinedType] using
-              TypesOfRel.groundedKnown (space := space)
+              StorageTypesRel.groundedKnown (space := space)
                 (IntrinsicGroundedTypeRel.string value)
                 (by simp [Atom.undefinedType])
         | custom type payload =>
             by_cases htype : type = "%Undefined%"
             · subst type
               simpa [getAtomTypes, getGroundedType, Atom.undefinedType] using
-                TypesOfRel.groundedUndefined (space := space)
+                StorageTypesRel.groundedUndefined (space := space)
                   (IntrinsicGroundedTypeRel.custom "%Undefined%" payload)
             · simpa [getAtomTypes, getGroundedType, Atom.undefinedType, htype] using
-                TypesOfRel.groundedKnown (space := space)
+                StorageTypesRel.groundedKnown (space := space)
                   (IntrinsicGroundedTypeRel.custom type payload)
                   (by simpa [Atom.undefinedType] using htype)
     | symbol name =>
@@ -223,13 +206,13 @@ theorem typeOfRel_iff_mem_getAtomTypes
           annotationTypesRel_getAnnotatedTypes (.symbol name) space.atoms
         by_cases htypes : types = []
         · simpa [getAtomTypes, types, htypes] using
-            TypesOfRel.symbolUndefined (space := space) (name := name)
+            StorageTypesRel.symbolUndefined (space := space) (name := name)
               (htypes ▸ hrel)
         · simpa [getAtomTypes, types, htypes] using
-            TypesOfRel.symbolKnown (space := space) (name := name) hrel htypes
+            StorageTypesRel.symbolKnown (space := space) (name := name) hrel htypes
     | expression atoms =>
         cases atoms with
-        | nil => exact TypesOfRel.unit space
+        | nil => exact StorageTypesRel.unit space
         | cons head tail =>
             let types := getAnnotatedTypes space (.expression (head :: tail))
             have hrel :
@@ -238,11 +221,11 @@ theorem typeOfRel_iff_mem_getAtomTypes
                 (.expression (head :: tail)) space.atoms
             by_cases htypes : types = []
             · simpa [getAtomTypes, types, htypes] using
-                TypesOfRel.expressionUndefined
+                StorageTypesRel.expressionUndefined
                   (space := space) (head := head) (tail := tail)
                   (htypes ▸ hrel)
             · simpa [getAtomTypes, types, htypes] using
-                TypesOfRel.expressionKnown
+                StorageTypesRel.expressionKnown
                   (space := space) (head := head) (tail := tail) hrel htypes
 
 /-! ## Function-type destructors -/

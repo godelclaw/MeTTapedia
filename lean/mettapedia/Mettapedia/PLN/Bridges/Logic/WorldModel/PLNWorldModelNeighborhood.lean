@@ -15,7 +15,7 @@ consequence theory of the Kripke world model.
 namespace Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood
 
 open LO.Modal
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 
 

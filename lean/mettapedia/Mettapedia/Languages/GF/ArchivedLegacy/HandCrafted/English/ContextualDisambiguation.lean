@@ -17,8 +17,8 @@ open Mettapedia.Languages.GF.LinguisticInvariance
 open Mettapedia.Languages.GF.WorldModelSemantics
 open Mettapedia.Languages.GF.Generated.PaperAmbiguityPGFWitnesses
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.Evidence
 open Mettapedia.Languages.GF.HandCrafted.English
 open Mettapedia.Languages.GF.HandCrafted.English.Examples
 open Nouns Verbs Adjectives Syntax Pronouns Relatives
@@ -26,10 +26,10 @@ open Nouns Verbs Adjectives Syntax Pronouns Relatives
 /-! ## Same-Surface Telescope Ambiguity -/
 
 /-- NP-attachment reading: John saw [the man with the telescope]. -/
-def telescopeNPAttachmentSurface : String := Examples.telescopeNPAttachmentSurface
+def telescopeNPAttachmentSurface : String := Examples.telescopeNPAttachmentText
 
 /-- VP-attachment reading: John [saw the man] [with the telescope]. -/
-def telescopeVPAttachmentSurface : String := Examples.telescopeVPAttachmentSurface
+def telescopeVPAttachmentSurface : String := Examples.telescopeVPAttachmentText
 
 theorem telescope_np_surface :
     telescopeNPAttachmentSurface = "John sees the man with the telescope" := by
@@ -191,10 +191,10 @@ theorem telescope_modifier_scene_values :
 /-! ## Same-Surface Anna Ambiguity -/
 
 /-- NP-attachment reading: Anna dressed [the baby in the crib]. -/
-def annaNPAttachmentSurface : String := Examples.annaNPAttachmentSurface
+def annaNPAttachmentSurface : String := Examples.annaNPAttachmentText
 
 /-- VP-attachment reading: Anna [dressed the baby] [in the crib]. -/
-def annaVPAttachmentSurface : String := Examples.annaVPAttachmentSurface
+def annaVPAttachmentSurface : String := Examples.annaVPAttachmentText
 
 theorem anna_np_surface :
     annaNPAttachmentSurface = "Anna dresses the baby in the crib" := by

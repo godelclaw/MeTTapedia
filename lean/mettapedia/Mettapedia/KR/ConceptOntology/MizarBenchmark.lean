@@ -17,7 +17,7 @@ gate but not robust under the stricter one.
 namespace Mettapedia.KR.ConceptOntology
 
 open Mettapedia.KR.ConceptGeometry.AbstractInheritance
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.KR.ConceptOntology.Generated.MizarConlat1
 open scoped ENNReal
 

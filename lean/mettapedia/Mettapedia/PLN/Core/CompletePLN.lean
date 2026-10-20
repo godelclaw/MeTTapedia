@@ -2,6 +2,7 @@ import Mettapedia.PLN.Evidence.BinaryEvidence
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 import Mathlib.Probability.ProbabilityMassFunction.Basic
 import Mathlib.Data.Real.Basic
+import Mettapedia.ProbabilityTheory.FiniteEventMass
 
 
 /-!
@@ -64,7 +65,7 @@ than just pairwise conditional probabilities.
 
 namespace Mettapedia.PLN.Core.CompletePLN
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation
 
 /-! ## Part 1: Joint Probability Distribution
@@ -258,8 +259,9 @@ structure InferenceResult where
   strength : ℝ
   /-- Which mode was used -/
   mode_used : InferenceMode
-  /-- Confidence in the result (higher for complete mode) -/
-  confidence : ℝ
+  /-- Uncalibrated dispatcher score; neither PLN observation confidence nor
+      a certified approximation-error bound. -/
+  heuristicScore : ℝ
   /-- Was independence assumed? -/
   assumed_independence : Bool
 
@@ -284,20 +286,20 @@ noncomputable def hybridDeduction
     | some inputs =>
       { strength := plnDeductionStrength inputs.s_AB inputs.s_BC inputs.s_B inputs.s_C
         mode_used := InferenceMode.fast
-        confidence := 0.8  -- Lower confidence due to independence assumption
+        heuristicScore := 0.8  -- Dispatch heuristic; not calibrated observation confidence.
         assumed_independence := true }
     | none =>
       -- Fallback: can't compute without inputs
       { strength := 0.5
         mode_used := InferenceMode.fast
-        confidence := 0
+        heuristicScore := 0
         assumed_independence := true }
   | InferenceMode.complete =>
     match complete_inputs with
     | some ⟨_, inputs⟩ =>
       { strength := completeDeduction inputs.joint inputs.prop_A inputs.prop_B inputs.prop_C
         mode_used := InferenceMode.complete
-        confidence := 1.0  -- Full confidence - exact computation
+        heuristicScore := 1.0  -- Dispatch heuristic; exactness is established separately.
         assumed_independence := false }
     | none =>
       -- Fallback to fast mode if no joint available
@@ -305,18 +307,18 @@ noncomputable def hybridDeduction
       | some inputs =>
         { strength := plnDeductionStrength inputs.s_AB inputs.s_BC inputs.s_B inputs.s_C
           mode_used := InferenceMode.fast
-          confidence := 0.8
+          heuristicScore := 0.8
           assumed_independence := true }
       | none =>
         { strength := 0.5
           mode_used := InferenceMode.fast
-          confidence := 0
+          heuristicScore := 0
           assumed_independence := true }
   | InferenceMode.adaptive =>
     -- Already handled above, this case shouldn't occur
     { strength := 0.5
       mode_used := InferenceMode.adaptive
-      confidence := 0
+      heuristicScore := 0
       assumed_independence := true }
 
 /-! ## Part 5: Verification: Complete Mode Equals Exact Probability
@@ -386,6 +388,16 @@ theorem cond_prob_bounds (J : JointDistribution n) (i j : Fin n)
         simp only [h2', Bool.false_eq_true, ↓reduceIte]
         exact le_refl 0
 
+/-- The conditional readout is in the unit interval, including its numerical
+zero convention for an unsupported conditioning event. -/
+theorem cond_prob_mem_unit (J : JointDistribution n) (i j : Fin n) :
+    condProb J i j ∈ Set.Icc (0 : ℝ) 1 := by
+  by_cases positive : 0 < marginalProb J j
+  · exact cond_prob_bounds J i j positive
+  · have zero : marginalProb J j = 0 :=
+      le_antisymm (le_of_not_gt positive) (marginal_prob_bounds J j).1
+    simp [condProb, zero]
+
 /-! ## Part 6: When Fast PLN Equals Complete PLN
 
 The fast PLN formulas are EXACT when independence assumptions hold.
@@ -399,23 +411,188 @@ def hasPositiveIndependence (J : JointDistribution n) (a b c : Fin n) : Prop :=
 def hasNegativeIndependence (J : JointDistribution n) (a b c : Fin n) : Prop :=
   condProb2Neg J c a b = condProbNeg J c b
 
-/-- When BOTH independence conditions hold, fast PLN = complete PLN.
+/-- A finite event mass is nonnegative. -/
+theorem event_mass_nonneg (J : JointDistribution n) (event : Fin (2 ^ n) → Prop)
+    [DecidablePred event] : 0 ≤ ∑ world, if event world then J.prob world else 0 := by
+  exact Finset.sum_nonneg fun world _ => by split_ifs <;> simp_all [J.prob_nonneg]
 
-    This is the key theorem connecting the two modes.
-    It shows that fast PLN is a VALID APPROXIMATION when its
-    assumptions are satisfied.
--/
+/-- Event inclusion bounds finite event masses. -/
+theorem event_mass_mono (J : JointDistribution n) (first second : Fin (2 ^ n) → Prop)
+    [DecidablePred first] [DecidablePred second] (included : ∀ world, first world → second world) :
+    (∑ world, if first world then J.prob world else 0) ≤
+      ∑ world, if second world then J.prob world else 0 := by
+  apply Finset.sum_le_sum
+  intro world _
+  by_cases left : first world
+  · simp [left, included world left]
+  · simp only [left, if_false]
+    split_ifs <;> simp_all [J.prob_nonneg]
+
+/-- A nonnegative submass divided by its carrier mass is in the unit interval,
+including the zero-carrier convention of the existing query API. -/
+theorem ratio_mem_unit {numerator denominator : ℝ}
+    (nonnegative : 0 ≤ numerator) (bounded : numerator ≤ denominator) :
+    numerator / denominator ∈ Set.Icc (0 : ℝ) 1 := by
+  have den0 : 0 ≤ denominator := nonnegative.trans bounded
+  by_cases zero : denominator = 0
+  · simp [zero]
+  · have positive : 0 < denominator := lt_of_le_of_ne den0 (Ne.symm zero)
+    exact ⟨div_nonneg nonnegative den0, (div_le_one positive).mpr bounded⟩
+
+theorem jointProb2_comm (J : JointDistribution n) (a b : Fin n) :
+    jointProb2 J a b = jointProb2 J b a := by simp [jointProb2, and_comm]
+
+/-- Reconstruct the joint mass from a conditional readout, including an empty
+conditioning event. This does not assert that conditioning on it is defined. -/
+theorem marginal_mul_condProb (J : JointDistribution n) (i j : Fin n) :
+    marginalProb J j * condProb J i j = jointProb2 J j i := by
+  rw [jointProb2_comm J j i]
+  by_cases empty : marginalProb J j = 0
+  · have nonnegative : 0 ≤ jointProb2 J i j := event_mass_nonneg J _
+    have bounded : jointProb2 J i j ≤ marginalProb J j :=
+      event_mass_mono J _ _ (fun _ h => h.2)
+    have zero : jointProb2 J i j = 0 := by linarith
+    simp [condProb, empty, zero]
+  · simp only [condProb, empty, if_false]
+    field_simp
+
+theorem marginalProbNeg_eq_one_sub (J : JointDistribution n) (b : Fin n) :
+    marginalProbNeg J b = 1 - marginalProb J b := by
+  have complement := Mettapedia.ProbabilityTheory.FiniteEventMass.complement J.prob
+    (worldToAssignment n · b)
+  simpa [Mettapedia.ProbabilityTheory.FiniteEventMass.mass,
+    marginalProb, marginalProbNeg, J.prob_sum_one] using complement
+
+theorem marginal_partition (J : JointDistribution n) (a b : Fin n) :
+    marginalProb J a = jointProb2 J a b + jointProb2Neg J a b := by
+  unfold marginalProb jointProb2 jointProb2Neg
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro world _
+  cases worldToAssignment n world a <;> cases worldToAssignment n world b <;> simp
+
+/-- The complement-branch reference conditional is recoverable from the
+ordinary deduction readouts. At a zero complement mass both conventions give
+zero, so the algebraic identity still holds. -/
+theorem condProbNeg_from_readouts (J : JointDistribution n) (c b : Fin n) :
+    condProbNeg J c b =
+      (marginalProb J c - marginalProb J b * condProb J c b) / (1 - marginalProb J b) := by
+  rw [marginal_mul_condProb]
+  have split := marginal_partition J c b
+  rw [jointProb2_comm J c b] at split
+  have numerator : marginalProb J c - jointProb2 J b c = jointProb2Neg J c b := by linarith
+  rw [numerator, ← marginalProbNeg_eq_one_sub]
+  unfold condProbNeg
+  dsimp only
+  split_ifs with empty
+  · simp [empty]
+  · simp only [jointProb2Neg, and_comm]
+
+theorem joint_partition (J : JointDistribution n) (a b c : Fin n) :
+    jointProb2 J a c = jointProb3 J a b c + jointProb3Neg J a b c := by
+  unfold jointProb2 jointProb3 jointProb3Neg
+  rw [← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro world _
+  cases worldToAssignment n world a <;> cases worldToAssignment n world b <;>
+    cases worldToAssignment n world c <;> simp
+
+theorem jointProb3_nonneg (J : JointDistribution n) (a b c : Fin n) :
+    0 ≤ jointProb3 J a b c := event_mass_nonneg J _
+
+theorem jointProb3_le_jointProb2 (J : JointDistribution n) (a b c : Fin n) :
+    jointProb3 J a b c ≤ jointProb2 J a b :=
+  event_mass_mono J _ _ (fun _ holds => ⟨holds.1, holds.2.1⟩)
+
+theorem jointProb3Neg_nonneg (J : JointDistribution n) (a b c : Fin n) :
+    0 ≤ jointProb3Neg J a b c := event_mass_nonneg J _
+
+theorem jointProb3Neg_le_jointProb2Neg (J : JointDistribution n) (a b c : Fin n) :
+    jointProb3Neg J a b c ≤ jointProb2Neg J a b :=
+  event_mass_mono J _ _ (fun _ holds => ⟨holds.1, holds.2.1⟩)
+
+/-- Multiplying by the branch mass remains valid for a zero-probability branch. -/
+theorem condProb2_mul_joint (J : JointDistribution n) (a b c : Fin n) :
+    condProb2 J c a b * jointProb2 J a b = jointProb3 J a b c := by
+  by_cases zero : jointProb2 J a b = 0
+  · have numerator : jointProb3 J a b c = 0 := by
+      have bounded := jointProb3_le_jointProb2 J a b c
+      rw [zero] at bounded
+      exact le_antisymm bounded (jointProb3_nonneg J a b c)
+    simp [condProb2, zero, numerator]
+  · simp [condProb2, zero]
+
+theorem condProb2Neg_mul_joint (J : JointDistribution n) (a b c : Fin n) :
+    condProb2Neg J c a b * jointProb2Neg J a b = jointProb3Neg J a b c := by
+  by_cases zero : jointProb2Neg J a b = 0
+  · have numerator : jointProb3Neg J a b c = 0 := by
+      have bounded := jointProb3Neg_le_jointProb2Neg J a b c
+      rw [zero] at bounded
+      exact le_antisymm bounded (jointProb3Neg_nonneg J a b c)
+    simp [condProb2Neg, zero, numerator]
+  · simp [condProb2Neg, zero]
+
+theorem condProb2_mem_unit (J : JointDistribution n) (a b c : Fin n) :
+    condProb2 J c a b ∈ Set.Icc (0 : ℝ) 1 := by
+  unfold condProb2
+  dsimp only
+  split_ifs with zero
+  · simp
+  · exact ratio_mem_unit (jointProb3_nonneg J a b c) (jointProb3_le_jointProb2 J a b c)
+
+theorem condProb2Neg_mem_unit (J : JointDistribution n) (a b c : Fin n) :
+    condProb2Neg J c a b ∈ Set.Icc (0 : ℝ) 1 := by
+  unfold condProb2Neg
+  dsimp only
+  split_ifs with zero
+  · simp
+  · exact ratio_mem_unit (jointProb3Neg_nonneg J a b c) (jointProb3Neg_le_jointProb2Neg J a b c)
+
+/-- Total probability for a conditional query. Only the query's conditioning
+mass must be nonzero; either internal branch may be empty. -/
+theorem conditional_total_probability (J : JointDistribution n) (a b c : Fin n)
+    (possible : marginalProb J a ≠ 0) :
+    condProb J c a = condProb J b a * condProb2 J c a b +
+      (1 - condProb J b a) * condProb2Neg J c a b := by
+  have positiveBranch := condProb2_mul_joint J a b c
+  have negativeBranch := condProb2Neg_mul_joint J a b c
+  have split := marginal_partition J a b
+  have joint := joint_partition J a b c
+  simp only [condProb, possible, if_false]
+  rw [jointProb2_comm J c a, jointProb2_comm J b a, joint]
+  have complement : 1 - jointProb2 J a b / marginalProb J a =
+      jointProb2Neg J a b / marginalProb J a := by
+    field_simp
+    linarith
+  rw [complement]
+  field_simp
+  nlinarith [positiveBranch, negativeBranch]
+
+/-- The branch-screening approximation expressed using the two actual branch
+reference conditionals. -/
+noncomputable def screeningDeduction (J : JointDistribution n) (a b c : Fin n) : ℝ :=
+  condProb J b a * condProb J c b + (1 - condProb J b a) * condProbNeg J c b
+
+/-- On coherent model readouts the branch formulation is exactly the existing
+PLN deduction formula. This connects the error analysis to that actual API. -/
+theorem screeningDeduction_eq_plnDeductionStrength (J : JointDistribution n) (a b c : Fin n) :
+    screeningDeduction J a b c =
+      plnDeductionStrength (condProb J b a) (condProb J c b)
+        (marginalProb J b) (marginalProb J c) := by
+  simp only [screeningDeduction, condProbNeg_from_readouts, plnDeductionStrength, mul_div_assoc]
+
+/-- Both branch-screening equalities make the approximate query exact.
+This theorem compares two independently defined computations. -/
 theorem fast_equals_complete_under_independence
     (J : JointDistribution n) (a b c : Fin n)
-    (_h_pos : hasPositiveIndependence J a b c)
-    (_h_neg : hasNegativeIndependence J a b c)
-    (_h_marg_b : 0 < marginalProb J b)
-    (_h_marg_a : 0 < marginalProb J a) :
-    -- Under independence, fast PLN formula gives correct answer
-    -- (This is a simplified statement; full version would compute
-    --  the fast formula from the joint distribution)
-    completeDeduction J a b c = condProb J c a := by
-  rfl
+    (h_pos : hasPositiveIndependence J a b c)
+    (h_neg : hasNegativeIndependence J a b c)
+    (h_marg_a : 0 < marginalProb J a) :
+    plnDeductionStrength (condProb J b a) (condProb J c b)
+      (marginalProb J b) (marginalProb J c) = completeDeduction J a b c := by
+  rw [← screeningDeduction_eq_plnDeductionStrength]
+  unfold screeningDeduction completeDeduction
+  rw [conditional_total_probability J a b c h_marg_a.ne', h_pos, h_neg]
 
 /-! ## Part 7: Practical API for AGI Systems
 
@@ -478,7 +655,7 @@ This file provides:
 3. **Hybrid System**:
    - `InferenceMode`: fast | complete | adaptive
    - `hybridDeduction`: Unified API that dispatches appropriately
-   - `InferenceResult`: Result with provenance and confidence
+   - `InferenceResult`: Result with provenance and an uncalibrated dispatcher score
 
 4. **Mode Selection**:
    - `selectMode`: Automatic mode selection based on context
@@ -504,7 +681,7 @@ let rec := getRecommendation ctx
 -- Perform inference with appropriate mode
 let result := hybridDeduction rec.recommended_mode fast_inputs complete_inputs ctx
 -- result.strength = exact P(C|A)
--- result.confidence = 1.0
+-- result.heuristicScore = 1.0
 -- result.assumed_independence = false
 ```
 

@@ -29,7 +29,7 @@ open Mettapedia.Languages.GF.HandCrafted.Abstract
 open Mettapedia.Languages.GF.OSLFBridge
 open Mettapedia.Languages.GF.SUMO.SumoAbstract
 open OSLF.MeTTaIL.Syntax
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelSetTheoryBridge
 
 abbrev SetLang := Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelSetTheoryBridge.SetLang

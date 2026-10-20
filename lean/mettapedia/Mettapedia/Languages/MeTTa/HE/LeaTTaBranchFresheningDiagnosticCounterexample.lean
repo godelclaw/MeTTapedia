@@ -1,4 +1,8 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationSelectionConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Branch-local freshening changes polymorphic failure diagnostics
@@ -73,7 +77,7 @@ theorem branch_fresh_candidates_not_equal : shortFresh ≠ longFresh := by
 alpha-presentations of the same raw type. -/
 theorem branch_fresh_candidates_alpha_related :
     ObservedTypeAlphaRel
-      (fromLeaTTaAtom shortFresh) (fromLeaTTaAtom longFresh) := by
+      (decodeModelAtom shortFresh) (decodeModelAtom longFresh) := by
   have shortVariant :=
     freshenTypeCandidate_alphaVariant ["x"] 1 nativeRawCandidate
   have longVariant :=
@@ -126,15 +130,15 @@ theorem both_branch_diagnostics_share_alpha_observation :
     ArgumentTypeDiagnosticRuntimeRel nativeDiagnostic shortDiagnostic ∧
       ArgumentTypeDiagnosticRuntimeRel nativeDiagnostic longDiagnostic := by
   have shortAlpha : ObservedTypeAlphaRel nativeRawCandidate
-      (fromLeaTTaAtom shortFresh) := by
+      (decodeModelAtom shortFresh) := by
     refine ⟨nativeRawCandidate, TypeVariableRenamingOf.refl _, ?_⟩
-    simpa [shortFresh, rawCandidate, nativeRawCandidate, toLeaTTaAtom] using
+    simpa [shortFresh, rawCandidate, nativeRawCandidate, encodeModelAtom] using
       (freshenTypeCandidate_alphaVariant ["x"] 1
         nativeRawCandidate).toTypeVariableRenamingOf
   have longAlpha : ObservedTypeAlphaRel nativeRawCandidate
-      (fromLeaTTaAtom longFresh) := by
+      (decodeModelAtom longFresh) := by
     refine ⟨nativeRawCandidate, TypeVariableRenamingOf.refl _, ?_⟩
-    simpa [longFresh, rawCandidate, nativeRawCandidate, toLeaTTaAtom] using
+    simpa [longFresh, rawCandidate, nativeRawCandidate, encodeModelAtom] using
       (freshenTypeCandidate_alphaVariant ["longer"] 1
         nativeRawCandidate).toTypeVariableRenamingOf
   constructor
@@ -142,7 +146,7 @@ theorem both_branch_diagnostics_share_alpha_observation :
       { position := rfl
         expected := by
           simpa [nativeDiagnostic, shortDiagnostic, formalType,
-            nativeFormalType, fromLeaTTaAtom] using
+            nativeFormalType, decodeModelAtom] using
             ObservedTypeAlphaRel.refl nativeFormalType
         actual := by
           simpa [nativeDiagnostic, shortDiagnostic] using shortAlpha }
@@ -150,7 +154,7 @@ theorem both_branch_diagnostics_share_alpha_observation :
       { position := rfl
         expected := by
           simpa [nativeDiagnostic, longDiagnostic, formalType,
-            nativeFormalType, fromLeaTTaAtom] using
+            nativeFormalType, decodeModelAtom] using
             ObservedTypeAlphaRel.refl nativeFormalType
         actual := by
           simpa [nativeDiagnostic, longDiagnostic] using longAlpha }

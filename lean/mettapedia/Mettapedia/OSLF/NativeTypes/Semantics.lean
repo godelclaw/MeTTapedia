@@ -18,6 +18,10 @@ import Mettapedia.OSLF.NativeTypes.Semantics.Families
 import Mettapedia.OSLF.NativeTypes.Semantics.Structural
 import Mettapedia.OSLF.NativeTypes.Semantics.Structural.Controls
 import Mettapedia.OSLF.NativeTypes.Semantics.Structural.Propositional
+import Mettapedia.OSLF.NativeTypes.Decision.FiniteFixedPointsControls
+import Mettapedia.OSLF.NativeTypes.Decision.FiniteGraphControls
+import Mettapedia.OSLF.NativeTypes.Semantics.ObservedFixedPointControls
+import Mettapedia.OSLF.NativeTypes.Semantics.ObservedModalFormula
 
 open Mettapedia.OSLF.Framework
 

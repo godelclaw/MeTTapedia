@@ -185,51 +185,51 @@ def isValidatedHEList : List Atom → Bool
 end
 
 example : isStableCommonForm (.expression [.symbol "let", .var "$x", .symbol "a", .symbol "b"]) = true := by
-  native_decide
+  decide_cbv
 
 example : isStableCommonForm (.expression [.symbol "progn", .symbol "a", .symbol "b"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isStableCommonForm (.expression [.symbol "unique", .symbol "goal"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isStableCommonForm (.expression
     [.symbol "unique-atom", .expression [.symbol "collapse", .symbol "xs"]]) = false := by
-  native_decide
+  decide_cbv
 
 example : isStableCommonForm (.expression [.symbol "foldall",
     .symbol "merge", .symbol "goal", .symbol "0"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isStableCommonForm (.expression [.symbol "foldl-atom",
     .symbol "xs", .symbol "0", .symbol "merge"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isStableCommonForm (.expression
     [.symbol "foldl-atom", .symbol "xs", .symbol "0", .var "$acc", .var "$item",
       .expression [.symbol "eval", .expression [.symbol "merge", .var "$acc", .var "$item"]]]) = true := by
-  native_decide
+  decide_cbv
 
 example : isValidatedHESource (.expression [.symbol "chain",
     .symbol "e", .var "$x", .symbol "b"]) = true := by
-  native_decide
+  decide_cbv
 
 example : isValidatedHESource (.expression [.symbol "chain",
     .symbol "e",
     .expression [.symbol "chain", .symbol "x", .var "$y", .symbol "z"],
     .symbol "b"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isValidatedHESource (.expression
     [.expression [.symbol "function", .expression [.symbol "return", .symbol "chain"]],
      .symbol "arg"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isValidatedHESource (.expression [.symbol "unique-atom", .symbol "xs"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isValidatedHESource (.expression [.symbol "unique", .symbol "xs"]) = false := by
-  native_decide
+  decide_cbv
 
 /-- PeTTa `foldall` reducers that remain first-order callable after lowering to
     HE's ordinary application syntax. -/
@@ -340,58 +340,58 @@ end
 
 example : isValidatedPeTTaSource (.expression
     [.symbol "foldall", .symbol "merge", .expression [.symbol "twohop-item"], .symbol "0"]) = true := by
-  native_decide
+  decide_cbv
 
 example : isValidatedPeTTaSource (.expression
     [.symbol "foldall", .var "$f", .expression [.symbol "twohop-item"], .symbol "0"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isValidatedPeTTaSource (.expression
     [.symbol "foldall", .symbol "@<", .expression [.symbol "twohop-item"], .symbol "0"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isValidatedPeTTaSource (.expression
     [.symbol "reduce", .expression [.symbol "fib", .symbol "5"]]) = true := by
-  native_decide
+  decide_cbv
 
 example : isValidatedPeTTaSource (.expression
     [.symbol "foldl-atom", .expression [.symbol "collapse", .symbol "xs"], .symbol "0",
       .symbol "merge"]) = true := by
-  native_decide
+  decide_cbv
 
 example : isValidatedPeTTaSource (.expression
     [.symbol "foldl-atom", .expression [.symbol "collapse", .symbol "xs"], .symbol "0",
       .var "$acc", .var "$item",
       .expression [.symbol "eval", .expression [.symbol "merge", .var "$acc", .var "$item"]]]) = true := by
-  native_decide
+  decide_cbv
 
 example : isValidatedPeTTaSource (.expression
     [.symbol "foldl-atom", .expression [.symbol "collapse", .symbol "xs"], .symbol "0",
       .var "$f"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isValidatedPeTTaSource (.expression
     [.symbol "prog1", .expression [.symbol "foldall", .symbol "merge",
       .expression [.symbol "twohop-item"], .symbol "0"], .symbol "done"]) = true := by
-  native_decide
+  decide_cbv
 
 example : isValidatedPeTTaSource (.expression
     [.expression [.symbol "prog1", .symbol "chain"], .symbol "arg"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isValidatedPeTTaSource (.expression [.symbol "unique", .symbol "goal"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isValidatedPeTTaSource (.expression
     [.symbol "unique-atom", .expression [.symbol "collapse", .symbol "xs"]]) = false := by
-  native_decide
+  decide_cbv
 
 example : isValidatedPeTTaSource (.expression [.symbol "unique-atom", .symbol "xs"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isValidatedPeTTaSource (.expression
     [.expression [.symbol "progn", .symbol "side", .symbol "prog1"], .symbol "arg"]) = false := by
-  native_decide
+  decide_cbv
 
 theorem firstOrderReducerAtom_eq_symbol (a : Atom)
     (h : isFirstOrderReducerAtom a = true) :
@@ -536,7 +536,7 @@ theorem stableCommonForm_cons_of_head (hd : Atom) (args : List Atom)
                                                   simp [isStableCommonHead, isStableCommonForm, isForbiddenHeadSymbol] at hhd
                                                 exact False.elim hfalse
                                               · simp [isStableCommonForm, isStableCommonExpr, isStableCommonHead,
-                                                  isForbiddenHeadSymbol, isStableCommonList, hchain, hcollapse,
+                                                  isForbiddenHeadSymbol, hchain, hcollapse,
                                                   hsuperpose, hswitch, hswitchm, hatomsubst, hnop, hfunction,
                                                   hprogn, hprog1, hfoldall, hfoldl, hbind, huniqueatom, hlt, hgt,
                                                   hreduce, hunique, hnew, hget, hchange]
@@ -549,7 +549,7 @@ theorem stableCommonForm_cons_of_head (hd : Atom) (args : List Atom)
 
 private theorem stableCommon_selfSymbol :
     isStableCommonForm (.symbol "&self") = true := by
-  simp [isStableCommonForm, isStableCommonExpr, isStableCommonHead, isForbiddenHeadSymbol]
+  simp [isStableCommonForm]
 
 /-- Shared atomspace handles currently admitted by the translator's theoremic
     common fragment. We require the handle itself to already lie in the stable
@@ -561,12 +561,12 @@ example : isSharedAtomSpaceHandle (.symbol "&self") = true := by
   simpa [isSharedAtomSpaceHandle] using stableCommon_selfSymbol
 
 example : isSharedAtomSpaceHandle (.symbol "&kb") = true := by
-  simp [isSharedAtomSpaceHandle, isStableCommonForm, isStableCommonExpr,
-    isStableCommonHead, isForbiddenHeadSymbol]
+  simp [isSharedAtomSpaceHandle, isStableCommonForm,
+    ]
 
 example : isSharedAtomSpaceHandle
     (.expression [.symbol "chain", .symbol "x", .var "$y", .symbol "z"]) = false := by
-  native_decide
+  decide_cbv
 
 private theorem sharedAtomSpaceHandle_preserves_stableCommonForm
     (space : Atom) (h : isSharedAtomSpaceHandle space = true) :
@@ -607,7 +607,7 @@ example : isSharedAtomSpaceFragment
     (.expression [.symbol "match",
       .expression [.symbol "chain", .symbol "e", .var "$x", .symbol "b"],
       .symbol "pat", .symbol "tmpl"]) = false := by
-  native_decide
+  decide_cbv
 
 inductive SharedAtomSpaceOperationalBridge : Atom → Prop where
   | matchSpace (space pat tmpl : Atom)
@@ -1041,10 +1041,10 @@ def isSharedStateFragment (_ : Atom) : Bool :=
   false
 
 example : isSharedStateFragment (.expression [.symbol "new-state", .symbol "zero"]) = false := by
-  native_decide
+  decide_cbv
 
 example : isStableCommonForm (.expression [.symbol "get-state", .symbol "&counter"]) = false := by
-  native_decide
+  decide_cbv
 
 /-- PeTTa named-state source syntax recognized by the translator bridge.
 
@@ -1065,12 +1065,12 @@ def isPeTTaNamedStateFragment : Atom → Bool
 example : isPeTTaNamedStateFragment
     (.expression [.symbol "bind!", .symbol "counter",
       .expression [.symbol "new-state", .symbol "zero"]]) = true := by
-  native_decide
+  decide_cbv
 
 example : isPeTTaNamedStateFragment
     (.expression [.symbol "get-state",
       .expression [.symbol "chain", .symbol "e", .var "$x", .symbol "body"]]) = false := by
-  native_decide
+  decide_cbv
 
 inductive SharedStateOperationalBridge : Atom → Prop where
 

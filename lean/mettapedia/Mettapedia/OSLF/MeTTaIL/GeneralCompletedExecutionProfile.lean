@@ -52,7 +52,7 @@ def snapshot (enabled : Bool) : Snapshot where
   language := language
   freeTypes := []
   provider := ⟨[⟨"allow", [term], [.input]⟩],
-    if enabled then [⟨"allow", [one]⟩, ⟨"allow", [one]⟩] else []⟩
+    (if enabled then [⟨"allow", [one]⟩, ⟨"allow", [one]⟩] else []), []⟩
 
 def permissions : Permissions where
   sites := .all

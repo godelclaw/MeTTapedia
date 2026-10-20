@@ -11,7 +11,7 @@ and a tiny control dataset with both exact and credal gate variation.
 namespace Mettapedia.KR.ConceptOntology
 
 open Mettapedia.KR.ConceptGeometry.AbstractInheritance
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 universe u v

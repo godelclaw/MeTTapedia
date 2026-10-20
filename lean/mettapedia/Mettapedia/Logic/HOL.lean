@@ -104,12 +104,16 @@ Completeness (Henkin 1950 for the theory of types — sorry-free, axiom-clean):
   (`exists_classical_world`, including the `all_counterexample` field),
 - the canonical Henkin **general** term model (`TermModel/`), the fundamental lemma,
   and `models_iff_mem`,
-- the headline `TermModel.HenkinCompleteness.henkin_satisfiable`: a consistent
-  *witnessed + excluded-middle* theory has a Henkin general model satisfying it.
-- the public corollary
-  `TermModel.HenkinCompleteness.henkin_model_exists_of_consistent_classical`:
-  a consistent parameter-free classical theory over `WithParams` has a Henkin
-  general model satisfying the theory itself.
+- the headline `ClosedTheorySet.henkin_satisfiable` (`TermModel/HenkinCompleteness`): a
+  consistent *witnessed + excluded-middle* theory has a Henkin general model satisfying it.
+- the corollary `ClosedTheorySet.henkin_model_exists_of_consistent_classical` and its
+  extensional form: a consistent theory over `WithParams` in which no parameter occurs
+  and which proves every excluded-middle instance has a Henkin general model of the
+  theory itself (instances in `TermModel/HenkinCompletenessControls`).
+- over the original signature, `SevenVirtues.provable_iff_valid` and
+  `SevenVirtues.consistent_iff_satisfiable` (`SevenVirtues/Completeness`): with excluded
+  middle as one axiom, the calculus is sound and complete for extensional Henkin models
+  over countable signatures with a closed term at each base type.
 
 Kripke models and the propositional slice:
 - `Semantics.KripkeFrameModel.model`: every preordered set of worlds, with carriers and

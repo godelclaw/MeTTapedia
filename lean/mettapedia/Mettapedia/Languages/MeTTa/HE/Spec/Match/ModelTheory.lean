@@ -1,5 +1,6 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 import Mathlib.Order.WellFoundedSet
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 /-!
 # Model theory for the executable-independent spec matcher
@@ -14,8 +15,164 @@ unification fuel do not occur in the construction.
 namespace Mettapedia.Languages.MeTTa.HE.Spec.Match.ModelTheory
 
 open Mettapedia.Languages.MeTTa.HE
-open Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+private theorem specNonvariablePack :
+    (∀ {query pattern : Atom} {out : Bindings},
+      Spec.Match.Merge.MatchRel Spec.Match.Merge.equalityGroundedSemantic query pattern out →
+        HEAssignmentsNonVariable out) ∧
+    (∀ {left right out : Bindings},
+      Spec.Match.Merge.MergeRel Spec.Match.Merge.equalityGroundedSemantic left right out →
+        HEAssignmentsNonVariable left → HEAssignmentsNonVariable right → HEAssignmentsNonVariable out) := by
+  constructor
+  case' left =>
+    intro query pattern out hmatch
+    apply Spec.Match.Merge.MatchRel.rec
+        (motive_1 := fun _ _ out _ => HEAssignmentsNonVariable out)
+        (motive_2 := fun _ _ seed out _ =>
+          HEAssignmentsNonVariable seed → HEAssignmentsNonVariable out)
+        (motive_3 := fun seed _ value out _ =>
+          HEAssignmentsNonVariable seed →
+            Spec.Match.Merge.isVariableB value = false →
+              HEAssignmentsNonVariable out)
+        (motive_4 := fun seed _ _ out _ =>
+          HEAssignmentsNonVariable seed → HEAssignmentsNonVariable out)
+        (motive_5 := fun seed constraints out _ =>
+          HEAssignmentsNonVariable seed →
+            (∀ key value,
+              Spec.Match.Merge.Constraint.value key value ∈ constraints →
+                Spec.Match.Merge.isVariableB value = false) →
+              HEAssignmentsNonVariable out)
+        (motive_6 := fun left right out _ =>
+          HEAssignmentsNonVariable left →
+            HEAssignmentsNonVariable right →
+              HEAssignmentsNonVariable out)
+      (t := hmatch)
+  case' right =>
+    intro left right out merging
+    apply Spec.Match.Merge.MergeRel.rec
+        (motive_1 := fun _ _ out _ => HEAssignmentsNonVariable out)
+        (motive_2 := fun _ _ seed out _ =>
+          HEAssignmentsNonVariable seed → HEAssignmentsNonVariable out)
+        (motive_3 := fun seed _ value out _ =>
+          HEAssignmentsNonVariable seed →
+            Spec.Match.Merge.isVariableB value = false →
+              HEAssignmentsNonVariable out)
+        (motive_4 := fun seed _ _ out _ =>
+          HEAssignmentsNonVariable seed → HEAssignmentsNonVariable out)
+        (motive_5 := fun seed constraints out _ =>
+          HEAssignmentsNonVariable seed →
+            (∀ key value,
+              Spec.Match.Merge.Constraint.value key value ∈ constraints →
+                Spec.Match.Merge.isVariableB value = false) →
+              HEAssignmentsNonVariable out)
+        (motive_6 := fun left right out _ =>
+          HEAssignmentsNonVariable left →
+            HEAssignmentsNonVariable right →
+              HEAssignmentsNonVariable out)
+      (t := merging)
+  all_goals solve
+    | intro symbol hadmissible key target hmem
+      simp [Bindings.empty] at hmem
+    | intro left right hadmissible key target hmem
+      simp [Bindings.empty, Bindings.addEquality] at hmem
+    | intro varName value hnonvar hadmissible
+      have hvalue : Spec.Match.Merge.isVariableB value = false := by
+        cases value <;>
+          simp_all [Spec.Match.Merge.isVariableB,
+            Spec.Match.Merge.isVariableB]
+      exact (show HEAssignmentsNonVariable Bindings.empty by
+        intro key target hmem
+        simp [Bindings.empty] at hmem).assign hvalue
+    | intro value varName hnonvar hadmissible
+      have hvalue : Spec.Match.Merge.isVariableB value = false := by
+        cases value <;>
+          simp_all [Spec.Match.Merge.isVariableB,
+            Spec.Match.Merge.isVariableB]
+      exact (show HEAssignmentsNonVariable Bindings.empty by
+        intro key target hmem
+        simp [Bindings.empty] at hmem).assign hvalue
+    | intro queries patterns out hitems hadmissible ih
+      exact ih (by
+        intro key target hmem
+        simp [Bindings.empty] at hmem)
+    | intro grounded right out hright hcustom hground hadmissible
+      rcases hground with ⟨hrightEq, hout⟩
+      subst right
+      subst out
+      intro key target hmem
+      simp [Bindings.empty] at hmem
+    | intro left grounded out hleft hleftNoCustom hcustom hground hadmissible
+      rcases hground with ⟨hleftEq, hout⟩
+      subst left
+      subst out
+      intro key target hmem
+      simp [Bindings.empty] at hmem
+    | intro left right hleft hright hadmissible key target hmem
+      simp [Bindings.empty] at hmem
+    | intro seed hseed
+      exact hseed
+    | intro query pattern queries patterns seed matched next out
+        hhead hmerge htail ihHead ihMerge ihTail hseed
+      exact ihTail (ihMerge hseed ihHead)
+    | intro seed varName value hvalues hseed hvalue
+      exact hseed.assign hvalue
+    | intro seed varName value first rest hvalues hagree hsame hseed hvalue
+      exact hseed
+    | intro seed varName value first rest matched out hvalues hagree hne
+        hmatch hmerge ihMatch ihMerge hseed hvalue
+      exact ihMerge hseed ihMatch
+    | intro seed varName value first rest matched out hvalues hnotAgree
+        hlist hmerge ihList ihMerge hseed hvalue
+      have hempty : HEAssignmentsNonVariable Bindings.empty := by
+        intro key target hmem
+        simp [Bindings.empty] at hmem
+      exact ihMerge hseed (ihList hempty)
+    | intro seed left right values hvalues hagree hseed
+      exact hseed.addEquality left right
+    | intro seed left right first rest matched out hvalues hnotAgree
+        hlist hmerge ihList ihMerge hseed
+      have hempty : HEAssignmentsNonVariable Bindings.empty := by
+        intro key target hmem
+        simp [Bindings.empty] at hmem
+      exact ihMerge (hseed.addEquality left right) (ihList hempty)
+    | intro seed hseed hvalues
+      exact hseed
+    | intro seed next out key value rest hadd htail ihAdd ihTail hseed hvalues
+      have hvalue := hvalues key value (by simp)
+      have hrest : ∀ restKey restValue,
+          Spec.Match.Merge.Constraint.value restKey restValue ∈ rest →
+            Spec.Match.Merge.isVariableB restValue = false := by
+        intro restKey restValue hmem
+        exact hvalues restKey restValue (by simp [hmem])
+      exact ihTail (ihAdd hseed hvalue) hrest
+    | intro seed next out left right rest hadd htail ihAdd ihTail hseed hvalues
+      have hrest : ∀ restKey restValue,
+          Spec.Match.Merge.Constraint.value restKey restValue ∈ rest →
+            Spec.Match.Merge.isVariableB restValue = false := by
+        intro restKey restValue hmem
+        exact hvalues restKey restValue (by simp [hmem])
+      exact ihTail (ihAdd hseed) hrest
+    | intro left right out order horder hfold ihFold hleft hright
+      apply ihFold hleft
+      intro key value hmem
+      have hconstraint :
+          Spec.Match.Merge.Constraint.value key value ∈
+            Spec.Match.Merge.constraints right :=
+        (List.Perm.mem_iff horder).mp hmem
+      exact hright.isVarB_eq_false_of_assignment
+        (Spec.Match.SolutionTheory.value_mem_constraints_iff.mp hconstraint)
+/-- Default spec matching never stores variables as assignment values. -/
+theorem specMatch_assignmentsNonVariable {query pattern : Atom} {out : Bindings}
+    (matching : Spec.Match.Merge.MatchRel Spec.Match.Merge.equalityGroundedSemantic query pattern out) :
+    HEAssignmentsNonVariable out := specNonvariablePack.1 matching
+/-- Independent merging preserves nonvariable assignment values from both inputs. -/
+theorem specMerge_assignmentsNonVariable {left right out : Bindings}
+    (merging : Spec.Match.Merge.MergeRel Spec.Match.Merge.equalityGroundedSemantic left right out)
+    (first : HEAssignmentsNonVariable left) (second : HEAssignmentsNonVariable right) :
+    HEAssignmentsNonVariable out := specNonvariablePack.2 merging first second
+
 
 /-! ## Finite support -/
 
@@ -23,60 +180,60 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 equality endpoints in a spec binding record. -/
 def bindingSupport (bindings : Bindings) : Finset String :=
   (bindings.assignments.flatMap (fun entry =>
-      entry.1 :: (toLeaTTaAtom entry.2).vars) ++
+      entry.1 :: (encodeModelAtom entry.2).vars) ++
     bindings.equalities.flatMap (fun edge => [edge.1, edge.2])).toFinset
 
-private theorem mem_toLeaTTaAtoms_of_mem {atoms : List Atom} {atom : Atom}
+private theorem mem_encodeModelAtoms_of_mem {atoms : List Atom} {atom : Atom}
     (hmem : atom ∈ atoms) :
-    toLeaTTaAtom atom ∈ toLeaTTaAtoms atoms := by
+    encodeModelAtom atom ∈ encodeModelAtoms atoms := by
   induction atoms with
   | nil => cases hmem
   | cons head tail ih =>
-      simp only [toLeaTTaAtoms, List.mem_cons] at hmem ⊢
-      exact hmem.elim (fun heq => Or.inl (congrArg toLeaTTaAtom heq))
+      simp only [encodeModelAtoms, List.mem_cons] at hmem ⊢
+      exact hmem.elim (fun heq => Or.inl (congrArg encodeModelAtom heq))
         (fun htail => Or.inr (ih htail))
 
 /-- The neutral occurrence relation has exactly the variable support of the
 structural translation. -/
 theorem atomOccurs_iff_mem_translated_vars {atom : Atom} {name : String} :
     Spec.Match.Merge.AtomOccurs atom name ↔
-      name ∈ (toLeaTTaAtom atom).vars := by
+      name ∈ (encodeModelAtom atom).vars := by
   constructor
   · intro hoccurs
     induction hoccurs with
-    | var => simp [toLeaTTaAtom, Metta.Atom.vars]
+    | var => simp [encodeModelAtom, Metta.Atom.vars]
     | @expression atoms atom name hmem _ ih =>
-        simp only [toLeaTTaAtom, Metta.Atom.vars, List.mem_flatten]
-        refine ⟨(toLeaTTaAtom atom).vars, ?_, ih⟩
+        simp only [encodeModelAtom, Metta.Atom.vars, List.mem_flatten]
+        refine ⟨(encodeModelAtom atom).vars, ?_, ih⟩
         exact List.mem_map.mpr
-          ⟨toLeaTTaAtom atom, mem_toLeaTTaAtoms_of_mem hmem, rfl⟩
+          ⟨encodeModelAtom atom, mem_encodeModelAtoms_of_mem hmem, rfl⟩
   · intro hmem
     let AtomGoal : Atom → Prop := fun candidate => ∀ name',
-      name' ∈ (toLeaTTaAtom candidate).vars →
+      name' ∈ (encodeModelAtom candidate).vars →
         Spec.Match.Merge.AtomOccurs candidate name'
     let ListGoal : List Atom → Prop := fun candidates => ∀ name',
-      name' ∈ ((toLeaTTaAtoms candidates).map Metta.Atom.vars).flatten →
+      name' ∈ ((encodeModelAtoms candidates).map Metta.Atom.vars).flatten →
         ∃ candidate ∈ candidates,
           Spec.Match.Merge.AtomOccurs candidate name'
     have hrec : ∀ candidate, AtomGoal candidate := by
       apply Atom.rec (motive_1 := AtomGoal) (motive_2 := ListGoal)
       · intro symbol name' h
-        simp [toLeaTTaAtom, Metta.Atom.vars] at h
+        simp [encodeModelAtom, Metta.Atom.vars] at h
       · intro candidate name' h
         have heq : name' = candidate := by
-          simpa [toLeaTTaAtom, Metta.Atom.vars] using h
+          simpa [encodeModelAtom, Metta.Atom.vars] using h
         subst name'
         exact .var candidate
       · intro grounded name' h
-        simp [toLeaTTaAtom, Metta.Atom.vars] at h
+        simp [encodeModelAtom, Metta.Atom.vars] at h
       · intro candidates ih name' h
         obtain ⟨candidate, hcandidate, hoccurs⟩ := ih name' (by
-          simpa [toLeaTTaAtom, Metta.Atom.vars] using h)
+          simpa [encodeModelAtom, Metta.Atom.vars] using h)
         exact .expression hcandidate hoccurs
       · intro name' h
-        simp [toLeaTTaAtoms] at h
+        simp [encodeModelAtoms] at h
       · intro candidate candidates ihCandidate ihCandidates name' h
-        simp only [toLeaTTaAtoms, List.map_cons, List.flatten_cons,
+        simp only [encodeModelAtoms, List.map_cons, List.flatten_cons,
           List.mem_append] at h
         rcases h with hhead | htail
         · exact ⟨candidate, by simp, ihCandidate name' hhead⟩
@@ -221,7 +378,7 @@ theorem size_valuation_lt_apply_of_atomOccurs_nonvariable
     (hnonvariable : Spec.Match.Merge.isVariableB value = false)
     (hoccurs : Spec.Match.Merge.AtomOccurs value dependency) :
     (valuation dependency).size <
-      (applyClassSolution valuation (toLeaTTaAtom value)).size := by
+      (applyClassSolution valuation (encodeModelAtom value)).size := by
   cases value with
   | symbol symbol => cases hoccurs
   | var name => simp [Spec.Match.Merge.isVariableB] at hnonvariable
@@ -229,33 +386,33 @@ theorem size_valuation_lt_apply_of_atomOccurs_nonvariable
   | expression atoms =>
       cases hoccurs with
       | @expression _ child _ hchild hoccursChild =>
-          have hdependency : dependency ∈ (toLeaTTaAtom child).vars :=
+          have hdependency : dependency ∈ (encodeModelAtom child).vars :=
             atomOccurs_iff_mem_translated_vars.mp hoccursChild
           have hle :=
             size_applyClassSolution_ge_of_mem_vars valuation dependency
-              (toLeaTTaAtom child) hdependency
+              (encodeModelAtom child) hdependency
           have hchildTranslated :
-              toLeaTTaAtom child ∈ toLeaTTaAtoms atoms := by
-            exact mem_toLeaTTaAtoms_of_mem hchild
+              encodeModelAtom child ∈ encodeModelAtoms atoms := by
+            exact mem_encodeModelAtoms_of_mem hchild
           have hchildApplied :
-              applyClassSolution valuation (toLeaTTaAtom child) ∈
-                (toLeaTTaAtoms atoms).map
+              applyClassSolution valuation (encodeModelAtom child) ∈
+                (encodeModelAtoms atoms).map
                   (applyClassSolution valuation) := by
             exact List.mem_map.mpr
-              ⟨toLeaTTaAtom child, hchildTranslated, rfl⟩
+              ⟨encodeModelAtom child, hchildTranslated, rfl⟩
           have hmemSize :
-              (applyClassSolution valuation (toLeaTTaAtom child)).size ∈
-                ((toLeaTTaAtoms atoms).map
+              (applyClassSolution valuation (encodeModelAtom child)).size ∈
+                ((encodeModelAtoms atoms).map
                   (applyClassSolution valuation)).map Metta.Atom.size := by
             exact List.mem_map.mpr
-              ⟨applyClassSolution valuation (toLeaTTaAtom child),
+              ⟨applyClassSolution valuation (encodeModelAtom child),
                 hchildApplied, rfl⟩
           have hsum :
-              (applyClassSolution valuation (toLeaTTaAtom child)).size ≤
-                (((toLeaTTaAtoms atoms).map
+              (applyClassSolution valuation (encodeModelAtom child)).size ≤
+                (((encodeModelAtoms atoms).map
                   (applyClassSolution valuation)).map Metta.Atom.size).sum :=
             List.single_le_sum (by intro _ _; omega) _ hmemSize
-          simp only [toLeaTTaAtom, applyClassSolution, Metta.Atom.size]
+          simp only [encodeModelAtom, applyClassSolution, Metta.Atom.size]
           omega
 
 /-- Every dependency edge in a satisfiable normalized binding record strictly
@@ -280,7 +437,7 @@ theorem size_valuation_lt_of_classDepends
   calc
     (valuation target).size = (valuation dependency).size :=
       congrArg Metta.Atom.size htargetEq.symm
-    _ < (applyClassSolution valuation (toLeaTTaAtom value)).size := hproper
+    _ < (applyClassSolution valuation (encodeModelAtom value)).size := hproper
     _ = (valuation key).size := congrArg Metta.Atom.size hassignmentEq.symm
     _ = (valuation source).size := congrArg Metta.Atom.size hsourceEq
 
@@ -439,7 +596,7 @@ noncomputable def canonicalNodeValue
                   (chosenDependencyNode_lt assignment hnonvariable hoccurs)
               else
                 .var dependency)
-            (toLeaTTaAtom assignment.1.2)
+            (encodeModelAtom assignment.1.2)
 
 /-- Total canonical valuation: support variables use their class
 representative's well-founded value; variables absent from the record remain
@@ -502,8 +659,8 @@ theorem bindingSatisfied_congr_of_eq_on_support
     · intro name value member
       calc
         second name = first name := (same name (assignment_key_mem_bindingSupport member)).symm
-        _ = applyClassSolution first (toLeaTTaAtom value) := satisfied.1 name value member
-        _ = applyClassSolution second (toLeaTTaAtom value) := by
+        _ = applyClassSolution first (encodeModelAtom value) := satisfied.1 name value member
+        _ = applyClassSolution second (encodeModelAtom value) := by
           apply applyClassSolution_congr_of_eq_on_vars
           intro dependency occurs
           exact same dependency (assignment_value_var_mem_bindingSupport member
@@ -550,7 +707,7 @@ theorem canonicalNodeValue_eq_applyClassSolution_of_chosen
     canonicalNodeValue bindings hloopFree hnonvariable source =
       applyClassSolution
         (canonicalValuation bindings hloopFree hnonvariable)
-        (toLeaTTaAtom assignment.1.2) := by
+        (encodeModelAtom assignment.1.2) := by
   classical
   rw [canonicalNodeValue, WellFounded.fix_eq, hchosen]
   apply applyClassSolution_congr_of_eq_on_vars
@@ -684,9 +841,9 @@ theorem apply_canonicalNodeValue_eq_of_satisfied
             applyClassSolution
                 (fun name => applyClassSolution specific
                   (canonicalValuation bindings hloopFree hnonvariable name))
-                (toLeaTTaAtom assignment.1.2) =
+                (encodeModelAtom assignment.1.2) =
                 applyClassSolution specific
-                  (toLeaTTaAtom assignment.1.2) := by
+                  (encodeModelAtom assignment.1.2) := by
               apply applyClassSolution_congr_of_eq_on_vars
               intro dependency hdependency
               have hoccurs :=
@@ -738,7 +895,7 @@ def CanonicalClassCoherent
       canonicalNodeValue bindings hloopFree hnonvariable source =
         applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)
-          (toLeaTTaAtom assignment.1.2)
+          (encodeModelAtom assignment.1.2)
 
 /-- Class coherence plus semantic loop freedom produces an actual syntactic
 Herbrand model of the binding record.  Equality edges are handled by the
@@ -776,10 +933,10 @@ theorem canonicalClassCoherent_of_every_assignment_eq_chosen
       chosenClassAssignment bindings source.1 = some chosen →
       applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)
-          (toLeaTTaAtom chosen.1.2) =
+          (encodeModelAtom chosen.1.2) =
         applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)
-          (toLeaTTaAtom assignment.1.2)) :
+          (encodeModelAtom assignment.1.2)) :
     CanonicalClassCoherent bindings hloopFree hnonvariable := by
   intro source assignment
   cases hchosen : chosenClassAssignment bindings source.1 with
@@ -908,10 +1065,10 @@ theorem ValuationRefines.bindingSatisfied
     calc
       specific key = applyClassSolution post (general key) := hkey
       _ = applyClassSolution post
-          (applyClassSolution general (toLeaTTaAtom value)) :=
+          (applyClassSolution general (encodeModelAtom value)) :=
             congrArg (applyClassSolution post) hgeneral
-      _ = applyClassSolution specific (toLeaTTaAtom value) :=
-            (happly (toLeaTTaAtom value)).symm
+      _ = applyClassSolution specific (encodeModelAtom value) :=
+            (happly (encodeModelAtom value)).symm
   · intro left right hequality
     have hgeneral := hsatisfied.2 left right hequality
     have hleft : specific left = applyClassSolution post (general left) := by
@@ -1133,7 +1290,7 @@ theorem mergeRel_left_subrecord
   next =>
       intro bindings varName value hvalues
       exact bindingSubrecord_assign_of_not_isBound bindings varName value
-        (isBound_eq_false_of_classValues_nil hvalues)
+        (EqualityClosure.isBound_eq_false_of_classValues_nil hvalues)
   next =>
       intro bindings varName value first rest hvalues hagree hvalue
       exact BindingSubrecord.refl bindings
@@ -1198,7 +1355,7 @@ theorem matchListAccRel_seed_subrecord
   next =>
       intro bindings varName value hvalues
       exact bindingSubrecord_assign_of_not_isBound bindings varName value
-        (isBound_eq_false_of_classValues_nil hvalues)
+        (EqualityClosure.isBound_eq_false_of_classValues_nil hvalues)
   next =>
       intro bindings varName value first rest hvalues hagree hvalue
       exact BindingSubrecord.refl bindings
@@ -1240,7 +1397,7 @@ theorem addVarBindingRel_seed_subrecord
   cases hadd with
   | fresh hvalues =>
       exact bindingSubrecord_assign_of_not_isBound _ _ _
-        (isBound_eq_false_of_classValues_nil hvalues)
+        (EqualityClosure.isBound_eq_false_of_classValues_nil hvalues)
   | same => exact BindingSubrecord.refl seed
   | conflict hvalues hagree hne hmatch hmerge =>
       exact mergeRel_left_subrecord hmerge
@@ -1327,10 +1484,10 @@ theorem incompatibleAcyclicProbe_has_no_model :
   have hab : Metta.Atom.sym "a" = Metta.Atom.sym "b" := by
     calc
       Metta.Atom.sym "a" = valuation "x" := by
-        simpa [toLeaTTaAtom, applyClassSolution] using ha.symm
+        simpa [encodeModelAtom, applyClassSolution] using ha.symm
       _ = valuation "y" := hxy
       _ = Metta.Atom.sym "b" := by
-        simpa [toLeaTTaAtom, applyClassSolution] using hb
+        simpa [encodeModelAtom, applyClassSolution] using hb
   simp at hab
 
 /-- Therefore the missing reconciliation-provenance hypothesis is substantive,
@@ -1382,7 +1539,7 @@ theorem satisfiableUnreconciledProbe_loopFree :
     · rcases hassignment with ⟨rfl, rfl⟩
       have hdependency : dependency = "y" := by
         have hmem := atomOccurs_iff_mem_translated_vars.mp hoccurs
-        simpa [toLeaTTaAtom, Metta.Atom.vars] using hmem
+        simpa [encodeModelAtom, Metta.Atom.vars] using hmem
       subst dependency
       constructor
       · simpa [satisfiableUnreconciledProbe, Bindings.eqClass,
@@ -1391,7 +1548,7 @@ theorem satisfiableUnreconciledProbe_loopFree :
           Bindings.eqClassAux, Bindings.eqStep] using htarget
     · rcases hassignment with ⟨rfl, rfl⟩
       have hmem := atomOccurs_iff_mem_translated_vars.mp hoccurs
-      simp [toLeaTTaAtom, Metta.Atom.vars] at hmem
+      simp [encodeModelAtom, Metta.Atom.vars] at hmem
   intro name hcycle
   have hreach : ∀ {source target},
       Relation.TransGen
@@ -1419,9 +1576,9 @@ theorem satisfiableUnreconciledProbe_has_model :
     simp [satisfiableUnreconciledProbe] at hassignment
     rcases hassignment with hassignment | hassignment
     · rcases hassignment with ⟨rfl, rfl⟩
-      simp [valuation, toLeaTTaAtom, applyClassSolution]
+      simp [valuation, encodeModelAtom, applyClassSolution]
     · rcases hassignment with ⟨rfl, rfl⟩
-      simp [valuation, toLeaTTaAtom, applyClassSolution]
+      simp [valuation, encodeModelAtom, applyClassSolution]
   · intro left right hequality
     simp [satisfiableUnreconciledProbe] at hequality
 
@@ -1470,7 +1627,7 @@ theorem satisfiableUnreconciledProbe_canonical_not_model :
     (.expression [.symbol "f", .symbol "a"])
     (by simp [satisfiableUnreconciledProbe])
   have himpossible := hfirst.symm.trans hsecond
-  simp [toLeaTTaAtom, applyClassSolution, hy] at himpossible
+  simp [encodeModelAtom, applyClassSolution, hy] at himpossible
 
 /-- Therefore the missing reconciliation-provenance hypothesis is also
 strictly stronger than satisfiability: class coherence would force precisely
@@ -1512,7 +1669,7 @@ theorem cyclicMergeLeft_has_model :
       simpa [cyclicMergeLeft, Bindings.empty, Bindings.assign,
         Bindings.isBound, Bindings.lookup] using hassignment
     rcases hentry with ⟨rfl, rfl⟩
-    simp [valuation, toLeaTTaAtom, applyClassSolution]
+    simp [valuation, encodeModelAtom, applyClassSolution]
   · intro left right hequality
     simp [cyclicMergeLeft, Bindings.empty, Bindings.assign] at hequality
 
@@ -1530,7 +1687,7 @@ theorem cyclicMergeRight_has_model :
       simpa [cyclicMergeRight, Bindings.empty, Bindings.assign,
         Bindings.isBound, Bindings.lookup] using hassignment
     rcases hentry with ⟨rfl, rfl⟩
-    simp [valuation, toLeaTTaAtom, applyClassSolution]
+    simp [valuation, encodeModelAtom, applyClassSolution]
   · intro left right hequality
     simp [cyclicMergeRight, Bindings.empty, Bindings.assign] at hequality
 
@@ -1572,7 +1729,7 @@ theorem cyclicMergeOut_has_no_model :
       Bindings.assign, Bindings.isBound, Bindings.lookup])
   have hxSize := congrArg Metta.Atom.size hx
   have hySize := congrArg Metta.Atom.size hy
-  simp [toLeaTTaAtom, applyClassSolution, Metta.Atom.size] at hxSize hySize
+  simp [encodeModelAtom, applyClassSolution, Metta.Atom.size] at hxSize hySize
   omega
 
 /-- The same probe confirms exactly why the outer spec matcher carries its

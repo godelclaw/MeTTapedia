@@ -3278,6 +3278,25 @@ theorem receive_success_iff (before after : FrameReadback) (wanted : Destination
   · rintro ⟨slot, valid, room, rfl, bound, rfl⟩
     exact receive_current before slot value valid bound room
 
+/-- A value write keeps the ordered native lexical identities. The payload
+and its version change; source-name resolution remains the same operation. -/
+theorem write_variable_ids (before : FrameReadback) (slot : Fin before.slots.length)
+    (value : BindingValueView) (valid : value.Admissible)
+    (room : before.view.writeClock + 1 < 2 ^ 64) :
+    (write before slot value valid room).slots.map FrameSlotView.varId =
+      before.slots.map FrameSlotView.varId := by
+  have same := List.set_getElem_self
+    (as := before.slots.map FrameSlotView.varId) (i := slot.val) (by simp)
+  simpa [write,replaceSlot] using same
+
+theorem receive_coordinates (before after : FrameReadback) (wanted : Destination)
+    (value : BindingValueView) (received : receive? before wanted value = some after) :
+    after.view.token = before.view.token ∧
+      after.slots.map FrameSlotView.varId = before.slots.map FrameSlotView.varId := by
+  obtain ⟨slot,valid,room,_,_,rfl⟩ :=
+    (receive_success_iff before after wanted value).mp received
+  exact ⟨rfl,write_variable_ids before slot value valid room⟩
+
 /-- A successful child receipt realizes exactly the common store write at
 the saved destination, including all unmodified frames of the caller image. -/
 theorem receive_correspondence (store : StoreOf BindingValueView)
@@ -3527,6 +3546,45 @@ theorem receiveDirectory_clock (directory after : DirectoryReadback)
     · simp at received
     · cases Option.some.inj received
       exact commitDirectory_clock _ _ _ _ _ _ _
+
+/-- The complete directory keeps its lexical coordinates through the
+successful receipt, including the unchanged ordering of sibling frames. -/
+theorem commitDirectory_coordinates (directory : DirectoryReadback) (before after : FrameReadback)
+    (member : before ∈ directory.frames) (wanted : Destination) (value : BindingValueView)
+    (received : receive? before wanted value = some after) :
+    (commitDirectory directory before after member wanted value received).frames.map
+        (fun frame => (frame.view.token,frame.slots.map FrameSlotView.varId)) =
+      directory.frames.map (fun frame => (frame.view.token,frame.slots.map FrameSlotView.varId)) := by
+  change (directory.frames.map (directoryFrame before after)).map _ = _
+  rw [List.map_map]
+  apply List.map_congr_left
+  intro frame frameMember
+  by_cases same : frame.view.token.handle = before.view.token.handle
+  · have selected := directory.select_frame frame frameMember
+    rw [same] at selected
+    have frameEq : frame = before :=
+      Option.some.inj (selected.symm.trans (directory.select_frame before member))
+    subst frame
+    have coordinates := receive_coordinates before after wanted value received
+    have sameCoordinates :
+        (after.view.token,after.slots.map FrameSlotView.varId) =
+          (before.view.token,before.slots.map FrameSlotView.varId) :=
+      Prod.ext coordinates.1 coordinates.2
+    simpa [directoryFrame] using sameCoordinates
+  · simp [directoryFrame,same,refreshClock]
+
+theorem receiveDirectory_coordinates (directory after : DirectoryReadback)
+    (wanted : Destination) (value : BindingValueView)
+    (received : receiveDirectory? directory wanted value = some after) :
+    after.frames.map (fun frame => (frame.view.token,frame.slots.map FrameSlotView.varId)) =
+      directory.frames.map (fun frame => (frame.view.token,frame.slots.map FrameSlotView.varId)) := by
+  unfold receiveDirectory? at received
+  split at received
+  · simp at received
+  · split at received
+    · simp at received
+    · cases Option.some.inj received
+      exact commitDirectory_coordinates _ _ _ _ _ _ _
 
 /-- Sibling inventories keep their payloads, write versions, presentation and
 activation boundaries; only their common directory clock is refreshed. -/

@@ -1,5 +1,6 @@
 import Mettapedia.Machines.Cursor.Sequence
 import Mettapedia.Machines.SnapshotBatch
+import Mettapedia.Machines.BindingPublication
 
 /-!
 # A resumable fold client for a pull protocol
@@ -1530,6 +1531,752 @@ end CallbackControls
 #print axioms CallbackControls.changing_representation_after_refusal_keeps_retry_state
 #print axioms CallbackControls.moving_only_the_window_does_not_refine_resumption
 #print axioms CallbackControls.window_partition_uses_common_transport
+
+/-! A retained computation supplies the callback boundary directly. Its
+provider state keeps the actual indexed source outcome and consumer context;
+there is no materialized list of future returns. -/
+
+namespace Retained
+
+variable {Base : Type} {Index : Base → Type}
+    {P : IndexedPolynomial.{0, 0, 0, 0} Base Index}
+    {Return : (base : Base) → Index base → Type}
+    (source : Provider P) (reader : Client (P := P) (Return := Return))
+    (base : Base) (Context : Type)
+
+structure State where
+  computation : Nat × Outcome source reader base
+  context : Context
+
+variable {Context}
+    (sourceCharge : Charge source) (quantum : Nat)
+    (isReturn : Finished source (Return := Return) base → Bool)
+    (rearm : Finished source (Return := Return) base →
+      Mettapedia.Machines.Cursor.Packet source reader base)
+    (consume : Context → Finished source (Return := Return) base → Bool × Context)
+
+/-- Acceptance reads the retained source return, rather than reconstructing
+it from a payload. Even a refused callback keeps its actual context update. -/
+def provider : Provider (protocol (Finished source (Return := Return) base)
+    (Finished source (Return := Return) base)) where
+  State _ _ := State source reader base Context
+  step state request := match request with
+    | .next =>
+        let later := Mettapedia.Machines.Cursor.resume source reader sourceCharge quantum state.computation
+        let next := {state with computation := later}
+        match later.2 with
+        | .paused _ => ⟨.paused, next⟩
+        | .done result =>
+            if isReturn result then ⟨.returned result, next⟩ else ⟨.terminal result, next⟩
+    | .accept _ => match state.computation.2 with
+        | .paused _ => ⟨false, state⟩
+        | .done result =>
+            if isReturn result then
+              let decision := consume state.context result
+              ⟨decision.1, ⟨if decision.1 then
+                  (state.computation.1, .paused (rearm result)) else state.computation,
+                decision.2⟩⟩
+            else ⟨false, state⟩
+
+theorem next_retains_outcome (state : State source reader base Context) :
+    ((provider source reader base sourceCharge quantum isReturn rearm consume).step
+      (base := ()) (index := ()) state .next).2 =
+      ⟨Mettapedia.Machines.Cursor.resume source reader sourceCharge quantum state.computation,
+        state.context⟩ := by
+  cases later : (Mettapedia.Machines.Cursor.resume source reader sourceCharge quantum
+    state.computation).2 with
+  | paused packet => simp [provider, later]
+  | done result => cases returned : isReturn result <;> simp [provider, later, returned]
+
+theorem accept_refusal_keeps_computation
+    (state : State source reader base Context)
+    (item result : Finished source (Return := Return) base)
+    (ready : state.computation.2 = .done result) (returned : isReturn result = true)
+    (refused : (consume state.context result).1 = false) :
+    ((provider source reader base sourceCharge quantum isReturn rearm consume).step
+      (base := ()) (index := ()) state (.accept item)).2 =
+      ⟨state.computation, (consume state.context result).2⟩ := by
+  simp [provider, ready, returned, refused]
+
+theorem accept_success_rearms_only
+    (state : State source reader base Context)
+    (item result : Finished source (Return := Return) base)
+    (ready : state.computation.2 = .done result) (returned : isReturn result = true)
+    (accepted : (consume state.context result).1 = true) :
+    ((provider source reader base sourceCharge quantum isReturn rearm consume).step
+      (base := ()) (index := ()) state (.accept item)).2 =
+      ⟨(state.computation.1, .paused (rearm result)), (consume state.context result).2⟩ := by
+  simp [provider, ready, returned, accepted]
+
+theorem accept_preserves_source_charge (state : State source reader base Context)
+    (item : Finished source (Return := Return) base) :
+    ((provider source reader base sourceCharge quantum isReturn rearm consume).step
+      (base := ()) (index := ()) state (.accept item)).2.computation.1 =
+      state.computation.1 := by
+  cases ready : state.computation.2 with
+  | paused packet => simp [provider, ready]
+  | done result =>
+      cases returned : isReturn result <;> cases accepted : (consume state.context result).1 <;>
+        simp [provider, ready, returned, accepted]
+
+/-- Pure scheduler subdivision keeps the complete live callback packet.
+This does not combine separate acceptance calls or move authority changes. -/
+theorem inspection_split (allowance accepted earlier later : Nat)
+    (pending : Option (Finished source (Return := Return) base))
+    (state : State source reader base Context)
+    (terminalAfter : Finished source (Return := Return) base →
+      Option (Finished source (Return := Return) base))
+    (charge : Charge (provider source reader base sourceCharge quantum isReturn rearm consume)) :
+    let owned := provider source reader base sourceCharge quantum isReturn rearm consume
+    Mettapedia.Machines.Cursor.advance owned (client _ _ terminalAfter) charge (earlier + later)
+        (packet owned allowance pending accepted state terminalAfter) =
+      Mettapedia.Machines.Cursor.resume owned (client _ _ terminalAfter) charge later
+        (Mettapedia.Machines.Cursor.advance owned (client _ _ terminalAfter) charge earlier
+          (packet owned allowance pending accepted state terminalAfter)) :=
+  advance_add _ _ _ _ _ _
+
+end Retained
+
+/-- A local callback invariant lifts through the existing owned sequencer,
+including the provider post-state of a refusal. -/
+theorem fromCallbacks_invariant (Safe : M.State () () → Prop)
+    (kept : ∀ state request, Safe state → Safe (M.step state request).2)
+    (allowance accepted : Nat) (pending : Option Item) (state : M.State () ())
+    (safe : Safe state) (terminalAfter : Item → Option Terminal := fun _ => none) :
+    Safe (fromCallbacks M charge allowance pending accepted state terminalAfter).2.2 := by
+  induction allowance generalizing pending accepted state with
+  | zero => exact safe
+  | succ allowance ih =>
+      cases pending with
+      | some item =>
+          have after := kept state (.accept item) safe
+          cases response : M.step state (.accept item) with
+          | mk decision next =>
+              simp only [response] at after
+              cases decision <;> cases final : terminalAfter item <;>
+                simp only [fromCallbacks, response, final]
+              all_goals first | exact after | exact ih _ _ _ after
+      | none =>
+          have after := kept state .next safe
+          cases response : M.step state .next with
+          | mk reply next =>
+              simp only [response] at after
+              cases reply with
+              | paused => simpa only [fromCallbacks, response] using after
+              | terminal reason => simpa only [fromCallbacks, response] using after
+              | returned item =>
+                  have afterAccept := kept next (.accept item) after
+                  cases decision : M.step next (.accept item) with
+                  | mk answer finalState =>
+                      simp only [decision] at afterAccept
+                      cases answer <;> cases final : terminalAfter item <;>
+                        simp only [fromCallbacks, response, decision, final]
+                      all_goals first | exact afterAccept | exact ih _ _ _ afterAccept
+
+#print axioms Retained.accept_refusal_keeps_computation
+#print axioms Retained.next_retains_outcome
+#print axioms Retained.accept_success_rearms_only
+#print axioms Retained.accept_preserves_source_charge
+#print axioms Retained.inspection_split
+#print axioms fromCallbacks_invariant
+
+/-! A frozen return is either an ordinary batch or one observation carrying
+its residual. The existing callback sequencer drains its publication records;
+enumerating this finite batch never resumes the saved source. A refused check
+may prepare private context, but cannot commit the record or discard its loan.
+-/
+namespace FrozenPublication
+
+variable {Saved Context Observation : Type}
+
+abbrev State (Saved Item Context : Type) :=
+  Saved × OwnedSequence.Packet Item (List Item × Context)
+
+abbrev Call (Saved Item Context : Type) :=
+  Nat × (Result Item Unit × State Saved Item Context)
+
+/-- Complete records are retained, including environment, role and conditions
+when `Item` is `Returned Term Environment`. The saved source is not a list of
+future answers and is never interpreted by this publication provider. -/
+def provider (check : Context → Item → Bool × Context) : Provider (protocol Item Unit) where
+  State _ _ := State Saved Item Context
+  step state request := match request with
+    | .next => match state.2.pending with
+      | some item => ⟨.returned item, state⟩
+      | none => match state.2.remaining with
+        | [] => ⟨.terminal (), (state.1, {state.2 with requested := state.2.requested + 1})⟩
+        | item :: rest => ⟨.returned item, (state.1, {state.2 with
+            remaining := rest, pending := some item, requested := state.2.requested + 1})⟩
+    | .accept _ => match state.2.pending with
+      | none => ⟨false, state⟩
+      | some item =>
+          let checked := check state.2.accumulator.2 item
+          ⟨checked.1, (state.1, {state.2 with
+            pending := if checked.1 then none else some item
+            accumulator := (if checked.1 then state.2.accumulator.1 ++ [item]
+              else state.2.accumulator.1, checked.2)
+            accepted := state.2.accepted + if checked.1 then 1 else 0})⟩
+
+def content (state : State Saved Item Context) : List Item :=
+  state.2.accumulator.1 ++ OwnedSequence.undelivered state.2
+
+def start (saved : Saved) (items : List Item) (context : Context) : Call Saved Item Context :=
+  (0, ⟨none, none, 0⟩, saved, ⟨items, none, ([], context), 0, 0⟩)
+
+/-- The tags describe result presentation, not another progress protocol.
+A closed empty bag has no publication record; an open observation has one. -/
+def records : List Item ⊕ Observation → List (Item ⊕ Observation)
+  | .inl rows => rows.map Sum.inl
+  | .inr observation => [Sum.inr observation]
+
+/-- A paused source supplies no endpoint. A genuine closed batch and a genuine
+open stop use the existing return/terminal distinction, retaining the source. -/
+def prepare (saved : Saved) (context : Context)
+    (reply : NextReply (List Item) Observation) : Option (Call Saved (Item ⊕ Observation) Context) :=
+  match reply with
+  | .paused => none
+  | .returned rows => some (start saved (records (.inl rows)) context)
+  | .terminal observation => some (start saved (records (.inr observation)) context)
+
+def run (check : Context → Item → Bool × Context) (allowance : Nat)
+    (call : Call Saved Item Context) : Call Saved Item Context :=
+  resumeCall (provider check) (fun _ _ => 1) allowance call
+
+/-- Both successful publication and stateful refusal conserve the exact
+ordered batch. The internal pending record authenticates acceptance. -/
+theorem step_preserves (check : Context → Item → Bool × Context)
+    (state : State Saved Item Context) (request : Request Item) :
+    ((provider check).step (base := ()) (index := ()) state request).2.1 = state.1 ∧
+      content ((provider check).step (base := ()) (index := ()) state request).2 = content state := by
+  rcases state with ⟨saved, remaining, pending, ⟨committed, context⟩, accepted, requested⟩
+  cases request with
+  | next =>
+      cases pending with
+      | some item => simp [provider, content, OwnedSequence.undelivered]
+      | none => cases remaining <;> simp [provider, content, OwnedSequence.undelivered]
+  | accept _ =>
+      cases pending with
+      | none => simp [provider, content, OwnedSequence.undelivered]
+      | some item =>
+          cases answer : (check context item).1 <;>
+            simp [provider, content, OwnedSequence.undelivered, answer, List.append_assoc]
+
+/-- This lifts the concrete publication invariant through the maintained
+callback interpreter, including every refused callback's actual post-state. -/
+theorem callbacks_preserve (check : Context → Item → Bool × Context)
+    (allowance accepted : Nat) (pending : Option Item) (state : State Saved Item Context) :
+    let later := fromCallbacks (provider check) (fun _ _ => 1) allowance pending accepted state
+    later.2.2.1 = state.1 ∧ content later.2.2 = content state := by
+  apply fromCallbacks_invariant (provider check) (fun _ _ => 1)
+    (fun later => later.1 = state.1 ∧ content later = content state)
+  · intro later request valid
+    obtain ⟨source, batch⟩ := step_preserves check later request
+    exact ⟨source.trans valid.1, batch.trans valid.2⟩
+  · exact ⟨rfl, rfl⟩
+
+theorem run_preserves (check : Context → Item → Bool × Context)
+    (allowance : Nat) (call : Call Saved Item Context) :
+    (run check allowance call).2.2.1 = call.2.2.1 ∧
+      content (run check allowance call).2.2 = content call.2.2 := by
+  unfold run resumeCall
+  cases stopped : call.2.1.terminal with
+  | some reason => exact ⟨rfl, rfl⟩
+  | none => exact callbacks_preserve check allowance call.2.1.accepted call.2.1.pending call.2.2
+
+/-- The full source, not just an answer count, is fixed while checked draining
+partitions the original records into committed, held and remaining portions. -/
+theorem run_partition (check : Context → Item → Bool × Context) (allowance : Nat)
+    (saved : Saved) (items : List Item) (context : Context) :
+    let later := run check allowance (start saved items context)
+    later.2.2.1 = saved ∧
+      later.2.2.2.accumulator.1 ++ later.2.2.2.pending.toList ++
+        later.2.2.2.remaining = items := by
+  simpa [start, content, OwnedSequence.undelivered, List.append_assoc] using
+    run_preserves check allowance (start saved items context)
+
+/-- A zero publication grant neither turns a pause into completion nor drops
+an already paid source or the consumer's prepared context. -/
+theorem run_zero (check : Context → Item → Bool × Context) (call : Call Saved Item Context) :
+    run check 0 call = call := resumeCall_zero _ _ _
+
+def schedule (check : Context → Item → Bool × Context) (grants : List Nat)
+    (call : Call Saved Item Context) : Call Saved Item Context :=
+  grants.foldl (fun previous allowance => run check allowance previous) call
+
+/-- A word of actual grants retains stateful refusals. It is not replaced by
+their sum, which could erase the opportunity to retry a prepared context. -/
+theorem schedule_preserves (check : Context → Item → Bool × Context)
+    (grants : List Nat) (call : Call Saved Item Context) :
+    (schedule check grants call).2.2.1 = call.2.2.1 ∧
+      content (schedule check grants call).2.2 = content call.2.2 := by
+  induction grants generalizing call with
+  | nil => exact ⟨rfl, rfl⟩
+  | cons grant rest ih =>
+      have one := run_preserves check grant call
+      have later := ih (run check grant call)
+      exact ⟨later.1.trans one.1, later.2.trans one.2⟩
+
+theorem schedule_partition (check : Context → Item → Bool × Context)
+    (grants : List Nat) (saved : Saved) (items : List Item) (context : Context) :
+    let later := schedule check grants (start saved items context)
+    later.2.2.1 = saved ∧
+      later.2.2.2.accumulator.1 ++ later.2.2.2.pending.toList ++
+        later.2.2.2.remaining = items := by
+  simpa [start, content, OwnedSequence.undelivered, List.append_assoc] using
+    schedule_preserves check grants (start saved items context)
+
+theorem acceptance_preserves_saved (check : Context → Item → Bool × Context)
+    (state : State Saved Item Context) (item : Item) :
+    ((provider check).step (base := ()) (index := ()) state (.accept item)).2.1 = state.1 :=
+  (step_preserves check state (.accept item)).1
+
+/-- Publication charges are administrative callback charges. Refusal retains
+that paid work while the separate saved source account stays fixed. -/
+theorem run_charge_mono (check : Context → Item → Bool × Context)
+    (allowance : Nat) (call : Call Saved Item Context) :
+    call.1 ≤ (run check allowance call).1 :=
+  resumeCall_charge_mono (provider check) (fun _ _ => 1) allowance call
+
+namespace Controls
+
+private def first : Returned Nat Nat := ⟨7, 11, .completed, [3]⟩
+private def second : Returned Nat Nat := ⟨7, 22, .conditional, [4, 4]⟩
+private def warm (ready : Bool) (_ : Returned Nat Nat) : Bool × Bool := (ready, true)
+
+theorem refused_then_retried_records_keep_source_and_roles :
+    let initial := start (17, [91, 92]) [first, second] false
+    let refused := run warm 1 initial
+    let accepted := run warm 1 refused
+    let finished := run warm 2 accepted
+    refused.2.1.pending = some first ∧ refused.2.2.2.accumulator = ([], true) ∧
+      accepted.2.2.2.requested = refused.2.2.2.requested ∧
+      finished.2.1.terminal = some () ∧
+      finished.2.2.1 = (17, [91, 92]) ∧
+      finished.2.2.2.accumulator = ([first, second], true) := by decide
+
+theorem closed_zero_and_one_open_have_different_publication_shapes :
+    records (Observation := Nat) (.inl ([] : List Nat)) = [] ∧
+      records (Item := Nat) (Observation := Nat) (.inr 0) = [Sum.inr 0] ∧
+      prepare (Item := Nat) (Observation := Nat) 9 false .paused = none ∧
+      (run (fun (context : Bool) (_ : Nat) => (true, context)) 1
+        (start 9 [] false)).2.1.terminal = some () := by decide
+
+theorem returned_empty_collection_is_one_record :
+    let value : Returned (List Nat) Nat := ⟨[], 4, .completed, []⟩
+    let finished := run (fun (context : Unit) (_ : Returned (List Nat) Nat) => (true, context))
+      2 (start 9 [value] ())
+    finished.2.1.accepted = 1 ∧ finished.2.2.2.accumulator.1 = [value] := by decide
+
+theorem insufficient_grant_is_not_a_closed_publication :
+    let later := run (fun (context : Unit) (_ : Nat) => (true, context))
+      1 (start 9 [7, 7] ())
+    later.2.1.terminal = none ∧ later.2.2.2.accumulator.1 = [7] ∧
+      later.2.2.2.remaining = [7] := by decide
+
+theorem merging_grants_can_lose_a_stateful_retry :
+    let initial := start (17, [91, 92]) [first, second] false
+    run warm 2 initial ≠ run warm 1 (run warm 1 initial) := by
+  intro initial same
+  have counts := congrArg
+    (fun call : Call (Nat × List Nat) (Returned Nat Nat) Bool => call.2.1.accepted) same
+  have impossible : (0 : Nat) = 1 := counts
+  cases impossible
+
+end Controls
+
+#print axioms step_preserves
+#print axioms callbacks_preserve
+#print axioms run_partition
+#print axioms run_zero
+#print axioms schedule_preserves
+#print axioms schedule_partition
+#print axioms acceptance_preserves_saved
+#print axioms run_charge_mono
+#print axioms Controls.refused_then_retried_records_keep_source_and_roles
+#print axioms Controls.closed_zero_and_one_open_have_different_publication_shapes
+#print axioms Controls.returned_empty_collection_is_one_record
+#print axioms Controls.insufficient_grant_is_not_a_closed_publication
+#print axioms Controls.merging_grants_can_lose_a_stateful_retry
+
+/-! Preparation is a private callback phase of this same publisher. A proved
+incompatible source row is disposed without emitting a value; refusal keeps
+the raw loan. Once prepared, the complete record survives an append refusal
+and its retry does not repeat preparation. -/
+namespace CheckedPreparation
+
+variable {Raw Ready Work Sink Refusal : Type}
+
+structure PreparationContext (Raw Ready Work Sink : Type) where
+  work : Work
+  sink : Sink
+  cached : Option Ready
+  resolved : List (Raw × Option Ready)
+  attempts : Nat
+
+def initial (work : Work) (sink : Sink) : PreparationContext Raw Ready Work Sink :=
+  ⟨work, sink, none, [], 0⟩
+
+/-- A failed append may update its own private context. It retains the
+already prepared record and does not add a resolved source occurrence. -/
+def appendPrepared (append : Sink → Ready → Bool × Sink)
+    (context : PreparationContext Raw Ready Work Sink) (raw : Raw) (ready : Ready) :
+    Bool × PreparationContext Raw Ready Work Sink :=
+  let checked := append context.sink ready
+  (checked.1, {context with
+    sink := checked.2
+    cached := if checked.1 then none else some ready
+    resolved := if checked.1 then context.resolved ++ [(raw, some ready)]
+      else context.resolved})
+
+/-- The Boolean acknowledges disposal of a raw candidate, not publication
+of a value. `ok none` skips one incompatible candidate; `error` retains it. -/
+def check (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (append : Sink → Ready → Bool × Sink)
+    (context : PreparationContext Raw Ready Work Sink) (raw : Raw) :
+    Bool × PreparationContext Raw Ready Work Sink :=
+  match context.cached with
+  | some ready => appendPrepared append context raw ready
+  | none =>
+      let attempted := prepare context.work raw
+      let next := {context with work := attempted.2, attempts := context.attempts + 1}
+      match attempted.1 with
+      | .error _ => (false, next)
+      | .ok none => (true, {next with resolved := next.resolved ++ [(raw, none)]})
+      | .ok (some ready) => appendPrepared append next raw ready
+
+/-- Complete records are filtered only by an explicit incompatible verdict,
+never by duplicate payloads or by operational refusal. -/
+def published (context : PreparationContext Raw Ready Work Sink) : List Ready :=
+  context.resolved.filterMap Prod.snd
+
+def skipped (context : PreparationContext Raw Ready Work Sink) : List Raw :=
+  context.resolved.filterMap fun row => match row.2 with
+    | none => some row.1
+    | some _ => none
+
+theorem append_resolved_keys (append : Sink → Ready → Bool × Sink)
+    (context : PreparationContext Raw Ready Work Sink) (raw : Raw) (ready : Ready) :
+    (appendPrepared append context raw ready).2.resolved.map Prod.fst =
+      if (appendPrepared append context raw ready).1
+      then context.resolved.map Prod.fst ++ [raw] else context.resolved.map Prod.fst := by
+  cases decision : append context.sink ready with
+  | mk accepted sink => cases accepted <;> simp [appendPrepared, decision]
+
+theorem check_resolved_keys
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (append : Sink → Ready → Bool × Sink)
+    (context : PreparationContext Raw Ready Work Sink) (raw : Raw) :
+    (check prepare append context raw).2.resolved.map Prod.fst =
+      if (check prepare append context raw).1
+      then context.resolved.map Prod.fst ++ [raw] else context.resolved.map Prod.fst := by
+  cases cached : context.cached with
+  | some ready => simpa [check, cached] using append_resolved_keys append context raw ready
+  | none =>
+      cases attempted : prepare context.work raw with
+      | mk verdict work =>
+          cases verdict with
+          | error reason => simp [check, cached, attempted]
+          | ok result =>
+              cases result with
+              | none => simp [check, cached, attempted]
+              | some ready =>
+                  simpa [check, cached, attempted] using append_resolved_keys append
+                    {context with work := work, attempts := context.attempts + 1} raw ready
+
+theorem check_resolved_length
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (append : Sink → Ready → Bool × Sink)
+    (context : PreparationContext Raw Ready Work Sink) (raw : Raw) :
+    (check prepare append context raw).2.resolved.length = context.resolved.length +
+      if (check prepare append context raw).1 then 1 else 0 := by
+  have keys := congrArg List.length (check_resolved_keys prepare append context raw)
+  cases accepted : (check prepare append context raw).1 <;> simpa [accepted] using keys
+
+/-- The existing packet logs all disposed candidates, including incompatible
+ones. The callback context separately logs which full records were published. -/
+def Coherent (state : State Saved Raw (PreparationContext Raw Ready Work Sink)) : Prop :=
+  state.2.accumulator.2.resolved.map Prod.fst = state.2.accumulator.1 ∧
+    state.2.accepted = state.2.accumulator.2.resolved.length
+
+theorem step_coherent
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (append : Sink → Ready → Bool × Sink)
+    (state : State Saved Raw (PreparationContext Raw Ready Work Sink)) (request : Request Raw)
+    (coherent : Coherent state) :
+    Coherent ((provider (check prepare append)).step (base := ()) (index := ()) state request).2 := by
+  rcases state with ⟨saved, remaining, pending, ⟨handled, context⟩, accepted, requested⟩
+  change context.resolved.map Prod.fst = handled ∧ accepted = context.resolved.length at coherent
+  cases request with
+  | next =>
+      cases pending with
+      | some raw => simpa [provider, Coherent] using coherent
+      | none => cases remaining <;> simpa [provider, Coherent] using coherent
+  | accept _ =>
+      cases pending with
+      | none => simpa [provider, Coherent] using coherent
+      | some raw =>
+          have keys := check_resolved_keys prepare append context raw
+          have length := check_resolved_length prepare append context raw
+          cases decision : check prepare append context raw with
+          | mk allowed next =>
+              cases allowed <;>
+                simp_all [provider, Coherent]
+
+theorem callbacks_coherent
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (append : Sink → Ready → Bool × Sink)
+    (allowance accepted : Nat) (pending : Option Raw)
+    (state : State Saved Raw (PreparationContext Raw Ready Work Sink)) (coherent : Coherent state) :
+    Coherent (fromCallbacks (provider (check prepare append)) (fun _ _ => 1)
+      allowance pending accepted state).2.2 := by
+  apply fromCallbacks_invariant (provider (check prepare append)) (fun _ _ => 1) Coherent
+  · intro later request valid
+    exact step_coherent prepare append later request valid
+  · exact coherent
+
+theorem run_coherent
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (append : Sink → Ready → Bool × Sink) (allowance : Nat)
+    (call : Call Saved Raw (PreparationContext Raw Ready Work Sink))
+    (coherent : Coherent call.2.2) :
+    Coherent (run (check prepare append) allowance call).2.2 := by
+  unfold run resumeCall
+  cases stopped : call.2.1.terminal with
+  | some reason => exact coherent
+  | none => exact callbacks_coherent prepare append allowance _ _ _ coherent
+
+theorem schedule_coherent
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (append : Sink → Ready → Bool × Sink) (grants : List Nat)
+    (call : Call Saved Raw (PreparationContext Raw Ready Work Sink))
+    (coherent : Coherent call.2.2) :
+    Coherent (schedule (check prepare append) grants call).2.2 := by
+  induction grants generalizing call with
+  | nil => exact coherent
+  | cons grant rest ih => exact ih _ (run_coherent prepare append grant call coherent)
+
+/-- Every actual grant word conserves the original raw occurrence partition,
+the full saved source account, and the distinct disposal/publication accounts. -/
+theorem schedule_partition
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (append : Sink → Ready → Bool × Sink) (grants : List Nat)
+    (saved : Saved) (items : List Raw) (work : Work) (sink : Sink) :
+    let later := schedule (check prepare append) grants (start saved items (initial work sink))
+    later.2.2.1 = saved ∧
+      later.2.2.2.accumulator.2.resolved.map Prod.fst ++
+        later.2.2.2.pending.toList ++ later.2.2.2.remaining = items ∧
+      later.2.2.2.accepted = later.2.2.2.accumulator.2.resolved.length := by
+  have partition := FrozenPublication.schedule_partition (check prepare append) grants
+    saved items (initial work sink)
+  have coherent := schedule_coherent prepare append grants (start saved items (initial work sink))
+    (by simp [Coherent, start, initial])
+  refine ⟨partition.1, ?_, coherent.2⟩
+  rw [coherent.1]
+  exact partition.2
+
+theorem disposition_counts (context : PreparationContext Raw Ready Work Sink) :
+    (published context).length + (skipped context).length = context.resolved.length := by
+  suffices ∀ rows : List (Raw × Option Ready),
+      (rows.filterMap Prod.snd).length +
+        (rows.filterMap fun row => match row.2 with
+          | none => some row.1 | some _ => none).length = rows.length by
+    exact this context.resolved
+  intro rows
+  induction rows with
+  | nil => rfl
+  | cons row rows ih =>
+      rcases row with ⟨raw, ready⟩
+      cases ready <;> simp_all <;> omega
+
+/-- Appending a cached value never repeats preparation, even if publication
+refuses again. The private sink's post-state is retained. -/
+theorem cached_refusal_retains_prepared
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (append : Sink → Ready → Bool × Sink)
+    (context : PreparationContext Raw Ready Work Sink) (raw : Raw) (ready : Ready)
+    (cached : context.cached = some ready) (refused : (append context.sink ready).1 = false) :
+    (check prepare append context raw).1 = false ∧
+      (check prepare append context raw).2.cached = some ready ∧
+      (check prepare append context raw).2.attempts = context.attempts ∧
+      (check prepare append context raw).2.work = context.work ∧
+      (check prepare append context raw).2.resolved = context.resolved ∧
+      (check prepare append context raw).2.sink = (append context.sink ready).2 := by
+  simp [check, cached, appendPrepared, refused]
+
+/-- Bindings use their existing private-slot implementation. Only the
+environment is replaced in a ready record; role and conditions stay earned. -/
+def bindingPreparation {Key Value Metadata Operation Conflict Term : Type} [DecidableEq Key]
+    (checker : Mettapedia.Machines.BindingPublication.Checker Key Value Metadata
+      (Conflict ⊕ Refusal) Operation)
+    (inventory : List Key) (spare : Nat) (operations : List Operation)
+    (row : Returned Term (Mettapedia.Machines.BindingPublication.Environment Key Value Metadata)) :
+    Except Refusal (Option (Returned Term
+      (Mettapedia.Machines.BindingPublication.Environment Key Value Metadata))) :=
+  (Mettapedia.Machines.BindingPublication.CheckedPreparation.run checker row.environment
+    inventory spare operations).map (Option.map fun environment => {row with environment := environment})
+
+theorem bindingPreparation_eq_checked_reference
+    {Key Value Metadata Operation Conflict Term : Type} [DecidableEq Key]
+    (checker : Mettapedia.Machines.BindingPublication.Checker Key Value Metadata
+      (Conflict ⊕ Refusal) Operation)
+    (inventory : List Key) (spare : Nat) (operations : List Operation)
+    (row : Returned Term (Mettapedia.Machines.BindingPublication.Environment Key Value Metadata)) :
+    bindingPreparation checker inventory spare operations row =
+      (Mettapedia.Machines.BindingPublication.CheckedPreparation.classify
+        (Mettapedia.Machines.BindingPublication.sequential checker row.environment operations)).map
+          (Option.map fun environment => {row with environment := environment}) := by
+  unfold bindingPreparation
+  rw [Mettapedia.Machines.BindingPublication.CheckedPreparation.run_eq_sequential]
+
+/-- Replacing private binding preparation by the independent checked-map
+reference preserves the entire retained publication call under every actual
+grant word, including cache state, skipped rows, sink state and charges. The
+reference applies checked writes to logical maps; the target uses slots. -/
+theorem binding_schedule_eq_checked_reference
+    {Key Value Metadata Operation Conflict Term : Type} [DecidableEq Key]
+    (checker : Work → Returned Term
+      (Mettapedia.Machines.BindingPublication.Environment Key Value Metadata) →
+        Mettapedia.Machines.BindingPublication.Checker Key Value Metadata
+          (Conflict ⊕ Refusal) Operation)
+    (inventory : List Key) (spare : Nat)
+    (operations : Returned Term
+      (Mettapedia.Machines.BindingPublication.Environment Key Value Metadata) → List Operation)
+    (nextWork : Work → Returned Term
+      (Mettapedia.Machines.BindingPublication.Environment Key Value Metadata) → Work)
+    (append : Sink → Returned Term
+      (Mettapedia.Machines.BindingPublication.Environment Key Value Metadata) → Bool × Sink)
+    (grants : List Nat) (saved : Saved)
+    (rows : List (Returned Term
+      (Mettapedia.Machines.BindingPublication.Environment Key Value Metadata)))
+    (work : Work) (sink : Sink) :
+    schedule (check (fun state row =>
+        (bindingPreparation (checker state row) inventory spare (operations row) row,
+          nextWork state row)) append) grants (start saved rows (initial work sink)) =
+      schedule (check (fun state row =>
+        ((Mettapedia.Machines.BindingPublication.CheckedPreparation.classify
+          (Mettapedia.Machines.BindingPublication.sequential (checker state row)
+            row.environment (operations row))).map
+              (Option.map fun environment => {row with environment := environment}),
+          nextWork state row)) append) grants (start saved rows (initial work sink)) := by
+  simp_rw [bindingPreparation_eq_checked_reference]
+
+namespace Controls
+
+private def first : Returned Nat Nat := ⟨7, 11, .completed, [3]⟩
+private def second : Returned Nat Nat := ⟨7, 22, .conditional, [4, 4]⟩
+private def preparing (warm : Bool) (raw : Nat) : Except Unit (Option (Returned Nat Nat)) × Bool :=
+  if raw == 0 then (.ok none, warm)
+  else if warm then (.ok (some (if raw == 1 then first else second)), warm)
+  else (.error (), true)
+private def appending (warm : Bool) (_ : Returned Nat Nat) : Bool × Bool := (warm, true)
+private def begin : Call (Nat × List Nat) Nat (PreparationContext Nat (Returned Nat Nat) Bool Bool) :=
+  start (33, [8, 9]) [0, 1, 2] (initial false false)
+
+theorem incompatible_skip_does_not_drop_compatible_siblings :
+    let later := schedule (check preparing appending) [1, 1, 1, 1, 2] begin
+    later.2.1.terminal = some () ∧
+      published later.2.2.2.accumulator.2 = [first, second] ∧
+      skipped later.2.2.2.accumulator.2 = [0] ∧
+      later.2.2.2.accepted = 3 ∧ later.2.2.2.accumulator.2.attempts = 4 ∧
+      later.2.2.1 = (33, [8, 9]) := by decide
+
+theorem refusal_is_not_incompatibility :
+    let later := schedule (check preparing appending) [1, 1] begin
+    later.2.1.terminal = none ∧ later.2.1.pending = some 1 ∧
+      later.2.2.2.pending = some 1 ∧ later.2.2.2.accumulator.1 = [0] ∧
+      later.2.2.2.accumulator.2.resolved = [(0, none)] ∧
+      later.2.2.2.remaining = [2] := by decide
+
+theorem append_retry_uses_cache_and_no_source_request :
+    let refused := schedule (check preparing appending) [1, 1, 1] begin
+    let accepted := run (check preparing appending) 1 refused
+    refused.2.2.2.accumulator.2.cached = some first ∧
+      accepted.2.2.2.accumulator.2.cached = none ∧
+      accepted.2.2.2.accumulator.2.attempts = refused.2.2.2.accumulator.2.attempts ∧
+      accepted.2.2.2.requested = refused.2.2.2.requested ∧
+      accepted.2.2.1 = refused.2.2.1 ∧
+      published accepted.2.2.2.accumulator.2 = [first] := by decide
+
+theorem merging_grants_loses_a_preparation_retry :
+    schedule (check preparing appending) [1, 1, 1, 1, 2] begin ≠
+      run (check preparing appending) 6 begin := by
+  intro same
+  have observed := congrArg (fun call : Call (Nat × List Nat) Nat
+      (PreparationContext Nat (Returned Nat Nat) Bool Bool) => call.2.2.2.accepted) same
+  have impossible : (3 : Nat) = 1 := observed
+  cases impossible
+
+private abbrev BindingEnvironment :=
+  Mettapedia.Machines.BindingPublication.Environment Nat Nat Nat
+
+private def bindingChecker (warm : Bool) :
+    Mettapedia.Machines.BindingPublication.Checker Nat Nat Nat (Unit ⊕ Unit) Nat :=
+  fun environment operation =>
+    ⟨⟨[(operation, operation + 10)], environment.metadata + 1⟩,
+      if operation == 7 then .error (.inl ())
+      else if operation == 8 && !warm then .error (.inr ()) else .ok ()⟩
+
+private def bindingPreparing (warm : Bool) (row : Returned Nat BindingEnvironment) :
+    Except Unit (Option (Returned Nat BindingEnvironment)) × Bool :=
+  (bindingPreparation (bindingChecker warm) [0, 1, 7, 8] 1
+    [0, if row.payload == 0 then 7 else 8, 1] row,
+    if row.payload == 0 then warm else true)
+
+private def bindingRows : List (Returned Nat BindingEnvironment) :=
+  [⟨0, ⟨fun _ => none, 5⟩, .completed, []⟩,
+   ⟨7, ⟨fun _ => none, 11⟩, .completed, [3]⟩,
+   ⟨7, ⟨fun _ => none, 22⟩, .conditional, [4, 4]⟩]
+
+private def bindingBegin : Call (Nat × List Nat) (Returned Nat BindingEnvironment)
+    (PreparationContext (Returned Nat BindingEnvironment) (Returned Nat BindingEnvironment) Bool Unit) :=
+  start (55, [13, 13]) bindingRows (initial false ())
+
+/-- This instance uses actual checked private binding writes rather than
+supplying an abstract three-way oracle. Equal payloads retain distinct worlds,
+result roles and conditions after a skipped conflict and an operational retry. -/
+theorem checked_bindings_publish_full_records_after_retry :
+    let later := schedule (check bindingPreparing (fun _ _ => (true, ())))
+      [1, 1, 3] bindingBegin
+    later.2.1.terminal = some () ∧
+      (published later.2.2.2.accumulator.2).map (fun row =>
+        (row.payload, row.environment.get 0, row.environment.get 8,
+          row.environment.get 1, row.environment.metadata, row.form, row.conditions)) =
+        [(7, some 10, some 18, some 11, 14, .completed, [3]),
+         (7, some 10, some 18, some 11, 25, .conditional, [4, 4])] ∧
+      later.2.2.2.accepted = 3 ∧ later.2.2.1 = (55, [13, 13]) := by
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+/-- A successful tentative write followed by refused work must neither look
+matched nor publish its dirty buffer. Its unvisited suffix remains unchecked. -/
+theorem refusal_after_write_preserves_input_and_unvisited_suffix :
+    let row : Returned Nat BindingEnvironment := ⟨7, ⟨fun _ => none, 11⟩, .completed, [3]⟩
+    bindingPreparation (bindingChecker false) [0, 1, 8] 1 [0, 8, 1] row = .error () ∧
+      (Mettapedia.Machines.BindingPublication.privatelyBuild (bindingChecker false)
+        (Mettapedia.Machines.BindingPublication.prepare row.environment [0, 1, 8] 1)
+          [0, 8, 1]).original.get 0 = none ∧
+      Mettapedia.Machines.BindingPublication.checkedPrefix (bindingChecker false)
+        row.environment [0, 8, 1] = [0, 8] := by
+  exact ⟨rfl, rfl, rfl⟩
+
+end Controls
+
+#print axioms check_resolved_keys
+#print axioms step_coherent
+#print axioms schedule_partition
+#print axioms disposition_counts
+#print axioms cached_refusal_retains_prepared
+#print axioms bindingPreparation_eq_checked_reference
+#print axioms binding_schedule_eq_checked_reference
+#print axioms Controls.incompatible_skip_does_not_drop_compatible_siblings
+#print axioms Controls.refusal_is_not_incompatibility
+#print axioms Controls.append_retry_uses_cache_and_no_source_request
+#print axioms Controls.merging_grants_loses_a_preparation_retry
+#print axioms Controls.checked_bindings_publish_full_records_after_retry
+#print axioms Controls.refusal_after_write_preserves_input_and_unvisited_suffix
+
+end CheckedPreparation
+
+end FrozenPublication
 
 end CallbackBoundary
 

@@ -1,5 +1,6 @@
 import Mettapedia.Machines.RevisionedOccurrenceStore
 import Mettapedia.Machines.BindingPublication
+import Mettapedia.Machines.ReadOnlyQuery
 import Mathlib.Data.Finset.Image
 import Mettapedia.Machines.LinkedScopeStack
 import Mettapedia.Machines.Cursor.OwnedLifecycle
@@ -1263,5 +1264,261 @@ end CapturedReadViewCanary
 #print axioms RevisionDependencySet.validAt_iff_of_agreesOn_storeSupport
 #print axioms RevisionDependencySet.validAt_update_iff_of_not_mem_storeSupport
 #print axioms RevisionDependencySet.not_validAt_update_of_mem
+
+
+/-! ## Complete scoped reads of open finite record views
+
+The active records are the actual finite source entries, not a declared set of
+possible keys. One immutable contents interface interprets each issued
+(epoch, space, key, revision) identity. Its immutability is a store contract;
+equal arbitrary revision integers do not establish payload equality.
+-/
+
+namespace ScopedRecords
+
+variable {Epoch Generation Space Letter Revision Payload : Type}
+
+abbrev Key (Space Letter : Type) := Space × List Letter
+abbrev Stamp (Space Letter Revision : Type) := Key Space Letter × Revision
+abbrev Source (Epoch Generation Space Letter Revision : Type) :=
+  RevisionedStoreView Epoch Generation (Stamp Space Letter Revision)
+
+inductive Scope (Space Letter : Type) where
+  | key (space : Space) (name : List Letter)
+  | prefix (space : Space) (name : List Letter)
+  | space (name : Space)
+  deriving DecidableEq, Repr
+
+def Scope.owner : Scope Space Letter → Space
+  | .key site _ | .prefix site _ | .space site => site
+
+def accepts [DecidableEq Space] [DecidableEq Letter]
+    (scope : Scope Space Letter) (stamp : Stamp Space Letter Revision) : Bool :=
+  match scope with
+  | .key site name => decide (stamp.1 = (site, name))
+  | .prefix site name => decide (stamp.1.1 = site ∧ name <+: stamp.1.2)
+  | .space site => decide (stamp.1.1 = site)
+
+theorem accepts_owner [DecidableEq Space] [DecidableEq Letter]
+    (scope : Scope Space Letter) (stamp : Stamp Space Letter Revision)
+    (matched : accepts scope stamp = true) : stamp.1.1 = scope.owner := by
+  cases scope with
+  | key site name => exact congrArg Prod.fst (of_decide_eq_true matched)
+  | «prefix» site name => exact (of_decide_eq_true matched).1
+  | space site => exact of_decide_eq_true matched
+
+abbrev MetaReply (Epoch Letter Revision : Type) := Epoch × List (List Letter × Revision)
+abbrev FullReply (Epoch Space Letter Revision Payload : Type) :=
+  Epoch × List (Stamp Space Letter Revision × Payload)
+
+variable [DecidableEq Space] [DecidableEq Letter]
+
+def selected (source : Source Epoch Generation Space Letter Revision) (scope : Scope Space Letter) :
+    List (Stamp Space Letter Revision) :=
+  (RevisionEnvironment.matchingRows accepts source.entries).current scope
+
+def localStamp (stamp : Stamp Space Letter Revision) : List Letter × Revision := (stamp.1.2, stamp.2)
+
+def metadata (source : Source Epoch Generation Space Letter Revision) (scope : Scope Space Letter) :
+    MetaReply Epoch Letter Revision :=
+  (source.storeId, (selected source scope).map localStamp)
+
+def observe (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (source : Source Epoch Generation Space Letter Revision) (scope : Scope Space Letter) :
+    FullReply Epoch Space Letter Revision Payload :=
+  (source.storeId, (selected source scope).map fun stamp => (stamp, contents source.storeId stamp))
+
+def eraseReply (reply : FullReply Epoch Space Letter Revision Payload) : MetaReply Epoch Letter Revision :=
+  (reply.1, reply.2.map fun row => localStamp row.1)
+
+/-- The scope supplies its fixed namespace; metadata retains the ordered
+key/revision sequence. Payload and other semantic row fields come from the
+immutable version interface, only at identities actually present in the view. -/
+def restoreReply (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (scope : Scope Space Letter) (reply : MetaReply Epoch Letter Revision) :
+    FullReply Epoch Space Letter Revision Payload :=
+  (reply.1, reply.2.map fun row =>
+    let stamp := ((scope.owner, row.1), row.2)
+    (stamp, contents reply.1 stamp))
+
+theorem observe_metadata (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (source : Source Epoch Generation Space Letter Revision) (scope : Scope Space Letter) :
+    eraseReply (observe contents source scope) = metadata source scope := by
+  simp [eraseReply, observe, metadata, List.map_map, Function.comp_def]
+
+/-- This is the revision-faithful source instance. It compares different
+captured/current active views through one fixed immutable contents interface. -/
+theorem observe_restored (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (source : Source Epoch Generation Space Letter Revision) (scope : Scope Space Letter) :
+    restoreReply contents scope (metadata source scope) = observe contents source scope := by
+  apply Prod.ext
+  · rfl
+  · simp only [restoreReply, metadata, observe, List.map_map, Function.comp_def]
+    apply List.map_congr_left
+    intro stamp member
+    have matched := (List.mem_filter.mp member).2
+    have owner := accepts_owner scope stamp matched
+    rcases stamp with ⟨⟨site, name⟩, revision⟩
+    simp only at owner
+    simp [localStamp, owner]
+
+theorem metadata_preserves_full (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (first second : Source Epoch Generation Space Letter Revision) (scope : Scope Space Letter)
+    (same : metadata first scope = metadata second scope) :
+    observe contents first scope = observe contents second scope := by
+  rw [← observe_restored, ← observe_restored, same]
+
+abbrev Captured (Epoch Space Letter Revision Payload : Type) :=
+  ReadOnlyQuery.Observation (Scope Space Letter) (FullReply Epoch Space Letter Revision Payload) Epoch
+
+def capture (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (source : Source Epoch Generation Space Letter Revision) (scopes : List (Scope Space Letter)) :
+    Captured Epoch Space Letter Revision Payload :=
+  ⟨source.storeId, ReadOnlyQuery.samples (observe contents source) scopes⟩
+
+def eraseReads (reads : ReadOnlyQuery.Reads (Scope Space Letter)
+    (FullReply Epoch Space Letter Revision Payload)) :
+    ReadOnlyQuery.Reads (Scope Space Letter) (MetaReply Epoch Letter Revision) :=
+  reads.map fun read => (read.1, eraseReply read.2)
+
+def erase (captured : Captured Epoch Space Letter Revision Payload) :
+    ReadOnlyQuery.Observation (Scope Space Letter) (MetaReply Epoch Letter Revision) Epoch :=
+  ⟨captured.answer, eraseReads captured.reads⟩
+
+def validate [DecidableEq Epoch] [DecidableEq Revision]
+    (current : Source Epoch Generation Space Letter Revision)
+    (required : Captured Epoch Space Letter Revision Payload) : Bool :=
+  decide (current.storeId = required.answer) &&
+    ReadOnlyQuery.checkReads (metadata current) (eraseReads required.reads)
+
+theorem metadata_agreement_iff (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (captured current : Source Epoch Generation Space Letter Revision)
+    (reads : ReadOnlyQuery.Reads (Scope Space Letter) (FullReply Epoch Space Letter Revision Payload))
+    (authentic : ReadOnlyQuery.Agrees (observe contents captured) reads) :
+    ReadOnlyQuery.Agrees (metadata current) (eraseReads reads) ↔
+      ReadOnlyQuery.Agrees (observe contents current) reads := by
+  constructor
+  · intro valid read member
+    have stamped := valid (read.1, eraseReply read.2) (List.mem_map.mpr ⟨read, member, rfl⟩)
+    have same : metadata current read.1 = metadata captured read.1 := by
+      rw [← observe_metadata contents captured read.1, authentic read member]
+      exact stamped
+    exact (metadata_preserves_full contents current captured read.1 same).trans (authentic read member)
+  · intro valid read member
+    obtain ⟨original, present, rfl⟩ := List.mem_map.mp member
+    rw [← observe_metadata contents current original.1, valid original present]
+
+theorem validate_exact [DecidableEq Epoch] [DecidableEq Revision] [DecidableEq Payload]
+    (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (captured current : Source Epoch Generation Space Letter Revision)
+    (required : Captured Epoch Space Letter Revision Payload)
+    (authentic : ReadOnlyQuery.Agrees (observe contents captured) required.reads) :
+    validate current required = true ↔ current.storeId = required.answer ∧
+      ReadOnlyQuery.Agrees (observe contents current) required.reads := by
+  simp only [validate, Bool.and_eq_true, decide_eq_true_eq, ReadOnlyQuery.checkReads_iff]
+  rw [metadata_agreement_iff contents captured current required.reads authentic]
+
+/-- All new scope views come from one current immutable view. Earlier
+original views are retained after them. This array order is not a chronological
+history, and array membership does not issue a writable grant. -/
+def joined [DecidableEq Epoch] [DecidableEq Revision]
+    (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (current : Source Epoch Generation Space Letter Revision)
+    (required : Captured Epoch Space Letter Revision Payload) (scopes : List (Scope Space Letter)) :
+    Option (Captured Epoch Space Letter Revision Payload) :=
+  if validate current required then
+    some ⟨current.storeId, ReadOnlyQuery.samples (observe contents current) scopes ++ required.reads⟩
+  else none
+
+theorem joined_admitted [DecidableEq Epoch] [DecidableEq Revision]
+    (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (current : Source Epoch Generation Space Letter Revision)
+    (required result : Captured Epoch Space Letter Revision Payload) (scopes : List (Scope Space Letter))
+    (issued : joined contents current required scopes = some result) :
+    validate current required = true ∧ result.answer = current.storeId ∧
+      result.reads = ReadOnlyQuery.samples (observe contents current) scopes ++ required.reads := by
+  unfold joined at issued
+  split at issued
+  · cases Option.some.inj issued
+    exact ⟨by assumption, rfl, rfl⟩
+  · cases issued
+
+theorem joined_current [DecidableEq Epoch] [DecidableEq Revision] [DecidableEq Payload]
+    (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (captured current : Source Epoch Generation Space Letter Revision)
+    (required result : Captured Epoch Space Letter Revision Payload) (scopes : List (Scope Space Letter))
+    (authentic : ReadOnlyQuery.Agrees (observe contents captured) required.reads)
+    (issued : joined contents current required scopes = some result) :
+    result.answer = current.storeId ∧ ReadOnlyQuery.Agrees (observe contents current) result.reads := by
+  obtain ⟨valid, epoch, order⟩ := joined_admitted contents current required result scopes issued
+  refine ⟨epoch, ?_⟩
+  rw [order, ReadOnlyQuery.agrees_append]
+  exact ⟨(ReadOnlyQuery.agrees_samples_iff _ _ _).mpr (fun _ _ => rfl),
+    ((validate_exact contents captured current required authentic).mp valid).2⟩
+
+theorem erase_samples (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (source : Source Epoch Generation Space Letter Revision) (scopes : List (Scope Space Letter)) :
+    eraseReads (ReadOnlyQuery.samples (observe contents source) scopes) =
+      ReadOnlyQuery.samples (metadata source) scopes := by
+  simp [ReadOnlyQuery.samples, eraseReads, List.map_map, Function.comp_def, observe_metadata]
+
+theorem joined_erasure [DecidableEq Epoch] [DecidableEq Revision]
+    (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (current : Source Epoch Generation Space Letter Revision)
+    (required : Captured Epoch Space Letter Revision Payload) (scopes : List (Scope Space Letter)) :
+    (joined contents current required scopes).map erase =
+      if validate current required then
+        some ⟨current.storeId, ReadOnlyQuery.samples (metadata current) scopes ++ eraseReads required.reads⟩
+      else none := by
+  by_cases valid : validate current required = true <;>
+    simp [joined, valid, erase, eraseReads, ReadOnlyQuery.samples, List.map_append, List.map_map, Function.comp_def, observe_metadata]
+
+theorem nonmatching_append (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (source : Source Epoch Generation Space Letter Revision) (nextGeneration : Generation)
+    (added : List (Stamp Space Letter Revision)) (scope : Scope Space Letter)
+    (outside : ∀ stamp ∈ added, accepts scope stamp = false) :
+    observe contents (source.replaceRevision nextGeneration (source.entries ++ added)) scope =
+      observe contents source scope := by
+  have empty : added.filter (accepts scope) = [] :=
+    List.filter_eq_nil_iff.mpr (by intro stamp member; simp [outside stamp member])
+  simp [observe, selected, RevisionEnvironment.matchingRows, RevisionedStoreView.replaceRevision,
+    List.filter_append, empty]
+
+theorem matching_append_refused [DecidableEq Epoch] [DecidableEq Revision]
+    (contents : Epoch → Stamp Space Letter Revision → Payload)
+    (source : Source Epoch Generation Space Letter Revision) (nextGeneration : Generation)
+    (scope : Scope Space Letter) (stamp : Stamp Space Letter Revision)
+    (matching : accepts scope stamp = true) :
+    validate (source.replaceRevision nextGeneration (source.entries ++ [stamp]))
+      (capture contents source [scope]) = false := by
+  apply Bool.eq_false_iff.mpr
+  intro permitted
+  have compared := (ReadOnlyQuery.checkReads_iff _ _).mp (Bool.and_eq_true_iff.mp permitted).2
+  have same := compared (scope, metadata source scope) (by
+    simp [capture, eraseReads, ReadOnlyQuery.samples, observe_metadata])
+  have lengths := congrArg (fun reply => reply.2.length) same
+  simp [metadata, selected, RevisionEnvironment.matchingRows, RevisionedStoreView.replaceRevision,
+    List.filter_append, matching] at lengths
+
+theorem epoch_refused [DecidableEq Epoch] [DecidableEq Revision]
+    (current : Source Epoch Generation Space Letter Revision)
+    (required : Captured Epoch Space Letter Revision Payload) (changed : current.storeId ≠ required.answer) :
+    validate current required = false := by simp [validate, changed]
+
+#print axioms accepts_owner
+#print axioms observe_metadata
+#print axioms observe_restored
+#print axioms metadata_preserves_full
+#print axioms metadata_agreement_iff
+#print axioms validate_exact
+#print axioms joined_admitted
+#print axioms joined_current
+#print axioms erase_samples
+#print axioms joined_erasure
+#print axioms nonmatching_append
+#print axioms matching_append_refused
+#print axioms epoch_refused
+
+end ScopedRecords
 
 end Mettapedia.Machines

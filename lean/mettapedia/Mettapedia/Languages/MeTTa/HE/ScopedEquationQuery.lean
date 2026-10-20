@@ -1,6 +1,12 @@
+import Mettapedia.Languages.MeTTa.HE.LeaTTaTypeConformance
+import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationExactConformance
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.BindingTheory
 import Mettapedia.Languages.MeTTa.HE.RecursiveScope
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Scoped equation-query execution and independent soundness
@@ -34,16 +40,17 @@ def avoidNames (live : List Atom) (query : Atom)
 
 def freshRule (live : List Atom) (query : Atom) (specIncoming : Bindings)
     (incoming : Metta.Bindings) (counter : Nat) (lhs rhs : Atom) : Atom × Atom :=
-  EquationFreshening.freshRule (avoidNames live query specIncoming incoming) counter lhs rhs
+  LeaTTaTypePresentationExactConformance.EquationFreshening.freshRule
+    (avoidNames live query specIncoming incoming) counter lhs rhs
 
 /-- Execute one complete stored-rule candidate, retaining native bindings. -/
 def ruleResults (live : List Atom) (query : Atom) (specIncoming : Bindings)
     (incoming : Metta.Bindings) (counter : Nat) (lhs rhs : Atom) : List Hit :=
   let fresh := freshRule live query specIncoming incoming counter lhs rhs
-  (Metta.matchAtoms (toLeaTTaAtom fresh.1) (toLeaTTaAtom query)).flatMap fun matched =>
+  (Metta.matchAtoms (encodeModelAtom fresh.1) (encodeModelAtom query)).flatMap fun matched =>
     (Metta.Bindings.merge incoming matched).filterMap fun merged =>
       if merged.hasLoop then none
-      else some ⟨fromLeaTTaAtom (Metta.instantiate merged (toLeaTTaAtom fresh.2)), merged⟩
+      else some ⟨decodeModelAtom (Metta.instantiate merged (encodeModelAtom fresh.2)), merged⟩
 
 /-- Both semantic and exact-image invariants used by the query boundary. -/
 structure BindingInvariant (spec : Bindings) (native : Metta.Bindings) : Prop where
@@ -58,7 +65,8 @@ theorem freshRule_alphaVariant (live : List Atom) (query : Atom) (specIncoming :
     AlphaVariantRel live query specIncoming lhs rhs
       (freshRule live query specIncoming incoming counter lhs rhs).1
       (freshRule live query specIncoming incoming counter lhs rhs).2 :=
-  EquationFreshening.freshRule_alphaVariant_of_covers live query lhs rhs specIncoming counter _
+  LeaTTaTypePresentationExactConformance.EquationFreshening.freshRule_alphaVariant_of_covers
+    live query lhs rhs specIncoming counter _
     (fun name visible => List.mem_append_left _
       ((EquationScope.mem_visibleNames_iff live query specIncoming name).mpr visible))
 
@@ -66,7 +74,7 @@ theorem freshRule_varsDisjoint (live : List Atom) (query : Atom) (specIncoming :
     (incoming : Metta.Bindings) (counter : Nat) (lhs rhs : Atom) :
     VarsDisjoint query (freshRule live query specIncoming incoming counter lhs rhs).1 := by
   intro name queryMember patternMember
-  have avoided := EquationFreshening.freshRule_variables_avoid
+  have avoided := LeaTTaTypePresentationExactConformance.EquationFreshening.freshRule_variables_avoid
     (avoidNames live query specIncoming incoming) counter lhs rhs name
     (List.mem_append_left _ patternMember)
   apply avoided
@@ -78,8 +86,8 @@ judgment. This law concerns matching, before ambient merge and filtering. -/
 theorem match_nonempty_iff (live : List Atom) (query : Atom) (specIncoming : Bindings)
     (incoming : Metta.Bindings) (counter : Nat) (lhs rhs : Atom) :
     Metta.matchAtoms
-        (toLeaTTaAtom (freshRule live query specIncoming incoming counter lhs rhs).1)
-        (toLeaTTaAtom query) ≠ [] ↔
+        (encodeModelAtom (freshRule live query specIncoming incoming counter lhs rhs).1)
+        (encodeModelAtom query) ≠ [] ↔
       ∃ matched, MatchRel equalityGroundedSemantic query
         (freshRule live query specIncoming incoming counter lhs rhs).1 matched := by
   constructor
@@ -96,8 +104,8 @@ theorem match_nonempty_iff (live : List Atom) (query : Atom) (specIncoming : Bin
 theorem match_empty_iff (live : List Atom) (query : Atom) (specIncoming : Bindings)
     (incoming : Metta.Bindings) (counter : Nat) (lhs rhs : Atom) :
     Metta.matchAtoms
-        (toLeaTTaAtom (freshRule live query specIncoming incoming counter lhs rhs).1)
-        (toLeaTTaAtom query) = [] ↔
+        (encodeModelAtom (freshRule live query specIncoming incoming counter lhs rhs).1)
+        (encodeModelAtom query) = [] ↔
       ∀ matched, ¬MatchRel equalityGroundedSemantic query
         (freshRule live query specIncoming incoming counter lhs rhs).1 matched := by
   simpa only [not_not, not_exists] using
@@ -109,12 +117,12 @@ theorem ruleResults_witness {live : List Atom} {query lhs rhs : Atom}
     (member : hit ∈ ruleResults live query specIncoming incoming counter lhs rhs) :
     ∃ matched merged,
       matched ∈ Metta.matchAtoms
-        (toLeaTTaAtom (freshRule live query specIncoming incoming counter lhs rhs).1)
-        (toLeaTTaAtom query) ∧
+        (encodeModelAtom (freshRule live query specIncoming incoming counter lhs rhs).1)
+        (encodeModelAtom query) ∧
       merged ∈ Metta.Bindings.merge incoming matched ∧
       merged.hasLoop = false ∧
-      hit = ⟨fromLeaTTaAtom (Metta.instantiate merged
-        (toLeaTTaAtom (freshRule live query specIncoming incoming counter lhs rhs).2)), merged⟩ := by
+      hit = ⟨decodeModelAtom (Metta.instantiate merged
+        (encodeModelAtom (freshRule live query specIncoming incoming counter lhs rhs).2)), merged⟩ := by
   simp only [ruleResults, List.mem_flatMap, List.mem_filterMap] at member
   obtain ⟨matched, matchMember, merged, mergeMember, emitted⟩ := member
   split at emitted
@@ -128,12 +136,12 @@ losing the instantiated RHS or its returned bindings. -/
 theorem ruleResults_of_match_merge {live : List Atom} {query lhs rhs : Atom}
     {specIncoming : Bindings} {incoming matched merged : Metta.Bindings} {counter : Nat}
     (matchMember : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom (freshRule live query specIncoming incoming counter lhs rhs).1)
-      (toLeaTTaAtom query))
+      (encodeModelAtom (freshRule live query specIncoming incoming counter lhs rhs).1)
+      (encodeModelAtom query))
     (mergeMember : merged ∈ Metta.Bindings.merge incoming matched)
     (loopFree : merged.hasLoop = false) :
-    (⟨fromLeaTTaAtom (Metta.instantiate merged
-      (toLeaTTaAtom (freshRule live query specIncoming incoming counter lhs rhs).2)), merged⟩ : Hit) ∈
+    (⟨decodeModelAtom (Metta.instantiate merged
+      (encodeModelAtom (freshRule live query specIncoming incoming counter lhs rhs).2)), merged⟩ : Hit) ∈
       ruleResults live query specIncoming incoming counter lhs rhs := by
   unfold ruleResults
   exact List.mem_flatMap.mpr ⟨matched, matchMember,
@@ -149,8 +157,8 @@ theorem ruleResults_bindingsImage {live : List Atom} {query lhs rhs : Atom}
   obtain ⟨matched, merged, matchedMember, mergedMember, _, rfl⟩ := ruleResults_witness member
   apply leaMerge_result_image incomingImage _ mergedMember
   exact leaMatchAtoms_result_heImage
-    (leaAtomHEImage_toLeaTTaAtom (freshRule live query specIncoming incoming counter lhs rhs).1)
-    (leaAtomHEImage_toLeaTTaAtom query) matchedMember
+    (leaAtomHEImage_encodeModelAtom (freshRule live query specIncoming incoming counter lhs rhs).1)
+    (leaAtomHEImage_encodeModelAtom query) matchedMember
 
 /-- The semantic witnesses are constructed from the actual native match and
 merge that emitted this hit, retaining the exact freshened pair. -/
@@ -160,12 +168,12 @@ theorem ruleResults_sound_witness {live : List Atom} {query lhs rhs : Atom}
     (member : hit ∈ ruleResults live query specIncoming incoming counter lhs rhs) :
     ∃ nativeMatched specMatched specOutput,
       nativeMatched ∈ Metta.matchAtoms
-        (toLeaTTaAtom (freshRule live query specIncoming incoming counter lhs rhs).1)
-        (toLeaTTaAtom query) ∧
+        (encodeModelAtom (freshRule live query specIncoming incoming counter lhs rhs).1)
+        (encodeModelAtom query) ∧
       hit.bindings ∈ Metta.Bindings.merge incoming nativeMatched ∧
       hit.bindings.hasLoop = false ∧
-      hit.value = fromLeaTTaAtom (Metta.instantiate hit.bindings
-        (toLeaTTaAtom (freshRule live query specIncoming incoming counter lhs rhs).2)) ∧
+      hit.value = decodeModelAtom (Metta.instantiate hit.bindings
+        (encodeModelAtom (freshRule live query specIncoming incoming counter lhs rhs).2)) ∧
       EquationRuleInstanceRel live query specIncoming lhs rhs
         (freshRule live query specIncoming incoming counter lhs rhs).1
         (freshRule live query specIncoming incoming counter lhs rhs).2 specMatched ∧
@@ -177,18 +185,19 @@ theorem ruleResults_sound_witness {live : List Atom} {query lhs rhs : Atom}
   obtain ⟨specMatched, specOutput, matchDerivation, mergeDerivation, next, observation⟩ :=
     queryOp_hit_observational_sound invariant.semantic matchMember mergeMember loopFree
   have matchedImage : LeaBindingsHEImage matched :=
-    leaMatchAtoms_result_heImage (leaAtomHEImage_toLeaTTaAtom fresh.1)
-      (leaAtomHEImage_toLeaTTaAtom query) matchMember
+    leaMatchAtoms_result_heImage (leaAtomHEImage_encodeModelAtom fresh.1)
+      (leaAtomHEImage_encodeModelAtom query) matchMember
   have mergedImage : LeaBindingsHEImage merged :=
     leaMerge_result_image invariant.image matchedImage mergeMember
-  have emittedImage : LeaAtomHEImage (Metta.instantiate merged (toLeaTTaAtom fresh.2)) :=
-    instantiate_heImage mergedImage _ (leaAtomHEImage_toLeaTTaAtom fresh.2)
+  have emittedImage : LeaAtomHEImage (Metta.instantiate merged (encodeModelAtom fresh.2)) :=
+    instantiate_heImage mergedImage _ (leaAtomHEImage_encodeModelAtom fresh.2)
   have satisfied : HEBindingSatisfied (leaClassSolution merged) specOutput :=
     (next.solutionTheory (leaClassSolution merged)).mpr next.runtime.canonical.1
   obtain ⟨swapped, reversed, swappedShape, _swappedModel, theory⟩ :=
     Spec.Match.Completeness.exists_swapped_specMerge_of_satisfied mergeDerivation
       invariant.semantic.specAssignmentsNonVariable
-      (specMatch_assignmentsNonVariable matchDerivation) ⟨leaClassSolution merged, satisfied⟩
+      (Spec.Match.ModelTheory.specMatch_assignmentsNonVariable matchDerivation)
+      ⟨leaClassSolution merged, satisfied⟩
   have swappedSatisfied := (theory (leaClassSolution merged)).mp satisfied
   have nextSwapped : LeaQueryOpBindingInvariant swapped merged :=
     ⟨fun valuation => (theory valuation).symm.trans (next.solutionTheory valuation),
@@ -200,7 +209,7 @@ theorem ruleResults_sound_witness {live : List Atom} {query lhs rhs : Atom}
       ⟨nextSwapped, mergedImage⟩⟩
   intro valuation outputSatisfied
   unfold HEAtomEquationSatisfied
-  rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage emittedImage]
+  rw [encodeModelAtom_decodeModelAtom_of_heImage emittedImage]
   exact observation valuation ((theory valuation).mpr outputSatisfied)
 
 /-- Every hit from an admitted paired state constructs the independent
@@ -284,8 +293,8 @@ theorem occurrence_match_nonempty {space : Space} {live : List Atom} {query lhs 
       (freshRule live query specIncoming incoming (counter + position) lhs rhs).2
       matched emitted output) :
     Metta.matchAtoms
-      (toLeaTTaAtom (freshRule live query specIncoming incoming (counter + position) lhs rhs).1)
-      (toLeaTTaAtom query) ≠ [] :=
+      (encodeModelAtom (freshRule live query specIncoming incoming (counter + position) lhs rhs).1)
+      (encodeModelAtom query) ≠ [] :=
   (match_nonempty_iff live query specIncoming incoming (counter + position) lhs rhs).mpr
     ⟨matched, occurrence.selected.2⟩
 
@@ -313,7 +322,7 @@ theorem occurrence_observational_complete {space : Space} {live : List Atom}
   obtain ⟨callerFirst, callerFirstMerge, callerFirstSatisfied, _callerFirstShape⟩ :=
     Spec.Match.Completeness.exists_specMerge_of_solution
       common.2 invariant.semantic.specAssignmentsNonVariable
-      common.1 (specMatch_assignmentsNonVariable occurrence.selected.2)
+      common.1 (Spec.Match.ModelTheory.specMatch_assignmentsNonVariable occurrence.selected.2)
   have callerFirstModel : ∃ valuation, HEBindingSatisfied valuation callerFirst :=
     ⟨sourceModel, callerFirstSatisfied⟩
   have callerFirstTheory (valuation : String → Metta.Atom) :
@@ -328,26 +337,26 @@ theorem occurrence_observational_complete {space : Space} {live : List Atom}
       occurrence.selected.2 callerFirstMerge callerFirstModel
   have equivalent : LeaBindingSolutionTheoryEquiv output merged :=
     fun valuation => (callerFirstTheory valuation).trans (callerFirstEquivalent valuation)
-  let result : Hit := ⟨fromLeaTTaAtom (Metta.instantiate merged (toLeaTTaAtom fresh.2)), merged⟩
+  let result : Hit := ⟨decodeModelAtom (Metta.instantiate merged (encodeModelAtom fresh.2)), merged⟩
   have returned : result ∈ ruleResults live query specIncoming incoming (counter + position) lhs rhs :=
     ruleResults_of_match_merge matchMember mergeMember loopFree
   have matchedImage : LeaBindingsHEImage nativeMatched :=
-    leaMatchAtoms_result_heImage (leaAtomHEImage_toLeaTTaAtom fresh.1)
-      (leaAtomHEImage_toLeaTTaAtom query) matchMember
+    leaMatchAtoms_result_heImage (leaAtomHEImage_encodeModelAtom fresh.1)
+      (leaAtomHEImage_encodeModelAtom query) matchMember
   have mergedImage := leaMerge_result_image invariant.image matchedImage mergeMember
-  have emittedImage := instantiate_heImage mergedImage _ (leaAtomHEImage_toLeaTTaAtom fresh.2)
+  have emittedImage := instantiate_heImage mergedImage _ (leaAtomHEImage_encodeModelAtom fresh.2)
   refine ⟨result, (queryResults_mem_iff _ _ _ _ _ _ _).mpr ⟨occurrence.stored, returned⟩,
     equivalent, ?_⟩
   intro valuation satisfied
-  have observed := anchored_observable_inert equivalent satisfied (toLeaTTaAtom fresh.2)
+  have observed := anchored_observable_inert equivalent satisfied (encodeModelAtom fresh.2)
   have original := occurrence.result.2 valuation satisfied
-  change applyClassSolution valuation (toLeaTTaAtom result.value) =
-    applyClassSolution valuation (toLeaTTaAtom emitted)
-  change applyClassSolution valuation (toLeaTTaAtom emitted) =
-    applyClassSolution valuation (toLeaTTaAtom fresh.2) at original
+  change applyClassSolution valuation (encodeModelAtom result.value) =
+    applyClassSolution valuation (encodeModelAtom emitted)
+  change applyClassSolution valuation (encodeModelAtom emitted) =
+    applyClassSolution valuation (encodeModelAtom fresh.2) at original
   change applyClassSolution valuation
-    (toLeaTTaAtom (fromLeaTTaAtom (Metta.instantiate merged (toLeaTTaAtom fresh.2)))) = _
-  rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage emittedImage]
+    (encodeModelAtom (decodeModelAtom (Metta.instantiate merged (encodeModelAtom fresh.2)))) = _
+  rw [encodeModelAtom_decodeModelAtom_of_heImage emittedImage]
   exact observed.trans original.symm
 
 /-- Every physical hit is justified by its own raw row and the same native
@@ -359,12 +368,12 @@ theorem queryResults_occurrence_sound {space : Space} {live : List Atom} {query 
     (member : hit ∈ queryResults space live query specIncoming incoming counter) :
     ∃ nativeMatched specMatched specOutput,
       nativeMatched ∈ Metta.matchAtoms
-        (toLeaTTaAtom (freshRule live query specIncoming incoming
-          (counter + hit.position) hit.lhs hit.rhs).1) (toLeaTTaAtom query) ∧
+        (encodeModelAtom (freshRule live query specIncoming incoming
+          (counter + hit.position) hit.lhs hit.rhs).1) (encodeModelAtom query) ∧
       hit.result.bindings ∈ Metta.Bindings.merge incoming nativeMatched ∧
       hit.result.bindings.hasLoop = false ∧
-      hit.result.value = fromLeaTTaAtom (Metta.instantiate hit.result.bindings
-        (toLeaTTaAtom (freshRule live query specIncoming incoming
+      hit.result.value = decodeModelAtom (Metta.instantiate hit.result.bindings
+        (encodeModelAtom (freshRule live query specIncoming incoming
           (counter + hit.position) hit.lhs hit.rhs).2)) ∧
       EquationQueryOccurrenceRel space live query specIncoming hit.position hit.lhs hit.rhs
         (freshRule live query specIncoming incoming (counter + hit.position) hit.lhs hit.rhs).1
@@ -428,7 +437,7 @@ theorem occurrence_arbitrary_alpha_complete {space : Space} {live : List Atom}
   have runtime : LeaRuntimeBindingInvariant result.bindings := by
     rw [resultEq]
     exact LeaRuntimeBindingInvariant.merge_matchOutput invariant.semantic.runtime
-      (toLeaTTaAtom_noFloat _) (toLeaTTaAtom_noFloat _) matchMember mergeMember loopFree
+      (encodeModelAtom_noFloat _) (encodeModelAtom_noFloat _) matchMember mergeMember loopFree
   have paired : BindingInvariant targetOutput result.bindings :=
     ⟨⟨equivalent, targetNonvariable, runtime⟩, ruleResults_bindingsImage invariant.image executed⟩
   refine ⟨permutation, targetMatched, targetOutput, result, fixed, member,

@@ -1,6 +1,11 @@
+import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.WildcardProvenanceCounterexample
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Exact
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Normal
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypeCanonicalSubst
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Syntactic type-match simulation state
@@ -39,7 +44,7 @@ structure TypePresentationState
   observation : ∀ atom : Atom,
     (∀ name, name ∈ TypeSubst.typeVars atom → name ∈ scope) →
       spec.apply atom =
-        fromLeaTTaAtom (Metta.instantiate lea (toLeaTTaAtom atom))
+        decodeModelAtom (Metta.instantiate lea (encodeModelAtom atom))
   runtime : LeaRuntimeBindingInvariant lea
 
 /-- The reachable presentation lane additionally carries the normal form
@@ -72,7 +77,7 @@ theorem TypePresentationState.return_eq
     (declared : Atom)
     (hscope : ∀ name, name ∈ TypeSubst.typeVars declared → name ∈ scope) :
     spec.apply declared =
-      fromLeaTTaAtom (Metta.instantiate lea (toLeaTTaAtom declared)) :=
+      decodeModelAtom (Metta.instantiate lea (encodeModelAtom declared)) :=
   state.observation declared hscope
 
 /-- Empty spec and LeaTTa presentations agree on every finite scope. -/
@@ -99,7 +104,7 @@ theorem matchType_wildcard_presentation_sound
       left = Atom.undefinedType ∨ right = Atom.undefinedType ∨
         left = Atom.atomType ∨ right = Atom.atomType)
     (success : Metta.Minimal.matchType leaIncoming
-      (toLeaTTaAtom left) (toLeaTTaAtom right) = some leaOutput) :
+      (encodeModelAtom left) (encodeModelAtom right) = some leaOutput) :
     CorePlusR2TypePresentationMatchRel
         specIncoming left right specIncoming ∧
       TypePresentationState scope specIncoming leaOutput := by
@@ -110,7 +115,7 @@ theorem matchType_wildcard_presentation_sound
         (Metta.Atom.sym "%Undefined%" ==
           Metta.Atom.sym "%Undefined%") = true := by decide
     have hsame : leaIncoming = leaOutput := by
-      simpa [Metta.Minimal.matchType, toLeaTTaAtom,
+      simpa [Metta.Minimal.matchType, encodeModelAtom,
         Atom.undefinedType, hundefinedBeq] using success
     subst leaOutput
     exact ⟨.undefinedLeft specIncoming right, state⟩
@@ -119,7 +124,7 @@ theorem matchType_wildcard_presentation_sound
         (Metta.Atom.sym "%Undefined%" ==
           Metta.Atom.sym "%Undefined%") = true := by decide
     have hsame : leaIncoming = leaOutput := by
-      simpa [Metta.Minimal.matchType, toLeaTTaAtom,
+      simpa [Metta.Minimal.matchType, encodeModelAtom,
         Atom.undefinedType, hundefinedBeq] using success
     subst leaOutput
     exact ⟨.undefinedRight specIncoming left, state⟩
@@ -128,7 +133,7 @@ theorem matchType_wildcard_presentation_sound
         (Metta.Atom.sym "Atom" == Metta.Atom.sym "Atom") = true := by
       decide
     have hsame : leaIncoming = leaOutput := by
-      simpa [Metta.Minimal.matchType, toLeaTTaAtom,
+      simpa [Metta.Minimal.matchType, encodeModelAtom,
         Atom.atomType, hatomBeq] using success
     subst leaOutput
     exact ⟨.atomLeft specIncoming right, state⟩
@@ -137,7 +142,7 @@ theorem matchType_wildcard_presentation_sound
         (Metta.Atom.sym "Atom" == Metta.Atom.sym "Atom") = true := by
       decide
     have hsame : leaIncoming = leaOutput := by
-      simpa [Metta.Minimal.matchType, toLeaTTaAtom,
+      simpa [Metta.Minimal.matchType, encodeModelAtom,
         Atom.atomType, hatomBeq] using success
     subst leaOutput
     exact ⟨.atomRight specIncoming left, state⟩
@@ -153,32 +158,32 @@ theorem matchType_identical_leaf_presentation_sound
     (notUndefined : type ≠ Atom.undefinedType)
     (notAtom : type ≠ Atom.atomType)
     (success : Metta.Minimal.matchType leaIncoming
-      (toLeaTTaAtom type) (toLeaTTaAtom type) = some leaOutput) :
+      (encodeModelAtom type) (encodeModelAtom type) = some leaOutput) :
     CorePlusR2TypePresentationMatchRel
         specIncoming type type specIncoming ∧
       TypePresentationState scope specIncoming leaOutput := by
   have hundefined :
-      (toLeaTTaAtom type == Metta.Atom.sym "%Undefined%") = false := by
-    cases hbeq : (toLeaTTaAtom type ==
+      (encodeModelAtom type == Metta.Atom.sym "%Undefined%") = false := by
+    cases hbeq : (encodeModelAtom type ==
         Metta.Atom.sym "%Undefined%") with
     | false => rfl
     | true =>
-        change Metta.Atom.beq (toLeaTTaAtom type)
+        change Metta.Atom.beq (encodeModelAtom type)
           (Metta.Atom.sym "%Undefined%") = true at hbeq
         have heq : type = Atom.undefinedType :=
-          (toLeaTTaAtom_beq_eq_true_iff type Atom.undefinedType).mp
-            (by simpa [toLeaTTaAtom, Atom.undefinedType] using hbeq)
+          (encodeModelAtom_beq_eq_true_iff type Atom.undefinedType).mp
+            (by simpa [encodeModelAtom, Atom.undefinedType] using hbeq)
         exact (notUndefined heq).elim
   have hatom :
-      (toLeaTTaAtom type == Metta.Atom.sym "Atom") = false := by
-    cases hbeq : (toLeaTTaAtom type == Metta.Atom.sym "Atom") with
+      (encodeModelAtom type == Metta.Atom.sym "Atom") = false := by
+    cases hbeq : (encodeModelAtom type == Metta.Atom.sym "Atom") with
     | false => rfl
     | true =>
-        change Metta.Atom.beq (toLeaTTaAtom type)
+        change Metta.Atom.beq (encodeModelAtom type)
           (Metta.Atom.sym "Atom") = true at hbeq
         have heq : type = Atom.atomType :=
-          (toLeaTTaAtom_beq_eq_true_iff type Atom.atomType).mp
-            (by simpa [toLeaTTaAtom, Atom.atomType] using hbeq)
+          (encodeModelAtom_beq_eq_true_iff type Atom.atomType).mp
+            (by simpa [encodeModelAtom, Atom.atomType] using hbeq)
         exact (notAtom heq).elim
   rw [Metta.Minimal.matchType, hundefined, hatom] at success
   have hsame : leaIncoming = leaOutput := by
@@ -186,20 +191,20 @@ theorem matchType_identical_leaf_presentation_sound
     | symbol name =>
         simpa [Metta.Minimal.matchReduced, Metta.matchAtoms,
           Metta.matchAtomsWith, Metta.Bindings.merge,
-          state.runtime.loopFree, toLeaTTaAtom, hundefined] using success
+          state.runtime.loopFree, encodeModelAtom, hundefined] using success
     | var name =>
         simpa [Metta.Minimal.matchReduced, Metta.matchAtoms,
           Metta.matchAtomsWith, Metta.Bindings.merge,
-          state.runtime.loopFree, toLeaTTaAtom, hundefined] using success
+          state.runtime.loopFree, encodeModelAtom, hundefined] using success
     | grounded value =>
         have hgroundEquiv :
-            Metta.Ground.equiv (toLeaTTaGround value)
-              (toLeaTTaGround value) = true := by
-          simpa [toLeaTTaAtom, Metta.Atom.equiv] using
-            toLeaTTaAtom_grounded_equiv_self value
+            Metta.Ground.equiv (encodeModelGround value)
+              (encodeModelGround value) = true := by
+          simpa [encodeModelAtom, Metta.Atom.equiv] using
+            encodeModelAtom_grounded_equiv_self value
         simpa [Metta.Minimal.matchReduced, Metta.matchAtoms,
           Metta.matchAtomsWith, Metta.Bindings.merge,
-          state.runtime.loopFree, toLeaTTaAtom, hundefined,
+          state.runtime.loopFree, encodeModelAtom, hundefined,
           Metta.Atom.equiv, hgroundEquiv] using success
     | expression atoms => exact (notExpression atoms rfl).elim
   subst leaOutput
@@ -299,7 +304,7 @@ theorem initial_variable_symbol_presentation :
           initialVariableSymbolSpec := by
       have herase : ["t"].eraseDups = ["t"] := by decide
       simp [leaCanonicalTypeSubstOn, initialVariableSymbolSpec,
-        hsolution, fromLeaTTaAtom, herase]
+        hsolution, decodeModelAtom, herase]
     rw [hsubst] at canonical
     exact canonical
 
@@ -320,5 +325,45 @@ theorem distinct_symbols_are_not_top_level_wildcards :
       (.symbol "A" : Atom) = Atom.atomType ∨
       (.symbol "B" : Atom) = Atom.atomType) := by
   decide
+
+/-! ## Resolved-wildcard implementation controls -/
+
+def legacyLeaIncoming : Metta.Bindings :=
+  [Metta.BindingRel.val "x" (.sym "%Undefined%")]
+
+/-- The repaired runtime keeps the raw equation visible and rejects the
+conflict `$x := %Undefined%` together with `$x = A`. -/
+theorem repaired_runtime_rejects_resolved_wildcard_conflict :
+    Metta.Minimal.matchReduced legacyLeaIncoming
+      (.var "x") (.sym "A") = none := by
+  have hx : ((Metta.Atom.var "x" ==
+      Metta.Atom.sym "%Undefined%") = false) := by decide
+  have hA : ((Metta.Atom.sym "A" ==
+      Metta.Atom.sym "%Undefined%") = false) := by decide
+  rw [Metta.Minimal.matchReduced, hx, hA]
+  simp [legacyLeaIncoming, Metta.matchAtoms, Metta.matchAtomsWith,
+    Metta.Bindings.merge,
+    Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
+    Metta.Bindings.classValues, Metta.Bindings.eqClassOrdered,
+    Metta.Bindings.eqVarsInOrder, Metta.Bindings.lookupVal,
+    Metta.Bindings.unifyValues, Metta.Unify.unifyRounds,
+    Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
+    Metta.Atom.size]
+  · intro es acts hvar
+    cases hvar
+
+/-- The repaired runtime also keeps the raw children visible and rejects the
+nested conflicting equation. -/
+theorem repaired_runtime_rejects_nested_resolved_wildcard_conflict :
+    Metta.Minimal.matchReduced legacyLeaIncoming
+      (.expr [.var "x"]) (.expr [.sym "A"]) = none := by
+  have hleft : ((Metta.Atom.expr [Metta.Atom.var "x"] ==
+      Metta.Atom.sym "%Undefined%") = false) := by decide
+  have hright : ((Metta.Atom.expr [Metta.Atom.sym "A"] ==
+      Metta.Atom.sym "%Undefined%") = false) := by decide
+  rw [Metta.Minimal.matchReduced, hleft, hright]
+  simp only [Bool.false_or, Bool.false_eq_true, ↓reduceIte,
+    Metta.Minimal.matchReducedList,
+    repaired_runtime_rejects_resolved_wildcard_conflict]
 
 end Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationMatchConformance

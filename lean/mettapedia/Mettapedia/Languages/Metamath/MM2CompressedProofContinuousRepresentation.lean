@@ -1841,7 +1841,7 @@ theorem physical_boundary_ruleScoped_step_nodup
               cFireRuleScopedSourceExecFact_mork_nodup space directive
                 represented.mork_nodup⟩
   | consume =>
-      unfold cRuleScopedSourceWorkQueueStep at moved
+      rw [cRuleScopedSourceWorkQueueStep_consume] at moved
       cases selected : selectNextScheduled (cRawExecFacts space) with
       | none => simp [selected] at moved
       | some raw =>

@@ -1,5 +1,9 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaFuelExecution
 import Mettapedia.Languages.MeTTa.HE.LeaTTaMinimalControlUnify
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Generated patterns in the executable matcher
@@ -28,64 +32,64 @@ open Mettapedia.Languages.MeTTa.HE.Spec.Type.RuntimeRefinement (renameTypeVars)
 relation and the actual runtime spelling. No fresh-pattern oracle is needed. -/
 theorem renamed_atom_contract (rename : String → String) (atom : Atom) :
     AlphaRenameAtomRel rename atom (renameTypeVars rename atom) ∧
-      toLeaTTaAtom (renameTypeVars rename atom) = renBy rename (toLeaTTaAtom atom) := by
+      encodeModelAtom (renameTypeVars rename atom) = renBy rename (encodeModelAtom atom) := by
   induction atom using Atom.rec (motive_2 := fun atoms =>
     AlphaRenameAtomsRel rename atoms (atoms.map (renameTypeVars rename)) ∧
-      toLeaTTaAtoms (atoms.map (renameTypeVars rename)) =
-        (toLeaTTaAtoms atoms).map (renBy rename)) with
+      encodeModelAtoms (atoms.map (renameTypeVars rename)) =
+        (encodeModelAtoms atoms).map (renBy rename)) with
   | symbol name =>
     simp only [renameTypeVars]
-    exact ⟨.symbol name, by simp only [toLeaTTaAtom, renBy]⟩
+    exact ⟨.symbol name, by simp only [encodeModelAtom, renBy]⟩
   | var name =>
     simp only [renameTypeVars]
-    exact ⟨.variable name, by simp only [toLeaTTaAtom, renBy]⟩
+    exact ⟨.variable name, by simp only [encodeModelAtom, renBy]⟩
   | grounded value =>
     simp only [renameTypeVars]
-    exact ⟨.grounded value, by simp only [toLeaTTaAtom, renBy]⟩
+    exact ⟨.grounded value, by simp only [encodeModelAtom, renBy]⟩
   | expression atoms ih =>
     simp only [renameTypeVars]
     refine ⟨.expression ih.1, ?_⟩
-    simpa only [toLeaTTaAtom, renBy] using (congrArg Metta.Atom.expr ih.2)
+    simpa only [encodeModelAtom, renBy] using (congrArg Metta.Atom.expr ih.2)
   | nil => exact ⟨.nil, rfl⟩
   | cons atom atoms ihAtom ihAtoms =>
     exact ⟨.cons ihAtom.1 ihAtoms.1, by
-      simpa only [List.map_cons, toLeaTTaAtoms] using congrArg₂ List.cons ihAtom.2 ihAtoms.2⟩
+      simpa only [List.map_cons, encodeModelAtoms] using congrArg₂ List.cons ihAtom.2 ihAtoms.2⟩
 
 theorem alpha_runtime_shape {rename : String → String} {source target : Atom}
     (renamed : AlphaRenameAtomRel rename source target) :
-    toLeaTTaAtom target = renBy rename (toLeaTTaAtom source) := by
+    encodeModelAtom target = renBy rename (encodeModelAtom source) := by
   induction renamed using AlphaRenameAtomRel.rec
-      (motive_2 := fun source target _ => toLeaTTaAtoms target =
-        (toLeaTTaAtoms source).map (renBy rename)) with
-  | symbol | «variable» | grounded => simp only [toLeaTTaAtom, renBy]
+      (motive_2 := fun source target _ => encodeModelAtoms target =
+        (encodeModelAtoms source).map (renBy rename)) with
+  | symbol | «variable» | grounded => simp only [encodeModelAtom, renBy]
   | expression _ ih =>
-    simpa only [toLeaTTaAtom, renBy] using congrArg Metta.Atom.expr ih
+    simpa only [encodeModelAtom, renBy] using congrArg Metta.Atom.expr ih
   | nil => rfl
   | cons _ _ head tail =>
-    simpa only [toLeaTTaAtoms, List.map_cons] using congrArg₂ List.cons head tail
+    simpa only [encodeModelAtoms, List.map_cons] using congrArg₂ List.cons head tail
 
 
 private theorem runtime_match_iff_solution (target pattern : Atom)
     {runtime : Metta.Bindings} (invariant : LeaRuntimeBindingInvariant runtime)
     (disjoint : VarsDisjoint target pattern) :
     (∃ matched merged,
-      matched ∈ Metta.matchAtoms (toLeaTTaAtom target) (toLeaTTaAtom pattern) ∧
+      matched ∈ Metta.matchAtoms (encodeModelAtom target) (encodeModelAtom pattern) ∧
       merged ∈ Metta.Bindings.merge runtime matched ∧ merged.hasLoop = false) ↔
       ∃ valuation, HEAtomEquationSatisfied valuation target pattern ∧
         LeaBindingSatisfied valuation runtime := by
   constructor
   · rintro ⟨matched, merged, matchedHere, mergedHere, acyclic⟩
     have outputInvariant := invariant.merge_matchOutput
-      (toLeaTTaAtom_noFloat target) (toLeaTTaAtom_noFloat pattern)
+      (encodeModelAtom_noFloat target) (encodeModelAtom_noFloat pattern)
       matchedHere mergedHere acyclic
     let valuation := leaClassSolution merged
     have matchedNoFloat := leaMatchAtoms_result_noFloat
-      (toLeaTTaAtom_noFloat target) (toLeaTTaAtom_noFloat pattern) matchedHere
+      (encodeModelAtom_noFloat target) (encodeModelAtom_noFloat pattern) matchedHere
     have inputs := (leaMerge_solution_iff valuation invariant.noFloat
       matchedNoFloat mergedHere).mp outputInvariant.canonical.1
     exact ⟨valuation,
-      (leaMatchAtoms_solution_iff valuation (toLeaTTaAtom_noFloat target)
-        (toLeaTTaAtom_noFloat pattern) matchedHere).mp inputs.2, inputs.1⟩
+      (leaMatchAtoms_solution_iff valuation (encodeModelAtom_noFloat target)
+        (encodeModelAtom_noFloat pattern) matchedHere).mp inputs.2, inputs.1⟩
   · rintro ⟨valuation, same, incomingSatisfied⟩
     obtain ⟨specMatched, matchProof, matchedSatisfied⟩ :=
       Spec.Match.Completeness.exists_specMatch_of_solution same.symm
@@ -93,7 +97,7 @@ private theorem runtime_match_iff_solution (target pattern : Atom)
       specMatch_observational_complete_of_satisfiable matchProof disjoint.symm
         ⟨valuation, same.symm⟩
     have matchedNoFloat := leaMatchAtoms_result_noFloat
-      (toLeaTTaAtom_noFloat target) (toLeaTTaAtom_noFloat pattern) matchedHere
+      (encodeModelAtom_noFloat target) (encodeModelAtom_noFloat pattern) matchedHere
     obtain ⟨merged, mergedHere, satisfied, _⟩ :=
       LeaTTaMergeExistence.merge_exists_of_satisfied invariant.noFloat matchedNoFloat
         incomingSatisfied ((matchedTheory valuation).mp matchedSatisfied)
@@ -107,7 +111,7 @@ private theorem runtime_match_iff_model (target pattern : Atom)
     (invariant : LeaQueryOpBindingInvariant spec runtime)
     (disjoint : VarsDisjoint target pattern) :
     (∃ matched merged,
-      matched ∈ Metta.matchAtoms (toLeaTTaAtom target) (toLeaTTaAtom pattern) ∧
+      matched ∈ Metta.matchAtoms (encodeModelAtom target) (encodeModelAtom pattern) ∧
       merged ∈ Metta.Bindings.merge runtime matched ∧ merged.hasLoop = false) ↔
       ∃ valuation, HEAtomEquationSatisfied valuation target pattern ∧
         HEBindingSatisfied valuation spec := by
@@ -127,8 +131,8 @@ theorem alpha_patterns_closed_runtime_match_iff (source values : List Term) (fir
     (privateNames : ∀ name, AtomOccurs (patterns source first).1.1 name →
       rename name ∉ runtime.vars) :
     (∃ matched merged,
-      matched ∈ Metta.matchAtoms (toLeaTTaAtom (MeTTaData.encodeItems values))
-        (toLeaTTaAtom fresh) ∧
+      matched ∈ Metta.matchAtoms (encodeModelAtom (MeTTaData.encodeItems values))
+        (encodeModelAtom fresh) ∧
       merged ∈ Metta.Bindings.merge runtime matched ∧ merged.hasLoop = false) ↔
       ∃ environment, matchTerms source values = some environment := by
   have disjoint : VarsDisjoint (MeTTaData.encodeItems values) fresh := by
@@ -196,8 +200,8 @@ theorem alpha_patterns_runtime_match_iff (source values : List Term) (first : Na
     (privateNames : ∀ name, AtomOccurs (patterns source first).1.1 name →
       ¬QueryVisibleName live (MeTTaData.encodeItems values) spec (rename name)) :
     (∃ matched merged,
-      matched ∈ Metta.matchAtoms (toLeaTTaAtom (MeTTaData.encodeItems values))
-        (toLeaTTaAtom fresh) ∧
+      matched ∈ Metta.matchAtoms (encodeModelAtom (MeTTaData.encodeItems values))
+        (encodeModelAtom fresh) ∧
       merged ∈ Metta.Bindings.merge runtime matched ∧ merged.hasLoop = false) ↔
       ∃ environment, matchTerms source values = some environment := by
   have disjoint : VarsDisjoint (MeTTaData.encodeItems values) fresh := by
@@ -219,23 +223,23 @@ theorem alpha_patterns_runtime_bindings (source values : List Term) (first : Nat
     (invariant : LeaRuntimeBindingInvariant incoming)
     (renamed : AlphaRenameAtomRel rename (patterns source first).1.1 fresh)
     (matchedHere : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom (MeTTaData.encodeItems values)) (toLeaTTaAtom fresh))
+      (encodeModelAtom (MeTTaData.encodeItems values)) (encodeModelAtom fresh))
     (mergedHere : output ∈ Metta.Bindings.merge incoming matched)
     (acyclic : output.hasLoop = false) :
     LeaRuntimeBindingInvariant output ∧
       ∃ environment, matchTerms source values = some environment ∧
         ValuationFor (leaClassSolution output ∘ rename) first environment := by
   have outputInvariant := invariant.merge_matchOutput
-    (toLeaTTaAtom_noFloat (MeTTaData.encodeItems values)) (toLeaTTaAtom_noFloat fresh)
+    (encodeModelAtom_noFloat (MeTTaData.encodeItems values)) (encodeModelAtom_noFloat fresh)
     matchedHere mergedHere acyclic
   refine ⟨outputInvariant, ?_⟩
   let valuation := leaClassSolution output
   have matchedNoFloat := leaMatchAtoms_result_noFloat
-    (toLeaTTaAtom_noFloat (MeTTaData.encodeItems values)) (toLeaTTaAtom_noFloat fresh) matchedHere
+    (encodeModelAtom_noFloat (MeTTaData.encodeItems values)) (encodeModelAtom_noFloat fresh) matchedHere
   have inputs := (leaMerge_solution_iff valuation invariant.noFloat
     matchedNoFloat mergedHere).mp outputInvariant.canonical.1
   have same := (leaMatchAtoms_solution_iff valuation
-    (toLeaTTaAtom_noFloat (MeTTaData.encodeItems values)) (toLeaTTaAtom_noFloat fresh)
+    (encodeModelAtom_noFloat (MeTTaData.encodeItems values)) (encodeModelAtom_noFloat fresh)
     matchedHere).mp inputs.2
   apply patterns_solution_reflects source values first (valuation ∘ rename)
   simpa only [MettaEquationSatisfied, encoded_items_solution_fixed,
@@ -245,14 +249,14 @@ private theorem valuationFor_name_lookup (valuation : String → Metta.Atom)
     (bindings : Env) (first : Nat) (aligned : ValuationFor valuation first bindings)
     (name : String) :
     ((namesForMatch first bindings).find? (fun entry => entry.1 == name)).map
-        (fun entry => applyClassSolution valuation (toLeaTTaAtom entry.2)) =
-      (bindings.lookup name).map (fun term => toLeaTTaAtom (MeTTaData.encode term)) := by
+        (fun entry => applyClassSolution valuation (encodeModelAtom entry.2)) =
+      (bindings.lookup name).map (fun term => encodeModelAtom (MeTTaData.encode term)) := by
   induction bindings generalizing first with
   | nil => rfl
   | cons entry remaining ih =>
     rw [namesForMatch_cons]
     by_cases same : entry.1 = name
-    · simpa [List.find?, Env.lookup, same, toLeaTTaAtom, applyClassSolution]
+    · simpa [List.find?, Env.lookup, same, encodeModelAtom, applyClassSolution]
         using congrArg some aligned.1
     · have different : (entry.1 == name) = false := by simp [same]
       simpa [List.find?, Env.lookup, different] using ih (first + 1) aligned.2
@@ -267,7 +271,7 @@ theorem alpha_patterns_runtime_lookup (source values : List Term) (first : Nat)
     (renamed : AlphaRenameAtomRel rename (patterns source first).1.1 fresh)
     (sourceMatch : matchTerms source values = some bindings)
     (matchedHere : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom (MeTTaData.encodeItems values)) (toLeaTTaAtom fresh))
+      (encodeModelAtom (MeTTaData.encodeItems values)) (encodeModelAtom fresh))
     (mergedHere : output ∈ Metta.Bindings.merge incoming matched)
     (acyclic : output.hasLoop = false)
     (name label target : String) (payload : Term)
@@ -275,14 +279,14 @@ theorem alpha_patterns_runtime_lookup (source values : List Term) (first : Nat)
       some (label, .var target))
     (expected : bindings.lookup name = some payload) :
     Metta.instantiate output (.var (rename target)) =
-      toLeaTTaAtom (MeTTaData.encode payload) := by
+      encodeModelAtom (MeTTaData.encode payload) := by
   obtain ⟨_, environment, matchedSource, aligned⟩ :=
     alpha_patterns_runtime_bindings source values first invariant.runtime renamed matchedHere mergedHere acyclic
   have same : environment = bindings := Option.some.inj (matchedSource.symm.trans sourceMatch)
   subst environment
   have lookup := valuationFor_name_lookup (leaClassSolution output ∘ rename) bindings first aligned name
   rw [← patterns_names_of_match source values bindings sourceMatch first, found, expected] at lookup
-  simp only [Option.map_some, Option.some.injEq, toLeaTTaAtom, applyClassSolution,
+  simp only [Option.map_some, Option.some.injEq, encodeModelAtom, applyClassSolution,
     Function.comp_apply] at lookup
   rw [← applyClassSolution_lea_eq_instantiate]
   simpa only [applyClassSolution] using lookup
@@ -296,7 +300,7 @@ theorem alpha_patterns_success_execution (source values : List Term) (first : Na
     (invariant : LeaQueryOpBindingInvariant spec incoming)
     (renamed : AlphaRenameAtomRel rename (patterns source first).1.1 fresh)
     (matchedHere : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom (MeTTaData.encodeItems values)) (toLeaTTaAtom fresh))
+      (encodeModelAtom (MeTTaData.encodeItems values)) (encodeModelAtom fresh))
     (mergedHere : output ∈ Metta.Bindings.merge incoming matched)
     (stored : ClosedValueBindings incoming)
     (environment : Metta.Minimal.MinEnv) (state : Metta.Minimal.St)
@@ -308,7 +312,7 @@ theorem alpha_patterns_success_execution (source values : List Term) (first : Na
         ValuationFor (leaClassSolution output ∘ rename) first bindings ∧
         Metta.Minimal.interpretFuel environment (fuel + 1) state
           (⟨Metta.Minimal.atomToStack (.expr [.sym "unify",
-            toLeaTTaAtom (MeTTaData.encodeItems values), toLeaTTaAtom fresh, yes, no])
+            encodeModelAtom (MeTTaData.encodeItems values), encodeModelAtom fresh, yes, no])
             (parent :: continuation), incoming⟩ :: rest) done =
           Metta.Minimal.interpretFuel environment fuel state
             (Metta.Minimal.finItem (parent :: continuation)
@@ -337,12 +341,12 @@ theorem alpha_patterns_runtime_refusal (source values : List Term) (first : Nat)
       ¬QueryVisibleName live (MeTTaData.encodeItems values) spec (rename name))
     (refused : matchTerms source values = none)
     (previous : Metta.Minimal.Stack) (yes no : Metta.Atom) :
-    Metta.Minimal.unifyOp previous (toLeaTTaAtom (MeTTaData.encodeItems values))
-        (toLeaTTaAtom fresh) yes no runtime =
+    Metta.Minimal.unifyOp previous (encodeModelAtom (MeTTaData.encodeItems values))
+        (encodeModelAtom fresh) yes no runtime =
       [Metta.Minimal.finItem previous no runtime] := by
   have noCandidate : ¬∃ matched merged,
-      matched ∈ Metta.matchAtoms (toLeaTTaAtom (MeTTaData.encodeItems values))
-        (toLeaTTaAtom fresh) ∧
+      matched ∈ Metta.matchAtoms (encodeModelAtom (MeTTaData.encodeItems values))
+        (encodeModelAtom fresh) ∧
       merged ∈ Metta.Bindings.merge runtime matched ∧ merged.hasLoop = false := by
     rw [alpha_patterns_runtime_match_iff source values first invariant injective renamed privateNames]
     simp [refused]
@@ -365,11 +369,11 @@ theorem alpha_patterns_viable_execution (source values : List Term) (first : Nat
     (done : List (Metta.Atom × Metta.Bindings)) :
     Metta.Minimal.interpretFuel environment (fuel + 1) state
         (⟨Metta.Minimal.atomToStack (.expr [.sym "unify",
-          toLeaTTaAtom (MeTTaData.encodeItems values), toLeaTTaAtom fresh,
+          encodeModelAtom (MeTTaData.encodeItems values), encodeModelAtom fresh,
           yes, firstFallback]) continuation, runtime⟩ :: rest) done =
       Metta.Minimal.interpretFuel environment (fuel + 1) state
         (⟨Metta.Minimal.atomToStack (.expr [.sym "unify",
-          toLeaTTaAtom (MeTTaData.encodeItems values), toLeaTTaAtom fresh,
+          encodeModelAtom (MeTTaData.encodeItems values), encodeModelAtom fresh,
           yes, secondFallback]) continuation, runtime⟩ :: rest) done := by
   exact LeaTTaMinimalControlExecution.unify_viable_execution environment state runtime
     _ _ yes firstFallback secondFallback continuation fuel rest done
@@ -387,20 +391,20 @@ theorem selectBranches_refused_prefix (target : Atom)
     (continuation : Metta.Minimal.Stack) (fuel : Nat)
     (rest : List Metta.Minimal.Item) (done : List (Metta.Atom × Metta.Bindings))
     (fixed : Metta.instantiate bindings
-      (toLeaTTaAtom (selectBranches target (earlier ++ suffix) otherwise)) =
-        toLeaTTaAtom (selectBranches target (earlier ++ suffix) otherwise))
+      (encodeModelAtom (selectBranches target (earlier ++ suffix) otherwise)) =
+        encodeModelAtom (selectBranches target (earlier ++ suffix) otherwise))
     (refused : ∀ row ∈ earlier, ¬∃ matched merged,
-      matched ∈ Metta.matchAtoms (toLeaTTaAtom target) (toLeaTTaAtom row.1) ∧
+      matched ∈ Metta.matchAtoms (encodeModelAtom target) (encodeModelAtom row.1) ∧
       merged ∈ Metta.Bindings.merge bindings matched ∧ merged.hasLoop = false) :
     let parent : Metta.Minimal.Frame :=
       { atom := parentBody, ret := .function, vars := scope }
     Metta.Minimal.interpretFuel environment (fuel + 2 * earlier.length) state
         (Metta.Minimal.finItem (parent :: continuation)
-          (toLeaTTaAtom (selectBranches target (earlier ++ suffix) otherwise)) bindings :: rest)
+          (encodeModelAtom (selectBranches target (earlier ++ suffix) otherwise)) bindings :: rest)
         done =
       Metta.Minimal.interpretFuel environment fuel state
         (Metta.Minimal.finItem (parent :: continuation)
-          (toLeaTTaAtom (selectBranches target suffix otherwise)) bindings :: rest) done := by
+          (encodeModelAtom (selectBranches target suffix otherwise)) bindings :: rest) done := by
   intro parent
   revert fixed refused
   induction earlier with
@@ -410,19 +414,19 @@ theorem selectBranches_refused_prefix (target : Atom)
     intro fixed refused
     let next := selectBranches target (rows ++ suffix) otherwise
     have parts :
-        Metta.instantiate bindings (toLeaTTaAtom target) = toLeaTTaAtom target ∧
-        Metta.instantiate bindings (toLeaTTaAtom pattern) = toLeaTTaAtom pattern ∧
-        Metta.instantiate bindings (toLeaTTaAtom body) = toLeaTTaAtom body ∧
-        Metta.instantiate bindings (toLeaTTaAtom next) = toLeaTTaAtom next := by
+        Metta.instantiate bindings (encodeModelAtom target) = encodeModelAtom target ∧
+        Metta.instantiate bindings (encodeModelAtom pattern) = encodeModelAtom pattern ∧
+        Metta.instantiate bindings (encodeModelAtom body) = encodeModelAtom body ∧
+        Metta.instantiate bindings (encodeModelAtom next) = encodeModelAtom next := by
       simpa only [next, selectBranches, List.cons_append, List.foldr_cons, call,
-        toLeaTTaAtom, toLeaTTaAtoms, Metta.instantiate, Metta.Bindings.resolveAtom,
+        encodeModelAtom, encodeModelAtoms, Metta.instantiate, Metta.Bindings.resolveAtom,
         List.map_cons, List.map_nil, Metta.Atom.expr.injEq, List.cons.injEq,
         true_and, and_true] using fixed
     have budget : fuel + 2 * (rows.length + 1) = (fuel + 2 * rows.length + 1) + 1 := by omega
     change Metta.Minimal.interpretFuel environment (fuel + 2 * (rows.length + 1)) state
       (Metta.Minimal.finItem (parent :: continuation)
-        (.expr [.sym "unify", toLeaTTaAtom target, toLeaTTaAtom pattern,
-          toLeaTTaAtom body, toLeaTTaAtom next]) bindings :: rest) done = _
+        (.expr [.sym "unify", encodeModelAtom target, encodeModelAtom pattern,
+          encodeModelAtom body, encodeModelAtom next]) bindings :: rest) done = _
     rw [budget, LeaTTaMinimalControlExecution.function_unify_enters,
       parts.1, parts.2.1, parts.2.2.1, parts.2.2.2,
       LeaTTaMinimalControlExecution.unify_no_candidate_selects environment state bindings

@@ -33,31 +33,9 @@ import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 
 noncomputable section
 
-namespace Mettapedia.PLN.TruthValues.Distributional
+namespace Mettapedia.PLN.TruthValues.PLNDistributional
 
 open MeasureTheory ProbabilityTheory Real Set
-
-/-! ## Simple Truth Values
-
-Use the canonical STV carrier from `PLNDeduction` to avoid duplicate record
-definitions for the same `(strength, confidence)` object.
--/
-
-/-- Distributional STV reuses the canonical `PLNDeduction.STV` record. -/
-abbrev SimpleTruthValue := Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction.STV
-
-namespace SimpleTruthValue
-
-/-- Construct an STV from values with proofs. -/
-def mk' (s c : ℝ) (hs : s ∈ Icc 0 1) (hc : c ∈ Icc 0 1) : SimpleTruthValue where
-  strength := s
-  confidence := c
-  strength_nonneg := hs.1
-  strength_le_one := hs.2
-  confidence_nonneg := hc.1
-  confidence_le_one := hc.2
-
-end SimpleTruthValue
 
 /-! ## Beta Distribution Parameters
 
@@ -297,7 +275,7 @@ Beta distribution.
 /-- Convert Beta parameters to a Simple Truth Value using expected value as strength.
     The confidence is derived from the count n = α + β using PLN's formula:
     c = n / (n + k) where k is a constant (we use k = 1 for simplicity). -/
-def BetaParams.toSTV (p : BetaParams) : SimpleTruthValue where
+def BetaParams.toSTV (p : BetaParams) : Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction.STV where
   strength := p.expectedValue
   confidence := p.n / (p.n + 1)
   strength_nonneg := le_of_lt p.expectedValue_pos
@@ -561,86 +539,43 @@ theorem count_confidence_roundtrip (n : ℝ) (hn : 0 < n) :
   field_simp
   ring
 
-/-! ## BinaryEvidence-Based PLN (The Correct Approach)
+/-! ## Revision of Beta parameters
 
-A Truth Value is not a pair (s, c) but a State of BinaryEvidence:
-- α observations supporting the proposition
-- β observations against it
-
-The Beta distribution emerges as the *posterior* given this evidence,
-not as an arbitrary parameterization. This is the conjugate prior view.
+Positive counts `(α, β)` of observations for and against a proposition are the
+parameters of the Beta posterior of its probability under the improper prior
+with no pseudo-counts.  Revision adds them; it is the conjugate update exactly
+when the two counts come from disjoint observations of one Bernoulli
+parameter.  These are not the PLN count carrier
+`Mettapedia.PLN.Evidence.BinaryEvidence`, whose counts live in
+`ℝ≥0∞` and may be zero.
 -/
 
-/-- Positive real evidence counts read as the parameters of a Beta posterior.
-    Semantically: "We have observed α positive and β negative instances."
-    The Beta(α, β) distribution represents our uncertainty about the true probability.
-    Both counts are positive so that the Beta distribution is proper; this is
-    not the PLN count carrier `Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence`,
-    whose counts live in `ℝ≥0∞` and may be zero. -/
-structure BinaryEvidence where
-  positive : ℝ  -- α (can be fractional for "virtual" evidence)
-  negative : ℝ  -- β
-  positive_pos : 0 < positive
-  negative_pos : 0 < negative
+namespace BetaParams
 
-namespace BinaryEvidence
+/-- Revision adds the counts of disjoint observations. -/
+def revision (e₁ e₂ : BetaParams) : BetaParams where
+  alpha := e₁.alpha + e₂.alpha
+  betaParam := e₁.betaParam + e₂.betaParam
+  alpha_pos := add_pos e₁.alpha_pos e₂.alpha_pos
+  beta_pos := add_pos e₁.beta_pos e₂.beta_pos
 
-/-- Total evidence count -/
-def total (e : BinaryEvidence) : ℝ := e.positive + e.negative
-
-theorem total_pos (e : BinaryEvidence) : 0 < e.total :=
-  add_pos e.positive_pos e.negative_pos
-
-/-- Convert BinaryEvidence to BetaParams -/
-def toBeta (e : BinaryEvidence) : BetaParams where
-  alpha := e.positive
-  betaParam := e.negative
-  alpha_pos := e.positive_pos
-  beta_pos := e.negative_pos
-
-/-- Strength = Expected probability given evidence = α / (α + β) -/
-def strength (e : BinaryEvidence) : ℝ := e.positive / e.total
-
-theorem strength_eq_expectedValue (e : BinaryEvidence) :
-    e.strength = e.toBeta.expectedValue := rfl
-
-theorem strength_mem_Ioo (e : BinaryEvidence) : e.strength ∈ Ioo 0 1 :=
-  e.toBeta.expectedValue_mem_Ioo
-
-/-- Variance of the Beta distribution induced by evidence -/
-def variance (e : BinaryEvidence) : ℝ := e.toBeta.variance
-
-theorem variance_pos (e : BinaryEvidence) : 0 < e.variance :=
-  e.toBeta.variance_pos
-
-/-- Revision adds counts.  For counts of disjoint observations of one Bernoulli
-    parameter, with no prior pseudo-counts added, this is the conjugate Beta
-    update; an observation recorded in both arguments is counted twice. -/
-def revision (e₁ e₂ : BinaryEvidence) : BinaryEvidence where
-  positive := e₁.positive + e₂.positive
-  negative := e₁.negative + e₂.negative
-  positive_pos := add_pos e₁.positive_pos e₂.positive_pos
-  negative_pos := add_pos e₁.negative_pos e₂.negative_pos
-
-/-- Revision is commutative -/
-theorem revision_comm (e₁ e₂ : BinaryEvidence) :
+theorem revision_comm (e₁ e₂ : BetaParams) :
     revision e₁ e₂ = revision e₂ e₁ := by
   simp only [revision, add_comm]
 
-/-- Revision preserves total evidence count -/
-theorem revision_total (e₁ e₂ : BinaryEvidence) :
-    (revision e₁ e₂).total = e₁.total + e₂.total := by
-  simp only [revision, total]
+/-- Revision adds the sample sizes. -/
+theorem revision_n (e₁ e₂ : BetaParams) :
+    (revision e₁ e₂).n = e₁.n + e₂.n := by
+  simp only [revision, n]
   ring
 
-/-- Revision strength formula: strength of combined evidence.
-    This is EXACT - no approximation needed for revision. -/
-theorem revision_strength (e₁ e₂ : BinaryEvidence) :
-    (revision e₁ e₂).strength = (e₁.positive + e₂.positive) / (e₁.total + e₂.total) := by
-  simp only [revision, strength, total]
+/-- The mean after revision is the pooled frequency. -/
+theorem revision_expectedValue (e₁ e₂ : BetaParams) :
+    (revision e₁ e₂).expectedValue = (e₁.alpha + e₂.alpha) / (e₁.n + e₂.n) := by
+  simp only [revision, expectedValue, n]
   congr 1; ring
 
-end BinaryEvidence
+end BetaParams
 
 /-! ## Auditing the PLN Heuristic
 
@@ -650,35 +585,35 @@ variables to the variance implied by PLN's confidence heuristic.
 
 /-- The TRUE variance of Z = X · Y where X, Y are independent.
     Var(XY) = E[X]²Var[Y] + E[Y]²Var[X] + Var[X]Var[Y] -/
-def trueProductVariance (e₁ e₂ : BinaryEvidence) : ℝ :=
-  let s₁ := e₁.strength
-  let s₂ := e₂.strength
+def trueProductVariance (e₁ e₂ : BetaParams) : ℝ :=
+  let s₁ := e₁.expectedValue
+  let s₂ := e₂.expectedValue
   let v₁ := e₁.variance
   let v₂ := e₂.variance
   s₁^2 * v₂ + s₂^2 * v₁ + v₁ * v₂
 
-theorem trueProductVariance_pos (e₁ e₂ : BinaryEvidence) :
+theorem trueProductVariance_pos (e₁ e₂ : BetaParams) :
     0 < trueProductVariance e₁ e₂ := by
   simp only [trueProductVariance]
-  have hs₁ := e₁.strength_mem_Ioo
-  have hs₂ := e₂.strength_mem_Ioo
+  have hs₁ := e₁.expectedValue_mem_Ioo
+  have hs₂ := e₂.expectedValue_mem_Ioo
   have hv₁ := e₁.variance_pos
   have hv₂ := e₂.variance_pos
-  have h1 : 0 ≤ e₁.strength^2 * e₂.variance := mul_nonneg (sq_nonneg _) (le_of_lt hv₂)
-  have h2 : 0 ≤ e₂.strength^2 * e₁.variance := mul_nonneg (sq_nonneg _) (le_of_lt hv₁)
+  have h1 : 0 ≤ e₁.expectedValue^2 * e₂.variance := mul_nonneg (sq_nonneg _) (le_of_lt hv₂)
+  have h2 : 0 ≤ e₂.expectedValue^2 * e₁.variance := mul_nonneg (sq_nonneg _) (le_of_lt hv₁)
   have h3 : 0 < e₁.variance * e₂.variance := mul_pos hv₁ hv₂
   linarith
 
 /-- PLN's HEURISTIC confidence for deduction: c_AC = c_AB * c_BC.
     Given a lookahead parameter K, confidence c relates to count n via c = n/(n+K).
     The implied variance is then computed from the "fake" count. -/
-def plnHeuristicVariance (e₁ e₂ : BinaryEvidence) (K : ℝ) (_hK : 0 < K) : ℝ :=
-  let n₁ := e₁.total
-  let n₂ := e₂.total
+def plnHeuristicVariance (e₁ e₂ : BetaParams) (K : ℝ) (_hK : 0 < K) : ℝ :=
+  let n₁ := e₁.n
+  let n₂ := e₂.n
   let c₁ := n₁ / (n₁ + K)
   let c₂ := n₂ / (n₂ + K)
   let c_product := c₁ * c₂  -- PLN heuristic: multiply confidences
-  let s_product := e₁.strength * e₂.strength
+  let s_product := e₁.expectedValue * e₂.expectedValue
   -- Variance implied by treating c_product as the "true" confidence
   -- Using Beta variance approximation: Var ≈ s(1-s)/(n+1) where n = K·c/(1-c)
   let n_implied := K * c_product / (1 - c_product)
@@ -692,17 +627,16 @@ def plnHeuristicVariance (e₁ e₂ : BinaryEvidence) (K : ℝ) (_hK : 0 < K) : 
     - True variance ≈ 0.05 (using product formula s₁²v₂ + s₂²v₁ + v₁v₂)
     - Heuristic variance ≈ 0.0625 (from s(1-s)/(n+1))
     The heuristic OVERESTIMATES variance in this case. -/
-theorem pln_heuristic_counterexample : ∃ e₁ e₂ : BinaryEvidence, ∃ K : ℝ, ∃ hK : 0 < K,
+theorem pln_heuristic_counterexample : ∃ e₁ e₂ : BetaParams, ∃ K : ℝ, ∃ hK : 0 < K,
     trueProductVariance e₁ e₂ ≠ plnHeuristicVariance e₁ e₂ K hK := by
-  -- Take e₁ = e₂ = BinaryEvidence(2, 2) (uniform prior), K = 1
+  -- Take e₁ = e₂ = Beta(2, 2), K = 1
   use ⟨2, 2, by norm_num, by norm_num⟩
   use ⟨2, 2, by norm_num, by norm_num⟩
   use 1, by norm_num
   -- The two formulas give different algebraic expressions
-  simp only [trueProductVariance, plnHeuristicVariance, BinaryEvidence.strength,
-             BinaryEvidence.total, BinaryEvidence.variance, BinaryEvidence.toBeta,
-             BetaParams.variance, BetaParams.n]
+  simp only [trueProductVariance, plnHeuristicVariance, BetaParams.expectedValue,
+             BetaParams.n, BetaParams.variance]
   -- norm_num verifies the expressions differ
   norm_num
 
-end Mettapedia.PLN.TruthValues.Distributional
+end Mettapedia.PLN.TruthValues.PLNDistributional

@@ -17,11 +17,14 @@ import Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
 import Mettapedia.Languages.MeTTa.HE.LeaTTaSpecSoundness
 import Mettapedia.Languages.MeTTa.HE.LeaTTaQueryObservationalAnchor
 import Mettapedia.Languages.MeTTa.HE.LeaTTaSpecSeal
-import Mettapedia.Languages.MeTTa.HE.LeaTTaConcreteConformance
 import Mettapedia.Languages.MeTTa.HE.MatcherMergeCompleteness
 import Mettapedia.Languages.MeTTa.LeaTTa.Corpus.SelfInterp
 import Mettapedia.OSLF.MeTTaIL.Match
 import MettaHyperonFull.Proofs.BindingLaws
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # HE MeTTa Conformance
@@ -294,12 +297,13 @@ theorem mettaCall_error_passthrough :
       (Atom.error (.symbol "x") (.symbol "e"), emptyB) :=
   .error_passthrough _ _ _ rfl
 
-private def leattaErrorPassthroughAtom : Metta.Atom :=
+/-- Native error fixture shared with downstream call-conformance controls. -/
+def leattaErrorPassthroughAtom : Metta.Atom :=
   Metta.Atom.expr
     [Metta.Atom.sym "Error", Metta.Atom.sym "x", Metta.Atom.sym "e"]
 
 theorem leatta_error_passthrough_atom_is_HE_error_translation :
-    LeaTTaBridge.toLeaTTaAtom (Atom.error (.symbol "x") (.symbol "e")) =
+    Spec.Match.SolutionTheory.encodeModelAtom (Atom.error (.symbol "x") (.symbol "e")) =
       leattaErrorPassthroughAtom := rfl
 
 private theorem empty_minimal_symbol_candidates (s : String) :
@@ -329,7 +333,7 @@ theorem leatta_minimal_error_passthrough_mettaEval :
   simp only [hsource, herror, Bool.or_true, if_true]
 
 theorem leatta_minimal_error_passthrough_matches_HE_mettaCall_interface :
-    LeaTTaBridge.toLeaTTaAtom (Atom.error (.symbol "x") (.symbol "e")) =
+    Spec.Match.SolutionTheory.encodeModelAtom (Atom.error (.symbol "x") (.symbol "e")) =
         leattaErrorPassthroughAtom ∧
       Metta.Minimal.mettaEval (Metta.Minimal.MinEnv.ofAtomsGT [] []) 4
         Metta.Minimal.St.init [] leattaErrorPassthroughAtom =
@@ -361,6 +365,7 @@ theorem mettaCall_equation_match :
   case h_no_loop => rfl
   case h_recurse =>
     -- merged.apply (.symbol "result") fuel = .symbol "result" (ground, no vars)
+    refine OrdinaryCallReturnRel.of_eval (by decide) ?_
     apply EvalAtom.type_cast (fuel := fuel)
     · rfl
     · decide
@@ -403,6 +408,7 @@ theorem mettaCall_symbol_rhs :
   case h_merge => decide
   case h_no_loop => rfl
   case h_recurse =>
+    refine OrdinaryCallReturnRel.of_eval (by decide) ?_
     apply EvalAtom.type_cast (fuel := fuel)
     · rfl
     · decide
@@ -445,6 +451,7 @@ theorem mettaCall_equation_rhs_substitution :
   case h_no_loop => rfl
   case h_recurse =>
     -- merged.apply (.var "x#0") fuel = .symbol "hello" by kernel reduction
+    refine OrdinaryCallReturnRel.of_eval (by decide) ?_
     change EvalAtom _ _ (.symbol "hello") _ _ _
     apply EvalAtom.type_cast (fuel := fuel)
     · rfl
@@ -455,10 +462,9 @@ theorem mettaCall_equation_rhs_substitution :
 /-! ## 6b. Equation RHS Fuel Drift Regression
 
 The coarse declarative `MettaCall.equation_match` constructor can recurse on a
-low-fuel `merged.applyFull rhs fuel` result that has not stabilized yet. This is
-exactly why the aligned completeness bridge in `Correctness.lean` uses the
-stronger `ApplyStableEventually` witness instead of naively mirroring the
-public constructor one-for-one.
+low-fuel `merged.applyFull rhs fuel` result that has not stabilized yet. The
+executable evaluator never returns that unresolved right-hand side, so the
+coarse derivation is neither certified nor stably reached.
 
 The rule `(= (q $z) $z)` is called on `(q $w)` under a chain of incoming
 assignments `w ↦ y1 ↦ … ↦ y4 ↦ a`. Matching equates the rule instance `z#0`
@@ -515,67 +521,103 @@ theorem mettaCall_equation_rhs_unstable_low_fuel :
   case h_no_loop => rfl
   case h_recurse =>
     rw [equation_rhs_apply_fuel5_unstable]
+    refine OrdinaryCallReturnRel.of_eval (by decide) ?_
     apply EvalAtom.type_pass
     · rfl
     · exact Or.inr (Or.inr rfl)
 
-private theorem unstableTop_tuple (n : Nat) (live : List Atom) :
+/-- The executable evaluator's merged frame: the incoming chain enters as
+alias constraints before the rule instance's equality is merged. -/
+private def unstableResultB : Bindings :=
+  { assignments := [("y4", .symbol "a")],
+    equalities := [("w", "z#0"), ("w", "y1"), ("y1", "y2"), ("y2", "y3"), ("y3", "y4")] }
+
+private theorem unstableTop_tuple (n : Nat) :
     interpretTuple unstableChainSpace GroundedDispatch.none unstableTopAtom unstableTopB
-      (n + 7) live = [(unstableTopAtom, unstableTopB)] := by rfl
+      (n + 6) [Atom.undefinedType] = [(unstableTopAtom, unstableTopB)] := by rfl
 
-private theorem unstableTop_aeval (n : Nat) (live : List Atom) :
+set_option maxRecDepth 8192 in
+private theorem unstableTop_alias_merge (n : Nat) :
+    mergeBindings unstableQueryB
+      (Spec.Type.Presentation.BindingTheory.aliasConstraints unstableTopB) (n + 5) =
+      [unstableResultB] := by rfl
+
+set_option maxRecDepth 8192 in
+private theorem unstableResult_apply (n : Nat) :
+    unstableResultB.applyFull (.var "z#0") (n + 5) = .symbol "a" := by rfl
+
+set_option maxRecDepth 8192 in
+private theorem unstableResult_loop : unstableResultB.hasLoop = false := by rfl
+
+private theorem unstableTop_aeval (n : Nat) :
     evalAtom unstableChainSpace GroundedDispatch.none (.symbol "a") Atom.undefinedType
-      unstableChainB (n + 6) live = [(.symbol "a", unstableChainB)] := by rfl
+      unstableResultB (n + 5) [] = [(.symbol "a", unstableResultB)] := by rfl
 
-private theorem unstableTop_callback (n : Nat) :
-    mettaCall unstableChainSpace GroundedDispatch.none unstableTopAtom Atom.undefinedType
-      unstableTopB (n + 7) = [(.symbol "a", unstableChainB)] := by
-  have hq := unstableTop_query (n + 1)
-  have hm := unstableTop_merge (n + 1)
-  have ha := equation_rhs_apply_fuel6_stabilized n
-  have he := unstableTop_aeval n []
-  have hl : unstableChainB.hasLoop = false := rfl
+private theorem unstableTop_raw (n : Nat) :
+    rawQueryResults unstableChainSpace unstableTopAtom Atom.undefinedType unstableTopB (n + 5) [] =
+      [(.symbol "a", unstableResultB)] := by
+  simp only [rawQueryResults, unstableTop_query, unstableTop_alias_merge, List.flatMap_cons,
+    List.flatMap_nil, List.filterMap_cons, List.filterMap_nil, unstableResult_loop,
+    unstableResult_apply]
+  rfl
+
+private theorem unstableTop_invoke (n : Nat) :
+    invoke unstableChainSpace GroundedDispatch.none (.ordinary Atom.undefinedType) unstableTopAtom
+      unstableTopB (n + 6) [] = [(.symbol "a", unstableResultB)] := by
   have hx : GroundedDispatch.none.isExecutable (.symbol "q") = false := rfl
-  simp only [show n + 1 + 5 = n + 6 by omega] at hq hm
-  simp only [unstableTopAtom] at hq
-  unfold mettaCall
-  simp [unstableTopAtom, isErrorAtom, hx, hq, hm, hl, ha, he]
+  have hinv : invocationResult unstableChainSpace GroundedDispatch.none (.symbol "a") unstableResultB
+      (n + 5) [Atom.undefinedType] (some unstableTopAtom) = [(.symbol "a", unstableResultB)] := by
+    simp [invocationResult]
+  have hret : ordinaryCallReturn unstableTopAtom (.symbol "a") unstableResultB
+      (fun value bindings =>
+        evalAtom unstableChainSpace GroundedDispatch.none value Atom.undefinedType bindings (n + 5)) =
+        [(.symbol "a", unstableResultB)] := by
+    rw [ordinaryCallReturn_evaluate _ _ _ _ (by decide) rfl]
+    exact unstableTop_aeval n
+  have hraw := unstableTop_raw n
+  have herr : isErrorAtom (.expression [.symbol "q", .var "w"]) = false := rfl
+  simp only [invoke, InvocationMode.errorPassthrough, InvocationMode.expected,
+    InvocationMode.pendingScope]
+  simp [unstableTopAtom, hx, minimalInstruction] at hinv hret hraw ⊢
+  simp [hraw, hinv, hret, herr]
 
 private theorem unstableTop_expression (n : Nat) :
     interpretExpression unstableChainSpace GroundedDispatch.none unstableTopAtom
-      Atom.undefinedType unstableTopB (n + 8) = [(.symbol "a", unstableChainB)] := by
-  have ht := unstableTop_tuple n [Atom.undefinedType]
-  have hc := unstableTop_callback n
+      Atom.undefinedType unstableTopB (n + 7) [] = [(.symbol "a", unstableResultB)] := by
+  have ht := unstableTop_tuple n
+  have hc := unstableTop_invoke n
   have hty : getAtomTypes unstableChainSpace (.symbol "q") = [Atom.undefinedType] := rfl
   have hf : isFunctionType Atom.undefinedType = false := rfl
-  simp only [unstableTopAtom] at ht hc
   unfold interpretExpression
-  simp only [unstableTopAtom, hty, List.flatMap_cons, List.flatMap_nil, hf, List.any_cons,
-    List.any_nil, Bool.false_eq_true, if_false, Bool.not_false, Bool.true_or, Bool.or_false,
-    beq_self_eq_true, if_true, List.nil_append, List.append_nil, ht, hc]
-  rfl
+  simp [unstableTopAtom, hty, hf] at ht hc ⊢
+  simp [ht, hc]
 
-/-- The unstable low-fuel equation-match witness bubbles up to a genuine
-    top-level `evalAtom` result. -/
-theorem evalAtom_unstable_top_level_low_fuel_reaches :
-    (.var "z#0", unstableChainB) ∈
-      evalAtom unstableChainSpace noDispatch
-        unstableTopAtom Atom.undefinedType unstableTopB 8 := by
-  decide +kernel
-
-/-- From fuel 9 onward, the executable evaluator has stabilized to the final
-    fully-substituted result, so the low-fuel top-level witness disappears. -/
-theorem evalAtom_unstable_top_level_stabilized_from_fuel9 (n : Nat) :
+/-- From fuel 8 onward, the executable evaluator returns only the fully
+    resolved symbol, under its own merged frame. -/
+theorem evalAtom_unstable_top_level_stabilized_from_fuel8 (n : Nat) :
     evalAtom unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableTopB (n + 9) =
-      [(.symbol "a", unstableChainB)] := by
+      unstableTopAtom Atom.undefinedType unstableTopB (n + 8) =
+      [(.symbol "a", unstableResultB)] := by
   have hx := unstableTop_expression n
   have hne : Atom.expression [Atom.symbol "q", Atom.var "w"] ≠ Atom.empty := by decide
-  simp only [unstableTopAtom, Atom.undefinedType] at hx
   unfold noDispatch evalAtom
-  simp [hx, hne, unstableTopAtom, isEmptyOrError, isErrorAtom, isEmptyAtom, getMetaType,
-    Atom.atomType, Atom.undefinedType, Atom.variableType, Atom.symbolType, Atom.groundedType,
+  simp only [unstableTopAtom] at hx ⊢
+  simp only [hx]
+  simp [hne, isEmptyOrError, isErrorAtom, isEmptyAtom, getMetaType, Atom.atomType,
+    Atom.undefinedType, Atom.variableType, Atom.symbolType, Atom.groundedType,
     Atom.expressionType, Atom.unit]
+
+/-- The executable evaluator never returns the unresolved right-hand side,
+    at any fuel. -/
+theorem evalAtom_unstable_rhs_not_returned (fuel : Nat) :
+    (.var "z#0", unstableChainB) ∉
+      evalAtom unstableChainSpace noDispatch
+        unstableTopAtom Atom.undefinedType unstableTopB fuel := by
+  match fuel with
+  | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 => decide +kernel
+  | n + 8 =>
+    rw [evalAtom_unstable_top_level_stabilized_from_fuel8 n]
+    simp
 
 /-- The coarse public `EvalAtom` spec admits the unstable low-fuel top-level
     result. This is exactly the kind of derivation that should NOT be forced
@@ -584,44 +626,45 @@ theorem evalAtom_unstable_top_level_derivation :
     EvalAtom unstableChainSpace noDispatch
       unstableTopAtom Atom.undefinedType unstableTopB
       (.var "z#0", unstableChainB) := by
-  exact evalAtom_sound unstableChainSpace noDispatch
-    unstableTopAtom Atom.undefinedType unstableTopB 8
-    (.var "z#0", unstableChainB)
-    evalAtom_unstable_top_level_low_fuel_reaches
+  have head : EvalAtom unstableChainSpace noDispatch (live := [.expression [.var "w"],
+      Atom.undefinedType]) (.symbol "q") Atom.undefinedType unstableTopB
+      (.symbol "q", unstableTopB) :=
+    .type_cast _ _ _ _ fuel rfl (by decide) (Or.inl rfl) (by decide)
+  have tail : InterpretTuple unstableChainSpace noDispatch (live := [.symbol "q",
+      Atom.undefinedType]) (.expression [.var "w"]) unstableTopB
+      (.expression [.var "w"], unstableTopB) :=
+    .singleton _ _ (.var "w", unstableTopB)
+      (.type_pass _ _ _ rfl (Or.inr (Or.inr rfl))) rfl
+  have tuple : InterpretTuple unstableChainSpace noDispatch (live := [Atom.undefinedType])
+      unstableTopAtom unstableTopB (unstableTopAtom, unstableTopB) :=
+    .success (.symbol "q") [.var "w"] unstableTopB _ _ (by decide) head rfl tail rfl
+  exact .interpret_success _ _ _ _ rfl (by decide) rfl (by decide)
+    (.tuple_path _ _ _ _ _ ⟨Atom.undefinedType, by decide, Or.inr rfl⟩ tuple
+      mettaCall_equation_rhs_unstable_low_fuel (by decide)) rfl
 
 /-- The unstable low-fuel top-level derivation is NOT certified: certification
-    requires stable eventual reachability, but from fuel 9 onward the evaluator
-    only returns the stabilized symbol result. -/
+    requires stable eventual reachability, but the evaluator never returns
+    that result. -/
 theorem evalAtom_unstable_top_level_not_certified :
     ¬ EvalAtomCertified unstableChainSpace noDispatch
       unstableTopAtom Atom.undefinedType unstableTopB
       (.var "z#0", unstableChainB) := by
   intro h_cert
-  rcases (evalAtomCertified_iff_stably_reaches
-      unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableTopB
-      (.var "z#0", unstableChainB)).mp h_cert with ⟨fuel0, h_eventual⟩
-  have h_mem :
-      (.var "z#0", unstableChainB) ∈
-        evalAtom unstableChainSpace noDispatch
-          unstableTopAtom Atom.undefinedType unstableTopB (fuel0 + 9) := by
-    exact h_eventual (fuel0 + 9) (Nat.le_add_right fuel0 9)
-  rw [evalAtom_unstable_top_level_stabilized_from_fuel9 fuel0] at h_mem
-  simp at h_mem
+  obtain ⟨fuel0, h_eventual⟩ := evalAtomCertified_to_stably_reaches
+    unstableChainSpace noDispatch unstableTopAtom Atom.undefinedType unstableTopB
+    (.var "z#0", unstableChainB) [] h_cert
+  exact evalAtom_unstable_rhs_not_returned fuel0 (h_eventual fuel0 le_rfl)
 
 /-- The same unstable top-level result still has an honest fuel-indexed
-    filtered witness at the low subfuel used by the evaluator. This shows that
-    even filtered-at-fuel evidence is weaker than certification. -/
+    filtered witness. This shows that even filtered-at-fuel evidence is weaker
+    than certification. -/
 theorem evalAtom_unstable_top_level_filtered_witness :
     ∃ n, EvalAtomFilteredAtFuel unstableChainSpace noDispatch
       unstableTopAtom Atom.undefinedType unstableTopB n
-      (.var "z#0", unstableChainB) := by
-  exact evalAtom_reaches_filtered_sound unstableChainSpace noDispatch
-    unstableTopAtom Atom.undefinedType unstableTopB
-    (.var "z#0", unstableChainB)
-    ⟨7, evalAtom_unstable_top_level_low_fuel_reaches⟩
+      (.var "z#0", unstableChainB) :=
+  ⟨0, evalAtom_unstable_top_level_derivation, fun unresolved => nomatch unresolved⟩
 
-/-- So the global implication `EvalAtom -> EvalAtomCertified` is false.
+/-- So the global implication `EvalAtom -> EvalAtomStablyReaches` is false.
     This blocks the tempting but wrong plan to prove certification for every
     coarse public `EvalAtom` derivation without strengthening the theorem
     boundary. -/
@@ -631,14 +674,12 @@ theorem evalAtom_to_stably_reaches_not_valid :
         EvalAtom space dispatch atom type_ b r →
           EvalAtomStablyReaches space dispatch atom type_ b r) := by
   intro h
-  exact evalAtom_unstable_top_level_not_certified <|
-    evalAtomStablyReaches_to_certified unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableTopB
-      (.var "z#0", unstableChainB)
-      (h unstableChainSpace noDispatch
+  exact evalAtom_unstable_top_level_not_certified
+    ⟨evalAtom_unstable_top_level_derivation,
+      h unstableChainSpace noDispatch
         unstableTopAtom Atom.undefinedType unstableTopB
         (.var "z#0", unstableChainB)
-        evalAtom_unstable_top_level_derivation)
+        evalAtom_unstable_top_level_derivation⟩
 
 /-- So the global implication `EvalAtom -> EvalAtomCertified` is false.
     This blocks the tempting but wrong plan to prove certification for every
@@ -657,22 +698,20 @@ theorem evalAtom_to_certified_not_valid :
       evalAtom_unstable_top_level_derivation
 
 /-- Even the honest fuel-indexed filtered witness is still not strong enough
-    to imply certification. This rules out the next tempting-but-false theorem
-    target above the public certification boundary. -/
+    to imply stable reachability. This rules out the next tempting-but-false
+    theorem target above the public certification boundary. -/
 theorem filtered_witness_to_stably_reaches_not_valid :
     ¬ (∀ (space : Space) (dispatch : GroundedDispatch)
         (atom type_ : Atom) (b : Bindings) (r : ResultPair),
         (∃ n, EvalAtomFilteredAtFuel space dispatch atom type_ b n r) →
           EvalAtomStablyReaches space dispatch atom type_ b r) := by
   intro h
-  exact evalAtom_unstable_top_level_not_certified <|
-    evalAtomStablyReaches_to_certified unstableChainSpace noDispatch
-      unstableTopAtom Atom.undefinedType unstableTopB
-      (.var "z#0", unstableChainB)
-      (h unstableChainSpace noDispatch
+  exact evalAtom_unstable_top_level_not_certified
+    ⟨evalAtom_unstable_top_level_derivation,
+      h unstableChainSpace noDispatch
         unstableTopAtom Atom.undefinedType unstableTopB
         (.var "z#0", unstableChainB)
-        evalAtom_unstable_top_level_filtered_witness)
+        evalAtom_unstable_top_level_filtered_witness⟩
 
 /-- Even the honest fuel-indexed filtered witness is still not strong enough
     to imply certification. This rules out the next tempting-but-false theorem
@@ -832,278 +871,23 @@ theorem he_premise_core_step_models_oslf_language_step
       Mettapedia.Languages.MeTTa.HE.LanguageDef.mettaHE p q := by
   exact Mettapedia.Languages.MeTTa.HE.CoreFragment.premiseCoreToLanguageStep h
 
-theorem heFuelEvaluatorEngine_bridge : HEEngineBridge heFuelEvaluatorEngine where
-  evalAtom_sound := by
-    intro space dispatch atom type_ b fuel r hmem
-    exact evalAtom_sound space dispatch atom type_ b fuel r hmem
-  mettaCall_sound := by
-    intro space dispatch atom type_ b fuel r hmem
-    exact mettaCall_sound space dispatch atom type_ b fuel r hmem
+/-! ### Malformed `unify` interface
 
-theorem heFuelEvaluatorEngine_models_declarative_he :
-    HEEngineModelsDeclarativeSpec heFuelEvaluatorEngine :=
-  engine_parametric_he_refinement heFuelEvaluatorEngine heFuelEvaluatorEngine_bridge
+LeaTTa's minimal evaluator and the HE call rule give the same bad-arity error
+for a three-argument `unify`. -/
 
-/-! ### LeaTTa equation-call fragment hook
-
-This is not a complete LeaTTa engine instance.  It exposes the exact local
-`mettaCall_sound` obligation discharged by the equation-call bridge in
-`LeaTTaBridge`: any future engine whose call-step relation refines that
-step-shaped fragment already satisfies the corresponding declarative HE
-`MettaCall` obligation. -/
-
-theorem leattaEquationFragment_mettaCall_sound
-    (engine : HEOperationalEngine)
-    (h_refines :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.mettaCallStep space dispatch atom type_ b fuel r →
-          LeaTTaBridge.LeaTTaEquationMettaCallStep
-            space dispatch fuel atom type_ b r) :
-    ∀ (space : Space) (dispatch : GroundedDispatch)
-      (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-      engine.mettaCallStep space dispatch atom type_ b fuel r →
-        MettaCall space dispatch atom type_ b r := by
-  intro space dispatch atom type_ b fuel r hstep
-  exact LeaTTaBridge.leattaEquationMettaCallStep_sound
-    (h_refines space dispatch atom type_ b fuel r hstep)
-
-/-- Assemble a full `HEEngineBridge` from explicit non-LeaTTa obligations plus
-the proven LeaTTa equation-call fragment for `mettaCallStep`.
-
-This theorem is deliberately obligation-preserving: it does not manufacture a
-LeaTTa engine, and it does not claim the equation fragment covers all possible
-runtimes unless the caller proves that their engine's `mettaCallStep` relation
-really refines `LeaTTaEquationMettaCallStep`. -/
-theorem engine_bridge_of_leattaEquationFragment_mettaCall
-    (engine : HEOperationalEngine)
-    (h_eval :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.evalAtomStep space dispatch atom type_ b fuel r →
-          EvalAtom space dispatch atom type_ b r)
-    (h_metta_refines :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.mettaCallStep space dispatch atom type_ b fuel r →
-          LeaTTaBridge.LeaTTaEquationMettaCallStep
-            space dispatch fuel atom type_ b r) :
-    HEEngineBridge engine where
-  evalAtom_sound := h_eval
-  mettaCall_sound := leattaEquationFragment_mettaCall_sound engine h_metta_refines
-/-- Engine-parametric declarative HE model theorem for any engine whose
-`mettaCallStep` interface is proven to refine the LeaTTa equation-call fragment,
-with the remaining engine obligations supplied explicitly. -/
-theorem engine_models_declarative_he_of_leattaEquationFragment_mettaCall
-    (engine : HEOperationalEngine)
-    (h_eval :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.evalAtomStep space dispatch atom type_ b fuel r →
-          EvalAtom space dispatch atom type_ b r)
-    (h_metta_refines :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.mettaCallStep space dispatch atom type_ b fuel r →
-          LeaTTaBridge.LeaTTaEquationMettaCallStep
-            space dispatch fuel atom type_ b r) :
-    HEEngineModelsDeclarativeSpec engine :=
-  engine_parametric_he_refinement engine
-    (engine_bridge_of_leattaEquationFragment_mettaCall
-      engine h_eval h_metta_refines)
-
-/-- The currently proved LeaTTa-backed HE engine instance for the equation-call
-fragment.  It is intentionally not named as a complete LeaTTa runtime: the
-`mettaCallStep` field is exactly the observed equation-call fragment from
-`LeaTTaBridge`, while the `evalAtomStep` field exposes the already-declarative
-HE eval interface needed by the shared refinement theorem. -/
-def leattaEquationFragmentEngine : HEOperationalEngine where
-  evalAtomStep := fun space dispatch atom type_ b _fuel r =>
-    EvalAtom space dispatch atom type_ b r
-  mettaCallStep := fun space dispatch atom type_ b fuel r =>
-    LeaTTaBridge.LeaTTaEquationMettaCallStep
-      space dispatch fuel atom type_ b r
-
-theorem leattaEquationFragmentEngine_bridge :
-    HEEngineBridge leattaEquationFragmentEngine :=
-  engine_bridge_of_leattaEquationFragment_mettaCall
-    leattaEquationFragmentEngine
-    (by
-      intro space dispatch atom type_ b fuel r hstep
-      simpa [leattaEquationFragmentEngine] using hstep)
-    (by
-      intro space dispatch atom type_ b fuel r hstep
-      simpa [leattaEquationFragmentEngine] using hstep)
-theorem leattaEquationFragmentEngine_models_declarative_he :
-    HEEngineModelsDeclarativeSpec leattaEquationFragmentEngine :=
-  engine_parametric_he_refinement
-    leattaEquationFragmentEngine leattaEquationFragmentEngine_bridge
-
-/-! ### LeaTTa equation/no-match fragment hook
-
-The next honest widening adds the non-ground no-match branch.  It is still a
-fragment instance, not a full LeaTTa engine: the executable side contributes
-LeaTTa `queryOp` observations for equation hits or `NotReducible`, while the
-official HE query premises remain explicit. -/
-
-theorem leattaEquationNoMatchFragment_mettaCall_sound
-    (engine : HEOperationalEngine)
-    (h_refines :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.mettaCallStep space dispatch atom type_ b fuel r →
-          LeaTTaBridge.LeaTTaEquationNoMatchMettaCallStep
-            space dispatch fuel atom type_ b r) :
-    ∀ (space : Space) (dispatch : GroundedDispatch)
-      (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-      engine.mettaCallStep space dispatch atom type_ b fuel r →
-        MettaCall space dispatch atom type_ b r := by
-  intro space dispatch atom type_ b fuel r hstep
-  exact LeaTTaBridge.leattaEquationNoMatchMettaCallStep_sound
-    (h_refines space dispatch atom type_ b fuel r hstep)
-
-def leattaEquationNoMatchFragmentEngine : HEOperationalEngine where
-  evalAtomStep := fun space dispatch atom type_ b _fuel r =>
-    EvalAtom space dispatch atom type_ b r
-  mettaCallStep := fun space dispatch atom type_ b fuel r =>
-    LeaTTaBridge.LeaTTaEquationNoMatchMettaCallStep
-      space dispatch fuel atom type_ b r
-theorem leattaEquationNoMatchFragmentEngine_bridge :
-    HEEngineBridge leattaEquationNoMatchFragmentEngine where
-  evalAtom_sound := by
-    intro space dispatch atom type_ b fuel r hstep
-    simpa [leattaEquationNoMatchFragmentEngine] using hstep
-  mettaCall_sound := by
-    intro space dispatch atom type_ b fuel r hstep
-    exact LeaTTaBridge.leattaEquationNoMatchMettaCallStep_sound hstep
-theorem leattaEquationNoMatchFragmentEngine_models_declarative_he :
-    HEEngineModelsDeclarativeSpec leattaEquationNoMatchFragmentEngine :=
-  engine_parametric_he_refinement
-    leattaEquationNoMatchFragmentEngine
-    leattaEquationNoMatchFragmentEngine_bridge
-
-/-- Concrete positive readout for the widened fragment: the empty-space
-symbol-headed no-match executable observation satisfies official HE
-`MettaCall.no_match` through the engine-parametric call interface. -/
-theorem emptySpace_foo_equationNoMatchFragment_models_mettaCall :
-    MettaCall Space.empty GroundedDispatch.none
-      (.expression [.symbol "foo"]) Atom.undefinedType Bindings.empty
-      (.expression [.symbol "foo"], Bindings.empty) :=
-  leattaEquationNoMatchFragmentEngine_models_declarative_he.mettaCall_models
-    Space.empty GroundedDispatch.none
-    (.expression [.symbol "foo"]) Atom.undefinedType Bindings.empty 10
-    (.expression [.symbol "foo"], Bindings.empty)
-    LeaTTaBridge.emptySpace_foo_equationNoMatchMettaCallStep_counter0
-
-/-! ### LeaTTa query/unify fragment hook
-
-This widening adds the primitive `unify` raw success/fallback lane to the
-already-proved equation/no-match query fragment. -/
-
-theorem leattaQueryUnifyFragment_mettaCall_sound
-    (engine : HEOperationalEngine)
-    (h_refines :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.mettaCallStep space dispatch atom type_ b fuel r →
-          LeaTTaBridge.LeaTTaQueryUnifyMettaCallStep
-            space dispatch fuel atom type_ b r) :
-    ∀ (space : Space) (dispatch : GroundedDispatch)
-      (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-      engine.mettaCallStep space dispatch atom type_ b fuel r →
-        MettaCall space dispatch atom type_ b r := by
-  intro space dispatch atom type_ b fuel r hstep
-  exact LeaTTaBridge.leattaQueryUnifyMettaCallStep_sound
-    (h_refines space dispatch atom type_ b fuel r hstep)
-
-def leattaQueryUnifyFragmentEngine : HEOperationalEngine where
-  evalAtomStep := fun space dispatch atom type_ b _fuel r =>
-    EvalAtom space dispatch atom type_ b r
-  mettaCallStep := fun space dispatch atom type_ b fuel r =>
-    LeaTTaBridge.LeaTTaQueryUnifyMettaCallStep
-      space dispatch fuel atom type_ b r
-theorem leattaQueryUnifyFragmentEngine_bridge :
-    HEEngineBridge leattaQueryUnifyFragmentEngine where
-  evalAtom_sound := by
-    intro space dispatch atom type_ b fuel r hstep
-    simpa [leattaQueryUnifyFragmentEngine] using hstep
-  mettaCall_sound := by
-    intro space dispatch atom type_ b fuel r hstep
-    exact LeaTTaBridge.leattaQueryUnifyMettaCallStep_sound hstep
-theorem leattaQueryUnifyFragmentEngine_models_declarative_he :
-    HEEngineModelsDeclarativeSpec leattaQueryUnifyFragmentEngine :=
-  engine_parametric_he_refinement
-    leattaQueryUnifyFragmentEngine
-    leattaQueryUnifyFragmentEngine_bridge
-
-/-- Concrete positive readout for the primitive `unify` fallback lane: a
-symbol mismatch in LeaTTa `unifyOp` and the official HE raw fallback premise
-produce the declarative HE `MettaCall.unify_no_match_raw` result. -/
-theorem emptySpace_unifySymbolMismatch_queryUnifyFragment_models_mettaCall :
-    MettaCall Space.empty GroundedDispatch.none
-      (.expression [.symbol "unify", .symbol "a", .symbol "b",
-        .symbol "then", .symbol "else"])
-      Atom.undefinedType Bindings.empty
-      (.symbol "else", Bindings.empty) :=
-  leattaQueryUnifyFragmentEngine_models_declarative_he.mettaCall_models
-    Space.empty GroundedDispatch.none
-    (.expression [.symbol "unify", .symbol "a", .symbol "b",
-      .symbol "then", .symbol "else"])
-    Atom.undefinedType Bindings.empty 10
-    (.symbol "else", Bindings.empty)
-    LeaTTaBridge.emptySpace_unifySymbolMismatch_queryUnifyMettaCallStep_counter0
-
-/-- General positive readout for the primitive `unify` success lane on the
-ground-target/variable-pattern fragment. The executable LeaTTa singleton
-match/merge evidence is derived by `LeaTTaBridge` from `GroundAtom target`; the
-declarative conclusion is the official HE `MettaCall` result. -/
-theorem groundTarget_unifyVar_queryUnifyFragment_models_mettaCall
-    {space : Space} {d : GroundedDispatch}
-    {target thenBranch elseBranch type_ : Atom} {v : String}
-    (hground : GroundAtom target) :
-    MettaCall space d
-      (.expression [.symbol "unify", target, .var v, thenBranch, elseBranch])
-      type_ Bindings.empty
-      ((Bindings.empty.assign v target).applyDefault thenBranch,
-        Bindings.empty.assign v target) :=
-  leattaQueryUnifyFragmentEngine_models_declarative_he.mettaCall_models
-    space d
-    (.expression [.symbol "unify", target, .var v, thenBranch, elseBranch])
-    type_ Bindings.empty 10
-    ((Bindings.empty.assign v target).applyDefault thenBranch,
-      Bindings.empty.assign v target)
-    (Or.inr <|
-      LeaTTaBridge.leattaUnifyMettaCallStep_success_ground_var_empty_seed
-        (space := space) (d := d) (n := 9)
-        (target := target) (v := v) (thenBranch := thenBranch)
-        (elseBranch := elseBranch) (type_ := type_)
-        hground)
-
-/-- Concrete positive readout for the primitive `unify` success lane: matching
-`a` against `$x` returns the success branch `$x` instantiated to `a`, with the
-official HE match binding carried through the query/unify fragment engine. -/
-theorem emptySpace_unifyVarSymbol_queryUnifyFragment_models_mettaCall :
-    MettaCall Space.empty GroundedDispatch.none
-      (.expression [.symbol "unify", .symbol "a", .var "x",
-        .var "x", .symbol "else"])
-      Atom.undefinedType Bindings.empty
-      (.symbol "a", Bindings.empty.assign "x" (.symbol "a")) :=
-  groundTarget_unifyVar_queryUnifyFragment_models_mettaCall
-      (space := Space.empty) (d := GroundedDispatch.none)
-      (target := .symbol "a") (v := "x") (thenBranch := .var "x")
-      (elseBranch := .symbol "else") (type_ := Atom.undefinedType)
-      (GroundAtom.symbol "a")
-
-private def heBadUnifyThreeArgs : Atom :=
+/-- Malformed three-argument HE `unify` fixture. -/
+def heBadUnifyThreeArgs : Atom :=
   .expression [.symbol "unify", .symbol "a", .symbol "p", .symbol "t"]
 
-private def leattaBadUnifyThreeArgs : Metta.Atom :=
+/-- Independent native presentation of the malformed `unify` fixture. -/
+def leattaBadUnifyThreeArgs : Metta.Atom :=
   Metta.Atom.expr
     [Metta.Atom.sym "unify", Metta.Atom.sym "a",
       Metta.Atom.sym "p", Metta.Atom.sym "t"]
 
 theorem leatta_bad_unify_three_args_is_HE_translation :
-    LeaTTaBridge.toLeaTTaAtom heBadUnifyThreeArgs =
+    Spec.Match.SolutionTheory.encodeModelAtom heBadUnifyThreeArgs =
       leattaBadUnifyThreeArgs := rfl
 
 private def leattaBadUnifyThreeArgsError : Metta.Atom :=
@@ -1156,7 +940,7 @@ theorem HE_unify_bad_arity_three_args_mettaCall :
 
 theorem leatta_minimal_unify_bad_arity_error_is_HE_bad_arity_translation :
     leattaBadUnifyThreeArgsError =
-      LeaTTaBridge.toLeaTTaAtom
+      Spec.Match.SolutionTheory.encodeModelAtom
         (mkUnifyBadArityError heBadUnifyThreeArgs) := by
   rfl
 
@@ -1167,7 +951,7 @@ theorem leatta_minimal_unify_bad_arity_matches_HE_bad_arity_interface :
     Metta.Minimal.evalAtomMin
         (Metta.Minimal.MinEnv.ofAtomsGT [] []) 4
         leattaBadUnifyThreeArgs =
-      [LeaTTaBridge.toLeaTTaAtom
+      [Spec.Match.SolutionTheory.encodeModelAtom
         (mkUnifyBadArityError heBadUnifyThreeArgs)] ∧
     MettaCall Space.empty GroundedDispatch.none
       heBadUnifyThreeArgs Atom.undefinedType Bindings.empty
@@ -1191,8 +975,8 @@ def LeaTTaUnifyBadArityMettaCallStep
     result = (mkUnifyBadArityError atom, inputBindings) ∧
     Metta.Minimal.evalAtomMin
         (Metta.Minimal.MinEnv.ofAtomsGT [] []) fuel
-        (LeaTTaBridge.toLeaTTaAtom atom) =
-      [LeaTTaBridge.toLeaTTaAtom (mkUnifyBadArityError atom)]
+        (Spec.Match.SolutionTheory.encodeModelAtom atom) =
+      [Spec.Match.SolutionTheory.encodeModelAtom (mkUnifyBadArityError atom)]
 
 theorem leattaUnifyBadArityMettaCallStep_sound
     {space : Space} {d : GroundedDispatch} {fuel : Nat}
@@ -1216,409 +1000,10 @@ theorem leattaBadUnifyThreeArgs_unifyBadArityMettaCallStep_counter4 :
   refine ⟨[.symbol "a", .symbol "p", .symbol "t"], rfl, by decide, rfl, rfl, ?_⟩
   exact leatta_minimal_unify_bad_arity_matches_HE_bad_arity_interface.1
 
-/-! ### LeaTTa query/unify fragment with extensional primitive bindings
+/-! ### Visible equation-query evidence
 
-This sibling fragment keeps the same engine-parametric refinement interface, but
-uses the lookup-extensional executable observation for primitive `unify`. -/
-
-theorem leattaQueryUnifyFragmentExt_mettaCall_sound
-    (engine : HEOperationalEngine)
-    (h_refines :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.mettaCallStep space dispatch atom type_ b fuel r →
-          LeaTTaBridge.LeaTTaQueryUnifyMettaCallStepExt
-            space dispatch fuel atom type_ b r) :
-    ∀ (space : Space) (dispatch : GroundedDispatch)
-      (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-      engine.mettaCallStep space dispatch atom type_ b fuel r →
-        MettaCall space dispatch atom type_ b r := by
-  intro space dispatch atom type_ b fuel r hstep
-  exact LeaTTaBridge.leattaQueryUnifyMettaCallStepExt_sound
-    (h_refines space dispatch atom type_ b fuel r hstep)
-
-def leattaQueryUnifyFragmentExtEngine : HEOperationalEngine where
-  evalAtomStep := fun space dispatch atom type_ b _fuel r =>
-    EvalAtom space dispatch atom type_ b r
-  mettaCallStep := fun space dispatch atom type_ b fuel r =>
-    LeaTTaBridge.LeaTTaQueryUnifyMettaCallStepExt
-      space dispatch fuel atom type_ b r
-theorem leattaQueryUnifyFragmentExtEngine_bridge :
-    HEEngineBridge leattaQueryUnifyFragmentExtEngine where
-  evalAtom_sound := by
-    intro space dispatch atom type_ b fuel r hstep
-    simpa [leattaQueryUnifyFragmentExtEngine] using hstep
-  mettaCall_sound := by
-    intro space dispatch atom type_ b fuel r hstep
-    exact LeaTTaBridge.leattaQueryUnifyMettaCallStepExt_sound hstep
-theorem leattaQueryUnifyFragmentExtEngine_models_declarative_he :
-    HEEngineModelsDeclarativeSpec leattaQueryUnifyFragmentExtEngine :=
-  engine_parametric_he_refinement
-    leattaQueryUnifyFragmentExtEngine
-    leattaQueryUnifyFragmentExtEngine_bridge
-
-/-- Concrete positive readout for the non-empty-seed primitive `unify` lane:
-LeaTTa's runtime merge order differs from the official HE raw result order,
-but the emitted binding set is direct-lookup equivalent, so the shared
-engine-parametric refinement still yields the exact HE `MettaCall`. -/
-theorem seededUnifyOrder_queryUnifyFragmentExt_models_mettaCall :
-    MettaCall Space.empty GroundedDispatch.none
-      (.expression [.symbol "unify", .symbol "a", .var "x",
-        .var "x", .symbol "else"])
-      Atom.undefinedType LeaTTaBridge.seededUnifyOrderSeed
-      (.symbol "a", LeaTTaBridge.seededUnifyOrderHEMerged) :=
-  leattaQueryUnifyFragmentExtEngine_models_declarative_he.mettaCall_models
-    Space.empty GroundedDispatch.none
-    (.expression [.symbol "unify", .symbol "a", .var "x",
-      .var "x", .symbol "else"])
-    Atom.undefinedType LeaTTaBridge.seededUnifyOrderSeed 10
-    (.symbol "a", LeaTTaBridge.seededUnifyOrderHEMerged)
-    LeaTTaBridge.seededUnifyOrder_queryUnifyMettaCallStepExt_counter0
-
-/-- Conformance-facing schema for the equality-aware visible equation bridge.
-The executable side supplies a repaired LeaTTa visible observation; the
-declarative side remains the official HE `queryEquations`/`mergeBindings`/
-recursive-`EvalAtom` premise bundle. This is the bridge shape needed for
-equality-bearing matches that cannot pass through the assignment-only
-instantiated-RHS shortcut. -/
-theorem leattaVisibleEquationObservation_models_mettaCall
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {src dst type_ rhs : Atom}
-    {queryBindings inputBindings merged outputBindings : Bindings}
-    {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
-    {counter : Nat}
-    (hobs :
-      LeaTTaBridge.LeaTTaVisibleEquationStepObservation
-        space d fuel src dst gt prev counter)
-    (h_not_error : isErrorAtom src = false)
-    (h_not_grounded : HeadNotExecutable d src)
-    {avoid : List String}
-    (h_cover : CoversEvaluation avoid [] src type_ inputBindings)
-    (h_query_public : (rhs, queryBindings) ∈
-      queryEquationsAvoiding avoid space src fuel)
-    (h_merge : merged ∈ mergeBindings queryBindings inputBindings fuel)
-    (h_no_loop : merged.hasLoop = false)
-    (h_recurse :
-      EvalAtom space d (merged.applyFull rhs fuel) type_ merged
-        (dst, outputBindings)) :
-    MettaCall space d src type_ inputBindings (dst, outputBindings) := by
-  exact
-    (LeaTTaBridge.observedMettaCall_of_equation_match
-      (space := space)
-      (d := d)
-      (fuel := fuel)
-      (src := src)
-      (dst := dst)
-      (type_ := type_)
-      (rhs := rhs)
-      (queryBindings := queryBindings)
-      (inputBindings := inputBindings)
-      (merged := merged)
-      (outputBindings := outputBindings)
-      (gt := gt)
-      (prev := prev)
-      (counter := counter)
-      hobs h_not_error h_not_grounded h_cover h_query_public h_merge
-      h_no_loop h_recurse).2
-
-/-- Conformance-facing schema for the repaired visible-avoid transport path.
-This is the equality-aware counterpart of the instantiated-RHS fragment below:
-once the public HE query witness, visible HE query witness, avoid-aware LeaTTa
-transport, and recursive `EvalAtom` premise are supplied, the official
-declarative HE `MettaCall` result follows. -/
-theorem leattaTransportAgainstVisible_models_mettaCall
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {es : List Atom} {rhs type_ : Atom} {qb outputBindings : Bindings}
-    {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
-    {counter : Nat} {k : String}
-    (h_not_special : ¬ SpecialFormHead (.expression es))
-    (h_not_error : isErrorAtom (.expression es) = false)
-    (h_not_grounded : HeadNotExecutable d (.expression es))
-    (hk : Metta.Minimal.headKey
-      (LeaTTaBridge.toLeaTTaAtom (.expression es)) = some k)
-    (h_query_visible : (rhs, qb) ∈
-      queryEquationsAgainstVisible space (.expression es) fuel)
-    {avoid : List String}
-    (h_cover : CoversEvaluation avoid [] (.expression es) type_ Bindings.empty)
-    (h_query_public : (rhs, qb) ∈
-      queryEquationsAvoiding avoid space (.expression es) fuel)
-    (htransport : LeaTTaBridge.EquationMatchVisibleItemTransportAgainst
-      space (.expression es) rhs qb fuel gt prev counter)
-    (h_recurse :
-      EvalAtom space d (qb.applyFull rhs fuel) type_ qb
-        (qb.applyFull rhs fuel, outputBindings)) :
-  MettaCall space d (.expression es) type_ Bindings.empty
-      (qb.applyFull rhs fuel, outputBindings) := by
-  exact
-    LeaTTaBridge.leattaEquationMettaCallStep_sound
-      (LeaTTaBridge.leattaEquationMettaCallStep_of_transport_againstVisible_empty_input
-        (space := space)
-        (d := d)
-        (fuel := fuel)
-        (es := es)
-        (rhs := rhs)
-        (type_ := type_)
-        (qb := qb)
-        (outputBindings := outputBindings)
-        (gt := gt)
-        (prev := prev)
-        (counter := counter)
-        (k := k)
-        h_not_special h_not_error h_not_grounded hk h_query_visible
-        h_cover h_query_public htransport h_recurse)
-
-/-- Binding-threaded conformance schema for the repaired visible-avoid
-transport path. This removes the empty-input restriction from
-`leattaTransportAgainstVisible_models_mettaCall` while keeping the exact HE
-merge, loop, and recursive-evaluation premises visible. The result atom is
-still the visible equation successor observed by LeaTTa. -/
-theorem leattaTransportAgainstVisibleWithMerge_models_mettaCall
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {es : List Atom} {rhs type_ : Atom}
-    {qb inputBindings merged outputBindings : Bindings}
-    {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
-    {counter : Nat} {k : String}
-    (h_not_special : ¬ SpecialFormHead (.expression es))
-    (h_not_error : isErrorAtom (.expression es) = false)
-    (h_not_grounded : HeadNotExecutable d (.expression es))
-    (hk : Metta.Minimal.headKey
-      (LeaTTaBridge.toLeaTTaAtom (.expression es)) = some k)
-    (h_query_visible : (rhs, qb) ∈
-      queryEquationsAgainstVisible space (.expression es) fuel)
-    {avoid : List String}
-    (h_cover : CoversEvaluation avoid [] (.expression es) type_ inputBindings)
-    (h_query_public : (rhs, qb) ∈
-      queryEquationsAvoiding avoid space (.expression es) fuel)
-    (htransport : LeaTTaBridge.EquationMatchVisibleItemTransportAgainst
-      space (.expression es) rhs qb fuel gt prev counter)
-    (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
-    (h_no_loop : merged.hasLoop = false)
-    (h_recurse :
-      EvalAtom space d (merged.applyFull rhs fuel) type_ merged
-        (qb.applyFull rhs fuel, outputBindings)) :
-  MettaCall space d (.expression es) type_ inputBindings
-      (qb.applyFull rhs fuel, outputBindings) := by
-  exact
-    LeaTTaBridge.leattaEquationMettaCallStep_sound
-      (LeaTTaBridge.leattaEquationMettaCallStep_of_transport_againstVisible_with_merge
-        (space := space)
-        (d := d)
-        (fuel := fuel)
-        (es := es)
-        (rhs := rhs)
-        (type_ := type_)
-        (qb := qb)
-        (inputBindings := inputBindings)
-        (merged := merged)
-        (outputBindings := outputBindings)
-        (gt := gt)
-        (prev := prev)
-        (counter := counter)
-        (k := k)
-        h_not_special h_not_error h_not_grounded hk h_query_visible
-        h_cover h_query_public htransport h_merge h_no_loop h_recurse)
-
-/-- Continuation-aware conformance schema for an equality-aware visible LeaTTa
-observation.  The executable observation records the immediate equation
-successor, while the official HE `MettaCall` result is exactly the result of
-the recursive `EvalAtom` premise. -/
-theorem leattaVisibleEquationObservation_models_mettaCall_final
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {src visibleDst type_ rhs : Atom}
-    {queryBindings inputBindings merged : Bindings}
-    {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
-    {counter : Nat} {finalResult : ResultPair}
-    (hobs :
-      LeaTTaBridge.LeaTTaVisibleEquationStepObservation
-        space d fuel src visibleDst gt prev counter)
-    (h_not_error : isErrorAtom src = false)
-    (h_not_grounded : HeadNotExecutable d src)
-    {avoid : List String}
-    (h_cover : CoversEvaluation avoid [] src type_ inputBindings)
-    (h_query_public : (rhs, queryBindings) ∈
-      queryEquationsAvoiding avoid space src fuel)
-    (h_merge : merged ∈ mergeBindings queryBindings inputBindings fuel)
-    (h_no_loop : merged.hasLoop = false)
-    (h_recurse :
-      EvalAtom space d (merged.applyFull rhs fuel) type_ merged finalResult) :
-  MettaCall space d src type_ inputBindings finalResult := by
-  exact
-    LeaTTaBridge.leattaEquationMettaCallStep_sound
-      (LeaTTaBridge.leattaEquationMettaCallStep_of_visible_observation_with_merge_final
-        (space := space)
-        (d := d)
-        (fuel := fuel)
-        (src := src)
-        (visibleDst := visibleDst)
-        (type_ := type_)
-        (rhs := rhs)
-        (queryBindings := queryBindings)
-        (inputBindings := inputBindings)
-        (merged := merged)
-        (gt := gt)
-        (prev := prev)
-        (counter := counter)
-        (finalResult := finalResult)
-        hobs h_not_error h_not_grounded h_cover h_query_public h_merge
-        h_no_loop h_recurse)
-
-/-- Continuation-aware conformance schema for the repaired visible-avoid
-transport path. This is the version needed by the full equation-call rule: the
-visible LeaTTa `queryOp` item only has to agree with the immediate HE equation
-successor, not with the recursive final result. -/
-theorem leattaTransportAgainstVisibleWithMerge_models_mettaCall_final
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {es : List Atom} {rhs type_ : Atom}
-    {qb inputBindings merged : Bindings}
-    {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
-    {counter : Nat} {k : String} {finalResult : ResultPair}
-    (h_not_special : ¬ SpecialFormHead (.expression es))
-    (h_not_error : isErrorAtom (.expression es) = false)
-    (h_not_grounded : HeadNotExecutable d (.expression es))
-    (hk : Metta.Minimal.headKey
-      (LeaTTaBridge.toLeaTTaAtom (.expression es)) = some k)
-    (h_query_visible : (rhs, qb) ∈
-      queryEquationsAgainstVisible space (.expression es) fuel)
-    {avoid : List String}
-    (h_cover : CoversEvaluation avoid [] (.expression es) type_ inputBindings)
-    (h_query_public : (rhs, qb) ∈
-      queryEquationsAvoiding avoid space (.expression es) fuel)
-    (htransport : LeaTTaBridge.EquationMatchVisibleItemTransportAgainst
-      space (.expression es) rhs qb fuel gt prev counter)
-    (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
-    (h_no_loop : merged.hasLoop = false)
-    (h_recurse :
-      EvalAtom space d (merged.applyFull rhs fuel) type_ merged finalResult) :
-  MettaCall space d (.expression es) type_ inputBindings finalResult := by
-  exact
-    LeaTTaBridge.leattaEquationMettaCallStep_sound
-      (LeaTTaBridge.leattaEquationMettaCallStep_of_transport_againstVisible_with_merge_final
-        (space := space)
-        (d := d)
-        (fuel := fuel)
-        (es := es)
-        (rhs := rhs)
-        (type_ := type_)
-        (qb := qb)
-        (inputBindings := inputBindings)
-        (merged := merged)
-        (gt := gt)
-        (prev := prev)
-        (counter := counter)
-        (k := k)
-        (finalResult := finalResult)
-        h_not_special h_not_error h_not_grounded hk h_query_visible
-        h_cover h_query_public htransport h_merge h_no_loop h_recurse)
-
-/-- Conformance schema for the concrete executable `queryOp` hit boundary.
-Unlike the transport-based schema, this theorem consumes the runtime evidence
-directly: a LeaTTa `queryOp` item alpha-equivalent to the immediate HE visible
-equation successor. -/
-theorem leattaQueryOpHitAgainstVisibleWithMerge_models_mettaCall_final
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {es : List Atom} {rhs type_ : Atom}
-    {qb inputBindings merged : Bindings}
-    {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
-    {counter : Nat} {finalResult : ResultPair}
-    (h_not_special : ¬ SpecialFormHead (.expression es))
-    (h_not_error : isErrorAtom (.expression es) = false)
-    (h_not_grounded : HeadNotExecutable d (.expression es))
-    (h_query_visible : (rhs, qb) ∈
-      queryEquationsAgainstVisible space (.expression es) fuel)
-    {avoid : List String}
-    (h_cover : CoversEvaluation avoid [] (.expression es) type_ inputBindings)
-    (h_query_public : (rhs, qb) ∈
-      queryEquationsAvoiding avoid space (.expression es) fuel)
-    (hhit :
-      LeaTTaBridge.LeaTTaEquationQueryOpHit
-        space fuel (.expression es) (qb.applyFull rhs fuel) gt prev counter)
-    (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
-    (h_no_loop : merged.hasLoop = false)
-    (h_recurse :
-      EvalAtom space d (merged.applyFull rhs fuel) type_ merged finalResult) :
-  MettaCall space d (.expression es) type_ inputBindings finalResult := by
-  exact
-    LeaTTaBridge.leattaEquationMettaCallStep_sound
-      (LeaTTaBridge.leattaEquationMettaCallStep_of_queryOp_hit_againstVisible_with_merge_final
-        (space := space)
-        (d := d)
-        (fuel := fuel)
-        (es := es)
-        (rhs := rhs)
-        (type_ := type_)
-        (qb := qb)
-        (inputBindings := inputBindings)
-        (merged := merged)
-        (gt := gt)
-        (prev := prev)
-        (counter := counter)
-        (finalResult := finalResult)
-        h_not_special h_not_error h_not_grounded h_query_visible
-        h_cover h_query_public hhit h_merge h_no_loop h_recurse)
-
-/-- Query-match-aware version of the concrete executable `queryOp` boundary.
-In addition to the official HE `MettaCall`, this packages the public and
-visible query hits with their dedicated HE `MatchRel` witnesses.  The result
-keeps the executable observation and the declarative query evidence together,
-which is the shape the engine-parametric conformance theorem needs. -/
-theorem leattaQueryOpHitAgainstVisibleWithMerge_models_mettaCall_final_with_queryMatchRel
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {es : List Atom} {rhs type_ : Atom}
-    {qb inputBindings merged : Bindings}
-    {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
-    {counter : Nat} {finalResult : ResultPair}
-    (h_not_special : ¬ SpecialFormHead (.expression es))
-    (h_not_error : isErrorAtom (.expression es) = false)
-    (h_not_grounded : HeadNotExecutable d (.expression es))
-    (h_query_visible : (rhs, qb) ∈
-      queryEquationsAgainstVisible space (.expression es) fuel)
-    {avoid : List String}
-    (h_cover : CoversEvaluation avoid [] (.expression es) type_ inputBindings)
-    (h_query_public : (rhs, qb) ∈
-      queryEquationsAvoiding avoid space (.expression es) fuel)
-    (hhit :
-      LeaTTaBridge.LeaTTaEquationQueryOpHit
-        space fuel (.expression es) (qb.applyFull rhs fuel) gt prev counter)
-    (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
-    (h_no_loop : merged.hasLoop = false)
-    (h_recurse :
-      EvalAtom space d (merged.applyFull rhs fuel) type_ merged finalResult) :
-    MettaCall space d (.expression es) type_ inputBindings finalResult ∧
-    (∃ lhs rhs0 idx,
-      (.expression [.symbol "=", lhs, rhs0], idx) ∈ space.atoms.zipIdx ∧
-      rhs = (freshenEquationAvoiding avoid idx lhs rhs0).2 ∧
-      DeclMatchSpec.MatchRel
-        (.expression es) (freshenEquationAvoiding avoid idx lhs rhs0).1 qb) ∧
-    (∃ lhs rhs0 idx,
-      (.expression [.symbol "=", lhs, rhs0], idx) ∈ space.atoms.zipIdx ∧
-      rhs =
-        (freshenEquationAgainst
-          (collectVars (.expression es) fuel).eraseDups idx lhs rhs0 fuel).2 ∧
-      DeclMatchSpec.MatchRel
-        (.expression es)
-        (freshenEquationAgainst
-          (collectVars (.expression es) fuel).eraseDups idx lhs rhs0 fuel).1
-        qb) := by
-  refine ⟨?_, ?_, ?_⟩
-  · exact
-      leattaQueryOpHitAgainstVisibleWithMerge_models_mettaCall_final
-        (space := space)
-        (d := d)
-        (fuel := fuel)
-        (es := es)
-        (rhs := rhs)
-        (type_ := type_)
-        (qb := qb)
-        (inputBindings := inputBindings)
-        (merged := merged)
-        (gt := gt)
-        (prev := prev)
-        (counter := counter)
-        (finalResult := finalResult)
-        h_not_special h_not_error h_not_grounded h_query_visible
-        h_cover h_query_public hhit h_merge h_no_loop h_recurse
-  · exact queryEquationsAvoiding_hits_are_declarative_matches h_query_public
-  · exact queryEquationsAgainstVisible_hits_are_declarative_matches h_query_visible
+An engine-independent evidence package for one visible equation-query step,
+with its LeaTTa-facing companion. -/
 
 /-- Pure HE evidence package for one visible equation-query step.
 It records the public query premise consumed by `MettaCall.equation_match`, the
@@ -1662,7 +1047,8 @@ structure HEVisibleEquationQueryEvidence
   merge : merged ∈ mergeBindings qb inputBindings fuel
   no_loop : merged.hasLoop = false
   recurse :
-    EvalAtom space d (merged.applyFull rhs fuel) type_ merged finalResult
+    OrdinaryCallReturnRel space d (.expression es) (merged.applyFull rhs fuel) type_ merged
+      finalResult
 
 def visibleEquationQueryEvidence_of_repaired_query_premises
     {space : Space} {d : GroundedDispatch} {fuel : Nat}
@@ -1679,7 +1065,8 @@ def visibleEquationQueryEvidence_of_repaired_query_premises
     (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
     (h_no_loop : merged.hasLoop = false)
     (h_recurse :
-      EvalAtom space d (merged.applyFull rhs fuel) type_ merged finalResult) :
+      OrdinaryCallReturnRel space d (.expression es) (merged.applyFull rhs fuel) type_ merged
+        finalResult) :
     HEVisibleEquationQueryEvidence
       space d fuel es type_ inputBindings finalResult where
   rhs := rhs
@@ -1732,7 +1119,8 @@ def leattaVisibleEquationQueryEvidence_of_queryOp_hit
     (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
     (h_no_loop : merged.hasLoop = false)
     (h_recurse :
-      EvalAtom space d (merged.applyFull rhs fuel) type_ merged finalResult) :
+      OrdinaryCallReturnRel space d (.expression es) (merged.applyFull rhs fuel) type_ merged
+        finalResult) :
     LeaTTaVisibleEquationQueryEvidence
       space d fuel es type_ inputBindings finalResult gt prev counter where
   he :=
@@ -1825,9 +1213,8 @@ theorem engine_mettaCall_sound_of_leattaVisibleEquationQueryEvidence
 
 /-! ### LeaTTa visible equation-query evidence fragment
 
-This fragment is narrower than `leattaEquationFragmentEngine`: its executable
-call interface is exactly the repaired visible equation-query path, with public
-and visible HE query premises present in the observation. -/
+Its executable call interface is exactly the repaired visible equation-query
+path, with public and visible HE query premises present in the observation. -/
 
 def LeaTTaVisibleEquationQueryOpMettaCallStep
     (space : Space) (d : GroundedDispatch) (fuel : Nat)
@@ -1847,7 +1234,8 @@ def LeaTTaVisibleEquationQueryOpMettaCallStep
       space fuel (.expression es) (qb.applyFull rhs fuel) gt prev counter ∧
     merged ∈ mergeBindings qb inputBindings fuel ∧
     merged.hasLoop = false ∧
-    EvalAtom space d (merged.applyFull rhs fuel) type_ merged finalResult
+    OrdinaryCallReturnRel space d (.expression es) (merged.applyFull rhs fuel) type_ merged
+      finalResult
 
 theorem leattaVisibleEquationQueryOpMettaCallStep_sound
     {space : Space} {d : GroundedDispatch} {fuel : Nat}
@@ -1901,15 +1289,10 @@ theorem leattaVisibleEquationQueryOpFragmentEngine_models_declarative_he :
     leattaVisibleEquationQueryOpFragmentEngine
     leattaVisibleEquationQueryOpFragmentEngine_bridge
 
-/-! ### LeaTTa repaired query/extensional-unify fragment
+/-! ### `Error` passthrough step
 
-This is the widest currently proved call fragment that keeps the repaired
-equation-query path explicit: `Error` passthrough is carried by the HE
-source rule and checked against LeaTTa's executable translation above,
-equation hits must come through the visible `matchAtoms`-backed query evidence
-above, no-match stays the official empty public-query branch, and primitive
-`unify` uses the lookup-extensional executable binding observation from
-`LeaTTaBridge`. -/
+`Error` passthrough is carried by the HE source rule and checked against
+LeaTTa's executable translation above. -/
 
 def LeaTTaErrorPassthroughMettaCallStep
     (_space : Space) (_d : GroundedDispatch) (_fuel : Nat)
@@ -1918,11 +1301,11 @@ def LeaTTaErrorPassthroughMettaCallStep
   ∃ src msg,
     atom = Atom.error src msg ∧
     result = (Atom.error src msg, inputBindings) ∧
-    LeaTTaBridge.toLeaTTaAtom atom =
+    Spec.Match.SolutionTheory.encodeModelAtom atom =
       Metta.Atom.expr
         [Metta.Atom.sym "Error",
-          LeaTTaBridge.toLeaTTaAtom src,
-          LeaTTaBridge.toLeaTTaAtom msg]
+          Spec.Match.SolutionTheory.encodeModelAtom src,
+          Spec.Match.SolutionTheory.encodeModelAtom msg]
 
 theorem leattaErrorPassthroughMettaCallStep_sound
     {space : Space} {d : GroundedDispatch} {fuel : Nat}
@@ -1936,821 +1319,6 @@ theorem leattaErrorPassthroughMettaCallStep_sound
   subst atom
   subst result
   exact MettaCall.error_passthrough _ _ _ rfl
-
-def LeaTTaRepairedQueryUnifyExtMettaCallStep
-    (space : Space) (d : GroundedDispatch) (fuel : Nat)
-    (atom type_ : Atom) (inputBindings : Bindings)
-    (result : ResultPair) : Prop :=
-  LeaTTaErrorPassthroughMettaCallStep
-      space d fuel atom type_ inputBindings result ∨
-  LeaTTaVisibleEquationQueryOpMettaCallStep
-      space d fuel atom type_ inputBindings result ∨
-  LeaTTaBridge.LeaTTaNoMatchMettaCallStep
-      space d fuel atom type_ inputBindings result ∨
-  LeaTTaBridge.LeaTTaUnifyMettaCallStepExt
-      space d fuel atom type_ inputBindings result
-
-theorem leattaRepairedQueryUnifyExtMettaCallStep_sound
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {atom type_ : Atom} {inputBindings : Bindings}
-    {result : ResultPair}
-    (hstep :
-      LeaTTaRepairedQueryUnifyExtMettaCallStep
-        space d fuel atom type_ inputBindings result) :
-    MettaCall space d atom type_ inputBindings result := by
-  rcases hstep with herr | hrest
-  · exact leattaErrorPassthroughMettaCallStep_sound herr
-  rcases hrest with hvisible | hrest
-  · exact leattaVisibleEquationQueryOpMettaCallStep_sound hvisible
-  rcases hrest with hno | hunify
-  · exact LeaTTaBridge.leattaNoMatchMettaCallStep_sound hno
-  · exact LeaTTaBridge.leattaUnifyMettaCallStepExt_sound hunify
-
-/-- Any engine whose call interface refines the repaired LeaTTa-backed
-error/query/no-match/extensional-`unify` fragment satisfies the corresponding
-declarative HE `MettaCall` obligation. -/
-theorem leattaRepairedQueryUnifyExtFragment_mettaCall_sound
-    (engine : HEOperationalEngine)
-    (h_refines :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.mettaCallStep space dispatch atom type_ b fuel r →
-          LeaTTaRepairedQueryUnifyExtMettaCallStep
-            space dispatch fuel atom type_ b r) :
-    ∀ (space : Space) (dispatch : GroundedDispatch)
-      (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-      engine.mettaCallStep space dispatch atom type_ b fuel r →
-        MettaCall space dispatch atom type_ b r := by
-  intro space dispatch atom type_ b fuel r hstep
-  exact leattaRepairedQueryUnifyExtMettaCallStep_sound
-    (h_refines space dispatch atom type_ b fuel r hstep)
-
-/-- Assemble a full engine bridge from explicit non-call obligations plus a
-proof that the engine's call interface refines the repaired LeaTTa-backed
-error/query/no-match/extensional-`unify` fragment. -/
-theorem engine_bridge_of_leattaRepairedQueryUnifyExtFragment_mettaCall
-    (engine : HEOperationalEngine)
-    (h_eval :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.evalAtomStep space dispatch atom type_ b fuel r →
-          EvalAtom space dispatch atom type_ b r)
-    (h_metta_refines :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.mettaCallStep space dispatch atom type_ b fuel r →
-          LeaTTaRepairedQueryUnifyExtMettaCallStep
-            space dispatch fuel atom type_ b r) :
-    HEEngineBridge engine where
-  evalAtom_sound := h_eval
-  mettaCall_sound :=
-    leattaRepairedQueryUnifyExtFragment_mettaCall_sound engine h_metta_refines
-/-- Engine-parametric declarative HE model theorem for any engine whose
-`mettaCallStep` interface is proven to refine the repaired LeaTTa-backed
-error/query/no-match/extensional-`unify` fragment. -/
-theorem engine_models_declarative_he_of_leattaRepairedQueryUnifyExtFragment_mettaCall
-    (engine : HEOperationalEngine)
-    (h_eval :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.evalAtomStep space dispatch atom type_ b fuel r →
-          EvalAtom space dispatch atom type_ b r)
-    (h_metta_refines :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.mettaCallStep space dispatch atom type_ b fuel r →
-          LeaTTaRepairedQueryUnifyExtMettaCallStep
-            space dispatch fuel atom type_ b r) :
-    HEEngineModelsDeclarativeSpec engine :=
-  engine_parametric_he_refinement engine
-    (engine_bridge_of_leattaRepairedQueryUnifyExtFragment_mettaCall
-      engine h_eval h_metta_refines)
-
-def leattaRepairedQueryUnifyExtFragmentEngine : HEOperationalEngine where
-  evalAtomStep := fun space dispatch atom type_ b _fuel r =>
-    EvalAtom space dispatch atom type_ b r
-  mettaCallStep := fun space dispatch atom type_ b fuel r =>
-    LeaTTaRepairedQueryUnifyExtMettaCallStep
-      space dispatch fuel atom type_ b r
-theorem leattaRepairedQueryUnifyExtFragmentEngine_bridge :
-    HEEngineBridge leattaRepairedQueryUnifyExtFragmentEngine where
-  evalAtom_sound := by
-    intro space dispatch atom type_ b fuel r hstep
-    simpa [leattaRepairedQueryUnifyExtFragmentEngine] using hstep
-  mettaCall_sound := by
-    intro space dispatch atom type_ b fuel r hstep
-    exact leattaRepairedQueryUnifyExtMettaCallStep_sound hstep
-theorem leattaRepairedQueryUnifyExtFragmentEngine_models_declarative_he :
-    HEEngineModelsDeclarativeSpec leattaRepairedQueryUnifyExtFragmentEngine :=
-  engine_parametric_he_refinement
-    leattaRepairedQueryUnifyExtFragmentEngine
-    leattaRepairedQueryUnifyExtFragmentEngine_bridge
-
-/-- Concrete no-match readout through the repaired query/extensional-unify
-fragment. -/
-theorem emptySpace_foo_repairedQueryUnifyExtFragment_models_mettaCall :
-    MettaCall Space.empty GroundedDispatch.none
-      (.expression [.symbol "foo"]) Atom.undefinedType Bindings.empty
-      (.expression [.symbol "foo"], Bindings.empty) :=
-  leattaRepairedQueryUnifyExtFragmentEngine_models_declarative_he.mettaCall_models
-    Space.empty GroundedDispatch.none
-    (.expression [.symbol "foo"]) Atom.undefinedType Bindings.empty 10
-    (.expression [.symbol "foo"], Bindings.empty)
-    (Or.inr (Or.inr
-      (Or.inl LeaTTaBridge.emptySpace_foo_noMatchMettaCallStep_counter0)))
-
-/-- Concrete extensional-`unify` readout through the repaired
-query/extensional-unify fragment. -/
-theorem seededUnifyOrder_repairedQueryUnifyExtFragment_models_mettaCall :
-    MettaCall Space.empty GroundedDispatch.none
-      (.expression [.symbol "unify", .symbol "a", .var "x",
-        .var "x", .symbol "else"])
-      Atom.undefinedType LeaTTaBridge.seededUnifyOrderSeed
-      (.symbol "a", LeaTTaBridge.seededUnifyOrderHEMerged) :=
-  leattaRepairedQueryUnifyExtFragmentEngine_models_declarative_he.mettaCall_models
-    Space.empty GroundedDispatch.none
-    (.expression [.symbol "unify", .symbol "a", .var "x",
-      .var "x", .symbol "else"])
-    Atom.undefinedType LeaTTaBridge.seededUnifyOrderSeed 10
-    (.symbol "a", LeaTTaBridge.seededUnifyOrderHEMerged)
-    (Or.inr (Or.inr (Or.inr
-      LeaTTaBridge.seededUnifyOrder_leattaUnifyMettaCallStepExt_counter0)))
-
-/-- Concrete `Error` passthrough through the repaired query/extensional-unify
-fragment, paired with the executable LeaTTa minimal readout for the translated
-atom. -/
-theorem leatta_minimal_error_passthrough_repairedQueryUnifyExtFragment_models_mettaCall :
-    Metta.Minimal.mettaEval (Metta.Minimal.MinEnv.ofAtomsGT [] []) 4
-      Metta.Minimal.St.init [] leattaErrorPassthroughAtom =
-        ([(leattaErrorPassthroughAtom, [])], Metta.Minimal.St.init) ∧
-    MettaCall Space.empty GroundedDispatch.none
-      (Atom.error (.symbol "x") (.symbol "e")) Atom.undefinedType Bindings.empty
-      (Atom.error (.symbol "x") (.symbol "e"), Bindings.empty) := by
-  constructor
-  · exact leatta_minimal_error_passthrough_mettaEval
-  · exact
-      leattaRepairedQueryUnifyExtFragmentEngine_models_declarative_he.mettaCall_models
-        Space.empty GroundedDispatch.none
-        (Atom.error (.symbol "x") (.symbol "e")) Atom.undefinedType Bindings.empty 10
-        (Atom.error (.symbol "x") (.symbol "e"), Bindings.empty)
-        (Or.inl
-          ⟨.symbol "x", .symbol "e", rfl, rfl,
-            leatta_error_passthrough_atom_is_HE_error_translation⟩)
-
-/-! ### Repaired query/unify fragment plus malformed-`unify` interface
-
-This super-fragment keeps the repaired query/extensional-`unify` bridge intact
-and adds the subject-side malformed-`unify` observation repaired above. -/
-
-def LeaTTaRepairedQueryUnifyExtBadArityMettaCallStep
-    (space : Space) (d : GroundedDispatch) (fuel : Nat)
-    (atom type_ : Atom) (inputBindings : Bindings)
-    (result : ResultPair) : Prop :=
-  LeaTTaRepairedQueryUnifyExtMettaCallStep
-    space d fuel atom type_ inputBindings result ∨
-  LeaTTaUnifyBadArityMettaCallStep
-    space d fuel atom type_ inputBindings result ∨
-  LeaTTaBridge.LeaTTaEquationMettaCallStep
-    space d fuel atom type_ inputBindings result
-
-theorem leattaRepairedQueryUnifyExtBadArityMettaCallStep_sound
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {atom type_ : Atom} {inputBindings : Bindings}
-    {result : ResultPair}
-    (hstep :
-      LeaTTaRepairedQueryUnifyExtBadArityMettaCallStep
-        space d fuel atom type_ inputBindings result) :
-    MettaCall space d atom type_ inputBindings result := by
-  rcases hstep with hbase | hrest
-  · exact leattaRepairedQueryUnifyExtMettaCallStep_sound hbase
-  rcases hrest with hbad | heq
-  · exact leattaUnifyBadArityMettaCallStep_sound hbad
-  · exact LeaTTaBridge.leattaEquationMettaCallStep_sound heq
-
-/-- Any engine whose call interface refines the repaired query/extensional-`unify`
-fragment plus the malformed-`unify` executable observation satisfies the
-corresponding declarative HE `MettaCall` obligation. -/
-theorem leattaRepairedQueryUnifyExtBadArityFragment_mettaCall_sound
-    (engine : HEOperationalEngine)
-    (h_refines :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.mettaCallStep space dispatch atom type_ b fuel r →
-          LeaTTaRepairedQueryUnifyExtBadArityMettaCallStep
-            space dispatch fuel atom type_ b r) :
-    ∀ (space : Space) (dispatch : GroundedDispatch)
-      (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-      engine.mettaCallStep space dispatch atom type_ b fuel r →
-        MettaCall space dispatch atom type_ b r := by
-  intro space dispatch atom type_ b fuel r hstep
-  exact leattaRepairedQueryUnifyExtBadArityMettaCallStep_sound
-    (h_refines space dispatch atom type_ b fuel r hstep)
-
-theorem engine_bridge_of_leattaRepairedQueryUnifyExtBadArityFragment_mettaCall
-    (engine : HEOperationalEngine)
-    (h_eval :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.evalAtomStep space dispatch atom type_ b fuel r →
-          EvalAtom space dispatch atom type_ b r)
-    (h_metta_refines :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.mettaCallStep space dispatch atom type_ b fuel r →
-          LeaTTaRepairedQueryUnifyExtBadArityMettaCallStep
-            space dispatch fuel atom type_ b r) :
-    HEEngineBridge engine where
-  evalAtom_sound := h_eval
-  mettaCall_sound :=
-    leattaRepairedQueryUnifyExtBadArityFragment_mettaCall_sound
-      engine h_metta_refines
-theorem engine_models_declarative_he_of_leattaRepairedQueryUnifyExtBadArityFragment_mettaCall
-    (engine : HEOperationalEngine)
-    (h_eval :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.evalAtomStep space dispatch atom type_ b fuel r →
-          EvalAtom space dispatch atom type_ b r)
-    (h_metta_refines :
-      ∀ (space : Space) (dispatch : GroundedDispatch)
-        (atom type_ : Atom) (b : Bindings) (fuel : Nat) (r : ResultPair),
-        engine.mettaCallStep space dispatch atom type_ b fuel r →
-          LeaTTaRepairedQueryUnifyExtBadArityMettaCallStep
-            space dispatch fuel atom type_ b r) :
-    HEEngineModelsDeclarativeSpec engine :=
-  engine_parametric_he_refinement engine
-    (engine_bridge_of_leattaRepairedQueryUnifyExtBadArityFragment_mettaCall
-      engine h_eval h_metta_refines)
-
-def leattaRepairedQueryUnifyExtBadArityFragmentEngine : HEOperationalEngine where
-  evalAtomStep := fun space dispatch atom type_ b _fuel r =>
-    EvalAtom space dispatch atom type_ b r
-  mettaCallStep := fun space dispatch atom type_ b fuel r =>
-    LeaTTaRepairedQueryUnifyExtBadArityMettaCallStep
-      space dispatch fuel atom type_ b r
-theorem leattaRepairedQueryUnifyExtBadArityFragmentEngine_bridge :
-    HEEngineBridge leattaRepairedQueryUnifyExtBadArityFragmentEngine where
-  evalAtom_sound := by
-    intro space dispatch atom type_ b fuel r hstep
-    simpa [leattaRepairedQueryUnifyExtBadArityFragmentEngine] using hstep
-  mettaCall_sound := by
-    intro space dispatch atom type_ b fuel r hstep
-    exact leattaRepairedQueryUnifyExtBadArityMettaCallStep_sound hstep
-theorem leattaRepairedQueryUnifyExtBadArityFragmentEngine_models_declarative_he :
-    HEEngineModelsDeclarativeSpec
-      leattaRepairedQueryUnifyExtBadArityFragmentEngine :=
-  engine_parametric_he_refinement
-    leattaRepairedQueryUnifyExtBadArityFragmentEngine
-    leattaRepairedQueryUnifyExtBadArityFragmentEngine_bridge
-
-/-- The bad-arity-inclusive repaired fragment subsumes the previous repaired
-query/extensional-`unify` fragment. -/
-theorem leattaRepairedQueryUnifyExt_step_subsumed_by_badArityFragment
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {atom type_ : Atom} {inputBindings : Bindings}
-    {result : ResultPair}
-    (hstep :
-      LeaTTaRepairedQueryUnifyExtMettaCallStep
-        space d fuel atom type_ inputBindings result) :
-    LeaTTaRepairedQueryUnifyExtBadArityMettaCallStep
-        space d fuel atom type_ inputBindings result :=
-  Or.inl hstep
-
-/-- The bad-arity-inclusive repaired fragment also subsumes the general
-LeaTTa equation-call step.  This is the migration path away from the separate
-equation fragment engine. -/
-theorem leattaEquationStep_subsumed_by_badArityFragment
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {atom type_ : Atom} {inputBindings : Bindings}
-    {result : ResultPair}
-    (hstep :
-      LeaTTaBridge.LeaTTaEquationMettaCallStep
-        space d fuel atom type_ inputBindings result) :
-    LeaTTaRepairedQueryUnifyExtBadArityMettaCallStep
-        space d fuel atom type_ inputBindings result :=
-  Or.inr (Or.inr hstep)
-
-/-- The older repaired fragment engine is justified through the stronger
-bad-arity-inclusive bridge, giving a migration path for downstream readouts
-while fragment engines are consolidated. -/
-theorem leattaRepairedQueryUnifyExtFragmentEngine_models_declarative_he_via_badArityFragment :
-    HEEngineModelsDeclarativeSpec leattaRepairedQueryUnifyExtFragmentEngine :=
-  engine_models_declarative_he_of_leattaRepairedQueryUnifyExtBadArityFragment_mettaCall
-    leattaRepairedQueryUnifyExtFragmentEngine
-    (by
-      intro space dispatch atom type_ b fuel r hstep
-      simpa [leattaRepairedQueryUnifyExtFragmentEngine] using hstep)
-    (by
-      intro space dispatch atom type_ b fuel r hstep
-      exact
-        leattaRepairedQueryUnifyExt_step_subsumed_by_badArityFragment
-          (by
-            simpa [leattaRepairedQueryUnifyExtFragmentEngine] using hstep))
-/-- The older equation fragment engine is justified through the stronger
-bad-arity-inclusive bridge. -/
-theorem leattaEquationFragmentEngine_models_declarative_he_via_badArityFragment :
-    HEEngineModelsDeclarativeSpec leattaEquationFragmentEngine :=
-  engine_models_declarative_he_of_leattaRepairedQueryUnifyExtBadArityFragment_mettaCall
-    leattaEquationFragmentEngine
-    (by
-      intro space dispatch atom type_ b fuel r hstep
-      simpa [leattaEquationFragmentEngine] using hstep)
-    (by
-      intro space dispatch atom type_ b fuel r hstep
-      exact
-        leattaEquationStep_subsumed_by_badArityFragment
-          (by
-            simpa [leattaEquationFragmentEngine] using hstep))
-/-- Concrete no-match readout through the bad-arity-inclusive repaired
-fragment. -/
-theorem emptySpace_foo_repairedQueryUnifyExtBadArityFragment_models_mettaCall :
-    MettaCall Space.empty GroundedDispatch.none
-      (.expression [.symbol "foo"]) Atom.undefinedType Bindings.empty
-      (.expression [.symbol "foo"], Bindings.empty) :=
-  leattaRepairedQueryUnifyExtBadArityFragmentEngine_models_declarative_he.mettaCall_models
-    Space.empty GroundedDispatch.none
-    (.expression [.symbol "foo"]) Atom.undefinedType Bindings.empty 10
-    (.expression [.symbol "foo"], Bindings.empty)
-    (Or.inl (Or.inr (Or.inr
-      (Or.inl LeaTTaBridge.emptySpace_foo_noMatchMettaCallStep_counter0))))
-
-/-- Concrete extensional-`unify` readout through the bad-arity-inclusive
-repaired fragment. -/
-theorem seededUnifyOrder_repairedQueryUnifyExtBadArityFragment_models_mettaCall :
-    MettaCall Space.empty GroundedDispatch.none
-      (.expression [.symbol "unify", .symbol "a", .var "x",
-        .var "x", .symbol "else"])
-      Atom.undefinedType LeaTTaBridge.seededUnifyOrderSeed
-      (.symbol "a", LeaTTaBridge.seededUnifyOrderHEMerged) :=
-  leattaRepairedQueryUnifyExtBadArityFragmentEngine_models_declarative_he.mettaCall_models
-    Space.empty GroundedDispatch.none
-    (.expression [.symbol "unify", .symbol "a", .var "x",
-      .var "x", .symbol "else"])
-    Atom.undefinedType LeaTTaBridge.seededUnifyOrderSeed 10
-    (.symbol "a", LeaTTaBridge.seededUnifyOrderHEMerged)
-    (Or.inl (Or.inr (Or.inr (Or.inr
-      LeaTTaBridge.seededUnifyOrder_leattaUnifyMettaCallStepExt_counter0))))
-
-/-- Concrete `Error` passthrough through the bad-arity-inclusive repaired
-fragment, paired with the executable LeaTTa minimal readout for the translated
-atom. -/
-theorem leatta_minimal_error_passthrough_repairedQueryUnifyExtBadArityFragment_models_mettaCall :
-    Metta.Minimal.mettaEval (Metta.Minimal.MinEnv.ofAtomsGT [] []) 4
-      Metta.Minimal.St.init [] leattaErrorPassthroughAtom =
-        ([(leattaErrorPassthroughAtom, [])], Metta.Minimal.St.init) ∧
-    MettaCall Space.empty GroundedDispatch.none
-      (Atom.error (.symbol "x") (.symbol "e")) Atom.undefinedType Bindings.empty
-      (Atom.error (.symbol "x") (.symbol "e"), Bindings.empty) := by
-  constructor
-  · exact leatta_minimal_error_passthrough_mettaEval
-  · exact
-      leattaRepairedQueryUnifyExtBadArityFragmentEngine_models_declarative_he.mettaCall_models
-        Space.empty GroundedDispatch.none
-        (Atom.error (.symbol "x") (.symbol "e")) Atom.undefinedType Bindings.empty 10
-        (Atom.error (.symbol "x") (.symbol "e"), Bindings.empty)
-        (Or.inl (Or.inl
-          ⟨.symbol "x", .symbol "e", rfl, rfl,
-            leatta_error_passthrough_atom_is_HE_error_translation⟩))
-
-/-- Concrete equality-bearing chain-resolution readout through the
-bad-arity-inclusive repaired fragment, subsuming the older equation-fragment
-readout. -/
-theorem chainResolveBoundary_badArityFragment_models_mettaCall_counter0 :
-    MettaCall
-      (Space.ofList
-        [.expression
-          [.symbol "=",
-            .expression [.symbol "f", .var "x", .var "y"],
-            .var "x"]])
-      GroundedDispatch.none
-      (.expression [.symbol "f", .var "y#1", .symbol "a"])
-      Atom.undefinedType Bindings.empty
-      (.var "y#1",
-        ({ assignments := [("y#2", .symbol "a")]
-         , equalities := [("y#1", "x#0")] } : Bindings)) :=
-  leattaRepairedQueryUnifyExtBadArityFragmentEngine_models_declarative_he.mettaCall_models
-    (Space.ofList
-      [.expression
-        [.symbol "=",
-          .expression [.symbol "f", .var "x", .var "y"],
-          .var "x"]])
-    GroundedDispatch.none
-    (.expression [.symbol "f", .var "y#1", .symbol "a"])
-    Atom.undefinedType Bindings.empty 10
-    (.var "y#1",
-      ({ assignments := [("y#2", .symbol "a")]
-       , equalities := [("y#1", "x#0")] } : Bindings))
-    (leattaEquationStep_subsumed_by_badArityFragment
-      LeaTTaBridge.chainResolveBoundary_leattaEquationMettaCallStep_counter0)
-
-/-- Concrete malformed-`unify` readout through the repaired fragment extended
-with the bad-arity subject observation. -/
-theorem leatta_minimal_unify_bad_arity_repairedQueryUnifyExtBadArityFragment_models_mettaCall :
-    Metta.Minimal.evalAtomMin
-        (Metta.Minimal.MinEnv.ofAtomsGT [] []) 4
-        leattaBadUnifyThreeArgs =
-      [LeaTTaBridge.toLeaTTaAtom
-        (mkUnifyBadArityError heBadUnifyThreeArgs)] ∧
-    MettaCall Space.empty GroundedDispatch.none
-      heBadUnifyThreeArgs Atom.undefinedType Bindings.empty
-      (mkUnifyBadArityError heBadUnifyThreeArgs, Bindings.empty) := by
-  constructor
-  · exact leatta_minimal_unify_bad_arity_matches_HE_bad_arity_interface.1
-  · exact
-      leattaRepairedQueryUnifyExtBadArityFragmentEngine_models_declarative_he.mettaCall_models
-        Space.empty GroundedDispatch.none
-        heBadUnifyThreeArgs Atom.undefinedType Bindings.empty 4
-        (mkUnifyBadArityError heBadUnifyThreeArgs, Bindings.empty)
-        (Or.inr
-          (Or.inl
-            leattaBadUnifyThreeArgs_unifyBadArityMettaCallStep_counter4))
-
-/-- Transport-backed conformance through the concrete `queryOp` hit boundary.
-This theorem makes explicit that the older avoid-aware transport certificate is
-now only one way to produce the executable hit consumed by the smaller bridge. -/
-theorem leattaTransportAgainstVisibleWithMerge_models_mettaCall_final_via_queryOpHit
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {es : List Atom} {rhs type_ : Atom}
-    {qb inputBindings merged : Bindings}
-    {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
-    {counter : Nat} {k : String} {finalResult : ResultPair}
-    (h_not_special : ¬ SpecialFormHead (.expression es))
-    (h_not_error : isErrorAtom (.expression es) = false)
-    (h_not_grounded : HeadNotExecutable d (.expression es))
-    (hk : Metta.Minimal.headKey
-      (LeaTTaBridge.toLeaTTaAtom (.expression es)) = some k)
-    (h_query_visible : (rhs, qb) ∈
-      queryEquationsAgainstVisible space (.expression es) fuel)
-    {avoid : List String}
-    (h_cover : CoversEvaluation avoid [] (.expression es) type_ inputBindings)
-    (h_query_public : (rhs, qb) ∈
-      queryEquationsAvoiding avoid space (.expression es) fuel)
-    (htransport : LeaTTaBridge.EquationMatchVisibleItemTransportAgainst
-      space (.expression es) rhs qb fuel gt prev counter)
-    (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
-    (h_no_loop : merged.hasLoop = false)
-    (h_recurse :
-      EvalAtom space d (merged.applyFull rhs fuel) type_ merged finalResult) :
-    MettaCall space d (.expression es) type_ inputBindings finalResult := by
-  exact
-    leattaRepairedQueryUnifyExtBadArityFragmentEngine_models_declarative_he.mettaCall_models
-      space d (.expression es) type_ inputBindings fuel finalResult
-      (leattaEquationStep_subsumed_by_badArityFragment
-        (LeaTTaBridge.leattaEquationMettaCallStep_of_transport_againstVisible_with_merge_final
-          (space := space)
-          (d := d)
-          (fuel := fuel)
-          (es := es)
-          (rhs := rhs)
-          (type_ := type_)
-          (qb := qb)
-          (inputBindings := inputBindings)
-          (merged := merged)
-          (gt := gt)
-          (prev := prev)
-          (counter := counter)
-          (k := k)
-          (finalResult := finalResult)
-          h_not_special h_not_error h_not_grounded hk h_query_visible
-          h_cover h_query_public htransport h_merge h_no_loop h_recurse))
-
-/-- Conformance schema through the smaller local freshened-item transport
-boundary. Candidate selection is discharged from the HE visible query witness;
-the supplied obligation is only the single-candidate LeaTTa freshening,
-matching, merge, loop-filter, instantiation, and alpha-agreement step. -/
-theorem leattaFreshenedItemTransportAgainstVisibleWithMerge_models_mettaCall_final
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {es : List Atom} {rhs type_ : Atom}
-    {qb inputBindings merged : Bindings}
-    {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
-    {counter : Nat} {k : String} {finalResult : ResultPair}
-    (h_not_special : ¬ SpecialFormHead (.expression es))
-    (h_not_error : isErrorAtom (.expression es) = false)
-    (h_not_grounded : HeadNotExecutable d (.expression es))
-    (hk : Metta.Minimal.headKey
-      (LeaTTaBridge.toLeaTTaAtom (.expression es)) = some k)
-    (h_query_visible : (rhs, qb) ∈
-      queryEquationsAgainstVisible space (.expression es) fuel)
-    {avoid : List String}
-    (h_cover : CoversEvaluation avoid [] (.expression es) type_ inputBindings)
-    (h_query_public : (rhs, qb) ∈
-      queryEquationsAvoiding avoid space (.expression es) fuel)
-    (hitemTransport :
-      LeaTTaBridge.FreshenedQueryOpItemTransportAgainstVisible
-        space (.expression es) rhs qb fuel gt prev counter)
-    (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
-    (h_no_loop : merged.hasLoop = false)
-    (h_recurse :
-      EvalAtom space d (merged.applyFull rhs fuel) type_ merged finalResult) :
-    MettaCall space d (.expression es) type_ inputBindings finalResult := by
-  exact
-    leattaRepairedQueryUnifyExtBadArityFragmentEngine_models_declarative_he.mettaCall_models
-      space d (.expression es) type_ inputBindings fuel finalResult
-      (leattaEquationStep_subsumed_by_badArityFragment
-        (LeaTTaBridge.leattaEquationMettaCallStep_of_freshened_item_transport_againstVisible_with_merge_final
-          (space := space)
-          (d := d)
-          (fuel := fuel)
-          (es := es)
-          (rhs := rhs)
-          (type_ := type_)
-          (qb := qb)
-          (inputBindings := inputBindings)
-          (merged := merged)
-          (gt := gt)
-          (prev := prev)
-          (counter := counter)
-          (k := k)
-          (finalResult := finalResult)
-          h_not_special h_not_error h_not_grounded hk h_query_visible
-          h_cover h_query_public hitemTransport h_merge h_no_loop h_recurse))
-
-/-- Variable-successor specialization of the freshened-item conformance schema.
-The caller proves only that the executable local item emits a variable and the
-HE visible successor is a variable; the bridge supplies the alpha-equivalence
-needed by the official `MettaCall` conclusion. -/
-theorem leattaFreshenedVariableItemTransportAgainstVisibleWithMerge_models_mettaCall_final
-    {space : Space} {d : GroundedDispatch} {fuel : Nat}
-    {es : List Atom} {rhs type_ : Atom}
-    {qb inputBindings merged : Bindings}
-    {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
-    {counter : Nat} {k : String} {finalResult : ResultPair}
-    (h_not_special : ¬ SpecialFormHead (.expression es))
-    (h_not_error : isErrorAtom (.expression es) = false)
-    (h_not_grounded : HeadNotExecutable d (.expression es))
-    (hk : Metta.Minimal.headKey
-      (LeaTTaBridge.toLeaTTaAtom (.expression es)) = some k)
-    (h_query_visible : (rhs, qb) ∈
-      queryEquationsAgainstVisible space (.expression es) fuel)
-    {avoid : List String}
-    (h_cover : CoversEvaluation avoid [] (.expression es) type_ inputBindings)
-    (h_query_public : (rhs, qb) ∈
-      queryEquationsAvoiding avoid space (.expression es) fuel)
-    (hvarTransport :
-      LeaTTaBridge.FreshenedVariableQueryOpItemTransportAgainstVisible
-        space (.expression es) rhs qb fuel gt prev counter)
-    (h_merge : merged ∈ mergeBindings qb inputBindings fuel)
-    (h_no_loop : merged.hasLoop = false)
-    (h_recurse :
-      EvalAtom space d (merged.applyFull rhs fuel) type_ merged finalResult) :
-    MettaCall space d (.expression es) type_ inputBindings finalResult := by
-  exact
-    leattaRepairedQueryUnifyExtBadArityFragmentEngine_models_declarative_he.mettaCall_models
-      space d (.expression es) type_ inputBindings fuel finalResult
-      (leattaEquationStep_subsumed_by_badArityFragment
-        (LeaTTaBridge.leattaEquationMettaCallStep_of_freshened_variable_item_transport_againstVisible_with_merge_final
-          (space := space)
-          (d := d)
-          (fuel := fuel)
-          (es := es)
-          (rhs := rhs)
-          (type_ := type_)
-          (qb := qb)
-          (inputBindings := inputBindings)
-          (merged := merged)
-          (gt := gt)
-          (prev := prev)
-          (counter := counter)
-          (k := k)
-          (finalResult := finalResult)
-          h_not_special h_not_error h_not_grounded hk h_query_visible
-          h_cover h_query_public hvarTransport h_merge h_no_loop h_recurse))
-
-/-- Concrete equality-bearing query readout through the engine-parametric
-LeaTTa equation fragment.  This is the repaired path for the chain-resolution
-boundary where HE's visible query interface preserves an equality relation that
-the assignment-only instantiated-item shortcut cannot carry. -/
-theorem chainResolveBoundary_equationFragment_models_mettaCall_counter0 :
-    MettaCall
-      (Space.ofList
-        [.expression
-          [.symbol "=",
-            .expression [.symbol "f", .var "x", .var "y"],
-            .var "x"]])
-      GroundedDispatch.none
-      (.expression [.symbol "f", .var "y#1", .symbol "a"])
-      Atom.undefinedType Bindings.empty
-      (.var "y#1",
-        ({ assignments := [("y#2", .symbol "a")]
-         , equalities := [("y#1", "x#0")] } : Bindings)) :=
-  chainResolveBoundary_badArityFragment_models_mettaCall_counter0
-
-/-- Negative companion for the equality-bearing query boundary: there is a
-faithful visible-query hit whose expected instantiated item is absent from the
-assignment-only shortcut's `queryOp` target. -/
-theorem equalityBearing_query_hit_not_carried_by_instantiated_item_shortcut :
-    ∃ (space : Space) (src rhs : Atom) (qb : Bindings)
-      (fuel counter : Nat) (gt : Metta.GroundingTable),
-      (rhs, qb) ∈ queryEquationsAgainstVisible space src fuel ∧
-      LeaTTaBridge.NoVarAssignmentValues qb ∧
-      LeaTTaBridge.AssignmentsNodup qb ∧
-      LeaTTaBridge.atomDepth rhs + 2 ≤ fuel ∧
-      Metta.Minimal.evalResult []
-          (Metta.instantiate (LeaTTaBridge.toLeaTTaMatchBindings qb)
-            (LeaTTaBridge.toLeaTTaAtom rhs))
-          (LeaTTaBridge.toLeaTTaMatchBindings qb) ∉
-        (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT
-            (LeaTTaBridge.toLeaTTaAtoms space.atoms) gt)
-          { counter := counter, world := Metta.Minimal.World.empty }
-          [] (LeaTTaBridge.toLeaTTaAtom src) Metta.Bindings.empty).1 :=
-  LeaTTaBridge.exists_visible_query_hit_not_carried_by_instantiated_item_shortcut
-
-/-- Generic conformance schema for the no-variable-values instantiated-RHS
-equation fragment.  It exposes the reusable bridge behind the unary-identity
-fixture: once the repaired visible query, public HE query, LeaTTa `queryOp` item,
-and recursive `EvalAtom` premise are supplied, the official declarative HE
-`MettaCall` result follows. -/
-theorem leattaInstantiatedEquationFragment_models_mettaCall
-    {space : Space} {d : GroundedDispatch} {n : Nat}
-    {es : List Atom} {rhs type_ : Atom} {qb outputBindings : Bindings}
-    {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
-    {counter : Nat}
-    (h_not_special : ¬ SpecialFormHead (.expression es))
-    (h_not_error : isErrorAtom (.expression es) = false)
-    (h_not_grounded : HeadNotExecutable d (.expression es))
-    (h_query_visible : (rhs, qb) ∈
-      queryEquationsAgainstVisible space (.expression es) (n + 1))
-    {avoid : List String}
-    (h_cover : CoversEvaluation avoid [] (.expression es) type_ Bindings.empty)
-    (h_query_public : (rhs, qb) ∈
-      queryEquationsAvoiding avoid space (.expression es) (n + 1))
-    (heq : qb.equalities = [])
-    (hfresh : ValueKeysFreshForValues (LeaTTaBridge.toLeaTTaMatchBindings qb))
-    (hdepth : LeaTTaBridge.atomDepth rhs + 2 ≤ n + 1)
-    (hitem :
-      Metta.Minimal.evalResult prev
-          (Metta.instantiate (LeaTTaBridge.toLeaTTaMatchBindings qb)
-            (LeaTTaBridge.toLeaTTaAtom rhs))
-          (LeaTTaBridge.toLeaTTaMatchBindings qb) ∈
-        (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT
-            (LeaTTaBridge.toLeaTTaAtoms space.atoms) gt)
-          { counter := counter, world := Metta.Minimal.World.empty }
-          prev (LeaTTaBridge.toLeaTTaAtom (.expression es))
-          Metta.Bindings.empty).1)
-    (h_recurse :
-      EvalAtom space d (qb.applyFull rhs (n + 1)) type_ qb
-        (qb.applyFull rhs (n + 1), outputBindings)) :
-    MettaCall space d (.expression es) type_ Bindings.empty
-      (qb.applyFull rhs (n + 1), outputBindings) := by
-  exact
-    leattaRepairedQueryUnifyExtBadArityFragmentEngine_models_declarative_he.mettaCall_models
-      space d (.expression es) type_ Bindings.empty (n + 1)
-      (qb.applyFull rhs (n + 1), outputBindings)
-      (leattaEquationStep_subsumed_by_badArityFragment
-        (LeaTTaBridge.leattaEquationMettaCallStep_of_instantiated_item_againstVisible_empty_input
-          (space := space) (d := d) (n := n) (es := es)
-          (rhs := rhs) (type_ := type_) (qb := qb)
-          (outputBindings := outputBindings) (gt := gt) (prev := prev)
-          (counter := counter)
-          h_not_special h_not_error h_not_grounded h_query_visible
-          h_cover h_query_public heq hfresh
-          hdepth hitem h_recurse))
-
-/-- Conformance-facing positive fixture for the LeaTTa equation-call fragment:
-the arbitrary unary-identity non-ground assignment witness satisfies the
-official HE `MettaCall` rule through the step-shaped bridge hook. -/
-theorem leattaUnaryIdentityFragment_models_mettaCall
-    (head var value : String)
-    (h_not_special :
-      ¬ SpecialFormHead (.expression [.symbol head, .symbol value]))
-    (h_not_error :
-      isErrorAtom (.expression [.symbol head, .symbol value]) = false)
-    (h_recurse :
-      EvalAtom (LeaTTaBridge.unaryIdentitySpace head var) GroundedDispatch.none
-        (.symbol value) Atom.undefinedType
-        (LeaTTaBridge.unaryIdentityBindings var value)
-        (.symbol value, LeaTTaBridge.unaryIdentityBindings var value)) :
-    MettaCall (LeaTTaBridge.unaryIdentitySpace head var) GroundedDispatch.none
-      (.expression [.symbol head, .symbol value]) Atom.undefinedType
-      Bindings.empty (.symbol value, LeaTTaBridge.unaryIdentityBindings var value) := by
-  have heq :
-      (LeaTTaBridge.unaryIdentityBindings var value).equalities = [] := by
-    simp [LeaTTaBridge.unaryIdentityBindings, Bindings.assign, Bindings.empty]
-  have hfull :
-      (LeaTTaBridge.unaryIdentityBindings var value).applyFull
-          (.var (LeaTTaBridge.unaryIdentityFresh0 var)) 10 =
-        .symbol value := by
-    rw [Bindings.applyFull_no_equalities heq]
-    simp [Bindings.apply, Bindings.resolve, Bindings.resolveAtomAux,
-      Bindings.hasAssignedVar, LeaTTaBridge.unaryIdentityBindings,
-      LeaTTaBridge.unaryIdentityFresh0, Bindings.assign, Bindings.isBound,
-      Bindings.empty, Bindings.lookup]
-  simpa [hfull] using
-    (leattaInstantiatedEquationFragment_models_mettaCall
-      (space := LeaTTaBridge.unaryIdentitySpace head var)
-      (d := GroundedDispatch.none)
-      (n := 9)
-      (es := [.symbol head, .symbol value])
-      (rhs := .var (LeaTTaBridge.unaryIdentityFresh0 var))
-      (type_ := Atom.undefinedType)
-      (qb := LeaTTaBridge.unaryIdentityBindings var value)
-      (outputBindings := LeaTTaBridge.unaryIdentityBindings var value)
-      (gt := (default : Metta.GroundingTable))
-      (prev := [])
-      (counter := 0)
-      h_not_special
-      h_not_error
-      (by
-        simp [HeadNotExecutable, GroundedDispatch.none]
-        constructor
-        · intro hunify
-          apply h_not_special
-          simp [SpecialFormHead, hunify]
-        · intro hswitch
-          apply h_not_special
-          simp [SpecialFormHead, hswitch])
-      (LeaTTaBridge.queryEquationsAgainstVisible_unaryIdentity_counter0_mem
-        head var value)
-      (LeaTTaBridge.unaryIdentity_cover head value)
-      (LeaTTaBridge.queryEquationsAvoiding_unaryIdentity_counter0_mem
-        head var value)
-      heq
-      (by
-        have htranslated :
-            LeaTTaBridge.toLeaTTaMatchBindings
-                (LeaTTaBridge.unaryIdentityBindings var value) =
-              [Metta.BindingRel.val
-                (LeaTTaBridge.unaryIdentityFresh0 var) (Metta.Atom.sym value)] := by
-          simp [LeaTTaBridge.toLeaTTaMatchBindings,
-            LeaTTaBridge.toLeaTTaMatchSubst,
-            LeaTTaBridge.unaryIdentityBindings,
-            LeaTTaBridge.unaryIdentityFresh0, Bindings.assign,
-            Bindings.isBound, Bindings.lookup, Bindings.empty,
-            LeaTTaBridge.toLeaTTaAtom, Metta.Bindings.ofSubst]
-        rw [htranslated]
-        exact ClosedValueBindings.valueKeysFreshForValues
-          (ClosedValueBindings.val (by simp [Metta.Atom.vars])
-            ClosedValueBindings.nil))
-      (by simp [LeaTTaBridge.atomDepth])
-      (LeaTTaBridge.unaryIdentity_instantiated_queryOp_item_counter0
-        head var value (default : Metta.GroundingTable))
-      (by
-        simpa [hfull] using h_recurse))
-
-/-- Stable reachability through the concrete fuel evaluator gives the public
-    implementation-refined HE certification boundary. -/
-theorem heFuelEvaluatorEngine_stable_evalAtom_models_certified
-    (space : Space) (dispatch : GroundedDispatch)
-    (atom type_ : Atom) (b : Bindings) (r : ResultPair) :
-    StableEvalAtomStep heFuelEvaluatorEngine space dispatch atom type_ b r →
-      EvalAtomCertified space dispatch atom type_ b r := by
-  intro hstable
-  exact evalAtomStablyReaches_to_certified space dispatch atom type_ b r
-    (by
-      simpa [StableEvalAtomStep, heFuelEvaluatorEngine, EvalAtomStablyReaches]
-        using hstable)
-
-/-- For the concrete HE fuel evaluator, the engine-parametric stable
-`evalAtomStep` interface is exactly the public certified evaluator boundary. -/
-theorem heFuelEvaluatorEngine_stable_evalAtom_iff_certified
-    (space : Space) (dispatch : GroundedDispatch)
-    (atom type_ : Atom) (b : Bindings) (r : ResultPair) :
-    StableEvalAtomStep heFuelEvaluatorEngine space dispatch atom type_ b r ↔
-      EvalAtomCertified space dispatch atom type_ b r := by
-  constructor
-  · exact heFuelEvaluatorEngine_stable_evalAtom_models_certified
-      space dispatch atom type_ b r
-  · intro hcert
-    rcases hcert.2 with ⟨fuel0, hstable⟩
-    refine ⟨fuel0, ?_⟩
-    intro fuel hfuel
-    simpa [heFuelEvaluatorEngine] using hstable fuel hfuel
-
-/-- Stable reachability through the concrete fuel evaluator's `mettaCall`
-    interface gives the internal implementation-refined call certificate. -/
-theorem heFuelEvaluatorEngine_stable_mettaCall_models_certified
-    (space : Space) (dispatch : GroundedDispatch)
-    (atom type_ : Atom) (b : Bindings) (r : ResultPair) :
-    StableMettaCallStep heFuelEvaluatorEngine space dispatch atom type_ b r →
-      Mettapedia.Languages.MeTTa.HE.Internal.MettaCallCertified
-        space dispatch atom type_ b r := by
-  intro hstable
-  refine ⟨?_, ?_⟩
-  · exact heFuelEvaluatorEngine_models_declarative_he.stableMettaCall_models
-      space dispatch atom type_ b r hstable
-  · simpa [StableMettaCallStep, heFuelEvaluatorEngine,
-      Mettapedia.Languages.MeTTa.HE.Internal.MettaCallStablyReaches]
-      using hstable
-
-/-- For the concrete HE fuel evaluator, the engine-parametric stable
-`mettaCallStep` interface is exactly the implementation-refined `MettaCall`
-certificate used by the conformance bridge. -/
-theorem heFuelEvaluatorEngine_stable_mettaCall_iff_certified
-    (space : Space) (dispatch : GroundedDispatch)
-    (atom type_ : Atom) (b : Bindings) (r : ResultPair) :
-    StableMettaCallStep heFuelEvaluatorEngine space dispatch atom type_ b r ↔
-      Mettapedia.Languages.MeTTa.HE.Internal.MettaCallCertified
-        space dispatch atom type_ b r := by
-  constructor
-  · exact heFuelEvaluatorEngine_stable_mettaCall_models_certified
-      space dispatch atom type_ b r
-  · intro hcert
-    rcases hcert.2 with ⟨fuel0, hstable⟩
-    refine ⟨fuel0, ?_⟩
-    intro fuel hfuel
-    simpa [heFuelEvaluatorEngine] using hstable fuel hfuel
 
 /-! ### Metacircular self-interpreter corpus boundary
 

@@ -20,7 +20,7 @@ abbrev PolicyRuleSet := Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpoint
 
 def fixtureSeed : Set (LO.Modal.Formula ℕ) := ∅
 def fixtureRules : PolicyRuleSet := (∅ :
-  Set (Mettapedia.PLN.WorldModel.PLNWorldModel.WMConsequenceRuleOn WeightedState (LO.Modal.Formula ℕ)))
+  Set (Mettapedia.PLN.WorldModel.WMConsequenceRuleOn WeightedState (LO.Modal.Formula ℕ)))
 
 theorem disjoint_compatible
     (pkA pkB : PointedKripke) :

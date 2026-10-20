@@ -24,8 +24,8 @@ PLN world-model calculus (`BinaryWorldModel`, `WMRewriteRule`, `BinaryEvidence`)
 namespace Mettapedia.Logic.GovernanceReasoning.Bridge
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.Logic.GovernanceReasoning.Core
 
 open scoped ENNReal

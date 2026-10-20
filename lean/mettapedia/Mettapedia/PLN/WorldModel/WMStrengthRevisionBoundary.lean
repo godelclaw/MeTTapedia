@@ -18,7 +18,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.PLN.WorldModel.WMStrengthRevisionBoundary
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceControlReadout
 
 /-- No operation on scalar strengths can make strength a homomorphism of

@@ -19,6 +19,14 @@ structure Rep (n : Nat) where
   loopless : ∀ vertex, vertex ∉ row vertex
   nodup : ∀ vertex, (row vertex).Nodup
 
+/-- Invariant proofs add no identity beyond the stored ordered rows. -/
+@[ext] theorem Rep.ext {n : Nat} {first second : Rep n}
+    (rows : first.row = second.row) : first = second := by
+  cases first
+  cases second
+  cases rows
+  rfl
+
 /-- Read adjacency directly from the row membership relation. -/
 def denote {n : Nat} (graph : Rep n) : SimpleGraph (Fin n) where
   Adj source target := target ∈ graph.row source

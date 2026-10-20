@@ -2082,7 +2082,7 @@ structure DefinableCutTightnessProfile where
       (hCons : T.Consistent)
       (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : ℕ),
         NoConstOccurrence (param σ k) ψ)
-      (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T),
+      (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ),
       (C.intervalOfConsistent enum henum hCons hT0 hEM).lower = 1 ↔
         T.Provable C.formula
   genericWidthCollapse :
@@ -2094,7 +2094,7 @@ structure DefinableCutTightnessProfile where
       (hCons : T.Consistent)
       (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : ℕ),
         NoConstOccurrence (param σ k) ψ)
-      (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T),
+      (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ),
       (C.intervalOfConsistent enum henum hCons hT0 hEM).width = 0 ↔
         T.Provable C.formula ∨ T.Provable (Term.not C.formula)
   certifiedFragmentOrderTight :
@@ -2132,7 +2132,7 @@ structure DefinableCutTightnessProfile where
       (hCons : T.Consistent)
       (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : ℕ),
         NoConstOccurrence (param σ k) ψ)
-      (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T),
+      (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ),
       ((formulaIndicatorPositiveThresholdCut φ hφ0 τ hτpos hτle).intervalOfConsistent
         enum henum hCons hT0 hEM).width = 0 ↔
         T.Provable φ ∨ T.Provable (Term.not φ)
@@ -2163,7 +2163,7 @@ structure DefinableCutTightnessProfile where
       (hCons : T.Consistent)
       (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : ℕ),
         NoConstOccurrence (param ρ i) ψ)
-      (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T),
+      (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ),
       ((predicateFuzzyForAllCountingCardinalityThresholdCut
         σ params p χ hχ0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq hχRep).intervalOfConsistent
           enum henum hCons hT0 hEM).width = 0 ↔
@@ -2190,7 +2190,7 @@ structure DefinableCutTightnessProfile where
       (hCons : T.Consistent)
       (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : ℕ),
         NoConstOccurrence (param ρ i) ψ)
-      (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T),
+      (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ),
       ((predicateFuzzyForAllCountingAtLeastNBaseCut
         b params p hp0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq).intervalOfConsistent
           enum henum hCons hT0 hEM).width = 0 ↔
@@ -2219,7 +2219,7 @@ structure DefinableCutTightnessProfile where
       (hCons : T.Consistent)
       (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : ℕ),
         NoConstOccurrence (param ρ i) ψ)
-      (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T),
+      (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ),
       ((predicateFuzzyThereExistsCountingAtLeastNBaseCut
         b params p hp0 hObj hMeasurable hε0 k N hNpos hPCL hCardEq).intervalOfConsistent
           enum henum hCons hT0 hEM).width = 0 ↔
@@ -2251,7 +2251,7 @@ structure DefinableCutTightnessProfile where
       (hCons : T.Consistent)
       (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : ℕ),
         NoConstOccurrence (param σ i) ψ)
-      (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T),
+      (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ),
       ((predicateCountingCapacityCardinalityThresholdCut
         τ p χ hχ0 hObj hMeasurable k N hNpos hCardEq hχRep).intervalOfConsistent
           enum henum hCons hT0 hEM).width = 0 ↔
@@ -2276,7 +2276,7 @@ structure DefinableCutTightnessProfile where
       (hCons : T.Consistent)
       (hT0 : ∀ ψ ∈ T, ∀ (ρ : Ty Base) (i : ℕ),
         NoConstOccurrence (param ρ i) ψ)
-      (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T),
+      (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ),
       ((predicateCountingCapacityAtLeastNBaseCut
         b p hp0 hObj hMeasurable k N hNpos hCardEq).intervalOfConsistent
           enum henum hCons hT0 hEM).width = 0 ↔
@@ -2308,7 +2308,7 @@ structure DefinableCutTightnessProfile where
       (hCons : T.Consistent)
       (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (i : ℕ),
         NoConstOccurrence (param σ i) ψ)
-      (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T),
+      (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ),
       ((predicateSugenoCountingCardinalityThresholdCut
         τ p χ hχ0 hObj hMeasurable k N hNpos hCardEq hχRep).intervalOfConsistent
           enum henum hCons hT0 hEM).width = 0 ↔
@@ -2322,7 +2322,7 @@ structure DefinableCutTightnessProfile where
       (hCons : T.Consistent)
       (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : ℕ),
         NoConstOccurrence (param σ k) ψ)
-      (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T),
+      (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ),
       ((C.andCut D).intervalOfConsistent enum henum hCons hT0 hEM).lower = 1 ↔
         ∀ M : Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCompletenessTightness.ExtensionalTheoryModel T,
           C.threshold ≤ C.score M ∧ D.threshold ≤ D.score M
@@ -2335,7 +2335,7 @@ structure DefinableCutTightnessProfile where
       (hCons : T.Consistent)
       (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : ℕ),
         NoConstOccurrence (param σ k) ψ)
-      (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T),
+      (hEM : ∀ ψ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T ψ),
       ((C.impCut D).intervalOfConsistent enum henum hCons hT0 hEM).lower = 1 →
         (C.intervalOfConsistent enum henum hCons hT0 hEM).lower = 1 →
           (D.intervalOfConsistent enum henum hCons hT0 hEM).lower = 1

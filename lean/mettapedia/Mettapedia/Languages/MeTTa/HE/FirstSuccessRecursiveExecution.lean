@@ -1,6 +1,7 @@
 import Mettapedia.Languages.MeTTa.HE.FirstSuccessRecursiveStrategy
 import Mettapedia.Languages.MeTTa.HE.RecursiveDataExecution
 import Mettapedia.GSLT.Distinction.SimulationComposition
+import Mettapedia.Machines.ProductiveCoreAdapters
 
 /-!
 # Reflected execution of the first-success recursive strategy
@@ -98,7 +99,7 @@ def machine (dispatch : GroundedDispatch) (policy : TypePolicy := rawTypes) :
             control := .returning remaining, emitted := state.emitted ++ [result]})
 
 theorem next_preserves_context (dispatch : GroundedDispatch) (before after : Configuration)
-    (advanced : next dispatch before = some after) :
+    {policy : TypePolicy} (advanced : next dispatch before policy = some after) :
     after.space = before.space ∧ after.emitted = before.emitted := by
   cases before with
   | mk space control stack emitted =>
@@ -321,35 +322,54 @@ def machine (dispatch : GroundedDispatch) (policy : TypePolicy := rawTypes) :
   RecursiveMachine.Checked.guardMachine (FirstSuccessRecursiveExecution.machine dispatch policy)
     (fun state => blocked dispatch state policy)
 
+/-- Replenishing only the pending operation preserves the complete avoidance
+scope used by scoped type queries. Callers, alternatives and earlier answers
+remain protected; no new type-instance names are introduced by a depth grant. -/
+theorem invocationTypes_replenish (extra : Nat) (state : Configuration) :
+    invocationTypes (RecursiveMachine.Checked.replenish extra state) = invocationTypes state := by
+  rcases state with ⟨space, control, stack, emitted⟩
+  cases control with
+  | work task =>
+      simp [invocationTypes, RecursiveMachine.Checked.replenish,
+        RecursiveScope.configurationNames, RecursiveScope.liveAtoms, RecursiveScope.controlAtoms]
+  | returning results =>
+      cases stack with
+      | nil => rfl
+      | cons frame remaining => cases frame <;> rfl
+
 theorem blocked_run (dispatch : GroundedDispatch) (state : Configuration)
-    (request : ResourceRequest) (budget : Nat)
-    (pending : blocked dispatch state = some request) :
-    (machine dispatch).run (budget + 1) state = ([], .suspended request state) := by
-  exact (machine dispatch).run_succ_call (by simp [machine, RecursiveMachine.Checked.guardMachine, pending])
+    (request : ResourceRequest) (budget : Nat) {policy : TypePolicy}
+    (pending : blocked dispatch state policy = some request) :
+    (machine dispatch policy).run (budget + 1) state = ([], .suspended request state) := by
+  exact (machine dispatch policy).run_succ_call
+    (by simp [machine, RecursiveMachine.Checked.guardMachine, pending])
 
 theorem resume_prefix (dispatch : GroundedDispatch) (state saved : Configuration)
-    (first second : Nat) (observed : ResultSet)
-    (paused : (machine dispatch).run first state = (observed, .exhausted saved)) :
-    (machine dispatch).run (first + second) state =
-      (observed ++ ((machine dispatch).run second saved).1,
-        ((machine dispatch).run second saved).2) :=
-  (machine dispatch).established_and_pending first second state saved observed paused
+    (first second : Nat) (observed : ResultSet) {policy : TypePolicy}
+    (paused : (machine dispatch policy).run first state = (observed, .exhausted saved)) :
+    (machine dispatch policy).run (first + second) state =
+      (observed ++ ((machine dispatch policy).run second saved).1,
+        ((machine dispatch policy).run second saved).2) :=
+  (machine dispatch policy).established_and_pending first second state saved observed paused
 
 /-- A depth grant changes only the pending operation. It uses the existing
 replenishment map, which retains callers, world, scope and publication history. -/
-def continueRun (dispatch : GroundedDispatch) (budget extra : Nat) :
-    ResultSet × Outcome Configuration Configuration ResourceRequest →
-      ResultSet × Outcome Configuration Configuration ResourceRequest
+def continueRun (dispatch : GroundedDispatch) (budget extra : Nat)
+    (result : ResultSet × Outcome Configuration Configuration ResourceRequest)
+    (policy : TypePolicy := rawTypes) :
+    ResultSet × Outcome Configuration Configuration ResourceRequest :=
+  match result with
   | (events, .suspended _ saved) =>
-      let later := (machine dispatch).run budget (RecursiveMachine.Checked.replenish extra saved)
+      let later := (machine dispatch policy).run budget (RecursiveMachine.Checked.replenish extra saved)
       (events ++ later.1, later.2)
-  | result => (machine dispatch).continueRun budget result
+  | result => (machine dispatch policy).continueRun budget result
 
 /-- Grants preserve every already-published occurrence as a prefix. The
 following events come only from the saved pending operation. -/
 theorem continueRun_events_prefix (dispatch : GroundedDispatch) (budget extra : Nat)
-    (result : ResultSet × Outcome Configuration Configuration ResourceRequest) :
-    result.1 <+: (continueRun dispatch budget extra result).1 := by
+    (result : ResultSet × Outcome Configuration Configuration ResourceRequest)
+    (policy : TypePolicy := rawTypes) :
+    result.1 <+: (continueRun dispatch budget extra result policy).1 := by
   rcases result with ⟨events, outcome⟩
   cases outcome <;> simp only [continueRun, Machine.continueRun]
   all_goals first | exact List.prefix_append _ _ | exact List.prefix_rfl
@@ -506,6 +526,111 @@ theorem data_blocked_run (dispatch : GroundedDispatch) (state : Configuration)
   rw [run_representation, blocked_run dispatch state request budget pending]
   rfl
 
+namespace Scheduler
+
+open Mettapedia.Machines.ProductiveCoreAdapters
+
+/-- The common first-order cursor executes the actual checked worker. The
+selected type policy, complete pending configuration and resource requests
+remain explicit; scheduling does not replace an unserved request by an answer. -/
+def visit (dispatch : GroundedDispatch) (policy : TypePolicy) (price : Configuration → Nat)
+    (fuel : Nat) (source : Configuration) : Nat × EventCursor.Result (machine dispatch policy) :=
+  Machines.Cursor.advance (EventCursor.provider (machine dispatch policy)) EventCursor.client
+    (EventCursor.charge (machine dispatch policy) price) fuel
+    (EventCursor.packet (machine dispatch policy) ([], .exhausted source))
+
+theorem visit_read (dispatch : GroundedDispatch) (policy : TypePolicy) (price : Configuration → Nat)
+    (fuel : Nat) (source : Configuration) :
+    EventCursor.read (machine dispatch policy) (visit dispatch policy price fuel source).2 =
+      (machine dispatch policy).run fuel source := by
+  simpa only [visit, List.nil_append] using
+    (EventCursor.advance_run (machine dispatch policy) price fuel source []).2
+
+theorem visit_account (dispatch : GroundedDispatch) (policy : TypePolicy) (price : Configuration → Nat)
+    (fuel : Nat) (source : Configuration) :
+    (visit dispatch policy price fuel source).1 = (machine dispatch policy).spent price fuel source :=
+  (EventCursor.advance_run (machine dispatch policy) price fuel source []).1
+
+theorem visit_split (dispatch : GroundedDispatch) (policy : TypePolicy) (price : Configuration → Nat)
+    (earlier later : Nat) (source : Configuration) :
+    visit dispatch policy price (earlier + later) source =
+      Machines.Cursor.resume (EventCursor.provider (machine dispatch policy)) EventCursor.client
+        (EventCursor.charge (machine dispatch policy) price) later
+        (visit dispatch policy price earlier source) :=
+  EventCursor.advance_split _ _ _ _ _ _
+
+/-- A real pending request is retained at the shared scheduler boundary.
+This does not equate a checked resource request with completed source failure. -/
+theorem visit_blocked (dispatch : GroundedDispatch) (policy : TypePolicy) (price : Configuration → Nat)
+    (source : Configuration) (request : ResourceRequest)
+    (pending : blocked dispatch source policy = some request) :
+    EventCursor.read (machine dispatch policy) (visit dispatch policy price 1 source).2 =
+      ([], .suspended request source) := by
+  rw [visit_read]
+  exact blocked_run dispatch source request 0 pending
+
+/-- An explicit depth grant starts at the saved worker operation and keeps the
+previous event history and charge. A primitive-service request requires its
+own reply and is left unchanged. This operation supplies no external ownership
+or permission to clone the retained computation. -/
+def grant (dispatch : GroundedDispatch) (policy : TypePolicy) (price : Configuration → Nat)
+    (budget extra : Nat) (previous : Nat × EventCursor.Result (machine dispatch policy)) :
+    Nat × EventCursor.Result (machine dispatch policy) :=
+  match EventCursor.read (machine dispatch policy) previous.2 with
+  | (events, .suspended request saved) =>
+      match request with
+      | .primitiveService _ => previous
+      | _ =>
+          let later := Machines.Cursor.advance (EventCursor.provider (machine dispatch policy))
+            EventCursor.client (EventCursor.charge (machine dispatch policy) price) budget
+            (EventCursor.packet (machine dispatch policy)
+              (events, .exhausted (RecursiveMachine.Checked.replenish extra saved)))
+          (previous.1 + later.1, later.2)
+  | _ => Machines.Cursor.resume (EventCursor.provider (machine dispatch policy)) EventCursor.client
+      (EventCursor.charge (machine dispatch policy) price) budget previous
+
+/-- The granted cursor reads exactly the independently defined checked-worker
+continuation with the same policy. The old events are not re-executed. -/
+theorem grant_depth_read (dispatch : GroundedDispatch) (policy : TypePolicy) (price : Configuration → Nat)
+    (budget extra : Nat) (previous : Nat × EventCursor.Result (machine dispatch policy))
+    (events : ResultSet) (request : ResourceRequest) (saved : Configuration)
+    (depth : request = .evaluationDepth ∨ request = .leafDepth)
+    (pending : EventCursor.read (machine dispatch policy) previous.2 = (events, .suspended request saved)) :
+    EventCursor.read (machine dispatch policy) (grant dispatch policy price budget extra previous).2 =
+      continueRun dispatch budget extra (events, .suspended request saved) policy := by
+  rcases depth with rfl | rfl
+  all_goals
+    unfold grant
+    rw [pending]
+    exact (EventCursor.advance_run (machine dispatch policy) price budget
+      (RecursiveMachine.Checked.replenish extra saved) events).2
+
+theorem grant_depth_account (dispatch : GroundedDispatch) (policy : TypePolicy) (price : Configuration → Nat)
+    (budget extra : Nat) (previous : Nat × EventCursor.Result (machine dispatch policy))
+    (events : ResultSet) (request : ResourceRequest) (saved : Configuration)
+    (depth : request = .evaluationDepth ∨ request = .leafDepth)
+    (pending : EventCursor.read (machine dispatch policy) previous.2 = (events, .suspended request saved)) :
+    (grant dispatch policy price budget extra previous).1 = previous.1 +
+      (machine dispatch policy).spent price budget (RecursiveMachine.Checked.replenish extra saved) := by
+  rcases depth with rfl | rfl
+  all_goals
+    unfold grant
+    rw [pending]
+    exact congrArg (previous.1 + ·) (EventCursor.advance_run (machine dispatch policy) price budget
+      (RecursiveMachine.Checked.replenish extra saved) events).1
+
+theorem grant_service_unchanged (dispatch : GroundedDispatch) (policy : TypePolicy)
+    (price : Configuration → Nat) (budget extra : Nat)
+    (previous : Nat × EventCursor.Result (machine dispatch policy))
+    (events : ResultSet) (instruction : Atom) (saved : Configuration)
+    (pending : EventCursor.read (machine dispatch policy) previous.2 =
+      (events, .suspended (.primitiveService instruction) saved)) :
+    grant dispatch policy price budget extra previous = previous := by
+  unfold grant
+  rw [pending]
+
+end Scheduler
+
 end Checked
 
 namespace Controls.SelectionPolicy
@@ -645,6 +770,50 @@ theorem within_signature_agreement_succeeds :
     ((Checked.machine GroundedDispatch.none scopedTypes).run 1000
       (start (.expression [.symbol "same", seven, .grounded (.int 8)]))).1.map Prod.fst =
       [.symbol "True"] := by decide +kernel
+
+private def pendingPair : Configuration := Configuration.initial source
+  (.atom pairCall Atom.undefinedType Bindings.empty 0 [])
+
+private theorem pending_pair_request (policy : TypePolicy) :
+    Checked.blocked GroundedDispatch.none pendingPair policy = some .evaluationDepth := rfl
+
+/-- An actual zero-depth scoped worker request crosses the shared cursor,
+then the explicit depth grant keeps scoped invocation for both calls. -/
+theorem scoped_cursor_depth_grant_keeps_independent_instances :
+    (Machines.ProductiveCoreAdapters.EventCursor.read (Checked.machine GroundedDispatch.none scopedTypes)
+      (Checked.Scheduler.grant GroundedDispatch.none scopedTypes (fun _ => 1) 1000 16
+        (Checked.Scheduler.visit GroundedDispatch.none scopedTypes (fun _ => 1) 1 pendingPair)).2).1.map Prod.fst =
+      [.expression [.symbol "Pair", seven, yes]] := by
+  rw [Checked.Scheduler.grant_depth_read _ _ _ _ _ _ [] .evaluationDepth pendingPair (Or.inl rfl)
+    (Checked.Scheduler.visit_blocked _ _ _ _ _ (pending_pair_request scopedTypes))]
+  simpa only [Checked.continueRun,
+    show RecursiveMachine.Checked.replenish 16 pendingPair = pairStart from rfl,
+    List.nil_append] using independent_calls_of_one_schematic_signature
+
+/-- The same actual request resumed with literal annotation lookup has the
+already proved type-instance conflict. Scheduling does not identify policies. -/
+theorem literal_cursor_depth_grant_keeps_policy_separation :
+    ((Machines.ProductiveCoreAdapters.EventCursor.read (Checked.machine GroundedDispatch.none rawTypes)
+      (Checked.Scheduler.grant GroundedDispatch.none rawTypes (fun _ => 1) 1000 16
+        (Checked.Scheduler.visit GroundedDispatch.none rawTypes (fun _ => 1) 1 pendingPair)).2).1.map Prod.fst).map
+      isEmptyOrError = [true] := by
+  rw [Checked.Scheduler.grant_depth_read _ _ _ _ _ _ [] .evaluationDepth pendingPair (Or.inl rfl)
+    (Checked.Scheduler.visit_blocked _ _ _ _ _ (pending_pair_request rawTypes))]
+  simpa only [Checked.continueRun,
+    show RecursiveMachine.Checked.replenish 16 pendingPair = pairStart from rfl,
+    List.nil_append] using literal_profile_leaks_the_first_instance
+
+/-- A real unsupported primitive is a retained service request. Neither a
+scheduler allowance nor a depth grant supplies its external response. -/
+theorem cursor_depth_grant_does_not_answer_service (policy : TypePolicy) (budget extra : Nat) :
+    let saved := Configuration.initial source
+      (.primitive (.symbol "opaque-service") Bindings.empty 1 [] none)
+    Checked.Scheduler.grant GroundedDispatch.none policy (fun _ => 1) budget extra
+        (Checked.Scheduler.visit GroundedDispatch.none policy (fun _ => 1) 1 saved) =
+      Checked.Scheduler.visit GroundedDispatch.none policy (fun _ => 1) 1 saved := by
+  dsimp only
+  apply Checked.Scheduler.grant_service_unchanged _ _ _ _ _ _ [] (.symbol "opaque-service")
+  exact Checked.Scheduler.visit_blocked _ _ _ _ _ rfl
 
 end Controls.ScopedPolymorphism
 

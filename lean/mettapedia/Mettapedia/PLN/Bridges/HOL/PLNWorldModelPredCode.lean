@@ -14,7 +14,7 @@ This is a useful fragment, but it is not the general Church/Henkin HOL layer.
 
 namespace Mettapedia.PLN.Bridges.HOL.PLNWorldModelPredCode
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 
 /-- Predicate-code query type. -/

@@ -1240,7 +1240,7 @@ structure LevelSupportedTruthClauses
 
 /-- The level-aware supported truth clauses are already available from the raw
 successor machinery and a scheduler provider. -/
-def levelSupportedTruthClauses
+theorem levelSupportedTruthClauses
     (P : SchedulerProvider (Base := Base) Const) :
     LevelSupportedTruthClauses (Base := Base) (Const := Const) P where
   or_clause := by

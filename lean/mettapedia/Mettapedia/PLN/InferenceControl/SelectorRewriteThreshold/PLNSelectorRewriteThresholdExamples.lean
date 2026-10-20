@@ -10,7 +10,7 @@ Concrete worked fixtures for the composed selector/rewrite/threshold API path.
 
 namespace Mettapedia.PLN.InferenceControl.SelectorRewriteThreshold.PLNSelectorRewriteThresholdExamples
 
-open Mettapedia.PLN.Core.PLNCanonical
+open Mettapedia.PLN.Core.PLNCanonicalAPI
 open Mettapedia.PLN.Bridges.Languages
 open Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlExamples
 
@@ -24,28 +24,28 @@ side remains generic so this theorem can be instantiated in any WM/OSLF setting.
 theorem bool_selector_rewrite_threshold_end_to_end_fixture
     {State Srt : Type*} {Query : Srt → Type*}
     [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-    [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
+    [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
     {L₁ L₂ : Mettapedia.OSLF.MeTTaIL.Syntax.LanguageDef}
     (i : Mettapedia.OSLF.Framework.PLNWMHypercubeBasis.WMIntervalSemantics)
     (R : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern →
       Mettapedia.OSLF.MeTTaIL.Syntax.Pattern → Prop)
     (m : Mettapedia.OSLF.Framework.LangMorphism.LanguageMorphism L₁ L₂ Eq)
-    (ctx : Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.CtxOfInterval i)
-    {r : Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMRewriteRuleSigma State Srt Query} {W₁ W₂ : State}
+    (ctx : Mettapedia.PLN.WorldModel.WorldModelITVHypercube.CtxOfInterval i)
+    {r : Mettapedia.PLN.WorldModel.WorldModelSigma.WMRewriteRuleSigma State Srt Query} {W₁ W₂ : State}
     (queryOfAtom₁ queryOfAtom₂ :
       String → Mettapedia.OSLF.MeTTaIL.Syntax.Pattern → Sigma Query)
     (a0 : String)
     (p : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern)
     (coord : Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV → ℝ) (tau : ℝ)
-    (hSide : r.side) (hW : Mettapedia.PLN.WorldModel.PLNWorldModel.WMJudgment W₁)
+    (hSide : r.side) (hW : Mettapedia.PLN.WorldModel.WMJudgment W₁)
     (hTau :
-      tau ≤ coord ((Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval i).eval ctx (r.derive W₁)))
-    (hEq : Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMQueryEqSigma (State := State) (Srt := Srt) (Query := Query)
+      tau ≤ coord ((Mettapedia.PLN.WorldModel.WorldModelITVHypercube.semanticsOfInterval i).eval ctx (r.derive W₁)))
+    (hEq : Mettapedia.PLN.WorldModel.WorldModelSigma.WMQueryEqSigma (State := State) (Srt := Srt) (Query := Query)
       r.conclusion (queryOfAtom₁ a0 p))
     (hVal : ∀ p',
-      PLNWMOSLFBridgeITVTyped.wmPatternValuation
+      PLNWMOSLFBridgeITV.wmPatternValuation
         (State := State) (Srt := Srt) (Query := Query) W₂ queryOfAtom₂ a0 (m.mapTerm p') =
-      PLNWMOSLFBridgeITVTyped.wmPatternValuation
+      PLNWMOSLFBridgeITV.wmPatternValuation
         (State := State) (Srt := Srt) (Query := Query) W₁ queryOfAtom₁ a0 p')
     (selectorWitness : Finset Bool → Finset (Unit × Unit)) :
     let G := Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlAlgorithms.greedySelect
@@ -91,28 +91,28 @@ the threshold-acceptance component from the composed selector/rewrite theorem. -
 theorem thresholdAccepted_bool_selector_fixture
     {State Srt : Type*} {Query : Srt → Type*}
     [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-    [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
+    [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
     {L₁ L₂ : Mettapedia.OSLF.MeTTaIL.Syntax.LanguageDef}
     (i : Mettapedia.OSLF.Framework.PLNWMHypercubeBasis.WMIntervalSemantics)
     (R : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern →
       Mettapedia.OSLF.MeTTaIL.Syntax.Pattern → Prop)
     (m : Mettapedia.OSLF.Framework.LangMorphism.LanguageMorphism L₁ L₂ Eq)
-    (ctx : Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.CtxOfInterval i)
-    {r : Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMRewriteRuleSigma State Srt Query} {W₁ W₂ : State}
+    (ctx : Mettapedia.PLN.WorldModel.WorldModelITVHypercube.CtxOfInterval i)
+    {r : Mettapedia.PLN.WorldModel.WorldModelSigma.WMRewriteRuleSigma State Srt Query} {W₁ W₂ : State}
     (queryOfAtom₁ queryOfAtom₂ :
       String → Mettapedia.OSLF.MeTTaIL.Syntax.Pattern → Sigma Query)
     (a0 : String)
     (p : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern)
     (coord : Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV → ℝ) (tau : ℝ)
-    (hSide : r.side) (hW : Mettapedia.PLN.WorldModel.PLNWorldModel.WMJudgment W₁)
+    (hSide : r.side) (hW : Mettapedia.PLN.WorldModel.WMJudgment W₁)
     (hTau :
-      tau ≤ coord ((Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval i).eval ctx (r.derive W₁)))
-    (hEq : Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMQueryEqSigma (State := State) (Srt := Srt) (Query := Query)
+      tau ≤ coord ((Mettapedia.PLN.WorldModel.WorldModelITVHypercube.semanticsOfInterval i).eval ctx (r.derive W₁)))
+    (hEq : Mettapedia.PLN.WorldModel.WorldModelSigma.WMQueryEqSigma (State := State) (Srt := Srt) (Query := Query)
       r.conclusion (queryOfAtom₁ a0 p))
     (hVal : ∀ p',
-      PLNWMOSLFBridgeITVTyped.wmPatternValuation
+      PLNWMOSLFBridgeITV.wmPatternValuation
         (State := State) (Srt := Srt) (Query := Query) W₂ queryOfAtom₂ a0 (m.mapTerm p') =
-      PLNWMOSLFBridgeITVTyped.wmPatternValuation
+      PLNWMOSLFBridgeITV.wmPatternValuation
         (State := State) (Srt := Srt) (Query := Query) W₁ queryOfAtom₁ a0 p') :
     thresholdAccepted
       (State := State) (Srt := Srt) (Query := Query)

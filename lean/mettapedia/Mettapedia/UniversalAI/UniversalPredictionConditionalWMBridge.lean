@@ -26,9 +26,9 @@ Negative example:
 namespace Mettapedia.UniversalAI.UniversalPrediction
 
 open scoped Classical
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelProfiles
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelProfiles
 
 /-- A conditional prefix query `target | context`. -/
 structure ConditionalPrefixQuery where

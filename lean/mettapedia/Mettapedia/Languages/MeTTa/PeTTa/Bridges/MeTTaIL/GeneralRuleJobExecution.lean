@@ -469,14 +469,14 @@ private def parameterBody : Atom :=
       recurseBody, Effects.boolean false]]
 
 private def parameterCases : SpaceSemantics.Cases :=
-  [(a "Some" [v "parameter"], parameterBody), (v "_", Effects.boolean false)]
+  [(a "Some" [v "parameter"], parameterBody), (v "_____________", Effects.boolean false)]
 
 private def declarationBody : Atom := a "case" [a "gslt:rule:row-at" [v "index", v "parameters"],
   .expression (parameterCases.map fun row => .expression [row.1, row.2])]
 
 private def declarationCases : SpaceSemantics.Cases :=
   [(a "Some" [a "GrammarTypingV1" [v "label", v "category", v "parameters"]], declarationBody),
-   (v "_", Effects.boolean false)]
+   (v "______________", Effects.boolean false)]
 
 private def applicationBody : Atom := a "case" [a "gslt:rule:row-at" [v "declaration", v "declarations"],
   .expression (declarationCases.map fun row => .expression [row.1, row.2])]
@@ -493,7 +493,7 @@ private def representationCases : SpaceSemantics.Cases :=
       a "LCons" [a "TypingDirectCollection" [v "frameKind"], v "tail"]], recurseBody),
    (a "ReplacementShape" [a "ContextCollection" [v "kind", v "before", v "inner", v "after", v "rest"],
       a "LCons" [a "TypingAuthoredCollection" [v "declaration"], v "tail"]], recurseBody),
-   (v "_", Effects.boolean false)]
+   (v "_______________", Effects.boolean false)]
 
 private theorem representation_shape : (equation .represented).body =
     a "case" [a "ReplacementShape" [v "context", v "frames"],
@@ -524,7 +524,7 @@ private def representationBindings (context : OneHoleContext) (frames : List Typ
        ("rest", encoded (InferenceCettaWire.encodeRest rest)), ("after", encoded (InferenceCettaWire.encodePatterns after)),
        ("inner", contextValue inner), ("before", encoded (InferenceCettaWire.encodePatterns before)),
        ("kind", encoded (InferenceCettaWire.encodeCollectionType kind))]
-  | context, frames => [("_", a "ReplacementShape" [contextValue context, framesValue frames])]
+  | context, frames => [("_______________", a "ReplacementShape" [contextValue context, framesValue frames])]
 
 private def representationBody : OneHoleContext → List TypingFrame → Atom
   | .hole, [] => Effects.boolean true
@@ -611,7 +611,7 @@ private theorem representation_application_returns (state : State) (language : L
   unfold applicationBody
   cases declared : language.terms[declaration]? with
   | none =>
-      apply branch_returns caller (("_", .symbol "None") :: caller) state
+      apply branch_returns caller (("______________", .symbol "None") :: caller) state
         (a "gslt:rule:row-at" [v "declaration", v "declarations"]) (.symbol "None")
         declarationCases (Effects.boolean false)
       · simpa [declared, encodeOption, CettaWireAtom.encode] using lookup
@@ -639,7 +639,7 @@ private theorem representation_application_returns (state : State) (language : L
         unfold declarationBody
         cases parameterFound : grammar.params[index]? with
         | none =>
-            apply branch_returns parsed (("_", .symbol "None") :: parsed) state
+            apply branch_returns parsed (("_____________", .symbol "None") :: parsed) state
               (a "gslt:rule:row-at" [v "index", v "parameters"]) (.symbol "None")
               parameterCases (Effects.boolean false)
             · simpa [parameterFound, encodeOption, CettaWireAtom.encode] using lookupParameter
@@ -841,7 +841,7 @@ private def finishCases : SpaceSemantics.Cases :=
        v "permissions", v "bound", v "expected", v "source", a "RuleJob" [v "ordinal", v "declaration", a "RuleJobSite"
         [v "address", v "context", v "focus", v "focusBound", v "focusType", v "frames"]]],
      a "PremiseResult" [v "goal", a "RootAnswer" [v "trace", v "captured", v "completed", v "history", v "localTarget"]]],
-    finishGoalBody), (v "_", .symbol "None")]
+    finishGoalBody), (v "_______________", .symbol "None")]
 
 private theorem finish_shape : (equation .finish).body = a "case"
     [a "RuleJobFinishInput" [v "request", v "result"], .expression (finishCases.map fun row => .expression [row.1, row.2])] := by

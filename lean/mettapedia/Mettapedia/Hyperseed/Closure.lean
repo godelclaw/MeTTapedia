@@ -14,7 +14,7 @@ seed queries.
 
 namespace Mettapedia.Hyperseed
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointCascade

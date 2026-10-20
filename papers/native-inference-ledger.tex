@@ -116,6 +116,575 @@ E & A write and a read need not commute & \name{LayerEffects.Controls.put_get_no
 E & The specified distribution-over-finite-sets law is impossible & \name{NondeterminismProbability.no_distributiveLaw} & PCQ & proved\\
 E & Surviving answers cannot recover every failed-branch charge & \name{LayerEffects.Spec.no_failed_cost_recovery} & PCQ & proved\\
 E & Marginals cannot determine same-world conjunction & \name{EvidenceSpaces.no_same_world_conjunction_from_marginals} & PQ & proved\\
+D & Exact finite local-rule witnesses & \name{FormationSensitiveChecking.interface} & PQ & proved\\
+D & Original typing iff common tree acceptance & \name{FormationSensitiveChecking.typing_iff_checked_tree} & PCQ & proved\\
+D & Original typing iff common shared-graph acceptance & \name{FormationSensitiveChecking.typing_iff_checked_graph} & PCQ & proved\\
+D & Original typing iff logical theorem minting & \name{FormationSensitiveChecking.typing_iff_minted} & PCQ & proved\\
+D & Maintained replay publishes common authority exactly & \name{FormationSensitiveChecking.mintReplay_iff} & PQ & proved\\
+D & Full formed judgment iff finite request acceptance & \name{FormationSensitiveChecking.judgment_iff_checked} & PCQ & proved\\
+D & Admitted substitution preserves checkable source evidence & \name{FormationSensitiveChecking.checked_substitute} & PCQ & proved\\
+D & Checked request reconstructs the original formed judgment & \name{FormationSensitiveChecking.Request.sound} & PQ & proved\\
+D & Cumulative tower finite evidence coverage & \name{Tower.Checking.coverage} & PCQ & proved\\
+D & All positive and negative cumulative controls pass & \name{Tower.Checking.Controls.all_pass} & PQ & proved\\
+D & Accepted requests hold in the named set-tower model & \name{TowerInterpretation.Checking.request_model_sound} & PCQ & proved\\
+D & Every closed empty-type request refuses under the model hypothesis & \name{TowerInterpretation.Checking.empty_request_refuses} & PCQ & proved\\
+D & Checked subjects denote members of their displayed types & \name{TowerInterpretation.Checking.checked_value_member} & PCQ & proved\\
+D & Checked type conversion preserves actual set values & \name{TowerInterpretation.Checking.checked_type_conversion} & PCQ & proved\\
+D & Checked subject conversion preserves actual set values & \name{TowerInterpretation.Checking.checked_term_conversion} & PCQ & proved\\
+D & Checked components construct the original contextual arrow & \name{TowerInterpretation.Checking.checkedArrow} & PQ & proved\\
+D & Checked values commute with admitted annotated substitution & \name{TowerInterpretation.Checking.checked_value_substitution} & PCQ & proved\\
+D & Finite closed-universe requests exactly characterize set membership & \name{TowerInterpretation.Checking.universe_request_iff_set} & PCQ & proved\\
+D & The same requests characterize membership in well-founded hypersets & \name{TowerInterpretation.Checking.universe_request_iff_hyperset} & PCQ & proved\\
+O & Finite reachability is an equation-invariant native predicate & \name{GSLTTypeSynthesis.semanticReach} & none & proved\\
+O & Equation-wise route agreement gives equal predicate actions & \name{EquationRespectingMap.pullback_eq_of_equiv} & PQ & proved\\
+O & Forward strict routes preserve existential next-step observations & \name{OperationalTranslation.preserves_semanticDiamond} & PQ & proved\\
+O & Operational route agreement preserves semantic reindexing & \name{OperationalTranslation.pullback_eq_of_equiv} & PQ & proved\\
+O & Local coverage reflects existential next-step observations & \name{CoveredTranslation.semanticDiamond_iff} & PQ & proved\\
+O & Covered routes preserve and reflect finite reachability & \name{CoveredTranslation.semanticReach_iff} & PQ & proved\\
+O & Path-valued lowering preserves finite reachability & \name{OperationalRealization.preserves_semanticReach} & PQ & proved\\
+O & Fusion need not preserve a one-step diamond & \name{OperationalRealization.FusionCanary.fusion_changes_one_step_diamond} & P & proved\\
+O & Actual covered growth preserves the modal comparison & \name{IndexedOperational.Canary.covered_growth_semanticDiamond} & PQ & proved\\
+O & Extra target behavior refutes modal reflection & \name{IndexedOperational.Canary.escaping_native_type_not_reflected} & PQ & proved\\
+O & Outgoing coverage does not preserve the incoming box & \name{IndexedOperational.Canary.outgoing_coverage_does_not_preserve_past_box} & PQ & proved\\
+O & Conversion paths equal the original structural conversion relation & \name{FormationSensitiveCheckingOSLF.path_iff_conversion} & P & proved\\
+O & Conversion-native OSLF truth iff accepted finite evidence & \name{FormationSensitiveCheckingOSLF.satisfies_iff_checked} & PCQ & proved\\
+O & Dependency restriction yields a genuine forward conversion route & \name{FormationSensitiveCheckingOSLF.restrictionRoute} & PQ & proved\\
+O & Checked higher requests admit a finite sufficient source-reflecting restriction & \name{FormationSensitiveCheckingOSLF.checked_request_has_restriction} & PQ & proved\\
+O & Reverse beta inhabits the conversion native observation & \name{Tower.Checking.Controls.reverse_beta_oslf} & PCQ & proved\\
+O & Raw beta observation carries no typing premise & \name{Tower.Checking.Controls.raw_beta_oslf} & PCQ & proved\\
+O & Conversion-native truth does not admit a restricted computation package & \name{FormationSensitive.RestrictionPreservation.oslf_observation_does_not_admit_restriction} & PCQ & proved\\
+O & The repaired smaller package retains conversion and root preservation & \name{FormationSensitive.RestrictionPreservation.oslf_observation_with_preserving_repair} & PCQ & proved\\
+O & Guarded OSLF term conversion preserves actual set values & \name{TowerInterpretation.Checking.oslf_term_conversion} & PCQ & proved\\
+S & Generic conversion observation presents the authored relation & \name{IndexedOperational.conversionTheory_path_iff} & none & proved\\
+S & Native reachability has exactly the declared conversion support & \name{IndexedOperational.satisfies_conversionNativeType_iff} & PCQ & proved\\
+S & Simple type interpretation retains the atomic sort & \name{SingleBaseSTLC.HOLComparison.type_injective} & none & proved\\
+S & Typed HOL syntax retains source terms & \name{SingleBaseSTLC.HOLComparison.term_injective} & none & proved\\
+S & Renaming commutes with the HOL interpretation & \name{SingleBaseSTLC.HOLComparison.rename_term} & Q & proved\\
+S & Simultaneous substitution commutes with the HOL interpretation & \name{SingleBaseSTLC.HOLComparison.substitute_term} & PQ & proved\\
+S & The simple context interpretation is a functor & \name{SingleBaseSTLC.HOLComparison.contextFunctor} & PQ & proved\\
+S & HOL beta joinability reflects intrinsic beta conversion & \name{SingleBaseSTLC.HOLComparison.holJoinable_iff_betaConv} & PCQ & proved\\
+S & The HOL and structural tower conversions agree on the image & \name{SingleBaseSTLC.HOLComparison.holJoinable_iff_towerConv} & PCQ & proved\\
+S & The intrinsic checker decides the HOL observation & \name{SingleBaseSTLC.HOLComparison.decideConversion_iff_holJoinable} & PCQ & proved\\
+S & Beta conversion supplies retained HOL equality evidence & \name{SingleBaseSTLC.HOLComparison.equality_proof_of_conversion} & PCQ & proved\\
+S & HOL equality need not reflect into structural conversion & \name{SingleBaseSTLC.HOLComparison.Controls.hol_equality_does_not_reflect_conversion} & PCQ & proved\\
+S & Typed HOL terms distinguish a raw tower erasure collision & \name{SingleBaseSTLC.HOLComparison.Controls.hol_retains_erased_types} & none & proved\\
+S & Conversion trees elaborate to retained HOL proofs & \name{SingleBaseSTLC.HOLConversionBubble.elaborate} & PCQ & proved\\
+S & The beta bubble is exact for structural tower conversion & \name{SingleBaseSTLC.HOLConversionBubble.beta_path_iff_tower} & PCQ & proved\\
+S & Native predicate truth is the support of retained paths & \name{SingleBaseSTLC.HOLConversionBubble.satisfies_iff_path} & PCQ & proved\\
+S & The beta native predicate has a total decision procedure & \name{SingleBaseSTLC.HOLConversionBubble.beta_satisfies_iff_decides} & PCQ & proved\\
+S & Eta strictly enlarges the local conversion policy & \name{SingleBaseSTLC.HOLConversionBubble.Controls.eta_strictly_adds_conversion} & PCQ & proved\\
+S & The native observation distinguishes beta and eta policies & \name{SingleBaseSTLC.HOLConversionBubble.Controls.eta_observation_depends_on_policy} & PCQ & proved\\
+S & Pure simple terms require no interpreted constants & \name{SingleBaseSTLC.HOLReadingComparison.reads} & PQ & proved\\
+S & The actual dependent reader constructs typed codes & \name{SingleBaseSTLC.HOLReadingComparison.code_typed} & PQ & proved\\
+S & Computed native codes commute with the maintained substitution & \name{SingleBaseSTLC.HOLReadingComparison.code_substitute} & PQ & proved\\
+S & The beta native observation gives dependent typed equality & \name{SingleBaseSTLC.HOLReadingComparison.observed_typed} & PCQ & proved\\
+S & Observed equality reaches the explicit set-tower model & \name{SingleBaseSTLC.HOLTowerModel.observed_set_equality} & PCQ & proved\\
+S & Typed eta equality is distinct from structural conversion & \name{SingleBaseSTLC.HOLTowerModel.typed_equality_not_structural_conversion} & PCQ & proved\\
+E & Joint admissibility over one base & \name{extendRules_union_sameDerivability_iff} & P & proved\\
+E & Combine actual certificate compilers & \name{AdditionalRuleCertificateCompiler.combine} & PCQ & proved\\
+E & Mixed certificate elimination is conservative & \name{AdditionalRuleCertificateCompiler.combine_sameDerivability} & PCQ & proved\\
+E & Mixed-feature expansion has three base nodes & \name{ConservativeExtensionCanary.compiledMixed_count} & PCQ & proved\\
+E & Admissible package cannot license a new fact & \name{ConservativeExtensionCanary.combined_newFact_forbidden} & PCQ & proved\\
+E & Compute retained evidence and recovery receipt & \name{EqualityRecipe.checkedPathWithRecovery} & PQ & proved\\
+E & Recover the complete submitted recipe & \name{EqualityRecipe.forget_checkedPath} & PQ & proved\\
+E & Retained evidence replays at its endpoints & \name{EqualityRecipe.evaluate_forgetPath} & PQ & proved\\
+H & Instantiate licensed equations with scope & \name{HOL.EquationProofs.instantiate} & PQ & proved\\
+H & Combine equation proof receipts & \name{HOL.EquationProofs.append} & P & proved\\
+H & Licensed compatible source steps have HOL proofs & \name{HOL.SourceStep.hasHOLProof} & PCQ & proved\\
+H & Licensed source articles have HOL proofs & \name{HOL.CoreConversion.hasHOLProof} & PCQ & proved\\
+H & Logical retyping elaborates to HOL evidence & \name{HOL.ProofSyntaxModulo.hasHOLProof} & PCQ & proved\\
+H & Curry equation cannot obtain HOL receipts & \name{HOL.ConversionElaborationControls.no_curry_equationProofs} & PCQ & proved\\
+H & Exact local conversion-policy replay & \name{HOL.ConversionRecipes.leaf_authority} & PCQ & proved\\
+H & Exact authority for selected finite recipes & \name{HOL.ConversionRecipes.authority} & PCQ & proved\\
+H & Permissions follow the contracted redex type & \name{HOL.ConversionRecipes.Policy.betaAllowed_mono} & none & proved\\
+H & Policy routes preserve conversion support & \name{HOL.ConversionRecipes.LocalStep.conversion_mono} & none & proved\\
+H & Construct retained HOL equality proofs & \name{HOL.ConversionRecipes.elaborate} & PCQ & proved\\
+H & Replace logical casts with equality elimination & \name{HOL.ConversionRecipes.convertProof} & PCQ & proved\\
+H & Native observation is certificate existence & \name{HOL.ConversionRecipes.observed_iff_accepted} & PCQ & proved\\
+H & Operational observation follows policy edges & \name{HOL.ConversionRecipes.observed_mono} & PCQ & proved\\
+H & Untrusted proposals produce checked HOL evidence & \name{HOL.ConversionRecipes.elaborateSubmission} & PCQ & proved\\
+H & Convergent equality retains different receipts & \name{HOL.ConversionRecipes.Controls.eta_and_equation_recipes_distinct} & none & proved\\
+H & Equal endpoints retain different proof sizes & \name{HOL.ConversionRecipes.Controls.proof_costs_differ} & PCQ & proved\\
+H & Two-sort conversion and elaboration controls & \name{HOL.ConversionRecipes.Controls.all_verdicts} & PCQ & proved\\
+H & Least upper policy for joined generators & \name{HOL.ConversionRecipes.Policy.join_extends_iff} & P & proved\\
+H & Compile actual typed beta executions & \name{HOL.ConversionRecipes.executionRecipe} & PCQ & proved\\
+H & The execution compiler produces accepted recipes & \name{HOL.ConversionRecipes.executionRecipe_checked} & PCQ & proved\\
+H & Previous beta observation reaches the recipe checker & \name{HOL.ConversionRecipes.joinable_has_betaRecipe} & PCQ & proved\\
+I & Retain selected schema positions and substitutions & \name{SchemaTableConversionCode.retained} & PQ & proved\\
+I & Finite schema decoding is sound & \name{SchemaTableConversionCode.decode_sound} & PQ & proved\\
+I & Finite schema decoding covers every selected instance & \name{SchemaTableConversionCode.decode_complete} & PQ & proved\\
+I & Qualify selected schema-root replay & \name{SchemaTableConversionCode.rootDecoder} & PQ & proved\\
+I & Root replay commutes with renaming & \name{SchemaTableConversionCode.decode_rename} & PQ & proved\\
+I & Root replay commutes with substitution & \name{SchemaTableConversionCode.decode_substitute} & PQ & proved\\
+I & Check formed dependent substitutions & \name{FormationSensitiveChecking.SubstitutionRequest.sound} & PQ & proved\\
+I & Admitted substitutions have finite evidence & \name{FormationSensitiveChecking.SubstitutionRequest.complete} & PCQ & proved\\
+I & Compute the original typed schema receipt & \name{IndexedFamily.Checking.receiptAt} & PQ & proved\\
+I & Reconstruct the original iota witness & \name{IndexedFamily.Checking.realizeEvidence} & PQ & proved\\
+I & Selected computation includes into the declaration calculus & \name{IndexedFamily.Checking.inclusion} & PQ & proved\\
+I & Inclusion retains full formed judgments & \name{IndexedFamily.Checking.judgment_inclusion} & PQ & proved\\
+I & Selected conversion has a forward operational route & \name{IndexedFamily.Checking.conversionRoute} & PQ & proved\\
+I & Checked instantiation reconstructs typed iota evidence & \name{IndexedFamily.Checking.InstanceRequest.replay} & PQ & proved\\
+I & Typed iota publication checks its target context & \name{IndexedFamily.Checking.InstanceRequest.formed} & PQ & proved\\
+I & Typed requests export accepted root codes & \name{IndexedFamily.Checking.InstanceRequest.rootCode_accepted} & PQ & proved\\
+I & Exact decoding of all four Nat/Vec iota cases & \name{NativeNaturalVectorFamilies.Checking.iotaDecoder} & PCQ & proved\\
+I & Join actual Nat/Vec roots with declaration replay & \name{NativeNaturalVectorFamilies.Checking.decoder} & PCQ & proved\\
+I & Actual Nat/Vec conversion has exact finite evidence & \name{NativeNaturalVectorFamilies.Checking.conversion_iff_checked} & PCQ & proved\\
+I & Connect the Nat/Vec formation-sensitive checker & \name{NativeNaturalVectorFamilies.Checking.coverage} & PCQ & proved\\
+I & Typed iota and dependent-substitution controls & \name{IndexedFamilyCheckingControls.all_verdicts} & PCQ & proved\\
+E & Replay a generated row at its original ordinal & \name{SchemaTableConversionCode.decode_at} & PQ & proved\\
+E & All selected schema roots equal the original schema support & \name{SchemaTableConversionCode.all_roots_iff} & PQ & proved\\
+E & Use independent source presentations in common replay & \name{SchemaTableConversionCode.presentedDecoder} & PQ & proved\\
+E & Generated simple iota rules have the exact finite presentation & \name{IndexedPolynomialGenerated.Checking.presents} & PQ & proved\\
+E & Connect generated roots to the common conversion decoder & \name{IndexedPolynomialGenerated.Checking.decoder} & PQ & proved\\
+E & Recover the schema of the original constructor occurrence & \name{IndexedPolynomialGenerated.Checking.table_get} & PQ & proved\\
+E & Replay generated receipts with their complete assignments & \name{IndexedPolynomialGenerated.Checking.receiptCode_accepted} & PQ & proved\\
+E & Generated conversion has exact finite evidence & \name{IndexedPolynomialGenerated.Checking.conversion_iff_checked} & PQ & proved\\
+E & Generated receipts compile to accepted recipes & \name{IndexedPolynomialGenerated.Checking.receiptRecipe_accepted} & PQ & proved\\
+E & Accepted submissions give original formed judgments & \name{FormationSensitiveElaboration.replay_sound} & PQ & proved\\
+E & Bidirectional evidence production is sound after replay & \name{FormationSensitiveElaboration.elaborate_sound} & PQ & proved\\
+E & Inferred implicit assignments retain all determined slots & \name{FormationSensitiveElaboration.Implicit.complete_sound} & PQ & proved\\
+E & Implicit insertion checks the actual rendered application & \name{FormationSensitiveElaboration.Implicit.elaborate_sound} & PQ & proved\\
+E & Generated replay and elaboration controls & \name{InductiveElaborationControls.all_verdicts} & PCQ & proved\\
+E & Infer both omitted vector-cons arguments and check the result & \name{InductiveElaborationControls.inferredSingleton_typed} & PCQ & proved\\
+E & Proposed normalization carries a checked conversion recipe & \name{StructuralConversionSearch.normalize_sound} & PQ & proved\\
+E & Bounded comparison produces sound conversion evidence & \name{StructuralConversionSearch.compare_sound} & PQ & proved\\
+E & Instantiate the motive universe at the element/motive maximum & \name{NativeNaturalVectorFamilies.Programs.levelInstance} & PQ & proved\\
+E & The selected Nat/Vec universe instance is formed & \name{NativeNaturalVectorFamilies.Programs.signature_formed} & PCQ & proved\\
+E & Transport full judgments through that universe instance & \name{NativeNaturalVectorFamilies.Programs.judgment_map} & PQ & proved\\
+E & Independent replay accepts the finite append evidence & \name{NativeNaturalVectorFamilies.Programs.appendChecked_true} & PCQ & proved\\
+E & The complete closed dependent append function is typed & \name{NativeNaturalVectorFamilies.Programs.append_typed} & PCQ & proved\\
+E & Refuse changed append result indices in the submitted evidence & \name{NativeNaturalVectorFamilies.Programs.changedType_refused} & PCQ & proved\\
+E & Refuse a changed append program with the same submission & \name{NativeNaturalVectorFamilies.Programs.changedTerm_refused} & PCQ & proved\\
+E & Refuse a forged append root typing rule & \name{NativeNaturalVectorFamilies.Programs.forgedRoot_refused} & PCQ & proved\\
+E & Dependent append acceptance and refusal controls & \name{NativeNaturalVectorFamilies.Programs.all_verdicts} & PCQ & proved\\
+I & Compute a retained natural-eliminator receipt & \name{IndexedFamilyCheckingControls.checkedZeroReceipt} & PCQ & proved\\
+K & Append commutes with capture-safe substitution & \name{NativeNaturalVectorFamilies.Programs.Computation.append_substitute} & PQ & proved\\
+K & Append nil conversion holds for arbitrary scoped arguments & \name{NativeNaturalVectorFamilies.Programs.Computation.append_nil} & PCQ & proved\\
+K & Append cons conversion retains the recursive append result & \name{NativeNaturalVectorFamilies.Programs.Computation.append_cons} & PCQ & proved\\
+K & Refuse omission of append recursive computation & \name{NativeNaturalVectorFamilies.Programs.Computation.wrongBranch_refused} & PCQ & proved\\
+K & Symbolic append computation controls & \name{NativeNaturalVectorFamilies.Programs.Computation.all_verdicts} & PCQ & proved\\
+K & Inverse substitution reconstructs its original scoped source & \name{ScopedSubstitutionInversion.invert_sound} & PQ & proved\\
+K & Recursive-call abstraction preserves binder scope & \name{ScopedSubstitutionInversion.Controls.all_verdicts} & PQ & proved\\
+K & Constructor clauses retain their actual names and arities & \name{IndexedInductive.CaseElaboration.adaptClause_name} & none & proved\\
+K & Compiled methods reconstruct written recursive child calls & \name{IndexedInductive.CaseElaboration.compileBranch_reconstructs} & PQ & proved\\
+K & Constructor clauses cover the exact ordered admitted inventory & \name{IndexedInductive.CaseElaboration.compileMethods_coverage} & PQ & proved\\
+K & Constructor-case elaboration checks its actual eliminator application & \name{IndexedInductive.CaseElaboration.elaborate_sound} & PQ & proved\\
+K & Written append clauses generate the independent reference methods & \name{IndexedInductive.AppendElaboration.methods_match_reference} & PQ & proved\\
+K & Scoped append compilation gives the checked closed program & \name{IndexedInductive.AppendElaboration.compiled_matches_reference} & PQ & proved\\
+K & The compiled append function retains its dependent type & \name{IndexedInductive.AppendElaboration.compiled_typed} & PCQ & proved\\
+K & The source-compiled append is typed by the natural-only policy & \name{IndexedInductive.AppendElaboration.compiled_typed_naturalOnly} & PCQ & proved\\
+K & Uniform scoped append clause acceptance and refusal controls & \name{IndexedInductive.AppendElaboration.all_verdicts} & PQ & proved\\
+K & Retain schema evidence when permissions increase & \name{SchemaTableConversionCode.Evidence.weakenPermissions} & P & proved\\
+K & Schema-root permissions include monotonically & \name{SchemaTableConversionCode.root_mono} & PQ & proved\\
+K & Restricted Nat/Vec computation includes into the original signature & \name{NativeNaturalVectorFamilies.Programs.ComputationProfiles.includes_original} & PCQ & proved\\
+K & Nat/Vec declaration permissions include monotonically & \name{NativeNaturalVectorFamilies.Programs.ComputationProfiles.permissions_mono} & PCQ & proved\\
+K & Restricted checking preserves full original judgments & \name{NativeNaturalVectorFamilies.Programs.ComputationProfiles.judgment_inclusion} & PCQ & proved\\
+K & Existing append evidence checks with the two natural iota rows & \name{NativeNaturalVectorFamilies.Programs.ComputationProfiles.append_checked_naturalOnly} & PCQ & proved\\
+K & The smaller policy types the full dependent append function & \name{NativeNaturalVectorFamilies.Programs.ComputationProfiles.append_typed_naturalOnly} & PCQ & proved\\
+K & Checking and computation permission controls & \name{NativeNaturalVectorFamilies.Programs.ComputationProfiles.all_verdicts} & PCQ & proved\\
+K & The admitted natural eliminator computes at zero & \name{IndexedInductiveNaturalHOL.recurse_zero} & P & proved\\
+K & The admitted natural eliminator computes at successor & \name{IndexedInductiveNaturalHOL.recurse_succ} & P & proved\\
+K & The natural recursion equations determine their actual function & \name{IndexedInductiveNaturalHOL.recurse_unique} & PQ & proved\\
+K & The authored natural carrier has unique recursion & \name{IndexedInductiveNaturalHOL.recursion_exists_unique} & PQ & proved\\
+K & The authored natural carrier has full predicate induction & \name{IndexedInductiveNaturalHOL.induction} & PQ & proved\\
+K & The authored carrier supplies the existing Peano structure & \name{IndexedInductiveNaturalHOL.peanoStructure} & PQ & proved\\
+K & The source-carrier HOL interpretation has full domains & \name{IndexedInductiveNaturalHOL.fullDomains} & PQ & proved\\
+K & The source carrier satisfies the existing HOL Peano formulas & \name{IndexedInductiveNaturalHOL.models_axioms} & PQ & proved\\
+K & The HOL interpretation retains natural no-confusion & \name{IndexedInductiveNaturalHOL.models_noConfusion} & PQ & proved\\
+K & The HOL interpretation satisfies second-order induction & \name{IndexedInductiveNaturalHOL.models_induction} & PQ & proved\\
+K & The source eliminator satisfies the HOL unique-recursion formula schema & \name{IndexedInductiveNaturalHOL.models_recursion} & PQ & proved\\
+K & The authored natural carrier is infinite & \name{IndexedInductiveNaturalHOL.infinite_carrier} & PCQ & proved\\
+K & The actual interpreted successor cannot collapse to zero & \name{IndexedInductiveNaturalHOL.successor_zero_refused} & PQ & proved\\
+K & Finite case plans reconstruct the written recursive calls & \name{IndexedInductive.CaseElaboration.compilePlan_reconstructs} & PQ & proved\\
+K & Finite case plans retain exact ordered clause coverage & \name{IndexedInductive.CaseElaboration.compilePlans_coverage} & PQ & proved\\
+K & The selected direct module reconstructs every source block & \name{IndexedInductive.OperationSource.selectModule_exact} & P & proved\\
+K & Lexical symbol expansion commutes with substitution & \name{IndexedInductive.OperationSource.Symbol.instantiate_substitute} & PQ & proved\\
+K & Named symbol applications retain substituted arguments & \name{IndexedInductive.OperationSource.applySymbol_substitute} & PQ & proved\\
+K & Named operation lowering commutes with substitution & \name{IndexedInductive.OperationSource.lower_substitute} & PQ & proved\\
+K & Named operation expansion and scope controls & \name{IndexedInductive.OperationSource.Controls.all_verdicts} & PCQ & proved\\
+K & Named constructor-clause and resolution controls & \name{IndexedInductive.OperationSource.Controls.all_clauseVerdicts} & PCQ & proved\\
+K & The actual textual program retains its complete module data & \name{IndexedInductive.AppendSource.source_reconstructed} & P & proved\\
+K & Textual declarations lower to the independent admitted vectors & \name{IndexedInductive.AppendSource.text_admitted} & P & proved\\
+K & Executable source plans agree with the admitted semantic inventory & \name{IndexedInductive.AppendSource.source_vector_plans_match} & PCQ & proved\\
+K & Textual addition compiles from its own source clauses & \name{IndexedInductive.AppendSource.addition_matches_reference} & PCQ & proved\\
+K & Textual append compiles to the independent checked core & \name{IndexedInductive.AppendSource.append_matches_reference} & PCQ & proved\\
+K & The actual textual append has the full dependent function type & \name{IndexedInductive.AppendSource.append_typed} & PCQ & proved\\
+K & Textual append retains its type in the natural-only policy & \name{IndexedInductive.AppendSource.append_typed_naturalOnly} & PCQ & proved\\
+K & Independent replay checks the actual textual producer output & \name{IndexedInductive.AppendSource.checkProposal_sound} & PCQ & proved\\
+K & Textual append acceptance and malformed-source controls & \name{IndexedInductive.AppendSource.all_verdicts} & PCQ & proved\\
+L & The exact closure body denotes quantified predicate closure & \name{HOL.NaturalClosure.denote_body} & none & proved\\
+L & Applied native closure retains its selected model meaning & \name{HOL.NaturalClosure.denote_predicate} & none & proved\\
+L & Every base point satisfies its closure predicate & \name{HOL.NaturalClosure.closedUnder_zero} & none & proved\\
+L & Admitted successors preserve predicate closure & \name{HOL.NaturalClosure.closedUnder_successor} & none & proved\\
+L & Strengthened closure gives induction in full-domain models & \name{HOL.NaturalClosure.closedUnder_induction} & none & proved\\
+L & The exact zero statement is valid in the selected Henkin semantics & \name{HOL.NaturalClosure.models_zero} & none & proved\\
+L & The exact successor statement is valid in Henkin semantics & \name{HOL.NaturalClosure.models_successor} & none & proved\\
+L & The exact induction statement holds in full-domain models & \name{HOL.NaturalClosure.models_induction} & none & proved\\
+N4 & Binder naming commutes with lifted variable renaming & \name{HOL.Names.lift_comp} & Q & proved\\
+N4 & Intrinsic HOL renaming commutes with MM0 HOL syntax production & \name{MM0.HOLSyntaxWire.encodeTerm_rename} & PQ & proved\\
+N4 & Printed natural-closure body retains the shared Henkin meaning & \name{MM0.NaturalClosure.definition_meaning} & none & proved\\
+N4 & Concrete MM0 closure names retain binder separation & \name{MM0.NaturalClosure.reference_names_distinct} & none & proved\\
+N4 & Zero is generated in the finite collapsing interpretation & \name{MM0.NaturalClosure.finite_zero} & none & proved\\
+N4 & Another finite inhabitant need not belong to natural closure & \name{MM0.NaturalClosure.finite_other_refused} & none & proved\\
+N4 & MM0 HOL closure reference controls pass & \name{MM0.NaturalClosure.all_verdicts} & P & proved\\
+L & Independent intrinsic HOL syntax erases to the native closure body & \name{Megalodon.NaturalClosure.body_erases} & P & proved\\
+L & The actual native closure definition has its declared type & \name{Megalodon.NaturalClosure.native_body_typed} & P & proved\\
+L & The three native closure statements are formed & \name{Megalodon.NaturalClosure.native_statements_formed} & P & proved\\
+L & Native zero unfolding agrees with the intrinsic statement & \name{Megalodon.NaturalClosure.zero_statement_erases} & PCQ & proved\\
+L & Native successor unfolding agrees with the intrinsic statement & \name{Megalodon.NaturalClosure.successor_statement_erases} & PCQ & proved\\
+L & Native induction unfolding agrees with the intrinsic statement & \name{Megalodon.NaturalClosure.induction_statement_erases} & PCQ & proved\\
+L & The finite native zero proof checks against its exact claim & \name{Megalodon.NaturalClosure.zero_proof_checked} & PCQ & proved\\
+L & The finite native successor proof checks against its exact claim & \name{Megalodon.NaturalClosure.successor_proof_checked} & PCQ & proved\\
+L & Native closure acceptance and altered-evidence controls & \name{Megalodon.NaturalClosure.all_verdicts} & PCQ & proved\\
+L & Every authored natural satisfies the exact closure predicate & \name{IndexedInductiveNaturalMegalodon.source_member} & PQ & proved\\
+L & The source interpretation satisfies the closure membership formula & \name{IndexedInductiveNaturalMegalodon.source_membership_formula} & PQ & proved\\
+L & The three native formulas hold on the authored carrier & \name{IndexedInductiveNaturalMegalodon.source_native_formulas} & PQ & proved\\
+L & Closure-restricted induction retains every authored source value & \name{IndexedInductiveNaturalMegalodon.source_induction} & PQ & proved\\
+L & A collapsed successor excludes a genuine source successor & \name{IndexedInductiveNaturalMegalodon.collapsing_successor_refused} & PQ & proved\\
+L & The collapsed-operation negative has nonempty closure & \name{IndexedInductiveNaturalMegalodon.collapsing_zero_accepted} & PQ & proved\\
+L & Composed certificate links agree with their address composition & \name{SchemaTableConversionCode.Linking.relocate_comp} & P & proved\\
+L & Schema relocation preserves both acceptance and refusal & \name{SchemaTableConversionCode.Linking.decode_relocate} & PQ & proved\\
+L & A schema embedding preserves the selected root judgment & \name{SchemaTableConversionCode.Linking.root_inclusion} & PQ & proved\\
+L & Package linking and permission controls & \name{SchemaTableConversionCode.Linking.Controls.all_verdicts} & PQ & proved\\
+L & The informative source vector table joins the exact natural prefix & \name{IndexedInductive.AppendChecking.generated_table_reference} & PCQ & proved\\
+L & The generated library matches the independent declaration inventory & \name{IndexedInductive.AppendChecking.generated_library_reference} & PCQ & proved\\
+L & The informative candidate retains the reference declaration entries & \name{IndexedInductive.AppendChecking.candidate_entries_reference} & PCQ & proved\\
+L & Candidate computation includes into the independent Nat/Vec roots & \name{IndexedInductive.AppendChecking.candidate_root_inclusion} & PCQ & proved\\
+L & Both declarations and roots extend from the generated candidate & \name{IndexedInductive.AppendChecking.candidate_extension} & PCQ & proved\\
+L & The generated source calculus preserves full reference judgments & \name{IndexedInductive.AppendChecking.candidate_judgment_inclusion} & PCQ & proved\\
+L & The candidate route composes with the selected universe instance & \name{IndexedInductive.AppendChecking.candidate_judgment_to_program} & PCQ & proved\\
+L & Generated and executable checking policies agree exactly & \name{IndexedInductive.AppendChecking.signature_comparison} & PCQ & proved\\
+L & The actual textual declarations select the informative candidate table & \name{IndexedInductive.AppendChecking.textual_candidate_table} & PCQ & proved\\
+L & The actual textual append is typed by the generated checking policy & \name{IndexedInductive.AppendChecking.textual_append_typed} & PCQ & proved\\
+L & Finite replay checks the term in the generated package policy & \name{IndexedInductive.AppendChecking.replay_sound} & PCQ & proved\\
+L & Vector receipts retain their source bounds and global permissions & \name{IndexedInductive.AppendChecking.linked_vector_replay} & PCQ & proved\\
+L & Package linking and permission controls & \name{IndexedInductive.AppendChecking.all_verdicts} & PCQ & proved\\
+L & The natural-only package policy checks the actual textual append & \name{IndexedInductive.AppendChecking.replay_naturalOnly} & PCQ & proved\\
+L & Fixed-row typed substitutions have exact finite certificate coverage & \name{Declaration.IndexedFamily.Checking.InstanceRequest.checked_arguments_iff} & PCQ & proved\\
+L & Selected original rows present exactly the selected roots & \name{SchemaTableConversionCode.selected_roots_iff} & PQ & proved\\
+L & Opaque declaration extensions expose only their declared roots & \name{DeclarationConversionCode.opaque_roots_iff} & PQ & proved\\
+L & The finite pattern check establishes the existing lifting condition & \name{Annotated.SchemaTable.linearCheck_sound} & PQ & proved\\
+L & Linear selected patterns lift every raw root at an annotated input & \name{Annotated.SchemaTable.root_lift} & PQ & proved\\
+L & Root permissions retain the annotated declarations & \name{Programs.Annotated.constantType_eq} & PCQ & proved\\
+L & The actual natural-only roots lift uniformly with annotations & \name{Programs.Annotated.lift_natural_root} & PCQ & proved\\
+L & The vector nil pattern repeats its parameter & \name{Programs.Annotated.vector_nil_repeats_parameter} & P & proved\\
+L & The vector cons pattern repeats its length index & \name{Programs.Annotated.vector_cons_repeats_index} & P & proved\\
+L & All four canonical endpoints have independent annotated typing & \name{Programs.Annotated.endpoints_typed} & PCQ & proved\\
+L & The actual annotated canonical telescopes are formed & \name{Programs.Annotated.context_formed} & PCQ & proved\\
+L & Canonical right sides typecheck against left-inferred templates & \name{Programs.Annotated.template_typed} & PCQ & proved\\
+L & Annotated root preservation conditional on former injectivity & \name{Programs.Annotated.root_preserving_of_formerFacts} & PCQ & proved\\
+L & Former inversion discharges the actual schema premises & \name{Programs.Annotated.root_premised_of_formerFacts} & PCQ & proved\\
+L & Former facts suffice for the actual annotated root equalities & \name{Programs.Annotated.root_admitted_of_formerFacts} & PCQ & proved\\
+L & Licensed rows give typed equalities under typed assignments & \name{Programs.Annotated.instantiated_equal} & PCQ & proved\\
+L & Erasure preserves the selected typed instance equality & \name{Programs.Annotated.erased_instantiated_equal} & PCQ & proved\\
+L & Each original row has a canonical typed equality witness & \name{Programs.Annotated.canonical_equal} & PCQ & proved\\
+L & Canonical typing metadata and changed-type refusal controls & \name{Programs.Annotated.all_metadataVerdicts} & PCQ & proved\\
+L & Natural lifting and repeated vector-parameter controls & \name{Programs.Annotated.all_verdicts} & PCQ & proved\\
+L & The full textual declaration source supplies the complete generated library & \name{IndexedInductive.AppendChecking.textual_candidate_library} & P & proved\\
+L & Actual submitted proposals replay in the generated policy & \name{IndexedInductive.AppendChecking.replayProposal_sound} & PCQ & proved\\
+L & Live source proposals retain their generated checking policy & \name{IndexedInductive.AppendChecking.replaySource_sound} & PCQ & proved\\
+I & The recursion graph is functional under successor separation & \name{NaturalRecursion.Graph.functional} & none & proved\\
+I & Graph values agree with every recursive solution & \name{NaturalRecursion.Graph.agrees} & none & proved\\
+I & Every generated number has a graph value & \name{NaturalRecursion.Graph.exists_of_generated} & none & proved\\
+I & A lawful selector selects a graph value & \name{NaturalRecursion.selected_graph} & none & proved\\
+I & The selected recursor satisfies its zero equation & \name{NaturalRecursion.selected_zero} & none & proved\\
+I & The selected recursor satisfies its successor equation & \name{NaturalRecursion.selected_successor} & none & proved\\
+I & Selected recursion is unique on the generated carrier & \name{NaturalRecursion.selected_unique} & none & proved\\
+I & Full-domain Leibniz equality has the declared meaning & \name{NaturalRecursion.denote_equality} & none & proved\\
+I & Full-domain encoded existence has the declared meaning & \name{NaturalRecursion.denote_existential} & none & proved\\
+I & The typed graph denotes the independent inductive graph & \name{NaturalRecursion.denote_graph_iff} & none & proved\\
+I & The typed uniqueness clause has its pointwise meaning & \name{NaturalRecursion.denote_uniqueness} & PQ & proved\\
+I & The typed zero-separation interface retains its meaning & \name{NaturalRecursion.denote_zeroExcluded} & PQ & proved\\
+I & The typed injectivity interface retains its meaning & \name{NaturalRecursion.denote_successorInjective} & PQ & proved\\
+I & The typed choice interface retains its selection law & \name{NaturalRecursion.denote_choiceCondition} & PQ & proved\\
+I & The typed recursion clauses retain their equations & \name{NaturalRecursion.denote_recursionProperty} & PQ & proved\\
+I & Full-domain models satisfy conditional unique recursion & \name{NaturalRecursion.models_recursion} & PQ & proved\\
+I & The independent typed graph matches its exported definition & \name{NaturalRecursion.graph_source_definition} & P & proved\\
+I & Typed Leibniz equality matches the exported definition & \name{NaturalRecursion.equality_source_definition} & P & proved\\
+I & Typed existence matches the exported definition & \name{NaturalRecursion.existential_source_definition} & P & proved\\
+I & The independent typed recursion statement erases exactly & \name{NaturalRecursion.native_statement_erases} & P & proved\\
+I & The independent native recursion statement is formed & \name{NaturalRecursion.native_statement_formed} & P & proved\\
+I & The authored eliminator supplies a recursion graph value & \name{IndexedInductiveNaturalMegalodon.source_recursion_graph} & PQ & proved\\
+I & The graph is exactly the authored eliminator graph & \name{IndexedInductiveNaturalMegalodon.source_graph_iff} & PQ & proved\\
+I & Every lawful selector agrees with the authored eliminator & \name{IndexedInductiveNaturalMegalodon.source_selector_agrees} & PQ & proved\\
+I & Lawful selectors agree on every authored natural & \name{IndexedInductiveNaturalMegalodon.source_selectors_agree} & PQ & proved\\
+I & The classical interpretation supplies scoped inhabited choice & \name{IndexedInductiveNaturalMegalodon.source_recursion_with_choice} & PCQ & proved\\
+I & The authored full-domain model satisfies the native schema & \name{IndexedInductiveNaturalMegalodon.source_recursion_statement} & PQ & proved\\
+I & Source successor discharges both typed interfaces & \name{IndexedInductiveNaturalMegalodon.source_successor_formulas} & PQ & proved\\
+I & The recursion graph contains a genuine successor result & \name{IndexedInductiveNaturalMegalodon.source_recursion_nonempty} & none & proved\\
+I & A constant-zero selector fails a genuine source computation & \name{IndexedInductiveNaturalMegalodon.constant_selector_wrong_result} & PQ & proved\\
+I & Original selected natural rows are exactly the constructor schemas & \name{ComputationProfiles.NaturalConversion.schema_iff} & PCQ & proved\\
+I & Actual natural-only roots have exact schema coverage & \name{ComputationProfiles.NaturalConversion.roots_exact} & PCQ & proved\\
+I & The actual natural schemas form a constructor system & \name{ComputationProfiles.NaturalConversion.system} & PCQ & proved\\
+I & Natural-only structural conversion is confluent & \name{ComputationProfiles.NaturalConversion.churchRosser} & PCQ & proved\\
+I & Natural-only conversion has the Pi boundary & \name{ComputationProfiles.NaturalConversion.pi_boundary} & PCQ & proved\\
+I & Natural-only conversion has the Sigma boundary & \name{ComputationProfiles.NaturalConversion.sigma_boundary} & PCQ & proved\\
+I & Natural-only roots require the original four-argument eliminator & \name{ComputationProfiles.NaturalConversion.root_head} & PCQ & proved\\
+I & Bare declared constants do not compute in this policy & \name{ComputationProfiles.NaturalConversion.constant_normal} & PCQ & proved\\
+I & Actual addition at zero is a permitted conversion & \name{ComputationProfiles.NaturalConversion.addition_zero} & PCQ & proved\\
+I & Structural conversion separates the natural type from Pi & \name{ComputationProfiles.NaturalConversion.natural_not_pi} & PCQ & proved\\
+I & Typed substitutions construct arbitrary dependent declaration spines & \name{FormationSensitive.DeclarationSpine.applyTelescope} & PQ & proved\\
+I & Observed recursor typing retains its genuine declaration formation & \name{ComputationProfiles.NaturalConversion.Preservation.recursor_spine} & PCQ & proved\\
+I & Recover actual dependent recursor arguments and result adjustment & \name{ComputationProfiles.NaturalConversion.Preservation.recover} & PCQ & proved\\
+I & The actual selected zero root uniformly preserves typing & \name{ComputationProfiles.NaturalConversion.Preservation.zero_preserves} & PCQ & proved\\
+I & Recover a successor predecessor at its declared domain & \name{ComputationProfiles.NaturalConversion.Preservation.successor_argument} & PCQ & proved\\
+I & The actual selected successor root uniformly preserves typing & \name{ComputationProfiles.NaturalConversion.Preservation.successor_preserves} & PCQ & proved\\
+I & All actual natural-only roots uniformly preserve typing & \name{ComputationProfiles.NaturalConversion.Preservation.roots} & PCQ & proved\\
+I & Natural-only contextual computation preserves full formed judgments & \name{ComputationProfiles.NaturalConversion.Preservation.steps_preserve} & PCQ & proved\\
+I & An actual checked zero redex witnesses preservation & \name{ComputationProfiles.NaturalConversion.Controls.zero_typed} & PCQ & proved\\
+I & An actual checked successor redex witnesses preservation & \name{ComputationProfiles.NaturalConversion.Controls.successor_typed} & PCQ & proved\\
+I & The uniform zero theorem applies to a real checked redex & \name{ComputationProfiles.NaturalConversion.Controls.zero_preserved} & PCQ & proved\\
+I & Four actual steps compute the selected successor example & \name{ComputationProfiles.NaturalConversion.Controls.successor_path} & PCQ & proved\\
+I & The full successor computation retains its exact type & \name{ComputationProfiles.NaturalConversion.Controls.successor_preserved} & PCQ & proved\\
+I & The same natural proof submission refuses an altered Pi result & \name{ComputationProfiles.NaturalConversion.Controls.altered_type_refused} & PCQ & proved\\
+I & Natural preservation controls accept and refuse their intended inputs & \name{ComputationProfiles.NaturalConversion.Controls.all_verdicts} & PCQ & proved\\
+N5 & The original Nat declaration retains its universe typing & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.natural_typed} & PCQ & proved\\
+N5 & The original zero declaration has type Nat & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.zero_typed} & PCQ & proved\\
+N5 & The original successor has its dependent-function type & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.successor_constant_typed} & PCQ & proved\\
+N5 & Successor preserves the actual annotated Nat type & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.successor_typed} & PCQ & proved\\
+N5 & Successor transports actual typed natural equalities & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.successor_equal} & PCQ & proved\\
+N5 & The natural type lies in the selected motive universe & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.natural_in_universe} & PCQ & proved\\
+N5 & The selected motive universe has its successor typing & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.universe_typed} & PCQ & proved\\
+N5 & The natural motive function type is formed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.motive_type} & PCQ & proved\\
+N5 & The actual annotated natural motive has its declared type & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.motive_typed} & PCQ & proved\\
+N5 & The applied actual motive retains its universe typing & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.motive_applied} & PCQ & proved\\
+N5 & The actual motive computes by a finite typed beta equality & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.motive_beta} & PCQ & proved\\
+N5 & The recursive natural-method domain is formed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.step_inner_type} & PCQ & proved\\
+N5 & The full natural method function type is formed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.step_type} & PCQ & proved\\
+N5 & The actual method body retains its indexed motive result & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.method_body_typed} & PCQ & proved\\
+N5 & The actual recursive method abstraction is typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.step_inner_typed} & PCQ & proved\\
+N5 & The complete annotated natural method has its declared type & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.step_typed} & PCQ & proved\\
+N5 & Two typed beta steps compute the actual natural method & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.step_apply_equal} & PCQ & proved\\
+N5 & The original natural recursor has its closed telescope type & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.recursor_typed} & PCQ & proved\\
+N5 & Actual recursor arguments form a typed simultaneous substitution & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.arguments_typed} & PCQ & proved\\
+N5 & Recursor application retains the actual indexed motive result & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.eliminate_typed} & PCQ & proved\\
+N5 & Annotated addition is typed for arbitrary typed natural arguments & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.add_typed} & PCQ & proved\\
+N5 & Annotated addition erases to the independently defined M1 code & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.add_erases} & P & proved\\
+N5 & The complete annotated addition function has its curried type & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.addFunction_typed} & PCQ & proved\\
+N5 & The closed annotated function erases to actual closed M1 addition & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.addFunction_erases} & P & proved\\
+N5 & The existing bidirectional annotator reconstructs typed addition & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.producedAddFunction_exact} & PCQ & proved\\
+N5 & The actual produced addition has an independent typing derivation & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.producedAddFunction_typed} & PCQ & proved\\
+N5 & The actual typed zero equation retains original row permission & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.add_zero} & PCQ & proved\\
+N5 & The actual typed successor equation retains original row permission & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.add_successor} & PCQ & proved\\
+N5 & The inactive annotated profile has no root computation & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.inactive_no_root} & PCQ & proved\\
+N5 & Closed addition stays typed with every iota root disabled & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.typed_without_iota} & PCQ & proved\\
+N5 & A second actual motive has its own genuine domain typing & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.otherMotive_typed} & PCQ & proved\\
+N5 & Different typed motive domains share one erasure & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.domain_erasure_distinction} & none & proved\\
+N5 & Actual annotated one plus zero equals one at Nat & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.one_plus_zero} & PCQ & proved\\
+N5 & Annotated natural-program reference controls pass & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.all_verdicts} & PCQ & proved\\
+I & Actual annotated addition commutes with substitution & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.add_substitute} & P & proved\\
+I & Actual annotated addition commutes with renaming & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.add_rename} & P & proved\\
+I & Abstract an independently typed body over formed dependent domain and codomain & \name{TypedEquality.Annotated.CTyped.abstractTerm} & P & proved\\
+I & Actual dependent append: elementSort typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.elementSort_typed} & PCQ & proved\\
+I & Actual dependent append: in motive universe & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.in_motive_universe} & PCQ & proved\\
+I & Actual dependent append: vector constant typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.vector_constant_typed} & PCQ & proved\\
+I & Actual dependent append: vector typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.vector_typed} & PCQ & proved\\
+I & Actual dependent append: vector index equal & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.vector_index_equal} & PCQ & proved\\
+I & Actual dependent append: nil constant typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.nil_constant_typed} & PCQ & proved\\
+I & Actual dependent append: nil typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.nil_typed} & PCQ & proved\\
+I & Actual dependent append: cons constant typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.cons_constant_typed} & PCQ & proved\\
+I & Actual dependent append: cons typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.cons_typed} & PCQ & proved\\
+I & Actual dependent append: result typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.result_typed} & PCQ & proved\\
+I & Actual dependent append: result substitute & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.result_substitute} & P & proved\\
+I & Actual dependent append: innerType open & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.innerType_open} & PQ & proved\\
+I & Actual dependent append: family applied & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.family_applied} & PCQ & proved\\
+I & Actual dependent append: recursor constant typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.recursor_constant_typed} & PCQ & proved\\
+I & Actual dependent append: arguments typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.arguments_typed} & PCQ & proved\\
+I & Actual dependent append: eliminate typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.eliminate_typed} & PCQ & proved\\
+I & Actual dependent append: innerType typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.innerType_typed} & PCQ & proved\\
+I & Actual dependent append: familyType typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.familyType_typed} & PCQ & proved\\
+I & Actual dependent append: motiveInner typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.motiveInner_typed} & PCQ & proved\\
+I & Actual dependent append: motive typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.motive_typed} & PCQ & proved\\
+I & Actual dependent append: motiveInner substitute & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.motiveInner_substitute} & P & proved\\
+I & Actual dependent append: motiveInner rename & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.motiveInner_rename} & P & proved\\
+I & Actual dependent append: motive rename & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.motive_rename} & P & proved\\
+I & Actual dependent append: motive beta & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.motive_beta} & PCQ & proved\\
+I & Actual dependent append: method body typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.method_body_typed} & PCQ & proved\\
+I & Actual dependent append: method typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.method_typed} & PCQ & proved\\
+I & Actual dependent append: nil branch typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.nil_branch_typed} & PCQ & proved\\
+I & Actual dependent append: append typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.append_typed} & PCQ & proved\\
+I & Actual dependent append: functionContext formed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.functionContext_formed} & PCQ & proved\\
+I & Actual dependent append: functionBody typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.functionBody_typed} & PCQ & proved\\
+I & Actual dependent append: functionResult typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.functionResult_typed} & PCQ & proved\\
+I & Actual dependent append: appendFunction typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.appendFunction_typed} & PCQ & proved\\
+I & Actual dependent append: motive erases & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.motive_erases} & PQ & proved\\
+I & Actual dependent append: method erases & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.method_erases} & PQ & proved\\
+I & Actual dependent append: append erases & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.append_erases} & PQ & proved\\
+I & Actual dependent append: appendFunction erases & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.appendFunction_erases} & PQ & proved\\
+I & Actual dependent append: appendFunctionType erases & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.appendFunctionType_erases} & P & proved\\
+I & Actual dependent append: producedAppendFunction exact & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.producedAppendFunction_exact} & PCQ & proved\\
+I & Actual dependent append: producedAppendFunction typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.producedAppendFunction_typed} & PCQ & proved\\
+I & Actual dependent append: naturalOnly typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.naturalOnly_typed} & PCQ & proved\\
+I & Actual dependent append: unconstrained erasure distinction & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.unconstrained_erasure_distinction} & PCQ & proved\\
+I & Actual dependent append: all verdicts & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.all_verdicts} & PCQ & proved\\
+I & Typed append computation: methodContext formed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.methodContext_formed} & PCQ & proved\\
+I & Typed append computation: methodResult typed & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.methodResult_typed} & PCQ & proved\\
+I & Typed append computation: method apply equal & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.method_apply_equal} & PCQ & proved\\
+I & Typed append computation: append nil & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.append_nil} & PCQ & proved\\
+I & Typed append computation: append cons & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.append_cons} & PCQ & proved\\
+I & Typed append computation: natural as element & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.natural_as_element} & PCQ & proved\\
+I & Typed append computation: closed nil & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.closed_nil} & PCQ & proved\\
+I & Typed append computation: closed cons & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.closed_cons} & PCQ & proved\\
+I & Typed append computation: closed cons erased & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.closed_cons_erased} & PCQ & proved\\
+I & Typed append computation: typed with vector rows disabled & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.typed_with_vector_rows_disabled} & PCQ & proved\\
+I & Typed append computation: all computationVerdicts & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.all_computationVerdicts} & PCQ & proved\\
+I & Restrict a typed telescope assignment to its ambient context & \name{TypedEquality.Annotated.CTele.ambientSub_typed} & P & proved\\
+I & Opening after ambient restriction reconstructs the full assignment & \name{TypedEquality.Annotated.CTele.inst_ambientSub} & PQ & proved\\
+I & Typed dependent telescope application preserves equality & \name{TypedEquality.Annotated.CTele.apply_equal} & PQ & proved\\
+I & Relative telescope abstractions compute under a full independently typed assignment & \name{TypedEquality.Annotated.CTele.lams_apply} & PQ & proved\\
+I & Selected annotated policy transport: opaque values & \name{NativeNaturalVectorFamilies.Programs.Annotated.opaque_values} & PCQ & proved\\
+I & Selected annotated policy transport: presentation & \name{NativeNaturalVectorFamilies.Programs.Annotated.presentation} & PCQ & proved\\
+I & Selected annotated policy transport: permissions morphism & \name{NativeNaturalVectorFamilies.Programs.Annotated.permissions_morphism} & PCQ & proved\\
+I & Selected annotated policy transport: judgment mono & \name{NativeNaturalVectorFamilies.Programs.Annotated.judgment_mono} & PCQ & proved\\
+I & Selected annotated policy transport: context mono & \name{NativeNaturalVectorFamilies.Programs.Annotated.context_mono} & PCQ & proved\\
+I & Selected annotated policy transport: substitution mono & \name{NativeNaturalVectorFamilies.Programs.Annotated.substitution_mono} & PCQ & proved\\
+I & Selected annotated policy transport: erase root & \name{NativeNaturalVectorFamilies.Programs.Annotated.erase_root} & PCQ & proved\\
+I & Selected annotated policy transport: natural patterns linear & \name{NativeNaturalVectorFamilies.Programs.Annotated.natural_patterns_linear} & PCQ & proved\\
+I & Selected annotated policy transport: vector cons repeats parameter & \name{NativeNaturalVectorFamilies.Programs.Annotated.vector_cons_repeats_parameter} & P & proved\\
+I & Selected annotated policy transport: naturalOnly included & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.naturalOnly_included} & PCQ & proved\\
+I & Selected annotated policy transport: function after two extensions & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.function_after_two_extensions} & PCQ & proved\\
+I & Selected annotated policy transport: nil before cons & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.nil_before_cons} & PCQ & proved\\
+I & Selected annotated policy transport: cons certificate strict & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.cons_certificate_strict} & PCQ & proved\\
+I & Selected annotated policy transport: all profileVerdicts & \name{NativeNaturalVectorFamilies.Programs.Annotated.Append.all_profileVerdicts} & PCQ & proved\\
+I & Premise translation commutes with head-map composition & \name{TypedEquality.Annotated.CPremise.mapHead_comp} & P & proved\\
+I & Compose premise-preserving annotated package morphisms & \name{TypedEquality.Annotated.ChurchRules.Morphism.comp} & P & proved\\
+I & Transport a presented annotated package under an enlarged schema family & \name{TypedEquality.Annotated.ChurchRules.ofSchemas_morphism} & PQ & proved\\
+I & Typed natural fact interface: fullDomains & \name{HOL.NaturalFacts.fullDomains} & none & proved\\
+I & Typed natural fact interface: recursion meaning & \name{HOL.NaturalFacts.recursion_meaning} & none & proved\\
+I & Typed natural fact interface: induction meaning & \name{HOL.NaturalFacts.induction_meaning} & none & proved\\
+I & Typed natural fact interface: noConfusion meaning & \name{HOL.NaturalFacts.noConfusion_meaning} & none & proved\\
+I & Typed natural fact interface: successorInjective meaning & \name{HOL.NaturalFacts.successorInjective_meaning} & none & proved\\
+I & Typed natural fact interface: infinity meaning & \name{HOL.NaturalFacts.infinity_meaning} & none & proved\\
+I & Typed natural fact interface: collapsing noConfusion refused & \name{HOL.NaturalFacts.collapsing_noConfusion_refused} & P & proved\\
+I & Typed natural fact interface: encodeTerm rename & \name{HOLLight.HOLSyntaxWire.encodeTerm_rename} & PQ & proved\\
+I & Typed natural fact interface: names distinct & \name{HOLLight.NaturalFacts.names_distinct} & none & proved\\
+I & Typed natural fact interface: binder names distinct & \name{HOLLight.NaturalFacts.binder_names_distinct} & P & proved\\
+I & Typed natural fact interface: bare zero statement distinct & \name{HOLLight.NaturalFacts.bare_zero_statement_distinct} & P & proved\\
+I & Authored carrier at the native fact signature: models recursion & \name{IndexedInductiveNaturalHOL.NativeFacts.models_recursion} & PQ & proved\\
+I & Authored carrier at the native fact signature: models induction & \name{IndexedInductiveNaturalHOL.NativeFacts.models_induction} & PQ & proved\\
+I & Authored carrier at the native fact signature: models noConfusion & \name{IndexedInductiveNaturalHOL.NativeFacts.models_noConfusion} & PQ & proved\\
+I & Authored carrier at the native fact signature: models successorInjective & \name{IndexedInductiveNaturalHOL.NativeFacts.models_successorInjective} & PQ & proved\\
+I & Authored carrier at the native fact signature: models infinity & \name{IndexedInductiveNaturalHOL.NativeFacts.models_infinity} & PQ & proved\\
+I & Authored carrier at the native fact signature: all models & \name{IndexedInductiveNaturalHOL.NativeFacts.all_models} & PQ & proved\\
+I & Authored carrier at the native fact signature: boolean recursion witness & \name{IndexedInductiveNaturalHOL.NativeFacts.boolean_recursion_witness} & P & proved\\
+I & Observed telescope retains a typed application head & \name{FormationSensitive.Typing.applyClosed_head} & P & proved\\
+I & Observed telescope recovers its original declaration spine & \name{FormationSensitive.DeclarationSpine.ofObservedTelescope} & P & proved\\
+I & A declaration head retains its closed formation & \name{FormationSensitive.DeclarationSpine.constant_formed} & P & proved\\
+I & Original vector eliminator declaration & \name{ComputationProfiles.NaturalConversion.Preservation.Vector.recursor_declared} & PCQ & proved\\
+I & Vector telescope application is the original eliminator call & \name{ComputationProfiles.NaturalConversion.Preservation.Vector.application_shape} & P & proved\\
+I & Vector telescope recovers the dependent principal result & \name{ComputationProfiles.NaturalConversion.Preservation.Vector.principal_result} & P & proved\\
+I & Observed vector application retains its original declaration & \name{ComputationProfiles.NaturalConversion.Preservation.Vector.recursor_spine} & PCQ & proved\\
+I & All dependent vector arguments and displayed-type replay & \name{ComputationProfiles.NaturalConversion.Preservation.Vector.recover} & PCQ & proved\\
+I & Operational vector nil preserves smaller-policy typing & \name{ComputationProfiles.NaturalConversion.Preservation.Vector.nil_preserves} & PCQ & proved\\
+I & Original vector cons declaration & \name{ComputationProfiles.NaturalConversion.Preservation.Vector.constructor_declared} & PCQ & proved\\
+I & Observed constructor recovers its four dependent arguments & \name{ComputationProfiles.NaturalConversion.Preservation.Vector.constructor_arguments} & PCQ & proved\\
+I & Canonical vector cons target from original eliminator formation & \name{ComputationProfiles.NaturalConversion.Preservation.Vector.canonical_cons_target} & PCQ & proved\\
+I & Operational vector cons preserves smaller-policy typing & \name{ComputationProfiles.NaturalConversion.Preservation.Vector.cons_preserves} & PCQ & proved\\
+I & All original operational roots preserve smaller checking judgments & \name{ComputationProfiles.NaturalConversion.Preservation.operational_roots} & PCQ & proved\\
+I & Existing producer yields the canonical nil submission & \name{ComputationProfiles.NaturalConversion.Controls.vector_nil_produced} & PCQ & proved\\
+I & Existing producer yields the canonical cons submission & \name{ComputationProfiles.NaturalConversion.Controls.vector_cons_produced} & PCQ & proved\\
+I & Canonical vector nil source checks under natural-only policy & \name{ComputationProfiles.NaturalConversion.Controls.vector_nil_typed} & PCQ & proved\\
+I & Canonical vector cons source checks under natural-only policy & \name{ComputationProfiles.NaturalConversion.Controls.vector_cons_typed} & PCQ & proved\\
+I & Canonical operational nil target retains its type & \name{ComputationProfiles.NaturalConversion.Controls.vector_nil_preserved} & PCQ & proved\\
+I & Canonical operational cons target retains its type & \name{ComputationProfiles.NaturalConversion.Controls.vector_cons_preserved} & PCQ & proved\\
+I & Operational cons is absent from smaller checking roots & \name{ComputationProfiles.NaturalConversion.Controls.vector_cons_root_disabled} & PCQ & proved\\
+I & Smaller checker refuses the operational cons citation & \name{ComputationProfiles.NaturalConversion.Controls.vector_cons_citation_refused} & PCQ & proved\\
+I & Full checker accepts the exact same cons citation & \name{ComputationProfiles.NaturalConversion.Controls.vector_cons_citation_enabled} & PCQ & proved\\
+I & Actual original declaration roots preserve smaller checking judgments & \name{ComputationProfiles.NaturalConversion.Preservation.operational_rule_roots} & PCQ & proved\\
+I & Actual closure parameters form an admitted Henkin valuation & \name{HOL.NaturalClosure.parameterValuation_admissible} & none & proved\\
+I & Actual lambda denotes the strengthened closure predicate & \name{HOL.NaturalClosure.denote_strengthening} & none & proved\\
+I & Henkin term closure admits the particular induction predicate & \name{HOL.NaturalClosure.strengthening_admitted} & none & proved\\
+I & Closure-premised induction from local parameter admission & \name{HOL.NaturalClosure.closedUnder_induction_admitted} & none & proved\\
+I & Guarded induction holds in every selected Henkin model & \name{HOL.NaturalClosure.models_induction_henkin} & none & proved\\
+I & Three-point interpretation has exactly its generated zero & \name{HOL.NaturalClosure.InductionControls.closed_iff_zero} & P & proved\\
+I & Three-point guarded step holds & \name{HOL.NaturalClosure.InductionControls.guarded_step} & P & proved\\
+I & Three-point unguarded step fails & \name{HOL.NaturalClosure.InductionControls.unguarded_step_refused} & P & proved\\
+I & Three-point actual guarded induction & \name{HOL.NaturalClosure.InductionControls.guarded_induction} & P & proved\\
+I & Native guarded-step and strengthened-definition controls & \name{MM0.NaturalInduction.all_verdicts} & P & proved\\
+I & Common cumulative head preservation for annotated packages & \name{Annotated.CHeadPreserving.ofLevelTower} & P & proved\\
+I & Original disabled table has no raw root & \name{NativeNaturalVectorFamilies.Programs.Annotated.inactive_raw_no_root} & PCQ & proved\\
+I & Actual declaration policies reuse the tower head reading & \name{NativeNaturalVectorFamilies.Programs.Annotated.headReading} & PCQ & proved\\
+I & Actual declaration policies retain ground-head equality & \name{NativeNaturalVectorFamilies.Programs.Annotated.ground_head_eq} & PCQ & proved\\
+I & Opaque annotated declarations have former injectivity and no-confusion & \name{NativeNaturalVectorFamilies.Programs.Annotated.inactive_formerFacts} & PCQ & proved\\
+I & Opaque annotated product cannot equal a universe head & \name{NativeNaturalVectorFamilies.Programs.Annotated.inactive_pi_not_head} & PCQ & proved\\
+I & Cumulative heads preserve typing under every actual permission selection & \name{NativeNaturalVectorFamilies.Programs.Annotated.head_preserving} & PCQ & proved\\
+I & Opaque contextual reductions are equal at the original dependent type & \name{NativeNaturalVectorFamilies.Programs.Annotated.inactive_reduction_equal} & PCQ & proved\\
+I & Opaque contextual reductions retain the original dependent type & \name{NativeNaturalVectorFamilies.Programs.Annotated.inactive_reduction_typed} & PCQ & proved\\
+I & Actual opaque natural function product is not a universe & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.inactive_function_type_not_universe} & PCQ & proved\\
+I & Actual opaque natural function takes a typed beta step & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.inactive_function_beta} & PCQ & proved\\
+I & Opaque declarations refuse the actual natural zero citation & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.inactive_zero_citation_refused} & PCQ & proved\\
+I & Enabling rows accepts that same natural zero citation & \name{NativeNaturalVectorFamilies.Programs.Annotated.Functions.full_zero_citation_accepted} & PCQ & proved\\
+M1 & Nontrivial interpretation of the original natural type & \name{NaturalDomain.reading_nat} & PCQ & proved\\
+M1 & Original zero is the numeral zero ideal & \name{NaturalDomain.reading_zero} & PCQ & proved\\
+M1 & Original successor uses the projected numeral constructor & \name{NaturalDomain.reading_successor} & PCQ & proved\\
+M1 & Original recursor uses the projected dependent recursor & \name{NaturalDomain.reading_recursor} & PCQ & proved\\
+M1 & Actual natural declaration matches the numeral interface & \name{NaturalDomain.nat_declared} & PCQ & proved\\
+M1 & Actual zero declaration matches the numeral interface & \name{NaturalDomain.zero_declared} & PCQ & proved\\
+M1 & Actual successor declaration matches the numeral interface & \name{NaturalDomain.successor_declared} & PCQ & proved\\
+M1 & Actual dependent recursor declaration matches the numeral interface & \name{NaturalDomain.recursor_declared} & PCQ & proved\\
+M1 & Every original constant is fixed by its declared projection & \name{NaturalDomain.constants_valid} & PCQ & proved\\
+M1 & Original recursor lookup recovers the semantic dependent spine & \name{NaturalDomain.recursor_spine} & PCQ & proved\\
+M1 & Natural zero computation with original semantic spine premises & \name{NaturalDomain.zero_valid} & PCQ & proved\\
+M1 & Natural successor computation with original semantic spine premises & \name{NaturalDomain.successor_valid} & PCQ & proved\\
+M1 & Both actual selected annotated rows have valid interpretations & \name{NaturalDomain.roots_valid} & PCQ & proved\\
+M1 & Nontrivial valid reading of the natural-only annotation & \name{NaturalDomain.valid} & PCQ & proved\\
+M1 & Existing actual addition proof has equal denotations & \name{NaturalDomain.one_plus_zero} & PCQ & proved\\
+M1 & Actual successor of zero denotes its numeral ideal & \name{NaturalDomain.successor_zero} & PCQ & proved\\
+M1 & Actual one plus zero denotes successor of zero & \name{NaturalDomain.one_plus_zero_value} & PCQ & proved\\
+M1 & The natural interpretation separates zero and successor & \name{NaturalDomain.zero_ne_successor_zero} & PCQ & proved\\
+M1 & Soundness refutes the false annotated constructor equation & \name{NaturalDomain.zero_equal_successor_refused} & PCQ & proved\\
+M1 & Larger declaration spine facts retain original types & \name{SpineFacts.of_decl_inclusion} & PQ & proved\\
+M1 & Semantic validity of an opaque package sum retaining computation & \name{ReadingValid.sum_opaque} & PQ & proved\\
+M1 & Decoder proposition name is fresh for the original signature & \name{NaturalDomain.Decoder.fresh_prop} & PCQ & proved\\
+M1 & Decoder name is fresh for the original signature & \name{NaturalDomain.Decoder.fresh_holds} & PCQ & proved\\
+M1 & Opaque proposition declaration has its original type & \name{NaturalDomain.Decoder.prop_declared} & PCQ & proved\\
+M1 & Opaque decoder declaration has its original type & \name{NaturalDomain.Decoder.holds_declared} & PCQ & proved\\
+M1 & Original nontrivial reading validates opaque decoder declarations & \name{NaturalDomain.Decoder.declarations_valid} & PCQ & proved\\
+M1 & Semantic validity with original natural computation and fresh decoder & \name{NaturalDomain.Decoder.valid} & PCQ & proved\\
+M1 & Decoder extension retains exactly the original natural root cases & \name{NaturalDomain.Decoder.roots_iff} & PCQ & proved\\
+M1 & Decoder extension retains original root evidence requirements & \name{NaturalDomain.Decoder.premises_iff} & PCQ & proved\\
+M1 & Actual original typed addition proof persists into decoder extension & \name{NaturalDomain.Decoder.one_plus_zero} & PCQ & proved\\
+M1 & Actual natural zero computation remains enabled & \name{NaturalDomain.Decoder.zero_root} & PCQ & proved\\
+M1 & Decoder extension still refutes the false constructor equation & \name{NaturalDomain.Decoder.zero_equal_successor_refused} & PCQ & proved\\
+M1 & Abstraction/representation roundtrip has the defined type & \name{HOLTypeDefinitionBoundary.roundtrip_typed} & PQ & proved\\
+M1 & Equality at the defined type passes source typing & \name{HOLTypeDefinitionBoundary.defined_equality_typed} & PQ & proved\\
+M1 & Distinct representation equality index is refused & \name{HOLTypeDefinitionBoundary.representation_equality_refused} & PQ & proved\\
+M1 & Correctly indexed equation passes source ingress & \name{HOLTypeDefinitionBoundary.defined_equality_checked} & PCQ & proved\\
+M1 & Wrong equality index refuses source ingress & \name{HOLTypeDefinitionBoundary.representation_equality_check_refused} & PCQ & proved\\
+M1 & Concrete representation and defined types differ & \name{HOLTypeDefinitionBoundary.distinct_types} & none & proved\\
+M1 & Type-definition boundary controls compute & \name{HOLTypeDefinitionBoundary.all_verdicts} & PQ & proved\\
+M1 & Constant expansion retains the complete schema-premise list & \name{patternPremises_instConsts_of_fixed} & PQ & proved\\
+M1 & Supported schema roots survive constant expansion & \name{SchemaConstantsFixed.root} & PQ & proved\\
+M1 & Required evidence follows the same constant expansion & \name{SchemaConstantsFixed.requires} & PQ & proved\\
+M1 & Supported declarations and schemas give a full constant interpretation & \name{ChurchRules.ofSchemas_constInstance} & PQ & proved\\
+M1 & Fresh proposition expands to its universe & \name{NaturalDomain.Decoder.interpret_prop} & PQ & proved\\
+M1 & Fresh decoder expands to the universe identity & \name{NaturalDomain.Decoder.interpret_holds} & PQ & proved\\
+M1 & Every original declared name is fixed & \name{NaturalDomain.Decoder.original_names_fixed} & PCQ & proved\\
+M1 & All eight original declaration types pass finite support checking & \name{NaturalDomain.Decoder.declarationTypeFixedCheck_true} & PCQ & proved\\
+M1 & Every actual declared type is fixed by the return map & \name{NaturalDomain.Decoder.original_types_fixed} & PCQ & proved\\
+M1 & All four original left templates are fixed & \name{NaturalDomain.Decoder.row_left_fixed} & PCQ & proved\\
+M1 & All four original right templates are fixed & \name{NaturalDomain.Decoder.row_right_fixed} & PCQ & proved\\
+M1 & All four rows retain their inferred variable types & \name{NaturalDomain.Decoder.row_variable_type_fixed} & PCQ & proved\\
+M1 & Every selected original row has full constant-interpretation support & \name{NaturalDomain.Decoder.schema_support} & PCQ & proved\\
+M1 & Original computation and evidence survive the interpretation & \name{NaturalDomain.Decoder.original_interpretation} & PCQ & proved\\
+M1 & Decoder type expansion reuses the maintained definitions & \name{NaturalDomain.Decoder.decoder_type_expansion} & PQ & proved\\
+M1 & Full return interpretation for every original permission selection & \name{NaturalDomain.Decoder.return_interpretation} & PCQ & proved\\
+M1 & Return preserves complete judgments and contexts & \name{NaturalDomain.Decoder.returned_judgment} & PCQ & proved\\
+M1 & Equal derivability for statements fixed by the return interpretation & \name{NaturalDomain.Decoder.fixed_statement_iff} & PCQ & proved\\
+M1 & The fresh proposition is typed in each extension & \name{NaturalDomain.Decoder.proposition_typed} & PCQ & proved\\
+M1 & Its changed universe image is typed in the original package & \name{NaturalDomain.Decoder.returned_proposition_typed} & PCQ & proved\\
+M1 & Fresh proposition typing is not fixed by the return map & \name{NaturalDomain.Decoder.proposition_statement_changes} & PQ & proved\\
+M1 & The actual original addition statement is fixed & \name{NaturalDomain.Decoder.original_addition_fixed} & PQ & proved\\
+M1 & Actual natural-only addition reflects through the return route & \name{NaturalDomain.Decoder.original_addition_reflected} & PCQ & proved\\
+M1 & Actual full-policy addition reflects through the return route & \name{NaturalDomain.Decoder.full_policy_addition_reflected} & PCQ & proved\\
+M1 & Return interpretation refutes the false natural constructor equation & \name{NaturalDomain.Decoder.false_equation_refused_by_return} & PCQ & proved\\
+M1 & Legacy identity typing omits domain formation & \name{FormationSensitive.raw_identity_at_any_domain} & P & proved\\
+M1 & Refined identity typing retains its domain declaration & \name{FormationSensitive.judgment_identity_domain_declared} & PQ & proved\\
+M1 & Raw/refined identity boundary at a missing domain & \name{FormationSensitive.raw_identity_missing_domain} & PQ & proved\\
+M1 & Formed contexts alone do not upgrade every legacy derivation & \name{FormationSensitive.no_uniform_raw_upgrade} & PQ & proved\\
+M1 & Selected carrier no-preimage formula has the omitted-point meaning & \name{MM0.NaturalCarrier.noPreimage_meaning} & none & proved\\
+M1 & Selected carrier reference-format controls compute & \name{MM0.NaturalCarrier.all_verdicts} & P & proved\\
+M1 & Natural-subtype statement/domain controls compute & \name{MM0.NaturalType.all_verdicts} & P & proved\\
 \midrule
 A3 & Finite-stack realization of the HOL Light to MM0 translation & --- & --- & open\\
 A2 & Existing shared-lemma HOL translation equals the node-by-node translation & --- & --- & open\\

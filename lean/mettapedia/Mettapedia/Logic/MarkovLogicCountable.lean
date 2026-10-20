@@ -55,7 +55,7 @@ theorem queryMass_le_totalMass (q : Query) :
   · simp [hq]
 
 /-- Package the countable semantics as a mass semantics object. -/
-noncomputable def toMassSemantics : MassSemantics Query where
+noncomputable def toMassSemantics : Mettapedia.ProbabilityTheory.MassSemantics Query where
   queryMass := CountableMLNSemantics.queryMass M
   totalMass := CountableMLNSemantics.totalMass M
   queryMass_le_total := M.queryMass_le_totalMass

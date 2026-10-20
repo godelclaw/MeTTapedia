@@ -25,6 +25,11 @@ The engine is two general facts about the bounded resolver:
   budget is always a genuine cycle, never budget shortfall.
 -/
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
+import Mettapedia.Languages.MeTTa.HE.LeaTTaSpecConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 namespace Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 

@@ -13,7 +13,7 @@ fast, but it is only one member of the no-independence credal interval unless a
 coupling/independence assumption has actually been discharged.
 -/
 
-namespace Mettapedia.PLN.RuleFamilies.FirstOrder.PLNIndependencePoint
+namespace Mettapedia.PLN.RuleFamilies.FirstOrder.PLNIndependencePointApproximation
 
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 
@@ -119,4 +119,4 @@ theorem flatLaw_effectiveConcentration_not_weightedComponentCount_canary :
           (1 / 2 : ℝ) (1000 : ℝ) (1 / 2 : ℝ) (1000 : ℝ) := by
   norm_num [effectiveConcentration, weightedAverageComponentCount]
 
-end Mettapedia.PLN.RuleFamilies.FirstOrder.PLNIndependencePoint
+end Mettapedia.PLN.RuleFamilies.FirstOrder.PLNIndependencePointApproximation

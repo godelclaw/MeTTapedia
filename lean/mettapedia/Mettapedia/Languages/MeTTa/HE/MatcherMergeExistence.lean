@@ -1,5 +1,7 @@
 import Mettapedia.Languages.MeTTa.HE.MatchSolutionTheory
 import Mettapedia.Languages.MeTTa.HE.UnificationCompleteness
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
 
 /-!
 # Satisfiable matcher-result merge-back exists (`HESatisfiedMatcherMergeRelExists`)
@@ -38,11 +40,11 @@ theorem valueConflict_jointly_satisfied
     (hb : HEBindingSatisfied μ b) (hmatched : HEBindingSatisfied μ matched)
     (hclass : b.classValues v = first :: rest)
     (hval : (v, val) ∈ matched.assignments) :
-    MettaEquationSatisfied μ (toLeaTTaAtom first, toLeaTTaAtom val) := by
-  have h1 : μ v = applyClassSolution μ (toLeaTTaAtom first) :=
+    MettaEquationSatisfied μ (encodeModelAtom first, encodeModelAtom val) := by
+  have h1 : μ v = applyClassSolution μ (encodeModelAtom first) :=
     hb.eq_applyClassSolution_of_mem_classValues
       (by rw [hclass]; exact List.mem_cons_self ..)
-  have h2 : μ v = applyClassSolution μ (toLeaTTaAtom val) := hmatched.1 v val hval
+  have h2 : μ v = applyClassSolution μ (encodeModelAtom val) := hmatched.1 v val hval
   simpa [MettaEquationSatisfied] using h1.symm.trans h2
 
 /-! ## Building block 2 — the joint-system measure (Robinson variable count)
@@ -78,25 +80,25 @@ each assignment `$x <- val` becomes `$x = ⟦val⟧`, each equality `$x = $y`
 becomes `$x = $y`, all in LeaTTa atoms.  This is the joint-system carrier over
 which the Robinson variable count is taken. -/
 def HEEquations (b : Bindings) : List (Metta.Atom × Metta.Atom) :=
-  b.assignments.map (fun p => (Metta.Atom.var p.1, toLeaTTaAtom p.2)) ++
+  b.assignments.map (fun p => (Metta.Atom.var p.1, encodeModelAtom p.2)) ++
   b.equalities.map (fun p => (Metta.Atom.var p.1, Metta.Atom.var p.2))
 
 /-- Constraint-list presentation of the same literal HE record.  Unlike the
 Robinson elimination trace, this carrier deliberately retains every raw
 runtime assignment and equality entry. -/
 def HEConstraints (b : Bindings) : List (String × Metta.Atom) :=
-  b.assignments.map (fun p => (p.1, toLeaTTaAtom p.2)) ++
+  b.assignments.map (fun p => (p.1, encodeModelAtom p.2)) ++
     b.equalities.map (fun p => (p.1, Metta.Atom.var p.2))
 
 /-- Every equation extracted from an HE record is host-float-free on both
 sides: variables are float-free by definition, translated values by
-`toLeaTTaAtom_noFloat`. -/
+`encodeModelAtom_noFloat`. -/
 theorem HEEquations_noFloat (b : Bindings) :
     ∀ eq ∈ HEEquations b, MettaAtomNoFloat eq.1 ∧ MettaAtomNoFloat eq.2 := by
   intro eq hmem
   simp only [HEEquations, List.mem_append, List.mem_map] at hmem
   rcases hmem with ⟨p, _, rfl⟩ | ⟨p, _, rfl⟩
-  · exact ⟨by simp [MettaAtomNoFloat], toLeaTTaAtom_noFloat p.2⟩
+  · exact ⟨by simp [MettaAtomNoFloat], encodeModelAtom_noFloat p.2⟩
   · exact ⟨by simp [MettaAtomNoFloat], by simp [MettaAtomNoFloat]⟩
 
 /-- A valuation satisfying an HE record satisfies its translated equation
@@ -109,7 +111,7 @@ theorem HEEquations_satisfied {μ : String → Metta.Atom} {b : Bindings}
   simp only [HEEquations, List.mem_append, List.mem_map] at hmem
   rcases hmem with ⟨p, hp, rfl⟩ | ⟨p, hp, rfl⟩
   · show applyClassSolution μ (Metta.Atom.var p.1)
-        = applyClassSolution μ (toLeaTTaAtom p.2)
+        = applyClassSolution μ (encodeModelAtom p.2)
     simpa [applyClassSolution] using hb.1 p.1 p.2 hp
   · show applyClassSolution μ (Metta.Atom.var p.1)
         = applyClassSolution μ (Metta.Atom.var p.2)
@@ -127,7 +129,7 @@ theorem HEEquations_satisfied_iff
     constructor
     · intro key value hmem
       have hconstraint := hequations
-        (Metta.Atom.var key, toLeaTTaAtom value)
+        (Metta.Atom.var key, encodeModelAtom value)
         (by
           simp only [HEEquations, List.mem_append, List.mem_map]
           exact Or.inl ⟨(key, value), hmem, rfl⟩)
@@ -156,15 +158,15 @@ def HEEquationRightAtoms (b : Bindings) : List Atom :=
 /-- The pointwise atom presentation is definitionally faithful to
 `HEEquations`, including the runtime assignment-before-equality order. -/
 theorem zip_translated_HEEquationAtoms (b : Bindings) :
-    List.zip (toLeaTTaAtoms (HEEquationLeftAtoms b))
-        (toLeaTTaAtoms (HEEquationRightAtoms b)) =
+    List.zip (encodeModelAtoms (HEEquationLeftAtoms b))
+        (encodeModelAtoms (HEEquationRightAtoms b)) =
       HEEquations b := by
   have htranslate : ∀ atoms : List Atom,
-      toLeaTTaAtoms atoms = atoms.map toLeaTTaAtom := by
+      encodeModelAtoms atoms = atoms.map encodeModelAtom := by
     intro atoms
     induction atoms with
     | nil => rfl
-    | cons atom rest ih => simp [toLeaTTaAtoms, ih]
+    | cons atom rest ih => simp [encodeModelAtoms, ih]
   rw [htranslate, htranslate]
   simp only [HEEquationLeftAtoms, HEEquationRightAtoms,
     List.map_append]
@@ -172,9 +174,9 @@ theorem zip_translated_HEEquationAtoms (b : Bindings) :
   have hassignments :
       List.zip
           (b.assignments.map (fun p => Metta.Atom.var p.1))
-          (b.assignments.map (fun p => toLeaTTaAtom p.2)) =
+          (b.assignments.map (fun p => encodeModelAtom p.2)) =
         b.assignments.map
-          (fun p => (Metta.Atom.var p.1, toLeaTTaAtom p.2)) := by
+          (fun p => (Metta.Atom.var p.1, encodeModelAtom p.2)) := by
     induction b.assignments with
     | nil => rfl
     | cons assignment rest ih => simp [ih]
@@ -191,7 +193,7 @@ theorem zip_translated_HEEquationAtoms (b : Bindings) :
   change
     List.zip
         (b.assignments.map (fun p => Metta.Atom.var p.1))
-        (b.assignments.map (fun p => toLeaTTaAtom p.2)) ++
+        (b.assignments.map (fun p => encodeModelAtom p.2)) ++
       List.zip
         (b.equalities.map (fun p => Metta.Atom.var p.1))
         (b.equalities.map (fun p => Metta.Atom.var p.2)) =

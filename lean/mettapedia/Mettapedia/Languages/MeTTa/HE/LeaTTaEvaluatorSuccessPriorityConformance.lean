@@ -1,6 +1,10 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaEvaluatorConfigurationConformance
 import Mettapedia.Languages.MeTTa.HE.EvaluatorBindingExtension
 import MettaHyperonFull.Proofs.Substitution
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # LeaTTa evaluator success-priority conformance
@@ -43,7 +47,7 @@ def RawEvaluatorResultsRuntimeSound
     (space : Space) (dispatch : Spec.Eval.GroundedDispatch) (live : List Atom)
     (atom expectedType : Atom) (bindings : Bindings)
     (runtimeResults : List (Metta.Atom × Metta.Bindings))
-    (typing : EvalTypeService := publishedTypeService) : Prop :=
+    (typing : EvalTypeService := storageTypeService) : Prop :=
   ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ result,
       EvalAtomRawRel space dispatch live (typing := typing)
@@ -89,7 +93,7 @@ structure RawEvaluatorResultsRuntimeRel
     (space : Space) (dispatch : Spec.Eval.GroundedDispatch) (live : List Atom)
     (atom expectedType : Atom) (bindings : Bindings)
     (runtimeResults : List (Metta.Atom × Metta.Bindings))
-    (typing : EvalTypeService := publishedTypeService) : Prop where
+    (typing : EvalTypeService := storageTypeService) : Prop where
   sound : ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ result,
       EvalAtomRawRel space dispatch live (typing := typing)
@@ -125,7 +129,7 @@ structure EvaluatorResultsRuntimeRel
     (space : Space) (dispatch : Spec.Eval.GroundedDispatch) (live : List Atom)
     (atom expectedType : Atom) (bindings : Bindings)
     (runtimeResults : List (Metta.Atom × Metta.Bindings))
-    (typing : EvalTypeService := publishedTypeService) : Prop where
+    (typing : EvalTypeService := storageTypeService) : Prop where
   sound : ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ result,
       EvalRel space dispatch live atom expectedType bindings result typing ∧
@@ -148,7 +152,7 @@ structure InterpretExpressionResultsRuntimeRel
     (space : Space) (dispatch : Spec.Eval.GroundedDispatch) (live : List Atom)
     (expression expectedType : Atom) (bindings : Bindings)
     (runtimeResults : List (Metta.Atom × Metta.Bindings))
-    (typing : EvalTypeService := publishedTypeService) : Prop where
+    (typing : EvalTypeService := storageTypeService) : Prop where
   sound : ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ result,
       InterpretExpressionRel space dispatch live (typing := typing)
@@ -172,7 +176,7 @@ def InterpretExpressionResultsRuntimeSound
     (space : Space) (dispatch : Spec.Eval.GroundedDispatch) (live : List Atom)
     (expression expectedType : Atom) (bindings : Bindings)
     (runtimeResults : List (Metta.Atom × Metta.Bindings))
-    (typing : EvalTypeService := publishedTypeService) : Prop :=
+    (typing : EvalTypeService := storageTypeService) : Prop :=
   ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ result,
       InterpretExpressionRel space dispatch live (typing := typing)
@@ -192,7 +196,7 @@ def SelectedApplicationResultsRuntimeSound
     (expression expectedType : Atom) (policy : SelectedTypePolicy)
     (applicableBindings : Bindings)
     (runtimeResults : List (Metta.Atom × Metta.Bindings))
-    (typing : EvalTypeService := publishedTypeService) : Prop :=
+    (typing : EvalTypeService := storageTypeService) : Prop :=
   ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ interpreted callResult,
       InterpretFunctionRel space dispatch
@@ -216,7 +220,7 @@ def TupleApplicationResultsRuntimeSound
     (space : Space) (dispatch : Spec.Eval.GroundedDispatch) (live : List Atom)
     (expression expectedType : Atom) (bindings : Bindings)
     (runtimeResults : List (Metta.Atom × Metta.Bindings))
-    (typing : EvalTypeService := publishedTypeService) : Prop :=
+    (typing : EvalTypeService := storageTypeService) : Prop :=
   ∀ runtimeResult, runtimeResult ∈ runtimeResults →
     ∃ tupleResult callResult,
       InterpretTupleRel space dispatch (expectedType :: live) (typing := typing)
@@ -856,11 +860,11 @@ theorem scopedEvaluatorResultRuntimeRel_badType
       presentation bindings runtimeBindings)
     (sourceRelation : AtomRuntimeRel services atom runtimeSource)
     (sourceUnchanged : presentation.apply atom = atom)
-    (expectedEquation : runtimeExpected = toLeaTTaAtom expectedType) :
+    (expectedEquation : runtimeExpected = encodeModelAtom expectedType) :
     ScopedEvaluatorResultRuntimeRel services scope
       (mkError atom (.badType expectedType actualType), bindings)
       (Metta.Minimal.badTypeAtom runtimeSource runtimeExpected
-        (toLeaTTaAtom actualType), runtimeBindings) := by
+        (encodeModelAtom actualType), runtimeBindings) := by
   apply ScopedEvaluatorResultRuntimeRel.ofBadType state
   · exact ⟨atom, runtimeSource, by simpa [sourceUnchanged] using
         (ObservedTypeAlphaRel.refl atom), sourceRelation, rfl⟩
@@ -882,11 +886,11 @@ theorem scopedEvaluatorResultRuntimeRel_badType_privateCandidate
       fixedScope leftActual rightActual)
     (sourceRelation : AtomRuntimeRel services atom runtimeSource)
     (sourceUnchanged : presentation.apply atom = atom)
-    (expectedEquation : runtimeExpected = toLeaTTaAtom expectedType) :
+    (expectedEquation : runtimeExpected = encodeModelAtom expectedType) :
     ScopedEvaluatorResultRuntimeRel services scope
       (mkError atom (.badType expectedType leftActual), bindings)
       (Metta.Minimal.badTypeAtom runtimeSource runtimeExpected
-        (toLeaTTaAtom rightActual), runtimeBindings) := by
+        (encodeModelAtom rightActual), runtimeBindings) := by
   apply ScopedEvaluatorResultRuntimeRel.ofBadType state
   · exact ⟨atom, runtimeSource, by simpa [sourceUnchanged] using
         (ObservedTypeAlphaRel.refl atom), sourceRelation, rfl⟩
@@ -1245,24 +1249,24 @@ theorem RuntimeConfigurationRel.functionErrorsSound
     (sourceEquation :
       Metta.instantiate runtimeBindings runtimeAtom = runtimeSource)
     (runtimeExpectedNotUndefined :
-      (toLeaTTaAtom expectedType == Metta.Atom.sym "%Undefined%") = false)
+      (encodeModelAtom expectedType == Metta.Atom.sym "%Undefined%") = false)
     (runtimeSourceNotEmptyOrError :
       (runtimeSource == Metta.Minimal.emptyA || runtimeSource.isError) = false)
     (runtimeDoesNotPass :
-      (toLeaTTaAtom expectedType == Metta.Atom.atomType ||
-        toLeaTTaAtom expectedType ==
+      (encodeModelAtom expectedType == Metta.Atom.atomType ||
+        encodeModelAtom expectedType ==
           Metta.Atom.typeAtomOfMetaType runtimeSource.metaType ||
         runtimeSource.metaType == .variable) = false)
     (runtimeSourceShape :
       ∃ head tail, runtimeSource = .expr (head :: tail))
     (selectedSourceEquation :
       Metta.instantiate runtimeBindings runtimeSource =
-        toLeaTTaAtom
+        encodeModelAtom
           (.expression (.symbol operator :: arguments)))
     (selectorEquation :
       Metta.Minimal.selectFunctionTypeForExpectedFrom env state.world
-        (.sym operator) (toLeaTTaAtoms arguments)
-          (toLeaTTaAtom expectedType) runtimeBindings =
+        (.sym operator) (encodeModelAtoms arguments)
+          (encodeModelAtom expectedType) runtimeBindings =
         .exhausted runtimeErrors false)
     (inputState : TypePresentationSimulationState
       presentation bindings runtimeBindings)
@@ -1273,7 +1277,7 @@ theorem RuntimeConfigurationRel.functionErrorsSound
       name ∈ runtimeBindings.vars)
     (sourceObservation : EvaluatorAtomObservationRel services presentation
       runtimeBindings (.expression (.symbol operator :: arguments))
-        (toLeaTTaAtom (.expression (.symbol operator :: arguments))))
+        (encodeModelAtom (.expression (.symbol operator :: arguments))))
     (specNotEmptyOrError :
       ¬IsEmptyOrErrorRel (.expression (.symbol operator :: arguments)))
     (metaTypeRelation :
@@ -1286,14 +1290,14 @@ theorem RuntimeConfigurationRel.functionErrorsSound
       space dispatch live
       (.expression (.symbol operator :: arguments)) expectedType bindings
       (Metta.Minimal.mettaEvalExpected env (fuel + 1) state runtimeBindings
-        runtimeAtom (toLeaTTaAtom expectedType)).1
+        runtimeAtom (encodeModelAtom expectedType)).1
       (preparedPackageTypeService oracle) := by
-  let types := fromLeaTTaAtoms
+  let types := decodeModelAtoms
     (Metta.Minimal.getTypes env
       (Metta.Minimal.typePrep state.world (.sym operator)))
   have typesOf : (preparedPackageTypeService oracle).typesOf space
       (.symbol operator) types := by
-    simpa [types, toLeaTTaAtom] using
+    simpa [types, encodeModelAtom] using
       configuration.typesOf (.symbol operator)
   obtain ⟨outcome, scan, runtimeOutcome⟩ :=
     configuration.candidateScanFrom operator expectedType arguments bindings
@@ -1310,15 +1314,15 @@ theorem RuntimeConfigurationRel.functionErrorsSound
     (arguments := arguments) (types := types)
     (presentation := presentation)
     (runtimeSource := runtimeSource)
-    (runtimeExpression := toLeaTTaAtom
+    (runtimeExpression := encodeModelAtom
       (.expression (.symbol operator :: arguments)))
     (runtimeOperator := operator)
-    (runtimeArguments := toLeaTTaAtoms arguments)
+    (runtimeArguments := encodeModelAtoms arguments)
     (runtimeErrors := runtimeErrors) (outcome := outcome)
     env fuel state sourceEquation runtimeExpectedNotUndefined
       runtimeSourceNotEmptyOrError runtimeDoesNotPass runtimeSourceShape
       selectedSourceEquation
-      (by simp [toLeaTTaAtom, toLeaTTaAtoms_eq_map]) selectorEquation
+      (by simp [encodeModelAtom, encodeModelAtoms_eq_map]) selectorEquation
       rfl typesOf scan runtimeOutcome inputState sourceObservation
       specNotEmptyOrError metaTypeRelation specDoesNotPass
 
@@ -1335,7 +1339,7 @@ theorem preparedTypeCastOutcomeRuntimeRel_failure_sound
       presentation bindings runtimeBindings)
     (sourceRelation : AtomRuntimeRel services atom runtimeSource)
     (sourceUnchanged : presentation.apply atom = atom)
-    (expectedEquation : runtimeExpected = toLeaTTaAtom expectedType)
+    (expectedEquation : runtimeExpected = encodeModelAtom expectedType)
     (outcome : PreparedTypeCastOutcomeRuntimeRel oracle space atom
       expectedType bindings (.inl rejected)) :
     ∀ runtimeActual, runtimeActual ∈ rejected →
@@ -1347,7 +1351,7 @@ theorem preparedTypeCastOutcomeRuntimeRel_failure_sound
   cases outcome with
   | failure present variants _nonempty allFailed =>
       intro runtimeActual runtimeMember
-      rw [toLeaTTaAtoms_eq_map] at runtimeMember
+      rw [encodeModelAtoms_eq_map] at runtimeMember
       obtain ⟨actualType, actualMember, rfl⟩ :=
         List.mem_map.mp runtimeMember
       refine ⟨(mkError atom (.badType expectedType actualType), bindings),
@@ -1378,7 +1382,7 @@ theorem preparedTypeCastOutcomeRuntimeRel_failure_complete
           space atom expectedType bindings)
     (sourceRelation : AtomRuntimeRel services atom runtimeSource)
     (sourceUnchanged : presentation.apply atom = atom)
-    (expectedEquation : runtimeExpected = toLeaTTaAtom expectedType)
+    (expectedEquation : runtimeExpected = encodeModelAtom expectedType)
     (outcome : PreparedTypeCastOutcomeRuntimeRel oracle space atom
       expectedType bindings (.inl rejected)) :
     ∀ result,
@@ -1418,8 +1422,8 @@ theorem preparedTypeCastOutcomeRuntimeRel_failure_complete
           obtain ⟨runtimeActual, runtimeMember, actualAlpha⟩ :=
             PrivateCandidateFamilyAlphaRel.exists_right_of_mem_left
               candidatesAlpha competingMember
-          refine ⟨toLeaTTaAtom runtimeActual, ?_, ?_⟩
-          · rw [toLeaTTaAtoms_eq_map]
+          refine ⟨encodeModelAtom runtimeActual, ?_, ?_⟩
+          · rw [encodeModelAtoms_eq_map]
             exact List.mem_map.mpr ⟨runtimeActual, runtimeMember, rfl⟩
           · exact scopedEvaluatorResultRuntimeRel_badType_privateCandidate
               inputState actualAlpha sourceRelation
@@ -1755,7 +1759,7 @@ theorem rawEvaluatorResultsRuntimeRel_mettaEvalExpected_castFailure
     (outcome : PreparedTypeCastOutcomeRuntimeRel oracle space atom
       expectedType bindings (.inl rejected))
     (sourceRelation : AtomRuntimeRel services atom runtimeSource)
-    (expectedEquation : runtimeExpected = toLeaTTaAtom expectedType)
+    (expectedEquation : runtimeExpected = encodeModelAtom expectedType)
     (specNotEmptyOrError : ¬IsEmptyOrErrorRel atom)
     (metaTypeRelation : MetaTypeRel atom metaType)
     (specDoesNotPass : ¬(expectedType = Atom.atomType ∨

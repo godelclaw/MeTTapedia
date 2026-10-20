@@ -37,9 +37,9 @@ namespace Mettapedia.Examples.PLN.BrokenSensorDemo
 
 open Mettapedia.PLN.Bridges.ProbabilityTheory
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceNormalGamma
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 /-! ## §1: Hybrid State Type
 

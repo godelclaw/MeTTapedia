@@ -1,4 +1,5 @@
 import Mettapedia.Languages.TPTP.StatusSemantics
+import Mettapedia.Languages.TPTP.SZSOutput
 import Mettapedia.Languages.TPTP.CheckerAuthority
 import Mettapedia.Languages.TPTP.ProblemAuthority
 import Mettapedia.Languages.TPTP.SubmissionProfile

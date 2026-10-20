@@ -10,6 +10,7 @@ import Mettapedia.GSLT.Parsing.ExactDecimalLexeme
 `render?` writes an atom as MeTTa source text, or refuses it. It writes symbols, variables,
 integers, plain strings and Booleans in spellings that the shared source reader keeps exactly, and
 refuses everything else: symbols that would read as variables, commands, Booleans or numbers;
+the anonymous variable marker, whose source spelling allocates a fresh occurrence;
 strings that need escapes; foreign grounded values.
 
 `Rendered atom characters expression` is the same rendering as a relation, together with the
@@ -26,6 +27,7 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.PeTTa.ReadAfterRender
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
+open Mettapedia.Languages.ProcessCalculi
 open Algorithms.MeTTa.Simple.Parser (SExpr)
 open Mettapedia.GSLT.Parsing
 open Mettapedia.GSLT.Parsing.SExprTokenRoundTrip (tokens childTokens safe childrenSafe)
@@ -46,6 +48,13 @@ def symbolSafe (symbol : String) : Bool :=
       first != '$' && first != '!' && symbol.toList.all symbolChar &&
         !(["True", "true", "False", "false"] : List String).contains symbol &&
         (ExactDecimalLexeme.parseInteger? symbol).isNone
+
+/-- An exact variable spelling cannot use the anonymous occurrence marker. -/
+def variableSafe (name : String) : Bool := symbolSafe name && name != "_"
+
+theorem variableSafe_parts {name : String} (safeName : variableSafe name = true) :
+    symbolSafe name = true ∧ name ≠ "_" := by
+  simpa only [variableSafe, Bool.and_eq_true, bne_iff_ne] using safeName
 
 def digitChar (digit : Nat) : Char := Char.ofNat (48 + digit)
 
@@ -68,7 +77,7 @@ mutual
   /-- The characters of an atom's source spelling, if it has one the reader keeps. -/
   def chars? : Atom → Option (List Char)
     | .symbol symbol => if symbolSafe symbol then some symbol.toList else none
-    | .var name => if symbolSafe name then some ('$' :: name.toList) else none
+    | .var name => if variableSafe name then some ('$' :: name.toList) else none
     | .grounded (.int value) => some (intChars value)
     | .grounded (.string value) =>
         if value.toList.all SpaceSemantics.plainStringCharacter then some ('"' :: value.toList ++ ['"'])
@@ -96,7 +105,7 @@ mutual
   inductive Rendered : Atom → List Char → SExpr → Prop
     | symbol (symbol : String) : symbolSafe symbol = true →
         Rendered (.symbol symbol) symbol.toList (.atom (String.ofList symbol.toList))
-    | var (name : String) : symbolSafe name = true →
+    | var (name : String) : variableSafe name = true →
         Rendered (.var name) ('$' :: name.toList) (.atom (String.ofList ('$' :: name.toList)))
     | int (value : Int) :
         Rendered (.grounded (.int value)) (intChars value) (.atom (String.ofList (intChars value)))
@@ -445,7 +454,7 @@ theorem lex_rendered_cases {atom : Atom} {characters : List Char} {expression : 
       intro character member
       rcases List.mem_cons.mp member with same | rest
       · subst same; exact ⟨rfl, by decide, by decide, by decide, by decide⟩
-      · exact symbol_token_chars safeName character rest
+      · exact symbol_token_chars (variableSafe_parts safeName).1 character rest
     simpa [initialPoint] using lex_token_chars ('$' :: name.toList) token []
   | int value =>
     refine .inr ⟨?_, ?_, rfl⟩
@@ -572,7 +581,7 @@ mutual
         · exact (symbolChar_not (allChars _ member)).1 rfl
         · exact (symbolChar_not (allChars _ member)).2.1 rfl
     | _, _, _, .var name safeName => by
-        obtain ⟨_, _, _, _, _, allChars, _⟩ := symbol_parts safeName
+        obtain ⟨_, _, _, _, _, allChars, _⟩ := symbol_parts (variableSafe_parts safeName).1
         refine ⟨ofList_ne_text (by rfl) fun member => ?_, ofList_ne_text (by rfl) fun member => ?_⟩
         · rcases List.mem_cons.mp member with same | rest
           · cases same
@@ -601,7 +610,7 @@ mutual
     | _, _, _, .cons head tail => ⟨rendered_safe head, renderedList_safe tail⟩
 end
 
-open SpaceSemantics (readToken readExpression readExpressions readPlainString)
+open SpaceSemantics (readToken readRawExpression readRawExpressions readExpression readExpressions readPlainString)
 
 private theorem readPlainString_none {token : String} {first : Char} {rest : List Char}
     (shape : token.toList = first :: rest) (notQuote : first ≠ '"') : readPlainString token = none := by
@@ -699,30 +708,73 @@ theorem read_bool (value : Bool) :
   cases value <;> simp [readToken, readPlainString]
 
 mutual
-  /-- **The token reader rebuilds the atom.** -/
-  theorem read_expression : ∀ {atom : Atom} {characters : List Char} {expression : SExpr},
-      Rendered atom characters expression → readExpression expression = .ok atom
+  /-- The lexical reader reconstructs the exact atom before anonymous source
+  occurrences are allocated. -/
+  theorem read_raw_expression : ∀ {atom : Atom} {characters : List Char} {expression : SExpr},
+      Rendered atom characters expression → readRawExpression expression = .ok atom
     | _, _, _, .symbol symbol safeSymbol => by
-        rw [readExpression]; exact read_symbol safeSymbol
+        rw [readRawExpression]; exact read_symbol safeSymbol
     | _, _, _, .var name safeName => by
-        rw [readExpression]; exact read_var safeName
+        rw [readRawExpression]; exact read_var (variableSafe_parts safeName).1
     | _, _, _, .int value => by
-        rw [readExpression]; exact read_int value
+        rw [readRawExpression]; exact read_int value
     | _, _, _, .string value plain => by
-        rw [readExpression]; exact read_string value plain
+        rw [readRawExpression]; exact read_string value plain
     | _, _, _, .bool value => by
-        rw [readExpression]; exact read_bool value
+        rw [readRawExpression]; exact read_bool value
     | _, _, _, .expression children => by
-        rw [readExpression, read_expressions children]
+        rw [readRawExpression, read_raw_expressions children]
         rfl
 
-  theorem read_expressions : ∀ {items : List Atom} {parts : List (List Char)} {expressions : List SExpr},
-      RenderedList items parts expressions → readExpressions expressions = .ok items
-    | _, _, _, .nil => by rw [readExpressions]
+  theorem read_raw_expressions : ∀ {items : List Atom} {parts : List (List Char)} {expressions : List SExpr},
+      RenderedList items parts expressions → readRawExpressions expressions = .ok items
+    | _, _, _, .nil => by rw [readRawExpressions]
     | _, _, _, .cons head tail => by
-        rw [readExpressions, read_expression head, read_expressions tail]
+        rw [readRawExpressions, read_raw_expression head, read_raw_expressions tail]
         rfl
 end
+
+mutual
+  /-- Exact rendered variables are all named; anonymous occurrences are
+  intentionally outside the renderer's exact-readback contract. -/
+  theorem rendered_named : ∀ {atom : Atom} {characters : List Char} {expression : SExpr},
+      Rendered atom characters expression → "_" ∉ MORK.atomFreeVars atom
+    | _, _, _, .symbol _ _ => by simp only [MORK.atomFreeVars, List.not_mem_nil, not_false_eq_true]
+    | _, _, _, .var name safeName => by
+        simpa only [MORK.atomFreeVars, List.mem_singleton] using Ne.symm (variableSafe_parts safeName).2
+    | _, _, _, .int _ => by simp only [MORK.atomFreeVars, List.not_mem_nil, not_false_eq_true]
+    | _, _, _, .string _ _ => by simp only [MORK.atomFreeVars, List.not_mem_nil, not_false_eq_true]
+    | _, _, _, .bool _ => by simp only [MORK.atomFreeVars, List.not_mem_nil, not_false_eq_true]
+    | _, _, _, .expression children => renderedList_named children
+
+  theorem renderedList_named : ∀ {items : List Atom} {parts : List (List Char)} {expressions : List SExpr},
+      RenderedList items parts expressions → "_" ∉ MORK.atomFreeVars (.expression items)
+    | _, _, _, .nil => by
+        simp only [MORK.atomFreeVars, MORK.atomFreeVars.atomFreeVarsList, List.not_mem_nil, not_false_eq_true]
+    | _, _, _, .cons head tail => by
+        simpa only [MORK.atomFreeVars, MORK.atomFreeVars.atomFreeVarsList, List.mem_append, not_or] using
+          And.intro (rendered_named head) (renderedList_named tail)
+end
+
+/-- The scoped reader also reconstructs the exact atom: the renderer has
+already excluded the only variable spelling that would allocate a new name. -/
+theorem read_expression {atom : Atom} {characters : List Char} {expression : SExpr}
+    (rendered : Rendered atom characters expression) : readExpression expression = .ok atom :=
+  SpaceSemantics.readExpression_named (read_raw_expression rendered) (rendered_named rendered)
+
+theorem read_expressions {items : List Atom} {parts : List (List Char)} {expressions : List SExpr}
+    (rendered : RenderedList items parts expressions) : readExpressions expressions = .ok items := by
+  simp only [readExpressions, read_raw_expressions rendered, Except.map,
+    SpaceSemantics.Anonymous.resolveList_of_named items (renderedList_named rendered)]
+
+theorem render_named {atom : Atom} {text : String} (rendered : render? atom = some text) :
+    "_" ∉ MORK.atomFreeVars atom := by
+  unfold render? at rendered
+  cases chars : chars? atom with
+  | none => simp only [chars, Option.map_none, reduceCtorEq] at rendered
+  | some characters =>
+      obtain ⟨expression, source⟩ := rendered_of_chars chars
+      exact rendered_named source
 
 /-! ## The scanner -/
 
@@ -879,7 +931,7 @@ mutual
     | _, _, _, .symbol symbol safeSymbol, line, depth, start, _ =>
       scan_token_chars _ (symbol_token_chars safeSymbol) line depth start
     | _, _, _, .var name safeName, line, depth, start, _ =>
-      scan_token_chars _ (var_token_chars safeName) line depth start
+      scan_token_chars _ (var_token_chars (variableSafe_parts safeName).1) line depth start
     | _, _, _, .int value, line, depth, start, _ =>
       scan_token_chars _ (int_token_chars value) line depth start
     | _, _, _, .bool value, line, depth, start, _ =>
@@ -1224,5 +1276,24 @@ theorem read_render {program : SpaceSemantics.Program} {text : String} (rendered
     cases rendered
     obtain ⟨expressions, children⟩ := renderedList_of_chars listed
     exact read_text children expressionsOnly
+
+theorem named_variable_roundtrip : readExpression (.atom "$named") = .ok (.var "named") := by
+  simpa only [show String.ofList ('$' :: "named".toList) = "$named" by decide] using
+    read_expression (Rendered.var "named" (by decide))
+
+theorem anonymous_variable_refused : render? (.var "_") = none := by
+  simp only [render?, chars?, variableSafe, bne_self_eq_false, Bool.and_false,
+    Bool.false_eq_true, ↓reduceIte, Option.map_none]
+
+theorem underscore_symbol_rendered : render? (.symbol "_") = some "_" := by
+  decide
+
+#print axioms read_expression
+#print axioms read_expressions
+#print axioms render_named
+#print axioms read_render
+#print axioms named_variable_roundtrip
+#print axioms anonymous_variable_refused
+#print axioms underscore_symbol_rendered
 
 end Mettapedia.Languages.MeTTa.PeTTa.ReadAfterRender

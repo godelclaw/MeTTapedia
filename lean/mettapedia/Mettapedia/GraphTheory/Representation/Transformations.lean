@@ -381,6 +381,30 @@ def rowsToCSRRule (n : Nat) :
   map := rowsToCSR
   commute := rowsToCSR_commutes
 
+/-- Expose the actual packed slices as ordered adjacency rows. No neighbor
+order or occurrence is reconstructed from a Boolean adjacency query. -/
+def csrToRows {n : Nat} (graph : CSR.Rep n) : AdjacencyRows.Rep n where
+  row := CSR.row graph
+  symmetric := graph.symmetric
+  loopless := graph.loopless
+  nodup := graph.nodup
+
+theorem csrToRows_commutes {n : Nat} (graph : CSR.Rep n) :
+    AdjacencyRows.denote (csrToRows graph) = CSR.denote graph := rfl
+
+def csrToRowsRule (n : Nat) :
+    Refinement (CSR.presentation n) (AdjacencyRows.presentation n) where
+  map := csrToRows
+  commute := csrToRows_commutes
+
+/-- Packing and exposing preserve the complete ordered rows, rather than
+only their simple-graph meaning. -/
+@[simp] theorem csrToRows_rowsToCSR {n : Nat} (graph : AdjacencyRows.Rep n) :
+    csrToRows (rowsToCSR graph) = graph := by
+  apply AdjacencyRows.Rep.ext
+  funext vertex
+  exact rowsToCSR_row graph vertex
+
 /-- Matrix-to-CSR is the lawful composite of row expansion and packing. -/
 def matrixToCSRRule (n : Nat) :
     Refinement (AdjacencyMatrix.presentation n) (CSR.presentation n) :=

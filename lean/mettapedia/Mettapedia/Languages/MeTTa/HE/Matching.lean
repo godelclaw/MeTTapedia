@@ -200,6 +200,110 @@ def evalMatch (depth : Nat) : MatchRequest → List Bindings
   | .binding bindings name value => addVarBinding bindings name value depth
   | .equality bindings left right => addVarEquality bindings left right depth
 
+/-! ## Unitary equality matching -/
+
+/-- Equality-based unification does not introduce alternatives. List matching
+may receive several existing seeds, each of which contributes at most one
+result. Custom grounded matching is a separate source profile. -/
+def MatchRequest.branchBound : MatchRequest → Nat
+  | .lists _ _ seeds => seeds.length
+  | _ => 1
+
+private theorem flatMap_length_le (rows : List α) (next : α → List β)
+    (each : ∀ row ∈ rows, (next row).length ≤ 1) :
+    (rows.flatMap next).length ≤ rows.length := by
+  induction rows with
+  | nil => simp
+  | cons head tail ih =>
+      have first := each head List.mem_cons_self
+      have rest := ih (fun row member => each row (List.mem_cons_of_mem _ member))
+      simp only [List.flatMap_cons,List.length_append,List.length_cons]
+      omega
+
+private theorem foldl_length_le (items : List α) (initial : List β)
+    (step : List β → α → List β)
+    (each : ∀ rows item, (step rows item).length ≤ rows.length) :
+    (items.foldl step initial).length ≤ initial.length := by
+  induction items generalizing initial with
+  | nil => exact Nat.le_refl _
+  | cons head tail ih => exact (ih (step initial head)).trans (each initial head)
+
+/-- A complete or depth-truncated equality matcher can remove a seed but
+cannot duplicate it. The bound holds for arbitrary incoming aliases and
+relation-list presentations, without assuming successful unification. -/
+theorem evalMatch_length_le (depth : Nat) (request : MatchRequest) :
+    (evalMatch depth request).length ≤ request.branchBound := by
+  induction depth generalizing request with
+  | zero => cases request <;> simp [evalMatch,matchAtoms,matchAtomsList,mergeBindings,
+      addVarBinding,addVarEquality,MatchRequest.branchBound]
+  | succ depth ih =>
+      have flatten (rows : List Bindings) (next : Bindings → MatchRequest)
+          (bound : ∀ row, (next row).branchBound ≤ 1) :
+          (rows.flatMap fun row => evalMatch depth (next row)).length ≤ rows.length :=
+        flatMap_length_le rows _ (fun row _ => (ih (next row)).trans (bound row))
+      cases request with
+      | atoms left right =>
+          change (matchAtoms left right (depth+1)).length ≤ 1
+          conv_lhs => unfold matchAtoms
+          apply Nat.le_trans (List.length_filter_le ..)
+          repeat' first
+            | exact ih (.lists _ _ [Bindings.empty])
+            | (simp only [List.length_nil,List.length_cons]; omega)
+            | split
+      | lists left right seeds =>
+          change (matchAtomsList left right seeds (depth+1)).length ≤ seeds.length
+          cases left with
+          | nil => cases right <;> simp [matchAtomsList]
+          | cons head left =>
+              cases right with
+              | nil => simp [matchAtomsList]
+              | cons other right =>
+                  conv_lhs => unfold matchAtomsList
+                  apply (ih (.lists left right _)).trans
+                  apply flatMap_length_le
+                  intro seed _
+                  exact (flatten (matchAtoms head other depth) (fun matched => .merge seed matched)
+                    (fun _ => Nat.le_refl _)).trans (ih (.atoms head other))
+      | merge left right =>
+          change (mergeBindings left right (depth+1)).length ≤ 1
+          conv_lhs => unfold mergeBindings
+          apply Nat.le_trans (foldl_length_le right.equalities _ _ ?_)
+          · exact foldl_length_le right.assignments [left] _ (by
+              intro rows item
+              exact flatten rows (fun row => .binding row item.1 item.2) (fun _ => Nat.le_refl _))
+          · intro rows item
+            exact flatten rows (fun row => .equality row item.1 item.2) (fun _ => Nat.le_refl _)
+      | binding bindings name value =>
+          change (addVarBinding bindings name value (depth+1)).length ≤ 1
+          conv_lhs => unfold addVarBinding
+          split
+          · simp
+          · split
+            · split
+              · simp
+              · exact (flatten _ (fun row => .merge bindings row) (fun _ => Nat.le_refl _)).trans
+                  (ih (.atoms _ _))
+            · exact (flatten _ (fun row => .merge bindings row) (fun _ => Nat.le_refl _)).trans
+                (ih (.lists _ _ [Bindings.empty]))
+      | equality bindings left right =>
+          change (addVarEquality bindings left right (depth+1)).length ≤ 1
+          conv_lhs => unfold addVarEquality
+          dsimp only
+          split
+          · simp
+          · split
+            · simp
+            · exact (flatten _ (fun row => .merge (bindings.addEquality left right) row)
+                (fun _ => Nat.le_refl _)).trans (ih (.atoms _ _))
+            · exact (flatten _ (fun row => .merge (bindings.addEquality left right) row)
+                (fun _ => Nat.le_refl _)).trans (ih (.lists _ _ [Bindings.empty]))
+
+theorem matchAtoms_length_le_one (left right : Atom) (depth : Nat) :
+    (matchAtoms left right depth).length ≤ 1 := evalMatch_length_le depth (.atoms left right)
+
+theorem mergeBindings_length_le_one (left right : Bindings) (depth : Nat) :
+    (mergeBindings left right depth).length ≤ 1 := evalMatch_length_le depth (.merge left right)
+
 namespace MatchDepth
 
 private abbrev Q := Mettapedia.Machines.ReadOnlyQuery.Program MatchRequest (List Bindings)

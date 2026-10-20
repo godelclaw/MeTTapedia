@@ -62,7 +62,7 @@ This extension is left for future work.
 namespace Mettapedia.OSLF.PathMap.PLNBridge
 
 open Mettapedia.PathMap
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 /-! ## Section 1: BinaryEvidence Extraction -/

@@ -6,7 +6,7 @@ noncomputable section
 namespace Mettapedia.Examples.PLN.WMPLNDistributionalExamples
 
 open Mettapedia.Logic
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.PLNJointEvidence
 open Mettapedia.Logic.WMMarkovCanonical
 open Mettapedia.PLN.TruthValues.WMPLNDistributionalTruthFunctions
@@ -76,10 +76,10 @@ theorem binaryCoin_propSTV_strength :
   have hE : binaryCoinJointEvidence.propEvidence 0 = ⟨3, 7⟩ := by
     simpa [coinAtom] using binaryCoin_propEvidence
   simp [truthDirichletOverWorldsPropSTV,
-    Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToDeductionSTV]
+    Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToSTV]
   rw [hE]
-  norm_num [Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength,
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.total,
+  norm_num [Mettapedia.PLN.Evidence.BinaryEvidence.toStrength,
+    Mettapedia.PLN.Evidence.BinaryEvidence.total,
     Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction.clamp01]
 
 theorem binaryCoin_propSTV_confidence :
@@ -87,10 +87,10 @@ theorem binaryCoin_propSTV_confidence :
   have hE : binaryCoinJointEvidence.propEvidence 0 = ⟨3, 7⟩ := by
     simpa [coinAtom] using binaryCoin_propEvidence
   simp [truthDirichletOverWorldsPropSTV,
-    Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToDeductionSTV]
+    Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToSTV]
   rw [hE]
-  norm_num [Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toConfidence,
-    Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.total,
+  norm_num [Mettapedia.PLN.Evidence.BinaryEvidence.toConfidence,
+    Mettapedia.PLN.Evidence.BinaryEvidence.total,
     Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction.clamp01]
 
 theorem binaryCoin_propITVBayesExact95_bounds :
@@ -138,8 +138,8 @@ theorem oneStep01_walley_lower :
       Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       oneStep01State (.link bit0 bit1)).lower = 1 / 3 := by
   unfold truthMarkovDirichletTransitionITVWalley
-  unfold Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITV
-  unfold Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.walleyIDMPredictive
+  unfold Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITV
+  unfold Mettapedia.PLN.WorldModel.ITVSemantics.walleyIDMPredictive
   rw [oneStep01_transitionEvidence]
   norm_num [Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default,
     Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV.fromWalleyIDMPredictive]
@@ -149,8 +149,8 @@ theorem oneStep01_walley_upper :
       Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       oneStep01State (.link bit0 bit1)).upper = 1 := by
   unfold truthMarkovDirichletTransitionITVWalley
-  unfold Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITV
-  unfold Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.walleyIDMPredictive
+  unfold Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITV
+  unfold Mettapedia.PLN.WorldModel.ITVSemantics.walleyIDMPredictive
   rw [oneStep01_transitionEvidence]
   norm_num [Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default,
     Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV.fromWalleyIDMPredictive]
@@ -160,8 +160,8 @@ theorem oneStep01_walley_credibility :
       Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
       oneStep01State (.link bit0 bit1)).credibility = 1 / 3 := by
   unfold truthMarkovDirichletTransitionITVWalley
-  unfold Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITV
-  unfold Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.walleyIDMPredictive
+  unfold Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITV
+  unfold Mettapedia.PLN.WorldModel.ITVSemantics.walleyIDMPredictive
   rw [oneStep01_transitionEvidence]
   norm_num [Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default,
     Mettapedia.PLN.TruthValues.PLNIndefiniteTruth.ITV.fromWalleyIDMPredictive]

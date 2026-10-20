@@ -1,5 +1,7 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 import Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Executable-independent equation-query steps
@@ -19,7 +21,7 @@ here.
 namespace Mettapedia.Languages.MeTTa.HE
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
-open LeaTTaBridge (HEBindingSatisfied applyClassSolution)
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory (HEBindingSatisfied applyClassSolution)
 open Spec.Bindings.ScopeObservation
 
 /-- One successful equation-query step from a selected, freshened rule.
@@ -33,7 +35,7 @@ def Spec.Eval.EquationQueryStep
     (incoming output : Bindings)
     (freshRhs emitted : Metta.Atom) : Prop :=
   ∃ matched : Bindings,
-    LeaTTaBridge.VarsDisjoint query freshPattern ∧
+    Spec.Match.SolutionTheory.VarsDisjoint query freshPattern ∧
       Spec.Match.Merge.MatchRel
         Spec.Match.Merge.equalityGroundedSemantic
         query freshPattern matched ∧
@@ -52,7 +54,7 @@ example :
       (.symbol "a") (.symbol "a")
       Bindings.empty Bindings.empty (.sym "result") (.sym "result") := by
   refine ⟨Bindings.empty,
-    (by simp [LeaTTaBridge.VarsDisjoint, LeaTTaBridge.toLeaTTaAtom,
+    (by simp [Spec.Match.SolutionTheory.VarsDisjoint, Spec.Match.SolutionTheory.encodeModelAtom,
       Metta.Atom.vars]),
     Spec.Match.Merge.MatchRel.symSym "a"
       Spec.Match.Merge.semanticLoopFree_empty, ?_, ?_⟩

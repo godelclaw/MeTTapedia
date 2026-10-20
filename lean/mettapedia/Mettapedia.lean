@@ -182,6 +182,9 @@ import Mettapedia.Logic.Relation.NormalizationExamples
 import Mettapedia.Logic.Relation.PathConfluence
 import Mettapedia.Logic.Relation.PathConfluenceExamples
 import Mettapedia.Logic.Relation.DecodedPath
+import Mettapedia.Logic.Relation.NormalFormDecision
+import Mettapedia.Logic.Relation.CommutativeTerms
+import Mettapedia.Logic.Relation.SchematicPresentation
 import Mettapedia.Logic.WorldModel
 import Mettapedia.Logic.MarkovLogicIndividuationBridge
 import Mettapedia.Logic.MarkovLogicLocalQueryApproximation
@@ -234,6 +237,8 @@ import Mettapedia.OSLF.Bridges.CategoryTheory.OpenMapRegression
 import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOL
 import Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
+import Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLCompletenessControls
+import Mettapedia.PLN.Bridges.HOL.DefinableCuts.CountingControls
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelFOLCompleteness
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelSetTheoryBridge
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelSetTheoryBridgeRegression
@@ -243,6 +248,7 @@ import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctri
 import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhoodConsequence
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeCompleteness
+import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeCompletenessControls
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeNeighborhoodEmbedding
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeNeighborhoodCanonical
 import Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted
@@ -345,6 +351,10 @@ import Mettapedia.Logic.HOL.BetaNormalization
 import Mettapedia.Logic.HOL.ConversionTiers
 import Mettapedia.Logic.HOL.CheckableFragment
 import Mettapedia.Logic.HOL.Semantics.StandardTransport
+import Mettapedia.Logic.HOL.TermModel.HenkinCompletenessControls
+import Mettapedia.Logic.HOL.HeadlineWitnesses
+import Mettapedia.Logic.DDLPlus.FrameControls
+import Mettapedia.Logic.GovernanceReasoning.DTSControls
 import Mettapedia.Logic.HOL.TwoMembershipModels
 import Mettapedia.Logic.HOL.StandardSemanticsBubbles
 import Mettapedia.Logic.HOL.InstitutionTrinity
@@ -823,6 +833,8 @@ import Mettapedia.OSLF.Framework.SortedInstrumentCongruenceControls
 import Mettapedia.OSLF.Framework.SortedInstrumentCongruenceBranchingControls
 import Mettapedia.Documentation.SourceLedgers.FindingMind
 import Mettapedia.OSLF.NativeTypes
+import Mettapedia.OSLF.NativeTypes.Consumers
+import Mettapedia.OSLF.NativeTypes.Instances.Normalized
 import Mettapedia.GSLT.Dynamics.ContextualStrategyQualification
 import Mettapedia.GSLT.Dynamics.DemandAgreement
 import Mettapedia.CacheCoherenceAndMatcherInstances

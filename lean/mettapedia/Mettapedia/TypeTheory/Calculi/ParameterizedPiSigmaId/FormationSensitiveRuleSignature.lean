@@ -28,6 +28,7 @@ structure Judgment (Head : Type) where
   context : Ctx Head arity
   subject : Tm Head arity
   type : Tm Head arity
+  deriving DecidableEq
 
 abbrev judgment {n : Nat} (Γ : Ctx Head n) (term type : Tm Head n) : Judgment Head :=
   ⟨n, Γ, term, type⟩

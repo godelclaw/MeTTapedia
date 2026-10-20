@@ -1,6 +1,7 @@
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitiveSignaturePreservation
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.CumulativeRegularity
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.CumulativeConversion
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Annotated.ContextualPreservation
 
 /-! # Subject preservation for the root-empty cumulative profile -/
 
@@ -43,4 +44,40 @@ theorem Judgment.steps_preserve_tower {Γ : Tower.Ctx n}
 
 
 end FormationSensitive
+
+namespace TypedEquality.Annotated
+
+open UniverseLevel
+
+/-- Head equality preserves annotated typing in any package with the
+cumulative tower's head policy. Declarations and root computation are
+independent parameters; semantic equality of levels gives cumulativity in
+both directions without assuming the level expressions identical. -/
+theorem CHeadPreserving.ofLevelTower {L : Type} [LevelOrder L]
+    {R : Rules (LevelTower.Head L)}
+    (containsTyping : ∀ {h u}, LevelTower.HeadTyping h u → R.headTyping h u)
+    (containsCumulative : ∀ {u v}, LevelTower.Cumulative u v → R.cumulative u v)
+    (typingWithin : ∀ {h u}, R.headTyping h u → LevelTower.HeadTyping h u)
+    (headEqWithin : ∀ {h h'}, R.headEq h h' → LevelTower.HeadEq h h')
+    (P : ChurchRules R) : CHeadPreserving P := by
+  intro n Γ h h' A same typing
+  obtain ⟨u, headTyping, le⟩ := typing.generation
+  have same' := headEqWithin same
+  cases typingWithin headTyping with
+  | legacyGround =>
+      cases h' with
+      | legacyGround => exact CTyped.subsume (.headType headTyping) le
+      | sort _ => exact same'.elim
+  | sort l =>
+      cases h' with
+      | legacyGround => exact same'.elim
+      | sort r =>
+          have raise : R.cumulative (.sort (.succ r)) (.sort (.succ l)) :=
+            containsCumulative fun valuation => by
+              exact LevelOrder.succ_le_succ (le_of_eq (same' valuation).symm)
+          exact CTyped.subsume
+            (CDerivable.cumul (.headType (containsTyping (.sort r))) raise) le
+
+end TypedEquality.Annotated
+
 end Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation

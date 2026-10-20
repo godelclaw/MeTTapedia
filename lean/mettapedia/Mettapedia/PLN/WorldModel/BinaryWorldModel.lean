@@ -1,13 +1,14 @@
 import Mettapedia.PLN.Evidence.EvidenceClass
 import Mettapedia.PLN.Evidence.BinaryEvidence
+import Mettapedia.PLN.TruthValues.PLNWeightTV
 
 /-!
 # PLN World Models (Posterior-State Interface)
 
 This module defines a minimal interface for the **complete** (“distribution-passing”) PLN layer:
 
-- A *world-model posterior state* `State` that can be revised by combining independent evidence
-  sources (an `EvidenceType`, i.e. an additive commutative monoid).
+- A *world-model posterior state* `State` that can be revised by combining evidence from
+  disjoint observations (an `EvidenceType`, i.e. an additive commutative monoid).
 - Query projections that extract **binary BinaryEvidence** (`n⁺, n⁻`) for arbitrary queries.
 
 All truth-value notions (strength/weight/confidence/interval bounds) are **views** computed from
@@ -25,12 +26,12 @@ models instantiate the interface (counting satisfiers of a crisp semantics in
 rules that act on queries are in `WorldModelCalculus`.
 -/
 
-namespace Mettapedia.PLN.WorldModel.PLNWorldModel
+namespace Mettapedia.PLN.WorldModel
 
 open scoped ENNReal
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## Queries -/
 
@@ -649,4 +650,4 @@ end WMStrengthRuleSigma
 
 end WorldModelSigma
 
-end Mettapedia.PLN.WorldModel.PLNWorldModel
+end Mettapedia.PLN.WorldModel

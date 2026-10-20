@@ -22,6 +22,29 @@ ethical-agent layer — policy kernel, tool broker, gate chain, "mindlock" — o
 
 ## Modules
 
+### Attention, retrieval and memory
+
+[`Attention/`](Attention/README.md) contains real-valued three-timescale attention,
+conservative spreading, premise activation and conditional relevance guarantees.
+[`Memory/`](Memory/README.md) contains event-sourced records, bitemporal claims,
+working memory, summary freshness and agent-owned refinement and retirement.
+Both are available through `CognitiveArchitecture.Main`.
+
+The shared mathematical layers live in
+[`ProbabilityTheory/MarkovChain`](../ProbabilityTheory/MarkovChain/README.md)
+and [`Algorithms/Retrieval`](../Algorithms/Retrieval/README.md). Their restart
+residual and ranking certificates use exact arithmetic and explicit margins.
+The [`PLN evidence bridges`](../PLN/Bridges/CognitiveArchitecture/README.md) keep
+attention allocation distinct from factual support and retain observation
+identities when evidence is replayed or withdrawn. Local-query approximation
+under uniform Dobrushin contraction is packaged separately in
+`Logic.MarkovLogicLocalQueryApproximation`.
+
+These contracts complement the assessment and temporal-profile modules below.
+They do not establish a deployed memory system's conformance, a retrieval speedup
+or an experiential interpretation. Evidence about recall and attention can support
+an architectural assessment while leaving experienced wellbeing undetermined.
+
 ### MetaMo
 
 MetaMo is a six-file motivational Q-module framework.

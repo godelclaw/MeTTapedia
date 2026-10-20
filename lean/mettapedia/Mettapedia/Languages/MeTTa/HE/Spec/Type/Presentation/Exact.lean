@@ -66,6 +66,17 @@ def TypeCandidateAlphaVariantRel
       target = renameTypeVars rename source ∧
       ∀ name ∈ TypeSubst.typeVars source, rename name ∉ avoid
 
+/-- Every variable of a fresh type instance avoids its declared live scope. -/
+theorem TypeCandidateAlphaVariantRel.target_vars_fresh
+    {avoid : List String} {source target : Atom}
+    (variant : TypeCandidateAlphaVariantRel avoid source target) :
+    ∀ name ∈ TypeSubst.typeVars target, name ∉ avoid := by
+  rcases variant with ⟨rename, _injective, rfl, fresh⟩
+  intro name member
+  rw [ScopeObservation.typeVars_renameTypeVars] at member
+  obtain ⟨original, sourceMember, rfl⟩ := List.mem_map.mp member
+  exact fresh original sourceMember
+
 /-- Forgetting the finite avoidance proof yields the positive refinement
 layer's schematic-type renaming evidence. -/
 theorem TypeCandidateAlphaVariantRel.toTypeVariableRenamingOf
@@ -87,6 +98,63 @@ inductive ArgumentAlphaVariantsRel :
         (avoid ++ TypeSubst.typeVars target) sources targets →
       ArgumentAlphaVariantsRel avoid
         (source :: sources) (target :: targets)
+
+/-- Sequentially freshened candidates all avoid the original retained scope. -/
+theorem ArgumentAlphaVariantsRel.target_vars_fresh
+    {avoid : List String} {sources targets : List Atom}
+    (variants : ArgumentAlphaVariantsRel avoid sources targets) :
+    ∀ name ∈ TypeSubst.typeVarsList targets, name ∉ avoid := by
+  induction variants with
+  | nil => simp [TypeSubst.typeVarsList]
+  | cons head _ ih =>
+      intro name member forbidden
+      rcases List.mem_append.mp member with first | remaining
+      · exact head.target_vars_fresh name first forbidden
+      · exact ih name remaining (List.mem_append_left _ forbidden)
+
+/-- A fresh candidate also avoids every smaller protected scope. -/
+theorem TypeCandidateAlphaVariantRel.restrict {avoid smaller : List String} {source target : Atom}
+    (variant : TypeCandidateAlphaVariantRel avoid source target)
+    (included : ∀ name ∈ smaller, name ∈ avoid) :
+    TypeCandidateAlphaVariantRel smaller source target := by
+  obtain ⟨rename,injective,shape,fresh⟩ := variant
+  exact ⟨rename,injective,shape,fun name member present => fresh name member (included _ present)⟩
+
+/-- Renaming a private presentation transports its avoidance contract. The
+raw annotation is retained, so independent candidates keep their own scopes. -/
+theorem TypeCandidateAlphaVariantRel.rename_target {avoid : List String} {source target : Atom}
+    (variant : TypeCandidateAlphaVariantRel avoid source target) (names : Equiv.Perm String) :
+    TypeCandidateAlphaVariantRel (avoid.map names) source (renameTypeVars names target) := by
+  obtain ⟨rename,injective,shape,fresh⟩ := variant
+  refine ⟨names ∘ rename,names.injective.comp injective,?_,?_⟩
+  · rw [shape,ScopeObservation.renameTypeVars_comp]
+  · intro name member present
+    obtain ⟨original,kept,equal⟩ := List.mem_map.mp present
+    exact fresh name member (names.injective equal ▸ kept)
+
+theorem ArgumentAlphaVariantsRel.restrict {avoid smaller : List String} {sources targets : List Atom}
+    (variants : ArgumentAlphaVariantsRel avoid sources targets)
+    (included : ∀ name ∈ smaller, name ∈ avoid) :
+    ArgumentAlphaVariantsRel smaller sources targets := by
+  induction variants generalizing smaller with
+  | nil => exact .nil _
+  | cons first _ ih =>
+      refine .cons (first.restrict included) (ih ?_)
+      intro name member
+      rcases List.mem_append.mp member with old | localName
+      · exact List.mem_append_left _ (included name old)
+      · exact List.mem_append_right _ localName
+
+/-- One naming convention transports the entire ordered family, including
+the additional avoidance contributed by each earlier candidate. -/
+theorem ArgumentAlphaVariantsRel.rename_targets {avoid : List String} {sources targets : List Atom}
+    (variants : ArgumentAlphaVariantsRel avoid sources targets) (names : Equiv.Perm String) :
+    ArgumentAlphaVariantsRel (avoid.map names) sources (targets.map (renameTypeVars names)) := by
+  induction variants with
+  | nil => exact .nil _
+  | cons first _ ih =>
+      refine .cons (first.rename_target names) ?_
+      simpa only [List.map_append,ScopeObservation.typeVars_renameTypeVars] using ih
 
 /-- Operator candidates share the function-side avoid set.  Candidates are
 scanned independently, so their private alpha scopes need not be conjoined. -/
@@ -805,5 +873,303 @@ theorem bare_arrow_uses_undefined_fallback :
       AtomsAvoid, TypeSubst.typeVars, TypeSubst.typeVarsList]
   · exact ApplicationPackageMatrixRel.singleton_failure
       malformedArrowNoSuccess
+
+/-! ## Existence of finite fresh presentations -/
+
+/-- A finite source type always admits a fresh injective alpha instance. -/
+theorem TypeCandidateAlphaVariantRel.exists (avoid : List String) (source : Atom) :
+    ∃ target, TypeCandidateAlphaVariantRel avoid source target := by
+  let names := instanceName avoid (TypeSubst.typeVars source) 0
+  exact ⟨renameTypeVars names source, names, instanceName_injective _ _ _, rfl,
+    fun name _ => instanceName_not_mem _ _ _ name⟩
+
+/-- Sequential argument instances extend the avoid set at every position. -/
+theorem ArgumentAlphaVariantsRel.exists (avoid : List String) (sources : List Atom) :
+    ∃ targets, ArgumentAlphaVariantsRel avoid sources targets := by
+  induction sources generalizing avoid with
+  | nil => exact ⟨[], .nil avoid⟩
+  | cons source sources ih =>
+      obtain ⟨target, variant⟩ := TypeCandidateAlphaVariantRel.exists avoid source
+      obtain ⟨targets, variants⟩ := ih (avoid ++ TypeSubst.typeVars target)
+      exact ⟨target :: targets, .cons variant variants⟩
+
+/-- Independently scanned operator candidates admit one common avoid boundary. -/
+theorem OperatorAlphaVariantsRel.exists (avoid : List String) (sources : List Atom) :
+    ∃ targets, OperatorAlphaVariantsRel avoid sources targets := by
+  induction sources with
+  | nil => exact ⟨[], .nil⟩
+  | cons source sources ih =>
+      obtain ⟨target, variant⟩ := TypeCandidateAlphaVariantRel.exists avoid source
+      obtain ⟨targets, variants⟩ := ih
+      exact ⟨target :: targets, .cons variant variants⟩
+
+/-- A presentation avoiding a larger suffix also realizes the same global
+operator presentation at the smaller prefix avoid set. -/
+private theorem operatorAlphaVariants_weaken_append
+    {avoid extra : List String} {sources targets : List Atom}
+    (variants : OperatorAlphaVariantsRel
+      (avoid ++ extra) sources targets) :
+    OperatorAlphaVariantsRel avoid sources targets := by
+  induction variants with
+  | nil => exact OperatorAlphaVariantsRel.nil
+  | @cons source target sources targets head tail ih =>
+      rcases head with ⟨rename, injective, presentation, fresh⟩
+      apply OperatorAlphaVariantsRel.cons
+      · exact ⟨rename, injective, presentation, by
+          intro name member avoidMember
+          exact fresh name member
+            (List.mem_append_left extra avoidMember)⟩
+      · exact ih
+
+/-- Avoiding every variable in every fresh argument choice implies the exact
+operator/choice cell-scope law carried by the independent matrix relation. -/
+private theorem operatorAlphaVariants_scopesSeparated
+    {avoid : List String} {rawOperators freshOperators : List Atom}
+    {freshArgumentChoices : List (List Atom)}
+    (variants : OperatorAlphaVariantsRel
+      (avoid ++ TypeSubst.typeVarsList freshArgumentChoices.flatten)
+      rawOperators freshOperators) :
+    ApplicationPackageScopesSeparated
+      freshArgumentChoices freshOperators := by
+  apply ApplicationPackageScopesSeparated.mk
+  intro actualTypes actualMember operatorType operatorMember
+  induction variants with
+  | nil => simp at operatorMember
+  | @cons source target sources targets head tail ih =>
+      rcases List.mem_cons.mp operatorMember with rfl | tailMember
+      · intro name operatorVar argumentVar
+        apply
+          (Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Exact.TypeCandidateAlphaVariantRel.target_vars_fresh
+            head name operatorVar)
+        apply List.mem_append_right avoid
+        have includes : ∀ choices : List (List Atom), actualTypes ∈ choices →
+            name ∈ TypeSubst.typeVarsList choices.flatten := by
+          intro choices member
+          induction choices with
+          | nil => simp at member
+          | cons choice choices ih =>
+              rw [List.flatten_cons, TypeSubst.typeVarsList_append, List.mem_append]
+              rcases List.mem_cons.mp member with rfl | tailMember
+              · exact Or.inl argumentVar
+              · exact Or.inr (ih tailMember)
+        exact includes freshArgumentChoices actualMember
+      · exact ih tailMember
+
+private theorem annotationTypesRel_exists (target : Atom) (atoms : List Atom) :
+    ∃ types, AnnotationTypesRel target atoms types := by
+  classical
+  induction atoms with
+  | nil => exact ⟨[], .nil⟩
+  | cons atom atoms ih =>
+      obtain ⟨types, tail⟩ := ih
+      by_cases annotated : ∃ type, atom = .expression [.symbol ":", target, type]
+      · obtain ⟨type, rfl⟩ := annotated
+        exact ⟨type :: types, .hit tail⟩
+      · exact ⟨types, .skip (fun type equal => annotated ⟨type, equal⟩) tail⟩
+
+/-! ## Totality of the executable-independent presentation relation -/
+
+private theorem applicationPackageOutcomeRel_exists
+    (actualTypes : List Atom) (operatorType : Atom) :
+    ∃ output, ApplicationPackageOutcomeRel
+      actualTypes operatorType output := by
+  classical
+  by_cases success : ∃ result,
+      ApplicationPackageSuccessRel actualTypes operatorType result
+  · obtain ⟨result, resultSuccess⟩ := success
+    exact ⟨some result, ApplicationPackageOutcomeRel.success resultSuccess⟩
+  · refine ⟨none, ApplicationPackageOutcomeRel.failure ?_⟩
+    intro result resultSuccess
+    exact success ⟨result, resultSuccess⟩
+
+private theorem applicationPackageOutcomeRowRel_exists
+    (argumentChoices : List (List Atom)) (operatorType : Atom) :
+    ∃ results,
+      ApplicationPackageOutcomeRowRel
+        argumentChoices operatorType results := by
+  induction argumentChoices with
+  | nil =>
+      exact ⟨[], [], List.Forall₂.nil, rfl⟩
+  | cons actualTypes argumentChoices ih =>
+      obtain ⟨tailResults, tailOutcomes, tailRel, tailEquation⟩ := ih
+      obtain ⟨outcome, outcomeRel⟩ :=
+        applicationPackageOutcomeRel_exists actualTypes operatorType
+      cases outcome with
+      | none =>
+          refine ⟨tailResults, none :: tailOutcomes,
+            List.Forall₂.cons outcomeRel tailRel, ?_⟩
+          simpa using tailEquation
+      | some result =>
+          refine ⟨result :: tailResults, some result :: tailOutcomes,
+            List.Forall₂.cons outcomeRel tailRel, ?_⟩
+          simpa using congrArg (result :: ·) tailEquation
+
+private theorem applicationPackageMatrixRel_exists
+    (argumentChoices : List (List Atom)) : ∀ operatorTypes,
+    ∃ results,
+      ApplicationPackageMatrixRel
+        argumentChoices operatorTypes results := by
+  intro operatorTypes
+  induction operatorTypes with
+  | nil => exact ⟨[], [], List.Forall₂.nil, rfl⟩
+  | cons operatorType operatorTypes ih =>
+      obtain ⟨row, rowRel⟩ :=
+        applicationPackageOutcomeRowRel_exists
+          argumentChoices operatorType
+      obtain ⟨tailResults, tailRows, tailRel, tailEquation⟩ := ih
+      refine ⟨row ++ tailResults, row :: tailRows,
+        List.Forall₂.cons rowRel tailRel, ?_⟩
+      simpa using congrArg (row ++ ·) tailEquation
+
+private theorem argumentAlphaChoiceVariantsRel_exists
+    (avoid : List String) : ∀ choices : List (List Atom),
+    ∃ freshChoices,
+      List.Forall₂ (ArgumentAlphaVariantsRel avoid)
+        choices freshChoices := by
+  intro choices
+  induction choices with
+  | nil => exact ⟨[], List.Forall₂.nil⟩
+  | cons choice choices ih =>
+      obtain ⟨freshChoice, variant⟩ := ArgumentAlphaVariantsRel.exists avoid choice
+      obtain ⟨freshChoices, variants⟩ := ih
+      exact ⟨freshChoice :: freshChoices,
+        List.Forall₂.cons variant variants⟩
+
+/-- The exact package-presentation relation is total on independent HE atoms.
+Fresh instances are earned from the source finite-support laws, without a
+runtime matcher, evaluator, or freshener in the construction. -/
+theorem runtimeTypePackages_exists (space : Space) : ∀ atom : Atom,
+    ∃ packages, RuntimeTypePackagesRel space atom packages := by
+  intro atom
+  induction atom using Atom.rec
+      (motive_2 := fun atoms =>
+        ∃ packageLists : List (List TypePackage),
+          List.Forall₂ (RuntimeTypePackagesRel space)
+            atoms packageLists) with
+  | symbol name =>
+      obtain ⟨annotated, annotation⟩ :=
+        annotationTypesRel_exists (.symbol name) space.atoms
+      by_cases nonempty : annotated ≠ []
+      · exact ⟨annotated.map publishedPackage,
+          RuntimeTypePackagesRel.symbolKnown annotation nonempty⟩
+      · have empty : annotated = [] := by simpa using nonempty
+        rw [empty] at annotation
+        exact ⟨[publishedPackage Atom.undefinedType],
+          RuntimeTypePackagesRel.symbolUndefined annotation⟩
+  | var name =>
+      exact ⟨[publishedPackage Atom.undefinedType],
+        RuntimeTypePackagesRel.variable name⟩
+  | grounded value =>
+      cases value with
+      | int value =>
+          exact ⟨[publishedPackage (.symbol "Number")],
+            RuntimeTypePackagesRel.grounded
+              (IntrinsicGroundedTypeRel.int value)⟩
+      | string value =>
+          exact ⟨[publishedPackage (.symbol "String")],
+            RuntimeTypePackagesRel.grounded
+              (IntrinsicGroundedTypeRel.string value)⟩
+      | bool value =>
+          exact ⟨[publishedPackage (.symbol "Bool")],
+            RuntimeTypePackagesRel.grounded
+              (IntrinsicGroundedTypeRel.bool value)⟩
+      | custom type payload =>
+          exact ⟨[publishedPackage (.symbol type)],
+            RuntimeTypePackagesRel.grounded
+              (IntrinsicGroundedTypeRel.custom type payload)⟩
+  | expression atoms allTypes =>
+      cases atoms with
+      | nil =>
+          exact ⟨[publishedPackage Atom.undefinedType],
+            RuntimeTypePackagesRel.unit⟩
+      | cons head tail =>
+          obtain ⟨packageLists, packageTypes⟩ := allTypes
+          cases packageTypes with
+          | @cons _ headPackages _ tailPackageLists headTypes tailTypes =>
+              by_cases stateShape : head = .symbol "StateValue" ∧
+                  ∃ value, tail = [value]
+              · obtain ⟨rfl, value, rfl⟩ := stateShape
+                cases tailTypes with
+                | @cons _ valuePackages _ _ valueTypes emptyTypes =>
+                    cases emptyTypes
+                    obtain ⟨content, remaining, packagesEquation⟩ :=
+                      List.exists_cons_of_ne_nil valueTypes.nonempty
+                    subst valuePackages
+                    exact ⟨[stateMonadPackage content],
+                      RuntimeTypePackagesRel.stateValue valueTypes⟩
+              · have notState : NotStateValueShape head tail := by
+                  intro value
+                  by_cases headEquation : head = .symbol "StateValue"
+                  · exact Or.inr (by
+                      intro tailEquation
+                      exact stateShape
+                        ⟨headEquation, value, tailEquation⟩)
+                  · exact Or.inl headEquation
+                let expression := Atom.expression (head :: tail)
+                obtain ⟨annotated, annotation⟩ :=
+                  annotationTypesRel_exists expression space.atoms
+                by_cases nonempty : annotated ≠ []
+                · exact ⟨annotated.map publishedPackage,
+                    RuntimeTypePackagesRel.expressionKnown
+                      notState annotation nonempty⟩
+                · have empty : annotated = [] := by
+                    simpa using nonempty
+                  rw [empty] at annotation
+                  have noAnnotations : AnnotationTypesRel
+                      (.expression (head :: tail)) space.atoms [] := by
+                    simpa [expression] using annotation
+                  let rawArgumentLists :=
+                    tailPackageLists.map observedTypes
+                  let rawArgumentChoices :=
+                    orderedCartesian rawArgumentLists
+                  let rawOperators := observedTypes headPackages
+                  let avoid := inferenceAvoidNames space expression
+                    (rawOperators ++ rawArgumentLists.flatten)
+                  obtain ⟨freshArgumentChoices, argumentVariants⟩ :=
+                    argumentAlphaChoiceVariantsRel_exists
+                      avoid rawArgumentChoices
+                  let operatorAvoid :=
+                    avoid ++
+                      TypeSubst.typeVarsList rawArgumentLists.flatten
+                  let separatedOperatorAvoid :=
+                    operatorAvoid ++
+                      TypeSubst.typeVarsList freshArgumentChoices.flatten
+                  obtain ⟨freshOperators, separatedOperatorVariants⟩ :=
+                    OperatorAlphaVariantsRel.exists separatedOperatorAvoid rawOperators
+                  have operatorVariants : OperatorAlphaVariantsRel
+                      operatorAvoid rawOperators freshOperators := by
+                    apply operatorAlphaVariants_weaken_append
+                      (avoid := operatorAvoid)
+                      (extra := TypeSubst.typeVarsList
+                        freshArgumentChoices.flatten)
+                    exact separatedOperatorVariants
+                  have scopesSeparated : ApplicationPackageScopesSeparated
+                      freshArgumentChoices freshOperators := by
+                    apply operatorAlphaVariants_scopesSeparated
+                      (avoid := operatorAvoid)
+                    exact separatedOperatorVariants
+                  obtain ⟨results, scan⟩ :=
+                    applicationPackageMatrixRel_exists
+                      freshArgumentChoices freshOperators
+                  by_cases resultsNonempty : results ≠ []
+                  · exact ⟨results,
+                      RuntimeTypePackagesRel.expressionInferred
+                        notState noAnnotations headTypes tailTypes
+                        rfl rfl rfl argumentVariants operatorVariants
+                        scopesSeparated scan resultsNonempty⟩
+                  · have resultsEmpty : results = [] := by
+                      simpa using resultsNonempty
+                    subst results
+                    exact ⟨[publishedPackage Atom.undefinedType],
+                      RuntimeTypePackagesRel.expressionUndefined
+                        notState noAnnotations headTypes tailTypes
+                        rfl rfl rfl argumentVariants operatorVariants
+                        scopesSeparated scan⟩
+  | nil => exact ⟨[], List.Forall₂.nil⟩
+  | cons atom atoms atomTypes tailTypes =>
+      obtain ⟨packages, packagesRel⟩ := atomTypes
+      obtain ⟨packageLists, packageListsRel⟩ := tailTypes
+      exact ⟨packages :: packageLists,
+        List.Forall₂.cons packagesRel packageListsRel⟩
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Exact

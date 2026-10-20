@@ -28,7 +28,7 @@ open Mettapedia.GSLT.LanguageDef.RefinementInterface
 open Mettapedia.GSLT.LanguageDef.PureBetaAtomicRoot
 open Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding
 open Mettapedia.PLN.Evidence
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 universe uQuery uParams uInput

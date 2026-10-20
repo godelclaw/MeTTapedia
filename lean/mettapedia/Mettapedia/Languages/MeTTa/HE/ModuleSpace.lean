@@ -518,3 +518,58 @@ example : node₀.view (Function.update store₀ 2 ⟨[ownAtom]⟩) = node₀.vi
 end Examples
 
 end Mettapedia.Languages.MeTTa.HE
+
+
+namespace Mettapedia.Languages.MeTTa.HE.ModuleStore
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+/-- Equal current contents cannot encode distinct mutable context identities.
+The obstruction applies to any content-only payload and recovery operation,
+independently of a runtime's representation of handles. -/
+theorem equal_contents_forbid_content_codec {Payload : Type} (store : ModuleStore)
+    (first second : ModId) (different : first ≠ second) (same : store first = store second)
+    (encode : Space → Payload) :
+    ¬∃ recover : Payload → ModId, ∀ context, recover (encode (store context)) = context := by
+  rintro ⟨recover, roundtrip⟩
+  apply different
+  calc
+    first = recover (encode (store first)) := (roundtrip first).symm
+    _ = recover (encode (store second)) := by rw [same]
+    _ = second := roundtrip second
+
+/-- A local annotation write is read through the same stable context. The
+lookup observes the new annotation before the prior ones, without changing
+any other context's contents. -/
+theorem annotation_write_lookup (store : ModuleStore) (context : ModId) (atom type : Atom) :
+    getAnnotatedTypes
+      ((Function.update store context ((store context).add (.expression [.symbol ":", atom, type]))) context) atom =
+      type :: getAnnotatedTypes (store context) atom := by
+  simp [getAnnotatedTypes, Space.add]
+
+theorem annotation_write_other (store : ModuleStore) (context other : ModId) (atom type : Atom)
+    (different : other ≠ context) :
+    getAnnotatedTypes
+      ((Function.update store context ((store context).add (.expression [.symbol ":", atom, type]))) other) atom =
+      getAnnotatedTypes (store other) atom := by
+  rw [Function.update_of_ne different]
+
+namespace IdentityControls
+
+private def initial : ModuleStore := fun _ => Space.empty
+private def probe : Atom := .symbol "context-probe"
+private def marked : Space := Space.empty.add (.expression [.symbol ":", probe, .symbol "Seen"])
+private def written : ModuleStore := Function.update initial 0 marked
+
+theorem initially_equal : initial 0 = initial 1 := rfl
+
+theorem one_write_distinguishes_contexts :
+    getAnnotatedTypes (written 0) probe = [.symbol "Seen"] ∧
+      getAnnotatedTypes (written 1) probe = [] := by decide
+
+theorem equal_empty_payloads_do_not_recover_identity {Payload : Type} (encode : Space → Payload) :
+    ¬∃ recover : Payload → ModId, ∀ context, recover (encode (initial context)) = context :=
+  equal_contents_forbid_content_codec initial 0 1 (by decide) initially_equal encode
+
+end IdentityControls
+end Mettapedia.Languages.MeTTa.HE.ModuleStore

@@ -32,9 +32,9 @@ open scoped Classical ENNReal
 open MeasureTheory ProbabilityTheory
 
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNLinkCalculus
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.ProbabilityTheory.BayesianNetworks
 open Mettapedia.ProbabilityTheory.BayesianNetworks.DSeparation
 open Mettapedia.ProbabilityTheory.BayesianNetworks.BayesianNetwork

@@ -55,12 +55,24 @@ def sourceAdmission (request : Request) : Bool :=
     Mettapedia.GSLT.LanguageDef.WellSorted.checkOpenPatternWellSorted
       request.plan.snapshot.language request.plan.snapshot.free request.bound request.expected request.root
 
+theorem sourceAdmission_eq_true_iff {request : Request} :
+    sourceAdmission request = true ↔
+      request.plan.complete = true ∧
+        Mettapedia.GSLT.LanguageDef.WellSorted.OpenPatternWellSorted
+          request.plan.snapshot.language request.plan.snapshot.free
+          request.bound request.expected request.root := by
+  unfold sourceAdmission
+  rw [Bool.and_eq_true, Mettapedia.GSLT.LanguageDef.WellSorted.checkOpenPatternWellSorted_eq_true_iff]
+
 theorem sourceAdmission_sound {request : Request} (checked : sourceAdmission request = true)
     (compiled : request.plan = GeneralExecutionAdmission.compile request.plan.snapshot request.plan.permissions) :
     Admitted request := by
-  simp only [sourceAdmission, Bool.and_eq_true] at checked
-  exact ⟨compiled, (congrArg GeneralExecutionAdmission.Plan.complete compiled) ▸ checked.1,
-    Mettapedia.GSLT.LanguageDef.WellSorted.checkOpenPatternWellSorted_sound checked.2⟩
+  obtain ⟨accepted, sorted⟩ := sourceAdmission_eq_true_iff.mp checked
+  exact ⟨compiled, accepted, sorted⟩
+
+theorem sourceAdmission_complete {request : Request} (admitted : Admitted request) :
+    sourceAdmission request = true :=
+  sourceAdmission_eq_true_iff.mpr ⟨admitted.accepted, admitted.rootSorted⟩
 
 def modalReadout (kind : ModalQuery) (request : Request) (state : State request)
     (test : Pattern → Bool) : CheckResult :=

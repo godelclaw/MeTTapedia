@@ -24,7 +24,7 @@ open Mettapedia.OSLF.NativeTypes.Structural
 open Mettapedia.OSLF.NativeTypes.SortProfiles.Derived (CubeVertex)
 open Mettapedia.OSLF.NativeTypes.SortProfiles.OperationTables.Controls (theory carrier)
 
-def snapshot : Snapshot := ⟨theory, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨theory, [], ⟨[], [], []⟩⟩
 def fragment : LanguageFragment := {operational := {sites := .rootOnly}}
 def chosen := selectedSnapshot snapshot fragment
 
@@ -87,7 +87,7 @@ theorem actual_structural_sort_is_read : structuralOutputSort accepted firstCons
 
 /-- With equations disabled, changing a structural result coordinate forms a
 different actual universe-indexed code while retaining the same language. -/
-def directedSnapshot : Snapshot := ⟨Mettapedia.OSLF.NativeTypes.SortProfiles.OperationTables.Controls.directedTheory, [], ⟨[], []⟩⟩
+def directedSnapshot : Snapshot := ⟨Mettapedia.OSLF.NativeTypes.SortProfiles.OperationTables.Controls.directedTheory, [], ⟨[], [], []⟩⟩
 def directedChosen := selectedSnapshot directedSnapshot fragment
 def lowVertex : CubeVertex directedChosen.language := (fun _ => .star, fun _ => .star)
 def highVertex : CubeVertex directedChosen.language :=

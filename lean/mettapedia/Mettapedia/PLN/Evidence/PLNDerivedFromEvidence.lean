@@ -1,6 +1,6 @@
 import Mettapedia.PLN.Evidence.BinaryEvidence
 
-namespace Mettapedia.PLN.Evidence.EvidenceQuantale
+namespace Mettapedia.PLN.Evidence
 
 open Classical
 
@@ -24,24 +24,20 @@ On BinaryEvidence counts `(n⁺, n⁻)`, the corresponding operation is swapping
 This is *not* Heyting negation `compl`; it is a polarity swap preserving total evidence.
 -/
 
-/-- Swap positive and negative evidence. -/
-def flip (e : BinaryEvidence) : BinaryEvidence :=
-  ⟨e.neg, e.pos⟩
-
-theorem flip_total (e : BinaryEvidence) : (flip e).total = e.total := by
+theorem swap_total (e : BinaryEvidence) : (swap e).total = e.total := by
   -- total is `pos + neg`, and addition is commutative.
-  simp [flip, BinaryEvidence.total, add_comm]
+  simp [swap, BinaryEvidence.total, add_comm]
 
-theorem toStrength_flip (e : BinaryEvidence) (ht0 : e.total ≠ 0) (htT : e.total ≠ ⊤) :
-    toStrength (flip e) = 1 - toStrength e := by
+theorem toStrength_swap (e : BinaryEvidence) (ht0 : e.total ≠ 0) (htT : e.total ≠ ⊤) :
+    toStrength (swap e) = 1 - toStrength e := by
   -- Unfold `toStrength` and compute in `ℝ≥0∞`.
   unfold toStrength
-  have hflip0 : (flip e).total ≠ 0 := by simpa [flip_total] using ht0
+  have hswap0 : (swap e).total ≠ 0 := by simpa [swap_total] using ht0
   -- Remove the `if` branches.
-  simp only [ht0, hflip0, ↓reduceIte]
-  -- Rewrite the flipped strength denominator to `e.total` and unfold the numerator.
-  rw [flip_total]
-  simp [flip]
+  simp only [ht0, hswap0, ↓reduceIte]
+  -- Rewrite the swapped strength denominator to `e.total` and unfold the numerator.
+  rw [swap_total]
+  simp [swap]
   have hposT : e.pos ≠ (⊤ : ENNReal) := by
     intro h
     apply htT
@@ -58,4 +54,4 @@ theorem toStrength_flip (e : BinaryEvidence) (ht0 : e.total ≠ 0) (htT : e.tota
 
 end BinaryEvidence
 
-end Mettapedia.PLN.Evidence.EvidenceQuantale
+end Mettapedia.PLN.Evidence

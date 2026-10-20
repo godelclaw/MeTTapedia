@@ -1,5 +1,8 @@
-import Mettapedia.Languages.MeTTa.HE.LeaTTaTypeServiceConformance
+import Mettapedia.Languages.MeTTa.HE.Spec.Eval
+import Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Evaluator binding-theory extension
@@ -8,19 +11,19 @@ Recursive evaluation may add constraints, but it must not forget constraints
 already visible at its input.  This module states that property semantically:
 every model of an output binding record is also a model of the input record.
 
-The type service supplies the two primitive extension laws used by evaluator
-dispatch.  The remaining control steps derive extension from the exact
-solution theory of specification matching and merging.
+A type service supplies the two primitive extension laws used by evaluator
+dispatch. The remaining control steps derive extension from the exact
+solution theory of specification matching and merging. Concrete service
+realizations consume these laws downstream; they are not dependencies of the
+evaluator preservation theorem.
 -/
 
 namespace Mettapedia.Languages.MeTTa.HE.EvaluatorBindingExtension
 
 open Mettapedia.Languages.MeTTa.HE
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
-open LeaTTaBridge
-open LeaTTaSpecTypeService
-open LeaTTaTypeConformance
-open LeaTTaTypeServiceConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 open Spec.Bindings.ScopeObservation
 open Spec.Eval
 open Spec.Eval.Steps
@@ -79,7 +82,7 @@ theorem mergeRel_extends_left {left right output : Bindings}
   apply (specTypeBindingSatisfied_iff_heBindingSatisfied_translated
     valuation left).mpr
   exact ((mergeRel_solution_iff merge
-    (fun name => toLeaTTaAtom (valuation name))).mp
+    (fun name => encodeModelAtom (valuation name))).mp
       ((specTypeBindingSatisfied_iff_heBindingSatisfied_translated
         valuation output).mp outputSatisfied)).1
 
@@ -93,7 +96,7 @@ theorem mergeRel_extends_right {left right output : Bindings}
   apply (specTypeBindingSatisfied_iff_heBindingSatisfied_translated
     valuation right).mpr
   exact ((mergeRel_solution_iff merge
-    (fun name => toLeaTTaAtom (valuation name))).mp
+    (fun name => encodeModelAtom (valuation name))).mp
       ((specTypeBindingSatisfied_iff_heBindingSatisfied_translated
         valuation output).mp outputSatisfied)).2
 
@@ -171,78 +174,6 @@ theorem corePlusR2TypeMatchRel_bindingTheoryExtends
     BindingTheoryExtends input output := by
   intro valuation satisfied
   exact (matched.solutions valuation).mp satisfied |>.1
-
-/-- First-success type casting inherits extension from the selected match. -/
-theorem firstTypeCastSuccessRel_bindingTheoryExtends
-    {expectedType : Atom} {input output : Bindings} {candidates : List Atom}
-    (selected : FirstTypeCastSuccessRel
-      expectedType input candidates output) :
-    BindingTheoryExtends input output := by
-  induction selected with
-  | head matched => exact corePlusR2TypeMatchRel_bindingTheoryExtends matched
-  | tail _ _ ih => exact ih
-
-/-- The repaired prepared cast either returns a selected extension or leaves
-the incoming binding record unchanged in every diagnostic result. -/
-theorem preparedTypeCastRel_bindingTheoryExtends
-    {oracle : TypePreparationOracle} {space : Space}
-    {atom expectedType : Atom} {input : Bindings} {result : ResultPair}
-    {protectedScope : List String}
-    (cast : PreparedTypeCastRel oracle space atom expectedType input result
-      protectedScope) :
-    BindingTheoryExtends input result.2 := by
-  cases cast with
-  | success _ _ selected =>
-      exact firstTypeCastSuccessRel_bindingTheoryExtends selected
-  | failure => exact BindingTheoryExtends.refl input
-
-/-- Every successful prepared package scan carries the exact presentation
-extension selected by its winning candidate. -/
-theorem preparedPackageCandidateScanRel_bindingTheoryExtends
-    {oracle : TypePreparationOracle} {space : Space}
-    {expression expectedType : Atom} {input : Bindings}
-    {packages : List Spec.Type.Presentation.Exact.TypePackage}
-    {policy : SelectedTypePolicy}
-    {output : Bindings}
-    (scan : PreparedPackageCandidateScanRel oracle space expression
-      expectedType input packages (.success policy output)) :
-    BindingTheoryExtends input output := by
-  rcases scan with
-    ⟨initialPresentation, candidates, _initial, _variants, candidatesScan⟩
-  obtain ⟨candidate, _member, applicable⟩ := candidatesScan.success_candidate
-  rcases applicable with
-    ⟨_operator, _arguments, _argumentTypes, _returnType, _candidateLists,
-      _argumentOutcome, _returnOutcome, presentation, _expressionShape,
-      _functionType, _arity, _prepared, _separated, _argumentScan,
-      _returnScan, _selected, _policy, extension⟩
-  exact BindingTheoryExtends.of_presentationExtension extension
-
-/-- The package-recovery wrapper preserves the extension theorem of its
-package scan. -/
-theorem recoveredPackageCandidateScanRel_bindingTheoryExtends
-    {oracle : TypePreparationOracle} {space : Space}
-    {expression expectedType : Atom} {input : Bindings}
-    {presented : List Atom} {policy : SelectedTypePolicy}
-    {output : Bindings}
-    (scan : RecoveredPackageCandidateScanRel oracle
-      (PreparedPackageCandidateScanRel oracle) space expression expectedType
-        input presented (.success policy output)) :
-    BindingTheoryExtends input output := by
-  rcases scan with
-    ⟨_operator, _arguments, _prepared, _packages, _shape,
-      _preparation, _packagesRelation, _alpha, packageScan⟩
-  exact preparedPackageCandidateScanRel_bindingTheoryExtends packageScan
-
-/-- The exact prepared package service satisfies both primitive extension
-laws without any additional freshness assumption. -/
-theorem preparedPackageTypeService_bindingLaws
-    (oracle : TypePreparationOracle) :
-    EvalTypeServiceBindingLaws (preparedPackageTypeService oracle) := by
-  constructor
-  · intro protectedScope space atom expectedType input result cast
-    exact preparedTypeCastRel_bindingTheoryExtends cast
-  · intro _ space expression expectedType input candidates policy output scan
-    exact recoveredPackageCandidateScanRel_bindingTheoryExtends scan
 
 /-! ## Mutual evaluator preservation -/
 
@@ -344,20 +275,6 @@ theorem callReturnRel_bindingTheoryExtends
     | exact BindingTheoryExtends.refl _
     | exact evalAtomRawRel_bindingTheoryExtends laws (by assumption)
 
-/-- The repaired evaluator service therefore preserves every incoming
-binding constraint across the shared full/minimal semantic judgments. -/
-theorem prepared_evalAtomRawRel_bindingTheoryExtends
-    {oracle : TypePreparationOracle}
-    {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
-    {live : List Atom}
-    {atom expectedType : Atom} {input : BindingFrame} {result : FrameResult}
-    (derivation : EvalAtomRawRel space dispatch live
-      (typing := preparedPackageTypeService oracle)
-      atom expectedType input result) :
-    BindingTheoryExtends input result.2 :=
-  evalAtomRawRel_bindingTheoryExtends
-    (preparedPackageTypeService_bindingLaws oracle) derivation
-
 /-! ## Boundary canaries -/
 
 /-- Positive: the empty binding theory extends itself. -/
@@ -415,7 +332,7 @@ theorem published_applicationSuccess_bindingTheoryExtends
 
 /-- The ordinary published service earns the two local extension obligations
 from its actual type-match/merge and ordered candidate-scan derivations. -/
-theorem publishedTypeService_bindingLaws : EvalTypeServiceBindingLaws publishedTypeService := by
+theorem publishedTypeService_bindingLaws : EvalTypeServiceBindingLaws storageTypeService := by
   constructor
   · intro scope space atom expected input result cast
     cases cast with

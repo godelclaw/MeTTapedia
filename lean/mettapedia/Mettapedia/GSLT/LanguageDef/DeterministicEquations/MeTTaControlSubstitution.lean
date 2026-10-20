@@ -1,6 +1,10 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaControlCorrespondence
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaDataBindings
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaExpressionScope
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # The observation of a MeTTa chain substitution
@@ -24,22 +28,22 @@ open Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge (AtomOccurs)
 
 theorem substituteName_solution (atom : Atom) (name : String) (replacement : Atom)
     (valuation : String → Metta.Atom) :
-    applyClassSolution valuation (toLeaTTaAtom (substituteName name replacement atom)) =
+    applyClassSolution valuation (encodeModelAtom (substituteName name replacement atom)) =
       applyClassSolution
-        (Function.update valuation name (applyClassSolution valuation (toLeaTTaAtom replacement)))
-        (toLeaTTaAtom atom) := by
+        (Function.update valuation name (applyClassSolution valuation (encodeModelAtom replacement)))
+        (encodeModelAtom atom) := by
   cases atom with
-  | symbol | grounded => simp only [substituteName, toLeaTTaAtom, applyClassSolution]
+  | symbol | grounded => simp only [substituteName, encodeModelAtom, applyClassSolution]
   | var other =>
       by_cases same : other = name
       · subst other
-        simp only [substituteName, if_true, toLeaTTaAtom, applyClassSolution,
+        simp only [substituteName, if_true, encodeModelAtom, applyClassSolution,
           Function.update_self]
-      · simp only [substituteName, same, if_false, toLeaTTaAtom, applyClassSolution,
+      · simp only [substituteName, same, if_false, encodeModelAtom, applyClassSolution,
           Function.update_of_ne same]
   | expression items =>
-      simp only [substituteName, toLeaTTaAtom, applyClassSolution,
-        solutionTheory_toLeaTTaAtoms_eq_map, List.map_map, Metta.Atom.expr.injEq]
+      simp only [substituteName, encodeModelAtom, applyClassSolution,
+        solutionTheory_encodeModelAtoms_eq_map, List.map_map, Metta.Atom.expr.injEq]
       apply List.map_congr_left
       intro item member
       exact substituteName_solution item name replacement valuation
@@ -452,16 +456,16 @@ end
 /-- The structural substitution used in the compiler law is exactly the
 independent interpreter's substitution after atom translation. -/
 theorem substituteName_runtime (atom : Atom) (name : String) (replacement : Atom) :
-    toLeaTTaAtom (substituteName name replacement atom) =
-      Metta.Subst.apply [(name, toLeaTTaAtom replacement)] (toLeaTTaAtom atom) := by
+    encodeModelAtom (substituteName name replacement atom) =
+      Metta.Subst.apply [(name, encodeModelAtom replacement)] (encodeModelAtom atom) := by
   cases atom with
-  | symbol | grounded => simp only [substituteName, toLeaTTaAtom, Metta.Subst.apply]
+  | symbol | grounded => simp only [substituteName, encodeModelAtom, Metta.Subst.apply]
   | var other =>
     by_cases same : other = name <;>
-      simp [substituteName, toLeaTTaAtom, Metta.Subst.apply, Metta.Subst.lookup, same]
+      simp [substituteName, encodeModelAtom, Metta.Subst.apply, Metta.Subst.lookup, same]
   | expression items =>
-    simp only [substituteName, toLeaTTaAtom, Metta.Subst.apply,
-      solutionTheory_toLeaTTaAtoms_eq_map, List.map_map, Metta.Atom.expr.injEq]
+    simp only [substituteName, encodeModelAtom, Metta.Subst.apply,
+      solutionTheory_encodeModelAtoms_eq_map, List.map_map, Metta.Atom.expr.injEq]
     apply List.map_congr_left
     intro item member
     exact substituteName_runtime item name replacement
@@ -474,13 +478,13 @@ theorem expression_runtime_substitution (program : Program) (names : Names)
     (fuel replacement : Atom) (source : Term) (index first : Nat) (before : index < first)
     (namesBound : ∀ entry ∈ names, UsesBefore first entry.2)
     (fuelBound : UsesBefore first fuel) :
-    Metta.Subst.apply [(freshName index, toLeaTTaAtom replacement)]
-        (toLeaTTaAtom (expression program names fuel source first).1) =
-      toLeaTTaAtom (expression program
+    Metta.Subst.apply [(freshName index, encodeModelAtom replacement)]
+        (encodeModelAtom (expression program names fuel source first).1) =
+      encodeModelAtom (expression program
         (names.map (fun entry => (entry.1, substituteName (freshName index) replacement entry.2)))
         (substituteName (freshName index) replacement fuel) source first).1 := by
   rw [← substituteName_runtime]
-  exact congrArg (fun emitted => toLeaTTaAtom emitted.1)
+  exact congrArg (fun emitted => encodeModelAtom emitted.1)
     (expression_substitution program names fuel replacement source index first before namesBound fuelBound)
 
 open Mettapedia.Languages.MeTTa.HE.CanonAbsorbsFreshening
@@ -508,17 +512,17 @@ freshened continuation. -/
 theorem renamed_expression_runtime_substitution (program : Program) (names : Names)
     (fuel replacement : Atom) (source : Term) (index first : Nat)
     (rename : String → String) (injective : Function.Injective rename)
-    (closed : (toLeaTTaAtom replacement).vars = []) (before : index < first)
+    (closed : (encodeModelAtom replacement).vars = []) (before : index < first)
     (namesBound : ∀ entry ∈ names, UsesBefore first entry.2)
     (fuelBound : UsesBefore first fuel) :
-    Metta.Subst.apply [(rename (freshName index), toLeaTTaAtom replacement)]
-        (renBy rename (toLeaTTaAtom (expression program names fuel source first).1)) =
-      renBy rename (toLeaTTaAtom (expression program
+    Metta.Subst.apply [(rename (freshName index), encodeModelAtom replacement)]
+        (renBy rename (encodeModelAtom (expression program names fuel source first).1)) =
+      renBy rename (encodeModelAtom (expression program
         (names.map (fun entry => (entry.1, substituteName (freshName index) replacement entry.2)))
         (substituteName (freshName index) replacement fuel) source first).1) := by
   have transport := rename_single_substitution
-    (toLeaTTaAtom (expression program names fuel source first).1)
-    (toLeaTTaAtom replacement) (freshName index) rename injective
+    (encodeModelAtom (expression program names fuel source first).1)
+    (encodeModelAtom replacement) (freshName index) rename injective
   rw [renBy_eq_self_of_vars_nil rename _ closed] at transport
   rw [← transport, expression_runtime_substitution program names fuel replacement source index
     first before namesBound fuelBound]
@@ -613,18 +617,18 @@ private theorem subst_cons_closed (name : String) (replacement : Metta.Atom)
 even when input keys repeat. The first occurrence supplies the value. -/
 theorem fillInputs_runtime (inputs : List (Nat × Atom)) (atom : Atom)
     (rename : String → String) (injective : Function.Injective rename)
-    (closed : ∀ entry ∈ inputs, (toLeaTTaAtom entry.2).vars = []) :
+    (closed : ∀ entry ∈ inputs, (encodeModelAtom entry.2).vars = []) :
     Metta.Subst.apply (inputs.map (fun entry =>
-        (rename (freshName entry.1), toLeaTTaAtom entry.2)))
-        (renBy rename (toLeaTTaAtom atom)) =
-      renBy rename (toLeaTTaAtom (fillInputs inputs atom)) := by
+        (rename (freshName entry.1), encodeModelAtom entry.2)))
+        (renBy rename (encodeModelAtom atom)) =
+      renBy rename (encodeModelAtom (fillInputs inputs atom)) := by
   induction inputs generalizing atom with
   | nil => simpa only [List.map_nil, fillInputs] using
-      Metta.Subst.apply_nil (renBy rename (toLeaTTaAtom atom))
+      Metta.Subst.apply_nil (renBy rename (encodeModelAtom atom))
   | cons entry rest ih =>
     rw [List.map_cons, subst_cons_closed _ _ _ _ (closed entry (by simp))]
-    have transport := rename_single_substitution (toLeaTTaAtom atom)
-      (toLeaTTaAtom entry.2) (freshName entry.1) rename injective
+    have transport := rename_single_substitution (encodeModelAtom atom)
+      (encodeModelAtom entry.2) (freshName entry.1) rename injective
     rw [renBy_eq_self_of_vars_nil rename _ (closed entry (by simp))] at transport
     rw [← transport, ← substituteName_runtime]
     exact ih _ (fun row member => closed row (by simp [member]))
@@ -637,17 +641,17 @@ theorem expression_runtime_inputs (program : Program) (names : Names) (fuel : At
     (rename : String → String) (injective : Function.Injective rename)
     (inputBefore : ∀ entry ∈ inputs, entry.1 < first)
     (inputBound : ∀ entry ∈ inputs, UsesBefore first entry.2)
-    (closed : ∀ entry ∈ inputs, (toLeaTTaAtom entry.2).vars = [])
+    (closed : ∀ entry ∈ inputs, (encodeModelAtom entry.2).vars = [])
     (namesBound : ∀ entry ∈ names, UsesBefore first entry.2)
     (fuelBound : UsesBefore first fuel) :
     Metta.Subst.apply (inputs.map (fun entry =>
-        (rename (freshName entry.1), toLeaTTaAtom entry.2)))
-        (renBy rename (toLeaTTaAtom (expression program names fuel source first).1)) =
-      renBy rename (toLeaTTaAtom (expression program
+        (rename (freshName entry.1), encodeModelAtom entry.2)))
+        (renBy rename (encodeModelAtom (expression program names fuel source first).1)) =
+      renBy rename (encodeModelAtom (expression program
         (names.map (fun entry => (entry.1, fillInputs inputs entry.2)))
         (fillInputs inputs fuel) source first).1) := by
   rw [fillInputs_runtime inputs _ rename injective closed]
-  exact congrArg (fun emitted : Atom × Nat => renBy rename (toLeaTTaAtom emitted.1))
+  exact congrArg (fun emitted : Atom × Nat => renBy rename (encodeModelAtom emitted.1))
     (expression_fillInputs program names fuel source inputs first inputBefore inputBound
       namesBound fuelBound)
 
@@ -679,21 +683,21 @@ theorem expression_binding_materialization (program : Program) (names : Names) (
     (bindings : Metta.Bindings)
     (inputBefore : ∀ entry ∈ inputs, entry.1 < first)
     (inputBound : ∀ entry ∈ inputs, UsesBefore first entry.2)
-    (closed : ∀ entry ∈ inputs, (toLeaTTaAtom entry.2).vars = [])
+    (closed : ∀ entry ∈ inputs, (encodeModelAtom entry.2).vars = [])
     (namesBound : ∀ entry ∈ names, UsesBefore first entry.2)
     (fuelBound : UsesBefore first fuel)
     (observations : ∀ index, index < (expression program names fuel source first).2 →
       Metta.instantiate bindings (.var (rename (freshName index))) =
         Metta.Subst.apply (inputs.map (fun entry =>
-          (rename (freshName entry.1), toLeaTTaAtom entry.2)))
+          (rename (freshName entry.1), encodeModelAtom entry.2)))
           (.var (rename (freshName index)))) :
     Metta.instantiate bindings
-        (renBy rename (toLeaTTaAtom (expression program names fuel source first).1)) =
-      renBy rename (toLeaTTaAtom (expression program
+        (renBy rename (encodeModelAtom (expression program names fuel source first).1)) =
+      renBy rename (encodeModelAtom (expression program
         (names.map (fun entry => (entry.1, fillInputs inputs entry.2)))
         (fillInputs inputs fuel) source first).1) := by
   rw [instantiate_eq_subst_on_variables bindings
-    (inputs.map (fun entry => (rename (freshName entry.1), toLeaTTaAtom entry.2))) _ ?_]
+    (inputs.map (fun entry => (rename (freshName entry.1), encodeModelAtom entry.2))) _ ?_]
   · exact expression_runtime_inputs program names fuel source inputs first rename injective
       inputBefore inputBound closed namesBound fuelBound
   · intro name occurrence
@@ -800,7 +804,7 @@ syntax. The guest's variable spellings remain inside encoded data. -/
 theorem renamed_expression_data_name_bounds (program : Program) (names : Names)
     (fuel : Atom) (source : Term) (first : Nat) (rename : String → String)
     (namesData : ∀ entry ∈ names, DataAtom entry.2) (fuelData : DataAtom fuel) :
-    ∀ name ∈ (renBy rename (toLeaTTaAtom (expression program names fuel source first).1)).vars,
+    ∀ name ∈ (renBy rename (encodeModelAtom (expression program names fuel source first).1)).vars,
       ∃ index, first ≤ index ∧ index < (expression program names fuel source first).2 ∧
         name = rename (freshName index) := by
   intro name member

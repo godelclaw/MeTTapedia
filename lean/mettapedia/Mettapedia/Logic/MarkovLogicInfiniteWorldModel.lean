@@ -14,13 +14,13 @@ formalizations:
       measure when the uniform Dobrushin contraction condition holds
       (proved in `MarkovLogicInfiniteUniqueness`).
 
-  (B) **The PLN World Model calculus.** A `MassSemantics` object packages
+  (B) **The PLN World Model calculus.** A `Mettapedia.ProbabilityTheory.MassSemantics` object packages
       query-mass and total-mass data into `BinaryEvidence`, which in turn
       instantiates a `BinaryWorldModel` with `queryStrength`, `queryConfidence`,
       and simple truth-value views (developed in `MarkovLogicAbstract`).
 
 The bridge is elementary once the right abstraction is chosen: a probability
-measure has total mass 1, so the `MassSemantics` record is immediate.  The
+measure has total mass 1, so the `Mettapedia.ProbabilityTheory.MassSemantics` record is immediate.  The
 resulting pipeline reads:
 
 ```text
@@ -30,10 +30,10 @@ ClassicalInfiniteGroundMLNSpec M
 ProbabilityMeasure μ on InfiniteWorld Atom
       │  infiniteMLNMassSemantics
       ▼
-MassSemantics (ConstraintQuery Atom)
+Mettapedia.ProbabilityTheory.MassSemantics (ConstraintQuery Atom)
     queryMass q  =  μ { ω | ω satisfies q }
     totalMass    =  1
-      │  evidenceOfMasses
+      │  binaryMass
       ▼
 BinaryEvidence  ⟨ μ(q) ,  1 − μ(q) ⟩
       │  toStrength
@@ -80,7 +80,7 @@ uniqueness claim is made or could be made.
 
 namespace Mettapedia.Logic.MarkovLogicInfiniteWorldModel
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.Logic.MarkovLogicAbstract
 open Mettapedia.Logic.MarkovLogicClauseSemantics
 open Mettapedia.Logic.MarkovLogicClauseFactorGraph
@@ -132,7 +132,7 @@ theorem measurableSet_infiniteQueryEvent
 /-- **Mass semantics induced by a DLR measure.**
 
     Every probability measure `μ` on `InfiniteWorld Atom` gives rise to a
-    `MassSemantics` with `totalMass = 1` and `queryMass q = μ(infiniteQueryEvent q)`.
+    `Mettapedia.ProbabilityTheory.MassSemantics` with `totalMass = 1` and `queryMass q = μ(infiniteQueryEvent q)`.
     The DLR hypothesis `hμ` is carried but not consumed; it witnesses that `μ`
     arose from the Gibbs specification of `M`, justifying the semantic
     interpretation as an MLN query probability.
@@ -144,7 +144,7 @@ noncomputable def infiniteMLNMassSemantics
     (μ : ProbabilityMeasure (InfiniteWorld Atom))
     (_hμ : FixedRegionCylinderDLR M.toStrictlyPositiveInfiniteGroundMLNSpec
       (μ : Measure (InfiniteWorld Atom))) :
-    MassSemantics (ConstraintQuery Atom) where
+    Mettapedia.ProbabilityTheory.MassSemantics (ConstraintQuery Atom) where
   queryMass q := (μ : Measure (InfiniteWorld Atom)) (infiniteQueryEvent q)
   totalMass := 1
   queryMass_le_total q := by
@@ -163,7 +163,7 @@ theorem infiniteMLNMassSemantics_queryProb_eq_measure_infiniteQueryEvent
     (q : ConstraintQuery Atom) :
     (infiniteMLNMassSemantics M μ hμ).queryProb q =
       (μ : Measure (InfiniteWorld Atom)) (infiniteQueryEvent q) := by
-  simp [MassSemantics.queryProb, infiniteMLNMassSemantics]
+  simp [Mettapedia.ProbabilityTheory.MassSemantics.queryProb, infiniteMLNMassSemantics]
 
 /-- **WM query strength equals Gibbs probability.**
 
@@ -209,7 +209,7 @@ theorem infiniteMLN_queryStrength_unique_of_uniform
     (infiniteMLNMassSemantics M ν hν).queryProb q := by
   have hmeq : (μ : Measure (InfiniteWorld Atom)) = (ν : Measure (InfiniteWorld Atom)) :=
     M.paperUniformSmallTotalInfluence_implies_paperUniqueMeasure hM μ ν hμ hν
-  simp only [MassSemantics.queryProb, infiniteMLNMassSemantics]
+  simp only [Mettapedia.ProbabilityTheory.MassSemantics.queryProb, infiniteMLNMassSemantics]
   rw [hmeq]
   rfl
 

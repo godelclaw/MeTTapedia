@@ -1,6 +1,5 @@
 import Mettapedia.Languages.MeTTa.HE.TypeGrounding.SpecBoundary
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ScopeObservation
-import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationRecursiveExact
 
 /-!
 # Type variables: first-order schematic declarations and HOL type instances
@@ -1372,7 +1371,7 @@ theorem schematic_hol_iff_exact {space : Space} {expression type : Atom}
     have equal := toTy_injective static ground.static holEq
     subst equal
     obtain ⟨packages, derivation⟩ :=
-      LeaTTaTypePresentationRecursiveExact.runtimeTypePackages_exists space expression
+      Spec.Type.Presentation.Exact.runtimeTypePackages_exists space expression
     obtain ⟨principal, observed, _, valuation, firstOrder, instanceEq⟩ := all derivation
     exact ⟨noFallback, principal, ⟨packages, derivation, observed⟩, valuation, firstOrder,
       instanceEq⟩

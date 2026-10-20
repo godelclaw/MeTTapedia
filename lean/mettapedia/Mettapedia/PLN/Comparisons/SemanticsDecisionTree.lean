@@ -101,8 +101,8 @@ theorem gate_example_dempsterShafer :
 
 /-- If evidence values are incomparable, no scalar order embedding exists. -/
 theorem evidence_blocks_order_reflecting_scalarization :
-    ¬ ∃ Θ : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence → ℝ,
-      ∀ a b : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence, a ≤ b ↔ Θ a ≤ Θ b :=
+    ¬ ∃ Θ : Mettapedia.PLN.Evidence.BinaryEvidence → ℝ,
+      ∀ a b : Mettapedia.PLN.Evidence.BinaryEvidence, a ≤ b ↔ Θ a ≤ Θ b :=
   Mettapedia.PLN.Evidence.PLN_KS_Bridge.evidence_no_orderEmbedding_into_real
 
 /-- K&S sits in the standard commutative quantale inference slice. -/

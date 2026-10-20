@@ -11,14 +11,14 @@ noncomputable section
 
 namespace Mettapedia.PLN.TruthValues.WMPLNDistributionalTruthFunctions
 
-open Mettapedia.PLN.Evidence.EvidenceSTVBridge (DeductionSTV)
+open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction (STV)
 open Mettapedia.PLN.TruthValues.PLNWeightTV (WTV)
 open Mettapedia.PLN.TruthValues.PLNIndefiniteTruth (ITV)
 open Mettapedia.PLN.TruthValues.PeTTaLibPLNTruthFunctions (TV)
 open Mettapedia.PLN.Evidence.EvidenceClass (BinaryContext)
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet (IDMPredictiveContext)
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.PLNJointEvidence
 open Mettapedia.Logic.WMMarkovCanonical
 open Mettapedia.Logic.MarkovPredictiveChaining
@@ -78,16 +78,16 @@ distributional sibling.
 
 /-! ## Dirichlet-over-worlds joint-evidence views -/
 
-/-- DeductionSTV proposition view extracted from the Dirichlet-over-worlds carrier. -/
+/-- STV proposition view extracted from the Dirichlet-over-worlds carrier. -/
 noncomputable def truthDirichletOverWorldsPropSTV
-    (κ : ℝ≥0∞) {n : ℕ} (E : JointEvidence n) (A : Fin n) : DeductionSTV :=
-  Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToDeductionSTV κ
+    (κ : ℝ≥0∞) {n : ℕ} (E : JointEvidence n) (A : Fin n) : STV :=
+  Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToSTV κ
     (Mettapedia.PLN.Evidence.PLNJointEvidence.JointEvidence.propEvidence (n := n) (E := E) A)
 
-/-- DeductionSTV link view extracted from the Dirichlet-over-worlds carrier. -/
+/-- STV link view extracted from the Dirichlet-over-worlds carrier. -/
 noncomputable def truthDirichletOverWorldsLinkSTV
-    (κ : ℝ≥0∞) {n : ℕ} (E : JointEvidence n) (A B : Fin n) : DeductionSTV :=
-  Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToDeductionSTV κ
+    (κ : ℝ≥0∞) {n : ℕ} (E : JointEvidence n) (A B : Fin n) : STV :=
+  Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToSTV κ
     (Mettapedia.PLN.Evidence.PLNJointEvidence.JointEvidence.linkEvidence (n := n) (E := E) A B)
 
 /-- WTV proposition view extracted from the Dirichlet-over-worlds carrier. -/
@@ -138,17 +138,17 @@ noncomputable def truthDirichletOverWorldsLinkITVBayesExact95
 
 /-! ## Markov-Dirichlet transition-query views -/
 
-/-- DeductionSTV view of a binary transition query over the Markov Dirichlet carrier. -/
+/-- STV view of a binary transition query over the Markov Dirichlet carrier. -/
 noncomputable def truthMarkovDirichletTransitionSTV
-    (κ : ℝ≥0∞) {k : ℕ} (W : MarkovTransitionWMState k) (q : MarkovTransitionQuery k) : DeductionSTV :=
-  Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToDeductionSTV κ
-    (Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.evidence
+    (κ : ℝ≥0∞) {k : ℕ} (W : MarkovTransitionWMState k) (q : MarkovTransitionQuery k) : STV :=
+  Mettapedia.PLN.Evidence.EvidenceSTVBridge.evidenceToSTV κ
+    (Mettapedia.PLN.WorldModel.BinaryWorldModel.evidence
       (State := MarkovTransitionWMState k) (Query := MarkovTransitionQuery k) W q)
 
 /-- WTV view of a binary transition query over the Markov Dirichlet carrier. -/
 noncomputable def truthMarkovDirichletTransitionWTV
     (κ : ℝ≥0∞) {k : ℕ} (W : MarkovTransitionWMState k) (q : MarkovTransitionQuery k) : WTV :=
-  Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryWTV
+  Mettapedia.PLN.WorldModel.BinaryWorldModel.queryWTV
     (State := MarkovTransitionWMState k) (Query := MarkovTransitionQuery k) κ W q
 
 /-- Walley-IDM ITV view of a binary transition query over the Markov Dirichlet
@@ -156,21 +156,21 @@ carrier. This is the interval-facing predictive view for the transition row. -/
 noncomputable abbrev truthMarkovDirichletTransitionITVWalley
     {k : ℕ} (ctx : IDMPredictiveContext) (W : MarkovTransitionWMState k)
     (q : MarkovTransitionQuery k) : ITV :=
-  Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITV
+  Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITV
     (State := MarkovTransitionWMState k) (Query := MarkovTransitionQuery k)
-    Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.walleyIDMPredictive ctx W q
+    Mettapedia.PLN.WorldModel.ITVSemantics.walleyIDMPredictive ctx W q
 
 /-- Exact-invCDF 95% Bayesian ITV view of a binary transition query over the
 Markov Dirichlet carrier. -/
 noncomputable def truthMarkovDirichletTransitionITVBayesExact95
     {k : ℕ} (ctx : BinaryContext) (W : MarkovTransitionWMState k)
     (q : MarkovTransitionQuery k) : ITV :=
-  Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITV
+  Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITV
     (State := MarkovTransitionWMState k) (Query := MarkovTransitionQuery k)
-    Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.bayesCredibleExact95 ctx W q
+    Mettapedia.PLN.WorldModel.ITVSemantics.bayesCredibleExact95 ctx W q
 
 /-- Sequential predictive chain mass for Markov-Dirichlet futures.
-This is intentionally not collapsed into DeductionSTV/WTV because it is a path-mass
+This is intentionally not collapsed into STV/WTV because it is a path-mass
 process quantity rather than a single additive query view. -/
 noncomputable def truthMarkovDirichletPredictiveChainMass
     {k : ℕ} (hk : 0 < k)
@@ -186,12 +186,12 @@ theorem truthMarkovDirichletTransitionITVWalley_width_add_credibility
     (truthMarkovDirichletTransitionITVWalley ctx W q).width +
       (truthMarkovDirichletTransitionITVWalley ctx W q).credibility = 1 := by
   change
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITVWidth
-        Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.walleyIDMPredictive ctx W q +
-      Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITVCredibility
-        Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.walleyIDMPredictive ctx W q = 1
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITVWidth
+        Mettapedia.PLN.WorldModel.ITVSemantics.walleyIDMPredictive ctx W q +
+      Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITVCredibility
+        Mettapedia.PLN.WorldModel.ITVSemantics.walleyIDMPredictive ctx W q = 1
   exact
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITVWidth_add_queryITVCredibility_walley
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITVWidth_add_queryITVCredibility_walley
       (State := MarkovTransitionWMState k) (Query := MarkovTransitionQuery k) ctx W q
 
 theorem truthMarkovDirichletPredictiveChainMass_le_one

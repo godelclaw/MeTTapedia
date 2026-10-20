@@ -8,10 +8,10 @@ Connects the interval-semantics axis from `PLNWMHypercubeBasis` to explicit
 ITV semantics and typed WM query views.
 -/
 
-namespace Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube
+namespace Mettapedia.PLN.WorldModel.WorldModelITVHypercube
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.Framework.PLNWMHypercubeBasis
 
 /-- Context family selected by the interval semantics axis. -/
@@ -623,4 +623,4 @@ theorem WMRewriteRuleSigma.applyITVThreshold_walley_strength_selector
 
 end Typed
 
-end Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube
+end Mettapedia.PLN.WorldModel.WorldModelITVHypercube

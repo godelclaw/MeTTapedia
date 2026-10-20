@@ -29,6 +29,10 @@ spec specification:
 import Mettapedia.Languages.MeTTa.HE.LeaTTaSpecSoundness
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval.EquationQueryStep
 import MettaHyperonFull.Proofs.CaptureAvoidingFreshening
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 namespace Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
 
@@ -344,7 +348,7 @@ theorem queryOp_hit_observational_anchor
     (hincomingNonvariable : HEAssignmentsNonVariable specIncoming)
     (hincomingNoFloat : LeaBindingsNoFloat incoming)
     (hmatch : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (hmerge : merged ∈ Metta.Bindings.merge incoming matched)
     (hsat : ∃ valuation : String → Metta.Atom,
       LeaBindingSatisfied valuation merged) :
@@ -360,27 +364,27 @@ theorem queryOp_hit_observational_anchor
   obtain ⟨valuation, hmerged⟩ := hsat
   have hmatchedNoFloat : LeaBindingsNoFloat matched :=
     leaMatchAtoms_result_noFloat
-      (toLeaTTaAtom_noFloat pattern) (toLeaTTaAtom_noFloat query) hmatch
+      (encodeModelAtom_noFloat pattern) (encodeModelAtom_noFloat query) hmatch
   have hsplit := (leaMerge_solution_iff valuation
     hincomingNoFloat hmatchedNoFloat hmerge).mp hmerged
   have hincomingSat : LeaBindingSatisfied valuation incoming := hsplit.1
   have hmatchedSat : LeaBindingSatisfied valuation matched := hsplit.2
   have hmettaEquation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom pattern, toLeaTTaAtom query) :=
+      (encodeModelAtom pattern, encodeModelAtom query) :=
     (leaMatchAtoms_solution_iff valuation
-      (toLeaTTaAtom_noFloat pattern)
-      (toLeaTTaAtom_noFloat query) hmatch).mp hmatchedSat
+      (encodeModelAtom_noFloat pattern)
+      (encodeModelAtom_noFloat query) hmatch).mp hmatchedSat
   have hspecEquation : HEAtomEquationSatisfied valuation query pattern :=
     hmettaEquation.symm
   obtain ⟨specMatched, hspecMatch, hspecMatchedSat⟩ :=
     Spec.Match.Completeness.exists_specMatch_of_solution hspecEquation
   have hmatchedEquiv : LeaBindingSolutionTheoryEquiv specMatched matched :=
-    Spec.Match.SolutionTheory.specMatch_leaMatch_solutionTheoryEquiv
+    LeaTTaSpecConformance.specMatch_leaMatch_solutionTheoryEquiv
       hspecMatch hmatch
   have hspecIncomingSat : HEBindingSatisfied valuation specIncoming :=
     (hincomingEquiv valuation).mpr hincomingSat
   have hspecMatchedNonvariable : HEAssignmentsNonVariable specMatched :=
-    LeaTTaSpecConformance.specMatch_assignmentsNonVariable hspecMatch
+    Spec.Match.ModelTheory.specMatch_assignmentsNonVariable hspecMatch
   obtain ⟨specMerged, hspecMerge, _, hspecMergedNonvariable⟩ :=
     Spec.Match.Completeness.exists_specMerge_of_solution
       hspecIncomingSat hincomingNonvariable
@@ -418,7 +422,7 @@ theorem queryOp_hit_exists_of_spec
       HEBindingSatisfied valuation specMerged) :
     ∃ matched merged,
       matched ∈ Metta.matchAtoms
-          (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
+          (encodeModelAtom pattern) (encodeModelAtom query) ∧
         merged ∈ Metta.Bindings.merge incoming matched ∧
         merged.hasLoop = false ∧
         LeaBindingSolutionTheoryEquiv specMerged merged := by
@@ -426,7 +430,7 @@ theorem queryOp_hit_exists_of_spec
   have hpair := (Spec.Match.SolutionTheory.mergeRel_solution_iff
     hspecMerge valuation).mp hmergedSatHE
   have hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom query, toLeaTTaAtom pattern) :=
+      (encodeModelAtom query, encodeModelAtom pattern) :=
     (Spec.Match.SolutionTheory.matchRel_solution_iff
       hspecMatch valuation).mp hpair.2
   obtain ⟨matched, hmatched, hmatchedEquiv⟩ :=
@@ -438,7 +442,7 @@ theorem queryOp_hit_exists_of_spec
     (hmatchedEquiv valuation).mp hpair.2
   have hmatchedNoFloat : LeaBindingsNoFloat matched :=
     leaMatchAtoms_result_noFloat
-      (toLeaTTaAtom_noFloat pattern) (toLeaTTaAtom_noFloat query) hmatched
+      (encodeModelAtom_noFloat pattern) (encodeModelAtom_noFloat query) hmatched
   obtain ⟨merged, hmerged, hmergedSat, _⟩ :=
     LeaTTaMergeExistence.merge_exists_of_satisfied
       hincomingNoFloat hmatchedNoFloat hincomingSat hmatchedSat
@@ -478,7 +482,7 @@ theorem queryOp_hit_observational_sound_of_satisfiable
     (hincomingNonvariable : HEAssignmentsNonVariable specIncoming)
     (hincomingNoFloat : LeaBindingsNoFloat incoming)
     (hmatch : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (hmerge : merged ∈ Metta.Bindings.merge incoming matched)
     (hsat : ∃ valuation : String → Metta.Atom,
       LeaBindingSatisfied valuation merged) :
@@ -540,7 +544,7 @@ theorem queryOp_hit_observational_sound
     {incoming matched merged : Metta.Bindings} {rhs : Metta.Atom}
     (hinvariant : LeaQueryOpBindingInvariant specIncoming incoming)
     (hmatch : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (hmerge : merged ∈ Metta.Bindings.merge incoming matched)
     (hloop : merged.hasLoop = false) :
     ∃ specMatched specMerged,
@@ -559,8 +563,8 @@ theorem queryOp_hit_observational_sound
       LeaTTaSpecConformance.LeaRuntimeBindingInvariant merged :=
     LeaTTaSpecConformance.LeaRuntimeBindingInvariant.merge_matchOutput
       hinvariant.runtime
-      (toLeaTTaAtom_noFloat pattern)
-      (toLeaTTaAtom_noFloat query)
+      (encodeModelAtom_noFloat pattern)
+      (encodeModelAtom_noFloat query)
       hmatch hmerge hloop
   obtain ⟨specMatched, specMerged, hspecMatch, hspecMerge,
       hequiv, hspecMergedNonvariable⟩ :=
@@ -584,7 +588,7 @@ theorem queryOp_hit_specEquationQueryStep_sound
     (hinvariant : LeaQueryOpBindingInvariant specIncoming incoming)
     (hdisjoint : VarsDisjoint query pattern)
     (hmatch : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (hmerge : merged ∈ Metta.Bindings.merge incoming matched)
     (hloop : merged.hasLoop = false) :
     ∃ specMerged,
@@ -597,7 +601,7 @@ theorem queryOp_hit_specEquationQueryStep_sound
       (rhs := freshRhs) hinvariant hmatch hmerge hloop
   refine ⟨specMerged, ?_, hnextInvariant⟩
   refine ⟨specMatched, hdisjoint, hspecMatch, hspecMerge.logicalMerge ?_, hobservable⟩
-  exact ⟨_, LeaTTaTypeConformance.specTypeBindingSatisfied_of_heBindingSatisfied
+  exact ⟨_, Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_of_heBindingSatisfied
     ((hnextInvariant.solutionTheory (leaClassSolution merged)).mpr
       hnextInvariant.runtime.canonical.1)⟩
 
@@ -614,16 +618,16 @@ theorem queryOpItemsOfRule_observational_sound
     (hinvariant : LeaQueryOpBindingInvariant specIncoming incoming)
     (hfreshPattern :
       (Metta.Minimal.freshenRuleAvoiding counter
-        (Metta.Minimal.queryOpAvoid prev (toLeaTTaAtom query) incoming)
-        rawLhs rawRhs).1.1 = toLeaTTaAtom pattern)
+        (Metta.Minimal.queryOpAvoid prev (encodeModelAtom query) incoming)
+        rawLhs rawRhs).1.1 = encodeModelAtom pattern)
     (hitem : item ∈ Metta.Minimal.queryOpItemsOfRule
-      prev (toLeaTTaAtom query) incoming counter (rawLhs, rawRhs)) :
+      prev (encodeModelAtom query) incoming counter (rawLhs, rawRhs)) :
     ∃ merged specMatched specMerged,
       item = Metta.Minimal.evalResult prev
           (Metta.instantiate merged
             (Metta.Minimal.freshenRuleAvoiding counter
               (Metta.Minimal.queryOpAvoid prev
-                (toLeaTTaAtom query) incoming)
+                (encodeModelAtom query) incoming)
               rawLhs rawRhs).1.2) merged ∧
         Spec.Match.Merge.MatchRel
           Spec.Match.Merge.equalityGroundedSemantic
@@ -638,15 +642,15 @@ theorem queryOpItemsOfRule_observational_sound
                 (Metta.instantiate merged
                   (Metta.Minimal.freshenRuleAvoiding counter
                     (Metta.Minimal.queryOpAvoid prev
-                      (toLeaTTaAtom query) incoming)
+                      (encodeModelAtom query) incoming)
                     rawLhs rawRhs).1.2) =
               applyClassSolution valuation
                 (Metta.Minimal.freshenRuleAvoiding counter
                   (Metta.Minimal.queryOpAvoid prev
-                    (toLeaTTaAtom query) incoming)
+                    (encodeModelAtom query) incoming)
                   rawLhs rawRhs).1.2 := by
   have hitem' : item ∈ queryOpItemsOfRule
-      prev (toLeaTTaAtom query) incoming counter (rawLhs, rawRhs) := hitem
+      prev (encodeModelAtom query) incoming counter (rawLhs, rawRhs) := hitem
   rw [mem_queryOpItemsOfRule_iff] at hitem'
   obtain ⟨matched, hmatch, merged, hmerge, hloop, hitemEq⟩ := hitem'
   rw [hfreshPattern] at hmatch
@@ -655,7 +659,7 @@ theorem queryOpItemsOfRule_observational_sound
     queryOp_hit_observational_sound
       (rhs :=
         (Metta.Minimal.freshenRuleAvoiding counter
-          (Metta.Minimal.queryOpAvoid prev (toLeaTTaAtom query) incoming)
+          (Metta.Minimal.queryOpAvoid prev (encodeModelAtom query) incoming)
           rawLhs rawRhs).1.2)
       hinvariant hmatch hmerge hloop
   exact ⟨merged, specMatched, specMerged, hitemEq,
@@ -669,23 +673,23 @@ theorem varsDisjoint_of_freshenRuleAvoiding_pattern
     {rawLhs rawRhs : Metta.Atom}
     (hfreshPattern :
       (Metta.Minimal.freshenRuleAvoiding counter
-        (Metta.Minimal.queryOpAvoid prev (toLeaTTaAtom query) incoming)
-        rawLhs rawRhs).1.1 = toLeaTTaAtom pattern) :
+        (Metta.Minimal.queryOpAvoid prev (encodeModelAtom query) incoming)
+        rawLhs rawRhs).1.1 = encodeModelAtom pattern) :
     VarsDisjoint query pattern := by
   intro name hquery hpattern
   have hfresh := Metta.Minimal.freshenRuleAvoiding_vars_fresh
     counter
-    (Metta.Minimal.queryOpAvoid prev (toLeaTTaAtom query) incoming)
+    (Metta.Minimal.queryOpAvoid prev (encodeModelAtom query) incoming)
     rawLhs rawRhs
   have hfreshName :
       name ∈
         (Metta.Minimal.freshenRuleAvoiding counter
           (Metta.Minimal.queryOpAvoid prev
-            (toLeaTTaAtom query) incoming)
+            (encodeModelAtom query) incoming)
           rawLhs rawRhs).1.1.vars ++
         (Metta.Minimal.freshenRuleAvoiding counter
           (Metta.Minimal.queryOpAvoid prev
-            (toLeaTTaAtom query) incoming)
+            (encodeModelAtom query) incoming)
           rawLhs rawRhs).1.2.vars := by
     apply List.mem_append_left
     rw [hfreshPattern]
@@ -709,15 +713,15 @@ theorem queryOpItemsOfRule_specEquationQueryStep_sound
     (hinvariant : LeaQueryOpBindingInvariant specIncoming incoming)
     (hfreshPattern :
       (Metta.Minimal.freshenRuleAvoiding counter
-        (Metta.Minimal.queryOpAvoid prev (toLeaTTaAtom query) incoming)
-        rawLhs rawRhs).1.1 = toLeaTTaAtom pattern)
+        (Metta.Minimal.queryOpAvoid prev (encodeModelAtom query) incoming)
+        rawLhs rawRhs).1.1 = encodeModelAtom pattern)
     (hitem : item ∈ Metta.Minimal.queryOpItemsOfRule
-      prev (toLeaTTaAtom query) incoming counter (rawLhs, rawRhs)) :
+      prev (encodeModelAtom query) incoming counter (rawLhs, rawRhs)) :
     ∃ merged specMerged freshRhs,
       freshRhs =
           (Metta.Minimal.freshenRuleAvoiding counter
             (Metta.Minimal.queryOpAvoid prev
-              (toLeaTTaAtom query) incoming)
+              (encodeModelAtom query) incoming)
             rawLhs rawRhs).1.2 ∧
         item = Metta.Minimal.evalResult prev
           (Metta.instantiate merged freshRhs) merged ∧
@@ -730,14 +734,14 @@ theorem queryOpItemsOfRule_specEquationQueryStep_sound
       hinvariant hfreshPattern hitem
   let freshRhs :=
     (Metta.Minimal.freshenRuleAvoiding counter
-      (Metta.Minimal.queryOpAvoid prev (toLeaTTaAtom query) incoming)
+      (Metta.Minimal.queryOpAvoid prev (encodeModelAtom query) incoming)
       rawLhs rawRhs).1.2
   refine ⟨merged, specMerged, freshRhs, rfl, ?_, ?_, hnextInvariant⟩
   · exact hitemEq
   · refine ⟨specMatched,
       varsDisjoint_of_freshenRuleAvoiding_pattern hfreshPattern,
       hspecMatch, hspecMerge.logicalMerge ?_, hobservable⟩
-    exact ⟨_, LeaTTaTypeConformance.specTypeBindingSatisfied_of_heBindingSatisfied
+    exact ⟨_, Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_of_heBindingSatisfied
       ((hnextInvariant.solutionTheory (leaClassSolution merged)).mpr
         hnextInvariant.runtime.canonical.1)⟩
 
@@ -749,7 +753,7 @@ theorem queryOp_hit_observational_sound_empty_incoming
     {pattern query : OSLFCore.Atom}
     {matched merged : Metta.Bindings} {rhs : Metta.Atom}
     (hmatch : matched ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (hmerge : merged ∈
       Metta.Bindings.merge Metta.Bindings.empty matched) :
     ∃ specMatched specMerged,
@@ -766,12 +770,12 @@ theorem queryOp_hit_observational_sound_empty_incoming
               applyClassSolution valuation rhs := by
   obtain ⟨valuation, hmatchedSatisfied⟩ :=
     LeaTTaSpecConformance.leaMatchAtoms_output_satisfiable
-      (toLeaTTaAtom_noFloat pattern)
-      (toLeaTTaAtom_noFloat query) hmatch
+      (encodeModelAtom_noFloat pattern)
+      (encodeModelAtom_noFloat query) hmatch
   have hmatchedNoFloat : LeaBindingsNoFloat matched :=
     leaMatchAtoms_result_noFloat
-      (toLeaTTaAtom_noFloat pattern)
-      (toLeaTTaAtom_noFloat query) hmatch
+      (encodeModelAtom_noFloat pattern)
+      (encodeModelAtom_noFloat query) hmatch
   have hemptySatisfied :
       LeaBindingSatisfied valuation Metta.Bindings.empty := by
     simp [LeaBindingSatisfied, Metta.Bindings.empty]

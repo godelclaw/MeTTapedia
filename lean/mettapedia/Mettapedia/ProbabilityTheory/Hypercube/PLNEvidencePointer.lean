@@ -4,7 +4,7 @@ import Mettapedia.PLN.Evidence.PLN_KS_Bridge
 
 namespace Mettapedia.ProbabilityTheory.Hypercube.EvidenceQuantalePointer
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-!
 # PLN BinaryEvidence vs KS (Hypercube Pointer)
@@ -18,7 +18,7 @@ Key point:
 
 For the formal statements, see:
 - `Mettapedia.PLN.Evidence.PLN_KS_Bridge`
-- `Mettapedia.PLN.Evidence.EvidenceQuantale`
+- `Mettapedia.PLN.Evidence.BinaryEvidence`
 -/
 
 /-! ## BinaryEvidence Has Genuine Incomparability -/

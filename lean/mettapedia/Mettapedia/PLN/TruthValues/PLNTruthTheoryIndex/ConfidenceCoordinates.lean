@@ -195,7 +195,7 @@ theorem generic_itv_does_not_force_point_projection :
 /-- For any typed ITV, the current midpoint strength view lies above the lower
 endpoint. -/
 theorem typed_itv_lower_le_midpoint
-    {Sem : Mettapedia.PLN.TruthValues.PLNTruthTower.ITVSemantics}
+    {Sem : Mettapedia.PLN.TruthValues.PLNTruthTower.ITVConstructor}
     (x : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV Sem) :
     x.lower ≤ x.midpoint :=
   Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.lower_le_midpoint x
@@ -203,14 +203,14 @@ theorem typed_itv_lower_le_midpoint
 /-- For any typed ITV, the current midpoint strength view lies below the upper
 endpoint. -/
 theorem typed_itv_midpoint_le_upper
-    {Sem : Mettapedia.PLN.TruthValues.PLNTruthTower.ITVSemantics}
+    {Sem : Mettapedia.PLN.TruthValues.PLNTruthTower.ITVConstructor}
     (x : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV Sem) :
     x.midpoint ≤ x.upper :=
   Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.midpoint_le_upper x
 
 /-- For any typed ITV, the current midpoint strength view is unit-bounded. -/
 theorem typed_itv_midpoint_in_unit
-    {Sem : Mettapedia.PLN.TruthValues.PLNTruthTower.ITVSemantics}
+    {Sem : Mettapedia.PLN.TruthValues.PLNTruthTower.ITVConstructor}
     (x : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV Sem) :
     x.midpoint ∈ Set.Icc (0 : ℝ) 1 :=
   Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.midpoint_in_unit x

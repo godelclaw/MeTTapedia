@@ -3,6 +3,8 @@ import Mettapedia.Languages.C11.FixedCoreStatements
 import Mettapedia.Languages.C11.StatementHistory
 import Mettapedia.Languages.C11.ExpressionEventHistory
 import Mettapedia.GSLT.Distinction.SimulationComposition
+import Mettapedia.GSLT.Distinction.SpanTransport
+import Mettapedia.Machines.ProductiveCoreAdapters
 
 /-!
 # A constructed statement-machine refinement stage
@@ -287,6 +289,74 @@ theorem backward (model : Model) (policy : SignedConversionPolicy) :
             exact ⟨1, le_rfl, saved,
               (observedMachine model policy).run_succ_call (fuel := 0) found, rfl⟩
         | silent next | publish events next | finish verdict | fail events => cases stepped
+
+/-- The independently specified C machine and its configuration codec use
+the same relational composition law as branching language machines. -/
+theorem relational_forward (model : Model) (policy : SignedConversionPolicy)
+    {PublicEvent PublicVerdict PublicRequest : Type}
+    (readout : ExecutionReadout ReceiptData ResultData RequestData PublicEvent PublicVerdict PublicRequest) :
+    DerivationSimulation (fun state action => (observedMachine model policy).step state = action)
+      (fun state action => (machineData model policy).step state = action) Related readout readout :=
+  (forward model policy).toDerivationSimulation (forward_matches_stuck model policy) readout
+
+theorem relational_backward (model : Model) (policy : SignedConversionPolicy)
+    {PublicEvent PublicVerdict PublicRequest : Type}
+    (readout : ExecutionReadout ReceiptData ResultData RequestData PublicEvent PublicVerdict PublicRequest) :
+    DerivationSimulation (fun state action => (machineData model policy).step state = action)
+      (fun state action => (observedMachine model policy).step state = action)
+      (fun data source => Related source data) readout readout :=
+  (backward model policy).toDerivationSimulation (backward_matches_stuck model policy) readout
+
+open Mettapedia.Machines Mettapedia.Machines.ProductiveCoreAdapters in
+/-- The independent statement machine and its data realization execute through
+the shared cursor scheduler. Related residuals retain memory, activations and
+service status; refused source execution is not reclassified as missing work. -/
+theorem scheduled_forward (model : Model) (policy : SignedConversionPolicy)
+    {PublicEvent PublicVerdict PublicRequest : Type}
+    (readout : ExecutionReadout ReceiptData ResultData RequestData PublicEvent PublicVerdict PublicRequest)
+    (sourcePrice : Configuration model → Nat) (dataPrice : ConfigurationData → Nat)
+    (fuel : Nat) {source : Configuration model} {data : ConfigurationData} (related : Related source data) :
+    ∃ count,
+      let sourceRun := Cursor.advance (EventCursor.provider (observedMachine model policy)) EventCursor.client
+        (EventCursor.charge (observedMachine model policy) sourcePrice) fuel
+        (EventCursor.packet (observedMachine model policy) ([], .exhausted source))
+      let dataRun := Cursor.advance (EventCursor.provider (machineData model policy)) EventCursor.client
+        (EventCursor.charge (machineData model policy) dataPrice) count
+        (EventCursor.packet (machineData model policy) ([], .exhausted data))
+      sourceRun.1 = (observedMachine model policy).spent sourcePrice fuel source ∧
+      dataRun.1 = (machineData model policy).spent dataPrice count data ∧
+      (EventCursor.read (observedMachine model policy) sourceRun.2).1.flatMap readout.event =
+        (EventCursor.read (machineData model policy) dataRun.2).1.flatMap readout.event ∧
+      OutcomeRel Related
+        ((EventCursor.read (observedMachine model policy) sourceRun.2).2.relabel readout.verdict readout.request)
+        ((EventCursor.read (machineData model policy) dataRun.2).2.relabel readout.verdict readout.request) :=
+  EventCursor.advance_machines (observedMachine model policy) (machineData model policy)
+    (relational_forward model policy readout) sourcePrice dataPrice fuel related
+
+open Mettapedia.Machines Mettapedia.Machines.ProductiveCoreAdapters in
+/-- Reflection through the actual data decoder is a second scheduled
+simulation. Prices remain independent of the semantic representation map. -/
+theorem scheduled_backward (model : Model) (policy : SignedConversionPolicy)
+    {PublicEvent PublicVerdict PublicRequest : Type}
+    (readout : ExecutionReadout ReceiptData ResultData RequestData PublicEvent PublicVerdict PublicRequest)
+    (dataPrice : ConfigurationData → Nat) (sourcePrice : Configuration model → Nat)
+    (fuel : Nat) {data : ConfigurationData} {source : Configuration model} (related : Related source data) :
+    ∃ count,
+      let dataRun := Cursor.advance (EventCursor.provider (machineData model policy)) EventCursor.client
+        (EventCursor.charge (machineData model policy) dataPrice) fuel
+        (EventCursor.packet (machineData model policy) ([], .exhausted data))
+      let sourceRun := Cursor.advance (EventCursor.provider (observedMachine model policy)) EventCursor.client
+        (EventCursor.charge (observedMachine model policy) sourcePrice) count
+        (EventCursor.packet (observedMachine model policy) ([], .exhausted source))
+      dataRun.1 = (machineData model policy).spent dataPrice fuel data ∧
+      sourceRun.1 = (observedMachine model policy).spent sourcePrice count source ∧
+      (EventCursor.read (machineData model policy) dataRun.2).1.flatMap readout.event =
+        (EventCursor.read (observedMachine model policy) sourceRun.2).1.flatMap readout.event ∧
+      OutcomeRel (fun data source => Related source data)
+        ((EventCursor.read (machineData model policy) dataRun.2).2.relabel readout.verdict readout.request)
+        ((EventCursor.read (observedMachine model policy) sourceRun.2).2.relabel readout.verdict readout.request) :=
+  EventCursor.advance_machines (machineData model policy) (observedMachine model policy)
+    (relational_backward model policy readout) dataPrice sourcePrice fuel related
 
 /-- The concrete, bidirectional refinement stage at one interface step per tick. -/
 def stage (model : Model) (policy : SignedConversionPolicy) :

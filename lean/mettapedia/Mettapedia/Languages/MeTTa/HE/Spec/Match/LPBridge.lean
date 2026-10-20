@@ -1,5 +1,6 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.ModelTheory
 import Mettapedia.Logic.LP.UnificationComplete
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 /-!
 # First-order unification bridge for the spec matcher
@@ -13,7 +14,7 @@ model existence without mentioning either HE or LeaTTa execution.
 namespace Mettapedia.Languages.MeTTa.HE.Spec.Match.LPBridge
 
 open Mettapedia.Languages.MeTTa.HE
-open Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
 open Mettapedia.Logic.LP
 
@@ -69,7 +70,7 @@ algebra. -/
 def atomToTerm : Atom → MatchTerm
   | .symbol symbol => .const (.symbol symbol)
   | .var name => .var name
-  | .grounded grounded => .const (.grounded (toLeaTTaGround grounded))
+  | .grounded grounded => .const (.grounded (encodeModelGround grounded))
   | .expression atoms =>
       let terms := atomsToTerms atoms
       .app (.expression terms.length) terms.get
@@ -89,7 +90,7 @@ end
 
 @[simp] theorem atomToTerm_grounded (grounded : GroundedValue) :
     atomToTerm (.grounded grounded) =
-      .const (.grounded (toLeaTTaGround grounded)) := rfl
+      .const (.grounded (encodeModelGround grounded)) := rfl
 
 @[simp] theorem atomsToTerms_nil : atomsToTerms [] = [] := rfl
 
@@ -279,12 +280,12 @@ def valuationSubst (valuation : String → Metta.Atom) : MatchSubst :=
 /-- Encoding followed by decoding is exactly the existing neutral LeaTTa
 translation. -/
 theorem termToMettaAtom_atomToTerm (atom : Atom) :
-    termToMettaAtom (atomToTerm atom) = toLeaTTaAtom atom := by
+    termToMettaAtom (atomToTerm atom) = encodeModelAtom atom := by
   let AtomGoal : Atom → Prop := fun candidate =>
-    termToMettaAtom (atomToTerm candidate) = toLeaTTaAtom candidate
+    termToMettaAtom (atomToTerm candidate) = encodeModelAtom candidate
   let ListGoal : List Atom → Prop := fun candidates =>
     List.map termToMettaAtom (atomsToTerms candidates) =
-      toLeaTTaAtoms candidates
+      encodeModelAtoms candidates
   have hrec : ∀ candidate, AtomGoal candidate := by
     apply Atom.rec (motive_1 := AtomGoal) (motive_2 := ListGoal)
     · intro symbol
@@ -295,7 +296,7 @@ theorem termToMettaAtom_atomToTerm (atom : Atom) :
       rfl
     · intro atoms ih
       dsimp only [AtomGoal]
-      simp only [atomToTerm, termToMettaAtom, toLeaTTaAtom]
+      simp only [atomToTerm, termToMettaAtom, encodeModelAtom]
       congr 1
       calc
         List.ofFn
@@ -306,11 +307,11 @@ theorem termToMettaAtom_atomToTerm (atom : Atom) :
                 rfl
         _ = List.map termToMettaAtom (atomsToTerms atoms) := by
               rw [List.ofFn_get]
-        _ = toLeaTTaAtoms atoms := ih
+        _ = encodeModelAtoms atoms := ih
     · rfl
     · intro atom atoms ihAtom ihAtoms
       dsimp only [ListGoal] at ihAtom ihAtoms ⊢
-      simp only [atomsToTerms, List.map_cons, toLeaTTaAtoms]
+      simp only [atomsToTerms, List.map_cons, encodeModelAtoms]
       rw [ihAtom, ihAtoms]
   exact hrec atom
 
@@ -344,7 +345,7 @@ theorem termToMettaAtom_apply_atomToTerm
     (substitution : MatchSubst) (atom : Atom) :
     termToMettaAtom (substitution.applyTerm (atomToTerm atom)) =
       applyClassSolution (substValuation substitution)
-        (toLeaTTaAtom atom) := by
+        (encodeModelAtom atom) := by
   rw [termToMettaAtom_applyTerm,
     termToMettaAtom_atomToTerm]
 

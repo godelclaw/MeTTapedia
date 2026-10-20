@@ -115,7 +115,7 @@ def erasureBaseFunctor {Head : Type} (rules : Rules Head) :
 /-- Erasing a typed substitution is faithful on every hom-set: typing proofs
 and telescope entries can be forgotten without identifying distinct raw
 substitution arrays. -/
-@[reducible] def erasureBaseFunctorFaithful {Head : Type} (rules : Rules Head) :
+theorem erasureBaseFunctorFaithful {Head : Type} (rules : Rules Head) :
     (erasureBaseFunctor rules).Faithful where
   map_injective := by
     intro source target left right equality

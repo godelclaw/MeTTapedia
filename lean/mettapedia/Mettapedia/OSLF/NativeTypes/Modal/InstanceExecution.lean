@@ -131,30 +131,34 @@ the substituted continuation, rather than an arbitrary successor. -/
 theorem native_meaning {admitted : Pattern → Prop}
     (equations : EquationDecision (GeneratedInstance.system schema))
     (decisions : ModalInstanceDecisions codes)
-    (request : ModalInstanceRequest codes assignment focus) :
+    (request : ModalInstanceRequest codes assignment focus)
+    (spatial : Decision.Spatial.SpatialTheory (GeneratedInstance.system schema) :=
+      .empty (GeneratedInstance.system schema)) :
     Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation (tests (admitted := admitted) equations decisions request)
-      instanceFormula request.source ↔
+      instanceFormula spatial request.source ↔
       Nonempty (Mettapedia.OSLF.NativeTypes.Modal.Rules.Outcome schema focus assignment codes.continuation) :=
   (instance_native_comparison equations request.target
     ((codes.inputs.2 assignment).meaning request.target)
     (@decide ((codes.inputs.2 assignment).meaning request.target)
       (decisions.continuation assignment request.target))
     (@decide_eq_true_iff ((codes.inputs.2 assignment).meaning request.target)
-      (decisions.continuation assignment request.target)) request.source).trans
+      (decisions.continuation assignment request.target)) request.source spatial).trans
         (GeneratedInstance.outcome_exact request)
 
 theorem machine_native_meaning {admitted : Pattern → Prop}
     (equations : EquationDecision (GeneratedInstance.system schema))
     (decisions : ModalInstanceDecisions codes)
-    (request : ModalInstanceRequest codes assignment focus) :
+    (request : ModalInstanceRequest codes assignment focus)
+    (spatial : Decision.Spatial.SpatialTheory (GeneratedInstance.system schema) :=
+      .empty (GeneratedInstance.system schema)) :
     Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation
-        (leaves (admitted := admitted) equations decisions request) instanceFormula request.source ↔
+        (leaves (admitted := admitted) equations decisions request) instanceFormula spatial request.source ↔
       Nonempty (Mettapedia.OSLF.NativeTypes.Modal.Rules.Outcome schema focus assignment codes.continuation) := by
   rw [Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation_comparison
     (leaves (admitted := admitted) equations decisions request)
     (tests (admitted := admitted) equations decisions request)
-    (leaf_meaning equations decisions request) instanceFormula]
-  exact native_meaning equations decisions request
+    (leaf_meaning equations decisions request) instanceFormula spatial]
+  exact native_meaning equations decisions request spatial
 
 structure Session {admitted : Pattern → Prop}
     (backend : CursorBackend (GeneratedInstance.system schema) admitted)
@@ -162,9 +166,9 @@ structure Session {admitted : Pattern → Prop}
     (decisions : ModalInstanceDecisions codes)
     (assignment : ScopedRuleMatching.Assignment) (focus : Pattern) where
   admittedRequest : AdmittedRequest codes assignment focus admitted
-  state : Mettapedia.OSLF.NativeTypes.Decision.Machine.State (Mettapedia.OSLF.NativeTypes.Decision.Machine.Observation backend)
+  state : Mettapedia.OSLF.NativeTypes.Decision.Machine.State (Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence backend)
     (Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation (leaves (admitted := admitted) equations decisions admittedRequest.request)
-      instanceFormula admittedRequest.request.source)
+      instanceFormula backend.spatial.theory admittedRequest.request.source)
 
 variable {admitted : Pattern → Prop}
 variable {backend : CursorBackend (GeneratedInstance.system schema) admitted}
@@ -175,7 +179,8 @@ def Session.result (session : Session backend equations decisions assignment foc
     Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.Outcome
       (Nonempty (Mettapedia.OSLF.NativeTypes.Modal.Rules.Outcome schema focus assignment codes.continuation)) :=
   Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.Outcome.map
-    (machine_native_meaning (admitted := admitted) equations decisions session.admittedRequest.request) session.state.outcome
+    (machine_native_meaning (admitted := admitted) equations decisions session.admittedRequest.request
+      backend.spatial.theory) session.state.outcome
 
 def Session.answer (session : Session backend equations decisions assignment focus) : Option Bool :=
   session.result.answer
@@ -183,7 +188,8 @@ def Session.answer (session : Session backend equations decisions assignment foc
 def Session.spent (session : Session backend equations decisions assignment focus) : Nat := session.state.spent
 
 def Session.observations (session : Session backend equations decisions assignment focus) :
-    List (Mettapedia.OSLF.NativeTypes.Decision.Machine.Observation backend) := session.state.observations
+    List (Mettapedia.OSLF.NativeTypes.Decision.Machine.Observation backend) :=
+  session.state.observations.filterMap Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence.operational?
 
 def resume (budget : Nat) (session : Session backend equations decisions assignment focus) :
     Session backend equations decisions assignment focus :=
@@ -283,7 +289,7 @@ theorem run_complete (request : AdmittedRequest codes assignment focus admitted)
     (enough : totalBound backend equations decisions request ≤ budget) :
     (run backend equations decisions request budget).result.Decided :=
   Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.Outcome.map_decided
-    (machine_native_meaning (admitted := admitted) equations decisions request.request) _
+    (machine_native_meaning (admitted := admitted) equations decisions request.request backend.spatial.theory) _
     (Mettapedia.OSLF.NativeTypes.Decision.Machine.complete_at_bound backend (leaves equations decisions request.request)
       instanceFormula request.request.source request.sourceAdmitted budget enough)
 

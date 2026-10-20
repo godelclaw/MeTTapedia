@@ -100,7 +100,7 @@ theorem typedSucc_rule_lp_sound :
   · rfl
   · simp [typedSuccRule, typedSuccCall, zeroPattern, matchPattern, matchArgs, mergeBindings]
   · simp [typedSuccRule, onePattern, applyBindings]
-  · native_decide
+  · decide +kernel
 
 theorem typedSucc_first_proof_path :
     TypedPeTTaEval typedSuccSpace typedSuccCall [onePattern] ∧
@@ -177,7 +177,7 @@ structure PureUnitRecBoundaryOracle where
 This reuses the historically named conditional-frontier package, now discharged
 through the declaration-side Church-Rosser theorem. It is a reusable
 certificate, not a re-proof of the metatheorem. -/
-def pureUnitRec_currentBoundary_conditional_oracle_certificate_of_decl_package
+theorem pureUnitRec_currentBoundary_conditional_oracle_certificate_of_decl_package
     (hDeclPkg :
       DeclChurchRosserFrontierPackage unitRecDeclEnv) :
     PureUnitRecBoundaryOracle :=
@@ -193,7 +193,7 @@ def pureUnitRec_currentBoundary_conditional_oracle_certificate_of_decl_package
     reduces := pureUnitRec_iota_oracle.2.1
     targetType := pureUnitRec_iota_oracle.2.2 }
 
-def pureUnitRec_currentBoundary_conditional_oracle_certificate
+theorem pureUnitRec_currentBoundary_conditional_oracle_certificate
     : PureUnitRecBoundaryOracle :=
   let hAdm : GeneratedRecursorContractAdmitted unitRecContract :=
     ⟨{ contract := unitRecContract
@@ -657,16 +657,16 @@ def inferClosedDeclAppType? (E : DeclEnv) : ScopedTerm 0 → Option (ScopedTerm 
 theorem capability_alice_read_certificate_accepts :
     inferClosedDeclAppType? capDeclEnv capReadAliceDocTerm =
       some capReadAliceDocType := by
-  native_decide
+  decide_cbv
 
 theorem capability_bob_read_with_bob_cap_certificate_accepts :
     inferClosedDeclAppType? capDeclEnv capReadBobDocWithBobCapTerm =
       some capReadBobDocType := by
-  native_decide
+  decide_cbv
 
 theorem capability_bob_cannot_read_with_alice_certificate :
     inferClosedDeclAppType? capDeclEnv capReadBobDocWithAliceCapTerm = none := by
-  native_decide
+  decide_cbv
 
 theorem capability_wrong_principal_domain_mismatch :
     HasTypeDecl capDeclEnv .nil capReadBobDocPrefixTerm capReadBobDocPrefixType ∧

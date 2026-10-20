@@ -522,3 +522,40 @@ theorem public_key_does_not_avoid_itself :
   exact avoids.keys "public" (by simp [TypeSubst.keys]) (by simp)
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Freshness
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Type
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Presentation
+
+/-- Every formal-variable occurrence is an occurrence of the complete arrow
+atom that contains it. -/
+theorem FunctionTypeRel.argumentVars_subset
+    {functionType returnType : Atom} {argumentTypes : List Atom}
+    (function : FunctionTypeRel functionType argumentTypes returnType) :
+    ∀ name, name ∈ TypeSubst.typeVarsList argumentTypes →
+      name ∈ TypeSubst.typeVars functionType := by
+  intro name member
+  rw [FunctionTypeRel] at function
+  rw [function]
+  rw [TypeSubst.typeVars, TypeSubst.typeVarsList, List.mem_append]
+  apply Or.inr
+  rw [TypeSubst.typeVarsList_append, List.mem_append]
+  exact Or.inl member
+
+/-- The return-variable support is also contained in the complete arrow. -/
+theorem FunctionTypeRel.returnVars_subset
+    {functionType returnType : Atom} {argumentTypes : List Atom}
+    (function : FunctionTypeRel functionType argumentTypes returnType) :
+    ∀ name, name ∈ TypeSubst.typeVars returnType →
+      name ∈ TypeSubst.typeVars functionType := by
+  intro name member
+  rw [FunctionTypeRel] at function
+  rw [function]
+  rw [TypeSubst.typeVars, TypeSubst.typeVarsList, List.mem_append]
+  apply Or.inr
+  rw [TypeSubst.typeVarsList_append, List.mem_append]
+  apply Or.inr
+  simpa [TypeSubst.typeVarsList] using member
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Type

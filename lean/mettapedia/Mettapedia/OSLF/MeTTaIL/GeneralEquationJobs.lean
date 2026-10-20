@@ -9,7 +9,8 @@ import Mettapedia.GSLT.LanguageDef.GeneralTypedOccurrenceReplacement
 # Generic equation jobs and checked local completion
 
 Jobs are generated from the actual compiled declaration positions and every
-licensed typed site. Each job starts its own scoped matcher and ordered
+licensed typed site. Equations are congruences: their sites are every well-sorted position
+(`OperationalPermissions.all`), whatever reduction contexts the plan's rewrites have. Each job starts its own scoped matcher and ordered
 premise work. Completion checks the actual reduct and both local and filled
 sorting judgments. The full authored captures, premise history and equation
 orientation remain available beside the canonical endpoint.
@@ -37,14 +38,14 @@ structure Job where
 
 def jobs (plan : Plan) (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern) : List Job :=
   plan.equations.zipIdx.flatMap fun (equation, position) =>
-    (generate (GeneralPlanEnvironment.environment plan).language plan.snapshot.free plan.permissions.sites bound expected source).map
+    (generate (GeneralPlanEnvironment.environment plan).language plan.snapshot.free OperationalPermissions.all bound expected source).map
       fun site => ⟨position, equation, site⟩
 
 /-- Declaration position and licensed context are specified independently of
 job enumeration and include all successful grammar typing alternatives. -/
 def LicensedJob (plan : Plan) (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern) (job : Job) : Prop :=
   (job.equation, job.planPosition) ∈ plan.equations.zipIdx ∧
-    Licensed (GeneralPlanEnvironment.environment plan).language plan.snapshot.free plan.permissions.sites bound expected source job.site
+    Licensed (GeneralPlanEnvironment.environment plan).language plan.snapshot.free OperationalPermissions.all bound expected source job.site
 
 theorem jobs_iff (plan : Plan) (bound : List TypeExpr) (expected : TypeExpr) (source : Pattern) (job : Job) :
     job ∈ jobs plan bound expected source ↔ LicensedJob plan bound expected source job := by

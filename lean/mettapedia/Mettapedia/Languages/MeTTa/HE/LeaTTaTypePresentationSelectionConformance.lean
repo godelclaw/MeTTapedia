@@ -1,5 +1,12 @@
+import Mettapedia.Languages.MeTTa.HE.TypeGrounding.Gradual
+import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationExactConformance
+import MettaHyperonFull.Proofs.Gradual
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Selection
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationCompleteness
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Exact conformance of one ordered runtime type-candidate scan
@@ -19,6 +26,8 @@ matcher at each scan site.
 namespace Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationSelectionConformance
 
 open Mettapedia.Languages.MeTTa.HE
+open TypeGrounding.Gradual
+open Mettapedia.Logic.TheoryModel (Consistent)
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Type.Presentation
 open Spec.Type.Presentation.Theory
@@ -60,7 +69,7 @@ private theorem runtimeValuationState_of_presentation
     (state.specSolutions (presentedValuation output)).mp incomingSatisfied
   have heSatisfied :
       HEBindingSatisfied
-        (fun name => toLeaTTaAtom (presentedValuation output name)) spec :=
+        (fun name => encodeModelAtom (presentedValuation output name)) spec :=
     heBindingSatisfied_of_specTypeBindingSatisfied specSatisfied
   exact
     { satisfied := (state.semantic.theory _).mp heSatisfied
@@ -74,7 +83,7 @@ theorem matchType_eq_none_iff_no_presentation
     (state : TypePresentationSimulationState incoming spec lea)
     (expected actual : Atom) (disjoint : VarsDisjoint expected actual) :
     Metta.Minimal.matchType lea
-        (toLeaTTaAtom expected) (toLeaTTaAtom actual) = none ↔
+        (encodeModelAtom expected) (encodeModelAtom actual) = none ↔
       ∀ output,
         ¬CorePlusR2TypePresentationMatchRel
           incoming expected actual output := by
@@ -93,7 +102,7 @@ theorem matchType_eq_none_iff_no_presentation
     contradiction
   · intro noPresentation
     cases runtimeEquation : Metta.Minimal.matchType lea
-        (toLeaTTaAtom expected) (toLeaTTaAtom actual) with
+        (encodeModelAtom expected) (encodeModelAtom actual) with
     | none => rfl
     | some runtimeOutput =>
         obtain ⟨presentationOutput, _specOutput, derivation, _outputState⟩ :=
@@ -112,7 +121,7 @@ inductive ActualTypeCandidateRuntimeRel
   | matched {presentationOutput : TypeSubst} {specOutput : Bindings}
       {leaOutput : Metta.Bindings} :
       Metta.Minimal.matchType lea
-          (toLeaTTaAtom expected) (toLeaTTaAtom candidate) = some leaOutput →
+          (encodeModelAtom expected) (encodeModelAtom candidate) = some leaOutput →
       CorePlusR2TypePresentationMatchRel
           incoming expected candidate presentationOutput →
       TypePresentationSimulationState
@@ -121,7 +130,7 @@ inductive ActualTypeCandidateRuntimeRel
         (.matched presentationOutput)
   | failed :
       Metta.Minimal.matchType lea
-          (toLeaTTaAtom expected) (toLeaTTaAtom candidate) = none →
+          (encodeModelAtom expected) (encodeModelAtom candidate) = none →
       (∀ output,
         ¬CorePlusR2TypePresentationMatchRel
           incoming expected candidate output) →
@@ -140,9 +149,9 @@ theorem classify_actual_type_candidates
         List.Forall₂
           (ActualTypeCandidateRuntimeRel state expected)
           candidates classifications ∧
-        (Metta.Minimal.scanActualTypes lea (toLeaTTaAtom expected)
-            (toLeaTTaAtoms candidates)).failures =
-          toLeaTTaAtoms (failedActualTypes candidates classifications) := by
+        (Metta.Minimal.scanActualTypes lea (encodeModelAtom expected)
+            (encodeModelAtoms candidates)).failures =
+          encodeModelAtoms (failedActualTypes candidates classifications) := by
   intro candidates
   induction candidates with
   | nil =>
@@ -154,7 +163,7 @@ theorem classify_actual_type_candidates
         inductionHypothesis (fun item member =>
           disjoint item (by simp [member]))
       cases runtimeEquation : Metta.Minimal.matchType lea
-          (toLeaTTaAtom expected) (toLeaTTaAtom candidate) with
+          (encodeModelAtom expected) (encodeModelAtom candidate) with
       | none =>
           have noPresentation :=
             (matchType_eq_none_iff_no_presentation state expected candidate
@@ -162,7 +171,7 @@ theorem classify_actual_type_candidates
           refine ⟨.failed :: classifications,
             .cons (.failed runtimeEquation noPresentation)
               tailClassifications, ?_⟩
-          simp only [toLeaTTaAtoms, Metta.Minimal.scanActualTypes,
+          simp only [encodeModelAtoms, Metta.Minimal.scanActualTypes,
             runtimeEquation, failedActualTypes]
           rw [tailFailures]
       | some leaOutput =>
@@ -172,7 +181,7 @@ theorem classify_actual_type_candidates
           refine ⟨.matched presentationOutput :: classifications,
             .cons (.matched runtimeEquation presentationMatch outputState)
               tailClassifications, ?_⟩
-          simp only [toLeaTTaAtoms, Metta.Minimal.scanActualTypes,
+          simp only [encodeModelAtoms, Metta.Minimal.scanActualTypes,
             runtimeEquation, failedActualTypes]
           exact tailFailures
 
@@ -191,10 +200,10 @@ the same expected type and alpha-equivalent private return presentation. -/
 inductive ExpectedReturnDiagnosticRuntimeRel :
     ExpectedReturnDiagnostic → Metta.Minimal.ExpectedFunctionTypeError → Prop where
   | badReturn {expected actual : Atom} {runtimeActual : Metta.Atom} :
-      ObservedTypeAlphaRel actual (fromLeaTTaAtom runtimeActual) →
+      ObservedTypeAlphaRel actual (decodeModelAtom runtimeActual) →
       ExpectedReturnDiagnosticRuntimeRel
         ⟨expected, actual⟩
-        (.badReturn (toLeaTTaAtom expected) runtimeActual)
+        (.badReturn (encodeModelAtom expected) runtimeActual)
 
 /-- Exact correspondence for the selected private presentation and complete
 ordered expected-return mismatch ledger. -/
@@ -238,12 +247,12 @@ theorem scanActualTypeBranches_presentation_exact
         TypePresentationCandidateBranchStates incoming expected candidates
           presentations
           (Metta.Minimal.scanActualTypeBranches lea
-            (toLeaTTaAtom expected)
-            (toLeaTTaAtoms candidates)).successes ∧
+            (encodeModelAtom expected)
+            (encodeModelAtoms candidates)).successes ∧
         (Metta.Minimal.scanActualTypeBranches lea
-            (toLeaTTaAtom expected)
-            (toLeaTTaAtoms candidates)).failures =
-          toLeaTTaAtoms failedActuals := by
+            (encodeModelAtom expected)
+            (encodeModelAtoms candidates)).failures =
+          encodeModelAtoms failedActuals := by
   intro candidates
   induction candidates with
   | nil =>
@@ -256,7 +265,7 @@ theorem scanActualTypeBranches_presentation_exact
         inductionHypothesis (fun item member =>
           disjoint item (by simp [member]))
       cases runtimeEquation : Metta.Minimal.matchType lea
-          (toLeaTTaAtom expected) (toLeaTTaAtom candidate) with
+          (encodeModelAtom expected) (encodeModelAtom candidate) with
       | none =>
           have noPresentation :=
             (matchType_eq_none_iff_no_presentation state expected candidate
@@ -267,8 +276,8 @@ theorem scanActualTypeBranches_presentation_exact
                 incoming expected (candidate :: candidates)
                 presentations
                 (Metta.Minimal.scanActualTypeBranches lea
-                  (toLeaTTaAtom expected)
-                  (toLeaTTaAtoms candidates)).successes :=
+                  (encodeModelAtom expected)
+                  (encodeModelAtoms candidates)).successes :=
               tailStates.imp fun presentation runtimeBinding evidence => by
                 obtain ⟨source, member, matched, specOutput, outputState⟩ :=
                   evidence
@@ -276,7 +285,7 @@ theorem scanActualTypeBranches_presentation_exact
                   specOutput, outputState⟩
             simpa [Metta.Minimal.scanActualTypeBranches,
               runtimeEquation] using tailStates'
-          · simp only [toLeaTTaAtoms,
+          · simp only [encodeModelAtoms,
               Metta.Minimal.scanActualTypeBranches, runtimeEquation]
             rw [tailFailures]
       | some leaOutput =>
@@ -289,8 +298,8 @@ theorem scanActualTypeBranches_presentation_exact
                 incoming expected (candidate :: candidates)
                 presentations
                 (Metta.Minimal.scanActualTypeBranches lea
-                  (toLeaTTaAtom expected)
-                  (toLeaTTaAtoms candidates)).successes :=
+                  (encodeModelAtom expected)
+                  (encodeModelAtoms candidates)).successes :=
               tailStates.imp fun presentation runtimeBinding evidence => by
                 obtain ⟨source, member, matched, specTail, tailState⟩ :=
                   evidence
@@ -319,7 +328,7 @@ theorem scanExpectedReturnBranches_presentation_exact
             specOutcome ∧
           ExpectedReturnBranchOutcomeRuntimeRel specOutcome
             (Metta.Minimal.scanExpectedReturnBranches
-              (toLeaTTaAtom expected) (toLeaTTaAtom returnType)
+              (encodeModelAtom expected) (encodeModelAtom returnType)
               runtimeBindings) := by
   intro presentations runtimeBindings states
   induction states with
@@ -330,7 +339,7 @@ theorem scanExpectedReturnBranches_presentation_exact
   | @cons presentation lea presentations runtimeBindings head tail ih =>
       obtain ⟨spec, state⟩ := head
       cases runtimeEquation : Metta.Minimal.matchType lea
-          (toLeaTTaAtom expected) (toLeaTTaAtom returnType) with
+          (encodeModelAtom expected) (encodeModelAtom returnType) with
       | some leaOutput =>
           obtain ⟨presentationOutput, specOutput, matched, outputState⟩ :=
             state.matchType expected returnType runtimeEquation
@@ -391,30 +400,30 @@ theorem scanActualTypes_selected_presentation_exact
     (expected : Atom) :
     ∀ candidates : List Atom,
       (∀ candidate ∈ candidates, VarsDisjoint expected candidate) →
-      (Metta.Minimal.scanActualTypes lea (toLeaTTaAtom expected)
-        (toLeaTTaAtoms candidates)).selected = some leaOutput →
+      (Metta.Minimal.scanActualTypes lea (encodeModelAtom expected)
+        (encodeModelAtoms candidates)).selected = some leaOutput →
       ∃ presentationOutput specOutput failedActuals,
         ActualTypeCandidateScanRel incoming expected candidates
           (.success presentationOutput failedActuals) ∧
-        (Metta.Minimal.scanActualTypes lea (toLeaTTaAtom expected)
-          (toLeaTTaAtoms candidates)).failures =
-            toLeaTTaAtoms failedActuals ∧
+        (Metta.Minimal.scanActualTypes lea (encodeModelAtom expected)
+          (encodeModelAtoms candidates)).failures =
+            encodeModelAtoms failedActuals ∧
         TypePresentationSimulationState
           presentationOutput specOutput leaOutput := by
   intro candidates
   induction candidates with
   | nil =>
       intro _ selected
-      simp [Metta.Minimal.scanActualTypes, toLeaTTaAtoms] at selected
+      simp [Metta.Minimal.scanActualTypes, encodeModelAtoms] at selected
   | cons candidate candidates inductionHypothesis =>
       intro disjoint selected
       cases runtimeEquation : Metta.Minimal.matchType lea
-          (toLeaTTaAtom expected) (toLeaTTaAtom candidate) with
+          (encodeModelAtom expected) (encodeModelAtom candidate) with
       | none =>
           have tailSelected :
-              (Metta.Minimal.scanActualTypes lea (toLeaTTaAtom expected)
-                (toLeaTTaAtoms candidates)).selected = some leaOutput := by
-            simpa [Metta.Minimal.scanActualTypes, toLeaTTaAtoms,
+              (Metta.Minimal.scanActualTypes lea (encodeModelAtom expected)
+                (encodeModelAtoms candidates)).selected = some leaOutput := by
+            simpa [Metta.Minimal.scanActualTypes, encodeModelAtoms,
               runtimeEquation] using selected
           obtain ⟨presentationOutput, specOutput, failedActuals,
               tailScan, tailFailures, outputState⟩ :=
@@ -444,12 +453,12 @@ theorem scanActualTypes_selected_presentation_exact
                       · exact candidateFailure candidateOutput
                       · exact beforeFailures earlier member candidateOutput)
                     selectedMatch suffixRel)
-              · simpa [Metta.Minimal.scanActualTypes, toLeaTTaAtoms,
-                  runtimeEquation] using congrArg (List.cons (toLeaTTaAtom candidate))
+              · simpa [Metta.Minimal.scanActualTypes, encodeModelAtoms,
+                  runtimeEquation] using congrArg (List.cons (encodeModelAtom candidate))
                     tailFailures
       | some selectedOutput =>
           have selectedOutputEq : selectedOutput = leaOutput := by
-            simpa [Metta.Minimal.scanActualTypes, toLeaTTaAtoms,
+            simpa [Metta.Minimal.scanActualTypes, encodeModelAtoms,
               runtimeEquation] using selected
           subst selectedOutput
           obtain ⟨presentationOutput, specOutput, presentationMatch,
@@ -467,7 +476,7 @@ theorem scanActualTypes_selected_presentation_exact
               (suffixClassifications := classifications)
               (output := presentationOutput)
               (by simp) presentationMatch presentationClassifications
-          · simpa [Metta.Minimal.scanActualTypes, toLeaTTaAtoms,
+          · simpa [Metta.Minimal.scanActualTypes, encodeModelAtoms,
               runtimeEquation] using tailFailures
 
 /-- A runtime scan with no selected candidate failed on every candidate, and
@@ -475,13 +484,13 @@ its failure projection is exactly the input list in declaration order. -/
 private theorem scanActualTypes_selected_none_all_failed
     (lea : Metta.Bindings) (expected : Atom) :
     ∀ candidates : List Atom,
-      (Metta.Minimal.scanActualTypes lea (toLeaTTaAtom expected)
-        (toLeaTTaAtoms candidates)).selected = none →
+      (Metta.Minimal.scanActualTypes lea (encodeModelAtom expected)
+        (encodeModelAtoms candidates)).selected = none →
       (∀ candidate ∈ candidates,
         Metta.Minimal.matchType lea
-          (toLeaTTaAtom expected) (toLeaTTaAtom candidate) = none) ∧
-      (Metta.Minimal.scanActualTypes lea (toLeaTTaAtom expected)
-        (toLeaTTaAtoms candidates)).failures = toLeaTTaAtoms candidates := by
+          (encodeModelAtom expected) (encodeModelAtom candidate) = none) ∧
+      (Metta.Minimal.scanActualTypes lea (encodeModelAtom expected)
+        (encodeModelAtoms candidates)).failures = encodeModelAtoms candidates := by
   intro candidates
   induction candidates with
   | nil =>
@@ -490,15 +499,15 @@ private theorem scanActualTypes_selected_none_all_failed
   | cons candidate candidates inductionHypothesis =>
       intro selected
       cases runtimeEquation : Metta.Minimal.matchType lea
-          (toLeaTTaAtom expected) (toLeaTTaAtom candidate) with
+          (encodeModelAtom expected) (encodeModelAtom candidate) with
       | some output =>
-          simp [Metta.Minimal.scanActualTypes, toLeaTTaAtoms,
+          simp [Metta.Minimal.scanActualTypes, encodeModelAtoms,
             runtimeEquation] at selected
       | none =>
           have tailSelected :
-              (Metta.Minimal.scanActualTypes lea (toLeaTTaAtom expected)
-                (toLeaTTaAtoms candidates)).selected = none := by
-            simpa [Metta.Minimal.scanActualTypes, toLeaTTaAtoms,
+              (Metta.Minimal.scanActualTypes lea (encodeModelAtom expected)
+                (encodeModelAtoms candidates)).selected = none := by
+            simpa [Metta.Minimal.scanActualTypes, encodeModelAtoms,
               runtimeEquation] using selected
           obtain ⟨tailFailed, tailFailures⟩ :=
             inductionHypothesis tailSelected
@@ -507,9 +516,9 @@ private theorem scanActualTypes_selected_none_all_failed
             rcases List.mem_cons.mp member with rfl | member
             · exact runtimeEquation
             · exact tailFailed item member
-          · simpa [Metta.Minimal.scanActualTypes, toLeaTTaAtoms,
+          · simpa [Metta.Minimal.scanActualTypes, encodeModelAtoms,
               runtimeEquation] using
-                congrArg (List.cons (toLeaTTaAtom candidate)) tailFailures
+                congrArg (List.cons (encodeModelAtom candidate)) tailFailures
 
 /-- If the repaired runtime selects no candidate, the independent relation
 has the exact all-failed derivation.  The empty runtime scan has no concrete
@@ -521,18 +530,18 @@ theorem scanActualTypes_failure_presentation_exact
     (expected : Atom) (candidates : List Atom)
     (disjoint : ∀ candidate ∈ candidates, VarsDisjoint expected candidate)
     (selected :
-      (Metta.Minimal.scanActualTypes lea (toLeaTTaAtom expected)
-        (toLeaTTaAtoms candidates)).selected = none) :
+      (Metta.Minimal.scanActualTypes lea (encodeModelAtom expected)
+        (encodeModelAtoms candidates)).selected = none) :
     (candidates = [] ∧
         ActualTypeCandidateScanRel incoming expected []
           (.failure [Atom.undefinedType]) ∧
-        (Metta.Minimal.scanActualTypes lea (toLeaTTaAtom expected)
-          (toLeaTTaAtoms candidates)).failures = []) ∨
+        (Metta.Minimal.scanActualTypes lea (encodeModelAtom expected)
+          (encodeModelAtoms candidates)).failures = []) ∨
       (candidates ≠ [] ∧
         ActualTypeCandidateScanRel incoming expected candidates
           (.failure candidates) ∧
-        (Metta.Minimal.scanActualTypes lea (toLeaTTaAtom expected)
-          (toLeaTTaAtoms candidates)).failures = toLeaTTaAtoms candidates) := by
+        (Metta.Minimal.scanActualTypes lea (encodeModelAtom expected)
+          (encodeModelAtoms candidates)).failures = encodeModelAtoms candidates) := by
   obtain ⟨allRuntimeFailed, runtimeFailures⟩ :=
     scanActualTypes_selected_none_all_failed lea expected candidates selected
   cases candidates with
@@ -562,7 +571,7 @@ structure PreparedArgumentCandidateLists
     (formals : List Atom) (initial : TypeSubst)
     (native : List (List Atom))
     (runtime : List (List Metta.Atom)) : Prop where
-  link : native.map toLeaTTaAtoms = runtime
+  link : native.map encodeModelAtoms = runtime
   avoidFormals : AtomsAvoid native.flatten
     (TypeSubst.typeVarsList formals)
   avoidInitial : initial.Avoids
@@ -582,7 +591,7 @@ theorem PreparedArgumentCandidateLists.formal_candidate_disjoint
     (candidateMember : candidate ∈ family) :
     VarsDisjoint formal candidate := by
   intro name formalOccurrence candidateOccurrence
-  rw [LeaTTaTypePresentationExactConformance.toLeaTTaAtom_vars_eq_typeVars]
+  rw [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
     at formalOccurrence candidateOccurrence
   have candidateInFlatten : candidate ∈ native.flatten :=
     List.mem_flatten.mpr ⟨family, familyMember, candidateMember⟩
@@ -683,7 +692,7 @@ theorem prepared_argument_candidates_positive_canary :
     PreparedArgumentCandidateLists [.var "t"] [] [[.var "u"]]
       [[.var "u"]] := by
   constructor
-  · simp [toLeaTTaAtoms, toLeaTTaAtom]
+  · simp [encodeModelAtoms, encodeModelAtom]
   · simp [AtomsAvoid, TypeSubst.typeVarsList, TypeSubst.typeVars]
   · exact TypeSubst.avoids_empty _
   · simp [FreshFamiliesSeparated, AtomsAvoid,
@@ -699,8 +708,8 @@ theorem prepared_argument_candidates_reject_formal_capture :
   have disjoint := prepared.formal_candidate_disjoint
     (formal := .var "t") (candidate := .var "t")
     (family := [.var "t"]) (by simp) (by simp) (by simp)
-  exact disjoint "t" (by simp [toLeaTTaAtom, Metta.Atom.vars])
-    (by simp [toLeaTTaAtom, Metta.Atom.vars])
+  exact disjoint "t" (by simp [encodeModelAtom, Metta.Atom.vars])
+    (by simp [encodeModelAtom, Metta.Atom.vars])
 
 /-! ## Runtime scan over prepared candidates -/
 
@@ -710,7 +719,7 @@ def runtimeArgumentTypeDiagnosticBlock (position : Nat)
     List Metta.Atom → List Metta.Minimal.TypeCheckArgsError :=
   List.map fun actual =>
     { position
-      expected := Metta.instantiate bindings (toLeaTTaAtom formal)
+      expected := Metta.instantiate bindings (encodeModelAtom formal)
       actual }
 
 /-- Add one earlier runtime diagnostic block after every later block. -/
@@ -733,7 +742,7 @@ def runtimeArgumentFailure (position : Nat)
   | first :: rest => .failure first rest
   | [] => .failure
       { position
-        expected := Metta.instantiate bindings (toLeaTTaAtom formal)
+        expected := Metta.instantiate bindings (encodeModelAtom formal)
         actual := .sym "%Undefined%" } []
 
 /-- The repaired runtime's recursive argument scan after state-dependent type
@@ -756,8 +765,8 @@ inductive RuntimePreparedArgumentScanRel :
       {position : Nat} {bindings next : Metta.Bindings}
       {runtimeFailures : List Metta.Atom}
       {tailOutcome : Metta.Minimal.TypeCheckArgsDetailedOutcome} :
-      Metta.Minimal.scanActualTypes bindings (toLeaTTaAtom formal)
-          (toLeaTTaAtoms candidates) =
+      Metta.Minimal.scanActualTypes bindings (encodeModelAtom formal)
+          (encodeModelAtoms candidates) =
         { selected := some next, failures := runtimeFailures } →
       RuntimePreparedArgumentScanRel formals remaining (position + 1)
         next tailOutcome →
@@ -770,8 +779,8 @@ inductive RuntimePreparedArgumentScanRel :
       {candidates : List Atom} {remaining : List (List Atom)}
       {position : Nat} {bindings : Metta.Bindings}
       {runtimeFailures : List Metta.Atom} :
-      Metta.Minimal.scanActualTypes bindings (toLeaTTaAtom formal)
-          (toLeaTTaAtoms candidates) =
+      Metta.Minimal.scanActualTypes bindings (encodeModelAtom formal)
+          (encodeModelAtoms candidates) =
         { selected := none, failures := runtimeFailures } →
       RuntimePreparedArgumentScanRel (formal :: formals)
         (candidates :: remaining) position bindings
@@ -798,7 +807,7 @@ mutual
         {head : Metta.Minimal.ActualTypeBranchScanResult}
         {tailOutcomes : List Metta.Minimal.TypeCheckArgsBranchResult} :
         Metta.Minimal.scanActualTypeBranches bindings
-            (toLeaTTaAtom formal) (toLeaTTaAtoms candidates) = head →
+            (encodeModelAtom formal) (encodeModelAtoms candidates) = head →
         RuntimePreparedArgumentBranchTailsRel formals remaining
           (position + 1) head.successes tailOutcomes →
         RuntimePreparedArgumentBranchScanRel (formal :: formals)
@@ -841,9 +850,9 @@ structure ArgumentTypeDiagnosticRuntimeRel
     (runtimeDiagnostic : Metta.Minimal.TypeCheckArgsError) : Prop where
   position : specDiagnostic.position = runtimeDiagnostic.position
   expected : ObservedTypeAlphaRel specDiagnostic.expected
-    (fromLeaTTaAtom runtimeDiagnostic.expected)
+    (decodeModelAtom runtimeDiagnostic.expected)
   actual : ObservedTypeAlphaRel specDiagnostic.actual
-    (fromLeaTTaAtom runtimeDiagnostic.actual)
+    (decodeModelAtom runtimeDiagnostic.actual)
 
 /-- Exact correspondence for one branch-valued argument-scan outcome. -/
 structure ArgumentCandidateListsBranchOutcomeRuntimeRel
@@ -865,7 +874,7 @@ def PreparedArgumentBranchTailStates
       ∃ spec,
         TypePresentationSimulationState presentation spec lea ∧
           PreparedArgumentCandidateLists formals presentation remaining
-            (remaining.map toLeaTTaAtoms))
+            (remaining.map encodeModelAtoms))
     presentations runtimeBindings
 
 /-- Flattening aligned branch outcomes preserves exact success-state
@@ -907,11 +916,11 @@ theorem argumentTypeDiagnosticBlock_runtime_exact
     List.Forall₂ ArgumentTypeDiagnosticRuntimeRel
       (argumentTypeDiagnosticBlock position (incoming.apply formal)
         failedActuals)
-      ((toLeaTTaAtoms failedActuals).map fun actual =>
+      ((encodeModelAtoms failedActuals).map fun actual =>
         { position := position
-          expected := Metta.instantiate lea (toLeaTTaAtom formal)
+          expected := Metta.instantiate lea (encodeModelAtom formal)
           actual := actual }) := by
-  simp only [argumentTypeDiagnosticBlock, toLeaTTaAtoms_eq_map,
+  simp only [argumentTypeDiagnosticBlock, encodeModelAtoms_eq_map,
     List.map_map]
   induction failedActuals with
   | nil => exact .nil
@@ -992,7 +1001,7 @@ theorem runtimePreparedArgumentScan_presentation_exact
     {runtimeOutcome : Metta.Minimal.TypeCheckArgsDetailedOutcome}
     (state : TypePresentationSimulationState incoming spec lea)
     (prepared : PreparedArgumentCandidateLists formals incoming
-      candidateLists (candidateLists.map toLeaTTaAtoms))
+      candidateLists (candidateLists.map encodeModelAtoms))
     (runtimeScan : RuntimePreparedArgumentScanRel formals candidateLists
       position lea runtimeOutcome) :
     ∃ specOutcome,
@@ -1013,8 +1022,8 @@ theorem runtimePreparedArgumentScan_presentation_exact
   | @stepSuccess formal formals candidates remaining position bindings next
       runtimeFailures tailOutcome scanEquation tailScan inductionHypothesis =>
       have selected :
-          (Metta.Minimal.scanActualTypes bindings (toLeaTTaAtom formal)
-            (toLeaTTaAtoms candidates)).selected = some next := by
+          (Metta.Minimal.scanActualTypes bindings (encodeModelAtom formal)
+            (encodeModelAtoms candidates)).selected = some next := by
         rw [scanEquation]
       have disjoint : ∀ candidate ∈ candidates,
           VarsDisjoint formal candidate := by
@@ -1027,7 +1036,7 @@ theorem runtimePreparedArgumentScan_presentation_exact
         scanActualTypes_selected_presentation_exact state formal candidates
           disjoint selected
       have runtimeFailuresEquation :
-          runtimeFailures = toLeaTTaAtoms failedActuals := by
+          runtimeFailures = encodeModelAtoms failedActuals := by
         rw [← failuresEquation, scanEquation]
       subst runtimeFailures
       have nextAvoids : presentationNext.Avoids
@@ -1037,7 +1046,7 @@ theorem runtimePreparedArgumentScan_presentation_exact
         exact prepared.selected_output_avoids_tail
           candidateMember headMatch
       have tailPrepared : PreparedArgumentCandidateLists formals
-          presentationNext remaining (remaining.map toLeaTTaAtoms) := by
+          presentationNext remaining (remaining.map encodeModelAtoms) := by
         simpa using prepared.tail nextAvoids
       obtain ⟨specTailOutcome, specTailScan, tailCorrespondence⟩ :=
         inductionHypothesis nextState tailPrepared
@@ -1066,8 +1075,8 @@ theorem runtimePreparedArgumentScan_presentation_exact
   | @stepFailure formal formals candidates remaining position bindings
       runtimeFailures scanEquation =>
       have selected :
-          (Metta.Minimal.scanActualTypes bindings (toLeaTTaAtom formal)
-            (toLeaTTaAtoms candidates)).selected = none := by
+          (Metta.Minimal.scanActualTypes bindings (encodeModelAtom formal)
+            (encodeModelAtoms candidates)).selected = none := by
         rw [scanEquation]
       have disjoint : ∀ candidate ∈ candidates,
           VarsDisjoint formal candidate := by
@@ -1088,7 +1097,7 @@ theorem runtimePreparedArgumentScan_presentation_exact
             actual := Atom.undefinedType }
         let runtimeDiagnostic : Metta.Minimal.TypeCheckArgsError :=
           { position := position + 1
-            expected := Metta.instantiate bindings (toLeaTTaAtom formal)
+            expected := Metta.instantiate bindings (encodeModelAtom formal)
             actual := .sym "%Undefined%" }
         have diagnostic : ArgumentTypeDiagnosticRuntimeRel
             specDiagnostic runtimeDiagnostic :=
@@ -1104,7 +1113,7 @@ theorem runtimePreparedArgumentScan_presentation_exact
       · rcases nonemptyCase with
           ⟨candidatesNonempty, headScan, failuresEquation⟩
         have runtimeFailuresEquation :
-            runtimeFailures = toLeaTTaAtoms candidates := by
+            runtimeFailures = encodeModelAtoms candidates := by
           rw [← failuresEquation, scanEquation]
         subst runtimeFailures
         have diagnostics := argumentTypeDiagnosticBlock_runtime_exact
@@ -1133,7 +1142,7 @@ mutual
       {runtimeOutcome : Metta.Minimal.TypeCheckArgsBranchResult}
       (state : TypePresentationSimulationState incoming spec lea)
       (prepared : PreparedArgumentCandidateLists formals incoming
-        candidateLists (candidateLists.map toLeaTTaAtoms))
+        candidateLists (candidateLists.map encodeModelAtoms))
       (runtimeScan : RuntimePreparedArgumentBranchScanRel formals
         candidateLists position lea runtimeOutcome) :
       ∃ specOutcome,
@@ -1190,7 +1199,7 @@ mutual
           ArgumentCandidateListsBranchScanRel.step headRel specTails,
           ?_⟩
         have headFailuresEquation :
-            head.failures = toLeaTTaAtoms failedActuals := by
+            head.failures = encodeModelAtoms failedActuals := by
           rw [← scanEquation]
           exact failuresEquation
         have currentDiagnostics : List.Forall₂
@@ -1257,15 +1266,15 @@ theorem scanActualTypes_atom_positive_canary :
         Metta.Bindings.empty := by
   have selected :
       (Metta.Minimal.scanActualTypes Metta.Bindings.empty
-        (toLeaTTaAtom Atom.atomType)
-        (toLeaTTaAtoms [.symbol "B"])).selected =
+        (encodeModelAtom Atom.atomType)
+        (encodeModelAtoms [.symbol "B"])).selected =
           some Metta.Bindings.empty := by
     rfl
   obtain ⟨presentationOutput, specOutput, failedActuals,
       scan, _failures, outputState⟩ :=
     scanActualTypes_selected_presentation_exact
       typePresentationSimulationState_empty Atom.atomType [.symbol "B"]
-      (by simp [VarsDisjoint, toLeaTTaAtom, Metta.Atom.vars]) selected
+      (by simp [VarsDisjoint, encodeModelAtom, Metta.Atom.vars]) selected
   exact ⟨presentationOutput, specOutput, failedActuals, scan, outputState⟩
 
 /-- Negative: two distinct concrete type symbols have an exact all-failed
@@ -1275,15 +1284,80 @@ theorem scanActualTypes_distinct_symbols_negative_canary :
       (.failure [.symbol "C"]) := by
   have selected :
       (Metta.Minimal.scanActualTypes Metta.Bindings.empty
-        (toLeaTTaAtom (.symbol "B"))
-        (toLeaTTaAtoms [.symbol "C"])).selected = none := by
+        (encodeModelAtom (.symbol "B"))
+        (encodeModelAtoms [.symbol "C"])).selected = none := by
     rfl
   have exactFailure :=
     scanActualTypes_failure_presentation_exact
       typePresentationSimulationState_empty (.symbol "B") [.symbol "C"]
-      (by simp [VarsDisjoint, toLeaTTaAtom, Metta.Atom.vars]) selected
+      (by simp [VarsDisjoint, encodeModelAtom, Metta.Atom.vars]) selected
   rcases exactFailure with empty | nonempty
   · simp at empty
   · exact nonempty.2.1
+
+/-! ## Gradual-typing comparisons for this implementation -/
+
+/-- **The external LeaTTa interpreter's executable type matcher accepts
+exactly the AGT-consistent pairs** of variable-free types. -/
+theorem leattaMatchType_iff_top {left right : Atom}
+    (leftGround : TypeSubst.typeVars left = [])
+    (rightGround : TypeSubst.typeVars right = []) :
+    Metta.Minimal.matchType Metta.Bindings.empty
+        (encodeModelAtom left) (encodeModelAtom right) ≠ none ↔
+      Consistent TopConcretization {left, right} := by
+  have disjoint : VarsDisjoint left right := by
+    intro name member
+    rw [encodeModelAtom_vars_eq_typeVars, leftGround] at member
+    simp at member
+  rw [Ne, matchType_eq_none_iff_no_presentation typePresentationSimulationState_empty
+    left right disjoint, ← presentation_iff_top TypeSubst.normal_empty leftGround rightGround]
+  simp
+
+/-- The gradual permissiveness that the external LeaTTa package proves
+(`Metta.matchType_undefined_left`, `Metta.matchType_atom_left` and their
+right-hand siblings) is the instance of the AGT reading in which one side is
+`%Undefined%` or a top-level `Atom`. -/
+theorem gradual_permissiveness_is_agt {type : Atom} (ground : TypeSubst.typeVars type = []) :
+    Consistent TopConcretization {Atom.undefinedType, type} ∧
+      Consistent TopConcretization {type, Atom.undefinedType} ∧
+      Consistent TopConcretization {Atom.atomType, type} ∧
+      Consistent TopConcretization {type, Atom.atomType} ∧
+      Metta.Minimal.matchType Metta.Bindings.empty
+          (encodeModelAtom Atom.undefinedType) (encodeModelAtom type) = some Metta.Bindings.empty ∧
+      Metta.Minimal.matchType Metta.Bindings.empty
+          (encodeModelAtom type) (encodeModelAtom Atom.undefinedType) = some Metta.Bindings.empty ∧
+      Metta.Minimal.matchType Metta.Bindings.empty
+          (encodeModelAtom Atom.atomType) (encodeModelAtom type) = some Metta.Bindings.empty ∧
+      Metta.Minimal.matchType Metta.Bindings.empty
+          (encodeModelAtom type) (encodeModelAtom Atom.atomType) = some Metta.Bindings.empty := by
+  obtain ⟨first, second, third, fourth⟩ := gradual_wildcards_consistent ground
+  exact ⟨first, second, third, fourth,
+    Metta.matchType_undefined_left _ _, Metta.matchType_undefined_right _ _,
+    Metta.matchType_atom_left _ _, Metta.matchType_atom_right _ _⟩
+
+/-- The external package's declarative consistency treats `Atom` as a
+wildcard below a constructor; its executable matcher and the independent
+concretization reject that nested interpretation. -/
+theorem metta_consistent_nested_atom_not_agt :
+    Metta.Consistent
+      (encodeModelAtom (.expression [.symbol "List", Atom.atomType]))
+      (encodeModelAtom (.expression [.symbol "List", .symbol "Number"])) ∧
+      ¬Consistent TopConcretization
+        {.expression [.symbol "List", Atom.atomType],
+         .expression [.symbol "List", .symbol "Number"]} ∧
+      Metta.Minimal.matchType Metta.Bindings.empty
+        (encodeModelAtom (.expression [.symbol "List", Atom.atomType]))
+        (encodeModelAtom (.expression [.symbol "List", .symbol "Number"])) = none := by
+  refine ⟨?_, nested_atom_not_topConsistent, ?_⟩
+  · change Metta.Consistent (.expr [.sym "List", .sym "Atom"])
+      (.expr [.sym "List", .sym "Number"])
+    exact .expr (.cons (.same _) (.cons (.atomL _) .nil))
+  · by_contra accepted
+    exact nested_atom_not_topConsistent
+      ((leattaMatchType_iff_top (by decide) (by decide)).mp accepted)
+
+#print axioms leattaMatchType_iff_top
+#print axioms gradual_permissiveness_is_agt
+#print axioms metta_consistent_nested_atom_not_agt
 
 end Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationSelectionConformance

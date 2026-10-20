@@ -4,7 +4,7 @@ import Mettapedia.NARS.TruthFunctions
 
 namespace Mettapedia.NARS.Bridges.PLN.EvidenceTranslation
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.NARS.TruthFunctions
 
 /-!

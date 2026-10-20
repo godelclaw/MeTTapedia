@@ -1,5 +1,5 @@
-import Mettapedia.OSLF.MeTTaIL.Complete
 import Mettapedia.Languages.MeTTa.PeTTa.Bridges.MeTTaIL.GeneralRuleJobExecution
+import Mettapedia.OSLF.MeTTaIL.StructuralDescentAdmission
 
 /-!
 # The complete machine's plan as MeTTa data

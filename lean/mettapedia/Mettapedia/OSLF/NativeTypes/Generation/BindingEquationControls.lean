@@ -18,7 +18,7 @@ open Mettapedia.OSLF.MeTTaIL.GeneralExecutionAdmission
 open Mettapedia.OSLF.NativeTypes.Generation
 open Mettapedia.OSLF.NativeTypes.SortProfiles.Laws.BindingControls
 
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨language, [], ⟨[], [], []⟩⟩
 
 def fragment : LanguageFragment :=
   {operational := {includeDerivedEquations := false}}
@@ -39,7 +39,7 @@ theorem whole_original_equation_stream_checks
     (generated vertex).literalBindingLawAdmission? = some true := by
   decide +revert +kernel
 
-def falseSnapshot : Snapshot := ⟨falseLanguage, [], ⟨[], []⟩⟩
+def falseSnapshot : Snapshot := ⟨falseLanguage, [], ⟨[], [], []⟩⟩
 
 def falseChosen := selectedSnapshot falseSnapshot fragment
 

@@ -1676,6 +1676,34 @@ theorem cFireRuleScopedSourceExecFact_atomsWithin_of_live_additions
         matchSourceGuards substitution directive.rule.guards).map Prod.fst)
     directive.rule.tmpl liveWithin additionsWithin
 
+/-- Consume one explicitly selected raw shell using the same rule-scoped
+operation as the work queue. Selection and current authorization belong to
+the caller; unsupported shells are still removed under the consume policy. -/
+def cConsumeRuleScopedRawExecFact (space : List Atom)
+    (raw : RawExecFact) : Option (List Atom) :=
+  match decodeSupportedSourceExec raw with
+  | some directive => some (cFireRuleScopedSourceExecFact space directive)
+  | none => some (morkEraseSupport space raw.atom)
+
+theorem cConsumeRuleScopedRawExecFact_supported
+    (space : List Atom) (raw : RawExecFact) (directive : SourceExecFact)
+    (decoded : decodeSupportedSourceExec raw = some directive) :
+    cConsumeRuleScopedRawExecFact space raw =
+      some (cFireRuleScopedSourceExecFact space directive) := by
+  simp only [cConsumeRuleScopedRawExecFact, decoded]
+
+theorem cConsumeRuleScopedRawExecFact_unsupported
+    (space : List Atom) (raw : RawExecFact)
+    (unsupported : decodeSupportedSourceExec raw = none) :
+    cConsumeRuleScopedRawExecFact space raw =
+      some (morkEraseSupport space raw.atom) := by
+  simp only [cConsumeRuleScopedRawExecFact, unsupported]
+
+theorem cConsumeRuleScopedRawExecFact_isSome (space : List Atom) (raw : RawExecFact) :
+    (cConsumeRuleScopedRawExecFact space raw).isSome = true := by
+  cases decoded : decodeSupportedSourceExec raw <;>
+    simp [cConsumeRuleScopedRawExecFact, decoded]
+
 /-- Least-key work-queue step for the rule-scoped executable semantics. -/
 def cRuleScopedSourceWorkQueueStep (policy : UnsupportedExecPolicy)
     (space : List Atom) : Option (List Atom) :=
@@ -1687,11 +1715,18 @@ def cRuleScopedSourceWorkQueueStep (policy : UnsupportedExecPolicy)
   | .consume =>
       match selectNextScheduled (cRawExecFacts space) with
       | none => none
+      | some raw => cConsumeRuleScopedRawExecFact space raw
+
+/-- The default strategy is still the original least-key consume operation.
+Unfolding the selected operation recovers the preceding queue definition. -/
+theorem cRuleScopedSourceWorkQueueStep_consume (space : List Atom) :
+    cRuleScopedSourceWorkQueueStep .consume space =
+      match selectNextScheduled (cRawExecFacts space) with
+      | none => none
       | some raw =>
           match decodeSupportedSourceExec raw with
-          | some directive =>
-              some (cFireRuleScopedSourceExecFact space directive)
-          | none => some (morkEraseSupport space raw.atom)
+          | some directive => some (cFireRuleScopedSourceExecFact space directive)
+          | none => some (morkEraseSupport space raw.atom) := rfl
 
 /-- Exact-fuel rule-scoped execution. -/
 def cRuleScopedSourceWorkQueueRunN (policy : UnsupportedExecPolicy) :
@@ -1957,6 +1992,10 @@ theorem alphaRenamedSupport_removes :
       [.symbol "kept"] := by
   decide
 
+#print axioms cConsumeRuleScopedRawExecFact_supported
+#print axioms cConsumeRuleScopedRawExecFact_unsupported
+#print axioms cConsumeRuleScopedRawExecFact_isSome
+#print axioms cRuleScopedSourceWorkQueueStep_consume
 #print axioms instantiateRuleTemplateAtom?_outputLocal
 #print axioms instantiateRuleTemplateAtom?_inputVariable
 #print axioms ruleTemplateCovered_of_templateCovered

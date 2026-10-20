@@ -1,9 +1,6 @@
 import Mettapedia.Languages.MeTTa.HE.TypeGrounding.Fragment
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Completeness
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.MatchSolutionTheory
-import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationSelectionConformance
-import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationExactConformance
-import MettaHyperonFull.Proofs.Gradual
 import Mettapedia.Logic.TheoryModel.Consistency
 
 /-!
@@ -29,18 +26,13 @@ On variable-free types:
   every static atom, while a nested `Atom` stays an ordinary symbol;
 * `presentation_iff_top`: HE's finite-presentation matcher succeeds exactly
   on AGT-consistent pairs;
-* `leattaMatchType_iff_top`: so does the executable matcher of the external
-  LeaTTa interpreter.  Its gradual permissiveness theorems
-  (`Metta.matchType_undefined_left` and its siblings) are the instances in
-  which one side is `%Undefined%` or `Atom` (`gradual_permissiveness_is_agt`).
 
 On static types AGT consistency is equality (`agt_static_iff_eq`): the
 conservative-extension property of gradual typing.  Consistency is not
 transitive (`agt_not_transitive`).
 
-The declarative relation `Metta.Consistent` of the external package accepts
-`Atom` at every depth.  HE's runtime, the spec and the executable matcher do
-not (`metta_consistent_nested_atom_not_agt`).
+Runtime matcher comparisons consume these source laws in downstream
+implementation studies. They are not premises of this semantics.
 -/
 
 namespace Mettapedia.Languages.MeTTa.HE.TypeGrounding.Gradual
@@ -53,10 +45,6 @@ open Spec.Type.Presentation.Theory
 open Spec.Type.Presentation.Completeness
 open Spec.Type.Presentation.MatchSolutionTheory
 open Spec.Type.RuntimeRefinement
-open LeaTTaBridge
-open LeaTTaTypePresentationFoldConformance
-open LeaTTaTypePresentationSelectionConformance
-open LeaTTaTypePresentationExactConformance
 open Mettapedia.Logic.TheoryModel (Consistent consistent_pair_iff)
 
 /-! ## Concretization -/
@@ -561,22 +549,6 @@ theorem presentation_iff_top {substitution : TypeSubst} (normal : substitution.N
         ((corePlusR2Consistent_iff_top _ leftGround rightGround).mpr consistent)
     exact ⟨output, derivation⟩
 
-/-- **The external LeaTTa interpreter's executable type matcher accepts
-exactly the AGT-consistent pairs** of variable-free types. -/
-theorem leattaMatchType_iff_top {left right : Atom}
-    (leftGround : TypeSubst.typeVars left = [])
-    (rightGround : TypeSubst.typeVars right = []) :
-    Metta.Minimal.matchType Metta.Bindings.empty
-        (toLeaTTaAtom left) (toLeaTTaAtom right) ≠ none ↔
-      Consistent TopConcretization {left, right} := by
-  have disjoint : VarsDisjoint left right := by
-    intro name member
-    rw [toLeaTTaAtom_vars_eq_typeVars, leftGround] at member
-    simp at member
-  rw [Ne, matchType_eq_none_iff_no_presentation typePresentationSimulationState_empty
-    left right disjoint, ← presentation_iff_top TypeSubst.normal_empty leftGround rightGround]
-  simp
-
 /-! ## Consequences -/
 
 /-- On static types AGT consistency is equality: gradual typing is a
@@ -597,33 +569,19 @@ theorem undefined_topConsistent {type : Atom} (ground : TypeSubst.typeVars type 
   obtain ⟨static, concrete⟩ := Concretizes.exists ground
   exact (consistent_pair_iff _).mpr ⟨static, Or.inr (.unknown concrete.static), Or.inr concrete⟩
 
-/-- The gradual permissiveness that the external LeaTTa package proves
-(`Metta.matchType_undefined_left`, `Metta.matchType_atom_left` and their
-right-hand siblings) is the instance of the AGT reading in which one side is
-`%Undefined%` or a top-level `Atom`. -/
-theorem gradual_permissiveness_is_agt {type : Atom} (ground : TypeSubst.typeVars type = []) :
+/-- Literal unknowns and a top-level `Atom` are consistent with every
+variable-free type under the declared concretization. -/
+theorem gradual_wildcards_consistent {type : Atom}
+    (ground : TypeSubst.typeVars type = []) :
     Consistent TopConcretization {Atom.undefinedType, type} ∧
       Consistent TopConcretization {type, Atom.undefinedType} ∧
       Consistent TopConcretization {Atom.atomType, type} ∧
-      Consistent TopConcretization {type, Atom.atomType} ∧
-      Metta.Minimal.matchType Metta.Bindings.empty
-          (toLeaTTaAtom Atom.undefinedType) (toLeaTTaAtom type) = some Metta.Bindings.empty ∧
-      Metta.Minimal.matchType Metta.Bindings.empty
-          (toLeaTTaAtom type) (toLeaTTaAtom Atom.undefinedType) = some Metta.Bindings.empty ∧
-      Metta.Minimal.matchType Metta.Bindings.empty
-          (toLeaTTaAtom Atom.atomType) (toLeaTTaAtom type) = some Metta.Bindings.empty ∧
-      Metta.Minimal.matchType Metta.Bindings.empty
-          (toLeaTTaAtom type) (toLeaTTaAtom Atom.atomType) = some Metta.Bindings.empty := by
+      Consistent TopConcretization {type, Atom.atomType} := by
   obtain ⟨static, concrete⟩ := Concretizes.exists ground
-  refine ⟨undefined_topConsistent ground,
+  exact ⟨undefined_topConsistent ground,
     (consistent_pair_iff _).mpr ⟨static, Or.inr concrete, Or.inr (.unknown concrete.static)⟩,
     (consistent_pair_iff _).mpr ⟨static, Or.inl ⟨rfl, concrete.static⟩, Or.inr concrete⟩,
-    (consistent_pair_iff _).mpr ⟨static, Or.inr concrete, Or.inl ⟨rfl, concrete.static⟩⟩,
-    ?_, ?_, ?_, ?_⟩
-  · exact Metta.matchType_undefined_left _ _
-  · exact Metta.matchType_undefined_right _ _
-  · exact Metta.matchType_atom_left _ _
-  · exact Metta.matchType_atom_right _ _
+    (consistent_pair_iff _).mpr ⟨static, Or.inr concrete, Or.inl ⟨rfl, concrete.static⟩⟩⟩
 
 private def number : Atom := .symbol "Number"
 private def string : Atom := .symbol "String"
@@ -667,53 +625,39 @@ theorem static_consistency_iff_encoded_equality {Target : Type}
 
 private def listOf (element : Atom) : Atom := .expression [.symbol "List", element]
 
-/-- A nested `Atom` is an ordinary symbol for AGT, so `(List Atom)` and
-`(List Number)` are inconsistent, and the executable matcher rejects them;
-the declarative `Metta.Consistent` of the external package nevertheless
-relates them, because it treats `Atom` as a wildcard at every depth. -/
-theorem metta_consistent_nested_atom_not_agt :
-    Metta.Consistent (toLeaTTaAtom (listOf Atom.atomType)) (toLeaTTaAtom (listOf number)) ∧
-      ¬Consistent TopConcretization {listOf Atom.atomType, listOf number} ∧
-      Metta.Minimal.matchType Metta.Bindings.empty
-        (toLeaTTaAtom (listOf Atom.atomType)) (toLeaTTaAtom (listOf number)) = none := by
-  have notConsistent : ¬Consistent TopConcretization {listOf Atom.atomType, listOf number} := by
-    have leftStatic : StaticAtom (listOf Atom.atomType) :=
-      StaticAtom.expression_iff.mpr (by
-        intro atom member
-        simp at member
-        rcases member with rfl | rfl <;> exact .symbol (by decide))
-    have rightStatic : StaticAtom (listOf number) :=
-      StaticAtom.expression_iff.mpr (by
-        intro atom member
-        simp [number] at member
-        rcases member with rfl | rfl <;> exact .symbol (by decide))
-    rw [consistent_pair_iff]
-    rintro ⟨static, leftTop, rightTop⟩
-    rcases leftTop with ⟨equal, _⟩ | leftConcrete
-    · simp [listOf, Atom.atomType] at equal
-    rcases rightTop with ⟨equal, _⟩ | rightConcrete
-    · simp [listOf, number, Atom.atomType] at equal
-    have leftEq := leftConcrete.eq_of_static leftStatic
-    have rightEq := rightConcrete.eq_of_static rightStatic
-    rw [leftEq] at rightEq
-    simp [listOf, number, Atom.atomType] at rightEq
-  refine ⟨?_, notConsistent, ?_⟩
-  · simp only [listOf, toLeaTTaAtom, toLeaTTaAtoms, Atom.atomType, number]
-    exact .expr (.cons (.same _) (.cons (.atomL _) .nil))
-  · have ground : ∀ element : Atom, TypeSubst.typeVars element = [] →
-        TypeSubst.typeVars (listOf element) = [] := by
-      intro element elementGround
-      simp [listOf, TypeSubst.typeVars, TypeSubst.typeVarsList, elementGround]
-    by_contra accepted
-    exact notConsistent ((leattaMatchType_iff_top (ground _ rfl) (ground _ rfl)).mp accepted)
+/-- A nested `Atom` is an ordinary symbol, so its list type is
+inconsistent with the list type of `Number`. -/
+theorem nested_atom_not_topConsistent :
+    ¬Consistent TopConcretization
+      {.expression [.symbol "List", Atom.atomType],
+       .expression [.symbol "List", .symbol "Number"]} := by
+  have leftStatic : StaticAtom (listOf Atom.atomType) :=
+    StaticAtom.expression_iff.mpr (by
+      intro atom member
+      simp at member
+      rcases member with rfl | rfl <;> exact .symbol (by decide))
+  have rightStatic : StaticAtom (listOf number) :=
+    StaticAtom.expression_iff.mpr (by
+      intro atom member
+      simp [number] at member
+      rcases member with rfl | rfl <;> exact .symbol (by decide))
+  rw [consistent_pair_iff]
+  rintro ⟨static, leftTop, rightTop⟩
+  rcases leftTop with ⟨equal, _⟩ | leftConcrete
+  · simp [Atom.atomType] at equal
+  rcases rightTop with ⟨equal, _⟩ | rightConcrete
+  · simp [Atom.atomType] at equal
+  have leftEq := leftConcrete.eq_of_static leftStatic
+  have rightEq := rightConcrete.eq_of_static rightStatic
+  rw [leftEq] at rightEq
+  simp [listOf, number, Atom.atomType] at rightEq
 
 #print axioms reducedTypeConsistent_iff_agt
 #print axioms corePlusR2Consistent_iff_top
 #print axioms presentation_iff_top
-#print axioms leattaMatchType_iff_top
-#print axioms gradual_permissiveness_is_agt
+#print axioms gradual_wildcards_consistent
+#print axioms nested_atom_not_topConsistent
 #print axioms agt_static_iff_eq
 #print axioms agt_not_transitive
-#print axioms metta_consistent_nested_atom_not_agt
 
 end Mettapedia.Languages.MeTTa.HE.TypeGrounding.Gradual

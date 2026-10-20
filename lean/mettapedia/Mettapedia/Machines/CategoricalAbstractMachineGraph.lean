@@ -1,6 +1,7 @@
 import Mettapedia.Machines.CategoricalAbstractMachine
 import Mettapedia.Machines.RationalTermGraph
 import Mettapedia.Machines.BranchLocalNeed.CacheLaws
+import Mettapedia.GSLT.Distinction.SpanTransport
 
 /-!
 # The categorical abstract machine on a value graph
@@ -3035,6 +3036,68 @@ theorem abstraction_stuck : MatchesStuck treeTicks storeTicks (fun tree state =>
             cases advanced
       refine ⟨1, le_rfl, state, ?_, related⟩
       simp only [Machine.run, storeTicks_step, storeObserved, storeAdvanced, Option.map_none]
+
+open Mettapedia.GSLT.Distinction.ProductiveBlocks in
+/-- The actual graph/tree refinement is a client of relational block
+composition for every declared public readout. Its stuck law is supplied by
+the graph/tree comparison, rather than assumed away by the adapter. -/
+theorem relational_refinement {PublicEvent PublicVerdict PublicRequest : Type}
+    (readout : ExecutionReadout Unit Unit Empty PublicEvent PublicVerdict PublicRequest) :
+    DerivationSimulation (fun state action => storeTicks.step state = action)
+      (fun state action => treeTicks.step state = action) Related readout readout :=
+  refinement.toDerivationSimulation refinement_stuck readout
+
+open Mettapedia.GSLT.Distinction.ProductiveBlocks in
+theorem relational_abstraction {PublicEvent PublicVerdict PublicRequest : Type}
+    (readout : ExecutionReadout Unit Unit Empty PublicEvent PublicVerdict PublicRequest) :
+    DerivationSimulation (fun state action => treeTicks.step state = action)
+      (fun state action => storeTicks.step state = action) (fun tree state => Related state tree) readout readout :=
+  abstraction.toDerivationSimulation abstraction_stuck readout
+
+open Mettapedia.GSLT.Distinction.ProductiveBlocks ProductiveCoreAdapters in
+/-- Scheduling the graph realization preserves the tree machine's public
+occurrences and related retained endpoint, at independently priced allowances.
+This uses the graph/tree representation relation, including the caller stack;
+it does not identify heap words with tree syntax. -/
+theorem scheduled_refinement {PublicEvent PublicVerdict PublicRequest : Type}
+    (readout : ExecutionReadout Unit Unit Empty PublicEvent PublicVerdict PublicRequest)
+    (graphPrice : State → Nat) (treePrice : CategoricalAbstractMachine.State → Nat)
+    (fuel : Nat) {state : State} {tree : CategoricalAbstractMachine.State} (related : Related state tree) :
+    ∃ count,
+      let graphRun := Cursor.advance (EventCursor.provider storeTicks) EventCursor.client
+        (EventCursor.charge storeTicks graphPrice) fuel (EventCursor.packet storeTicks ([], .exhausted state))
+      let treeRun := Cursor.advance (EventCursor.provider treeTicks) EventCursor.client
+        (EventCursor.charge treeTicks treePrice) count (EventCursor.packet treeTicks ([], .exhausted tree))
+      graphRun.1 = storeTicks.spent graphPrice fuel state ∧
+      treeRun.1 = treeTicks.spent treePrice count tree ∧
+      (EventCursor.read storeTicks graphRun.2).1.flatMap readout.event =
+        (EventCursor.read treeTicks treeRun.2).1.flatMap readout.event ∧
+      OutcomeRel Related ((EventCursor.read storeTicks graphRun.2).2.relabel readout.verdict readout.request)
+        ((EventCursor.read treeTicks treeRun.2).2.relabel readout.verdict readout.request) :=
+  EventCursor.advance_machines storeTicks treeTicks (relational_refinement readout)
+    graphPrice treePrice fuel related
+
+open Mettapedia.GSLT.Distinction.ProductiveBlocks ProductiveCoreAdapters in
+/-- The converse scheduled comparison is constructed from the tree-to-graph
+simulation. Forward scheduled transport alone would not give reflection. -/
+theorem scheduled_abstraction {PublicEvent PublicVerdict PublicRequest : Type}
+    (readout : ExecutionReadout Unit Unit Empty PublicEvent PublicVerdict PublicRequest)
+    (treePrice : CategoricalAbstractMachine.State → Nat) (graphPrice : State → Nat)
+    (fuel : Nat) {tree : CategoricalAbstractMachine.State} {state : State} (related : Related state tree) :
+    ∃ count,
+      let treeRun := Cursor.advance (EventCursor.provider treeTicks) EventCursor.client
+        (EventCursor.charge treeTicks treePrice) fuel (EventCursor.packet treeTicks ([], .exhausted tree))
+      let graphRun := Cursor.advance (EventCursor.provider storeTicks) EventCursor.client
+        (EventCursor.charge storeTicks graphPrice) count (EventCursor.packet storeTicks ([], .exhausted state))
+      treeRun.1 = treeTicks.spent treePrice fuel tree ∧
+      graphRun.1 = storeTicks.spent graphPrice count state ∧
+      (EventCursor.read treeTicks treeRun.2).1.flatMap readout.event =
+        (EventCursor.read storeTicks graphRun.2).1.flatMap readout.event ∧
+      OutcomeRel (fun tree state => Related state tree)
+        ((EventCursor.read treeTicks treeRun.2).2.relabel readout.verdict readout.request)
+        ((EventCursor.read storeTicks graphRun.2).2.relabel readout.verdict readout.request) :=
+  EventCursor.advance_machines treeTicks storeTicks (relational_abstraction readout)
+    treePrice graphPrice fuel related
 
 /-- An active-rule tree derivation runs on the strict tree profile, with arbitrary
 caller code and stack retained. -/

@@ -1,5 +1,7 @@
+import Mettapedia.GSLT.LanguageDef.FirstOrderCalculus
 import Mettapedia.GSLT.LanguageDef.CalculusLanguageDef
 import Mettapedia.GSLT.LanguageDef.ModuleFormat.Portable
+import Mettapedia.GSLT.LanguageDef.SemanticSettings
 
 /-!
 # The PLN evidence calculus as a coGSLT module
@@ -8,22 +10,26 @@ This module presents the judgment and rule structure of the PLN spine as a
 calculus language definition, renders it as portable module text and reads it
 back through the verified module reader.
 
-The calculus has three judgment forms:
+The calculus distinguishes the semantic settings of its judgments:
 
-- `Evidence q e`: the query `q` has the body of evidence `e`;
-- `Holds c`: the observation contract `c` holds;
-- `Reads q v`: the readout `v` is licensed for `q`.
+- `ObservationCounts` and `ObservationLowerBound` retain identified observations;
+- `SampleCounts` records paired samples; `ReportLikelihoods` records likelihoods;
+- `CountReadout` and `PopulationReadout` retain their distinct value meanings;
+- each setting has its own contract judgment.
+
+Exact evidence and under-counts are different judgments because the readouts
+need exact counts: an under-count can have any strength.
 
 Each rule names the spine theorem that justifies it:
 
 | Rule | Contract premise | Lean theorem |
 |---|---|---|
 | `revise` | `disjoint e₁ e₂` | `EvidenceContracts.additive_revision_exact_iff_disjoint` |
-| `revise-unknown-overlap` | none; gives the lower end | `EvidenceContracts.unknown_overlap_bounds` |
+| `revise-unknown-overlap` | none; concludes `ObservationLowerBound` | `EvidenceContracts.unknown_overlap_bounds` |
 | `negate` | none | `EvidenceContracts.against_add` (negation is presence) |
-| `fuse` | `reports e₁ e₂` (conditionally independent reports) | `EvidenceContracts.strength_fuse_uniform` |
+| `fuse` | `reports q e₁ e₂` (reports on `q`, independent given `q`) | `EvidenceContracts.strength_fuse_uniform` |
 | `conjoin-independent` | `independent a b` | `EvidenceSpaces.strength_mul` |
-| `conjoin-one-world` | `oneWorld a b` | `EvidenceContracts.conjunction_counts_iff` |
+| `conjoin-one-world` | `oneWorld e₁ e₂` (same observations) | `EvidenceContracts.conjunction_counts_iff` |
 | `deduce` | `screens a b c` | `PLNDerivation.pln_deduction_from_total_probability` |
 | `read-strength` | none | `BinaryEvidence.toStrength` |
 | `read-interval` | none | `WalleyBinaryIDM.credal_envelope_matches_Walley_ITV_bounds` |
@@ -36,11 +42,12 @@ What the module format carries, and what it does not:
 - It does not check a contract.  Rule side conditions in the format are
   syntactic (substitution, binder removal); disjointness of ledgers,
   conditional independence and screening off are properties of the observed
-  worlds.  A `Holds` judgment therefore enters a derivation as an assumption
+  worlds.  A setting-specific contract judgment therefore enters a derivation as an assumption
   supplied from outside the calculus.  What a contract means is fixed by a
   semantics of the judgments: `EvidenceCalculusSemantics` interprets the
   revision fragment over identified observations and proves the `revise`
-  schema of this module sound with its contract and unsound without it.
+  schema of this module sound with its contract and unsound without it, and
+  gives every other rule its semantics in the same way.
 - It does not compute counts or readouts.  Terms are first-order syntax; the
   value of `strength e` or `deduction s₁ s₂ s₃ s₄` is computed by the Lean
   definitions the table names.
@@ -57,102 +64,108 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.GSLT.LanguageDef
 open Mettapedia.GSLT.LanguageDef.CalculusLanguageDef
 open Mettapedia.GSLT.LanguageDef.InferenceChecker
+open Mettapedia.GSLT.LanguageDef.FirstOrderCalculus
 
-/-- A grammar rule with simple sorted parameters and no surface syntax. -/
-def term (label category : String) (params : List (String × String)) :
-    GrammarRule :=
-  { label, category,
-    params := params.map fun (name, sort) => TermParam.simple name (.base sort),
-    syntaxPattern := [] }
-
-/-- A metavariable pattern. -/
-def fv (name : String) : Pattern := .fvar name
-
-/-- A constructor or judgment application pattern. -/
-def app (head : String) (args : List Pattern) : Pattern := .apply head args
-
-/-- Queries, bodies of evidence, contracts and readout values, as syntax. -/
+/-- Counts, report likelihoods and their readouts have distinct sorts.
+The same pair of numbers does not identify their semantic interpretation. -/
 def evidenceTerms : List GrammarRule :=
   [ term "and" "Query" [("left", "Query"), ("right", "Query")],
-    term "link" "Query" [("source", "Query"), ("target", "Query")],
+    term "probability" "PopulationRequest" [("query", "Query")],
+    term "conditional" "PopulationRequest" [("source", "Query"), ("target", "Query")],
     term "not" "Query" [("query", "Query")],
-    term "revise" "Evidence" [("first", "Evidence"), ("second", "Evidence")],
-    term "lowerMerge" "Evidence" [("first", "Evidence"), ("second", "Evidence")],
-    term "swap" "Evidence" [("evidence", "Evidence")],
-    term "fuse" "Evidence" [("first", "Evidence"), ("second", "Evidence")],
-    term "pair" "Evidence" [("first", "Evidence"), ("second", "Evidence")],
-    term "disjoint" "Contract" [("first", "Evidence"), ("second", "Evidence")],
-    term "reports" "Contract" [("first", "Evidence"), ("second", "Evidence")],
-    term "independent" "Contract" [("left", "Query"), ("right", "Query")],
-    term "oneWorld" "Contract" [("left", "Query"), ("right", "Query")],
-    term "screens" "Contract" [("source", "Query"), ("middle", "Query"),
+    term "revise" "ObservationCounts" [("first", "ObservationCounts"), ("second", "ObservationCounts")],
+    term "lowerMerge" "ObservationCounts" [("first", "ObservationCounts"), ("second", "ObservationCounts")],
+    term "swap" "ObservationCounts" [("counts", "ObservationCounts")],
+    term "fuse" "ReportLikelihoods" [("first", "ReportLikelihoods"), ("second", "ReportLikelihoods")],
+    term "pair" "SampleCounts" [("first", "SampleCounts"), ("second", "SampleCounts")],
+    term "disjoint" "LedgerContract" [("first", "ObservationCounts"), ("second", "ObservationCounts")],
+    term "reports" "ReportContract" [("hypothesis", "Query"), ("first", "ReportLikelihoods"),
+      ("second", "ReportLikelihoods")],
+    term "independent" "SampleContract" [("left", "Query"), ("right", "Query")],
+    term "oneWorld" "LedgerContract" [("first", "ObservationCounts"), ("second", "ObservationCounts")],
+    term "screens" "PopulationContract" [("source", "Query"), ("middle", "Query"),
       ("target", "Query")],
-    term "strength" "Value" [("evidence", "Evidence")],
-    term "interval" "Value" [("evidence", "Evidence")],
-    term "frechet" "Value" [("first", "Evidence"), ("second", "Evidence")],
-    term "deduction" "Value" [("sourceMiddle", "Value"), ("middleTarget", "Value"),
-      ("middle", "Value"), ("target", "Value")] ]
+    term "strength" "CountValue" [("counts", "ObservationCounts")],
+    term "interval" "CountValue" [("counts", "ObservationCounts")],
+    term "frechet" "CountValue" [("first", "ObservationCounts"), ("second", "ObservationCounts")],
+    term "deduction" "PopulationValue" [("sourceMiddle", "PopulationValue"),
+      ("middleTarget", "PopulationValue"), ("middle", "PopulationValue"),
+      ("target", "PopulationValue")] ]
 
-/-- The evidence judgment `Evidence q e`. -/
-def ev (q e : Pattern) : Pattern := app "Evidence" [q, e]
-/-- The contract judgment `Holds c`. -/
-def holds (c : Pattern) : Pattern := app "Holds" [c]
-/-- The readout judgment `Reads q v`. -/
-def reads (q v : Pattern) : Pattern := app "Reads" [q, v]
-
-/-- A rule schema whose metavariables all live at depth zero. -/
-def rule (id : String) (vars : List String) (premises : List Pattern)
-    (conclusion : Pattern) : RuleSchema :=
-  { id := ⟨id⟩, metavariables := vars.map (·, 0), premises, conclusion }
+/-- Exact counts over retained observation identities. -/
+def observationCounts (q e : Pattern) : Pattern := app "ObservationCounts" [q, e]
+/-- A coordinate-wise lower bound on observation counts. -/
+def observationLowerBound (q e : Pattern) : Pattern := app "ObservationLowerBound" [q, e]
+/-- Counts of separately drawn samples and their paired products. -/
+def sampleCounts (q e : Pattern) : Pattern := app "SampleCounts" [q, e]
+/-- Likelihoods of a report under a hypothesis and its negation. -/
+def reportLikelihoods (q e : Pattern) : Pattern := app "ReportLikelihoods" [q, e]
+/-- Disjointness or common-population contracts on identified observations. -/
+def ledgerHolds (c : Pattern) : Pattern := app "LedgerHolds" [c]
+/-- The separability contract of paired sample construction. -/
+def sampleHolds (c : Pattern) : Pattern := app "SampleHolds" [c]
+/-- Conditional-independence contracts on reports. -/
+def reportHolds (c : Pattern) : Pattern := app "ReportHolds" [c]
+/-- Screening contracts on one population. -/
+def populationHolds (c : Pattern) : Pattern := app "PopulationHolds" [c]
+/-- A readout carrying the observation scope on which it is based. -/
+def countReadout (q v : Pattern) : Pattern := app "CountReadout" [q, v]
+/-- A marginal or conditional request in one population, with its readout. -/
+def populationReadout (request v : Pattern) : Pattern := app "PopulationReadout" [request, v]
 
 /-- The rules of the spine, each with its observation contract as a premise. -/
 def evidenceRules : List RuleSchema :=
   [ rule "revise" ["q", "e1", "e2"]
-      [ev (fv "q") (fv "e1"), ev (fv "q") (fv "e2"),
-        holds (app "disjoint" [fv "e1", fv "e2"])]
-      (ev (fv "q") (app "revise" [fv "e1", fv "e2"])),
+      [observationCounts (fv "q") (fv "e1"), observationCounts (fv "q") (fv "e2"),
+        ledgerHolds (app "disjoint" [fv "e1", fv "e2"])]
+      (observationCounts (fv "q") (app "revise" [fv "e1", fv "e2"])),
     rule "revise-unknown-overlap" ["q", "e1", "e2"]
-      [ev (fv "q") (fv "e1"), ev (fv "q") (fv "e2")]
-      (ev (fv "q") (app "lowerMerge" [fv "e1", fv "e2"])),
+      [observationCounts (fv "q") (fv "e1"), observationCounts (fv "q") (fv "e2")]
+      (observationLowerBound (fv "q") (app "lowerMerge" [fv "e1", fv "e2"])),
     rule "negate" ["q", "e"]
-      [ev (fv "q") (fv "e")]
-      (ev (app "not" [fv "q"]) (app "swap" [fv "e"])),
+      [observationCounts (fv "q") (fv "e")]
+      (observationCounts (app "not" [fv "q"]) (app "swap" [fv "e"])),
     rule "fuse" ["q", "e1", "e2"]
-      [ev (fv "q") (fv "e1"), ev (fv "q") (fv "e2"),
-        holds (app "reports" [fv "e1", fv "e2"])]
-      (ev (fv "q") (app "fuse" [fv "e1", fv "e2"])),
+      [reportLikelihoods (fv "q") (fv "e1"), reportLikelihoods (fv "q") (fv "e2"),
+        reportHolds (app "reports" [fv "q", fv "e1", fv "e2"])]
+      (reportLikelihoods (fv "q") (app "fuse" [fv "e1", fv "e2"])),
     rule "conjoin-independent" ["a", "b", "e1", "e2"]
-      [ev (fv "a") (fv "e1"), ev (fv "b") (fv "e2"),
-        holds (app "independent" [fv "a", fv "b"])]
-      (ev (app "and" [fv "a", fv "b"]) (app "pair" [fv "e1", fv "e2"])),
+      [sampleCounts (fv "a") (fv "e1"), sampleCounts (fv "b") (fv "e2"),
+        sampleHolds (app "independent" [fv "a", fv "b"])]
+      (sampleCounts (app "and" [fv "a", fv "b"]) (app "pair" [fv "e1", fv "e2"])),
     rule "conjoin-one-world" ["a", "b", "e1", "e2"]
-      [ev (fv "a") (fv "e1"), ev (fv "b") (fv "e2"),
-        holds (app "oneWorld" [fv "a", fv "b"])]
-      (reads (app "and" [fv "a", fv "b"]) (app "frechet" [fv "e1", fv "e2"])),
+      [observationCounts (fv "a") (fv "e1"), observationCounts (fv "b") (fv "e2"),
+        ledgerHolds (app "oneWorld" [fv "e1", fv "e2"])]
+      (countReadout (app "and" [fv "a", fv "b"]) (app "frechet" [fv "e1", fv "e2"])),
     rule "deduce" ["a", "b", "c", "s1", "s2", "s3", "s4"]
-      [reads (app "link" [fv "a", fv "b"]) (fv "s1"),
-        reads (app "link" [fv "b", fv "c"]) (fv "s2"),
-        reads (fv "b") (fv "s3"), reads (fv "c") (fv "s4"),
-        holds (app "screens" [fv "a", fv "b", fv "c"])]
-      (reads (app "link" [fv "a", fv "c"])
+      [populationReadout (app "conditional" [fv "a", fv "b"]) (fv "s1"),
+        populationReadout (app "conditional" [fv "b", fv "c"]) (fv "s2"),
+        populationReadout (app "probability" [fv "b"]) (fv "s3"), populationReadout (app "probability" [fv "c"]) (fv "s4"),
+        populationHolds (app "screens" [fv "a", fv "b", fv "c"])]
+      (populationReadout (app "conditional" [fv "a", fv "c"])
         (app "deduction" [fv "s1", fv "s2", fv "s3", fv "s4"])),
     rule "read-strength" ["q", "e"]
-      [ev (fv "q") (fv "e")]
-      (reads (fv "q") (app "strength" [fv "e"])),
+      [observationCounts (fv "q") (fv "e")]
+      (countReadout (fv "q") (app "strength" [fv "e"])),
     rule "read-interval" ["q", "e"]
-      [ev (fv "q") (fv "e")]
-      (reads (fv "q") (app "interval" [fv "e"])) ]
+      [observationCounts (fv "q") (fv "e")]
+      (countReadout (fv "q") (app "interval" [fv "e"])) ]
 
 /-- The PLN evidence calculus: one flat calculus language definition. -/
 def evidenceCalculus : CalculusLanguageDef where
   name := "pln-evidence-calculus"
-  types := [TypeDecl.plain "Query", TypeDecl.plain "Evidence",
-    TypeDecl.plain "Contract", TypeDecl.plain "Value"]
+  types := ["Query", "ObservationCounts", "SampleCounts", "ReportLikelihoods",
+    "LedgerContract", "SampleContract", "ReportContract", "PopulationContract",
+    "CountValue", "PopulationValue", "PopulationRequest"].map TypeDecl.plain
   terms := evidenceTerms
   equations := []
   rewrites := []
-  judgments := [{ head := "Evidence", arity := 2 }, { head := "Holds", arity := 1 },
-    { head := "Reads", arity := 2 }]
+  judgments := [{ head := "ObservationCounts", arity := 2 },
+    { head := "ObservationLowerBound", arity := 2 }, { head := "SampleCounts", arity := 2 },
+    { head := "ReportLikelihoods", arity := 2 }, { head := "LedgerHolds", arity := 1 },
+    { head := "SampleHolds", arity := 1 }, { head := "ReportHolds", arity := 1 },
+    { head := "PopulationHolds", arity := 1 }, { head := "CountReadout", arity := 2 },
+    { head := "PopulationReadout", arity := 2 }]
   rules := evidenceRules
 
 theorem evidenceCalculus_admitted : evidenceCalculus.isAdmitted = true := by
@@ -163,7 +176,8 @@ theorem evidenceCalculus_admitted : evidenceCalculus.isAdmitted = true := by
   unfold isAdmitted CalculusLanguageDef.isValid
     CalculusLanguageDef.hasValidLocalRules
   rw [validate]
-  simp [evidenceCalculus, evidenceTerms, evidenceRules, term, rule, ev, holds, reads,
+  simp [evidenceCalculus, evidenceTerms, evidenceRules, term, rule, observationCounts, observationLowerBound, sampleCounts, reportLikelihoods,
+    ledgerHolds, sampleHolds, reportHolds, populationHolds, countReadout, populationReadout,
     fv, app,
     CalculusLanguageDef.ruleIds, CalculusLanguageDef.judgmentSignatureValid,
     CalculusLanguageDef.judgmentHeads,
@@ -196,21 +210,22 @@ theorem evidenceCalculusModule_read :
   ModuleFormat.Portable.readValidatedCalculus_renderCalculus _
 
 /-- Whether a rule premise is an evidence judgment. -/
-def isEvidencePremise : Pattern → Bool
-  | .apply "Evidence" _ => true
+def isSummaryPremise : Pattern → Bool
+  | .apply "ObservationCounts" _ | .apply "SampleCounts" _ | .apply "ReportLikelihoods" _ => true
   | _ => false
 
 /-- Whether a rule premise is a contract judgment. -/
 def isContractPremise : Pattern → Bool
-  | .apply "Holds" _ => true
+  | .apply "LedgerHolds" _ | .apply "SampleHolds" _ | .apply "ReportHolds" _ |
+      .apply "PopulationHolds" _ => true
   | _ => false
 
 /-- Contract discipline on the module data: every rule that combines two bodies
 of evidence has a contract premise, except the unknown-overlap revision, whose
-conclusion is the conservative lower end and needs none. -/
+conclusion is an under-count and needs none. -/
 theorem rules_with_two_evidence_premises_have_contracts :
     ∀ r ∈ evidenceCalculus.rules,
-      r.premises.countP isEvidencePremise = 2 → r.id.value ≠ "revise-unknown-overlap" →
+      r.premises.countP isSummaryPremise = 2 → r.id.value ≠ "revise-unknown-overlap" →
         r.premises.any isContractPremise = true := by
   decide
 
@@ -218,10 +233,38 @@ theorem rules_with_two_evidence_premises_have_contracts :
 breaks it. -/
 theorem revise_without_contract_violates :
     ¬ ∀ r ∈ (rule "revise" ["q", "e1", "e2"]
-        [ev (fv "q") (fv "e1"), ev (fv "q") (fv "e2")]
-        (ev (fv "q") (app "revise" [fv "e1", fv "e2"])) :: evidenceRules.tail),
-      r.premises.countP isEvidencePremise = 2 → r.id.value ≠ "revise-unknown-overlap" →
+        [observationCounts (fv "q") (fv "e1"), observationCounts (fv "q") (fv "e2")]
+        (observationCounts (fv "q") (app "revise" [fv "e1", fv "e2"])) :: evidenceRules.tail),
+      r.premises.countP isSummaryPremise = 2 → r.id.value ≠ "revise-unknown-overlap" →
         r.premises.any isContractPremise = true := by
   decide
+
+/-- The semantic settings deliberately distinguish the two count populations
+as well as likelihood and readout meanings. -/
+inductive SemanticSetting where
+  | ledger | samples | reports | population
+  deriving DecidableEq, Repr
+
+def settingOf : Pattern → Option SemanticSetting
+  | .apply "ObservationCounts" _ | .apply "ObservationLowerBound" _ |
+      .apply "LedgerHolds" _ | .apply "CountReadout" _ => some .ledger
+  | .apply "SampleCounts" _ | .apply "SampleHolds" _ => some .samples
+  | .apply "ReportLikelihoods" _ | .apply "ReportHolds" _ => some .reports
+  | .apply "PopulationReadout" _ | .apply "PopulationHolds" _ => some .population
+  | _ => none
+
+/-- Every actual schema in the portable module remains within its declared
+interpretation. Cross-setting conversions require their own bridge rules. -/
+theorem evidenceRules_homogeneous :
+    ∀ schema ∈ evidenceCalculus.rules,
+      SemanticSettings.homogeneous? settingOf schema = true := by decide
+
+/-- A report fusion fed observation counts violates the setting discipline,
+even though both summaries happen to have two coordinates. -/
+theorem count_likelihood_mix_not_homogeneous :
+    SemanticSettings.homogeneous? settingOf
+      (rule "mixed-fusion" ["q", "e1", "e2"]
+        [observationCounts (fv "q") (fv "e1"), observationCounts (fv "q") (fv "e2")]
+        (reportLikelihoods (fv "q") (app "fuse" [fv "e1", fv "e2"]))) = false := by decide
 
 end Mettapedia.PLN.Bridges.GSLT.EvidenceCalculusModule

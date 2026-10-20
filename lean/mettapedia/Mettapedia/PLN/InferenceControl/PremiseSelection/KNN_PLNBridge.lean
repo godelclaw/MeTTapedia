@@ -12,7 +12,7 @@ positive-evidence total equal to the k-NN relevance score (ENNReal version).
 namespace Mettapedia.PLN.InferenceControl.PremiseSelection
 
 open scoped Classical ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## ENNReal k-NN (nonnegative scores) -/
 

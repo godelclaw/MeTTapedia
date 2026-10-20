@@ -41,7 +41,7 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.Eval
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst)
 open SpaceSemantics (Program Cases)
-open Effects (State Fault)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State Fault)
 open DeclarativeSpec (Transition Runs controlForm)
 
 /-- A source transition is chosen from syntax and the existing program, never
@@ -309,12 +309,12 @@ theorem step_transition {program : Program} {source target : Configuration}
         · cases computed
           apply Transition.call_enter rfl _ (by assumption)
           simp only [controlForm]
-          split <;> simp_all
+          split <;> (simp only [Atom.expression.injEq, List.cons.injEq, Atom.symbol.injEq] at * <;> aesop)
         · rename_i notCallable
           cases computed
           apply Transition.data_enter rfl _ (Bool.eq_false_iff.mpr notCallable)
           simp only [controlForm]
-          split <;> simp_all
+          split <;> (simp only [Atom.expression.injEq, List.cons.injEq, Atom.symbol.injEq] at * <;> aesop)
       · cases computed
         apply Transition.expression_enter rfl
         aesop
@@ -841,7 +841,7 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.Eval
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi
 open SpaceSemantics (Program)
-open Effects (State Fault)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State Fault)
 open Eval
 open DeclarativeSpec (Transition Runs controlForm)
 
@@ -1773,6 +1773,24 @@ theorem data_arguments_values_return (program : Program) (bindings : MORK.Subst)
       (finished state [.expression values] [] []) :=
   .step (step_transition rfl) (.refl _)
 
+theorem data_call_answers (program : Program) (bindings : MORK.Subst)
+    (before after : State) (head : String) (arguments : List Atom) (answers : List Atom)
+    (inert : (ioHead head || StdLib.known head ||
+      program.equations.any (·.head == head)) = false)
+    (computed : (theory program).MultiStep
+      { state := before, control := .arguments bindings .data (.symbol head :: arguments) [] 0 }
+      (finished after answers [] []))
+    (ordinary : head ∉ ["let", "let*", "case", "if", "collapse", "superpose", "empty", "quote"]) :
+    Returns program bindings before (.expression (.symbol head :: arguments)) after answers := by
+  refine .step ?_ computed
+  apply step_transition
+
+  simp at ordinary
+  rcases ordinary with ⟨notLet, notLetStar, notCase, notIf, notCollapse⟩
+  simp only [step]
+  split <;> simp_all
+
+
 theorem data_call_returns (program : Program) (bindings : MORK.Subst)
     (before after : State) (head : String) (arguments : List Atom) (answer : Atom)
     (inert : (ioHead head || StdLib.known head ||
@@ -1781,14 +1799,8 @@ theorem data_call_returns (program : Program) (bindings : MORK.Subst)
       { state := before, control := .arguments bindings .data (.symbol head :: arguments) [] 0 }
       (finished after [answer] [] []))
     (ordinary : head ∉ ["let", "let*", "case", "if", "collapse", "superpose", "empty", "quote"]) :
-    PureReturns program bindings before (.expression (.symbol head :: arguments)) after answer := by
-  refine .step ?_ computed
-  apply step_transition
-
-  simp at ordinary
-  rcases ordinary with ⟨notLet, notLetStar, notCase, notIf, notCollapse⟩
-  simp only [step]
-  split <;> simp_all
+    PureReturns program bindings before (.expression (.symbol head :: arguments)) after answer :=
+  data_call_answers program bindings before after head arguments [answer] inert computed ordinary
 
 theorem constructor_variables_return (program : Program) (bindings : MORK.Subst)
     (state : State) (head : String) (names : List String)
@@ -2272,7 +2284,7 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.Eval.InputOutput
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst)
 open SpaceSemantics (Program Cases)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 
 /-- Existing computation paths with explicit before/after I/O observations. -/
 abbrev ReturnsIO (program : Program) (bindings : Subst) (before : State) (expression : Atom)
@@ -2463,7 +2475,7 @@ namespace Mettapedia.Languages.MeTTa.PeTTa.Eval
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst)
 open SpaceSemantics (Program)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 
 def passiveArgument : Atom → Bool
   | .var _ | .symbol _ | .grounded _ => true

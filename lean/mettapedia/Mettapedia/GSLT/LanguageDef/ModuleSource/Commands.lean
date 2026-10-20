@@ -39,6 +39,22 @@ declare_syntax_cat moduleTheory
 declare_syntax_cat moduleImport
 declare_syntax_cat moduleEntry
 declare_syntax_cat moduleFile
+declare_syntax_cat moduleInductiveTerm
+declare_syntax_cat moduleInductiveBinder
+declare_syntax_cat moduleInductiveConstructor
+declare_syntax_cat moduleInductiveFamily
+
+scoped syntax:max ident : moduleInductiveTerm
+scoped syntax:max "Type" : moduleInductiveTerm
+scoped syntax:max "(" moduleInductiveTerm ")" : moduleInductiveTerm
+scoped syntax:70 moduleInductiveTerm:70 moduleInductiveTerm:71 : moduleInductiveTerm
+scoped syntax:30 moduleInductiveTerm:31 "->" moduleInductiveTerm:30 : moduleInductiveTerm
+scoped syntax ident ":" moduleInductiveTerm : moduleInductiveBinder
+scoped syntax ident "(" moduleInductiveBinder,* ")" ":" moduleInductiveTerm ";" : moduleInductiveConstructor
+scoped syntax ident "parameters" "(" moduleInductiveBinder,* ")"
+  "indices" "(" moduleInductiveBinder,* ")" ":" moduleInductiveTerm
+  "{" moduleInductiveConstructor* "}" : moduleInductiveFamily
+scoped syntax "Inductives" "{" moduleInductiveFamily* "}" : moduleBlock
 
 scoped syntax ident ";" : moduleExport
 scoped syntax ident "=>" ident ";" : moduleExport
@@ -134,7 +150,40 @@ private def replacementRow : TSyntax `moduleReplacement → MacroM Term
       `(ModuleSource.mkReplacement $(str old.getId.toString) (ModuleSource.singleRule (LanguageDef.terms $rows)))
   | other => Macro.throwErrorAt other "unsupported replacement"
 
+private partial def inductiveTerm : TSyntax `moduleInductiveTerm → MacroM Term
+  | `(moduleInductiveTerm| Type) => `(InductiveSyntax.Term.name "Type")
+  | `(moduleInductiveTerm| $label:ident) => `(InductiveSyntax.Term.name $(str label.getId.toString))
+  | `(moduleInductiveTerm| ($inner:moduleInductiveTerm)) => inductiveTerm inner
+  | `(moduleInductiveTerm| $domain:moduleInductiveTerm -> $codomain:moduleInductiveTerm) => do
+      `(InductiveSyntax.Term.arrow $(← inductiveTerm domain) $(← inductiveTerm codomain))
+  | `(moduleInductiveTerm| $function:moduleInductiveTerm $argument:moduleInductiveTerm) => do
+      `(InductiveSyntax.Term.app $(← inductiveTerm function) $(← inductiveTerm argument))
+  | other => Macro.throwErrorAt other "unsupported inductive term"
+
+private def inductiveBinder : TSyntax `moduleInductiveBinder → MacroM Term
+  | `(moduleInductiveBinder| $label:ident : $type:moduleInductiveTerm) => do
+      `(InductiveSyntax.Binder.mk $(str label.getId.toString) $(← inductiveTerm type))
+  | other => Macro.throwErrorAt other "unsupported inductive binder"
+
+private def inductiveConstructor : TSyntax `moduleInductiveConstructor → MacroM Term
+  | `(moduleInductiveConstructor| $label:ident ($fields:moduleInductiveBinder,*) : $result:moduleInductiveTerm ;) => do
+      `(InductiveSyntax.Constructor.mk $(str label.getId.toString)
+        $(← listTerm (← fields.getElems.mapM inductiveBinder)) $(← inductiveTerm result))
+  | other => Macro.throwErrorAt other "unsupported inductive constructor"
+
+private def inductiveFamily : TSyntax `moduleInductiveFamily → MacroM Term
+  | `(moduleInductiveFamily| $label:ident parameters ($params:moduleInductiveBinder,*)
+      indices ($ix:moduleInductiveBinder,*) : $sort:moduleInductiveTerm
+      { $constructors:moduleInductiveConstructor* }) => do
+      `(InductiveSyntax.Family.mk $(str label.getId.toString)
+        $(← listTerm (← params.getElems.mapM inductiveBinder))
+        $(← listTerm (← ix.getElems.mapM inductiveBinder)) $(← inductiveTerm sort)
+        $(← listTerm (← constructors.mapM inductiveConstructor)))
+  | other => Macro.throwErrorAt other "unsupported inductive family"
+
 private def blockTerm : TSyntax `moduleBlock → Expand Term
+  | `(moduleBlock| Inductives { $families:moduleInductiveFamily* }) => do
+      `(Block.inductives $(← listTerm (← families.mapM fun family => (inductiveFamily family : MacroM _))))
   | `(moduleBlock| Types { $[$sorts:ident ;]* }) => do
       let names ← listTerm (sorts.map fun sort => str sort.getId.toString)
       `(Block.types $names)

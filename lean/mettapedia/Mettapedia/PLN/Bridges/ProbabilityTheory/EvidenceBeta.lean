@@ -5,6 +5,7 @@ import Mettapedia.PLN.Evidence.EvidenceCounts
 import Mettapedia.ProbabilityTheory.Distributions.BetaBernoulli
 import Mathlib.Probability.CDF
 import Mathlib.Algebra.Order.Floor.Semiring
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 
 /-!
 # BinaryEvidence-Beta Bridge
@@ -44,7 +45,7 @@ PLN BinaryEvidence (k, m) captures exactly the sufficient statistic, and:
 namespace Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 open Mettapedia.ProbabilityTheory.Exchangeability
 open Mettapedia.ProbabilityTheory

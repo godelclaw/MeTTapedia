@@ -41,7 +41,7 @@ def language : LanguageDef where
 def snapshot (rows : List Pattern) : Snapshot where
   language := language
   freeTypes := []
-  provider := ⟨[⟨"gate", [term], [.input]⟩], rows.map fun value => ⟨"gate", [value]⟩⟩
+  provider := ⟨[⟨"gate", [term], [.input]⟩], rows.map (fun value => ⟨"gate", [value]⟩), []⟩
 
 def permissions (sites : OperationalPermissions) : Permissions where
   sites := sites
@@ -60,7 +60,11 @@ theorem bindings_compiled :
     GeneralRuleBindingInference.compile? language guarded = some (declaration 0).binding ∧
       GeneralRuleBindingInference.compile? language {guarded with name := "consume-guarded-again"} =
         some (declaration 1).binding := by
-  decide +kernel
+  simp [GeneralRuleBindingInference.compile?, GeneralRuleBindingInference.rootInput,
+    GeneralRuleBindingInference.rootArguments, GeneralRuleBindingInference.rootDeclared,
+    GeneralRuleBindingInference.inferredSpec, guarded, declaration, language,
+    RuleBinding.admittedFor, RuleBinding.occurrenceDeclared, RuleBinding.dependencies?,
+    RuleBinding.dependencySortsDeclared, Pattern.freeFvarNames, term]
 
 theorem premises_admitted (rows : List Pattern) :
     GeneralPremise.rulePremisesAdmitted language (snapshot rows).provider guarded
@@ -81,6 +85,20 @@ theorem canonical_templates :
       GeneralEquationCanonicalTemplates.checkBinding (declaration 1).binding.spec = true := by
   decide +kernel
 
+theorem elaborated_premises_admitted (rows : List Pattern) :
+    GeneralPremise.rulePremisesAdmitted language (snapshot rows).provider
+        ((declaration 0).binding.elaborate guarded) (declaration 0).binding.spec = true ∧
+      GeneralPremise.rulePremisesAdmitted language (snapshot rows).provider
+        ((declaration 1).binding.elaborate {guarded with name := "consume-guarded-again"})
+        (declaration 1).binding.spec = true := by
+  simp [GeneralRuleBindingInference.BindingPlan.elaborate,
+    GeneralRuleBindingInference.BindingPlan.implicitTypes,
+    GeneralPremise.rulePremisesAdmitted, GeneralPremise.premisesFlow,
+    GeneralPremise.premiseFlow, GeneralPremise.queryInputNames, GeneralPremise.queryOutputNames,
+    GeneralPremise.schemaValuesChecked, GeneralPremise.lookupRuleType?,
+    GeneralPremise.SchemaTyping.checkSchemaType, GeneralPremise.namesAvailable,
+    GeneralPremise.signature?, snapshot, guarded, declaration, term, Pattern.freeFvarNames]
+
 theorem compiled_rules (rows : List Pattern) (sites : OperationalPermissions) :
     (plan rows sites).rules = [declaration 0, declaration 1] := by
   have selectedRules : selectedRules (snapshot rows) (permissions sites) =
@@ -89,8 +107,8 @@ theorem compiled_rules (rows : List Pattern) (sites : OperationalPermissions) :
   rw [selectedRules]
   simp only [List.filterMap_cons, List.filterMap_nil, rulePlan?, Option.bind_eq_bind,
     show (snapshot rows).language = language from rfl, bindings_compiled.1,
-    bindings_compiled.2, Option.bind_some, (premises_admitted rows).1,
-    (premises_admitted rows).2, canonical_templates.1, canonical_templates.2.1,
+    bindings_compiled.2, Option.bind_some, (elaborated_premises_admitted rows).1,
+    (elaborated_premises_admitted rows).2, canonical_templates.1, canonical_templates.2.1,
     canonical_templates.2.2.1, canonical_templates.2.2.2, Bool.and_self, ↓reduceIte]
   rfl
 
@@ -118,8 +136,8 @@ theorem compilation_complete (sites : OperationalPermissions) :
     rw [selectedRules]
     simp only [List.flatMap_cons, List.flatMap_nil, ruleObligations,
       show (snapshot [zero, zero]).language = language from rfl,
-      bindings_compiled.1, bindings_compiled.2, (premises_admitted [zero, zero]).1,
-      (premises_admitted [zero, zero]).2, canonical_templates.1, canonical_templates.2.1,
+      bindings_compiled.1, bindings_compiled.2, (elaborated_premises_admitted [zero, zero]).1,
+      (elaborated_premises_admitted [zero, zero]).2, canonical_templates.1, canonical_templates.2.1,
       canonical_templates.2.2.1, canonical_templates.2.2.2, Bool.and_self, ↓reduceIte,
       List.nil_append]
   apply List.isEmpty_iff.mpr

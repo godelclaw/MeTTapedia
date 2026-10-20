@@ -22,7 +22,7 @@ namespace Mettapedia.PLN.WorldModel.DisplayedConsequence
 
 open Mettapedia.Logic.DisplayedAnytimeEvidence
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 universe u
 

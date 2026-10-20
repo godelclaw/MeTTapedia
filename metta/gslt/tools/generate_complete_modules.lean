@@ -54,14 +54,14 @@ def emitTo (spec : Spec) (name : String) (path : String) : IO Unit := do
   | .ok text => IO.FS.writeFile path text
   | .error _ => throw (IO.userError s!"refused: {name}")
 
-def lambdaSpec : Spec := ⟨Complete.Controls.lambdaPlan, [], .base "Term"⟩
-def guardedSpec : Spec := ⟨GeneralGuardedBinderExecution.plan [.permit], [], .proc⟩
-def sealedSpec : Spec := ⟨GeneralGuardedBinderExecution.plan [], [], .proc⟩
-def branchingSpec : Spec := ⟨Complete.ClassesControls.branchingPlan, [], .base "T"⟩
+def lambdaSpec : Spec := ⟨Complete.Controls.lambdaPlan, [], .base "Term", .standard⟩
+def guardedSpec : Spec := ⟨GeneralGuardedBinderExecution.plan [.permit], [], .proc, .standard⟩
+def sealedSpec : Spec := ⟨GeneralGuardedBinderExecution.plan [], [], .proc, .standard⟩
+def branchingSpec : Spec := ⟨Complete.ClassesControls.branchingPlan, [], .base "T", .standard⟩
 /-- λ compiled without the structural-descent refinement: its only obligation is stratification. -/
 def unstratifiedSpec : Spec :=
   ⟨GeneralExecutionAdmission.compile ⟨Mettapedia.OSLF.Binding.LambdaAuthoredFullRuleProfile.language, [],
-    {signatures := [], rows := []}⟩ StructuralDescent.Controls.rootPermissions, [], .base "Term"⟩
+    {signatures := [], rows := []}⟩ StructuralDescent.Controls.rootPermissions, [], .base "Term", .standard⟩
 
 def refusal (name : String) : String :=
   match emitText? lambdaSpec name with

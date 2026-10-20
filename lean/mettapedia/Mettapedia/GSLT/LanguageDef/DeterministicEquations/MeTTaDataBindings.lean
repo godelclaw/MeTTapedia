@@ -1,5 +1,9 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaFresheningCorrespondence
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.DataPreservation
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Data frames for generated MeTTa calls
@@ -83,49 +87,34 @@ end
 
 theorem DataAtom.solution_fixed {atom : Atom} (data : DataAtom atom)
     (valuation : String → Metta.Atom) :
-    applyClassSolution valuation (toLeaTTaAtom atom) = toLeaTTaAtom atom := by
+    applyClassSolution valuation (encodeModelAtom atom) = encodeModelAtom atom := by
   induction data with
-  | symbol | grounded => simp only [toLeaTTaAtom, applyClassSolution]
+  | symbol | grounded => simp only [encodeModelAtom, applyClassSolution]
   | expression children ih =>
-      simp only [toLeaTTaAtom, applyClassSolution, Metta.Atom.expr.injEq,
-        solutionTheory_toLeaTTaAtoms_eq_map, List.map_map]
+      simp only [encodeModelAtom, applyClassSolution, Metta.Atom.expr.injEq,
+        solutionTheory_encodeModelAtoms_eq_map, List.map_map]
       exact List.map_congr_left (fun atom member => ih atom member)
-
-/-- Existing live bindings and new pattern bindings remain in the data class. -/
-theorem unify_preserves_data {target pattern : Atom} {incoming output : Bindings}
-    (targetData : DataAtom target) (stored : AssignmentsIn DataAtom incoming)
-    (candidate : UnifyCandidateRel target pattern incoming output) :
-    AssignmentsIn DataAtom output := by
-  obtain ⟨matched, matchProof, mergeProof, _, _⟩ := candidate
-  exact merge_preserves DataAtom.not_var DataAtom.subatoms mergeProof
-    (match_preserves DataAtom.not_var DataAtom.subatoms matchProof (.inl targetData)) stored
-
-theorem encoded_pattern_preserves_data (source value : Term) (first : Nat)
-    {incoming output : Bindings} (stored : AssignmentsIn DataAtom incoming)
-    (candidate : UnifyCandidateRel (encode value) (MeTTaEmit.pattern source first).1.1
-      incoming output) : AssignmentsIn DataAtom output :=
-  unify_preserves_data (encode_data value) stored candidate
 
 /-- Free equality classes can be assigned inert data without changing any
 stored assignment or equality constraint. -/
 theorem data_model {bindings : Bindings} (stored : AssignmentsIn DataAtom bindings)
     (satisfiable : ∃ valuation, HEBindingSatisfied valuation bindings) :
     ∃ valuation, HEBindingSatisfied valuation bindings ∧
-      ∀ name, ∃ atom, DataAtom atom ∧ valuation name = toLeaTTaAtom atom := by
+      ∀ name, ∃ atom, DataAtom atom ∧ valuation name = encodeModelAtom atom := by
   classical
   obtain ⟨original, satisfied⟩ := satisfiable
   let inData : Metta.Atom → Prop := fun value =>
-    ∃ atom, DataAtom atom ∧ toLeaTTaAtom atom = value
+    ∃ atom, DataAtom atom ∧ encodeModelAtom atom = value
   let clean : Metta.Atom → Metta.Atom := fun value =>
     if inData value then value else .sym "nik:Nil"
-  have fixed : ∀ atom, DataAtom atom → clean (toLeaTTaAtom atom) = toLeaTTaAtom atom := by
+  have fixed : ∀ atom, DataAtom atom → clean (encodeModelAtom atom) = encodeModelAtom atom := by
     intro atom data
     exact if_pos ⟨atom, data, rfl⟩
   refine ⟨clean ∘ original, ⟨?_, ?_⟩, ?_⟩
   · intro name atom member
     have data := stored name atom member
     rw [data.solution_fixed]
-    change clean (original name) = toLeaTTaAtom atom
+    change clean (original name) = encodeModelAtom atom
     rw [satisfied.1 name atom member, data.solution_fixed, fixed atom data]
   · intro left right member
     exact congrArg clean (satisfied.2 left right member)
@@ -133,27 +122,55 @@ theorem data_model {bindings : Bindings} (stored : AssignmentsIn DataAtom bindin
     by_cases supported : inData (original name)
     · obtain ⟨atom, data, same⟩ := supported
       refine ⟨atom, data, ?_⟩
-      change clean (original name) = toLeaTTaAtom atom
+      change clean (original name) = encodeModelAtom atom
       rw [← same, fixed atom data]
     · refine ⟨.symbol "nik:Nil", .symbol (by simp [dataSymbols]), ?_⟩
       exact if_neg supported
+
+/-- Existing live bindings and new pattern bindings admit an inert data model
+of the merged frame. The logical merge output may represent that theory with
+different, even variable-valued, assignments. -/
+theorem unify_data_model {target pattern : Atom} {incoming output : Bindings}
+    (targetData : DataAtom target) (stored : AssignmentsIn DataAtom incoming)
+    (candidate : UnifyCandidateRel target pattern incoming output) :
+    ∃ valuation, HEBindingSatisfied valuation output ∧
+      ∀ name, ∃ atom, DataAtom atom ∧ valuation name = encodeModelAtom atom := by
+  obtain ⟨matched, matchProof, mergeProof⟩ := candidate
+  have matchedData :=
+    match_preserves DataAtom.not_var DataAtom.subatoms matchProof (.inl targetData)
+  have joinedData : AssignmentsIn DataAtom
+      ⟨matched.assignments ++ incoming.assignments, matched.equalities ++ incoming.equalities⟩ := by
+    intro name value member
+    rcases List.mem_append.mp member with present | present
+    · exact matchedData name value present
+    · exact stored name value present
+  obtain ⟨original, originalSatisfied⟩ := Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_model mergeProof
+  obtain ⟨valuation, satisfied, data⟩ := data_model joinedData
+    ⟨original, (mergeProof.1.he_models original).mp originalSatisfied⟩
+  exact ⟨valuation, (mergeProof.1.he_models valuation).mpr satisfied, data⟩
+
+theorem encoded_pattern_data_model (source value : Term) (first : Nat)
+    {incoming output : Bindings} (stored : AssignmentsIn DataAtom incoming)
+    (candidate : UnifyCandidateRel (encode value) (MeTTaEmit.pattern source first).1.1
+      incoming output) :
+    ∃ valuation, HEBindingSatisfied valuation output ∧
+      ∀ name, ∃ atom, DataAtom atom ∧ valuation name = encodeModelAtom atom :=
+  unify_data_model (encode_data value) stored candidate
 
 /-- Successful source matching admits a target model entirely in the data
 representation, including variables unused by the pattern. -/
 theorem patterns_data_model (source values : List Term) (first : Nat)
     {environment : Env} (matched : matchTerms source values = some environment) :
     ∃ valuation,
-      applyClassSolution valuation (toLeaTTaAtom (MeTTaEmit.patterns source first).1.1) =
-        toLeaTTaAtom (encodeItems values) ∧
-      ∀ name, ∃ atom, DataAtom atom ∧ valuation name = toLeaTTaAtom atom := by
+      applyClassSolution valuation (encodeModelAtom (MeTTaEmit.patterns source first).1.1) =
+        encodeModelAtom (encodeItems values) ∧
+      ∀ name, ∃ atom, DataAtom atom ∧ valuation name = encodeModelAtom atom := by
   obtain ⟨output, candidate⟩ :=
     (MeTTaEmit.patterns_unify_iff source values first).mpr ⟨environment, matched⟩
-  have stored := unify_preserves_data (encodeItems_data values)
+  obtain ⟨valuation, satisfied, data⟩ := unify_data_model (encodeItems_data values)
     (AssignmentsIn.empty DataAtom) candidate
-  obtain ⟨bindings, matchProof, mergeProof, _, satisfiable⟩ := candidate
-  obtain ⟨valuation, satisfied, data⟩ := data_model stored satisfiable
-  have inputs :=
-    (Spec.Match.SolutionTheory.mergeRel_solution_iff mergeProof valuation).mp satisfied
+  obtain ⟨bindings, matchProof, mergeProof⟩ := candidate
+  have inputs := (Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_solutions mergeProof valuation).mp satisfied
   have same :=
     (Spec.Match.SolutionTheory.matchRel_solution_iff matchProof valuation).mp inputs.1
   exact ⟨valuation, by simpa only [(encodeItems_data values).solution_fixed] using same.symm,
@@ -170,27 +187,27 @@ theorem alpha_patterns_extend_data_model (source values : List Term) (first : Na
     (privateNames : ∀ name, AtomOccurs (MeTTaEmit.patterns source first).1.1 name →
       ¬QueryVisibleName live query incoming (rename name))
     (base : String → Metta.Atom) (satisfied : HEBindingSatisfied base incoming)
-    (data : ∀ name, ∃ atom, DataAtom atom ∧ base name = toLeaTTaAtom atom)
-    (queryValue : applyClassSolution base (toLeaTTaAtom query) =
-      toLeaTTaAtom (encodeItems values))
+    (data : ∀ name, ∃ atom, DataAtom atom ∧ base name = encodeModelAtom atom)
+    (queryValue : applyClassSolution base (encodeModelAtom query) =
+      encodeModelAtom (encodeItems values))
     (candidate : UnifyCandidateRel query fresh incoming output) :
     ∃ extended,
       HEBindingSatisfied extended output ∧
-      (∀ name, ∃ atom, DataAtom atom ∧ extended name = toLeaTTaAtom atom) ∧
+      (∀ name, ∃ atom, DataAtom atom ∧ extended name = encodeModelAtom atom) ∧
       (∀ name, QueryVisibleName live query incoming name → extended name = base name) ∧
-      applyClassSolution extended (toLeaTTaAtom fresh) =
-        toLeaTTaAtom (encodeItems values) := by
+      applyClassSolution extended (encodeModelAtom fresh) =
+        encodeModelAtom (encodeItems values) := by
   obtain ⟨sourceModel, patternValue, sourceData⟩ :=
     patterns_data_model source values first matched
   obtain ⟨extended, patternSame, incomingSatisfied, agrees, range⟩ :=
     MeTTaEmit.alpha_extend_model_range injective renamed privateNames sourceModel base satisfied
-  have querySame : applyClassSolution extended (toLeaTTaAtom query) =
-      toLeaTTaAtom (encodeItems values) := by
+  have querySame : applyClassSolution extended (encodeModelAtom query) =
+      encodeModelAtom (encodeItems values) := by
     exact (MeTTaEmit.query_visible_solution agrees).trans queryValue
   have freshValue := patternSame.trans patternValue
-  obtain ⟨bindings, matchProof, mergeProof, _, _⟩ := candidate
+  obtain ⟨bindings, matchProof, mergeProof⟩ := candidate
   refine ⟨extended,
-    (Spec.Match.SolutionTheory.mergeRel_solution_iff mergeProof extended).mpr
+    (Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_solutions mergeProof extended).mpr
       ⟨(Spec.Match.SolutionTheory.matchRel_solution_iff matchProof extended).mpr
         (querySame.trans freshValue.symm), incomingSatisfied⟩,
     ?_, agrees, freshValue⟩
@@ -203,85 +220,85 @@ theorem alpha_patterns_extend_data_model (source values : List Term) (first : Na
 
 theorem DataAtom.ne_control_symbol {atom : Atom} (data : DataAtom atom)
     {head : String} (control : head ∉ dataSymbols) :
-    toLeaTTaAtom atom ≠ .sym head := by
+    encodeModelAtom atom ≠ .sym head := by
   intro same
   cases data with
   | @symbol name member =>
-      have equalName : name = head := by simpa only [toLeaTTaAtom, Metta.Atom.sym.injEq] using same
+      have equalName : name = head := by simpa only [encodeModelAtom, Metta.Atom.sym.injEq] using same
       exact control (equalName ▸ member)
-  | grounded | expression => simp only [toLeaTTaAtom] at same; contradiction
+  | grounded | expression => simp only [encodeModelAtom] at same; contradiction
 
 theorem DataAtom.ne_control_call {atom : Atom} (data : DataAtom atom)
     {head : String} (control : head ∉ dataSymbols) (arguments : List Metta.Atom) :
-    toLeaTTaAtom atom ≠ .expr (.sym head :: arguments) := by
+    encodeModelAtom atom ≠ .expr (.sym head :: arguments) := by
   intro same
   cases data with
-  | symbol | grounded => simp only [toLeaTTaAtom] at same; contradiction
+  | symbol | grounded => simp only [encodeModelAtom] at same; contradiction
   | @expression items children =>
       cases items with
-      | nil => simp [toLeaTTaAtom, toLeaTTaAtoms] at same
+      | nil => simp [encodeModelAtom, encodeModelAtoms] at same
       | cons first rest =>
-          simp only [toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.expr.injEq,
+          simp only [encodeModelAtom, encodeModelAtoms, Metta.Atom.expr.injEq,
             List.cons.injEq] at same
           exact (children first (by simp)).ne_control_symbol control same.1
 
 /-- A valuation into inert data cannot hide a control head in a variable. -/
 theorem control_shape_of_data_solution (valuation : String → Metta.Atom)
-    (values : ∀ name, ∃ atom, DataAtom atom ∧ valuation name = toLeaTTaAtom atom)
+    (values : ∀ name, ∃ atom, DataAtom atom ∧ valuation name = encodeModelAtom atom)
     {head : String} (control : head ∉ dataSymbols) {atom : Atom}
     {arguments : List Metta.Atom}
-    (same : applyClassSolution valuation (toLeaTTaAtom atom) =
+    (same : applyClassSolution valuation (encodeModelAtom atom) =
       .expr (.sym head :: arguments)) :
     ∃ items, atom = MeTTaEmit.call head items ∧
-      (toLeaTTaAtoms items).map (applyClassSolution valuation) = arguments := by
+      (encodeModelAtoms items).map (applyClassSolution valuation) = arguments := by
   cases atom with
-  | symbol | grounded => simp only [toLeaTTaAtom, applyClassSolution] at same; contradiction
+  | symbol | grounded => simp only [encodeModelAtom, applyClassSolution] at same; contradiction
   | var name =>
       obtain ⟨value, data, assigned⟩ := values name
-      simp only [toLeaTTaAtom, applyClassSolution, assigned] at same
+      simp only [encodeModelAtom, applyClassSolution, assigned] at same
       exact (data.ne_control_call control arguments same).elim
   | expression items =>
       cases items with
-      | nil => simp [toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution] at same
+      | nil => simp [encodeModelAtom, encodeModelAtoms, applyClassSolution] at same
       | cons first rest =>
-          simp only [toLeaTTaAtom, applyClassSolution, toLeaTTaAtoms, List.map_cons,
+          simp only [encodeModelAtom, applyClassSolution, encodeModelAtoms, List.map_cons,
             Metta.Atom.expr.injEq, List.cons.injEq] at same
           cases first with
           | symbol name =>
               have equalName : name = head := by
-                simpa only [toLeaTTaAtom, applyClassSolution, Metta.Atom.sym.injEq] using same.1
+                simpa only [encodeModelAtom, applyClassSolution, Metta.Atom.sym.injEq] using same.1
               subst name
               exact ⟨rest, rfl, same.2⟩
           | grounded | expression =>
-              simp [toLeaTTaAtom, applyClassSolution] at same
+              simp [encodeModelAtom, applyClassSolution] at same
           | var name =>
               obtain ⟨value, data, assigned⟩ := values name
-              have equalSymbol : toLeaTTaAtom value = .sym head := by
-                simpa only [toLeaTTaAtom, applyClassSolution, assigned] using same.1
+              have equalSymbol : encodeModelAtom value = .sym head := by
+                simpa only [encodeModelAtom, applyClassSolution, assigned] using same.1
               exact (data.ne_control_symbol control equalSymbol).elim
 
 /-- An inert model rules out observational aliases that hide executable
 control in variables, even when the frame stores symbolic expressions. -/
 theorem control_shape_of_model {bindings : Bindings}
     (model : ∃ valuation, HEBindingSatisfied valuation bindings ∧
-      ∀ name, ∃ atom, DataAtom atom ∧ valuation name = toLeaTTaAtom atom)
+      ∀ name, ∃ atom, DataAtom atom ∧ valuation name = encodeModelAtom atom)
     {head : String} (control : head ∉ dataSymbols) (arguments : List Atom) (emitted : Atom)
     (observed : ∀ valuation, HEBindingSatisfied valuation bindings →
       HEAtomEquationSatisfied valuation emitted (MeTTaEmit.call head arguments)) :
     ∃ items, emitted = MeTTaEmit.call head items ∧
       ∀ valuation, HEBindingSatisfied valuation bindings →
-        (toLeaTTaAtoms items).map (applyClassSolution valuation) =
-          (toLeaTTaAtoms arguments).map (applyClassSolution valuation) := by
+        (encodeModelAtoms items).map (applyClassSolution valuation) =
+          (encodeModelAtoms arguments).map (applyClassSolution valuation) := by
   obtain ⟨valuation, satisfied, values⟩ := model
   have same := observed valuation satisfied
-  simp only [HEAtomEquationSatisfied, MeTTaEmit.call, toLeaTTaAtom, toLeaTTaAtoms,
+  simp only [HEAtomEquationSatisfied, MeTTaEmit.call, encodeModelAtom, encodeModelAtoms,
     applyClassSolution, List.map_cons] at same
   obtain ⟨items, shape, _⟩ := control_shape_of_data_solution valuation values control same
   refine ⟨items, shape, ?_⟩
   intro anyModel anySatisfied
   have equalCode := observed anyModel anySatisfied
   rw [shape] at equalCode
-  simpa only [HEAtomEquationSatisfied, MeTTaEmit.call, toLeaTTaAtom, toLeaTTaAtoms,
+  simpa only [HEAtomEquationSatisfied, MeTTaEmit.call, encodeModelAtom, encodeModelAtoms,
     applyClassSolution, List.map_cons, Metta.Atom.expr.injEq, List.cons.injEq,
     true_and] using equalCode
 
@@ -295,8 +312,8 @@ theorem control_shape_of_observation {bindings : Bindings}
       HEAtomEquationSatisfied valuation emitted (MeTTaEmit.call head arguments)) :
     ∃ items, emitted = MeTTaEmit.call head items ∧
       ∀ valuation, HEBindingSatisfied valuation bindings →
-        (toLeaTTaAtoms items).map (applyClassSolution valuation) =
-          (toLeaTTaAtoms arguments).map (applyClassSolution valuation) :=
+        (encodeModelAtoms items).map (applyClassSolution valuation) =
+          (encodeModelAtoms arguments).map (applyClassSolution valuation) :=
   control_shape_of_model (data_model stored satisfiable) control arguments emitted observed
 
 /-- The actual independent selector preserves a generated control head when
@@ -306,16 +323,14 @@ theorem selected_control_shape {target pattern : Atom} {incoming output : Bindin
     {head : String} (control : head ∉ dataSymbols) (arguments : List Atom) (emitted : Atom)
     (selected : UnifySuccessRel target pattern (MeTTaEmit.call head arguments)
       incoming emitted output) :
-    AssignmentsIn DataAtom output ∧
+    (∃ valuation, HEBindingSatisfied valuation output ∧
+      ∀ name, ∃ atom, DataAtom atom ∧ valuation name = encodeModelAtom atom) ∧
       ∃ items, emitted = MeTTaEmit.call head items ∧
         ∀ valuation, HEBindingSatisfied valuation output →
-          (toLeaTTaAtoms items).map (applyClassSolution valuation) =
-            (toLeaTTaAtoms arguments).map (applyClassSolution valuation) := by
-  have outputData := unify_preserves_data targetData stored selected.1
-  refine ⟨outputData, control_shape_of_observation outputData ?_ control
-    arguments emitted selected.2⟩
-  obtain ⟨_, _, _, _, satisfiable⟩ := selected.1
-  exact satisfiable
+          (encodeModelAtoms items).map (applyClassSolution valuation) =
+            (encodeModelAtoms arguments).map (applyClassSolution valuation) := by
+  have model := unify_data_model targetData stored selected.1
+  exact ⟨model, control_shape_of_model model control arguments emitted selected.2⟩
 
 /-- An actual successful fresh selection reflects a source match, records its
 occurrence values in every output model, preserves a data model of the caller,
@@ -327,9 +342,9 @@ theorem alpha_selected_control_reflects (source values : List Term) (first : Nat
     (privateNames : ∀ name, AtomOccurs (MeTTaEmit.patterns source first).1.1 name →
       ¬QueryVisibleName live query incoming (rename name))
     (base : String → Metta.Atom) (satisfied : HEBindingSatisfied base incoming)
-    (data : ∀ name, ∃ atom, DataAtom atom ∧ base name = toLeaTTaAtom atom)
+    (data : ∀ name, ∃ atom, DataAtom atom ∧ base name = encodeModelAtom atom)
     (queryValue : ∀ valuation, HEBindingSatisfied valuation incoming →
-      applyClassSolution valuation (toLeaTTaAtom query) = toLeaTTaAtom (encodeItems values))
+      applyClassSolution valuation (encodeModelAtom query) = encodeModelAtom (encodeItems values))
     {head : String} (control : head ∉ dataSymbols) (arguments : List Atom) (emitted : Atom)
     (selected : UnifySuccessRel query fresh (MeTTaEmit.call head arguments)
       incoming emitted output) :
@@ -337,13 +352,14 @@ theorem alpha_selected_control_reflects (source values : List Term) (first : Nat
       (∀ valuation, HEBindingSatisfied valuation output →
         MeTTaEmit.ValuationFor (valuation ∘ rename) first environment) ∧
       (∃ extended, HEBindingSatisfied extended output ∧
-        (∀ name, ∃ atom, DataAtom atom ∧ extended name = toLeaTTaAtom atom) ∧
+        (∀ name, ∃ atom, DataAtom atom ∧ extended name = encodeModelAtom atom) ∧
         ∀ name, QueryVisibleName live query incoming name → extended name = base name) ∧
       ∃ items, emitted = MeTTaEmit.call head items ∧
         ∀ valuation, HEBindingSatisfied valuation output →
-          (toLeaTTaAtoms items).map (applyClassSolution valuation) =
-            (toLeaTTaAtoms arguments).map (applyClassSolution valuation) := by
-  obtain ⟨_, _, _, _, original, originalSatisfied⟩ := selected.1
+          (encodeModelAtoms items).map (applyClassSolution valuation) =
+            (encodeModelAtoms arguments).map (applyClassSolution valuation) := by
+  obtain ⟨_, _, logical⟩ := selected.1
+  obtain ⟨original, originalSatisfied⟩ := Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_model logical
   obtain ⟨environment, matched, _⟩ :=
     MeTTaEmit.alpha_patterns_binding_observation_observed source values first
       renamed queryValue selected.1 original originalSatisfied
@@ -371,10 +387,10 @@ private def symbolicFrame : Bindings :=
 /-- A symbolic stored expression can have an entirely inert interpretation. -/
 theorem symbolic_frame_has_data_model :
     ∃ valuation, HEBindingSatisfied valuation symbolicFrame ∧
-      ∀ name, ∃ atom, DataAtom atom ∧ valuation name = toLeaTTaAtom atom := by
+      ∀ name, ∃ atom, DataAtom atom ∧ valuation name = encodeModelAtom atom := by
   let closed := MeTTaEmit.call "nik:Cons" [.symbol "nik:Nil", .symbol "nik:Nil"]
   let valuation : String → Metta.Atom := fun name =>
-    if name = "wrapped" then toLeaTTaAtom closed else .sym "nik:Nil"
+    if name = "wrapped" then encodeModelAtom closed else .sym "nik:Nil"
   refine ⟨valuation, ⟨?_, ?_⟩, ?_⟩
   · intro name value member
     have casesOf : (name = "leaf" ∧ value = .symbol "nik:Nil") ∨
@@ -383,7 +399,7 @@ theorem symbolic_frame_has_data_model :
       simpa [symbolicFrame, Bindings.assign, Bindings.empty, Bindings.isBound,
         Bindings.lookup] using member
     rcases casesOf with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
-      simp [valuation, closed, MeTTaEmit.call, toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution]
+      simp [valuation, closed, MeTTaEmit.call, encodeModelAtom, encodeModelAtoms, applyClassSolution]
   · intro left right member
     simp [symbolicFrame, Bindings.assign, Bindings.empty] at member
   · intro name
@@ -412,7 +428,7 @@ theorem code_alias_observation (valuation : String → Metta.Atom)
       (Bindings.empty.assign "saved" (MeTTaEmit.returned (.symbol "nik:Nil")))) :
     HEAtomEquationSatisfied valuation (.var "saved")
       (MeTTaEmit.returned (.symbol "nik:Nil")) := by
-  simpa only [HEAtomEquationSatisfied, toLeaTTaAtom, applyClassSolution] using
+  simpa only [HEAtomEquationSatisfied, encodeModelAtom, applyClassSolution] using
     satisfied.1 "saved" (MeTTaEmit.returned (.symbol "nik:Nil"))
       (by simp [Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup])
 
@@ -428,7 +444,7 @@ theorem code_alias_is_satisfiable :
     have same : name = "saved" ∧ value = MeTTaEmit.returned (.symbol "nik:Nil") := by
       simpa [Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup] using member
     rcases same with ⟨rfl, rfl⟩
-    simp [MeTTaEmit.returned, MeTTaEmit.call, toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution]
+    simp [MeTTaEmit.returned, MeTTaEmit.call, encodeModelAtom, encodeModelAtoms, applyClassSolution]
   · intro left right member
     simp [Bindings.empty, Bindings.assign] at member
 

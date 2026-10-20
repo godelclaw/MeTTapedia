@@ -14,8 +14,8 @@ Executable fixture theorems for Chapter-12 mixed-channel behavior:
 namespace Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalCanary
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Languages
 open Mettapedia.PLN.ConceptGeometry.AssocPat
 open Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel
@@ -30,7 +30,7 @@ inductive ToyInheritanceQuery where
   deriving DecidableEq, Repr
 
 /-- Triple-state fixture: extensional / ASSOC / PAT evidence channels. -/
-abbrev ToyState := Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence × Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence × Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+abbrev ToyState := Mettapedia.PLN.Evidence.BinaryEvidence × Mettapedia.PLN.Evidence.BinaryEvidence × Mettapedia.PLN.Evidence.BinaryEvidence
 
 noncomputable instance : EvidenceType ToyState where
   toAddCommMonoid := inferInstance
@@ -97,7 +97,7 @@ theorem canary_mixed_projection_non_equivalent :
         Wsplit encMixedAssoc true false := by
   intro hEq
   have hpos : (3 : ℝ≥0∞) = 1 := by
-    exact congrArg Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.pos (by simpa [Wsplit, encMixedExtensional, encMixedAssoc,
+    exact congrArg Mettapedia.PLN.Evidence.BinaryEvidence.pos (by simpa [Wsplit, encMixedExtensional, encMixedAssoc,
       Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedEvidence, Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedQ,
       Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedAsExtensional, Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.mixedAsAssoc,
       toyExt, toyAssoc] using hEq)
@@ -136,17 +136,17 @@ Bayes-normal selector + lower-threshold gate over the extensional-projection
 mixed policy, composed through WM rewrite and OSLF truth transport. -/
 theorem canary_end_to_end_bayesNormal_lower_threshold :
     Mettapedia.OSLF.Formula.sem (fun _ _ => True)
-      (PLNWMOSLFBridgeITVTyped.thresholdAtomSemOfWMITVQSigma
+      (PLNWMOSLFBridgeITV.thresholdAtomSemOfWMITVQSigma
         (State := ToyState) (Srt := Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceSort)
         (Query := Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryFamily ToyPatternInheritanceQuery)
-        (Ctx := Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.CtxOfInterval .bayesNormal)
-        (Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval .bayesNormal)
+        (Ctx := Mettapedia.PLN.WorldModel.WorldModelITVHypercube.CtxOfInterval .bayesNormal)
+        (Mettapedia.PLN.WorldModel.WorldModelITVHypercube.semanticsOfInterval .bayesNormal)
         Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform WsplitPattern
         0 (fun itv => itv.lower)
-        (Mettapedia.PLN.Core.PLNCanonical.patternInheritanceQueryOfAtom_mixed
+        (Mettapedia.PLN.Core.PLNCanonicalAPI.patternInheritanceQueryOfAtom_mixed
           encPatternMixedExtensional))
       (.atom "a0") (Pattern.fvar "p") := by
-  refine Mettapedia.PLN.Core.PLNCanonical.intensional_mixed_assoc_threshold_atom_of_interval
+  refine Mettapedia.PLN.Core.PLNCanonicalAPI.intensional_mixed_assoc_threshold_atom_of_interval
     (State := ToyState) (Query := ToyPatternInheritanceQuery)
     .bayesNormal (R := fun _ _ => True) Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform
     encPatternMixedExtensional (fun e _ => e) True ?_ WsplitPattern
@@ -156,8 +156,8 @@ theorem canary_end_to_end_bayesNormal_lower_threshold :
       (State := ToyState) (Atom := Pattern) (Query := ToyPatternInheritanceQuery)
       toyPatternExt toyPatternAssoc toyPatternPat
   · simpa [encPatternMixedExtensional, WsplitPattern,
-      Mettapedia.PLN.Core.PLNCanonical.patternInheritanceQueryOfAtom_mixed] using
-      (((Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval .bayesNormal).eval
+      Mettapedia.PLN.Core.PLNCanonicalAPI.patternInheritanceQueryOfAtom_mixed] using
+      (((Mettapedia.PLN.WorldModel.WorldModelITVHypercube.semanticsOfInterval .bayesNormal).eval
         Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform
         ((Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.extensionalEvidence
           (State := ToyState) (Atom := Pattern) (Query := ToyPatternInheritanceQuery)
@@ -168,17 +168,17 @@ Bayes-exact selector + lower-threshold gate over the extensional-projection
 mixed policy, composed through WM rewrite and OSLF truth transport. -/
 theorem canary_end_to_end_bayesExact_lower_threshold :
     Mettapedia.OSLF.Formula.sem (fun _ _ => True)
-      (PLNWMOSLFBridgeITVTyped.thresholdAtomSemOfWMITVQSigma
+      (PLNWMOSLFBridgeITV.thresholdAtomSemOfWMITVQSigma
         (State := ToyState) (Srt := Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceSort)
         (Query := Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryFamily ToyPatternInheritanceQuery)
-        (Ctx := Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.CtxOfInterval .bayesExact)
-        (Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval .bayesExact)
+        (Ctx := Mettapedia.PLN.WorldModel.WorldModelITVHypercube.CtxOfInterval .bayesExact)
+        (Mettapedia.PLN.WorldModel.WorldModelITVHypercube.semanticsOfInterval .bayesExact)
         Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform WsplitPattern
         0 (fun itv => itv.lower)
-        (Mettapedia.PLN.Core.PLNCanonical.patternInheritanceQueryOfAtom_mixed
+        (Mettapedia.PLN.Core.PLNCanonicalAPI.patternInheritanceQueryOfAtom_mixed
           encPatternMixedExtensional))
       (.atom "a0") (Pattern.fvar "p") := by
-  refine Mettapedia.PLN.Core.PLNCanonical.intensional_mixed_assoc_threshold_atom_of_interval
+  refine Mettapedia.PLN.Core.PLNCanonicalAPI.intensional_mixed_assoc_threshold_atom_of_interval
     (State := ToyState) (Query := ToyPatternInheritanceQuery)
     .bayesExact (R := fun _ _ => True) Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform
     encPatternMixedExtensional (fun e _ => e) True ?_ WsplitPattern
@@ -188,8 +188,8 @@ theorem canary_end_to_end_bayesExact_lower_threshold :
       (State := ToyState) (Atom := Pattern) (Query := ToyPatternInheritanceQuery)
       toyPatternExt toyPatternAssoc toyPatternPat
   · simpa [encPatternMixedExtensional, WsplitPattern,
-      Mettapedia.PLN.Core.PLNCanonical.patternInheritanceQueryOfAtom_mixed] using
-      (((Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval .bayesExact).eval
+      Mettapedia.PLN.Core.PLNCanonicalAPI.patternInheritanceQueryOfAtom_mixed] using
+      (((Mettapedia.PLN.WorldModel.WorldModelITVHypercube.semanticsOfInterval .bayesExact).eval
         Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext.uniform
         ((Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.extensionalEvidence
           (State := ToyState) (Atom := Pattern) (Query := ToyPatternInheritanceQuery)
@@ -200,17 +200,17 @@ Walley selector + lower-threshold gate over the extensional-projection
 mixed policy, composed through WM rewrite and OSLF truth transport. -/
 theorem canary_end_to_end_walley_lower_threshold :
     Mettapedia.OSLF.Formula.sem (fun _ _ => True)
-      (PLNWMOSLFBridgeITVTyped.thresholdAtomSemOfWMITVQSigma
+      (PLNWMOSLFBridgeITV.thresholdAtomSemOfWMITVQSigma
         (State := ToyState) (Srt := Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceSort)
         (Query := Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryFamily ToyPatternInheritanceQuery)
-        (Ctx := Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.CtxOfInterval .walleyIDM)
-        (Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval .walleyIDM)
+        (Ctx := Mettapedia.PLN.WorldModel.WorldModelITVHypercube.CtxOfInterval .walleyIDM)
+        (Mettapedia.PLN.WorldModel.WorldModelITVHypercube.semanticsOfInterval .walleyIDM)
         Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default WsplitPattern
         0 (fun itv => itv.lower)
-        (Mettapedia.PLN.Core.PLNCanonical.patternInheritanceQueryOfAtom_mixed
+        (Mettapedia.PLN.Core.PLNCanonicalAPI.patternInheritanceQueryOfAtom_mixed
           encPatternMixedExtensional))
       (.atom "a0") (Pattern.fvar "p") := by
-  refine Mettapedia.PLN.Core.PLNCanonical.intensional_mixed_assoc_threshold_atom_of_interval
+  refine Mettapedia.PLN.Core.PLNCanonicalAPI.intensional_mixed_assoc_threshold_atom_of_interval
     (State := ToyState) (Query := ToyPatternInheritanceQuery)
     .walleyIDM (R := fun _ _ => True) Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
     encPatternMixedExtensional (fun e _ => e) True ?_ WsplitPattern
@@ -220,8 +220,8 @@ theorem canary_end_to_end_walley_lower_threshold :
       (State := ToyState) (Atom := Pattern) (Query := ToyPatternInheritanceQuery)
       toyPatternExt toyPatternAssoc toyPatternPat
   · simpa [encPatternMixedExtensional, WsplitPattern,
-      Mettapedia.PLN.Core.PLNCanonical.patternInheritanceQueryOfAtom_mixed] using
-      (((Mettapedia.PLN.WorldModel.PLNWorldModelITVHypercube.semanticsOfInterval .walleyIDM).eval
+      Mettapedia.PLN.Core.PLNCanonicalAPI.patternInheritanceQueryOfAtom_mixed] using
+      (((Mettapedia.PLN.WorldModel.WorldModelITVHypercube.semanticsOfInterval .walleyIDM).eval
         Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
         ((Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel.InheritanceQueryBuilder.extensionalEvidence
           (State := ToyState) (Atom := Pattern) (Query := ToyPatternInheritanceQuery)

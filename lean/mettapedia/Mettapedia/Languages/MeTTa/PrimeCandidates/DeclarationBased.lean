@@ -273,6 +273,7 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.Polarize
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Computation.PolarizedNeedEquationBoundaries
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.PolarizedNeedNaturalExamples
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeWireData
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeWireDataConversion
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.RawInferenceService
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.RawInferenceMILWorkload
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.PolarizedNeedInferenceService
@@ -465,6 +466,9 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.NativeListRun
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.FirstClassGSLT
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredBindingDeclarations
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredTypeExpressions
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredBindingEquationServices
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredPremiseProofFamily
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredPremiseProofFamilyControls
 import Mettapedia.GSLT.Dynamics.RevisionedOccurrenceExactImage
 import Mettapedia.GSLT.LanguageDef.GSLTILCoherentCompilation
 import Mettapedia.GSLT.LanguageDef.GSLTILUniversalStructure
@@ -515,6 +519,8 @@ import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.IntrinsicAxis
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.HOLNativeMixedPresentedMapFusion
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.SetProfile.Basic
 import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.SetProfile.Models
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.SetProfile.HOLFiberPeano
+import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.SetProfile.DeduktiHubFiber
 
 /-!
 # Declaration-based Prime candidate integration
@@ -795,7 +801,3 @@ internal-language result is exact on the returned-fibre image; it is not a
 claim of semantic-CwF initiality or a universal property for the full command
 language.  Those stronger statements remain machine-visible open boundaries.
 -/
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredBindingEquationServices
-import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeWireDataConversion
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredPremiseProofFamily
-import Mettapedia.Languages.MeTTa.PrimeCandidates.DeclarationBased.AuthoredPremiseProofFamilyControls

@@ -18,7 +18,7 @@ case (EvidenceDirichlet.lean), extending PLN to continuous domains.
 
 - `NormalGammaEvidence`: Sufficient statistics for Normal-Gamma inference
 - `NormalGammaPrior`: Parameters of the Normal-Gamma prior
-- `hplus`: Aggregation of independent evidence (coordinatewise addition)
+- `hplus`: Aggregation of evidence from disjoint observations (coordinatewise addition)
 - `posterior`: Conjugate posterior update
 - `toMean`, `toVariance`: View functions (like toStrength/toConfidence)
 
@@ -90,9 +90,9 @@ def single (x : ℝ) : NormalGammaEvidence where
   sumSq_nonneg := sq_nonneg x
   cauchy_schwarz := by simp [sq]
 
-/-- Aggregation of independent evidence (hplus): coordinatewise addition.
+/-- Aggregation of evidence from disjoint observations (hplus): coordinatewise addition.
 
-    This is the key operation: combining evidence from independent sources
+    This is the key operation: combining evidence from disjoint observations
     simply adds the sufficient statistics.
 
     The Cauchy-Schwarz property is preserved by hplus:

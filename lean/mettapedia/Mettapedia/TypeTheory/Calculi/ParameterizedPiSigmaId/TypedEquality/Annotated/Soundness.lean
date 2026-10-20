@@ -145,6 +145,26 @@ structure SoundnessFacts : Prop where
 
 end Definitions
 
+/-- Spine facts over more declarations retain every original declared type.
+The direction is contravariant: a constant known in the smaller signature
+must have its original type in the larger one. No root or typing law follows. -/
+theorem SpineFacts.of_decl_inclusion {R R' : Rules Head} {Rd : Reading Head}
+    {P : ChurchRules R} {Q : ChurchRules R'}
+    (included : ∀ {name : DeclName} {type : CTm Head 0},
+      P.constantType name = some type → Q.constantType name = some type) :
+    ∀ {n : Nat} {term : CTm Head n} {type : Ideal} {ρ : Env n},
+      SpineFacts Rd Q term type ρ → SpineFacts Rd P term type ρ := by
+  intro n term
+  induction term with
+  | const name => exact fun facts D known => facts D (included known)
+  | app f a ihf iha =>
+      rintro type ρ ⟨domain, family, continuous, same, ⟨hf, sf⟩, ⟨ha, sa⟩⟩
+      exact ⟨domain, family, continuous, same, ⟨hf, ihf sf⟩, ⟨ha, iha sa⟩⟩
+  | refl a ih =>
+      rintro type ρ ⟨domain, same, typed, facts⟩
+      exact ⟨domain, same, typed, ih facts⟩
+  | var | head | pi | sigma | id | lam | pair | fst | snd => exact fun facts => facts
+
 /-! ## Environments and spine facts -/
 
 section Basic

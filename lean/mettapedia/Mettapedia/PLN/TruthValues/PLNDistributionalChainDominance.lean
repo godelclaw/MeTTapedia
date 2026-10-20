@@ -39,9 +39,9 @@ import Mettapedia.PLN.TruthValues.PLNDistributional
 
 noncomputable section
 
-namespace Mettapedia.PLN.TruthValues.DistributionalChainDominance
+namespace Mettapedia.PLN.TruthValues.PLNDistributionalChainDominance
 
-open Mettapedia.PLN.TruthValues.Distributional
+open Mettapedia.PLN.TruthValues.PLNDistributional
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 open Set
 
@@ -64,7 +64,7 @@ namespace ScalarChainStep
 def heuristicConfidence (step : ScalarChainStep) : ℝ :=
   step.stv_AB.confidence * step.stv_BC.confidence
 
-def sB_ne_one (step : ScalarChainStep) : step.sB ≠ 1 := ne_of_lt step.sB_lt_one
+theorem sB_ne_one (step : ScalarChainStep) : step.sB ≠ 1 := ne_of_lt step.sB_lt_one
 
 /-- Output strength via the PLN deduction formula. -/
 def outputStrength (step : ScalarChainStep) : ℝ :=
@@ -83,10 +83,10 @@ def impliedVariance (step : ScalarChainStep) : ℝ :=
 end ScalarChainStep
 
 /-- A single deduction step in distributional inference mode (PLN book Ch. 6):
-carry full BinaryEvidence (Beta posteriors) rather than collapsing to scalar STVs. -/
+carry full Beta posteriors rather than collapsing to scalar STVs. -/
 structure DistributionalChainStep where
-  evidence_AB : BinaryEvidence
-  evidence_BC : BinaryEvidence
+  evidence_AB : BetaParams
+  evidence_BC : BetaParams
   sB : ℝ
   sC : ℝ
   sB_pos : 0 < sB
@@ -96,25 +96,25 @@ structure DistributionalChainStep where
 
 namespace DistributionalChainStep
 
-def sB_ne_one (step : DistributionalChainStep) : step.sB ≠ 1 := ne_of_lt step.sB_lt_one
+theorem sB_ne_one (step : DistributionalChainStep) : step.sB ≠ 1 := ne_of_lt step.sB_lt_one
 
 /-- Output strength: same deduction formula, using evidence strengths. -/
 def outputStrength (step : DistributionalChainStep) : ℝ :=
   let (a, b, c, d) := plnDeductionCoeffs step.sB step.sC step.sB_ne_one
-  a * step.evidence_AB.strength * step.evidence_BC.strength +
-  b * step.evidence_AB.strength + c * step.evidence_BC.strength + d
+  a * step.evidence_AB.expectedValue * step.evidence_BC.expectedValue +
+  b * step.evidence_AB.expectedValue + c * step.evidence_BC.expectedValue + d
 
 /-- Exact output variance via the affine-product-of-independents formula. -/
 def exactVariance (step : DistributionalChainStep) : ℝ :=
   trueFullDeductionVariance
-    step.evidence_AB.strength step.evidence_BC.strength
+    step.evidence_AB.expectedValue step.evidence_BC.expectedValue
     step.evidence_AB.variance step.evidence_BC.variance
     step.sB step.sC step.sB_ne_one
 
-/-- Project to scalar by collapsing BinaryEvidence to STV. -/
+/-- Project to scalar by collapsing the Beta posterior to an STV. -/
 def toScalar (step : DistributionalChainStep) : ScalarChainStep where
-  stv_AB := step.evidence_AB.toBeta.toSTV
-  stv_BC := step.evidence_BC.toBeta.toSTV
+  stv_AB := step.evidence_AB.toSTV
+  stv_BC := step.evidence_BC.toSTV
   sB := step.sB
   sC := step.sC
   sB_pos := step.sB_pos
@@ -130,11 +130,10 @@ def varianceApproximationError (step : DistributionalChainStep) : ℝ :=
 
 /-! ## Phase 2: One-Step Theorems -/
 
-/-- BinaryEvidence strength equals the projected STV strength. -/
-private theorem evidence_strength_eq_toSTV (e : BinaryEvidence) :
-    e.strength = e.toBeta.toSTV.strength := by
-  simp [BinaryEvidence.strength, BinaryEvidence.toBeta, BinaryEvidence.total,
-        BetaParams.toSTV, BetaParams.expectedValue, BetaParams.n]
+/-- The Beta mean equals the projected STV strength. -/
+private theorem evidence_strength_eq_toSTV (e : BetaParams) :
+    e.expectedValue = e.toSTV.strength := by
+  simp [BetaParams.toSTV, BetaParams.expectedValue, BetaParams.n]
 
 /-- Both methods produce the same output strength because they use the
 same deduction formula with the same input strengths. -/
@@ -146,11 +145,11 @@ theorem same_strength_one_step (step : DistributionalChainStep) :
       evidence_strength_eq_toSTV step.evidence_BC]
 
 /-- Symmetric evidence (2,2) as a reusable test fixture. -/
-def symmetricEvidence : BinaryEvidence where
-  positive := 2
-  negative := 2
-  positive_pos := by norm_num
-  negative_pos := by norm_num
+def symmetricEvidence : BetaParams where
+  alpha := 2
+  betaParam := 2
+  alpha_pos := by norm_num
+  beta_pos := by norm_num
 
 /-- A concrete distributional chain step using symmetric evidence with sB=sC=1/2. -/
 def demoStep : DistributionalChainStep where
@@ -176,8 +175,7 @@ theorem heuristic_variance_ne_exact :
              trueFullDeductionVariance, plnDeductionCoeffs,
              varianceAffineProductIndep, varianceProductIndep,
              BetaParams.toSTV, BetaParams.expectedValue, BetaParams.n,
-             BetaParams.variance, BinaryEvidence.toBeta, BinaryEvidence.strength,
-             BinaryEvidence.variance, BinaryEvidence.total]
+             BetaParams.variance, BetaParams.expectedValue]
   norm_num
 
 /-- The heuristic can OVERESTIMATE variance (it is not tight). -/
@@ -192,8 +190,7 @@ theorem heuristic_can_overestimate :
              trueFullDeductionVariance, plnDeductionCoeffs,
              varianceAffineProductIndep, varianceProductIndep,
              BetaParams.toSTV, BetaParams.expectedValue, BetaParams.n,
-             BetaParams.variance, BinaryEvidence.toBeta, BinaryEvidence.strength,
-             BinaryEvidence.variance, BinaryEvidence.total]
+             BetaParams.variance, BetaParams.expectedValue]
   norm_num
 
 /-- A step with large sB (close to 1), which amplifies the deduction coefficients
@@ -226,8 +223,7 @@ theorem heuristic_not_conservative :
              trueFullDeductionVariance, plnDeductionCoeffs,
              varianceAffineProductIndep, varianceProductIndep,
              BetaParams.toSTV, BetaParams.expectedValue, BetaParams.n,
-             BetaParams.variance, BinaryEvidence.toBeta, BinaryEvidence.strength,
-             BinaryEvidence.variance, BinaryEvidence.total]
+             BetaParams.variance, BetaParams.expectedValue]
   norm_num
 
 /-- There exist steps where the heuristic approximation error is nonzero. -/
@@ -289,8 +285,7 @@ theorem distributional_dominates_scalar :
                trueFullDeductionVariance, plnDeductionCoeffs,
                varianceAffineProductIndep, varianceProductIndep,
                BetaParams.toSTV, BetaParams.expectedValue, BetaParams.n,
-               BetaParams.variance, BinaryEvidence.toBeta, BinaryEvidence.strength,
-               BinaryEvidence.variance, BinaryEvidence.total]
+               BetaParams.variance, BetaParams.expectedValue]
     norm_num
 
 /-! ## Phase 4: Heuristic Impossibility -/
@@ -305,7 +300,7 @@ avoids this error entirely. -/
 theorem confidence_product_not_variance_preserving :
     ¬ (∀ (step : DistributionalChainStep),
         step.toScalar.impliedVariance = step.exactVariance) := by
-  push_neg
+  push Not
   exact heuristic_variance_ne_exact
 
-end Mettapedia.PLN.TruthValues.DistributionalChainDominance
+end Mettapedia.PLN.TruthValues.PLNDistributionalChainDominance

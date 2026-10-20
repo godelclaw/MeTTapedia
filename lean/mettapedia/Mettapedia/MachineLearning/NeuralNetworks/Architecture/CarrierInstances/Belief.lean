@@ -16,7 +16,7 @@ open StateCarrier
 open Mettapedia.MachineLearning.NeuralNetworks.WorkspaceDecoder
 open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidentialLedger
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 /-! ## Additive natural-count evidence -/

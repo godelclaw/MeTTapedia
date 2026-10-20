@@ -16,10 +16,10 @@ namespace Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeConsequence
 
 open scoped ENNReal
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.Logic.ModalMuCalculus
 open Mettapedia.Logic.GovernanceReasoning.Core
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 abbrev DeonticQuery := Formula DeonticAct 0
 
@@ -40,8 +40,6 @@ def satisfies (pk : PointedDeonticKripke S) (φ : DeonticQuery) : Prop :=
 end PointedDeonticKripke
 
 variable {S : Type*}
-
-instance : EvidenceType (Multiset (PointedDeonticKripke S)) where
 
 /-- BinaryEvidence from a multiset of pointed deontic models:
 positive count = satisfying points; negative count = refuting points. -/

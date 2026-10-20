@@ -30,7 +30,7 @@ Combined with confidence convergence, both errors are O(1/n).
 
 namespace Mettapedia.PLN.Evidence.Convergence
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 open Filter Topology
 open scoped ENNReal

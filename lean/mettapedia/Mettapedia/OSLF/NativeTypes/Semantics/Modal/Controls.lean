@@ -8,8 +8,8 @@ open Mettapedia.OSLF.Framework
 /-!
 # Native modal representative and origin controls
 
-A disabled Wrap context separates a quotient implementation from a raw
-implementation at an equivalent focus. A root-context control rejects an
+The Wrap context preserves the declared equation even when reduction
+permissions remain root-only. Both focus representatives have implementations. A root-context control rejects an
 unrelated specified contractum. Original rho COMM executions have equal
 targets and different occurrence origins, retained in the native family.
 -/
@@ -39,10 +39,10 @@ def betaFamily : Family schema (fun _ _ => False) continuation beta :=
 theorem beta_native_member : predicate schema (fun _ _ => False) continuation beta :=
   family_support_iff.mp ⟨betaFamily⟩
 
-theorem beta_native_member_has_no_raw_implementation :
+theorem beta_native_member_has_raw_implementation :
     predicate schema (fun _ _ => False) continuation beta ∧
-      ¬ Inhabits schema (fun _ _ => False) continuation beta :=
-  ⟨beta_native_member, Mettapedia.OSLF.NativeTypes.Modal.ContextControls.beta_not_inhabits⟩
+      Inhabits schema (fun _ _ => False) continuation beta :=
+  ⟨beta_native_member, Mettapedia.OSLF.NativeTypes.Modal.ContextControls.beta_inhabits⟩
 
 theorem beta_family_retains_alpha :
     betaFamily.representative = alpha ∧
@@ -80,12 +80,12 @@ theorem beta_response_executes_retained_representative :
   exact ⟨Option.some.inj (readout.1.symm.trans filled),
     Option.some.inj (readout.2.1.symm.trans rhs), readout.2.2.1⟩
 
-/-- Class membership retains the chosen representative; it does not create
-an equation lift through a disabled raw context. -/
-theorem quotient_output_cannot_promote_the_raw_program :
+/-- The retained representative and the raw program both execute through
+the authored equation lifted into their enclosing context. -/
+theorem quotient_output_preserves_the_raw_program :
     predicate schema (fun _ _ => False) continuation beta ∧
-      ¬ (gslt runtimePlan [] carrier).Step (wrap beta) done :=
-  ⟨beta_native_member, Mettapedia.OSLF.NativeTypes.Modal.ContextControls.wrap_beta_has_no_step⟩
+      (gslt runtimePlan [] carrier).Step (wrap beta) done :=
+  ⟨beta_native_member, Mettapedia.OSLF.NativeTypes.Modal.ContextControls.wrap_beta_steps_done⟩
 
 end Context
 

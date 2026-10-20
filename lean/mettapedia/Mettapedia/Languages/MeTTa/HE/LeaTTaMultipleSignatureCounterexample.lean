@@ -107,16 +107,16 @@ private theorem RATypeMatch :
   · exact mergeEmptyEmpty
 
 private theorem fTypes :
-    TypesOfRel multiSignatureSpace (.symbol "f") [arrowA, arrowB] := by
-  apply TypesOfRel.symbolKnown
+    StorageTypesRel multiSignatureSpace (.symbol "f") [arrowA, arrowB] := by
+  apply StorageTypesRel.symbolKnown
   · exact AnnotationTypesRel.hit
       (AnnotationTypesRel.hit
         (AnnotationTypesRel.skip (by simp) AnnotationTypesRel.nil))
   · simp
 
 private theorem aTypes :
-    TypesOfRel multiSignatureSpace (.symbol "a") [.symbol "A"] := by
-  apply TypesOfRel.symbolKnown
+    StorageTypesRel multiSignatureSpace (.symbol "a") [.symbol "A"] := by
+  apply StorageTypesRel.symbolKnown
   · exact AnnotationTypesRel.skip (by simp)
       (AnnotationTypesRel.skip (by simp)
         (AnnotationTypesRel.hit AnnotationTypesRel.nil))
@@ -188,6 +188,7 @@ private theorem fRaw {live : List Atom} {protectedScope : List String} :
   · simp [arrowA, Atom.atomType, Atom.symbolType, Atom.variableType]
   · exact Or.inl ⟨"f", rfl⟩
   · exact fCastToFirstSignature
+  · exact .same .renew _
 
 private theorem aRaw {live : List Atom} {protectedScope : List String} :
     EvalAtomRawRel multiSignatureSpace noHostDispatch live (protectedScope := protectedScope)
@@ -201,6 +202,7 @@ private theorem aRaw {live : List Atom} {protectedScope : List String} :
   · simp [Atom.atomType, Atom.symbolType, Atom.variableType]
   · exact Or.inl ⟨"a", rfl⟩
   · exact aCastToA
+  · exact .same .renew _
 
 private theorem interpretedArguments {live : List Atom} :
     InterpretArgsRel multiSignatureSpace noHostDispatch live
@@ -237,7 +239,7 @@ private theorem applicationNoEquation :
       (application, Bindings.empty) := by
   apply CallRel.noEquation
   · simp [application, IsErrorRel]
-  · simp [application, noHostDispatch, NonGroundedCallRel]
+  · exact ⟨by simp [Minimal.HostCall, noHostDispatch], by rfl⟩
   · intro freshPattern freshRhs matched ruleMatch
     obtain ⟨rawLhs, rawRhs, ruleMember, _⟩ := ruleMatch
     simp [multiSignatureSpace, Space.ofList] at ruleMember
@@ -248,13 +250,15 @@ private theorem interpretedExpression :
       (application, Bindings.empty) := by
   apply InterpretExpressionRel.functionPath
       application (.symbol "RA") (.symbol "f") [.symbol "a"]
-      [arrowA, arrowB]
+      [arrowA, arrowB] [arrowA, arrowB]
       ⟨arrowA, [.symbol "A"], .symbol "RA", rfl⟩ (.symbol "RA")
       Bindings.empty Bindings.empty
       (application, Bindings.empty) (application, Bindings.empty)
   · rfl
   · exact fTypes
+  · rfl
   · exact firstSignatureSelected
+  · exact .same .renew _
   · simp [Atom.expressionType]
   · exact interpretedFunction
   · exact applicationNoEquation
@@ -324,7 +328,7 @@ theorem runtime_last_signature_rejects_earlier_applicable_call :
     Metta.Minimal.scanActualTypes, hprep, htypes,
     Metta.Minimal.freshenTypeCandidate, Metta.Minimal.renameAllVars,
     Metta.instantiate, hmatch, Metta.Minimal.FunctionTypeScanOutcome.prependErrors,
-    Metta.Minimal.TypeCheckArgsError.toFunctionTypeError]
+    Metta.Minimal.TypeCheckArgsError.toFunctionTypeError, Metta.Bindings.resolveAtom]
 
 /-- Positive repair canary: the runtime's sole ordered selection boundary now
 chooses the earlier applicable declaration.  The fork proof module additionally

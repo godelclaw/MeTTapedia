@@ -225,35 +225,6 @@ theorem scoped_root_execution_eq_congruence
       base language recursiveStep bindings (.congruence source target) := by
   rfl
 
-private def term : TypeExpr := .base "Term"
-
-private def lambdaFree : FreeTypeContext :=
-  fun name => if name == "source" || name == "target" then some term else none
-
-/-- The old root form elaborates when its two variables have one sort. -/
-example : inferRootSort?
-    Mettapedia.OSLF.Framework.LambdaInstance.lambdaCalc lambdaFree []
-    (.fvar "source") (.fvar "target") = some term := by decide
-
-/-- A missing sort declaration never gets guessed from the first occurrence. -/
-example : inferRootSort?
-    Mettapedia.OSLF.Framework.LambdaInstance.lambdaCalc FreeTypeContext.empty []
-    (.fvar "source") (.fvar "target") = none := by decide
-
-/-- Lambda congruence under its local binder uses the explicit form. -/
-example : compile?
-    Mettapedia.OSLF.Framework.LambdaInstance.lambdaCalc
-    FreeTypeContext.empty []
-    (.scopedStep TypedScopedStepPremise.lambdaBodyStep) =
-      some (.step TypedScopedStepPremise.lambdaBodyStep) := by decide
-
-/-- An escaping local variable fails canonical elaboration. -/
-example : compile?
-    Mettapedia.OSLF.Framework.LambdaInstance.lambdaCalc
-    FreeTypeContext.empty []
-    (.scopedStep { TypedScopedStepPremise.lambdaBodyStep with target := .bvar 1 }) =
-      none := by decide
-
 /-- The existing rho ParCong premise becomes unambiguous once its missing
 schema declarations are supplied, including the collection rest. -/
 private def sortedParCong : RewriteRule :=

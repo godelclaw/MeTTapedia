@@ -69,12 +69,12 @@ instance projectiveLimitMeasure_isProbability
     [∀ I, IsProbabilityMeasure (P I)]
     (hP : MeasureTheory.IsProjectiveMeasureFamily P) :
     IsProbabilityMeasure (projectiveLimitMeasure (Atom := Atom) e P hP) := by
-  letI : ∀ n, IsProbabilityMeasure
+  let : ∀ n, IsProbabilityMeasure
       (Mettapedia.Logic.MarkovLogicCountableProjectiveExtension.prefixFamily e P n) :=
     fun n =>
       Mettapedia.Logic.MarkovLogicCountableProjectiveExtension.prefixFamily_isProbability
         e P n
-  letI : IsProbabilityMeasure
+  let : IsProbabilityMeasure
       (natProjectiveLimit
         (μ := Mettapedia.Logic.MarkovLogicCountableProjectiveExtension.prefixFamily e P)) := by
     delta natProjectiveLimit
@@ -185,18 +185,18 @@ theorem projectiveLimitMeasure_localQueryEvent
     (limitMarginal_projectiveLimitMeasure (Atom := Atom) e P hP Λ)
 
 /-- Any probability measure on infinite Boolean worlds induces the same
-local-query `MassSemantics` interface used by the finite-volume DLR layer. -/
+local-query `Mettapedia.ProbabilityTheory.MassSemantics` interface used by the finite-volume DLR layer. -/
 noncomputable def globalMeasureMassSemantics
     [DecidableEq Atom]
     (μ : Measure (InfiniteWorld Atom))
     [IsProbabilityMeasure μ]
     (Λ : Region Atom) :
-    MassSemantics (LocalConstraintQuery Atom Λ) where
+    Mettapedia.ProbabilityTheory.MassSemantics (LocalConstraintQuery Atom Λ) where
   queryMass := fun q => μ (localQueryEvent Λ q)
   totalMass := 1
   queryMass_le_total := by
     intro q
-    letI := ‹IsProbabilityMeasure μ›
+    let := ‹IsProbabilityMeasure μ›
     have hmono :
         μ (localQueryEvent (Atom := Atom) Λ q) ≤ μ Set.univ :=
       measure_mono (Set.subset_univ (localQueryEvent (Atom := Atom) Λ q))
@@ -213,7 +213,7 @@ theorem globalMeasureMassSemantics_queryProb
     (Λ : Region Atom) (q : LocalConstraintQuery Atom Λ) :
     (globalMeasureMassSemantics (Atom := Atom) μ Λ).queryProb q =
       μ (localQueryEvent Λ q) := by
-  simp [globalMeasureMassSemantics, MassSemantics.queryProb]
+  simp [globalMeasureMassSemantics, Mettapedia.ProbabilityTheory.MassSemantics.queryProb]
 
 /-- The candidate global measure obtained from a countable projective family
 therefore has the expected local-query probabilities. -/
@@ -240,7 +240,7 @@ theorem projectiveLimitMeasure_queryStrength_eq_family
     [∀ I, IsProbabilityMeasure (P I)]
     (hP : MeasureTheory.IsProjectiveMeasureFamily P)
     (Λ : Region Atom) (q : LocalConstraintQuery Atom Λ) :
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryStrength
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryStrength
       ({globalMeasureMassSemantics (Atom := Atom)
         (projectiveLimitMeasure (Atom := Atom) e P hP) Λ} :
           MassState (LocalConstraintQuery Atom Λ)) q =

@@ -544,4 +544,538 @@ theorem refining_host_inherits_evidence_and_wakeup_safety {Host Input : Type}
   rw [host_trace_refines_recorded_contract]
   exact arbitrary_trace_preserves_invariant _ _ h
 
+
+namespace FiniteBurst
+
+/-- Mailbox evidence has unique physical serials and receipts. Every live
+phase belongs to admitted source evidence; settled receipts are permanent. -/
+def WellFormed (s : Inbox) : Prop :=
+  invariant s ∧ (s.journal.map Event.serial).Nodup ∧
+    (∀ id, s.phase id ≠ none → id ∈ s.journal.map Event.serial) ∧
+    s.receipts.Nodup ∧ (∀ id ∈ s.receipts, s.phase id = some .settled)
+
+def initial (owner : Key) : Inbox := { owner := owner }
+
+theorem initial_wellFormed (owner : Key) : WellFormed (initial owner) := by
+  simp [WellFormed, initial, invariant, accounted, owned, safeSleep]
+
+private theorem fresh_serial_not_in_journal (s : Inbox) (id : Nat)
+    (accounting : accounted s) (fresh : s.phase id = none) : id ∉ s.journal.map Event.serial := by
+  intro member
+  obtain ⟨event, present, same⟩ := List.mem_map.mp member
+  exact accounting event present (same ▸ fresh)
+
+private theorem step_serials_unique (s : Inbox) (action : Action)
+    (accounting : accounted s) (unique : (s.journal.map Event.serial).Nodup) :
+    ((step s action).journal.map Event.serial).Nodup := by
+  cases action with
+  | arrival event =>
+      by_cases accepted : event.owner = s.owner ∧ s.phase event.serial = none
+      · have fresh := fresh_serial_not_in_journal s event.serial accounting accepted.2
+        simpa [step, record, accepted, List.nodup_append] using And.intro unique fresh
+      · simpa [step, record, accepted] using unique
+  | claim id => simp only [step, claim]; split <;> exact unique
+  | settle id => simp only [step, settle]; split <;> exact unique
+  | park ticket => exact unique
+  | wake => exact unique
+  | recover => exact unique
+
+private theorem step_phase_origin (s : Inbox) (action : Action)
+    (known : ∀ id, s.phase id ≠ none → id ∈ s.journal.map Event.serial) :
+    ∀ id, (step s action).phase id ≠ none → id ∈ (step s action).journal.map Event.serial := by
+  intro id live
+  cases action with
+  | arrival event =>
+      by_cases accepted : event.owner = s.owner ∧ s.phase event.serial = none
+      · by_cases same : id = event.serial
+        · simp [step, record, accepted, same]
+        · have old : s.phase id ≠ none := by simpa [step, record, accepted, same] using live
+          simpa [step, record, accepted] using List.mem_append_left [event.serial] (known id old)
+      · simpa [step, record, accepted] using known id (by simpa [step, record, accepted] using live)
+  | claim serial =>
+      by_cases queued : s.phase serial = some .queued
+      · by_cases same : id = serial
+        · simpa [step, claim, queued, same] using known serial (by simp [queued])
+        · simpa [step, claim, queued] using known id (by simpa [step, claim, queued, same] using live)
+      · simpa [step, claim, queued] using known id (by simpa [step, claim, queued] using live)
+  | settle serial =>
+      by_cases claimed : s.phase serial = some .claimed
+      · by_cases same : id = serial
+        · simpa [step, settle, claimed, same] using known serial (by simp [claimed])
+        · simpa [step, settle, claimed] using known id (by simpa [step, settle, claimed, same] using live)
+      · simpa [step, settle, claimed] using known id (by simpa [step, settle, claimed] using live)
+  | park ticket => exact known id live
+  | wake => exact known id live
+  | recover =>
+      apply known id
+      intro absent
+      simp [step, recover, absent] at live
+
+private theorem step_receipts_sound (s : Inbox) (action : Action)
+    (sound : ∀ id ∈ s.receipts, s.phase id = some .settled) :
+    ∀ id ∈ (step s action).receipts, (step s action).phase id = some .settled := by
+  intro id member
+  cases action with
+  | settle serial =>
+      by_cases claimed : s.phase serial = some .claimed
+      · have received : id ∈ s.receipts ++ [serial] := by simpa [step, settle, claimed] using member
+        rcases List.mem_append.mp received with old | new
+        · exact settlement_never_reopened s (.settle serial) id (sound id old)
+        · have same : id = serial := List.mem_singleton.mp new
+          simp [step, settle, claimed, same]
+      · exact settlement_never_reopened s (.settle serial) id (sound id (by simpa [step, settle, claimed] using member))
+  | arrival event =>
+      have old : id ∈ s.receipts := by
+        simp only [step, record] at member
+        split at member <;> exact member
+      exact settlement_never_reopened s (.arrival event) id (sound id old)
+  | claim serial =>
+      have old : id ∈ s.receipts := by
+        simp only [step, claim] at member
+        split at member <;> exact member
+      exact settlement_never_reopened s (.claim serial) id (sound id old)
+  | park ticket => exact sound id member
+  | wake => exact sound id member
+  | recover => exact settlement_never_reopened s .recover id (sound id member)
+
+private theorem step_receipts_unique (s : Inbox) (action : Action)
+    (unique : s.receipts.Nodup) (sound : ∀ id ∈ s.receipts, s.phase id = some .settled) :
+    (step s action).receipts.Nodup := by
+  cases action with
+  | settle serial =>
+      by_cases claimed : s.phase serial = some .claimed
+      · have fresh : serial ∉ s.receipts := by
+          intro present
+          have done := sound serial present
+          simp [claimed] at done
+        simp only [step, settle, claimed, if_pos]
+        apply List.nodup_append.mpr
+        refine ⟨unique, by simp, ?_⟩
+        intro a present b last equal
+        have same : b = serial := List.mem_singleton.mp last
+        exact fresh (same ▸ (equal ▸ present))
+      · simpa [step, settle, claimed] using unique
+  | arrival event => simp only [step, record]; split <;> exact unique
+  | claim serial => simp only [step, claim]; split <;> exact unique
+  | park ticket => exact unique
+  | wake => exact unique
+  | recover => exact unique
+
+theorem step_wellFormed (s : Inbox) (action : Action) (well : WellFormed s) :
+    WellFormed (step s action) := by
+  exact ⟨⟨step_preserves_accounting s action well.1.1,
+    step_preserves_ownership s action well.1.2.1, step_preserves_safe_sleep s action well.1.2.2⟩,
+    step_serials_unique s action well.1.1 well.2.1,
+    step_phase_origin s action well.2.2.1,
+    step_receipts_unique s action well.2.2.2.1 well.2.2.2.2,
+    step_receipts_sound s action well.2.2.2.2⟩
+
+theorem run_wellFormed (actions : List Action) (s : Inbox) (well : WellFormed s) :
+    WellFormed (run actions s) := by
+  induction actions generalizing s with
+  | nil => exact well
+  | cons action rest ih => exact ih _ (step_wellFormed s action well)
+
+/-- Each finite burst is admitted through the actual serial/owner checks. -/
+def recordBurst (s : Inbox) : List Event → Inbox
+  | [] => s
+  | event :: rest => recordBurst (record s event) rest
+
+theorem recordBurst_wellFormed (s : Inbox) (events : List Event) (well : WellFormed s) :
+    WellFormed (recordBurst s events) := by
+  induction events generalizing s with
+  | nil => exact well
+  | cons event rest ih => exact ih _ (step_wellFormed s (.arrival event) well)
+
+theorem record_pending_append (s : Inbox) (event : Event) (accounting : accounted s)
+    (accepted : event.owner = s.owner ∧ s.phase event.serial = none) :
+    pending (record s event) = pending s ++ [event] := by
+  have unchanged : s.journal.filter (fun old => decide
+      ((if old.serial = event.serial then some Delivery.queued else s.phase old.serial) = some .queued)) = pending s := by
+    apply List.filter_congr
+    intro old member
+    have different : old.serial ≠ event.serial := by
+      intro same
+      exact accounting old member (same ▸ accepted.2)
+    simp [different]
+  simpa [record, accepted, pending] using congrArg (· ++ [event]) unchanged
+
+/-- The accepted suffix is derived from real record calls. Rejected or
+repeated serials cannot move or replace an earlier pending occurrence. -/
+theorem recordBurst_extends (s : Inbox) (events : List Event) (well : WellFormed s) :
+    ∃ accepted, (recordBurst s events).journal = s.journal ++ accepted ∧
+      pending (recordBurst s events) = pending s ++ accepted ∧ accepted.Sublist events := by
+  induction events generalizing s with
+  | nil => exact ⟨[], by simp [recordBurst], by simp [recordBurst], .refl _⟩
+  | cons event rest ih =>
+      obtain ⟨later, journal, queue, included⟩ := ih (record s event) (step_wellFormed s (.arrival event) well)
+      by_cases accepted : event.owner = s.owner ∧ s.phase event.serial = none
+      · refine ⟨event :: later, ?_, ?_, included.cons_cons event⟩
+        · simpa [recordBurst, record, accepted, List.append_assoc] using journal
+        · simpa only [recordBurst, record_pending_append s event well.1.1 accepted, List.append_assoc, List.singleton_append] using queue
+      · refine ⟨later, ?_, ?_, included.cons event⟩
+        · simpa [recordBurst, record, accepted] using journal
+        · simpa [recordBurst, record, accepted] using queue
+
+
+theorem firstMatching_all (s : Inbox) : firstMatching s (fun _ => true) = (pending s).head? := by
+  cases queue : pending s <;> simp [firstMatching, queue]
+
+private theorem receive_oldest (s : Inbox) (event : Event) (rest : List Event)
+    (queue : pending s = event :: rest) : receive s (fun _ => true) = claim s event.serial := by
+  simp only [receive, firstMatching_all, queue, List.head?_cons]
+
+/-- One committed disposition slot. The selected handler and its acknowledgment
+must return and permit settlement; a waiting or withheld commit is no slot. -/
+def serveOldest (s : Inbox) : Option Event × Inbox :=
+  match pending s with
+  | [] => (none, s)
+  | event :: _ => (some event, settle (receive s (fun _ => true)) event.serial)
+
+private theorem pending_serials_unique (s : Inbox) (well : WellFormed s) :
+    ((pending s).map Event.serial).Nodup :=
+  well.2.1.sublist (List.filter_sublist.map Event.serial)
+
+theorem serveOldest_wellFormed (s : Inbox) (well : WellFormed s) :
+    WellFormed (serveOldest s).2 := by
+  cases queue : pending s with
+  | nil => simpa only [serveOldest, queue] using well
+  | cons event rest =>
+      simpa only [serveOldest, queue, receive_oldest s event rest queue, step] using
+        step_wellFormed (claim s event.serial) (.settle event.serial) (step_wellFormed s (.claim event.serial) well)
+
+/-- Both the exact queue residual and the actual acknowledgment list are
+projected from receive/claim/settle, with no equality of payloads involved. -/
+theorem serveOldest_projection (s : Inbox) (well : WellFormed s) :
+    pending (serveOldest s).2 = (pending s).drop 1 ∧
+      (serveOldest s).2.receipts = s.receipts ++ ((pending s).take 1).map Event.serial := by
+  cases queue : pending s with
+  | nil => simp [serveOldest, queue]
+  | cons event rest =>
+      have member : event ∈ pending s := by simp [queue]
+      have queued : s.phase event.serial = some .queued := of_decide_eq_true (List.mem_filter.mp member).2
+      have distinct : event.serial ∉ rest.map Event.serial := by
+        have unique := pending_serials_unique s well
+        rw [queue, List.map_cons] at unique
+        exact (List.nodup_cons.mp unique).1
+      have unchanged : rest.filter (fun e => decide (e.serial ≠ event.serial)) = rest := by
+        apply List.filter_eq_self.mpr
+        intro other present
+        apply decide_eq_true
+        intro same
+        exact distinct (List.mem_map.mpr ⟨other, present, same⟩)
+      simp only [serveOldest, queue, receive_oldest s event rest queue]
+      refine ⟨?_, ?_⟩
+      · rw [event_disposition_removes_only_its_pending_serial s event.serial queued, queue]
+        simpa using unchanged
+      · simp [claim, settle, queued]
+
+theorem served_event_origin (s : Inbox) (well : WellFormed s) (event : Event)
+    (served : (serveOldest s).1 = some event) :
+    event ∈ s.journal ∧ event.owner = s.owner ∧ s.phase event.serial = some .queued ∧
+      (serveOldest s).2.phase event.serial = some .settled := by
+  cases queue : pending s with
+  | nil => simp [serveOldest, queue] at served
+  | cons chosen rest =>
+      simp only [serveOldest, queue] at served
+      cases served
+      have member : event ∈ pending s := by simp [queue]
+      have source := List.mem_filter.mp member
+      have queued : s.phase event.serial = some .queued := of_decide_eq_true source.2
+      exact ⟨source.1, well.1.2.1 event source.1, queued, by
+        simp [serveOldest, queue, receive_oldest s event rest queue, claim, settle, queued]⟩
+
+private theorem serveOldest_journal (s : Inbox) : (serveOldest s).2.journal = s.journal := by
+  cases queue : pending s with
+  | nil => simp only [serveOldest, queue]
+  | cons event rest =>
+      simp only [serveOldest, queue, receive_oldest s event rest queue, claim, settle]
+      split <;> (first | rfl | (split <;> rfl))
+
+private theorem serveOldest_owner (s : Inbox) : (serveOldest s).2.owner = s.owner := by
+  cases queue : pending s with
+  | nil => simp only [serveOldest, queue]
+  | cons event rest =>
+      simp only [serveOldest, queue, receive_oldest s event rest queue, claim, settle]
+      split <;> (first | rfl | (split <;> rfl))
+
+private theorem recordBurst_receipts (s : Inbox) (events : List Event) :
+    (recordBurst s events).receipts = s.receipts := by
+  induction events generalizing s with
+  | nil => rfl
+  | cons event rest ih =>
+      rw [recordBurst, ih]
+      unfold record
+      split <;> rfl
+
+private theorem recordBurst_owner (s : Inbox) (events : List Event) :
+    (recordBurst s events).owner = s.owner := by
+  induction events generalizing s with
+  | nil => rfl
+  | cons event rest ih =>
+      exact (ih (record s event)).trans (step_preserves_owner s (.arrival event))
+
+/-- The oldest pending occurrence is committed before any later burst is
+admitted through record. Equal payloads still have separate stable serials. -/
+def slot (events : List Event) (s : Inbox) : Inbox := recordBurst (serveOldest s).2 events
+
+def pump : Nat → (Nat → List Event) → Inbox → Inbox
+  | 0, _, s => s
+  | slots + 1, arrivals, s => pump slots (fun i => arrivals (i + 1)) (slot (arrivals 0) s)
+
+theorem slot_wellFormed (events : List Event) (s : Inbox) (well : WellFormed s) :
+    WellFormed (slot events s) :=
+  recordBurst_wellFormed _ events (serveOldest_wellFormed s well)
+
+theorem pump_wellFormed (slots : Nat) (arrivals : Nat → List Event) (s : Inbox) (well : WellFormed s) :
+    WellFormed (pump slots arrivals s) := by
+  induction slots generalizing arrivals s with
+  | zero => exact well
+  | succ slots ih => exact ih _ _ (slot_wellFormed _ s well)
+
+theorem pump_preserves_owner (slots : Nat) (arrivals : Nat → List Event) (s : Inbox) :
+    (pump slots arrivals s).owner = s.owner := by
+  induction slots generalizing arrivals s with
+  | zero => rfl
+  | succ slots ih =>
+      exact (ih _ _).trans ((recordBurst_owner (serveOldest s).2 (arrivals 0)).trans (serveOldest_owner s))
+
+/-- Every field of the actual Inbox survives bounded slicing, including phase,
+serial evidence, receipts, epoch and sleep state. The later burst schedule
+starts at the resumed slot; this is not a wall-clock latency assertion. -/
+theorem pump_add (first second : Nat) (arrivals : Nat → List Event) (s : Inbox) :
+    pump (first + second) arrivals s = pump second (fun i => arrivals (i + first)) (pump first arrivals s) := by
+  induction first generalizing arrivals s with
+  | zero => simp [pump]
+  | succ first ih =>
+      simpa only [Nat.succ_add, Nat.zero_add, pump, Nat.add_assoc, Nat.add_comm first 1] using
+        ih (fun i => arrivals (i + 1)) (slot (arrivals 0) s)
+
+/-- Full payload evidence is retained by these actual operations. The suffix
+is proof data, not another runtime journal. -/
+theorem pump_journal_extends (slots : Nat) (arrivals : Nat → List Event) (s : Inbox) (well : WellFormed s) :
+    ∃ suffix, (pump slots arrivals s).journal = s.journal ++ suffix := by
+  induction slots generalizing arrivals s with
+  | zero => exact ⟨[], by simp [pump]⟩
+  | succ slots ih =>
+      obtain ⟨fresh, journal, _, _⟩ := recordBurst_extends (serveOldest s).2 (arrivals 0) (serveOldest_wellFormed s well)
+      obtain ⟨later, retained⟩ := ih (fun i => arrivals (i + 1)) (slot (arrivals 0) s) (slot_wellFormed _ s well)
+      refine ⟨fresh ++ later, ?_⟩
+      simpa only [pump, slot, journal, serveOldest_journal, List.append_assoc] using retained
+
+
+
+/-- The comparison schedule is constructed from accepted record suffixes of
+this actual pump. It is proof data, never a source oracle used by the runner. -/
+theorem pump_cooperative (slots : Nat) (arrivals : Nat → List Event) (s : Inbox) (well : WellFormed s) :
+    ∃ accepted : Nat → List Event,
+      pending (pump slots arrivals s) = remainingRetiring slots (fun _ => false) accepted (pending s) ∧
+      (pump slots arrivals s).receipts = s.receipts ++
+        (servicesRetiring slots (fun _ => false) accepted (pending s)).map Event.serial ∧
+      ∀ i, i < slots → (accepted i).Sublist (arrivals i) := by
+  induction slots generalizing arrivals s with
+  | zero => exact ⟨fun _ => [], rfl, by simp [pump, servicesRetiring], by simp⟩
+  | succ slots ih =>
+      let next := slot (arrivals 0) s
+      have nextWell : WellFormed next := slot_wellFormed _ s well
+      obtain ⟨fresh, _, queue, included⟩ := recordBurst_extends (serveOldest s).2 (arrivals 0) (serveOldest_wellFormed s well)
+      have nextQueue : pending next = (pending s).drop 1 ++ fresh := by
+        exact queue.trans (congrArg (· ++ fresh) (serveOldest_projection s well).1)
+      have nextReceipts : next.receipts = s.receipts ++ ((pending s).take 1).map Event.serial :=
+        (recordBurst_receipts _ _).trans (serveOldest_projection s well).2
+      obtain ⟨later, retained, paid, origins⟩ := ih (fun i => arrivals (i + 1)) next nextWell
+      let accepted : Nat → List Event := fun | 0 => fresh | i + 1 => later i
+      refine ⟨accepted, ?_, ?_, ?_⟩
+      · change pending (pump slots (fun i => arrivals (i + 1)) next) = _
+        rw [retained, nextQueue]
+        cases shape : pending s <;>
+          simp [remainingRetiring, rotateRetiring, accepted]
+      · change (pump slots (fun i => arrivals (i + 1)) next).receipts = _
+        rw [paid, nextReceipts, nextQueue]
+        cases shape : pending s <;>
+          simp [servicesRetiring, accepted, List.append_assoc]
+      · intro i bound
+        cases i with
+        | zero => exact included
+        | succ i => exact origins i (by omega)
+
+/-- A specific queued occurrence is settled within its original FIFO position.
+Arbitrary later finite bursts are already included in the actual transition. -/
+theorem pending_prefix_service (s : Inbox) (well : WellFormed s) (arrivals : Nat → List Event)
+    (before after : List Event) (event : Event) (queue : pending s = before ++ event :: after) :
+    let final := pump (before.length + 1) arrivals s
+    final.phase event.serial = some .settled ∧ final.receipts.count event.serial = 1 ∧
+      event ∈ final.journal ∧ event.owner = final.owner := by
+  obtain ⟨accepted, _, receipts, _⟩ := pump_cooperative (before.length + 1) arrivals s well
+  have serviced := prefix_served_despite_retirement_and_arrivals before after event (fun _ => false) accepted
+  rw [← queue] at serviced
+  have receipt : event.serial ∈ (pump (before.length + 1) arrivals s).receipts := by
+    rw [receipts]
+    exact List.mem_append_right _ (List.mem_map.mpr ⟨event, serviced, rfl⟩)
+  have finalWell := pump_wellFormed (before.length + 1) arrivals s well
+  have member : event ∈ pending s := by simp [queue]
+  have old : event ∈ s.journal := (List.mem_filter.mp member).1
+  obtain ⟨suffix, extended⟩ := pump_journal_extends (before.length + 1) arrivals s well
+  refine ⟨finalWell.2.2.2.2 event.serial receipt, ?_, ?_, ?_⟩
+  · simpa only [if_pos receipt] using finalWell.2.2.2.1.count (a := event.serial)
+  · rw [extended]
+    exact List.mem_append_left _ old
+  · exact (well.1.2.1 event old).trans (pump_preserves_owner _ arrivals s).symm
+
+theorem queued_message_service_bound (s : Inbox) (well : WellFormed s) (arrivals : Nat → List Event)
+    (event : Event) (queued : event ∈ pending s) :
+    ∃ slots ≤ (pending s).length,
+      (pump slots arrivals s).phase event.serial = some .settled ∧
+      (pump slots arrivals s).receipts.count event.serial = 1 ∧
+      event ∈ (pump slots arrivals s).journal ∧ event.owner = (pump slots arrivals s).owner := by
+  obtain ⟨before, after, shape⟩ := List.mem_iff_append.mp queued
+  refine ⟨before.length + 1, ?_, pending_prefix_service s well arrivals before after event shape⟩
+  simp [shape]
+
+/-- For every newly admitted physical event, the current pending prefix plus
+one committed settlement slot suffices. Equal client labels or payload codes
+supply no identity; only the admitted serial identifies this occurrence. -/
+theorem admitted_message_service_bound (s : Inbox) (well : WellFormed s) (event : Event)
+    (admitted : event.owner = s.owner ∧ s.phase event.serial = none) (arrivals : Nat → List Event) :
+    let final := pump ((pending s).length + 1) arrivals (record s event)
+    final.phase event.serial = some .settled ∧ final.receipts.count event.serial = 1 ∧
+      event ∈ final.journal ∧ event.owner = final.owner := by
+  exact pending_prefix_service (record s event) (step_wellFormed s (.arrival event) well) arrivals
+    (pending s) [] event (by simpa using record_pending_append s event well.1.1 admitted)
+
+/-- Receipts refer to unique actual source evidence owned by the same mailbox.
+The payload is that evidence's payload, rather than a lookup by equal label. -/
+theorem pump_receipt_origin (slots : Nat) (arrivals : Nat → List Event) (s : Inbox) (well : WellFormed s)
+    (serial : Nat) (received : serial ∈ (pump slots arrivals s).receipts) :
+    ∃ event ∈ (pump slots arrivals s).journal,
+      event.serial = serial ∧ event.owner = s.owner ∧
+      (pump slots arrivals s).phase serial = some .settled ∧
+      (pump slots arrivals s).receipts.count serial = 1 := by
+  have finalWell := pump_wellFormed slots arrivals s well
+  have settled := finalWell.2.2.2.2 serial received
+  have known := finalWell.2.2.1 serial (by simp [settled])
+  obtain ⟨event, member, same⟩ := List.mem_map.mp known
+  refine ⟨event, member, same, ?_, settled, ?_⟩
+  · exact (finalWell.1.2.1 event member).trans (pump_preserves_owner slots arrivals s)
+  · simpa only [if_pos received] using finalWell.2.2.2.1.count (a := serial)
+
+
+private theorem recordBurst_preserves_settlement (events : List Event) (s : Inbox)
+    (serial : Nat) (done : s.phase serial = some .settled) :
+    (recordBurst s events).phase serial = some .settled ∧
+      (recordBurst s events).receipts.count serial = s.receipts.count serial := by
+  induction events generalizing s with
+  | nil => exact ⟨done, rfl⟩
+  | cons event rest ih =>
+      have kept := settlement_never_reopened s (.arrival event) serial done
+      obtain ⟨settled, count⟩ := ih (record s event) kept
+      exact ⟨settled, count.trans (settled_step_cannot_add_another_receipt s (.arrival event) serial done)⟩
+
+private theorem serveOldest_preserves_settlement (s : Inbox) (serial : Nat)
+    (done : s.phase serial = some .settled) :
+    (serveOldest s).2.phase serial = some .settled ∧
+      (serveOldest s).2.receipts.count serial = s.receipts.count serial := by
+  cases queue : pending s with
+  | nil => simp [serveOldest, queue, done]
+  | cons event rest =>
+      have claimed := settlement_never_reopened s (.claim event.serial) serial done
+      have settled := settlement_never_reopened (claim s event.serial) (.settle event.serial) serial claimed
+      have count := (settled_step_cannot_add_another_receipt (claim s event.serial) (.settle event.serial) serial claimed).trans
+        (settled_step_cannot_add_another_receipt s (.claim event.serial) serial done)
+      simpa only [serveOldest, queue, receive_oldest s event rest queue, step] using And.intro settled count
+
+/-- Once settled, an occurrence cannot receive another receipt even across
+arbitrary later finite bursts and resumptions. -/
+theorem pump_preserves_settlement (slots : Nat) (arrivals : Nat → List Event) (s : Inbox)
+    (serial : Nat) (done : s.phase serial = some .settled) :
+    (pump slots arrivals s).phase serial = some .settled ∧
+      (pump slots arrivals s).receipts.count serial = s.receipts.count serial := by
+  induction slots generalizing arrivals s with
+  | zero => exact ⟨done, rfl⟩
+  | succ slots ih =>
+      have served := serveOldest_preserves_settlement s serial done
+      have admitted := recordBurst_preserves_settlement (arrivals 0) (serveOldest s).2 serial served.1
+      have resumed := ih (fun i => arrivals (i + 1)) (slot (arrivals 0) s) admitted.1
+      exact ⟨resumed.1, resumed.2.trans (admitted.2.trans served.2)⟩
+
+namespace Controls
+
+private def owner : Key := ⟨1, 0, 0⟩
+private def event (serial : Nat) (payload : Nat := 42) : Event := ⟨serial, owner, payload⟩
+private def two : Inbox := recordBurst (initial owner) [event 7, event 8]
+private def bursts : Nat → List Event
+  | 0 => [⟨9, ⟨2, 0, 0⟩, 42⟩, event 7 999, event 9]
+  | 1 => [event 8 999, event 10]
+  | _ => []
+
+/-- Equal payloads remain distinct occurrences. Foreign/repeated serials do not
+replace either original or jump the older pending prefix. -/
+theorem equal_payloads_late_bursts :
+    let final := pump 2 bursts two
+    final.receipts = [7, 8] ∧ pending final = [event 9, event 10] ∧
+      final.journal = [event 7, event 8, event 9, event 10] ∧
+      final.phase 7 = some .settled ∧ final.phase 8 = some .settled := by decide
+
+/-- With no queued work a slot admits its later burst; zero allowance leaves
+that complete mailbox untouched, and the next resumed slot settles it. -/
+theorem idle_arrival_zero_resume :
+    let arrivals : Nat → List Event := fun | 0 => [event 7] | _ => []
+    let arrived := pump 1 arrivals (initial owner)
+    pending arrived = [event 7] ∧ arrived.receipts = [] ∧
+      pump 0 arrivals arrived = arrived ∧
+      (pump 1 (fun i => arrivals (i + 1)) arrived).receipts = [7] ∧
+      pump 2 arrivals (initial owner) = pump 1 (fun i => arrivals (i + 1)) arrived := by
+  refine ⟨by decide, rfl, rfl, by decide, ?_⟩
+  exact pump_add 1 1 _ _
+
+/-- Claiming alone is not settlement. Waiting without a settlement action
+keeps the claim and produces no acknowledgment; recovery can retry it once. -/
+theorem claim_wait_recover_settle :
+    let claimed := receive two (fun _ => true)
+    let waiting := run [.wake, .arrival (event 9)] claimed
+    let retried := (serveOldest (recover waiting)).2
+    claimed.phase 7 = some .claimed ∧ claimed.receipts = [] ∧
+      waiting.phase 7 = some .claimed ∧ waiting.receipts = [] ∧
+      pending (recover waiting) = [event 7, event 8, event 9] ∧
+      retried.phase 7 = some .settled ∧ retried.receipts = [7] ∧
+      (settle retried 7).receipts = [7] := by decide
+
+/-- The older accounting predicate alone admits forged duplicate serials.
+The preserved stronger invariant excludes that state before a FIFO bound. -/
+theorem forged_serial_rejected_by_invariant :
+    let forged : Inbox := {
+      owner := owner
+      journal := [event 7, event 7 999]
+      phase := fun id => if id = 7 then some .queued else none }
+    invariant forged ∧ ¬ WellFormed forged := by
+  constructor
+  · simp [invariant, accounted, owned, safeSleep, event]
+  · intro well
+    have unique := well.2.1
+    simp [event] at unique
+
+end Controls
+
+#print axioms initial_wellFormed
+#print axioms step_wellFormed
+#print axioms run_wellFormed
+#print axioms recordBurst_extends
+#print axioms serveOldest_projection
+#print axioms served_event_origin
+#print axioms pump_wellFormed
+#print axioms pump_add
+#print axioms pump_journal_extends
+#print axioms pump_cooperative
+#print axioms pending_prefix_service
+#print axioms queued_message_service_bound
+#print axioms admitted_message_service_bound
+#print axioms pump_receipt_origin
+#print axioms pump_preserves_settlement
+#print axioms Controls.equal_payloads_late_bursts
+#print axioms Controls.idle_arrival_zero_resume
+#print axioms Controls.claim_wait_recover_settle
+#print axioms Controls.forged_serial_rejected_by_invariant
+
+end FiniteBurst
+
 end Mettapedia.Machines.EventPump

@@ -102,7 +102,7 @@ theorem positive_possibility_receipt (driver : Driver) (formula : driver.Formula
     ∃ view : FrontierView driver.backend source.val,
       (checkSource driver (.possibility formula) source budget).frontier = some ⟨source, view⟩ ∧
         ∃ receipt, receipt ∈ view.receipts ∧ driver.system.Step source.val (driver.backend.target source.val receipt) ∧
-          denotation driver.tests formula (driver.backend.target source.val receipt) := by
+          denotation driver.tests formula driver.backend.spatial.theory (driver.backend.target source.val receipt) := by
   refine ⟨frontierView driver.backend (run driver.backend driver.tests (.possibility formula) source.val budget),
     computed_frontier driver (.possibility formula) source budget true read, ?_⟩
   exact recorded_positive_receipt_evidence driver.backend driver.tests formula source.val budget
@@ -114,7 +114,7 @@ theorem negative_universal_counterreceipt (driver : Driver) (formula : driver.Fo
     ∃ view : FrontierView driver.backend source.val,
       (checkSource driver (.outgoingUniversal formula) source budget).frontier = some ⟨source, view⟩ ∧
         ∃ receipt, receipt ∈ view.receipts ∧ driver.system.Step source.val (driver.backend.target source.val receipt) ∧
-          ¬ denotation driver.tests formula (driver.backend.target source.val receipt) := by
+          ¬ denotation driver.tests formula driver.backend.spatial.theory (driver.backend.target source.val receipt) := by
   refine ⟨frontierView driver.backend (run driver.backend driver.tests (.outgoingUniversal formula) source.val budget),
     computed_frontier driver (.outgoingUniversal formula) source budget false read, ?_⟩
   exact recorded_negative_receipt_evidence driver.backend driver.tests formula source.val budget

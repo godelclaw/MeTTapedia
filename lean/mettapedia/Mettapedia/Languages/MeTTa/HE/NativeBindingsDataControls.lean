@@ -1,11 +1,17 @@
 import Mettapedia.Languages.MeTTa.HE.NativeBindingsData
-import Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
+import Mettapedia.Languages.MeTTa.HE.LeaTTaBindingMaterialization
 import Mettapedia.Languages.MeTTa.HE.LeaTTaScopedQuery
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
-# Binding-data retention and rejection controls
+# LeaTTa binding-codec retention and rejection controls
 
-The general guard, decoding and injectivity laws live in `NativeBindingsData`.
+These are downstream controls for the LeaTTa representation study. The
+codec guard, decoding and injectivity laws live in `NativeBindingsData`;
+neither module specifies HE evaluation.
 These controls retain duplicate relations and alias endpoints, check recursively
 stored values, and reject payload constructors outside the declared HE image.
 -/
@@ -30,10 +36,10 @@ def payload : Atom := .expression [.symbol "he-query-bindings-v1", .expression
 
 theorem ordered_encoding_retains_aliases_duplicates_and_values : bindingsData retained = some payload := by
   simp [bindingsData, bindingsInImage, retained, relationData, payload, atomInImage,
-    atomsInImage, LeaTTaTypeConformance.fromLeaTTaAtom, LeaTTaTypeConformance.fromLeaTTaAtoms]
+    atomsInImage, Spec.Match.SolutionTheory.decodeModelAtom, Spec.Match.SolutionTheory.decodeModelAtoms]
 
 theorem ordered_decoding_retains_aliases_duplicates_and_values : readBindings payload = some retained := by
-  simp [readBindings, readRelation, payload, retained, toLeaTTaAtom, toLeaTTaAtoms]
+  simp [readBindings, readRelation, payload, retained, encodeModelAtom, encodeModelAtoms]
 
 theorem exact_roundtrip : (bindingsData retained).bind readBindings = some retained := by
   rw [ordered_encoding_retains_aliases_duplicates_and_values]
@@ -49,7 +55,7 @@ theorem logical_projection_retains_nested_assignments :
       [("x#0", .symbol "a"),
         ("stored", .expression [.symbol "pair", .var "x#0", .var "other"])] := by
   simp [QueryBindingProjection.project, retained,
-    LeaTTaTypeConformance.fromLeaTTaAtom, LeaTTaTypeConformance.fromLeaTTaAtoms]
+    Spec.Match.SolutionTheory.decodeModelAtom, Spec.Match.SolutionTheory.decodeModelAtoms]
 
 theorem image_guard_accepts_inconsistent_values :
     (bindingsData [.val "x" (.sym "a"), .val "x" (.sym "b")]).isSome = true := by
@@ -60,11 +66,11 @@ theorem inconsistent_values_have_no_logical_model (valuation : String → Metta.
       (QueryBindingProjection.project [.val "x" (.sym "a"), .val "x" (.sym "b")]) := by
   intro satisfied
   have first := satisfied.1 "x" (.symbol "a") (by
-    simp [QueryBindingProjection.project, LeaTTaTypeConformance.fromLeaTTaAtom])
+    simp [QueryBindingProjection.project, Spec.Match.SolutionTheory.decodeModelAtom])
   have second := satisfied.1 "x" (.symbol "b") (by
-    simp [QueryBindingProjection.project, LeaTTaTypeConformance.fromLeaTTaAtom])
+    simp [QueryBindingProjection.project, Spec.Match.SolutionTheory.decodeModelAtom])
   have incompatible := first.symm.trans second
-  simp [toLeaTTaAtom, applyClassSolution] at incompatible
+  simp [encodeModelAtom, applyClassSolution] at incompatible
 
 def previous : Metta.Minimal.Stack :=
   [{ atom := .expr [.sym "saved", .var "pending"], vars := ["explicit"] }]
@@ -87,12 +93,12 @@ theorem empty_stack_omits_the_pending_name :
 theorem actual_work_item_constructs_an_independent_derivation
     {space : Space} {query lhs rhs : Atom} {counter : Nat} {item : Metta.Minimal.Item}
     (stored : .expression [.symbol "=", lhs, rhs] ∈ space.atoms)
-    (member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (toLeaTTaAtom query)
-      [] counter (toLeaTTaAtom lhs, toLeaTTaAtom rhs)) :
+    (member : item ∈ Metta.Minimal.queryOpItemsOfRule previous (encodeModelAtom query)
+      [] counter (encodeModelAtom lhs, encodeModelAtom rhs)) :
     ∃ emitted output merged,
       Spec.Eval.Steps.EquationQueryCandidateRel space (LeaTTaScopedQuery.liveScope previous) query
           (QueryBindingProjection.project []) emitted output ∧
-        item = Metta.Minimal.evalResult previous (toLeaTTaAtom emitted) merged ∧
+        item = Metta.Minimal.evalResult previous (encodeModelAtom emitted) merged ∧
         ScopedEquationQuery.BindingInvariant (QueryBindingProjection.project merged) merged ∧
         ∀ valuation,
           HEBindingSatisfied valuation output ↔

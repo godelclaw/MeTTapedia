@@ -10,26 +10,24 @@ import MettaHyperonFull.Proofs.Alpha
 import MettaHyperonFull.Proofs.IndexingComplete
 import MettaHyperonFull.Proofs.Preservation
 import MettaHyperonFull.Proofs.Substitution
+import Batteries.Tactic.OpenPrivate
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+
+open private lookup_eq_some_of_mem_assignment_nodup
+  from Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 /-!
-# HE <-> LeaTTa Bridge Basics
+# LeaTTa representation and implementation comparisons
 
-This file starts the Lean-side bridge between Mettapedia's HE atom/space
-interface and LeaTTa's verified Meta-MeTTa core. The first step is deliberately
-small and honest: a structural translation on atoms plus the shape-preservation
-lemmas that later simulation proofs will need.
+This module studies a third-party implementation. It is neither the HE source
+specification nor a conformance oracle for HE. Independent HE source judgments
+and binding mathematics are imported here; they do not depend on this study.
 
-What is proved here:
-
-* `toLeaTTaAtom` / `toLeaTTaSpace` - structural translation
-* head-key preservation on the symbol-headed fragment
-* equation-rule extraction preservation
-
-What is intentionally deferred:
-
-* matching/unification correspondence
-* QUERY/equation-step simulation
-* grounded numeric-tower alignment
+Structural model encoding lives in `Spec.Match.SolutionTheory`. This downstream
+module relates that encoding to LeaTTa spaces, substitutions and implementation
+operations. Each comparison is restricted to its explicit hypotheses; it does
+not establish that the implementation realizes the whole HE language.
 -/
 
 namespace Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
@@ -38,21 +36,21 @@ open Mettapedia.Languages.MeTTa.OSLFCore
 open Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge
 
 /-- Numeric boundary: HE grounded values never translate to LeaTTa host floats. -/
-theorem toLeaTTaGround_ne_float (g : GroundedValue) (f : Float) :
-    toLeaTTaGround g ≠ .float f := by
-  cases g <;> simp [toLeaTTaGround]
+theorem encodeModelGround_ne_float (g : GroundedValue) (f : Float) :
+    encodeModelGround g ≠ .float f := by
+  cases g <;> simp [encodeModelGround]
 
 /-- Runtime boundary: HE grounded values never translate to LeaTTa's host-side
 unit payload. -/
-theorem toLeaTTaGround_ne_unit (g : GroundedValue) :
-    toLeaTTaGround g ≠ .unit := by
-  cases g <;> simp [toLeaTTaGround]
+theorem encodeModelGround_ne_unit (g : GroundedValue) :
+    encodeModelGround g ≠ .unit := by
+  cases g <;> simp [encodeModelGround]
 
 /-- Error-contour boundary: HE grounded values never translate directly to
 LeaTTa's grounded `error` payload constructor. -/
-theorem toLeaTTaGround_ne_error (g : GroundedValue) (msg : String) :
-    toLeaTTaGround g ≠ .error msg := by
-  cases g <;> simp [toLeaTTaGround]
+theorem encodeModelGround_ne_error (g : GroundedValue) (msg : String) :
+    encodeModelGround g ≠ .error msg := by
+  cases g <;> simp [encodeModelGround]
 
 @[simp] private theorem substOccurs_symbol (v s : String) :
     Metta.Subst.occurs v (Metta.Atom.sym s) = false := by
@@ -62,8 +60,8 @@ theorem toLeaTTaGround_ne_error (g : GroundedValue) (msg : String) :
     Metta.Subst.occurs v (Metta.Atom.gnd g) = false := by
   simp [Metta.Subst.occurs]
 
-private theorem toLeaTTaGround_equiv_self (g : GroundedValue) :
-    Metta.Ground.equiv (toLeaTTaGround g) (toLeaTTaGround g) = true := by
+private theorem encodeModelGround_equiv_self (g : GroundedValue) :
+    Metta.Ground.equiv (encodeModelGround g) (encodeModelGround g) = true := by
   cases g with
   | int n =>
       change (Metta.Ground.int n == Metta.Ground.int n) = true
@@ -83,13 +81,13 @@ private theorem toLeaTTaGround_equiv_self (g : GroundedValue) :
       change ((typeName == typeName) && (payload == payload)) = true
       simp
 
-theorem toLeaTTaAtom_grounded_equiv_self (g : GroundedValue) :
-    Metta.Atom.equiv (toLeaTTaAtom (.grounded g)) (toLeaTTaAtom (.grounded g)) = true := by
-  simpa [toLeaTTaAtom, Metta.Atom.equiv] using toLeaTTaGround_equiv_self g
+theorem encodeModelAtom_grounded_equiv_self (g : GroundedValue) :
+    Metta.Atom.equiv (encodeModelAtom (.grounded g)) (encodeModelAtom (.grounded g)) = true := by
+  simpa [encodeModelAtom, Metta.Atom.equiv] using encodeModelGround_equiv_self g
 
 /-- Translate an HE space into a LeaTTa space by translating its atom list. -/
 def toLeaTTaSpace (space : Space) : Metta.Space :=
-  ⟨toLeaTTaAtoms space.atoms⟩
+  ⟨encodeModelAtoms space.atoms⟩
 
 /-- HE-side analogue of LeaTTa's `headKey`, used to state shape preservation
 without prematurely committing to the whole step relation. -/
@@ -104,7 +102,7 @@ Assignments are processed right-to-left so that the leftmost HE lookup wins,
 matching `List.lookup` on the original assignment list. -/
 def toLeaTTaSubst : List (String × Atom) → Metta.Subst
   | [] => []
-  | (v, a) :: rest => Metta.Subst.extend (toLeaTTaSubst rest) v (toLeaTTaAtom a)
+  | (v, a) :: rest => Metta.Subst.extend (toLeaTTaSubst rest) v (encodeModelAtom a)
 
 /-- Matcher-oriented LeaTTa substitution induced by an HE assignment list.
 
@@ -112,7 +110,7 @@ HE's `simpleMatch` appends fresh assignments as variables are first discovered,
 while LeaTTa's matcher-facing bindings grow by prepending fresh `val` relations.
 Reversing the HE assignment list aligns the two concrete binding orders. -/
 def toLeaTTaMatchSubst (assigns : List (String × Atom)) : Metta.Subst :=
-  assigns.reverse.map fun (v, a) => (v, toLeaTTaAtom a)
+  assigns.reverse.map fun (v, a) => (v, encodeModelAtom a)
 
 /-- Assignment-only LeaTTa bindings induced by the HE assignment interface. -/
 def toLeaTTaAssignmentBindings (b : Bindings) : Metta.Bindings :=
@@ -129,7 +127,7 @@ def toLeaTTaMatchBindings (b : Bindings) : Metta.Bindings :=
 all other targets are direct values. -/
 def toLeaTTaAssignmentRel : String × Atom → Metta.BindingRel
   | (v, .var w) => .eq v w
-  | (v, value) => .val v (toLeaTTaAtom value)
+  | (v, value) => .val v (encodeModelAtom value)
 
 /-- Concrete normal form of the assignment-only matcher translation. -/
 theorem toLeaTTaMatchBindings_eq_map (b : Bindings) :
@@ -166,7 +164,7 @@ def LeaValueRelEquiv (b : Bindings) (lb : Metta.Bindings) : Prop :=
   ∀ v value,
     Metta.BindingRel.val v value ∈ lb ↔
       ∃ heValue, (v, heValue) ∈ b.assignments ∧
-        value = toLeaTTaAtom heValue
+        value = encodeModelAtom heValue
 
 /-- Order-free equality-edge agreement. Equality is symmetric in the official
 binding-set semantics, so relation orientation is deliberately quotiented. -/
@@ -183,17 +181,6 @@ not fields smuggled into this definition. -/
 structure LeaBindingRelEquiv (b : Bindings) (lb : Metta.Bindings) : Prop where
   values : LeaValueRelEquiv b lb
   equalities : LeaEqualityRelEquiv b lb
-
-/-- Boundary predicate for the fragment where HE's recursive `resolve` agrees
-with LeaTTa's one-pass substitution: no HE lookup produces a bare variable. -/
-def NoVarAssignmentValues (b : Bindings) : Prop :=
-  ∀ ⦃v x⦄, b.lookup v = some (.var x) → False
-
-/-- Syntactic form of the same matcher invariant: no stored assignment has a
-bare-variable value. Unlike `NoVarAssignmentValues`, this sees every list entry
-and therefore needs no uniqueness premise when used directly. -/
-def NoBareVarAssignments (b : Bindings) : Prop :=
-  ∀ ⦃v x⦄, (v, .var x) ∉ b.assignments
 
 @[simp] theorem toLeaTTaEqualityBindings_empty :
     toLeaTTaEqualityBindings Bindings.empty = [] := rfl
@@ -236,7 +223,7 @@ example :
         Metta.BindingRel.eq "p" "q"] := by
   constructor
   · intro v value
-    simp [toLeaTTaAtom]
+    simp [encodeModelAtom]
   · intro x y
     simp only [List.mem_cons, List.not_mem_nil,
       or_false, Metta.BindingRel.eq.injEq, Prod.mk.injEq]
@@ -251,7 +238,7 @@ example :
         ⟨[("r", .symbol "a")], [("q", "p")]⟩ := by
   simp [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
     toLeaTTaMatchBindings, toLeaTTaMatchSubst, Metta.Bindings.ofSubst,
-    toLeaTTaAtom]
+    encodeModelAtom]
 
 private theorem noVarAssignmentValues_of_extends
     {seed result : Bindings}
@@ -261,14 +248,14 @@ private theorem noVarAssignmentValues_of_extends
   intro v x hlookup
   exact hno (hext v (.var x) hlookup)
 
-private theorem mem_toLeaTTaAtoms_of_mem {atoms : List Atom} {a : Atom}
+private theorem mem_encodeModelAtoms_of_mem {atoms : List Atom} {a : Atom}
     (h : a ∈ atoms) :
-    toLeaTTaAtom a ∈ toLeaTTaAtoms atoms := by
+    encodeModelAtom a ∈ encodeModelAtoms atoms := by
   induction atoms with
   | nil => cases h
   | cons hd tl ih =>
       simp at h ⊢
-      exact h.elim (fun h => Or.inl (congrArg toLeaTTaAtom h))
+      exact h.elim (fun h => Or.inl (congrArg encodeModelAtom h))
         (fun h => Or.inr (ih h))
 
 @[simp] theorem toLeaTTaSubst_nil :
@@ -276,7 +263,7 @@ private theorem mem_toLeaTTaAtoms_of_mem {atoms : List Atom} {a : Atom}
 
 @[simp] theorem toLeaTTaSubst_cons (v : String) (a : Atom) (rest : List (String × Atom)) :
     toLeaTTaSubst ((v, a) :: rest) =
-      Metta.Subst.extend (toLeaTTaSubst rest) v (toLeaTTaAtom a) := rfl
+      Metta.Subst.extend (toLeaTTaSubst rest) v (encodeModelAtom a) := rfl
 
 @[simp] theorem toLeaTTaMatchSubst_nil :
     toLeaTTaMatchSubst [] = [] := rfl
@@ -285,15 +272,15 @@ private theorem mem_toLeaTTaAtoms_of_mem {atoms : List Atom} {a : Atom}
     toLeaTTaMatchBindings Bindings.empty = [] := by
   rfl
 
-/-- List companion to `toLeaTTaAtom_beq_self`. -/
-private theorem toLeaTTaAtoms_beqList_self (es : List Atom)
-    (hself : ∀ x ∈ es, (toLeaTTaAtom x == toLeaTTaAtom x) = true) :
-    Metta.Atom.beqList (toLeaTTaAtoms es) (toLeaTTaAtoms es) = true := by
+/-- List companion to `encodeModelAtom_beq_self`. -/
+private theorem encodeModelAtoms_beqList_self (es : List Atom)
+    (hself : ∀ x ∈ es, (encodeModelAtom x == encodeModelAtom x) = true) :
+    Metta.Atom.beqList (encodeModelAtoms es) (encodeModelAtoms es) = true := by
   induction es with
   | nil =>
-      simp [toLeaTTaAtoms, Metta.Atom.beqList]
+      simp [encodeModelAtoms, Metta.Atom.beqList]
   | cons e es ihTail =>
-      simp only [toLeaTTaAtoms, Metta.Atom.beqList, Bool.and_eq_true]
+      simp only [encodeModelAtoms, Metta.Atom.beqList, Bool.and_eq_true]
       constructor
       · exact hself e (List.Mem.head es)
       · exact ihTail (fun x hx => hself x (List.Mem.tail e hx))
@@ -301,8 +288,8 @@ private theorem toLeaTTaAtoms_beqList_self (es : List Atom)
 /-- The HE->LeaTTa translation lands in the reflexive fragment of LeaTTa's
 structural Boolean atom equality: no translated grounded payload is a host
 float, so self-comparison reduces to `true`. -/
-theorem toLeaTTaAtom_beq_self (a : Atom) :
-    (toLeaTTaAtom a == toLeaTTaAtom a) = true := by
+theorem encodeModelAtom_beq_self (a : Atom) :
+    (encodeModelAtom a == encodeModelAtom a) = true := by
   match a with
   | .symbol s =>
       change (s == s) = true
@@ -329,8 +316,8 @@ theorem toLeaTTaAtom_beq_self (a : Atom) :
           change ((typeName == typeName) && (payload == payload)) = true
           simp
   | .expression es =>
-      change Metta.Atom.beqList (toLeaTTaAtoms es) (toLeaTTaAtoms es) = true
-      exact toLeaTTaAtoms_beqList_self es (fun x _ => toLeaTTaAtom_beq_self x)
+      change Metta.Atom.beqList (encodeModelAtoms es) (encodeModelAtoms es) = true
+      exact encodeModelAtoms_beqList_self es (fun x _ => encodeModelAtom_beq_self x)
   termination_by sizeOf a
 
 @[simp] theorem AssignmentsNodup.empty :
@@ -698,45 +685,6 @@ private theorem lookup_none_of_not_mem_assignment_keys {xs : List (String × Ato
         simp [hvk]
       simp [List.lookup_cons, hbeq, ih htail]
 
-private theorem lookup_eq_some_of_mem_assignment_nodup
-    {xs : List (String × Atom)} (hkeys : (xs.map Prod.fst).Nodup)
-    {v : String} {a : Atom} (hmem : (v, a) ∈ xs) :
-    List.lookup v xs = some a := by
-  induction xs with
-  | nil =>
-      cases hmem
-  | cons hd tl ih =>
-      rcases hd with ⟨k, b⟩
-      simp at hmem
-      have hkeys' : (tl.map Prod.fst).Nodup := by
-        simpa using (List.nodup_cons.mp hkeys).2
-      cases hmem with
-      | inl hEq =>
-          rcases hEq with ⟨rfl, rfl⟩
-          simp
-      | inr hmemtl =>
-          have hknot : k ∉ tl.map Prod.fst := by
-            simpa using (List.nodup_cons.mp hkeys).1
-          have hvk : v ≠ k := by
-            intro hvk
-            apply hknot
-            have hvmem : v ∈ tl.map Prod.fst := by
-              exact List.mem_map_of_mem hmemtl
-            simpa [hvk] using hvmem
-          have hbeq : (v == k) = false := by
-            simp [hvk]
-          simp [List.lookup_cons, hbeq, ih hkeys' hmemtl]
-
-/-- Lookup-level absence of variable values implies syntactic absence when HE
-assignment keys are unique. -/
-theorem noBareVarAssignments_of_noVarAssignmentValues
-    {b : Bindings} (hkeys : AssignmentsNodup b)
-    (hno : NoVarAssignmentValues b) :
-    NoBareVarAssignments b := by
-  intro v x hmem
-  apply hno
-  exact lookup_eq_some_of_mem_assignment_nodup hkeys hmem
-
 /-- Under the matcher invariant, value-relation membership in the canonical
 assignment translation is exactly translated HE assignment membership. -/
 theorem mem_val_toLeaTTaMatchBindings_iff
@@ -744,7 +692,7 @@ theorem mem_val_toLeaTTaMatchBindings_iff
     (v : String) (value : Metta.Atom) :
     Metta.BindingRel.val v value ∈ toLeaTTaMatchBindings b ↔
       ∃ heValue, (v, heValue) ∈ b.assignments ∧
-        value = toLeaTTaAtom heValue := by
+        value = encodeModelAtom heValue := by
   rw [toLeaTTaMatchBindings_eq_map]
   constructor
   · intro hmem
@@ -853,8 +801,8 @@ private theorem lookup_reverse_eq_of_assignmentKeysNodup
       exact lookup_eq_some_of_mem_assignment_nodup hkeysRev hmemRev
 
 private theorem toLeaTTaSubst_lookup_map (assigns : List (String × Atom)) (v : String) :
-    Metta.Subst.lookup (assigns.map fun (x, a) => (x, toLeaTTaAtom a)) v =
-      Option.map toLeaTTaAtom (List.lookup v assigns) := by
+    Metta.Subst.lookup (assigns.map fun (x, a) => (x, encodeModelAtom a)) v =
+      Option.map encodeModelAtom (List.lookup v assigns) := by
   induction assigns with
   | nil =>
       rfl
@@ -892,7 +840,7 @@ private theorem toLeaTTaSubst_keys_nodup (assigns : List (String × Atom)) :
 
 @[simp] theorem toLeaTTaMatchSubst_lookup (assigns : List (String × Atom)) (v : String) :
     Metta.Subst.lookup (toLeaTTaMatchSubst assigns) v =
-      Option.map toLeaTTaAtom (List.lookup v assigns.reverse) := by
+      Option.map encodeModelAtom (List.lookup v assigns.reverse) := by
   unfold toLeaTTaMatchSubst
   simpa using toLeaTTaSubst_lookup_map assigns.reverse v
 
@@ -900,7 +848,7 @@ private theorem toLeaTTaSubst_keys_nodup (assigns : List (String × Atom)) :
 interface as HE's `Bindings.lookup`. -/
 @[simp] theorem toLeaTTaSubst_lookup (assigns : List (String × Atom)) (v : String) :
     Metta.Subst.lookup (toLeaTTaSubst assigns) v =
-      Option.map toLeaTTaAtom (List.lookup v assigns) := by
+      Option.map encodeModelAtom (List.lookup v assigns) := by
   induction assigns with
   | nil =>
       rfl
@@ -985,7 +933,7 @@ equality-class resolution instead. -/
 non-variable HE assignments. Variable assignments are equality relations. -/
 @[simp] theorem toLeaTTaAssignmentBindings_lookupVal (b : Bindings) (v : String) :
     Metta.Bindings.lookupVal (toLeaTTaAssignmentBindings b) v =
-      (Option.map toLeaTTaAtom (b.lookup v)).bind directSubstValue := by
+      (Option.map encodeModelAtom (b.lookup v)).bind directSubstValue := by
   rw [toLeaTTaAssignmentBindings,
     lookupVal_ofSubst_of_nodup _ (toLeaTTaSubst_keys_nodup b.assignments)]
   simp [Bindings.lookup, toLeaTTaSubst_lookup]
@@ -1003,7 +951,7 @@ private def LeaLookupExt (b : Bindings) (lb : Metta.Bindings) : Prop :=
 @[simp] theorem toLeaTTaMatchBindings_lookupVal_of_nodup
     {b : Bindings} (hkeys : AssignmentsNodup b) (v : String) :
     Metta.Bindings.lookupVal (toLeaTTaMatchBindings b) v =
-      (Option.map toLeaTTaAtom (b.lookup v)).bind directSubstValue := by
+      (Option.map encodeModelAtom (b.lookup v)).bind directSubstValue := by
   unfold AssignmentsNodup at hkeys
   unfold toLeaTTaMatchBindings
   rw [lookupVal_ofSubst_of_nodup]
@@ -1062,7 +1010,7 @@ private def addTranslatedAssignment
     (lb : Metta.Bindings) (v : String) (val : Atom) : Metta.Bindings :=
   match val with
   | .var w => Metta.Bindings.addEqRaw lb v w
-  | _ => Metta.Bindings.addValRaw lb v (toLeaTTaAtom val)
+  | _ => Metta.Bindings.addValRaw lb v (encodeModelAtom val)
 
 private theorem LeaLookupExt.addTranslatedAssignment_of_lookup_none
     {b : Bindings} {lb : Metta.Bindings} {v : String} {val : Atom}
@@ -1093,9 +1041,9 @@ private theorem LeaLookupExt.addTranslatedAssignment_of_lookup_none
       · subst w
         have hassign : (b.assign v (.symbol s)).lookup v = some (.symbol s) :=
           lookup_assign_of_lookup_none b v (.symbol s) h
-        simp [addTranslatedAssignment, hassign, toLeaTTaAtom, directSubstValue]
+        simp [addTranslatedAssignment, hassign, encodeModelAtom, directSubstValue]
       · simp only [addTranslatedAssignment]
-        rw [lookupVal_addValRaw_of_ne lb (a := toLeaTTaAtom (.symbol s)) hw,
+        rw [lookupVal_addValRaw_of_ne lb (a := encodeModelAtom (.symbol s)) hw,
           assign_lookup_ne b v (.symbol s) w hw h]
         exact hseed w
   | grounded g =>
@@ -1103,9 +1051,9 @@ private theorem LeaLookupExt.addTranslatedAssignment_of_lookup_none
       · subst w
         have hassign : (b.assign v (.grounded g)).lookup v = some (.grounded g) :=
           lookup_assign_of_lookup_none b v (.grounded g) h
-        simp [addTranslatedAssignment, hassign, toLeaTTaAtom, directSubstValue]
+        simp [addTranslatedAssignment, hassign, encodeModelAtom, directSubstValue]
       · simp only [addTranslatedAssignment]
-        rw [lookupVal_addValRaw_of_ne lb (a := toLeaTTaAtom (.grounded g)) hw,
+        rw [lookupVal_addValRaw_of_ne lb (a := encodeModelAtom (.grounded g)) hw,
           assign_lookup_ne b v (.grounded g) w hw h]
         exact hseed w
   | expression es =>
@@ -1113,9 +1061,9 @@ private theorem LeaLookupExt.addTranslatedAssignment_of_lookup_none
       · subst w
         have hassign : (b.assign v (.expression es)).lookup v = some (.expression es) :=
           lookup_assign_of_lookup_none b v (.expression es) h
-        simp [addTranslatedAssignment, hassign, toLeaTTaAtom, directSubstValue]
+        simp [addTranslatedAssignment, hassign, encodeModelAtom, directSubstValue]
       · simp only [addTranslatedAssignment]
-        rw [lookupVal_addValRaw_of_ne lb (a := toLeaTTaAtom (.expression es)) hw,
+        rw [lookupVal_addValRaw_of_ne lb (a := encodeModelAtom (.expression es)) hw,
           assign_lookup_ne b v (.expression es) w hw h]
         exact hseed w
 
@@ -1291,11 +1239,11 @@ private theorem instantiate_eq_toLeaTTaMatchBindings_of_lookupExt
     {b : Bindings} {lb : Metta.Bindings}
     (_hkeys : AssignmentsNodup b) (hlookup : LeaLookupExt b lb) :
     ∀ a : Atom,
-      Metta.instantiate lb (toLeaTTaAtom a) =
-        Metta.instantiate (toLeaTTaMatchBindings b) (toLeaTTaAtom a) := by
+      Metta.instantiate lb (encodeModelAtom a) =
+        Metta.instantiate (toLeaTTaMatchBindings b) (encodeModelAtom a) := by
   intro a
   exact instantiate_eq_of_resolve_readout_on_vars lb
-    (toLeaTTaMatchBindings b) (toLeaTTaAtom a) (fun v _ => hlookup v)
+    (toLeaTTaMatchBindings b) (encodeModelAtom a) (fun v _ => hlookup v)
 
 private theorem removeVal_of_lookupVal_none {bs : Metta.Bindings} {v : String}
     (h : Metta.Bindings.lookupVal bs v = none) :
@@ -1350,7 +1298,7 @@ private theorem toLeaTTaMatchBindings_assign_of_lookup_none
     {b : Bindings} {v : String} {val : Atom}
     (hkeys : AssignmentsNodup b) (h : b.lookup v = none) :
     toLeaTTaMatchBindings (b.assign v val) =
-      Metta.Bindings.addValRaw (toLeaTTaMatchBindings b) v (toLeaTTaAtom val) := by
+      Metta.Bindings.addValRaw (toLeaTTaMatchBindings b) v (encodeModelAtom val) := by
   have hassign :
       b.assign v val = { b with assignments := b.assignments ++ [(v, val)] } := by
     simp [Bindings.assign, Bindings.isBound, h]
@@ -1360,10 +1308,10 @@ private theorem toLeaTTaMatchBindings_assign_of_lookup_none
   unfold toLeaTTaMatchBindings toLeaTTaMatchSubst
   simp [List.reverse_append, Metta.Bindings.addValRaw]
   change
-    Metta.BindingRel.val v (toLeaTTaAtom val) ::
-        Metta.Bindings.ofSubst ((List.map (fun x => (x.1, toLeaTTaAtom x.2)) b.assignments).reverse) =
-      Metta.BindingRel.val v (toLeaTTaAtom val) ::
-        (Metta.Bindings.ofSubst ((List.map (fun x => (x.1, toLeaTTaAtom x.2)) b.assignments).reverse)).removeVal v
+    Metta.BindingRel.val v (encodeModelAtom val) ::
+        Metta.Bindings.ofSubst ((List.map (fun x => (x.1, encodeModelAtom x.2)) b.assignments).reverse) =
+      Metta.BindingRel.val v (encodeModelAtom val) ::
+        (Metta.Bindings.ofSubst ((List.map (fun x => (x.1, encodeModelAtom x.2)) b.assignments).reverse)).removeVal v
   congr 1
   simpa [toLeaTTaMatchBindings, toLeaTTaMatchSubst] using
     (removeVal_of_lookupVal_none hlookupNone).symm
@@ -1372,7 +1320,7 @@ private theorem merge_singleton_val_of_lookup_none
     {b : Bindings} {v : String} {val : Atom}
     (hkeys : AssignmentsNodup b) (h : b.lookup v = none) :
     Metta.Bindings.merge (toLeaTTaMatchBindings b)
-        [Metta.BindingRel.val v (toLeaTTaAtom val)] =
+        [Metta.BindingRel.val v (encodeModelAtom val)] =
       [toLeaTTaMatchBindings (b.assign v val)] := by
   have hlookupNone : Metta.Bindings.lookupVal (toLeaTTaMatchBindings b) v = none := by
     simpa [h] using toLeaTTaMatchBindings_lookupVal_of_nodup hkeys v
@@ -1384,18 +1332,18 @@ private theorem merge_singleton_val_of_lookup_some_eq
     {b : Bindings} {v : String} {val : Atom}
     (hkeys : AssignmentsNodup b) (h : b.lookup v = some val) :
     Metta.Bindings.merge (toLeaTTaMatchBindings b)
-        [Metta.BindingRel.val v (toLeaTTaAtom val)] =
+        [Metta.BindingRel.val v (encodeModelAtom val)] =
       [toLeaTTaMatchBindings b] := by
-  have hlookup : Metta.Bindings.lookupVal (toLeaTTaMatchBindings b) v = some (toLeaTTaAtom val) := by
+  have hlookup : Metta.Bindings.lookupVal (toLeaTTaMatchBindings b) v = some (encodeModelAtom val) := by
     simpa [h] using toLeaTTaMatchBindings_lookupVal_of_nodup hkeys v
-  exact merge_singleton_val_of_lookup_some_eq_ext hlookup (toLeaTTaAtom_beq_self val)
+  exact merge_singleton_val_of_lookup_some_eq_ext hlookup (encodeModelAtom_beq_self val)
 
 theorem leattaMergeSingletonVal_lookupEq_assign_of_lookup_none
     {b : Bindings} {v : String} {val : Atom}
     (hkeys : AssignmentsNodup b) (h : b.lookup v = none) :
     ∃ emitted,
       emitted ∈ Metta.Bindings.merge (toLeaTTaMatchBindings b)
-        [Metta.BindingRel.val v (toLeaTTaAtom val)] ∧
+        [Metta.BindingRel.val v (encodeModelAtom val)] ∧
       LeaBindingsLookupEq emitted (toLeaTTaMatchBindings (b.assign v val)) := by
   refine ⟨toLeaTTaMatchBindings (b.assign v val), ?_, LeaBindingsLookupEq.refl _⟩
   rw [merge_singleton_val_of_lookup_none hkeys h]
@@ -1406,7 +1354,7 @@ theorem leattaMergeSingletonVal_lookupEq_same_of_lookup_some
     (hkeys : AssignmentsNodup b) (h : b.lookup v = some val) :
     ∃ emitted,
       emitted ∈ Metta.Bindings.merge (toLeaTTaMatchBindings b)
-        [Metta.BindingRel.val v (toLeaTTaAtom val)] ∧
+        [Metta.BindingRel.val v (encodeModelAtom val)] ∧
       LeaBindingsLookupEq emitted (toLeaTTaMatchBindings b) := by
   refine ⟨toLeaTTaMatchBindings b, ?_, LeaBindingsLookupEq.refl _⟩
   rw [merge_singleton_val_of_lookup_some_eq hkeys h]
@@ -1422,18 +1370,18 @@ private theorem simpleMatch_var_seeded_lookup_bridge_of_ne_self
     {target : Atom} {b qb : Bindings} {lb : Metta.Bindings} {v : String} {fuel : Nat}
     (_hkeys : AssignmentsNodup b) (hseed : LeaLookupExt b lb)
     (hnotself : target ≠ .var v)
-    (hoccurs : v ∉ (toLeaTTaAtom target).vars)
+    (hoccurs : v ∉ (encodeModelAtom target).vars)
     (hmatch : simpleMatch (.var v) target b fuel = some qb) :
     ∃ lb',
-      lb' ∈ (Metta.matchAtoms (.var v) (toLeaTTaAtom target)).flatMap
+      lb' ∈ (Metta.matchAtoms (.var v) (encodeModelAtom target)).flatMap
         (fun mb => Metta.Bindings.merge lb mb) ∧
       LeaLookupExt qb lb' := by
   cases fuel with
   | zero =>
       simp [simpleMatch] at hmatch
   | succ n =>
-      have hoccursEq : Metta.Subst.occurs v (toLeaTTaAtom target) = false :=
-        occurs_eq_false_of_not_mem_vars v (toLeaTTaAtom target) hoccurs
+      have hoccursEq : Metta.Subst.occurs v (encodeModelAtom target) = false :=
+        occurs_eq_false_of_not_mem_vars v (encodeModelAtom target) hoccurs
       cases hlook : b.lookup v with
       | none =>
           simp [simpleMatch, hlook] at hmatch
@@ -1449,7 +1397,7 @@ private theorem simpleMatch_var_seeded_lookup_bridge_of_ne_self
                 · refine List.mem_flatMap.mpr ?_
                   refine ⟨[Metta.BindingRel.val v (Metta.Atom.var w)], ?_, ?_⟩
                   · have hneq : v ≠ w := by simpa [eq_comm] using hwv
-                    simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hneq]
+                    simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hneq]
                   · rw [merge_singleton_val_of_lookup_none_ext hlbnone]
                     simp
                 · exact LeaLookupExt.addValRaw_of_lookup_none hseed hlook
@@ -1459,30 +1407,30 @@ private theorem simpleMatch_var_seeded_lookup_bridge_of_ne_self
               refine ⟨Metta.Bindings.addValRaw lb v (Metta.Atom.sym s), ?_, ?_⟩
               · refine List.mem_flatMap.mpr ?_
                 refine ⟨[Metta.BindingRel.val v (Metta.Atom.sym s)], ?_, ?_⟩
-                · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                 · rw [merge_singleton_val_of_lookup_none_ext hlbnone]
                   simp
               · exact LeaLookupExt.addValRaw_of_lookup_none hseed hlook
           | grounded g =>
               have hlbnone : Metta.Bindings.lookupVal lb v = none := by
                 simpa [hlook] using hseed v
-              refine ⟨Metta.Bindings.addValRaw lb v (Metta.Atom.gnd (toLeaTTaGround g)), ?_, ?_⟩
+              refine ⟨Metta.Bindings.addValRaw lb v (Metta.Atom.gnd (encodeModelGround g)), ?_, ?_⟩
               · refine List.mem_flatMap.mpr ?_
-                refine ⟨[Metta.BindingRel.val v (Metta.Atom.gnd (toLeaTTaGround g))], ?_, ?_⟩
-                · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                refine ⟨[Metta.BindingRel.val v (Metta.Atom.gnd (encodeModelGround g))], ?_, ?_⟩
+                · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                 · rw [merge_singleton_val_of_lookup_none_ext hlbnone]
                   simp
               · exact LeaLookupExt.addValRaw_of_lookup_none hseed hlook
           | expression es =>
               have hoccursExpr :
-                  Metta.Subst.occurs v (Metta.Atom.expr (toLeaTTaAtoms es)) = false := by
-                simpa [toLeaTTaAtom] using hoccursEq
+                  Metta.Subst.occurs v (Metta.Atom.expr (encodeModelAtoms es)) = false := by
+                simpa [encodeModelAtom] using hoccursEq
               have hlbnone : Metta.Bindings.lookupVal lb v = none := by
                 simpa [hlook] using hseed v
-              refine ⟨Metta.Bindings.addValRaw lb v (Metta.Atom.expr (toLeaTTaAtoms es)), ?_, ?_⟩
+              refine ⟨Metta.Bindings.addValRaw lb v (Metta.Atom.expr (encodeModelAtoms es)), ?_, ?_⟩
               · refine List.mem_flatMap.mpr ?_
-                refine ⟨[Metta.BindingRel.val v (Metta.Atom.expr (toLeaTTaAtoms es))], ?_, ?_⟩
-                · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hoccursExpr]
+                refine ⟨[Metta.BindingRel.val v (Metta.Atom.expr (encodeModelAtoms es))], ?_, ?_⟩
+                · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hoccursExpr]
                 · rw [merge_singleton_val_of_lookup_none_ext hlbnone]
                   simp
               · exact LeaLookupExt.addValRaw_of_lookup_none hseed hlook
@@ -1498,48 +1446,48 @@ private theorem simpleMatch_var_seeded_lookup_bridge_of_ne_self
                   refine ⟨lb, ?_, hseed⟩
                   refine List.mem_flatMap.mpr ?_
                   refine ⟨[], ?_, ?_⟩
-                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                   · rw [merge_empty_right]
                     simp
                 · have hlb : Metta.Bindings.lookupVal lb v = some (Metta.Atom.var w) := by
-                    simpa [hlook, toLeaTTaAtom] using hseed v
+                    simpa [hlook, encodeModelAtom] using hseed v
                   refine ⟨lb, ?_, hseed⟩
                   refine List.mem_flatMap.mpr ?_
                   refine ⟨[Metta.BindingRel.val v (Metta.Atom.var w)], ?_, ?_⟩
                   · have hneq : v ≠ w := by simpa [eq_comm] using hwv
-                    simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hneq]
-                  · rw [merge_singleton_val_of_lookup_some_eq_ext hlb (toLeaTTaAtom_beq_self (.var w))]
+                    simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hneq]
+                  · rw [merge_singleton_val_of_lookup_some_eq_ext hlb (encodeModelAtom_beq_self (.var w))]
                     simp
             | symbol s =>
                 have hlb : Metta.Bindings.lookupVal lb v = some (Metta.Atom.sym s) := by
-                  simpa [hlook, toLeaTTaAtom] using hseed v
+                  simpa [hlook, encodeModelAtom] using hseed v
                 refine ⟨lb, ?_, hseed⟩
                 refine List.mem_flatMap.mpr ?_
                 refine ⟨[Metta.BindingRel.val v (Metta.Atom.sym s)], ?_, ?_⟩
-                · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
-                · rw [merge_singleton_val_of_lookup_some_eq_ext hlb (toLeaTTaAtom_beq_self (.symbol s))]
+                · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
+                · rw [merge_singleton_val_of_lookup_some_eq_ext hlb (encodeModelAtom_beq_self (.symbol s))]
                   simp
             | grounded g =>
-                have hlb : Metta.Bindings.lookupVal lb v = some (Metta.Atom.gnd (toLeaTTaGround g)) := by
-                  simpa [hlook, toLeaTTaAtom] using hseed v
+                have hlb : Metta.Bindings.lookupVal lb v = some (Metta.Atom.gnd (encodeModelGround g)) := by
+                  simpa [hlook, encodeModelAtom] using hseed v
                 refine ⟨lb, ?_, hseed⟩
                 refine List.mem_flatMap.mpr ?_
-                refine ⟨[Metta.BindingRel.val v (Metta.Atom.gnd (toLeaTTaGround g))], ?_, ?_⟩
-                · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
-                · rw [merge_singleton_val_of_lookup_some_eq_ext hlb (toLeaTTaAtom_beq_self (.grounded g))]
+                refine ⟨[Metta.BindingRel.val v (Metta.Atom.gnd (encodeModelGround g))], ?_, ?_⟩
+                · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
+                · rw [merge_singleton_val_of_lookup_some_eq_ext hlb (encodeModelAtom_beq_self (.grounded g))]
                   simp
             | expression es =>
                 have hoccursExpr :
-                    Metta.Subst.occurs v (Metta.Atom.expr (toLeaTTaAtoms es)) = false := by
-                  simpa [toLeaTTaAtom] using hoccursEq
-                have hlb : Metta.Bindings.lookupVal lb v = some (Metta.Atom.expr (toLeaTTaAtoms es)) := by
-                  simpa [hlook, toLeaTTaAtom] using hseed v
+                    Metta.Subst.occurs v (Metta.Atom.expr (encodeModelAtoms es)) = false := by
+                  simpa [encodeModelAtom] using hoccursEq
+                have hlb : Metta.Bindings.lookupVal lb v = some (Metta.Atom.expr (encodeModelAtoms es)) := by
+                  simpa [hlook, encodeModelAtom] using hseed v
                 refine ⟨lb, ?_, hseed⟩
                 refine List.mem_flatMap.mpr ?_
-                refine ⟨[Metta.BindingRel.val v (Metta.Atom.expr (toLeaTTaAtoms es))], ?_, ?_⟩
-                · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hoccursExpr]
+                refine ⟨[Metta.BindingRel.val v (Metta.Atom.expr (encodeModelAtoms es))], ?_, ?_⟩
+                · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hoccursExpr]
                 · rw [merge_singleton_val_of_lookup_some_eq_ext hlb
-                    (toLeaTTaAtom_beq_self (.expression es))]
+                    (encodeModelAtom_beq_self (.expression es))]
                   simp
           · simp [simpleMatch, hlook, hEq] at hmatch
 
@@ -1548,7 +1496,7 @@ private theorem simpleMatch_symbol_seeded_lookup_bridge
     (_hkeys : AssignmentsNodup b) (hseed : LeaLookupExt b lb)
     (hmatch : simpleMatch (.symbol s) target b fuel = some qb) :
     ∃ lb',
-      lb' ∈ (Metta.matchAtoms (.sym s) (toLeaTTaAtom target)).flatMap
+      lb' ∈ (Metta.matchAtoms (.sym s) (encodeModelAtom target)).flatMap
         (fun mb => Metta.Bindings.merge lb mb) ∧
       LeaLookupExt qb lb' := by
   cases fuel with
@@ -1564,7 +1512,7 @@ private theorem simpleMatch_symbol_seeded_lookup_bridge
             refine ⟨lb, ?_, hseed⟩
             refine List.mem_flatMap.mpr ?_
             refine ⟨[], ?_, ?_⟩
-            · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+            · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
             · rw [merge_empty_right]
               simp
           · simp [simpleMatch, hst] at hmatch
@@ -1581,7 +1529,7 @@ private theorem simpleMatch_grounded_seeded_lookup_bridge
     (_hkeys : AssignmentsNodup b) (hseed : LeaLookupExt b lb)
     (hmatch : simpleMatch (.grounded g) target b fuel = some qb) :
     ∃ lb',
-      lb' ∈ (Metta.matchAtoms (.gnd (toLeaTTaGround g)) (toLeaTTaAtom target)).flatMap
+      lb' ∈ (Metta.matchAtoms (.gnd (encodeModelGround g)) (encodeModelAtom target)).flatMap
         (fun mb => Metta.Bindings.merge lb mb) ∧
       LeaLookupExt qb lb' := by
   cases fuel with
@@ -1598,10 +1546,10 @@ private theorem simpleMatch_grounded_seeded_lookup_bridge
             refine List.mem_flatMap.mpr ?_
             refine ⟨[], ?_, ?_⟩
             · have hself :
-                  Metta.Atom.equiv (Metta.Atom.gnd (toLeaTTaGround g))
-                    (Metta.Atom.gnd (toLeaTTaGround g)) = true := by
-                  simpa [toLeaTTaAtom] using toLeaTTaAtom_grounded_equiv_self g
-              simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hself]
+                  Metta.Atom.equiv (Metta.Atom.gnd (encodeModelGround g))
+                    (Metta.Atom.gnd (encodeModelGround g)) = true := by
+                  simpa [encodeModelAtom] using encodeModelAtom_grounded_equiv_self g
+              simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hself]
             · rw [merge_empty_right]
               simp
           · simp [simpleMatch, hgh] at hmatch
@@ -1624,7 +1572,7 @@ private def ListVarsDisjoint (ps ts : List Atom) (fuel : Nat) : Prop :=
 
 /-- The v1.0.8 matcher occurs-check boundary for a variable-shaped HE pattern. -/
 private def VarPatternTargetOccursFree (pattern target : Atom) : Prop :=
-  ∀ v, pattern = .var v → v ∉ (toLeaTTaAtom target).vars
+  ∀ v, pattern = .var v → v ∉ (encodeModelAtom target).vars
 
 @[simp] private theorem listVars_nil (fuel : Nat) :
     listVars [] fuel = [] := rfl
@@ -1681,7 +1629,7 @@ private theorem simpleMatchList_seeded_lookup_bridge_of_elem
         AtomVarsDisjoint pattern target fuel →
         simpleMatch pattern target b fuel = some qb →
           ∃ lb',
-            lb' ∈ (Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom target)).flatMap
+            lb' ∈ (Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom target)).flatMap
               (fun mb => Metta.Bindings.merge lb mb) ∧
             LeaLookupExt qb lb') :
     (∀ {ps ts b qb lb},
@@ -1690,7 +1638,7 @@ private theorem simpleMatchList_seeded_lookup_bridge_of_elem
       ListVarsDisjoint ps ts fuel →
       simpleMatch.simpleMatchList ps ts b fuel = some qb →
         ∃ lb',
-          lb' ∈ Metta.matchAll none [lb] (toLeaTTaAtoms ps) (toLeaTTaAtoms ts) ∧
+          lb' ∈ Metta.matchAll none [lb] (encodeModelAtoms ps) (encodeModelAtoms ts) ∧
           LeaLookupExt qb lb') := by
   intro ps
   induction ps with
@@ -1735,9 +1683,9 @@ private def LeaSeedMatch
     (pattern target : Atom) (lb out : Metta.Bindings) : Prop :=
   match pattern, target with
   | .expression ps, .expression ts =>
-      out ∈ Metta.matchAll none [lb] (toLeaTTaAtoms ps) (toLeaTTaAtoms ts)
+      out ∈ Metta.matchAll none [lb] (encodeModelAtoms ps) (encodeModelAtoms ts)
   | _, _ =>
-      out ∈ (Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom target)).flatMap
+      out ∈ (Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom target)).flatMap
         (fun mb => Metta.Bindings.merge lb mb)
 
 /-- Leaf-shape success bridge from HE's seeded one-way matcher into the direct
@@ -1755,7 +1703,7 @@ private theorem simpleMatch_leaf_seeded_lookup_bridge_disjoint :
         VarPatternTargetOccursFree pattern target →
         simpleMatch pattern target b fuel = some qb →
           ∃ lb',
-            lb' ∈ (Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom target)).flatMap
+            lb' ∈ (Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom target)).flatMap
               (fun mb => Metta.Bindings.merge lb mb) ∧
             LeaLookupExt qb lb' := by
   intro fuel pattern target b qb lb hkeys hseed hnonexpr hdisj hoccurs hmatch
@@ -1789,7 +1737,7 @@ private theorem simpleMatch_leaf_seeded_exact_bridge_disjoint :
         VarPatternTargetOccursFree pattern target →
         simpleMatch pattern target b fuel = some qb →
           toLeaTTaMatchBindings qb ∈
-            (Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom target)).flatMap
+            (Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom target)).flatMap
               (fun mb => Metta.Bindings.merge (toLeaTTaMatchBindings b) mb) := by
   intro fuel pattern target b qb hkeys hnonexpr hdisj hoccurs hmatch
   cases pattern with
@@ -1798,8 +1746,8 @@ private theorem simpleMatch_leaf_seeded_exact_bridge_disjoint :
       | zero =>
           simp [simpleMatch] at hmatch
       | succ n =>
-          have hoccursEq : Metta.Subst.occurs v (toLeaTTaAtom target) = false :=
-            occurs_eq_false_of_not_mem_vars v (toLeaTTaAtom target) (hoccurs v rfl)
+          have hoccursEq : Metta.Subst.occurs v (encodeModelAtom target) = false :=
+            occurs_eq_false_of_not_mem_vars v (encodeModelAtom target) (hoccurs v rfl)
           cases hlook : b.lookup v with
           | none =>
               simp [simpleMatch, hlook] at hmatch
@@ -1814,51 +1762,51 @@ private theorem simpleMatch_leaf_seeded_exact_bridge_disjoint :
                   · have hvw : v ≠ w := by
                       intro hvw
                       exact hneq hvw.symm
-                    simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hvw]
+                    simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hvw]
                   · rw [show
                         Metta.Bindings.merge (toLeaTTaMatchBindings b)
                           [Metta.BindingRel.val v (.var w)] =
                             [toLeaTTaMatchBindings (b.assign v (.var w))] by
-                        simpa [toLeaTTaAtom] using
+                        simpa [encodeModelAtom] using
                           (merge_singleton_val_of_lookup_none
                             (b := b) (v := v) (val := .var w) hkeys hlook)]
                     simp
               | symbol s =>
                   refine List.mem_flatMap.mpr ?_
                   refine ⟨[Metta.BindingRel.val v (.sym s)], ?_, ?_⟩
-                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                   · rw [show
                         Metta.Bindings.merge (toLeaTTaMatchBindings b)
                           [Metta.BindingRel.val v (.sym s)] =
                             [toLeaTTaMatchBindings (b.assign v (.symbol s))] by
-                        simpa [toLeaTTaAtom] using
+                        simpa [encodeModelAtom] using
                           (merge_singleton_val_of_lookup_none
                             (b := b) (v := v) (val := .symbol s) hkeys hlook)]
                     simp
               | grounded g =>
                   refine List.mem_flatMap.mpr ?_
-                  refine ⟨[Metta.BindingRel.val v (.gnd (toLeaTTaGround g))], ?_, ?_⟩
-                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                  refine ⟨[Metta.BindingRel.val v (.gnd (encodeModelGround g))], ?_, ?_⟩
+                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                   · rw [show
                         Metta.Bindings.merge (toLeaTTaMatchBindings b)
-                          [Metta.BindingRel.val v (.gnd (toLeaTTaGround g))] =
+                          [Metta.BindingRel.val v (.gnd (encodeModelGround g))] =
                             [toLeaTTaMatchBindings (b.assign v (.grounded g))] by
-                        simpa [toLeaTTaAtom] using
+                        simpa [encodeModelAtom] using
                           (merge_singleton_val_of_lookup_none
                             (b := b) (v := v) (val := .grounded g) hkeys hlook)]
                     simp
               | expression es =>
                   have hoccursExpr :
-                      Metta.Subst.occurs v (Metta.Atom.expr (toLeaTTaAtoms es)) = false := by
-                    simpa [toLeaTTaAtom] using hoccursEq
+                      Metta.Subst.occurs v (Metta.Atom.expr (encodeModelAtoms es)) = false := by
+                    simpa [encodeModelAtom] using hoccursEq
                   refine List.mem_flatMap.mpr ?_
-                  refine ⟨[Metta.BindingRel.val v (.expr (toLeaTTaAtoms es))], ?_, ?_⟩
-                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hoccursExpr]
+                  refine ⟨[Metta.BindingRel.val v (.expr (encodeModelAtoms es))], ?_, ?_⟩
+                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hoccursExpr]
                   · rw [show
                         Metta.Bindings.merge (toLeaTTaMatchBindings b)
-                          [Metta.BindingRel.val v (.expr (toLeaTTaAtoms es))] =
+                          [Metta.BindingRel.val v (.expr (encodeModelAtoms es))] =
                             [toLeaTTaMatchBindings (b.assign v (.expression es))] by
-                        simpa [toLeaTTaAtom] using
+                        simpa [encodeModelAtom] using
                           (merge_singleton_val_of_lookup_none
                             (b := b) (v := v) (val := .expression es) hkeys hlook)]
                     simp
@@ -1873,57 +1821,57 @@ private theorem simpleMatch_leaf_seeded_exact_bridge_disjoint :
                     · subst hwv
                       refine List.mem_flatMap.mpr ?_
                       refine ⟨[], ?_, ?_⟩
-                      · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                      · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                       · rw [merge_empty_right]
                         simp
                     · refine List.mem_flatMap.mpr ?_
                       refine ⟨[Metta.BindingRel.val v (.var w)], ?_, ?_⟩
                       · have hneq : v ≠ w := by simpa [eq_comm] using hwv
-                        simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hneq]
+                        simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hneq]
                       · rw [show
                             Metta.Bindings.merge (toLeaTTaMatchBindings b)
                               [Metta.BindingRel.val v (.var w)] =
                                 [toLeaTTaMatchBindings b] by
-                            simpa [toLeaTTaAtom] using
+                            simpa [encodeModelAtom] using
                               (merge_singleton_val_of_lookup_some_eq
                                 (b := b) (v := v) (val := .var w) hkeys hlook)]
                         simp
                 | symbol s =>
                     refine List.mem_flatMap.mpr ?_
                     refine ⟨[Metta.BindingRel.val v (.sym s)], ?_, ?_⟩
-                    · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                    · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                     · rw [show
                           Metta.Bindings.merge (toLeaTTaMatchBindings b)
                             [Metta.BindingRel.val v (.sym s)] =
                               [toLeaTTaMatchBindings b] by
-                          simpa [toLeaTTaAtom] using
+                          simpa [encodeModelAtom] using
                             (merge_singleton_val_of_lookup_some_eq
                               (b := b) (v := v) (val := .symbol s) hkeys hlook)]
                       simp
                 | grounded g =>
                     refine List.mem_flatMap.mpr ?_
-                    refine ⟨[Metta.BindingRel.val v (.gnd (toLeaTTaGround g))], ?_, ?_⟩
-                    · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                    refine ⟨[Metta.BindingRel.val v (.gnd (encodeModelGround g))], ?_, ?_⟩
+                    · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                     · rw [show
                           Metta.Bindings.merge (toLeaTTaMatchBindings b)
-                            [Metta.BindingRel.val v (.gnd (toLeaTTaGround g))] =
+                            [Metta.BindingRel.val v (.gnd (encodeModelGround g))] =
                               [toLeaTTaMatchBindings b] by
-                          simpa [toLeaTTaAtom] using
+                          simpa [encodeModelAtom] using
                             (merge_singleton_val_of_lookup_some_eq
                               (b := b) (v := v) (val := .grounded g) hkeys hlook)]
                       simp
                 | expression es =>
                     have hoccursExpr :
-                        Metta.Subst.occurs v (Metta.Atom.expr (toLeaTTaAtoms es)) = false := by
-                      simpa [toLeaTTaAtom] using hoccursEq
+                        Metta.Subst.occurs v (Metta.Atom.expr (encodeModelAtoms es)) = false := by
+                      simpa [encodeModelAtom] using hoccursEq
                     refine List.mem_flatMap.mpr ?_
-                    refine ⟨[Metta.BindingRel.val v (.expr (toLeaTTaAtoms es))], ?_, ?_⟩
-                    · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hoccursExpr]
+                    refine ⟨[Metta.BindingRel.val v (.expr (encodeModelAtoms es))], ?_, ?_⟩
+                    · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hoccursExpr]
                     · rw [show
                           Metta.Bindings.merge (toLeaTTaMatchBindings b)
-                            [Metta.BindingRel.val v (.expr (toLeaTTaAtoms es))] =
+                            [Metta.BindingRel.val v (.expr (encodeModelAtoms es))] =
                               [toLeaTTaMatchBindings b] by
-                          simpa [toLeaTTaAtom] using
+                          simpa [encodeModelAtom] using
                             (merge_singleton_val_of_lookup_some_eq
                               (b := b) (v := v) (val := .expression es) hkeys hlook)]
                       simp
@@ -1941,7 +1889,7 @@ private theorem simpleMatch_leaf_seeded_exact_bridge_disjoint :
                 obtain ⟨_, rfl⟩ := hmatch
                 refine List.mem_flatMap.mpr ?_
                 refine ⟨[], ?_, ?_⟩
-                · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                 · rw [merge_empty_right]
                   simp
               · simp [simpleMatch, hst] at hmatch
@@ -1965,10 +1913,10 @@ private theorem simpleMatch_leaf_seeded_exact_bridge_disjoint :
                 refine List.mem_flatMap.mpr ?_
                 refine ⟨[], ?_, ?_⟩
                 · have hself :
-                    Metta.Atom.equiv (Metta.Atom.gnd (toLeaTTaGround g))
-                      (Metta.Atom.gnd (toLeaTTaGround g)) = true := by
-                    simpa [toLeaTTaAtom] using toLeaTTaAtom_grounded_equiv_self g
-                  simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hself]
+                    Metta.Atom.equiv (Metta.Atom.gnd (encodeModelGround g))
+                      (Metta.Atom.gnd (encodeModelGround g)) = true := by
+                    simpa [encodeModelAtom] using encodeModelAtom_grounded_equiv_self g
+                  simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hself]
                 · rw [merge_empty_right]
                   simp
               · simp [simpleMatch, hgh] at hmatch
@@ -1995,7 +1943,7 @@ private theorem simpleMatch_leaf_seeded_exact_bridge_noVar :
         VarPatternTargetOccursFree pattern target →
         simpleMatch pattern target b fuel = some qb →
           toLeaTTaMatchBindings qb ∈
-            (Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom target)).flatMap
+            (Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom target)).flatMap
               (fun mb => Metta.Bindings.merge (toLeaTTaMatchBindings b) mb) := by
   intro fuel pattern target b qb hkeys hno hnonexpr hoccurs hmatch
   cases pattern with
@@ -2004,8 +1952,8 @@ private theorem simpleMatch_leaf_seeded_exact_bridge_noVar :
       | zero =>
           simp [simpleMatch] at hmatch
       | succ n =>
-          have hoccursEq : Metta.Subst.occurs v (toLeaTTaAtom target) = false :=
-            occurs_eq_false_of_not_mem_vars v (toLeaTTaAtom target) (hoccurs v rfl)
+          have hoccursEq : Metta.Subst.occurs v (encodeModelAtom target) = false :=
+            occurs_eq_false_of_not_mem_vars v (encodeModelAtom target) (hoccurs v rfl)
           cases hlook : b.lookup v with
           | none =>
               simp [simpleMatch, hlook] at hmatch
@@ -2019,39 +1967,39 @@ private theorem simpleMatch_leaf_seeded_exact_bridge_noVar :
               | symbol s =>
                   refine List.mem_flatMap.mpr ?_
                   refine ⟨[Metta.BindingRel.val v (.sym s)], ?_, ?_⟩
-                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                   · rw [show
                         Metta.Bindings.merge (toLeaTTaMatchBindings b)
                           [Metta.BindingRel.val v (.sym s)] =
                             [toLeaTTaMatchBindings (b.assign v (.symbol s))] by
-                        simpa [toLeaTTaAtom] using
+                        simpa [encodeModelAtom] using
                           (merge_singleton_val_of_lookup_none
                             (b := b) (v := v) (val := .symbol s) hkeys hlook)]
                     simp
               | grounded g =>
                   refine List.mem_flatMap.mpr ?_
-                  refine ⟨[Metta.BindingRel.val v (.gnd (toLeaTTaGround g))], ?_, ?_⟩
-                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                  refine ⟨[Metta.BindingRel.val v (.gnd (encodeModelGround g))], ?_, ?_⟩
+                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                   · rw [show
                         Metta.Bindings.merge (toLeaTTaMatchBindings b)
-                          [Metta.BindingRel.val v (.gnd (toLeaTTaGround g))] =
+                          [Metta.BindingRel.val v (.gnd (encodeModelGround g))] =
                             [toLeaTTaMatchBindings (b.assign v (.grounded g))] by
-                        simpa [toLeaTTaAtom] using
+                        simpa [encodeModelAtom] using
                           (merge_singleton_val_of_lookup_none
                             (b := b) (v := v) (val := .grounded g) hkeys hlook)]
                     simp
               | expression es =>
                   have hoccursExpr :
-                      Metta.Subst.occurs v (Metta.Atom.expr (toLeaTTaAtoms es)) = false := by
-                    simpa [toLeaTTaAtom] using hoccursEq
+                      Metta.Subst.occurs v (Metta.Atom.expr (encodeModelAtoms es)) = false := by
+                    simpa [encodeModelAtom] using hoccursEq
                   refine List.mem_flatMap.mpr ?_
-                  refine ⟨[Metta.BindingRel.val v (.expr (toLeaTTaAtoms es))], ?_, ?_⟩
-                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hoccursExpr]
+                  refine ⟨[Metta.BindingRel.val v (.expr (encodeModelAtoms es))], ?_, ?_⟩
+                  · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hoccursExpr]
                   · rw [show
                         Metta.Bindings.merge (toLeaTTaMatchBindings b)
-                          [Metta.BindingRel.val v (.expr (toLeaTTaAtoms es))] =
+                          [Metta.BindingRel.val v (.expr (encodeModelAtoms es))] =
                             [toLeaTTaMatchBindings (b.assign v (.expression es))] by
-                        simpa [toLeaTTaAtom] using
+                        simpa [encodeModelAtom] using
                           (merge_singleton_val_of_lookup_none
                             (b := b) (v := v) (val := .expression es) hkeys hlook)]
                     simp
@@ -2066,39 +2014,39 @@ private theorem simpleMatch_leaf_seeded_exact_bridge_noVar :
                 | symbol s =>
                     refine List.mem_flatMap.mpr ?_
                     refine ⟨[Metta.BindingRel.val v (.sym s)], ?_, ?_⟩
-                    · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                    · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                     · rw [show
                           Metta.Bindings.merge (toLeaTTaMatchBindings b)
                             [Metta.BindingRel.val v (.sym s)] =
                               [toLeaTTaMatchBindings b] by
-                          simpa [toLeaTTaAtom] using
+                          simpa [encodeModelAtom] using
                             (merge_singleton_val_of_lookup_some_eq
                               (b := b) (v := v) (val := .symbol s) hkeys hlook)]
                       simp
                 | grounded g =>
                     refine List.mem_flatMap.mpr ?_
-                    refine ⟨[Metta.BindingRel.val v (.gnd (toLeaTTaGround g))], ?_, ?_⟩
-                    · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                    refine ⟨[Metta.BindingRel.val v (.gnd (encodeModelGround g))], ?_, ?_⟩
+                    · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                     · rw [show
                           Metta.Bindings.merge (toLeaTTaMatchBindings b)
-                            [Metta.BindingRel.val v (.gnd (toLeaTTaGround g))] =
+                            [Metta.BindingRel.val v (.gnd (encodeModelGround g))] =
                               [toLeaTTaMatchBindings b] by
-                          simpa [toLeaTTaAtom] using
+                          simpa [encodeModelAtom] using
                             (merge_singleton_val_of_lookup_some_eq
                               (b := b) (v := v) (val := .grounded g) hkeys hlook)]
                       simp
                 | expression es =>
                     have hoccursExpr :
-                        Metta.Subst.occurs v (Metta.Atom.expr (toLeaTTaAtoms es)) = false := by
-                      simpa [toLeaTTaAtom] using hoccursEq
+                        Metta.Subst.occurs v (Metta.Atom.expr (encodeModelAtoms es)) = false := by
+                      simpa [encodeModelAtom] using hoccursEq
                     refine List.mem_flatMap.mpr ?_
-                    refine ⟨[Metta.BindingRel.val v (.expr (toLeaTTaAtoms es))], ?_, ?_⟩
-                    · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hoccursExpr]
+                    refine ⟨[Metta.BindingRel.val v (.expr (encodeModelAtoms es))], ?_, ?_⟩
+                    · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hoccursExpr]
                     · rw [show
                           Metta.Bindings.merge (toLeaTTaMatchBindings b)
-                            [Metta.BindingRel.val v (.expr (toLeaTTaAtoms es))] =
+                            [Metta.BindingRel.val v (.expr (encodeModelAtoms es))] =
                               [toLeaTTaMatchBindings b] by
-                          simpa [toLeaTTaAtom] using
+                          simpa [encodeModelAtom] using
                             (merge_singleton_val_of_lookup_some_eq
                               (b := b) (v := v) (val := .expression es) hkeys hlook)]
                       simp
@@ -2116,7 +2064,7 @@ private theorem simpleMatch_leaf_seeded_exact_bridge_noVar :
                 obtain ⟨_, rfl⟩ := hmatch
                 refine List.mem_flatMap.mpr ?_
                 refine ⟨[], ?_, ?_⟩
-                · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+                · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
                 · rw [merge_empty_right]
                   simp
               · simp [simpleMatch, hst] at hmatch
@@ -2140,10 +2088,10 @@ private theorem simpleMatch_leaf_seeded_exact_bridge_noVar :
                 refine List.mem_flatMap.mpr ?_
                 refine ⟨[], ?_, ?_⟩
                 · have hself :
-                    Metta.Atom.equiv (Metta.Atom.gnd (toLeaTTaGround g))
-                      (Metta.Atom.gnd (toLeaTTaGround g)) = true := by
-                    simpa [toLeaTTaAtom] using toLeaTTaAtom_grounded_equiv_self g
-                  simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom, hself]
+                    Metta.Atom.equiv (Metta.Atom.gnd (encodeModelGround g))
+                      (Metta.Atom.gnd (encodeModelGround g)) = true := by
+                    simpa [encodeModelAtom] using encodeModelAtom_grounded_equiv_self g
+                  simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom, hself]
                 · rw [merge_empty_right]
                   simp
               · simp [simpleMatch, hgh] at hmatch
@@ -2171,7 +2119,7 @@ private theorem simpleMatch_leaf_seeded_lookup_bridge_noVar :
         VarPatternTargetOccursFree pattern target →
         simpleMatch pattern target b fuel = some qb →
           ∃ lb',
-            lb' ∈ (Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom target)).flatMap
+            lb' ∈ (Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom target)).flatMap
               (fun mb => Metta.Bindings.merge lb mb) ∧
             LeaLookupExt qb lb' := by
   intro fuel pattern target b qb lb hkeys hseed hno hnonexpr hoccurs hmatch
@@ -2274,7 +2222,7 @@ private theorem simpleMatch_seeded_lookup_bridge_noVar (fuel : Nat) :
       NoVarAssignmentValues qb →
       simpleMatch.simpleMatchList ps ts b fuel = some qb →
         ∃ lb',
-          lb' ∈ Metta.matchAll none [lb] (toLeaTTaAtoms ps) (toLeaTTaAtoms ts) ∧
+          lb' ∈ Metta.matchAll none [lb] (encodeModelAtoms ps) (encodeModelAtoms ts) ∧
           LeaLookupExt qb lb') := by
   induction fuel with
   | zero =>
@@ -2350,7 +2298,7 @@ private theorem simpleMatch_seeded_lookup_bridge_noVar (fuel : Nat) :
             NoVarAssignmentValues qb →
             simpleMatch.simpleMatchList ps ts b (Nat.succ n) = some qb →
               ∃ lb',
-                lb' ∈ Metta.matchAll none [lb] (toLeaTTaAtoms ps) (toLeaTTaAtoms ts) ∧
+                lb' ∈ Metta.matchAll none [lb] (encodeModelAtoms ps) (encodeModelAtoms ts) ∧
                 LeaLookupExt qb lb' := by
         intro ps
         induction ps with
@@ -2407,7 +2355,7 @@ private theorem simpleMatch_expr_seeded_matchAll_bridge_of_elem
         AtomVarsDisjoint pattern target fuel →
         simpleMatch pattern target b fuel = some qb →
           ∃ lb',
-            lb' ∈ (Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom target)).flatMap
+            lb' ∈ (Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom target)).flatMap
               (fun mb => Metta.Bindings.merge lb mb) ∧
             LeaLookupExt qb lb') :
     ∀ {ps ts b qb lb},
@@ -2441,14 +2389,14 @@ private theorem simpleMatchList_seeded_exact_bridge_of_elem
         AtomVarsDisjoint pattern target fuel →
         simpleMatch pattern target b fuel = some qb →
           toLeaTTaMatchBindings qb ∈
-            (Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom target)).flatMap
+            (Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom target)).flatMap
               (fun mb => Metta.Bindings.merge (toLeaTTaMatchBindings b) mb)) :
     ∀ {ps ts b qb},
       AssignmentsNodup b →
       ListVarsDisjoint ps ts fuel →
       simpleMatch.simpleMatchList ps ts b fuel = some qb →
         toLeaTTaMatchBindings qb ∈
-          Metta.matchAll none [toLeaTTaMatchBindings b] (toLeaTTaAtoms ps) (toLeaTTaAtoms ts) := by
+          Metta.matchAll none [toLeaTTaMatchBindings b] (encodeModelAtoms ps) (encodeModelAtoms ts) := by
   intro ps
   induction ps with
   | nil =>
@@ -2477,40 +2425,40 @@ private theorem simpleMatchList_seeded_exact_bridge_of_elem
                 (simpleMatch_preserves_assignmentsNodup fuel).1 p t b b' hkeys hhd
               have hhead :
                   toLeaTTaMatchBindings b' ∈
-                    (Metta.matchAtoms (toLeaTTaAtom p) (toLeaTTaAtom t)).flatMap
+                    (Metta.matchAtoms (encodeModelAtom p) (encodeModelAtom t)).flatMap
                       (fun mb => Metta.Bindings.merge (toLeaTTaMatchBindings b) mb) :=
                 hElem hkeys (atomVarsDisjoint_head hdisj) hhd
               have htail :
                   toLeaTTaMatchBindings qb ∈
-                    Metta.matchAll none [toLeaTTaMatchBindings b'] (toLeaTTaAtoms ps) (toLeaTTaAtoms ts) :=
+                    Metta.matchAll none [toLeaTTaMatchBindings b'] (encodeModelAtoms ps) (encodeModelAtoms ts) :=
                 ihPs hkeys' (listVarsDisjoint_tail hdisj) hmatch
       exact matchAll_cons_of_head_tail hhead htail
 -/
 
-theorem toLeaTTaAtom_vars_nil_of_ground_core :
-    ∀ {a : Atom}, GroundAtom a → (toLeaTTaAtom a).vars = [] := by
+theorem encodeModelAtom_vars_nil_of_ground_core :
+    ∀ {a : Atom}, GroundAtom a → (encodeModelAtom a).vars = [] := by
   intro a hground
   induction hground with
   | symbol s =>
-      simp [toLeaTTaAtom, Metta.Atom.vars]
+      simp [encodeModelAtom, Metta.Atom.vars]
   | grounded g =>
-      simp [toLeaTTaAtom, Metta.Atom.vars]
+      simp [encodeModelAtom, Metta.Atom.vars]
   | @expression es hElems ih =>
       have hlist : ∀ atoms : List Atom,
-          (∀ e ∈ atoms, (toLeaTTaAtom e).vars = []) →
-          ((toLeaTTaAtoms atoms).map Metta.Atom.vars).flatten = [] := by
+          (∀ e ∈ atoms, (encodeModelAtom e).vars = []) →
+          ((encodeModelAtoms atoms).map Metta.Atom.vars).flatten = [] := by
         intro atoms
         induction atoms with
         | nil =>
-            simp [toLeaTTaAtoms]
+            simp [encodeModelAtoms]
         | cons e rest ihRest =>
             intro hall
-            have hhead : (toLeaTTaAtom e).vars = [] := hall e (by simp)
-            have htail : ∀ e' ∈ rest, (toLeaTTaAtom e').vars = [] := by
+            have hhead : (encodeModelAtom e).vars = [] := hall e (by simp)
+            have htail : ∀ e' ∈ rest, (encodeModelAtom e').vars = [] := by
               intro e' he'
               exact hall e' (by simp [he'])
-            simp [toLeaTTaAtoms, hhead, ihRest htail]
-      simpa [toLeaTTaAtom, Metta.Atom.vars] using
+            simp [encodeModelAtoms, hhead, ihRest htail]
+      simpa [encodeModelAtom, Metta.Atom.vars] using
         hlist es (fun e he => ih e he)
 
 private theorem closedValueBindings_ofSubst
@@ -2563,13 +2511,13 @@ private theorem mem_toLeaTTaSubst_source
     {assigns : List (String × Atom)} {p : Metta.VarName × Metta.Atom}
     (hp : p ∈ toLeaTTaSubst assigns) :
     ∃ original ∈ assigns,
-      p = (original.1, toLeaTTaAtom original.2) := by
+      p = (original.1, encodeModelAtom original.2) := by
   induction assigns generalizing p with
   | nil =>
       simp [toLeaTTaSubst] at hp
   | cons entry rest ih =>
       rcases entry with ⟨x, a⟩
-      change p ∈ (x, toLeaTTaAtom a) ::
+      change p ∈ (x, encodeModelAtom a) ::
         Metta.Subst.erase (toLeaTTaSubst rest) x at hp
       rcases List.mem_cons.mp hp with rfl | hpErase
       · exact ⟨(x, a), by simp, rfl⟩
@@ -2584,7 +2532,7 @@ private theorem toLeaTTaAssignmentBindings_closed_of_ground
   apply closedValueBindings_ofSubst
   intro p hp
   rcases mem_toLeaTTaSubst_source hp with ⟨original, horiginal, rfl⟩
-  exact toLeaTTaAtom_vars_nil_of_ground_core (hb.1 original horiginal)
+  exact encodeModelAtom_vars_nil_of_ground_core (hb.1 original horiginal)
 
 private theorem toLeaTTaMatchBindings_closed_of_ground
     {b : Bindings} (hb : GroundBindings b) :
@@ -2595,7 +2543,7 @@ private theorem toLeaTTaMatchBindings_closed_of_ground
   rcases List.mem_map.mp hp with ⟨original, horiginalRev, rfl⟩
   have horiginal : original ∈ b.assignments := by
     simpa [List.mem_reverse] using horiginalRev
-  exact toLeaTTaAtom_vars_nil_of_ground_core (hb.1 original horiginal)
+  exact encodeModelAtom_vars_nil_of_ground_core (hb.1 original horiginal)
 
 private theorem toLeaTTaMatchBindings_value_of_noVar
     {b : Bindings} (hno : NoVarAssignmentValues b)
@@ -2617,11 +2565,11 @@ private theorem toLeaTTaMatchBindings_value_of_noVar
   | var z =>
       exact hno hlookup
   | symbol name =>
-      simp [toLeaTTaAtom] at hvar
+      simp [encodeModelAtom] at hvar
   | grounded ground =>
-      simp [toLeaTTaAtom] at hvar
+      simp [encodeModelAtom] at hvar
   | expression children =>
-      simp [toLeaTTaAtom] at hvar
+      simp [encodeModelAtom] at hvar
 
 @[simp] theorem instantiate_toLeaTTaAssignmentBindings
     {b : Bindings} (hb : GroundBindings b) (a : Metta.Atom) :
@@ -2650,11 +2598,11 @@ private theorem toLeaTTaMatchBindings_value_of_noVar
         | var x =>
             exact False.elim (hno h)
         | symbol name =>
-            simp [hlist, directSubstValue, toLeaTTaAtom]
+            simp [hlist, directSubstValue, encodeModelAtom]
         | grounded ground =>
-            simp [hlist, directSubstValue, toLeaTTaAtom]
+            simp [hlist, directSubstValue, encodeModelAtom]
         | expression children =>
-            simp [hlist, directSubstValue, toLeaTTaAtom]
+            simp [hlist, directSubstValue, encodeModelAtom]
   induction a with
   | var x =>
       simp [Metta.Subst.apply, hlookup x]
@@ -2694,8 +2642,8 @@ This lets later query/equation proofs use LeaTTa's concrete matcher outputs
 without changing the substituted reduct. -/
 theorem instantiate_toLeaTTaMatchBindings_eq_subst_of_nodup
     {b : Bindings} (hb : GroundBindings b) (hkeys : AssignmentsNodup b) (a : Atom) :
-    Metta.instantiate (toLeaTTaMatchBindings b) (toLeaTTaAtom a) =
-      Metta.Subst.apply (toLeaTTaSubst b.assignments) (toLeaTTaAtom a) := by
+    Metta.instantiate (toLeaTTaMatchBindings b) (encodeModelAtom a) =
+      Metta.Subst.apply (toLeaTTaSubst b.assignments) (encodeModelAtom a) := by
   rw [ClosedValueBindings.instantiate_eq_subst_apply
     (toLeaTTaMatchBindings_closed_of_ground hb)]
   apply subst_apply_eq_of_lookup_eq
@@ -2717,19 +2665,19 @@ theorem instantiate_toLeaTTaMatchBindings_eq_subst_of_nodup
       | var x =>
           exact False.elim (hno h)
       | symbol name =>
-          simp [hlist, directSubstValue, toLeaTTaAtom]
+          simp [hlist, directSubstValue, encodeModelAtom]
       | grounded ground =>
-          simp [hlist, directSubstValue, toLeaTTaAtom]
+          simp [hlist, directSubstValue, encodeModelAtom]
       | expression children =>
-          simp [hlist, directSubstValue, toLeaTTaAtom]
+          simp [hlist, directSubstValue, encodeModelAtom]
 
 theorem instantiate_toLeaTTaMatchBindings_eq_subst_of_noVar_fresh
     {b : Bindings} (hno : NoVarAssignmentValues b)
     (hkeys : AssignmentsNodup b)
     (hfresh : ValueKeysFreshForValues (toLeaTTaMatchBindings b))
     (a : Atom) :
-    Metta.instantiate (toLeaTTaMatchBindings b) (toLeaTTaAtom a) =
-      Metta.Subst.apply (toLeaTTaSubst b.assignments) (toLeaTTaAtom a) := by
+    Metta.instantiate (toLeaTTaMatchBindings b) (encodeModelAtom a) =
+      Metta.Subst.apply (toLeaTTaSubst b.assignments) (encodeModelAtom a) := by
   have hval := toLeaTTaMatchBindings_value_of_noVar hno hkeys
   rw [ValueBindings.instantiate_eq_subst_apply_of_fresh hval hfresh]
   apply subst_apply_eq_of_lookup_eq
@@ -2749,11 +2697,11 @@ theorem instantiate_toLeaTTaMatchBindings_eq_subst_of_noVar_fresh
       | var x =>
           exact False.elim (hno h)
       | symbol name =>
-          simp [hlist, directSubstValue, toLeaTTaAtom]
+          simp [hlist, directSubstValue, encodeModelAtom]
       | grounded ground =>
-          simp [hlist, directSubstValue, toLeaTTaAtom]
+          simp [hlist, directSubstValue, encodeModelAtom]
       | expression children =>
-          simp [hlist, directSubstValue, toLeaTTaAtom]
+          simp [hlist, directSubstValue, encodeModelAtom]
 
 private theorem grounds_nil (env : Metta.TypeEnv) (σ : Metta.Subst) :
     Metta.Grounds env σ [] := by
@@ -2770,18 +2718,18 @@ theorem instantiated_rule_typed_of_reduction_preserves_type
     {env : Metta.TypeEnv} {Γ : List (String × Metta.Atom)}
     {lhs rhs : Atom} {qb : Bindings} {T : Metta.Atom}
     (hσ : Metta.Grounds env (toLeaTTaSubst qb.assignments) Γ)
-    (hL : Metta.WT env Γ (toLeaTTaAtom lhs) T)
-    (hR : Metta.WT env Γ (toLeaTTaAtom rhs) T)
+    (hL : Metta.WT env Γ (encodeModelAtom lhs) T)
+    (hR : Metta.WT env Γ (encodeModelAtom rhs) T)
     (hb : GroundBindings qb)
     (hkeys : AssignmentsNodup qb) :
-    Metta.WT env [] (Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom lhs)) T ∧
-      Metta.WT env [] (Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom rhs)) T := by
+    Metta.WT env [] (Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom lhs)) T ∧
+      Metta.WT env [] (Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom rhs)) T := by
   have htyped :=
     Metta.reduction_preserves_type
       (env := env)
       (Γ := Γ)
-      (L := toLeaTTaAtom lhs)
-      (R := toLeaTTaAtom rhs)
+      (L := encodeModelAtom lhs)
+      (R := encodeModelAtom rhs)
       (T := T)
       (σ := toLeaTTaSubst qb.assignments)
       hσ hL hR
@@ -2802,24 +2750,24 @@ theorem typed_evalResult_item_of_reduction_preserves_type
     {lhs rhs : Atom} {qb : Bindings} {T : Metta.Atom}
     (hitem :
       Metta.Minimal.evalResult prev
-          (Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom rhs))
+          (Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom rhs))
           (toLeaTTaMatchBindings qb) ∈ items)
     (hσ : Metta.Grounds env (toLeaTTaSubst qb.assignments) Γ)
-    (hL : Metta.WT env Γ (toLeaTTaAtom lhs) T)
-    (hR : Metta.WT env Γ (toLeaTTaAtom rhs) T)
+    (hL : Metta.WT env Γ (encodeModelAtom lhs) T)
+    (hR : Metta.WT env Γ (encodeModelAtom rhs) T)
     (hb : GroundBindings qb)
     (hkeys : AssignmentsNodup qb) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈ items ∧
       Metta.WT env [] emitted T := by
-  refine ⟨Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom rhs),
+  refine ⟨Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom rhs),
     toLeaTTaMatchBindings qb, hitem, ?_⟩
   exact (instantiated_rule_typed_of_reduction_preserves_type hσ hL hR hb hkeys).2
 
 private theorem hasAssignedVarAux_true_exists :
     ∀ {b : Bindings} {fuel : Nat} {a : Atom},
       b.hasAssignedVarAux fuel a = true →
-        ∃ w, b.isBound w = true ∧ w ∈ (toLeaTTaAtom a).vars := by
+        ∃ w, b.isBound w = true ∧ w ∈ (encodeModelAtom a).vars := by
   intro b fuel
   induction fuel with
   | zero => intro a h; simp [Bindings.hasAssignedVarAux] at h
@@ -2828,23 +2776,23 @@ private theorem hasAssignedVarAux_true_exists :
       cases a with
       | var v =>
           exact ⟨v, by simpa [Bindings.hasAssignedVarAux] using h,
-            by simp [toLeaTTaAtom, Metta.Atom.vars]⟩
+            by simp [encodeModelAtom, Metta.Atom.vars]⟩
       | expression es =>
           simp only [Bindings.hasAssignedVarAux] at h
           rcases List.any_eq_true.mp h with ⟨e, he, hassigned⟩
           rcases ih hassigned with ⟨w, hwBound, hwVars⟩
           refine ⟨w, hwBound, ?_⟩
-          simp only [toLeaTTaAtom, Metta.Atom.vars, List.mem_flatten]
-          have htranslated : toLeaTTaAtom e ∈ toLeaTTaAtoms es :=
-            mem_toLeaTTaAtoms_of_mem he
-          refine ⟨(toLeaTTaAtom e).vars, ?_, hwVars⟩
-          exact List.mem_map.mpr ⟨toLeaTTaAtom e, htranslated, rfl⟩
+          simp only [encodeModelAtom, Metta.Atom.vars, List.mem_flatten]
+          have htranslated : encodeModelAtom e ∈ encodeModelAtoms es :=
+            mem_encodeModelAtoms_of_mem he
+          refine ⟨(encodeModelAtom e).vars, ?_, hwVars⟩
+          exact List.mem_map.mpr ⟨encodeModelAtom e, htranslated, rfl⟩
       | symbol s => simp [Bindings.hasAssignedVarAux] at h
       | grounded g => simp [Bindings.hasAssignedVarAux] at h
 
 private theorem hasAssignedVar_true_exists {b : Bindings} {a : Atom}
     (h : b.hasAssignedVar a = true) :
-    ∃ w, b.isBound w = true ∧ w ∈ (toLeaTTaAtom a).vars := by
+    ∃ w, b.isBound w = true ∧ w ∈ (encodeModelAtom a).vars := by
   exact hasAssignedVarAux_true_exists h
 
 private theorem key_mem_bindingValueKeys_of_val_mem
@@ -2870,26 +2818,26 @@ private theorem key_mem_bindingValueKeys_of_val_mem
 private theorem val_mem_toLeaTTaMatchBindings_of_lookup
     {b : Bindings} (hno : NoVarAssignmentValues b)
     {v : String} {a : Atom} (hlookup : b.lookup v = some a) :
-    Metta.BindingRel.val v (toLeaTTaAtom a) ∈ toLeaTTaMatchBindings b := by
+    Metta.BindingRel.val v (encodeModelAtom a) ∈ toLeaTTaMatchBindings b := by
   have hmem : (v, a) ∈ b.assignments := lookup_some_mem_assignments hlookup
   cases a with
   | var w => exact False.elim (hno hlookup)
   | symbol s =>
       unfold toLeaTTaMatchBindings Metta.Bindings.ofSubst toLeaTTaMatchSubst
       apply List.mem_map.mpr
-      refine ⟨(v, toLeaTTaAtom (.symbol s)), ?_, rfl⟩
+      refine ⟨(v, encodeModelAtom (.symbol s)), ?_, rfl⟩
       apply List.mem_map.mpr
       exact ⟨(v, .symbol s), by simpa using hmem, rfl⟩
   | grounded g =>
       unfold toLeaTTaMatchBindings Metta.Bindings.ofSubst toLeaTTaMatchSubst
       apply List.mem_map.mpr
-      refine ⟨(v, toLeaTTaAtom (.grounded g)), ?_, rfl⟩
+      refine ⟨(v, encodeModelAtom (.grounded g)), ?_, rfl⟩
       apply List.mem_map.mpr
       exact ⟨(v, .grounded g), by simpa using hmem, rfl⟩
   | expression es =>
       unfold toLeaTTaMatchBindings Metta.Bindings.ofSubst toLeaTTaMatchSubst
       apply List.mem_map.mpr
-      refine ⟨(v, toLeaTTaAtom (.expression es)), ?_, rfl⟩
+      refine ⟨(v, encodeModelAtom (.expression es)), ?_, rfl⟩
       apply List.mem_map.mpr
       exact ⟨(v, .expression es), by simpa using hmem, rfl⟩
 
@@ -2912,15 +2860,15 @@ private theorem assignmentValuesIndependent_of_noVar_fresh
       have hwVal := val_mem_toLeaTTaMatchBindings_of_lookup hno hwLookup
       have hwKey := key_mem_bindingValueKeys_of_val_mem hwVal
       have haVal := val_mem_toLeaTTaMatchBindings_of_lookup hno hlookup
-      exact False.elim ((hfresh w hwKey v (toLeaTTaAtom a) haVal) hwVars)
+      exact False.elim ((hfresh w hwKey v (encodeModelAtom a) haVal) hwVars)
 
 /-- First substitution correspondence lemma: on variable leaves, HE's
 assignment-only application operation matches LeaTTa instantiation once we are in
 the no-variable-values fragment. This is the kernel of the later ground-query
 equation-step bridge. -/
-theorem toLeaTTaAtom_apply_var_eq_instantiate {b : Bindings}
+theorem encodeModelAtom_apply_var_eq_instantiate {b : Bindings}
     (hb : GroundBindings b) (v : String) (fuel : Nat) :
-    toLeaTTaAtom (b.apply (.var v) (fuel + 2)) =
+    encodeModelAtom (b.apply (.var v) (fuel + 2)) =
       Metta.instantiate (toLeaTTaAssignmentBindings b) (.var v) := by
   rw [instantiate_toLeaTTaAssignmentBindings hb]
   simp [Bindings.apply]
@@ -2932,20 +2880,20 @@ theorem toLeaTTaAtom_apply_var_eq_instantiate {b : Bindings}
   have hindependent := assignmentValuesIndependent_of_noVar_fresh hno hfresh
   rw [resolve_eq_lookup_of_assignmentValuesIndependent hindependent v fuel]
   simp [Metta.Subst.apply, toLeaTTaSubst_lookup]
-  change toLeaTTaAtom (match b.lookup v with
+  change encodeModelAtom (match b.lookup v with
       | some val => val
       | none => Atom.var v) =
-    (Option.map toLeaTTaAtom (b.lookup v)).getD (Metta.Atom.var v)
-  cases h : b.lookup v <;> simp [toLeaTTaAtom]
+    (Option.map encodeModelAtom (b.lookup v)).getD (Metta.Atom.var v)
+  cases h : b.lookup v <;> simp [encodeModelAtom]
 
 /-- With enough fuel to cover the term depth, HE's bounded substitution agrees
 with LeaTTa's one-pass substitution on the no-variable-values fragment. -/
-theorem toLeaTTaAtom_apply_eq_subst_of_noVarAssignmentValues {b : Bindings}
+theorem encodeModelAtom_apply_eq_subst_of_noVarAssignmentValues {b : Bindings}
     (hno : NoVarAssignmentValues b)
     (hfresh : ValueKeysFreshForValues (toLeaTTaMatchBindings b)) :
     ∀ fuel a, atomDepth a + 2 ≤ fuel →
-      toLeaTTaAtom (b.apply a fuel) =
-        Metta.Subst.apply (toLeaTTaSubst b.assignments) (toLeaTTaAtom a) := by
+      encodeModelAtom (b.apply a fuel) =
+        Metta.Subst.apply (toLeaTTaSubst b.assignments) (encodeModelAtom a) := by
   intro fuel
   have hindependent := assignmentValuesIndependent_of_noVar_fresh hno hfresh
   induction fuel with
@@ -2960,25 +2908,25 @@ theorem toLeaTTaAtom_apply_eq_subst_of_noVarAssignmentValues {b : Bindings}
       | succ fuel' =>
           cases a with
           | symbol s =>
-              simp [Bindings.apply, Metta.Subst.apply, toLeaTTaAtom]
+              simp [Bindings.apply, Metta.Subst.apply, encodeModelAtom]
           | var v =>
               simp [Bindings.apply]
               rw [resolve_eq_lookup_of_assignmentValuesIndependent
                 hindependent v fuel']
-              simp only [toLeaTTaAtom, Metta.Subst.apply]
+              simp only [encodeModelAtom, Metta.Subst.apply]
               rw [toLeaTTaSubst_lookup]
-              change toLeaTTaAtom (match b.lookup v with
+              change encodeModelAtom (match b.lookup v with
                   | some val => val
                   | none => Atom.var v) =
-                (Option.map toLeaTTaAtom (b.lookup v)).getD (Metta.Atom.var v)
-              cases h : b.lookup v <;> simp [toLeaTTaAtom]
+                (Option.map encodeModelAtom (b.lookup v)).getD (Metta.Atom.var v)
+              cases h : b.lookup v <;> simp [encodeModelAtom]
           | grounded g =>
-              simp [Bindings.apply, Metta.Subst.apply, toLeaTTaAtom]
+              simp [Bindings.apply, Metta.Subst.apply, encodeModelAtom]
           | expression es =>
               have hlist :
                   ∀ es : List Atom, listDepth es + 2 ≤ fuel' + 1 →
-                    toLeaTTaAtoms (es.map (fun e => b.apply e (fuel' + 1))) =
-                      (toLeaTTaAtoms es).map
+                    encodeModelAtoms (es.map (fun e => b.apply e (fuel' + 1))) =
+                      (encodeModelAtoms es).map
                         (Metta.Subst.apply (toLeaTTaSubst b.assignments)) := by
                 intro es
                 induction es with
@@ -2987,7 +2935,7 @@ theorem toLeaTTaAtom_apply_eq_subst_of_noVarAssignmentValues {b : Bindings}
                     rfl
                 | cons e es ihEs =>
                     intro hes
-                    simp [toLeaTTaAtoms, listDepth] at hes ⊢
+                    simp [encodeModelAtoms, listDepth] at hes ⊢
                     have hhead : atomDepth e + 2 ≤ fuel' + 1 := by
                       omega
                     have htail : listDepth es + 2 ≤ fuel' + 1 := by
@@ -2998,17 +2946,17 @@ theorem toLeaTTaAtom_apply_eq_subst_of_noVarAssignmentValues {b : Bindings}
               have hes : listDepth es + 2 ≤ fuel' + 1 := by
                 simp [atomDepth] at hdepth
                 omega
-              simpa [Bindings.apply, Metta.Subst.apply, toLeaTTaAtom] using hlist es hes
+              simpa [Bindings.apply, Metta.Subst.apply, encodeModelAtom] using hlist es hes
 
 /-- Ground HE bindings automatically satisfy the no-variable-values boundary,
 so the bounded substitution correspondence applies whenever the fuel covers the
 term depth. -/
-theorem toLeaTTaAtom_apply_eq_subst_of_groundBindings {b : Bindings}
+theorem encodeModelAtom_apply_eq_subst_of_groundBindings {b : Bindings}
     (hb : GroundBindings b) :
     ∀ fuel a, atomDepth a + 2 ≤ fuel →
-      toLeaTTaAtom (b.apply a fuel) =
-        Metta.Subst.apply (toLeaTTaSubst b.assignments) (toLeaTTaAtom a) :=
-  toLeaTTaAtom_apply_eq_subst_of_noVarAssignmentValues
+      encodeModelAtom (b.apply a fuel) =
+        Metta.Subst.apply (toLeaTTaSubst b.assignments) (encodeModelAtom a) :=
+  encodeModelAtom_apply_eq_subst_of_noVarAssignmentValues
     (noVarAssignmentValues_of_groundBindings hb)
     (ClosedValueBindings.valueKeysFreshForValues
       (toLeaTTaMatchBindings_closed_of_ground hb))
@@ -3018,30 +2966,30 @@ and LeaTTa instantiation agree even when we use LeaTTa's matcher-facing binding
 order. This is the bridge form needed for transported QUERY witnesses, because
 LeaTTa's concrete matcher returns `toLeaTTaMatchBindings`, not the
 substitution-oriented binding order. -/
-theorem toLeaTTaAtom_apply_eq_instantiate_matchBindings_of_groundBindings
+theorem encodeModelAtom_apply_eq_instantiate_matchBindings_of_groundBindings
     {b : Bindings} (hb : GroundBindings b) (hkeys : AssignmentsNodup b) :
     ∀ fuel a, atomDepth a + 2 ≤ fuel →
-      toLeaTTaAtom (b.apply a fuel) =
-        Metta.instantiate (toLeaTTaMatchBindings b) (toLeaTTaAtom a) := by
+      encodeModelAtom (b.apply a fuel) =
+        Metta.instantiate (toLeaTTaMatchBindings b) (encodeModelAtom a) := by
   intro fuel a hdepth
   rw [instantiate_toLeaTTaMatchBindings_eq_subst_of_nodup hb hkeys a]
-  exact toLeaTTaAtom_apply_eq_subst_of_groundBindings hb fuel a hdepth
+  exact encodeModelAtom_apply_eq_subst_of_groundBindings hb fuel a hdepth
 
 /-- Ground HE substitutions can be transported through any LeaTTa matcher
 witness whose direct value lookups coincide with the HE bindings. This is the
 instantiate-side counterpart to the lookup-extensional matcher bridge and is
 the form the later equation-step transport actually consumes. -/
-theorem toLeaTTaAtom_apply_eq_instantiate_of_groundBindings_lookupExt
+theorem encodeModelAtom_apply_eq_instantiate_of_groundBindings_lookupExt
     {b : Bindings} {lb : Metta.Bindings}
     (hb : GroundBindings b) (hkeys : AssignmentsNodup b)
     (hlookup : LeaLookupExt b lb) :
     ∀ fuel a, atomDepth a + 2 ≤ fuel →
-      toLeaTTaAtom (b.apply a fuel) =
-        Metta.instantiate lb (toLeaTTaAtom a) := by
+      encodeModelAtom (b.apply a fuel) =
+        Metta.instantiate lb (encodeModelAtom a) := by
   intro fuel a hdepth
-  trans Metta.instantiate (toLeaTTaMatchBindings b) (toLeaTTaAtom a)
+  trans Metta.instantiate (toLeaTTaMatchBindings b) (encodeModelAtom a)
   · exact
-      toLeaTTaAtom_apply_eq_instantiate_matchBindings_of_groundBindings
+      encodeModelAtom_apply_eq_instantiate_matchBindings_of_groundBindings
         hb hkeys fuel a hdepth
   · symm
     exact instantiate_eq_toLeaTTaMatchBindings_of_lookupExt hkeys hlookup a
@@ -3052,16 +3000,16 @@ remain unique and the fuel covers the term depth. This is the exact semantic
 agreement line exposed by the chain-resolution counterexample: HE may leave
 variables unbound, but it must not bind them to further variables if we want its
 `apply` interface to match LeaTTa's one-pass `instantiate`. -/
-theorem toLeaTTaAtom_apply_eq_instantiate_matchBindings_of_noVarAssignmentValues
+theorem encodeModelAtom_apply_eq_instantiate_matchBindings_of_noVarAssignmentValues
     {b : Bindings} (hno : NoVarAssignmentValues b) (hkeys : AssignmentsNodup b)
     (hfresh : ValueKeysFreshForValues (toLeaTTaMatchBindings b)) :
     ∀ fuel a, atomDepth a + 2 ≤ fuel →
-      toLeaTTaAtom (b.apply a fuel) =
-        Metta.instantiate (toLeaTTaMatchBindings b) (toLeaTTaAtom a) := by
+      encodeModelAtom (b.apply a fuel) =
+        Metta.instantiate (toLeaTTaMatchBindings b) (encodeModelAtom a) := by
   intro fuel a hdepth
   rw [instantiate_toLeaTTaMatchBindings_eq_subst_of_noVar_fresh
     hno hkeys hfresh a]
-  exact toLeaTTaAtom_apply_eq_subst_of_noVarAssignmentValues
+  exact encodeModelAtom_apply_eq_subst_of_noVarAssignmentValues
     hno hfresh fuel a hdepth
 
 /-- The no-variable-values substitution correspondence also transports through
@@ -3069,18 +3017,18 @@ any LeaTTa matcher witness with the same direct lookup behavior as the HE
 bindings. This is the lookup-extensional form the remaining queryOp witness
 transport can consume without committing to LeaTTa's concrete binding-list
 order. -/
-theorem toLeaTTaAtom_apply_eq_instantiate_of_noVarAssignmentValues_lookupExt
+theorem encodeModelAtom_apply_eq_instantiate_of_noVarAssignmentValues_lookupExt
     {b : Bindings} {lb : Metta.Bindings}
     (hno : NoVarAssignmentValues b) (hkeys : AssignmentsNodup b)
     (hfresh : ValueKeysFreshForValues (toLeaTTaMatchBindings b))
     (hlookup : LeaLookupExt b lb) :
     ∀ fuel a, atomDepth a + 2 ≤ fuel →
-      toLeaTTaAtom (b.apply a fuel) =
-        Metta.instantiate lb (toLeaTTaAtom a) := by
+      encodeModelAtom (b.apply a fuel) =
+        Metta.instantiate lb (encodeModelAtom a) := by
   intro fuel a hdepth
-  trans Metta.instantiate (toLeaTTaMatchBindings b) (toLeaTTaAtom a)
+  trans Metta.instantiate (toLeaTTaMatchBindings b) (encodeModelAtom a)
   · exact
-      toLeaTTaAtom_apply_eq_instantiate_matchBindings_of_noVarAssignmentValues
+      encodeModelAtom_apply_eq_instantiate_matchBindings_of_noVarAssignmentValues
         hno hkeys hfresh fuel a hdepth
   · symm
     exact instantiate_eq_toLeaTTaMatchBindings_of_lookupExt hkeys hlookup a
@@ -3099,16 +3047,16 @@ theorem visible_successor_of_instantiated_item
     (hdepth : atomDepth rhs + 2 ≤ fuel)
     (hitem :
       Metta.Minimal.evalResult prev
-          (Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom rhs))
+          (Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom rhs))
           (toLeaTTaMatchBindings qb) ∈ items) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈ items ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) := by
-  refine ⟨Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom rhs),
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) := by
+  refine ⟨Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom rhs),
     toLeaTTaMatchBindings qb, hitem, ?_⟩
   unfold Metta.AlphaEq
   rw [Bindings.applyFull_no_equalities heq]
-  rw [← toLeaTTaAtom_apply_eq_instantiate_matchBindings_of_noVarAssignmentValues
+  rw [← encodeModelAtom_apply_eq_instantiate_matchBindings_of_noVarAssignmentValues
     hno hkeys hfresh fuel rhs hdepth]
 
 /-- Lookup-extensional version of the visible-successor bridge. If the emitted
@@ -3125,15 +3073,15 @@ theorem visible_successor_of_lookupExt_instantiated_item
     (hdepth : atomDepth rhs + 2 ≤ fuel)
     (hitem :
       Metta.Minimal.evalResult prev
-          (Metta.instantiate lb (toLeaTTaAtom rhs))
+          (Metta.instantiate lb (encodeModelAtom rhs))
           lb ∈ items) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈ items ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) := by
-  refine ⟨Metta.instantiate lb (toLeaTTaAtom rhs), lb, hitem, ?_⟩
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) := by
+  refine ⟨Metta.instantiate lb (encodeModelAtom rhs), lb, hitem, ?_⟩
   unfold Metta.AlphaEq
   rw [Bindings.applyFull_no_equalities heq]
-  rw [← toLeaTTaAtom_apply_eq_instantiate_of_noVarAssignmentValues_lookupExt
+  rw [← encodeModelAtom_apply_eq_instantiate_of_noVarAssignmentValues_lookupExt
     hno hkeys hfresh hlookup fuel rhs hdepth]
 
 /-- LeaTTa's alpha-equivalence collapses bare variable names to the same
@@ -3158,10 +3106,10 @@ theorem visible_successor_of_variable_item
     (hitem : Metta.Minimal.evalResult prev (Metta.Atom.var emittedVar) m ∈ items) :
     ∃ emitted m',
       Metta.Minimal.evalResult prev emitted m' ∈ items ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) := by
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) := by
   refine ⟨Metta.Atom.var emittedVar, m, hitem, ?_⟩
   rw [happly]
-  simpa [toLeaTTaAtom] using alphaEq_var_var emittedVar targetVar
+  simpa [encodeModelAtom] using alphaEq_var_var emittedVar targetVar
 
 /-- Typed visible-successor bridge on the instantiated-item interface. If a LeaTTa
 item already carries the translated instantiated RHS, then under the explicit
@@ -3179,20 +3127,20 @@ theorem typed_visible_successor_of_instantiated_item
     (hdepth : atomDepth rhs + 2 ≤ fuel)
     (hitem :
       Metta.Minimal.evalResult prev
-          (Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom rhs))
+          (Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom rhs))
           (toLeaTTaMatchBindings qb) ∈ items)
     (hσ : Metta.Grounds env (toLeaTTaSubst qb.assignments) Γ)
-    (hL : Metta.WT env Γ (toLeaTTaAtom lhs) T)
-    (hR : Metta.WT env Γ (toLeaTTaAtom rhs) T) :
+    (hL : Metta.WT env Γ (encodeModelAtom lhs) T)
+    (hR : Metta.WT env Γ (encodeModelAtom rhs) T) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈ items ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) ∧
       Metta.WT env [] emitted T := by
-  refine ⟨Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom rhs),
+  refine ⟨Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom rhs),
     toLeaTTaMatchBindings qb, hitem, ?_, ?_⟩
   · unfold Metta.AlphaEq
     rw [Bindings.applyFull_no_equalities hb.2]
-    rw [← toLeaTTaAtom_apply_eq_instantiate_matchBindings_of_noVarAssignmentValues
+    rw [← encodeModelAtom_apply_eq_instantiate_matchBindings_of_noVarAssignmentValues
       hno hkeys hfresh fuel rhs hdepth]
   · exact (instantiated_rule_typed_of_reduction_preserves_type hσ hL hR hb hkeys).2
 
@@ -3200,9 +3148,9 @@ theorem typed_visible_successor_of_instantiated_item
 the same left-to-right variable multiset as LeaTTa's ordinary `Atom.vars`. This
 is the bookkeeping bridge needed to compare HE freshening against LeaTTa's
 `freshenRule`. -/
-private theorem collectVars_eq_toLeaTTaAtom_vars_of_depth :
+private theorem collectVars_eq_encodeModelAtom_vars_of_depth :
     ∀ fuel a, atomDepth a + 1 ≤ fuel →
-      collectVars a fuel = (toLeaTTaAtom a).vars := by
+      collectVars a fuel = (encodeModelAtom a).vars := by
   intro fuel
   induction fuel with
   | zero =>
@@ -3212,24 +3160,24 @@ private theorem collectVars_eq_toLeaTTaAtom_vars_of_depth :
       intro a hdepth
       cases a with
       | symbol s =>
-          simp [collectVars, toLeaTTaAtom, Metta.Atom.vars]
+          simp [collectVars, encodeModelAtom, Metta.Atom.vars]
       | var v =>
-          simp [collectVars, toLeaTTaAtom, Metta.Atom.vars]
+          simp [collectVars, encodeModelAtom, Metta.Atom.vars]
       | grounded g =>
-          simp [collectVars, toLeaTTaAtom, Metta.Atom.vars]
+          simp [collectVars, encodeModelAtom, Metta.Atom.vars]
       | expression es =>
           have hlist :
               ∀ es : List Atom, listDepth es + 1 ≤ fuel →
                 collectVars.collectVarsList es fuel =
-                  ((toLeaTTaAtoms es).map Metta.Atom.vars).flatten := by
+                  ((encodeModelAtoms es).map Metta.Atom.vars).flatten := by
             intro es
             induction es with
             | nil =>
                 intro _
-                simp [collectVars.collectVarsList, toLeaTTaAtoms]
+                simp [collectVars.collectVarsList, encodeModelAtoms]
             | cons e es ihEs =>
                 intro hes
-                simp [collectVars.collectVarsList, toLeaTTaAtoms, listDepth] at hes ⊢
+                simp [collectVars.collectVarsList, encodeModelAtoms, listDepth] at hes ⊢
                 have hhead : atomDepth e + 1 ≤ fuel := by
                   omega
                 have htail : listDepth es + 1 ≤ fuel := by
@@ -3238,7 +3186,7 @@ private theorem collectVars_eq_toLeaTTaAtom_vars_of_depth :
           have hes : listDepth es + 1 ≤ fuel := by
             simp [atomDepth] at hdepth
             omega
-          simpa [collectVars, toLeaTTaAtom, Metta.Atom.vars] using hlist es hes
+          simpa [collectVars, encodeModelAtom, Metta.Atom.vars] using hlist es hes
 
 /-- Specialization of the previous bridge to successful ground `simpleMatch`
 results from the empty seed. This is the substitution half of the eventual
@@ -3249,10 +3197,10 @@ theorem simpleMatch_ground_apply_eq_instantiate_matchBindings
     GroundAtom target →
     simpleMatch pattern target Bindings.empty fuelMatch = some mb →
     atomDepth rhs + 2 ≤ fuelApply →
-      toLeaTTaAtom (mb.apply rhs fuelApply) =
-        Metta.instantiate (toLeaTTaMatchBindings mb) (toLeaTTaAtom rhs) := by
+      encodeModelAtom (mb.apply rhs fuelApply) =
+        Metta.instantiate (toLeaTTaMatchBindings mb) (encodeModelAtom rhs) := by
   intro hground hmatch hdepth
-  exact toLeaTTaAtom_apply_eq_instantiate_matchBindings_of_groundBindings
+  exact encodeModelAtom_apply_eq_instantiate_matchBindings_of_groundBindings
     (simpleMatch_groundBindings hground hmatch)
     (simpleMatch_assignmentsNodup hmatch)
     fuelApply rhs hdepth
@@ -3260,10 +3208,10 @@ theorem simpleMatch_ground_apply_eq_instantiate_matchBindings
 /-- HE-side variable renaming commutes with the structural translation once the
 fuel covers the atom depth. This is the alpha-freshening boundary theorem the
 equation bridge needs. -/
-theorem toLeaTTaAtom_renameVars_of_depth (mapping : List (String × String)) :
+theorem encodeModelAtom_renameVars_of_depth (mapping : List (String × String)) :
     ∀ fuel a, atomDepth a + 1 ≤ fuel →
-      toLeaTTaAtom (Mettapedia.Languages.MeTTa.HE.renameVars mapping a fuel) =
-        Metta.renameVars mapping (toLeaTTaAtom a) := by
+      encodeModelAtom (Mettapedia.Languages.MeTTa.HE.renameVars mapping a fuel) =
+        Metta.renameVars mapping (encodeModelAtom a) := by
   intro fuel
   induction fuel with
   | zero =>
@@ -3273,17 +3221,17 @@ theorem toLeaTTaAtom_renameVars_of_depth (mapping : List (String × String)) :
       intro a hdepth
       cases a with
       | symbol s =>
-          simp [Mettapedia.Languages.MeTTa.HE.renameVars, Metta.renameVars, toLeaTTaAtom]
+          simp [Mettapedia.Languages.MeTTa.HE.renameVars, Metta.renameVars, encodeModelAtom]
       | var v =>
-          simp [Mettapedia.Languages.MeTTa.HE.renameVars, Metta.renameVars, toLeaTTaAtom]
+          simp [Mettapedia.Languages.MeTTa.HE.renameVars, Metta.renameVars, encodeModelAtom]
       | grounded g =>
-          simp [Mettapedia.Languages.MeTTa.HE.renameVars, Metta.renameVars, toLeaTTaAtom]
+          simp [Mettapedia.Languages.MeTTa.HE.renameVars, Metta.renameVars, encodeModelAtom]
       | expression es =>
           have hlist :
               ∀ es : List Atom, listDepth es + 1 ≤ fuel →
-                toLeaTTaAtoms
+                encodeModelAtoms
                     (Mettapedia.Languages.MeTTa.HE.renameVars.renameVarsList mapping es fuel) =
-                  (toLeaTTaAtoms es).map (Metta.renameVars mapping) := by
+                  (encodeModelAtoms es).map (Metta.renameVars mapping) := by
             intro es
             induction es with
             | nil =>
@@ -3291,7 +3239,7 @@ theorem toLeaTTaAtom_renameVars_of_depth (mapping : List (String × String)) :
                 rfl
             | cons e es ihEs =>
                 intro hes
-                simp [listDepth, toLeaTTaAtoms,
+                simp [listDepth, encodeModelAtoms,
                   Mettapedia.Languages.MeTTa.HE.renameVars.renameVarsList] at hes ⊢
                 have hhead : atomDepth e + 1 ≤ fuel := by
                   omega
@@ -3303,58 +3251,58 @@ theorem toLeaTTaAtom_renameVars_of_depth (mapping : List (String × String)) :
           have hes : listDepth es + 1 ≤ fuel := by
             simp [atomDepth] at hdepth
             omega
-          simpa [Mettapedia.Languages.MeTTa.HE.renameVars, Metta.renameVars, toLeaTTaAtom] using
+          simpa [Mettapedia.Languages.MeTTa.HE.renameVars, Metta.renameVars, encodeModelAtom] using
             congrArg Metta.Atom.expr (hlist es hes)
 
 /-- The translated freshened LHS is exactly LeaTTa renaming applied to the
 translated raw LHS, provided the fuel reaches the atom depth. -/
-theorem toLeaTTaAtom_freshenEquation_fst
+theorem encodeModelAtom_freshenEquation_fst
     (idx : Nat) (lhs rhs : Atom) (fuel : Nat)
     (hdepth : atomDepth lhs + 1 ≤ fuel) :
-    toLeaTTaAtom (freshenEquation idx lhs rhs fuel).1 =
+    encodeModelAtom (freshenEquation idx lhs rhs fuel).1 =
       Metta.renameVars
         ((freshMapping idx ((collectVars lhs fuel ++ collectVars rhs fuel).eraseDups)).1)
-        (toLeaTTaAtom lhs) := by
+        (encodeModelAtom lhs) := by
   simp [freshenEquation]
-  exact toLeaTTaAtom_renameVars_of_depth _ fuel lhs hdepth
+  exact encodeModelAtom_renameVars_of_depth _ fuel lhs hdepth
 
 /-- The translated freshened RHS is exactly LeaTTa renaming applied to the
 translated raw RHS, provided the fuel reaches the atom depth. -/
-theorem toLeaTTaAtom_freshenEquation_snd
+theorem encodeModelAtom_freshenEquation_snd
     (idx : Nat) (lhs rhs : Atom) (fuel : Nat)
     (hdepth : atomDepth rhs + 1 ≤ fuel) :
-    toLeaTTaAtom (freshenEquation idx lhs rhs fuel).2 =
+    encodeModelAtom (freshenEquation idx lhs rhs fuel).2 =
       Metta.renameVars
         ((freshMapping idx ((collectVars lhs fuel ++ collectVars rhs fuel).eraseDups)).1)
-        (toLeaTTaAtom rhs) := by
+        (encodeModelAtom rhs) := by
   simp [freshenEquation]
-  exact toLeaTTaAtom_renameVars_of_depth _ fuel rhs hdepth
+  exact encodeModelAtom_renameVars_of_depth _ fuel rhs hdepth
 
 /-- The translated avoid-aware freshened LHS is exactly LeaTTa renaming
 applied to the translated raw LHS, provided the fuel reaches the atom depth. -/
-theorem toLeaTTaAtom_freshenEquationAgainst_fst
+theorem encodeModelAtom_freshenEquationAgainst_fst
     (avoid : List String) (idx : Nat) (lhs rhs : Atom) (fuel : Nat)
     (hdepth : atomDepth lhs + 1 ≤ fuel) :
-    toLeaTTaAtom (freshenEquationAgainst avoid idx lhs rhs fuel).1 =
+    encodeModelAtom (freshenEquationAgainst avoid idx lhs rhs fuel).1 =
       Metta.renameVars
         ((freshMappingAgainst idx avoid
           ((collectVars lhs fuel ++ collectVars rhs fuel).eraseDups)).1)
-        (toLeaTTaAtom lhs) := by
+        (encodeModelAtom lhs) := by
   simp [freshenEquationAgainst]
-  exact toLeaTTaAtom_renameVars_of_depth _ fuel lhs hdepth
+  exact encodeModelAtom_renameVars_of_depth _ fuel lhs hdepth
 
 /-- The translated avoid-aware freshened RHS is exactly LeaTTa renaming
 applied to the translated raw RHS, provided the fuel reaches the atom depth. -/
-theorem toLeaTTaAtom_freshenEquationAgainst_snd
+theorem encodeModelAtom_freshenEquationAgainst_snd
     (avoid : List String) (idx : Nat) (lhs rhs : Atom) (fuel : Nat)
     (hdepth : atomDepth rhs + 1 ≤ fuel) :
-    toLeaTTaAtom (freshenEquationAgainst avoid idx lhs rhs fuel).2 =
+    encodeModelAtom (freshenEquationAgainst avoid idx lhs rhs fuel).2 =
       Metta.renameVars
         ((freshMappingAgainst idx avoid
           ((collectVars lhs fuel ++ collectVars rhs fuel).eraseDups)).1)
-        (toLeaTTaAtom rhs) := by
+        (encodeModelAtom rhs) := by
   simp [freshenEquationAgainst]
-  exact toLeaTTaAtom_renameVars_of_depth _ fuel rhs hdepth
+  exact encodeModelAtom_renameVars_of_depth _ fuel rhs hdepth
 
 /-- HE-side model of LeaTTa's runtime freshening discipline: every variable
 from the rule gets the same runtime counter suffix, matching
@@ -3439,26 +3387,26 @@ private theorem leaRenameVars_eq_substApply_uniformCounter
 
 /-- Translating the HE-side runtime-freshened LHS lands exactly on LeaTTa's
 renaming interface for the same runtime counter. -/
-private theorem toLeaTTaAtom_uniformCounterFreshenEquation_fst
+private theorem encodeModelAtom_uniformCounterFreshenEquation_fst
     (counter : Nat) (lhs rhs : Atom) (fuel : Nat)
     (hdepth : atomDepth lhs + 1 ≤ fuel) :
-    toLeaTTaAtom (uniformCounterFreshenEquation counter lhs rhs fuel).1 =
+    encodeModelAtom (uniformCounterFreshenEquation counter lhs rhs fuel).1 =
       Metta.renameVars
         (uniformCounterMapping counter (collectVars lhs fuel ++ collectVars rhs fuel))
-        (toLeaTTaAtom lhs) := by
+        (encodeModelAtom lhs) := by
   simp [uniformCounterFreshenEquation]
-  exact toLeaTTaAtom_renameVars_of_depth _ fuel lhs hdepth
+  exact encodeModelAtom_renameVars_of_depth _ fuel lhs hdepth
 
-/-- RHS companion to `toLeaTTaAtom_uniformCounterFreshenEquation_fst`. -/
-private theorem toLeaTTaAtom_uniformCounterFreshenEquation_snd
+/-- RHS companion to `encodeModelAtom_uniformCounterFreshenEquation_fst`. -/
+private theorem encodeModelAtom_uniformCounterFreshenEquation_snd
     (counter : Nat) (lhs rhs : Atom) (fuel : Nat)
     (hdepth : atomDepth rhs + 1 ≤ fuel) :
-    toLeaTTaAtom (uniformCounterFreshenEquation counter lhs rhs fuel).2 =
+    encodeModelAtom (uniformCounterFreshenEquation counter lhs rhs fuel).2 =
       Metta.renameVars
         (uniformCounterMapping counter (collectVars lhs fuel ++ collectVars rhs fuel))
-        (toLeaTTaAtom rhs) := by
+        (encodeModelAtom rhs) := by
   simp [uniformCounterFreshenEquation]
-  exact toLeaTTaAtom_renameVars_of_depth _ fuel rhs hdepth
+  exact encodeModelAtom_renameVars_of_depth _ fuel rhs hdepth
 
 /-- Exact bridge: LeaTTa's executable runtime freshening is the translation of
 the corresponding HE-side `uniformCounterFreshenEquation`. This pins the
@@ -3467,31 +3415,31 @@ private theorem freshenRule_eq_uniformCounterFreshenEquation
     (counter : Nat) (lhs rhs : Atom) (fuel : Nat)
     (hdepthL : atomDepth lhs + 1 ≤ fuel)
     (hdepthR : atomDepth rhs + 1 ≤ fuel) :
-    Metta.Minimal.freshenRule counter (toLeaTTaAtom lhs) (toLeaTTaAtom rhs) =
-      (toLeaTTaAtom (uniformCounterFreshenEquation counter lhs rhs fuel).1,
-        toLeaTTaAtom (uniformCounterFreshenEquation counter lhs rhs fuel).2) := by
-  rw [toLeaTTaAtom_uniformCounterFreshenEquation_fst counter lhs rhs fuel hdepthL,
-    toLeaTTaAtom_uniformCounterFreshenEquation_snd counter lhs rhs fuel hdepthR]
+    Metta.Minimal.freshenRule counter (encodeModelAtom lhs) (encodeModelAtom rhs) =
+      (encodeModelAtom (uniformCounterFreshenEquation counter lhs rhs fuel).1,
+        encodeModelAtom (uniformCounterFreshenEquation counter lhs rhs fuel).2) := by
+  rw [encodeModelAtom_uniformCounterFreshenEquation_fst counter lhs rhs fuel hdepthL,
+    encodeModelAtom_uniformCounterFreshenEquation_snd counter lhs rhs fuel hdepthR]
   have hvarsL :
-      collectVars lhs fuel = (toLeaTTaAtom lhs).vars :=
-    collectVars_eq_toLeaTTaAtom_vars_of_depth fuel lhs hdepthL
+      collectVars lhs fuel = (encodeModelAtom lhs).vars :=
+    collectVars_eq_encodeModelAtom_vars_of_depth fuel lhs hdepthL
   have hvarsR :
-      collectVars rhs fuel = (toLeaTTaAtom rhs).vars :=
-    collectVars_eq_toLeaTTaAtom_vars_of_depth fuel rhs hdepthR
+      collectVars rhs fuel = (encodeModelAtom rhs).vars :=
+    collectVars_eq_encodeModelAtom_vars_of_depth fuel rhs hdepthR
   rw [show
       uniformCounterMapping counter (collectVars lhs fuel ++ collectVars rhs fuel) =
-        uniformCounterMapping counter ((toLeaTTaAtom lhs).vars ++ (toLeaTTaAtom rhs).vars) by
+        uniformCounterMapping counter ((encodeModelAtom lhs).vars ++ (encodeModelAtom rhs).vars) by
         simp [uniformCounterMapping, hvarsL, hvarsR]]
   unfold Metta.Minimal.freshenRule
-  cases hvars : ((toLeaTTaAtom lhs).vars ++ (toLeaTTaAtom rhs).vars) with
+  cases hvars : ((encodeModelAtom lhs).vars ++ (encodeModelAtom rhs).vars) with
   | nil =>
       simp [uniformCounterMapping, Metta.renameVars_nil]
   | cons v vs =>
       apply Prod.ext
       · symm
-        exact leaRenameVars_eq_substApply_uniformCounter counter (v :: vs) (toLeaTTaAtom lhs)
+        exact leaRenameVars_eq_substApply_uniformCounter counter (v :: vs) (encodeModelAtom lhs)
       · symm
-        exact leaRenameVars_eq_substApply_uniformCounter counter (v :: vs) (toLeaTTaAtom rhs)
+        exact leaRenameVars_eq_substApply_uniformCounter counter (v :: vs) (encodeModelAtom rhs)
 
 private theorem mem_of_mem_zipIdx {α : Type*} {xs : List α} {x : α} {i : Nat}
     (h : (x, i) ∈ xs.zipIdx) : x ∈ xs := by
@@ -3581,32 +3529,32 @@ private theorem renameVars_nil :
           simp [renameVars, hlist]
 
 /-- Translating a ground HE atom yields a LeaTTa atom with no free variables. -/
-theorem toLeaTTaAtom_vars_nil_of_ground :
-    ∀ {a : Atom}, GroundAtom a → (toLeaTTaAtom a).vars = [] := by
+theorem encodeModelAtom_vars_nil_of_ground :
+    ∀ {a : Atom}, GroundAtom a → (encodeModelAtom a).vars = [] := by
   intro a hground
   induction hground with
   | symbol s =>
-      simp [toLeaTTaAtom, Metta.Atom.vars]
+      simp [encodeModelAtom, Metta.Atom.vars]
   | grounded g =>
-      simp [toLeaTTaAtom, Metta.Atom.vars]
+      simp [encodeModelAtom, Metta.Atom.vars]
   | @expression es hElems ih =>
-      have hlist : ∀ es : List Atom, (∀ e ∈ es, (toLeaTTaAtom e).vars = []) →
-          ((toLeaTTaAtoms es).map Metta.Atom.vars).flatten = [] := by
+      have hlist : ∀ es : List Atom, (∀ e ∈ es, (encodeModelAtom e).vars = []) →
+          ((encodeModelAtoms es).map Metta.Atom.vars).flatten = [] := by
         intro es
         induction es with
         | nil =>
-            simp [toLeaTTaAtoms]
+            simp [encodeModelAtoms]
         | cons e es ihEs =>
             intro hEs
-            have hhead : (toLeaTTaAtom e).vars = [] := hEs e (by simp)
-            have htail : ∀ e' ∈ es, (toLeaTTaAtom e').vars = [] := by
+            have hhead : (encodeModelAtom e).vars = [] := hEs e (by simp)
+            have htail : ∀ e' ∈ es, (encodeModelAtom e').vars = [] := by
               intro e' he'
               exact hEs e' (by simp [he'])
-            simp [toLeaTTaAtoms, hhead, ihEs htail]
-      have hElemsNil : ∀ e ∈ es, (toLeaTTaAtom e).vars = [] := by
+            simp [encodeModelAtoms, hhead, ihEs htail]
+      have hElemsNil : ∀ e ∈ es, (encodeModelAtom e).vars = [] := by
         intro e he
         exact ih e he
-      simpa [toLeaTTaAtom, Metta.Atom.vars] using hlist es hElemsNil
+      simpa [encodeModelAtom, Metta.Atom.vars] using hlist es hElemsNil
 
 /-- A fully ground equation is unchanged by HE's local freshening pass. -/
 private theorem freshenEquation_eq_of_ground
@@ -3683,13 +3631,13 @@ private theorem simpleMatch_ground_empty_exact :
         simpleMatch pattern target Bindings.empty fuel = some qb →
           qb = Bindings.empty ∧
           Metta.Bindings.empty ∈
-            Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom target)) ∧
+            Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom target)) ∧
       (∀ {ps ts qb},
         (∀ p ∈ ps, GroundAtom p) →
         simpleMatch.simpleMatchList ps ts Bindings.empty fuel = some qb →
           qb = Bindings.empty ∧
           Metta.Bindings.empty ∈
-            Metta.matchAll none [Metta.Bindings.empty] (toLeaTTaAtoms ps) (toLeaTTaAtoms ts)) := by
+            Metta.matchAll none [Metta.Bindings.empty] (encodeModelAtoms ps) (encodeModelAtoms ts)) := by
   intro fuel
   induction fuel with
   | zero =>
@@ -3720,7 +3668,7 @@ private theorem simpleMatch_ground_empty_exact :
             simpleMatch pattern target Bindings.empty (Nat.succ fuel) = some qb →
               qb = Bindings.empty ∧
               Metta.Bindings.empty ∈
-                Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom target) := by
+                Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom target) := by
         intro pattern target qb hground hmatch
         cases hground with
         | symbol s =>
@@ -3732,7 +3680,7 @@ private theorem simpleMatch_ground_empty_exact :
                   subst qb
                   exact ⟨rfl, by simp [Metta.Bindings.empty, Metta.matchAtoms,
                     Metta.matchAtomsWith, Metta.Bindings.hasLoop,
-                    Metta.Bindings.vars, toLeaTTaAtom]⟩
+                    Metta.Bindings.vars, encodeModelAtom]⟩
                 · simp [simpleMatch, hst] at hmatch
             | var v =>
                 simp [simpleMatch] at hmatch
@@ -3749,8 +3697,8 @@ private theorem simpleMatch_ground_empty_exact :
                   subst qb
                   refine ⟨rfl, ?_⟩
                   simpa [Metta.Bindings.empty, Metta.matchAtoms, Metta.matchAtomsWith,
-                    Metta.Bindings.hasLoop, Metta.Bindings.vars, toLeaTTaAtom] using
-                    toLeaTTaAtom_grounded_equiv_self g
+                    Metta.Bindings.hasLoop, Metta.Bindings.vars, encodeModelAtom] using
+                    encodeModelAtom_grounded_equiv_self g
                 · simp [simpleMatch, hgh] at hmatch
             | var v =>
                 simp [simpleMatch] at hmatch
@@ -3771,7 +3719,7 @@ private theorem simpleMatch_ground_empty_exact :
                   obtain ⟨hqb, hmem⟩ := ihList hps hlist
                   subst hqb
                   refine ⟨rfl, ?_⟩
-                  simpa [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom,
+                  simpa [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom,
                     hlen, Metta.Bindings.empty, Metta.Bindings.hasLoop,
                     Metta.Bindings.vars] using hmem
             | var v =>
@@ -3786,7 +3734,7 @@ private theorem simpleMatch_ground_empty_exact :
             simpleMatch.simpleMatchList ps ts Bindings.empty (Nat.succ fuel) = some qb →
               qb = Bindings.empty ∧
               Metta.Bindings.empty ∈
-                Metta.matchAll none [Metta.Bindings.empty] (toLeaTTaAtoms ps) (toLeaTTaAtoms ts) := by
+                Metta.matchAll none [Metta.Bindings.empty] (encodeModelAtoms ps) (encodeModelAtoms ts) := by
         intro ps
         induction ps with
         | nil =>
@@ -3826,7 +3774,7 @@ private theorem simpleMatch_ground_empty_exact :
                       simp [Metta.Bindings.empty, merge_empty_right]
                     have hheadSeeded :
                         Metta.Bindings.empty ∈
-                          (Metta.matchAtoms (toLeaTTaAtom p) (toLeaTTaAtom t)).flatMap
+                          (Metta.matchAtoms (encodeModelAtom p) (encodeModelAtom t)).flatMap
                             (fun mb => Metta.Bindings.merge Metta.Bindings.empty mb) := by
                       exact List.mem_flatMap.mpr ⟨Metta.Bindings.empty, hhead, hmergeEmpty⟩
                     refine ⟨rfl, ?_⟩
@@ -4019,8 +3967,8 @@ theorem mem_queryEquationsAgainstVisible_decompose
 
 /-- The translation preserves the head key used by LeaTTa's first-argument
 indexing layer. -/
-@[simp] theorem headKey_toLeaTTaAtom (a : Atom) :
-    Metta.Minimal.headKey (toLeaTTaAtom a) = heHeadKey a := by
+@[simp] theorem headKey_encodeModelAtom (a : Atom) :
+    Metta.Minimal.headKey (encodeModelAtom a) = heHeadKey a := by
   cases a with
   | symbol s =>
       rfl
@@ -4304,7 +4252,7 @@ def translatedEquationRules : List Atom → List (Metta.Atom × Metta.Atom)
           if s = "=" then
             match tail with
             | [lhs, rhs] =>
-                (toLeaTTaAtom lhs, toLeaTTaAtom rhs) :: translatedEquationRules rest
+                (encodeModelAtom lhs, encodeModelAtom rhs) :: translatedEquationRules rest
             | _ => translatedEquationRules rest
           else
             translatedEquationRules rest
@@ -4312,23 +4260,23 @@ def translatedEquationRules : List Atom → List (Metta.Atom × Metta.Atom)
 
 /-- Translating an HE atom list preserves exactly the LeaTTa `equalityRules`
 interface. -/
-@[simp] theorem equalityRules_toLeaTTaAtoms (atoms : List Atom) :
-    (Metta.Space.equalityRules ⟨toLeaTTaAtoms atoms⟩) = translatedEquationRules atoms := by
+@[simp] theorem equalityRules_encodeModelAtoms (atoms : List Atom) :
+    (Metta.Space.equalityRules ⟨encodeModelAtoms atoms⟩) = translatedEquationRules atoms := by
   induction atoms with
   | nil =>
       rfl
   | cons a atoms ih =>
       cases a with
       | symbol s =>
-          simpa [translatedEquationRules, toLeaTTaAtom, toLeaTTaAtoms, Metta.Space.equalityRules, List.filterMap] using ih
+          simpa [translatedEquationRules, encodeModelAtom, encodeModelAtoms, Metta.Space.equalityRules, List.filterMap] using ih
       | var v =>
-          simpa [translatedEquationRules, toLeaTTaAtom, toLeaTTaAtoms, Metta.Space.equalityRules, List.filterMap] using ih
+          simpa [translatedEquationRules, encodeModelAtom, encodeModelAtoms, Metta.Space.equalityRules, List.filterMap] using ih
       | grounded g =>
-          simpa [translatedEquationRules, toLeaTTaGround, toLeaTTaAtom, toLeaTTaAtoms, Metta.Space.equalityRules, List.filterMap] using ih
+          simpa [translatedEquationRules, encodeModelGround, encodeModelAtom, encodeModelAtoms, Metta.Space.equalityRules, List.filterMap] using ih
       | expression es =>
           cases es with
           | nil =>
-              simpa [translatedEquationRules, toLeaTTaAtom, toLeaTTaAtoms, Metta.Space.equalityRules, List.filterMap] using ih
+              simpa [translatedEquationRules, encodeModelAtom, encodeModelAtoms, Metta.Space.equalityRules, List.filterMap] using ih
           | cons h tail =>
               cases h with
               | symbol s =>
@@ -4336,38 +4284,38 @@ interface. -/
                   · subst hs
                     cases tail with
                     | nil =>
-                        simpa [translatedEquationRules, toLeaTTaAtom, toLeaTTaAtoms, Metta.Space.equalityRules, List.filterMap] using ih
+                        simpa [translatedEquationRules, encodeModelAtom, encodeModelAtoms, Metta.Space.equalityRules, List.filterMap] using ih
                     | cons a1 tail1 =>
                         cases tail1 with
                         | nil =>
-                            simpa [translatedEquationRules, toLeaTTaAtom, toLeaTTaAtoms, Metta.Space.equalityRules, List.filterMap] using ih
+                            simpa [translatedEquationRules, encodeModelAtom, encodeModelAtoms, Metta.Space.equalityRules, List.filterMap] using ih
                         | cons a2 tail2 =>
                             cases tail2 with
                             | nil =>
-                                simpa [translatedEquationRules, toLeaTTaAtom, toLeaTTaAtoms, Metta.Space.equalityRules, List.filterMap] using
-                                  congrArg (List.cons (toLeaTTaAtom a1, toLeaTTaAtom a2)) ih
+                                simpa [translatedEquationRules, encodeModelAtom, encodeModelAtoms, Metta.Space.equalityRules, List.filterMap] using
+                                  congrArg (List.cons (encodeModelAtom a1, encodeModelAtom a2)) ih
                             | cons a3 tail3 =>
-                                simpa [translatedEquationRules, toLeaTTaAtom, toLeaTTaAtoms, Metta.Space.equalityRules, List.filterMap] using ih
-                  · simpa [translatedEquationRules, toLeaTTaAtom, toLeaTTaAtoms, Metta.Space.equalityRules, List.filterMap, hs] using ih
+                                simpa [translatedEquationRules, encodeModelAtom, encodeModelAtoms, Metta.Space.equalityRules, List.filterMap] using ih
+                  · simpa [translatedEquationRules, encodeModelAtom, encodeModelAtoms, Metta.Space.equalityRules, List.filterMap, hs] using ih
               | var v =>
-                  simpa [translatedEquationRules, toLeaTTaAtom, toLeaTTaAtoms, Metta.Space.equalityRules, List.filterMap] using ih
+                  simpa [translatedEquationRules, encodeModelAtom, encodeModelAtoms, Metta.Space.equalityRules, List.filterMap] using ih
               | grounded g =>
-                  simpa [translatedEquationRules, toLeaTTaGround, toLeaTTaAtom, toLeaTTaAtoms, Metta.Space.equalityRules, List.filterMap] using ih
+                  simpa [translatedEquationRules, encodeModelGround, encodeModelAtom, encodeModelAtoms, Metta.Space.equalityRules, List.filterMap] using ih
               | expression inner =>
-                  simpa [translatedEquationRules, toLeaTTaAtom, toLeaTTaAtoms, Metta.Space.equalityRules, List.filterMap] using ih
+                  simpa [translatedEquationRules, encodeModelAtom, encodeModelAtoms, Metta.Space.equalityRules, List.filterMap] using ih
 
 /-- Translating an HE space preserves exactly the equation rules visible to
 LeaTTa's executable space layer. -/
 @[simp] theorem equalityRules_toLeaTTaSpace (space : Space) :
     (toLeaTTaSpace space).equalityRules = translatedEquationRules space.atoms := by
-  exact equalityRules_toLeaTTaAtoms space.atoms
+  exact equalityRules_encodeModelAtoms space.atoms
 
 /-- LeaTTa's index-layer rule extraction sees the same translated equation
 interface as `Space.equalityRules`. This is the raw rule-space identity needed
 before we can compare step relations. -/
-@[simp] theorem extractRules_toLeaTTaAtoms (atoms : List Atom) :
-    Metta.Minimal.extractRules (toLeaTTaAtoms atoms) = translatedEquationRules atoms := by
-  exact equalityRules_toLeaTTaAtoms atoms
+@[simp] theorem extractRules_encodeModelAtoms (atoms : List Atom) :
+    Metta.Minimal.extractRules (encodeModelAtoms atoms) = translatedEquationRules atoms := by
+  exact equalityRules_encodeModelAtoms atoms
 
 /-- The two LeaTTa views of translated HE equations coincide definitionally:
 plain-space `equalityRules` and the kernel's `extractRules` see the same rule
@@ -4375,24 +4323,24 @@ list. -/
 @[simp] theorem extractRules_eq_equalityRules (space : Space) :
     Metta.Minimal.extractRules (toLeaTTaSpace space).atoms =
       (toLeaTTaSpace space).equalityRules := by
-  exact (extractRules_toLeaTTaAtoms space.atoms).trans
+  exact (extractRules_encodeModelAtoms space.atoms).trans
     (equalityRules_toLeaTTaSpace space).symm
 
 private theorem mem_translatedEquationRules_of_mem_eq_atom
     {atoms : List Atom} {lhs rhs : Atom}
     (hmem : Atom.expression [Atom.symbol "=", lhs, rhs] ∈ atoms) :
-    (toLeaTTaAtom lhs, toLeaTTaAtom rhs) ∈ translatedEquationRules atoms := by
-  rw [← equalityRules_toLeaTTaAtoms atoms]
+    (encodeModelAtom lhs, encodeModelAtom rhs) ∈ translatedEquationRules atoms := by
+  rw [← equalityRules_encodeModelAtoms atoms]
   unfold Metta.Space.equalityRules
   refine List.mem_filterMap.mpr ?_
-  refine ⟨toLeaTTaAtom (.expression [.symbol "=", lhs, rhs]), ?_, ?_⟩
-  · simpa [toLeaTTaAtom] using mem_toLeaTTaAtoms_of_mem hmem
-  · simp [toLeaTTaAtom]
+  refine ⟨encodeModelAtom (.expression [.symbol "=", lhs, rhs]), ?_, ?_⟩
+  · simpa [encodeModelAtom] using mem_encodeModelAtoms_of_mem hmem
+  · simp [encodeModelAtom]
 
 private theorem mem_extractRules_of_mem_eq_atom
     {atoms : List Atom} {lhs rhs : Atom}
     (hmem : Atom.expression [Atom.symbol "=", lhs, rhs] ∈ atoms) :
-    (toLeaTTaAtom lhs, toLeaTTaAtom rhs) ∈ Metta.Minimal.extractRules (toLeaTTaAtoms atoms) := by
+    (encodeModelAtom lhs, encodeModelAtom rhs) ∈ Metta.Minimal.extractRules (encodeModelAtoms atoms) := by
   simpa using
     (mem_translatedEquationRules_of_mem_eq_atom (atoms := atoms) (lhs := lhs) (rhs := rhs) hmem)
 
@@ -4405,7 +4353,7 @@ theorem queryEquations_extractRule_witness
     (hmem : (rhs, qb) ∈ queryEquations space atom fuel) :
     ∃ idx lhs rawRhs,
       (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx ∧
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
         Metta.Minimal.extractRules (toLeaTTaSpace space).atoms ∧
       FaithfulQueryWitness atom (freshenEquation idx lhs rawRhs fuel).1 qb fuel := by
   obtain ⟨eqidx, heqidx, lhs, rawRhs, hshape, _hRhs, hmatch⟩ :=
@@ -4428,7 +4376,7 @@ theorem queryEquationsAgainstVisible_extractRule_witness
     (hmem : (rhs, qb) ∈ queryEquationsAgainstVisible space atom fuel) :
     ∃ idx lhs rawRhs,
       (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx ∧
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
         Metta.Minimal.extractRules (toLeaTTaSpace space).atoms ∧
       FaithfulQueryWitness atom
         (freshenEquationAgainst ((collectVars atom fuel).eraseDups) idx lhs rawRhs fuel).1
@@ -4494,19 +4442,19 @@ transport. -/
 theorem queryEquations_extractCandidate_split
     {space : Space} {src rhs : Atom} {qb : Bindings} {fuel : Nat}
     {gt : Metta.GroundingTable} {k : String}
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hmem : (rhs, qb) ∈ queryEquations space src fuel) :
     ∃ idx lhs rawRhs pre post,
       (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx ∧
       FaithfulQueryWitness src (freshenEquation idx lhs rawRhs fuel).1 qb fuel ∧
       Metta.Minimal.candidatesW
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
-          Metta.Minimal.World.empty (toLeaTTaAtom src) =
-        pre ++ (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) :: post := by
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
+          Metta.Minimal.World.empty (encodeModelAtom src) =
+        pre ++ (encodeModelAtom lhs, encodeModelAtom rawRhs) :: post := by
   obtain ⟨idx, lhs, rawRhs, hzip, hrule, hmatch⟩ :=
     queryEquations_extractRule_witness hmem
   have hsrcHead : heHeadKey src = some k := by
-    simpa [headKey_toLeaTTaAtom] using hk
+    simpa [headKey_encodeModelAtom] using hk
   have hfreshHead :
       heHeadKey (freshenEquation idx lhs rawRhs fuel).1 = some k ∨
         heHeadKey (freshenEquation idx lhs rawRhs fuel).1 = none :=
@@ -4514,31 +4462,31 @@ theorem queryEquations_extractCandidate_split
   have hlhsHead : heHeadKey lhs = some k ∨ heHeadKey lhs = none := by
     simpa [heHeadKey_freshenEquation_fst idx lhs rawRhs fuel] using hfreshHead
   have hcandCore :
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
-        (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt).candidates
-          (toLeaTTaAtom src) := by
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
+        (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt).candidates
+          (encodeModelAtom src) := by
     unfold Metta.Minimal.MinEnv.candidates
     rw [hk]
     cases hlhsHead with
     | inl hlhsSome =>
         have hbucket :
-            (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
-              (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt).ruleIndex.getD k [] := by
+            (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
+              (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt).ruleIndex.getD k [] := by
           rw [Metta.ruleIndex_getD]
-          exact List.mem_filter.mpr ⟨hrule, by simp [headKey_toLeaTTaAtom, hlhsSome]⟩
+          exact List.mem_filter.mpr ⟨hrule, by simp [headKey_encodeModelAtom, hlhsSome]⟩
         exact List.mem_append.mpr <| Or.inl hbucket
     | inr hlhsNone =>
         have hvar :
-            (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
-              (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt).varRules := by
+            (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
+              (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt).varRules := by
           rw [Metta.ofAtomsGT_varRules]
-          exact List.mem_filter.mpr ⟨hrule, by simp [headKey_toLeaTTaAtom, hlhsNone]⟩
+          exact List.mem_filter.mpr ⟨hrule, by simp [headKey_encodeModelAtom, hlhsNone]⟩
         exact List.mem_append.mpr <| Or.inr hvar
   have hcand :
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
         Metta.Minimal.candidatesW
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
-          Metta.Minimal.World.empty (toLeaTTaAtom src) := by
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
+          Metta.Minimal.World.empty (encodeModelAtom src) := by
     simpa [Metta.Minimal.candidatesW, Metta.Minimal.World.empty] using hcandCore
   rcases list_mem_split hcand with ⟨pre, post, hsplit⟩
   exact ⟨idx, lhs, rawRhs, pre, post, hzip, hmatch, hsplit⟩
@@ -4551,7 +4499,7 @@ theorems. -/
 theorem queryEquationsAgainstVisible_extractCandidate_split
     {space : Space} {src rhs : Atom} {qb : Bindings} {fuel : Nat}
     {gt : Metta.GroundingTable} {k : String}
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hmem : (rhs, qb) ∈ queryEquationsAgainstVisible space src fuel) :
     ∃ idx lhs rawRhs pre post,
       (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx ∧
@@ -4559,13 +4507,13 @@ theorem queryEquationsAgainstVisible_extractCandidate_split
         (freshenEquationAgainst ((collectVars src fuel).eraseDups) idx lhs rawRhs fuel).1
         qb fuel ∧
       Metta.Minimal.candidatesW
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
-          Metta.Minimal.World.empty (toLeaTTaAtom src) =
-        pre ++ (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) :: post := by
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
+          Metta.Minimal.World.empty (encodeModelAtom src) =
+        pre ++ (encodeModelAtom lhs, encodeModelAtom rawRhs) :: post := by
   obtain ⟨idx, lhs, rawRhs, hzip, hrule, hmatch⟩ :=
     queryEquationsAgainstVisible_extractRule_witness hmem
   have hsrcHead : heHeadKey src = some k := by
-    simpa [headKey_toLeaTTaAtom] using hk
+    simpa [headKey_encodeModelAtom] using hk
   have hfreshHead :
       heHeadKey
           (freshenEquationAgainst ((collectVars src fuel).eraseDups) idx lhs rawRhs fuel).1 =
@@ -4578,31 +4526,31 @@ theorem queryEquationsAgainstVisible_extractCandidate_split
     simpa [heHeadKey_freshenEquationAgainst_fst ((collectVars src fuel).eraseDups) idx lhs rawRhs fuel]
       using hfreshHead
   have hcandCore :
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
-        (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt).candidates
-          (toLeaTTaAtom src) := by
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
+        (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt).candidates
+          (encodeModelAtom src) := by
     unfold Metta.Minimal.MinEnv.candidates
     rw [hk]
     cases hlhsHead with
     | inl hlhsSome =>
         have hbucket :
-            (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
-              (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt).ruleIndex.getD k [] := by
+            (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
+              (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt).ruleIndex.getD k [] := by
           rw [Metta.ruleIndex_getD]
-          exact List.mem_filter.mpr ⟨hrule, by simp [headKey_toLeaTTaAtom, hlhsSome]⟩
+          exact List.mem_filter.mpr ⟨hrule, by simp [headKey_encodeModelAtom, hlhsSome]⟩
         exact List.mem_append.mpr <| Or.inl hbucket
     | inr hlhsNone =>
         have hvar :
-            (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
-              (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt).varRules := by
+            (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
+              (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt).varRules := by
           rw [Metta.ofAtomsGT_varRules]
-          exact List.mem_filter.mpr ⟨hrule, by simp [headKey_toLeaTTaAtom, hlhsNone]⟩
+          exact List.mem_filter.mpr ⟨hrule, by simp [headKey_encodeModelAtom, hlhsNone]⟩
         exact List.mem_append.mpr <| Or.inr hvar
   have hcand :
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
         Metta.Minimal.candidatesW
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
-          Metta.Minimal.World.empty (toLeaTTaAtom src) := by
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
+          Metta.Minimal.World.empty (encodeModelAtom src) := by
     simpa [Metta.Minimal.candidatesW, Metta.Minimal.World.empty] using hcandCore
   rcases list_mem_split hcand with ⟨pre, post, hsplit⟩
   exact ⟨idx, lhs, rawRhs, pre, post, hzip, hmatch, hsplit⟩
@@ -4615,7 +4563,7 @@ used here. -/
 theorem candidate_split_of_againstVisible_witness
     {space : Space} {src lhs rawRhs : Atom} {qb : Bindings}
     {fuel : Nat} {gt : Metta.GroundingTable} {idx : Nat} {k : String}
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hzip : (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈
       space.atoms.zipIdx)
     (hmatch : FaithfulQueryWitness src
@@ -4623,20 +4571,20 @@ theorem candidate_split_of_againstVisible_witness
       qb fuel) :
     ∃ pre post,
       Metta.Minimal.candidatesW
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
-          Metta.Minimal.World.empty (toLeaTTaAtom src) =
-        pre ++ (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) :: post := by
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
+          Metta.Minimal.World.empty (encodeModelAtom src) =
+        pre ++ (encodeModelAtom lhs, encodeModelAtom rawRhs) :: post := by
   have hRawMem : Atom.expression [Atom.symbol "=", lhs, rawRhs] ∈ space.atoms := by
     exact mem_of_mem_zipIdx
       (x := Atom.expression [Atom.symbol "=", lhs, rawRhs]) (i := idx) hzip
   have hrule :
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
         Metta.Minimal.extractRules (toLeaTTaSpace space).atoms := by
     simpa [toLeaTTaSpace] using
       (mem_extractRules_of_mem_eq_atom
         (atoms := space.atoms) (lhs := lhs) (rhs := rawRhs) hRawMem)
   have hsrcHead : heHeadKey src = some k := by
-    simpa [headKey_toLeaTTaAtom] using hk
+    simpa [headKey_encodeModelAtom] using hk
   have hfreshHead :
       heHeadKey
           (freshenEquationAgainst ((collectVars src fuel).eraseDups) idx lhs rawRhs fuel).1 =
@@ -4650,31 +4598,31 @@ theorem candidate_split_of_againstVisible_witness
         ((collectVars src fuel).eraseDups) idx lhs rawRhs fuel]
       using hfreshHead
   have hcandCore :
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
-        (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt).candidates
-          (toLeaTTaAtom src) := by
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
+        (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt).candidates
+          (encodeModelAtom src) := by
     unfold Metta.Minimal.MinEnv.candidates
     rw [hk]
     cases hlhsHead with
     | inl hlhsSome =>
         have hbucket :
-            (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
-              (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt).ruleIndex.getD k [] := by
+            (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
+              (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt).ruleIndex.getD k [] := by
           rw [Metta.ruleIndex_getD]
-          exact List.mem_filter.mpr ⟨hrule, by simp [headKey_toLeaTTaAtom, hlhsSome]⟩
+          exact List.mem_filter.mpr ⟨hrule, by simp [headKey_encodeModelAtom, hlhsSome]⟩
         exact List.mem_append.mpr <| Or.inl hbucket
     | inr hlhsNone =>
         have hvar :
-            (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
-              (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt).varRules := by
+            (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
+              (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt).varRules := by
           rw [Metta.ofAtomsGT_varRules]
-          exact List.mem_filter.mpr ⟨hrule, by simp [headKey_toLeaTTaAtom, hlhsNone]⟩
+          exact List.mem_filter.mpr ⟨hrule, by simp [headKey_encodeModelAtom, hlhsNone]⟩
         exact List.mem_append.mpr <| Or.inr hvar
   have hcand :
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
         Metta.Minimal.candidatesW
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
-          Metta.Minimal.World.empty (toLeaTTaAtom src) := by
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
+          Metta.Minimal.World.empty (encodeModelAtom src) := by
     simpa [Metta.Minimal.candidatesW, Metta.Minimal.World.empty] using hcandCore
   rcases list_mem_split hcand with ⟨pre, post, hsplit⟩
   exact ⟨pre, post, hsplit⟩
@@ -4711,15 +4659,15 @@ theorem queryEquations_alphaBoundary
     ∃ idx lhs rawRhs,
       (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx ∧
       (atomDepth lhs + 1 ≤ fuel →
-        toLeaTTaAtom (freshenEquation idx lhs rawRhs fuel).1 =
+        encodeModelAtom (freshenEquation idx lhs rawRhs fuel).1 =
           Metta.renameVars
             ((freshMapping idx ((collectVars lhs fuel ++ collectVars rawRhs fuel).eraseDups)).1)
-            (toLeaTTaAtom lhs)) ∧
+            (encodeModelAtom lhs)) ∧
       (atomDepth rawRhs + 1 ≤ fuel →
-        toLeaTTaAtom rhs =
+        encodeModelAtom rhs =
           Metta.renameVars
             ((freshMapping idx ((collectVars lhs fuel ++ collectVars rawRhs fuel).eraseDups)).1)
-            (toLeaTTaAtom rawRhs)) := by
+            (encodeModelAtom rawRhs)) := by
   obtain ⟨eqidx, heqidx, lhs, rawRhs, hshape, hRhs, _hmatch⟩ :=
     mem_queryEquations_decompose hmem
   rcases eqidx with ⟨eq, idx⟩
@@ -4727,9 +4675,9 @@ theorem queryEquations_alphaBoundary
   refine ⟨idx, lhs, rawRhs, ?_, ?_, ?_⟩
   · simpa using heqidx
   · intro hdepth
-    exact toLeaTTaAtom_freshenEquation_fst idx lhs rawRhs fuel hdepth
+    exact encodeModelAtom_freshenEquation_fst idx lhs rawRhs fuel hdepth
   · intro hdepth
-    simpa [hRhs] using toLeaTTaAtom_freshenEquation_snd idx lhs rawRhs fuel hdepth
+    simpa [hRhs] using encodeModelAtom_freshenEquation_snd idx lhs rawRhs fuel hdepth
 
 /-- The repaired visible-avoid query interface has the same exact translation
 boundary shape: once the fuel reaches the relevant depths, the HE freshened
@@ -4744,17 +4692,17 @@ theorem queryEquationsAgainstVisible_alphaBoundary
     ∃ idx lhs rawRhs,
       (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx ∧
       (atomDepth lhs + 1 ≤ fuel →
-        toLeaTTaAtom (freshenEquationAgainst ((collectVars atom fuel).eraseDups) idx lhs rawRhs fuel).1 =
+        encodeModelAtom (freshenEquationAgainst ((collectVars atom fuel).eraseDups) idx lhs rawRhs fuel).1 =
           Metta.renameVars
             ((freshMappingAgainst idx ((collectVars atom fuel).eraseDups)
               ((collectVars lhs fuel ++ collectVars rawRhs fuel).eraseDups)).1)
-            (toLeaTTaAtom lhs)) ∧
+            (encodeModelAtom lhs)) ∧
       (atomDepth rawRhs + 1 ≤ fuel →
-        toLeaTTaAtom rhs =
+        encodeModelAtom rhs =
           Metta.renameVars
             ((freshMappingAgainst idx ((collectVars atom fuel).eraseDups)
               ((collectVars lhs fuel ++ collectVars rawRhs fuel).eraseDups)).1)
-            (toLeaTTaAtom rawRhs)) := by
+            (encodeModelAtom rawRhs)) := by
   obtain ⟨eqidx, heqidx, lhs, rawRhs, hshape, hRhs, _hmatch⟩ :=
     mem_queryEquationsAgainstVisible_decompose hmem
   rcases eqidx with ⟨eq, idx⟩
@@ -4763,11 +4711,11 @@ theorem queryEquationsAgainstVisible_alphaBoundary
   · simpa using heqidx
   · intro hdepth
     exact
-      toLeaTTaAtom_freshenEquationAgainst_fst
+      encodeModelAtom_freshenEquationAgainst_fst
         ((collectVars atom fuel).eraseDups) idx lhs rawRhs fuel hdepth
   · intro hdepth
     simpa [hRhs] using
-      toLeaTTaAtom_freshenEquationAgainst_snd
+      encodeModelAtom_freshenEquationAgainst_snd
         ((collectVars atom fuel).eraseDups) idx lhs rawRhs fuel hdepth
 
 /-- Once a translated LeaTTa rule-and-match witness has been transported, it
@@ -4777,9 +4725,9 @@ membership step plus the head-key side condition. -/
 theorem mem_equalityReductions_of_extractRule_match
     {space : Space} {src dst : Atom} {lhs rhs : Metta.Atom} {mb : Metta.Bindings}
     (hrule : (lhs, rhs) ∈ Metta.Minimal.extractRules (toLeaTTaSpace space).atoms)
-    (hmatch : mb ∈ Metta.matchAtoms lhs (toLeaTTaAtom src))
-    (hres : toLeaTTaAtom dst = Metta.instantiate mb rhs) :
-    toLeaTTaAtom dst ∈ Metta.equalityReductions (toLeaTTaSpace space) (toLeaTTaAtom src) := by
+    (hmatch : mb ∈ Metta.matchAtoms lhs (encodeModelAtom src))
+    (hres : encodeModelAtom dst = Metta.instantiate mb rhs) :
+    encodeModelAtom dst ∈ Metta.equalityReductions (toLeaTTaSpace space) (encodeModelAtom src) := by
   rw [Metta.mem_equalityReductions]
   refine ⟨(lhs, rhs), ?_, mb, hmatch, hres⟩
   simpa [extractRules_eq_equalityRules space] using hrule
@@ -4794,8 +4742,8 @@ theorem mem_equalityReductions_of_ground_rule_query
     (hLhsGround : GroundAtom lhs) (hRhsGround : GroundAtom rawRhs)
     (hmatch :
       simpleMatch (freshenEquation idx lhs rawRhs fuel).1 src Bindings.empty fuel = some qb) :
-    toLeaTTaAtom rawRhs ∈
-      Metta.equalityReductions (toLeaTTaSpace space) (toLeaTTaAtom src) := by
+    encodeModelAtom rawRhs ∈
+      Metta.equalityReductions (toLeaTTaSpace space) (encodeModelAtom src) := by
   have hfresh : freshenEquation idx lhs rawRhs fuel = (lhs, rawRhs) :=
     freshenEquation_eq_of_ground idx hLhsGround hRhsGround fuel
   have hmatchRaw : simpleMatch lhs src Bindings.empty fuel = some qb := by
@@ -4805,13 +4753,13 @@ theorem mem_equalityReductions_of_ground_rule_query
   have hRawMem : Atom.expression [Atom.symbol "=", lhs, rawRhs] ∈ space.atoms := by
     exact mem_of_mem_zipIdx (x := Atom.expression [Atom.symbol "=", lhs, rawRhs]) (i := idx) hzip
   have hrule :
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
         Metta.Minimal.extractRules (toLeaTTaSpace space).atoms := by
     simpa [toLeaTTaSpace] using
       (mem_extractRules_of_mem_eq_atom
         (atoms := space.atoms) (lhs := lhs) (rhs := rawRhs) hRawMem)
   refine mem_equalityReductions_of_extractRule_match hrule hmb ?_
-  simpa [Metta.Bindings.empty] using (Metta.instantiate_nil (toLeaTTaAtom rawRhs)).symm
+  simpa [Metta.Bindings.empty] using (Metta.instantiate_nil (encodeModelAtom rawRhs)).symm
 
 /-- The one-candidate worklist generated by LeaTTa's capture-avoiding `queryOp` fold step.
 This compatibility name is definitionally the executable helper, so bridge proofs cannot drift
@@ -4982,17 +4930,17 @@ theorem queryOp_contains_ground_rule_result
     {space : Space} {src lhs rawRhs : Atom} {qb : Bindings} {fuel idx : Nat}
     {gt : Metta.GroundingTable} {k : String}
     (prev : Metta.Minimal.Stack) (counter : Nat)
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hzip : (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx)
     (hLhsGround : GroundAtom lhs) (hRhsGround : GroundAtom rawRhs)
     (hmatch :
       simpleMatch (freshenEquation idx lhs rawRhs fuel).1 src Bindings.empty fuel = some qb) :
-    Metta.Minimal.evalResult prev (toLeaTTaAtom rawRhs) Metta.Bindings.empty ∈
+    Metta.Minimal.evalResult prev (encodeModelAtom rawRhs) Metta.Bindings.empty ∈
       (Metta.Minimal.queryOp
-        (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+        (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
         { counter := counter, world := Metta.Minimal.World.empty }
-        prev (toLeaTTaAtom src) Metta.Bindings.empty).1 := by
-  let env := Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt
+        prev (encodeModelAtom src) Metta.Bindings.empty).1 := by
+  let env := Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt
   let st0 : Metta.Minimal.St := { counter := counter, world := Metta.Minimal.World.empty }
   have hfreshHE : freshenEquation idx lhs rawRhs fuel = (lhs, rawRhs) :=
     freshenEquation_eq_of_ground idx hLhsGround hRhsGround fuel
@@ -5003,42 +4951,42 @@ theorem queryOp_contains_ground_rule_result
   have hRawMem : Atom.expression [Atom.symbol "=", lhs, rawRhs] ∈ space.atoms := by
     exact mem_of_mem_zipIdx (x := Atom.expression [Atom.symbol "=", lhs, rawRhs]) (i := idx) hzip
   have hrule :
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
-        Metta.Minimal.extractRules (toLeaTTaAtoms space.atoms) := by
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
+        Metta.Minimal.extractRules (encodeModelAtoms space.atoms) := by
     exact mem_extractRules_of_mem_eq_atom (atoms := space.atoms) (lhs := lhs) (rhs := rawRhs) hRawMem
   have hcandCore :
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈ env.candidates (toLeaTTaAtom src) := by
-    exact Metta.candidates_complete (toLeaTTaAtoms space.atoms) gt (toLeaTTaAtom src) k
-      (toLeaTTaAtom lhs) (toLeaTTaAtom rawRhs) hk hrule (by
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈ env.candidates (encodeModelAtom src) := by
+    exact Metta.candidates_complete (encodeModelAtoms space.atoms) gt (encodeModelAtom src) k
+      (encodeModelAtom lhs) (encodeModelAtom rawRhs) hk hrule (by
         intro hnil
         rw [hnil] at hmb
         simp at hmb)
   have hcand :
-      (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∈
-        Metta.Minimal.candidatesW env Metta.Minimal.World.empty (toLeaTTaAtom src) := by
+      (encodeModelAtom lhs, encodeModelAtom rawRhs) ∈
+        Metta.Minimal.candidatesW env Metta.Minimal.World.empty (encodeModelAtom src) := by
     simpa [env, Metta.Minimal.candidatesW, Metta.Minimal.World.empty] using hcandCore
   rcases list_mem_split hcand with ⟨pre, post, hsplit⟩
-  have hvarsL : (toLeaTTaAtom lhs).vars = [] :=
-    toLeaTTaAtom_vars_nil_of_ground hLhsGround
-  have hvarsR : (toLeaTTaAtom rawRhs).vars = [] :=
-    toLeaTTaAtom_vars_nil_of_ground hRhsGround
+  have hvarsL : (encodeModelAtom lhs).vars = [] :=
+    encodeModelAtom_vars_nil_of_ground hLhsGround
+  have hvarsR : (encodeModelAtom rawRhs).vars = [] :=
+    encodeModelAtom_vars_nil_of_ground hRhsGround
   have hitem :
-      Metta.Minimal.evalResult prev (toLeaTTaAtom rawRhs) Metta.Bindings.empty ∈
-        queryOpItemsOfRule prev (toLeaTTaAtom src) Metta.Bindings.empty
+      Metta.Minimal.evalResult prev (encodeModelAtom rawRhs) Metta.Bindings.empty ∈
+        queryOpItemsOfRule prev (encodeModelAtom src) Metta.Bindings.empty
           (counter + pre.length)
-          (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) := by
+          (encodeModelAtom lhs, encodeModelAtom rawRhs) := by
     have hfreshLea :
         Metta.Minimal.freshenRule
             (counter + pre.length)
-            (toLeaTTaAtom lhs) (toLeaTTaAtom rawRhs) =
-          (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) := by
+            (encodeModelAtom lhs) (encodeModelAtom rawRhs) =
+          (encodeModelAtom lhs, encodeModelAtom rawRhs) := by
       simp [Metta.Minimal.freshenRule, hvarsL, hvarsR]
     have hcompat :
         Metta.Minimal.freshenRuleAvoiding (counter + pre.length)
-            (Metta.Minimal.queryOpAvoid prev (toLeaTTaAtom src) Metta.Bindings.empty)
-            (toLeaTTaAtom lhs) (toLeaTTaAtom rawRhs) =
+            (Metta.Minimal.queryOpAvoid prev (encodeModelAtom src) Metta.Bindings.empty)
+            (encodeModelAtom lhs) (encodeModelAtom rawRhs) =
           (Metta.Minimal.freshenRule (counter + pre.length)
-            (toLeaTTaAtom lhs) (toLeaTTaAtom rawRhs), counter + pre.length + 1) := by
+            (encodeModelAtom lhs) (encodeModelAtom rawRhs), counter + pre.length + 1) := by
       apply Metta.Minimal.freshenRuleAvoiding_eq_legacy
       rw [hfreshLea, hvarsL, hvarsR]
       simp
@@ -5049,15 +4997,15 @@ theorem queryOp_contains_ground_rule_result
     simp [Metta.Bindings.empty, merge_empty_right,
       Metta.Minimal.evalResult, Metta.instantiate_nil]
   have hmemResults :
-      Metta.Minimal.evalResult prev (toLeaTTaAtom rawRhs) Metta.Bindings.empty ∈
-        ((Metta.Minimal.candidatesW env Metta.Minimal.World.empty (toLeaTTaAtom src)).foldl
-          (queryOpFoldStep prev (toLeaTTaAtom src) Metta.Bindings.empty) ([], st0)).1 := by
+      Metta.Minimal.evalResult prev (encodeModelAtom rawRhs) Metta.Bindings.empty ∈
+        ((Metta.Minimal.candidatesW env Metta.Minimal.World.empty (encodeModelAtom src)).foldl
+          (queryOpFoldStep prev (encodeModelAtom src) Metta.Bindings.empty) ([], st0)).1 := by
     rw [hsplit]
     simpa [st0] using
-      (mem_queryOpFold_of_split_candidate prev (toLeaTTaAtom src) Metta.Bindings.empty st0
-        pre post (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs)
-        (Metta.Minimal.evalResult prev (toLeaTTaAtom rawRhs) Metta.Bindings.empty) hitem)
-  have hNotVarHead : Metta.Minimal.isVariableHeaded (toLeaTTaAtom src) = false := by
+      (mem_queryOpFold_of_split_candidate prev (encodeModelAtom src) Metta.Bindings.empty st0
+        pre post (encodeModelAtom lhs, encodeModelAtom rawRhs)
+        (Metta.Minimal.evalResult prev (encodeModelAtom rawRhs) Metta.Bindings.empty) hitem)
+  have hNotVarHead : Metta.Minimal.isVariableHeaded (encodeModelAtom src) = false := by
     rcases Metta.headKey_some hk with hsrc | ⟨ls, hsrc⟩
     · rw [hsrc]
       simp [Metta.Minimal.isVariableHeaded]
@@ -5065,7 +5013,7 @@ theorem queryOp_contains_ground_rule_result
       simp [Metta.Minimal.isVariableHeaded]
   exact
     queryOp_contains_item_of_splitCandidate env st0 prev
-      (toLeaTTaAtom src) Metta.Bindings.empty hNotVarHead hsplit hitem
+      (encodeModelAtom src) Metta.Bindings.empty hNotVarHead hsplit hitem
 
 /-- Typed specialization of the exact closed-ground `queryOp` bridge. On this
 fragment the translated rule is already closed, so the LeaTTa preservation
@@ -5077,20 +5025,20 @@ theorem queryOp_contains_typed_ground_rule_result
     {gt : Metta.GroundingTable} {k : String}
     {env : Metta.TypeEnv} {T : Metta.Atom}
     (prev : Metta.Minimal.Stack) (counter : Nat)
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hzip : (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx)
     (hLhsGround : GroundAtom lhs) (hRhsGround : GroundAtom rawRhs)
     (hmatch :
       simpleMatch (freshenEquation idx lhs rawRhs fuel).1 src Bindings.empty fuel = some qb)
-    (hL : Metta.WT env [] (toLeaTTaAtom lhs) T)
-    (hR : Metta.WT env [] (toLeaTTaAtom rawRhs) T) :
+    (hL : Metta.WT env [] (encodeModelAtom lhs) T)
+    (hR : Metta.WT env [] (encodeModelAtom rawRhs) T) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1 ∧
-      emitted = toLeaTTaAtom rawRhs ∧
+          prev (encodeModelAtom src) Metta.Bindings.empty).1 ∧
+      emitted = encodeModelAtom rawRhs ∧
       Metta.WT env [] emitted T := by
   have hitem :=
     queryOp_contains_ground_rule_result
@@ -5098,7 +5046,7 @@ theorem queryOp_contains_typed_ground_rule_result
       (qb := qb) (fuel := fuel) (idx := idx) (gt := gt) (k := k)
       prev counter hk hzip hLhsGround hRhsGround hmatch
   have htypedInst :
-      Metta.WT env [] (toLeaTTaAtom rawRhs) T := by
+      Metta.WT env [] (encodeModelAtom rawRhs) T := by
     have htyped :=
       instantiated_rule_typed_of_reduction_preserves_type
         (env := env) (Γ := []) (lhs := lhs) (rhs := rawRhs)
@@ -5106,7 +5054,7 @@ theorem queryOp_contains_typed_ground_rule_result
         (hσ := grounds_nil env (toLeaTTaSubst Bindings.empty.assignments))
         (hL := hL) (hR := hR) GroundBindings.empty AssignmentsNodup.empty
     simpa [toLeaTTaMatchBindings_empty, Metta.instantiate_nil] using htyped.2
-  exact ⟨toLeaTTaAtom rawRhs, Metta.Bindings.empty, hitem, rfl, htypedInst⟩
+  exact ⟨encodeModelAtom rawRhs, Metta.Bindings.empty, hitem, rfl, htypedInst⟩
 
 /-- Exact remaining transport obligation for the non-ground equation fragment.
 Once an HE `queryEquations` witness is decomposed to its concrete indexed raw
@@ -5121,17 +5069,17 @@ def QueryOpWitnessTransport
     (space : Space) (src rhs : Atom) (qb : Bindings) (fuel : Nat)
     (gt : Metta.GroundingTable) (prev : Metta.Minimal.Stack) (counter : Nat) : Prop :=
   ∀ {idx lhs rawRhs k}
-    (_hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (_hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (_hzip : (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx)
     (_hmatch : FaithfulQueryWitness src (freshenEquation idx lhs rawRhs fuel).1 qb fuel),
     ∃ pre post,
       Metta.Minimal.candidatesW
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
-          Metta.Minimal.World.empty (toLeaTTaAtom src) =
-        pre ++ (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) :: post ∧
-      Metta.Minimal.evalResult prev (toLeaTTaAtom rhs) (toLeaTTaMatchBindings qb) ∈
-        queryOpItemsOfRule prev (toLeaTTaAtom src) Metta.Bindings.empty (counter + pre.length)
-          (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
+          Metta.Minimal.World.empty (encodeModelAtom src) =
+        pre ++ (encodeModelAtom lhs, encodeModelAtom rawRhs) :: post ∧
+      Metta.Minimal.evalResult prev (encodeModelAtom rhs) (toLeaTTaMatchBindings qb) ∈
+        queryOpItemsOfRule prev (encodeModelAtom src) Metta.Bindings.empty (counter + pre.length)
+          (encodeModelAtom lhs, encodeModelAtom rawRhs)
 
 /-- Honest reduction of the remaining non-ground positive bridge: if the
 specialized freshened-witness transport above is provided, then the translated
@@ -5142,20 +5090,20 @@ theorem queryOp_contains_queryEquations_result_of_transport
     {space : Space} {src rhs : Atom} {qb : Bindings} {fuel : Nat}
     {gt : Metta.GroundingTable} {k : String}
     (prev : Metta.Minimal.Stack) (counter : Nat)
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hquery : (rhs, qb) ∈ queryEquations space src fuel)
     (htransport : QueryOpWitnessTransport space src rhs qb fuel gt prev counter) :
-    Metta.Minimal.evalResult prev (toLeaTTaAtom rhs) (toLeaTTaMatchBindings qb) ∈
+    Metta.Minimal.evalResult prev (encodeModelAtom rhs) (toLeaTTaMatchBindings qb) ∈
       (Metta.Minimal.queryOp
-        (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+        (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
         { counter := counter, world := Metta.Minimal.World.empty }
-        prev (toLeaTTaAtom src) Metta.Bindings.empty).1 := by
-  let env := Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt
+        prev (encodeModelAtom src) Metta.Bindings.empty).1 := by
+  let env := Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt
   let st0 : Metta.Minimal.St := { counter := counter, world := Metta.Minimal.World.empty }
   obtain ⟨idx, lhs, rawRhs, hzip, _hrule, hmatch⟩ :=
     queryEquations_extractRule_witness hquery
   obtain ⟨pre, post, hsplit, hitem⟩ := htransport hk hzip hmatch
-  have hNotVarHead : Metta.Minimal.isVariableHeaded (toLeaTTaAtom src) = false := by
+  have hNotVarHead : Metta.Minimal.isVariableHeaded (encodeModelAtom src) = false := by
     rcases Metta.headKey_some hk with hsrc | ⟨ls, hsrc⟩
     · rw [hsrc]
       simp [Metta.Minimal.isVariableHeaded]
@@ -5163,7 +5111,7 @@ theorem queryOp_contains_queryEquations_result_of_transport
       simp [Metta.Minimal.isVariableHeaded]
   exact
     queryOp_contains_item_of_splitCandidate env st0 prev
-      (toLeaTTaAtom src) Metta.Bindings.empty hNotVarHead hsplit hitem
+      (encodeModelAtom src) Metta.Bindings.empty hNotVarHead hsplit hitem
 
 /-- Rule-level name for the one honest remaining positive non-ground bridge
 hypothesis. This stays deliberately at the `queryOp` item layer: `queryOp`
@@ -5182,16 +5130,16 @@ theorem queryOp_contains_equation_match_item_of_transport
     {space : Space} {src rhs : Atom} {qb : Bindings} {fuel : Nat}
     {gt : Metta.GroundingTable} {k : String}
     (prev : Metta.Minimal.Stack) (counter : Nat)
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hquery : (rhs, qb) ∈ queryEquations space src fuel)
     (htransport : EquationMatchQueryOpTransport
       (space := space) (src := src) (rhs := rhs) (qb := qb) (fuel := fuel)
       (gt := gt) prev counter) :
-    Metta.Minimal.evalResult prev (toLeaTTaAtom rhs) (toLeaTTaMatchBindings qb) ∈
+    Metta.Minimal.evalResult prev (encodeModelAtom rhs) (toLeaTTaMatchBindings qb) ∈
       (Metta.Minimal.queryOp
-        (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+        (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
         { counter := counter, world := Metta.Minimal.World.empty }
-        prev (toLeaTTaAtom src) Metta.Bindings.empty).1 := by
+        prev (encodeModelAtom src) Metta.Bindings.empty).1 := by
   exact
     queryOp_contains_queryEquations_result_of_transport
       (space := space) (src := src) (rhs := rhs) (qb := qb) (fuel := fuel)
@@ -5216,19 +5164,19 @@ theorem queryOp_contains_equation_match_visible_successor_of_instantiated_item
     (hdepth : atomDepth rhs + 2 ≤ fuel)
     (hitem :
       Metta.Minimal.evalResult prev
-          (Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom rhs))
+          (Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom rhs))
           (toLeaTTaMatchBindings qb) ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1) :
+          prev (encodeModelAtom src) Metta.Bindings.empty).1) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1 ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) := by
+          prev (encodeModelAtom src) Metta.Bindings.empty).1 ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) := by
   exact
     visible_successor_of_instantiated_item
       heq hno hkeys hfresh hdepth hitem
@@ -5248,19 +5196,19 @@ theorem queryOp_contains_equation_match_visible_successor_of_instantiated_item_a
     (hdepth : atomDepth rhs + 2 ≤ fuel)
     (hitem :
       Metta.Minimal.evalResult prev
-          (Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom rhs))
+          (Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom rhs))
           (toLeaTTaMatchBindings qb) ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1) :
+          prev (encodeModelAtom src) Metta.Bindings.empty).1) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1 ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) := by
+          prev (encodeModelAtom src) Metta.Bindings.empty).1 ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) := by
   exact
     visible_successor_of_instantiated_item
       heq (queryEquationsAgainstVisible_noVarAssignmentValues hquery)
@@ -5286,22 +5234,22 @@ theorem queryOp_contains_typed_equation_match_visible_successor_of_instantiated_
     (hdepth : atomDepth rhs + 2 ≤ fuel)
     (hitem :
       Metta.Minimal.evalResult prev
-          (Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom rhs))
+          (Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom rhs))
           (toLeaTTaMatchBindings qb) ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1)
+          prev (encodeModelAtom src) Metta.Bindings.empty).1)
     (hσ : Metta.Grounds env (toLeaTTaSubst qb.assignments) Γ)
-    (hL : Metta.WT env Γ (toLeaTTaAtom lhs) T)
-    (hR : Metta.WT env Γ (toLeaTTaAtom rhs) T) :
+    (hL : Metta.WT env Γ (encodeModelAtom lhs) T)
+    (hR : Metta.WT env Γ (encodeModelAtom rhs) T) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1 ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) ∧
+          prev (encodeModelAtom src) Metta.Bindings.empty).1 ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) ∧
       Metta.WT env [] emitted T := by
   exact
     typed_visible_successor_of_instantiated_item
@@ -5321,22 +5269,22 @@ theorem queryOp_contains_typed_equation_match_visible_successor_of_instantiated_
     (hdepth : atomDepth rhs + 2 ≤ fuel)
     (hitem :
       Metta.Minimal.evalResult prev
-          (Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom rhs))
+          (Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom rhs))
           (toLeaTTaMatchBindings qb) ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1)
+          prev (encodeModelAtom src) Metta.Bindings.empty).1)
     (hσ : Metta.Grounds env (toLeaTTaSubst qb.assignments) Γ)
-    (hL : Metta.WT env Γ (toLeaTTaAtom lhs) T)
-    (hR : Metta.WT env Γ (toLeaTTaAtom rhs) T) :
+    (hL : Metta.WT env Γ (encodeModelAtom lhs) T)
+    (hR : Metta.WT env Γ (encodeModelAtom rhs) T) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1 ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) ∧
+          prev (encodeModelAtom src) Metta.Bindings.empty).1 ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) ∧
       Metta.WT env [] emitted T := by
   exact
     typed_visible_successor_of_instantiated_item
@@ -5367,23 +5315,23 @@ theorem equation_match_typed_queryOp_visible_successor_of_instantiated_item
     (hdepth : atomDepth rhs + 2 ≤ fuel)
     (hitem :
       Metta.Minimal.evalResult prev
-          (Metta.instantiate (toLeaTTaMatchBindings qb) (toLeaTTaAtom rhs))
+          (Metta.instantiate (toLeaTTaMatchBindings qb) (encodeModelAtom rhs))
           (toLeaTTaMatchBindings qb) ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom (.expression es)) Metta.Bindings.empty).1)
+          prev (encodeModelAtom (.expression es)) Metta.Bindings.empty).1)
     (hσ : Metta.Grounds env (toLeaTTaSubst qb.assignments) Γ)
-    (hL : Metta.WT env Γ (toLeaTTaAtom lhs) T)
-    (hR : Metta.WT env Γ (toLeaTTaAtom rhs) T) :
+    (hL : Metta.WT env Γ (encodeModelAtom lhs) T)
+    (hR : Metta.WT env Γ (encodeModelAtom rhs) T) :
     HESmallStep space d fuel (.expression es) (qb.applyFull rhs fuel) live ∧
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom (.expression es)) Metta.Bindings.empty).1 ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) ∧
+          prev (encodeModelAtom (.expression es)) Metta.Bindings.empty).1 ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) ∧
       Metta.WT env [] emitted T := by
   refine ⟨HESmallStep.equation_match h_not_special h_not_grounded hquery
     (GroundBindings.hasLoop_false hb), ?_⟩
@@ -5404,18 +5352,18 @@ def EquationMatchVisibleItemTransport
     (gt : Metta.GroundingTable) (prev : Metta.Minimal.Stack) (counter : Nat) :
     Prop :=
   ∀ {idx lhs rawRhs k}
-    (_hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (_hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (_hzip : (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx)
     (_hmatch : FaithfulQueryWitness src (freshenEquation idx lhs rawRhs fuel).1 qb fuel),
     ∃ pre post emitted m,
       Metta.Minimal.candidatesW
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
-          Metta.Minimal.World.empty (toLeaTTaAtom src) =
-        pre ++ (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) :: post ∧
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
+          Metta.Minimal.World.empty (encodeModelAtom src) =
+        pre ++ (encodeModelAtom lhs, encodeModelAtom rawRhs) :: post ∧
       Metta.Minimal.evalResult prev emitted m ∈
-        queryOpItemsOfRule prev (toLeaTTaAtom src) Metta.Bindings.empty (counter + pre.length)
-          (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel))
+        queryOpItemsOfRule prev (encodeModelAtom src) Metta.Bindings.empty (counter + pre.length)
+          (encodeModelAtom lhs, encodeModelAtom rawRhs) ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel))
 
 /-- Honest positive simulation theorem at the visible-successor item layer.
 Once the specialized freshened-witness transport above is discharged, LeaTTa's
@@ -5426,23 +5374,23 @@ theorem queryOp_contains_equation_match_visible_successor_of_transport
     {space : Space} {src rhs : Atom} {qb : Bindings} {fuel : Nat}
     {gt : Metta.GroundingTable} {k : String}
     (prev : Metta.Minimal.Stack) (counter : Nat)
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hquery : (rhs, qb) ∈ queryEquations space src fuel)
     (htransport : EquationMatchVisibleItemTransport
       space src rhs qb fuel gt prev counter) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1 ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) := by
-  let env := Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt
+          prev (encodeModelAtom src) Metta.Bindings.empty).1 ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) := by
+  let env := Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt
   let st0 : Metta.Minimal.St := { counter := counter, world := Metta.Minimal.World.empty }
   obtain ⟨idx, lhs, rawRhs, hzip, _hrule, hmatch⟩ :=
     queryEquations_extractRule_witness hquery
   obtain ⟨pre, post, emitted, m, hsplit, hitem, halpha⟩ := htransport hk hzip hmatch
-  have hNotVarHead : Metta.Minimal.isVariableHeaded (toLeaTTaAtom src) = false := by
+  have hNotVarHead : Metta.Minimal.isVariableHeaded (encodeModelAtom src) = false := by
     rcases Metta.headKey_some hk with hsrc | ⟨ls, hsrc⟩
     · rw [hsrc]
       simp [Metta.Minimal.isVariableHeaded]
@@ -5451,7 +5399,7 @@ theorem queryOp_contains_equation_match_visible_successor_of_transport
   refine ⟨emitted, m, ?_, halpha⟩
   exact
     queryOp_contains_item_of_splitCandidate env st0 prev
-      (toLeaTTaAtom src) Metta.Bindings.empty hNotVarHead hsplit hitem
+      (encodeModelAtom src) Metta.Bindings.empty hNotVarHead hsplit hitem
 
 /-- Avoid-aware counterpart of `EquationMatchVisibleItemTransport`.
 
@@ -5464,20 +5412,20 @@ def EquationMatchVisibleItemTransportAgainst
     (gt : Metta.GroundingTable) (prev : Metta.Minimal.Stack) (counter : Nat) :
     Prop :=
   ∀ {idx lhs rawRhs k}
-    (_hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (_hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (_hzip : (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx)
     (_hmatch : FaithfulQueryWitness src
       (freshenEquationAgainst ((collectVars src fuel).eraseDups) idx lhs rawRhs fuel).1
       qb fuel),
     ∃ pre post emitted m,
       Metta.Minimal.candidatesW
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
-          Metta.Minimal.World.empty (toLeaTTaAtom src) =
-        pre ++ (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) :: post ∧
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
+          Metta.Minimal.World.empty (encodeModelAtom src) =
+        pre ++ (encodeModelAtom lhs, encodeModelAtom rawRhs) :: post ∧
       Metta.Minimal.evalResult prev emitted m ∈
-        queryOpItemsOfRule prev (toLeaTTaAtom src) Metta.Bindings.empty (counter + pre.length)
-          (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel))
+        queryOpItemsOfRule prev (encodeModelAtom src) Metta.Bindings.empty (counter + pre.length)
+          (encodeModelAtom lhs, encodeModelAtom rawRhs) ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel))
 
 /-- Constructor for the common equality-bearing visible transport case where HE's
 successor remains a variable and LeaTTa's executable item emits a variable. The
@@ -5490,27 +5438,27 @@ theorem equationMatchVisibleItemTransportAgainst_of_variable_item
     {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack} {counter : Nat}
     (h :
       ∀ {idx lhs rawRhs k}
-        (_hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+        (_hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
         (_hzip : (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx)
         (_hmatch : FaithfulQueryWitness src
           (freshenEquationAgainst ((collectVars src fuel).eraseDups) idx lhs rawRhs fuel).1
           qb fuel),
         ∃ pre post emittedVar targetVar m,
           Metta.Minimal.candidatesW
-              (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
-              Metta.Minimal.World.empty (toLeaTTaAtom src) =
-            pre ++ (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) :: post ∧
+              (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
+              Metta.Minimal.World.empty (encodeModelAtom src) =
+            pre ++ (encodeModelAtom lhs, encodeModelAtom rawRhs) :: post ∧
           qb.applyFull rhs fuel = .var targetVar ∧
           Metta.Minimal.evalResult prev (Metta.Atom.var emittedVar) m ∈
-            queryOpItemsOfRule prev (toLeaTTaAtom src) Metta.Bindings.empty
-              (counter + pre.length) (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs)) :
+            queryOpItemsOfRule prev (encodeModelAtom src) Metta.Bindings.empty
+              (counter + pre.length) (encodeModelAtom lhs, encodeModelAtom rawRhs)) :
     EquationMatchVisibleItemTransportAgainst space src rhs qb fuel gt prev counter := by
   intro idx lhs rawRhs k hk hzip hmatch
   obtain ⟨pre, post, emittedVar, targetVar, m, hsplit, happly, hitem⟩ :=
     h hk hzip hmatch
   refine ⟨pre, post, Metta.Atom.var emittedVar, m, hsplit, hitem, ?_⟩
   rw [happly]
-  simpa [toLeaTTaAtom] using alphaEq_var_var emittedVar targetVar
+  simpa [encodeModelAtom] using alphaEq_var_var emittedVar targetVar
 
 /-- Honest positive simulation theorem for the repaired visible-avoid
 `queryEquationsAgainstVisible` interface. Once the avoid-aware transport witness
@@ -5520,23 +5468,23 @@ theorem queryOp_contains_equation_match_visible_successor_againstVisible_of_tran
     {space : Space} {src rhs : Atom} {qb : Bindings} {fuel : Nat}
     {gt : Metta.GroundingTable} {k : String}
     (prev : Metta.Minimal.Stack) (counter : Nat)
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hquery : (rhs, qb) ∈ queryEquationsAgainstVisible space src fuel)
     (htransport : EquationMatchVisibleItemTransportAgainst
       space src rhs qb fuel gt prev counter) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1 ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) := by
-  let env := Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt
+          prev (encodeModelAtom src) Metta.Bindings.empty).1 ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) := by
+  let env := Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt
   let st0 : Metta.Minimal.St := { counter := counter, world := Metta.Minimal.World.empty }
   obtain ⟨idx, lhs, rawRhs, hzip, _hrule, hmatch⟩ :=
     queryEquationsAgainstVisible_extractRule_witness hquery
   obtain ⟨pre, post, emitted, m, hsplit, hitem, halpha⟩ := htransport hk hzip hmatch
-  have hNotVarHead : Metta.Minimal.isVariableHeaded (toLeaTTaAtom src) = false := by
+  have hNotVarHead : Metta.Minimal.isVariableHeaded (encodeModelAtom src) = false := by
     rcases Metta.headKey_some hk with hsrc | ⟨ls, hsrc⟩
     · rw [hsrc]
       simp [Metta.Minimal.isVariableHeaded]
@@ -5545,7 +5493,7 @@ theorem queryOp_contains_equation_match_visible_successor_againstVisible_of_tran
   refine ⟨emitted, m, ?_, halpha⟩
   exact
     queryOp_contains_item_of_splitCandidate env st0 prev
-      (toLeaTTaAtom src) Metta.Bindings.empty hNotVarHead hsplit hitem
+      (encodeModelAtom src) Metta.Bindings.empty hNotVarHead hsplit hitem
 
 /-- Downstream package for the repaired visible-avoid query interface: the public
 HE query witness has already passed the loop filter, and under the avoid-aware
@@ -5555,7 +5503,7 @@ theorem queryEquationsAgainstVisible_queryOp_visible_successor_package_of_transp
     {space : Space} {src rhs : Atom} {qb : Bindings} {fuel : Nat}
     {gt : Metta.GroundingTable} {k : String}
     (prev : Metta.Minimal.Stack) (counter : Nat)
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hquery : (rhs, qb) ∈ queryEquationsAgainstVisible space src fuel)
     (htransport : EquationMatchVisibleItemTransportAgainst
       space src rhs qb fuel gt prev counter) :
@@ -5563,10 +5511,10 @@ theorem queryEquationsAgainstVisible_queryOp_visible_successor_package_of_transp
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1 ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) := by
+          prev (encodeModelAtom src) Metta.Bindings.empty).1 ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) := by
   refine ⟨queryEquationsAgainstVisible_hasLoop_false hquery, ?_⟩
   exact
     queryOp_contains_equation_match_visible_successor_againstVisible_of_transport
@@ -5585,7 +5533,7 @@ theorem equation_match_againstVisible_queryOp_visible_successor_package_of_trans
     (prev : Metta.Minimal.Stack) (counter : Nat)
     (h_not_special : ¬ SpecialFormHead (.expression es))
     (h_not_grounded : HeadNotExecutable d (.expression es))
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom (.expression es)) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom (.expression es)) = some k)
     (h_query : (rhs, qb) ∈
       queryEquationsAgainstVisible space (.expression es) fuel)
     (htransport : EquationMatchVisibleItemTransportAgainst
@@ -5594,10 +5542,10 @@ theorem equation_match_againstVisible_queryOp_visible_successor_package_of_trans
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom (.expression es)) Metta.Bindings.empty).1 ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) := by
+          prev (encodeModelAtom (.expression es)) Metta.Bindings.empty).1 ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) := by
   refine
     ⟨HEEquationStepAgainstVisible.equation_match
         h_not_special h_not_grounded h_query
@@ -5620,10 +5568,10 @@ def LeaTTaEquationQueryOpHit
   ∃ emitted bindings,
     Metta.Minimal.evalResult prev emitted bindings ∈
       (Metta.Minimal.queryOp
-        (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+        (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
         { counter := counter, world := Metta.Minimal.World.empty }
-        prev (toLeaTTaAtom src) Metta.Bindings.empty).1 ∧
-    Metta.AlphaEq emitted (toLeaTTaAtom dst)
+        prev (encodeModelAtom src) Metta.Bindings.empty).1 ∧
+    Metta.AlphaEq emitted (encodeModelAtom dst)
 
 /-- Local freshened-item transport obligation for the repaired visible-query
 interface.  The HE query witness already determines the raw candidate split; this
@@ -5635,26 +5583,26 @@ def FreshenedQueryOpItemTransportAgainstVisible
     (gt : Metta.GroundingTable) (prev : Metta.Minimal.Stack) (counter : Nat) :
     Prop :=
   ∀ {idx lhs rawRhs pre post k}
-    (_hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (_hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (_hzip : (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx)
     (_hmatch : FaithfulQueryWitness src
       (freshenEquationAgainst ((collectVars src fuel).eraseDups) idx lhs rawRhs fuel).1
       qb fuel)
     (_hsplit :
       Metta.Minimal.candidatesW
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
-          Metta.Minimal.World.empty (toLeaTTaAtom src) =
-        pre ++ (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) :: post),
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
+          Metta.Minimal.World.empty (encodeModelAtom src) =
+        pre ++ (encodeModelAtom lhs, encodeModelAtom rawRhs) :: post),
     ∃ freshLhs freshRhs mb m emitted,
       (Metta.Minimal.freshenRuleAvoiding (counter + pre.length)
-          (Metta.Minimal.queryOpAvoid prev (toLeaTTaAtom src) Metta.Bindings.empty)
-          (toLeaTTaAtom lhs) (toLeaTTaAtom rawRhs)).1 =
+          (Metta.Minimal.queryOpAvoid prev (encodeModelAtom src) Metta.Bindings.empty)
+          (encodeModelAtom lhs) (encodeModelAtom rawRhs)).1 =
         (freshLhs, freshRhs) ∧
-      mb ∈ Metta.matchAtoms freshLhs (toLeaTTaAtom src) ∧
+      mb ∈ Metta.matchAtoms freshLhs (encodeModelAtom src) ∧
       m ∈ Metta.Bindings.merge Metta.Bindings.empty mb ∧
       Metta.Bindings.hasLoop m = false ∧
       emitted = Metta.instantiate m freshRhs ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel))
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel))
 
 /-- Variable-successor specialization of the local freshened-item transport
 obligation.  It records the executable single-candidate facts and leaves the
@@ -5664,22 +5612,22 @@ def FreshenedVariableQueryOpItemTransportAgainstVisible
     (gt : Metta.GroundingTable) (prev : Metta.Minimal.Stack) (counter : Nat) :
     Prop :=
   ∀ {idx lhs rawRhs pre post k}
-    (_hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (_hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (_hzip : (Atom.expression [Atom.symbol "=", lhs, rawRhs], idx) ∈ space.atoms.zipIdx)
     (_hmatch : FaithfulQueryWitness src
       (freshenEquationAgainst ((collectVars src fuel).eraseDups) idx lhs rawRhs fuel).1
       qb fuel)
     (_hsplit :
       Metta.Minimal.candidatesW
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
-          Metta.Minimal.World.empty (toLeaTTaAtom src) =
-        pre ++ (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) :: post),
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
+          Metta.Minimal.World.empty (encodeModelAtom src) =
+        pre ++ (encodeModelAtom lhs, encodeModelAtom rawRhs) :: post),
     ∃ freshLhs freshRhs mb m emittedVar targetVar,
       (Metta.Minimal.freshenRuleAvoiding (counter + pre.length)
-          (Metta.Minimal.queryOpAvoid prev (toLeaTTaAtom src) Metta.Bindings.empty)
-          (toLeaTTaAtom lhs) (toLeaTTaAtom rawRhs)).1 =
+          (Metta.Minimal.queryOpAvoid prev (encodeModelAtom src) Metta.Bindings.empty)
+          (encodeModelAtom lhs) (encodeModelAtom rawRhs)).1 =
         (freshLhs, freshRhs) ∧
-      mb ∈ Metta.matchAtoms freshLhs (toLeaTTaAtom src) ∧
+      mb ∈ Metta.matchAtoms freshLhs (encodeModelAtom src) ∧
       m ∈ Metta.Bindings.merge Metta.Bindings.empty mb ∧
       Metta.Bindings.hasLoop m = false ∧
       Metta.instantiate m freshRhs = Metta.Atom.var emittedVar ∧
@@ -5704,7 +5652,7 @@ theorem freshenedQueryOpItemTransportAgainstVisible_of_variable_item
       hfresh, hmb, hmerge, hloop, ?_, ?_⟩
   · exact hemitted.symm
   · rw [happly]
-    simpa [toLeaTTaAtom] using alphaEq_var_var emittedVar targetVar
+    simpa [encodeModelAtom] using alphaEq_var_var emittedVar targetVar
 
 /-- Candidate extraction plus a local freshened-item transport proof produces
 the concrete executable `queryOp` witness for the repaired visible-query
@@ -5715,18 +5663,18 @@ theorem queryOp_contains_equation_match_visible_successor_againstVisible_of_fres
     {space : Space} {src rhs : Atom} {qb : Bindings} {fuel : Nat}
     {gt : Metta.GroundingTable} {k : String}
     (prev : Metta.Minimal.Stack) (counter : Nat)
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hquery : (rhs, qb) ∈ queryEquationsAgainstVisible space src fuel)
     (hitemTransport : FreshenedQueryOpItemTransportAgainstVisible
       space src rhs qb fuel gt prev counter) :
     ∃ emitted m,
       Metta.Minimal.evalResult prev emitted m ∈
         (Metta.Minimal.queryOp
-          (Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt)
+          (Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt)
           { counter := counter, world := Metta.Minimal.World.empty }
-          prev (toLeaTTaAtom src) Metta.Bindings.empty).1 ∧
-      Metta.AlphaEq emitted (toLeaTTaAtom (qb.applyFull rhs fuel)) := by
-  let env := Metta.Minimal.MinEnv.ofAtomsGT (toLeaTTaAtoms space.atoms) gt
+          prev (encodeModelAtom src) Metta.Bindings.empty).1 ∧
+      Metta.AlphaEq emitted (encodeModelAtom (qb.applyFull rhs fuel)) := by
+  let env := Metta.Minimal.MinEnv.ofAtomsGT (encodeModelAtoms space.atoms) gt
   let st0 : Metta.Minimal.St := { counter := counter, world := Metta.Minimal.World.empty }
   obtain ⟨idx, lhs, rawRhs, pre, post, hzip, hmatch, hsplit⟩ :=
     queryEquationsAgainstVisible_extractCandidate_split
@@ -5738,17 +5686,17 @@ theorem queryOp_contains_equation_match_visible_successor_againstVisible_of_fres
     hitemTransport hk hzip hmatch hsplit
   have hitem :
       Metta.Minimal.evalResult prev emitted m ∈
-        queryOpItemsOfRule prev (toLeaTTaAtom src) Metta.Bindings.empty
-          (counter + pre.length) (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs) := by
+        queryOpItemsOfRule prev (encodeModelAtom src) Metta.Bindings.empty
+          (counter + pre.length) (encodeModelAtom lhs, encodeModelAtom rawRhs) := by
     refine
       (mem_queryOpItemsOfRule_iff
-        prev (toLeaTTaAtom src) Metta.Bindings.empty
-        (counter + pre.length) (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs)
+        prev (encodeModelAtom src) Metta.Bindings.empty
+        (counter + pre.length) (encodeModelAtom lhs, encodeModelAtom rawRhs)
         (Metta.Minimal.evalResult prev emitted m)).2 ?_
     refine ⟨mb, ?_, m, hmerge, hloop, ?_⟩
     · simpa [hfresh] using hmb
     · rw [hfresh, hemitted]
-  have hNotVarHead : Metta.Minimal.isVariableHeaded (toLeaTTaAtom src) = false := by
+  have hNotVarHead : Metta.Minimal.isVariableHeaded (encodeModelAtom src) = false := by
     rcases Metta.headKey_some hk with hsrc | ⟨ls, hsrc⟩
     · rw [hsrc]
       simp [Metta.Minimal.isVariableHeaded]
@@ -5757,7 +5705,7 @@ theorem queryOp_contains_equation_match_visible_successor_againstVisible_of_fres
   refine ⟨emitted, m, ?_, halpha⟩
   exact
     queryOp_contains_item_of_splitCandidate env st0 prev
-      (toLeaTTaAtom src) Metta.Bindings.empty hNotVarHead hsplit hitem
+      (encodeModelAtom src) Metta.Bindings.empty hNotVarHead hsplit hitem
 
 /-- Direct `LeaTTaEquationQueryOpHit` constructor from the smaller local
 freshened-item transport obligation. -/
@@ -5765,7 +5713,7 @@ theorem leattaEquationQueryOpHit_of_freshened_item_transport_againstVisible
     {space : Space} {src rhs : Atom} {qb : Bindings} {fuel : Nat}
     {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
     {counter : Nat} {k : String}
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hquery : (rhs, qb) ∈ queryEquationsAgainstVisible space src fuel)
     (hitemTransport : FreshenedQueryOpItemTransportAgainstVisible
       space src rhs qb fuel gt prev counter) :
@@ -5783,7 +5731,7 @@ theorem leattaEquationQueryOpHit_of_freshened_variable_item_transport_againstVis
     {space : Space} {src rhs : Atom} {qb : Bindings} {fuel : Nat}
     {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
     {counter : Nat} {k : String}
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hquery : (rhs, qb) ∈ queryEquationsAgainstVisible space src fuel)
     (hvarTransport : FreshenedVariableQueryOpItemTransportAgainstVisible
       space src rhs qb fuel gt prev counter) :
@@ -5820,8 +5768,8 @@ theorem equationMatchVisibleItemTransportAgainst_of_freshened_item_transport
   refine ⟨pre, post, emitted, m, hsplit, ?_, halpha⟩
   refine
     (mem_queryOpItemsOfRule_iff
-      prev (toLeaTTaAtom src) Metta.Bindings.empty
-      (counter + pre.length) (toLeaTTaAtom lhs, toLeaTTaAtom rawRhs)
+      prev (encodeModelAtom src) Metta.Bindings.empty
+      (counter + pre.length) (encodeModelAtom lhs, encodeModelAtom rawRhs)
       (Metta.Minimal.evalResult prev emitted m)).2 ?_
   refine ⟨mb, ?_, m, hmerge, hloop, ?_⟩
   · simpa [hfresh] using hmb
@@ -5833,7 +5781,7 @@ theorem leattaEquationQueryOpHit_of_transport_againstVisible
     {space : Space} {src rhs : Atom} {qb : Bindings} {fuel : Nat}
     {gt : Metta.GroundingTable} {prev : Metta.Minimal.Stack}
     {counter : Nat} {k : String}
-    (hk : Metta.Minimal.headKey (toLeaTTaAtom src) = some k)
+    (hk : Metta.Minimal.headKey (encodeModelAtom src) = some k)
     (hquery : (rhs, qb) ∈ queryEquationsAgainstVisible space src fuel)
     (htransport : EquationMatchVisibleItemTransportAgainst
       space src rhs qb fuel gt prev counter) :

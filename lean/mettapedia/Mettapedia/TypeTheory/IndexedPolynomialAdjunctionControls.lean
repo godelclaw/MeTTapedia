@@ -53,7 +53,7 @@ theorem reconstruction_depends_on_input :
 /-- Replacing reconstruction by a constant is well typed but does not satisfy
 the actual algebra-morphism square. -/
 def constantEvidence : (freeAlgebra proofMethods Result).a ⟶ resultAlgebra.a :=
-  fun _ _ => ↾(fun _ => 0)
+  fun _ _ => ↾(fun _ => (0 : Fin _))
 
 theorem constant_evidence_not_algebra_morphism :
     ¬ (proofMethods.endofunctor.map constantEvidence ≫ resultAlgebra.str =

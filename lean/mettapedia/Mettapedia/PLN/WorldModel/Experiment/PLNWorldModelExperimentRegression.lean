@@ -13,7 +13,7 @@ Concrete finite fixture for the experiment-channel WM layer:
 
 namespace Mettapedia.PLN.WorldModel.Experiment.PLNWorldModelExperimentRegression
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.Experiment.PLNWorldModelExperiment
 open scoped ENNReal
 

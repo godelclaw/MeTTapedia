@@ -19,7 +19,7 @@ The bridge stays deliberately narrow:
 namespace Mettapedia.PLN.Bridges.KR.ConceptClosure.CredalConceptFixpointClosureBridge
 
 open Mettapedia.KR.ConceptGeometry
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.Hyperseed
 open scoped ENNReal

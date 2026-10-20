@@ -14,7 +14,7 @@ strictly necessary in the finite-evidence regime where PLN actually operates.
 
 ## Key results
 
-1. `scaledEvidence`: BinaryEvidence(k·p₀, k·n₀) with constant strength.
+1. `scaledEvidence`: Beta(k·p₀, k·n₀) with constant mean.
 2. `beta_variance_scaled_eq`: exact variance formula in terms of k.
 3. `beta_variance_vanishes`: Beta variance → 0 as k → ∞.
 4. `exact_variance_vanishes_of_input_variance`: exact deduction variance → 0.
@@ -33,38 +33,38 @@ import Mettapedia.PLN.TruthValues.PLNDistributionalChainDominance
 
 noncomputable section
 
-namespace Mettapedia.PLN.TruthValues.DistributionalConvergence
+namespace Mettapedia.PLN.TruthValues.PLNDistributionalConvergence
 
-open Mettapedia.PLN.TruthValues.Distributional
-open Mettapedia.PLN.TruthValues.DistributionalChainDominance
+open Mettapedia.PLN.TruthValues.PLNDistributional
+open Mettapedia.PLN.TruthValues.PLNDistributionalChainDominance
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 open Set
 
-/-! ## Step 1: Scaled BinaryEvidence -/
+/-! ## Step 1: Scaled evidence -/
 
 /-- Scale evidence counts by a positive natural number k.
-    BinaryEvidence(k·p₀, k·n₀) represents k times as much evidence
+    Beta(k·p₀, k·n₀) represents k times as much evidence
     with the same strength ratio. -/
 def scaledEvidence (p₀ n₀ : ℝ) (hp : 0 < p₀) (hn : 0 < n₀)
-    (k : ℕ) (hk : 0 < k) : BinaryEvidence where
-  positive := k * p₀
-  negative := k * n₀
-  positive_pos := mul_pos (Nat.cast_pos.mpr hk) hp
-  negative_pos := mul_pos (Nat.cast_pos.mpr hk) hn
+    (k : ℕ) (hk : 0 < k) : BetaParams where
+  alpha := k * p₀
+  betaParam := k * n₀
+  alpha_pos := mul_pos (Nat.cast_pos.mpr hk) hp
+  beta_pos := mul_pos (Nat.cast_pos.mpr hk) hn
 
 /-- Scaled evidence has constant strength = p₀/(p₀+n₀), independent of k. -/
 theorem scaledEvidence_strength (p₀ n₀ : ℝ) (hp : 0 < p₀) (hn : 0 < n₀)
     (k : ℕ) (hk : 0 < k) :
-    (scaledEvidence p₀ n₀ hp hn k hk).strength = p₀ / (p₀ + n₀) := by
-  simp only [scaledEvidence, BinaryEvidence.strength, BinaryEvidence.total]
+    (scaledEvidence p₀ n₀ hp hn k hk).expectedValue = p₀ / (p₀ + n₀) := by
+  simp only [scaledEvidence, BetaParams.expectedValue, BetaParams.n]
   have hk' : (k : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (by omega)
   field_simp
 
 /-- Scaled evidence total = k·(p₀+n₀). -/
 theorem scaledEvidence_total (p₀ n₀ : ℝ) (hp : 0 < p₀) (hn : 0 < n₀)
     (k : ℕ) (hk : 0 < k) :
-    (scaledEvidence p₀ n₀ hp hn k hk).total = k * (p₀ + n₀) := by
-  simp only [scaledEvidence, BinaryEvidence.total]; ring
+    (scaledEvidence p₀ n₀ hp hn k hk).n = k * (p₀ + n₀) := by
+  simp only [scaledEvidence, BetaParams.n]; ring
 
 /-! ## Step 2: Beta Variance Vanishes -/
 
@@ -73,7 +73,7 @@ theorem beta_variance_scaled_eq (p₀ n₀ : ℝ) (hp : 0 < p₀) (hn : 0 < n₀
     (k : ℕ) (hk : 0 < k) :
     (scaledEvidence p₀ n₀ hp hn k hk).variance =
     (k * p₀) * (k * n₀) / ((k * (p₀ + n₀))^2 * (k * (p₀ + n₀) + 1)) := by
-  simp only [BinaryEvidence.variance, BinaryEvidence.toBeta, BetaParams.variance, BetaParams.n, scaledEvidence]
+  simp only [BetaParams.variance, BetaParams.n, scaledEvidence]
   congr 1; ring
 
 /-- Upper bound: Beta variance ≤ p₀·n₀ / (k·(p₀+n₀)³). -/
@@ -209,9 +209,9 @@ theorem impliedVariance_eq (step : ScalarChainStep)
 /-- The confidence of scaledEvidence = k·T₀/(k·T₀+1). -/
 theorem scaledEvidence_confidence (p₀ n₀ : ℝ) (hp : 0 < p₀) (hn : 0 < n₀)
     (k : ℕ) (hk : 0 < k) :
-    (scaledEvidence p₀ n₀ hp hn k hk).toBeta.toSTV.confidence =
+    (scaledEvidence p₀ n₀ hp hn k hk).toSTV.confidence =
     k * (p₀ + n₀) / (k * (p₀ + n₀) + 1) := by
-  simp only [BetaParams.toSTV, BetaParams.n, BinaryEvidence.toBeta, scaledEvidence]
+  simp only [BetaParams.toSTV, BetaParams.n, scaledEvidence]
   congr 1 <;> ring
 
 /-- The heuristic confidence of a scaledStep. -/
@@ -253,7 +253,7 @@ theorem scaledStep_outputStrength_const (p₀ n₀ : ℝ) (hp : 0 < p₀) (hn : 
   have h1 := scaledEvidence_strength p₀ n₀ hp hn k₁ hk₁
   have h2 := scaledEvidence_strength p₀ n₀ hp hn k₂ hk₂
   simp only [BetaParams.toSTV, BetaParams.expectedValue, BetaParams.n,
-             BinaryEvidence.toBeta, BinaryEvidence.strength, BinaryEvidence.total, scaledEvidence] at *
+             BetaParams.expectedValue, BetaParams.n, scaledEvidence] at *
   rw [h1, h2]
 
 /-- The confidence gap 1 - c_h of a scaledStep converges to 0 as k → ∞.
@@ -437,4 +437,4 @@ theorem scalar_converges_to_distributional
    implied_variance_vanishes p₀ n₀ sB sC hp hn hsB hsB1 hsC0 hsC1,
    approximation_error_vanishes p₀ n₀ sB sC hp hn hsB hsB1 hsC0 hsC1⟩
 
-end Mettapedia.PLN.TruthValues.DistributionalConvergence
+end Mettapedia.PLN.TruthValues.PLNDistributionalConvergence

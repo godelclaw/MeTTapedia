@@ -11,7 +11,7 @@ open Mettapedia.PLN.Bridges.HOL.PLNHigherOrderHOLRules (HOLProvIff)
 open Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness
   (ClassicalHOLTheory ClassicalHOLQuery ClassicalHOLState derivableImpOnTheory)
 open Mettapedia.Logic.HOL.WithParams
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 variable {Base : Type u} {Const : Ty Base → Type v}
 
@@ -111,7 +111,7 @@ theorem classical_singletonConsequenceOnTheory_to_holExtensionalProvImpOnTheory
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hT0 : ∀ χ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
-    (hEM : ∀ χ ∈ EMSchema Const, χ ∈ T)
+    (hEM : ∀ χ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T χ)
     (hImp0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) (.imp φ ψ))
     (h : Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization.singletonStrengthLEOn
       Mettapedia.Logic.HOL.holSatisfies (Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCompleteness.modelsTheory (Base := Base) (Const := Const) T) φ ψ) :
@@ -129,7 +129,7 @@ theorem holDerivableImpOnTheory_to_holExtensionalProvImpOnTheory_classical
     (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hT0 : ∀ χ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) χ)
-    (hEM : ∀ χ ∈ EMSchema Const, χ ∈ T)
+    (hEM : ∀ χ ∈ EMSchema Const, ClosedTheorySet.Provable (Const := WithParams Const) T χ)
     (hImp0 : ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) (.imp φ ψ))
     (h :
       derivableImpOnTheory (Base := Base) (Const := Const) T φ ψ) :

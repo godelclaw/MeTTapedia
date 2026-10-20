@@ -1,6 +1,7 @@
 import Mettapedia.GSLT.LanguageDef.GeneralTypedOccurrenceLocalReplacement
 import Mettapedia.OSLF.MeTTaIL.GeneralRuleJobs
 import Mettapedia.OSLF.MeTTaIL.GeneralEquationJobs
+import Mettapedia.OSLF.MeTTaIL.LicensedCompose
 
 /-!
 # Context transport of original authored rewrite receipts
@@ -26,17 +27,6 @@ set_option autoImplicit false
 namespace Mettapedia.OSLF.MeTTaIL.GeneralTypedSites
 open Syntax DerivedContexts
 
-/-- Compose the two original typed occurrence records. Physical path and
-selected typing-declaration frames concatenate; the inner local carrier is
-retained literally. -/
-def SiteData.compose (outer inner : SiteData) : SiteData where
-  address := outer.address ++ inner.address
-  context := outer.context.comp inner.context
-  focus := inner.focus
-  focusBound := inner.focusBound
-  focusType := inner.focusType
-  typingFrames := outer.typingFrames ++ inner.typingFrames
-
 @[simp] theorem SiteData.compose_fill (outer inner : SiteData) (target : Pattern) :
     (outer.compose inner).context.fill target = outer.context.fill (inner.context.fill target) :=
   OneHoleContext.fill_comp _ _ _
@@ -51,7 +41,7 @@ open Mettapedia.GSLT.LanguageDef.WellSorted
 
 /-- An independently licensed inner site transports through the actual outer
 source typing descent, retaining both chosen declaration paths. -/
-theorem compose {language : LanguageDef} {free : FreeTypeContext}
+theorem compose_at_focus {language : LanguageDef} {free : FreeTypeContext}
     {permissions : OperationalPermissions} {bound : List TypeExpr} {expected : TypeExpr}
     {source : Pattern} {outer inner : SiteData}
     (outside : Licensed language free permissions bound expected source outer)
@@ -123,7 +113,7 @@ theorem Receipt.inContext_validWith {dynamic : GeneralPremise.DynamicProvider} {
     (represented : outside.acceptsReplacementRepresentation (GeneralPlanEnvironment.environmentWith plan dynamic).language
       receipt.target = true) :
     (receipt.inContext outside).ValidWith dynamic plan bound expected source := by
-  have innerLicensed := licensed.compose localValid.1.2
+  have innerLicensed := licensed.compose_at_focus localValid.1.2
   have globalTarget := licensed.replace_locally_openPatternWellSorted sourceAdmitted
     receipt.target represented localValid.2.2.2.2
   have outerRepresented : outside.acceptsReplacementRepresentation
@@ -212,14 +202,14 @@ theorem Receipt.inContext_completion {plan : Plan}
     {bound : List TypeExpr} {expected : TypeExpr} {source : Pattern} {outside : SiteData}
     {receipt : Receipt}
     (licensed : Licensed (GeneralPlanEnvironment.environment plan).language plan.snapshot.free
-      plan.permissions.sites bound expected source outside)
+      OperationalPermissions.all bound expected source outside)
     (sourceAdmitted : OpenPatternWellSorted (GeneralPlanEnvironment.environment plan).language
       plan.snapshot.free bound expected source)
     (localValid : Completion plan outside.focusBound outside.focusType outside.focus receipt)
     (represented : outside.acceptsReplacementRepresentation (GeneralPlanEnvironment.environment plan).language
       receipt.target = true) :
     Completion plan bound expected source (receipt.inContext outside) := by
-  have combinedLicensed := licensed.compose localValid.job.2
+  have combinedLicensed := licensed.compose_at_focus localValid.job.2
   have localTarget : OpenPatternWellSorted (GeneralPlanEnvironment.environment plan).language
       plan.snapshot.free outside.focusBound outside.focusType receipt.target := by
     rw [localValid.endpoint]
@@ -251,7 +241,7 @@ theorem Receipt.finish_inContext {plan : Plan}
     {bound : List TypeExpr} {expected : TypeExpr} {source : Pattern} {outside : SiteData}
     {receipt : Receipt}
     (licensed : Licensed (GeneralPlanEnvironment.environment plan).language plan.snapshot.free
-      plan.permissions.sites bound expected source outside)
+      OperationalPermissions.all bound expected source outside)
     (sourceAdmitted : OpenPatternWellSorted (GeneralPlanEnvironment.environment plan).language
       plan.snapshot.free bound expected source)
     (localValid : Completion plan outside.focusBound outside.focusType outside.focus receipt)

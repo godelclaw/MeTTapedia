@@ -26,7 +26,7 @@ convergence theorem — those differ across families.
 
 ## Bridge
 
-The generic `genAdditiveExtension` from `PLNWorldModelAdditive` applies to all
+The generic `genAdditiveExtension` from `WorldModelAdditive` applies to all
 three families via the `AddCommMonoid` constraint. The `ConjugateEvidence` class
 adds the observation-count homomorphism, enabling count-distribution theorems
 across arbitrary multisets of observations.
@@ -34,11 +34,11 @@ across arbitrary multisets of observations.
 
 namespace Mettapedia.PLN.Bridges.ProbabilityTheory.ConjugateEvidenceCore
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceNormalGamma
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open scoped ENNReal
 
 /-! ## Conjugate BinaryEvidence Class -/
@@ -86,7 +86,7 @@ theorem observationCount_eq_zero_of_add_idempotent {Ev : Type*} [ConjugateEviden
             rw [ConjugateEvidence.observationCount_add]
       _ = ConjugateEvidence.observationCount e := by simp [hidem]
   exact
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditiveNoGo.EvidenceQuantale.BinaryEvidence.finite_coord_add_idempotent_eq_zero
+    Mettapedia.PLN.WorldModel.PLNWorldModelAdditiveNoGo.BinaryEvidence.finite_coord_add_idempotent_eq_zero
       hfin hcountIdem
 
 theorem not_add_idempotent_of_finite_nonzero_observationCount {Ev : Type*}

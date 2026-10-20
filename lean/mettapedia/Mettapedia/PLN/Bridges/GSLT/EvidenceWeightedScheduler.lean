@@ -32,7 +32,7 @@ open Mettapedia.GSLT.Core.WeightedMuScheduler
 open Mettapedia.GSLT.Core.InferenceControl
 open Mettapedia.Machines.BranchLocalNeed.NeedReference (Machine Produced)
 open Mettapedia.PLN.Bridges.GSLT.GuidanceOptimization
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.InferenceControl.PremiseSelection
 
 universe uGoal uNode uAnswer uMemory

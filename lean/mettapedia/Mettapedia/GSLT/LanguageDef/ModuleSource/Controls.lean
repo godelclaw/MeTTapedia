@@ -11,14 +11,19 @@ unchanged and elaborated:
   abelian group and the commutative monoid: 14 equations, none duplicated;
 - an abelian group's laws use the replaced names: `x + (-x) = 0`;
 - the rho calculus takes parallel composition from the commutative monoid with its carrier
-  renamed to `Proc`, so the monoid laws arrive as laws of the bag constructor `PPar`, and a name
-  written `(Zero)` before the replacement is `PZero` after it;
+  renamed to `Proc`: the monoid's associativity and unit become the declared algebra of the bag
+  constructor `PPar` (flattening, with unit `PZero`, a name written `(Zero)` before the
+  replacement), and leave the equations together with commutativity, which the bag quotients out;
+- a monoid replaced by a list constructor declares flattening with its unit, since both unit laws
+  hold;
 - both languages pass the core predicate;
 - both modules print as `.module` text that reads back to the same data.
 
 Negative controls: passing one monoid as both arguments of `Rig` (the mistake upstream's file
 warns about) is a join collision; an argument that is not an instance of its parameter's theory,
-a replacement of a missing constructor and an unknown theory are refused.
+a replacement of a missing constructor and an unknown theory are refused; replacing a monoid's
+operation by a bag would add commutativity, and a commutative monoid's by a set would add
+idempotence, so both are refused.
 -/
 
 open Mettapedia.GSLT.LanguageDef.ModuleSource.Commands
@@ -53,6 +58,11 @@ def equationNamed (result : Except Error LanguageDef) (wanted : String) : Option
   | .ok language => (language.equations.find? fun row => row.name == wanted).map fun row => (row.left, row.right)
   | .error _ => none
 
+def algebraOf (result : Except Error LanguageDef) (label : String) : Option CollectionAlgebra :=
+  match result with
+  | .ok language => (language.terms.find? fun rule => rule.label == label).bind (·.algebra?)
+  | .error _ => none
+
 def isCore (result : Except Error LanguageDef) : Bool :=
   match result with
   | .ok language => match language.toCore with
@@ -69,11 +79,50 @@ def isCore (result : Except Error LanguageDef) : Bool :=
 
 #guard sorts Rholang.language == ["Proc", "Name"]
 #guard labels Rholang.language == ["PZero", "PPar", "PDrop", "NQuote", "PRepl", "PNew", "POutput", "PInput"]
-#guard counts Rholang.language == (7, 4)
-#guard equationNamed Rholang.language "Monoid:equation:1@2" ==
-  some (Pattern.apply "PPar" [Pattern.collection .hashBag [Pattern.fvar "x", Pattern.apply "PZero" []] none],
-    Pattern.fvar "x")
+#guard counts Rholang.language == (3, 4)
+#guard algebraOf Rholang.language "PPar" == some { flatten := true, unit := some "PZero" }
+#guard (match Rholang.language with
+  | .ok language => language.equations.map (·.name)
+  | .error _ => []) == ["QuoteDropCalc:equation:0@5", "NewReplCalc:equation:0@6", "NewReplCalc:equation:1@6"]
 #guard isCore Rholang.language
+
+#module
+  import "UnivAlg.module" as u
+  Module ListOfMonoid {
+    Theory Words(m: u.Monoid) {
+      m Replacements { Mult => Word . xs:Vec(Elem) |- "[" xs.*sep(",") "]" : Elem; }
+    }
+    theory Words(u.Monoid(u.EmptySet()))
+  }
+
+#guard algebraOf ListOfMonoid.language "Word" == some { flatten := true, unit := some "One" }
+#guard counts ListOfMonoid.language == (0, 0)
+
+#module
+  import "UnivAlg.module" as u
+  Module BagOfMonoid {
+    Theory Wrong(m: u.Monoid) {
+      m Replacements { Mult => Bag . xs:HashBag(Elem) |- "{" xs.*sep(",") "}" : Elem; }
+    }
+    theory Wrong(u.Monoid(u.EmptySet()))
+  }
+
+#guard match BagOfMonoid.language with
+  | .error (.replaceAddsLaws "Mult" "Bag" "commutativity") => true
+  | _ => false
+
+#module
+  import "UnivAlg.module" as u
+  Module SetOfCommutativeMonoid {
+    Theory Wrong(c: u.CommutativeMonoid) {
+      c Replacements { Plus => Set . xs:HashSet(Elem) |- "{" xs.*sep(",") "}" : Elem; }
+    }
+    theory Wrong(u.CommutativeMonoid(u.Monoid(u.EmptySet())))
+  }
+
+#guard match SetOfCommutativeMonoid.language with
+  | .error (.replaceAddsLaws "Plus" "Set" "idempotence") => true
+  | _ => false
 
 #module
   import "UnivAlg.module" as u

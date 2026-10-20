@@ -1,4 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaItemsExecution
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Completed generated calls
@@ -68,7 +72,7 @@ theorem loaded_selected_to_caller (program : Program) (head : String)
     (noImports : state.world.selfImports = [])
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) (caller : Frame) (continuation : Stack) :
-    let query := toLeaTTaAtom (call (dispatchName head)
+    let query := encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])
     ∃ nextState output cost threshold,
       nextState.world = state.world ∧ ClosedValueBindings output ∧
@@ -80,7 +84,7 @@ theorem loaded_selected_to_caller (program : Program) (head : String)
         interpretFuel environment (fuel + cost) state
           (⟨atomToStack (.expr [.sym "eval", query]) (caller :: continuation), incoming⟩ :: rest) done =
         interpretFuel environment fuel nextState
-          (finItem (caller :: continuation) (toLeaTTaAtom (observation result)) output :: rest) done := by
+          (finItem (caller :: continuation) (encodeModelAtom (observation result)) output :: rest) done := by
   intro query
   obtain ⟨first, rawBody, emitted, registered⟩ := loaded.dispatch head present sourceFuel
     arguments state.world noExtra noImports
@@ -90,7 +94,7 @@ theorem loaded_selected_to_caller (program : Program) (head : String)
       selected rawBody emitted environment state (caller :: continuation) incoming stored invariant
       (by rw [loaded.groundings]; exact dispatchName_native_miss _ _)
       (dispatchName_not_embedded _ _) registered
-  let body := renBy rename (toLeaTTaAtom
+  let body := renBy rename (encodeModelAtom
     (expression program (sourceBindings.map fun pair => (pair.1, MeTTaData.encode pair.2))
       (.grounded (.int sourceFuel)) row.equation.body (patterns row.equation.params start).2).1)
   obtain ⟨nextState, output, bodyCost, threshold, world, outputClosed, outputInvariant,
@@ -108,7 +112,7 @@ theorem loaded_selected_to_caller (program : Program) (head : String)
     have entered := entry (fuel + 1 + bodyCost) rest done
     have ran := execution (fuel + 1) (by omega) rest done
     have returned := selected_return_to_caller environment nextState output parentBody
-      (toLeaTTaAtom (observation result)) (varsCopy (caller :: continuation)) caller continuation
+      (encodeModelAtom (observation result)) (varsCopy (caller :: continuation)) caller continuation
       fuel rest done
     rw [Metta.instantiate_of_closed output _ (observation_closed result)] at returned
     simpa only [show fuel + 1 + bodyCost + 6 + 2 * skipped =
@@ -131,14 +135,14 @@ theorem loaded_selected_execution (program : Program) (head : String)
     (noImports : state.world.selfImports = [])
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) :
-    let query := toLeaTTaAtom (requestAtom program sourceFuel head arguments)
+    let query := encodeModelAtom (requestAtom program sourceFuel head arguments)
     ∃ nextState output cost threshold,
       nextState.world = state.world ∧ ClosedValueBindings output ∧
       LeaRuntimeBindingInvariant output ∧
       ∀ fuel, threshold ≤ fuel →
         interpretFuel environment (fuel + cost) state
           [⟨atomToStack (.expr [.sym "eval", query]) [], incoming⟩] [] =
-        ([(toLeaTTaAtom (observation result), output)], nextState) := by
+        ([(encodeModelAtom (observation result), output)], nextState) := by
   intro query
   obtain ⟨first, rawBody, emitted, registered⟩ := loaded.dispatch head present sourceFuel
     arguments state.world noExtra noImports
@@ -158,10 +162,10 @@ theorem loaded_selected_execution (program : Program) (head : String)
   intro fuel enough
   have entered := entry (fuel + 1 + bodyCost) [] []
   have ran := execution (fuel + 1) (by omega) [] []
-  have visible : (toLeaTTaAtom (observation result) != emptyA) = true := by
+  have visible : (encodeModelAtom (observation result) != emptyA) = true := by
     cases result <;> rfl
   have returned := selected_closed_return_finishes environment nextState output parentBody
-    (toLeaTTaAtom (observation result)) [] fuel (observation_closed result) visible
+    (encodeModelAtom (observation result)) [] fuel (observation_closed result) visible
   have defined : program.defines head = true := by simpa [Program.defines] using present
   simpa only [query, requestAtom, invoke, defined, if_true, sequenceAtom_encode, varsCopy,
     show fuel + 1 + bodyCost + 6 + 2 * skipped = fuel + (bodyCost + 7 + 2 * skipped) by omega]
@@ -179,7 +183,7 @@ theorem loaded_refused_to_caller (program : Program) (head : String)
     (noImports : state.world.selfImports = [])
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) (caller : Frame) (continuation : Stack) :
-    let query := toLeaTTaAtom (call (dispatchName head)
+    let query := encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])
     ∃ nextState output cost threshold,
       nextState.world = state.world ∧ ClosedValueBindings output ∧
@@ -215,17 +219,17 @@ theorem loaded_refused_to_caller (program : Program) (head : String)
       using materializedEmitted.symm.trans emitted
   subst materializedBody
   have outputInvariant := (materializes matched output matching merging).2.1
-  let lhs := toLeaTTaAtom (call (dispatchName head)
+  let lhs := encodeModelAtom (call (dispatchName head)
     [.var (freshName first), .var (freshName (first + 1))])
   let fresh := freshenRuleAvoiding state.counter
     (Metta.Minimal.queryOpAvoid (caller :: continuation) query incoming) lhs
-    (toLeaTTaAtom (call "function" [rawBody]))
+    (encodeModelAtom (call "function" [rawBody]))
   refine ⟨{ state with counter := fresh.2 }, output, scanCost + 2, 0,
     rfl, outputClosed, outputInvariant, ?_, ?_⟩
   · intro key live unassigned
     exact query_preserves_unassigned_caller (caller :: continuation) query lhs
-      (toLeaTTaAtom (call "function" [rawBody])) incoming matched output state.counter key
-      stored (by simp [query, call, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars,
+      (encodeModelAtom (call "function" [rawBody])) incoming matched output state.counter key
+      stored (by simp [query, call, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars,
         data_atom_runtime_closed (MeTTaData.encodeItems_data arguments)])
       live unassigned matching merging
   · intro fuel _ rest done
@@ -251,7 +255,7 @@ private theorem dispatchName_is_call (head : String) :
 continuation. This shared control lemma has no guest-specific checking logic. -/
 private theorem compiled_invocation_of_callee (environment : MinEnv) (head : String)
     (inputs : List Atom) (notValue : head ≠ "nik:Value") (notPrimitive : head ≠ "nik:primitive")
-    (sourceClosed : (toLeaTTaAtom (call "eval" [call head inputs])).vars = [])
+    (sourceClosed : (encodeModelAtom (call "eval" [call head inputs])).vars = [])
     (result : Outcome)
     (callee : ∀ state : St, state.world.selfExtra = [] → state.world.selfImports = [] →
       ∀ incoming : Metta.Bindings, ClosedValueBindings incoming → LeaRuntimeBindingInvariant incoming →
@@ -264,20 +268,20 @@ private theorem compiled_invocation_of_callee (environment : MinEnv) (head : Str
             Metta.Bindings.lookupVal output key = none) ∧
         ∀ fuel, threshold ≤ fuel → ∀ rest done,
           interpretFuel environment (fuel + cost) state
-            (⟨atomToStack (toLeaTTaAtom (call "eval" [call head inputs]))
+            (⟨atomToStack (encodeModelAtom (call "eval" [call head inputs]))
               (caller :: continuation), incoming⟩ :: rest) done =
           interpretFuel environment fuel nextState
-            (finItem (caller :: continuation) (toLeaTTaAtom (observation result)) output :: rest) done) :
+            (finItem (caller :: continuation) (encodeModelAtom (observation result)) output :: rest) done) :
     CompiledExecutes environment (returnInvocation (call head inputs)) result := by
   intro first rename injective state noExtra noImports incoming stored invariant
     parentBody scope continuation code _
   let parent : Frame := { atom := parentBody, ret := .function, vars := scope }
-  let source := renBy rename (toLeaTTaAtom (call "eval" [call head inputs]))
-  let template := renBy rename (toLeaTTaAtom (returned (.var (freshName first))))
+  let source := renBy rename (encodeModelAtom (call "eval" [call head inputs]))
+  let template := renBy rename (encodeModelAtom (returned (.var (freshName first))))
   let recipient : Frame :=
     { atom := .expr [.sym "chain", source, .var (rename (freshName first)), template],
       ret := .chain, vars := chainFrameVars (parent :: continuation) source template }
-  have sourceSame : source = toLeaTTaAtom (call "eval" [call head inputs]) :=
+  have sourceSame : source = encodeModelAtom (call "eval" [call head inputs]) :=
     renBy_eq_self_of_vars_nil rename _ sourceClosed
   obtain ⟨nextState, output, cost, threshold, world, outputClosed, outputInvariant,
       preserves, execution⟩ := callee state noExtra noImports incoming stored
@@ -288,7 +292,7 @@ private theorem compiled_invocation_of_callee (environment : MinEnv) (head : Str
   · intro fuel enough rest done
     have called := execution (fuel + 3) (by omega) rest done
     have returned := renamed_returnInvocation_enters_handler environment state nextState incoming
-      output rename head inputs (toLeaTTaAtom (observation result)) first cost fuel
+      output rename head inputs (encodeModelAtom (observation result)) first cost fuel
       parentBody scope continuation rest done notValue
       notPrimitive (observation_closed result)
     have completed := returned (by
@@ -320,7 +324,7 @@ theorem compiled_selected_invocation (program : Program) (head : String)
   apply compiled_invocation_of_callee environment (dispatchName head)
     [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments]
     (dispatchName_is_call head).1 (dispatchName_is_call head).2
-  · simp [call, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars,
+  · simp [call, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars,
       data_atom_runtime_closed (MeTTaData.encodeItems_data arguments)]
   · exact loaded_selected_to_caller program head present environment loaded sourceFuel
       arguments row sourceBindings selected result bodyRun
@@ -339,7 +343,7 @@ theorem compiled_refused_invocation (program : Program) (head : String)
   apply compiled_invocation_of_callee environment (dispatchName head)
     [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments]
     (dispatchName_is_call head).1 (dispatchName_is_call head).2
-  · simp [call, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars,
+  · simp [call, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars,
       data_atom_runtime_closed (MeTTaData.encodeItems_data arguments)]
   · exact loaded_refused_to_caller program head present environment loaded sourceFuel arguments refused
 
@@ -413,22 +417,22 @@ theorem compiled_apply (program : Program) (host : Host) (environment : MinEnv)
 interpreter. A data result returns directly; calls use their ordinary chains. -/
 private theorem returnInvocation_controlled (invocation : Atom) (first : Nat)
     (rename : String → String) :
-    isEmbeddedOp (renBy rename (toLeaTTaAtom (returnInvocation invocation first).1)) = true ∨
-      ∃ payload, renBy rename (toLeaTTaAtom (returnInvocation invocation first).1) =
+    isEmbeddedOp (renBy rename (encodeModelAtom (returnInvocation invocation first).1)) = true ∨
+      ∃ payload, renBy rename (encodeModelAtom (returnInvocation invocation first).1) =
         .expr [.sym "return", payload] := by
   unfold returnInvocation
   split
   · apply Or.inr
-    simp only [pure, StateT.pure, returned, call, toLeaTTaAtom, toLeaTTaAtoms,
+    simp only [pure, StateT.pure, returned, call, encodeModelAtom, encodeModelAtoms,
       renBy, List.map_cons, List.map_nil]
     exact ⟨_, rfl⟩
   · apply Or.inl
-    change isEmbeddedOp (renBy rename (toLeaTTaAtom (call "chain" [_, _, _]))) = true
-    simp only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil, isEmbeddedOp]
+    change isEmbeddedOp (renBy rename (encodeModelAtom (call "chain" [_, _, _]))) = true
+    simp only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil, isEmbeddedOp]
     rfl
   · apply Or.inl
-    change isEmbeddedOp (renBy rename (toLeaTTaAtom (call "chain" [_, _, _]))) = true
-    simp only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil, isEmbeddedOp]
+    change isEmbeddedOp (renBy rename (encodeModelAtom (call "chain" [_, _, _]))) = true
+    simp only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil, isEmbeddedOp]
     rfl
 
 /-- Invocation continuations obey the same allocation and substitution laws

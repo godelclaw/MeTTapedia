@@ -27,7 +27,7 @@ and the Deontic Traditional Scheme (DTS), based on the governance-reasoning-engi
 namespace Mettapedia.Logic.GovernanceReasoning.Core
 
 open Mettapedia.Logic.ModalMuCalculus
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## §1 Thematic Roles (ISO 24617-4)
 

@@ -159,7 +159,7 @@ evidence-scale `κ`), summing those counts, and translating the sum
 back into a TV.
 
 This is the theorem that justifies using PLN revision as the
-single-parameter aggregator for independent observations of the same
+single-parameter aggregator for disjoint observations of the same
 hypothesis: it is literally "accumulate the counts, then read off the
 (strength, confidence) summary." -/
 theorem truthRevision_eq_toTV_hplus

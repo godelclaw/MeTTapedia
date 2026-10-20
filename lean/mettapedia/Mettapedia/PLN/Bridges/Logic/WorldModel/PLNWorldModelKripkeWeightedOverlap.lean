@@ -21,9 +21,9 @@ namespace Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeightedOve
 
 open LO
 open LO.Modal
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelKripkeWeighted
 open scoped ENNReal
 

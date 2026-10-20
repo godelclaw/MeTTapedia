@@ -14,10 +14,10 @@ open Mettapedia.Languages.GF.OSLFBridge
 open Mettapedia.Languages.GF.Typing
 open Mettapedia.Languages.GF.GFWMConnections
 open Mettapedia.Languages.GF.GFWMObligationAdapter
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelTwoSortBridge
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Adapters.ProfileTheory
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open scoped ENNReal

@@ -101,8 +101,10 @@ def services : List (String × Signature) :=
     ("stuck", ⟨[], some (.integer .int)⟩),
     ("grow", ⟨[.integer .int, .integer .int], some (.integer .int)⟩)]
 
-def composed (program : Program model) : Machine Composed Trace (Option (Value model)) ResourceRequest :=
-  served model policy abi program mettaService load
+def composed (program : Program model)
+    (serviceMachine : Machine Service Trace (Reply (Value model) Failure) ResourceRequest := mettaService) :
+    Machine Composed Trace (Option (Value model)) ResourceRequest :=
+  served model policy abi program serviceMachine load
 
 /-- **A C call served by MeTTa publishes the evaluator's meaning.** When a C
 request has a MeTTa form and its evaluation completes, the composed program
@@ -132,11 +134,92 @@ theorem metta_call_publishes_evaluator_meaning (program : Program model)
   rw [← loaded] at answered
   exact served_call model policy abi program mettaService load configuration saved request called fuel _ _ answered
 
-def runComposed (unit : CanonicalTerm) (fuel : Nat) :
+/-- The same C request loader served by the configuration-scoped HE worker. -/
+def scopedMettaService : Machine Service Trace (Reply (Value model) Failure) ResourceRequest :=
+  Mettapedia.Languages.MeTTa.HE.RecursiveService.checkedService decode
+    Mettapedia.Languages.MeTTa.HE.FirstSuccessRecursiveExecution.scopedTypes
+    GroundedDispatch.none .foreign
+
+section ScopedSource
+
+open Mettapedia.Languages.MeTTa.HE
+
+private theorem space_closed_annotations : FirstSuccessScopedAdequacy.ClosedTypeAnnotations space :=
+  (FirstSuccessScopedAdequacy.closedColonAnnotations_of_bool (by decide +kernel)).closedTypeAnnotations
+
+/-- A covered independent HE source derivation constructs the complete C
+service-call block. The reply and every published occurrence follow from
+that derivation, without an assumed completed evaluator run. -/
+theorem scoped_metta_call_source (program : Program model)
+    (configuration saved : Executable model) (request : Request model)
+    (called : (machine model policy abi program).step configuration = some (.call request saved))
+    (arguments : List Atom) (encoded : request.arguments.mapM encode = some arguments)
+    {comparison : SourceBindingComparison} {results : ResultSet}
+    (source : FirstSuccessSourceExecution.AtomDerivation
+      (comparison := comparison) space [] (callAtom request.service arguments)
+      Atom.undefinedType Bindings.empty depth results)
+    (covered : source.Covered) :
+    ∃ used,
+      (served model policy abi program scopedMettaService load).run used (.running configuration) =
+        (.called request :: results.map .foreign ++ [.replied (RecursiveService.answer decode results)],
+          .exhausted (.running (resume model policy saved (RecursiveService.answer decode results)))) := by
+  have loaded : load request = RecursiveTasks.Configuration.initial space
+      (.atom (callAtom request.service arguments) Atom.undefinedType Bindings.empty depth []) := by
+    simp only [load,encoded]
+  obtain ⟨budget,completed⟩ := RecursiveService.checked_service_source_completed decode
+    (Event := Trace) .foreign source covered space_closed_annotations
+  have answered : scopedMettaService.run budget (load request) =
+      (results.map .foreign,.finished (RecursiveService.answer decode results)) := by
+    rw [loaded]
+    simpa only [scopedMettaService,Nat.add_zero] using completed 0
+  obtain ⟨used,_,executed⟩ := served_call model policy abi program scopedMettaService load
+    configuration saved request called budget _ _ answered
+  exact ⟨used,executed⟩
+
+/-- A real waiting C caller stays attached to the complete paused HE
+configuration. Resumption emits only the remaining source occurrences and
+one reply; it does not reload the request or replay its published prefix. -/
+theorem scoped_metta_resume_source (program : Program model)
+    (configuration saved : Executable model) (request : Request model)
+    (called : (machine model policy abi program).step configuration = some (.call request saved))
+    (arguments : List Atom) (encoded : request.arguments.mapM encode = some arguments)
+    {comparison : SourceBindingComparison} {results : ResultSet}
+    (source : FirstSuccessSourceExecution.AtomDerivation
+      (comparison := comparison) space [] (callAtom request.service arguments)
+      Atom.undefinedType Bindings.empty depth results)
+    (covered : source.Covered) (first : Nat) (before : List Trace) (residual : Service)
+    (paused : scopedMettaService.run first (load request) = (before,.exhausted residual)) :
+    saved.status = .waiting request.service request.arguments ∧
+      ∃ used after,
+        (served model policy abi program scopedMettaService load).run used
+          (.handling request saved residual) =
+            (after ++ [.replied (RecursiveService.answer decode results)],
+              .exhausted (.running (resume model policy saved (RecursiveService.answer decode results)))) ∧
+        before ++ after = results.map .foreign := by
+  have caller := call_saves_waiting model policy abi program configuration saved request called
+  refine ⟨by rw [caller.1]; exact caller.2,?_⟩
+  have loaded : load request = RecursiveTasks.Configuration.initial space
+      (.atom (callAtom request.service arguments) Atom.undefinedType Bindings.empty depth []) := by
+    simp only [load,encoded]
+  have pausedWorker := paused
+  rw [scopedMettaService,loaded] at pausedWorker
+  obtain ⟨budget,after,completed,partition⟩ := RecursiveService.checked_service_source_resume decode
+    (Event := Trace) .foreign source covered space_closed_annotations first before residual pausedWorker
+  have completedService : scopedMettaService.run budget residual =
+      (after,.finished (RecursiveService.answer decode results)) := completed
+  obtain ⟨used,_,executed⟩ := (hosted model policy abi program).handle_run_of_reply
+    (callback model policy) scopedMettaService load budget request saved residual after
+      (RecursiveService.answer decode results) completedService
+  exact ⟨used,after,executed,partition⟩
+
+end ScopedSource
+
+def runComposed (unit : CanonicalTerm) (fuel : Nat)
+    (serviceMachine : Machine Service Trace (Reply (Value model) Failure) ResourceRequest := mettaService) :
     Option (List Trace × Outcome Composed (Option (Value model)) ResourceRequest) := do
   let program ← readUnit model services unit
   let initial ← start model program "main" ⟨[], []⟩ []
-  some ((composed program).run fuel (.running initial))
+  some ((composed program serviceMachine).run fuel (.running initial))
 
 def returnedValue : List Trace × Outcome Composed (Option (Value model)) ResourceRequest → Option Int
   | (_, .finished (some (.integer value))) => some value.integer.value
@@ -334,6 +417,21 @@ def stuckUnit : CanonicalTerm :=
 theorem unreadable_metta_result_stops_the_program :
     (runComposed stuckUnit 400).map (fun run => (stoppedWith run, failedReplies run.1)) =
       some (some (.service "stuck"), ([.unreadable (callAtom "stuck" [])], 1)) := by
+  decide +kernel
+
+/-- The same C loop and request codec run through the scoped HE service. -/
+theorem scoped_metta_served_loop_returns_nine :
+    (runComposed servicesUnit 5000 scopedMettaService).map (fun run =>
+      (returnedValue run,calls run.1,mettaResults run.1)) =
+      some (some 9,3,[numeral 3,numeral 6,numeral 9]) := by
+  decide +kernel
+
+/-- The scoped service preserves both alternatives instead of choosing one
+to satisfy the C function's single-return contract. -/
+theorem two_scoped_metta_results_stop_the_program :
+    (runComposed coinUnit 800 scopedMettaService).map (fun run =>
+      (stoppedWith run,mettaResults run.1,failedReplies run.1)) =
+      some (some (.service "coin"),[zeroAtom,succAtom zeroAtom],([.several 2],1)) := by
   decide +kernel
 
 end Mettapedia.Languages.C11.FixedCoreServiceControls

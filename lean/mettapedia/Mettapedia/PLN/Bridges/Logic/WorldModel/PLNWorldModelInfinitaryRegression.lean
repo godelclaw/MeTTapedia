@@ -16,7 +16,7 @@ namespace Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelInfinitaryRegress
 
 open LO
 open LO.FirstOrder
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 /-! ## Predicate-code fixtures -/
 

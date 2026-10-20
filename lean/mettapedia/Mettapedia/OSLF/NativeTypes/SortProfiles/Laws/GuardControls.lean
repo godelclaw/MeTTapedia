@@ -24,9 +24,9 @@ def guardedTheory : LanguageDef :=
     equations := [{Mettapedia.OSLF.NativeTypes.SortProfiles.OperationTables.Controls.equation with
       premises := [.relationQuery "enabled" []]}]}
 
-def active : ProviderSnapshot := ⟨[⟨"enabled", [], []⟩], [⟨"enabled", []⟩]⟩
-def inactive : ProviderSnapshot := ⟨[⟨"enabled", [], []⟩], []⟩
-def missing : ProviderSnapshot := ⟨[], []⟩
+def active : ProviderSnapshot := ⟨[⟨"enabled", [], []⟩], [⟨"enabled", []⟩], []⟩
+def inactive : ProviderSnapshot := ⟨[⟨"enabled", [], []⟩], [], []⟩
+def missing : ProviderSnapshot := ⟨[], [], []⟩
 
 def separated : Mettapedia.OSLF.NativeTypes.SortProfiles.Coherence.Profile (signature guardedTheory) :=
   Mettapedia.OSLF.NativeTypes.SortProfiles.Coherence.Controls.separatedOutput guardedTheory
@@ -50,7 +50,7 @@ theorem provider_changes_the_actual_center :
     decide
 
 def duplicateProvider : ProviderSnapshot :=
-  ⟨[⟨"enabled", [], []⟩], [⟨"enabled", []⟩, ⟨"enabled", []⟩]⟩
+  ⟨[⟨"enabled", [], []⟩], [⟨"enabled", []⟩, ⟨"enabled", []⟩], []⟩
 
 theorem duplicate_premise_and_provider_origins :
     guards? duplicateProvider [.relationQuery "enabled" [], .relationQuery "enabled" []] =
@@ -76,12 +76,48 @@ theorem empty_capture_is_independently_typed : TypedAssignment environment conte
 
 theorem actual_nullary_query_keeps_each_provider_origin (index : Fin 2) :
     QueryHolds environment context "enabled" [] [] index.val [] := by
-  apply (nullary_query_exact environment context "enabled" [] empty_capture_is_independently_typed _).mpr
+  apply (nullary_query_exact environment context "enabled" [] empty_capture_is_independently_typed _
+    (by simp [environment, duplicateProvider])).mpr
   refine ⟨⟨⟨"enabled", [], []⟩, by decide +kernel⟩, ?_⟩
   have below := index.isLt
   change index.val ∈ [0, 1]
   simp only [List.mem_cons, List.not_mem_nil, or_false]
   omega
+
+/-- A dynamic service that answers every request with one empty row. -/
+def emptyRowService : DynamicProvider where
+  Source _ _ rows := rows = [[]]
+  rows? _ _ := some [[]]
+  rows_exact := by
+    intro _ _ _
+    simp only [Option.some.injEq]
+    exact eq_comm
+
+/-- The same guard declaration, served by a registered dynamic relation with no
+static rows. -/
+def dynamicEnvironment : Environment :=
+  {environment with
+    provider := ⟨[⟨"enabled", [], []⟩], [], ["enabled"]⟩
+    dynamic := emptyRowService}
+
+/-- A registered dynamic relation holds at a native index outside the static
+rows, so the static table does not decide it. -/
+theorem dynamic_nullary_query_outside_static_rows :
+    QueryHolds dynamicEnvironment context "enabled" [] [] 0 [] ∧
+      0 ∉ rows dynamicEnvironment.provider "enabled" := by
+  refine ⟨?_, by simp [rows, dynamicEnvironment]⟩
+  exact QueryHolds.dynamicRow (nativeIndex := 0) (signature := ⟨"enabled", [], []⟩)
+    (rows := [[]]) (values := []) (by simp [dynamicEnvironment]) (by decide +kernel) .nil rfl rfl
+    ⟨rfl, .nil⟩ .nil empty_capture_is_independently_typed
+
+/-- Without its unregistered-relation hypothesis, the static-row
+characterization of `nullary_query_exact` fails. -/
+theorem static_rows_do_not_decide_dynamic_relations :
+    ¬ (QueryHolds dynamicEnvironment context "enabled" [] [] 0 [] ↔
+      (∃ signature, signature? dynamicEnvironment.provider "enabled" 0 = some signature) ∧
+        0 ∈ rows dynamicEnvironment.provider "enabled") := fun characterized =>
+  dynamic_nullary_query_outside_static_rows.2
+    (characterized.mp dynamic_nullary_query_outside_static_rows.1).2
 
 /-- This is the guarded source law, not an erased unconditional F/G equation. -/
 theorem disabled_source_law_is_vacuously_stable :

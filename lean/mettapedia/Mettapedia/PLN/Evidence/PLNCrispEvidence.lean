@@ -42,7 +42,7 @@ import Mettapedia.PLN.Bridges.Logic.PLNIntuitionisticBridge
 namespace Mettapedia.PLN.Evidence.PLNCrispEvidence
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.Logic.PLNIntuitionisticBridge
 open LO.Propositional
 

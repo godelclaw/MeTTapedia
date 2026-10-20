@@ -25,7 +25,7 @@ open Mettapedia.OSLF.MeTTaIL.Engine
 open Mettapedia.OSLF.Formula
 open Mettapedia.CategoryTheory.PLNInstance
 open Mettapedia.OSLF.Framework.EvidenceSemantics
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge.WMHyperdoctrine
 open Mettapedia.OSLF.Framework.ConstructorCategory
 open Mettapedia.OSLF.Framework.TypeSynthesis

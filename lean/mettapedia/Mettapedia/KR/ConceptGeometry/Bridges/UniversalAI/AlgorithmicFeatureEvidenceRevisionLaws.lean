@@ -23,7 +23,7 @@ open KolmogorovComplexity
 open Mettapedia.KR.ConceptGeometry.ExtensionalIntensionalDivergence
 open Mettapedia.KR.ConceptGeometry.Bridges.UniversalAI.AlgorithmicFeatureEvidence
 open Mettapedia.KR.ConceptGeometry.Bridges.UniversalAI.AlgorithmicFeatureEvidenceGrowth
-open Mettapedia.Logic.WorldModel.AlgorithmicConceptFormationExamples
+open Mettapedia.Logic.WorldModel.AlgorithmicConceptFormation
 open Mettapedia.PLN.TruthValues.PLNWeightTV
 
 universe u v
@@ -75,7 +75,7 @@ open KolmogorovComplexity
 open Mettapedia.KR.ConceptGeometry.ExtensionalIntensionalDivergence
 open Mettapedia.KR.ConceptGeometry.Bridges.UniversalAI.AlgorithmicFeatureEvidence
 open Mettapedia.KR.ConceptGeometry.Bridges.UniversalAI.AlgorithmicFeatureEvidenceGrowth
-open Mettapedia.Logic.WorldModel.AlgorithmicConceptFormationExamples
+open Mettapedia.Logic.WorldModel.AlgorithmicConceptFormation
 open Mettapedia.PLN.TruthValues.PLNWeightTV
 
 /-! ## Strength can move in either direction -/

@@ -117,7 +117,7 @@ private theorem target_meaning (driver : Driver) (runtime : Engine driver)
     (formula : driver.Formula) {raw : Pattern} (source : driver.Decoded raw)
     (receipt : runtime.cursor.Receipt source.val)
     (listed : receipt ∈ (runtime.cursor.tasks source.val).flatten) :
-    Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation runtime.leaves formula
+    Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation runtime.leaves formula runtime.cursor.spatial.theory
       (runtime.cursor.target source.val receipt) ↔
       Meaning driver formula (driver.render (runtime.cursor.target source.val receipt)) :=
   runtime.meaning_at_decoded formula
@@ -136,7 +136,7 @@ theorem computed_positive_receipt {driver : Driver} {runtime : Engine driver}
   obtain ⟨receipt, listed, saved, holds⟩ := Mettapedia.OSLF.NativeTypes.Decision.Machine.positive_saved_receipt
     runtime.cursor runtime.leaves formula source.val source.property.1 budget result
   rw [same]
-  exact ⟨source, receipt, listed, saved, runtime.cursor.sound _ _ listed,
+  exact ⟨source, receipt, listed, (Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence.mem_operational _ _).mpr saved, runtime.cursor.sound _ _ listed,
     (target_meaning driver runtime formula source receipt listed).mp holds⟩
 
 theorem computed_negative_counterreceipt {driver : Driver} {runtime : Engine driver}
@@ -151,7 +151,7 @@ theorem computed_negative_counterreceipt {driver : Driver} {runtime : Engine dri
   obtain ⟨receipt, listed, saved, absent⟩ := Mettapedia.OSLF.NativeTypes.Decision.Machine.negative_saved_counterreceipt
     runtime.cursor runtime.leaves formula source.val source.property.1 budget result
   rw [same]
-  exact ⟨source, receipt, listed, saved, runtime.cursor.sound _ _ listed,
+  exact ⟨source, receipt, listed, (Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence.mem_operational _ _).mpr saved, runtime.cursor.sound _ _ listed,
     fun holds => absent ((target_meaning driver runtime formula source receipt listed).mpr holds)⟩
 
 theorem computed_negative_coverage {driver : Driver} {runtime : Engine driver}
@@ -166,12 +166,15 @@ theorem computed_negative_coverage {driver : Driver} {runtime : Engine driver}
         ¬ Meaning driver formula (driver.render (runtime.cursor.target source.val receipt)) := by
   obtain ⟨source, budget, same, result⟩ := computed_running session computed false read
   rw [same]
-  refine ⟨source, Mettapedia.OSLF.NativeTypes.Decision.Machine.negative_possibility_ordered_coverage
-    runtime.cursor runtime.leaves formula source.val source.property.1 budget result, ?_⟩
-  intro receipt listed
-  obtain ⟨saved, absent⟩ := Mettapedia.OSLF.NativeTypes.Decision.Machine.negative_possibility_saved_coverage
-    runtime.cursor runtime.leaves formula source.val source.property.1 budget result receipt listed
-  exact ⟨saved, fun holds => absent ((target_meaning driver runtime formula source receipt listed).mpr holds)⟩
+  refine ⟨source, ?_, ?_⟩
+  · have ordered := Mettapedia.OSLF.NativeTypes.Decision.Machine.negative_possibility_ordered_coverage
+      runtime.cursor runtime.leaves formula source.val source.property.1 budget result
+    simpa only [Session.observations, Mettapedia.OSLF.NativeTypes.Decision.Machine.fullObservations_operational] using
+      ordered.filterMap Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence.operational?
+  · intro receipt listed
+    obtain ⟨saved, absent⟩ := Mettapedia.OSLF.NativeTypes.Decision.Machine.negative_possibility_saved_coverage
+      runtime.cursor runtime.leaves formula source.val source.property.1 budget result receipt listed
+    exact ⟨(Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence.mem_operational _ _).mpr saved, fun holds => absent ((target_meaning driver runtime formula source receipt listed).mpr holds)⟩
 
 theorem computed_positive_coverage {driver : Driver} {runtime : Engine driver}
     (formula : driver.Formula) {raw : Pattern}
@@ -185,12 +188,15 @@ theorem computed_positive_coverage {driver : Driver} {runtime : Engine driver}
         Meaning driver formula (driver.render (runtime.cursor.target source.val receipt)) := by
   obtain ⟨source, budget, same, result⟩ := computed_running session computed true read
   rw [same]
-  refine ⟨source, Mettapedia.OSLF.NativeTypes.Decision.Machine.positive_universal_ordered_coverage
-    runtime.cursor runtime.leaves formula source.val source.property.1 budget result, ?_⟩
-  intro receipt listed
-  obtain ⟨saved, holds⟩ := Mettapedia.OSLF.NativeTypes.Decision.Machine.positive_universal_saved_coverage
-    runtime.cursor runtime.leaves formula source.val source.property.1 budget result receipt listed
-  exact ⟨saved, (target_meaning driver runtime formula source receipt listed).mp holds⟩
+  refine ⟨source, ?_, ?_⟩
+  · have ordered := Mettapedia.OSLF.NativeTypes.Decision.Machine.positive_universal_ordered_coverage
+      runtime.cursor runtime.leaves formula source.val source.property.1 budget result
+    simpa only [Session.observations, Mettapedia.OSLF.NativeTypes.Decision.Machine.fullObservations_operational] using
+      ordered.filterMap Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence.operational?
+  · intro receipt listed
+    obtain ⟨saved, holds⟩ := Mettapedia.OSLF.NativeTypes.Decision.Machine.positive_universal_saved_coverage
+      runtime.cursor runtime.leaves formula source.val source.property.1 budget result receipt listed
+    exact ⟨(Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence.mem_operational _ _).mpr saved, (target_meaning driver runtime formula source receipt listed).mp holds⟩
 
 theorem search_positive_receipt (driver : Driver) (runtime : Engine driver)
     (formula : driver.Formula) (raw : Pattern) (budget : Nat)

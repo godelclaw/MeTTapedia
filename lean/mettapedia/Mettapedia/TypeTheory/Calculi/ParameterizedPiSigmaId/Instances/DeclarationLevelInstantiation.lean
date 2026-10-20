@@ -115,7 +115,7 @@ def rules (instantiation : LevelInstance source theta) : Rules Tower.Head :=
 /-- Level instantiation transports the complete declaration-aware typing
 spine.  It does not claim a converse because a level substitution may
 intentionally identify distinct parameters. -/
-def morphism (instantiation : LevelInstance source theta) :
+theorem morphism (instantiation : LevelInstance source theta) :
     (extendRules Tower.rules source).Morphism instantiation.rules
       (substLevelsHead theta) where
   headTyping := (levelSubstMorphism theta).headTyping
@@ -177,7 +177,7 @@ private theorem substLevelsTm_eq_const
 /-- Formation and freshness survive level instantiation.  Computation
 preservation remains deliberately separate, just as it is for the source
 signature. -/
-def formed (instantiation : LevelInstance source theta)
+theorem formed (instantiation : LevelInstance source theta)
     (sourceFormed : source.Formed Tower.rules) :
     instantiation.signature.Formed Tower.rules where
   fresh := by

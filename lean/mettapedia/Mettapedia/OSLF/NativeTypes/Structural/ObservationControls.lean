@@ -37,7 +37,7 @@ def language : LanguageDef where
 def carrier : TypeExpr := .base "Value"
 def first : Pattern := .apply "First" []
 def second : Pattern := .apply "Second" []
-def snapshot : GeneralExecutionAdmission.Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : GeneralExecutionAdmission.Snapshot := ⟨language, [], ⟨[], [], []⟩⟩
 def languageFragment : LanguageFragment :=
   {operational := {includeDerivedEquations := false}}
 def logicFragment : ConnectiveFragment :=

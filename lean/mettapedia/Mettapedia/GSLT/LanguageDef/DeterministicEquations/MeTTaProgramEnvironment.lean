@@ -2,6 +2,10 @@ import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaDispatcherExecuti
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaNameEncoding
 import MettaHyperonFull.Proofs.IndexingComplete
 import Mettapedia.Util.LinearHash
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Loading emitted computational programs
@@ -49,21 +53,21 @@ private theorem emitted_dispatcher_rules (program : Program) (head : String) (fi
       (dispatcher program head first).1.2 = call "="
         [call (dispatchName head) [.var (freshName first), .var (freshName (first + 1))],
           call "function" [body]] ∧
-      extractRules [toLeaTTaAtom (dispatcher program head first).1.1,
-          toLeaTTaAtom (dispatcher program head first).1.2] =
-        [(toLeaTTaAtom (call (dispatchName head)
+      extractRules [encodeModelAtom (dispatcher program head first).1.1,
+          encodeModelAtom (dispatcher program head first).1.2] =
+        [(encodeModelAtom (call (dispatchName head)
             [.var (freshName first), .var (freshName (first + 1))]),
-          toLeaTTaAtom (call "function" [body]))] := by
+          encodeModelAtom (call "function" [body]))] := by
   obtain ⟨body, rule⟩ := dispatcher_input_interface program head first
   refine ⟨body, rule, ?_⟩
   rw [dispatcher_annotation, rule]
-  simp [extractRules, call, toLeaTTaAtom, toLeaTTaAtoms]
+  simp [extractRules, call, encodeModelAtom, encodeModelAtoms]
 
 private theorem batch_no_headless (program : Program)
     {heads : List String} {pairs : List (Atom × Atom)}
     (generated : List.Forall₂
       (fun head pair => ∃ first, pair = (dispatcher program head first).1) heads pairs) :
-    (extractRules (pairs.flatMap fun pair => [toLeaTTaAtom pair.1, toLeaTTaAtom pair.2])).filter
+    (extractRules (pairs.flatMap fun pair => [encodeModelAtom pair.1, encodeModelAtom pair.2])).filter
       (fun rule => (headKey rule.1).isNone) = [] := by
   induction generated with
   | nil => rfl
@@ -73,7 +77,7 @@ private theorem batch_no_headless (program : Program)
     simp only [List.flatMap_cons, extractRules, List.filterMap_append, List.filter_append]
       at rules ⊢
     rw [rules]
-    simpa only [extractRules, List.filter_cons, List.filter_nil, call, toLeaTTaAtom, toLeaTTaAtoms,
+    simpa only [extractRules, List.filter_cons, List.filter_nil, call, encodeModelAtom, encodeModelAtoms,
       headKey, Option.isNone_some, Bool.false_eq_true, if_false, List.nil_append] using ih
 
 private theorem batch_filter_absent (program : Program)
@@ -81,7 +85,7 @@ private theorem batch_filter_absent (program : Program)
     (generated : List.Forall₂
       (fun head pair => ∃ first, pair = (dispatcher program head first).1) heads pairs)
     (key : String) (absent : ∀ head ∈ heads, dispatchName head ≠ key) :
-    (extractRules (pairs.flatMap fun pair => [toLeaTTaAtom pair.1, toLeaTTaAtom pair.2])).filter
+    (extractRules (pairs.flatMap fun pair => [encodeModelAtom pair.1, encodeModelAtom pair.2])).filter
       (fun rule => headKey rule.1 == some key) = [] := by
   induction generated with
   | nil => rfl
@@ -93,7 +97,7 @@ private theorem batch_filter_absent (program : Program)
     simp only [List.flatMap_cons, extractRules, List.filterMap_append, List.filter_append]
       at rules ⊢
     rw [rules]
-    simpa only [extractRules, List.filter_cons, List.filter_nil, call, toLeaTTaAtom, toLeaTTaAtoms,
+    simpa only [extractRules, List.filter_cons, List.filter_nil, call, encodeModelAtom, encodeModelAtoms,
       headKey, beq_iff_eq, Option.some.injEq, different, if_false, List.nil_append] using emptyTail
 
 private theorem batch_filter_present (program : Program)
@@ -106,11 +110,11 @@ private theorem batch_filter_present (program : Program)
       (dispatcher program target first).1.2 = call "="
         [call (dispatchName target) [.var (freshName first), .var (freshName (first + 1))],
           call "function" [body]] ∧
-      (extractRules (pairs.flatMap fun pair => [toLeaTTaAtom pair.1, toLeaTTaAtom pair.2])).filter
+      (extractRules (pairs.flatMap fun pair => [encodeModelAtom pair.1, encodeModelAtom pair.2])).filter
         (fun rule => headKey rule.1 == some (dispatchName target)) =
-        [(toLeaTTaAtom (call (dispatchName target)
+        [(encodeModelAtom (call (dispatchName target)
             [.var (freshName first), .var (freshName (first + 1))]),
-          toLeaTTaAtom (call "function" [body]))] := by
+          encodeModelAtom (call "function" [body]))] := by
   induction generated with
   | nil => simp at present
   | @cons head pair heads pairs generated related ih =>
@@ -125,7 +129,7 @@ private theorem batch_filter_present (program : Program)
       simp only [List.flatMap_cons, extractRules, List.filterMap_append, List.filter_append]
         at rules tailEmpty ⊢
       rw [rules, tailEmpty]
-      simp [call, toLeaTTaAtom, toLeaTTaAtoms, headKey]
+      simp [call, encodeModelAtom, encodeModelAtoms, headKey]
     · have headDifferent : dispatchName head ≠ dispatchName target :=
         fun equal => same (unique head (by simp) equal)
       have inTail : target ∈ heads := (List.mem_cons.mp present).resolve_left
@@ -136,7 +140,7 @@ private theorem batch_filter_present (program : Program)
       simp only [List.flatMap_cons, extractRules, List.filterMap_append, List.filter_append]
         at rules found ⊢
       rw [rules]
-      simpa only [List.filter_cons, List.filter_nil, call, toLeaTTaAtom, toLeaTTaAtoms,
+      simpa only [List.filter_cons, List.filter_nil, call, encodeModelAtom, encodeModelAtoms,
         headKey, beq_iff_eq, Option.some.injEq, headDifferent, if_false, List.nil_append] using found
 
 /-- Loading the actual emitted program exposes exactly its generated equation
@@ -152,11 +156,11 @@ theorem programAtoms_candidates (program : Program) (head : String)
         [call (dispatchName head) [.var (freshName first), .var (freshName (first + 1))],
           call "function" [body]] ∧
       (MinEnv.ofAtomsGT
-        ((programAtoms program).flatMap fun pair => [toLeaTTaAtom pair.1, toLeaTTaAtom pair.2])
-        groundings).candidates (toLeaTTaAtom (call (dispatchName head) arguments)) =
-        [(toLeaTTaAtom (call (dispatchName head)
+        ((programAtoms program).flatMap fun pair => [encodeModelAtom pair.1, encodeModelAtom pair.2])
+        groundings).candidates (encodeModelAtom (call (dispatchName head) arguments)) =
+        [(encodeModelAtom (call (dispatchName head)
             [.var (freshName first), .var (freshName (first + 1))]),
-          toLeaTTaAtom (call "function" [body]))] := by
+          encodeModelAtom (call "function" [body]))] := by
   let heads := (program.map Equation.head).eraseDups
   have generated : List.Forall₂
       (fun label pair => ∃ first, pair = (dispatcher program label first).1)
@@ -165,8 +169,8 @@ theorem programAtoms_candidates (program : Program) (head : String)
     (Mettapedia.Util.LinearHash.eraseDups_nodup _) head (by simpa only [heads, List.mem_eraseDups] using present)
     (fun other member => unique other (by simpa only [heads, List.mem_eraseDups] using member))
   refine ⟨first, body, rule, ?_⟩
-  have keyed : headKey (toLeaTTaAtom (call (dispatchName head) arguments)) =
-      some (dispatchName head) := by simp [call, toLeaTTaAtom, toLeaTTaAtoms, headKey]
+  have keyed : headKey (encodeModelAtom (call (dispatchName head) arguments)) =
+      some (dispatchName head) := by simp [call, encodeModelAtom, encodeModelAtoms, headKey]
   simp only [MinEnv.candidates, keyed, Metta.ruleIndex_getD, Metta.ofAtomsGT_varRules]
   rw [batch_no_headless program generated, List.append_nil]
   exact found
@@ -204,8 +208,8 @@ theorem dispatchName_native_miss (head : String) (arguments : List Metta.Atom) :
 
 /-- Generated dispatcher calls are ordinary queries, not embedded instructions. -/
 theorem dispatchName_not_embedded (head : String) (arguments : List Atom) :
-    isEmbeddedOp (toLeaTTaAtom (call (dispatchName head) arguments)) = false := by
-  simp only [call, toLeaTTaAtom, toLeaTTaAtoms, isEmbeddedOp,
+    isEmbeddedOp (encodeModelAtom (call (dispatchName head) arguments)) = false := by
+  simp only [call, encodeModelAtom, encodeModelAtoms, isEmbeddedOp,
     List.contains_cons, List.contains_nil, Bool.or_eq_false_iff, beq_eq_false_iff_ne]
   repeat' constructor
   all_goals
@@ -225,11 +229,11 @@ theorem programAtoms_candidates_world (program : Program) (head : String)
         [call (dispatchName head) [.var (freshName first), .var (freshName (first + 1))],
           call "function" [body]] ∧
       candidatesW (MinEnv.ofAtomsGT
-        ((programAtoms program).flatMap fun pair => [toLeaTTaAtom pair.1, toLeaTTaAtom pair.2])
-        groundings) world (toLeaTTaAtom (call (dispatchName head) arguments)) =
-        [(toLeaTTaAtom (call (dispatchName head)
+        ((programAtoms program).flatMap fun pair => [encodeModelAtom pair.1, encodeModelAtom pair.2])
+        groundings) world (encodeModelAtom (call (dispatchName head) arguments)) =
+        [(encodeModelAtom (call (dispatchName head)
             [.var (freshName first), .var (freshName (first + 1))]),
-          toLeaTTaAtom (call "function" [body]))] := by
+          encodeModelAtom (call "function" [body]))] := by
   obtain ⟨first, body, rule, loaded⟩ :=
     programAtoms_candidates program head present unique arguments groundings
   exact ⟨first, body, rule, by simpa only [candidatesW, noExtra, noImports, List.nil_append,
@@ -247,11 +251,11 @@ structure LoadedProgram (program : Program) (environment : MinEnv) : Prop where
       (dispatcher program head first).1.2 = call "="
         [call (dispatchName head) [.var (freshName first), .var (freshName (first + 1))],
           call "function" [body]] ∧
-      candidatesW environment world (toLeaTTaAtom (call (dispatchName head)
+      candidatesW environment world (encodeModelAtom (call (dispatchName head)
         [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])) =
-        [(toLeaTTaAtom (call (dispatchName head)
+        [(encodeModelAtom (call (dispatchName head)
             [.var (freshName first), .var (freshName (first + 1))]),
-          toLeaTTaAtom (call "function" [body]))]
+          encodeModelAtom (call "function" [body]))]
 
 /-- Loading additional equations preserves each generated dispatcher when
 those equations have explicit heads disjoint from the compiler's names.
@@ -262,7 +266,7 @@ theorem programAtoms_loaded (program : Program)
     (disjoint : ∀ head ∈ program.map Equation.head,
       (extractRules library).filter (fun rule => headKey rule.1 == some (dispatchName head)) = []) :
     LoadedProgram program (MinEnv.ofAtomsGT
-      (((programAtoms program).flatMap fun pair => [toLeaTTaAtom pair.1, toLeaTTaAtom pair.2]) ++
+      (((programAtoms program).flatMap fun pair => [encodeModelAtom pair.1, encodeModelAtom pair.2]) ++
         library) Metta.Builtins.table) where
   groundings := rfl
   dispatch head present sourceFuel arguments world noExtra noImports := by
@@ -271,9 +275,9 @@ theorem programAtoms_loaded (program : Program)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments]
       Metta.Builtins.table
     refine ⟨first, body, emitted, ?_⟩
-    have keyed : headKey (toLeaTTaAtom (call (dispatchName head)
+    have keyed : headKey (encodeModelAtom (call (dispatchName head)
         [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])) =
-        some (dispatchName head) := by simp [call, toLeaTTaAtom, toLeaTTaAtoms, headKey]
+        some (dispatchName head) := by simp [call, encodeModelAtom, encodeModelAtoms, headKey]
     simp only [MinEnv.candidates, keyed, Metta.ruleIndex_getD, Metta.ofAtomsGT_varRules] at loaded
     simp only [candidatesW, noExtra, noImports, List.filterMap_nil,
       List.append_nil, MinEnv.candidates, keyed, Metta.ruleIndex_getD,
@@ -301,9 +305,9 @@ theorem programAtoms_selection (program : Program) (head : String)
     (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) :
     let environment := MinEnv.ofAtomsGT
-      ((programAtoms program).flatMap fun pair => [toLeaTTaAtom pair.1, toLeaTTaAtom pair.2])
+      ((programAtoms program).flatMap fun pair => [encodeModelAtom pair.1, encodeModelAtom pair.2])
       Metta.Builtins.table
-    let query := toLeaTTaAtom (call (dispatchName head)
+    let query := encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])
     ∃ first rawBody, ∃ rename : String → String, ∃ headerBindings output skipped start body,
       (dispatcher program head first).1.2 = call "="
@@ -319,27 +323,27 @@ theorem programAtoms_selection (program : Program) (head : String)
       ValuationFor
         (leaClassSolution output ∘ rename)
         start sourceBindings ∧
-      Metta.instantiate output (toLeaTTaAtom body) = renBy rename (toLeaTTaAtom
+      Metta.instantiate output (encodeModelAtom body) = renBy rename (encodeModelAtom
         (expression program (sourceBindings.map (fun entry =>
           (entry.1, MeTTaData.encode entry.2))) (.grounded (.int sourceFuel))
           row.equation.body (patterns row.equation.params start).2).1) ∧
       (∀ name ∈ liveStackVars previous,
         Metta.Bindings.lookupVal incoming name = none →
           Metta.Bindings.lookupVal output name = none) ∧
-      (∀ name ∈ (Metta.instantiate output (toLeaTTaAtom body)).vars,
+      (∀ name ∈ (Metta.instantiate output (encodeModelAtom body)).vars,
         name ∉ liveStackVars previous) ∧
       let fresh := freshenRuleAvoiding state.counter
         (Metta.Minimal.queryOpAvoid previous query incoming)
-        (toLeaTTaAtom (call (dispatchName head)
+        (encodeModelAtom (call (dispatchName head)
           [.var (freshName first), .var (freshName (first + 1))]))
-        (toLeaTTaAtom (call "function" [rawBody]))
+        (encodeModelAtom (call "function" [rawBody]))
       let function := Metta.instantiate headerBindings fresh.1.2
       let parent : Frame := { atom := function, ret := .function, vars := varsCopy previous }
       ∀ fuel rest done,
         interpretFuel environment (fuel + 5 + 2 * skipped) state
           (⟨atomToStack (.expr [.sym "eval", query]) previous, incoming⟩ :: rest) done =
         interpretFuel environment fuel { state with counter := fresh.2 }
-          (finItem (parent :: previous) (Metta.instantiate output (toLeaTTaAtom body)) output :: rest) done := by
+          (finItem (parent :: previous) (Metta.instantiate output (encodeModelAtom body)) output :: rest) done := by
   intro environment query
   obtain ⟨first, rawBody, emitted, loaded⟩ := programAtoms_candidates_world program head
     present unique [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments]
@@ -372,21 +376,21 @@ theorem loaded_dispatcher_enters_body (program : Program) (head : String)
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming)
     (nativeMiss : Metta.callGrounded environment.gt (dispatchName head)
-      ([toLeaTTaAtom (.grounded (.int sourceFuel)),
-        toLeaTTaAtom (MeTTaData.encodeItems arguments)].map
+      ([encodeModelAtom (.grounded (.int sourceFuel)),
+        encodeModelAtom (MeTTaData.encodeItems arguments)].map
           (fun atom => resolveStates state.world (subTokens state.world atom))) = .noReduce)
-    (notEmbedded : isEmbeddedOp (toLeaTTaAtom (call (dispatchName head)
+    (notEmbedded : isEmbeddedOp (encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])) = false)
-    (loaded : candidatesW environment state.world (toLeaTTaAtom (call (dispatchName head)
+    (loaded : candidatesW environment state.world (encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])) =
-      [(toLeaTTaAtom (call (dispatchName head)
+      [(encodeModelAtom (call (dispatchName head)
           [.var (freshName first), .var (freshName (first + 1))]),
-        toLeaTTaAtom (call "function" [rawBody]))]) :
-    let query := toLeaTTaAtom (call (dispatchName head)
+        encodeModelAtom (call "function" [rawBody]))]) :
+    let query := encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])
     ∃ rename : String → String, ∃ start counter skipped parentBody output,
       Function.Injective rename ∧ ClosedValueBindings output ∧ LeaRuntimeBindingInvariant output ∧
-      let body := renBy rename (toLeaTTaAtom
+      let body := renBy rename (encodeModelAtom
         (expression program (sourceBindings.map (fun entry =>
           (entry.1, MeTTaData.encode entry.2))) (.grounded (.int sourceFuel))
           row.equation.body (patterns row.equation.params start).2).1)
@@ -413,14 +417,14 @@ theorem loaded_dispatcher_enters_body (program : Program) (head : String)
         exact loaded)
   let fresh := freshenRuleAvoiding state.counter
     (Metta.Minimal.queryOpAvoid previous query incoming)
-    (toLeaTTaAtom (call (dispatchName head)
+    (encodeModelAtom (call (dispatchName head)
       [.var (freshName first), .var (freshName (first + 1))]))
-    (toLeaTTaAtom (call "function" [selectedBody]))
+    (encodeModelAtom (call "function" [selectedBody]))
   let parentBody := Metta.instantiate headerBindings fresh.1.2
   refine ⟨rename, start, fresh.2, skipped, parentBody, output, injective,
     outputClosed, outputInvariant, ?_⟩
   intro body parent
-  change Metta.instantiate output (toLeaTTaAtom rawSelected) = body at materialized
+  change Metta.instantiate output (encodeModelAtom rawSelected) = body at materialized
   have fixed : Metta.instantiate output body = body := by
     rw [← materialized, instantiate_closed_value_bindings_idempotent outputClosed]
   rw [materialized] at bodyPrivate
@@ -430,7 +434,7 @@ theorem loaded_dispatcher_enters_body (program : Program) (head : String)
   have selectedBody := entry (fuel + 1) rest done
   change interpretFuel environment _ state _ done =
     interpretFuel environment (fuel + 1) { state with counter := fresh.2 }
-      (finItem (parent :: previous) (Metta.instantiate output (toLeaTTaAtom rawSelected))
+      (finItem (parent :: previous) (Metta.instantiate output (encodeModelAtom rawSelected))
         output :: rest) done at selectedBody
   rw [materialized] at selectedBody
   have enters := function_embedded_enters environment { state with counter := fresh.2 }
@@ -456,13 +460,13 @@ theorem programAtoms_enters_body (program : Program) (head : String)
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) :
     let environment := MinEnv.ofAtomsGT
-      ((programAtoms program).flatMap fun pair => [toLeaTTaAtom pair.1, toLeaTTaAtom pair.2])
+      ((programAtoms program).flatMap fun pair => [encodeModelAtom pair.1, encodeModelAtom pair.2])
       Metta.Builtins.table
-    let query := toLeaTTaAtom (call (dispatchName head)
+    let query := encodeModelAtom (call (dispatchName head)
       [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])
     ∃ rename : String → String, ∃ start counter skipped parentBody output,
       Function.Injective rename ∧ ClosedValueBindings output ∧ LeaRuntimeBindingInvariant output ∧
-      let body := renBy rename (toLeaTTaAtom
+      let body := renBy rename (encodeModelAtom
         (expression program (sourceBindings.map (fun entry =>
           (entry.1, MeTTaData.encode entry.2))) (.grounded (.int sourceFuel))
           row.equation.body (patterns row.equation.params start).2).1)
@@ -504,9 +508,9 @@ theorem programAtoms_zero_source_fuel (program : Program) (head : String)
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) :
     let environment := MinEnv.ofAtomsGT
-      ((programAtoms program).flatMap fun pair => [toLeaTTaAtom pair.1, toLeaTTaAtom pair.2])
+      ((programAtoms program).flatMap fun pair => [encodeModelAtom pair.1, encodeModelAtom pair.2])
       Metta.Builtins.table
-    let query := toLeaTTaAtom (requestAtom program 0 head arguments)
+    let query := encodeModelAtom (requestAtom program 0 head arguments)
     ∃ counter skipped output, ClosedValueBindings output ∧ LeaRuntimeBindingInvariant output ∧
       ∀ fuel,
         interpretFuel environment (fuel + 11 + 2 * skipped) state
@@ -547,16 +551,16 @@ theorem programAtoms_variable_execution (program : Program) (head name : String)
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) :
     let environment := MinEnv.ofAtomsGT
-      ((programAtoms program).flatMap fun pair => [toLeaTTaAtom pair.1, toLeaTTaAtom pair.2])
+      ((programAtoms program).flatMap fun pair => [encodeModelAtom pair.1, encodeModelAtom pair.2])
       Metta.Builtins.table
-    let query := toLeaTTaAtom (requestAtom program (sourceFuel + 1) head arguments)
+    let query := encodeModelAtom (requestAtom program (sourceFuel + 1) head arguments)
     let result := ((sourceBindings.lookup name).map fun term => value (MeTTaData.encode term)).getD
       (.symbol "nik:Failure")
     ∃ counter skipped output, ClosedValueBindings output ∧ LeaRuntimeBindingInvariant output ∧
       ∀ fuel,
         interpretFuel environment (fuel + 16 + 2 * skipped) state
           [⟨atomToStack (.expr [.sym "eval", query]) [], incoming⟩] [] =
-        ([(toLeaTTaAtom result, output)], { state with counter := counter }) := by
+        ([(encodeModelAtom result, output)], { state with counter := counter }) := by
   intro environment query result
   obtain ⟨rename, start, counter, skipped, parentBody, output, injective, storedOutput,
       invariantOutput, privateNames, _, _, enters⟩ := programAtoms_enters_body program head present
@@ -570,17 +574,17 @@ theorem programAtoms_variable_execution (program : Program) (head name : String)
     (patterns row.equation.params start).2 sourceFuel (fuel + 1) rename injective
     environment { state with counter := counter } output storedOutput parentBody [] [] [] []
     rfl privateNames
-  have closed : (toLeaTTaAtom result).vars = [] := by
+  have closed : (encodeModelAtom result).vars = [] := by
     cases found : sourceBindings.lookup name with
-    | none => simp [result, found, toLeaTTaAtom, Metta.Atom.vars]
-    | some term => simp [result, found, value, call, toLeaTTaAtom, toLeaTTaAtoms,
+    | none => simp [result, found, encodeModelAtom, Metta.Atom.vars]
+    | some term => simp [result, found, value, call, encodeModelAtom, encodeModelAtoms,
         Metta.Atom.vars, data_atom_runtime_closed (MeTTaData.encode_data term)]
-  have visible : (toLeaTTaAtom result != emptyA) = true := by
+  have visible : (encodeModelAtom result != emptyA) = true := by
     cases found : sourceBindings.lookup name <;>
       simp only [result, found, Option.map_none, Option.getD_none, Option.map_some,
-        Option.getD_some, value, call, toLeaTTaAtom, toLeaTTaAtoms, emptyA] <;> rfl
+        Option.getD_some, value, call, encodeModelAtom, encodeModelAtoms, emptyA] <;> rfl
   have done := selected_closed_return_finishes environment { state with counter := counter }
-    output parentBody (toLeaTTaAtom result) [] fuel closed visible
+    output parentBody (encodeModelAtom result) [] fuel closed visible
   have defined : program.defines head := by simpa [Program.defines] using present
   simpa only [query, requestAtom, invoke, defined, if_true, sequenceAtom_encode,
     show fuel + 10 + 6 + 2 * skipped = fuel + 16 + 2 * skipped by omega,
@@ -600,9 +604,9 @@ theorem programAtoms_refused_execution (program : Program) (head : String)
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) :
     let environment := MinEnv.ofAtomsGT
-      ((programAtoms program).flatMap fun pair => [toLeaTTaAtom pair.1, toLeaTTaAtom pair.2])
+      ((programAtoms program).flatMap fun pair => [encodeModelAtom pair.1, encodeModelAtom pair.2])
       Metta.Builtins.table
-    let query := toLeaTTaAtom (requestAtom program sourceFuel head arguments)
+    let query := encodeModelAtom (requestAtom program sourceFuel head arguments)
     ∃ counter cost output, ClosedValueBindings output ∧ ∀ fuel,
       interpretFuel environment (fuel + cost) state
         [⟨atomToStack (.expr [.sym "eval", query]) [], incoming⟩] [] =
@@ -621,13 +625,13 @@ theorem programAtoms_refused_execution (program : Program) (head : String)
     program head first sourceFuel arguments rawBody emitted environment state [] incoming
       stored (dispatchName_native_miss _ _) (dispatchName_not_embedded _ _) loaded
   obtain ⟨scanCost, scanning⟩ := refuses matched output matching merging
-  let lhs := toLeaTTaAtom (call (dispatchName head)
+  let lhs := encodeModelAtom (call (dispatchName head)
     [.var (freshName first), .var (freshName (first + 1))])
-  let rawQuery := toLeaTTaAtom (call (dispatchName head)
+  let rawQuery := encodeModelAtom (call (dispatchName head)
     [.grounded (.int sourceFuel), MeTTaData.encodeItems arguments])
   let fresh := freshenRuleAvoiding state.counter
     (Metta.Minimal.queryOpAvoid [] rawQuery incoming) lhs
-    (toLeaTTaAtom (call "function" [rawBody]))
+    (encodeModelAtom (call "function" [rawBody]))
   refine ⟨fresh.2, scanCost + 2, output, outputClosed, ?_⟩
   intro fuel
   have entry := enters (fuel + 1 + scanCost) [] []

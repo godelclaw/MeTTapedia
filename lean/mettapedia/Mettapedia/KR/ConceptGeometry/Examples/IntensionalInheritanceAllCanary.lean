@@ -12,7 +12,7 @@ VE / BP bridge theorems.
 namespace Mettapedia.KR.ConceptGeometry.Examples.IntensionalInheritanceAllCanary
 
 open Mettapedia.KR.ConceptGeometry.IntensionalInheritance
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.KR.ConceptOntology.Examples
 
 instance : Nonempty (MembershipCounts.EmpiricalObject MembershipCounts.positiveExample) :=
@@ -332,37 +332,21 @@ noncomputable def toyObservationData : Multiset ToyMembershipObservation :=
     {ToyMembershipObservation.seen Creature.pingu Concept.penguin}
 
 noncomputable def toyObservationContext :
-    letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
     Mettapedia.KR.ConceptOntology.EvidenceMembershipContext
       (Multiset ToyMembershipObservation) Creature Concept BinaryEvidence := by
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
   exact toyObservationEncoder.inducedContext
 
 noncomputable def toyObservationInterpretation :
-    letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
     Interpretation Concept Creature Concept := by
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
   exact EvidenceMembershipContext.crispInterpretationAt toyObservationContext gate toyObservationData
 
 noncomputable def toyObservationPenguinBirdTable :
-    letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
     FiniteWitnessFeatureTable := by
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
   exact Interpretation.toFiniteWitnessFeatureTable
     toyObservationInterpretation Concept.penguin Concept.bird
 
 noncomputable def toyObservationBirdFlyTable :
-    letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
     FiniteWitnessFeatureTable := by
-  letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
   exact Interpretation.toFiniteWitnessFeatureTable
     toyObservationInterpretation Concept.bird Concept.fly
 
@@ -479,15 +463,11 @@ theorem toy_birdFly_generic_semantic_score_eq_generated_ve_query_score :
       (witness := Concept.fly)
 
 theorem toyObservation_penguinBird_prior_eq_generated_ve_ratio :
-    letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
     Interpretation.finitePriorProb toyObservationInterpretation Concept.bird =
       (FiniteWitnessFeatureTable.veWeight
         toyObservationPenguinBirdTable
         [⟨MembershipConcept.witness, true⟩] : ℝ) /
         FiniteWitnessFeatureTable.veWeight toyObservationPenguinBirdTable [] := by
-  let : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
   exact
     Mettapedia.KR.ConceptGeometry.IntensionalInheritance.ObservationEncoderBridge.finitePriorProb_inducedContext_eq_veWeight_ratio
       (S := toyObservationEncoder)
@@ -497,8 +477,6 @@ theorem toyObservation_penguinBird_prior_eq_generated_ve_ratio :
       (witness := Concept.bird)
 
 theorem toyObservation_penguinBird_ext_eq_generated_bp_ratio :
-    letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
     Interpretation.finiteExtensionalProb
         toyObservationInterpretation
         Concept.penguin
@@ -510,8 +488,6 @@ theorem toyObservation_penguinBird_ext_eq_generated_bp_ratio :
           toyObservationPenguinBirdTable
           (FiniteWitnessFeatureTable.ttJointAssign toyObservationPenguinBirdTable) : ℝ) /
           FiniteWitnessFeatureTable.featureMessage toyObservationPenguinBirdTable true := by
-  let : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
   exact
     Mettapedia.KR.ConceptGeometry.IntensionalInheritance.ObservationEncoderBridge.finiteExtensionalProb_inducedContext_eq_bp_ratio
       (S := toyObservationEncoder)
@@ -521,8 +497,6 @@ theorem toyObservation_penguinBird_ext_eq_generated_bp_ratio :
       (witness := Concept.bird)
 
 theorem toyObservation_birdFly_score_eq_generated_ve_query_score :
-    letI : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-      Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
     Interpretation.finitePointwiseLogRatioBits
         toyObservationInterpretation
         Concept.bird
@@ -543,8 +517,6 @@ theorem toyObservation_birdFly_score_eq_generated_ve_query_score :
             toyObservationBirdFlyTable
             [⟨MembershipConcept.witness, true⟩] : ℝ) /
           FiniteWitnessFeatureTable.veWeight toyObservationBirdFlyTable []) := by
-  let : Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType (Multiset ToyMembershipObservation) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType ToyMembershipObservation
   exact
     Mettapedia.KR.ConceptGeometry.IntensionalInheritance.ObservationEncoderBridge.finitePointwiseLogRatioBits_inducedContext_eq_ve_query_score
       (S := toyObservationEncoder)

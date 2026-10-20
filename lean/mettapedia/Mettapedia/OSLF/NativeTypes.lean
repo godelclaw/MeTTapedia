@@ -12,11 +12,15 @@ import Mettapedia.OSLF.NativeTypes.Decision.Reference.PublicEvidenceControls
 import Mettapedia.OSLF.NativeTypes.Decision.Reference.PublicEvidenceLaws
 import Mettapedia.OSLF.NativeTypes.Decision.Structural.Controls
 import Mettapedia.OSLF.NativeTypes.Decision.Structural.MatchingControls
+import Mettapedia.OSLF.NativeTypes.Decision.FiniteMuCalculusControls
+import Mettapedia.OSLF.NativeTypes.Executable.FiniteControls
+import Mettapedia.OSLF.NativeTypes.Executable.InfiniteSourceControls
 import Mettapedia.OSLF.NativeTypes.Generation
 import Mettapedia.OSLF.NativeTypes.Instances.Lambda.DriverAdmission
 import Mettapedia.OSLF.NativeTypes.Instances.Lambda.ScheduledControls
 import Mettapedia.OSLF.NativeTypes.Instances.MeTTaFamily.Census
 import Mettapedia.OSLF.NativeTypes.Instances.MeTTaFamily.EquationSite
+import Mettapedia.OSLF.NativeTypes.Instances.Natural
 import Mettapedia.OSLF.NativeTypes.Instances.Partrec.FormulaControls
 import Mettapedia.OSLF.NativeTypes.Instances.Partrec.MachineFormulaControls
 import Mettapedia.OSLF.NativeTypes.Instances.Rho.BindingAdmission

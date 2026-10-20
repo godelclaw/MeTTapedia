@@ -20,7 +20,7 @@ open Mettapedia.OSLF.Framework.PyashCoreInstance
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.CategoryTheory.PLNInstance
 open Mettapedia.PLN.Bridges.CategoryTheory.EvidenceFibration
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-- Lightweight OSLF→NTT linkage record keyed by exported canary label. -/
 structure PyashGFCanaryNTTLink where

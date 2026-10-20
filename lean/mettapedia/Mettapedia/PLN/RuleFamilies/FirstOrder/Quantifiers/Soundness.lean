@@ -51,7 +51,7 @@ This file proves the **5 critical theorems** establishing the correctness of PLN
 
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.Algebra.QuantaleWeakness
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 open scoped ENNReal

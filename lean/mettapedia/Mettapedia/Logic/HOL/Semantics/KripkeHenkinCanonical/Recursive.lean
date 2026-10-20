@@ -308,8 +308,7 @@ theorem recursiveForces_mono
     (ClosedEnv.empty (Base := Base) (Const := WithParams Const)) hφ
 
 /-- Recursive Kripke forcing whose accessibility relation is the level-growing
-canonical preorder.  This is the recursive counterpart of
-`canonicalLevelKripkeHenkin`: atomic formulas and equality are still read from
+canonical preorder `LevelLe`.  Atomic formulas and equality are still read from
 carrier membership, but implication, negation, universals, and existentials
 range only over successors that also preserve the level invariant. -/
 def LevelRecursiveForcesOpen :

@@ -20,7 +20,7 @@ It then provides:
 
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 open scoped BigOperators
 

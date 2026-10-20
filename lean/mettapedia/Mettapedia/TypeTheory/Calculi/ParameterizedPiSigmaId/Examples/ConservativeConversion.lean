@@ -37,7 +37,7 @@ def shortcutRules (R : Rules Head) : Rules Head :=
 
 /-- The shortcut certificate is independently justified by the two authored
 beta steps. Every rule package without declared root computation supports it. -/
-def shortcutExtension (R : Rules Head) (empty : R.computation = RootComputation.empty) :
+theorem shortcutExtension (R : Rules Head) (empty : R.computation = RootComputation.empty) :
     ConversionConservativeExtension R (shortcutRules R) where
   headEq_eq := rfl
   root_inclusion := by

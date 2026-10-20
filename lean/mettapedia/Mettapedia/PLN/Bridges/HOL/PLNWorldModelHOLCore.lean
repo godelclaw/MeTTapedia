@@ -15,7 +15,7 @@ module at this semantics.
 namespace Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
 
 open Mettapedia.Logic.HOL
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 
 universe u v w

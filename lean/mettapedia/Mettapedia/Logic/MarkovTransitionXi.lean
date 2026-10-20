@@ -26,9 +26,9 @@ Negative example:
 namespace Mettapedia.Logic.MarkovTransitionXi
 
 open Mettapedia.Logic
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.Logic.WMMarkovCanonical
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
 open Mettapedia.OSLF.Framework.EvidenceSemantics
 open Mettapedia.OSLF.Formula

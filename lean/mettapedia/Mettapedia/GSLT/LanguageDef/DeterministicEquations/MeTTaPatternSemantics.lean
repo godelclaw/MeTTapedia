@@ -1,6 +1,11 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaBindingCorrespondence
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval.Steps
+import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.BindingTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Emitted patterns in the independent MeTTa matching semantics
@@ -16,8 +21,8 @@ namespace Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaEmit
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.MeTTa.HE (Bindings)
-open Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
-open Mettapedia.Languages.MeTTa.HE.LeaTTaSpecConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.ModelTheory
 open Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge
 open Mettapedia.Languages.MeTTa.HE.Spec.Eval.Steps
 
@@ -25,7 +30,7 @@ open Mettapedia.Languages.MeTTa.HE.Spec.Eval.Steps
 def ValuationFor (valuation : String → Metta.Atom) : Nat → Env → Prop
   | _, [] => True
   | first, (_, value) :: rest =>
-      valuation (freshName first) = toLeaTTaAtom (MeTTaData.encode value) ∧
+      valuation (freshName first) = encodeModelAtom (MeTTaData.encode value) ∧
         ValuationFor valuation (first + 1) rest
 
 theorem valuationFor_append (valuation : String → Metta.Atom)
@@ -42,7 +47,7 @@ theorem valuationFor_of_index (valuation : String → Metta.Atom)
     (first : Nat) (environment : Env)
     (aligned : ∀ (index : Nat) (inside : index < environment.length),
       valuation (freshName (first + index)) =
-        toLeaTTaAtom (MeTTaData.encode environment[index].2)) :
+        encodeModelAtom (MeTTaData.encode environment[index].2)) :
     ValuationFor valuation first environment := by
   induction environment generalizing first with
   | nil => trivial
@@ -50,18 +55,18 @@ theorem valuationFor_of_index (valuation : String → Metta.Atom)
       constructor
       · have head := aligned 0 (by simp)
         change valuation (freshName (first + 0)) =
-          toLeaTTaAtom (MeTTaData.encode entry.2) at head
+          encodeModelAtom (MeTTaData.encode entry.2) at head
         simpa only [Nat.add_zero] using head
       · apply ih
         intro index inside
         have next := aligned (index + 1) (by simpa using inside)
         change valuation (freshName (first + (index + 1))) =
-          toLeaTTaAtom (MeTTaData.encode rest[index].2) at next
+          encodeModelAtom (MeTTaData.encode rest[index].2) at next
         simpa only [Nat.add_assoc, Nat.add_left_comm, Nat.add_comm] using next
 
 /-- A concrete model of every fresh pattern occurrence. -/
 def matchedValuation (first : Nat) (environment : Env) (name : String) : Metta.Atom :=
-  (((extendMatch first environment Bindings.empty).lookup name).map toLeaTTaAtom).getD
+  (((extendMatch first environment Bindings.empty).lookup name).map encodeModelAtom).getD
     (.var name)
 
 theorem matchedValuation_reads (first : Nat) (environment : Env) :
@@ -75,24 +80,24 @@ theorem matchedValuation_reads (first : Nat) (environment : Env) :
 mutual
 
 theorem encoded_solution_fixed (valuation : String → Metta.Atom) (term : Term) :
-    applyClassSolution valuation (toLeaTTaAtom (MeTTaData.encode term)) =
-      toLeaTTaAtom (MeTTaData.encode term) := by
+    applyClassSolution valuation (encodeModelAtom (MeTTaData.encode term)) =
+      encodeModelAtom (MeTTaData.encode term) := by
   cases term with
   | sym | lit | var =>
-      simp [MeTTaData.encode, toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution]
+      simp [MeTTaData.encode, encodeModelAtom, encodeModelAtoms, applyClassSolution]
   | expr items | list items =>
-      simp [MeTTaData.encode, toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution,
+      simp [MeTTaData.encode, encodeModelAtom, encodeModelAtoms, applyClassSolution,
         encoded_items_solution_fixed valuation items]
 termination_by sizeOf term
 
 theorem encoded_items_solution_fixed (valuation : String → Metta.Atom)
     (terms : List Term) :
-    applyClassSolution valuation (toLeaTTaAtom (MeTTaData.encodeItems terms)) =
-      toLeaTTaAtom (MeTTaData.encodeItems terms) := by
+    applyClassSolution valuation (encodeModelAtom (MeTTaData.encodeItems terms)) =
+      encodeModelAtom (MeTTaData.encodeItems terms) := by
   cases terms with
-  | nil => simp [MeTTaData.encodeItems, toLeaTTaAtom, applyClassSolution]
+  | nil => simp [MeTTaData.encodeItems, encodeModelAtom, applyClassSolution]
   | cons first rest =>
-      simp [MeTTaData.encodeItems, toLeaTTaAtom, toLeaTTaAtoms, applyClassSolution,
+      simp [MeTTaData.encodeItems, encodeModelAtom, encodeModelAtoms, applyClassSolution,
         encoded_solution_fixed valuation first, encoded_items_solution_fixed valuation rest]
 termination_by sizeOf terms
 
@@ -103,12 +108,12 @@ mutual
 theorem pattern_solution_of_match (source value : Term) (environment : Env)
     (matched : matchTerm source value = some environment) (first : Nat)
     (valuation : String → Metta.Atom) (reads : ValuationFor valuation first environment) :
-    applyClassSolution valuation (toLeaTTaAtom (pattern source first).1.1) =
-      toLeaTTaAtom (MeTTaData.encode value) := by
+    applyClassSolution valuation (encodeModelAtom (pattern source first).1.1) =
+      encodeModelAtom (MeTTaData.encode value) := by
   cases source with
   | var name =>
       cases matched
-      simpa only [pattern_variable, toLeaTTaAtom, applyClassSolution] using reads.1
+      simpa only [pattern_variable, encodeModelAtom, applyClassSolution] using reads.1
   | sym name =>
       cases value <;> simp [matchTerm] at matched
       rcases matched with ⟨rfl, rfl⟩
@@ -119,24 +124,24 @@ theorem pattern_solution_of_match (source value : Term) (environment : Env)
       exact encoded_solution_fixed valuation (.lit _)
   | expr items =>
       cases value <;> simp [matchTerm] at matched
-      simp only [pattern_expression, call, MeTTaData.encode, toLeaTTaAtom,
-        toLeaTTaAtoms, applyClassSolution, List.map_cons, List.map_nil]
+      simp only [pattern_expression, call, MeTTaData.encode, encodeModelAtom,
+        encodeModelAtoms, applyClassSolution, List.map_cons, List.map_nil]
       rw [patterns_solution_of_match items _ environment matched first valuation reads]
   | list items =>
       cases value <;> simp [matchTerm] at matched
-      simp only [pattern_list, call, MeTTaData.encode, toLeaTTaAtom,
-        toLeaTTaAtoms, applyClassSolution, List.map_cons, List.map_nil]
+      simp only [pattern_list, call, MeTTaData.encode, encodeModelAtom,
+        encodeModelAtoms, applyClassSolution, List.map_cons, List.map_nil]
       rw [patterns_solution_of_match items _ environment matched first valuation reads]
 termination_by sizeOf source
 
 theorem patterns_solution_of_match (source values : List Term) (environment : Env)
     (matched : matchTerms source values = some environment) (first : Nat)
     (valuation : String → Metta.Atom) (reads : ValuationFor valuation first environment) :
-    applyClassSolution valuation (toLeaTTaAtom (patterns source first).1.1) =
-      toLeaTTaAtom (MeTTaData.encodeItems values) := by
+    applyClassSolution valuation (encodeModelAtom (patterns source first).1.1) =
+      encodeModelAtom (MeTTaData.encodeItems values) := by
   cases source with
   | nil => cases values <;> simp_all [matchTerms, patterns_nil,
-      MeTTaData.encodeItems, toLeaTTaAtom, applyClassSolution]
+      MeTTaData.encodeItems, encodeModelAtom, applyClassSolution]
   | cons head rest =>
       cases values with
       | nil => simp [matchTerms] at matched
@@ -151,8 +156,8 @@ theorem patterns_solution_of_match (source values : List Term) (environment : En
                     simpa [matchTerms, headMatch, tailMatch] using matched
                   subst environment
                   rw [valuationFor_append] at reads
-                  simp only [patterns_cons, call, MeTTaData.encodeItems, toLeaTTaAtom,
-                    toLeaTTaAtoms, applyClassSolution, List.map_cons, List.map_nil]
+                  simp only [patterns_cons, call, MeTTaData.encodeItems, encodeModelAtom,
+                    encodeModelAtoms, applyClassSolution, List.map_cons, List.map_nil]
                   rw [pattern_solution_of_match head value headEnvironment headMatch
                       first valuation reads.1,
                     pattern_end_of_match head value headEnvironment headMatch,
@@ -167,55 +172,55 @@ mutual
 /-- A model of the emitted pattern equation cannot invent a source match. -/
 theorem pattern_solution_reflects (source value : Term) (first : Nat)
     (valuation : String → Metta.Atom)
-    (same : applyClassSolution valuation (toLeaTTaAtom (pattern source first).1.1) =
-      toLeaTTaAtom (MeTTaData.encode value)) :
+    (same : applyClassSolution valuation (encodeModelAtom (pattern source first).1.1) =
+      encodeModelAtom (MeTTaData.encode value)) :
     ∃ environment, matchTerm source value = some environment ∧
       ValuationFor valuation first environment := by
   cases source with
   | var name =>
       refine ⟨[(name, value)], rfl, ?_, trivial⟩
-      simpa only [pattern_variable, toLeaTTaAtom, applyClassSolution] using same
+      simpa only [pattern_variable, encodeModelAtom, applyClassSolution] using same
   | sym name =>
       simp only [pattern_symbol, encoded_solution_fixed] at same
       cases value <;>
         simp_all [MeTTaData.encode,
-          toLeaTTaAtom, toLeaTTaAtoms, toLeaTTaGround, matchTerm, ValuationFor]
+          encodeModelAtom, encodeModelAtoms, encodeModelGround, matchTerm, ValuationFor]
   | lit spelling =>
       simp only [pattern_literal, encoded_solution_fixed] at same
       cases value <;>
         simp_all [MeTTaData.encode,
-          toLeaTTaAtom, toLeaTTaAtoms, toLeaTTaGround, matchTerm, ValuationFor]
+          encodeModelAtom, encodeModelAtoms, encodeModelGround, matchTerm, ValuationFor]
   | expr items =>
       cases value <;>
-        simp [pattern_expression, call, MeTTaData.encode, toLeaTTaAtom,
-          toLeaTTaAtoms, applyClassSolution] at same
+        simp [pattern_expression, call, MeTTaData.encode, encodeModelAtom,
+          encodeModelAtoms, applyClassSolution] at same
       exact patterns_solution_reflects items _ first valuation same
   | list items =>
       cases value <;>
-        simp [pattern_list, call, MeTTaData.encode, toLeaTTaAtom,
-          toLeaTTaAtoms, applyClassSolution] at same
+        simp [pattern_list, call, MeTTaData.encode, encodeModelAtom,
+          encodeModelAtoms, applyClassSolution] at same
       exact patterns_solution_reflects items _ first valuation same
 termination_by sizeOf source
 
 theorem patterns_solution_reflects (source values : List Term) (first : Nat)
     (valuation : String → Metta.Atom)
-    (same : applyClassSolution valuation (toLeaTTaAtom (patterns source first).1.1) =
-      toLeaTTaAtom (MeTTaData.encodeItems values)) :
+    (same : applyClassSolution valuation (encodeModelAtom (patterns source first).1.1) =
+      encodeModelAtom (MeTTaData.encodeItems values)) :
     ∃ environment, matchTerms source values = some environment ∧
       ValuationFor valuation first environment := by
   cases source with
   | nil =>
       cases values <;>
-        simp_all [patterns_nil, MeTTaData.encodeItems, toLeaTTaAtom,
-          toLeaTTaAtoms, applyClassSolution, matchTerms, ValuationFor]
+        simp_all [patterns_nil, MeTTaData.encodeItems, encodeModelAtom,
+          encodeModelAtoms, applyClassSolution, matchTerms, ValuationFor]
   | cons head rest =>
       cases values with
       | nil =>
-          simp [patterns_cons, call, MeTTaData.encodeItems, toLeaTTaAtom,
-            toLeaTTaAtoms, applyClassSolution] at same
+          simp [patterns_cons, call, MeTTaData.encodeItems, encodeModelAtom,
+            encodeModelAtoms, applyClassSolution] at same
       | cons value tail =>
-          simp only [patterns_cons, call, MeTTaData.encodeItems, toLeaTTaAtom,
-            toLeaTTaAtoms, applyClassSolution, List.map_cons, List.map_nil,
+          simp only [patterns_cons, call, MeTTaData.encodeItems, encodeModelAtom,
+            encodeModelAtoms, applyClassSolution, List.map_cons, List.map_nil,
             Metta.Atom.expr.injEq, List.cons.injEq] at same
           obtain ⟨headEnvironment, headMatch, headReads⟩ :=
             pattern_solution_reflects head value first valuation same.2.1
@@ -269,10 +274,9 @@ theorem unify_iff_common_model (target source : Atom) (incoming : Bindings)
       ∃ valuation, HEAtomEquationSatisfied valuation target source ∧
         HEBindingSatisfied valuation incoming := by
   constructor
-  · rintro ⟨output, matched, matchProof, mergeProof, _, valuation, satisfies⟩
-    have inputSatisfied :=
-      (Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.mergeRel_solution_iff
-        mergeProof valuation).mp satisfies
+  · rintro ⟨output, matched, matchProof, mergeProof⟩
+    obtain ⟨valuation, satisfies⟩ := Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_model mergeProof
+    have inputSatisfied := (Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_solutions mergeProof valuation).mp satisfies
     exact ⟨valuation,
       (Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.matchRel_solution_iff
         matchProof valuation).mp inputSatisfied.1, inputSatisfied.2⟩
@@ -282,9 +286,9 @@ theorem unify_iff_common_model (target source : Atom) (incoming : Bindings)
     obtain ⟨output, merged, outputSatisfied, outputValues⟩ :=
       Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness.exists_specMerge_of_solution
         satisfies (specMatch_assignmentsNonVariable matchProof) incomingSatisfied values
-    exact ⟨output, matched, matchProof, merged,
-      semanticLoopFree_of_satisfied_nonvariable outputSatisfied outputValues,
-      valuation, outputSatisfied⟩
+    exact ⟨output, matched, matchProof, merged.logicalMerge
+      ⟨_, Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_of_heBindingSatisfied
+        outputSatisfied⟩⟩
 
 /-- Empty frames impose no extra constraint on the atom equation. -/
 theorem unify_empty_iff_model (target source : Atom) :
@@ -329,10 +333,8 @@ theorem pattern_unify_binding_observation (source value : Term) (first : Nat)
     (valuation : String → Metta.Atom) (satisfies : HEBindingSatisfied valuation output) :
     ∃ environment, matchTerm source value = some environment ∧
       ValuationFor valuation first environment := by
-  obtain ⟨matched, matchProof, mergeProof, _, _⟩ := viable
-  have inputSatisfied :=
-    (Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.mergeRel_solution_iff
-      mergeProof valuation).mp satisfies
+  obtain ⟨matched, matchProof, mergeProof⟩ := viable
+  have inputSatisfied := (Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_solutions mergeProof valuation).mp satisfies
   have same :=
     (Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.matchRel_solution_iff
       matchProof valuation).mp inputSatisfied.1
@@ -345,10 +347,8 @@ theorem patterns_unify_binding_observation (source values : List Term) (first : 
     (valuation : String → Metta.Atom) (satisfies : HEBindingSatisfied valuation output) :
     ∃ environment, matchTerms source values = some environment ∧
       ValuationFor valuation first environment := by
-  obtain ⟨matched, matchProof, mergeProof, _, _⟩ := viable
-  have inputSatisfied :=
-    (Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.mergeRel_solution_iff
-      mergeProof valuation).mp satisfies
+  obtain ⟨matched, matchProof, mergeProof⟩ := viable
+  have inputSatisfied := (Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.LogicalMergeRel.he_solutions mergeProof valuation).mp satisfies
   have same :=
     (Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.matchRel_solution_iff
       matchProof valuation).mp inputSatisfied.1
@@ -408,7 +408,7 @@ theorem semantic_frame_alias_capture :
     have aliasEq := satisfies.2 (freshName 0) "old" (by
       simp [Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup, Bindings.addEquality])
     simp only [HEAtomEquationSatisfied, encoded_solution_fixed, pattern_variable,
-      toLeaTTaAtom, applyClassSolution, aliasEq, oldValue] at same
-    simp [MeTTaData.encode, toLeaTTaAtom, toLeaTTaAtoms, toLeaTTaGround] at same
+      encodeModelAtom, applyClassSolution, aliasEq, oldValue] at same
+    simp [MeTTaData.encode, encodeModelAtom, encodeModelAtoms, encodeModelGround] at same
 
 end Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaEmit

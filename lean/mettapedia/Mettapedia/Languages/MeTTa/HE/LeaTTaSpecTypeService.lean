@@ -1,6 +1,10 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationRecursiveExact
 import Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Exact prepared-package recovery for the repaired runtime type service
@@ -87,7 +91,7 @@ def PackagesPresent
 
 /-- Exact package presentation after one abstract preparation step.  Only the
 repaired runtime service uses this relation; the published textual service
-continues to use `TypesOfRel` directly. -/
+continues to use `StorageTypesRel` directly. -/
 def PreparedPackagesPresent (oracle : TypePreparationOracle)
     (space : Space) (atom : Atom) (presented : List Atom) : Prop :=
   ∃ prepared,
@@ -233,8 +237,8 @@ theorem packagesPresent_runtimeGetTypes
     {space : Space} {env : Metta.Minimal.MinEnv}
     (index : TypeEnvironmentRel space env) (atom : Atom) :
     PackagesPresent space atom
-      (fromLeaTTaAtoms
-        (Metta.Minimal.getTypes env (toLeaTTaAtom atom))) := by
+      (decodeModelAtoms
+        (Metta.Minimal.getTypes env (encodeModelAtom atom))) := by
   obtain ⟨packages, packagesRel, alpha⟩ :=
     runtimeGetTypes_has_exact_package_presentation index atom
   exact ⟨packages, packagesRel, alpha⟩
@@ -250,12 +254,12 @@ theorem preparedPackagesPresent_runtimeGetTypes
     (world : Metta.Minimal.World) (atom prepared : Atom)
     (preparation : oracle.prepare space atom prepared)
     (preparationEquation :
-      Metta.Minimal.typePrep world (toLeaTTaAtom atom) =
-        toLeaTTaAtom prepared) :
+      Metta.Minimal.typePrep world (encodeModelAtom atom) =
+        encodeModelAtom prepared) :
     PreparedPackagesPresent oracle space atom
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (Metta.Minimal.getTypes env
-          (Metta.Minimal.typePrep world (toLeaTTaAtom atom)))) := by
+          (Metta.Minimal.typePrep world (encodeModelAtom atom)))) := by
   refine ⟨prepared, preparation, ?_⟩
   rw [preparationEquation]
   exact packagesPresent_runtimeGetTypes index prepared

@@ -25,7 +25,7 @@ runtime step transports to a WM strength inequality.
 namespace Mettapedia.PLN.Bridges.Languages.WorldModel.PLNWorldModelRuntimeBridge
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.Languages.MeTTa.RuntimeSpec
 
 /-- Local WM strength obligation for a fixed state/query pair. -/

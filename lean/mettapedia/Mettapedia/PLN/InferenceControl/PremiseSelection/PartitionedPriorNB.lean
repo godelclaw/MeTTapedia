@@ -18,7 +18,7 @@ namespace Mettapedia.PLN.InferenceControl.PremiseSelection
 
 open scoped Classical ENNReal BigOperators
 open Mettapedia.PLN.InferenceControl.PremiseSelection.Optimality
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 variable {Goal Fact Bin : Type*}
 variable {TS : OperatorRoleTheoryScaled Goal Fact}

@@ -18,9 +18,9 @@ namespace Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhoodCompl
 open LO
 open LO.Modal
 open Formula.Neighborhood
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhood
 open Mettapedia.PLN.WorldModel.PLNWorldModelCrispSpecialization
 open scoped ENNReal

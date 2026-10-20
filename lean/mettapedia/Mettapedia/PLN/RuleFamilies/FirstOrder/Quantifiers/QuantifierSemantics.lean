@@ -28,7 +28,7 @@ P(∀x : P(x)) = probability that a random pair (u,v) both satisfies P
 
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.Algebra.QuantaleWeakness
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 open scoped ENNReal

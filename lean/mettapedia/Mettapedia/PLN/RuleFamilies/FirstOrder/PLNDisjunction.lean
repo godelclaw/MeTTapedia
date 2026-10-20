@@ -37,7 +37,7 @@ $$\max(P(A), P(B)) ≤ P(A ∨ B) ≤ \min(1, P(A) + P(B))$$
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDisjunction
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNNegation
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNConjunction
 open Mettapedia.ProbabilityTheory

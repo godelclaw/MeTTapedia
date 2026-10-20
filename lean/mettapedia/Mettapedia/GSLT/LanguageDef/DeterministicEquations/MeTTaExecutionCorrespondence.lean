@@ -1,5 +1,9 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaInvocationExecution
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.DataEquality
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Execution of the emitted deterministic fragment
@@ -269,12 +273,12 @@ theorem invocation_execution (program : Program) (host : Host) (environment : Mi
 theorem compiled_public_execution (environment : MinEnv) (compiler : Emit Atom)
     (result : Outcome) (execution : CompiledExecutes environment compiler result)
     (shaped : ∀ first rename, ∃ items,
-      renBy rename (toLeaTTaAtom (compiler first).1) = .expr items)
+      renBy rename (encodeModelAtom (compiler first).1) = .expr items)
     (first : Nat) (rename : String → String) (injective : Function.Injective rename)
     (state : St) (noExtra : state.world.selfExtra = []) (noImports : state.world.selfImports = [])
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) :
-    let body := renBy rename (toLeaTTaAtom (compiler first).1)
+    let body := renBy rename (encodeModelAtom (compiler first).1)
     (∀ key ∈ body.vars, Metta.Bindings.lookupVal incoming key = none) →
     ∃ nextState output cost threshold,
       nextState.world = state.world ∧ ClosedValueBindings output ∧
@@ -282,7 +286,7 @@ theorem compiled_public_execution (environment : MinEnv) (compiler : Emit Atom)
       ∀ fuel, threshold ≤ fuel →
         interpretFuel environment (fuel + cost) state
           [⟨atomToStack (.expr [.sym "function", body]) [], incoming⟩] [] =
-        ([(toLeaTTaAtom (observation result), output)],
+        ([(encodeModelAtom (observation result), output)],
           nextState) := by
   intro body fresh
   let sourceCall := Metta.Atom.expr [.sym "function", body]
@@ -297,10 +301,10 @@ theorem compiled_public_execution (environment : MinEnv) (compiler : Emit Atom)
       [{ atom := sourceCall, ret := .function, vars := [] }] := by
     simp only [sourceCall, shape, atomToStack, varsCopy]
   have ran := run (fuel + 1) (by omega) [] []
-  have visible : (toLeaTTaAtom (observation result) != emptyA) = true := by
+  have visible : (encodeModelAtom (observation result) != emptyA) = true := by
     cases result <;> rfl
   have returned := Mettapedia.Languages.MeTTa.HE.LeaTTaMinimalControlExecution.selected_closed_return_finishes
-    environment nextState output sourceCall (toLeaTTaAtom (observation result)) [] fuel
+    environment nextState output sourceCall (encodeModelAtom (observation result)) [] fuel
       (observation_closed result) visible
   rw [show fuel + (cost + 1) = fuel + 1 + cost by omega]
   change interpretFuel environment (fuel + 1 + cost) state
@@ -320,7 +324,7 @@ theorem expression_public_execution (program : Program) (host : Host) (environme
     (state : St) (noExtra : state.world.selfExtra = []) (noImports : state.world.selfImports = [])
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) :
-    let body := renBy rename (toLeaTTaAtom (expression program
+    let body := renBy rename (encodeModelAtom (expression program
       (sourceBindings.map (fun row => (row.1, MeTTaData.encode row.2)))
       (.grounded (.int sourceFuel)) term first).1)
     (∀ key ∈ body.vars, Metta.Bindings.lookupVal incoming key = none) →
@@ -330,7 +334,7 @@ theorem expression_public_execution (program : Program) (host : Host) (environme
       ∀ fuel, threshold ≤ fuel →
         interpretFuel environment (fuel + cost) state
           [⟨atomToStack (.expr [.sym "function", body]) [], incoming⟩] [] =
-        ([(toLeaTTaAtom (observation (eval program host sourceFuel sourceBindings term)), output)],
+        ([(encodeModelAtom (observation (eval program host sourceFuel sourceBindings term)), output)],
           nextState) := by
   refine compiled_public_execution environment _ _
     (expression_execution program host environment loaded primitives unlisted
@@ -340,7 +344,7 @@ theorem expression_public_execution (program : Program) (host : Host) (environme
   have embedded := expression_runtime_embedded program
     (sourceBindings.map (fun row => (row.1, MeTTaData.encode row.2)))
     (.grounded (.int sourceFuel)) term first rename
-  cases shaped : renBy rename (toLeaTTaAtom (expression program
+  cases shaped : renBy rename (encodeModelAtom (expression program
       (sourceBindings.map (fun row => (row.1, MeTTaData.encode row.2)))
       (.grounded (.int sourceFuel)) term first).1) with
   | sym => simp [shaped, isEmbeddedOp] at embedded
@@ -360,7 +364,7 @@ theorem invocation_public_execution (program : Program) (host : Host) (environme
     (state : St) (noExtra : state.world.selfExtra = []) (noImports : state.world.selfImports = [])
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) :
-    let body := renBy rename (toLeaTTaAtom
+    let body := renBy rename (encodeModelAtom
       (returnInvocation (requestAtom program sourceFuel head arguments) first).1)
     (∀ key ∈ body.vars, Metta.Bindings.lookupVal incoming key = none) →
     ∃ nextState output cost threshold,
@@ -369,7 +373,7 @@ theorem invocation_public_execution (program : Program) (host : Host) (environme
       ∀ fuel, threshold ≤ fuel →
         interpretFuel environment (fuel + cost) state
           [⟨atomToStack (.expr [.sym "function", body]) [], incoming⟩] [] =
-        ([(toLeaTTaAtom (observation (apply program host sourceFuel head arguments)), output)],
+        ([(encodeModelAtom (observation (apply program host sourceFuel head arguments)), output)],
           nextState) := by
   refine compiled_public_execution environment _ _
     (invocation_execution program host environment loaded primitives unlisted
@@ -379,16 +383,16 @@ theorem invocation_public_execution (program : Program) (host : Host) (environme
   unfold invoke
   split
   · unfold returnInvocation
-    change ∃ items, renBy rename (toLeaTTaAtom (call "chain" [_, _, _])) = .expr items
-    simp only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil]
+    change ∃ items, renBy rename (encodeModelAtom (call "chain" [_, _, _])) = .expr items
+    simp only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil]
     exact ⟨_, rfl⟩
   · split
     · unfold returnInvocation
-      change ∃ items, renBy rename (toLeaTTaAtom (call "chain" [_, _, _])) = .expr items
-      simp only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil]
+      change ∃ items, renBy rename (encodeModelAtom (call "chain" [_, _, _])) = .expr items
+      simp only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil]
       exact ⟨_, rfl⟩
     · simp only [value, call, returnInvocation, pure, StateT.pure]
-      simp only [returned, call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil]
+      simp only [returned, call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil]
       exact ⟨_, rfl⟩
 
 /-- The public observation of a generated invocation after the target budget
@@ -397,8 +401,8 @@ Private result bindings and the freshening counter are not public observations. 
 def StableReturns (environment : MinEnv) (compiler : Emit Atom) (result : Outcome) : Prop :=
   ∃ threshold, ∀ budget, threshold ≤ budget →
     (interpretFuel environment budget St.init
-      [⟨atomToStack (.expr [.sym "function", toLeaTTaAtom (compiler 0).1]) [], []⟩] []).1.map
-        Prod.fst = [toLeaTTaAtom (observation result)]
+      [⟨atomToStack (.expr [.sym "function", encodeModelAtom (compiler 0).1]) [], []⟩] []).1.map
+        Prod.fst = [encodeModelAtom (observation result)]
 
 theorem StableReturns.unique {environment : MinEnv} {compiler : Emit Atom}
     {first second : Outcome} (left : StableReturns environment compiler first)
@@ -407,9 +411,9 @@ theorem StableReturns.unique {environment : MinEnv} {compiler : Emit Atom}
   obtain ⟨after, right⟩ := right
   have same := (left (max before after) (Nat.le_max_left _ _)).symm.trans
     (right (max before after) (Nat.le_max_right _ _))
-  have atomSame : toLeaTTaAtom (observation first) = toLeaTTaAtom (observation second) :=
+  have atomSame : encodeModelAtom (observation first) = encodeModelAtom (observation second) :=
     List.cons.inj same |>.1
-  exact observation_injective (toLeaTTaAtom_injective atomSame)
+  exact observation_injective (encodeModelAtom_injective atomSame)
 
 /-- Execution preservation for the real public request, at independently
 sufficient target fuel. Every source outcome, including exhaustion, is covered. -/
@@ -423,7 +427,7 @@ theorem invocation_stable_returns (program : Program) (host : Host) (environment
       (apply program host sourceFuel head arguments) := by
   have invariant : LeaRuntimeBindingInvariant ([] : Metta.Bindings) :=
     leaRuntimeBindingInvariant_empty
-  have fresh : ∀ key ∈ (renBy id (toLeaTTaAtom
+  have fresh : ∀ key ∈ (renBy id (encodeModelAtom
       (returnInvocation (requestAtom program sourceFuel head arguments) 0).1)).vars,
       Metta.Bindings.lookupVal [] key = none := by
     intro key _
@@ -437,9 +441,9 @@ theorem invocation_stable_returns (program : Program) (host : Host) (environment
   have executed := run (budget - cost) ready
   have sameBudget : budget - cost + cost = budget := by omega
   rw [sameBudget] at executed
-  have renamed : renBy id (toLeaTTaAtom
+  have renamed : renBy id (encodeModelAtom
       (returnInvocation (requestAtom program sourceFuel head arguments) 0).1) =
-      toLeaTTaAtom (returnInvocation (requestAtom program sourceFuel head arguments) 0).1 := by
+      encodeModelAtom (returnInvocation (requestAtom program sourceFuel head arguments) 0).1 := by
     exact renBy_id _
   rw [renamed] at executed
   simpa only [List.map_cons, List.map_nil] using

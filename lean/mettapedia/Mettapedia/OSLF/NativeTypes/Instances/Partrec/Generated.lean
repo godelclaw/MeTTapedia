@@ -190,12 +190,12 @@ theorem whole_language_formula_complete (bound : List TypeExpr) (formula : Formu
 
 theorem positive_generated_meaning (bound : List TypeExpr) (formula : Formula CfgFormer)
     (source : Pattern) (budget : Nat) (read : (run bound formula source budget).answer = some true) :
-    denotation (tests bound) formula source :=
+    denotation (tests bound) formula (.empty _) source :=
   Outcome.positive _ read
 
 theorem negative_generated_meaning (bound : List TypeExpr) (formula : Formula CfgFormer)
     (source : Pattern) (budget : Nat) (read : (run bound formula source budget).answer = some false) :
-    ¬ denotation (tests bound) formula source :=
+    ¬ denotation (tests bound) formula (.empty _) source :=
   Outcome.negative _ read
 
 end Mettapedia.OSLF.NativeTypes.Instances.Partrec.Generated

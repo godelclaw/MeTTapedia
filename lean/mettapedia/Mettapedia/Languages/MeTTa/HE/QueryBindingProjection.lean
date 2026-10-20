@@ -1,25 +1,27 @@
 import Mettapedia.Languages.MeTTa.HE.BindingResolutionReadSupport
 import Mettapedia.Util.LinearHash
-import Mettapedia.Languages.MeTTa.HE.NativeBindingsData
-import Mettapedia.Languages.MeTTa.HE.LeaTTaBindingMaterialization
-import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationPrincipalAlpha
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.BindingTheory
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.StructuralModel
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
+import Mettapedia.Languages.MeTTa.HE.Spec.Eval.Steps
 import Mettapedia.Languages.MeTTa.HE.DeclMergeSpec
+import Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
 import Batteries.Tactic.OpenPrivate
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ScopeObservation
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
-# Constructed logical presentation of executable query bindings
+# Logical presentations of HE query bindings
 
-The projection retains every value assignment and explicit equality edge.
-For image-valued records, its model theory is proved equal to the executable
-record's model theory. A reachable runtime invariant then constructs the
-paired query invariant; the caller need not supply logical correspondence.
-Successful query hits construct both an independent derivation and the next
-projected binding state. Logical endpoints are related by their complete
-solution theories, while the data codec retains concrete relation order.
+The actual HE matching and binding operations preserve their complete source
+constraint theories. Successful local operations construct independent source
+derivations and binding presentations, including open incoming aliases. Logical
+endpoints are related by their full solution theories and variable support;
+neither relation order nor a chosen residual representative defines that
+agreement.
 
 The actual HE resolver has its own canonical principal-readout theorem under
 semantic loop freedom, non-variable assignments and structural class
@@ -29,9 +31,8 @@ observed tuple, preserving correlations while retaining concrete checkpoints.
 The model-language encoding used here is a structural syntax map, not an
 interpreter comparison.
 
-The separate LeaTTa projection below retains its own runtime invariant and
-materialization/invocation theorems. Unmaterialized syntax can still have a
-different dispatch shape.
+The executable LeaTTa projection and its materialization/invocation
+comparisons live in the separate runtime conformance owner.
 -/
 
 set_option autoImplicit false
@@ -176,7 +177,7 @@ theorem mergeRel_left_subrecord {left right out : Bindings}
   next =>
     intro before key value empty
     exact bindingSubrecord_assign_of_not_isBound _ _ _
-      (LeaTTaBridge.isBound_eq_false_of_classValues_nil empty)
+      (EqualityClosure.isBound_eq_false_of_classValues_nil empty)
   next => intros; exact BindingSubrecord.refl _
   next => intros; assumption
   next => intros; assumption
@@ -195,7 +196,7 @@ theorem addBindingRel_seed_subrecord {before out : Bindings} {key : String} {val
   cases relation with
   | fresh empty =>
       exact bindingSubrecord_assign_of_not_isBound _ _ _
-        (LeaTTaBridge.isBound_eq_false_of_classValues_nil empty)
+        (EqualityClosure.isBound_eq_false_of_classValues_nil empty)
   | same => exact BindingSubrecord.refl _
   | conflict _ _ _ _ merged => exact mergeRel_left_subrecord merged
   | reconcile _ _ _ merged => exact mergeRel_left_subrecord merged
@@ -482,7 +483,7 @@ theorem support_cover_family (fuel : Nat) :
       | nil =>
         simp only [values,List.mem_singleton] at member
         subst out
-        exact fresh_assignment_support (LeaTTaBridge.isBound_eq_false_of_classValues_nil values) occurs
+        exact fresh_assignment_support (EqualityClosure.isBound_eq_false_of_classValues_nil values) occurs
       | cons first rest =>
         have keyCovered : key∈specBindingVars out := subrecord_support beforeRows
           (class_key_support (key:=key) (value:=first) (by rw [values]; simp))
@@ -635,123 +636,10 @@ end Mettapedia.Languages.MeTTa.HE.FreshPrivateMerge
 namespace Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
-open LeaTTaBridge LeaTTaTypeConformance LeaTTaSpecConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 open Spec.Eval.Steps
 open Spec.Type.Presentation (TypeSubst)
 open Spec.Type.Presentation.BindingTheory (BindingMaterializationRel)
-
-def project (bindings : Metta.Bindings) : Bindings :=
-  ⟨bindings.filterMap (fun relation => match relation with
-      | .val name value => some (name, fromLeaTTaAtom value)
-      | .eq _ _ => none), leaEqualityEdges bindings⟩
-
-theorem assignment_mem_iff (bindings : Metta.Bindings) (name : String) (value : Atom) :
-    (name, value) ∈ (project bindings).assignments ↔
-      ∃ original, Metta.BindingRel.val name original ∈ bindings ∧ fromLeaTTaAtom original = value := by
-  constructor
-  · intro member
-    obtain ⟨relation, relationMember, converted⟩ := List.mem_filterMap.mp member
-    cases relation with
-    | val key original =>
-        simp only [Option.some.injEq, Prod.mk.injEq] at converted
-        obtain ⟨rfl, rfl⟩ := converted
-        exact ⟨original, relationMember, rfl⟩
-    | eq left right => simp at converted
-  · rintro ⟨original, member, rfl⟩
-    exact List.mem_filterMap.mpr ⟨.val name original, member, rfl⟩
-
-theorem equality_mem_iff (bindings : Metta.Bindings) (left right : String) :
-    (left, right) ∈ (project bindings).equalities ↔ .eq left right ∈ bindings :=
-  mem_leaEqualityEdges_iff
-
-/-- Complete solution-theory correspondence is derived from concrete fields. -/
-theorem solutionTheory (bindings : Metta.Bindings) (image : LeaBindingsHEImage bindings) :
-    LeaBindingSolutionTheoryEquiv (project bindings) bindings := by
-  intro valuation
-  constructor
-  · intro satisfied
-    constructor
-    · intro key original member
-      have assignment := satisfied.1 key (fromLeaTTaAtom original)
-        ((assignment_mem_iff bindings key _).mpr ⟨original, member, rfl⟩)
-      rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage (image key original member)] at assignment
-      exact assignment
-    · intro left right member
-      exact satisfied.2 left right ((equality_mem_iff bindings left right).mpr member)
-  · intro satisfied
-    constructor
-    · intro key value member
-      obtain ⟨original, originalMember, rfl⟩ := (assignment_mem_iff bindings key value).mp member
-      rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage (image key original originalMember)]
-      exact satisfied.1 key original originalMember
-    · intro left right member
-      exact satisfied.2 left right ((equality_mem_iff bindings left right).mp member)
-
-theorem assignmentsNonVariable (bindings : Metta.Bindings)
-    (image : LeaBindingsHEImage bindings) (normalized : LeaAssignmentsNonVariable bindings) :
-    HEAssignmentsNonVariable (project bindings) := by
-  intro key target member
-  obtain ⟨original, originalMember, decoded⟩ := (assignment_mem_iff bindings key _).mp member
-  have translated := congrArg toLeaTTaAtom decoded
-  rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage (image key original originalMember)] at translated
-  exact normalized key target (by simpa only [toLeaTTaAtom, translated] using originalMember)
-
-theorem paired (bindings : Metta.Bindings) (image : LeaBindingsHEImage bindings)
-    (runtime : LeaRuntimeBindingInvariant bindings) :
-    ScopedEquationQuery.BindingInvariant (project bindings) bindings :=
-  ⟨⟨solutionTheory bindings image,
-      assignmentsNonVariable bindings image runtime.assignmentsNonVariable, runtime⟩, image⟩
-
-theorem paired_empty : ScopedEquationQuery.BindingInvariant (project []) [] :=
-  paired [] leaBindingsHEImage_empty leaRuntimeBindingInvariant_empty
-
-theorem value_name_mem {bindings : Metta.Bindings} {key name : String} {value : Metta.Atom}
-    (member : .val key value ∈ bindings) (occurrence : name = key ∨ name ∈ value.vars) :
-    name ∈ bindings.vars := by
-  simp only [Metta.Bindings.vars, List.mem_eraseDups, List.mem_flatMap]
-  exact ⟨.val key value, member, by simpa only [List.mem_cons] using occurrence⟩
-
-theorem equality_name_mem {bindings : Metta.Bindings} {left right name : String}
-    (member : .eq left right ∈ bindings) (occurrence : name = left ∨ name = right) :
-    name ∈ bindings.vars := by
-  simp only [Metta.Bindings.vars, List.mem_eraseDups, List.mem_flatMap]
-  exact ⟨.eq left right, member, by simpa using occurrence⟩
-
-/-- The projected presentation adds no variable outside the concrete record. -/
-theorem binding_name_mem {bindings : Metta.Bindings} {name : String}
-    (image : LeaBindingsHEImage bindings)
-    (member : name ∈ EquationScope.bindingNames (project bindings)) : name ∈ bindings.vars := by
-  simp only [EquationScope.bindingNames, List.mem_append, List.mem_flatMap] at member
-  rcases member with assignment | equality
-  · obtain ⟨⟨key, value⟩, stored, occurrence⟩ := assignment
-    obtain ⟨original, originalMember, rfl⟩ := (assignment_mem_iff bindings key value).mp stored
-    simp only [List.mem_cons] at occurrence
-    rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage (image key original originalMember)] at occurrence
-    exact value_name_mem originalMember occurrence
-  · obtain ⟨⟨left, right⟩, stored, occurrence⟩ := equality
-    apply equality_name_mem ((equality_mem_iff bindings left right).mp stored)
-    simpa using occurrence
-
-/-- Each query output provides a logical derivation and a constructed next
-projected state with the same complete solution theory as that derivation. -/
-theorem ruleResults_sound {space : Space} {live : List Atom} {query lhs rhs : Atom}
-    {incoming : Metta.Bindings} {counter : Nat} {hit : ScopedEquationQuery.Hit}
-    (stored : .expression [.symbol "=", lhs, rhs] ∈ space.atoms)
-    (image : LeaBindingsHEImage incoming) (runtime : LeaRuntimeBindingInvariant incoming)
-    (member : hit ∈ ScopedEquationQuery.ruleResults live query (project incoming) incoming counter lhs rhs) :
-    ∃ output,
-      EquationQueryCandidateRel space live query (project incoming) hit.value output ∧
-        ScopedEquationQuery.BindingInvariant (project hit.bindings) hit.bindings ∧
-        ∀ valuation,
-          HEBindingSatisfied valuation output ↔ HEBindingSatisfied valuation (project hit.bindings) := by
-  obtain ⟨output, derivation, next⟩ :=
-    ScopedEquationQuery.ruleResults_sound stored (paired incoming image runtime) member
-  have projectedNext := paired hit.bindings next.image next.semantic.runtime
-  refine ⟨output, derivation, projectedNext, ?_⟩
-  intro valuation
-  exact (next.semantic.solutionTheory valuation).trans
-    (projectedNext.semantic.solutionTheory valuation).symm
-
 
 /-! ## Operational application under the projected solution theory -/
 
@@ -773,7 +661,7 @@ private theorem representative_observation {bindings : Bindings} {valuation : St
 private theorem selected_value_observation {bindings : Bindings} {valuation : String → Metta.Atom}
     (satisfied : HEBindingSatisfied valuation bindings) {name : String} {value : Atom}
     (selected : (bindings.eqClassOrdered name).findSome? bindings.lookup = some value) :
-    valuation name = applyClassSolution valuation (toLeaTTaAtom value) := by
+    valuation name = applyClassSolution valuation (encodeModelAtom value) := by
   obtain ⟨key, member, lookup⟩ := List.exists_of_findSome?_eq_some selected
   obtain ⟨before, after, entries, _⟩ := List.lookup_eq_some_iff.mp lookup
   have stored : (key, value) ∈ bindings.assignments := by rw [entries]; simp
@@ -786,8 +674,8 @@ theorem resolveAtomFullAux_semantically_inert {bindings : Bindings}
     {valuation : String → Metta.Atom} (satisfied : HEBindingSatisfied valuation bindings) :
     ∀ fuel visited atom resolved,
       bindings.resolveAtomFullAux fuel visited atom = some resolved →
-      applyClassSolution valuation (toLeaTTaAtom resolved) =
-        applyClassSolution valuation (toLeaTTaAtom atom) := by
+      applyClassSolution valuation (encodeModelAtom resolved) =
+        applyClassSolution valuation (encodeModelAtom atom) := by
   intro fuel
   induction fuel with
   | zero => intro visited atom resolved ran; simp [Bindings.resolveAtomFullAux] at ran
@@ -805,8 +693,8 @@ theorem resolveAtomFullAux_semantically_inert {bindings : Bindings}
               cases ran
               have observed : ∀ xs ys : List Atom,
                   xs.mapM (bindings.resolveAtomFullAux fuel visited) = some ys →
-                  (toLeaTTaAtoms ys).map (applyClassSolution valuation) =
-                    (toLeaTTaAtoms xs).map (applyClassSolution valuation) := by
+                  (encodeModelAtoms ys).map (applyClassSolution valuation) =
+                    (encodeModelAtoms xs).map (applyClassSolution valuation) := by
                 intro xs
                 induction xs with
                 | nil => intro ys mapped; simp only [List.mapM_nil, Option.pure_def, Option.some.injEq] at mapped; subst ys; rfl
@@ -820,12 +708,12 @@ theorem resolveAtomFullAux_semantically_inert {bindings : Bindings}
                         | some values =>
                             have same : value :: values = ys := by simpa [List.mapM_cons, firstRun, restRun] using mapped
                             subst ys
-                            simpa only [toLeaTTaAtoms, List.map_cons] using
+                            simpa only [encodeModelAtoms, List.map_cons] using
                               congrArg₂ List.cons (ih visited first value firstRun) (tail values restRun)
-              simpa only [toLeaTTaAtom, applyClassSolution, Metta.Atom.expr.injEq] using observed atoms values mapped
+              simpa only [encodeModelAtom, applyClassSolution, Metta.Atom.expr.injEq] using observed atoms values mapped
       | var name =>
-          rw [show applyClassSolution valuation (toLeaTTaAtom (.var name)) = valuation name by
-            simp only [toLeaTTaAtom, applyClassSolution]]
+          rw [show applyClassSolution valuation (encodeModelAtom (.var name)) = valuation name by
+            simp only [encodeModelAtom, applyClassSolution]]
           simp only [Bindings.resolveAtomFullAux] at ran
           split at ran
           · cases ran
@@ -833,9 +721,9 @@ theorem resolveAtomFullAux_semantically_inert {bindings : Bindings}
             | none =>
                 simp only [selected] at ran
                 split at ran
-                · cases ran; simp only [toLeaTTaAtom, applyClassSolution]
+                · cases ran; simp only [encodeModelAtom, applyClassSolution]
                 · cases ran
-                  simpa only [toLeaTTaAtom, applyClassSolution] using representative_observation satisfied name
+                  simpa only [encodeModelAtom, applyClassSolution] using representative_observation satisfied name
             | some value =>
                 simp only [selected] at ran
                 have valueObserved := (selected_value_observation satisfied selected).symm
@@ -845,7 +733,7 @@ theorem resolveAtomFullAux_semantically_inert {bindings : Bindings}
                     split at ran
                     · split at ran
                       · cases ran
-                      · cases ran; simpa only [toLeaTTaAtom, applyClassSolution] using representative_observation satisfied name
+                      · cases ran; simpa only [encodeModelAtom, applyClassSolution] using representative_observation satisfied name
                     · split at ran
                       · exact (ih _ _ _ ran).trans valueObserved
                       · cases ran; exact valueObserved
@@ -870,12 +758,12 @@ original variable; the open/failed branch remains the resolver's own `none`. -/
 theorem resolveFull_semantically_inert {bindings : Bindings} {valuation : String → Metta.Atom}
     (satisfied : HEBindingSatisfied valuation bindings) {name : String} {fuel : Nat} {resolved : Atom}
     (ran : bindings.resolveFull name fuel = some resolved) :
-    applyClassSolution valuation (toLeaTTaAtom resolved) = valuation name := by
+    applyClassSolution valuation (encodeModelAtom resolved) = valuation name := by
   unfold Bindings.resolveFull at ran
   dsimp only at ran
   split at ran
   · cases ran
-  · simpa only [toLeaTTaAtom, applyClassSolution] using
+  · simpa only [encodeModelAtom, applyClassSolution] using
       resolveAtomFullAux_semantically_inert satisfied fuel [] (.var name) resolved ran
 
 /-- Bounded HE application preserves meaning even when its fuel is too small
@@ -883,8 +771,8 @@ for complete syntactic materialization. This law does not identify such a
 partial value with native fully instantiated syntax. -/
 theorem applyFull_semantically_inert {bindings : Bindings} {valuation : String → Metta.Atom}
     (satisfied : HEBindingSatisfied valuation bindings) (atom : Atom) (fuel : Nat) :
-    applyClassSolution valuation (toLeaTTaAtom (bindings.applyFull atom fuel)) =
-      applyClassSolution valuation (toLeaTTaAtom atom) := by
+    applyClassSolution valuation (encodeModelAtom (bindings.applyFull atom fuel)) =
+      applyClassSolution valuation (encodeModelAtom atom) := by
   induction fuel generalizing atom with
   | zero => rfl
   | succ fuel ih =>
@@ -895,19 +783,19 @@ theorem applyFull_semantically_inert {bindings : Bindings} {valuation : String �
           cases resolved : bindings.resolveFull name fuel with
           | none => rfl
           | some value =>
-              simpa only [toLeaTTaAtom, applyClassSolution] using
+              simpa only [encodeModelAtom, applyClassSolution] using
                 resolveFull_semantically_inert satisfied resolved
       | expression atoms =>
-          simp only [Bindings.applyFull, toLeaTTaAtom, applyClassSolution, Metta.Atom.expr.injEq]
+          simp only [Bindings.applyFull, encodeModelAtom, applyClassSolution, Metta.Atom.expr.injEq]
           have mapped : ∀ xs : List Atom,
-              (toLeaTTaAtoms (xs.map fun atom => bindings.applyFull atom fuel)).map
+              (encodeModelAtoms (xs.map fun atom => bindings.applyFull atom fuel)).map
                   (applyClassSolution valuation) =
-                (toLeaTTaAtoms xs).map (applyClassSolution valuation) := by
+                (encodeModelAtoms xs).map (applyClassSolution valuation) := by
             intro xs
             induction xs with
             | nil => rfl
             | cons first rest tail =>
-                simpa only [List.map_cons, toLeaTTaAtoms] using congrArg₂ List.cons (ih first) tail
+                simpa only [List.map_cons, encodeModelAtoms] using congrArg₂ List.cons (ih first) tail
           exact mapped atoms
 
 /-! ## Principal readout of the actual HE resolver -/
@@ -992,10 +880,10 @@ private theorem canonical_fixes_unresolvable {bindings : Bindings}
     (nonvariable : AssignmentsNonVariable bindings) {atom : Atom}
     (unresolvable : bindings.hasResolvableVar atom = false) :
     applyClassSolution (canonicalValuation bindings loopFree nonvariable)
-      (toLeaTTaAtom atom) = toLeaTTaAtom atom := by
+      (encodeModelAtom atom) = encodeModelAtom atom := by
   refine (applyClassSolution_congr_of_eq_on_vars
     (canonicalValuation bindings loopFree nonvariable) (fun name => .var name)
-    (toLeaTTaAtom atom) ?_).trans (applyClassSolution_identity _)
+    (encodeModelAtom atom) ?_).trans (applyClassSolution_identity _)
   intro name member
   have occurrence := atomOccurs_iff_mem_translated_vars.mpr member
   obtain ⟨singleton, lookup⟩ := unresolvable_occurrence bindings _ _ (Nat.le_refl _)
@@ -1007,29 +895,29 @@ private theorem canonical_fixes_unresolvable {bindings : Bindings}
 
 
 private def readoutRank (valuation : String → Metta.Atom) (atom : Atom) : Nat :=
-  2 * (applyClassSolution valuation (toLeaTTaAtom atom)).size +
+  2 * (applyClassSolution valuation (encodeModelAtom atom)).size +
     if Spec.Match.Merge.isVariableB atom then 1 else 0
 
 private theorem readoutRank_child (valuation : String → Metta.Atom)
     {atoms : List Atom} {atom : Atom} (member : atom ∈ atoms) :
     readoutRank valuation atom < readoutRank valuation (.expression atoms) := by
-  have encoded : toLeaTTaAtom atom ∈ toLeaTTaAtoms atoms := by
-    have maps : toLeaTTaAtoms atoms = atoms.map toLeaTTaAtom := by
+  have encoded : encodeModelAtom atom ∈ encodeModelAtoms atoms := by
+    have maps : encodeModelAtoms atoms = atoms.map encodeModelAtom := by
       clear member
       induction atoms with
       | nil => rfl
-      | cons first rest ih => simp only [toLeaTTaAtoms, List.map_cons, ih]
+      | cons first rest ih => simp only [encodeModelAtoms, List.map_cons, ih]
     rw [maps]
     exact List.mem_map.mpr ⟨atom, member, rfl⟩
-  have sizes : (applyClassSolution valuation (toLeaTTaAtom atom)).size ∈
-      ((toLeaTTaAtoms atoms).map (applyClassSolution valuation)).map Metta.Atom.size :=
+  have sizes : (applyClassSolution valuation (encodeModelAtom atom)).size ∈
+      ((encodeModelAtoms atoms).map (applyClassSolution valuation)).map Metta.Atom.size :=
     List.mem_map.mpr ⟨_, List.mem_map.mpr ⟨_,encoded,rfl⟩,rfl⟩
   have smaller := List.single_le_sum (by intro _ _; omega) _ sizes
   have extra : (if Spec.Match.Merge.isVariableB atom then 1 else 0) ≤ 1 := by
     split <;> omega
   have parent : readoutRank valuation (.expression atoms) =
-      2 * ((((toLeaTTaAtoms atoms).map (applyClassSolution valuation)).map Metta.Atom.size).sum + 1) := by
-    simp [readoutRank,toLeaTTaAtom,applyClassSolution,Metta.Atom.size,Spec.Match.Merge.isVariableB,Nat.add_comm]
+      2 * ((((encodeModelAtoms atoms).map (applyClassSolution valuation)).map Metta.Atom.size).sum + 1) := by
+    simp [readoutRank,encodeModelAtom,applyClassSolution,Metta.Atom.size,Spec.Match.Merge.isVariableB,Nat.add_comm]
   rw [parent]
   unfold readoutRank
   omega
@@ -1047,9 +935,9 @@ private theorem resolver_principal_of_rank {bindings : Bindings}
       readoutRank (canonicalValuation bindings loopFree nonvariable) atom < fuel →
       AncestorBound (canonicalValuation bindings loopFree nonvariable) visited atom →
       ∃ resolved, bindings.resolveAtomFullAux fuel visited atom = some resolved ∧
-        toLeaTTaAtom resolved =
+        encodeModelAtom resolved =
           applyClassSolution (canonicalValuation bindings loopFree nonvariable)
-            (toLeaTTaAtom atom) := by
+            (encodeModelAtom atom) := by
   let valuation := canonicalValuation bindings loopFree nonvariable
   have satisfied : HEBindingSatisfied valuation bindings :=
     canonicalValuation_satisfies_of_classCoherent loopFree nonvariable coherent
@@ -1059,12 +947,12 @@ private theorem resolver_principal_of_rank {bindings : Bindings}
   | succ fuel ih =>
       intro visited atom bounded ancestors
       cases atom with
-      | symbol name => exact ⟨.symbol name,rfl,by simp [toLeaTTaAtom,applyClassSolution]⟩
-      | grounded value => exact ⟨.grounded value,rfl,by simp [toLeaTTaAtom,applyClassSolution]⟩
+      | symbol name => exact ⟨.symbol name,rfl,by simp [encodeModelAtom,applyClassSolution]⟩
+      | grounded value => exact ⟨.grounded value,rfl,by simp [encodeModelAtom,applyClassSolution]⟩
       | expression atoms =>
           have each : ∀ atom ∈ atoms, ∃ resolved,
               bindings.resolveAtomFullAux fuel visited atom = some resolved ∧
-              toLeaTTaAtom resolved = applyClassSolution valuation (toLeaTTaAtom atom) := by
+              encodeModelAtom resolved = applyClassSolution valuation (encodeModelAtom atom) := by
             intro atom member
             apply ih visited atom
             · have smaller := readoutRank_child valuation member
@@ -1075,7 +963,7 @@ private theorem resolver_principal_of_rank {bindings : Bindings}
               exact ancestors name (.expression member occurrence) seen inVisited
           have many : ∀ xs : List Atom, (∀ x ∈ xs, x ∈ atoms) →
               ∃ ys, xs.mapM (bindings.resolveAtomFullAux fuel visited) = some ys ∧
-                toLeaTTaAtoms ys = (toLeaTTaAtoms xs).map (applyClassSolution valuation) := by
+                encodeModelAtoms ys = (encodeModelAtoms xs).map (applyClassSolution valuation) := by
             intro xs
             induction xs with
             | nil => intro _; exact ⟨[],rfl,rfl⟩
@@ -1085,11 +973,11 @@ private theorem resolver_principal_of_rank {bindings : Bindings}
                 obtain ⟨values,restRun,restValues⟩ := tail (fun x member => subset x (by simp [member]))
                 refine ⟨value::values, ?_, ?_⟩
                 · simp [List.mapM_cons,firstRun,restRun]
-                · simp only [toLeaTTaAtoms,List.map_cons,firstValue,restValues]
+                · simp only [encodeModelAtoms,List.map_cons,firstValue,restValues]
           obtain ⟨resolved,mapped,readout⟩ := many atoms (fun _ member => member)
           refine ⟨.expression resolved, ?_, ?_⟩
           · simp [Bindings.resolveAtomFullAux,mapped]
-          · simpa only [toLeaTTaAtom,applyClassSolution] using congrArg Metta.Atom.expr readout
+          · simpa only [encodeModelAtom,applyClassSolution] using congrArg Metta.Atom.expr readout
       | var name =>
           have notVisited : (bindings.eqClassOrdered name).any visited.contains = false := by
             apply List.any_eq_false.mpr
@@ -1106,16 +994,16 @@ private theorem resolver_principal_of_rank {bindings : Bindings}
               · refine ⟨.var name, ?_, ?_⟩
                 · simp only [Bindings.resolveAtomFullAux,notVisited,Bool.false_eq_true,↓reduceIte,selected]
                   rw [if_pos singleton]
-                · simpa only [toLeaTTaAtom,applyClassSolution,Bindings.eqRepresentative,singleton,
+                · simpa only [encodeModelAtom,applyClassSolution,Bindings.eqRepresentative,singleton,
                     List.headD_cons] using observed.symm
               · refine ⟨.var (bindings.eqRepresentative name), ?_, ?_⟩
                 · simp only [Bindings.resolveAtomFullAux,notVisited,Bool.false_eq_true,↓reduceIte,selected]
                   rw [if_neg singleton]
-                · simpa only [toLeaTTaAtom,applyClassSolution] using observed.symm
+                · simpa only [encodeModelAtom,applyClassSolution] using observed.symm
           | some value =>
               obtain ⟨key,stored,inClass⟩ := selected_stored selected
               have valueNonvar := nonvariable key value stored
-              have observed : valuation name = applyClassSolution valuation (toLeaTTaAtom value) :=
+              have observed : valuation name = applyClassSolution valuation (encodeModelAtom value) :=
                 selected_value_observation satisfied selected
               have unfoldResolver : bindings.resolveAtomFullAux (fuel+1) visited (.var name) =
                   if bindings.hasResolvableVar value then
@@ -1127,10 +1015,10 @@ private theorem resolver_principal_of_rank {bindings : Bindings}
               · rw [if_pos resolvable]
                 have smaller : readoutRank valuation value < readoutRank valuation (.var name) := by
                   have left : readoutRank valuation value =
-                      2 * (applyClassSolution valuation (toLeaTTaAtom value)).size := by
+                      2 * (applyClassSolution valuation (encodeModelAtom value)).size := by
                     simp only [readoutRank,valueNonvar,Bool.false_eq_true,↓reduceIte,Nat.add_zero]
                   have right : readoutRank valuation (.var name) = 2 * (valuation name).size + 1 := by
-                    simp only [readoutRank,Spec.Match.Merge.isVariableB,toLeaTTaAtom,applyClassSolution,↓reduceIte]
+                    simp only [readoutRank,Spec.Match.Merge.isVariableB,encodeModelAtom,applyClassSolution,↓reduceIte]
                   rw [left,right,observed]
                   omega
                 obtain ⟨resolved,ran,readout⟩ := ih (bindings.eqClassOrdered name ++ visited) value
@@ -1149,10 +1037,10 @@ private theorem resolver_principal_of_rank {bindings : Bindings}
                       exact smaller
                     · exact smaller.trans (ancestors name (.var name) seen inOld))
                 refine ⟨resolved,ran,?_⟩
-                simpa only [toLeaTTaAtom,applyClassSolution] using readout.trans observed.symm
+                simpa only [encodeModelAtom,applyClassSolution] using readout.trans observed.symm
               · rw [if_neg resolvable]
                 refine ⟨value,rfl,?_⟩
-                simpa only [toLeaTTaAtom,applyClassSolution] using
+                simpa only [encodeModelAtom,applyClassSolution] using
                   (canonical_fixes_unresolvable loopFree nonvariable
                     (by simpa using resolvable)).symm.trans observed.symm
 
@@ -1163,9 +1051,9 @@ private theorem application_principal_of_rank {bindings : Bindings}
     (coherent : CanonicalClassCoherent bindings loopFree nonvariable) :
     ∀ fuel atom,
       readoutRank (canonicalValuation bindings loopFree nonvariable) atom + 1 < fuel →
-      toLeaTTaAtom (bindings.applyFull atom fuel) =
+      encodeModelAtom (bindings.applyFull atom fuel) =
         applyClassSolution (canonicalValuation bindings loopFree nonvariable)
-          (toLeaTTaAtom atom) := by
+          (encodeModelAtom atom) := by
   let valuation := canonicalValuation bindings loopFree nonvariable
   intro fuel
   induction fuel with
@@ -1173,12 +1061,12 @@ private theorem application_principal_of_rank {bindings : Bindings}
   | succ fuel ih =>
       intro atom bounded
       cases atom with
-      | symbol name => simp [Bindings.applyFull,toLeaTTaAtom,applyClassSolution]
-      | grounded value => simp [Bindings.applyFull,toLeaTTaAtom,applyClassSolution]
+      | symbol name => simp [Bindings.applyFull,encodeModelAtom,applyClassSolution]
+      | grounded value => simp [Bindings.applyFull,encodeModelAtom,applyClassSolution]
       | expression atoms =>
           have each : ∀ atom ∈ atoms,
-              toLeaTTaAtom (bindings.applyFull atom fuel) =
-                applyClassSolution valuation (toLeaTTaAtom atom) := by
+              encodeModelAtom (bindings.applyFull atom fuel) =
+                applyClassSolution valuation (encodeModelAtom atom) := by
             intro atom member
             apply ih atom
             have smaller := readoutRank_child valuation member
@@ -1186,17 +1074,17 @@ private theorem application_principal_of_rank {bindings : Bindings}
             change readoutRank valuation atom + 1 < fuel
             omega
           have many : ∀ xs : List Atom, (∀ x ∈ xs, x ∈ atoms) →
-              toLeaTTaAtoms (xs.map (fun atom => bindings.applyFull atom fuel)) =
-                (toLeaTTaAtoms xs).map (applyClassSolution valuation) := by
+              encodeModelAtoms (xs.map (fun atom => bindings.applyFull atom fuel)) =
+                (encodeModelAtoms xs).map (applyClassSolution valuation) := by
             intro xs
             induction xs with
             | nil => intro _; rfl
             | cons first rest tail =>
                 intro subset
-                simp only [List.map_cons,toLeaTTaAtoms]
+                simp only [List.map_cons,encodeModelAtoms]
                 exact congrArg₂ List.cons (each first (subset first (by simp)))
                   (tail (fun atom member => subset atom (by simp [member])))
-          simpa only [Bindings.applyFull,toLeaTTaAtom,applyClassSolution] using
+          simpa only [Bindings.applyFull,encodeModelAtom,applyClassSolution] using
             congrArg Metta.Atom.expr (many atoms (fun _ member => member))
       | var name =>
           by_cases missing :
@@ -1210,7 +1098,7 @@ private theorem application_principal_of_rank {bindings : Bindings}
             have unchanged : bindings.applyFull (.var name) (fuel+1) = .var name := by
               simp only [Bindings.applyFull,Bindings.resolveFull,missing,↓reduceIte]
             rw [unchanged]
-            simpa only [toLeaTTaAtom,applyClassSolution,Bindings.eqRepresentative,
+            simpa only [encodeModelAtom,applyClassSolution,Bindings.eqRepresentative,
               singleton,List.headD_cons] using observed.symm
           · obtain ⟨resolved,ran,readout⟩ := resolver_principal_of_rank loopFree nonvariable coherent
               fuel [] (.var name) (by omega) (by intro _ _ _ member; cases member)
@@ -1227,8 +1115,8 @@ theorem applyFull_eq_canonical_of_covered {bindings : Bindings}
     (nonvariable : AssignmentsNonVariable bindings)
     (coherent : CanonicalClassCoherent bindings loopFree nonvariable)
     (atom : Atom) (depth : Nat) (covered : bindings.applyFullCovered atom depth = true) :
-    toLeaTTaAtom (bindings.applyFull atom depth) =
-      applyClassSolution (canonicalValuation bindings loopFree nonvariable) (toLeaTTaAtom atom) := by
+    encodeModelAtom (bindings.applyFull atom depth) =
+      applyClassSolution (canonicalValuation bindings loopFree nonvariable) (encodeModelAtom atom) := by
   let extra := readoutRank (canonicalValuation bindings loopFree nonvariable) atom + 2
   have actual := application_principal_of_rank loopFree nonvariable coherent (depth+extra) atom
     (by dsimp [extra]; omega)
@@ -1242,8 +1130,8 @@ theorem applyFull_eq_canonical_of_resolutionFuel {bindings : Bindings}
     (nonvariable : AssignmentsNonVariable bindings)
     (coherent : CanonicalClassCoherent bindings loopFree nonvariable)
     (atom : Atom) (extra : Nat := 0) :
-    toLeaTTaAtom (bindings.applyFull atom (bindings.resolutionFuel atom + extra)) =
-      applyClassSolution (canonicalValuation bindings loopFree nonvariable) (toLeaTTaAtom atom) := by
+    encodeModelAtom (bindings.applyFull atom (bindings.resolutionFuel atom + extra)) =
+      applyClassSolution (canonicalValuation bindings loopFree nonvariable) (encodeModelAtom atom) := by
   rw [bindings.applyFullCovered_stable atom (bindings.resolutionFuel atom) extra
     (bindings.applyFullCovered_resolutionFuel atom)]
   exact applyFull_eq_canonical_of_covered loopFree nonvariable coherent atom _
@@ -1257,12 +1145,12 @@ theorem applyFull_mostGeneralSolution {bindings : Bindings}
     (nonvariable : AssignmentsNonVariable bindings)
     (coherent : CanonicalClassCoherent bindings loopFree nonvariable) :
     MostGeneralSolution bindings (fun name =>
-      toLeaTTaAtom (bindings.applyFull (.var name) (bindings.resolutionFuel (.var name)))) := by
+      encodeModelAtom (bindings.applyFull (.var name) (bindings.resolutionFuel (.var name)))) := by
   have same : (fun name =>
-      toLeaTTaAtom (bindings.applyFull (.var name) (bindings.resolutionFuel (.var name)))) =
+      encodeModelAtom (bindings.applyFull (.var name) (bindings.resolutionFuel (.var name)))) =
       canonicalValuation bindings loopFree nonvariable := by
     funext name
-    simpa only [Nat.add_zero,toLeaTTaAtom,applyClassSolution] using
+    simpa only [Nat.add_zero,encodeModelAtom,applyClassSolution] using
       applyFull_eq_canonical_of_resolutionFuel loopFree nonvariable coherent (.var name)
   rw [same]
   exact canonicalValuation_mostGeneralSolution_of_classCoherent loopFree nonvariable coherent
@@ -1275,7 +1163,7 @@ theorem applyFull_typeBindingSatisfied {bindings : Bindings}
     (coherent : CanonicalClassCoherent bindings loopFree nonvariable) :
     Spec.Type.RuntimeRefinement.TypeBindingSatisfied
       (fun name => bindings.applyFull (.var name) (bindings.resolutionFuel (.var name))) bindings :=
-  (LeaTTaTypeConformance.specTypeBindingSatisfied_iff_heBindingSatisfied_translated _ _).mpr
+  (Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_iff_heBindingSatisfied_translated _ _).mpr
     (applyFull_mostGeneralSolution loopFree nonvariable coherent).1
 
 /-- One sufficient-depth executable HE readout acts homomorphically on an arbitrary
@@ -1287,12 +1175,12 @@ theorem applyFull_eq_readoutValuation_of_covered {bindings : Bindings}
     (atom : Atom) (depth : Nat) (covered : bindings.applyFullCovered atom depth = true) :
     bindings.applyFull atom depth = Spec.Type.RuntimeRefinement.applyTypeValuation
       (fun name => bindings.applyFull (.var name) (bindings.resolutionFuel (.var name))) atom := by
-  apply toLeaTTaAtom_injective
+  apply encodeModelAtom_injective
   rw [applyFull_eq_canonical_of_covered loopFree nonvariable coherent atom depth covered,
-    LeaTTaTypeConformance.toLeaTTaAtom_applyTypeValuation]
+    Spec.Bindings.ScopeObservation.ModelTransport.encodeModelAtom_applyTypeValuation]
   apply applyClassSolution_congr_of_eq_on_vars
   intro name _
-  simpa only [Nat.add_zero,toLeaTTaAtom,applyClassSolution] using
+  simpa only [Nat.add_zero,encodeModelAtom,applyClassSolution] using
     (applyFull_eq_canonical_of_resolutionFuel loopFree nonvariable coherent (.var name)).symm
 
 
@@ -1303,10 +1191,10 @@ theorem applyFull_type_semantically_inert {bindings : Bindings} {valuation : Str
     (atom : Atom) (depth : Nat) :
     Spec.Type.RuntimeRefinement.applyTypeValuation valuation (bindings.applyFull atom depth) =
       Spec.Type.RuntimeRefinement.applyTypeValuation valuation atom := by
-  apply toLeaTTaAtom_injective
-  simp only [LeaTTaTypeConformance.toLeaTTaAtom_applyTypeValuation]
+  apply encodeModelAtom_injective
+  simp only [Spec.Bindings.ScopeObservation.ModelTransport.encodeModelAtom_applyTypeValuation]
   exact applyFull_semantically_inert
-    (LeaTTaTypeConformance.heBindingSatisfied_of_specTypeBindingSatisfied satisfied) atom depth
+    (Spec.Bindings.ScopeObservation.ModelTransport.heBindingSatisfied_of_specTypeBindingSatisfied satisfied) atom depth
 
 /-- Scoped-equivalent binding theories yield alpha-equivalent actual HE
 readouts. Private model extensions are taken from the existing scoped
@@ -1574,18 +1462,17 @@ end PrincipalReadout
 section ActualMergePrincipality
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
-open LeaTTaBridge
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 open Spec.Match.ModelTheory Spec.Match.StructuralModel
 open Spec.Bindings.ScopeObservation
 open Spec.Type.Presentation
-open LeaTTaTypePresentationExactConformance
 
 open private map_replicate_append_singleton_last
   from Mettapedia.Languages.MeTTa.HE.Spec.Match.StructuralModel
 
 private theorem occurs_iff_typeVars {atom : Atom} {name : String} :
     Spec.Match.Merge.AtomOccurs atom name ↔ name ∈ TypeSubst.typeVars atom := by
-  rw [atomOccurs_iff_mem_translated_vars, toLeaTTaAtom_vars_eq_typeVars]
+  rw [atomOccurs_iff_mem_translated_vars, Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars]
 
 private theorem dependenciesBelow_of_support {target out : Bindings}
     {source : DependencyNode target}
@@ -1673,7 +1560,7 @@ theorem declMerge_right_satisfied_of_dependenciesBelow
       ∀ assignment : ClassAssignment target node.1,
         canonicalNodeValue target loopFree nonvariable node =
           applyClassSolution (canonicalValuation target loopFree nonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     {left right out : Bindings}
     (merged : DeclMergeSpec.MergeRel left right out)
     (included : BindingSubrecord out target)
@@ -1687,7 +1574,7 @@ theorem declMerge_right_satisfied_of_dependenciesBelow
         BindingSubrecord result target →
         AtomDependenciesBelow target source (.var key) →
         AtomDependenciesBelow target source value →
-        valuation key = applyClassSolution valuation (toLeaTTaAtom value))
+        valuation key = applyClassSolution valuation (encodeModelAtom value))
       (motive_2 := fun _ first second result _ =>
         BindingSubrecord result target → valuation first = valuation second)
       (motive_3 := fun _ assignments result _ =>
@@ -1696,7 +1583,7 @@ theorem declMerge_right_satisfied_of_dependenciesBelow
           AtomDependenciesBelow target source (.var key) ∧
           AtomDependenciesBelow target source value) →
         ∀ key value, (key,value) ∈ assignments →
-          valuation key = applyClassSolution valuation (toLeaTTaAtom value))
+          valuation key = applyClassSolution valuation (encodeModelAtom value))
       (motive_4 := fun _ equalities result _ =>
         BindingSubrecord result target →
         ∀ first second, (first,second) ∈ equalities →
@@ -1707,7 +1594,7 @@ theorem declMerge_right_satisfied_of_dependenciesBelow
       (t := merged)
     next =>
       intro seed key value empty contained keyBelow _valueBelow
-      have free := LeaTTaBridge.isBound_eq_false_of_classValues_nil empty
+      have free := EqualityClosure.isBound_eq_false_of_classValues_nil empty
       have stored : (key,value) ∈ (seed.assign key value).assignments := by
         simp [Bindings.assign, free]
       exact canonical_assignment_eq_of_key_below loopFree nonvariable smaller
@@ -1756,11 +1643,11 @@ theorem declMerge_right_satisfied_of_dependenciesBelow
       obtain ⟨fuel, member⟩ := DeclMatchSpec.matchAtomsList_complete listProof
       have listValues := (matchAtomsList_singleton_solution_iff member valuation).mp
         matchedSatisfied |>.2
-      have firstValue : applyClassSolution valuation (toLeaTTaAtom first) =
-          applyClassSolution valuation (toLeaTTaAtom value) := by
+      have firstValue : applyClassSolution valuation (encodeModelAtom first) =
+          applyClassSolution valuation (encodeModelAtom value) := by
         apply map_replicate_append_singleton_last
-          (fun atom => applyClassSolution valuation (toLeaTTaAtom atom)) first value rest
-        simpa [MettaAtomListsSatisfied, solutionTheory_toLeaTTaAtoms_eq_map,
+          (fun atom => applyClassSolution valuation (encodeModelAtom atom)) first value rest
+        simpa [MettaAtomListsSatisfied, solutionTheory_encodeModelAtoms_eq_map,
           List.map_map, Function.comp_def] using listValues
       exact (canonical_eq_classValue_of_subrecord_below
         loopFree nonvariable smaller seedTarget keyBelow firstMem).trans firstValue
@@ -1855,7 +1742,7 @@ theorem mergeBindings_semanticLoopFree_of_common_model
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Match.ModelTheory Spec.Match.StructuralModel
-open LeaTTaBridge
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 open private assignmentsNodup_assign lookup_eq_some_of_mem_nodup map_replicate_eq_each
   from Mettapedia.Languages.MeTTa.HE.Spec.Match.StructuralModel
@@ -1871,7 +1758,7 @@ theorem declMerge_evalCoherentAt
       ∀ assignment : ClassAssignment target node.1,
         canonicalNodeValue target loopFree nonvariable node =
           applyClassSolution (canonicalValuation target loopFree nonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     {left right out : Bindings} (merged : DeclMergeSpec.MergeRel left right out)
     (included : BindingSubrecord out target) (unique : AssignmentsNodup left)
     (seedCoherent : ClassAssignmentsEvalCoherentIn target left
@@ -1945,8 +1832,8 @@ theorem declMerge_evalCoherentAt
       obtain ⟨fuel, ran⟩ := DeclMatchSpec.matchAtoms_complete matchProof
       have equation := (matchAtoms_solution_iff ran valuation).mp matchedSatisfied
       have pivot : ∀ value ∈ [first, second],
-          applyClassSolution valuation (toLeaTTaAtom first) =
-            applyClassSolution valuation (toLeaTTaAtom value) := by
+          applyClassSolution valuation (encodeModelAtom first) =
+            applyClassSolution valuation (encodeModelAtom value) := by
         intro value present
         rcases List.mem_cons.mp present with same | present
         · subst value; rfl
@@ -1986,11 +1873,11 @@ theorem declMerge_evalCoherentAt
       obtain ⟨fuel, ran⟩ := DeclMatchSpec.matchAtomsList_complete matchProof
       have items := (matchAtomsList_singleton_solution_iff ran valuation).mp matchedSatisfied |>.2
       have pivot : ∀ value ∈ first :: second :: third :: rest,
-          applyClassSolution valuation (toLeaTTaAtom first) =
-            applyClassSolution valuation (toLeaTTaAtom value) := by
-        apply map_replicate_eq_each (fun atom => applyClassSolution valuation (toLeaTTaAtom atom))
+          applyClassSolution valuation (encodeModelAtom first) =
+            applyClassSolution valuation (encodeModelAtom value) := by
+        apply map_replicate_eq_each (fun atom => applyClassSolution valuation (encodeModelAtom atom))
           first (second :: third :: rest)
-        simpa [MettaAtomListsSatisfied, solutionTheory_toLeaTTaAtoms_eq_map,
+        simpa [MettaAtomListsSatisfied, solutionTheory_encodeModelAtoms_eq_map,
           List.map_map, Function.comp_def, Nat.add_assoc] using items
       exact ihMerge resultIncluded candidateUnique
         (evalCoherentIn_addEquality_of_pivot coherent seedUnique valuePermutation candidateIncluded pivot)
@@ -2041,7 +1928,7 @@ theorem evalCoherentIn_of_no_equalities {target seed : Bindings}
   have sameValue : leftValue = rightValue := Option.some.inj
     ((lookup_eq_some_of_mem_nodup unique leftPresent).symm.trans
       (lookup_eq_some_of_mem_nodup unique rightPresent))
-  exact congrArg (fun value => applyClassSolution valuation (toLeaTTaAtom value)) sameValue
+  exact congrArg (fun value => applyClassSolution valuation (encodeModelAtom value)) sameValue
 
 /-- Starting from a unique equality-free seed, an actual successful merge
 earns canonical coherence by replaying every conflict. Caller coherence is
@@ -2061,7 +1948,7 @@ theorem declMerge_canonicalClassCoherent_of_no_equalities
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Match.ModelTheory
-open LeaTTaBridge
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 /-- Actual merge output has canonical coherence when its unique equality-free
 seed and its right record share a model. The conclusion is earned from the
@@ -2097,7 +1984,7 @@ theorem mergeBindings_applyFull_mostGeneral_of_common_model
     (leftModel : HEBindingSatisfied valuation left)
     (rightModel : HEBindingSatisfied valuation right) :
     MostGeneralSolution out (fun name =>
-      toLeaTTaAtom (out.applyFull (.var name) (out.resolutionFuel (.var name)))) :=
+      encodeModelAtom (out.applyFull (.var name) (out.resolutionFuel (.var name)))) :=
   applyFull_mostGeneralSolution
     (mergeBindings_semanticLoopFree_of_common_model member leftShape rightShape
       leftModel rightModel)
@@ -2107,279 +1994,7 @@ theorem mergeBindings_applyFull_mostGeneral_of_common_model
 
 end ActualMergePrincipality
 
-/-! ## Separate executable query-binding projection -/
-
-/-- The operational observation square for two concrete binding backends.
-Logical theory equivalence transports the satisfying model; both actual
-application algorithms preserve its observation at any HE fuel. -/
-theorem application_observation {spec : Bindings} {native : Metta.Bindings}
-    (equivalent : LeaBindingSolutionTheoryEquiv spec native)
-    {valuation : String → Metta.Atom} (satisfied : HEBindingSatisfied valuation spec)
-    (atom : Atom) (fuel : Nat) :
-    applyClassSolution valuation (toLeaTTaAtom (spec.applyFull atom fuel)) =
-      applyClassSolution valuation (Metta.instantiate native (toLeaTTaAtom atom)) :=
-  (applyFull_semantically_inert satisfied atom fuel).trans
-    (instantiate_semantically_inert ((equivalent valuation).mp satisfied) (toLeaTTaAtom atom)).symm
-
-/-- Concrete projection earns the application observation square directly
-from its field-level solution-theory theorem. -/
-theorem projected_application_observation (bindings : Metta.Bindings)
-    (image : LeaBindingsHEImage bindings) {valuation : String → Metta.Atom}
-    (satisfied : HEBindingSatisfied valuation (project bindings)) (atom : Atom) (fuel : Nat) :
-    applyClassSolution valuation (toLeaTTaAtom ((project bindings).applyFull atom fuel)) =
-      applyClassSolution valuation (Metta.instantiate bindings (toLeaTTaAtom atom)) :=
-  application_observation (solutionTheory bindings image) satisfied atom fuel
-
-
-/-- Reachable native bindings turn model observation into equality after the
-actual materialization boundary, reusing the existing canonical-model law. -/
-theorem application_materialization {spec : Bindings} {native : Metta.Bindings}
-    (invariant : LeaQueryOpBindingInvariant spec native) (atom : Atom) (fuel : Nat) :
-    Metta.instantiate native (toLeaTTaAtom (spec.applyFull atom fuel)) =
-      Metta.instantiate native (toLeaTTaAtom atom) :=
-  invariant.materializes_observation fun _ satisfied => applyFull_semantically_inert satisfied atom fuel
-
-/-- The actual minimal invocation substitutes before dispatch. Consequently
-it respects bounded HE application even when the unmaterialized syntax has a
-different shape. No congruence of arbitrary raw dispatch is asserted. -/
-theorem application_invocation {spec : Bindings} {native : Metta.Bindings}
-    (invariant : LeaQueryOpBindingInvariant spec native)
-    (environment : Metta.Minimal.MinEnv) (state : Metta.Minimal.St)
-    (continuation : Metta.Minimal.Stack) (atom : Atom) (fuel : Nat) :
-    Metta.Minimal.evalOp environment state continuation
-      (toLeaTTaAtom (spec.applyFull atom fuel)) native =
-    Metta.Minimal.evalOp environment state continuation (toLeaTTaAtom atom) native :=
-  evalOp_eq_of_instantiate_eq environment state continuation native
-    (application_materialization invariant atom fuel)
-
-/-! ## Independent normal presentations at materialized boundaries -/
-
-/-- An independently normal finite presentation of the complete binding
-theory has the same materialized shape as the actual principal runtime
-resolver, up to a renaming of residual variables. -/
-theorem normal_materialization_alpha {spec : Bindings} {native : Metta.Bindings}
-    (invariant : LeaQueryOpBindingInvariant spec native)
-    {presentation : TypeSubst} (normal : presentation.Normal)
-    (exactTheory : ∀ valuation,
-      Spec.Type.Presentation.Theory.TypeSubstSatisfied valuation presentation ↔
-        Spec.Type.RuntimeRefinement.TypeBindingSatisfied valuation spec)
-    (atom : Atom) :
-    Spec.Type.Presentation.Alpha.ObservedTypeAlphaRel (presentation.apply atom)
-      (fromLeaTTaAtom (Metta.instantiate native (toLeaTTaAtom atom))) :=
-  LeaTTaTypePresentationPrincipalAlpha.observedTypeAlpha_of_bindingTheory normal
-    exactTheory invariant.solutionTheory invariant.runtime atom
-
-/-- A reachable paired binding frame earns source satisfiability from its
-actual canonical runtime model. No normal source-record format is assumed. -/
-theorem binding_theory_satisfiable {spec : Bindings} {native : Metta.Bindings}
-    (invariant : LeaQueryOpBindingInvariant spec native) :
-    ∃ valuation, Spec.Type.RuntimeRefinement.TypeBindingSatisfied valuation spec := by
-  have model : HEBindingSatisfied (leaClassSolution native) spec :=
-    (invariant.solutionTheory _).mpr invariant.runtime.canonical.1
-  exact ⟨_, specTypeBindingSatisfied_of_heBindingSatisfied model⟩
-
-/-- A reachable spec/runtime pair earns an independent normal finite
-presentation from the spec equations themselves. Its actual materialization
-comparison is then derived from principality, rather than assumed as a field
-or defined by the runtime result. -/
-theorem exists_normal_materialization {spec : Bindings} {native : Metta.Bindings}
-    (invariant : LeaQueryOpBindingInvariant spec native) :
-    ∃ presentation : TypeSubst,
-      presentation.Normal ∧
-      (∀ valuation, Spec.Type.Presentation.Theory.TypeSubstSatisfied valuation presentation ↔
-        Spec.Type.RuntimeRefinement.TypeBindingSatisfied valuation spec) ∧
-      ∀ atom : Atom,
-        Spec.Type.Presentation.Alpha.ObservedTypeAlphaRel (presentation.apply atom)
-          (fromLeaTTaAtom (Metta.instantiate native (toLeaTTaAtom atom))) := by
-  obtain ⟨presentation, fold⟩ :=
-    Spec.Type.Presentation.BindingTheory.exists_binding_presentation (binding_theory_satisfiable invariant)
-  exact ⟨presentation, fold.bindingTheory.1, fold.bindingTheory.2,
-    normal_materialization_alpha invariant fold.bindingTheory.1 fold.bindingTheory.2⟩
-
-/-- Every independently generated finished-operand materialization agrees
-with actual reachable runtime materialization up to residual-variable renaming.
-The source relation itself has no native resolver premise. -/
-theorem binding_materialization_alpha {spec : Bindings} {native : Metta.Bindings}
-    (invariant : LeaQueryOpBindingInvariant spec native) {raw normalized : Atom}
-    (materialized : BindingMaterializationRel spec raw normalized) :
-    Spec.Type.Presentation.Alpha.ObservedTypeAlphaRel normalized
-      (fromLeaTTaAtom (Metta.instantiate native (toLeaTTaAtom raw))) := by
-  obtain ⟨presentation, fold, rfl⟩ := materialized
-  exact normal_materialization_alpha invariant fold.bindingTheory.1 fold.bindingTheory.2 raw
-
-/-- Construct the independent operand relation from the actual paired frame,
-then derive its native comparison. The relation is not defined by the native
-result, and no correspondence certificate is supplied by the caller. -/
-theorem exists_binding_materialization {spec : Bindings} {native : Metta.Bindings}
-    (invariant : LeaQueryOpBindingInvariant spec native) (raw : Atom) :
-    ∃ normalized, BindingMaterializationRel spec raw normalized ∧
-      Spec.Type.Presentation.Alpha.ObservedTypeAlphaRel normalized
-        (fromLeaTTaAtom (Metta.instantiate native (toLeaTTaAtom raw))) := by
-  obtain ⟨normalized, materialized⟩ :=
-    BindingMaterializationRel.exists_of_satisfiable (binding_theory_satisfiable invariant) raw
-  exact ⟨normalized, materialized, binding_materialization_alpha invariant materialized⟩
-
-/-- Projection of the current concrete binding record earns the same
-source-generated handler materialization at every finite operand depth. -/
-theorem projected_binding_materialization (native : Metta.Bindings)
-    (image : LeaBindingsHEImage native) (runtime : LeaRuntimeBindingInvariant native) (raw : Atom) :
-    ∃ normalized, BindingMaterializationRel (project native) raw normalized ∧
-      Spec.Type.Presentation.Alpha.ObservedTypeAlphaRel normalized
-        (fromLeaTTaAtom (Metta.instantiate native (toLeaTTaAtom raw))) :=
-  exists_binding_materialization (paired native image runtime).semantic raw
-
-/-- The concrete query projection constructs the semantic invariant used by
-the normal presentation theorem. No presentation or correspondence is an
-extra caller-supplied certificate. -/
-theorem projected_normal_materialization (native : Metta.Bindings)
-    (image : LeaBindingsHEImage native) (runtime : LeaRuntimeBindingInvariant native) :
-    ∃ presentation : TypeSubst,
-      presentation.Normal ∧
-      (∀ valuation, Spec.Type.Presentation.Theory.TypeSubstSatisfied valuation presentation ↔
-        Spec.Type.RuntimeRefinement.TypeBindingSatisfied valuation (project native)) ∧
-      ∀ atom : Atom,
-        Spec.Type.Presentation.Alpha.ObservedTypeAlphaRel (presentation.apply atom)
-          (fromLeaTTaAtom (Metta.instantiate native (toLeaTTaAtom atom))) :=
-  exists_normal_materialization (paired native image runtime).semantic
-
 namespace Controls
-
-private def aliased : Metta.Bindings := [.eq "x" "y", .val "y" (.sym "answer")]
-private def model (name : String) : Metta.Atom :=
-  if name = "x" ∨ name = "y" then .sym "answer" else .var name
-
-private theorem aliased_image : LeaBindingsHEImage aliased := by
-  intro name value member
-  have same : name = "y" ∧ value = .sym "answer" := by simpa [aliased] using member
-  obtain ⟨rfl, rfl⟩ := same
-  exact leaAtomHEImage_sym "answer"
-
-private theorem model_satisfies : HEBindingSatisfied model (project aliased) := by
-  constructor
-  · intro name value member
-    have same : name = "y" ∧ value = .symbol "answer" := by
-      simpa only [project, aliased, List.filterMap_cons, List.filterMap_nil,
-        List.mem_singleton, Prod.mk.injEq, fromLeaTTaAtom] using member
-    obtain ⟨rfl, rfl⟩ := same
-    simp [model, toLeaTTaAtom, applyClassSolution]
-  · intro name other member
-    have same : name = "x" ∧ other = "y" := by
-      simpa only [project, aliased, leaEqualityEdges, List.mem_singleton, Prod.mk.injEq] using member
-    obtain ⟨rfl, rfl⟩ := same
-    simp [model]
-
-/-- A concrete nontrivial equality class earns observation agreement for
-arbitrary atoms, including every finite nesting, at every application fuel. -/
-theorem alias_application_observed (atom : Atom) (fuel : Nat) :
-    applyClassSolution model (toLeaTTaAtom ((project aliased).applyFull atom fuel)) =
-      applyClassSolution model (Metta.instantiate aliased (toLeaTTaAtom atom)) :=
-  projected_application_observation aliased aliased_image model_satisfies atom fuel
-
-private def direct : Metta.Bindings := [.val "x" (.sym "answer")]
-
-/-- Equal model observations do not make insufficient-fuel syntax into a
-fully materialized structural operand. -/
-theorem insufficient_fuel_is_not_materialization :
-    (project direct).applyFull (.var "x") 0 = .var "x" ∧
-    fromLeaTTaAtom (Metta.instantiate direct (.var "x")) = .symbol "answer" ∧
-    (project direct).applyFull (.var "x") 0 ≠
-      fromLeaTTaAtom (Metta.instantiate direct (.var "x")) := by
-  have materialized := Metta.instantiate_singleton_val_var_of_not_mem "x" (.sym "answer")
-    (by simp [Metta.Atom.vars])
-  have decoded : fromLeaTTaAtom (Metta.instantiate direct (.var "x")) = .symbol "answer" := by
-    rw [show direct = [.val "x" (.sym "answer")] from rfl, materialized]
-    rfl
-  refine ⟨rfl, decoded, ?_⟩
-  rw [decoded]
-  change (Atom.var "x") ≠ .symbol "answer"
-  decide
-
-private def functionValue : Atom :=
-  .expression [.symbol "function", .expression [.symbol "return", .symbol "answer"]]
-private def functionBindings : Metta.Bindings := [.val "f" (toLeaTTaAtom functionValue)]
-
-/-- Function dispatch is a finer observer than model equality: an unresolved
-variable and its materialized function block have different dispatch shapes. -/
-theorem observation_does_not_authorize_function_dispatch :
-    (project functionBindings).applyFull (.var "f") 0 = .var "f" ∧
-    fromLeaTTaAtom (Metta.instantiate functionBindings (.var "f")) = functionValue ∧
-    getMetaType ((project functionBindings).applyFull (.var "f") 0) = Atom.variableType ∧
-    getMetaType (fromLeaTTaAtom (Metta.instantiate functionBindings (.var "f"))) = Atom.expressionType := by
-  have fresh : "f" ∉ (toLeaTTaAtom functionValue).vars := by
-    simp [functionValue, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars]
-  have materialized := Metta.instantiate_singleton_val_var_of_not_mem "f"
-    (toLeaTTaAtom functionValue) fresh
-  simp only [functionBindings, materialized, fromLeaTTaAtom_toLeaTTaAtom, Bindings.applyFull]
-  simp [functionValue, getMetaType]
-
-private theorem function_image : LeaBindingsHEImage functionBindings := by
-  intro name value member
-  have same : name = "f" ∧ value = toLeaTTaAtom functionValue := by
-    simpa [functionBindings] using member
-  obtain ⟨rfl, rfl⟩ := same
-  exact leaAtomHEImage_toLeaTTaAtom functionValue
-
-private theorem function_runtime : LeaRuntimeBindingInvariant functionBindings := by
-  have noFloat : LeaBindingsNoFloat functionBindings := by
-    intro name value member
-    have same : name = "f" ∧ value = toLeaTTaAtom functionValue := by
-      simpa [functionBindings] using member
-    obtain ⟨rfl, rfl⟩ := same
-    exact toLeaTTaAtom_noFloat functionValue
-  have merged : Metta.Bindings.merge [] functionBindings = [functionBindings] := by rfl
-  have loopFree : functionBindings.hasLoop = false := by
-    exact Metta.Bindings.hasLoop_singleton_val_of_not_mem "f" (toLeaTTaAtom functionValue)
-      (by simp [functionValue, toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.vars])
-  exact leaRuntimeBindingInvariant_empty.merge noFloat
-    (by change functionBindings ∈ Metta.Bindings.merge [] functionBindings
-        rw [merged]; exact List.mem_singleton_self _) loopFree
-
-/-- The independent one-pass presentation exposes the function hidden by an
-unresolved alias. Its exact source theory and runtime principality are earned
-from concrete fields and the actual merge, rather than supplied as premises. -/
-theorem bound_function_has_normal_source_presentation :
-    let presentation : TypeSubst := [("f", functionValue)]
-    presentation.Normal ∧
-      (∀ valuation, Spec.Type.Presentation.Theory.TypeSubstSatisfied valuation presentation ↔
-        Spec.Type.RuntimeRefinement.TypeBindingSatisfied valuation (project functionBindings)) ∧
-      presentation.apply (.var "f") = functionValue ∧
-      Spec.Type.Presentation.Alpha.ObservedTypeAlphaRel
-        (presentation.apply (.var "f"))
-        (fromLeaTTaAtom (Metta.instantiate functionBindings (.var "f"))) := by
-  intro presentation
-  have normal : presentation.Normal := by
-    simp [presentation, functionValue, TypeSubst.Normal, TypeSubst.keys,
-      TypeSubst.typeVars, TypeSubst.typeVarsList]
-  have theory : ∀ valuation,
-      Spec.Type.Presentation.Theory.TypeSubstSatisfied valuation presentation ↔
-        Spec.Type.RuntimeRefinement.TypeBindingSatisfied valuation (project functionBindings) := by
-    intro valuation
-    simp [Spec.Type.Presentation.Theory.TypeSubstSatisfied,
-      Spec.Type.RuntimeRefinement.TypeBindingSatisfied, presentation, project, functionBindings,
-      fromLeaTTaAtom_toLeaTTaAtom, leaEqualityEdges]
-  have image := function_image
-  have exposed : presentation.apply (.var "f") = functionValue := by
-    simp [presentation, TypeSubst.apply, TypeSubst.lookup]
-  exact ⟨normal, theory, exposed,
-    normal_materialization_alpha (paired functionBindings image function_runtime).semantic
-      normal theory (.var "f")⟩
-
-/-- The actual valid native function-alias frame also has the independent
-finished-operand relation, with the same source binding projection and actual
-principal materialization. This is not an unresolved-syntax dispatch claim. -/
-theorem bound_function_has_materialization_derivation :
-    BindingMaterializationRel (project functionBindings) (.var "f") functionValue ∧
-    Spec.Type.Presentation.Alpha.ObservedTypeAlphaRel functionValue
-      (fromLeaTTaAtom (Metta.instantiate functionBindings (.var "f"))) ∧
-    (Atom.var "f") ≠ functionValue := by
-  have materialized : BindingMaterializationRel (project functionBindings) (.var "f") functionValue := by
-    have independent := BindingMaterializationRel.single_assignment "f" functionValue (.var "f")
-      (by simp [functionValue, TypeSubst.typeVars, TypeSubst.typeVarsList])
-    simpa [project, functionBindings, leaEqualityEdges, fromLeaTTaAtom_toLeaTTaAtom,
-      TypeSubst.apply, TypeSubst.lookup] using independent
-  exact ⟨materialized,
-    binding_materialization_alpha (paired functionBindings function_image function_runtime).semantic materialized,
-    by simp [functionValue]⟩
 
 /-! Actual HE principal-readout controls. -/
 
@@ -2491,7 +2106,7 @@ private theorem principalCompound_coherent :
 
 theorem principalCompound_actual_principal :
     MostGeneralSolution principalCompound
-      (fun name => LeaTTaBridge.toLeaTTaAtom
+      (fun name => Spec.Match.SolutionTheory.encodeModelAtom
         (principalCompound.applyFull (.var name)
           (principalCompound.resolutionFuel (.var name)))) :=
   applyFull_mostGeneralSolution principalCompound_loopFree
@@ -2507,8 +2122,8 @@ theorem principalCompound_actual_principal :
 
 /-- Acyclic but conflicting raw records are not promoted to principal models. -/
 theorem incoherent_actual_readout_not_model :
-    ¬LeaTTaBridge.HEBindingSatisfied
-      (fun name => LeaTTaBridge.toLeaTTaAtom
+    ¬Spec.Match.SolutionTheory.HEBindingSatisfied
+      (fun name => Spec.Match.SolutionTheory.encodeModelAtom
         (incompatibleAcyclicProbe.applyFull (.var name)
           (incompatibleAcyclicProbe.resolutionFuel (.var name))))
       incompatibleAcyclicProbe := by
@@ -2692,7 +2307,7 @@ theorem cyclicMerge_not_loopFree : ¬ Spec.Match.Merge.SemanticLoopFree cyclicMe
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Match.ModelTheory
 open Spec.Type.RuntimeRefinement
-open LeaTTaBridge
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 theorem duplicateAlias_coherent :
     CanonicalClassCoherent duplicateAliasOut duplicateAlias_loopFree duplicateAlias_nonvariable :=
@@ -2704,7 +2319,7 @@ theorem duplicateAlias_coherent :
 Its missing `y = a` constraint is now present, and the actual resolver is principal. -/
 theorem reconciledCompound_principal :
     MostGeneralSolution reconciledCompoundOut (fun name =>
-      toLeaTTaAtom (reconciledCompoundOut.applyFull (.var name)
+      encodeModelAtom (reconciledCompoundOut.applyFull (.var name)
         (reconciledCompoundOut.resolutionFuel (.var name)))) := by
   obtain ⟨valuation, model⟩ := satisfiableUnreconciledProbe_has_model
   exact mergeBindings_applyFull_mostGeneral_of_common_model
@@ -3252,7 +2867,7 @@ end Mettapedia.Languages.MeTTa.HE.QueryBindingProjection.Controls
 
 namespace Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
-open Spec.Match.ModelTheory Spec.Match.StructuralModel LeaTTaBridge
+open Spec.Match.ModelTheory Spec.Match.StructuralModel Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 /-- The actual expression matcher retains its seed through each concrete merge. -/
 theorem declMatchList_seed_subrecord {left right : List Atom} {seed out : Bindings}
@@ -3274,7 +2889,7 @@ theorem declMatchList_evalCoherentAt
       ∀ assignment : ClassAssignment target node.1,
         canonicalNodeValue target loopFree nonvariable node =
           applyClassSolution (canonicalValuation target loopFree nonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     {left right : List Atom} {seed out : Bindings}
     (derived : DeclMatchSpec.MatchListAccRel left right seed out)
     (included : BindingSubrecord out target) (unique : AssignmentsNodup seed)
@@ -3302,7 +2917,7 @@ theorem declMatch_evalCoherentAt
       ∀ assignment : ClassAssignment target node.1,
         canonicalNodeValue target loopFree nonvariable node =
           applyClassSolution (canonicalValuation target loopFree nonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     {left right : Atom} {matched : Bindings}
     (derived : DeclMatchSpec.MatchRel left right matched)
     (included : BindingSubrecord matched target) :
@@ -3347,7 +2962,7 @@ theorem mergeBindings_applyFull_mostGeneral_of_match_model
     (equation : HEAtomEquationSatisfied valuation left right)
     (callerModel : HEBindingSatisfied valuation caller) :
     MostGeneralSolution out (fun name =>
-      toLeaTTaAtom (out.applyFull (.var name) (out.resolutionFuel (.var name)))) := by
+      encodeModelAtom (out.applyFull (.var name) (out.resolutionFuel (.var name)))) := by
   have matchedShape := matchAtoms_assignmentsNonVariable_model matching
   have matchedModel := (matchAtoms_solution_iff matching valuation).mpr equation
   have shape := mergeBindings_assignmentsNonVariable_model merged matchedShape callerShape
@@ -3367,7 +2982,7 @@ theorem mergeBindings_applyFull_mostGeneral_of_match
     (callerShape : AssignmentsNonVariable caller)
     (admitted : out.hasLoop = false) :
     MostGeneralSolution out (fun name =>
-      toLeaTTaAtom (out.applyFull (.var name) (out.resolutionFuel (.var name)))) := by
+      encodeModelAtom (out.applyFull (.var name) (out.resolutionFuel (.var name)))) := by
   have shape := mergeBindings_assignmentsNonVariable_model merged
     (matchAtoms_assignmentsNonVariable_model matching) callerShape
   have loopFree := (Spec.Match.Merge.hasLoop_eq_false_iff_semanticLoopFree out).mp admitted
@@ -3392,7 +3007,7 @@ theorem alias_match_is_open : matched.equalities ≠ [] ∧
 
 theorem selected_principal :
     MostGeneralSolution merged (fun name =>
-      toLeaTTaAtom (merged.applyFull (.var name) (merged.resolutionFuel (.var name)))) := by
+      encodeModelAtom (merged.applyFull (.var name) (merged.resolutionFuel (.var name)))) := by
   apply mergeBindings_applyFull_mostGeneral_of_match selected_match selected_merge
   · intro key value present
     have same : key="public" ∧ value=.symbol "A" := by simpa [caller] using present
@@ -3421,7 +3036,7 @@ namespace Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Type.Presentation Spec.Type.RuntimeRefinement Spec.Bindings.ScopeObservation
 open Spec.Match.Merge Spec.Match.ModelTheory Spec.Match.Completeness
-open LeaTTaBridge LeaTTaSpecConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 /-- A surviving actual open query constructs an independent matcher and caller
 merge with the same full solution theory and support. The source endpoint is
@@ -3450,15 +3065,15 @@ theorem open_match_source_endpoint
     (DeclMergeSpec.mergeBindings_sound merged) loopFree shape
   let valuation : String → Atom := fun name=>out.applyFull (.var name) (out.resolutionFuel (.var name))
   have nativeModel : TypeBindingSatisfied valuation out := applyFull_typeBindingSatisfied loopFree shape coherent
-  have nativeInputs := (mergeBindings_solution_iff merged (fun name=>toLeaTTaAtom (valuation name))).mp
-    (LeaTTaTypeConformance.heBindingSatisfied_of_specTypeBindingSatisfied nativeModel)
-  have sourceCallerModel : HEBindingSatisfied (fun name=>toLeaTTaAtom (valuation name)) independent :=
-    LeaTTaTypeConformance.heBindingSatisfied_of_specTypeBindingSatisfied
+  have nativeInputs := (mergeBindings_solution_iff merged (fun name=>encodeModelAtom (valuation name))).mp
+    (Spec.Bindings.ScopeObservation.ModelTransport.heBindingSatisfied_of_specTypeBindingSatisfied nativeModel)
+  have sourceCallerModel : HEBindingSatisfied (fun name=>encodeModelAtom (valuation name)) independent :=
+    Spec.Bindings.ScopeObservation.ModelTransport.heBindingSatisfied_of_specTypeBindingSatisfied
       ((inputTheory valuation).mp
-        ((LeaTTaTypeConformance.specTypeBindingSatisfied_iff_heBindingSatisfied_translated valuation caller).mpr
+        ((Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_iff_heBindingSatisfied_translated valuation caller).mpr
           nativeInputs.2))
   obtain ⟨sourceMatched,sourceMatch,sourceMatchModel⟩ := exists_specMatch_of_solution
-    ((matchAtoms_solution_iff matching (fun name=>toLeaTTaAtom (valuation name))).mp nativeInputs.1)
+    ((matchAtoms_solution_iff matching (fun name=>encodeModelAtom (valuation name))).mp nativeInputs.1)
   have sourceCallerShape : HEAssignmentsNonVariable independent := by
     intro key target stored
     have impossible := independentShape key (.var target) stored
@@ -3472,25 +3087,85 @@ theorem open_match_source_endpoint
     | symbol | grounded | expression => rfl
   refine ⟨sourceMatched,sourceOut,sourceMatch,sourceMerge,nonvariable,
     semanticLoopFree_of_satisfied_nonvariable sourceModel nonvariable,
-    ⟨valuation,(LeaTTaTypeConformance.specTypeBindingSatisfied_iff_heBindingSatisfied_translated
+    ⟨valuation,(Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_iff_heBindingSatisfied_translated
       valuation sourceOut).mpr sourceModel⟩,?_,?_⟩
   · intro observer
-    rw [LeaTTaTypeConformance.specTypeBindingSatisfied_iff_heBindingSatisfied_translated observer out,
-      LeaTTaTypeConformance.specTypeBindingSatisfied_iff_heBindingSatisfied_translated observer sourceOut,
+    rw [Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_iff_heBindingSatisfied_translated observer out,
+      Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_iff_heBindingSatisfied_translated observer sourceOut,
       mergeBindings_solution_iff merged,
       Spec.Match.SolutionTheory.mergeRel_solution_iff sourceMerge,
       matchAtoms_solution_iff matching,
       Spec.Match.SolutionTheory.matchRel_solution_iff sourceMatch]
-    have callerModels : HEBindingSatisfied (fun name=>toLeaTTaAtom (observer name)) caller ↔
-        HEBindingSatisfied (fun name=>toLeaTTaAtom (observer name)) independent :=
-      (LeaTTaTypeConformance.specTypeBindingSatisfied_iff_heBindingSatisfied_translated observer caller).symm.trans
+    have callerModels : HEBindingSatisfied (fun name=>encodeModelAtom (observer name)) caller ↔
+        HEBindingSatisfied (fun name=>encodeModelAtom (observer name)) independent :=
+      (Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_iff_heBindingSatisfied_translated observer caller).symm.trans
         ((inputTheory observer).trans
-          (LeaTTaTypeConformance.specTypeBindingSatisfied_iff_heBindingSatisfied_translated observer independent))
+          (Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_iff_heBindingSatisfied_translated observer independent))
     rw [callerModels]
     rfl
   · intro name
     rw [FreshPrivateMerge.merge_support_iff merged name,FreshPrivateMerge.match_support_iff matching name,
       SourceSupport.merge_support sourceMerge name,SourceSupport.match_support sourceMatch name,inputSupport]
+
+end Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
+
+namespace Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type.Presentation Spec.Type.RuntimeRefinement Spec.Bindings.ScopeObservation
+open Spec.Type.Presentation.BindingTheory
+open Spec.Match.Merge Spec.Match.ModelTheory Spec.Match.Completeness
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+
+/-- A surviving open query constructs an independent source match, actual
+candidate-first source merge, and one correlated readout for an arbitrary whole
+continuation tuple. The same residual permutation preserves the complete
+source theory and exact freshness support and fixes every outside name.
+This does not assert equivariance of unchanged name-inspecting host policies. -/
+theorem open_match_joint_source_endpoint
+    {query pattern : Atom} {matched caller independent out : Bindings} {matchFuel mergeFuel : Nat}
+    (matching : matched ∈ matchAtoms query pattern matchFuel)
+    (merged : out ∈ mergeBindings matched caller mergeFuel)
+    (callerShape : AssignmentsNonVariable caller)
+    (independentShape : AssignmentsNonVariable independent)
+    (admitted : out.hasLoop=false)
+    (inputTheory : ∀ valuation,TypeBindingSatisfied valuation caller ↔
+      TypeBindingSatisfied valuation independent)
+    (inputSupport : ∀ name,name∈specBindingVars caller ↔ name∈specBindingVars independent)
+    (observations : List Atom) (depth : Nat)
+    (covered : out.applyFullCovered (.expression observations) depth=true) :
+    ∃ (sourceMatched sourceOut : Bindings) (normalized : Atom) (p : Equiv.Perm String),
+      MatchRel equalityGroundedSemantic query pattern sourceMatched ∧
+      MergeRel equalityGroundedSemantic sourceMatched independent sourceOut ∧
+      AssignmentsNonVariable sourceOut ∧ SemanticLoopFree sourceOut ∧
+      BindingMaterializationRel sourceOut (.expression observations) normalized ∧
+      normalized=renameTypeVars p (out.applyFull (.expression observations) depth) ∧
+      (∀ valuation,TypeBindingSatisfied valuation out ↔ TypeBindingSatisfied valuation sourceOut) ∧
+      (∀ name,name∈specBindingVars out ↔ name∈specBindingVars sourceOut) ∧
+      (∀ valuation,TypeBindingSatisfied valuation sourceOut →
+        ∀ atom,applyTypeValuation valuation (renameTypeVars p atom)=applyTypeValuation valuation atom) ∧
+      (∀ name,name∉specBindingVars sourceOut → p name=name) ∧
+      (∀ valuation,TypeBindingSatisfied valuation out ↔
+        TypeBindingSatisfied valuation (renameBindings p sourceOut)) ∧
+      (∀ name,name∈specBindingVars out ↔ name∈specBindingVars (renameBindings p sourceOut)) := by
+  obtain ⟨sourceMatched,sourceOut,sourceMatch,sourceMerge,sourceShape,sourceLoop,sourceModel,
+      theory,support⟩ := open_match_source_endpoint matching merged callerShape independentShape
+        admitted inputTheory inputSupport
+  obtain ⟨normalized,materialized⟩ :=
+    BindingMaterializationRel.exists_of_satisfiable sourceModel (.expression observations)
+  have shape := mergeBindings_assignmentsNonVariable_model merged
+    (matchAtoms_assignmentsNonVariable_model matching) callerShape
+  have loopFree := (hasLoop_eq_false_iff_semanticLoopFree out).mp admitted
+  have coherent := declMerge_canonicalClassCoherent_of_match (DeclMatchSpec.matchAtoms_sound matching)
+    (DeclMergeSpec.mergeBindings_sound merged) loopFree shape
+  obtain ⟨p,readout,fixed,_outside,renamedTheory⟩ :=
+    applyFull_joint_model_fixed_permutation_of_bindingMaterialization loopFree shape coherent
+      theory observations depth covered materialized
+  exact ⟨sourceMatched,sourceOut,normalized,p,sourceMatch,sourceMerge,sourceShape,sourceLoop,
+    materialized,readout,theory,support,
+    fun valuation model atom=>applyTypeValuation_model_fixed p valuation (fixed valuation model) atom,
+    model_fixed_fixes_outside p sourceModel fixed,
+    fun valuation=>(theory valuation).trans (renamedTheory valuation).symm,
+    fun name=>(support name).trans (renameBindings_support_of_model_fixed p sourceModel fixed name).symm⟩
 
 end Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
 
@@ -3554,14 +3229,8 @@ theorem nativeReadoutPresentation_certificate {native independent : Bindings}
     (sameSolutions : ∀ valuation, TypeBindingSatisfied valuation native ↔
       TypeBindingSatisfied valuation independent) :
     BindingTheory.ReadoutCertificate independent (nativeReadoutPresentation native) := by
-  obtain ⟨folded, choice, fold, _normal, _theory, allReads, fixed, outside⟩ :=
-    exists_uniform_exact_native_presentation loopFree nonvariable coherent sameSolutions
-  refine ⟨(nativeReadoutPresentation_principal loopFree nonvariable coherent sameSolutions).1,
-    folded, choice, fold, fixed, outside, ?_⟩
-  intro atom
-  exact (nativeReadoutPresentation_apply loopFree nonvariable coherent atom _
-    (native.applyFullCovered_resolutionFuel atom)).trans
-    (allReads atom _ (native.applyFullCovered_resolutionFuel atom)).symm
+  have principal := nativeReadoutPresentation_principal loopFree nonvariable coherent sameSolutions
+  exact BindingTheory.ReadoutCertificate.of_normal_theory principal.1 principal.2
 
 end Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
 
@@ -3571,7 +3240,7 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Type.Presentation Spec.Type.Presentation.BindingTheory
 open Spec.Type.RuntimeRefinement Spec.Bindings.ScopeObservation
 open Spec.Match.Merge Spec.Match.ModelTheory Spec.Eval.Steps
-open LeaTTaBridge LeaTTaTypeConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-- Every actual raw merge occurrence preserves the full original conjunction.
 This says nothing about a subsequent loop filter or selected representative. -/
@@ -3667,7 +3336,7 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Type.Presentation Spec.Type.Presentation.Theory
 open Spec.Type.Presentation.BindingTheory Spec.Type.RuntimeRefinement
 open Spec.Bindings.ScopeObservation Spec.Match.Merge Spec.Match.ModelTheory
-open LeaTTaBridge LeaTTaTypeConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-- Execute the existing merger on a constraint-equivalent alias presentation,
 retain its structural cycle filter, and compute one finite ordered-class
@@ -3801,7 +3470,7 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Type.Presentation Spec.Type.Presentation.Theory
 open Spec.Type.Presentation.BindingTheory Spec.Type.RuntimeRefinement
 open Spec.Bindings.ScopeObservation Spec.Match.Merge Spec.Match.ModelTheory
-open LeaTTaBridge LeaTTaTypeConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-- Each selected occurrence retains its actual matching origin, complete
 constraint theory, and a single internally constructed output table. -/
@@ -3967,7 +3636,7 @@ open Spec.Type.Presentation Spec.Type.Presentation.Theory
 open Spec.Type.Presentation.BindingTheory Spec.Type.RuntimeRefinement
 open Spec.Bindings.ScopeObservation Spec.Match.Merge Spec.Match.ModelTheory
 open Spec.Match.Completeness
-open LeaTTaBridge LeaTTaTypeConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-- An actual repaired occurrence constructs an independent match and the
 full conjunction contract against the chosen source input. The source input
@@ -3993,7 +3662,7 @@ theorem mergeReadouts_source
   have matchedModel := ((bindingSatisfied_append_iff valuation matched incoming).mp
     ((agreement.solutions valuation).mp model)).1
   obtain ⟨sourceMatched, sourceMatch, _sourceModel⟩ := exists_specMatch_of_solution
-    ((matchAtoms_solution_iff matching (fun name => toLeaTTaAtom (valuation name))).mp
+    ((matchAtoms_solution_iff matching (fun name => encodeModelAtom (valuation name))).mp
       (heBindingSatisfied_of_specTypeBindingSatisfied matchedModel))
   have matchAgreement : BindingSourceAgreement matched sourceMatched := by
     constructor
@@ -4030,6 +3699,75 @@ theorem unifyReadouts_source
         table.apply atom = output.applyFull atom readDepth) := by
   obtain ⟨matched, matching, selected⟩ := mem_unifyReadouts.mp occurred
   exact mergeReadouts_source input matching selected
+
+/-- Complete local matcher and merge coverage is equivalent to the
+independent existence of a satisfiable unify candidate. Both directions
+construct their witnesses, including for arbitrary incoming aliases. -/
+theorem covered_unifyReadouts_iff_source
+    {target pattern : Atom} {incoming : Bindings} {depth : Nat}
+    (covered : unifyMatchesCovered target pattern incoming depth = true) :
+    (∃ entry, entry ∈ unifyReadouts target pattern incoming depth) ↔
+      ∃ output, Spec.Eval.Steps.UnifyCandidateRel target pattern incoming output := by
+  constructor
+  · rintro ⟨⟨output,table⟩,occurred⟩
+    obtain ⟨sourceMatched,matching,agreement,⟨valuation,model⟩,_,_⟩ :=
+      unifyReadouts_source (.refl incoming) occurred
+    have common := (bindingSatisfied_append_iff valuation sourceMatched incoming).mp
+      ((agreement.solutions valuation).mp model)
+    exact ⟨_,sourceMatched,matching,LogicalMergeRel.append_of_common_model ⟨valuation,common⟩⟩
+  · rintro ⟨sourceOutput,sourceMatched,sourceMatch,sourceMerge⟩
+    obtain ⟨valuation,model⟩ := sourceMerge.2
+    have parts := (sourceMerge.solutions valuation).mp model
+    let observer : String → Metta.Atom := fun name => encodeModelAtom (valuation name)
+    have equation : HEAtomEquationSatisfied observer target pattern :=
+      (Spec.Match.SolutionTheory.matchRel_solution_iff sourceMatch observer).mp
+        (heBindingSatisfied_of_specTypeBindingSatisfied parts.1)
+    obtain ⟨matchCovered,mergeCovered⟩ := Bool.and_eq_true_iff.mp covered
+    obtain ⟨matched,matching⟩ := covered_match_of_solution matchCovered equation
+    have matchedModel : HEBindingSatisfied observer matched :=
+      (matchAtoms_solution_iff matching observer).mpr equation
+    have callerModel : HEBindingSatisfied observer (aliasConstraints incoming) :=
+      heBindingSatisfied_of_specTypeBindingSatisfied
+        ((aliasConstraints_models incoming valuation).mpr parts.2)
+    have callerShape : HEAssignmentsNonVariable (aliasConstraints incoming) := by
+      intro key name present
+      have impossible := aliasConstraints_nonvariable incoming key (.var name) present
+      simp [isVariableB] at impossible
+    obtain ⟨output,witnessDepth,occurred⟩ := exists_mergeBindings_of_common_model
+      matchedModel (heAssignmentsNonVariable_of_matchAtoms matching) callerModel callerShape
+    have later := DeclMatchSpec.mergeBindings_mono matched (aliasConstraints incoming)
+      witnessDepth depth occurred
+    have stable := matchCovered_stable depth witnessDepth (.merge matched (aliasConstraints incoming))
+      (List.all_eq_true.mp mergeCovered matched matching)
+    change mergeBindings matched (aliasConstraints incoming) (depth + witnessDepth) =
+      mergeBindings matched (aliasConstraints incoming) depth at stable
+    rw [Nat.add_comm witnessDepth depth,stable] at later
+    have selected := (mergeReadouts_selected_iff_common_model matching later).mpr
+      ⟨valuation,(specTypeBindingSatisfied_iff_heBindingSatisfied_translated valuation matched).mpr
+        matchedModel,parts.2⟩
+    exact ⟨_,mem_unifyReadouts.mpr ⟨matched,matching,selected⟩⟩
+
+/-- A completed empty primitive result is exactly independent failure of
+the full match-and-caller conjunction. This licenses the else branch after
+merge rejection as well as after structural mismatch. -/
+theorem covered_unify_empty_iff
+    {target pattern branch : Atom} {incoming : Bindings} {depth : Nat}
+    (covered : unifyMatchesCovered target pattern incoming depth = true) :
+    unifySuccessResults target pattern branch incoming depth = [] ↔
+      Spec.Eval.Steps.UnifyNoMatchRel target pattern incoming := by
+  rw [← results_eq_unifySuccessResults]
+  change (unifyReadouts target pattern incoming depth).map _ = [] ↔ _
+  rw [List.map_eq_nil_iff]
+  constructor
+  · intro empty output candidate
+    obtain ⟨entry,occurred⟩ := (covered_unifyReadouts_iff_source covered).mpr ⟨output,candidate⟩
+    rw [empty] at occurred
+    exact List.not_mem_nil occurred
+  · intro absent
+    apply List.eq_nil_iff_forall_not_mem.mpr
+    intro entry occurred
+    obtain ⟨output,candidate⟩ := (covered_unifyReadouts_iff_source covered).mp ⟨entry,occurred⟩
+    exact absent output candidate
 
 /-- The chosen source certificate is absorbed by the actual computed table
 simultaneously on the complete pending tuple. -/
@@ -4131,6 +3869,13 @@ theorem all_pending_positions_absorb_old_table (atoms : List Atom) :
 theorem actual_coverage : unifyMatchesCovered target pattern (aliasConstraints incoming) 12 = true := by
   decide +kernel
 
+/-- Complete actual search constructs an independent source candidate for
+the crossed bare-alias caller, without a normalized-caller premise. -/
+theorem crossed_aliases_have_source_candidate :
+    ∃ selected, Spec.Eval.Steps.UnifyCandidateRel target pattern incoming selected := by
+  apply (covered_unifyReadouts_iff_source (depth := 12) (by decide +kernel)).mp
+  exact ⟨_,actual_occurrence⟩
+
 theorem every_larger_depth_keeps_the_occurrence (extra : Nat) :
     results target pattern pending incoming (12 + extra) =
       [(.expression [.var "u", .var "u", .var "u", .var "u", .var "u"], output)] :=
@@ -4169,6 +3914,27 @@ theorem outside_name_stays_free :
   decide +kernel
 
 def groundCaller : Bindings := ⟨[("x", .symbol "A")], [("x", "saved") ]⟩
+
+/-- Structural matching succeeds, but the caller's incompatible constraint
+rejects the merge. Completed search licenses genuine source failure. -/
+theorem post_merge_failure_is_source_failure :
+    matchAtoms (.var "x") (.symbol "B") 12 ≠ [] ∧
+      unifySuccessResults (.var "x") (.symbol "B") (.symbol "yes") groundCaller 12 = [] ∧
+      Spec.Eval.Steps.UnifyNoMatchRel (.var "x") (.symbol "B") groundCaller := by
+  have empty : unifySuccessResults (.var "x") (.symbol "B") (.symbol "yes") groundCaller 12 = [] := by
+    decide +kernel
+  exact ⟨by decide +kernel,empty,(covered_unify_empty_iff (by decide +kernel)).mp empty⟩
+
+/-- The same empty helper output at depth zero cannot establish that
+failure: the independent source still has a live candidate. -/
+theorem truncated_unify_is_not_source_failure :
+    unifySuccessResults target pattern pending incoming 0 = [] ∧
+      unifyMatchesCovered target pattern incoming 0 = false ∧
+      ¬Spec.Eval.Steps.UnifyNoMatchRel target pattern incoming := by
+  refine ⟨by decide +kernel,by decide +kernel,?_⟩
+  intro absent
+  obtain ⟨selected,candidate⟩ := crossed_aliases_have_source_candidate
+  exact absent selected candidate
 
 theorem nonvariable_fragment_unchanged (left right branch : Atom) (depth : Nat) :
     results left right branch groundCaller depth =
@@ -4234,3 +4000,467 @@ theorem representative_spelling_is_not_arbitrary_literal_invariance :
   decide +kernel
 
 end Mettapedia.Languages.MeTTa.HE.QueryBindingProjection.AliasReadout.Controls
+
+namespace Mettapedia.Languages.MeTTa.HE.BindingSourceAgreement
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type Spec.Type.RuntimeRefinement Spec.Bindings.ScopeObservation
+open Spec.Match.Merge Spec.Match.Completeness
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
+
+/-- A finite source type match survives a change of the incoming constraint
+representation. The independent merge is constructed from its common model;
+its output retains the full solution theory and freshening support. The
+admitted input stores aliases as equality edges, not variable-valued
+assignments. Literal representative readouts are a separate contract. -/
+theorem typeMatch_finite {native independent output : Bindings} {expected actual : Atom}
+    (input : BindingSourceAgreement native independent)
+    (shape : HEAssignmentsNonVariable independent)
+    (matched : TypeMatchRel expected actual native output)
+    (finite : ∃ valuation : String → Atom, TypeBindingSatisfied valuation output) :
+    ∃ sourceOutput,
+      TypeMatchRel expected actual independent sourceOutput ∧
+      BindingSourceAgreement output sourceOutput ∧
+      HEAssignmentsNonVariable sourceOutput ∧
+      ∃ valuation : String → Atom, TypeBindingSatisfied valuation sourceOutput := by
+  cases matched with
+  | undefinedLeft =>
+      obtain ⟨valuation, model⟩ := finite
+      exact ⟨independent, .undefinedLeft _ _, input, shape, valuation, (input.solutions valuation).mp model⟩
+  | atomLeft =>
+      obtain ⟨valuation, model⟩ := finite
+      exact ⟨independent, .atomLeft _ _, input, shape, valuation, (input.solutions valuation).mp model⟩
+  | undefinedRight =>
+      obtain ⟨valuation, model⟩ := finite
+      exact ⟨independent, .undefinedRight _ _, input, shape, valuation, (input.solutions valuation).mp model⟩
+  | atomRight =>
+      obtain ⟨valuation, model⟩ := finite
+      exact ⟨independent, .atomRight _ _, input, shape, valuation, (input.solutions valuation).mp model⟩
+  | @structural _ _ _ matchingBindings _ leftUndefined leftAtom rightUndefined rightAtom matching merged =>
+      obtain ⟨valuation, model⟩ := finite
+      have conjunction := (bindingSatisfied_append_iff valuation native matchingBindings).mp
+        ((merged.bindingSourceAgreement.solutions valuation).mp model)
+      have independentModel := (input.solutions valuation).mp conjunction.1
+      obtain ⟨sourceOutput, sourceMerge, sourceModel, sourceShape⟩ := exists_specMerge_of_solution
+        ((specTypeBindingSatisfied_iff_heBindingSatisfied_translated valuation independent).mp independentModel)
+        shape
+        ((specTypeBindingSatisfied_iff_heBindingSatisfied_translated valuation matchingBindings).mp conjunction.2)
+        (Spec.Match.ModelTheory.specMatch_assignmentsNonVariable matching)
+      refine ⟨sourceOutput,
+        .structural leftUndefined leftAtom rightUndefined rightAtom matching sourceMerge,
+        merged.bindingSourceAgreement.trans
+          ((input.append (.refl matchingBindings)).trans sourceMerge.bindingSourceAgreement.symm),
+        sourceShape, valuation, ?_⟩
+      exact (specTypeBindingSatisfied_iff_heBindingSatisfied_translated valuation sourceOutput).mpr sourceModel
+
+/-- Finite candidate existence and rejection depend on the incoming theory
+and its support, rather than assignment order or alias-edge orientation.
+This is an existence law, not a completed candidate-bag or readout law. -/
+theorem typeMatch_finite_exists_iff {native independent : Bindings} {expected actual : Atom}
+    (input : BindingSourceAgreement native independent)
+    (nativeShape : HEAssignmentsNonVariable native)
+    (sourceShape : HEAssignmentsNonVariable independent) :
+    (∃ output, TypeMatchRel expected actual native output ∧
+      ∃ valuation : String → Atom, TypeBindingSatisfied valuation output) ↔
+    (∃ output, TypeMatchRel expected actual independent output ∧
+      ∃ valuation : String → Atom, TypeBindingSatisfied valuation output) := by
+  constructor
+  · rintro ⟨output, matched, finite⟩
+    obtain ⟨sourceOutput, sourceMatch, _, _, sourceModel⟩ := input.typeMatch_finite sourceShape matched finite
+    exact ⟨sourceOutput, sourceMatch, sourceModel⟩
+  · rintro ⟨output, matched, finite⟩
+    obtain ⟨nativeOutput, nativeMatch, _, _, nativeModel⟩ :=
+      input.symm.typeMatch_finite nativeShape matched finite
+    exact ⟨nativeOutput, nativeMatch, nativeModel⟩
+
+end Mettapedia.Languages.MeTTa.HE.BindingSourceAgreement
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Type
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type.RuntimeRefinement Spec.Type.Presentation Spec.Type.Presentation.BindingTheory
+open Spec.Bindings.ScopeObservation
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
+
+/-- Equivalent incoming constraints and the same source type query determine
+equivalent output constraint theories and support.
+The chosen equality-edge order and alias representative are not fixed by
+this law, and it does not assert literal equality of materialized reads. -/
+theorem TypeMatchRel.output_agreement {expected actual : Atom}
+    {leftBefore rightBefore first second : Bindings}
+    (left : TypeMatchRel expected actual leftBefore first)
+    (right : TypeMatchRel expected actual rightBefore second)
+    (incoming : BindingSourceAgreement leftBefore rightBefore) :
+    BindingSourceAgreement first second := by
+  by_cases wildcard : expected = Atom.undefinedType ∨ expected = Atom.atomType ∨
+      actual = Atom.undefinedType ∨ actual = Atom.atomType
+  · simpa only [left.wildcard_output wildcard,right.wildcard_output wildcard] using incoming
+  · have ordinary : expected ≠ Atom.undefinedType ∧ expected ≠ Atom.atomType ∧
+        actual ≠ Atom.undefinedType ∧ actual ≠ Atom.atomType := by
+      simpa only [not_or] using wildcard
+    obtain ⟨expectedDefined,expectedOrdinary,actualDefined,actualOrdinary⟩ := ordinary
+    obtain ⟨leftMatch,leftMatched,leftMerged⟩ := left.structural_of_nonWildcard
+      expectedDefined expectedOrdinary actualDefined actualOrdinary
+    obtain ⟨rightMatch,rightMatched,rightMerged⟩ := right.structural_of_nonWildcard
+      expectedDefined expectedOrdinary actualDefined actualOrdinary
+    have matched : BindingSourceAgreement leftMatch rightMatch := by
+      constructor
+      · intro valuation
+        rw [specTypeBindingSatisfied_iff_heBindingSatisfied_translated,
+          specTypeBindingSatisfied_iff_heBindingSatisfied_translated]
+        exact Spec.Match.SolutionTheory.matchRel_solutionTheory_unique leftMatched rightMatched _
+      · intro name
+        rw [QueryBindingProjection.SourceSupport.match_support leftMatched name,
+          QueryBindingProjection.SourceSupport.match_support rightMatched name]
+    exact leftMerged.bindingSourceAgreement.trans
+      ((incoming.append matched).trans rightMerged.bindingSourceAgreement.symm)
+
+private theorem first_selected_eq {Item : Type} (accepted : Item → Prop)
+    (leftPrefix rightPrefix leftTail rightTail : List Item) (left right : Item)
+    (same : leftPrefix ++ left :: leftTail = rightPrefix ++ right :: rightTail)
+    (leftRejected : ∀ item ∈ leftPrefix, ¬accepted item)
+    (rightRejected : ∀ item ∈ rightPrefix, ¬accepted item)
+    (leftAccepted : accepted left) (rightAccepted : accepted right) : left = right := by
+  induction leftPrefix generalizing rightPrefix with
+  | nil =>
+      cases rightPrefix with
+      | nil => exact (List.cons.inj same).1
+      | cons head rest =>
+          have heads : left = head := (List.cons.inj same).1
+          exact (rightRejected head (by simp) (heads ▸ leftAccepted)).elim
+  | cons head rest ih =>
+      cases rightPrefix with
+      | nil =>
+          have heads : head = right := (List.cons.inj same).1
+          exact (leftRejected head (by simp) (heads.symm ▸ rightAccepted)).elim
+      | cons other tail =>
+          exact ih tail (List.cons.inj same).2
+            (fun item present => leftRejected item (List.mem_cons_of_mem _ present))
+            (fun item present => rightRejected item (List.mem_cons_of_mem _ present))
+
+/-- Complete casts over the same functional query agree occurrence by
+occurrence once their matching policy is a subrelation of source matching.
+This covers both raw matching and guarded finite matching. Failed type
+copies remain separate occurrences, even when their diagnostics coincide. -/
+theorem TypeCastBatchRel.output_agreement {space : Space} {atom expected : Atom}
+    {before : Bindings} {lookup : TypeLookupRel}
+    {matching : Atom → Atom → Bindings → Bindings → Prop} {first second : ResultSet}
+    (queryUnique : ∀ left right, lookup before atom expected left →
+      lookup before atom expected right → left = right)
+    (sourceMatching : ∀ actual output, matching expected actual before output →
+      TypeMatchRel expected actual before output)
+    (left : TypeCastBatchRel space atom expected before first (lookup := lookup) (matching := matching))
+    (right : TypeCastBatchRel space atom expected before second (lookup := lookup) (matching := matching)) :
+    List.Forall₂ (fun first second : ResultPair =>
+      first.1 = second.1 ∧ BindingSourceAgreement first.2 second.2) first second := by
+  cases left with
+  | @success _ _ leftTypes leftPrefix leftTail leftType leftOutput leftQuery leftSplit leftRejected leftMatched =>
+      cases right with
+      | @success _ _ rightTypes rightPrefix rightTail rightType rightOutput rightQuery rightSplit rightRejected rightMatched =>
+          have selected := first_selected_eq
+            (fun actual => ∃ output, matching expected actual before output)
+            leftPrefix rightPrefix leftTail rightTail leftType rightType
+            (leftSplit.symm.trans ((queryUnique _ _ leftQuery rightQuery).trans rightSplit))
+            (fun actual present ⟨output,matched⟩ => leftRejected actual present output matched)
+            (fun actual present ⟨output,matched⟩ => rightRejected actual present output matched)
+            ⟨leftOutput,leftMatched⟩ ⟨rightOutput,rightMatched⟩
+          cases selected
+          exact .cons ⟨rfl,(sourceMatching _ _ leftMatched).output_agreement
+            (sourceMatching _ _ rightMatched) (.refl before)⟩ .nil
+      | failure rightQuery rejected =>
+          have present : leftType ∈ leftTypes := by rw [leftSplit]; simp
+          have present' := (queryUnique _ _ leftQuery rightQuery) ▸ present
+          exact (rejected leftType present' leftOutput leftMatched).elim
+  | failure leftQuery rejected =>
+      cases right with
+      | @success _ _ rightTypes rightPrefix rightTail rightType rightOutput rightQuery rightSplit rightRejected rightMatched =>
+          have present : rightType ∈ rightTypes := by rw [rightSplit]; simp
+          have present' := (queryUnique _ _ rightQuery leftQuery) ▸ present
+          exact (rejected rightType present' rightOutput rightMatched).elim
+      | failure rightQuery _ =>
+          have same := queryUnique _ _ leftQuery rightQuery
+          cases same
+          apply List.forall₂_same.mpr
+          intro result present
+          exact ⟨rfl,BindingSourceAgreement.refl result.2⟩
+
+/-- The whole ordered caller/value observation is independent of a source
+cast's chosen constraint presentation. Each list position remains present;
+an unsatisfiable occurrence is not collapsed into an empty result list. -/
+theorem TypeCastBatchRel.joint_observation_eq {space : Space} {atom expected : Atom}
+    {before : Bindings} {lookup : TypeLookupRel}
+    {matching : Atom → Atom → Bindings → Bindings → Prop} {first second : ResultSet}
+    (queryUnique : ∀ left right, lookup before atom expected left →
+      lookup before atom expected right → left = right)
+    (sourceMatching : ∀ actual output, matching expected actual before output →
+      TypeMatchRel expected actual before output)
+    (left : TypeCastBatchRel space atom expected before first (lookup := lookup) (matching := matching))
+    (right : TypeCastBatchRel space atom expected before second (lookup := lookup) (matching := matching))
+    (publicScope : List String) :
+    first.map (fun result => observedTuples result.2 (publicScope.map Atom.var ++ [result.1])) =
+      second.map (fun result => observedTuples result.2 (publicScope.map Atom.var ++ [result.1])) := by
+  have paired := left.output_agreement queryUnique sourceMatching right
+  clear left right
+  induction paired with
+  | nil => rfl
+  | @cons head other tail remaining related rest ih =>
+      obtain ⟨same,agreement⟩ := related
+      have observed := (agreement.theoryEquivAt
+        (TypeSubst.typeVarsList (publicScope.map Atom.var ++ [other.1]))).observedTuples_eq
+        (publicScope.map Atom.var ++ [other.1]) (fun _ present => present)
+      simpa only [List.map_cons,same,observed] using congrArg (List.cons _) ih
+
+/-- The published literal type-query profile discharges the two local query
+and match obligations of joint observation uniqueness. The source programs,
+open caller constraints and public observer are arbitrary. -/
+theorem TypeCastBatchRel.raw_joint_observation_eq {space : Space} {atom expected : Atom}
+    {before : Bindings} {first second : ResultSet}
+    (left : TypeCastBatchRel space atom expected before first)
+    (right : TypeCastBatchRel space atom expected before second)
+    (publicScope : List String) :
+    first.map (fun result => observedTuples result.2 (publicScope.map Atom.var ++ [result.1])) =
+      second.map (fun result => observedTuples result.2 (publicScope.map Atom.var ++ [result.1])) :=
+  left.joint_observation_eq (fun _ _ left right => left.unique right)
+    (fun _ _ matched => matched) right publicScope
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Type
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Eval.Steps
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type.RuntimeRefinement Spec.Type.Presentation Spec.Type.Presentation.BindingTheory
+open Spec.Bindings.ScopeObservation
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
+
+/-- Logical unification succeeds exactly when the incoming constraints and
+the new equation have a common finite model. The source matcher and output
+conjunction are constructed from that model. -/
+theorem unifyCandidate_exists_iff_equation_model (target pattern : Atom) (incoming : Bindings) :
+    (∃ output, UnifyCandidateRel target pattern incoming output) ↔
+      ∃ valuation : String → Atom, TypeBindingSatisfied valuation incoming ∧
+        applyTypeValuation valuation target = applyTypeValuation valuation pattern := by
+  constructor
+  · rintro ⟨output,matched,matching,merged⟩
+    obtain ⟨valuation,satisfied⟩ := merged.2
+    have model := (UnifyCandidateRel.solutions ⟨matched,matching,merged⟩ valuation).mp satisfied
+    exact ⟨valuation,model.2,model.1⟩
+  · rintro ⟨valuation,incomingModel,equation⟩
+    have translated : HEAtomEquationSatisfied
+        (fun name => encodeModelAtom (valuation name)) target pattern := by
+      simpa only [HEAtomEquationSatisfied,encodeModelAtom_applyTypeValuation] using
+        congrArg encodeModelAtom equation
+    obtain ⟨matched,matching,matchedModel⟩ := Spec.Match.Completeness.exists_specMatch_of_solution translated
+    have sourceModel : TypeBindingSatisfied valuation matched :=
+      (specTypeBindingSatisfied_iff_heBindingSatisfied_translated valuation matched).mpr matchedModel
+    exact ⟨_,matched,matching,LogicalMergeRel.append_of_common_model
+      ⟨valuation,sourceModel,incomingModel⟩⟩
+
+/-- A subsequent source unification reads its operands without changing
+their meaning in any model of the actual incoming frame. -/
+theorem UnifyCandidateRel.solutions_of_certified_reads {incoming output : Bindings}
+    {table : TypeSubst} {target pattern : Atom}
+    (certificate : ReadoutCertificate incoming table)
+    (candidate : UnifyCandidateRel (table.apply target) (table.apply pattern) incoming output)
+    (valuation : String → Atom) :
+    TypeBindingSatisfied valuation output ↔
+      applyTypeValuation valuation target = applyTypeValuation valuation pattern ∧
+        TypeBindingSatisfied valuation incoming := by
+  rw [candidate.solutions valuation]
+  apply and_congr_left
+  intro model
+  rw [certificate.preserves_model valuation model target,
+    certificate.preserves_model valuation model pattern]
+
+/-- The reached constraint inventory includes precisely the old support and
+the original operands, regardless of the certified representatives read. -/
+theorem UnifyCandidateRel.support_of_certified_reads {incoming output : Bindings}
+    {table : TypeSubst} {target pattern : Atom}
+    (certificate : ReadoutCertificate incoming table)
+    (candidate : UnifyCandidateRel (table.apply target) (table.apply pattern) incoming output)
+    (name : String) :
+    name ∈ specBindingVars output ↔
+      name ∈ specBindingVars incoming ∨ name ∈ TypeSubst.typeVars target ∨ name ∈ TypeSubst.typeVars pattern := by
+  obtain ⟨matched,matching,merged⟩ := candidate
+  rw [merged.support name,QueryBindingProjection.SourceSupport.match_support matching name]
+  have targetSupport := certificate.support_union_apply target name
+  have patternSupport := certificate.support_union_apply pattern name
+  tauto
+
+/-- An actual future unification preserves full theory/support agreement
+between two certified frames. Each side keeps its chosen readout table. -/
+theorem UnifyCandidateRel.output_agreement_of_certified_reads
+    {leftBefore rightBefore leftAfter rightAfter : Bindings} {leftTable rightTable : TypeSubst}
+    {target pattern : Atom}
+    (incoming : BindingSourceAgreement leftBefore rightBefore)
+    (leftCertificate : ReadoutCertificate leftBefore leftTable)
+    (rightCertificate : ReadoutCertificate rightBefore rightTable)
+    (left : UnifyCandidateRel (leftTable.apply target) (leftTable.apply pattern) leftBefore leftAfter)
+    (right : UnifyCandidateRel (rightTable.apply target) (rightTable.apply pattern) rightBefore rightAfter) :
+    BindingSourceAgreement leftAfter rightAfter := by
+  constructor
+  · intro valuation
+    rw [left.solutions_of_certified_reads leftCertificate valuation,
+      right.solutions_of_certified_reads rightCertificate valuation,incoming.solutions valuation]
+  · intro name
+    rw [left.support_of_certified_reads leftCertificate name,
+      right.support_of_certified_reads rightCertificate name,incoming.support name]
+
+/-- Success existence agrees before either side selects an output record.
+This is a local operation law, not an assumed evaluator simulation. -/
+theorem certified_unify_exists_iff {leftBefore rightBefore : Bindings}
+    {leftTable rightTable : TypeSubst} (incoming : BindingSourceAgreement leftBefore rightBefore)
+    (leftCertificate : ReadoutCertificate leftBefore leftTable)
+    (rightCertificate : ReadoutCertificate rightBefore rightTable) (target pattern : Atom) :
+    (∃ output, UnifyCandidateRel (leftTable.apply target) (leftTable.apply pattern) leftBefore output) ↔
+      ∃ output, UnifyCandidateRel (rightTable.apply target) (rightTable.apply pattern) rightBefore output := by
+  rw [unifyCandidate_exists_iff_equation_model,unifyCandidate_exists_iff_equation_model]
+  constructor
+  · rintro ⟨valuation,model,equation⟩
+    have otherModel := (incoming.solutions valuation).mp model
+    refine ⟨valuation,otherModel,?_⟩
+    rw [rightCertificate.preserves_model valuation otherModel target,
+      rightCertificate.preserves_model valuation otherModel pattern]
+    simpa only [leftCertificate.preserves_model valuation model target,
+      leftCertificate.preserves_model valuation model pattern] using equation
+  · rintro ⟨valuation,model,equation⟩
+    have otherModel := (incoming.solutions valuation).mpr model
+    refine ⟨valuation,otherModel,?_⟩
+    rw [leftCertificate.preserves_model valuation otherModel target,
+      leftCertificate.preserves_model valuation otherModel pattern]
+    simpa only [rightCertificate.preserves_model valuation model target,
+      rightCertificate.preserves_model valuation model pattern] using equation
+
+theorem certified_unify_noMatch_iff {leftBefore rightBefore : Bindings}
+    {leftTable rightTable : TypeSubst} (incoming : BindingSourceAgreement leftBefore rightBefore)
+    (leftCertificate : ReadoutCertificate leftBefore leftTable)
+    (rightCertificate : ReadoutCertificate rightBefore rightTable) (target pattern : Atom) :
+    UnifyNoMatchRel (leftTable.apply target) (leftTable.apply pattern) leftBefore ↔
+      UnifyNoMatchRel (rightTable.apply target) (rightTable.apply pattern) rightBefore := by
+  simpa only [not_exists,UnifyNoMatchRel] using
+    not_congr (certified_unify_exists_iff incoming leftCertificate rightCertificate target pattern)
+
+/-- A successful operation constructs its counterpart on the other certified
+presentation. The counterpart is not a premise of representation independence. -/
+theorem UnifyCandidateRel.transport_certified_reads
+    {leftBefore rightBefore leftAfter : Bindings} {leftTable rightTable : TypeSubst}
+    {target pattern : Atom}
+    (incoming : BindingSourceAgreement leftBefore rightBefore)
+    (leftCertificate : ReadoutCertificate leftBefore leftTable)
+    (rightCertificate : ReadoutCertificate rightBefore rightTable)
+    (left : UnifyCandidateRel (leftTable.apply target) (leftTable.apply pattern) leftBefore leftAfter) :
+    ∃ rightAfter,
+      UnifyCandidateRel (rightTable.apply target) (rightTable.apply pattern) rightBefore rightAfter ∧
+      BindingSourceAgreement leftAfter rightAfter := by
+  obtain ⟨rightAfter,right⟩ :=
+    (certified_unify_exists_iff incoming leftCertificate rightCertificate target pattern).mp ⟨_,left⟩
+  exact ⟨rightAfter,right,left.output_agreement_of_certified_reads incoming
+    leftCertificate rightCertificate right⟩
+
+/-- Both actual operations earn their new readout certificates. The later
+tables absorb all earlier pending reads, and preserve the entire joint packet
+observation, including repeated caller and return variables. -/
+theorem UnifyCandidateRel.certifies_paired_pending
+    {leftBefore rightBefore leftAfter : Bindings} {leftTable rightTable : TypeSubst}
+    {target pattern : Atom}
+    (incoming : BindingSourceAgreement leftBefore rightBefore)
+    (leftCertificate : ReadoutCertificate leftBefore leftTable)
+    (rightCertificate : ReadoutCertificate rightBefore rightTable)
+    (left : UnifyCandidateRel (leftTable.apply target) (leftTable.apply pattern) leftBefore leftAfter) :
+    ∃ rightAfter leftNext rightNext,
+      UnifyCandidateRel (rightTable.apply target) (rightTable.apply pattern) rightBefore rightAfter ∧
+      BindingSourceAgreement leftAfter rightAfter ∧
+      ReadoutCertificate leftAfter leftNext ∧ ReadoutCertificate rightAfter rightNext ∧
+      ∀ pending : List Atom,
+        (pending.map leftTable.apply).map leftNext.apply = pending.map leftNext.apply ∧
+        (pending.map rightTable.apply).map rightNext.apply = pending.map rightNext.apply ∧
+        observedTuples leftAfter ((pending.map leftTable.apply).map leftNext.apply) =
+          observedTuples rightAfter ((pending.map rightTable.apply).map rightNext.apply) := by
+  obtain ⟨rightAfter,right,outputs⟩ := left.transport_certified_reads incoming
+    leftCertificate rightCertificate
+  obtain ⟨_,_,leftMerge⟩ := left
+  have ⟨_,_,rightMerge⟩ := right
+  obtain ⟨leftNext,leftCertified,leftAbsorbs⟩ := leftMerge.certifies_pending leftCertificate
+  obtain ⟨rightNext,rightCertified,rightAbsorbs⟩ := rightMerge.certifies_pending rightCertificate
+  refine ⟨rightAfter,leftNext,rightNext,right,outputs,leftCertified,rightCertified,?_⟩
+  intro pending
+  refine ⟨leftAbsorbs pending,rightAbsorbs pending,?_⟩
+  rw [leftAbsorbs pending,rightAbsorbs pending,
+    leftCertified.observedTuples_eq,rightCertified.observedTuples_eq]
+  exact (outputs.theoryEquivAt (TypeSubst.typeVarsList pending)).observedTuples_eq pending
+    (fun _ present => present)
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Eval.Steps
+
+namespace Mettapedia.Languages.MeTTa.HE.QueryBindingProjection.CertifiedUnifyControls
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type.Presentation Spec.Type.Presentation.Theory Spec.Type.Presentation.BindingTheory
+open Spec.Type.RuntimeRefinement Spec.Bindings.ScopeObservation Spec.Eval.Steps
+open AliasReadout.Controls
+
+private def firstTable : TypeSubst := [("a",.var "b")]
+private def secondTable : TypeSubst := [("b",.var "a")]
+
+private theorem first_certificate : ReadoutCertificate forwardAlias firstTable := by
+  apply ReadoutCertificate.of_normal_theory
+  · simp [firstTable,TypeSubst.Normal,TypeSubst.keys,TypeSubst.typeVars]
+  · intro valuation
+    simp [TypeSubstSatisfied,TypeBindingSatisfied,firstTable,forwardAlias,applyTypeValuation]
+
+private theorem second_certificate : ReadoutCertificate backwardAlias secondTable := by
+  apply ReadoutCertificate.of_normal_theory
+  · simp [secondTable,TypeSubst.Normal,TypeSubst.keys,TypeSubst.typeVars]
+  · intro valuation
+    simp [TypeSubstSatisfied,TypeBindingSatisfied,secondTable,backwardAlias,applyTypeValuation]
+
+/-- Opposite certified alias representatives take the same next constraint
+and preserve one correlated caller/return packet. Neither the second output
+nor the two later readout certificates is supplied by the control. -/
+theorem opposite_aliases_take_next_unification :
+    firstTable.apply (.var "a") ≠ secondTable.apply (.var "a") ∧
+    ∃ leftAfter rightAfter leftNext rightNext,
+      UnifyCandidateRel (firstTable.apply (.var "a")) (.symbol "T") forwardAlias leftAfter ∧
+      UnifyCandidateRel (secondTable.apply (.var "a")) (.symbol "T") backwardAlias rightAfter ∧
+      BindingSourceAgreement leftAfter rightAfter ∧
+      ReadoutCertificate leftAfter leftNext ∧ ReadoutCertificate rightAfter rightNext ∧
+      observedTuples leftAfter
+          (([Atom.var "a",.var "b",.var "a"].map firstTable.apply).map leftNext.apply) =
+        observedTuples rightAfter
+          (([Atom.var "a",.var "b",.var "a"].map secondTable.apply).map rightNext.apply) := by
+  refine ⟨by simp [firstTable,secondTable,TypeSubst.apply,TypeSubst.lookup],?_⟩
+  obtain ⟨leftAfter,left⟩ := (unifyCandidate_exists_iff_equation_model
+    (firstTable.apply (.var "a")) (.symbol "T") forwardAlias).mpr
+      ⟨fun _ => .symbol "T",by simp [TypeBindingSatisfied,forwardAlias],by
+        simp [firstTable,TypeSubst.apply,TypeSubst.lookup,applyTypeValuation]⟩
+  obtain ⟨rightAfter,leftNext,rightNext,right,agreement,leftCertified,rightCertified,pending⟩ :=
+    UnifyCandidateRel.certifies_paired_pending (target := .var "a") (pattern := .symbol "T")
+      reordered_aliases_agree first_certificate second_certificate
+        (by simpa only [TypeSubst.apply] using left)
+  have right' : UnifyCandidateRel (secondTable.apply (.var "a")) (.symbol "T") backwardAlias rightAfter := by
+    simpa only [TypeSubst.apply] using right
+  exact ⟨leftAfter,rightAfter,leftNext,rightNext,left,right',agreement,leftCertified,rightCertified,
+    (pending [Atom.var "a",.var "b",.var "a"]).2.2⟩
+
+private def uncertifiedTable : TypeSubst := [("a",.symbol "Wrong")]
+
+/-- Normal table shape alone cannot justify future-operation transport.
+The unearned assignment changes an actual source success into no-match. -/
+theorem normal_table_without_certificate_changes_success :
+    uncertifiedTable.Normal ∧
+      (∃ output, UnifyCandidateRel (.var "a") (.symbol "Right") Bindings.empty output) ∧
+      UnifyNoMatchRel (uncertifiedTable.apply (.var "a")) (.symbol "Right") Bindings.empty ∧
+      ¬ReadoutCertificate Bindings.empty uncertifiedTable := by
+  refine ⟨by simp [uncertifiedTable,TypeSubst.Normal,TypeSubst.keys,TypeSubst.typeVars],?_,?_,?_⟩
+  · exact (unifyCandidate_exists_iff_equation_model _ _ _).mpr
+      ⟨fun _ => .symbol "Right",by simp [TypeBindingSatisfied,Bindings.empty],by simp [applyTypeValuation]⟩
+  · intro output candidate
+    have ⟨_,_,merged⟩ := candidate
+    obtain ⟨valuation,model⟩ := merged.2
+    have equation := ((candidate.solutions valuation).mp model).1
+    simp [uncertifiedTable,TypeSubst.apply,TypeSubst.lookup,applyTypeValuation] at equation
+  · intro certificate
+    have unbound := certificate.lookup_none_of_outside (name := "a")
+      (by simp [specBindingVars,Bindings.empty])
+    simp [uncertifiedTable,TypeSubst.lookup] at unbound
+
+end Mettapedia.Languages.MeTTa.HE.QueryBindingProjection.CertifiedUnifyControls

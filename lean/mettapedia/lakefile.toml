@@ -79,6 +79,16 @@ name = "PrimeMotivationQuotation"
 roots = ["Mettapedia.Languages.MeTTa.PrimeCandidates.CandidateMotivationProgramPackages"]
 needs = ["@/primeMotivationSources"]
 
+[[input_file]]
+name = "gsltNativeSpatialSource"
+path = "../../metta/gslt/lib/gslt_native_spatial.metta"
+text = false
+
+[[lean_lib]]
+name = "GSLTNativeSpatialQuotation"
+roots = ["Mettapedia.Languages.MeTTa.PeTTa.Bridges.NativeTypes.SpatialSource"]
+needs = ["@/gsltNativeSpatialSource"]
+
 [[lean_lib]]
 name = "MetamathProofRegression"
 roots = ["Mettapedia.Languages.Metamath.MM2AssembledNormalExecution"]

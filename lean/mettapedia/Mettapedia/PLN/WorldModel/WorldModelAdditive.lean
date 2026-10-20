@@ -5,7 +5,7 @@ import Mettapedia.PLN.WorldModel.BinaryWorldModel
 # Additive World-Model Extensions
 
 This module isolates the generic additive extension theorem behind the
-`PLNWorldModel` interface:
+`BinaryWorldModel` interface:
 
 - atomic observations contribute evidence query-wise;
 - multisets of observations extend that contribution additively;
@@ -22,11 +22,11 @@ to `BinaryEvidence`, `MultiEvidence k`, `NormalGammaEvidence`, or any future con
 family. The original `BinaryEvidence`-specific names are preserved as abbreviations.
 -/
 
-namespace Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+namespace Mettapedia.PLN.WorldModel.WorldModelAdditive
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 
 /-! ## Generic Additive Extension (polymorphic over evidence type) -/
 
@@ -189,17 +189,10 @@ theorem existsUnique_additiveExtension
     ∃! E : Multiset Obs' → Query' → BinaryEvidence, IsAdditiveExtension a E :=
   genExistsUnique_additiveExtension a
 
-/-- Package multiset addition as an `EvidenceType` when using multisets as
-posterior states. This is a non-instance helper so existing domain-specific
-instances remain free to choose their own import boundaries. -/
-@[instance_reducible] def multisetEvidenceType (Obs : Type*) : EvidenceType (Multiset Obs) where
-
 /-- Any atomic evidence contribution induces a multiset-based world model. -/
 @[instance_reducible] noncomputable def worldModelOfAtomicEvidence
     (a : AtomicEvidenceContribution Obs' Query') :
-    letI : EvidenceType (Multiset Obs') := multisetEvidenceType Obs'
     BinaryWorldModel (Multiset Obs') Query' := by
-  letI : EvidenceType (Multiset Obs') := multisetEvidenceType Obs'
   exact
     { evidence := additiveExtension a
       evidence_add := additiveExtension_add a
@@ -227,4 +220,4 @@ noncomputable def additiveExtensionProfileHom
     AddMonoidHom (Multiset Obs') (Query' → BinaryEvidence) :=
   genAdditiveExtensionProfileHom a
 
-end Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+end Mettapedia.PLN.WorldModel.WorldModelAdditive

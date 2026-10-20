@@ -21,10 +21,10 @@ more observations arrive.
 namespace Mettapedia.Examples.PLN.BioIncrementalHyperseed
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.Languages.ProbLog.DistributionSemantics
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNNoisyOr
@@ -92,9 +92,6 @@ theorem bioEncoder_unitObservation :
     rw [if_neg h]
     change unitNegativeEvidence.pos + unitNegativeEvidence.neg = 1
     simp [unitNegativeEvidence]
-
-noncomputable instance : EvidenceType (Multiset BioObservation) :=
-  multisetEvidenceType BioObservation
 
 noncomputable instance : BinaryWorldModel (Multiset BioObservation) BioQuery :=
   worldModelOfAtomicEvidence bioEncoder.observe

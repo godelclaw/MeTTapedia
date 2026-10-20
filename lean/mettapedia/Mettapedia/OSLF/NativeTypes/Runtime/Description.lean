@@ -43,6 +43,8 @@ structure Driver where
   tests : Leaf → Test system admitted
   leafAdmission : Mettapedia.OSLF.NativeTypes.Decision.Admission.LeafAdmission Leaf
   lookup : String → Option Leaf
+  spatial_admission : leafAdmission.spatial = backend.spatial.declared := by rfl
+  spatialLookup : String → Option Nat := fun _ => none
 
 def Driver.profileContract (driver : Driver) : Mettapedia.OSLF.NativeTypes.Decision.ProfileAdmission.Contract :=
   driver.profile.contract
@@ -70,11 +72,11 @@ abbrev Driver.Decoded (driver : Driver) (raw : Pattern) :=
 native predicate. Injective readback makes negative judgments unambiguous. -/
 def Meaning (driver : Driver) (formula : driver.Formula) (raw : Pattern) : Prop :=
   ∃ source, driver.admitted source ∧ driver.render source = raw ∧
-    denotation driver.tests formula source
+    denotation driver.tests formula driver.backend.spatial.theory source
 
 theorem meaning_at_decoded (driver : Driver) (formula : driver.Formula) (raw : Pattern)
     (decoded : driver.Decoded raw) :
-    Meaning driver formula raw ↔ denotation driver.tests formula decoded.val := by
+    Meaning driver formula raw ↔ denotation driver.tests formula driver.backend.spatial.theory decoded.val := by
   constructor
   · rintro ⟨source, _, equal, holds⟩
     have same : source = decoded.val := driver.render_injective (equal.trans decoded.property.2.symm)
@@ -86,7 +88,7 @@ inductive Result (driver : Driver) (formula : driver.Formula) (raw : Pattern) wh
   | refusedSource (reason : SourceIssue)
   | checked (source : driver.Decoded raw)
       (verdict : Mettapedia.OSLF.NativeTypes.Decision.Admission.Verdict
-        (denotation driver.tests formula source.val))
+        (denotation driver.tests formula driver.backend.spatial.theory source.val))
 
 inductive Readout where
   | sourceRefused (reason : SourceIssue)

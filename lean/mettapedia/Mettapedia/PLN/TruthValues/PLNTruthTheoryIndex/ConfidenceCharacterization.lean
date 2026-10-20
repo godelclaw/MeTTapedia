@@ -474,43 +474,31 @@ noncomputable def confidenceCharacterizationEndpointProfile :
 This is not a proof object; the corresponding commands are run by the build
 agent. -/
 structure RuntimeParityManifest where
-  projectionTowerPeTTaPath : String
-  projectionTowerCeTTaPath : String
-  projectionTowerExpectedChecks : Nat
-  itvIDMPeTTaPath : String
-  itvIDMCeTTaPath : String
-  itvIDMExpectedChecks : Nat
-  truthFunctionPeTTaPath : String
-  truthFunctionCeTTaPath : String
-  truthFunctionExpectedChecks : Nat
-  strengthPriorPeTTaPath : String
-  strengthPriorCeTTaPath : String
-  strengthPriorExpectedChecks : Nat
+  projectionTower : PLNDidacticWitnesses.RuntimeParityCheck
+  itvIDM : PLNDidacticWitnesses.RuntimeParityCheck
+  truthFunction : PLNDidacticWitnesses.RuntimeParityCheck
+  strengthPrior : PLNDidacticWitnesses.RuntimeParityCheck
 
 /-- Current PeTTa/CeTTa parity manifest for the projection-tower canary,
 ITV/IDM arithmetic, typed bridge/provenance mirrors, PeTTa truth-function
 confidence audit, and strength-prior canaries. -/
 def plnITVIDMRuntimeParityManifest : RuntimeParityManifest where
-  projectionTowerPeTTaPath :=
-    "/home/zar/claude/hyperon/PeTTa/examples/pln_projection_tower_bool_canary.metta"
-  projectionTowerCeTTaPath :=
-    "/home/zar/claude/hyperon/CeTTa/tests/test_wmpln_projection_tower_bool_canary.metta"
-  projectionTowerExpectedChecks := 15
-  itvIDMPeTTaPath :=
-    "/home/zar/claude/hyperon/PeTTa/examples/pln_itv_idm_parity_golden.metta"
-  itvIDMCeTTaPath :=
-    "/home/zar/claude/hyperon/CeTTa/tests/test_wmpln_itv_idm_parity_golden.metta"
-  itvIDMExpectedChecks := 26
-  truthFunctionPeTTaPath :=
-    "/home/zar/claude/hyperon/PeTTa/examples/pln_truth_parity_golden.metta"
-  truthFunctionCeTTaPath :=
-    "/home/zar/claude/hyperon/CeTTa/tests/test_wmpln_truth_parity_golden.metta"
-  truthFunctionExpectedChecks := 11
-  strengthPriorPeTTaPath :=
-    "/home/zar/claude/hyperon/PeTTa/examples/pln_strength_prior_canary.metta"
-  strengthPriorCeTTaPath :=
-    "/home/zar/claude/hyperon/CeTTa/tests/test_wmpln_strength_prior_canary.metta"
-  strengthPriorExpectedChecks := 13
+  projectionTower :=
+    { peTTaPath := "examples/pln_projection_tower_bool_canary.metta"
+      ceTTaPath := "test_wmpln_projection_tower_bool_canary.metta"
+      expectedChecks := 15 }
+  itvIDM :=
+    { peTTaPath := "examples/pln_itv_idm_parity_golden.metta"
+      ceTTaPath := "test_wmpln_itv_idm_parity_golden.metta"
+      expectedChecks := 26 }
+  truthFunction :=
+    { peTTaPath := "examples/pln_truth_parity_golden.metta"
+      ceTTaPath := "test_wmpln_truth_parity_golden.metta"
+      expectedChecks := 11 }
+  strengthPrior :=
+    { peTTaPath := "examples/pln_strength_prior_canary.metta"
+      ceTTaPath := "test_wmpln_strength_prior_canary.metta"
+      expectedChecks := 13 }
 
 
 end Mettapedia.PLN.TruthValues.PLNTruthTheoryIndex

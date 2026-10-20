@@ -1572,7 +1572,7 @@ Part~III.  Revision of SCMs with conflicting equations
 is \emph{not} additive; it requires the overlap-aware or trust-gated
 regimes described in the next section.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/WorldModelBase.lean}.}
+\codepath{Mettapedia/Logic/WorldModel/Basic.lean}.}
 
 \maplecourt{%
 Each Maple Court apartment carries a private state over questions
@@ -1658,7 +1658,7 @@ This theorem is the formal boundary between the additive and
 overlap regimes: additivity is not assumed---it is
 \emph{recovered} when the independence condition holds.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/WorldModelOverlap.lean}
+\codepath{Mettapedia/PLN/WorldModel/WorldModelOverlap.lean}
 (7~theorems, 0~sorry).}
 
 The \code{SubtractiveOverlapLayer} makes the correction explicit
@@ -1707,7 +1707,7 @@ per-channel evidence or summarize to a point?  The KS
 representation theorem gives the unique algebra for each
 vertex.%
 \footnote{Classification kernel-checked in
-\codepath{Mettapedia/Logic/WMHypercubeClassification.lean}
+\codepath{Mettapedia/PLN/WorldModel/WMHypercubeClassification.lean}
 (17~items, 0~sorry).}
 
 The carrier axis is orthogonal: binary, Dirichlet, and
@@ -1847,8 +1847,8 @@ This asymmetry determines
 the inference architecture and is developed in
 Chapter~\ref{ch:views}.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNWorldModelGeneric.lean}
-and \codepath{Mettapedia/Logic/WorldModelCore.lean}.}
+\codepath{Mettapedia/PLN/WorldModel/PLNWorldModelGeneric.lean}
+and \codepath{Mettapedia/PLN/WorldModel/WorldModelCore.lean}.}
 
 For the implementer: to build a new additive world model, implement
 \code{extract} and prove the two laws.  The rest of the stack---views,
@@ -2084,7 +2084,7 @@ The additive evidence algebra over \code{BinEvNat} satisfies all four
 structural rules of classical sequent calculus: cut, weakening,
 exchange, and contraction.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/EvidenceProofSystem.lean}
+\codepath{Mettapedia/PLN/Evidence/EvidenceProofSystem.lean}
 (10~theorems, 0~sorry).}
 \end{theorem}
 
@@ -2253,7 +2253,7 @@ from states to answer profiles:
 Both directions are definitional: the world-model interface IS the
 additive morphism, and vice versa, up to definitional equality in
 Lean---no propositional reasoning is needed.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/WorldModelCore.lean}.
+\footnote{Formalized in \codepath{Mettapedia/PLN/WorldModel/WorldModelCore.lean}.
 The structural equivalence \code{equivGSLTProfileHom} has both
 roundtrips by \code{rfl}.}
 \end{theorem}
@@ -2319,7 +2319,7 @@ This is the \emph{satisfaction condition} of an institution: truth
 notation.%
 \footnote{Formalized as
 \code{satisfactionCondition\_is\_naturality} in
-\codepath{Mettapedia/Logic/PLNWorldModelInstitution.lean}.}
+\codepath{Mettapedia/PLN/WorldModel/WorldModelInstitution.lean}.}
 \footnote{Open program: the GSLT universal theorem---every
 graph-structured lambda theory with parallel composition naturally
 induces a WorldModel.  See Meredith~\cite{meredith2026ccc}.}
@@ -2366,9 +2366,9 @@ Each arrow is proved.  Together they show that revision-as-addition
 is not an arbitrary choice but a categorical necessity under
 exchangeability.%
 \footnote{See
-\codepath{Mettapedia/ProbabilityTheory/GiryMonad.lean}
+\codepath{Mettapedia/ProbabilityTheory/HigherOrderProbability/GiryMonad.lean}
 and
-\codepath{Mettapedia/ProbabilityTheory/DeFinettiConnection.lean}.
+\codepath{Mettapedia/ProbabilityTheory/HigherOrderProbability/DeFinettiConnection.lean}.
 \textbf{Markov extension (April 2026):} The Diaconis--Freedman (1980)
 theorem---extending de~Finetti from i.i.d.\ to Markov-exchangeable
 sequences---is now fully formalized in
@@ -2534,7 +2534,7 @@ for $\mathrm{prop}(A)$, sum where $A$ is true vs.\ false; for
 $\mathrm{link}(A, B)$, sum where $A \wedge B$ vs.\ $A \wedge \neg B$.
 Revision is pointwise addition of pseudo-counts.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNJointEvidence.lean}.}
+\codepath{Mettapedia/PLN/Evidence/PLNJointEvidence.lean}.}
 
 This instance satisfies all the laws of
 \code{AdditiveWorldModel}: extraction commutes with revision, and the
@@ -2623,7 +2623,7 @@ where $n^+$ counts positive and $n^-$ counts negative observations.
 Under a Beta prior $\text{Beta}(\alpha, \beta)$, the posterior is
 $\text{Beta}(\alpha + n^+, \beta + n^-)$.  The Laplace-smoothed
 strength is $s = (1 + n^+) / (2 + n)$.%
-\footnote{Formalized in \codepath{Mettapedia/Logic/BinaryEvidence.lean}
+\footnote{Formalized in \codepath{Mettapedia/PLN/Evidence/BinaryEvidence.lean}
 and \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/EvidenceBeta.lean}.}
 
 \paragraph{Dirichlet-Multinomial ($k$-valued).}
@@ -2798,7 +2798,7 @@ distributing over arbitrary joins (a quantale).
 $e_{AB} \htensor e_{BC} \le e_{AC}$ in the information ordering.
 Equality holds under screening-off.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/EvidenceQuantale.lean}.}
+\codepath{Mettapedia/PLN/Evidence/BinaryEvidence.lean}.}
 \end{theorem}
 
 \noindent
@@ -2832,11 +2832,11 @@ evidence is not evidence of absence.  The ``totality gate'':
 $(3,0)$ and $(0,3)$ are incomparable, so no faithful
 $\mathbb{R}$-embedding exists.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/HeytingValuationOnEvidence.lean}.}%
+\codepath{Mettapedia/PLN/Evidence/HeytingValuationOnEvidence.lean}.}%
 \footnote{The Heyting structure has been extended to $k$-ary
 Dirichlet evidence: \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/EvidenceDirichletQuantale.lean}
 (13~theorems, 0~sorry).  The Boolean-to-Heyting categorical bridge is in
-\codepath{Mettapedia/Logic/BooleanHeytingBridge.lean} (4~theorems).}
+\codepath{Mettapedia/PLN/Bridges/Logic/BooleanHeytingBridge.lean} (4~theorems).}
 
 
 \section{Theoretical Foundations}
@@ -2859,7 +2859,7 @@ addition: adding counts IS the algebraically forced update under
 exchangeability.  The proof extends to Dirichlet-Multinomial and
 Normal-Gamma via the same mixture logic.%
 \footnote{Formalized in
-\codepath{Mettapedia/ProbabilityTheory/DeFinettiConnection.lean}
+\codepath{Mettapedia/ProbabilityTheory/HigherOrderProbability/DeFinettiConnection.lean}
 }
 
 \paragraph{Walley predictive intervals.}
@@ -2924,7 +2924,7 @@ KS axioms, and the measure theory follows inevitably.%
 theorems (0~sorry for the core representation; 11~sorry in
 experimental Shore-Johnson extensions).
 The triangle bridge is in
-\codepath{Mettapedia/Logic/KSEvidenceMeasureBridge.lean}.
+\codepath{Mettapedia/PLN/Evidence/KSEvidenceMeasureBridge.lean}.
 The $\sigma$-additivity boundary
 (\codepath{Mettapedia/ProbabilityTheory/KnuthSkilling/%
 Counterexamples/SigmaAdditivityNecessity.lean})
@@ -2956,7 +2956,7 @@ homomorphism: compressing two raw-data batches separately and
 adding the results gives the same sufficient statistics as
 compressing the concatenated batch.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/EvidentialLedger.lean}.}
+\codepath{Mettapedia/PLN/Evidence/EvidentialLedger.lean}.}
 This means the system can keep raw data for model switching or
 distributional queries while using compressed statistics for
 efficient $O(1)$ revision---the two representations are provably
@@ -3039,7 +3039,7 @@ language: forgetting changes the profile only within the declared scope.
 Idempotence says forgetting the same scope twice is the same as
 forgetting it once.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/GenericWorldModelForgetting.lean}
+\codepath{Mettapedia/PLN/WorldModel/GenericWorldModelForgetting.lean}
 .}
 
 \maplecourt{%
@@ -3083,7 +3083,7 @@ This is the precise boundary: forgetting cannot undo what leaked.
 The conservation theorems and the no-go are packaged as a single
 \code{EvidenceConservationPack}.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNWorldModelConservationPack.lean}
+\codepath{Mettapedia/PLN/WorldModel/WorldModelConservationPack.lean}
 .}
 
 These results are the \emph{state-level, scoped-forgetting} face of
@@ -3118,9 +3118,9 @@ is non-actionable, forgetting the overlap recovers additivity on
 the remainder---and the conservation laws apply to the
 remainder.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/GenericWorldModelForgetting.lean}
+\codepath{Mettapedia/PLN/WorldModel/GenericWorldModelForgetting.lean}
 (193~lines, 6~theorems) and
-\codepath{Mettapedia/Logic/PLNWorldModelSupportForgetting.lean}
+\codepath{Mettapedia/PLN/WorldModel/PLNWorldModelSupportForgetting.lean}
 (75~lines, 3~theorems).  Both 0~sorry.}
 
 
@@ -3248,7 +3248,7 @@ calculus adds it with proved conservation.%
 \footnote{Formalized in
 \codepath{Mettapedia/PLN/WorldModel/Provenance/PLNProvenanceInference.lean} (general
 theory) and
-\codepath{Mettapedia/Logic/PLNClassicExamples.lean}
+\codepath{Mettapedia/Examples/PLN/ClassicExamples.lean}
 (20~conformance checks).}
 
 \subsection{Stepped Walkthrough: DeductionRevision with Provenance}
@@ -3570,7 +3570,7 @@ reclassify a concept in a large ontology, using evidence from
 multiple authoritative sources, with kernel-checked ranking and
 sensitivity analysis.%
 \footnote{Generic framework:
-\codepath{Mettapedia/Logic/EvidentialLedger.lean}.
+\codepath{Mettapedia/PLN/Evidence/EvidentialLedger.lean}.
 Concrete case:
 \codepath{Mettapedia/Languages/GF/SUMO/PainEvidenceWM.lean}.
 All 10~theorems by \code{decide}, 0~sorry.}
@@ -3730,7 +3730,7 @@ theorem.
 There exist $e_1 \le e_2$ in the information order with
 $\mathrm{strength}(e_1) > \mathrm{strength}(e_2)$.%
 \footnote{Formalized as \code{toStrength\_not\_monotone\_info\_order}
-in \codepath{Mettapedia/Logic/PLNWorldModelProfiles.lean}.}
+in \codepath{Mettapedia/PLN/WorldModel/WorldModelProfiles.lean}.}
 \end{theorem}
 
 \noindent
@@ -3764,7 +3764,7 @@ display, thresholding, and action.  They are not the semantics.
 
 The choice $c=n/(n+k)$ is therefore not forced merely by the
 two-count reconstruction problem.  The formal coordinate theorem in
-\codepath{Mettapedia/Logic/PLNConfidenceWeight.lean} shows that any
+\codepath{Mettapedia/PLN/TruthValues/PLNConfidenceWeight.lean} shows that any
 confidence coordinate with a known left inverse on nonnegative evidence
 weights can reconstruct the binary counts from $(s,c)$.  A qualitatively
 different ``reserve-half'' coordinate, $c=n/(2n+k)$, is proved to reconstruct
@@ -3831,7 +3831,7 @@ There exist $e_1, e_2$ such that
 $\mathrm{strength}(e_1 + e_2) \ne
 \mathrm{strength}(e_1) + \mathrm{strength}(e_2)$.%
 \footnote{Counterexample: $e_1 = (1, 0)$, $e_2 = (0, 1)$.
-Formalized in \codepath{Mettapedia/Logic/WorldModelCore.lean}.}
+Formalized in \codepath{Mettapedia/PLN/WorldModel/WorldModelCore.lean}.}
 \end{theorem}
 
 \noindent
@@ -3849,7 +3849,7 @@ binary count coordinates $(n^+,n^-)$.  It is still lossy as a
 world-model view: it discards provenance, overlap/stamps, context, and
 posterior shape beyond the two-count summary.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/BinaryEvidence.lean}.}
+\codepath{Mettapedia/PLN/Evidence/BinaryEvidence.lean}.}
 
 \maplecourt{%
 Querying ``Is the pipe leaking?'' extracts $(1, 4)$: one leak alarm,
@@ -3994,11 +3994,11 @@ revision and Walley laws as PLN-chart selectors, Beta prior
 mean/concentration as learnable axes, Bernoulli e/m/Fisher geometry as
 the differential reading, and phase as an explicit extension boundary.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNTruthTheoryIndex.lean}, with the
+\codepath{Mettapedia/PLN/TruthValues/PLNTruthTheoryIndex.lean}, with the
 supporting chart, information-geometry, and amplitude-boundary theorems
-in \codepath{Mettapedia/Logic/PLNConfidenceWeightRevision.lean},
-\codepath{Mettapedia/Logic/PLNInformationGeometry.lean}, and
-\codepath{Mettapedia/Logic/PLNAmplitudePhase.lean}.}
+in \codepath{Mettapedia/PLN/TruthValues/PLNConfidenceWeightRevision.lean},
+\codepath{Mettapedia/PLN/TruthValues/PLNInformationGeometry.lean}, and
+\codepath{Mettapedia/PLN/TruthValues/PLNAmplitudePhase.lean}.}
 
 The differential reading is also explicit.  The m-flat Bernoulli
 geodesic is the straight mean-coordinate path
@@ -4106,7 +4106,7 @@ straight in log-odds coordinate.  The derivative-backed handles are
 \code{bernoulliMixtureGeodesic\_hasDerivAt} and
 \code{bernoulliLogOdds\_exponentialGeodesic\_hasDerivAt}.  All five
 witnesses are formalized as exact Lean facts in
-\codepath{Mettapedia/Logic/PLNDidacticWitnesses.lean} and mirrored as
+\codepath{Mettapedia/PLN/TruthValues/PLNDidacticWitnesses.lean} and mirrored as
 runtime canaries in
 \codepath{/home/zar/claude/hyperon/PeTTa/examples/pln\_didactic\_witnesses.metta}
 and
@@ -4159,7 +4159,7 @@ which interval semantics is intended, and the system computes
 accordingly.  The Walley connection is developed in
 Chapter~\ref{ch:evidence}, \S``Walley predictive intervals.''%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNIndefiniteTruth.lean}.}
+\codepath{Mettapedia/PLN/TruthValues/PLNIndefiniteTruth.lean}.}
 
 The degrees of freedom are explicit in the constructors.  Once lower and
 upper bounds are chosen, width is definitionally $s_U-s_L$.  The scalar
@@ -4201,7 +4201,7 @@ The MeTTa-style PLN formulas have had formally proved
 confidence-formula errors that arise precisely from operating on views
 as if they were evidence:%
 \footnote{Formalized:
-\codepath{Mettapedia/Logic/PLNBugAnalysis.lean}
+\codepath{Mettapedia/PLN/TruthValues/PLNBugAnalysis.lean}
 (0~sorry, 14~theorems with concrete counterexamples and MeTTa
 patches).}
 
@@ -4468,7 +4468,7 @@ family: each regime determines specific axis settings
 (commutativity, derived-additivity, probabilistic
 interpretation).%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/ModalProbabilityBridge.lean}
+\codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/ModalProbabilityBridge.lean}
 (14~items, 0~sorry).}
 
 
@@ -4597,7 +4597,7 @@ $\mathrm{extract}(E, B)$, $\mathrm{extract}(E, C)$,
 $\mathrm{extract}(E, A \!\Rightarrow\! B)$,
 $\mathrm{extract}(E, B \!\Rightarrow\! C)$.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNJointEvidenceNoGo.lean}.}
+\codepath{Mettapedia/PLN/Evidence/PLNJointEvidenceNoGo.lean}.}
 \end{theorem}
 
 \begin{proof}[Proof sketch]
@@ -4709,7 +4709,7 @@ The rule is a theorem, not a heuristic.
 The side condition $\Sigma$ is not optional.  When it fails, the
 rule does not apply.  The system falls back to the full posterior.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNBayesNetFastRules.lean} and
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNBayesNetFastRules.lean} and
 \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNDerivation.lean}.}
 
 \section{The Compiled Rule Catalog}
@@ -4763,7 +4763,7 @@ conditions.  Revision is evidence addition
 (\S\ref{sec:additive-regime}).%
 \footnote{Formalized in \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNDerivation.lean}
 (strength formulas, bounds, and Bayes-inversion theorems) and
-\codepath{Mettapedia/Logic/PLNBayesNetFastRules.lean} (BN exactness
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNBayesNetFastRules.lean} (BN exactness
 theorems).}
 
 \section{Compiled Tactics vs.\ Foundational Semantics}
@@ -4884,7 +4884,7 @@ screening-off:
   \mathrm{plnDed}(s_{AB}, s_{BC}, s_B, s_C).
 \]%
 \footnote{Formalized: \code{chainBN\_plnDeductionStrength\_exact}
-in \codepath{Mettapedia/Logic/PLNBayesNetFastRules.lean}.}
+in \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNBayesNetFastRules.lean}.}
 \end{theorem}
 
 \noindent
@@ -4927,7 +4927,7 @@ revision double-counts); this is the role of the trail-free, fresh-evidence
 discipline of Theorem~\ref{thm:damped-convergence}, and is why
 \code{RavenInduction} assigns its two ravens disjoint provenance stamps.  We
 leave as a target for
-\codepath{Mettapedia/Logic/PLNDistributionalConvergence.lean} the statement
+\codepath{Mettapedia/PLN/TruthValues/PLNDistributionalConvergence.lean} the statement
 that iterated induction-plus-revision on i.i.d.\ instance evidence converges in
 strength to $P(B\mid A)$ with confidence $\to 1$, the reverse link to
 $P(A\mid B)$, their ratio fixed by the base rates.
@@ -5006,7 +5006,7 @@ naive abduction fails.  The negative controls are as important as
 the positive ones --- they show that the $\Sigma$-discipline catches
 real errors.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNProofCarryingContractionDemo.lean}.}
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNProofCarryingContractionDemo.lean}.}
 
 
 \section{PLN v0.9 Examples as Compiled WM Instances}
@@ -5032,7 +5032,7 @@ is a compiled BN rewrite with provenance tracking:
 \noindent
 All verified with 20~kernel-checked conformance tests.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNClassicExamples.lean}.}
+\codepath{Mettapedia/Examples/PLN/ClassicExamples.lean}.}
 
 The stepped walkthrough for DeductionRevision with provenance
 appears in Chapter~\ref{ch:state-ops},
@@ -5119,7 +5119,7 @@ chaining at the scalar (view) level rather than the distributional
   $\ge \delta$, the total accumulated variance is
   $\ge n \cdot \delta$.  Variance grows at least linearly.%
   \footnote{Formalized in
-  \codepath{Mettapedia/Logic/PLNVarianceChainNoGo.lean}.}
+  \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNVarianceChainNoGo.lean}.}
 
 \item \textbf{Sensitivity amplification.}  If each step is
   $K$-Lipschitz, composing $n$ steps yields a $K^n$-Lipschitz chain.
@@ -5139,7 +5139,7 @@ chaining at the scalar (view) level rather than the distributional
   parameterizations.  No function of the topology alone bounds
   it non-trivially.%
   \footnote{Formalized in
-  \codepath{Mettapedia/Logic/PLNTopologyCPTNoGo.lean}.}
+  \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNTopologyCPTNoGo.lean}.}
 
 \item \textbf{No universal error bound.}  There is no function of
   the number of chaining steps that bounds the error for all world
@@ -5168,7 +5168,7 @@ content.  After $k$ steps, the distributional chain preserves the
 full posterior shape, while the scalar chain has accumulated artificial
 precision.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNDistributionalConvergence.lean}.}
+\codepath{Mettapedia/PLN/TruthValues/PLNDistributionalConvergence.lean}.}
 \end{theorem}
 
 \noindent
@@ -5334,7 +5334,7 @@ inclusion-exclusion terms alone:
 \]%
 \footnote{Formalized:
 \code{no\_universal\_union\_predictor\_from\_first\_two\_terms}
-in \codepath{Mettapedia/Logic/PLNInclusionExclusionIdentifiability.lean}
+in \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNInclusionExclusionIdentifiability.lean}
 }
 \end{theorem}
 
@@ -5365,7 +5365,7 @@ overlap (the residual) is known.  The two-term estimate equals
 the full union cardinality if and only if $|A \cap B \cap C| = 0$.%
 \footnote{Formalized:
 \code{unionCard\_eq\_twoTerm\_plus\_residualZ}
-in \codepath{Mettapedia/Logic/PLNMultideductionResidual.lean}
+in \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNMultideductionResidual.lean}
   The proof works in $\mathbb{Z}$ to handle the
 subtraction, then lifts to $\mathbb{Q}$-probability form.}
 \end{theorem}
@@ -5378,7 +5378,7 @@ whenever PLN combines rule-level evidence counts.
 Both theorems extend to $n$-way families via indexed
 generalizations.%
 \footnote{\code{unionCardN\_eq\_twoTerm\_plus\_residualNZ}
-in \codepath{Mettapedia/Logic/PLNMultideductionResidual.lean}.}
+in \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNMultideductionResidual.lean}.}
 
 \begin{corollary}[No universal additive correction (\claimCore{})]
 \label{cor:no-universal-xi}
@@ -5389,7 +5389,7 @@ $\xi$-correction cannot be a universal constant derived from
 low-order statistics alone.%
 \footnote{Formalized:
 \code{no\_universal\_constant\_correction}
-in \codepath{Mettapedia/Logic/PLNMultideductionResidual.lean}.}
+in \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNMultideductionResidual.lean}.}
 \end{corollary}
 
 \noindent
@@ -6124,7 +6124,7 @@ $F$ and the target concept~$W$.  Extensional inheritance is the left
 side; intensional inheritance is the exponent on the right.%
 \footnote{Formalized:
 \code{goertzel\_formula} in
-\codepath{Mettapedia/Logic/IntensionalInheritance.lean}
+\codepath{Mettapedia/KR/ConceptGeometry/IntensionalInheritance.lean}
 }
 
 \begin{theorem}[Singleton reduction (\claimCore{})]
@@ -6172,7 +6172,7 @@ family:
 \]
 Each sort has its own evidence extraction and strength computation.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNIntensionalWorldModel.lean}
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalWorldModel.lean}
 }
 \end{definition}
 
@@ -6200,7 +6200,7 @@ explicit theorem endpoints.%
 \footnote{Formalized:
 \code{intensionalFromConditional\_eq\_log2\_ratio} and
 \code{intensionalFromXiGeom\_eq\_log2\_ratio} in
-\codepath{Mettapedia/Logic/IntensionalInheritanceSolomonoffBridge.lean}
+\codepath{Mettapedia/KR/ConceptGeometry/Bridges/UniversalAI/IntensionalInheritanceSolomonoffBridge.lean}
 }
 
 
@@ -6218,7 +6218,7 @@ There exists a concrete state with evidence scores $(3, 2, 1)$ for
 contributes nontrivially and the mixed result cannot be expressed
 as any function of only the extensional and ASSOC values.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNIntensionalCanary.lean}
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalCanary.lean}
 }
 \end{theorem}
 
@@ -6228,7 +6228,7 @@ general law: the full three-channel model (extensional, ASSOC, PAT)
 is needed.  The corrected model is a typed three-channel mixed
 rule with selector-specialized endpoints.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNIntensionalAssocPatClosure.lean}
+\codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalAssocPatClosure.lean}
 }
 
 \medskip\noindent
@@ -6312,7 +6312,7 @@ group action $\varphi : T \to (Q \to Q)$ by quantale automorphisms:
 \end{itemize}%
 \footnote{Formalized:
 \code{TemporalQuantale} class in
-\codepath{Mettapedia/Logic/TemporalQuantale.lean}}
+\codepath{Mettapedia/Algebra/TemporalQuantale.lean}}
 \end{definition}
 
 \noindent
@@ -6814,7 +6814,7 @@ equilibria (phase transitions) opens up.
 \noindent
 Once a DLR measure exists, it can be fed into the WM-PLN bridge.  The
 construction is elementary: a probability measure has total mass~$1$, so
-the \texttt{MassSemantics} record from the WM interface is immediate, and the
+the \texttt{Mettapedia.ProbabilityTheory.MassSemantics} record from the WM interface is immediate, and the
 query strength reduces to the Gibbs probability of the query's cylinder event.
 
 \begin{theorem}[Infinite MLN world-model bridge (\claimConditional{})]
@@ -6850,7 +6850,7 @@ layers:
   via compactness), \codepath{MarkovLogicInfiniteUniqueness.lean} (Dobrushin
   uniqueness via descending-shell contraction).
 \item[Bridge.]  \codepath{MarkovLogicInfiniteWorldModel.lean} (Gibbs
-  $\to$ \texttt{MassSemantics} $\to$ \texttt{queryStrength}),
+  $\to$ \texttt{Mettapedia.ProbabilityTheory.MassSemantics} $\to$ \texttt{queryStrength}),
   \codepath{MarkovLogicInfiniteBoundaryStability.lean} (geometric shell
   decay), \codepath{MarkovLogicOntologyGrowth.lean} (cross-specification
   exact invariance), \codepath{MarkovLogicIndividuation.lean} (individuated
@@ -7041,7 +7041,7 @@ semantics back into the algebraic WM interface.
   \node[stage, fill=green!8] (meas) at (0, 3.3)
     {\texttt{ProbabilityMeasure}\;$\mu$};
   \node[stage, fill=orange!8] (mass) at (0, 1.6)
-    {\texttt{MassSemantics}\quad
+    {\texttt{Mettapedia.ProbabilityTheory.MassSemantics}\quad
      $\mathrm{totalMass} = 1$};
   \node[stage, fill=yellow!12] (wm) at (0, 0)
     {$\mathrm{STV}(q)=\langle \mu(q),\,1\rangle$};
@@ -7787,7 +7787,7 @@ $P(W|x)$ scores now give approximate intensional-inheritance strengths with a
 proved error envelope that shrinks as the approximation budget
 grows.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/IntensionalInheritanceApproximationBridge.lean}
+\codepath{Mettapedia/KR/ConceptGeometry/Bridges/UniversalAI/IntensionalInheritanceApproximationBridge.lean}
 (0~sorry).}
 
 A concrete end-to-end example instantiates the full bridge: a two-step
@@ -8241,7 +8241,7 @@ The WM calculus adds two things:
   \footnote{Formalized:
   \code{noisyOrDeltaVariance\_le\_sumVariance} and
   \code{deltaConfidence\_single} in
-  \codepath{Mettapedia/Logic/PLNNoisyOr.lean}
+  \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNNoisyOr.lean}
   (50~theorems, 0~sorry).}
 \end{itemize}
 
@@ -8445,7 +8445,7 @@ rule's stated side conditions.  Twenty conformance tests---including
 the classic DeductionRevision and RavenInheritance
 examples---verify exact numerical agreement.%
 \footnote{Formalized:
-\codepath{Mettapedia/Logic/PLNClassicExamples.lean}
+\codepath{Mettapedia/Examples/PLN/ClassicExamples.lean}
 (20~conformance tests, all by \code{decide}).}
 \end{theorem}
 
@@ -8928,7 +8928,7 @@ for ``It from Bit'' at the evidence layer.
 
 The current formalization has begun this boundary without claiming the
 full quantum calculus.  The file
-\codepath{Mettapedia/Logic/PLNAmplitudePhase.lean} proves that ordinary
+\codepath{Mettapedia/PLN/TruthValues/PLNAmplitudePhase.lean} proves that ordinary
 binary PLN strength is recovered as the Born shadow of the Hellinger
 amplitude, that the ordinary typed-STV projection forgets relative
 phase, and that the complex amplitude
@@ -9181,7 +9181,7 @@ detector (binary evidence) form a product state.  Sleep
 consolidation is verified: morning $+$ night batch $=$ sequential
 update.  Confidence grows monotonically with observations.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNBrokenSensorDemo.lean} (420~lines).}
+\codepath{Mettapedia/Examples/PLN/BrokenSensorDemo.lean} (420~lines).}
 
 \begin{figure}[htbp]
 \centering
@@ -9202,7 +9202,7 @@ exceedance probabilities remains a valid probability, bounded
 between the components.  Machine~B is $3.5\times$ more likely to
 produce defects than Machine~A.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNWidgetFactoryDemo.lean} (422~lines).}
+\codepath{Mettapedia/Examples/PLN/WidgetFactoryDemo.lean} (422~lines).}
 
 \paragraph{Kalman filter wake/sleep.}
 A 1D random-walk tracker with noisy observations.  The flagship
@@ -9212,7 +9212,7 @@ theorem: batch replay of deferred observations yields the
 \code{filterOrbit} composed twice).  This is the temporal
 counterpart of sleep consolidation.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNKalmanSleepDemo.lean} (374~lines).}
+\codepath{Mettapedia/Examples/PLN/KalmanSleepDemo.lean} (374~lines).}
 
 
 \section{Gas Sensor Array Drift}
@@ -9543,7 +9543,7 @@ networks.  A worked example on a fork+chain fixture with all
 three modes---clean hard-gated chaining, bounded-mode interval
 certification, and soft-mode fallback---is kernel-checked.%
 \footnote{Formalized in
-\codepath{Mettapedia/Logic/PLNProbGuardedAdmissibilityDemo.lean}
+\codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/PLNProbGuardedAdmissibilityDemo.lean}
 (13~theorems, 0~sorry).}
 
 
@@ -9730,7 +9730,7 @@ the combined confidence is computed via variance propagation
 through the noisy-OR function.  Combining more mechanisms
 provably increases confidence
 (\code{noisyOrDeltaVariance\_le\_sumVariance} in
-\codepath{Mettapedia/Logic/PLNNoisyOr.lean}).
+\codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNNoisyOr.lean}).
 
 This answers an open question raised at the Hyperon Workshop
 (March 2026): ``Since EM is done outside of PLN, how do we
@@ -10968,19 +10968,19 @@ Path & Lines & Thms & Book refs \\
 \endhead
 \multicolumn{4}{@{}l}{\emph{Foundations (Part~II)}} \\
 \midrule
-\code{Logic/PLNWorldModelGeneric} & 254 & 12 & Ch~3--4 \\
-\code{Logic/BinaryEvidence} & 1597 & 44 & Ch~4 \\
-\code{Logic/PLNNoisyOr} & 765 & 50 & Ch~4, 22 \\
-\code{Logic/WorldModelOverlap} & $\sim$120 & 7 & Ch~3 \\
+\code{PLN/WorldModel/PLNWorldModelGeneric} & 254 & 12 & Ch~3--4 \\
+\code{PLN/Evidence/BinaryEvidence} & 1597 & 44 & Ch~4 \\
+\code{PLN/RuleFamilies/FirstOrder/PLNNoisyOr} & 765 & 50 & Ch~4, 22 \\
+\code{PLN/WorldModel/WorldModelOverlap} & $\sim$120 & 7 & Ch~3 \\
 \code{PLN/Bridges/ProbabilityTheory/EvidenceNormalGammaLattice} & $\sim$150 & 10 & Ch~4 \\
 \code{Examples/PLN/MapleCourtDemo} & 906 & 47 & Ch~2--6 \\
 \code{Examples/PLN/WMDerivationTrackingDemo} & 453 & 31 & Ch~5 \\
-\code{Logic/EvidentialLedger} & 114 & 2 & Ch~5 \\
+\code{PLN/Evidence/EvidentialLedger} & 114 & 2 & Ch~5 \\
 \code{Languages/GF/SUMO/PainEvidenceWM} & 192 & 10 & Ch~5 \\
 \midrule
 \multicolumn{4}{@{}l}{\emph{Core Theory (Part~III)}} \\
 \midrule
-\code{Logic/PLNBayesNetInference} & 404 & 7 & Ch~10 \\
+\code{PLN/WorldModel/BayesNet/PLNBayesNetInference} & 404 & 7 & Ch~10 \\
 \code{Logic/DDLPlus/Core} & 410 & 11 & Ch~15 \\
 \code{Logic/DDLPlus/WMBridge} & 133 & 4 & Ch~16 \\
 \code{Logic/DDLPlus/Theorems} & 319 & 31 & Ch~15 \\
@@ -11038,24 +11038,24 @@ Path & Lines & Thms & Book refs \\
 \midrule
 \multicolumn{4}{@{}l}{\emph{Applications (Part~VI)}} \\
 \midrule
-\code{Logic/PLNBrokenSensorDemo} & 420 & 31 & Ch~20 \\
-\code{Logic/PLNWidgetFactoryDemo} & 422 & 30 & Ch~20 \\
-\code{Logic/PLNKalmanSleepDemo} & 374 & 35 & Ch~20 \\
+\code{Examples/PLN/BrokenSensorDemo} & 420 & 31 & Ch~20 \\
+\code{Examples/PLN/WidgetFactoryDemo} & 422 & 30 & Ch~20 \\
+\code{Examples/PLN/KalmanSleepDemo} & 374 & 35 & Ch~20 \\
 \code{Examples/PLN/WMGasSensorDriftDemo} & 652 & 58 & Ch~20 \\
 \code{Examples/PLN/WMSteelFaultDemo} & 568 & 46 & Ch~20 \\
 \code{Examples/PLN/WMNABSleepDemo} & 344 & 30 & Ch~20 \\
 \code{Examples/PLN/GJPForecastDemo} & 255 & 14 & Ch~20 \\
 \compactcodepath{PLN/WorldModel/OrderCost}{PLNWorldModelOrderCostGasPolicyDemo} & 155 & 6 & Ch~20 \\
 \code{Examples/PLN/BioHypothesisGeneration} & 635 & 36 & Ch~22 \\
-\code{Logic/PLNGWASHigherOrderBridge} & 310 & 17 & Ch~22 \\
+\code{PLN/RuleFamilies/HigherOrder/PLNGWASHigherOrderBridge} & 310 & 17 & Ch~22 \\
 \code{Examples/PLN/WMDemandDemo} & 258 & 27 & Ch~12 \\
 \code{Examples/PLN/WMForkDemandDemo} & $\sim$300 & 23 & Ch~12 \\
 \code{Examples/PLN/WMUWCSEGateDemo} & 177 & 12 & Ch~16 \\
 \code{PLN/Bridges/ProbabilityTheory/EvidenceDirichletQuantale} & $\sim$200 & 13 & Ch~2, 4 \\
-\code{Logic/PLNProbGuardedAdmissibilityDemo} & $\sim$200 & 13 & Ch~21 \\
+\code{PLN/RuleFamilies/HigherOrder/PLNProbGuardedAdmissibilityDemo} & $\sim$200 & 13 & Ch~21 \\
 \compactcodepath{PLN/WorldModel/OrderCost}{PLNWorldModelOrderCostProvenanceDemo} & 255 & 5 & Ch~12 \\
-\code{Logic/PLNQuantaleDivergence} & 121 & 3 & Ch~4 \\
-\code{Logic/BooleanHeytingBridge} & $\sim$100 & 4 & Ch~4 \\
+\code{PLN/RuleFamilies/QuantaleSemantics/PLNQuantaleDivergence} & 121 & 3 & Ch~4 \\
+\code{PLN/Bridges/Logic/BooleanHeytingBridge} & $\sim$100 & 4 & Ch~4 \\
 \code{Examples/PLN/AIOutcomesDemo} & 280 & 13 & Ch~24 \\
 \midrule
 \textbf{Total (book-referenced files)} & \textbf{$\sim$19,000+} & \textbf{$\sim$950} & \\

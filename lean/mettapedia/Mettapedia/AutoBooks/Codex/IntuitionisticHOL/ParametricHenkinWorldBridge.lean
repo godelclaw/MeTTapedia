@@ -4,7 +4,7 @@ import Mettapedia.AutoBooks.Codex.IntuitionisticHOL.ClosedTermHenkinWorldBridge
 namespace Mettapedia.AutoBooks.Codex.IntuitionisticHOL
 
 open Mettapedia.Logic.HOL
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open ClosedTermCanonicalWorldModel
 open scoped ENNReal
 

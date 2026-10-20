@@ -146,11 +146,11 @@ algebra from operational views---has been formalized as an explicit semantic
 stack split:
 
 \begin{itemize}
-\item \textbf{Layer 1} (world-model posterior): \codepath{Mettapedia/Logic/PLNWorldModel.lean}
-\item \textbf{Layer 2} (evidence algebra): \codepath{Mettapedia/Logic/EvidenceClass.lean},
-  \codepath{Mettapedia/Logic/EvidenceQuantale.lean}
-\item \textbf{Layer 3} (operational views): \codepath{Mettapedia/Logic/PLNIndefiniteTruth.lean}
-\item \textbf{Decision tree}: \codepath{Mettapedia/Logic/SemanticsDecisionTree.lean}
+\item \textbf{Layer 1} (world-model posterior): \codepath{Mettapedia/PLN/WorldModel/BinaryWorldModel.lean}
+\item \textbf{Layer 2} (evidence algebra): \codepath{Mettapedia/PLN/Evidence/EvidenceClass.lean},
+  \codepath{Mettapedia/PLN/Evidence/BinaryEvidence.lean}
+\item \textbf{Layer 3} (operational views): \codepath{Mettapedia/PLN/TruthValues/PLNIndefiniteTruth.lean}
+\item \textbf{Decision tree}: \codepath{Mettapedia/PLN/Comparisons/SemanticsDecisionTree.lean}
 \end{itemize}
 
 For the completed strength/confidence characterization itself, the current
@@ -195,10 +195,10 @@ knowledge is stored and queried.
 \section{What Formalizes Cleanly}
 
 \begin{itemize}
-\item \code{PLNQuery}: atoms, links, conditional links --- \codepath{Mettapedia/Logic/PLNWorldModel.lean}
+\item \code{PLNQuery}: atoms, links, conditional links --- \codepath{Mettapedia/PLN/WorldModel/BinaryWorldModel.lean}
 \item \code{WorldModel}: the query interface --- same file
 \item \code{WorldModelSigma}: side-condition-bundled models --- same file
-\item Rewrite judgments: \codepath{Mettapedia/Logic/PLNWorldModelCalculus.lean}
+\item Rewrite judgments: \codepath{Mettapedia/PLN/WorldModel/WorldModelCalculus.lean}
 \end{itemize}
 
 \section{What Required Correction}
@@ -251,17 +251,17 @@ are sufficient statistics.
 
 \begin{itemize}
 \item Evidence type $(n^+, n^-)$ with componentwise operations ---
-  \codepath{Mettapedia/Logic/EvidenceClass.lean}
+  \codepath{Mettapedia/PLN/Evidence/EvidenceClass.lean}
 \item Revision as additive monoid (associative, commutative, unit $(0,0)$) ---
   same file
 \item Information ordering (coordinatewise $\le$) --- same file
 \item Complete world-model posterior (Dirichlet pseudo-counts over $2^n$ worlds) ---
-  \codepath{Mettapedia/Logic/PLNJointEvidence.lean}
+  \codepath{Mettapedia/PLN/Evidence/PLNJointEvidence.lean}
 \item Evidence compositionality:
   $\mathrm{ev}(W_1 + W_2, q) = \mathrm{ev}(W_1, q) \hplus \mathrm{ev}(W_2, q)$ ---
-  \codepath{Mettapedia/Logic/PLNWorldModel.lean}
+  \codepath{Mettapedia/PLN/WorldModel/BinaryWorldModel.lean}
 \item Fr\'{e}chet bounds: $\max(0, s_A + s_B - 1) \le s_{A \wedge B} \le \min(s_A, s_B)$ ---
-  \codepath{Mettapedia/Logic/PLNFrechetBounds.lean}
+  \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNFrechetBounds.lean}
 \end{itemize}
 
 \section{What Required Correction}
@@ -315,11 +315,11 @@ representations of uncertainty that go beyond point estimates.
 
 \begin{itemize}
 \item ITV core with lower/upper/width/credibility coordinates ---
-  \codepath{Mettapedia/Logic/PLNIndefiniteTruth.lean}
+  \codepath{Mettapedia/PLN/TruthValues/PLNIndefiniteTruth.lean}
 \item Walley IDM predictive interval constructors ---
   same file, explicit \code{walleyIDM} constructors
 \item ITV hypercube transport ---
-  \codepath{Mettapedia/Logic/PLNWorldModelITVHypercube.lean}
+  \codepath{Mettapedia/PLN/WorldModel/WorldModelITVHypercube.lean}
 \end{itemize}
 
 \section{What Required Correction}
@@ -376,17 +376,17 @@ given $B$ and given $\lnot B$.
 
 \begin{itemize}
 \item Deduction strength formula: \code{plnDeductionStrength} ---
-  \codepath{Mettapedia/Logic/PLNDeduction.lean}
+  \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNDeduction.lean}
 \item Induction and abduction strength formulas ---
   \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNDerivation.lean}
 \item Full inference rule set ---
-  \codepath{Mettapedia/Logic/PLNInferenceRules.lean}
+  \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNInferenceRules.lean}
 \item MeTTa truth function parity / analysis ---
-  \codepath{Mettapedia/Logic/PeTTaLibPLNTruthFunctions.lean},
-  \codepath{Mettapedia/Logic/WMPLNJustifiedTruthFunctions.lean},
+  \codepath{Mettapedia/PLN/TruthValues/PeTTaLibPLNTruthFunctions.lean},
+  \codepath{Mettapedia/PLN/TruthValues/WMPLNJustifiedTruthFunctions.lean},
   \codepath{Mettapedia/PLN/Comparisons/PeTTa/PeTTaLibPLNFormalAnalysis.lean}
 \item BN chain exactness: \code{chainBN\_plnDeductionStrength\_exact} ---
-  \codepath{Mettapedia/Logic/PLNBayesNetFastRules.lean}
+  \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNBayesNetFastRules.lean}
 \item BN fork exactness: \code{forkBN\_plnDeductionStrength\_exact} ---
   same file
 \end{itemize}
@@ -508,7 +508,7 @@ It introduces the Kyburg flattening operation.
 \begin{itemize}
 \item Context-aware strength as Beta posterior mean:
   \code{strengthWith\_eq\_beta\_posterior\_meanENN} ---
-  \codepath{Mettapedia/Logic/HigherOrder/PLNKyburgReduction.lean}
+  \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/PLNKyburgReduction.lean}
 \item Evidence aggregation as conjugate update:
   \code{hplus\_is\_bayesian\_update} --- same file
 \item Kyburg flattening: \code{kyburg\_flattening},
@@ -518,7 +518,7 @@ It introduces the Kyburg flattening operation.
   \code{flatten\_associativity}, \code{flatten\_associativity\_kernel} ---
   \codepath{Mettapedia/ProbabilityTheory/HigherOrderProbability/GiryMonad.lean}
 \item De~Finetti singleton bridge into Kyburg flattening ---
-  \codepath{Mettapedia/Logic/HigherOrder/PLNKyburgReduction.lean}
+  \codepath{Mettapedia/PLN/Bridges/ProbabilityTheory/PLNKyburgReduction.lean}
 \item Worked example (uniform prior, evidence 3:1) ---
   same file
 \end{itemize}
@@ -607,7 +607,7 @@ Chapter~8 discusses how errors accumulate through chains of inference
 \begin{itemize}
 \item View transport under WM query equivalence: strength, confidence,
   interpretation views all preserved ---
-  \codepath{Mettapedia/Logic/PLNWorldModelCalculus.lean}
+  \codepath{Mettapedia/PLN/WorldModel/WorldModelCalculus.lean}
 \item Confidence-threshold atom semantics and rewrite soundness ---
   \codepath{Mettapedia/PLN/Bridges/Languages/PLNErrorMagnificationGrounding.lean}
 \item One-call WM rewrite $\to$ OSLF truth transport $\to$ threshold
@@ -703,7 +703,7 @@ statistics alone?
   probability distributions agreeing on all first-two-term statistics
   but differing on $|A \cup B|$.  Therefore two-term IE is
   \emph{not identifiable}. ---
-  \codepath{Mettapedia/Logic/PLNInclusionExclusionIdentifiability.lean}
+  \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNInclusionExclusionIdentifiability.lean}
 \item \textbf{No universal predictor:}
   \code{no\_universal\_union\_predictor\_from\_first\_two\_terms} ---
   same file.  No additive correction term works for all models.
@@ -712,7 +712,7 @@ statistics alone?
   and $R$ is the residual.  If $R$ is known or bounded, the corrected
   estimate is exact:
   \code{correctedEstimate\_agrees\_of\_residualAssumption} ---
-  \codepath{Mettapedia/Logic/PLNMultideductionResidual.lean}
+  \codepath{Mettapedia/PLN/RuleFamilies/FirstOrder/PLNMultideductionResidual.lean}
 \item \textbf{N-way generalization:} the residual decomposition extends
   to $n$-way unions. ---  same file
 \end{itemize}
@@ -827,7 +827,7 @@ sets and reductions from higher-order to first-order.
 \item HOI-to-FOI reduction via satisfying sets: for predicate $P$, the
   satisfying set $\mathrm{Sat}(P) = \{x \mid P(x)\}$ bridges
   higher-order and first-order ---
-  \codepath{Mettapedia/Logic/HigherOrder/HigherOrderReduction.lean}
+  \codepath{Mettapedia/PLN/RuleFamilies/HigherOrder/Reduction/HigherOrderReduction.lean}
 \item Weakness-based inheritance:
   $\mathrm{Inheritance}(A, B, \mu) = \mathrm{weakness}(A \cap B) / \mathrm{weakness}(A)$
   ---
@@ -940,16 +940,16 @@ an explicit no-go against collapsing back to the old binary law.
 
 \begin{itemize}
 \item Typed WM grounding for intensional inheritance ---
-  \codepath{Mettapedia/Logic/PLNIntensionalWorldModel.lean}
+  \codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalWorldModel.lean}
 \item Solomonoff-linked semantic transport ---
-  \codepath{Mettapedia/Logic/IntensionalInheritanceSolomonoffBridge.lean}
+  \codepath{Mettapedia/KR/ConceptGeometry/Bridges/UniversalAI/IntensionalInheritanceSolomonoffBridge.lean}
 \item Canonical \code{AssocPatSemanticModel} packaging ---
   \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean}
 \item Selector-specialized end-to-end endpoints ---
   same file
 \item Canary and regression targets ---
-  \codepath{Mettapedia/Logic/PLNIntensionalCanary.lean},
-  \codepath{Mettapedia/Logic/PLNIntensionalRegression.lean}
+  \codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalCanary.lean},
+  \codepath{Mettapedia/PLN/ConceptGeometry/AssocPat/PLNIntensionalRegression.lean}
 \end{itemize}
 
 \section{What Required Correction}
@@ -1212,7 +1212,7 @@ The complete theorem ledger is maintained in the Lean codebase.
 Key entry points:
 
 \begin{itemize}
-\item \codepath{Mettapedia/PLN/Core/PLNCore.lean} --- umbrella module
+\item \codepath{Mettapedia/PLN.lean} --- umbrella module
 \item \codepath{Mettapedia/PLN/Core/PLNCanonicalAPI.lean} --- canonical API (3806 lines)
 \item \codepath{Mettapedia/Logic/README.md} --- status table and theorem index
 \item \codepath{Mettapedia/Implementation/PLNParityChecklist.lean} --- MeTTa parity
@@ -1223,7 +1223,6 @@ Chapter-specific regression scripts:
 \item \code{lake build}\ \codepath{Mettapedia.PLN.Bridges.Logic.WorldModel.PLNWorldModelNeighborhoodConsequence} \codepath{Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalRegression}
 \item \code{lake build}\ \codepath{Mettapedia.PLN.InferenceControl.SelectorRewriteThreshold.PLNSelectorRewriteThresholdRegression}
 \item \code{lake build}\ \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression}
-\item \code{lake build}\ \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.QuantifierRegression} \codepath{Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.FuzzySyllogismRegressionFin}
 \item \code{lake build}\ \codepath{Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalRegression}
 \item \code{lake build}\ \codepath{Mettapedia.PLN.InferenceControl.PremiseSelection.PLNInferenceControlRegression}
 \end{itemize}

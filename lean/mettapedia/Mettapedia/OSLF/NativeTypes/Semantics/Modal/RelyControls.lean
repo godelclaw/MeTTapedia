@@ -41,7 +41,7 @@ def language : LanguageDef :=
     equations := []
     rewrites := [rule]}
 
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨language, [], ⟨[], [], []⟩⟩
 def permissions : Permissions := {sites := .rootOnly}
 def declaration : RulePlan :=
   ⟨0, rule, ⟨GeneralRuleBindingInference.inferredSpec rule, .inferredRootInputs⟩⟩

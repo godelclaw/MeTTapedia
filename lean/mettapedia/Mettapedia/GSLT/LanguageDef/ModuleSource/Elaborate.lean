@@ -25,6 +25,11 @@ replaced constructor is rewritten in every equation and rewrite, with its argume
 parameter name, and a binary operation replaced by a bag constructor of its sort collects its
 arguments into the bag.
 
+A replacement re-spells an operation and never adds laws: a binary operation becomes a bag only
+when it commutes, and a set only when it is also idempotent (`checkFaithful`). The equations that
+state a collection constructor's algebra, those of the operation it replaced or its own, become its
+declaration, flattening with a unit when one holds (`declareAlgebras`).
+
 Facts:
 - `joinValues_isSome_iff`: a join succeeds exactly when the two fragments are compatible;
 - `joinEntries_presentation`: a computed join is `Presentation.join`, a pushout over the shared
@@ -110,6 +115,8 @@ inductive Error where
   | renameMissing (sort : String)
   | importMissing (file : String)
   | noEntry
+  | replaceAddsLaws (old new law : String)
+  | requiresIndexedAdmission
 
 instance : Repr Error where
   reprPrec
@@ -126,6 +133,8 @@ instance : Repr Error where
     | .renameMissing sort, _ => s!"no sort {sort} to export"
     | .importMissing file, _ => s!"import {file} is not available"
     | .noEntry, _ => "the module has no entry theory"
+    | .replaceAddsLaws old new law, _ => s!"replacing {old} by {new} would add {law}, which {old} does not have"
+    | .requiresIndexedAdmission, _ => "inductive declarations require the indexed admission route"
 
 /-- Elaboration threads the next instance id. -/
 abbrev M := StateT Nat (Except Error)
@@ -326,6 +335,40 @@ def argumentMap (old new : GrammarRule) : Option (List Pattern → List Pattern)
         else none
     | _ => none
 
+/-- `(op x y) == (op y x)`: the binary constructor `op` commutes. -/
+def statesCommutative (op : String) (left right : Pattern) : Bool :=
+  match left, right with
+  | .apply first [.fvar x, .fvar y], .apply second [.fvar y', .fvar x'] =>
+      first == op && second == op && x != y && x == x' && y == y'
+  | _, _ => false
+
+/-- `(op x x) == x`: the binary constructor `op` is idempotent. -/
+def statesIdempotent (op : String) (left right : Pattern) : Bool :=
+  match left, right with
+  | .apply head [.fvar x, .fvar x'], .fvar x'' => head == op && x == x' && x == x''
+  | _, _ => false
+
+/-- Whether some premise-free equation of a value states `law` of `op`, either way round. -/
+def holdsOf (value : Value) (law : String → Pattern → Pattern → Bool) (op : String) : Bool :=
+  value.entries.any fun item => match item.body with
+    | .equation row => row.premises.isEmpty && (law op row.left row.right || law op row.right row.left)
+    | _ => false
+
+/-- **A replacement re-spells an operation; it never adds laws.** A binary operation becomes a bag
+constructor only when it commutes, and a set constructor only when it is also idempotent, because
+those collections quotient out exactly that. -/
+def checkFaithful (value : Value) (old : GrammarRule) (new : GrammarRule) : Except Error Unit :=
+  match new.params with
+  | [.simple _ (.collection kind _)] =>
+      if 2 ≤ old.params.length then
+        if (kind == .hashBag || kind == .hashSet) && !holdsOf value statesCommutative old.label then
+          .error (.replaceAddsLaws old.label new.label "commutativity")
+        else if kind == .hashSet && !holdsOf value statesIdempotent old.label then
+          .error (.replaceAddsLaws old.label new.label "idempotence")
+        else .ok ()
+      else .ok ()
+  | _ => .ok ()
+
 section Constructor
 
 variable (old new : String) (map : List Pattern → List Pattern)
@@ -399,6 +442,7 @@ def replaceRow (value : Value) (row : Replacement) : Except Error Value := do
   let some found := value.entries.find? (·.label == (.term, row.old)) | throw (.replaceMissing row.old)
   let .term oldRule := found.body | throw (.replaceMissing row.old)
   let some map := argumentMap oldRule row.rule | throw (.replaceShape row.old row.rule.label)
+  checkFaithful value oldRule row.rule
   let entries ← recheck (replaceItems value.entries row map)
   pure { value with entries }
 
@@ -418,6 +462,7 @@ def applyBlock (inst : Nat) (value : Value) : Block → Except Error Value
       newItem inst .rewrite row.name (.rewrite (RewriteRule.resolveNullary (nullaries value) row)))
   | .exports rows => rows.foldlM exportRow value
   | .replacements rows => rows.foldlM replaceRow value
+  | .inductives _ => .error .requiresIndexedAdmission
 where
   add (fresh : List Item) : Except Error Value := do
     let entries ← joinEntries value.entries fresh
@@ -520,6 +565,119 @@ def theoriesOf (library : List (String × Module)) : Nat → Module → Except E
         scope := scope ++ [([theory.name], made)]
       pure scope
 
+/-! ## Collection algebras
+
+A constructor whose single parameter is a collection of its own sort carries its algebra as a
+declaration (`GrammarRule.algebra?`): flattening, with the singleton law, and optionally a unit. A
+module states that algebra as equations, those of the operation a bag replaced or those written for
+the collection constructor itself. Those equations become the declaration and leave the equations;
+an unordered collection's own laws already permute its elements. -/
+
+/-- The elements of a collection written as the argument of the constructor `label`. -/
+def elementsUnder (label : String) : Pattern → Option (List Pattern)
+  | .apply head [.collection _ elements none] => if head == label then some elements else none
+  | _ => none
+
+/-- The names of a list of variables. -/
+def variableNames : List Pattern → Option (List String)
+  | [] => some []
+  | .fvar name :: rest => (variableNames rest).map (name :: ·)
+  | _ => none
+
+/-- `{{x, y}, z}`, `{x, {y, z}}` or `{x, y, z}` under `label`, as the names `[x, y, z]` and which
+of the three it is. -/
+def threeShape (label : String) (pattern : Pattern) : Option (Nat × List String) :=
+  match elementsUnder label pattern with
+  | some [inner, .fvar z] =>
+      match (elementsUnder label inner).bind variableNames with
+      | some [x, y] => some (0, [x, y, z])
+      | _ => none
+  | some [.fvar x, inner] =>
+      match (elementsUnder label inner).bind variableNames with
+      | some [y, z] => some (1, [x, y, z])
+      | _ => none
+  | some elements =>
+      match variableNames elements with
+      | some [x, y, z] => some (2, [x, y, z])
+      | _ => none
+  | none => none
+
+/-- Two different shapes of three distinct variables in one order: associativity, or flattening. -/
+def statesFlatten (label : String) (left right : Pattern) : Bool :=
+  match threeShape label left, threeShape label right with
+  | some (first, names), some (second, names') => first != second && names == names' && names.Nodup
+  | _, _ => false
+
+/-- `{x, u} == x` (`some (u, false)`) or `{u, x} == x` (`some (u, true)`) under `label`. -/
+def statesUnit (label : String) (left right : Pattern) : Option (String × Bool) :=
+  match elementsUnder label left, right with
+  | some [.fvar x, .apply unit []], .fvar x' => if x == x' then some (unit, false) else none
+  | some [.apply unit [], .fvar x], .fvar x' => if x == x' then some (unit, true) else none
+  | _, _ => none
+
+/-- `{x} == x` under `label`. -/
+def statesSingleton (label : String) (left right : Pattern) : Bool :=
+  match elementsUnder label left, right with
+  | some [.fvar x], .fvar x' => x == x'
+  | _, _ => false
+
+/-- `{x, y} == {y, x}` under `label`. -/
+def statesCommuting (label : String) (left right : Pattern) : Bool :=
+  match elementsUnder label left, elementsUnder label right with
+  | some [.fvar x, .fvar y], some [.fvar y', .fvar x'] => x != y && x == x' && y == y'
+  | _, _ => false
+
+/-- A law either way round. -/
+def eitherWay (law : Pattern → Pattern → Bool) (row : Equation) : Bool :=
+  law row.left row.right || law row.right row.left
+
+/-- The units an equation states, either way round. -/
+def unitsOf (label : String) (row : Equation) : List (String × Bool) :=
+  (statesUnit label row.left row.right).toList ++ (statesUnit label row.right row.left).toList
+
+/-- The kind of a bare collection constructor of its own sort. -/
+def ownKind (rule : GrammarRule) : Option CollType :=
+  match rule.params with
+  | [.simple _ (.collection kind (.base element))] => if element == rule.category then some kind else none
+  | _ => none
+
+/-- **The algebra the equations state for one collection constructor**, and the equations it
+replaces. A unit counts when its equations hold on both sides, or on one side of an unordered
+collection; a constructor that does not flatten declares nothing. Commutativity goes, since an
+unordered collection's laws permute; idempotence stays an equation, since the collection laws do not
+quotient a set by repetition. -/
+def statedAlgebra (equations : List Equation) (rule : GrammarRule) : Option (CollectionAlgebra × (Equation → Bool)) := do
+  let kind ← ownKind rule
+  let free := equations.filter (·.premises.isEmpty)
+  guard (free.any (eitherWay (statesFlatten rule.label)))
+  let unordered := kind == .hashBag || kind == .hashSet
+  let stated := free.flatMap (unitsOf rule.label)
+  let unit? : Option String :=
+    match stated.head? with
+    | some (unit, _) =>
+        if stated.all (·.1 == unit) && (unordered || (stated.any (·.2) && stated.any (!·.2))) then some unit
+        else none
+    | none => none
+  let replaced (row : Equation) : Bool :=
+    row.premises.isEmpty &&
+      (eitherWay (statesFlatten rule.label) row || eitherWay (statesSingleton rule.label) row ||
+        (unit?.isSome && (unitsOf rule.label row).any (some ·.1 == unit?)) ||
+        (unordered && eitherWay (statesCommuting rule.label) row))
+  return (⟨true, unit?⟩, replaced)
+
+/-- Every collection constructor's stated algebra becomes its declaration; a constructor that
+already declares one keeps it. -/
+def declareAlgebras (language : LanguageDef) : LanguageDef :=
+  language.terms.foldl (fun current rule =>
+    if rule.algebra?.isSome then current
+    else match statedAlgebra current.equations rule with
+      | some (algebra, replaced) =>
+          { current with
+            terms := current.terms.map fun other =>
+              if other.label == rule.label then { other with algebra? := some algebra } else other
+            equations := current.equations.filter (!replaced ·) }
+      | none => current) language
+
 /-- A value's declarations in order, before nullary names are resolved. -/
 def flattenRaw (name : String) (value : Value) : LanguageDef where
   name := name
@@ -532,8 +690,9 @@ def flattenRaw (name : String) (value : Value) : LanguageDef where
   rewrites := value.entries.filterMap fun item => match item.body with
     | .rewrite row => some row | _ => none
 
-/-- A value as a `LanguageDef`, its declarations in order. -/
-def flatten (name : String) (value : Value) : LanguageDef := flattenRaw name value
+/-- A value as a `LanguageDef`, its declarations in order, with the collection algebras its
+equations state declared. -/
+def flatten (name : String) (value : Value) : LanguageDef := declareAlgebras (flattenRaw name value)
 
 /-- The value of applying a theory to arguments, within a module. -/
 def applyTheory (library : List (String × Module)) (module : Module) (path : Path) (args : List Expr) :

@@ -372,9 +372,9 @@ example : MettaCall emptySpace noDispatch
     `(cons-atom a (b))` → `(a b)` -/
 example (services : Spec.Eval.Minimal.Services)
     (enumeration : Spec.Eval.Minimal.EvalEnumeration noSpecDispatch []
-      Spec.Eval.publishedTypeService) :
+      Spec.Eval.storageTypeService) :
     Spec.Eval.Minimal.MinimalStepRel services noSpecDispatch []
-      Spec.Eval.publishedTypeService enumeration emptySpace
+      Spec.Eval.storageTypeService enumeration emptySpace
     (.expression [.symbol "cons-atom", .symbol "a", .expression [.symbol "b"]]) emptyB
     (.expression [.symbol "a", .symbol "b"], emptyB) :=
   .consAtom _ _ _ _
@@ -383,9 +383,9 @@ example (services : Spec.Eval.Minimal.Services)
     `(decons-atom (a b))` → `(a (b))` -/
 example (services : Spec.Eval.Minimal.Services)
     (enumeration : Spec.Eval.Minimal.EvalEnumeration noSpecDispatch []
-      Spec.Eval.publishedTypeService) :
+      Spec.Eval.storageTypeService) :
     Spec.Eval.Minimal.MinimalStepRel services noSpecDispatch []
-      Spec.Eval.publishedTypeService enumeration emptySpace
+      Spec.Eval.storageTypeService enumeration emptySpace
     (.expression [.symbol "decons-atom", .expression [.symbol "a", .symbol "b"]]) emptyB
     (.expression [.symbol "a", .expression [.symbol "b"]], emptyB) :=
   .deconsAtom _ _ _ _

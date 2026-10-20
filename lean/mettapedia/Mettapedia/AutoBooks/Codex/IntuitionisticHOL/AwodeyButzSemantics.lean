@@ -25,6 +25,20 @@ The Awodey-Butz strategy for completeness:
 2. Build an interpretation where types become étale spaces over X
 3. Show that Γ forces to ⊤ but φ does not at some point
 
+## Renamed theorems
+
+The theorems that conclude `¬ Derivable` from a countermodel state soundness,
+not completeness.  They were renamed on 2026-10-20 from their former names:
+
+* `awodey_butz_completeness` →
+  `awodey_butz_not_derivable_of_exists_truth_counterexample`;
+* `awodey_butz_completeness_of_exists_beta_truth_counterexample` →
+  `awodey_butz_not_derivable_of_exists_beta_truth_counterexample`;
+* `awodey_butz_completeness_of_exists_semilocal_truth_counterexample` →
+  `awodey_butz_not_derivable_of_exists_semilocal_truth_counterexample`.
+
+No completeness theorem for the topological semantics is proved here.
+
 ## References
 
 * Awodey-Butz (2000), "Topological Completeness for Higher-Order Logic"
@@ -424,8 +438,8 @@ theorem not_derivable_of_topological_counterexample {Base : Type u} {Const : Ty 
 Any existential packaged topological counterexample refutes derivability.
 
 This remains the generic consumer theorem for the `Counterexample` package.
-The public completeness wrapper below is stronger: it consumes the produced
-one-point higher-order witness exported by the live Awodey-Butz bridge.
+The refutation theorem below consumes instead the produced one-point
+higher-order witness exported by the live Awodey-Butz bridge.
 -/
 theorem not_derivable_of_exists_topological_counterexample
     {Base : Type u} {Const : Ty Base → Type v}
@@ -443,12 +457,12 @@ theorem not_derivable_of_exists_topological_counterexample
 Any existential one-point higher-order truth counterexample refutes
 derivability.
 
-This is the strongest produced-witness completeness theorem currently available
-on the live topological stack: the witness is no longer an assumed packaged
-topological interpretation, but an explicit global model point where all
-antecedents force to `⊤` and the succedent does not.
+This is a soundness consequence, not a completeness theorem: from an explicit
+global model point where all antecedents force to `⊤` and the succedent does
+not, it concludes that the sequent is not derivable.  The witness is a model
+point, not an assumed packaged topological interpretation.
 -/
-theorem awodey_butz_completeness
+theorem awodey_butz_not_derivable_of_exists_truth_counterexample
     {Base : Type u} {Const : Ty Base → Type v}
     {Γ : Ctx Base} {antecedents : List (Formula Const Γ)}
     {succedent : Formula Const Γ}
@@ -473,7 +487,7 @@ This is the beta-specialized packaged form of the live point-model bridge:
 instead of exhibiting failure of an arbitrary succedent directly, the witness
 exhibits failure of the instantiated body of a beta redex.
 -/
-theorem awodey_butz_completeness_of_exists_beta_truth_counterexample
+theorem awodey_butz_not_derivable_of_exists_beta_truth_counterexample
     {Base : Type u} {Const : Ty Base → Type v}
     {Γ : Ctx Base} {antecedents : List (Formula Const Γ)}
     {σ : Ty Base}
@@ -496,12 +510,12 @@ theorem awodey_butz_completeness_of_exists_beta_truth_counterexample
 Any existential semilocal global-environment truth counterexample refutes
 derivability.
 
-This is the nearest current bridge from the completeness spine into the
-one-point Awodey-Butz witness style: the witness is still semilocal, but it is
-already packaged in the exact antecedent/succedent form needed to rule out a
-derivation.
+This connects the completeness spine to the one-point Awodey-Butz witness
+style: the witness is still semilocal, but it is already packaged in the exact
+antecedent/succedent form needed to rule out a derivation.  Like the theorems
+above, it states soundness.
 -/
-theorem awodey_butz_completeness_of_exists_semilocal_truth_counterexample
+theorem awodey_butz_not_derivable_of_exists_semilocal_truth_counterexample
     {Base : Type u} {Const : Ty Base → Type v}
     {Γ : Ctx Base} {antecedents : List (Formula Const Γ)}
     {succedent : Formula Const Γ}

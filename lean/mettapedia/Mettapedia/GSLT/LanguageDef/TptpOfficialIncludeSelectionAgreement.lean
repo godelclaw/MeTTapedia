@@ -274,7 +274,7 @@ local macro "selection_row_simp" : tactic =>
       boolFalse, boolTrue, selectionOk, selectionError, mkRule,
       congruence, typed, a, v, applyRuleUsing,
       matchPatternForRule_eq_syntactic, premisesUsing, premiseStepUsing,
-      matchPattern, matchArgs, mergeBindings, applyBindingsForRule,
+      matchPattern, matchArgs, mergeBindings, applyBindingsForRule, applyRuleBindings,
       applyBindings, PatternEqualityDecision.equal,
       PatternEqualityDecision.different])
 
@@ -288,7 +288,7 @@ local macro "scan_row_simp" : tactic =>
       errorAmbiguous, boolFalse, boolTrue, selectionOk, selectionError,
       mkRule, congruence, typed, a, v, applyRuleUsing,
       matchPatternForRule_eq_syntactic, premisesUsing, premiseStepUsing,
-      matchPattern, matchArgs, mergeBindings, applyBindingsForRule,
+      matchPattern, matchArgs, mergeBindings, applyBindingsForRule, applyRuleBindings,
       applyBindings, PatternEqualityDecision.equal,
       PatternEqualityDecision.different])
 
@@ -1024,7 +1024,7 @@ theorem scanRequest_true_rewriteAt_exact (fuel : Nat)
   simp only [scanRequestDecision, resolvedFormula, a]
   rw [initialMatch]
   simp [scanBindings, premisesUsing, premiseStepUsing, contains, a, v,
-    scanSeenDecision, congruence, applyBindingsForRule, applyBindings,
+    scanSeenDecision, congruence, applyBindingsForRule, applyRuleBindings, applyBindings,
     matchPattern, containsStep, decisionStep, mergeBindings]
 
 theorem scanSeen_true_rewriteAt_exact (fuel : Nat)
@@ -1054,7 +1054,7 @@ theorem scanSeen_true_rewriteAt_exact (fuel : Nat)
   simp only [scanSeenDecision, resolvedFormula, a]
   rw [initialMatch]
   simp [scanBindings, premisesUsing, errorAmbiguous, selectionError,
-    a, v, applyBindingsForRule, applyBindings]
+    a, v, applyBindingsForRule, applyRuleBindings, applyBindings]
 
 theorem scanSeen_false_rewriteAt_exact (fuel : Nat)
     (target requested remaining seen name input origin formulas erased rest
@@ -1092,7 +1092,7 @@ theorem scanSeen_false_rewriteAt_exact (fuel : Nat)
   rw [initialMatch]
   simp [scanBindings, premisesUsing, premiseStepUsing, eraseFirst, scan,
     stringsCons, prepend, a, v, congruence,
-    applyBindingsForRule, applyBindings, matchPattern, eraseStep, scanStep,
+    applyBindingsForRule, applyRuleBindings, applyBindings, matchPattern, eraseStep, scanStep,
     prependStep, mergeBindings]
 
 theorem prepend_ok_rewriteAt_exact (fuel : Nat)

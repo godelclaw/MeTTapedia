@@ -1,3 +1,7 @@
+import Mettapedia.Logic.WorldModel.PolynomialObservations
+import Mettapedia.Logic.WorldModel.Approximation
+import Mettapedia.Logic.WorldModel.Observation
+import Mettapedia.Logic.WorldModel.PartialObservationStore
 import Mettapedia.Logic.WorldModel.Basic
 import Mettapedia.Logic.WorldModel.Generative
 import Mettapedia.Logic.WorldModel.Algorithmic

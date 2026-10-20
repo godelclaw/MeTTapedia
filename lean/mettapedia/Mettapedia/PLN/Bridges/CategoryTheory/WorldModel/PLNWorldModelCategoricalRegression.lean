@@ -18,8 +18,8 @@ open _root_.CategoryTheory
 open LO
 open LO.FirstOrder
 open Mettapedia.Logic.HOL
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelInstitution
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelInstitution
 open Mettapedia.PLN.Evidence.EvidenceClass
 
 universe u v x

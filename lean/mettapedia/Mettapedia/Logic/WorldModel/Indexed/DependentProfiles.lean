@@ -92,7 +92,7 @@ end Dependent
 
 namespace DemoDependent
 
-open FixedQuery
+open FixedQueryBridge
 
 /-- A count question and a binary question. -/
 inductive Question

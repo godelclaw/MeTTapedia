@@ -310,7 +310,7 @@ end CredalOT
 
 namespace ControlExample
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 /-- A tiny exact-control base: the abstract side is `Trait`, the phenomenal

@@ -24,8 +24,8 @@ open Mettapedia.OSLF.MeTTaIL.Engine
 open Mettapedia.OSLF.Formula
 open Mettapedia.CategoryTheory.PLNInstance
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
 open Mettapedia.OSLF.Framework.EvidenceSemantics
 open Mettapedia.OSLF.Framework

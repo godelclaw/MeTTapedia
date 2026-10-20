@@ -1,6 +1,10 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationFoldConformance
 import Mettapedia.Languages.MeTTa.HE.LeaTTaMergeExistence
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ExactNormal
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Completeness of repaired LeaTTa for finite type presentations
@@ -38,7 +42,7 @@ every recursive type child. -/
 structure RuntimeValuationState
     (valuation : String → Atom) (bindings : Metta.Bindings) : Prop where
   satisfied : LeaBindingSatisfied
-    (fun name => toLeaTTaAtom (valuation name)) bindings
+    (fun name => encodeModelAtom (valuation name)) bindings
   runtime : LeaRuntimeBindingInvariant bindings
 
 /-- Empty runtime bindings satisfy every translated native valuation. -/
@@ -48,9 +52,9 @@ theorem runtimeValuationState_empty (valuation : String → Atom) :
   · simp [LeaBindingSatisfied, Metta.Bindings.empty]
   · exact leaRuntimeBindingInvariant_empty
 
-private theorem toLeaTTaAtom_beq_undefined_eq_false
+private theorem encodeModelAtom_beq_undefined_eq_false
     (atom : Atom) (hneq : atom ≠ Atom.undefinedType) :
-    (toLeaTTaAtom atom == Metta.Atom.sym "%Undefined%") = false := by
+    (encodeModelAtom atom == Metta.Atom.sym "%Undefined%") = false := by
   cases atom with
   | symbol name =>
       simp [Atom.undefinedType] at hneq
@@ -58,9 +62,9 @@ private theorem toLeaTTaAtom_beq_undefined_eq_false
       simp [hneq]
   | var | grounded | expression => rfl
 
-private theorem toLeaTTaAtom_beq_atomType_eq_false
+private theorem encodeModelAtom_beq_atomType_eq_false
     (atom : Atom) (hneq : atom ≠ Atom.atomType) :
-    (toLeaTTaAtom atom == Metta.Atom.sym "Atom") = false := by
+    (encodeModelAtom atom == Metta.Atom.sym "Atom") = false := by
   cases atom with
   | symbol name =>
       simp [Atom.atomType] at hneq
@@ -72,10 +76,10 @@ private theorem mettaEquationSatisfied_of_native
     (valuation : String → Atom) {left right : Atom}
     (equation : applyTypeValuation valuation left =
       applyTypeValuation valuation right) :
-    MettaEquationSatisfied (fun name => toLeaTTaAtom (valuation name))
-      (toLeaTTaAtom left, toLeaTTaAtom right) := by
-  have translated := congrArg toLeaTTaAtom equation
-  simpa [MettaEquationSatisfied, toLeaTTaAtom_applyTypeValuation] using
+    MettaEquationSatisfied (fun name => encodeModelAtom (valuation name))
+      (encodeModelAtom left, encodeModelAtom right) := by
+  have translated := congrArg encodeModelAtom equation
+  simpa [MettaEquationSatisfied, encodeModelAtom_applyTypeValuation] using
     translated
 
 /-- A satisfiable, scope-disjoint ordinary leaf makes the repaired runtime
@@ -93,12 +97,12 @@ private theorem matchReduced_leaf_exists
       applyTypeValuation valuation right) :
     ∃ output,
       Metta.Minimal.matchReduced bindings
-          (toLeaTTaAtom left) (toLeaTTaAtom right) = some output ∧
+          (encodeModelAtom left) (encodeModelAtom right) = some output ∧
         RuntimeValuationState valuation output := by
   let leaValuation : String → Metta.Atom :=
-    fun name => toLeaTTaAtom (valuation name)
+    fun name => encodeModelAtom (valuation name)
   have mettaEquation : MettaEquationSatisfied leaValuation
-      (toLeaTTaAtom left, toLeaTTaAtom right) :=
+      (encodeModelAtom left, encodeModelAtom right) :=
     mettaEquationSatisfied_of_native valuation equation
   have specEquation : HEAtomEquationSatisfied leaValuation right left := by
     simpa [HEAtomEquationSatisfied, MettaEquationSatisfied, eq_comm] using
@@ -114,7 +118,7 @@ private theorem matchReduced_leaf_exists
   obtain ⟨merged, mergedMember, mergedSatisfied, mergedNoFloat⟩ :=
     merge_exists_of_satisfied state.runtime.noFloat
       (leaMatchAtoms_result_noFloat
-        (toLeaTTaAtom_noFloat left) (toLeaTTaAtom_noFloat right)
+        (encodeModelAtom_noFloat left) (encodeModelAtom_noFloat right)
         matchedMember)
       state.satisfied matchedSatisfied
   have mergedNonVariable : LeaAssignmentsNonVariable merged :=
@@ -127,7 +131,7 @@ private theorem matchReduced_leaf_exists
     leaBindings_hasLoop_false_of_satisfied mergedSatisfied
       mergedNonVariable mergedIrreflexive
   let candidates :=
-    ((Metta.matchAtoms (toLeaTTaAtom left) (toLeaTTaAtom right)).flatMap
+    ((Metta.matchAtoms (encodeModelAtom left) (encodeModelAtom right)).flatMap
       (Metta.Bindings.merge bindings)).filter
         (fun candidate => !candidate.hasLoop)
   have mergedCandidate : merged ∈ candidates := by
@@ -148,12 +152,12 @@ private theorem matchReduced_leaf_exists
         simpa using selectedParts.2
       have selectedMatchedNoFloat : LeaBindingsNoFloat selectedMatched :=
         leaMatchAtoms_result_noFloat
-          (toLeaTTaAtom_noFloat left) (toLeaTTaAtom_noFloat right)
+          (encodeModelAtom_noFloat left) (encodeModelAtom_noFloat right)
           selectedMatch
       have selectedMatchedSatisfied :
           LeaBindingSatisfied leaValuation selectedMatched :=
         (leaMatchAtoms_solution_iff leaValuation
-          (toLeaTTaAtom_noFloat left) (toLeaTTaAtom_noFloat right)
+          (encodeModelAtom_noFloat left) (encodeModelAtom_noFloat right)
           selectedMatch).mpr mettaEquation
       have selectedSatisfied : LeaBindingSatisfied leaValuation selected :=
         (leaMerge_solution_iff leaValuation state.runtime.noFloat
@@ -161,16 +165,16 @@ private theorem matchReduced_leaf_exists
             ⟨state.satisfied, selectedMatchedSatisfied⟩
       have selectedRuntime : LeaRuntimeBindingInvariant selected :=
         state.runtime.merge_matchOutput
-          (toLeaTTaAtom_noFloat left) (toLeaTTaAtom_noFloat right)
+          (encodeModelAtom_noFloat left) (encodeModelAtom_noFloat right)
           selectedMatch selectedMerge selectedLoop
       refine ⟨selected, ?_, ⟨selectedSatisfied, selectedRuntime⟩⟩
       have leftUndefinedBeq :=
-        toLeaTTaAtom_beq_undefined_eq_false left leftNotUndefined
+        encodeModelAtom_beq_undefined_eq_false left leftNotUndefined
       have rightUndefinedBeq :=
-        toLeaTTaAtom_beq_undefined_eq_false right rightNotUndefined
+        encodeModelAtom_beq_undefined_eq_false right rightNotUndefined
       cases left <;> cases right
       all_goals
-        simp only [toLeaTTaAtom] at leftUndefinedBeq rightUndefinedBeq ⊢
+        simp only [encodeModelAtom] at leftUndefinedBeq rightUndefinedBeq ⊢
       all_goals
         simp [ReducedTypeLeafShape] at leafShape
       all_goals
@@ -187,7 +191,7 @@ private abbrev ReducedRuntimeComplete
     (left right : Atom) : Prop :=
   ∃ output,
     Metta.Minimal.matchReduced bindings
-        (toLeaTTaAtom left) (toLeaTTaAtom right) = some output ∧
+        (encodeModelAtom left) (encodeModelAtom right) = some output ∧
       RuntimeValuationState valuation output
 
 private abbrev ReducedListRuntimeComplete
@@ -195,7 +199,7 @@ private abbrev ReducedListRuntimeComplete
     (left right : List Atom) : Prop :=
   ∃ output,
     Metta.Minimal.matchReducedList bindings
-        (toLeaTTaAtoms left) (toLeaTTaAtoms right) = some output ∧
+        (encodeModelAtoms left) (encodeModelAtoms right) = some output ∧
       RuntimeValuationState valuation output
 
 mutual
@@ -221,13 +225,13 @@ private theorem reduced_runtime_complete
           (Metta.Atom.sym "%Undefined%" ==
             Metta.Atom.sym "%Undefined%") = true := by decide
       exact ⟨bindings, by simp [Metta.Minimal.matchReduced,
-        toLeaTTaAtom, Atom.undefinedType, same], state⟩
+        encodeModelAtom, Atom.undefinedType, same], state⟩
   | undefinedRight substitution left =>
       have same :
           (Metta.Atom.sym "%Undefined%" ==
             Metta.Atom.sym "%Undefined%") = true := by decide
       exact ⟨bindings, by simp [Metta.Minimal.matchReduced,
-        toLeaTTaAtom, Atom.undefinedType, same], state⟩
+        encodeModelAtom, Atom.undefinedType, same], state⟩
   | @expression substitution output lefts rights children =>
       have listsDisjoint : AtomListsVarsDisjoint lefts rights :=
         varsDisjoint_expression_iff.mp disjoint
@@ -235,13 +239,13 @@ private theorem reduced_runtime_complete
         reduced_list_runtime_complete valuation normal outputSatisfied
           children state listsDisjoint
       have leftUndefinedBeq :
-          (Metta.Atom.expr (toLeaTTaAtoms lefts) ==
+          (Metta.Atom.expr (encodeModelAtoms lefts) ==
             Metta.Atom.sym "%Undefined%") = false := rfl
       have rightUndefinedBeq :
-          (Metta.Atom.expr (toLeaTTaAtoms rights) ==
+          (Metta.Atom.expr (encodeModelAtoms rights) ==
             Metta.Atom.sym "%Undefined%") = false := rfl
       exact ⟨runtimeOutput, by
-        simp only [toLeaTTaAtom]
+        simp only [encodeModelAtom]
         rw [Metta.Minimal.matchReduced.eq_1,
           leftUndefinedBeq, rightUndefinedBeq]
         exact runtimeSuccess,
@@ -271,7 +275,7 @@ private theorem reduced_list_runtime_complete
   cases derivation with
   | nil substitution =>
       exact ⟨bindings, by simp [Metta.Minimal.matchReducedList,
-        toLeaTTaAtoms], state⟩
+        encodeModelAtoms], state⟩
   | @cons substitution next output left right lefts rights head tail =>
       have nextNormal : next.Normal := head.output_normal normal
       have tailTheory :=
@@ -285,7 +289,7 @@ private theorem reduced_list_runtime_complete
         reduced_list_runtime_complete valuation nextNormal outputSatisfied
           tail nextState disjoint.tail
       exact ⟨runtimeOutput, by
-        simp only [toLeaTTaAtoms,
+        simp only [encodeModelAtoms,
           Metta.Minimal.matchReducedList]
         rw [headSuccess]
         exact tailSuccess,
@@ -308,7 +312,7 @@ theorem matchType_complete
     (disjoint : VarsDisjoint left right) :
     ∃ output,
       Metta.Minimal.matchType bindings
-          (toLeaTTaAtom left) (toLeaTTaAtom right) = some output ∧
+          (encodeModelAtom left) (encodeModelAtom right) = some output ∧
         RuntimeValuationState valuation output := by
   cases derivation with
   | undefinedLeft right =>
@@ -316,34 +320,34 @@ theorem matchType_complete
           (Metta.Atom.sym "%Undefined%" ==
             Metta.Atom.sym "%Undefined%") = true := by decide
       exact ⟨bindings, by simp [Metta.Minimal.matchType,
-        toLeaTTaAtom, Atom.undefinedType, same], state⟩
+        encodeModelAtom, Atom.undefinedType, same], state⟩
   | undefinedRight left =>
       have same :
           (Metta.Atom.sym "%Undefined%" ==
             Metta.Atom.sym "%Undefined%") = true := by decide
       exact ⟨bindings, by simp [Metta.Minimal.matchType,
-        toLeaTTaAtom, Atom.undefinedType, same], state⟩
+        encodeModelAtom, Atom.undefinedType, same], state⟩
   | atomLeft right =>
       have same :
           (Metta.Atom.sym "Atom" == Metta.Atom.sym "Atom") = true := by
         decide
       exact ⟨bindings, by simp [Metta.Minimal.matchType,
-        toLeaTTaAtom, Atom.atomType, same], state⟩
+        encodeModelAtom, Atom.atomType, same], state⟩
   | atomRight left =>
       have same :
           (Metta.Atom.sym "Atom" == Metta.Atom.sym "Atom") = true := by
         decide
       exact ⟨bindings, by simp [Metta.Minimal.matchType,
-        toLeaTTaAtom, Atom.atomType, same], state⟩
+        encodeModelAtom, Atom.atomType, same], state⟩
   | reduced leftNotUndefined rightNotUndefined leftNotAtom rightNotAtom reduced =>
       have leftUndefinedBeq :=
-        toLeaTTaAtom_beq_undefined_eq_false left leftNotUndefined
+        encodeModelAtom_beq_undefined_eq_false left leftNotUndefined
       have rightUndefinedBeq :=
-        toLeaTTaAtom_beq_undefined_eq_false right rightNotUndefined
+        encodeModelAtom_beq_undefined_eq_false right rightNotUndefined
       have leftAtomBeq :=
-        toLeaTTaAtom_beq_atomType_eq_false left leftNotAtom
+        encodeModelAtom_beq_atomType_eq_false left leftNotAtom
       have rightAtomBeq :=
-        toLeaTTaAtom_beq_atomType_eq_false right rightNotAtom
+        encodeModelAtom_beq_atomType_eq_false right rightNotAtom
       obtain ⟨runtimeOutput, reducedSuccess, outputState⟩ :=
         reduced_runtime_complete valuation normal outputSatisfied
           reduced state disjoint
@@ -392,7 +396,7 @@ theorem matchApplicationTypeArguments_complete
     (disjoint : AtomListsVarsDisjoint expected actual) :
     ∃ output,
       Metta.Minimal.matchApplicationTypeArguments Metta.Bindings.empty
-        (toLeaTTaAtoms expected) (toLeaTTaAtoms actual) = some output := by
+        (encodeModelAtoms expected) (encodeModelAtoms actual) = some output := by
   let valuation := presentedValuation outputPresentation
   have outputNormal : outputPresentation.Normal :=
     Spec.Type.Presentation.ExactNormal.PresentationArgumentListMatchRel.output_normal
@@ -410,13 +414,13 @@ theorem matchApplicationTypeArguments_complete
       AtomListsVarsDisjoint expected actual →
       ∃ output,
         Metta.Minimal.matchApplicationTypeArguments bindings
-          (toLeaTTaAtoms expected) (toLeaTTaAtoms actual) = some output ∧
+          (encodeModelAtoms expected) (encodeModelAtoms actual) = some output ∧
           RuntimeValuationState valuation output := by
     intro expected actual incoming finalPresentation bindings fold
       incomingNormal finalSatisfied state scopes
     induction fold generalizing bindings with
     | nil substitution =>
-        exact ⟨bindings, by simp [toLeaTTaAtoms,
+        exact ⟨bindings, by simp [encodeModelAtoms,
           Metta.Minimal.matchApplicationTypeArguments], state⟩
     | @cons expected actual expecteds actuals incoming next output head tail ih =>
         have nextNormal := head.output_normal incomingNormal
@@ -429,7 +433,7 @@ theorem matchApplicationTypeArguments_complete
         obtain ⟨runtimeOutput, tailSuccess, outputState⟩ :=
           ih nextNormal finalSatisfied nextState scopes.tail
         exact ⟨runtimeOutput, by
-          simp only [toLeaTTaAtoms,
+          simp only [encodeModelAtoms,
             Metta.Minimal.matchApplicationTypeArguments]
           rw [headSuccess]
           exact tailSuccess,
@@ -453,6 +457,6 @@ theorem empty_fold_complete :
 the same variable spelling on both sides does not satisfy that premise. -/
 theorem shared_variable_not_disjoint :
     ¬VarsDisjoint (.var "t") (.var "t") := by
-  simp [VarsDisjoint, toLeaTTaAtom, Metta.Atom.vars]
+  simp [VarsDisjoint, encodeModelAtom, Metta.Atom.vars]
 
 end Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationCompleteness

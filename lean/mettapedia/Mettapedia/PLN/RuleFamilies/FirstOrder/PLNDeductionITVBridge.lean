@@ -651,7 +651,7 @@ noncomputable def deductionEndpointJointTypedITV
     (hFeas : DeductionBranchFeasibility pA pB pC sAB sBC)
     (credibility : ℝ) (hc : credibility ∈ Set.Icc (0 : ℝ) 1) :
     Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVSemantics DeductionAtom) :=
+      (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVConstructor DeductionAtom) :=
   Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromCredalEnvelope
     (deductionEndpointJointITVSource pA pB pC sAB sBC hFeas credibility hc)
 
@@ -709,7 +709,7 @@ noncomputable def deductionAllocationJointTypedITV
     (hFeas : DeductionBranchFeasibility pA pB pC sAB sBC)
     (credibility : ℝ) (hc : credibility ∈ Set.Icc (0 : ℝ) 1) :
     Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVSemantics DeductionAtom) :=
+      (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVConstructor DeductionAtom) :=
   Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromCredalEnvelope
     (deductionAllocationJointITVSource pA pB pC sAB sBC hFeas credibility hc)
 
@@ -931,7 +931,7 @@ noncomputable def deductionCredalStrengthTypedITV
     (hFeas : DeductionBranchFeasibility pA pB pC sAB sBC)
     (credibility : ℝ) (hc : credibility ∈ Set.Icc (0 : ℝ) 1) :
     Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-      Mettapedia.PLN.TruthValues.PLNTruthTower.genericITVSemantics :=
+      Mettapedia.PLN.TruthValues.PLNTruthTower.genericITVConstructor :=
   Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromGeneric
     (deductionCredalStrengthITV pA pB pC sAB sBC hpA hFeas credibility hc)
 

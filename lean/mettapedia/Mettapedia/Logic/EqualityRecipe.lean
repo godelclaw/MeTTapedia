@@ -1,4 +1,5 @@
 import Mettapedia.GSLT.LanguageDef.KernelAuthority
+import Mettapedia.TypeTheory.FreeConversion
 import Mathlib.Logic.Relation
 
 /-!
@@ -164,6 +165,131 @@ theorem symm_checked (comparison : Checker (Term × Term) Evidence)
     (checker comparison).check (target, source) (.symm proof) = true := by
   apply (check_iff comparison _ _).mpr
   simp [evaluate, (check_iff comparison _ _).mp accepted, Prod.swap]
+
+/-! ## Recovering retained evidence from successful replay -/
+
+/-- The primitive evidence of the generated conversion is an actual accepted
+leaf, including its submitted witness. -/
+abbrev AcceptedLeaf (comparison : Checker (Term × Term) Evidence)
+    (source target : Term) :=
+  { evidence : Evidence // comparison.check (source, target) evidence = true }
+
+/-- The maintained free conversion carrier retains every checked leaf and
+composition node. The single index here fixes the recipe's term domain;
+typed clients instantiate that domain at their context and type. -/
+abbrev CheckedPath (comparison : Checker (Term × Term) Evidence)
+    (source target : Term) :=
+  Mettapedia.TypeTheory.FreeConversion.Path (fun _ : Unit => Term)
+    (fun {_index : Unit} (left right : Term) => AcceptedLeaf comparison left right)
+    (index := ()) source target
+
+private def replayAlgebra (comparison : Checker (Term × Term) Evidence) :
+    Mettapedia.TypeTheory.FreeConversion.Algebra (fun _ : Unit => Term)
+      (fun {_index : Unit} (left right : Term) => AcceptedLeaf comparison left right)
+      (fun {_index : Unit} (left right : Term) =>
+        { recipe : Recipe Term Evidence // evaluate comparison recipe = some (left, right) }) where
+  onStep {_index} {source target} evidence :=
+    ⟨.leaf source target evidence.1, by simp [evaluate, evidence.2]⟩
+  onRefl term := ⟨.refl term, rfl⟩
+  onSymm recipe := ⟨.symm recipe.1, by simp [evaluate, recipe.2, Prod.swap]⟩
+  onTrans first second := ⟨.trans first.1 second.1, by simp [evaluate, first.2, second.2]⟩
+
+/-- Rebuild the submitted syntax using the common free-conversion fold. Its
+receipt records successful replay at exactly the original endpoints. -/
+def forgetPath (comparison : Checker (Term × Term) Evidence)
+    {source target : Term} (path : CheckedPath comparison source target) : Recipe Term Evidence :=
+  ((replayAlgebra comparison).fold path).1
+
+@[simp] theorem forgetPath_step (comparison : Checker (Term × Term) Evidence)
+    {source target : Term} (evidence : AcceptedLeaf comparison source target) :
+    forgetPath comparison (.step evidence) = .leaf source target evidence.1 := by
+  simp only [forgetPath, Mettapedia.TypeTheory.FreeConversion.Algebra.fold, replayAlgebra]
+
+@[simp] theorem forgetPath_refl (comparison : Checker (Term × Term) Evidence) (term : Term) :
+    forgetPath comparison (.refl term) = .refl term := by
+  simp only [forgetPath, Mettapedia.TypeTheory.FreeConversion.Algebra.fold, replayAlgebra]
+
+@[simp] theorem forgetPath_symm (comparison : Checker (Term × Term) Evidence)
+    {source target : Term} (path : CheckedPath comparison source target) :
+    forgetPath comparison (.symm path) = .symm (forgetPath comparison path) := by
+  simp only [forgetPath, Mettapedia.TypeTheory.FreeConversion.Algebra.fold, replayAlgebra]
+
+@[simp] theorem forgetPath_trans (comparison : Checker (Term × Term) Evidence)
+    {source middle target : Term} (first : CheckedPath comparison source middle)
+    (second : CheckedPath comparison middle target) :
+    forgetPath comparison (.trans first second) =
+      .trans (forgetPath comparison first) (forgetPath comparison second) := by
+  simp only [forgetPath, Mettapedia.TypeTheory.FreeConversion.Algebra.fold, replayAlgebra]
+
+/-- Replay of retained evidence reconstructs its endpoints. -/
+theorem evaluate_forgetPath (comparison : Checker (Term × Term) Evidence)
+    {source target : Term} (path : CheckedPath comparison source target) :
+    evaluate comparison (forgetPath comparison path) = some (source, target) :=
+  ((replayAlgebra comparison).fold path).2
+
+/-- Reconstruct a conversion tree and its exact syntax-recovery receipt from
+successful replay. Every branch builds the tree itself; no proof search or
+classical witness selection is used. -/
+def checkedPathWithRecovery (comparison : Checker (Term × Term) Evidence) :
+    (recipe : Recipe Term Evidence) → (source target : Term) →
+    evaluate comparison recipe = some (source, target) →
+      { path : CheckedPath comparison source target // forgetPath comparison path = recipe }
+  | .leaf left right evidence, source, target, accepted => by
+      cases checked : comparison.check (left, right) evidence with
+      | false => simp [evaluate, checked] at accepted
+      | true =>
+          have same : (left, right) = (source, target) := by
+            simpa [evaluate, checked] using accepted
+          cases same
+          exact ⟨.step ⟨evidence, checked⟩, by simp⟩
+  | .refl term, source, target, accepted => by
+      have same : (term, term) = (source, target) := by
+        simpa [evaluate] using accepted
+      cases same
+      exact ⟨.refl _, by simp⟩
+  | .symm recipe, source, target, accepted => by
+      cases computed : evaluate comparison recipe with
+      | none => simp [evaluate, computed] at accepted
+      | some pair =>
+          obtain ⟨left, right⟩ := pair
+          have same : (right, left) = (source, target) := by
+            simpa [evaluate, computed, Prod.swap] using accepted
+          cases same
+          let inner := checkedPathWithRecovery comparison recipe target source computed
+          exact ⟨.symm inner.1, by simp only [forgetPath_symm, inner.2]⟩
+  | .trans first second, source, target, accepted => by
+      cases computedFirst : evaluate comparison first with
+      | none => simp [evaluate, computedFirst] at accepted
+      | some pair =>
+          obtain ⟨left, middle⟩ := pair
+          cases computedSecond : evaluate comparison second with
+          | none => simp [evaluate, computedFirst, computedSecond] at accepted
+          | some pair =>
+              obtain ⟨middle', right⟩ := pair
+              by_cases sameMiddle : middle = middle'
+              · subst middle'
+                have same : (left, right) = (source, target) := by
+                  simpa [evaluate, computedFirst, computedSecond] using accepted
+                cases same
+                let firstPath := checkedPathWithRecovery comparison first source middle computedFirst
+                let secondPath := checkedPathWithRecovery comparison second middle target computedSecond
+                exact ⟨.trans firstPath.1 secondPath.1, by
+                  simp only [forgetPath_trans, firstPath.2, secondPath.2]⟩
+              · simp [evaluate, computedFirst, computedSecond, sameMiddle] at accepted
+
+/-- The retained conversion reconstructed from the submitted recipe. -/
+def checkedPath (comparison : Checker (Term × Term) Evidence)
+    (recipe : Recipe Term Evidence) (source target : Term)
+    (accepted : evaluate comparison recipe = some (source, target)) :
+    CheckedPath comparison source target :=
+  (checkedPathWithRecovery comparison recipe source target accepted).1
+
+/-- The decoder preserves the submitted evidence tree, not only its claim. -/
+theorem forget_checkedPath (comparison : Checker (Term × Term) Evidence)
+    (recipe : Recipe Term Evidence) (source target : Term)
+    (accepted : evaluate comparison recipe = some (source, target)) :
+    forgetPath comparison (checkedPath comparison recipe source target accepted) = recipe :=
+  (checkedPathWithRecovery comparison recipe source target accepted).2
 
 variable {OtherTerm : Type w} {OtherEvidence : Type x} [DecidableEq OtherTerm]
 

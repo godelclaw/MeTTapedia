@@ -1,6 +1,7 @@
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Instances.CumulativeConversion
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitiveRestriction
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.FormationSensitivePreservationExamples
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.FormationSensitiveCheckingOSLF
 
 /-!
 # Retained proofs and retained computation have different dependencies
@@ -107,7 +108,7 @@ theorem retained_proof_not_preservation :
 /-- A conversion derivation can use the retained equation under an erasing
 lambda, although its final type is unchanged. Formation of the endpoints
 does not demand formation of every intermediate conversion term. -/
-def conversionExcursion :
+theorem conversionExcursion :
     Conv (selected false).headEq (sortTm Tower.zero : Tower.Tm 0)
       (sortTm Tower.zero) (selected false).computation :=
   .trans _ _ _
@@ -115,6 +116,28 @@ def conversionExcursion :
     (.trans _ _ _
       (.rel _ _ (.congAppArg (.root (retained_step false))))
       (.rel _ _ (.betaPi (sortTm Tower.zero) (.const aliasName))))
+
+/-- The real retained root inhabits the conversion-native observation in
+both smaller packages, including the one lacking the reduct declaration. -/
+theorem retained_conversion_oslf (retainBody : Bool) :
+    (Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltOSLF
+      (FormationSensitiveCheckingOSLF.theory (selected retainBody) n)).satisfies (S := ())
+      (.const secondAliasName)
+      (FormationSensitiveCheckingOSLF.conversionNativeType
+        (selected retainBody) (.const aliasName)).pred :=
+  (FormationSensitiveCheckingOSLF.satisfies_iff_conversion _ _ _).mpr
+    (.rel _ _ (.root (retained_step retainBody)))
+
+/-- OSLF reachability, source validity and source reflection still do not
+discharge the independent computation-preservation obligation. -/
+theorem oslf_observation_does_not_admit_restriction :
+    (Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltOSLF
+      (FormationSensitiveCheckingOSLF.theory (selected false) 0)).satisfies (S := ())
+      (.const secondAliasName)
+      (FormationSensitiveCheckingOSLF.conversionNativeType (selected false)
+        (.const aliasName)).pred ∧
+    ¬ RootPreservation (selected false) :=
+  ⟨retained_conversion_oslf false, retained_proof_not_preservation.2.2⟩
 
 /-- The failing manifest can replay a real typing proof that uses its root,
 not only a proof that ignores every retained computation rule. -/
@@ -185,6 +208,17 @@ theorem repaired_root_preservation : RootPreservation (selected true) := by
       (.const aliasName) (sortTm Tower.zero) :=
     .const retained_body_lookup (.headType (.sort _)) (.sort _)
   exact typing.unfoldConstant (selected_lookup true) body
+
+/-- Retaining the missing declaration supports the same observed conversion
+and independently earns preservation for every root step of the package. -/
+theorem oslf_observation_with_preserving_repair :
+    (Mettapedia.OSLF.Framework.GSLTTypeSynthesis.gsltOSLF
+      (FormationSensitiveCheckingOSLF.theory (selected true) 0)).satisfies (S := ())
+      (.const secondAliasName)
+      (FormationSensitiveCheckingOSLF.conversionNativeType (selected true)
+        (.const aliasName)).pred ∧
+    RootPreservation (selected true) :=
+  ⟨retained_conversion_oslf true, repaired_root_preservation⟩
 
 private theorem include_pure (retainBody : Bool) (requirement : Requirement Tower.Head)
     (valid : requirement.Holds Tower.rules) : requirement.Holds (selected retainBody) := by

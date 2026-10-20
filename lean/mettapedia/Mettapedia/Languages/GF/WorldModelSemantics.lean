@@ -46,8 +46,8 @@ open Mettapedia.Languages.GF.OSLFBridge
 open Mettapedia.Languages.GF.Typing
 open Mettapedia.Languages.GF.LinguisticInvariance
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.Evidence
 open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.Framework.TypeSynthesis
@@ -1401,7 +1401,7 @@ Map to Table 5 in the paper. -/
 section PaperTheorems
 
 open Mettapedia.Languages.GF.LinguisticInvariance
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 /-- **Translation preserves evidence (all W).**
     Same abstract tree → same evidence in all world-model states.

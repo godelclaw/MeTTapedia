@@ -17,7 +17,7 @@ external-Bayesianity commutation.
 namespace Mettapedia.PLN.InferenceControl.PremiseSelection
 
 open scoped Classical ENNReal BigOperators
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-- Abstract checklist for operator-role correctness. -/
 structure OperatorRoleTheory (Goal Fact : Type*) where
@@ -147,7 +147,7 @@ theorem gatedPooledPrior_zero_local
   apply Scorer.ext
   intro g f
   simp [gatedPooledPrior, fuse, scaleScorer, scaleEvidence]
-  have hz : ({ pos := 0, neg := 0 } : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) = 0 := rfl
+  have hz : ({ pos := 0, neg := 0 } : Mettapedia.PLN.Evidence.BinaryEvidence) = 0 := rfl
   simp [hz] at *
 
 theorem gatedPosterior_zero_local
@@ -173,10 +173,10 @@ noncomputable def partitionedPrior
       = zeroScorer := by
   apply Scorer.ext
   intro g f
-  change (0 : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) =
+  change (0 : Mettapedia.PLN.Evidence.BinaryEvidence) =
       (zeroScorer : Scorer Goal Fact).score g f
-  change (0 : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) =
-      ({ pos := 0, neg := 0 } : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+  change (0 : Mettapedia.PLN.Evidence.BinaryEvidence) =
+      ({ pos := 0, neg := 0 } : Mettapedia.PLN.Evidence.BinaryEvidence)
   rfl
 
 @[simp] theorem partitionedPrior_zero_weights
@@ -193,7 +193,7 @@ noncomputable def partitionedPrior
   intro b hb
   have hb0 : weight b = 0 := hzero b hb
   simp [scaleEvidence, hb0]
-  show ({ pos := 0, neg := 0 } : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) = 0
+  show ({ pos := 0, neg := 0 } : Mettapedia.PLN.Evidence.BinaryEvidence) = 0
   rfl
 
 /-- Permutation/order invariance for partitioned pooling (Finset extensionality). -/

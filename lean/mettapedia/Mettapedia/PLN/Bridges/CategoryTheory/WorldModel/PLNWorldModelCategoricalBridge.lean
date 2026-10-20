@@ -4,7 +4,7 @@ import Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctri
 /-!
 # WM Categorical Bridge Endpoint
 
-This module connects the institution layer (`PLNWorldModelInstitution`) and
+This module connects the institution layer (`WorldModelInstitution`) and
 the hyperdoctrine layer (`PLNWorldModelHyperdoctrine`).
 
 * **The endpoint** (`EndpointStatement`, `EndpointContract`) is Beck–Chevalley
@@ -24,11 +24,11 @@ the hyperdoctrine layer (`PLNWorldModelHyperdoctrine`).
 namespace Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelCategoricalBridge
 
 open _root_.CategoryTheory
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelInstitution
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelInstitution
 open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 universe u v w x
 

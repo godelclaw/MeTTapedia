@@ -22,8 +22,8 @@ namespace Mettapedia.Hyperseed
 
 open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.KR.ConceptOntology
 
@@ -46,17 +46,15 @@ through the current perspective at that budget. The abstract content attached to
 one visible query is the rule closure generated from that query as a singleton
 seed inside the fixed trace/state `σ`. -/
 noncomputable def queryConstructionBaseFromTrace
-    (S : SufficientStatisticEncoder Obs Query Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+    (S : SufficientStatisticEncoder Obs Query Mettapedia.PLN.Evidence.BinaryEvidence)
     (frontier : Obs → Set Query)
     (R : Mettapedia.Hyperseed.RulePool S)
     (σ : Multiset Obs)
     (P : Perspective Query Signal Cost)
     (guard : Set Query) :
     ConstructionBase := by
-  letI : EvidenceType (Multiset Obs) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType Obs
   letI : BinaryWorldModel (Multiset Obs) Query :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.worldModelOfAtomicEvidence S.observe
+    Mettapedia.PLN.WorldModel.WorldModelAdditive.worldModelOfAtomicEvidence S.observe
   exact
     { Phenomena := Query
       Abstract := Query
@@ -71,7 +69,7 @@ noncomputable def queryConstructionBaseFromTrace
   Iff.rfl
 
 @[simp] theorem queryConstructionBaseFromTrace_visibleAt_eq
-    (S : SufficientStatisticEncoder Obs Query Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+    (S : SufficientStatisticEncoder Obs Query Mettapedia.PLN.Evidence.BinaryEvidence)
     (frontier : Obs → Set Query)
     (R : Mettapedia.Hyperseed.RulePool S)
     (σ : Multiset Obs)
@@ -80,14 +78,12 @@ noncomputable def queryConstructionBaseFromTrace
     (B : Cost) :
     (queryConstructionBaseFromTrace S frontier R σ P guard).visibleAt B =
       availableClosureFromTrace S frontier R σ P B guard := by
-  letI : EvidenceType (Multiset Obs) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType Obs
   letI : BinaryWorldModel (Multiset Obs) Query :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.worldModelOfAtomicEvidence S.observe
+    Mettapedia.PLN.WorldModel.WorldModelAdditive.worldModelOfAtomicEvidence S.observe
   rfl
 
 theorem queryConstructionBaseFromTrace_refines_of_le
-    (S : SufficientStatisticEncoder Obs Query Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+    (S : SufficientStatisticEncoder Obs Query Mettapedia.PLN.Evidence.BinaryEvidence)
     (frontier : Obs → Set Query)
     (R : Mettapedia.Hyperseed.RulePool S)
     (σ : Multiset Obs)
@@ -95,10 +91,8 @@ theorem queryConstructionBaseFromTrace_refines_of_le
     (guard : Set Query)
     {B₁ B₂ : Cost} (hB : B₁ ≤ B₂) :
     (queryConstructionBaseFromTrace S frontier R σ P guard).Refines B₁ B₂ := by
-  letI : EvidenceType (Multiset Obs) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType Obs
   letI : BinaryWorldModel (Multiset Obs) Query :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.worldModelOfAtomicEvidence S.observe
+    Mettapedia.PLN.WorldModel.WorldModelAdditive.worldModelOfAtomicEvidence S.observe
   intro q hq
   exact availableClosureFromTrace_mono_budget S frontier R σ P guard hB hq
 
@@ -108,16 +102,14 @@ The observer's indexicality now includes both the current trace/state and the
 budget. Visible phenomena are `(trace, query)` pairs whose query lies in the
 state-sensitive available closure of that same trace. -/
 noncomputable def statefulQueryConstructionBaseFromTrace
-    (S : SufficientStatisticEncoder Obs Query Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+    (S : SufficientStatisticEncoder Obs Query Mettapedia.PLN.Evidence.BinaryEvidence)
     (frontier : Obs → Set Query)
     (R : Mettapedia.Hyperseed.RulePool S)
     (P : StatefulPerspective (Multiset Obs) Query Signal Cost)
     (guard : Set Query) :
     ConstructionBase := by
-  letI : EvidenceType (Multiset Obs) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType Obs
   letI : BinaryWorldModel (Multiset Obs) Query :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.worldModelOfAtomicEvidence S.observe
+    Mettapedia.PLN.WorldModel.WorldModelAdditive.worldModelOfAtomicEvidence S.observe
   exact
     { Phenomena := Multiset Obs × Query
       Abstract := Query
@@ -128,7 +120,7 @@ noncomputable def statefulQueryConstructionBaseFromTrace
             w.2 ∈ stateAvailableClosureFromTrace S frontier R i.1 P i.2 guard } }
 
 @[simp] theorem statefulQueryConstructionBaseFromTrace_visibleAt_eq
-    (S : SufficientStatisticEncoder Obs Query Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+    (S : SufficientStatisticEncoder Obs Query Mettapedia.PLN.Evidence.BinaryEvidence)
     (frontier : Obs → Set Query)
     (R : Mettapedia.Hyperseed.RulePool S)
     (P : StatefulPerspective (Multiset Obs) Query Signal Cost)
@@ -138,14 +130,12 @@ noncomputable def statefulQueryConstructionBaseFromTrace
     (statefulQueryConstructionBaseFromTrace S frontier R P guard).visibleAt (σ, B) =
       { w | w.1 = σ ∧
           w.2 ∈ stateAvailableClosureFromTrace S frontier R σ P B guard } := by
-  letI : EvidenceType (Multiset Obs) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType Obs
   letI : BinaryWorldModel (Multiset Obs) Query :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.worldModelOfAtomicEvidence S.observe
+    Mettapedia.PLN.WorldModel.WorldModelAdditive.worldModelOfAtomicEvidence S.observe
   rfl
 
 theorem statefulQueryConstructionBaseFromTrace_refines_of_le
-    (S : SufficientStatisticEncoder Obs Query Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+    (S : SufficientStatisticEncoder Obs Query Mettapedia.PLN.Evidence.BinaryEvidence)
     (frontier : Obs → Set Query)
     (R : Mettapedia.Hyperseed.RulePool S)
     (P : StatefulPerspective (Multiset Obs) Query Signal Cost)
@@ -153,10 +143,8 @@ theorem statefulQueryConstructionBaseFromTrace_refines_of_le
     (σ : Multiset Obs)
     {B₁ B₂ : Cost} (hB : B₁ ≤ B₂) :
     (statefulQueryConstructionBaseFromTrace S frontier R P guard).Refines (σ, B₁) (σ, B₂) := by
-  letI : EvidenceType (Multiset Obs) :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.multisetEvidenceType Obs
   letI : BinaryWorldModel (Multiset Obs) Query :=
-    Mettapedia.PLN.WorldModel.PLNWorldModelAdditive.worldModelOfAtomicEvidence S.observe
+    Mettapedia.PLN.WorldModel.WorldModelAdditive.worldModelOfAtomicEvidence S.observe
   intro w hw
   exact ⟨hw.1, stateAvailableClosureFromTrace_mono_budget S frontier R σ P guard hB hw.2⟩
 

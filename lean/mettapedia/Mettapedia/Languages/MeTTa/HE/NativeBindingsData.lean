@@ -1,9 +1,17 @@
 import Mettapedia.Languages.MeTTa.HE.ScopedEquationQuery
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
-# Exact data boundary for native query bindings
+# LeaTTa binding-codec study
 
-Binding records retain their original order, duplicate relations, equality
+This downstream implementation study uses LeaTTa's executable binding
+carrier. It is not part of the independent HE specification or its abstract
+machine, and it supplies no reference-implementation claim for HE.
+
+The encoded records retain their original order, duplicate relations, equality
 endpoints and recursively stored values. The executable image guard admits
 exactly the declared HE atom representation. Values outside that image are
 rejected before encoding rather than projected to placeholder payloads.
@@ -47,21 +55,21 @@ theorem atomsInImage_eq_all (atoms : List Metta.Atom) :
   | cons atom rest ih => simp [atomsInImage, ih]
 
 theorem atomInImage_readback (atom : Metta.Atom) (accepted : atomInImage atom = true) :
-    toLeaTTaAtom (fromLeaTTaAtom atom) = atom := by
+    encodeModelAtom (decodeModelAtom atom) = atom := by
   cases atom with
   | sym name => rfl
   | var name => rfl
   | gnd value =>
-      cases value <;> simp_all [atomInImage, groundInImage, fromLeaTTaAtom,
-        fromLeaTTaGround, toLeaTTaAtom, toLeaTTaGround]
+      cases value <;> simp_all [atomInImage, groundInImage, decodeModelAtom,
+        decodeModelGround, encodeModelAtom, encodeModelGround]
   | expr atoms =>
       have children : ∀ child ∈ atoms, atomInImage child = true := by
         simpa only [atomInImage, atomsInImage_eq_all, List.all_eq_true] using accepted
-      simp only [fromLeaTTaAtom, toLeaTTaAtom, toLeaTTaAtoms_eq_map,
-        fromLeaTTaAtoms_eq_map, List.map_map]
+      simp only [decodeModelAtom, encodeModelAtom, encodeModelAtoms_eq_map,
+        decodeModelAtoms_eq_map, List.map_map]
       congr 1
       calc
-        atoms.map (toLeaTTaAtom ∘ fromLeaTTaAtom) = atoms.map id := by
+        atoms.map (encodeModelAtom ∘ decodeModelAtom) = atoms.map id := by
           apply List.map_congr_left
           intro child member
           exact atomInImage_readback child (children child member)
@@ -74,14 +82,14 @@ decreasing_by
   simp only [Metta.Atom.size] at *
   omega
 
-theorem atomInImage_translation (atom : Atom) : atomInImage (toLeaTTaAtom atom) = true := by
+theorem atomInImage_translation (atom : Atom) : atomInImage (encodeModelAtom atom) = true := by
   cases atom with
-  | symbol name => simp [toLeaTTaAtom, atomInImage]
-  | var name => simp [toLeaTTaAtom, atomInImage]
+  | symbol name => simp [encodeModelAtom, atomInImage]
+  | var name => simp [encodeModelAtom, atomInImage]
   | grounded value =>
-      cases value <;> simp [toLeaTTaAtom, toLeaTTaGround, atomInImage, groundInImage]
+      cases value <;> simp [encodeModelAtom, encodeModelGround, atomInImage, groundInImage]
   | expression atoms =>
-      simp only [toLeaTTaAtom, atomInImage, atomsInImage_eq_all, toLeaTTaAtoms_eq_map,
+      simp only [encodeModelAtom, atomInImage, atomsInImage_eq_all, encodeModelAtoms_eq_map,
         List.all_map, Function.comp_def, List.all_eq_true]
       intro child member
       exact atomInImage_translation child
@@ -90,7 +98,7 @@ termination_by sizeOf atom
 theorem atomInImage_iff (atom : Metta.Atom) : atomInImage atom = true ↔ LeaAtomHEImage atom := by
   constructor
   · intro accepted
-    exact ⟨fromLeaTTaAtom atom, atomInImage_readback atom accepted⟩
+    exact ⟨decodeModelAtom atom, atomInImage_readback atom accepted⟩
   · rintro ⟨original, rfl⟩
     exact atomInImage_translation original
 
@@ -112,13 +120,13 @@ theorem bindingsInImage_iff (bindings : Metta.Bindings) :
 
 def relationData : Metta.BindingRel → Atom
   | .val name value =>
-      .expression [.symbol "he-query-value-v1", .var name, fromLeaTTaAtom value]
+      .expression [.symbol "he-query-value-v1", .var name, decodeModelAtom value]
   | .eq left right =>
       .expression [.symbol "he-query-equality-v1", .var left, .var right]
 
 def readRelation : Atom → Option Metta.BindingRel
   | .expression [.symbol "he-query-value-v1", .var name, value] =>
-      some (.val name (toLeaTTaAtom value))
+      some (.val name (encodeModelAtom value))
   | .expression [.symbol "he-query-equality-v1", .var left, .var right] =>
       some (.eq left right)
   | _ => none
@@ -129,7 +137,7 @@ theorem readRelation_relationData (relation : Metta.BindingRel)
   cases relation with
   | val key value =>
       simp only [relationData, readRelation]
-      rw [toLeaTTaAtom_fromLeaTTaAtom_of_heImage (image key value rfl)]
+      rw [encodeModelAtom_decodeModelAtom_of_heImage (image key value rfl)]
   | eq left right => rfl
 
 theorem readRelation_image {data : Atom} {relation : Metta.BindingRel}
@@ -140,7 +148,7 @@ theorem readRelation_image {data : Atom} {relation : Metta.BindingRel}
   · cases decoded
     intro key value equality
     cases equality
-    exact leaAtomHEImage_toLeaTTaAtom _
+    exact leaAtomHEImage_encodeModelAtom _
   · cases decoded
     intro key value impossible
     cases impossible

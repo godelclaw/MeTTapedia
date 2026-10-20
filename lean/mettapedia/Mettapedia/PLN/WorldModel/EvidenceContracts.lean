@@ -3,6 +3,7 @@ import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 import Mettapedia.Logic.WorldModel.Basic
 import Mettapedia.ProbabilityTheory.ImpreciseProbability.WalleyBinaryIDM
 import Mettapedia.PLN.TruthValues.WMPLNJustifiedTruthFunctions
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeductionComposition
 
 /-!
 # Observation contracts for evidence
@@ -170,7 +171,6 @@ theorem evidence_add_right_cancel {a b c : Evidence ℕ} (h : a + c = b + c) : a
   · omega
   · omega
 
-theorem evidence_le_def (a b : Evidence ℕ) : a ≤ b ↔ a.pos ≤ b.pos ∧ a.neg ≤ b.neg := Iff.rfl
 
 /-! ## 1. The ledger contract -/
 
@@ -445,6 +445,45 @@ theorem independence_within_frechet {n a b : ℕ} (ha : a ≤ n) (hb : b ≤ n) 
   · exact (Nat.mul_le_mul_left a hb).trans_eq (mul_comm a n)
   · exact Nat.mul_le_mul_right b ha
 
+/-- The strength of natural counts as a real number, `0` with no samples. -/
+noncomputable def realStrength (e : Evidence ℕ) : ℝ := strength (map (Nat.castRingHom ℝ) e)
+
+theorem realStrength_ofSamples (bag : Multiset W) (φ : W → Bool) :
+    realStrength (ofSamples φ bag) = (count bag φ : ℝ) / Multiset.card bag := by
+  have total := ofSamples_total φ bag
+  simp only [Evidence.total] at total
+  simp only [realStrength, strength, Evidence.total, map_apply_pos, map_apply_neg,
+    Nat.coe_castRingHom, ofSamples_pos_eq_count]
+  rw [← Nat.cast_add, ← ofSamples_pos_eq_count, total]
+
+/-- **Fréchet bounds on strengths**: in one bag of worlds, the strength of a
+conjunction lies between `max 0 (s φ + s ψ - 1)` and `min (s φ) (s ψ)`. -/
+theorem frechet_strength (bag : Multiset W) (φ ψ : W → Bool) :
+    max 0 (realStrength (ofSamples φ bag) + realStrength (ofSamples ψ bag) - 1) ≤
+        realStrength (ofSamples (fun w => φ w && ψ w) bag) ∧
+      realStrength (ofSamples (fun w => φ w && ψ w) bag) ≤
+        min (realStrength (ofSamples φ bag)) (realStrength (ofSamples ψ bag)) := by
+  simp only [realStrength_ofSamples]
+  have upper := frechet_upper bag φ ψ
+  have lower := frechet_lower bag φ ψ
+  have aLe : count bag φ ≤ Multiset.card bag := Multiset.countP_le_card _ _
+  have bLe : count bag ψ ≤ Multiset.card bag := Multiset.countP_le_card _ _
+  rcases Nat.eq_zero_or_pos (Multiset.card bag) with empty | nonempty
+  · have a0 : count bag φ = 0 := by omega
+    have b0 : count bag ψ = 0 := by omega
+    have c0 : count bag (fun w => φ w && ψ w) = 0 := by omega
+    simp [empty, a0, b0, c0]
+  · have n : (0 : ℝ) < Multiset.card bag := by exact_mod_cast nonempty
+    have cA : (count bag (fun w => φ w && ψ w) : ℝ) ≤ count bag φ := by exact_mod_cast upper.1
+    have cB : (count bag (fun w => φ w && ψ w) : ℝ) ≤ count bag ψ := by exact_mod_cast upper.2
+    have ab : (count bag φ : ℝ) + count bag ψ ≤ count bag (fun w => φ w && ψ w) + Multiset.card bag := by
+      exact_mod_cast lower
+    refine ⟨max_le (by positivity) ?_, le_min ?_ ?_⟩
+    · rw [← add_div, div_sub_one n.ne', div_le_div_iff_of_pos_right n]
+      linarith
+    · exact div_le_div_of_nonneg_right cA n.le
+    · exact div_le_div_of_nonneg_right cB n.le
+
 end SameWorld
 
 /-! ## 4. The likelihood contract: PLN's tensor -/
@@ -518,7 +557,7 @@ theorem testimony_fuse_uniform (c : R) (first second : Bool → Bool → R)
   testimony_fuse_counts_prior_twice _ first second stochFirst stochSecond
 
 /-- **PLN's binary-evidence tensor is likelihood fusion.** -/
-theorem toPaired_tensor (x y : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) :
+theorem toPaired_tensor (x y : Mettapedia.PLN.Evidence.BinaryEvidence) :
     toPaired (x * y) = fuse (toPaired x) (toPaired y) := rfl
 
 /-- **Total conflict is the zero divisor**: two certain, contradictory reports
@@ -624,15 +663,32 @@ theorem hnot_not_monotone {α : Type u} [HeytingAlgebra α] [Nontrivial α] :
 
 /-- **On PLN's evidence frame, intuitionistic negation is not monotone.** -/
 theorem binaryEvidence_hnot_not_monotone :
-    ¬ Monotone fun a : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence => a ⇨ ⊥ := by
+    ¬ Monotone fun a : Mettapedia.PLN.Evidence.BinaryEvidence => a ⇨ ⊥ := by
   intro mono
   have collapse := top_eq_bot_of_hnot_monotone mono
-  have high : (⟨1, 0⟩ : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) ≤ ⊥ :=
+  have high : (⟨1, 0⟩ : Mettapedia.PLN.Evidence.BinaryEvidence) ≤ ⊥ :=
     collapse ▸ le_top
-  have low : (⊥ : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) ≤ ⟨0, 0⟩ := bot_le
-  have := ((Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.le_def _ _).1
+  have low : (⊥ : Mettapedia.PLN.Evidence.BinaryEvidence) ≤ ⟨0, 0⟩ := bot_le
+  have := ((Mettapedia.PLN.Evidence.BinaryEvidence.le_def _ _).1
     (high.trans low)).1
   exact absurd this (by norm_num)
+
+/-- Negation reads each sample the other way. -/
+theorem sampleEvidence_not {W : Type v} (φ : W → Bool) (w : W) :
+    sampleEvidence (fun w => !φ w) w = against (sampleEvidence φ w) := by
+  cases h : φ w <;> simp [sampleEvidence, h, against, positive, negative]
+
+/-- **The evidence for a negation is the swapped evidence** of the same samples. -/
+theorem ofSamples_not {W : Type v} (φ : W → Bool) (bag : Multiset W) :
+    ofSamples (fun w => !φ w) bag = against (ofSamples φ bag) := by
+  induction bag using Multiset.induction_on with
+  | empty => ext <;> simp [against]
+  | cons w bag ih => rw [ofSamples_cons, ofSamples_cons, ih, sampleEvidence_not, against_add]
+
+theorem ledgerEvidence_not {Id : Type u} {W : Type v} (world : Id → W) (φ : W → Bool)
+    (ledger : Finset Id) :
+    ledgerEvidence world (fun w => !φ w) ledger = against (ledgerEvidence world φ ledger) := by
+  rw [ledgerEvidence_eq_ofSamples, ledgerEvidence_eq_ofSamples, ofSamples_not]
 
 end Negation
 
@@ -927,18 +983,18 @@ theorem deduction_confidence_route {s pB pC posAB negAB posBC negBC x y : ℝ}
 /-- **PLN's deduction evidence posits the sum of the premise totals**: whenever
 its strength is at most one, its total is `E_AB.total + E_BC.total`. -/
 theorem deductionEvidence_total
-    (E_AB E_BC : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence) (pB pC : ENNReal)
+    (E_AB E_BC : Mettapedia.PLN.Evidence.BinaryEvidence) (pB pC : ENNReal)
     (hAB : E_AB.total ≠ 0) (hBC : E_BC.total ≠ 0) (hpB : pB ≠ 1)
-    (le : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.deductionStrength
-      (Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength E_AB)
-      (Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength E_BC) pB pC ≤ 1) :
-    (Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.deductionEvidence
+    (le : Mettapedia.PLN.Evidence.BinaryEvidence.deductionStrength
+      (Mettapedia.PLN.Evidence.BinaryEvidence.toStrength E_AB)
+      (Mettapedia.PLN.Evidence.BinaryEvidence.toStrength E_BC) pB pC ≤ 1) :
+    (Mettapedia.PLN.Evidence.BinaryEvidence.deductionEvidence
         E_AB E_BC pB pC hAB hBC hpB).total = E_AB.total + E_BC.total := by
-  set strength := Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.deductionStrength
-    (Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength E_AB)
-    (Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toStrength E_BC) pB pC
+  set strength := Mettapedia.PLN.Evidence.BinaryEvidence.deductionStrength
+    (Mettapedia.PLN.Evidence.BinaryEvidence.toStrength E_AB)
+    (Mettapedia.PLN.Evidence.BinaryEvidence.toStrength E_BC) pB pC
   set total := E_AB.total + E_BC.total
-  have built : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.deductionEvidence
+  have built : Mettapedia.PLN.Evidence.BinaryEvidence.deductionEvidence
       E_AB E_BC pB pC hAB hBC hpB = ⟨strength * total, (1 - strength) * total⟩ := rfl
   rw [built]
   change strength * total + (1 - strength) * total = total
@@ -950,7 +1006,7 @@ end IntervalRoute
 
 namespace Controls
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-- **Additive revision of overlapping ledgers double counts**: two ledgers
 sharing one positive observation. -/

@@ -83,7 +83,7 @@ private def noHostDispatch : Spec.Eval.GroundedDispatch where
 private theorem aHasTypeA :
     TypeOfRel typedASpace (.symbol "a") (.symbol "A") := by
   refine ⟨[.symbol "A"], ?_, by simp⟩
-  exact TypesOfRel.symbolKnown
+  exact StorageTypesRel.symbolKnown
     (AnnotationTypesRel.hit AnnotationTypesRel.nil) (by simp)
 
 private theorem expectedBDoesNotMatchActualA (candidate : Bindings) :
@@ -102,7 +102,7 @@ theorem spec_type_cast_rejects_A_as_B :
         Bindings.empty) := by
   apply TypeCastRel.failure (types := [.symbol "A"])
       (actualType := .symbol "A")
-  · exact TypesOfRel.symbolKnown
+  · exact StorageTypesRel.symbolKnown
       (AnnotationTypesRel.hit AnnotationTypesRel.nil) (by simp)
   · simp
   · intro candidateType hmem candidate
@@ -124,6 +124,7 @@ theorem spec_eval_atom_rejects_A_as_B :
   · simp [Atom.atomType, Atom.symbolType, Atom.variableType]
   · exact Or.inl ⟨"a", rfl⟩
   · exact spec_type_cast_rejects_A_as_B
+  · exact .same .renew _
 
 /-- The spec-required error is observably different from the unchanged atom
 currently produced when the expected type is discarded. -/

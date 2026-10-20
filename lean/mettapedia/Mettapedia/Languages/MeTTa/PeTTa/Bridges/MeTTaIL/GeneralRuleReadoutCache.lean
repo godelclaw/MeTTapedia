@@ -223,7 +223,7 @@ private theorem data_variables_template (head : String) (names : List String) (m
 private def keyBody : Atom := a "ReadoutKey" [v "request", v "goal", v "localTarget"]
 private def keyCases : SpaceSemantics.Cases :=
   [(a "PremiseResult" [v "goal", a "RootAnswer" [v "trace", v "captured", v "completed", v "history", v "localTarget"]], keyBody),
-    (v "_", a "ReadoutUncacheable" [v "request", v "result"])]
+    (v "____________", a "ReadoutUncacheable" [v "request", v "result"])]
 
 private theorem key_shape : (equation .key).body =
     a "case" [v "result", .expression (keyCases.map fun row => .expression [row.1, row.2])] := rfl
@@ -262,7 +262,7 @@ theorem key_returns (state : State) (request : GeneralRuleJobExecution.Request)
 
 private def targetCases : SpaceSemantics.Cases :=
   [(a "Some" [a "RuleJobReceipt" [v "job", v "trace", v "captured", v "completed", v "history", v "localTarget", v "target"]],
-      a "Some" [v "target"]), (v "_", .symbol "None")]
+      a "Some" [v "target"]), (v "____________", .symbol "None")]
 
 private theorem target_shape : (equation .target).body =
     a "case" [v "readout", .expression (targetCases.map fun row => .expression [row.1, row.2])] := rfl
@@ -276,7 +276,7 @@ theorem target_returns (state : State) (receipt : Option GeneralRuleJobs.Receipt
     let caller := bindings .target [encoded (encodeOption ScopedRuleJobReadoutExecution.receiptTerm none)]
     apply helper_call .target [] state _ [.symbol "None"] _ rfl (by rfl)
     rw [target_shape]
-    apply branch_returns caller (("_", .symbol "None") :: caller) state _ (.symbol "None") targetCases (.symbol "None")
+    apply branch_returns caller (("____________", .symbol "None") :: caller) state _ (.symbol "None") targetCases (.symbol "None")
     · simpa [caller, bindings, Helper.names, applySubst, Subst.lookup, encoded, CettaWireAtom.encode] using variable_returns runtime caller state "readout"
     · simp [caller, bindings, Helper.names, targetCases, SpaceSemantics.selectCase,
         SpaceSemantics.matchValue, matchAtom, Subst.lookup]
@@ -325,7 +325,7 @@ private def rebuildCases : SpaceSemantics.Cases :=
       [a "RuleJobRequestProjection" [v "environment", v "permissions", v "bound", v "expected", v "source", v "job"],
        a "PremiseResult" [v "goal", a "RootAnswer" [v "trace", v "captured", v "completed", v "history", v "localTarget"]],
        a "Some" [v "target"]], rebuildBody),
-    (v "_", .symbol "None")]
+    (v "____________", .symbol "None")]
 private theorem rebuild_shape : (equation .rebuild).body =
     a "case" [a "ReadoutRebuild" [v "request", v "result", v "endpoint"],
       .expression (rebuildCases.map fun row => .expression [row.1, row.2])] := rfl
@@ -361,7 +361,7 @@ theorem rebuild_returns (state : State) (request : GeneralRuleJobExecution.Reque
     rw [rebuild_shape]
     cases endpoint with
     | none =>
-      apply branch_returns caller (("_", value) :: caller) state _ value rebuildCases (.symbol "None") _ input
+      apply branch_returns caller (("____________", value) :: caller) state _ value rebuildCases (.symbol "None") _ input
       · simp [value, values, caller, bindings, Helper.names, rebuildCases, result, requestTerm,
           ScopedRuleJobReadoutExecution.requestProjectionTerm, PremiseOperationsExecution.GeneralExecution.resultTerm,
           SpaceSemantics.selectCase, SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues,
@@ -496,7 +496,7 @@ private def stepHit : Atom := a "let" [v "readout",
   a Helper.rebuild.head [v "request", v "result", v "endpoint"], stepHitData]
 private def stepChoice : Atom := a "if" [a "==" [v "key", v "oldKey"], stepHit, stepMiss]
 private def stepCases : SpaceSemantics.Cases :=
-  [(a "ReadoutCache" [v "oldKey", v "endpoint"], stepChoice), (v "_", stepMiss)]
+  [(a "ReadoutCache" [v "oldKey", v "endpoint"], stepChoice), (v "_________", stepMiss)]
 private theorem step_shape : (equation .step).body =
     a "let" [v "key", a Helper.key.head [v "request", v "result"],
       a "case" [v "cache", .expression (stepCases.map fun row => .expression [row.1, row.2])]] := rfl
@@ -538,7 +538,7 @@ theorem cache_step_returns (state : State) (request : GeneralRuleJobExecution.Re
         using variable_returns runtime next state "cache"
     cases cache with
     | none =>
-      let selected := ("_", encoded (cacheTerm request none)) :: next
+      let selected := ("_________", encoded (cacheTerm request none)) :: next
       apply branch_returns next selected state _ _ stepCases stepMiss _ readCache
       · simp [selected, next, caller, values, bindings, Helper.names, stepCases, cacheTerm,
           SpaceSemantics.selectCase, SpaceSemantics.matchValue, matchAtom, Subst.lookup, CettaWireAtom.encode]

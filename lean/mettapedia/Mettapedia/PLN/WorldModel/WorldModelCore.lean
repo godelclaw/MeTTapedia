@@ -12,6 +12,10 @@ hierarchy.  No new abstractions are invented — the pieces already exist.
 ## The Hierarchy (bottom to top)
 
 ```
+WorldModel State Query Ev            ← arbitrary revision and query
+        │
+        │  + additive revision/extraction
+        ▼
 AdditiveWorldModel State Query Ev    ← state-add, any Ev, no zero law
         │
         │  + evidence_zero          = GSLTEvidenceAssignment (≃ AddMonoidHom)
@@ -50,30 +54,31 @@ shared by:
 - Quantum amplitudes à la Meredith (Ev = ℂ)
 - Classical probability à la Knuth-Skilling (Ev = ℝ≥0∞)
 
-Everything else (forgetting, provenance, views, compiled inference, typed
-realization) is structure ON TOP of this core.
+This is the shared core of the additive specializations. General world
+models, nonlinear query extraction and multiplicative Bayesian revision
+start at `Logic/WorldModel/Basic`, without these additive assumptions.
 -/
 
 namespace Mettapedia.PLN.WorldModel.WorldModelCore
 
 open scoped ENNReal
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
-open Mettapedia.PLN.WorldModel.PLNWorldModelProfiles
+open Mettapedia.PLN.WorldModel.WorldModelProfiles
 open Mettapedia.OSLF.Framework.GSLTEvidence
 
 /-! ## 1. WorldModel with zero law = AddMonoidHom
 
-The existing `WorldModel` has `evidence_add` but not `evidence_zero`.
+The additive interface has `extract_add` but not `extract_zero`.
 The existing `BinaryWorldModel` (binary) has both.
 The existing `GSLTEvidenceAssignment` also has both.
 
 We define a zero-preserving generic world model predicate and show it
 is equivalent to an `AddMonoidHom` into profiles. -/
 
-/-- A `WorldModel` that also preserves zero.
+/-- An additive world model that also preserves zero.
 This is the full additive core: `extract : State →+ (Query → Ev)`. -/
 class ZeroPreservingGWM (State Query Ev : Type*)
     [EvidenceType State] [AddCommMonoid Ev]

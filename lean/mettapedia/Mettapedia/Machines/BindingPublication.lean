@@ -577,6 +577,87 @@ theorem executeOwned_retained_slots_bound
         rw [Nat.add_assoc] at sum
         exact Nat.le_trans tail sum
 
+/-! Checked preparation distinguishes a proved incompatible candidate from
+an attempt that could not decide or finish. Both discard tentative writes;
+only incompatibility licenses skipping that candidate. -/
+namespace CheckedPreparation
+
+variable {Conflict Refusal : Type x}
+
+/-- A successful empty option is a logical refutation, not failed work. -/
+def classify {Result : Type w} : Except (Conflict ⊕ Refusal) Result →
+    Except Refusal (Option Result)
+  | .ok result => .ok (some result)
+  | .error (.inl _) => .ok none
+  | .error (.inr reason) => .error reason
+
+/-- Execute the existing independently implemented private builder before
+classifying its result. No tentative binding becomes a successful answer. -/
+def run (check : Checker Key Value Metadata (Conflict ⊕ Refusal) Operation)
+    (base : Environment Key Value Metadata) (inventory : List Key) (spare : Nat)
+    (operations : List Operation) : Except Refusal (Option (Environment Key Value Metadata)) :=
+  classify (privatelyBuild check (prepare base inventory spare) operations).observe
+
+/-- The target's three-way preparation result agrees with the checked
+logical execution, including errors discovered after private mutation. -/
+theorem run_eq_sequential
+    (check : Checker Key Value Metadata (Conflict ⊕ Refusal) Operation)
+    (base : Environment Key Value Metadata) (inventory : List Key) (spare : Nat)
+    (operations : List Operation) :
+    run check base inventory spare operations = classify (sequential check base operations) := by
+  unfold run
+  rw [privatelyBuild_correct, prepare_exact]
+
+theorem ready_iff
+    (check : Checker Key Value Metadata (Conflict ⊕ Refusal) Operation)
+    (base result : Environment Key Value Metadata) (inventory : List Key) (spare : Nat)
+    (operations : List Operation) :
+    run check base inventory spare operations = .ok (some result) ↔
+      sequential check base operations = .ok result := by
+  rw [run_eq_sequential]
+  cases answer : sequential check base operations with
+  | ok environment => simp [classify]
+  | error reason => cases reason <;> simp [classify]
+
+theorem incompatible_iff
+    (check : Checker Key Value Metadata (Conflict ⊕ Refusal) Operation)
+    (base : Environment Key Value Metadata) (inventory : List Key) (spare : Nat)
+    (operations : List Operation) :
+    run check base inventory spare operations = .ok none ↔
+      ∃ conflict, sequential check base operations = .error (.inl conflict) := by
+  rw [run_eq_sequential]
+  cases answer : sequential check base operations with
+  | ok environment => simp [classify]
+  | error reason => cases reason <;> simp [classify]
+
+theorem refused_iff
+    (check : Checker Key Value Metadata (Conflict ⊕ Refusal) Operation)
+    (base : Environment Key Value Metadata) (inventory : List Key) (spare : Nat)
+    (operations : List Operation) (reason : Refusal) :
+    run check base inventory spare operations = .error reason ↔
+      sequential check base operations = .error (.inr reason) := by
+  rw [run_eq_sequential]
+  cases answer : sequential check base operations with
+  | ok environment => simp [classify]
+  | error actual => cases actual <;> simp [classify]
+
+/-- Classification does not change either the independently held input or
+the exact attempted prefix. A refused candidate is not evidence about any
+unvisited operation or sibling. -/
+theorem retains_input_and_checked_prefix
+    (check : Checker Key Value Metadata (Conflict ⊕ Refusal) Operation)
+    (base : Environment Key Value Metadata) (inventory : List Key) (spare : Nat)
+    (operations : List Operation) :
+    (privatelyBuild check (prepare base inventory spare) operations).original = base ∧
+      (executeOwned check (prepare base inventory spare) operations).checked =
+        checkedPrefix check base operations := by
+  constructor
+  · simpa [prepare] using privatelyBuild_preserves_original check operations
+      (prepare base inventory spare)
+  · rw [executeOwned_preserves_checked_prefix, prepare_exact]
+
+end CheckedPreparation
+
 end General
 
 /-! ## Executable checked-binding controls

@@ -127,51 +127,67 @@ theorem henkin_extensional_model_exists {T : ClosedTheorySet (WithParams Const)}
     exact hHW ψ (Set.mem_union_right _ hψ)
   · exact termHenkinModel_functionsRespectEqv W hComplete
 
-/-- Public corollary in the honest classical/Henkin regime: if a theory over
-`WithParams Const` is already parameter-free and already contains the excluded-middle
-schema, then ordinary consistency of that theory is enough to obtain a Henkin model of
-the theory itself.  The witnessing expansion is still used internally, but no extra
-consistency hypothesis beyond the original classical theory is needed. -/
+/-- Adding sentences that a consistent theory already proves keeps it consistent. -/
+theorem consistent_union_of_provable {T S : ClosedTheorySet Const}
+    (hCons : Consistent (Const := Const) T)
+    (hS : ∀ ψ ∈ S, Provable (Const := Const) T ψ) :
+    Consistent (Const := Const) (T ∪ S) := by
+  rintro ⟨Γ, hΓ, d⟩
+  apply hCons
+  refine provable_of_closedTheory_provable_hyps (Const := Const) ?_ d
+  intro ψ hψ
+  rcases hΓ ψ hψ with hT | hS'
+  · exact provable_of_mem (Const := Const) hT
+  · exact hS ψ hS'
+
+/-- A parameter-free theory that proves every excluded-middle instance stays consistent
+after Henkin witnessing and the addition of the excluded-middle schema. -/
+theorem consistent_witnessLimit_union_emSchema
+    {T : ClosedTheorySet (WithParams Const)} (enum : Nat → Body Const)
+    (hCons : Consistent (Const := WithParams Const) T)
+    (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
+    (hEM : ∀ ψ ∈ EMSchema Const, Provable (Const := WithParams Const) T ψ) :
+    Consistent (Const := WithParams Const) (witnessLimit T enum ∪ EMSchema Const) :=
+  consistent_union_of_provable (witnessLimit_consistent T enum hCons hT0) fun ψ hψ =>
+    provable_mono (Const := WithParams Const) (fun h => subset_witnessLimit T enum h)
+      (hEM ψ hψ)
+
+/-- **Henkin model existence for classical theories over the parameter signature.**
+Let `T` be a consistent theory over `WithParams Const` in which no parameter occurs and
+which proves every instance of the excluded-middle schema; for instance `T` contains the
+single parameter-free axiom `∀ p : prop, p ∨ ¬ p`
+(`SevenVirtues.provable_emSchema_of_mem`).  Then `T` has a Henkin general model.
+
+The schema is required to be provable, not contained: `EMSchema` has members that
+mention parameters, so a parameter-free theory never contains it
+(`SevenVirtues.classical_corollary_hypotheses_unsatisfiable`).  The model interprets the
+parameters, so every one of its domains is inhabited; no closed inhabitant of the base
+types of `Const` is assumed. -/
 theorem henkin_model_exists_of_consistent_classical
     {T : ClosedTheorySet (WithParams Const)} (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, Provable (Const := WithParams Const) T ψ) :
     ∃ N : HenkinModel.{u, v, v} Base (WithParams Const),
       ∀ ψ ∈ T, N.models ψ := by
-  have hWitness : Consistent (Const := WithParams Const) (witnessLimit T enum) :=
-    witnessLimit_consistent T enum hCons hT0
-  have hEMsub : EMSchema Const ⊆ witnessLimit T enum := by
-    intro ψ hψ
-    exact subset_witnessLimit T enum (hEM ψ hψ)
-  have hClassicalWitness :
-      Consistent (Const := WithParams Const) (witnessLimit T enum ∪ EMSchema Const) := by
-    simpa [Set.union_eq_left.2 hEMsub] using hWitness
-  obtain ⟨N, hN, _hEMN⟩ := henkin_model_exists enum henum hClassicalWitness
+  obtain ⟨N, hN, _hEMN⟩ :=
+    henkin_model_exists enum henum (consistent_witnessLimit_union_emSchema enum hCons hT0 hEM)
   exact ⟨N, hN⟩
 
-/-- Public extensional corollary in the honest classical/Henkin regime. This
-keeps the extensionality certificate produced by the canonical term model, so
-the stronger extensional proof system can be used soundly downstream. -/
+/-- Extensional form of `henkin_model_exists_of_consistent_classical`: the model also
+satisfies the congruence law `FunctionsRespectEqv`, so the extensional calculus
+`ExtDerivation` is sound in it. -/
 theorem henkin_extensional_model_exists_of_consistent_classical
     {T : ClosedTheorySet (WithParams Const)} (enum : Nat → Body Const)
     (henum : ∀ b : Body Const, ∃ n, enum n = b)
     (hCons : Consistent (Const := WithParams Const) T)
     (hT0 : ∀ ψ ∈ T, ∀ (σ : Ty Base) (k : Nat), NoConstOccurrence (param σ k) ψ)
-    (hEM : ∀ ψ ∈ EMSchema Const, ψ ∈ T) :
+    (hEM : ∀ ψ ∈ EMSchema Const, Provable (Const := WithParams Const) T ψ) :
     ∃ N : HenkinModel.{u, v, v} Base (WithParams Const),
       (∀ ψ ∈ T, N.models ψ) ∧ N.FunctionsRespectEqv := by
-  have hWitness : Consistent (Const := WithParams Const) (witnessLimit T enum) :=
-    witnessLimit_consistent T enum hCons hT0
-  have hEMsub : EMSchema Const ⊆ witnessLimit T enum := by
-    intro ψ hψ
-    exact subset_witnessLimit T enum (hEM ψ hψ)
-  have hClassicalWitness :
-      Consistent (Const := WithParams Const) (witnessLimit T enum ∪ EMSchema Const) := by
-    simpa [Set.union_eq_left.2 hEMsub] using hWitness
-  obtain ⟨N, hN, _hEMN, hExt⟩ :=
-    henkin_extensional_model_exists enum henum hClassicalWitness
+  obtain ⟨N, hN, _hEMN, hExt⟩ := henkin_extensional_model_exists enum henum
+    (consistent_witnessLimit_union_emSchema enum hCons hT0 hEM)
   exact ⟨N, hN, hExt⟩
 
 end ClosedTheorySet

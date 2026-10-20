@@ -34,6 +34,7 @@ structure LeafAdmission (Leaf : Type w) where
   admitted : Leaf → Prop
   probe : Leaf → Except Mettapedia.OSLF.NativeTypes.Structural.Refusal Unit
   exact : ∀ leaf, (probe leaf).isOk = true ↔ admitted leaf
+  spatial : Nat → Bool := fun _ => false
 
 inductive Formed {Leaf : Type w} (fragment : ConnectiveFragment)
     (admission : LeafAdmission Leaf) : Formula Leaf → Prop where
@@ -55,6 +56,10 @@ inductive Formed {Leaf : Type w} (fragment : ConnectiveFragment)
       Formed fragment admission (.possibility formula)
   | outgoingUniversal {formula} (enabled : fragment.core.modal = true) (inside : Formed fragment admission formula) :
       Formed fragment admission (.outgoingUniversal formula)
+  | separating {index first second} (enabled : fragment.core.structural = true)
+      (declared : admission.spatial index = true)
+      (left : Formed fragment admission first) (right : Formed fragment admission second) :
+      Formed fragment admission (.separating index first second)
 
 def denyUnless (enabled : Bool) (refusal : Refusal) (inside : Option Refusal) : Option Refusal :=
   if enabled then inside else some refusal
@@ -84,6 +89,9 @@ def firstRefusal {Leaf : Type w} (fragment : ConnectiveFragment)
       ((firstRefusal fragment admission first).or (firstRefusal fragment admission second))
   | .possibility formula => denyUnless fragment.core.possibility .possibility (firstRefusal fragment admission formula)
   | .outgoingUniversal formula => denyUnless fragment.core.modal (.unavailable .modal) (firstRefusal fragment admission formula)
+  | .separating index first second => denyUnless fragment.core.structural (.unavailable .structural)
+      (denyUnless (admission.spatial index) (.unavailable .structural)
+        ((firstRefusal fragment admission first).or (firstRefusal fragment admission second)))
 
 theorem firstRefusal_exact {Leaf : Type w} (fragment : ConnectiveFragment)
     (admission : LeafAdmission Leaf) (formula : Formula Leaf) :
@@ -145,6 +153,12 @@ theorem firstRefusal_exact {Leaf : Type w} (fragment : ConnectiveFragment)
     constructor
     · rintro ⟨enabled, inside⟩; exact .outgoingUniversal enabled inside
     · intro formed; cases formed with | outgoingUniversal enabled inside => exact ⟨enabled, inside⟩
+  | separating index first second left right =>
+    rw [firstRefusal, denyUnless_none, denyUnless_none, optionOr_none, left, right]
+    constructor
+    · rintro ⟨enabled, declared, first, second⟩; exact .separating enabled declared first second
+    · intro formed; cases formed with
+      | separating enabled declared first second => exact ⟨enabled, declared, first, second⟩
 
 inductive Verdict (statement : Prop) : Type where
   | semantic (result : Outcome statement)
@@ -166,7 +180,7 @@ def check {system : GSLT.{u}} {admitted : system.Term → Prop} {Leaf : Type w}
     (generated : Generated) (backend : Backend.{u,v} system admitted)
     (tests : Leaf → Test system admitted) (admission : LeafAdmission Leaf)
     (formula : Formula Leaf) (source : system.Term) (budget : Nat) :
-    Verdict (denotation tests formula source) :=
+    Verdict (denotation tests formula backend.spatial.theory source) :=
   match firstRefusal generated.logicFragment admission formula with
   | some reason => .refused reason
   | none => match generated.equationAdmission with

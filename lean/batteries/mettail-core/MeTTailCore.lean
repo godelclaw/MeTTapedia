@@ -14,6 +14,7 @@ import MeTTailCore.MeTTaIL.TransitionPlan
 import MeTTailCore.MeTTaIL.RewriteIR
 import MeTTailCore.MeTTaIL.RewriteIRV2
 import MeTTailCore.MeTTaSyntax.CommandIR
+import MeTTailCore.MeTTaSyntax.Atom
 import MeTTailCore.MeTTaSyntax.Spec
 import MeTTailCore.MeTTaSyntax.Pretty
 import MeTTailCore.MeTTaSyntax.RuleSyntax

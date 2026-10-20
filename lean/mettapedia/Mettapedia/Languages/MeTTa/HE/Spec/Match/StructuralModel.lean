@@ -1,4 +1,5 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.ModelTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 /-!
 # Structural reconciliation certificate for the spec matcher
@@ -14,7 +15,7 @@ chronology, unification fuel, or executable matcher occurs in the judgment.
 namespace Mettapedia.Languages.MeTTa.HE.Spec.Match.StructuralModel
 
 open Mettapedia.Languages.MeTTa.HE
-open Mettapedia.Languages.MeTTa.HE.LeaTTaBridge
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
 open Spec.Match.ModelTheory
 
@@ -775,45 +776,45 @@ private theorem solved_sound_pair
     {bindings : Bindings} {valuation : String → Metta.Atom}
     (hsatisfied : HEBindingSatisfied valuation bindings) :
     (∀ left right (_ : AtomSolved bindings left right),
-      applyClassSolution valuation (toLeaTTaAtom left) =
-        applyClassSolution valuation (toLeaTTaAtom right)) ∧
+      applyClassSolution valuation (encodeModelAtom left) =
+        applyClassSolution valuation (encodeModelAtom right)) ∧
     (∀ left right (_ : AtomsSolved bindings left right),
-      (toLeaTTaAtoms left).map (applyClassSolution valuation) =
-        (toLeaTTaAtoms right).map (applyClassSolution valuation)) := by
+      (encodeModelAtoms left).map (applyClassSolution valuation) =
+        (encodeModelAtoms right).map (applyClassSolution valuation)) := by
   apply solved_mutual_induction
   · intro name
     rfl
   · intro left right hclass
-    simpa [toLeaTTaAtom, applyClassSolution] using
+    simpa [encodeModelAtom, applyClassSolution] using
       hsatisfied.eq_of_mem_eqClass hclass
   · intro left key right hassignment hclass
-    simpa [toLeaTTaAtom, applyClassSolution] using
+    simpa [encodeModelAtom, applyClassSolution] using
       (hsatisfied.eq_of_mem_eqClass hclass).trans
         (hsatisfied.1 _ _ hassignment)
   · intro left key right hassignment hclass
-    simpa [toLeaTTaAtom, applyClassSolution] using
+    simpa [encodeModelAtom, applyClassSolution] using
       ((hsatisfied.eq_of_mem_eqClass hclass).trans
         (hsatisfied.1 _ _ hassignment)).symm
   · intro left key right hclass htail ih
     have htailEq' : valuation key =
-        applyClassSolution valuation (toLeaTTaAtom right) := by
-      simpa [toLeaTTaAtom, applyClassSolution] using ih
-    simpa [toLeaTTaAtom, applyClassSolution] using
+        applyClassSolution valuation (encodeModelAtom right) := by
+      simpa [encodeModelAtom, applyClassSolution] using ih
+    simpa [encodeModelAtom, applyClassSolution] using
       (hsatisfied.eq_of_mem_eqClass hclass).trans htailEq'
   · intro left key right hclass htail ih
     have htailEq' :
-        applyClassSolution valuation (toLeaTTaAtom left) = valuation key := by
-      simpa [toLeaTTaAtom, applyClassSolution] using ih
-    simpa [toLeaTTaAtom, applyClassSolution] using
+        applyClassSolution valuation (encodeModelAtom left) = valuation key := by
+      simpa [encodeModelAtom, applyClassSolution] using ih
+    simpa [encodeModelAtom, applyClassSolution] using
       htailEq'.trans (hsatisfied.eq_of_mem_eqClass hclass).symm
   · intro value
     rfl
   · intro left right hitems ih
-    simp only [toLeaTTaAtom, applyClassSolution]
+    simp only [encodeModelAtom, applyClassSolution]
     congr 1
   · rfl
   · intro left right lefts rights hhead htail ihHead ihTail
-    simp only [toLeaTTaAtoms, List.map_cons, List.cons.injEq]
+    simp only [encodeModelAtoms, List.map_cons, List.cons.injEq]
     exact ⟨ihHead, ihTail⟩
 
 /-- Every structural solution is a semantic consequence of the binding
@@ -823,8 +824,8 @@ theorem AtomSolved.sound
     (hsatisfied : HEBindingSatisfied valuation bindings)
     {left right : Atom}
     (hsolved : AtomSolved bindings left right) :
-    applyClassSolution valuation (toLeaTTaAtom left) =
-      applyClassSolution valuation (toLeaTTaAtom right) :=
+    applyClassSolution valuation (encodeModelAtom left) =
+      applyClassSolution valuation (encodeModelAtom right) :=
   (solved_sound_pair hsatisfied).1 left right hsolved
 
 /-- List companion of `AtomSolved.sound`. -/
@@ -833,49 +834,49 @@ theorem AtomsSolved.sound
     (hsatisfied : HEBindingSatisfied valuation bindings)
     {left right : List Atom}
     (hsolved : AtomsSolved bindings left right) :
-    (toLeaTTaAtoms left).map (applyClassSolution valuation) =
-      (toLeaTTaAtoms right).map (applyClassSolution valuation) :=
+    (encodeModelAtoms left).map (applyClassSolution valuation) =
+      (encodeModelAtoms right).map (applyClassSolution valuation) :=
   (solved_sound_pair hsatisfied).2 left right hsolved
 
 private theorem reconciled_sound_pair
     {bindings : Bindings} {valuation : String → Metta.Atom}
     (hsatisfied : HEBindingSatisfied valuation bindings) :
     (∀ left right (_ : AtomReconciled bindings left right),
-      applyClassSolution valuation (toLeaTTaAtom left) =
-        applyClassSolution valuation (toLeaTTaAtom right)) ∧
+      applyClassSolution valuation (encodeModelAtom left) =
+        applyClassSolution valuation (encodeModelAtom right)) ∧
     (∀ left right (_ : AtomsReconciled bindings left right),
-      (toLeaTTaAtoms left).map (applyClassSolution valuation) =
-        (toLeaTTaAtoms right).map (applyClassSolution valuation)) := by
+      (encodeModelAtoms left).map (applyClassSolution valuation) =
+        (encodeModelAtoms right).map (applyClassSolution valuation)) := by
   apply reconciled_mutual_induction
   · intro name
     rfl
   · intro left right hclass
-    simpa [toLeaTTaAtom, applyClassSolution] using
+    simpa [encodeModelAtom, applyClassSolution] using
       hsatisfied.eq_of_mem_eqClass hclass
   · intro left key stored right hassignment hclass htail ih
     have hleftStored : valuation left =
-        applyClassSolution valuation (toLeaTTaAtom stored) := by
-      simpa [toLeaTTaAtom, applyClassSolution] using
+        applyClassSolution valuation (encodeModelAtom stored) := by
+      simpa [encodeModelAtom, applyClassSolution] using
         (hsatisfied.eq_of_mem_eqClass hclass).trans
           (hsatisfied.1 _ _ hassignment)
-    simpa [toLeaTTaAtom, applyClassSolution] using
+    simpa [encodeModelAtom, applyClassSolution] using
       hleftStored.trans ih
   · intro left stored key right hassignment hclass htail ih
     have hrightStored : valuation right =
-        applyClassSolution valuation (toLeaTTaAtom stored) := by
-      simpa [toLeaTTaAtom, applyClassSolution] using
+        applyClassSolution valuation (encodeModelAtom stored) := by
+      simpa [encodeModelAtom, applyClassSolution] using
         (hsatisfied.eq_of_mem_eqClass hclass).trans
           (hsatisfied.1 _ _ hassignment)
-    simpa [toLeaTTaAtom, applyClassSolution] using
+    simpa [encodeModelAtom, applyClassSolution] using
       ih.trans hrightStored.symm
   · intro value
     rfl
   · intro left right hitems ih
-    simp only [toLeaTTaAtom, applyClassSolution]
+    simp only [encodeModelAtom, applyClassSolution]
     congr 1
   · rfl
   · intro left right lefts rights hhead htail ihHead ihTail
-    simp only [toLeaTTaAtoms, List.map_cons, List.cons.injEq]
+    simp only [encodeModelAtoms, List.map_cons, List.cons.injEq]
     exact ⟨ihHead, ihTail⟩
 
 /-- Directional recursive reconciliation is sound in every model of the
@@ -885,8 +886,8 @@ theorem AtomReconciled.sound
     (hsatisfied : HEBindingSatisfied valuation bindings)
     {left right : Atom}
     (hreconciled : AtomReconciled bindings left right) :
-    applyClassSolution valuation (toLeaTTaAtom left) =
-      applyClassSolution valuation (toLeaTTaAtom right) :=
+    applyClassSolution valuation (encodeModelAtom left) =
+      applyClassSolution valuation (encodeModelAtom right) :=
   (reconciled_sound_pair hsatisfied).1 left right hreconciled
 
 /-- List companion of `AtomReconciled.sound`. -/
@@ -895,8 +896,8 @@ theorem AtomsReconciled.sound
     (hsatisfied : HEBindingSatisfied valuation bindings)
     {left right : List Atom}
     (hreconciled : AtomsReconciled bindings left right) :
-    (toLeaTTaAtoms left).map (applyClassSolution valuation) =
-      (toLeaTTaAtoms right).map (applyClassSolution valuation) :=
+    (encodeModelAtoms left).map (applyClassSolution valuation) =
+      (encodeModelAtoms right).map (applyClassSolution valuation) :=
   (reconciled_sound_pair hsatisfied).2 left right hreconciled
 
 private theorem reconciled_mono_pair
@@ -1430,7 +1431,7 @@ theorem empty_not_structuralSolved_nested :
   intro hsolved
   have heq := hsolved.sound
     (hesat_empty (fun name => Metta.Atom.var name))
-  simp [toLeaTTaAtom, applyClassSolution] at heq
+  simp [encodeModelAtom, applyClassSolution] at heq
 
 /-- Negative presentation canary: an empty target cannot present a source
 assignment merely by forgetting its equation. -/
@@ -1444,7 +1445,7 @@ theorem empty_not_presents_structuralSolvedProbe :
   have hsolved := hpresentation.assignments "y" (.symbol "a") hmem
   have heq := hsolved.sound
     (hesat_empty (fun name => Metta.Atom.var name))
-  simp [toLeaTTaAtom, applyClassSolution] at heq
+  simp [encodeModelAtom, applyClassSolution] at heq
 
 private theorem lookup_mem_of_eq_some {key : String} {value : Atom} :
     ∀ {assignments : List (String × Atom)},
@@ -2156,25 +2157,25 @@ private theorem reconciled_canonical_pair
         canonicalNodeValue bindings hloopFree hnonvariable target =
           applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable)
-            (toLeaTTaAtom assignment.1.2)) :
+            (encodeModelAtom assignment.1.2)) :
     (∀ left right (_ : AtomReconciled bindings left right),
       AtomDependenciesBelow bindings source left →
       AtomDependenciesBelow bindings source right →
       applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)
-          (toLeaTTaAtom left) =
+          (encodeModelAtom left) =
         applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)
-          (toLeaTTaAtom right)) ∧
+          (encodeModelAtom right)) ∧
     (∀ left right (_ : AtomsReconciled bindings left right),
       (∀ atom, atom ∈ left →
         AtomDependenciesBelow bindings source atom) →
       (∀ atom, atom ∈ right →
         AtomDependenciesBelow bindings source atom) →
-      (toLeaTTaAtoms left).map
+      (encodeModelAtoms left).map
           (applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable)) =
-        (toLeaTTaAtoms right).map
+        (encodeModelAtoms right).map
           (applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable))) := by
   apply reconciled_mutual_induction
@@ -2183,7 +2184,7 @@ private theorem reconciled_canonical_pair
   · intro left right hclass hleftBelow hrightBelow
     obtain ⟨hleftSupport, _hleftLt⟩ :=
       hleftBelow left (.var left)
-    simpa [toLeaTTaAtom, applyClassSolution] using
+    simpa [encodeModelAtom, applyClassSolution] using
       canonicalValuation_eq_of_mem_eqClass
         hloopFree hnonvariable hleftSupport hclass
   · intro left key stored right hassignment hclass htail ih
@@ -2207,7 +2208,7 @@ private theorem reconciled_canonical_pair
         canonicalValuation bindings hloopFree hnonvariable left =
           applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable)
-            (toLeaTTaAtom stored) := by
+            (encodeModelAtom stored) := by
       have htargetStored := hsmaller target hleftLt assignment
       simpa [canonicalValuation, hleftSupport, target] using
         htargetStored
@@ -2215,7 +2216,7 @@ private theorem reconciled_canonical_pair
       (ClassAssignment.value_dependenciesBelow
         hnonvariable hleftLt assignment)
       hrightBelow
-    simpa [toLeaTTaAtom, applyClassSolution] using
+    simpa [encodeModelAtom, applyClassSolution] using
       hleftStored.trans htailEq
   · intro left stored key right hassignment hclass htail ih
       hleftBelow hrightBelow
@@ -2238,19 +2239,19 @@ private theorem reconciled_canonical_pair
         canonicalValuation bindings hloopFree hnonvariable right =
           applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable)
-            (toLeaTTaAtom stored) := by
+            (encodeModelAtom stored) := by
       have htargetStored := hsmaller target hrightLt assignment
       simpa [canonicalValuation, hrightSupport, target] using
         htargetStored
     have htailEq := ih hleftBelow
       (ClassAssignment.value_dependenciesBelow
         hnonvariable hrightLt assignment)
-    simpa [toLeaTTaAtom, applyClassSolution] using
+    simpa [encodeModelAtom, applyClassSolution] using
       htailEq.trans hrightStored.symm
   · intro value hleftBelow hrightBelow
     rfl
   · intro left right hitems ih hleftBelow hrightBelow
-    simp only [toLeaTTaAtom, applyClassSolution]
+    simp only [encodeModelAtom, applyClassSolution]
     congr 1
     exact ih
       (fun atom hatom name hoccurs =>
@@ -2261,7 +2262,7 @@ private theorem reconciled_canonical_pair
     rfl
   · intro left right lefts rights hhead htail ihHead ihTail
       hleftBelow hrightBelow
-    simp only [toLeaTTaAtoms, List.map_cons, List.cons.injEq]
+    simp only [encodeModelAtoms, List.map_cons, List.cons.injEq]
     constructor
     · exact ihHead
         (hleftBelow left (by simp))
@@ -2284,17 +2285,17 @@ theorem AtomReconciled.canonical_eq_of_below
         canonicalNodeValue bindings hloopFree hnonvariable target =
           applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     {left right : Atom}
     (hreconciled : AtomReconciled bindings left right)
     (hleftBelow : AtomDependenciesBelow bindings source left)
     (hrightBelow : AtomDependenciesBelow bindings source right) :
     applyClassSolution
         (canonicalValuation bindings hloopFree hnonvariable)
-        (toLeaTTaAtom left) =
+        (encodeModelAtom left) =
       applyClassSolution
         (canonicalValuation bindings hloopFree hnonvariable)
-        (toLeaTTaAtom right) :=
+        (encodeModelAtom right) :=
   (reconciled_canonical_pair hloopFree hnonvariable hsmaller).1
     left right hreconciled hleftBelow hrightBelow
 
@@ -2315,7 +2316,7 @@ theorem canonicalClassCoherent_of_reconciled
       canonicalNodeValue bindings hloopFree hnonvariable node =
         applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)
-          (toLeaTTaAtom assignment.1.2)
+          (encodeModelAtom assignment.1.2)
   change NodeCoherent source
   apply (dependencyOrder_wellFounded hloopFree).induction source
   intro source hsmaller assignment
@@ -2354,20 +2355,20 @@ theorem canonicalClassCoherent_of_reconciled
       have hpivotChosenEq :
           applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom pivotValue) =
+              (encodeModelAtom pivotValue) =
             applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom chosen.1.2) :=
+              (encodeModelAtom chosen.1.2) :=
         AtomReconciled.canonical_eq_of_below
           hloopFree hnonvariable hsmaller hpivotChosen
           hpivotBelow hchosenBelow
       have hpivotAssignmentEq :
           applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom pivotValue) =
+              (encodeModelAtom pivotValue) =
             applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom assignment.1.2) :=
+              (encodeModelAtom assignment.1.2) :=
         AtomReconciled.canonical_eq_of_below
           hloopFree hnonvariable hsmaller hpivotAssignment
           hpivotBelow hassignmentBelow
@@ -2375,12 +2376,12 @@ theorem canonicalClassCoherent_of_reconciled
         canonicalNodeValue bindings hloopFree hnonvariable source =
             applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom chosen.1.2) :=
+              (encodeModelAtom chosen.1.2) :=
           canonicalNodeValue_eq_applyClassSolution_of_chosen
             hloopFree hnonvariable chosen hchosen
         _ = applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom assignment.1.2) :=
+              (encodeModelAtom assignment.1.2) :=
           hpivotChosenEq.symm.trans hpivotAssignmentEq
 
 /-- A loop-free, non-variable record with derivational reconciliation has a
@@ -2410,7 +2411,7 @@ private theorem solved_canonical_pair
         canonicalNodeValue bindings hloopFree hnonvariable target =
           applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     :
     (∀ left right (_ : AtomSolved bindings left right),
       (∀ name, Spec.Match.Merge.AtomOccurs left name →
@@ -2419,10 +2420,10 @@ private theorem solved_canonical_pair
         AtomClassOccurs bindings rightRoot.1.2 name) →
       applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)
-          (toLeaTTaAtom left) =
+          (encodeModelAtom left) =
         applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)
-          (toLeaTTaAtom right)) ∧
+          (encodeModelAtom right)) ∧
     (∀ left right (_ : AtomsSolved bindings left right),
       (∀ atom, atom ∈ left → ∀ name,
         Spec.Match.Merge.AtomOccurs atom name →
@@ -2430,10 +2431,10 @@ private theorem solved_canonical_pair
       (∀ atom, atom ∈ right → ∀ name,
         Spec.Match.Merge.AtomOccurs atom name →
         AtomClassOccurs bindings rightRoot.1.2 name) →
-      (toLeaTTaAtoms left).map
+      (encodeModelAtoms left).map
           (applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable)) =
-        (toLeaTTaAtoms right).map
+        (encodeModelAtoms right).map
           (applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable))) := by
   apply solved_mutual_induction
@@ -2446,7 +2447,7 @@ private theorem solved_canonical_pair
       leftRoot.2.1 hoccurs
     have hleftSupport := mem_bindingSupport_of_mem_eqClass
       hoccurrenceSupport hleftClass
-    simpa [toLeaTTaAtom, applyClassSolution] using
+    simpa [encodeModelAtom, applyClassSolution] using
       canonicalValuation_eq_of_mem_eqClass
         hloopFree hnonvariable hleftSupport hclass
   · intro left key right hassignment hclass hleftRoot hrightRoot
@@ -2474,7 +2475,7 @@ private theorem solved_canonical_pair
       leftRoot.2.1 hoccurs
     have hoccurrenceLeft := canonicalValuation_eq_of_mem_eqClass
       hloopFree hnonvariable hoccurrenceSupport hleftClass
-    simpa [toLeaTTaAtom, applyClassSolution, target] using
+    simpa [encodeModelAtom, applyClassSolution, target] using
       hoccurrenceLeft.symm.trans
         (hoccurrenceNode.trans hleftValue)
   · intro left key right hassignment hclass hleftRoot hrightRoot
@@ -2502,7 +2503,7 @@ private theorem solved_canonical_pair
       rightRoot.2.1 hoccurs
     have hoccurrenceRight := canonicalValuation_eq_of_mem_eqClass
       hloopFree hnonvariable hoccurrenceSupport hrightClass
-    simpa [toLeaTTaAtom, applyClassSolution, target] using
+    simpa [encodeModelAtom, applyClassSolution, target] using
       ((hoccurrenceRight.symm.trans
         (hoccurrenceNode.trans hrightValue))).symm
   · intro left key right hclass htail ih hleftRoot hrightRoot
@@ -2529,9 +2530,9 @@ private theorem solved_canonical_pair
         canonicalValuation bindings hloopFree hnonvariable key =
           applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable)
-            (toLeaTTaAtom right) := by
-      simpa [toLeaTTaAtom, applyClassSolution] using htailEq
-    simpa [toLeaTTaAtom, applyClassSolution] using
+            (encodeModelAtom right) := by
+      simpa [encodeModelAtom, applyClassSolution] using htailEq
+    simpa [encodeModelAtom, applyClassSolution] using
       hleftKey.trans htailEq'
   · intro left key right hclass htail ih hleftRoot hrightRoot
     obtain ⟨occurrence, hoccurs, hrightClass⟩ :=
@@ -2555,15 +2556,15 @@ private theorem solved_canonical_pair
     have htailEq' :
         applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable)
-            (toLeaTTaAtom left) =
+            (encodeModelAtom left) =
           canonicalValuation bindings hloopFree hnonvariable key := by
-      simpa [toLeaTTaAtom, applyClassSolution] using htailEq
-    simpa [toLeaTTaAtom, applyClassSolution] using
+      simpa [encodeModelAtom, applyClassSolution] using htailEq
+    simpa [encodeModelAtom, applyClassSolution] using
       htailEq'.trans hrightKey.symm
   · intro value hleftRoot hrightRoot
     rfl
   · intro left right hitems ih hleftRoot hrightRoot
-    simp only [toLeaTTaAtom, applyClassSolution]
+    simp only [encodeModelAtom, applyClassSolution]
     congr 1
     exact ih
       (fun atom hatom name hoccurs =>
@@ -2574,7 +2575,7 @@ private theorem solved_canonical_pair
     rfl
   · intro left right lefts rights hhead htail ihHead ihTail
       hleftRoot hrightRoot
-    simp only [toLeaTTaAtoms, List.map_cons, List.cons.injEq]
+    simp only [encodeModelAtoms, List.map_cons, List.cons.injEq]
     constructor
     · exact ihHead
         (fun name hoccurs => hleftRoot left (by simp) name hoccurs)
@@ -2599,7 +2600,7 @@ theorem AtomSolved.canonical_eq_of_smaller
         canonicalNodeValue bindings hloopFree hnonvariable target =
           applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     {left right : Atom}
     (hsolved : AtomSolved bindings left right)
     (hleftRoot : ∀ name,
@@ -2610,10 +2611,10 @@ theorem AtomSolved.canonical_eq_of_smaller
       AtomClassOccurs bindings rightRoot.1.2 name) :
     applyClassSolution
         (canonicalValuation bindings hloopFree hnonvariable)
-        (toLeaTTaAtom left) =
+        (encodeModelAtom left) =
       applyClassSolution
         (canonicalValuation bindings hloopFree hnonvariable)
-        (toLeaTTaAtom right) :=
+        (encodeModelAtom right) :=
   (solved_canonical_pair hloopFree hnonvariable
     leftRoot rightRoot hsmaller).1 left right hsolved hleftRoot hrightRoot
 
@@ -2630,7 +2631,7 @@ theorem AtomsSolved.canonical_eq_of_smaller
         canonicalNodeValue bindings hloopFree hnonvariable target =
           applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     {left right : List Atom}
     (hsolved : AtomsSolved bindings left right)
     (hleftRoot : ∀ atom, atom ∈ left → ∀ name,
@@ -2639,10 +2640,10 @@ theorem AtomsSolved.canonical_eq_of_smaller
     (hrightRoot : ∀ atom, atom ∈ right → ∀ name,
       Spec.Match.Merge.AtomOccurs atom name →
       AtomClassOccurs bindings rightRoot.1.2 name) :
-    (toLeaTTaAtoms left).map
+    (encodeModelAtoms left).map
         (applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)) =
-      (toLeaTTaAtoms right).map
+      (encodeModelAtoms right).map
         (applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)) :=
   (solved_canonical_pair hloopFree hnonvariable
@@ -2665,7 +2666,7 @@ theorem canonicalClassCoherent_of_structurallyRooted
       canonicalNodeValue bindings hloopFree hnonvariable node =
         applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)
-          (toLeaTTaAtom assignment.1.2)
+          (encodeModelAtom assignment.1.2)
   change NodeCoherent source
   apply (dependencyOrder_wellFounded hloopFree).induction source
   intro source hsmaller assignment
@@ -2695,10 +2696,10 @@ theorem canonicalClassCoherent_of_structurallyRooted
       have hpivotChosenEq :
           applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom pivotValue) =
+              (encodeModelAtom pivotValue) =
             applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom chosen.1.2) :=
+              (encodeModelAtom chosen.1.2) :=
         AtomSolved.canonical_eq_of_smaller hloopFree hnonvariable
           pivot chosen hsmaller hpivotChosen
           (fun name hoccurs => ⟨name, hoccurs,
@@ -2708,10 +2709,10 @@ theorem canonicalClassCoherent_of_structurallyRooted
       have hpivotAssignmentEq :
           applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom pivotValue) =
+              (encodeModelAtom pivotValue) =
             applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom assignment.1.2) :=
+              (encodeModelAtom assignment.1.2) :=
         AtomSolved.canonical_eq_of_smaller hloopFree hnonvariable
           pivot assignment hsmaller hpivotAssignment
           (fun name hoccurs => ⟨name, hoccurs,
@@ -2722,12 +2723,12 @@ theorem canonicalClassCoherent_of_structurallyRooted
         canonicalNodeValue bindings hloopFree hnonvariable source =
             applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom chosen.1.2) :=
+              (encodeModelAtom chosen.1.2) :=
           canonicalNodeValue_eq_applyClassSolution_of_chosen
             hloopFree hnonvariable chosen hchosen
         _ = applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom assignment.1.2) :=
+              (encodeModelAtom assignment.1.2) :=
           hpivotChosenEq.symm.trans hpivotAssignmentEq
 
 /-- A loop-free, non-variable record with rooted structural reconciliation has
@@ -2760,7 +2761,7 @@ theorem canonicalClassCoherent_of_structurallySolved
       canonicalNodeValue bindings hloopFree hnonvariable node =
         applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)
-          (toLeaTTaAtom assignment.1.2)
+          (encodeModelAtom assignment.1.2)
   change NodeCoherent source
   apply (dependencyOrder_wellFounded hloopFree).induction source
   intro source hsmaller assignment
@@ -2781,12 +2782,12 @@ theorem canonicalClassCoherent_of_structurallySolved
         canonicalNodeValue bindings hloopFree hnonvariable source =
             applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom chosen.1.2) :=
+              (encodeModelAtom chosen.1.2) :=
           canonicalNodeValue_eq_applyClassSolution_of_chosen
             hloopFree hnonvariable chosen hchosen
         _ = applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom assignment.1.2) :=
+              (encodeModelAtom assignment.1.2) :=
           AtomSolved.canonical_eq_of_smaller hloopFree hnonvariable
             chosen assignment hsmaller
             (hsolved chosen.2.1 assignment.2.1 hchosenToAssignment)
@@ -2991,15 +2992,15 @@ theorem AtomReconciliationPath.canonical_eq
         canonicalNodeValue bindings hloopFree hnonvariable target =
           applyClassSolution
             (canonicalValuation bindings hloopFree hnonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     {left right : Atom}
     (hpath : AtomReconciliationPath bindings source left right) :
     applyClassSolution
         (canonicalValuation bindings hloopFree hnonvariable)
-        (toLeaTTaAtom left) =
+        (encodeModelAtom left) =
       applyClassSolution
         (canonicalValuation bindings hloopFree hnonvariable)
-        (toLeaTTaAtom right) := by
+        (encodeModelAtom right) := by
   induction hpath with
   | step hleft hreconciled hright =>
       exact AtomReconciled.canonical_eq_of_below
@@ -3008,10 +3009,10 @@ theorem AtomReconciliationPath.canonical_eq
       exact ihLeft.trans ihRight
   | expressionNil => rfl
   | expressionCons _ _ ihHead ihTail =>
-      simpa [toLeaTTaAtom, applyClassSolution] using
+      simpa [encodeModelAtom, applyClassSolution] using
         congrArg₂ List.cons ihHead
           (by
-            simpa [toLeaTTaAtom, applyClassSolution] using ihTail)
+            simpa [encodeModelAtom, applyClassSolution] using ihTail)
 
 /-! ## Backward guarded presentation
 
@@ -3626,7 +3627,7 @@ theorem canonicalClassCoherent_of_pathReconciled
       canonicalNodeValue bindings hloopFree hnonvariable node =
         applyClassSolution
           (canonicalValuation bindings hloopFree hnonvariable)
-          (toLeaTTaAtom assignment.1.2)
+          (encodeModelAtom assignment.1.2)
   change NodeCoherent source
   apply (dependencyOrder_wellFounded hloopFree).induction source
   intro source hsmaller assignment
@@ -3646,12 +3647,12 @@ theorem canonicalClassCoherent_of_pathReconciled
         canonicalNodeValue bindings hloopFree hnonvariable source =
             applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom chosen.1.2) :=
+              (encodeModelAtom chosen.1.2) :=
           canonicalNodeValue_eq_applyClassSolution_of_chosen
             hloopFree hnonvariable chosen hchosen
         _ = applyClassSolution
               (canonicalValuation bindings hloopFree hnonvariable)
-              (toLeaTTaAtom assignment.1.2) :=
+              (encodeModelAtom assignment.1.2) :=
           hpivotChosenEq.symm.trans hpivotAssignmentEq
 
 /-- A loop-free normalized record with strictly-below reconciliation paths has
@@ -3896,14 +3897,14 @@ theorem canonical_assignment_eq_of_key_below
         canonicalNodeValue target hloopFree hnonvariable node =
           applyClassSolution
             (canonicalValuation target hloopFree hnonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     {key : String} {value : Atom}
     (hassignment : (key, value) ∈ target.assignments)
     (hkeyBelow : AtomDependenciesBelow target source (.var key)) :
     canonicalValuation target hloopFree hnonvariable key =
       applyClassSolution
         (canonicalValuation target hloopFree hnonvariable)
-        (toLeaTTaAtom value) := by
+        (encodeModelAtom value) := by
   obtain ⟨hkeySupport, hlt⟩ := hkeyBelow key (.var key)
   let node : DependencyNode target :=
     representativeNode ⟨key, hkeySupport⟩
@@ -3929,7 +3930,7 @@ theorem canonical_eq_classValue_of_subrecord_below
         canonicalNodeValue target hloopFree hnonvariable node =
           applyClassSolution
             (canonicalValuation target hloopFree hnonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     (hsubrecord : BindingSubrecord sourceBindings target)
     {key : String} {value : Atom}
     (hkeyBelow : AtomDependenciesBelow target source (.var key))
@@ -3937,7 +3938,7 @@ theorem canonical_eq_classValue_of_subrecord_below
     canonicalValuation target hloopFree hnonvariable key =
       applyClassSolution
         (canonicalValuation target hloopFree hnonvariable)
-        (toLeaTTaAtom value) := by
+        (encodeModelAtom value) := by
   obtain ⟨storedKey, hassignment, hstoredClass⟩ :=
     exists_assignment_of_mem_classValues hvalue
   have htargetAssignment : (storedKey, value) ∈ target.assignments :=
@@ -4027,7 +4028,7 @@ private theorem mergeRel_below_pack
         canonicalNodeValue target hloopFree hnonvariable node =
           applyClassSolution
             (canonicalValuation target hloopFree hnonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     {left right out : Bindings}
     (hmerge : Spec.Match.Merge.MergeRel
       Spec.Match.Merge.equalityGroundedSemantic left right out) :
@@ -4055,7 +4056,7 @@ private theorem mergeRel_below_pack
         AtomDependenciesBelow target source (.var key) →
         AtomDependenciesBelow target source value →
           valuation key =
-            applyClassSolution valuation (toLeaTTaAtom value)))
+            applyClassSolution valuation (encodeModelAtom value)))
     (motive_4 := fun seed addedLeft addedRight result _ =>
       (BindingDependenciesBelow target source seed →
         AtomDependenciesBelow target source (.var addedLeft) →
@@ -4209,13 +4210,13 @@ private theorem mergeRel_below_pack
           (Spec.Match.SolutionTheory.matchListAccRel_solution_iff
             hlist valuation).mp hmatchedSatisfied |>.2
         have hfirstValue :
-            applyClassSolution valuation (toLeaTTaAtom first) =
-              applyClassSolution valuation (toLeaTTaAtom value) := by
+            applyClassSolution valuation (encodeModelAtom first) =
+              applyClassSolution valuation (encodeModelAtom value) := by
           apply map_replicate_append_singleton_last
             (fun atom =>
-              applyClassSolution valuation (toLeaTTaAtom atom))
+              applyClassSolution valuation (encodeModelAtom atom))
             first value rest
-          simpa [solutionTheory_toLeaTTaAtoms_eq_map,
+          simpa [solutionTheory_encodeModelAtoms_eq_map,
             List.map_map, Function.comp_def] using hitems
         exact (canonical_eq_classValue_of_subrecord_below
           hloopFree hnonvariable hsmaller hseedTarget hkey
@@ -4359,7 +4360,7 @@ theorem mergeRel_right_satisfied_of_dependenciesBelow
         canonicalNodeValue target hloopFree hnonvariable node =
           applyClassSolution
             (canonicalValuation target hloopFree hnonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     {left right out : Bindings}
     (hmerge : Spec.Match.Merge.MergeRel
       Spec.Match.Merge.equalityGroundedSemantic left right out)
@@ -4384,7 +4385,7 @@ theorem matchListAccRel_dependenciesBelow
         canonicalNodeValue target hloopFree hnonvariable node =
           applyClassSolution
             (canonicalValuation target hloopFree hnonvariable)
-            (toLeaTTaAtom assignment.1.2))
+            (encodeModelAtom assignment.1.2))
     {left right : List Atom} {seed result : Bindings}
     (hlist : Spec.Match.Merge.MatchListAccRel
       Spec.Match.Merge.equalityGroundedSemantic
@@ -4460,8 +4461,8 @@ structure ClassAssignmentsEvalCoherentIn
     (rightKey, rightValue) ∈ source.assignments →
     rightKey ∈ source.eqClass leftKey →
     leftKey ∈ target.eqClass ambient.1 →
-      applyClassSolution valuation (toLeaTTaAtom leftValue) =
-        applyClassSolution valuation (toLeaTTaAtom rightValue)
+      applyClassSolution valuation (encodeModelAtom leftValue) =
+        applyClassSolution valuation (encodeModelAtom rightValue)
 
 /-- The empty live accumulator is semantically coherent in every target. -/
 theorem evalCoherentIn_empty
@@ -4591,8 +4592,8 @@ theorem evalCoherentIn_addEquality_of_pivot
       ((bindings.addEquality left right).classValues left))
     (hout : BindingSubrecord (bindings.addEquality left right) target)
     (hpivot : ∀ value ∈ first :: rest,
-      applyClassSolution valuation (toLeaTTaAtom first) =
-        applyClassSolution valuation (toLeaTTaAtom value)) :
+      applyClassSolution valuation (encodeModelAtom first) =
+        applyClassSolution valuation (encodeModelAtom value)) :
     ClassAssignmentsEvalCoherentIn
       target (bindings.addEquality left right) valuation ambient := by
   let candidate := bindings.addEquality left right
@@ -4682,7 +4683,7 @@ private theorem specMatch_evalCoherentAt
         canonicalNodeValue out hloopFree hnonvariable node =
           applyClassSolution
             (canonicalValuation out hloopFree hnonvariable)
-            (toLeaTTaAtom assignment.1.2)) :
+            (encodeModelAtom assignment.1.2)) :
     ClassAssignmentsEvalCoherentIn out out
       (canonicalValuation out hloopFree hnonvariable) source := by
   let valuation := canonicalValuation out hloopFree hnonvariable
@@ -4850,12 +4851,12 @@ private theorem specMatch_evalCoherentAt
           (Spec.Match.SolutionTheory.matchListAccRel_solution_iff
             hlist valuation).mp hmatchedSatisfied |>.2
         have hpivot : ∀ value ∈ first :: rest,
-            applyClassSolution valuation (toLeaTTaAtom first) =
-              applyClassSolution valuation (toLeaTTaAtom value) := by
+            applyClassSolution valuation (encodeModelAtom first) =
+              applyClassSolution valuation (encodeModelAtom value) := by
           apply map_replicate_eq_each
-            (fun atom => applyClassSolution valuation (toLeaTTaAtom atom))
+            (fun atom => applyClassSolution valuation (encodeModelAtom atom))
             first rest
-          simpa [solutionTheory_toLeaTTaAtoms_eq_map,
+          simpa [solutionTheory_encodeModelAtoms_eq_map,
             List.map_map, Function.comp_def] using hitems
         have hcandidateCoherent := evalCoherentIn_addEquality_of_pivot
           hcoherent hseedNodup hvalues hcandidateTarget hpivot
@@ -4899,7 +4900,7 @@ theorem canonicalClassCoherent_of_evalCoherentAt
         ∀ assignment : ClassAssignment out node.1,
           canonicalNodeValue out loopFree nonvariable node =
             applyClassSolution (canonicalValuation out loopFree nonvariable)
-              (toLeaTTaAtom assignment.1.2)) →
+              (encodeModelAtom assignment.1.2)) →
       ClassAssignmentsEvalCoherentIn out out
         (canonicalValuation out loopFree nonvariable) source) :
     CanonicalClassCoherent out loopFree nonvariable := by

@@ -28,7 +28,7 @@ extended-real weight to each store, respecting:
 namespace Mettapedia.OSLF.PathMap.Measure
 
 open Mettapedia.PathMap
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.OSLF.PathMap.PLNBridge
 open Mettapedia.OSLF.PathMap.SolomonoffBridge
 open Mettapedia.UniversalAI.SolomonoffPrior

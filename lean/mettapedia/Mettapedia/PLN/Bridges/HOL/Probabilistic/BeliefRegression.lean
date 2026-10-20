@@ -26,8 +26,8 @@ open Mettapedia.PLN.Bridges.HOL.LogicalInduction
 open Mettapedia.PLN.Bridges.HOL.ProbHOLWorldModelBridge
 open Mettapedia.PLN.Bridges.HOL.PLNWorldModelHOLCore
 open Mettapedia.Logic.HOL.LogicalInduction
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 local instance instBeliefRegressionEmpiricalMeasurableSpace :

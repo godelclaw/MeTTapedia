@@ -334,15 +334,15 @@ structure StrengthProjectionProfile where
           Mettapedia.PLN.TruthValues.PLNForcedQueries.ITVSelector.eval .lower itv ≠
             Mettapedia.PLN.TruthValues.PLNForcedQueries.ITVSelector.eval .upper itv
   typedITVLowerLeMidpoint :
-    ∀ {Sem : Mettapedia.PLN.TruthValues.PLNTruthTower.ITVSemantics.{0}}
+    ∀ {Sem : Mettapedia.PLN.TruthValues.PLNTruthTower.ITVConstructor.{0}}
       (x : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV Sem),
       x.lower ≤ x.midpoint
   typedITVMidpointLeUpper :
-    ∀ {Sem : Mettapedia.PLN.TruthValues.PLNTruthTower.ITVSemantics.{0}}
+    ∀ {Sem : Mettapedia.PLN.TruthValues.PLNTruthTower.ITVConstructor.{0}}
       (x : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV Sem),
       x.midpoint ≤ x.upper
   typedITVMidpointInUnit :
-    ∀ {Sem : Mettapedia.PLN.TruthValues.PLNTruthTower.ITVSemantics.{0}}
+    ∀ {Sem : Mettapedia.PLN.TruthValues.PLNTruthTower.ITVConstructor.{0}}
       (x : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV Sem),
       x.midpoint ∈ Set.Icc (0 : ℝ) 1
   credalTowerMidpointAverage :
@@ -496,14 +496,14 @@ structure BayesCredibleProfile where
     ∀ (backend : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta.CredibleIntervalBackend)
       (ctx : Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext)
       (level : ℝ) (hlevel : 0 < level ∧ level < 1)
-      (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence),
+      (e : Mettapedia.PLN.Evidence.BinaryEvidence),
       (TypedITV.fromBayesCredible backend ctx level hlevel e).credibility =
-        (Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.toConfidence
+        (Mettapedia.PLN.Evidence.BinaryEvidence.toConfidence
           (ctx.α₀ + ctx.β₀) e).toReal
   credibilityIndependentOfBackendLevel :
     ∀ (backend₁ backend₂ :
         Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceBeta.CredibleIntervalBackend)
-      (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+      (e : Mettapedia.PLN.Evidence.BinaryEvidence)
       (ctx : Mettapedia.PLN.Evidence.EvidenceClass.BinaryContext)
       (level₁ level₂ : ℝ)
       (hlevel₁ : 0 < level₁ ∧ level₁ < 1)
@@ -524,7 +524,7 @@ width-complement bridge. -/
 structure WalleyBinaryProfile where
   typedWidthComplement :
     ∀ (s : ℝ) (hs : 0 < s)
-      (e : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence),
+      (e : Mettapedia.PLN.Evidence.BinaryEvidence),
       (TypedITV.fromWalleyBinary s hs e).width +
         (TypedITV.fromWalleyBinary s hs e).credibility = 1
   widthComplementForcesPLNOdds :
@@ -871,7 +871,7 @@ structure InformationGeometryLiftProfile where
           (e₁.strength * e₁.total + e₂.strength * e₂.total) /
             (e₁.total + e₂.total)
   truthLogOddsTensorAdd :
-    ∀ (x y : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence),
+    ∀ (x y : Mettapedia.PLN.Evidence.BinaryEvidence),
       x.neg ≠ 0 → y.neg ≠ 0 →
       x.truthOdds ≠ 0 → y.truthOdds ≠ 0 →
       x.truthOdds ≠ ⊤ → y.truthOdds ≠ ⊤ →

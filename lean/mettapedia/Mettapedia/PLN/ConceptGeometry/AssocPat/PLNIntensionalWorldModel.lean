@@ -17,8 +17,8 @@ Specific ASSOC/PAT probabilistic semantics are represented as explicit side cond
 namespace Mettapedia.PLN.ConceptGeometry.AssocPat.PLNIntensionalWorldModel
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 
 /-- Sort index for inheritance channels. -/
 inductive InheritanceSort where

@@ -130,6 +130,33 @@ theorem ValRel.cellFree_eq {C : Type} {φ : List C} {v : Val Nat} {v' : Val C}
   | thunk _ => simp [Val.cellFree] at free
   | code _ => simp [Val.cellFree] at free
 
+/-- Comparison with a ground constructor value is reflected even if the
+ambient cell map is not injective. This does not identify cell-bearing values. -/
+theorem ValRel.eq_cellFree_iff {C : Type} {φ ψ : List C} {value ground : Val Nat}
+    {actual expected : Val C} (related : ValRel φ value actual)
+    (groundRelated : ValRel ψ ground expected) (free : ground.cellFree = true) :
+    actual = expected ↔ value = ground := by
+  induction groundRelated generalizing value actual with
+  | sym symbol => cases related <;> simp
+  | app head argument headIH argumentIH =>
+      simp only [Val.cellFree, Bool.and_eq_true] at free
+      cases related with
+      | app headRelated argumentRelated =>
+          simp only [Val.app.injEq]
+          exact and_congr (headIH headRelated free.1) (argumentIH argumentRelated free.2)
+      | _ => simp
+  | need _ => simp [Val.cellFree] at free
+  | thunk _ => simp [Val.cellFree] at free
+  | code _ => simp [Val.cellFree] at free
+
+/-- Groundness cannot be removed from the comparison law for arbitrary maps:
+two different source cells can name the same target cell. -/
+theorem ValRel.cell_bearing_comparison_needs_injective_names :
+    ValRel [7, 7] (.need 0) (.need 7) ∧
+      ValRel [7, 7] (.need 1) (.need 7) ∧
+      (Val.need 0 : Val Nat) ≠ .need 1 :=
+  ⟨.need rfl, .need rfl, by decide⟩
+
 theorem EnvRel.length_eq {C : Type} {φ : List C} {ρ : List (Val Nat)} {ρ' : List (Val C)}
     (h : EnvRel φ ρ ρ') : ρ'.length = ρ.length :=
   (List.Forall₂.length_eq h).symm

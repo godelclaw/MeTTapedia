@@ -40,7 +40,7 @@ open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.QuantifiedFormula2
 open Mettapedia.OSLF.Framework.TypeSynthesis
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## 1. Store Resolution Relations
 

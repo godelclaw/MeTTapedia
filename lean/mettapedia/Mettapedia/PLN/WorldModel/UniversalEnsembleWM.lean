@@ -38,7 +38,7 @@ namespace Mettapedia.PLN.WorldModel.UniversalEnsembleWM
 
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 
 /-! ## 1. The universal additive world model
 

@@ -1,4 +1,8 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaEvaluatorConfigurationConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Evaluator binding-payload carrier counterexample
@@ -46,7 +50,7 @@ theorem no_type_presentation_simulation (services : Services) :
   rintro ⟨presentation, state⟩
   let valuation : String → Metta.Atom := fun name =>
     if name = "x" then
-      .gnd (toLeaTTaGround (services.bindingPayload Bindings.empty))
+      .gnd (encodeModelGround (services.bindingPayload Bindings.empty))
     else .var name
   have specSatisfied : HEBindingSatisfied valuation
       (payloadSpecBindings services) := by
@@ -62,7 +66,7 @@ theorem no_type_presentation_simulation (services : Services) :
   have payloadEquation := runtimeSatisfied.1 "x"
     (.gnd (.bindings [])) (by simp [payloadRuntimeBindings])
   cases payloadValue : services.bindingPayload Bindings.empty <;>
-    simp [valuation, payloadValue, toLeaTTaGround,
+    simp [valuation, payloadValue, encodeModelGround,
       applyClassSolution] at payloadEquation
 
 /-- The runtime matcher can place the opaque payload into a live evaluator

@@ -31,11 +31,11 @@ private def runtimeImplementsBuiltin (name : String) : Bool :=
 
 theorem runtime_covers_declared_relations :
     (mettaCalcPremises.relations.map (·.name)).all runtimeImplementsRel = true := by
-  native_decide
+  decide +kernel
 
 theorem runtime_covers_declared_builtins :
     (mettaCalcPremises.builtins.map (·.name)).all runtimeImplementsBuiltin = true := by
-  native_decide
+  decide +kernel
 
 theorem comm_witness_adapter_spec (t u p q : Pattern) :
     mettaCalcBuiltinMany builtinMettaCommWitness [t, u, p, q] =
@@ -48,7 +48,7 @@ theorem comm_witness_adapter_spec (t u p q : Pattern) :
 theorem comm_only_step_adapter_spec (src : Proc) :
     mettaCalcBuiltinMany builtinMettaCommOnlyStep [src] = commOnlyStep src := by
   have hneq : (builtinMettaCommOnlyStep == builtinMettaCommWitness) = false := by
-    native_decide
+    decide +kernel
   simp [mettaCalcBuiltinMany, mettaCommOnlyStepBuiltinMany, hneq]
 
 /-- Step semantics viewed explicitly as “rewrite + premise contract runtime”. -/
@@ -70,11 +70,11 @@ theorem reducesViaPremiseContract_iff_reduces {p q : Proc} :
 theorem premise_contract_comm_canary :
     demoCommTarget ∈ stepViaPremiseContract demoCommSource := by
   simpa [stepViaPremiseContract, step] using
-    (show demoCommTarget ∈ step demoCommSource from by native_decide)
+    (show demoCommTarget ∈ step demoCommSource from by decide +kernel)
 
 theorem premise_contract_refl_canary :
     demoReflectTarget ∈ stepViaPremiseContract demoReflectSource := by
   simpa [stepViaPremiseContract, step] using
-    (show demoReflectTarget ∈ step demoReflectSource from by native_decide)
+    (show demoReflectTarget ∈ step demoReflectSource from by decide +kernel)
 
 end Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.Adequacy

@@ -45,7 +45,8 @@ class MonoidalWorldModel (State : Type _) (Query : Type _) (V : Type _)
 
     `extract(revise(W₁,W₂), q) = combine(extract W₁ q, extract W₂ q, overlap W₁ W₂ q)`
 
-    Probability hypercube vertex: Dempster-Shafer (subadditive). -/
+    This interface includes observation-identity overlap corrections. A
+    Dempster-Shafer interpretation requires its own construction and laws. -/
 class OverlapWorldModel (State : Type _) (Query : Type _) (V : Type _) (Ov : Type _)
     extends MonoidalWorldModel State Query V where
   overlap : State → State → Query → Ov
@@ -55,8 +56,11 @@ class OverlapWorldModel (State : Type _) (Query : Type _) (V : Type _) (Ov : Typ
 
 /-! ## Level 2b: TrustGatedWorldModel -/
 
-/-- Revision gated by source trust scores.
-    Existing Lean: `FallbackRevision` in the typed realization vocabulary. -/
+/-- Trust metadata and an additional candidate merge operation.
+
+The inherited `revise` is monoidal. No law here identifies `gatedRevise`
+with it or establishes monotonicity in trust; such laws belong to a concrete
+interpretation. -/
 class TrustGatedWorldModel (State : Type _) (Query : Type _) (V : Type _) (Trust : Type _)
     extends MonoidalWorldModel State Query V where
   trust : State → Trust
@@ -64,8 +68,10 @@ class TrustGatedWorldModel (State : Type _) (Query : Type _) (V : Type _) (Trust
 
 /-! ## Level 2c: CoalitionWorldModel -/
 
-/-- Revision requiring consensus among coherent coalitions.
-    Existing Lean: `Semitopology`, `CoalitionTopology` in PLNSemitopology.lean. -/
+/-- A compatibility predicate and a merge defined on compatible pairs.
+
+The relation to the inherited monoidal revision, or to a coalition topology,
+is additional structure rather than an automatic consequence of these fields. -/
 class CoalitionWorldModel (State : Type _) (Query : Type _) (V : Type _)
     extends MonoidalWorldModel State Query V where
   actionable : State → State → Prop

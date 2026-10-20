@@ -13,8 +13,8 @@ These are `def`s, not `instance`s, to avoid typeclass diamonds.
 -/
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 
 /-- Every `AdditiveWorldModel` gives a `WorldModel`. -/

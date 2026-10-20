@@ -44,8 +44,8 @@ All building blocks are fully proved (0 sorry):
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.PLNXiDerivedBNRules
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridge
 open Mettapedia.OSLF.Framework.EvidenceSemantics
 open Mettapedia.PLN.Bridges.ProbabilityTheory.BayesNet.PLNBNCompilation
@@ -1435,7 +1435,7 @@ end Mettapedia.PLN.RuleFamilies.FirstOrder.PLNXiDerivedBNRules
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.PLNXiDerivedBNRules.Typed
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.ProbabilityTheory.BayesNet.PLNBNCompilation
 open Mettapedia.PLN.Bridges.ProbabilityTheory.BayesNet.PLNBNCompilation.BNWorldModel
 open Mettapedia.ProbabilityTheory.BayesianNetworks

@@ -20,9 +20,9 @@ It also adds a Blackwell-style factorization wrapper:
 
 namespace Mettapedia.PLN.WorldModel.Experiment.PLNWorldModelExperiment
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 variable {Θ Ω : Type*}
@@ -43,8 +43,6 @@ def queryOf (c : ExperimentChannel Θ Ω) (p : Ω → Prop) : ExperimentQuery Θ
 /-- Pointwise query satisfiability at one hypothesis. -/
 def queryHolds (θ : Θ) (q : ExperimentQuery Θ Ω) : Prop :=
   q.outcome (q.channel.run θ)
-
-instance : EvidenceType (Multiset Θ) where
 
 /-- BinaryEvidence for an experiment query:
 positive count = satisfying hypotheses; negative count = refuting hypotheses. -/

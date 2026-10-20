@@ -21,9 +21,9 @@ open Mettapedia.Logic
 open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 open scoped BigOperators ENNReal
 
@@ -130,10 +130,6 @@ theorem markov_binaryEvidenceOfRowEvidence_add {k : ℕ}
           (∑ a : Fin k, if a = target then (0 : ℝ≥0∞) else (e₁.counts a : ℝ≥0∞)) +
           (∑ a : Fin k, if a = target then (0 : ℝ≥0∞) else (e₂.counts a : ℝ≥0∞)) := by
             rw [Finset.sum_add_distrib]
-
-instance instEvidenceTypeMarkovTransitionWMState {k : ℕ} :
-    EvidenceType (MarkovTransitionWMState k) :=
-  multisetEvidenceType (MarkovTransitionObservation k)
 
 noncomputable instance instAdditiveWorldModelMarkovTransitionWMState {k : ℕ} :
     AdditiveWorldModel (MarkovTransitionWMState k) (Fin k) (MultiEvidence k) :=

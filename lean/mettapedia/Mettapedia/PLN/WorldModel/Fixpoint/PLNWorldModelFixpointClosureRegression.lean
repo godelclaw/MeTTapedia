@@ -13,12 +13,12 @@ rules:
 
 namespace Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosureRegression
 
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.PLN.WorldModel.Experiment.PLNWorldModelExperiment
 open Mettapedia.PLN.WorldModel.Experiment.PLNWorldModelExperimentRegression
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 abbrev FState := Multiset Hypothesis
@@ -102,7 +102,7 @@ theorem fixture_pullback_not_in_emptyRules_closure :
 
 /-! ## Explicit bounded-time stabilization fixture -/
 
-abbrev BState := Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+abbrev BState := Mettapedia.PLN.Evidence.BinaryEvidence
 abbrev BQuery := Bool
 
 noncomputable instance : EvidenceType BState := inferInstance

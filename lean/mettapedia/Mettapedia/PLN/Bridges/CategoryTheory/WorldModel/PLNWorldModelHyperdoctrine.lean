@@ -33,9 +33,9 @@ evidence, which substitution refutes on counting instances.
 namespace Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine
 
 open _root_.CategoryTheory
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.GSLT.Core
 open Mettapedia.GSLT.Topos
 open scoped ENNReal

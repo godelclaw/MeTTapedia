@@ -16,8 +16,8 @@ namespace Mettapedia.PLN.RuleFamilies.HigherOrder.PLNContextGuardBridge
 
 open scoped ENNReal
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 
 /-! ## A transparent query model for executable context canaries -/
 
@@ -118,7 +118,7 @@ theorem rewriteRule_applyITVCtx_union_revise
     BinaryWorldModel.WMITVJudgmentCtx
       (State := State) (Query := Query) sem ctx (Γ₁ ∪ Γ₂)
       (W₁ + W₂) r.conclusion (sem.eval ctx (r.derive (W₁ + W₂))) := by
-  exact BinaryWorldModel.WMRewriteRule.applyITVCtx
+  exact Mettapedia.PLN.WorldModel.WMRewriteRule.applyITVCtx
     (State := State) (Query := Query)
     sem ctx (r := r) hSide
     (WMJudgmentCtx.union_revise hW₁ hW₂)
@@ -172,7 +172,7 @@ theorem rewriteRule_applyITVCtx_of_required_subset
       W r.conclusion (sem.eval ctx (r.derive W)) :=
   itvJudgmentCtx_mono
     (State := State) (Query := Query) sem ctx hReq
-    (BinaryWorldModel.WMRewriteRule.applyITVCtx
+    (Mettapedia.PLN.WorldModel.WMRewriteRule.applyITVCtx
       (State := State) (Query := Query) sem ctx (r := r) hSide hW)
 
 end GenericWeakening
@@ -204,7 +204,7 @@ theorem contextComplete_applyITVCtx_canary :
       {demoEvidence} demoEvidence observed
       (ITVSemantics.walleyIDMPredictive.eval
         Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default demoEvidence) := by
-  exact BinaryWorldModel.WMRewriteRule.applyITVCtx
+  exact Mettapedia.PLN.WorldModel.WMRewriteRule.applyITVCtx
     (State := BinaryEvidence) (Query := ContextDemoQuery)
     ITVSemantics.walleyIDMPredictive Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext.default
     (r := observedIdentityRule)

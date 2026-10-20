@@ -21,7 +21,7 @@ namespace Mettapedia.Logic.FormedConceptOntologyGrowthBridge
 open Mettapedia.Logic
 open Mettapedia.KR.ConceptGeometry
 open Mettapedia.Logic.MarkovLogicClauseFactorGraph
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.Fixpoint.PLNWorldModelFixpointClosure
 open Mettapedia.PLN.Bridges.KR.ConceptClosure
 open Mettapedia.Logic.MarkovLogicAbstract

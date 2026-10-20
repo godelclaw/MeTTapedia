@@ -9,7 +9,7 @@ import Mettapedia.Algebra.QuantaleWeakness
 This file explores a **strength-level** (point-valued) quantale-like story for PLN.
 
 Important: the canonical foundational carrier for PLN in this repo is **evidence counts**
-`(n⁺, n⁻)` in `Mettapedia.PLN.Evidence.EvidenceQuantale`, which naturally admits incomparability and therefore
+`(n⁺, n⁻)` in `Mettapedia.PLN.Evidence.BinaryEvidence`, which naturally admits incomparability and therefore
 cannot embed its order into `ℝ` (see `Mettapedia.PLN.Evidence.PLN_KS_Bridge`).
 The `[0,1]` strength view is a lossy projection of that richer semantics.
 
@@ -23,7 +23,7 @@ The `[0,1]` strength view is a lossy projection of that richer semantics.
 
 PLN formulas admit a useful “quantale/weakness-theory” reading once you choose a value space.
 This file records one such strength-level packaging; the project’s more robust foundations are:
-- evidence semantics (`Mettapedia.PLN.Evidence.EvidenceQuantale`)
+- evidence semantics (`Mettapedia.PLN.Evidence.BinaryEvidence`)
 - the totality gate vs point semantics (`Mettapedia.PLN.Evidence.PLN_KS_Bridge`)
 - the measure-theoretic deduction derivation (`Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDerivation`)
 

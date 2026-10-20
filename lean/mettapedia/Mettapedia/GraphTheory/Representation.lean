@@ -21,6 +21,14 @@ import Mettapedia.GraphTheory.Representation.RevisionPortfolio
 import Mettapedia.GraphTheory.Representation.MatrixBridge
 import Mettapedia.GraphTheory.Representation.MatrixSemantics
 import Mettapedia.GraphTheory.Representation.FrontierAffine
+import Mettapedia.GraphTheory.Representation.NeighborTraversal
+import Mettapedia.GraphTheory.Representation.SparseFrontier
+import Mettapedia.GraphTheory.Representation.MaterializedSparseFrontier
+import Mettapedia.GraphTheory.Representation.SparseFrontierControls
+import Mettapedia.GraphTheory.Representation.WeightedSparseFrontier
+import Mettapedia.GraphTheory.Representation.SparseTraversalModule
+import Mettapedia.GraphTheory.Representation.ArraySparseFrontier
+import Mettapedia.GraphTheory.Representation.SparseBackendChoice
 import Mettapedia.GraphTheory.Representation.Hypergraph
 import Mettapedia.GraphTheory.Representation.Metagraph
 import Mettapedia.GraphTheory.Representation.DistinctionBridge
@@ -40,4 +48,10 @@ models, exact resource accounts, sound refinement rules, their transformation
 specifications, and detailed operational GSLTs where small-step machines have
 been proved. The matrix materialization language also has an independently
 authored module quotation and a checked canonical text/UTF-8 transport.
+Ordered neighbor enumeration connects sparse row and CSR folds to the same
+matrix frontiers and walk counts. Shared fold paths retain exact entry visits
+and finalization, and the module's constructed matrix feeds those sparse queries.
+Weighted sparse operators retain repeated coefficients through composition;
+an authored traversal module, indexed array lowering and amortized backend
+choice connect their operational and matrix meanings.
 -/

@@ -1,5 +1,7 @@
 -- SPDX-License-Identifier: Apache-2.0
 import Mettapedia.Languages.MeTTa.HE.LeaTTaBindingTransport
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
 
 /-!
 # Unification completeness: satisfiable equation systems have Robinson unifiers

@@ -22,7 +22,7 @@ namespace Mettapedia.PLN.InferenceControl.Counterexamples.PLNLargeScaleInference
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNInclusionExclusionIdentifiability
 open Mettapedia.PLN.InferenceControl.ProtocolDynamics.PLNTrailFreeDynamicsCounterexample
 open Mettapedia.PLN.InferenceControl.PremiseSelection
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 theorem ie_sameFirstTwo_differentUnion :
     ieTerm1 A1 B1 C1 = ieTerm1 A2 B2 C2
@@ -51,9 +51,9 @@ theorem poolingAxioms_notUnique
   maxPoolingOperator_ne_fuse
 
 theorem poolingUnique_of_externalBayes_totalAdd
-    (poolE : Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence →
-      Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence)
+    (poolE : Mettapedia.PLN.Evidence.BinaryEvidence →
+      Mettapedia.PLN.Evidence.BinaryEvidence →
+      Mettapedia.PLN.Evidence.BinaryEvidence)
     (hexBayes : ∀ x y ℓ, poolE (x * ℓ) (y * ℓ) = poolE x y * ℓ)
     (htotal : ∀ x y, (poolE x y).total = x.total + y.total) :
     ∀ x y, poolE x y = x + y :=

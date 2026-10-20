@@ -32,7 +32,7 @@ PLN BinaryEvidence (k, n-k) captures exactly this sufficient statistic.
 
 namespace Mettapedia.PLN.Evidence.Convergence
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.MeasureTheoretic
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal

@@ -7,6 +7,8 @@ import Mathlib.Algebra.BigOperators.Group.List.Basic
 import Mathlib.Logic.Function.Iterate
 import Mathlib.Data.List.Iterate
 import Mettapedia.Algebra.WorkSpan
+import Mettapedia.GSLT.LanguageDef.FiniteGraphCompletionCacheCompilation
+import Mettapedia.Machines.ResumableRegion
 
 /-!
 # Dependency analysis over a finite catalogue
@@ -899,6 +901,57 @@ inductive FoldDerivation {β : Type v} (combine : α → List β → β) : α �
       (children : List.Forall₂ (FoldDerivation combine) (c.deps item) values) :
       FoldDerivation combine item (combine item values)
 
+/-- Forget the fold's values, retaining its admission test and every ordered
+dependency. This is the independent finite-success judgment used by the
+completed structural-observation cache. -/
+def observationGraph :
+    Mettapedia.GSLT.LanguageDef.FiniteGraphCompletionCacheCompilation.Graph α :=
+  fun item => ⟨decide (item ∈ c.items), c.deps item, true⟩
+
+/-- A dependency derivation supplies a finite successful structural
+observation. No global acyclicity certificate is assumed. -/
+theorem FoldDerivation.accepted {β : Type v} {combine : α → List β → β}
+    {item : α} {value : β} (derived : c.FoldDerivation combine item value) :
+    Mettapedia.GSLT.LanguageDef.FiniteGraphCompletionCacheCompilation.Accepted
+      c.observationGraph item := by
+  induction derived using FoldDerivation.rec
+      (motive_2 := fun dependencies _ _ => ∀ child ∈ dependencies,
+        Mettapedia.GSLT.LanguageDef.FiniteGraphCompletionCacheCompilation.Accepted
+          c.observationGraph child) with
+  | node admitted _ children =>
+      exact .exit _ (by simpa [observationGraph] using admitted) children
+  | nil => contradiction
+  | @cons child _ rest _ _ _ first remaining =>
+      rename_i selected member
+      rcases List.mem_cons.mp member with same | member
+      · simpa only [same] using first
+      · exact remaining selected member
+
+/-- Every dependency below a finite fold derivation is accessible, even if
+the catalogue contains cycles elsewhere. -/
+theorem FoldDerivation.accessible {β : Type v} {combine : α → List β → β}
+    {item : α} {value : β} (derived : c.FoldDerivation combine item value) :
+    Acc (fun child parent => child ∈ c.deps parent) item :=
+  derived.accepted.accessible
+
+/-- A finite observation propagates down every reachable dependency. -/
+theorem FoldDerivation.accepted_of_reachable {β : Type v} {combine : α → List β → β}
+    {item node : α} {value : β} (derived : c.FoldDerivation combine item value)
+    (reachable : Relation.ReflTransGen (fun parent child => child ∈ c.deps parent) item node) :
+    Mettapedia.GSLT.LanguageDef.FiniteGraphCompletionCacheCompilation.Accepted
+      c.observationGraph node := by
+  induction reachable with
+  | refl => exact derived.accepted
+  | tail _ edge ih => exact ih.child edge
+
+/-- A successful finite fold rules out a cycle anywhere below its root,
+without rejecting unrelated cyclic catalogue components. -/
+theorem FoldDerivation.no_reachable_cycle {β : Type v} {combine : α → List β → β}
+    {item node : α} {value : β} (derived : c.FoldDerivation combine item value)
+    (reachable : Relation.ReflTransGen (fun parent child => child ∈ c.deps parent) item node) :
+    ¬ Relation.TransGen (fun child parent => child ∈ c.deps parent) node node :=
+  (FoldDerivation.accepted_of_reachable c derived reachable).no_cycle
+
 /-- Every independently derived value agrees with the existing executable
 fold. The proof follows the catalogue's established accessibility relation. -/
 theorem FoldDerivation.value_eq_depFold (A : c.Acyclic) {β : Type v}
@@ -1428,6 +1481,13 @@ def init (graph : Graph) (root : Nat) : Option State :=
       memo := fun _ => 0 }
   else none
 
+theorem init_root (graph : Graph) (root : Nat) (state : State)
+    (issued : init graph root = some state) : state.root = root := by
+  unfold init at issued
+  split at issued
+  · cases issued; rfl
+  · contradiction
+
 def fail (state : State) (status : Status) : State :=
   { state with status }
 
@@ -1563,6 +1623,8 @@ structure Valid (graph : Graph) (maximum : Nat) (state : State) : Prop where
     graph.Derived node (state.memo node) ∧ state.memo node ≤ maximum
   rooted : Rooted state.root state.stack
   completed : state.status = .bound → state.colors state.root = .done
+  stackUnique : (state.stack.map Frame.node).Nodup
+  stackActive : ∀ frame ∈ state.stack, state.colors frame.node = .active
 
 theorem frame_zero (graph : Graph) (maximum node : Nat)
     (admitted : node < graph.nodes.length) :
@@ -1604,12 +1666,14 @@ theorem run_add (graph : Graph) (maximum first second : Nat) (state : State) :
 theorem Valid.withCounters {graph : Graph} {maximum : Nat} {state : State}
     (valid : Valid graph maximum state) (ticks visits : Nat) (within : ticks ≤ maximum) :
     Valid graph maximum { state with ticks := ticks, indexVisits := visits } :=
-  ⟨valid.frames, within, valid.cached, valid.rooted, valid.completed⟩
+  ⟨valid.frames, within, valid.cached, valid.rooted, valid.completed,
+    valid.stackUnique, valid.stackActive⟩
 
 theorem Valid.fail {graph : Graph} {maximum : Nat} {state : State}
     (valid : Valid graph maximum state) (status : Status) (notBound : status ≠ .bound) :
     Valid graph maximum (OccurrenceGraph.fail state status) := by
-  refine ⟨valid.frames, valid.ticksWithin, valid.cached, valid.rooted, ?_⟩
+  refine ⟨valid.frames, valid.ticksWithin, valid.cached, valid.rooted, ?_,
+    valid.stackUnique, valid.stackActive⟩
   intro completed
   exact False.elim (notBound completed)
 
@@ -1625,7 +1689,7 @@ theorem init_valid (graph : Graph) (maximum root : Nat) (state : State)
   split at issued
   · rename_i admitted
     cases issued
-    refine ⟨?_, Nat.zero_le _, ?_, rfl, ?_⟩
+    refine ⟨?_, Nat.zero_le _, ?_, rfl, ?_, ?_, ?_⟩
     · intro frame member
       have equal : frame = { node := root } := List.mem_singleton.1 member
       subst frame
@@ -1635,6 +1699,11 @@ theorem init_valid (graph : Graph) (maximum root : Nat) (state : State)
       split at done <;> contradiction
     · intro completed
       cases completed
+    · simp
+    · intro frame member
+      have equal : frame = freshFrame root := List.mem_singleton.mp member
+      subst frame
+      simp [freshFrame]
   · contradiction
 
 theorem Valid.finish {graph : Graph} {maximum : Nat} {state : State}
@@ -1643,7 +1712,9 @@ theorem Valid.finish {graph : Graph} {maximum : Nat} {state : State}
     (finished : frame.row = (graph.rows frame.node).length) :
     Valid graph maximum (OccurrenceGraph.finish state frame rest) := by
   have frameValid := valid.frames frame (by simp [stack])
-  refine ⟨?_, valid.ticksWithin, ?_, ?_, ?_⟩
+  have unique : frame.node ∉ rest.map Frame.node ∧ (rest.map Frame.node).Nodup := by
+    simpa only [stack, List.map_cons, List.nodup_cons] using valid.stackUnique
+  refine ⟨?_, valid.ticksWithin, ?_, ?_, ?_, unique.2, ?_⟩
   · intro other member
     exact valid.frames other (by simp only [stack, List.mem_cons]; exact Or.inr member)
   · intro node done
@@ -1662,12 +1733,25 @@ theorem Valid.finish {graph : Graph} {maximum : Nat} {state : State}
         simpa only [stack, Rooted] using valid.rooted
       simp only [OccurrenceGraph.finish, ← root, Function.update_self]
     | cons second rest => simp [OccurrenceGraph.finish] at completed
+  · intro other member
+    have different : other.node ≠ frame.node := by
+      intro equal
+      exact unique.1 (List.mem_map.mpr ⟨other, member, equal⟩)
+    simpa only [OccurrenceGraph.finish, Function.update_of_ne different] using
+      valid.stackActive other (by simp only [stack, List.mem_cons]; exact Or.inr member)
 
 theorem Valid.push {graph : Graph} {maximum : Nat} {state : State}
     (valid : Valid graph maximum state) (child : Nat)
     (admitted : child < graph.nodes.length) (nonempty : state.stack ≠ [])
-    (pending : state.status = .pending) : Valid graph maximum (OccurrenceGraph.push state child) := by
-  refine ⟨?_, valid.ticksWithin, ?_, ?_, ?_⟩
+    (pending : state.status = .pending) (fresh : state.colors child = .fresh) :
+    Valid graph maximum (OccurrenceGraph.push state child) := by
+  have unvisited : child ∉ state.stack.map Frame.node := by
+    intro member
+    obtain ⟨frame, member, equal⟩ := List.mem_map.mp member
+    have active := valid.stackActive frame member
+    rw [equal, fresh] at active
+    contradiction
+  refine ⟨?_, valid.ticksWithin, ?_, ?_, ?_, ?_, ?_⟩
   · intro frame member
     rcases List.mem_cons.1 member with equal | member
     · subst frame
@@ -1685,6 +1769,17 @@ theorem Valid.push {graph : Graph} {maximum : Nat} {state : State}
     | cons frame rest => simpa only [OccurrenceGraph.push, stack, Rooted] using valid.rooted
   · intro completed
     simp [OccurrenceGraph.push, pending] at completed
+  · simpa only [OccurrenceGraph.push, List.map_cons, freshFrame, List.nodup_cons] using
+      And.intro unvisited valid.stackUnique
+  · intro frame member
+    rcases List.mem_cons.mp member with equal | member
+    · subst frame
+      simp [OccurrenceGraph.push, freshFrame]
+    · have different : frame.node ≠ child := by
+        intro equal
+        exact unvisited (List.mem_map.mpr ⟨frame, member, equal⟩)
+      simpa only [OccurrenceGraph.push, Function.update_of_ne different] using
+        valid.stackActive frame member
 
 theorem Valid.advance {graph : Graph} {maximum : Nat} {state : State}
     (valid : Valid graph maximum state) (frame : Frame) (rest : List Frame)
@@ -1693,7 +1788,7 @@ theorem Valid.advance {graph : Graph} {maximum : Nat} {state : State}
     (derived : RowValue graph (graph.rows frame.node)[frame.row] contribution)
     (within : frame.total + contribution ≤ maximum) :
     Valid graph maximum (OccurrenceGraph.advance state frame rest contribution) := by
-  refine ⟨?_, valid.ticksWithin, valid.cached, ?_, valid.completed⟩
+  refine ⟨?_, valid.ticksWithin, valid.cached, ?_, valid.completed, ?_, ?_⟩
   · intro other member
     rcases List.mem_cons.1 member with equal | member
     · subst other
@@ -1703,6 +1798,12 @@ theorem Valid.advance {graph : Graph} {maximum : Nat} {state : State}
   · cases rest with
     | nil => simpa only [OccurrenceGraph.advance, stack, Rooted] using valid.rooted
     | cons second rest => simpa only [OccurrenceGraph.advance, stack, Rooted] using valid.rooted
+  · simpa only [OccurrenceGraph.advance, List.map_cons, stack] using valid.stackUnique
+  · intro other member
+    rcases List.mem_cons.mp member with equal | member
+    · subst other
+      exact valid.stackActive frame (by simp [stack])
+    · exact valid.stackActive other (by simp only [stack, List.mem_cons]; exact Or.inr member)
 
 theorem Valid.addRow {graph : Graph} {maximum : Nat} {state : State}
     (valid : Valid graph maximum state) (frame : Frame) (rest : List Frame)
@@ -1816,7 +1917,7 @@ theorem step_valid (graph : Graph) (maximum : Nat) (state : State)
                     split
                     · simpa only [scanned, paid, stack] using scannedValid.fail .invalid (by decide)
                     · simpa only [scanned, paid, stack] using
-                        scannedValid.push child childAdmitted (by simp [scanned, paid, stack]) pending
+                        scannedValid.push child childAdmitted (by simp [scanned, paid, stack]) pending color
                   | done =>
                     simp only
                     split
@@ -1847,6 +1948,31 @@ theorem bound_derived (graph : Graph) (maximum : Nat) (state : State) (value : N
     cases reported
     exact valid.cached state.root (valid.completed completed)
   · contradiction
+
+/-- The completed-node cache retains independently certified finite
+observations. Reusing a completed child is justified by its derivation,
+not merely by an earlier encounter or an active mark. -/
+theorem Valid.cached_accepted {graph : Graph} {maximum : Nat} {state : State}
+    (valid : Valid graph maximum state) (node : Nat) (completed : state.colors node = .done) :
+    Mettapedia.GSLT.LanguageDef.FiniteGraphCompletionCacheCompilation.Accepted
+      graph.catalogue.observationGraph node :=
+  (valid.cached node completed).1.accepted
+
+/-- Successful reporting certifies accessibility of the actual dependency
+graph. Acyclicity is a conclusion about the observed root, not an input
+certificate to the DFS. -/
+theorem bound_accessible (graph : Graph) (maximum : Nat) (state : State) (value : Nat)
+    (valid : Valid graph maximum state) (reported : bound? state = some value) :
+    Acc (fun child parent => child ∈ graph.catalogue.deps parent) state.root :=
+  (bound_derived graph maximum state value valid reported).1.accessible
+
+theorem bound_no_reachable_cycle (graph : Graph) (maximum : Nat) (state : State) (value : Nat)
+    (valid : Valid graph maximum state) (reported : bound? state = some value) (node : Nat)
+    (reachable : Relation.ReflTransGen
+      (fun parent child => child ∈ graph.catalogue.deps parent) state.root node) :
+    ¬ Relation.TransGen (fun child parent => child ∈ graph.catalogue.deps parent) node node :=
+  Catalogue.FoldDerivation.no_reachable_cycle graph.catalogue
+    (bound_derived graph maximum state value valid reported).1 reachable
 
 theorem bound_unfoldingWork (graph : Graph) (maximum : Nat) (state : State) (value : Nat)
     (acyclic : graph.catalogue.Acyclic) (valid : Valid graph maximum state)
@@ -1905,14 +2031,39 @@ theorem initialized_run_bound (graph : Graph) (maximum root fuel : Nat) (state :
     (reported : bound? (run graph maximum fuel state) = some value) :
     value = graph.catalogue.unfoldingWork acyclic (fun node => (graph.rows node).length)
       root ∧ value ≤ maximum := by
-  have rooted : state.root = root := by
-    unfold init at issued
-    split at issued
-    · cases issued; rfl
-    · contradiction
+  have rooted := init_root graph root state issued
   have result := bound_unfoldingWork graph maximum (run graph maximum fuel state) value
     acyclic (run_valid graph maximum fuel state (init_valid graph maximum root state issued)) reported
   simpa only [run_root, rooted] using result
+
+/-- The initialized, retained DFS cannot report a finite observation of a
+root with a reachable cycle. All completed-cache reuse is covered by
+`run_valid`; insufficient fuel is not a successful report. -/
+theorem initialized_run_no_reachable_cycle (graph : Graph) (maximum root fuel : Nat)
+    (state : State) (issued : init graph root = some state) (value node : Nat)
+    (reported : bound? (run graph maximum fuel state) = some value)
+    (reachable : Relation.ReflTransGen
+      (fun parent child => child ∈ graph.catalogue.deps parent) root node) :
+    ¬ Relation.TransGen (fun child parent => child ∈ graph.catalogue.deps parent) node node := by
+  have rooted := init_root graph root state issued
+  apply bound_no_reachable_cycle graph maximum (run graph maximum fuel state) value
+    (run_valid graph maximum fuel state (init_valid graph maximum root state issued)) reported node
+  simpa only [run_root, rooted] using reachable
+
+/-- A reachable cycle can never receive a successful bound at any allowance.
+This says neither that every insufficient run detects it nor that an
+arbitrary malformed input state is a valid initialized traversal. -/
+theorem initialized_reachable_cycle_no_bound (graph : Graph) (maximum root fuel : Nat)
+    (state : State) (issued : init graph root = some state) (node : Nat)
+    (reachable : Relation.ReflTransGen
+      (fun parent child => child ∈ graph.catalogue.deps parent) root node)
+    (cycle : Relation.TransGen (fun child parent => child ∈ graph.catalogue.deps parent) node node) :
+    bound? (run graph maximum fuel state) = none := by
+  cases reported : bound? (run graph maximum fuel state) with
+  | none => rfl
+  | some value =>
+      exact False.elim (initialized_run_no_reachable_cycle graph maximum root fuel state
+        issued value node reported reachable cycle)
 
 theorem addRow_unfolding (maximum : Nat) (state : State) (frame : Frame) (rest : List Frame)
     (contribution span : Nat) :
@@ -2939,6 +3090,665 @@ theorem depth_fan_binds_when_work_overflows :
   refine ⟨?_, depthFan_dependencyDepth, by decide, by decide, by decide, by decide⟩
   rw [← sound.1]
   exact reported
+
+/-! ## Retained finite-graph observations and attempted work
+
+The machine below is the existing DFS with its terminal statuses exposed as
+`none`. Its state retains the ordered child cursor, active/completed marks,
+memo, and paid counters. A dispatch still performs a bulk duplicate-row scan;
+the scan-aware price below does not silently count that scan as one operation.
+Native row lookup, hash-table work, allocation and resizing need separate
+prices and a correspondence to these observations.
+-/
+
+open Mettapedia.Machines
+
+theorem step_of_stopped (graph : Graph) (maximum : Nat) (state : State)
+    (stopped : state.status ≠ .pending) (metric : Metric := .unfolding) :
+    step graph maximum state metric = state := by
+  simp only [step, if_pos stopped]
+
+theorem run_of_stopped (graph : Graph) (maximum fuel : Nat) (state : State)
+    (stopped : state.status ≠ .pending) (metric : Metric := .unfolding) :
+    run graph maximum fuel state metric = state := by
+  induction fuel with
+  | zero => rfl
+  | succ fuel ih => simpa only [run, step_of_stopped graph maximum state stopped metric] using ih
+
+/-- The maintained DFS as a resumable operation. No alternative graph
+traversal or journal is introduced. -/
+abbrev sliceMachine (graph : Graph) (maximum : Nat) : MachineCore State where
+  State := State
+  load := id
+  step state := if state.status = .pending then some (step graph maximum state) else none
+
+/-- Slicing the operation retains exactly the original DFS state, including
+completed sharing, the unfinished child coordinate and both paid counters. -/
+theorem sliceMachine_run (graph : Graph) (maximum fuel : Nat) (state : State) :
+    (MachineCore.runSlice (sliceMachine graph maximum) fuel state).1 =
+      run graph maximum fuel state := by
+  induction fuel generalizing state with
+  | zero => rfl
+  | succ fuel ih =>
+      by_cases pending : state.status = .pending
+      · simpa only [MachineCore.runSlice, sliceMachine, if_pos pending, run] using
+          ih (step graph maximum state)
+      · simp only [MachineCore.runSlice, sliceMachine, if_neg pending]
+        exact (run_of_stopped graph maximum (fuel + 1) state pending).symm
+
+open scoped BigOperators
+
+/-- Every not-yet-entered node reserves its rows, its entry, and its exit.
+This mathematical potential is independent of the tick ceiling and returned
+unfolding value. It is not state that a native service must maintain. -/
+def freshPotential (graph : Graph) (colors : Nat → Color) : Nat :=
+  ∑ node ∈ Finset.range graph.nodes.length,
+    if colors node = .fresh then (graph.rows node).length + 2 else 0
+
+/-- A fresh child reserves its own complete future work; an active frame
+reserves only its unfinished rows and exit. Completed DAG children reserve
+neither. All three coordinates are already present in the retained DFS. -/
+def structuralRank (graph : Graph) (state : State) : Nat :=
+  freshPotential graph state.colors +
+    (state.stack.map (fun frame => (graph.rows frame.node).length - frame.row + 1)).sum
+
+theorem freshPotential_update_nonfresh (graph : Graph) (colors : Nat → Color) (node : Nat)
+    (color : Color) (before : colors node ≠ .fresh) (after : color ≠ .fresh) :
+    freshPotential graph (Function.update colors node color) = freshPotential graph colors := by
+  apply Finset.sum_congr rfl
+  intro selected _
+  by_cases same : selected = node
+  · subst selected
+    simp [before, after]
+  · simp only [Function.update_of_ne same]
+
+theorem freshPotential_activate (graph : Graph) (colors : Nat → Color) (child : Nat)
+    (admitted : child < graph.nodes.length) (fresh : colors child = .fresh) :
+    freshPotential graph colors =
+      freshPotential graph (Function.update colors child .active) + (graph.rows child).length + 2 := by
+  let weight := fun node => if colors node = .fresh then (graph.rows node).length + 2 else 0
+  have member : child ∈ Finset.range graph.nodes.length := Finset.mem_range.mpr admitted
+  have before := Finset.sum_update_of_mem member weight (weight child)
+  simp only [Function.update_eq_self] at before
+  have changed : (fun node =>
+      if Function.update colors child .active node = .fresh then (graph.rows node).length + 2 else 0) =
+        Function.update weight child 0 := by
+    funext node
+    by_cases same : node = child
+    · subst node
+      simp
+    · simp only [Function.update_of_ne same, weight]
+  unfold freshPotential
+  rw [changed, Finset.sum_update_of_mem member weight 0]
+  change (∑ node ∈ Finset.range graph.nodes.length, weight node) = _
+  have own : weight child = (graph.rows child).length + 2 := by simp [weight, fresh]
+  omega
+
+theorem structuralRank_push (graph : Graph) (state : State) (child : Nat)
+    (admitted : child < graph.nodes.length) (fresh : state.colors child = .fresh) :
+    structuralRank graph (push state child) + 1 = structuralRank graph state := by
+  have reserved := freshPotential_activate graph state.colors child admitted fresh
+  dsimp only [structuralRank, push, freshFrame]
+  simp only [List.map_cons, List.sum_cons]
+  omega
+
+theorem structuralRank_finish (graph : Graph) (maximum : Nat) (state : State)
+    (valid : Valid graph maximum state) (frame : Frame) (rest : List Frame)
+    (stack : state.stack = frame :: rest) (finished : frame.row = (graph.rows frame.node).length) :
+    structuralRank graph (finish state frame rest) + 1 = structuralRank graph state := by
+  have active := valid.stackActive frame (by simp [stack])
+  have kept := freshPotential_update_nonfresh graph state.colors frame.node .done
+    (by rw [active]; decide) (by decide)
+  dsimp only [structuralRank, finish]
+  rw [kept, stack, List.map_cons, List.sum_cons, finished, Nat.sub_self]
+  omega
+
+theorem structuralRank_advance (graph : Graph) (state : State) (frame : Frame) (rest : List Frame)
+    (stack : state.stack = frame :: rest) (available : frame.row < (graph.rows frame.node).length)
+    (contribution : Nat) :
+    structuralRank graph (advance state frame rest contribution) + 1 = structuralRank graph state := by
+  dsimp only [structuralRank, advance]
+  simp only [stack, List.map_cons, List.sum_cons]
+  omega
+
+theorem structuralRank_addRow (graph : Graph) (maximum : Nat) (state : State)
+    (frame : Frame) (rest : List Frame) (stack : state.stack = frame :: rest)
+    (available : frame.row < (graph.rows frame.node).length) (contribution : Nat)
+    (pending : (addRow maximum state frame rest contribution).status = .pending) :
+    structuralRank graph (addRow maximum state frame rest contribution) + 1 =
+      structuralRank graph state := by
+  unfold addRow at pending ⊢
+  dsimp only [rowOverflow, commitRow] at pending ⊢
+  split_ifs at pending ⊢
+  · contradiction
+  · exact structuralRank_advance graph state frame rest stack available contribution
+
+theorem addRow_ticks (maximum : Nat) (state : State) (frame : Frame) (rest : List Frame)
+    (contribution : Nat) : (addRow maximum state frame rest contribution).ticks = state.ticks := by
+  unfold addRow
+  split <;> rfl
+
+/-- Every continuation of the actual DFS consumes one unit of structural
+potential. Fresh-color admission is essential: re-entering a completed or
+active node would not consume a fresh node's reservation. Rejections and
+administrative stops are not identified with successful completion. -/
+theorem step_continuation_exact (graph : Graph) (maximum : Nat) (state : State)
+    (valid : Valid graph maximum state)
+    (continues : (step graph maximum state).status = .pending) :
+    (step graph maximum state).ticks = state.ticks + 1 ∧
+      structuralRank graph (step graph maximum state) + 1 = structuralRank graph state := by
+  unfold step at continues ⊢
+  by_cases stopped : state.status ≠ .pending
+  · simp only [if_pos stopped] at continues
+    exact False.elim (stopped continues)
+  · simp only [if_neg stopped] at continues ⊢
+    by_cases refused : state.capacity ≠ graph.nodes.length ∨ state.stack = [] ∨ state.ticks = maximum
+    · simp [refused, fail] at continues
+    · simp only [if_neg refused] at continues ⊢
+      let paid : State := { state with ticks := state.ticks + 1 }
+      have paidValid : Valid graph maximum paid :=
+        valid.withCounters (state.ticks + 1) state.indexVisits (by
+          have := valid.ticksWithin
+          have before : state.ticks ≠ maximum := fun equal => refused (Or.inr (Or.inr equal))
+          omega)
+      cases stack : state.stack with
+      | nil => simp [stack, fail] at continues
+      | cons frame rest =>
+        simp only [stack] at continues
+        simp only
+        by_cases finished : frame.row = (graph.rows frame.node).length
+        · simp only [if_pos finished]
+          have progress := structuralRank_finish graph maximum paid paidValid frame rest stack finished
+          have same : structuralRank graph paid = structuralRank graph state := rfl
+          rw [same] at progress
+          exact ⟨rfl, by simpa only [paid, stack] using progress⟩
+        · simp only [if_neg finished] at continues ⊢
+          cases found : (graph.rows frame.node)[frame.row]? with
+          | none => simp [found, fail] at continues
+          | some row =>
+            simp only [found] at continues
+            simp only
+            obtain ⟨available, rowEqual⟩ := List.getElem?_eq_some_iff.mp found
+            by_cases badRow : row.physical = 0 ∨
+                (row.successor.any fun child => graph.nodes.length ≤ child)
+            · simp [badRow, fail] at continues
+            · simp only [if_neg badRow] at continues ⊢
+              cases visited : ((graph.rows frame.node).take frame.row).findIdx?
+                  (fun earlier => earlier.physical == row.physical) with
+              | some index => simp [visited, fail] at continues
+              | none =>
+                simp only [visited] at continues
+                simp only
+                let scanned : State := { paid with indexVisits := paid.indexVisits + frame.row }
+                have same : structuralRank graph scanned = structuralRank graph state := rfl
+                cases successor : row.successor with
+                | none =>
+                  simp only [successor] at continues
+                  simp only
+                  have after : (addRow maximum scanned frame rest 1).status = .pending := by
+                    simpa only [scanned, paid, stack] using continues
+                  have progress := structuralRank_addRow graph maximum scanned frame rest stack available 1 after
+                  rw [same] at progress
+                  exact ⟨by simp only [addRow_ticks],
+                    by simpa only [scanned, paid, stack] using progress⟩
+                | some child =>
+                  simp only [successor] at continues
+                  simp only
+                  have childAdmitted : child < graph.nodes.length := by
+                    have outside : ¬ graph.nodes.length ≤ child := by
+                      intro beyond
+                      exact badRow (Or.inr (by simp [successor, beyond]))
+                    omega
+                  cases color : state.colors child with
+                  | active => simp [color, fail] at continues
+                  | fresh =>
+                    simp only [color] at continues
+                    simp only
+                    by_cases full : (frame :: rest).length = state.capacity
+                    · simp [full, fail] at continues
+                    · simp only [if_neg full] at continues ⊢
+                      have progress := structuralRank_push graph scanned child childAdmitted color
+                      rw [same] at progress
+                      exact ⟨rfl, by simpa only [scanned, paid, stack] using progress⟩
+                  | done =>
+                    simp only [color] at continues
+                    simp only
+                    by_cases overflow : state.memo child = maximum
+                    · simp [overflow, fail] at continues
+                    · simp only [if_neg overflow] at continues ⊢
+                      have after : (addRow maximum scanned frame rest (1 + state.memo child)).status =
+                          .pending := by simpa only [scanned, paid, stack] using continues
+                      have progress := structuralRank_addRow graph maximum scanned frame rest stack available
+                        (1 + state.memo child) after
+                      rw [same] at progress
+                      exact ⟨by simp only [addRow_ticks],
+                        by simpa only [scanned, paid, stack] using progress⟩
+
+theorem step_structuralRank_lt (graph : Graph) (maximum : Nat) (state : State)
+    (valid : Valid graph maximum state)
+    (continues : (step graph maximum state).status = .pending) :
+    structuralRank graph (step graph maximum state) < structuralRank graph state :=
+  Nat.lt_of_succ_le (step_continuation_exact graph maximum state valid continues).2.le
+
+/-- Every still-pending run keeps its initial structural work reserve. The
+clock ceiling cannot create the decrease proved above. -/
+theorem run_pending_reserve (graph : Graph) (maximum fuel : Nat) (state : State)
+    (valid : Valid graph maximum state) (pending : (run graph maximum fuel state).status = .pending) :
+    (run graph maximum fuel state).ticks + structuralRank graph (run graph maximum fuel state) =
+      state.ticks + structuralRank graph state := by
+  induction fuel generalizing state with
+  | zero => rfl
+  | succ fuel ih =>
+      have nextPending : (step graph maximum state).status = .pending := by
+        by_contra stopped
+        rw [run, run_of_stopped graph maximum fuel _ stopped] at pending
+        exact stopped pending
+      have progress := step_continuation_exact graph maximum state valid nextPending
+      have later := ih (step graph maximum state) (step_valid graph maximum state valid) pending
+      change (run graph maximum fuel (step graph maximum state)).ticks +
+        structuralRank graph (run graph maximum fuel (step graph maximum state)) = _
+      omega
+
+/-- Explicit reserve admission rules out the administrative tick-ceiling
+guard at every pending state, independently of whether that state will
+eventually accept, detect a cycle, or refuse malformed input. -/
+theorem pending_below_administrative_ceiling (graph : Graph) (maximum fuel : Nat) (state : State)
+    (valid : Valid graph maximum state) (headroom : state.ticks + structuralRank graph state < maximum)
+    (pending : (run graph maximum fuel state).status = .pending) :
+    (run graph maximum fuel state).ticks < maximum := by
+  have reserved := run_pending_reserve graph maximum fuel state valid pending
+  omega
+
+/-- A structural allowance forces a returned status even on cyclic or
+malformed finite catalogues. The returned status must still be inspected:
+`.cycle`, `.invalid` and `.overflow` are not accepted finite observations. -/
+theorem run_stops_with_structural_allowance (graph : Graph) (maximum fuel : Nat) (state : State)
+    (valid : Valid graph maximum state) (enough : structuralRank graph state < fuel) :
+    (run graph maximum fuel state).status ≠ .pending := by
+  induction fuel generalizing state with
+  | zero => omega
+  | succ fuel ih =>
+      rw [run]
+      by_cases continues : (step graph maximum state).status = .pending
+      · have decreases := step_structuralRank_lt graph maximum state valid continues
+        exact ih (step graph maximum state) (step_valid graph maximum state valid) (by omega)
+      · rw [run_of_stopped graph maximum fuel _ continues]
+        exact continues
+
+theorem initialized_run_stops (graph : Graph) (maximum root : Nat) (state : State)
+    (issued : init graph root = some state) :
+    (run graph maximum (structuralRank graph state + 1) state).status ≠ .pending :=
+  run_stops_with_structural_allowance graph maximum _ state (init_valid graph maximum root state issued)
+    (Nat.lt_succ_self _)
+
+/-- This finite ceiling is computed from the retained graph's structural
+reserve, independently of the possibly much larger unfolded-value range.
+It excludes the tick-limit guard while the query is pending. An unfolding
+overflow still has its own explicit refusal status. -/
+theorem initialized_structural_ceiling (graph : Graph) (root : Nat) (state : State)
+    (issued : init graph root = some state) (fuel : Nat)
+    (pending : (run graph (state.ticks + structuralRank graph state + 1) fuel state).status = .pending) :
+    (run graph (state.ticks + structuralRank graph state + 1) fuel state).ticks <
+      state.ticks + structuralRank graph state + 1 :=
+  pending_below_administrative_ceiling graph _ fuel state (init_valid graph _ root state issued)
+    (Nat.lt_succ_self _) pending
+
+theorem sliceMachine_final_with_structural_allowance (graph : Graph) (maximum : Nat)
+    (state : State) (valid : Valid graph maximum state) :
+    (sliceMachine graph maximum).step
+      (MachineCore.runSlice (sliceMachine graph maximum) (structuralRank graph state + 1) state).1 = none := by
+  have stopped := run_stops_with_structural_allowance graph maximum
+    (structuralRank graph state + 1) state valid (Nat.lt_succ_self _)
+  simp only [sliceMachine_run, sliceMachine, if_neg stopped]
+
+/-- The structural allowance produces an inspected verdict. Only `.bound`
+provides a finite-success certificate; the cycle, invalid-input/administrative
+and overflow outcomes remain separate refusals. -/
+theorem initialized_run_verdict (graph : Graph) (maximum root : Nat) (state : State)
+    (issued : init graph root = some state) :
+    let result := run graph maximum (structuralRank graph state + 1) state
+    (∃ value, bound? result = some value ∧
+      Mettapedia.GSLT.LanguageDef.FiniteGraphCompletionCacheCompilation.Accepted
+        graph.catalogue.observationGraph root) ∨
+      result.status = .cycle ∨ result.status = .invalid ∨ result.status = .overflow := by
+  dsimp only
+  have valid := run_valid graph maximum (structuralRank graph state + 1) state
+    (init_valid graph maximum root state issued)
+  have stopped := initialized_run_stops graph maximum root state issued
+  cases verdict : (run graph maximum (structuralRank graph state + 1) state).status with
+  | pending => exact False.elim (stopped verdict)
+  | bound =>
+      left
+      let value := (run graph maximum (structuralRank graph state + 1) state).memo
+        (run graph maximum (structuralRank graph state + 1) state).root
+      have reported : bound? (run graph maximum (structuralRank graph state + 1) state) = some value := by
+        simp only [bound?, if_pos verdict, value]
+      have accepted := (bound_derived graph maximum _ value valid reported).1.accepted
+      exact ⟨value, reported, by simpa only [run_root, init_root graph root state issued] using accepted⟩
+  | cycle => exact Or.inr (Or.inl rfl)
+  | invalid => exact Or.inr (Or.inr (Or.inl rfl))
+  | overflow => exact Or.inr (Or.inr (Or.inr rfl))
+
+theorem addRow_indexVisits (maximum : Nat) (state : State) (frame : Frame) (rest : List Frame)
+    (contribution : Nat) (metric : Metric) (span : Nat) :
+    (addRow maximum state frame rest contribution metric span).indexVisits = state.indexVisits := by
+  unfold addRow
+  split
+  · rfl
+  · cases metric <;> rfl
+
+/-- Actual prefix-scan charges are monotone and bounded by the admitted row
+width. This follows the real duplicate-search branches, including an early
+duplicate rejection; it does not assume a cost bound for a whole dispatch. -/
+theorem step_indexVisits_bounds (graph : Graph) (maximum : Nat) (state : State)
+    (width : Nat) (rowWidth : ∀ node, (graph.rows node).length ≤ width)
+    (metric : Metric := .unfolding) :
+    state.indexVisits ≤ (step graph maximum state metric).indexVisits ∧
+      (step graph maximum state metric).indexVisits ≤ state.indexVisits + width := by
+  unfold step
+  split
+  · exact ⟨le_rfl, Nat.le_add_right _ _⟩
+  · split
+    · exact ⟨le_rfl, Nat.le_add_right _ _⟩
+    · dsimp only
+      cases stack : state.stack with
+      | nil => exact ⟨le_rfl, Nat.le_add_right _ _⟩
+      | cons frame rest =>
+        simp only
+        split
+        · exact ⟨le_rfl, Nat.le_add_right _ _⟩
+        · cases found : (graph.rows frame.node)[frame.row]? with
+          | none => exact ⟨le_rfl, Nat.le_add_right _ _⟩
+          | some row =>
+            simp only
+            split
+            · exact ⟨le_rfl, Nat.le_add_right _ _⟩
+            · have available := (List.getElem?_eq_some_iff.mp found).1
+              have within := rowWidth frame.node
+              cases visited : ((graph.rows frame.node).take frame.row).findIdx?
+                  (fun earlier => earlier.physical == row.physical) with
+              | some index =>
+                  have indexBound := (List.findIdx?_eq_some_iff_findIdx_eq.mp visited).1
+                  have prefixBound := List.length_take_le frame.row (graph.rows frame.node)
+                  simp only [fail]
+                  exact ⟨by omega, by omega⟩
+              | none =>
+                  simp only
+                  cases successor : row.successor with
+                  | none =>
+                      simp only [addRow_indexVisits]
+                      exact ⟨by omega, by omega⟩
+                  | some child =>
+                      simp only
+                      cases color : state.colors child with
+                      | active =>
+                          simp only [fail]
+                          exact ⟨by omega, by omega⟩
+                      | fresh =>
+                          simp only
+                          split <;> exact ⟨by simp [fail, push], by dsimp only [fail, push]; omega⟩
+                      | done =>
+                          simp only
+                          split
+                          · exact ⟨by simp [fail], by dsimp only [fail]; omega⟩
+                          · simp only [addRow_indexVisits]
+                            exact ⟨by omega, by omega⟩
+
+/-- Scan comparisons actually charged by this DFS call, not the logical
+number of dependency occurrences represented by its returned bound. -/
+def scanWork (graph : Graph) (maximum : Nat) (state : State) : Nat :=
+  (step graph maximum state).indexVisits - state.indexVisits
+
+theorem scanWork_le (graph : Graph) (maximum : Nat) (state : State) (width : Nat)
+    (rowWidth : ∀ node, (graph.rows node).length ≤ width) :
+    scanWork graph maximum state ≤ width := by
+  have charged := step_indexVisits_bounds graph maximum state width rowWidth
+  unfold scanWork
+  omega
+
+theorem scanWork_of_stopped (graph : Graph) (maximum : Nat) (state : State)
+    (stopped : state.status ≠ .pending) : scanWork graph maximum state = 0 := by
+  simp only [scanWork, step_of_stopped graph maximum state stopped, Nat.sub_self]
+
+/-- A finite graph always supplies a row-width contract; clients may use a
+tighter independently established bound. -/
+theorem Graph.rows_length_le_total (graph : Graph) (node : Nat) :
+    (graph.rows node).length ≤ (graph.nodes.map List.length).sum := by
+  unfold Graph.rows
+  cases row : graph.nodes[node]? with
+  | none => simp
+  | some rows =>
+      have member := List.mem_of_getElem? row
+      have lengthMember : rows.length ∈ graph.nodes.map List.length := List.mem_map.mpr ⟨rows, member, rfl⟩
+      exact List.single_le_sum (fun _ _ => Nat.zero_le _) _ lengthMember
+
+/-- The existing run account of the retained operation reads exactly the
+increase in its scan counter. Splitting does not replay a paid prefix. -/
+theorem scan_account_exact (graph : Graph) (maximum fuel : Nat) (state : State) :
+    state.indexVisits + MachineCore.sliceCost (sliceMachine graph maximum)
+      (scanWork graph maximum) fuel state = (run graph maximum fuel state).indexVisits := by
+  induction fuel generalizing state with
+  | zero => simp only [MachineCore.sliceCost_zero, Nat.add_zero, run_zero]
+  | succ fuel ih =>
+      by_cases pending : state.status = .pending
+      · have later := ih (step graph maximum state)
+        have monotone := (step_indexVisits_bounds graph maximum state
+          (graph.nodes.map List.length).sum graph.rows_length_le_total).1
+        simp only [MachineCore.sliceCost_succ, sliceMachine, if_pos pending, run]
+        change state.indexVisits +
+          (scanWork graph maximum state + MachineCore.sliceCost (sliceMachine graph maximum)
+            (scanWork graph maximum) fuel (step graph maximum state)) = _
+        unfold scanWork at *
+        omega
+      · simp only [MachineCore.sliceCost_succ, sliceMachine, if_neg pending, Nat.add_zero]
+        rw [run_of_stopped graph maximum (fuel + 1) state pending]
+
+/-- Terminal probes perform no row scan. They are nevertheless real attempted
+calls and can carry a nonzero fixed price. -/
+theorem attempted_scan_account_exact (graph : Graph) (maximum fuel : Nat) (state : State) :
+    state.indexVisits + MachineCore.Attempts.cost (sliceMachine graph maximum)
+      (scanWork graph maximum) fuel state = (run graph maximum fuel state).indexVisits := by
+  rw [MachineCore.Attempts.cost_exact]
+  by_cases early : (MachineCore.runSlice (sliceMachine graph maximum) fuel state).2 < fuel
+  · have final := MachineCore.runSlice_under_budget_final (sliceMachine graph maximum) fuel state early
+    have stopped : (MachineCore.runSlice (sliceMachine graph maximum) fuel state).1.status ≠ .pending := by
+      simpa only [sliceMachine, ite_eq_right_iff, Option.some_ne_none, imp_false] using final
+    rw [if_pos early, scanWork_of_stopped graph maximum _ stopped, Nat.add_zero]
+    exact scan_account_exact graph maximum fuel state
+  · rw [if_neg early, Nat.add_zero]
+    exact scan_account_exact graph maximum fuel state
+
+/-- A scan-aware price for an actual attempt. Fixed service work, memory
+access and representation costs belong in declared component prices; this
+construction does not assert that a native call has constant duration. -/
+def callPrice {Cost : Type*} [AddMonoid Cost] (graph : Graph) (maximum : Nat)
+    (fixed scan : Cost) (state : State) : Cost :=
+  fixed + scanWork graph maximum state • scan
+
+theorem callPrice_le {Cost : Type*} [AddCommMonoid Cost] [Preorder Cost]
+    [IsOrderedAddMonoid Cost] (graph : Graph) (maximum width : Nat)
+    (rowWidth : ∀ node, (graph.rows node).length ≤ width) (fixed scan : Cost)
+    (scanNonnegative : 0 ≤ scan) (state : State) :
+    callPrice graph maximum fixed scan state ≤ fixed + width • scan :=
+  add_le_add_right (nsmul_le_nsmul_left scanNonnegative
+    (scanWork_le graph maximum state width rowWidth)) fixed
+
+/-- Attempted-operation prices, including early terminal checks, compose
+through the maintained `RunAccount`. The bound is derived from the actual
+row-scan branches and an explicit price for each component operation. -/
+theorem attempted_cost_le {Cost : Type*} [AddCommMonoid Cost] [Preorder Cost]
+    [IsOrderedAddMonoid Cost] (graph : Graph) (maximum width : Nat)
+    (rowWidth : ∀ node, (graph.rows node).length ≤ width) (fixed scan : Cost)
+    (fixedNonnegative : 0 ≤ fixed) (scanNonnegative : 0 ≤ scan) (fuel : Nat) (state : State) :
+    MachineCore.Attempts.cost (sliceMachine graph maximum)
+      (callPrice graph maximum fixed scan) fuel state ≤ fuel • (fixed + width • scan) :=
+  MachineCore.Attempts.cost_le (sliceMachine graph maximum) _ _
+    (add_nonneg fixedNonnegative (nsmul_nonneg scanNonnegative width))
+    (callPrice_le graph maximum width rowWidth fixed scan scanNonnegative) fuel state
+
+/-- The shared child is completed once, before the unfinished parent is
+resumed. Every referring row still contributes to the independent unfolding
+value; the retained scan counter records the parent-prefix comparisons. -/
+theorem shared_dag_retains_completed_child :
+    (run depthFanGraph 100 3 depthFanInitial).stack = [freshFrame 0] ∧
+    (run depthFanGraph 100 3 depthFanInitial).colors 0 = .active ∧
+    (run depthFanGraph 100 3 depthFanInitial).colors 1 = .done ∧
+    (run depthFanGraph 100 3 depthFanInitial).memo 1 = 1 ∧
+    run depthFanGraph 100 9 depthFanInitial =
+      run depthFanGraph 100 6 (run depthFanGraph 100 3 depthFanInitial) ∧
+    bound? (run depthFanGraph 100 9 depthFanInitial) = some 10 ∧
+    (run depthFanGraph 100 9 depthFanInitial).ticks = 9 ∧
+    (run depthFanGraph 100 9 depthFanInitial).indexVisits = 10 := by
+  refine ⟨by decide, by decide, by decide, by decide,
+    run_add depthFanGraph 100 3 6 depthFanInitial, by decide, by decide, by decide⟩
+
+/-- The paid scan account is an observation of the real resumed DFS, not an
+unfolding tree or a count of returned answers. -/
+theorem shared_dag_scan_account :
+    MachineCore.sliceCost (sliceMachine depthFanGraph 100)
+      (scanWork depthFanGraph 100) 9 depthFanInitial = 10 ∧
+    MachineCore.Attempts.cost (sliceMachine depthFanGraph 100)
+      (scanWork depthFanGraph 100) 12 depthFanInitial = 10 := by
+  have scans := scan_account_exact depthFanGraph 100 9 depthFanInitial
+  have attempts := attempted_scan_account_exact depthFanGraph 100 12 depthFanInitial
+  have first : (run depthFanGraph 100 9 depthFanInitial).indexVisits = 10 := by decide
+  have later : (run depthFanGraph 100 12 depthFanInitial).indexVisits = 10 := by decide
+  simpa only [first, later, show depthFanInitial.indexVisits = 0 from rfl, Nat.zero_add]
+    using And.intro scans attempts
+
+/-- Sharing consumes a finite structural reserve without unfolding the
+shared child repeatedly. Rank is not the prefix-scan work account. -/
+theorem shared_dag_structural_reserve :
+    structuralRank depthFanGraph depthFanInitial = 9 ∧
+    structuralRank depthFanGraph (run depthFanGraph 100 3 depthFanInitial) = 6 ∧
+    structuralRank depthFanGraph (run depthFanGraph 100 9 depthFanInitial) = 0 ∧
+    (run depthFanGraph 100 7 depthFanInitial).ticks +
+      structuralRank depthFanGraph (run depthFanGraph 100 7 depthFanInitial) = 9 := by
+  decide
+
+/-- Tick or capacity refusal is not a proof of a cyclic or otherwise
+non-finite source. A genuine success at a sufficient allowance supplies
+the independent acceptance certificate for the same source. -/
+theorem administrative_refusals_do_not_disprove_finiteness :
+    (step depthFanGraph 0 depthFanInitial).status = .invalid ∧
+    (step depthFanGraph 100 { depthFanInitial with capacity := 0 }).status = .invalid ∧
+    Mettapedia.GSLT.LanguageDef.FiniteGraphCompletionCacheCompilation.Accepted
+      depthFanGraph.catalogue.observationGraph 0 := by
+  refine ⟨by decide, by decide, ?_⟩
+  have valid := run_valid depthFanGraph 100 9 depthFanInitial
+    (init_valid depthFanGraph 100 0 depthFanInitial (by rfl))
+  have accepted := (bound_derived depthFanGraph 100 _ 10 valid (by decide)).1.accepted
+  simpa only [run_root, show depthFanInitial.root = 0 from rfl] using accepted
+
+private def unknownReferenceGraph : Graph := ⟨[[⟨1, some 1⟩]]⟩
+
+private def unknownReferenceInitial : State := (init unknownReferenceGraph 0).get (by decide)
+
+/-- An out-of-catalogue successor is refused as input, rather than silently
+treated as a leaf. This is distinct from the administrative refusal above. -/
+theorem unknown_reference_refused :
+    (run unknownReferenceGraph 10 1 unknownReferenceInitial).status = .invalid ∧
+    ¬ Mettapedia.GSLT.LanguageDef.FiniteGraphCompletionCacheCompilation.Accepted
+      unknownReferenceGraph.catalogue.observationGraph 0 := by
+  refine ⟨by decide, ?_⟩
+  intro accepted
+  have member : 1 ∈ unknownReferenceGraph.catalogue.deps 0 := by decide
+  have child := accepted.child member
+  have admitted := child.localOk
+  simp [Catalogue.observationGraph, Graph.catalogue, unknownReferenceGraph] at admitted
+
+/-- A single DFS dispatch can perform several prefix comparisons. Charging
+only the dispatch would omit actual work already present in this service. -/
+theorem one_dispatch_scans_a_prefix :
+    let state := run depthFanGraph 100 7 depthFanInitial
+    (step depthFanGraph 100 state).ticks = state.ticks + 1 ∧
+      scanWork depthFanGraph 100 state = 4 ∧
+      MachineCore.Attempts.cost (sliceMachine depthFanGraph 100)
+        (callPrice depthFanGraph 100 (1 : Nat) 7) 1 state = 29 := by
+  dsimp only
+  refine ⟨by decide, by decide, ?_⟩
+  rw [MachineCore.Attempts.cost_exact, MachineCore.sliceCost_succ]
+  simp only [MachineCore.runSlice, sliceMachine]
+  decide
+
+/-- A finite observed component remains acceptable when an unrelated
+component is cyclic. Global catalogue acyclicity is not required. -/
+theorem unrelated_cycle_does_not_refuse_leaf :
+    let graph : Graph := ⟨[[⟨1, none⟩], [⟨1, some 1⟩]]⟩
+    let state := (init graph 0).get (by decide)
+    bound? (run graph 10 3 state) = some 1 ∧ 1 ∈ graph.catalogue.deps 1 := by
+  decide
+
+def rawCycleGraph : Graph := ⟨[[⟨1, some 0⟩]]⟩
+
+def rawCycleInitial : State := (init rawCycleGraph 0).get (by decide)
+
+/-- A real back-edge is refused. Zero allowance retains the active frontier
+and has no verdict; it must not be confused with either refusal or success. -/
+theorem raw_cycle_refused_and_zero_incomplete :
+    (run rawCycleGraph 10 1 rawCycleInitial).status = .cycle ∧
+    bound? (run rawCycleGraph 10 1 rawCycleInitial) = none ∧
+    (run rawCycleGraph 10 0 rawCycleInitial).status = .pending ∧
+    bound? (run rawCycleGraph 10 0 rawCycleInitial) = none ∧
+    (MachineCore.Attempts.trace (sliceMachine rawCycleGraph 10) 0 rawCycleInitial) = [] ∧
+    ¬ Mettapedia.GSLT.LanguageDef.FiniteGraphCompletionCacheCompilation.Accepted
+      rawCycleGraph.catalogue.observationGraph 0 := by
+  refine ⟨by decide, by decide, by decide, by decide, rfl, ?_⟩
+  intro accepted
+  apply accepted.no_cycle
+  apply Relation.TransGen.single
+  change 0 ∈ rawCycleGraph.catalogue.deps 0
+  decide
+
+/-- No scan comparisons occur after the cycle verdict, but an attempted
+terminal check has a nonzero fixed price. Dispatch and scan counts alone
+therefore do not price the producer callback. -/
+theorem terminal_probe_has_price_without_scan :
+    scanWork rawCycleGraph 10 (run rawCycleGraph 10 1 rawCycleInitial) = 0 ∧
+    MachineCore.Attempts.cost (sliceMachine rawCycleGraph 10)
+      (callPrice rawCycleGraph 10 (3 : Nat) 7) 1
+      (run rawCycleGraph 10 1 rawCycleInitial) = 3 := by
+  have stopped : (run rawCycleGraph 10 1 rawCycleInitial).status ≠ .pending := by decide
+  refine ⟨scanWork_of_stopped rawCycleGraph 10 _ stopped, ?_⟩
+  rw [MachineCore.Attempts.cost_exact]
+  simp [MachineCore.sliceCost_of_final, MachineCore.runSlice, sliceMachine, stopped,
+    callPrice, scanWork_of_stopped rawCycleGraph 10 _ stopped]
+
+#print axioms Catalogue.FoldDerivation.accepted
+#print axioms Catalogue.FoldDerivation.accessible
+#print axioms Catalogue.FoldDerivation.no_reachable_cycle
+#print axioms Valid.cached_accepted
+#print axioms bound_accessible
+#print axioms initialized_run_no_reachable_cycle
+#print axioms initialized_reachable_cycle_no_bound
+#print axioms sliceMachine_run
+#print axioms init_valid
+#print axioms step_valid
+#print axioms structuralRank_push
+#print axioms structuralRank_finish
+#print axioms structuralRank_advance
+#print axioms step_continuation_exact
+#print axioms run_pending_reserve
+#print axioms pending_below_administrative_ceiling
+#print axioms run_stops_with_structural_allowance
+#print axioms initialized_run_stops
+#print axioms initialized_structural_ceiling
+#print axioms sliceMachine_final_with_structural_allowance
+#print axioms initialized_run_verdict
+#print axioms step_indexVisits_bounds
+#print axioms scan_account_exact
+#print axioms attempted_scan_account_exact
+#print axioms callPrice_le
+#print axioms attempted_cost_le
+#print axioms shared_dag_retains_completed_child
+#print axioms shared_dag_scan_account
+#print axioms shared_dag_structural_reserve
+#print axioms administrative_refusals_do_not_disprove_finiteness
+#print axioms unknown_reference_refused
+#print axioms one_dispatch_scans_a_prefix
+#print axioms unrelated_cycle_does_not_refuse_leaf
+#print axioms raw_cycle_refused_and_zero_incomplete
+#print axioms terminal_probe_has_price_without_scan
 
 /-! ## Admission valuation and source frontier
 

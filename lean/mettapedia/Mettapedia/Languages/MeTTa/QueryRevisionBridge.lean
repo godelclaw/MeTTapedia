@@ -22,8 +22,8 @@ namespace Mettapedia.Languages.MeTTa.QueryRevisionBridge
 open Mettapedia.GSLT.Dynamics.QueryRevision
 open Mettapedia.GSLT.Dynamics.EventValuation
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.SpaceInteraction
 open Mettapedia.Languages.ProcessCalculi.MeTTaCalculus.CausalInteraction
 
@@ -123,9 +123,8 @@ at the selected query. -/
           BinaryWorldModel.evidence (State := State) (Query := Query)
             second request) :=
   by
-    simp [binaryEvidenceValuation, Valuation.historyGrade,
-      Mettapedia.GSLT.PartialMonoid.foldOption, additive,
-      additivePartialMonoid]
+    simp [binaryEvidenceValuation, binaryWorldTheory,
+      Mettapedia.GSLT.Dynamics.IndexedEventValuation.additivePartialMonoid]
 
 /-- Additive evidence revisions are both behaviorally commuting and compatible
 in the selected evidence valuation. -/
@@ -169,10 +168,11 @@ evidence and work counts events. -/
           BinaryWorldModel.evidence (State := State) (Query := Query)
             second request,
           (2 : Nat)) := by
-  simp [binaryEvidenceAndWorkValuation, binaryEvidenceValuation, eventCount,
-    Valuation.historyGrade, Mettapedia.GSLT.PartialMonoid.foldOption,
-    Valuation.prod, Mettapedia.GSLT.PartialMonoid.prod, additive,
-    additivePartialMonoid]
+  simp [binaryEvidenceAndWorkValuation, binaryEvidenceValuation, eventCount, binaryWorldTheory,
+    Valuation.historyGrade, Valuation.prod,
+    Mettapedia.GSLT.Dynamics.IndexedEventValuation.Valuation.prod,
+    Mettapedia.GSLT.PartialMonoid.prod,
+    Mettapedia.GSLT.Dynamics.IndexedEventValuation.additivePartialMonoid]
 
 /-- A pair may be admitted simultaneously by the evidential and execution-work
 coordinates without identifying their algebras. -/

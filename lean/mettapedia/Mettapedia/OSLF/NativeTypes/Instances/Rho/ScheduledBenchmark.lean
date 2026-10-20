@@ -95,14 +95,14 @@ theorem recorded_native_positive (source : Pattern)
     (accepted : Mettapedia.OSLF.NativeTypes.Instances.Rho.Canonical.admit source = true)
     (formula : Formula Empty) (budget : Nat)
     (decided : (recorded source accepted formula budget).outcome.answer = some true) :
-    denotation tests formula (originalSource source accepted) :=
+    denotation tests formula (.empty _) (originalSource source accepted) :=
   (recorded source accepted formula budget).outcome.positive decided
 
 theorem recorded_native_negative (source : Pattern)
     (accepted : Mettapedia.OSLF.NativeTypes.Instances.Rho.Canonical.admit source = true)
     (formula : Formula Empty) (budget : Nat)
     (decided : (recorded source accepted formula budget).outcome.answer = some false) :
-    ¬ denotation tests formula (originalSource source accepted) :=
+    ¬ denotation tests formula (.empty _) (originalSource source accepted) :=
   (recorded source accepted formula budget).outcome.negative decided
 
 theorem retained_receipts_are_original_steps (source : Pattern)

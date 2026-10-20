@@ -53,7 +53,7 @@ beings without collapsing into "desire everything."
 
 namespace Mettapedia.CognitiveArchitecture.GodelClaw.EpistemicLove
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNNegation
 open BinaryEvidence
 

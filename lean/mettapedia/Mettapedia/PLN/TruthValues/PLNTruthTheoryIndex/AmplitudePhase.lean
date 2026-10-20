@@ -172,18 +172,18 @@ noncomputable def amplitudePhasePLNProfile : AmplitudePhasePLNProfile where
 an explicit bridge to a shared target semantics. -/
 structure TypedITVOperationProfile where
   sameSemanticsConjunction :
-    ∀ {Sem : ITVSemantics.{0}} (x y : TypedITV Sem),
+    ∀ {Sem : ITVConstructor.{0}} (x y : TypedITV Sem),
       (TypedITV.conjunctionSameSemantics x y).value =
         ITV.conjunction x.value y.value
   sameSemanticsImplication :
-    ∀ {Sem : ITVSemantics.{0}} (x y : TypedITV Sem),
+    ∀ {Sem : ITVConstructor.{0}} (x y : TypedITV Sem),
       (TypedITV.implicationSameSemantics x y).value =
         ITV.implication x.value y.value
   forgetToGenericPreservesValue :
-    ∀ {Sem : ITVSemantics.{0}} (x : TypedITV Sem),
+    ∀ {Sem : ITVConstructor.{0}} (x : TypedITV Sem),
       (TypedITV.forgetToGeneric x).value = x.value
   crossSemanticsConjunctionViaBridge :
-    ∀ {Sem₁ Sem₂ Target : ITVSemantics.{0}}
+    ∀ {Sem₁ Sem₂ Target : ITVConstructor.{0}}
       (B : TypedITV.Bridge Sem₁ Sem₂ Target)
       (x : TypedITV Sem₁) (y : TypedITV Sem₂),
       (TypedITV.conjunctionViaBridge B x y).value =
@@ -207,244 +207,244 @@ structure WorldModelTypedITVProfile where
   binaryForgetsToRaw :
     ∀ {State Query Ctx : Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.BinaryWorldModel State Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) (q : Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV
+      (Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITV
           (State := State) (Query := Query) sem ctx W q).value =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITV
+        Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITV
           (State := State) (Query := Query) sem ctx W q
   binaryTypedLowerIsRawLower :
     ∀ {State Query Ctx : Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.BinaryWorldModel State Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) (q : Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV
+      (Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITV
           (State := State) (Query := Query) sem ctx W q).lower =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITVLower
+        Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITVLower
           (State := State) (Query := Query) sem ctx W q
   binaryTypedUpperIsRawUpper :
     ∀ {State Query Ctx : Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.BinaryWorldModel State Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) (q : Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV
+      (Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITV
           (State := State) (Query := Query) sem ctx W q).upper =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITVUpper
+        Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITVUpper
           (State := State) (Query := Query) sem ctx W q
   binaryTypedStrengthIsRawStrength :
     ∀ {State Query Ctx : Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.BinaryWorldModel State Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) (q : Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV
+      (Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITV
           (State := State) (Query := Query) sem ctx W q).midpoint =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITVStrength
+        Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITVStrength
           (State := State) (Query := Query) sem ctx W q
   binaryTypedWidthIsRawWidth :
     ∀ {State Query Ctx : Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.BinaryWorldModel State Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) (q : Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV
+      (Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITV
           (State := State) (Query := Query) sem ctx W q).width =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITVWidth
+        Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITVWidth
           (State := State) (Query := Query) sem ctx W q
   binaryTypedCredibilityIsRawCredibility :
     ∀ {State Query Ctx : Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.BinaryWorldModel State Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) (q : Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV
+      (Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITV
           (State := State) (Query := Query) sem ctx W q).credibility =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryITVCredibility
+        Mettapedia.PLN.WorldModel.BinaryWorldModel.queryITVCredibility
           (State := State) (Query := Query) sem ctx W q
   binaryTypedJudgmentForgetsToRaw :
     ∀ {State Query Ctx : Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.BinaryWorldModel State Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) {W : State} {q : Query}
       {itv : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-        (Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.toTruthTowerSemantics sem ctx)},
-      Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.WMTypedITVJudgment
+        (Mettapedia.PLN.WorldModel.ITVSemantics.toITVConstructor sem ctx)},
+      Mettapedia.PLN.WorldModel.BinaryWorldModel.WMTypedITVJudgment
         (State := State) (Query := Query) sem ctx W q itv →
-      Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.WMITVJudgment
+      Mettapedia.PLN.WorldModel.BinaryWorldModel.WMITVJudgment
         (State := State) (Query := Query) sem ctx W q itv.value
   binaryWalleyWidthComplement :
     ∀ {State Query : Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel State Query]
+      [Mettapedia.PLN.WorldModel.BinaryWorldModel State Query]
       (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
       (W : State) (q : Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITVWalley
+      (Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITVWalley
           (State := State) (Query := Query) ctx W q).width +
-        (Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITVWalley
+        (Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITVWalley
           (State := State) (Query := Query) ctx W q).credibility = 1
   sigmaForgetsToRaw :
     ∀ {State Srt Ctx : Type} {Query : Srt → Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) (q : Sigma Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV
+      (Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q).value =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryITV
+        Mettapedia.PLN.WorldModel.WorldModelSigma.queryITV
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q
   sigmaTypedAtForgetsToRawAt :
     ∀ {State Srt Ctx : Type} {Query : Srt → Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) {s : Srt} (q : Query s),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITVAt
+      (Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITVAt
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q).value =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryITVAt
+        Mettapedia.PLN.WorldModel.WorldModelSigma.queryITVAt
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q
   sigmaTypedLowerIsRawLower :
     ∀ {State Srt Ctx : Type} {Query : Srt → Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) (q : Sigma Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV
+      (Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q).lower =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryITVLower
+        Mettapedia.PLN.WorldModel.WorldModelSigma.queryITVLower
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q
   sigmaTypedUpperIsRawUpper :
     ∀ {State Srt Ctx : Type} {Query : Srt → Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) (q : Sigma Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV
+      (Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q).upper =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryITVUpper
+        Mettapedia.PLN.WorldModel.WorldModelSigma.queryITVUpper
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q
   sigmaTypedStrengthIsRawStrength :
     ∀ {State Srt Ctx : Type} {Query : Srt → Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) (q : Sigma Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV
+      (Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q).midpoint =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryITVStrength
+        Mettapedia.PLN.WorldModel.WorldModelSigma.queryITVStrength
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q
   sigmaTypedWidthIsRawWidth :
     ∀ {State Srt Ctx : Type} {Query : Srt → Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) (q : Sigma Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV
+      (Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q).width =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryITVWidth
+        Mettapedia.PLN.WorldModel.WorldModelSigma.queryITVWidth
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q
   sigmaTypedCredibilityIsRawCredibility :
     ∀ {State Srt Ctx : Type} {Query : Srt → Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State) (q : Sigma Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV
+      (Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q).credibility =
-        Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryITVCredibility
+        Mettapedia.PLN.WorldModel.WorldModelSigma.queryITVCredibility
           (State := State) (Srt := Srt) (Query := Query) sem ctx W q
   sigmaTypedJudgmentForgetsToRaw :
     ∀ {State Srt Ctx : Type} {Query : Srt → Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) {W : State} {q : Sigma Query}
       {itv : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-        (Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.toTruthTowerSemantics sem ctx)},
-      Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMTypedITVJudgmentSigma
+        (Mettapedia.PLN.WorldModel.ITVSemantics.toITVConstructor sem ctx)},
+      Mettapedia.PLN.WorldModel.WorldModelSigma.WMTypedITVJudgmentSigma
         (State := State) (Srt := Srt) (Query := Query) sem ctx W q itv →
-      Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMITVJudgmentSigma
+      Mettapedia.PLN.WorldModel.WorldModelSigma.WMITVJudgmentSigma
         (State := State) (Srt := Srt) (Query := Query) sem ctx W q itv.value
   sigmaQueryEquivalencePreservesTypedITV :
     ∀ {State Srt Ctx : Type} {Query : Srt → Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
+      [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
       {q₁ q₂ : Sigma Query}
-      (_ : Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMQueryEqSigma
+      (_ : Mettapedia.PLN.WorldModel.WorldModelSigma.WMQueryEqSigma
         (State := State) (Srt := Srt) (Query := Query) q₁ q₂)
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) (W : State),
-      Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV
+      Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV
         (State := State) (Srt := Srt) (Query := Query) sem ctx W q₁ =
-      Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV
+      Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV
         (State := State) (Srt := Srt) (Query := Query) sem ctx W q₂
   sigmaRewriteProducesTypedJudgment :
     ∀ {State Srt Ctx : Type} {Query : Srt → Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
-      (sem : Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics Ctx)
+      [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
+      (sem : Mettapedia.PLN.WorldModel.ITVSemantics Ctx)
       (ctx : Ctx) {r :
-        Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMRewriteRuleSigma State Srt Query}
-      {W : State}, r.side → Mettapedia.PLN.WorldModel.PLNWorldModel.WMJudgment W →
-      Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMTypedITVJudgmentSigma
+        Mettapedia.PLN.WorldModel.WorldModelSigma.WMRewriteRuleSigma State Srt Query}
+      {W : State}, r.side → Mettapedia.PLN.WorldModel.WMJudgment W →
+      Mettapedia.PLN.WorldModel.WorldModelSigma.WMTypedITVJudgmentSigma
         (State := State) (Srt := Srt) (Query := Query) sem ctx
         W r.conclusion
-        (Mettapedia.PLN.WorldModel.PLNWorldModel.ITVSemantics.typedEval sem ctx (r.derive W))
+        (Mettapedia.PLN.WorldModel.ITVSemantics.typedEval sem ctx (r.derive W))
   sigmaWalleyWidthComplement :
     ∀ {State Srt : Type} {Query : Srt → Type}
       [Mettapedia.PLN.Evidence.EvidenceClass.EvidenceType State]
-      [Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma State Srt Query]
+      [Mettapedia.PLN.WorldModel.WorldModelSigma State Srt Query]
       (ctx : Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet.IDMPredictiveContext)
       (W : State) (q : Sigma Query),
-      (Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITVWalley
+      (Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITVWalley
           (State := State) (Srt := Srt) (Query := Query) ctx W q).width +
-        (Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITVWalley
+        (Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITVWalley
           (State := State) (Srt := Srt) (Query := Query) ctx W q).credibility = 1
 
 /-- World-model ITV profile: typed provenance is now available at the query
 boundary, with raw ITV queries retained only as forgetful views. -/
 theorem worldModelTypedITVProfile : WorldModelTypedITVProfile where
   binaryForgetsToRaw :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV_value_eq_queryITV
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITV_value_eq_queryITV
   binaryTypedLowerIsRawLower :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV_lower_eq_queryITVLower
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITV_lower_eq_queryITVLower
   binaryTypedUpperIsRawUpper :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV_upper_eq_queryITVUpper
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITV_upper_eq_queryITVUpper
   binaryTypedStrengthIsRawStrength :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV_strength_eq_queryITVStrength
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITV_strength_eq_queryITVStrength
   binaryTypedWidthIsRawWidth :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV_width_eq_queryITVWidth
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITV_width_eq_queryITVWidth
   binaryTypedCredibilityIsRawCredibility :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITV_credibility_eq_queryITVCredibility
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITV_credibility_eq_queryITVCredibility
   binaryTypedJudgmentForgetsToRaw :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.WMTypedITVJudgment.forget
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.WMTypedITVJudgment.forget
   binaryWalleyWidthComplement :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.BinaryWorldModel.queryTypedITVWalley_width_add_credibility
+    Mettapedia.PLN.WorldModel.BinaryWorldModel.queryTypedITVWalley_width_add_credibility
   sigmaForgetsToRaw :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV_value_eq_queryITV
+    Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV_value_eq_queryITV
   sigmaTypedAtForgetsToRawAt :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITVAt_value_eq_queryITVAt
+    Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITVAt_value_eq_queryITVAt
   sigmaTypedLowerIsRawLower :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV_lower_eq_queryITVLower
+    Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV_lower_eq_queryITVLower
   sigmaTypedUpperIsRawUpper :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV_upper_eq_queryITVUpper
+    Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV_upper_eq_queryITVUpper
   sigmaTypedStrengthIsRawStrength :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV_strength_eq_queryITVStrength
+    Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV_strength_eq_queryITVStrength
   sigmaTypedWidthIsRawWidth :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV_width_eq_queryITVWidth
+    Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV_width_eq_queryITVWidth
   sigmaTypedCredibilityIsRawCredibility :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITV_credibility_eq_queryITVCredibility
+    Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITV_credibility_eq_queryITVCredibility
   sigmaTypedJudgmentForgetsToRaw :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMTypedITVJudgmentSigma.forget
+    Mettapedia.PLN.WorldModel.WorldModelSigma.WMTypedITVJudgmentSigma.forget
   sigmaQueryEquivalencePreservesTypedITV :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMQueryEqSigma.to_queryTypedITV
+    Mettapedia.PLN.WorldModel.WorldModelSigma.WMQueryEqSigma.to_queryTypedITV
   sigmaRewriteProducesTypedJudgment :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.WMRewriteRuleSigma.applyTypedITV
+    Mettapedia.PLN.WorldModel.WorldModelSigma.WMRewriteRuleSigma.applyTypedITV
   sigmaWalleyWidthComplement :=
-    Mettapedia.PLN.WorldModel.PLNWorldModel.WorldModelSigma.queryTypedITVWalley_width_add_credibility
+    Mettapedia.PLN.WorldModel.WorldModelSigma.queryTypedITVWalley_width_add_credibility
 
 /-- Credal/lower-prevision profile: lower and upper projections are forced by
 the retained imprecise-probability object. -/
@@ -536,7 +536,7 @@ structure CredalForcedQueryProfile where
       (f : Mettapedia.ProbabilityTheory.ImpreciseProbability.DesirableGambles.Gamble Ω)
       (hf : ∀ ω, f ω ∈ Set.Icc 0 1),
       let x : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-          (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVSemantics Ω) :=
+          (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVConstructor Ω) :=
         Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromCredalEnvelope
           { credal := K
             gamble := f
@@ -545,7 +545,7 @@ structure CredalForcedQueryProfile where
             credibility := 0
             credibility_in_unit := by norm_num }
       let y : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-          (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVSemantics Ω) :=
+          (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVConstructor Ω) :=
         Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromCredalEnvelope
           { credal := K
             gamble := f
@@ -575,7 +575,7 @@ structure CredalForcedQueryProfile where
       (X : Mettapedia.ProbabilityTheory.ImpreciseProbability.Gamble Ω)
       (hX : ∀ ω, X ω ∈ Set.Icc (0 : ℝ) 1),
       let x : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-          (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVSemantics Ω) :=
+          (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVConstructor Ω) :=
         Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromLowerPrevision
           { prevision := P
             gamble := X
@@ -583,7 +583,7 @@ structure CredalForcedQueryProfile where
             credibility := 0
             credibility_in_unit := by norm_num }
       let y : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-          (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVSemantics Ω) :=
+          (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVConstructor Ω) :=
         Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromLowerPrevision
           { prevision := P
             gamble := X
@@ -598,12 +598,12 @@ structure CredalForcedQueryProfile where
       (hX : ∀ ω, X ω ∈ Set.Icc (0 : ℝ) 1)
       (credibility : ℝ) (hc : credibility ∈ Set.Icc (0 : ℝ) 1),
       let lp : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-          (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVSemantics Ω) :=
+          (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVConstructor Ω) :=
         Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromLowerPrevision
           (Mettapedia.PLN.TruthValues.PLNTruthTower.SingletonCredalLowerPrevision.source
             P X hX credibility hc);
       let ce : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-          (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVSemantics Ω) :=
+          (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVConstructor Ω) :=
         Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromCredalEnvelope
           (Mettapedia.PLN.TruthValues.PLNTruthTower.SingletonCredalLowerPrevision.credalEnvelopeSource
             P X hX credibility hc);
@@ -618,12 +618,12 @@ structure CredalForcedQueryProfile where
       (hX : ∀ ω, X ω ∈ Set.Icc (0 : ℝ) 1)
       (credibility : ℝ) (hc : credibility ∈ Set.Icc (0 : ℝ) 1),
       let lp : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-          (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVSemantics Ω) :=
+          (Mettapedia.PLN.TruthValues.PLNTruthTower.lowerPrevisionITVConstructor Ω) :=
         Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromLowerPrevision
           (Mettapedia.PLN.TruthValues.PLNTruthTower.FiniteCredalLowerPrevision.source
             K hK X hX credibility hc);
       let ce : Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV
-          (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVSemantics Ω) :=
+          (Mettapedia.PLN.TruthValues.PLNTruthTower.credalEnvelopeITVConstructor Ω) :=
         Mettapedia.PLN.TruthValues.PLNTruthTower.TypedITV.fromCredalEnvelope
           { credal := K
             gamble := X

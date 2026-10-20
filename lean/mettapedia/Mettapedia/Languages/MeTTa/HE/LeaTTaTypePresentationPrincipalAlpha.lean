@@ -1,5 +1,9 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.PrincipalAlpha
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypeConformance
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Alpha-exact observation of LeaTTa type presentations
@@ -38,11 +42,11 @@ theorem observedTypeAlpha_of_bindingTheory
     (declared : Atom) :
     ObservedTypeAlphaRel
       (substitution.apply declared)
-      (fromLeaTTaAtom
-        (Metta.instantiate bindings (toLeaTTaAtom declared))) := by
+      (decodeModelAtom
+        (Metta.instantiate bindings (encodeModelAtom declared))) := by
   let leaModel := leaClassSolution bindings
   let nativeModel : String → Atom :=
-    fun name => fromLeaTTaAtom (leaModel name)
+    fun name => decodeModelAtom (leaModel name)
   have nativeModelSatisfied :
       TypeSubstSatisfied nativeModel substitution := by
     have specModel : HEBindingSatisfied leaModel spec :=
@@ -56,7 +60,7 @@ theorem observedTypeAlpha_of_bindingTheory
           applyTypeValuation post (nativeModel name) := by
     let presentationModel := presentedValuation substitution
     let leaPresentationModel : String → Metta.Atom :=
-      fun name => toLeaTTaAtom (presentationModel name)
+      fun name => encodeModelAtom (presentationModel name)
     have presentationSatisfied :
         TypeSubstSatisfied presentationModel substitution :=
       normal_presentedValuation_satisfied normal
@@ -70,15 +74,15 @@ theorem observedTypeAlpha_of_bindingTheory
       (theory leaPresentationModel).mp heaPresentationSatisfied
     obtain ⟨leaPost, hleaPost⟩ :=
       runtime.canonical.2 leaPresentationModel leaPresentationSatisfied
-    refine ⟨fun name => fromLeaTTaAtom (leaPost name), ?_⟩
+    refine ⟨fun name => decodeModelAtom (leaPost name), ?_⟩
     intro name
-    have decoded := congrArg fromLeaTTaAtom (hleaPost name)
-    rw [fromLeaTTaAtom_applyClassSolution_any] at decoded
+    have decoded := congrArg decodeModelAtom (hleaPost name)
+    rw [decodeModelAtom_applyClassSolution_any] at decoded
     simpa [leaPresentationModel, presentationModel,
       nativeModel, leaModel] using decoded
   have alpha := observedTypeAlpha_of_mutuallyPrincipal normal
     nativeModelSatisfied presentationRefinesModel declared
-  simpa [nativeModel, leaModel, ← fromLeaTTaAtom_applyClassSolution,
+  simpa [nativeModel, leaModel, ← decodeModelAtom_applyClassSolution,
     applyClassSolution_lea_eq_instantiate] using alpha
 
 /-- The assignment-only presentation API specializes the general binding
@@ -92,7 +96,7 @@ theorem observedTypeAlpha_of_solutionTheory
     (declared : Atom) :
     ObservedTypeAlphaRel
       (substitution.apply declared)
-      (fromLeaTTaAtom (Metta.instantiate bindings (toLeaTTaAtom declared))) :=
+      (decodeModelAtom (Metta.instantiate bindings (encodeModelAtom declared))) :=
   observedTypeAlpha_of_bindingTheory normal
     (fun valuation => (typeBindingSatisfied_asBindings_iff valuation substitution).symm)
     theory runtime declared
@@ -104,9 +108,9 @@ alpha-exactly, with the empty finite presentation. -/
 theorem empty_presentation_alpha (declared : Atom) :
     ObservedTypeAlphaRel
       (TypeSubst.apply ([] : TypeSubst) declared)
-      (fromLeaTTaAtom
+      (decodeModelAtom
         (Metta.instantiate Metta.Bindings.empty
-          (toLeaTTaAtom declared))) := by
+          (encodeModelAtom declared))) := by
   apply observedTypeAlpha_of_solutionTheory TypeSubst.normal_empty
   · intro valuation
     simp [typeSubstAsBindings, HEBindingSatisfied,

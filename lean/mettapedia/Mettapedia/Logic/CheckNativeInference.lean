@@ -12,6 +12,28 @@ import Mettapedia.OSLF.MeTTaIL.GeneralRewriteRecipeExecution
 import Mettapedia.OSLF.MeTTaIL.GeneralRewriteRecipeCompositionControls
 import Mettapedia.Languages.VibeITP.CheckingMachine
 import Mettapedia.GSLT.Logic.KripkeTruthChecking
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.TowerChecking
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.IndexedFamilyChecking
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.InductiveElaboration
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorProgramChecking
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorComputationProfiles
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorConversion
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorAnnotatedChecking
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorAnnotatedAppend
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.ScopedSubstitutionInversion
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveAppendSource
+import Mettapedia.Languages.Megalodon.NaturalClosure
+import Mettapedia.Languages.MM0.NaturalClosure
+import Mettapedia.Languages.MM0.NaturalInduction
+import Mettapedia.Languages.MM0.NaturalCarrier
+import Mettapedia.Languages.MM0.NaturalType
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorRawPreservation
+import Mettapedia.Languages.MM0.HOLTypeDefinitionBoundary
+import Mettapedia.Languages.HOLLight.NaturalFacts
+import Mettapedia.Languages.Megalodon.NaturalRecursion
+import Mettapedia.GSLT.LanguageDef.IndexedInductiveAppendChecking
+import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.HOLComparison
+import Mettapedia.Logic.HOL.ConversionRecipeControls
 
 /-! # Executable integration controls for native inference checking -/
 
@@ -134,7 +156,37 @@ def intuitionisticChecks : List (String × Bool) :=
    ("intuitionistic invalid hint falls back", !(IntuitionisticDecision.decideHinted .falsum [.inl proof]))]
 
 def checks : List (String × Bool) :=
-  Mettapedia.GSLT.Logic.PropositionalLRAT.Controls.verdicts ++
+  Mettapedia.Languages.HOLLight.NaturalFacts.verdicts ++
+  Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Annotated.verdicts ++
+  Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.ComputationProfiles.NaturalConversion.Controls.verdicts ++
+  Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Annotated.metadataVerdicts ++
+  Mettapedia.GSLT.LanguageDef.IndexedInductive.AppendChecking.verdicts ++
+  Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.SchemaTableConversionCode.Linking.Controls.verdicts ++
+  Mettapedia.Languages.Megalodon.NaturalClosure.verdicts ++
+  Mettapedia.Languages.MM0.NaturalClosure.verdicts ++
+  Mettapedia.Languages.MM0.NaturalInduction.verdicts ++
+  Mettapedia.Languages.MM0.NaturalCarrier.verdicts ++
+  Mettapedia.Languages.MM0.NaturalType.verdicts ++
+  Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.ComputationProfiles.NaturalConversion.RawPreservation.verdicts ++
+  Mettapedia.Languages.MM0.HOLTypeDefinitionBoundary.verdicts ++
+  Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Annotated.Functions.verdicts ++
+  Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Annotated.Append.verdicts ++
+  Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Annotated.Append.computationVerdicts ++
+  Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Annotated.Append.profileVerdicts ++
+  Mettapedia.Languages.Megalodon.NaturalRecursion.verdicts ++
+  Mettapedia.GSLT.LanguageDef.IndexedInductive.OperationSource.Controls.verdicts ++
+  Mettapedia.GSLT.LanguageDef.IndexedInductive.OperationSource.Controls.clauseVerdicts ++
+  Mettapedia.GSLT.LanguageDef.IndexedInductive.AppendSource.verdicts ++
+  Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.ComputationProfiles.verdicts ++
+  Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.ScopedSubstitutionInversion.Controls.verdicts ++
+  Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Computation.verdicts ++
+  Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.verdicts ++
+  Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.InductiveElaborationControls.verdicts ++
+  Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.IndexedFamilyCheckingControls.verdicts ++
+  HOL.ConversionRecipes.Controls.verdicts ++
+  Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.HOLComparison.Controls.verdicts ++
+  Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.Tower.Checking.Controls.verdicts ++
+    Mettapedia.GSLT.Logic.PropositionalLRAT.Controls.verdicts ++
     equationChecks ++ recipeChecks ++ hilbertChecks ++ hintChecks ++ refusalChecks ++ equalityChecks ++
     extensionChecks ++ intuitionisticChecks ++
     Mettapedia.Languages.VibeITP.CheckingMachine.CursorControls.verdicts ++

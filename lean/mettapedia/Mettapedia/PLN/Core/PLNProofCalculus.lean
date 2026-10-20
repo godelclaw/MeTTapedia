@@ -62,7 +62,7 @@ This file provides:
 
 namespace Mettapedia.PLN.Core.PLNProofCalculus
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
 
 /-! ## Formula Type

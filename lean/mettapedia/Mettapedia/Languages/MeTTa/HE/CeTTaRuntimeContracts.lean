@@ -10,6 +10,10 @@ import Mettapedia.Machines.CMemory.Tactic
 import Mettapedia.Machines.CMemory.Array
 import Mettapedia.Machines.CMemory.ProductiveBlocks
 import Mettapedia.Machines.LinkedScopeStack
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # CeTTa runtime contracts and selected instruction projections
@@ -1915,7 +1919,7 @@ open Mettapedia.Languages.MeTTa.HE
 open Spec.Eval Spec.Eval.Minimal Spec.Eval.Steps
 open Spec.Match.Merge Spec.Match.SolutionTheory
 open Spec.Type.Presentation Spec.Type.Presentation.BindingTheory
-open LeaTTaBridge
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 namespace Controls
 
@@ -1935,7 +1939,7 @@ theorem boundA_satisfied : HEBindingSatisfied (fun _ => .sym "A") boundA := by
     have both : key = "x" ∧ value = .symbol "A" := by
       simpa [boundA, Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup] using member
     rcases both with ⟨rfl, rfl⟩
-    simp [applyClassSolution, toLeaTTaAtom]
+    simp [applyClassSolution, encodeModelAtom]
   · simp [boundA, Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup]
 
 theorem bind_then_B_candidate :
@@ -2074,7 +2078,7 @@ theorem incompatible_second_binding_selects_else :
   have equalsB := (matchRel_solution_iff hmatch valuation).mp matchedSatisfied
   have equalsA := incomingSatisfied.1 "x" (.symbol "A") (by
     simp [boundA, Bindings.empty, Bindings.assign, Bindings.isBound, Bindings.lookup])
-  simp only [toLeaTTaAtom, applyClassSolution] at equalsA equalsB
+  simp only [encodeModelAtom, applyClassSolution] at equalsA equalsB
   have impossible := equalsA.symm.trans equalsB
   simp at impossible
 

@@ -27,7 +27,8 @@ Given evidence `e = (n⁺, n⁻)` with prior `(α₀, β₀)`:
 
 namespace Mettapedia.PLN.RuleFamilies.MeasureTheoretic
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.TruthValues.PLNDistributional (BetaParams)
 open MeasureTheory ProbabilityTheory
 open scoped ENNReal NNReal
 
@@ -52,7 +53,7 @@ noncomputable abbrev betaMeasureReal := ProbabilityTheory.betaMeasure
 noncomputable def evidenceBetaMeasure (e : BinaryEvidence) (interp : EvidenceInterpretation)
     (hpos_fin : e.pos ≠ ⊤) (hneg_fin : e.neg ≠ ⊤) : Measure ℝ :=
   let bp := evidenceToBetaParams e interp hpos_fin hneg_fin
-  betaMeasureReal bp.alpha bp.beta
+  betaMeasureReal bp.alpha bp.betaParam
 
 /-- The evidence-induced Beta measure is a probability measure -/
 theorem evidenceBetaMeasure_isProbability (e : BinaryEvidence) (interp : EvidenceInterpretation)
@@ -117,12 +118,12 @@ theorem betaMean_mem_unit (α β : ℝ) (hα : 0 < α) (hβ : 0 < β) :
   · rw [div_le_one (by linarith : 0 < α + β)]
     linarith
 
-/-- The BinaryEvidence-induced Beta mean matches our BetaParams.mean -/
+/-- The BinaryEvidence-induced Beta mean matches `BetaParams.expectedValue`. -/
 theorem evidenceBetaParams_mean_eq (e : BinaryEvidence) (interp : EvidenceInterpretation)
     (hpos_fin : e.pos ≠ ⊤) (hneg_fin : e.neg ≠ ⊤) :
     let bp := evidenceToBetaParams e interp hpos_fin hneg_fin
-    bp.mean = betaMean bp.alpha bp.beta := by
-  simp only [BetaParams.mean, BetaParams.total, betaMean]
+    bp.expectedValue = betaMean bp.alpha bp.betaParam := by
+  simp only [BetaParams.expectedValue, BetaParams.n, betaMean]
 
 /-! ## Summary
 
@@ -143,7 +144,7 @@ This file establishes:
 
 4. **Beta mean**:
    - `betaMean`: The mean α/(α+β)
-   - Connection to `BetaParams.mean`
+   - Connection to `BetaParams.expectedValue`
 
 ## Next Steps
 

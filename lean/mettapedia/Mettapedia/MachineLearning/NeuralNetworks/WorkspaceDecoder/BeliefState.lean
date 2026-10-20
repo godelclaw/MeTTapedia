@@ -23,7 +23,7 @@ open scoped ENNReal
 open Mettapedia.MachineLearning.NeuralNetworks.PredictiveCoding
 open Mettapedia.PLN.Bridges.PredictiveCoding
 open Mettapedia.PLN.Bridges.ProbabilityTheory.ConjugateEvidenceCore
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.TruthValues.PLNTruthTower
 open Mettapedia.PLN.TruthValues.PLNWeightTV
 

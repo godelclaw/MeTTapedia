@@ -1,5 +1,5 @@
 import Mettapedia.Logic.HOL.Soundness
-import Mettapedia.Logic.HOL.TermModel.HenkinCompleteness
+import Mettapedia.Logic.HOL.TermModel.HenkinCompletenessControls
 import Mettapedia.Logic.HOL.WitnessedWorld
 import Mettapedia.Logic.HOL.WitnessedSaturation
 import Mettapedia.Logic.HOL.Embedding.FirstOrder
@@ -42,11 +42,12 @@ Negative examples:
 - `benchmarkBeliefNotGlobalOracleExample`
 - `plannerShadowNotGlobalOracleExample`
 
-This is intentionally an example ladder, not the final end-to-end theorem. In
-particular, the final witnessed original-signature HOL completeness theorem is
-still in progress, so the current probabilistic/planner-facing examples are
-theorem-backed uses of the HOL semantic layers rather than consequences of that
-final missing completeness bridge.
+This is an example ladder, not an end-to-end theorem. Soundness and
+completeness over the original signature are
+`Mettapedia.Logic.HOL.SevenVirtues.provable_iff_valid` (countable signatures with
+a closed term at each base type, excluded middle as one axiom). The
+probabilistic and planner-facing examples below use the HOL semantic layers; they
+are not consequences of that theorem.
 -/
 
 namespace Mettapedia.Examples.PLN.HOLExampleLadder
@@ -61,10 +62,12 @@ general Henkin model whenever that extended theory is consistent. -/
 abbrev henkinSatisfiabilityExample :=
   @Mettapedia.Logic.HOL.ClosedTheorySet.henkin_satisfiable
 
-/-- Positive example: in the honest classical/Henkin regime, consistency of the
-original parameter-free theory yields a Henkin model of that theory. -/
+/-- Positive example: `ClosedTheorySet.henkin_model_exists_of_consistent_classical`
+applied to the single excluded-middle axiom over the propositional signature with
+parameters, which is consistent, mentions no parameter and proves every
+excluded-middle instance. -/
 abbrev henkinClassicalModelExistenceExample :=
-  @Mettapedia.Logic.HOL.ClosedTheorySet.henkin_model_exists_of_consistent_classical
+  @Mettapedia.Logic.HOL.HenkinCompletenessControls.excludedMiddleTheory_has_model
 
 /-- Positive example: consistent parameter-free theories extend to witnessed,
 prime, deductively closed Henkin worlds. -/

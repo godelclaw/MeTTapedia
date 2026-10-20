@@ -41,7 +41,7 @@ The infinitary version uses the same mathematical definitions, just with differe
 
 namespace Mettapedia.PLN.RuleFamilies.FirstOrder.Quantifiers.Infinite
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 open scoped ENNReal
 

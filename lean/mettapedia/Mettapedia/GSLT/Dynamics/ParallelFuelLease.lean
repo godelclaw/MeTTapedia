@@ -296,7 +296,7 @@ def refundTransfer {Owner : Type uOwner}
   amount := ledger.balances child
 
 /-- A valid ledger automatically funds a full refund. -/
-def refundReceipt {Owner : Type uOwner}
+theorem refundReceipt {Owner : Type uOwner}
     (ledger : Ledger Owner) (valid : ledger.Nonnegative)
     (child parent : Owner) (distinct : child ≠ parent) :
     Transfer.Receipt (refundTransfer ledger child parent distinct) ledger where
@@ -458,7 +458,7 @@ def grantFour : Transfer Owner where
   distinct := by decide
   amount := 4
 
-def grantFourReceipt : Transfer.Receipt grantFour initial where
+theorem grantFourReceipt : Transfer.Receipt grantFour initial where
   admission := by
     constructor <;> norm_num [grantFour, initial, Finsupp.single_apply]
 
@@ -468,7 +468,7 @@ def spendThree : Spend Owner where
   owner := .worker
   amount := 3
 
-def spendThreeReceipt : Spend.Receipt spendThree afterGrant where
+theorem spendThreeReceipt : Spend.Receipt spendThree afterGrant where
   admission := by
     constructor
     · norm_num [spendThree]
@@ -479,11 +479,11 @@ def spendThreeReceipt : Spend.Receipt spendThree afterGrant where
 
 def afterSpend : Ledger Owner := spendThreeReceipt.after
 
-def afterSpendNonnegative : afterSpend.Nonnegative :=
+theorem afterSpendNonnegative : afterSpend.Nonnegative :=
   spendThreeReceipt.nonnegative_after
     (grantFourReceipt.nonnegative_after initial_nonnegative)
 
-def refundOne : Transfer.Receipt
+theorem refundOne : Transfer.Receipt
     (refundTransfer afterSpend .worker .root (by decide)) afterSpend :=
   refundReceipt afterSpend afterSpendNonnegative .worker .root (by decide)
 
@@ -505,7 +505,7 @@ theorem grant_spend_refund_exact :
     Finsupp.single_apply, Finsupp.sum_add_index', Finsupp.sum_sub_index,
     Finsupp.sum_single_index, root_ne_worker, worker_ne_root]
 
-def execution : Execution initial final :=
+theorem execution : Execution initial final :=
   .cons (.transfer grantFour grantFourReceipt)
     (.cons (.spend spendThree spendThreeReceipt)
       (.cons (.transfer

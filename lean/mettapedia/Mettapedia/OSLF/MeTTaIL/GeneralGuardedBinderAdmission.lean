@@ -73,7 +73,8 @@ theorem admission_complete (allowed : List Token) :
       then [] else [Obligation.childStratification]) ++
     (if permissions.includeDerivedEquations &&
         (language.usesCollection .hashBag || language.usesCollection .hashSet || language.hasAlgebraDeclarations)
-      then [Obligation.derivedEquationCoverage] else [])).isEmpty = true
+      then [Obligation.derivedEquationCoverage] else []) ++
+    (if setDecompositionFree (snapshot allowed) permissions then [] else [Obligation.setDecomposition])).isEmpty = true
   rw [provider]
   cbv
 

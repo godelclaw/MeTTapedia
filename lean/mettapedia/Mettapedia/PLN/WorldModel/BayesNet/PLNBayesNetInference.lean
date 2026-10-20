@@ -22,7 +22,7 @@ namespace Mettapedia.PLN.WorldModel.BayesNet.PLNBayesNetInference
 
 open scoped Classical BigOperators ENNReal
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.WorldModel.BayesNet.PLNBayesNetWorldModel
 open Mettapedia.ProbabilityTheory.BayesianNetworks
 open Mettapedia.ProbabilityTheory.BayesianNetworks.VariableElimination
@@ -338,7 +338,7 @@ namespace Mettapedia.PLN.WorldModel.BayesNet.PLNBayesNetWorldModel.BoolBayesNet
 variable {n : ℕ} (bn : BoolBayesNet n)
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 noncomputable def toBayesianNetwork :
     Mettapedia.ProbabilityTheory.BayesianNetworks.BayesianNetwork (Fin n) :=

@@ -23,6 +23,7 @@ structure Engine (driver : Driver) where
   cursor : CursorBackend.{0,0} driver.system driver.admitted
   leaves : driver.Leaf → LeafBackend driver.system driver.admitted
   leaf_meaning : ∀ leaf, (leaves leaf).predicate = (driver.tests leaf).predicate
+  spatial_meaning : cursor.spatial.theory = driver.backend.spatial.theory := by rfl
 
 structure Installed where
   native : Driver
@@ -31,9 +32,9 @@ structure Installed where
 theorem Engine.meaning_at_decoded {driver : Driver} (runtime : Engine driver)
     (formula : driver.Formula) {raw : Mettapedia.OSLF.MeTTaIL.Syntax.Pattern}
     (source : driver.Decoded raw) :
-    Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation runtime.leaves formula source.val ↔
+    Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation runtime.leaves formula runtime.cursor.spatial.theory source.val ↔
       Meaning driver formula raw := by
-  rw [denotation_comparison runtime.leaves driver.tests runtime.leaf_meaning]
+  rw [denotation_comparison runtime.leaves driver.tests runtime.leaf_meaning formula runtime.cursor.spatial.theory, runtime.spatial_meaning]
   exact (Mettapedia.OSLF.NativeTypes.Runtime.Description.meaning_at_decoded driver formula raw source).symm
 
 end Mettapedia.OSLF.NativeTypes.Runtime

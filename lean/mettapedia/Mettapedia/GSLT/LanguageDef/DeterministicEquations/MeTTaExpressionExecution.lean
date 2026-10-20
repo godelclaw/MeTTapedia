@@ -1,4 +1,8 @@
 import Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaProgramEnvironment
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Recursive emitted-expression execution
@@ -28,8 +32,8 @@ def observation : Outcome → Atom
   | .exhausted => .symbol "nik:Exhausted"
 
 theorem observation_closed (result : Outcome) :
-    (toLeaTTaAtom (observation result)).vars = [] := by
-  cases result <;> simp [observation, value, call, toLeaTTaAtom, toLeaTTaAtoms,
+    (encodeModelAtom (observation result)).vars = [] := by
+  cases result <;> simp [observation, value, call, encodeModelAtom, encodeModelAtoms,
     Metta.Atom.vars, data_atom_runtime_closed (MeTTaData.encode_data _)]
 
 theorem observation_injective : Function.Injective observation := by
@@ -65,9 +69,9 @@ def CompiledExecutes (environment : MinEnv) (compiled : Emit Atom) (result : Out
   ∀ state : St, state.world.selfExtra = [] → state.world.selfImports = [] →
   ∀ incoming : Metta.Bindings, ClosedValueBindings incoming → LeaRuntimeBindingInvariant incoming →
   ∀ parentBody scope continuation,
-    let code := renBy rename (toLeaTTaAtom (compiled first).1)
+    let code := renBy rename (encodeModelAtom (compiled first).1)
     (∀ key ∈ code.vars, Metta.Bindings.lookupVal incoming key = none) →
-    BodyRun environment state incoming code (toLeaTTaAtom (observation result))
+    BodyRun environment state incoming code (encodeModelAtom (observation result))
       parentBody scope continuation
 
 /-- Specialization to the actual source-expression compiler, retaining the
@@ -117,7 +121,7 @@ theorem expression_of_return (program : Program) (environment : MinEnv)
       exact fresh _ (expression_remaining_occurs _ _ _ _ _ _)
     have closed := observation_closed result
     have materialized : Metta.instantiate incoming
-        (renBy rename (toLeaTTaAtom (observation result))) = toLeaTTaAtom (observation result) := by
+        (renBy rename (encodeModelAtom (observation result))) = encodeModelAtom (observation result) := by
       rw [renBy_eq_self_of_vars_nil rename _ closed, Metta.instantiate_of_closed _ _ closed]
     have bounded : UsesBefore (first + 1) (observation result) := by
       intro key occurs
@@ -128,7 +132,7 @@ theorem expression_of_return (program : Program) (environment : MinEnv)
     simp only [Nat.cast_add, Nat.cast_one]
     rw [emitted]
     exact renamed_withFuel_return_enters_handler environment state incoming rename injective
-      (observation result) (toLeaTTaAtom (observation result)) first remaining fuel
+      (observation result) (encodeModelAtom (observation result)) first remaining fuel
       parentBody scope continuation rest done groundings privateRemaining bounded materialized closed
 
 
@@ -179,7 +183,7 @@ theorem expression_as_operand (program : Program) (environment : MinEnv)
     (state : St) (noExtra : state.world.selfExtra = []) (noImports : state.world.selfImports = [])
     (incoming : Metta.Bindings) (stored : ClosedValueBindings incoming)
     (invariant : LeaRuntimeBindingInvariant incoming) (caller : Frame) (continuation : Stack) :
-    let body := renBy rename (toLeaTTaAtom (expression program
+    let body := renBy rename (encodeModelAtom (expression program
       (sourceBindings.map (fun row => (row.1, MeTTaData.encode row.2)))
       (.grounded (.int sourceFuel)) term first).1)
     let sourceCall := .expr [.sym "function", body]
@@ -193,7 +197,7 @@ theorem expression_as_operand (program : Program) (environment : MinEnv)
         interpretFuel environment (fuel + cost) state
           (⟨atomToStack sourceCall (caller :: continuation), incoming⟩ :: rest) done =
         interpretFuel environment fuel nextState
-          (finItem (caller :: continuation) (toLeaTTaAtom (observation result)) output :: rest) done := by
+          (finItem (caller :: continuation) (encodeModelAtom (observation result)) output :: rest) done := by
   intro body sourceCall fresh
   obtain ⟨nextState, output, cost, threshold, world, outputClosed, outputInvariant, preserved, execution⟩ :=
     run first rename injective state noExtra noImports incoming stored invariant sourceCall
@@ -217,13 +221,13 @@ theorem expression_as_operand (program : Program) (environment : MinEnv)
     have entered := execution (fuel + 1) (by omega) rest done
     have returns : interpretFuel environment (fuel + 1) nextState
         (finItem ({atom := sourceCall, ret := .function, vars := varsCopy (caller :: continuation)} ::
-          caller :: continuation) (.expr [.sym "return", toLeaTTaAtom (observation result)]) output :: rest) done =
+          caller :: continuation) (.expr [.sym "return", encodeModelAtom (observation result)]) output :: rest) done =
       interpretFuel environment fuel nextState
-        (finItem (caller :: continuation) (toLeaTTaAtom (observation result)) output :: rest) done := by
+        (finItem (caller :: continuation) (encodeModelAtom (observation result)) output :: rest) done := by
       apply driver_singleton_step
       · simpa only [Metta.instantiate_of_closed output _ (observation_closed result)] using
           step_function_return environment fuel nextState (caller :: continuation)
-            (varsCopy (caller :: continuation)) sourceCall (toLeaTTaAtom (observation result)) output
+            (varsCopy (caller :: continuation)) sourceCall (encodeModelAtom (observation result)) output
       · rfl
     have combined := entered.trans returns
     have opener : atomToStack sourceCall (caller :: continuation) =
@@ -252,8 +256,8 @@ theorem expression_let_value (program : Program) (environment : MinEnv)
   let assigned := expression program names (.grounded (.int remaining)) bound (first + 2)
   let tail := expression program ((name, target) :: names) (.grounded (.int remaining)) body assigned.2
   let parent : Frame := {atom := parentBody, ret := .function, vars := scope}
-  let sourceCall := renBy rename (toLeaTTaAtom (call "function" [assigned.1]))
-  let template := renBy rename (toLeaTTaAtom (resultBranches (.var (freshName tail.2)) target tail.1))
+  let sourceCall := renBy rename (encodeModelAtom (call "function" [assigned.1]))
+  let template := renBy rename (encodeModelAtom (resultBranches (.var (freshName tail.2)) target tail.1))
   let recipient : Frame :=
     {atom := .expr [.sym "chain", sourceCall, .var (rename (freshName tail.2)), template],
      ret := .chain, vars := chainFrameVars (parent :: continuation) sourceCall template}
@@ -261,13 +265,13 @@ theorem expression_let_value (program : Program) (environment : MinEnv)
     intro entry member
     obtain ⟨row, _, rfl⟩ := List.mem_map.mp member
     exact MeTTaData.encode_data row.2
-  have operandSubset : ∀ key ∈ (renBy rename (toLeaTTaAtom assigned.1)).vars,
-      key ∈ (renBy rename (toLeaTTaAtom source)).vars := by
+  have operandSubset : ∀ key ∈ (renBy rename (encodeModelAtom assigned.1)).vars,
+      key ∈ (renBy rename (encodeModelAtom source)).vars := by
     intro key member
     apply let_core_variables_in_source program names name bound body first remaining namesData
       rename injective key
-    change key ∈ (renBy rename (toLeaTTaAtom (call "chain" [call "function" [assigned.1], _, _]))).vars
-    simp only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil,
+    change key ∈ (renBy rename (encodeModelAtom (call "chain" [call "function" [assigned.1], _, _]))).vars
+    simp only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil,
       Metta.Atom.vars, List.flatten_cons, List.flatten_nil, List.nil_append,
       List.append_nil, List.mem_append, List.mem_cons, List.not_mem_nil]
     tauto
@@ -277,8 +281,8 @@ theorem expression_let_value (program : Program) (environment : MinEnv)
       (first + 2) rename injective state noExtra noImports incoming stored invariant recipient
       (parent :: continuation) (fun key member => fresh key (operandSubset key member))
   let output := Metta.Bindings.addValRaw middle (rename (freshName (first + 1)))
-    (toLeaTTaAtom (MeTTaData.encode payload))
-  let entered := renBy rename (toLeaTTaAtom (expression program
+    (encodeModelAtom (MeTTaData.encode payload))
+  let entered := renBy rename (encodeModelAtom (expression program
     (((name, payload) :: sourceBindings).map (fun row => (row.1, MeTTaData.encode row.2)))
     (.grounded (.int remaining)) body assigned.2).1)
   have prefixRun (fuel : Nat) (enough : operandThreshold ≤ fuel)
@@ -287,7 +291,7 @@ theorem expression_let_value (program : Program) (environment : MinEnv)
       operandCost fuel environment state middleState incoming middle rename injective
       stored middleStored middleInvariant groundings parentBody scope continuation rest done
       fresh operandPreserved (by simpa only [recipient, parent, sourceCall, template,
-        target, tail, assigned, names, call, toLeaTTaAtom, toLeaTTaAtoms, renBy,
+        target, tail, assigned, names, call, encodeModelAtom, encodeModelAtoms, renBy,
         List.map_cons, List.map_nil, observation] using operandExecution (fuel + 4) (by omega) rest done)
   obtain ⟨outputStored, outputInvariant, enteredSubset, enteredPrivate, callerPreserved, _⟩ :=
     prefixRun operandThreshold le_rfl [] []
@@ -333,8 +337,8 @@ theorem expression_let_stopped (program : Program) (environment : MinEnv)
   let assigned := expression program names (.grounded (.int remaining)) bound (first + 2)
   let tail := expression program ((name, target) :: names) (.grounded (.int remaining)) body assigned.2
   let parent : Frame := {atom := parentBody, ret := .function, vars := scope}
-  let sourceCall := renBy rename (toLeaTTaAtom (call "function" [assigned.1]))
-  let template := renBy rename (toLeaTTaAtom (resultBranches (.var (freshName tail.2)) target tail.1))
+  let sourceCall := renBy rename (encodeModelAtom (call "function" [assigned.1]))
+  let template := renBy rename (encodeModelAtom (resultBranches (.var (freshName tail.2)) target tail.1))
   let recipient : Frame :=
     {atom := .expr [.sym "chain", sourceCall, .var (rename (freshName tail.2)), template],
      ret := .chain, vars := chainFrameVars (parent :: continuation) sourceCall template}
@@ -342,13 +346,13 @@ theorem expression_let_stopped (program : Program) (environment : MinEnv)
     intro entry member
     obtain ⟨row, _, rfl⟩ := List.mem_map.mp member
     exact MeTTaData.encode_data row.2
-  have operandSubset : ∀ key ∈ (renBy rename (toLeaTTaAtom assigned.1)).vars,
-      key ∈ (renBy rename (toLeaTTaAtom source)).vars := by
+  have operandSubset : ∀ key ∈ (renBy rename (encodeModelAtom assigned.1)).vars,
+      key ∈ (renBy rename (encodeModelAtom source)).vars := by
     intro key member
     apply let_core_variables_in_source program names name bound body first remaining namesData
       rename injective key
-    change key ∈ (renBy rename (toLeaTTaAtom (call "chain" [call "function" [assigned.1], _, _]))).vars
-    simp only [call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil,
+    change key ∈ (renBy rename (encodeModelAtom (call "chain" [call "function" [assigned.1], _, _]))).vars
+    simp only [call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil,
       Metta.Atom.vars, List.flatten_cons, List.flatten_nil, List.nil_append,
       List.append_nil, List.mem_append, List.mem_cons, List.not_mem_nil]
     tauto
@@ -368,9 +372,9 @@ theorem expression_let_stopped (program : Program) (environment : MinEnv)
       operandCost fuel environment state nextState incoming output rename injective namesData stored
       groundings marker markers outputStored.hasLoop_false parentBody scope continuation rest done
       fresh (by simpa only [observed, recipient, parent, sourceCall, template, target, tail,
-        assigned, names, steps, call, toLeaTTaAtom, toLeaTTaAtoms, renBy, List.map_cons, List.map_nil] using
+        assigned, names, steps, call, encodeModelAtom, encodeModelAtoms, renBy, List.map_cons, List.map_nil] using
         operandExecution (fuel + steps + 2) (by omega) rest done)
-    simpa only [observed, toLeaTTaAtom, names, steps, Nat.add_assoc] using run
+    simpa only [observed, encodeModelAtom, names, steps, Nat.add_assoc] using run
 
 
 /-- The complete let case of the source-fuel induction, with the source

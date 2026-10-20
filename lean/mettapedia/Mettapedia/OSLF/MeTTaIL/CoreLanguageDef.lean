@@ -34,25 +34,30 @@ set_option autoImplicit false
 namespace Mettapedia.OSLF.MeTTaIL.CoreReduction
 
 open Syntax RuleBinding
-open Mettapedia.GSLT.LanguageDef.WellSorted (usesBareCollection?)
 
 /-! ## Patterns -/
 
 /-- Constructors whose only parameter is a collection. -/
-def bareLabels (language : LanguageDef) : List String :=
-  (language.terms.filter usesBareCollection?).map (·.label)
+def bareLabels (language : LanguageDef) : List (String × CollType) :=
+  language.terms.filterMap fun rule =>
+    match rule.params with
+    | [.simple _ (.collection kind _)] => some (rule.label, kind)
+    | _ => none
 
-/-- Bare collections for bare-collection constructors, everywhere in a pattern. -/
-def unwrap (bare : List String) : Pattern → Pattern
+/-- Bare collections for bare-collection constructors, everywhere in a pattern. A collection
+written as the constructor's argument takes the collection kind the constructor declares: a
+literal `{…}` is read at the kind of the parameter it fills. -/
+def unwrap (bare : List (String × CollType)) : Pattern → Pattern
   | .bvar index => .bvar index
   | .fvar name => .fvar name
   | .apply label arguments =>
       let inner := arguments.map (unwrap bare)
-      if bare.contains label then
+      match bare.lookup label with
+      | some declared =>
         match inner with
-        | [.collection kind elements rest] => .collection kind elements rest
+        | [.collection _ elements rest] => .collection declared elements rest
         | _ => .apply label inner
-      else .apply label inner
+      | none => .apply label inner
   | .lambda binder body => .lambda binder (unwrap bare body)
   | .multiLambda arity binders body => .multiLambda arity binders (unwrap bare body)
   | .subst body replacement => .subst (unwrap bare body) (unwrap bare replacement)
@@ -263,7 +268,7 @@ def arguments (binding : Binding) (names : List (Option String)) : Option (List 
     | none => if names[position]? = some none then some (.bvar position) else none
 
 /-- Unwrap the patterns of a premise. -/
-def unwrapPremise (bare : List String) : Premise → Premise
+def unwrapPremise (bare : List (String × CollType)) : Premise → Premise
   | .freshness condition => .freshness ⟨condition.varName, unwrap bare condition.term⟩
   | .congruence source target => .congruence (unwrap bare source) (unwrap bare target)
   | .scopedStep step => .scopedStep {step with source := unwrap bare step.source, target := unwrap bare step.target}
@@ -393,7 +398,7 @@ def reduce (language : LanguageDef) : Except Failure LanguageDef := do
 /-! ## The core predicate -/
 
 /-- A core pattern: erased binder names and bare collections. -/
-def corePattern (bare : List String) (pattern : Pattern) : Bool :=
+def corePattern (bare : List (String × CollType)) (pattern : Pattern) : Bool :=
   pattern.hasCanonicalBinderMetadata && unwrap bare pattern == pattern
 
 /-- A core rule: its patterns are core and its binding declaration is admitted. -/

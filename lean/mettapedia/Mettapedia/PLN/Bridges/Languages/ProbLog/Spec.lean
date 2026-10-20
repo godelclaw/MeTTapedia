@@ -1,3 +1,4 @@
+import Mettapedia.PLN.Bridges.Languages.ProbLog.ClauseExtension
 import Mettapedia.PLN.Bridges.Languages.ProbLog.DistributionSemantics
 import Mettapedia.PLN.Bridges.Languages.ProbLog.Compilation
 import Mettapedia.PLN.Bridges.Languages.ProbLog.Infinite
@@ -60,7 +61,7 @@ ProbLog defines query probability via the **distribution semantics**:
 
 ## Lean Formalization
 
-### Core definitions (in `ProbLogCompilation.lean`)
+### Core definitions (in `Compilation.lean`)
 
 - `ProbLogProgram σ n` — a ProbLog program: `n` probabilistic facts + definite clauses
 - `residualKB prog w` — residual knowledge base for world `w`
@@ -88,9 +89,18 @@ probabilities via Weighted Model Counting (Bryant 1986):
 | `bdd_wmc_correct` | `BDD/WMC.lean` | WMC = weighted sum over satisfying assignments |
 | `apply_eval` | `BDD/Operations.lean` | BDD apply preserves Boolean semantics |
 | `GroundBDDCompile_sound` | `BDD/Compilation.lean` | BDD true ⟹ query holds (soundness) |
-| `queryStrength_prop_eq_queryProb` | `ProbLogDistributionSemantics.lean` | WM-PLN extraction = ProbLog probability |
-| `compilation_or_noisyOr` | `ProbLogCompilation.lean` | OR-pattern ProbLog = noisy-OR formula |
+| `queryStrength_prop_eq_queryProb` | `DistributionSemantics.lean` | WM-PLN extraction = ProbLog probability |
+| `compilation_or_noisyOr` | `Compilation.lean` | OR-pattern ProbLog = noisy-OR formula |
 | `fuzzyOrMulti_eq_noisyOrMulti` | `PLNNoisyOr.lean` | PLN fuzzy-OR = noisy-OR |
+
+### Finite factor and clause interpretations
+
+`FunctionalExtension` observes finitely many atoms in each residual least
+model. Its two-variable factor graph preserves every joint query on those
+observations and the total mass. `ClauseExtension` gives an explicit grounded
+clause-potential interpretation with the same mass object. Recursive programs
+are interpreted semantically; the canonical tables may be exponential and
+hard zeros are outside finite real log-weights alone.
 
 ### Conformance tests (kernel-checked, `BDD/Operations.lean`)
 

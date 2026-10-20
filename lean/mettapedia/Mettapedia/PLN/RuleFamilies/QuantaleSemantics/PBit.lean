@@ -20,7 +20,7 @@ The existing `BinaryEvidence` type `(pos, neg : ℝ≥0∞)` IS already a p-bit 
 
 namespace Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 /-! ## P-Bit Corner Constants -/

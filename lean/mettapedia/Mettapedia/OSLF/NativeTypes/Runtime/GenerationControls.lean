@@ -115,7 +115,7 @@ def changedGrammar : Snapshot :=
 
 def changedProvider : Snapshot :=
   {Mettapedia.OSLF.NativeTypes.Instances.Rho.DriverSource.snapshot with provider :=
-    ⟨[⟨"foreign", [], []⟩], [⟨"foreign", []⟩]⟩}
+    ⟨[⟨"foreign", [], []⟩], [⟨"foreign", []⟩], []⟩}
 
 #guard status (.canonicalRho changedProvider Mettapedia.OSLF.NativeTypes.Instances.Rho.DriverSource.fragment {}) =
   .error (.snapshotMismatch .canonicalRho)

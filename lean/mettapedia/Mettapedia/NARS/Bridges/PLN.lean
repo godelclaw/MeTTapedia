@@ -1,3 +1,6 @@
+import Mettapedia.NARS.Bridges.PLN.LedgerCountInterpretation
+import Mettapedia.NARS.Bridges.PLN.RevisionWorldModel
+import Mettapedia.NARS.Bridges.PLN.ScopedWorldModel
 import Mettapedia.NARS.Bridges.PLN.EvidenceTranslation
 import Mettapedia.NARS.Bridges.PLN.ConstructibleDuality
 import Mettapedia.NARS.Bridges.PLN.InformationAdjunction

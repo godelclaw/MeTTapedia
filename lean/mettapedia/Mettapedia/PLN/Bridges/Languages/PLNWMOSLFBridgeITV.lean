@@ -14,13 +14,13 @@ Typed ITV bridge above the typed WM and OSLF layers:
   `Framework.QuantaleCoherence.language_quantale_coherence_bundle`
 -/
 
-namespace Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridgeITVTyped
+namespace Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridgeITV
 
 open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.OSLF.Framework.EvidenceSemantics
 open Mettapedia.Algebra.QuantaleWeakness
 open Mettapedia.OSLF.Framework.LangMorphism
@@ -1634,4 +1634,4 @@ theorem language_quantale_coherence_wmITV_strength_threshold_atom_of_queryEncode
 
 end SelectorCoherence
 
-end Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridgeITVTyped
+end Mettapedia.PLN.Bridges.Languages.PLNWMOSLFBridgeITV

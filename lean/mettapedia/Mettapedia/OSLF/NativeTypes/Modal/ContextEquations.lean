@@ -5,9 +5,9 @@ open Mettapedia.OSLF.Framework
 /-!
 # Equation conversion through a licensed binder context
 
-The proof constructs contextual equation receipts. Binder descent is governed
-by the actual operational permissions and typing context. It is not supplied
-as an assumed equation-preservation law for an arbitrary function.
+The proof constructs contextual equation receipts at well-sorted sites.
+Equation jobs use congruence contexts, independently of the plan's reduction
+permissions. No equation-preservation law for an arbitrary function is assumed.
 -/
 
 set_option autoImplicit false
@@ -43,11 +43,11 @@ def underLambda (domain : TypeExpr) (receipt : GeneralEquationJobs.Receipt) : Ge
 premise witnesses. The local binder context of those witnesses is unchanged. -/
 theorem underLambda_complete {plan : Plan} {bound : List TypeExpr} {domain codomain : TypeExpr}
     {source : Pattern} {receipt : GeneralEquationJobs.Receipt}
-    (permitted : plan.permissions.sites.underLambda = true)
+    (_permitted : plan.permissions.sites.underLambda = true)
     (complete : GeneralEquationJobs.Completion plan (domain :: bound) codomain source receipt) :
     GeneralEquationJobs.Completion plan bound (.arrow domain codomain)
       (.lambda none source) (underLambda domain receipt) := by
-  refine ⟨⟨complete.job.1, .lambda permitted complete.job.2⟩,
+  refine ⟨⟨complete.job.1, .lambda (by rfl) complete.job.2⟩,
     typed_lambda complete.sourceTyped, complete.matched, complete.capturedTyped,
     complete.premises, complete.completedTyped, complete.reduct, ?_, ?_⟩
   · refine ⟨complete.accepted.1, complete.accepted.2.1, ?_⟩

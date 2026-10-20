@@ -47,7 +47,7 @@ namespace Mettapedia.OSLF.QuantifiedFormula2
 open Mettapedia.OSLF.Formula
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.OSLF.Framework.EvidenceSemantics
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## Term Syntax -/
 

@@ -1,3 +1,4 @@
+import Mettapedia.NARS.Bridges.GSLT
 import Mettapedia.NARS.Bridges.CognitiveArchitecture
 import Mettapedia.NARS.Bridges.PLN
 import Mettapedia.NARS.Bridges.ProbabilityTheory

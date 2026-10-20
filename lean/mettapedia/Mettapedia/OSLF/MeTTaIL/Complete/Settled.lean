@@ -37,6 +37,7 @@ def settled (explorer : Explorer σ Run Receipt) : Bool := explorer.nodes.all (n
 
 variable {S}
 
+omit [DecidableEq σ] in
 theorem expand_settled (stable : Stable S) (round : Nat) (node : Node σ Run Receipt)
     (done : nodeSettled S node = true) :
     (expand S round node).2 = [] ∧ (expand S round node).1.state = node.state ∧
@@ -153,7 +154,7 @@ theorem classes_stable : Stable (Classes.search plan bound expected) := by
   simp only [Classes.status, same, done, if_true]
 
 /-- **Normalized exploration may stop once settled.** -/
-theorem normalized_stable : Stable (Normalized.search plan bound expected) :=
+theorem normalized_stable (mode : Normalized.Commit := .standard) : Stable (Normalized.search plan bound expected mode) :=
   classes_stable plan bound expected
 
 end Classes

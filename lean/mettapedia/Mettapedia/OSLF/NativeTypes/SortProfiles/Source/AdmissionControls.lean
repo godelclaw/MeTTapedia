@@ -47,7 +47,7 @@ def language : LanguageDef where
   equations := []
   rewrites := [rule]
 
-def snapshot : Snapshot := ⟨language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨language, [], ⟨[], [], []⟩⟩
 def fragment : LanguageFragment := {operational := {includeDerivedEquations := false}}
 def chosen := selectedSnapshot snapshot fragment
 def logic := Mettapedia.OSLF.NativeTypes.Structural.heytingFragment
@@ -143,7 +143,7 @@ def commutativeEquation : Equation where
   right := .apply "Pair" [.fvar "y", .fvar "x"]
 
 def commutativeLanguage : LanguageDef := {language with equations := [commutativeEquation]}
-def commutativeSnapshot : Snapshot := ⟨commutativeLanguage, [], ⟨[], []⟩⟩
+def commutativeSnapshot : Snapshot := ⟨commutativeLanguage, [], ⟨[], [], []⟩⟩
 def commutativeChosen := selectedSnapshot commutativeSnapshot fragment
 def commutativeWrongVertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex commutativeChosen.language :=
   (fun _ => .star, fun slot =>

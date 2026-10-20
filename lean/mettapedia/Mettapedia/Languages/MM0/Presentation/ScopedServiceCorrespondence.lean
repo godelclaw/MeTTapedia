@@ -1,4 +1,8 @@
 import Mettapedia.Languages.MM0.Presentation.ScopedServiceProgram
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Submitted shared MM0 proofs through generated execution
@@ -108,8 +112,8 @@ theorem shared_witness_iff (T : Theory) (declaration : TheoremDecl)
 def environment (library : List Metta.Atom) : MinEnv :=
   MinEnv.ofAtomsGT
     (((programAtoms program).flatMap fun pair =>
-      [Mettapedia.Languages.MeTTa.HE.LeaTTaBridge.toLeaTTaAtom pair.1,
-       Mettapedia.Languages.MeTTa.HE.LeaTTaBridge.toLeaTTaAtom pair.2]) ++ library)
+      [Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.encodeModelAtom pair.1,
+       Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory.encodeModelAtom pair.2]) ++ library)
     Metta.Builtins.table
 
 theorem program_loaded (library : List Metta.Atom)

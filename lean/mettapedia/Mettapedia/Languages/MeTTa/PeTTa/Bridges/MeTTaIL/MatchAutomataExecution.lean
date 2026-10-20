@@ -20,7 +20,7 @@ open CettaWire MeTTaILFirstOrderRuleCompilation
 open Mettapedia.OSLF.MeTTaIL.Syntax
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval MatchAutomataProgram
 open MatchAutomataSourceExecution (listValue)
 open MatchAutomataCompilationExecution (shapeTerm subjectTerm)
@@ -289,8 +289,7 @@ private theorem top_body_returns (state : State) (patterns : List PatternPlan) (
       patterns subject [v "locations", v "patterns", v "subject", .symbol "LNil"]
       (by
         simp [locationsBound, selected, runBound, goalsBound, observationsBound, programsBound, treeBound,
-          shapesBound, bindings, driverEnvironment, applySubst, Subst.lookup, listValue, encodeList_map,
-          Function.comp_def, id_eq]
+          shapesBound, bindings, driverEnvironment, applySubst, Subst.lookup, listValue, encodeList_map]
         rfl)
     rw [show candidates = _ from top_candidates patterns subject,
       MeTTaILSubtermMatchAutomata.complete_reference] at result
@@ -432,7 +431,7 @@ private theorem bottom_body_returns (state : State) (patterns : List PatternPlan
         have computed := MatchAutomataBottomExecution.bottom_state_captured_returns inventoryBound state inventory tree
           (v "inventory") (v "tree")
           (by simp [inventoryBound, rawBound, treeBound, shapesBound, applySubst, Subst.lookup,
-            listValue, encodeList_map, Function.comp_def, id_eq])
+            listValue, encodeList_map])
         rw [analyzed] at computed
         exact computed
       have locationsReturned : PureReturns program stateBound state
@@ -447,7 +446,7 @@ private theorem bottom_body_returns (state : State) (patterns : List PatternPlan
                     (BottomUpMatchAutomaton.analyze inventory tree)), .symbol "LNil"]
               rw [analyzed]
               simp [stateBound, stateValue, analyzedTree, inventoryBound, rawBound, treeBound, shapesBound,
-                applySubst, Subst.lookup, listValue, encodeList_map, Function.comp_def, id_eq])
+                applySubst, Subst.lookup, listValue, encodeList_map])
       have matchesReturned : PureReturns program locationsBound state
           (a "gslt:automata:complete" [v "locations", v "patterns", v "subject", .symbol "LNil"]) state
           matchesValue := by
@@ -455,7 +454,7 @@ private theorem bottom_body_returns (state : State) (patterns : List PatternPlan
           patterns subject [v "locations", v "patterns", v "subject", .symbol "LNil"]
           (by
             simp [locationsBound, stateBound, inventoryBound, rawBound, treeBound, shapesBound, bindings,
-              driverEnvironment, applySubst, Subst.lookup, listValue, encodeList_map, Function.comp_def, id_eq]
+              driverEnvironment, applySubst, Subst.lookup, listValue, encodeList_map]
             rfl)
         have exactCandidates : candidates =
             SubtermMatching.reference ((erasePatterns patterns).map MeTTaILSubtermMatchAutomata.View.lowerPattern)
@@ -478,7 +477,7 @@ private theorem bottom_body_returns (state : State) (patterns : List PatternPlan
         · simpa [matchesBound, locationsBound, stateBound, applySubst, Subst.lookup] using
             variable_returns program matchesBound state "state"
         · simp [bottomCases, stateValue, analyzedTree, MatchAutomataBottomExecution.stateTerm,
-            MatchAutomataBottomExecution.stateTerms_eq_map, listValue, encodeList_map, Function.comp_def, id_eq,
+            MatchAutomataBottomExecution.stateTerms_eq_map, listValue, encodeList_map,
             CettaWireAtom.encode, CettaWireAtom.encodeMany, SpaceSemantics.selectCase,
             SpaceSemantics.matchValue, SpaceSemantics.matchValue.matchValues, matchAtom, Subst.lookup,
             selected, matchesBound, locationsBound, stateBound, inventoryBound, rawBound, treeBound,

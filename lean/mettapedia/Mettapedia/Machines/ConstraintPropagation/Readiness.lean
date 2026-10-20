@@ -18,6 +18,19 @@ set_option autoImplicit false
 
 namespace Mettapedia.Machines.ConstraintPropagation.Readiness
 
+namespace Bindings
+
+/-- A completion agrees with every value already supplied. -/
+def Extends {Key Value : Type*} (bindings : Key → Option Value)
+    (completion : Key → Value) : Prop :=
+  ∀ name value, bindings name = some value → completion name = value
+
+/-- Refinement preserves every existing assignment. -/
+def Refines {Key Value : Type*} (early late : Key → Option Value) : Prop :=
+  ∀ name value, early name = some value → late name = some value
+
+end Bindings
+
 variable {Var : Type*} [DecidableEq Var]
 
 inductive Condition (Var : Type*) where

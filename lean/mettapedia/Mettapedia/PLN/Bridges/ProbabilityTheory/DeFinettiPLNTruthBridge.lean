@@ -135,7 +135,7 @@ noncomputable def posteriorBernoulliMixturePrefixTypedWidthComplementITV
     (hZ : M.countEvidenceMass k l ≠ 0)
     (X : Gamble (Fin n → Bool))
     (hX : ∀ ω, X ω ∈ Set.Icc (0 : ℝ) 1) :
-    TypedITV (projectiveCredalWidthComplementITVSemantics.{0, 0} PUnit
+    TypedITV (projectiveCredalWidthComplementITVConstructor.{0, 0} PUnit
       (Fin n → Bool)) :=
   TypedITV.fromProjectiveCredalWidthComplement
     (posteriorBernoulliMixturePrefixWidthComplementITVSource M k l n hZ X hX)
@@ -183,7 +183,7 @@ noncomputable def posteriorBernoulliMixtureFamilyPrefixTypedWidthComplementITV
     (hC : C.Nonempty)
     (X : Gamble (Fin n → Bool))
     (hX : ∀ ω, X ω ∈ Set.Icc (0 : ℝ) 1) :
-    TypedITV (projectiveCredalWidthComplementITVSemantics.{0, 0} PUnit
+    TypedITV (projectiveCredalWidthComplementITVConstructor.{0, 0} PUnit
       (Fin n → Bool)) :=
   TypedITV.fromProjectiveCredalWidthComplement
     (posteriorBernoulliMixtureFamilyPrefixWidthComplementITVSource
@@ -616,7 +616,7 @@ noncomputable def posteriorBernoulliMixtureFamilyPrefixTypedWidthComplementITV
     (posteriorBernoulliMixturePrefixTypedWidthComplementITV M k l n hZ X hX).midpoint =
       (bernoulliMixturePrefixLaw_analytic
         (M.posteriorBernoulliMixture k l hZ) n).toPrecisePrevision X := by
-  unfold TypedITV.midpoint TypedITV.value projectiveCredalWidthComplementITVSemantics
+  unfold TypedITV.midpoint TypedITV.value projectiveCredalWidthComplementITVConstructor
   exact posteriorBernoulliMixturePrefixWidthComplementITV_strength M k l n hZ X hX
 
 /-- Finite-source Revision count packets supply the same positive/negative

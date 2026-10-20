@@ -29,7 +29,7 @@ variable {space : Space} {dispatch : GroundedDispatch} {live : List Atom}
 /-- The existing function-body boundary after one raw instruction result.
 The bindings materialize that result before deciding whether to continue. -/
 def BodyCompletion (space : Space) (dispatch : GroundedDispatch) (live : List Atom)
-    (raw result : ResultPair) (typing : EvalTypeService := publishedTypeService)
+    (raw result : ResultPair) (typing : EvalTypeService := storageTypeService)
     (caller : Option Atom := none) : Prop :=
   ∃ materialized, BindingMaterializationRel raw.2 raw.1 materialized ∧
     ((embeddedInstruction materialized = false ∧ result = (materialized, raw.2)) ∨

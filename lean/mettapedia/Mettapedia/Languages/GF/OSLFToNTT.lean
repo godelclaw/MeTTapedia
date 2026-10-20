@@ -62,7 +62,7 @@ open Mettapedia.Languages.GF.StoreToLogicalForm
 open Mettapedia.Languages.GF.WorldModelVisibleBridge
 open Mettapedia.CategoryTheory.PLNInstance
 open Mettapedia.PLN.Bridges.CategoryTheory.EvidenceFibration
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## 1. BinaryEvidence → NT Object -/
 

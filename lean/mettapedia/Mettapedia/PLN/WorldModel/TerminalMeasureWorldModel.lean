@@ -42,7 +42,7 @@ Step C (future): measurable queries via σ-algebras.
 namespace Mettapedia.PLN.WorldModel.TerminalMeasureWorldModel
 
 open scoped ENNReal MeasureTheory
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 

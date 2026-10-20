@@ -23,7 +23,7 @@ open Mettapedia.Logic
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet
 open Mettapedia.ProbabilityTheory.Exchangeability.MarkovDeFinettiHigherOrder
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.SufficientStatisticEncoder
@@ -236,10 +236,6 @@ theorem aggregate_observationMultiset_eq_rowEvidence_of_summary
         omega))
       (0 : GramCounts k m) (xs.drop m) q
   simpa [haux, rowEvidence_zero, add_comm] using hagg
-
-instance instEvidenceTypeHigherOrderWMState :
-    EvidenceType (Multiset (HigherOrderObservation k m)) :=
-  multisetEvidenceType (HigherOrderObservation k m)
 
 noncomputable instance instAdditiveWorldModelHigherOrderWMState :
     AdditiveWorldModel (Multiset (HigherOrderObservation k m)) (Context k m) (MultiEvidence k) :=

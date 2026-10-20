@@ -69,7 +69,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.PLN.RuleFamilies.QuantaleSemantics.DoubleNegationCorners
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.PBit
 open Mettapedia.PLN.RuleFamilies.QuantaleSemantics.CDLogic
 open scoped ENNReal

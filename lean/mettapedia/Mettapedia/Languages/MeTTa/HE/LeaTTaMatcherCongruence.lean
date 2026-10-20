@@ -2,6 +2,10 @@ import Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
 import Mettapedia.Languages.MeTTa.HE.MatcherMergeExistence
 import Mettapedia.Languages.MeTTa.HE.DeclMergeSpec
 import Mettapedia.Languages.MeTTa.HE.BindingComposition
+import Batteries.Tactic.OpenPrivate
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
 
 /-!
 # Structural HE/LeaTTa matcher congruence
@@ -20,6 +24,10 @@ open Mettapedia.Languages.MeTTa.HE
 open Mettapedia.Languages.MeTTa.HE.DeclMergeSpec
 open Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge (AtomOccurs SemanticLoopFree)
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+
+open private encodeModelGround_injective assignment_mem_of_lookup_eq_some
+  heLookup_eq_some_of_assignment_mem_of_nodup
+  from Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
 
 /-- The structural part of cross-engine binding congruence.  It deliberately
 omits solution theory: successful executable operations supply that field
@@ -55,13 +63,13 @@ theorem heMatch_leaMatch_reversed_solutionTheoryEquiv
     {lb : Metta.Bindings}
     (hHE : b ∈ matchAtoms query pattern fuel)
     (hLea : lb ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query)) :
+      (encodeModelAtom pattern) (encodeModelAtom query)) :
     LeaBindingSolutionTheoryEquiv b lb := by
   intro valuation
   rw [matchAtoms_solution_iff hHE valuation,
     leaMatchAtoms_solution_iff valuation
-      (toLeaTTaAtom_noFloat pattern)
-      (toLeaTTaAtom_noFloat query) hLea]
+      (encodeModelAtom_noFloat pattern)
+      (encodeModelAtom_noFloat query) hLea]
   simp only [MettaEquationSatisfied]
   exact eq_comm
 
@@ -72,7 +80,7 @@ theorem matchAtoms_congruence_of_structural
     {lb : Metta.Bindings}
     (hHE : b ∈ matchAtoms query pattern fuel)
     (hLea : lb ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (hstruct : LeaBindingStructuralCongruence b lb) :
     LeaBindingCongruence b lb :=
   hstruct.withSolutions
@@ -108,7 +116,7 @@ theorem addVarBinding_congruence_of_structural
     (hlbNoFloat : LeaBindingsNoFloat lb)
     (hHE : heOut ∈ addVarBinding b v value fuel)
     (hLea : leaOut ∈
-      Metta.Bindings.addVarBinding lb v (toLeaTTaAtom value))
+      Metta.Bindings.addVarBinding lb v (encodeModelAtom value))
     (hstruct : LeaBindingStructuralCongruence heOut leaOut) :
     LeaBindingCongruence heOut leaOut := by
   apply hstruct.withSolutions
@@ -116,7 +124,7 @@ theorem addVarBinding_congruence_of_structural
   rw [addVarBinding_solution_iff hHE valuation,
     hbase.semantic.solutions valuation,
     leaAddVarBinding_solution_iff valuation hlbNoFloat
-      (toLeaTTaAtom_noFloat value) hLea]
+      (encodeModelAtom_noFloat value) hLea]
 
 /-- Successful equality insertion obtains its complete solution theory
 outside the structural preservation induction as well. -/
@@ -140,7 +148,7 @@ carried recursively. -/
 def LeaMatcherStructuralTransport
     (query pattern : Atom) (b : Bindings) : Prop :=
   ∃ lb,
-    lb ∈ Metta.matchAtoms (toLeaTTaAtom pattern) (toLeaTTaAtom query) ∧
+    lb ∈ Metta.matchAtoms (encodeModelAtom pattern) (encodeModelAtom query) ∧
       LeaBindingStructuralCongruence b lb
 
 /-- Upgrade the smaller matcher witness after executable HE success. -/
@@ -162,12 +170,12 @@ theorem leaMatchAtoms_leaf_subsingleton
     {query pattern : Atom} {left right : Metta.Bindings}
     (hleaf : ¬ BothExpressions query pattern)
     (hleft : left ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (hright : right ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query)) :
+      (encodeModelAtom pattern) (encodeModelAtom query)) :
     left = right := by
   cases query <;> cases pattern <;>
-    simp_all [BothExpressions, toLeaTTaAtom, Metta.matchAtoms,
+    simp_all [BothExpressions, encodeModelAtom, Metta.matchAtoms,
       Metta.matchAtomsWith.eq_def]
   split at hleft <;> simp_all
 
@@ -178,7 +186,7 @@ executable LeaTTa matcher, rather than an extra caller premise. -/
 theorem reflexiveVar_or_varsDisjoint_of_leaMatchAtoms_leaf
     {query pattern : Atom} {lb : Metta.Bindings}
     (hLea : lb ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (hleaf : ¬ BothExpressions query pattern) :
     (∃ name, query = .var name ∧ pattern = .var name) ∨
       VarsDisjoint query pattern := by
@@ -186,43 +194,43 @@ theorem reflexiveVar_or_varsDisjoint_of_leaMatchAtoms_leaf
   | symbol queryName =>
       exact Or.inr (by
         intro name hquery
-        simp [toLeaTTaAtom, Metta.Atom.vars] at hquery)
+        simp [encodeModelAtom, Metta.Atom.vars] at hquery)
   | grounded queryGround =>
       exact Or.inr (by
         intro name hquery
-        simp [toLeaTTaAtom, Metta.Atom.vars] at hquery)
+        simp [encodeModelAtom, Metta.Atom.vars] at hquery)
   | var queryName =>
       cases pattern with
       | symbol patternName =>
           exact Or.inr (by
             intro name hquery hpattern
-            simp [toLeaTTaAtom, Metta.Atom.vars] at hpattern)
+            simp [encodeModelAtom, Metta.Atom.vars] at hpattern)
       | grounded patternGround =>
           exact Or.inr (by
             intro name hquery hpattern
-            simp [toLeaTTaAtom, Metta.Atom.vars] at hpattern)
+            simp [encodeModelAtom, Metta.Atom.vars] at hpattern)
       | var patternName =>
           by_cases hsame : queryName = patternName
           · subst patternName
             exact Or.inl ⟨queryName, rfl, rfl⟩
           · exact Or.inr (by
               intro name hquery hpattern
-              simp [toLeaTTaAtom, Metta.Atom.vars] at hquery hpattern
+              simp [encodeModelAtom, Metta.Atom.vars] at hquery hpattern
               exact hsame (hquery.symm.trans hpattern))
       | expression patternAtoms =>
           cases hoccurs :
-              Metta.Subst.occurs queryName (.expr (toLeaTTaAtoms patternAtoms)) with
+              Metta.Subst.occurs queryName (.expr (encodeModelAtoms patternAtoms)) with
           | true =>
-              simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom,
+              simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom,
                 hoccurs] at hLea
           | false =>
               have hfresh :
-                  queryName ∉ (.expr (toLeaTTaAtoms patternAtoms) : Metta.Atom).vars :=
+                  queryName ∉ (.expr (encodeModelAtoms patternAtoms) : Metta.Atom).vars :=
                 not_mem_vars_of_occurs_eq_false queryName _ hoccurs
               exact Or.inr (by
                 intro name hquery hpattern
                 have hname : name = queryName := by
-                  simpa [toLeaTTaAtom, Metta.Atom.vars] using hquery
+                  simpa [encodeModelAtom, Metta.Atom.vars] using hquery
                 subst name
                 exact hfresh hpattern)
   | expression queryAtoms =>
@@ -230,25 +238,25 @@ theorem reflexiveVar_or_varsDisjoint_of_leaMatchAtoms_leaf
       | symbol patternName =>
           exact Or.inr (by
             intro name hquery hpattern
-            simp [toLeaTTaAtom, Metta.Atom.vars] at hpattern)
+            simp [encodeModelAtom, Metta.Atom.vars] at hpattern)
       | grounded patternGround =>
           exact Or.inr (by
             intro name hquery hpattern
-            simp [toLeaTTaAtom, Metta.Atom.vars] at hpattern)
+            simp [encodeModelAtom, Metta.Atom.vars] at hpattern)
       | var patternName =>
           cases hoccurs :
-              Metta.Subst.occurs patternName (.expr (toLeaTTaAtoms queryAtoms)) with
+              Metta.Subst.occurs patternName (.expr (encodeModelAtoms queryAtoms)) with
           | true =>
-              simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom,
+              simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom,
                 hoccurs] at hLea
           | false =>
               have hfresh :
-                  patternName ∉ (.expr (toLeaTTaAtoms queryAtoms) : Metta.Atom).vars :=
+                  patternName ∉ (.expr (encodeModelAtoms queryAtoms) : Metta.Atom).vars :=
                 not_mem_vars_of_occurs_eq_false patternName _ hoccurs
               exact Or.inr (by
                 intro name hquery hpattern
                 have hname : name = patternName := by
-                  simpa [toLeaTTaAtom, Metta.Atom.vars] using hpattern
+                  simpa [encodeModelAtom, Metta.Atom.vars] using hpattern
                 subst name
                 exact hfresh hquery)
       | expression patternAtoms =>
@@ -261,7 +269,7 @@ mutual operational induction. -/
 theorem exists_matchRel_of_leaMatchAtoms_leaf
     {query pattern : Atom} {lb : Metta.Bindings}
     (hLea : lb ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (hdisj : VarsDisjoint query pattern)
     (hleaf : ¬ BothExpressions query pattern) :
     ∃ heOut, DeclMatchSpec.MatchRel query pattern heOut := by
@@ -273,16 +281,16 @@ theorem exists_matchRel_of_leaMatchAtoms_leaf
           · subst patternName
             exact ⟨⟨[], []⟩, .symSym queryName⟩
           · simp [Metta.matchAtoms, Metta.matchAtomsWith.eq_def,
-              toLeaTTaAtom, heq] at hLea
+              encodeModelAtom, heq] at hLea
       | var patternVar =>
           exact ⟨⟨[(patternVar, .symbol queryName)], []⟩,
             .nonVarVar (by simp [DeclMatchSpec.Atom.isVarB]) (by intro occurs; cases occurs)⟩
       | grounded ground =>
           simp [Metta.matchAtoms, Metta.matchAtomsWith.eq_def,
-            toLeaTTaAtom, Metta.Atom.equiv] at hLea
+            encodeModelAtom, Metta.Atom.equiv] at hLea
       | expression atoms =>
           simp [Metta.matchAtoms, Metta.matchAtomsWith.eq_def,
-            toLeaTTaAtom, Metta.Atom.equiv] at hLea
+            encodeModelAtom, Metta.Atom.equiv] at hLea
   | var queryVar =>
       cases pattern with
       | symbol patternName =>
@@ -293,8 +301,8 @@ theorem exists_matchRel_of_leaMatchAtoms_leaf
             intro heq
             subst patternVar
             exact (hdisj queryVar
-              (by simp [toLeaTTaAtom, Metta.Atom.vars]))
-              (by simp [toLeaTTaAtom, Metta.Atom.vars])
+              (by simp [encodeModelAtom, Metta.Atom.vars]))
+              (by simp [encodeModelAtom, Metta.Atom.vars])
           exact ⟨⟨[], [(queryVar, patternVar)]⟩,
             .varVar queryVar patternVar⟩
       | grounded ground =>
@@ -304,31 +312,31 @@ theorem exists_matchRel_of_leaMatchAtoms_leaf
           exact ⟨⟨[(queryVar, .expression atoms)], []⟩,
             .varNonVar (by simp [DeclMatchSpec.Atom.isVarB]) (by
               intro occurs
-              exact hdisj queryVar (by simp [toLeaTTaAtom, Metta.Atom.vars])
-                (mem_toLeaTTaAtom_vars_iff_atomOccurs.mpr occurs))⟩
+              exact hdisj queryVar (by simp [encodeModelAtom, Metta.Atom.vars])
+                (mem_encodeModelAtom_vars_iff_atomOccurs.mpr occurs))⟩
   | grounded queryGround =>
       cases pattern with
       | symbol patternName =>
           simp [Metta.matchAtoms, Metta.matchAtomsWith.eq_def,
-            toLeaTTaAtom, Metta.Atom.equiv] at hLea
+            encodeModelAtom, Metta.Atom.equiv] at hLea
       | var patternVar =>
           exact ⟨⟨[(patternVar, .grounded queryGround)], []⟩,
             .nonVarVar (by simp [DeclMatchSpec.Atom.isVarB]) (by intro occurs; cases occurs)⟩
       | grounded patternGround =>
           have hequiv :
-              Metta.Ground.equiv (toLeaTTaGround patternGround)
-                (toLeaTTaGround queryGround) = true := by
+              Metta.Ground.equiv (encodeModelGround patternGround)
+                (encodeModelGround queryGround) = true := by
             by_contra hnot
             have hfalse :
-                Metta.Ground.equiv (toLeaTTaGround patternGround)
-                  (toLeaTTaGround queryGround) = false :=
+                Metta.Ground.equiv (encodeModelGround patternGround)
+                  (encodeModelGround queryGround) = false :=
               Bool.eq_false_of_not_eq_true hnot
             simp [Metta.matchAtoms, Metta.matchAtomsWith.eq_def,
-              toLeaTTaAtom, Metta.Atom.equiv, hfalse] at hLea
+              encodeModelAtom, Metta.Atom.equiv, hfalse] at hLea
           have heq : patternGround = queryGround := by
             cases patternGround <;> cases queryGround
             all_goals
-              simp only [toLeaTTaGround, Metta.Ground.equiv] at hequiv
+              simp only [encodeModelGround, Metta.Ground.equiv] at hequiv
             all_goals
               change Metta.Ground.beq _ _ = true at hequiv
             all_goals
@@ -337,194 +345,24 @@ theorem exists_matchRel_of_leaMatchAtoms_leaf
           exact ⟨⟨[], []⟩, .grounded queryGround⟩
       | expression atoms =>
           simp [Metta.matchAtoms, Metta.matchAtomsWith.eq_def,
-            toLeaTTaAtom, Metta.Atom.equiv] at hLea
+            encodeModelAtom, Metta.Atom.equiv] at hLea
   | expression queryAtoms =>
       cases pattern with
       | symbol patternName =>
           simp [Metta.matchAtoms, Metta.matchAtomsWith.eq_def,
-            toLeaTTaAtom, Metta.Atom.equiv] at hLea
+            encodeModelAtom, Metta.Atom.equiv] at hLea
       | var patternVar =>
           exact ⟨⟨[(patternVar, .expression queryAtoms)], []⟩,
             .nonVarVar (by simp [DeclMatchSpec.Atom.isVarB]) (by
               intro occurs
               exact hdisj patternVar
-                (mem_toLeaTTaAtom_vars_iff_atomOccurs.mpr occurs)
-                (by simp [toLeaTTaAtom, Metta.Atom.vars]))⟩
+                (mem_encodeModelAtom_vars_iff_atomOccurs.mpr occurs)
+                (by simp [encodeModelAtom, Metta.Atom.vars]))⟩
       | grounded ground =>
           simp [Metta.matchAtoms, Metta.matchAtomsWith.eq_def,
-            toLeaTTaAtom, Metta.Atom.equiv] at hLea
+            encodeModelAtom, Metta.Atom.equiv] at hLea
       | expression patternAtoms =>
           exact (hleaf ⟨queryAtoms, patternAtoms, rfl, rfl⟩).elim
-
-/-- Translation of HE grounded payloads is injective. -/
-private theorem toLeaTTaGround_injective :
-    Function.Injective toLeaTTaGround := by
-  intro left right heq
-  cases left <;> cases right <;>
-    simp [toLeaTTaGround] at heq <;> simp_all
-
-/-- The HE-to-LeaTTa atom embedding is injective.  Consequently, extracting
-an HE witness from a transformed Robinson equation cannot silently replace
-an original conflicting atom by a different presentation.  This is the
-constructor-level fact used by the direct strict-prefix recursion; binding
-records themselves remain compared only through `LeaBindingCongruence`. -/
-theorem toLeaTTaAtom_injective : Function.Injective toLeaTTaAtom := by
-  let AtomGoal : Atom → Prop := fun left => ∀ right,
-    toLeaTTaAtom left = toLeaTTaAtom right → left = right
-  let ListGoal : List Atom → Prop := fun left => ∀ right,
-    toLeaTTaAtoms left = toLeaTTaAtoms right → left = right
-  have hrec : ∀ left, AtomGoal left := by
-    apply Atom.rec (motive_1 := AtomGoal) (motive_2 := ListGoal)
-    · intro name right heq
-      cases right <;> simp_all [toLeaTTaAtom]
-    · intro name right heq
-      cases right <;> simp_all [toLeaTTaAtom]
-    · intro value right heq
-      cases right with
-      | symbol | var | expression => cases heq
-      | grounded other =>
-          congr
-          cases value <;> cases other <;>
-            simp [toLeaTTaAtom, toLeaTTaGround] at heq <;> simp_all
-    · intro atoms ih right heq
-      cases right with
-      | symbol | var | grounded => cases heq
-      | expression others =>
-          exact congrArg Atom.expression (ih others (by
-            simpa [toLeaTTaAtom] using heq))
-    · intro right heq
-      cases right <;> simp_all [toLeaTTaAtoms]
-    · intro atom atoms ihAtom ihAtoms right heq
-      cases right with
-      | nil => cases heq
-      | cons other others =>
-          simp only [toLeaTTaAtoms, List.cons.injEq] at heq
-          exact congrArg₂ List.cons
-            (ihAtom other heq.1) (ihAtoms others heq.2)
-  intro left right heq
-  exact hrec left right heq
-
-/-- A semantically satisfiable HE leaf equation has a declarative matcher
-witness.  Expression/expression equations are reserved for the paired list /
-merge recursion. -/
-theorem exists_matchRel_of_solution_leaf
-    {left right : Atom}
-    (hsat : ∃ valuation : String → Metta.Atom,
-      MettaEquationSatisfied valuation
-        (toLeaTTaAtom left, toLeaTTaAtom right))
-    (hleaf : ¬ BothExpressions left right) :
-    ∃ out, DeclMatchSpec.MatchRel left right out := by
-  obtain ⟨valuation, hequation⟩ := hsat
-  cases left with
-  | symbol leftName =>
-      cases right with
-      | symbol rightName =>
-          have hname : leftName = rightName := by
-            simpa [MettaEquationSatisfied, toLeaTTaAtom,
-              applyClassSolution] using hequation
-          subst rightName
-          exact ⟨Bindings.empty, .symSym leftName⟩
-      | var rightName =>
-          exact ⟨Bindings.empty.assign rightName (.symbol leftName),
-            .nonVarVar (by simp [DeclMatchSpec.Atom.isVarB]) (by intro occurs; cases occurs)⟩
-      | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
-            applyClassSolution] at hequation
-      | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
-            applyClassSolution] at hequation
-  | var leftName =>
-      cases right with
-      | symbol rightName =>
-          exact ⟨Bindings.empty.assign leftName (.symbol rightName),
-            .varNonVar (by simp [DeclMatchSpec.Atom.isVarB]) (by intro occurs; cases occurs)⟩
-      | var rightName =>
-          exact ⟨Bindings.empty.addEquality leftName rightName,
-            .varVar leftName rightName⟩
-      | grounded rightGround =>
-          exact ⟨Bindings.empty.assign leftName (.grounded rightGround),
-            .varNonVar (by simp [DeclMatchSpec.Atom.isVarB]) (by intro occurs; cases occurs)⟩
-      | expression rightAtoms =>
-          have hoccurs : ¬AtomOccurs (.expression rightAtoms) leftName :=
-            not_atomOccurs_of_satisfied_nonvariable_equation (by simp)
-              (by simpa [MettaEquationSatisfied, toLeaTTaAtom,
-                applyClassSolution] using hequation)
-          exact ⟨Bindings.empty.assign leftName (.expression rightAtoms),
-            .varNonVar (by simp [DeclMatchSpec.Atom.isVarB]) hoccurs⟩
-  | grounded leftGround =>
-      cases right with
-      | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
-            applyClassSolution] at hequation
-      | var rightName =>
-          exact ⟨Bindings.empty.assign rightName (.grounded leftGround),
-            .nonVarVar (by simp [DeclMatchSpec.Atom.isVarB]) (by intro occurs; cases occurs)⟩
-      | grounded rightGround =>
-          have hground : leftGround = rightGround :=
-            toLeaTTaGround_injective (by
-              simpa [MettaEquationSatisfied, toLeaTTaAtom,
-                applyClassSolution] using hequation)
-          subst rightGround
-          exact ⟨Bindings.empty, .grounded leftGround⟩
-      | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
-            applyClassSolution] at hequation
-  | expression leftAtoms =>
-      cases right with
-      | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
-            applyClassSolution] at hequation
-      | var rightName =>
-          have hoccurs : ¬AtomOccurs (.expression leftAtoms) rightName :=
-            not_atomOccurs_of_satisfied_nonvariable_equation (by simp)
-              (by simpa [MettaEquationSatisfied, toLeaTTaAtom,
-                applyClassSolution] using hequation.symm)
-          exact ⟨Bindings.empty.assign rightName (.expression leftAtoms),
-            .nonVarVar (by simp [DeclMatchSpec.Atom.isVarB]) hoccurs⟩
-      | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
-            applyClassSolution] at hequation
-      | expression rightAtoms =>
-          exact (hleaf ⟨leftAtoms, rightAtoms, rfl, rfl⟩).elim
-
-/-- The semantic leaf witness is returned by the executable HE matcher at
-some finite fuel. -/
-theorem exists_matchAtoms_of_solution_leaf
-    {left right : Atom}
-    (hsat : ∃ valuation : String → Metta.Atom,
-      MettaEquationSatisfied valuation
-        (toLeaTTaAtom left, toLeaTTaAtom right))
-    (hleaf : ¬ BothExpressions left right) :
-    ∃ out fuel, out ∈ matchAtoms left right fuel := by
-  obtain ⟨out, hrel⟩ := exists_matchRel_of_solution_leaf hsat hleaf
-  obtain ⟨fuel, hmem⟩ := DeclMatchSpec.matchAtoms_complete hrel
-  exact ⟨out, fuel, hmem⟩
-
-/-- A successful HE leaf match between two non-variables is necessarily
-reflexive.  Thus every unequal non-variable reconciliation that succeeds must
-enter the expression/list recursion. -/
-theorem matchAtoms_eq_of_nonvariable_leaf
-    {left right : Atom} {out : Bindings} {fuel : Nat}
-    (hleft : DeclMatchSpec.Atom.isVarB left = false)
-    (hright : DeclMatchSpec.Atom.isVarB right = false)
-    (hleaf : ¬ BothExpressions left right)
-    (hmatch : out ∈ matchAtoms left right fuel) :
-    left = right := by
-  have hrel := DeclMatchSpec.matchAtoms_sound hmatch
-  cases hrel with
-  | symSym => rfl
-  | varVar => simp [DeclMatchSpec.Atom.isVarB] at hleft
-  | varNonVar => simp [DeclMatchSpec.Atom.isVarB] at hleft
-  | nonVarVar => simp [DeclMatchSpec.Atom.isVarB] at hright
-  | grounded => rfl
-  | expr => exact (hleaf (by simp [BothExpressions])).elim
-
-/-- HE binding records produced by the matcher/merge lane never store a bare
-variable as an assignment value; variable/variable relationships are equality
-edges.  This excludes malformed tautological seeds such as `$x ← $x`, on
-which recursive merge can diverge through repeated conflict matching. -/
-def HEAssignmentsNonVariable (b : Bindings) : Prop :=
-  ∀ key target, (key, .var target) ∉ b.assignments
 
 /-- The remaining relation-level operation needed to lift semantic leaf
 completeness through expression matching.  It is restricted to right inputs
@@ -570,7 +408,7 @@ theorem exists_matchRel_of_solution_of_merge
       HEBindingSatisfied valuation seed →
       HEAssignmentsNonVariable seed →
       MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) →
+        (encodeModelAtoms lefts) (encodeModelAtoms rights) →
       ∃ out,
         DeclMatchSpec.MatchListAccRel lefts rights seed out ∧
           HEBindingSatisfied valuation out ∧
@@ -599,9 +437,9 @@ theorem exists_matchRel_of_solution_of_merge
             ⟨valuation, hequation⟩ (by simp [BothExpressions])
       | expression rights =>
           have hlists : MettaAtomListsSatisfied valuation
-              (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) := by
+              (encodeModelAtoms lefts) (encodeModelAtoms rights) := by
             simpa [HEAtomEquationSatisfied, MettaAtomListsSatisfied,
-              toLeaTTaAtom, applyClassSolution] using hequation
+              encodeModelAtom, applyClassSolution] using hequation
           obtain ⟨out, hlist, hsatisfied, hnonvariable⟩ :=
             hlefts (seed := Bindings.empty) (valuation := valuation)
               ((hesat_empty_iff valuation).mpr trivial)
@@ -614,19 +452,19 @@ theorem exists_matchRel_of_solution_of_merge
       | nil =>
           exact ⟨seed, .nil, hseed, hseedNonvar⟩
       | cons right rights =>
-          simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
+          simp [MettaAtomListsSatisfied, encodeModelAtoms] at hlists
     · intro left lefts hleft hlefts rights seed valuation hseed
         hseedNonvar hlists
       cases rights with
       | nil =>
-          simp [MettaAtomListsSatisfied, toLeaTTaAtoms] at hlists
+          simp [MettaAtomListsSatisfied, encodeModelAtoms] at hlists
       | cons right rights =>
           have hequations :
               HEAtomEquationSatisfied valuation left right ∧
                 MettaAtomListsSatisfied valuation
-                  (toLeaTTaAtoms lefts) (toLeaTTaAtoms rights) := by
+                  (encodeModelAtoms lefts) (encodeModelAtoms rights) := by
             simpa [HEAtomEquationSatisfied, MettaAtomListsSatisfied,
-              toLeaTTaAtoms] using hlists
+              encodeModelAtoms] using hlists
           obtain ⟨matched, hmatched⟩ := hleft hequations.1
           obtain ⟨matchFuel, hmatchMem⟩ :=
             DeclMatchSpec.matchAtoms_complete hmatched
@@ -671,7 +509,7 @@ actual executable HE matcher output carrying the settled congruence invariant. -
 theorem leaMatchAtoms_leaf_congruence_realization
     {query pattern : Atom} {lb : Metta.Bindings}
     (hLea : lb ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (hdisj : VarsDisjoint query pattern)
     (hleaf : ¬ BothExpressions query pattern) :
     LeaMatcherCongruenceRealization query pattern lb := by
@@ -692,7 +530,7 @@ singleton congruence. -/
 theorem leaMatchAtoms_leaf_congruence_realization_internal
     {query pattern : Atom} {lb : Metta.Bindings}
     (hLea : lb ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query))
+      (encodeModelAtom pattern) (encodeModelAtom query))
     (hleaf : ¬ BothExpressions query pattern) :
     LeaMatcherCongruenceRealization query pattern lb := by
   rcases reflexiveVar_or_varsDisjoint_of_leaMatchAtoms_leaf hLea hleaf with
@@ -700,7 +538,7 @@ theorem leaMatchAtoms_leaf_congruence_realization_internal
   · subst query
     subst pattern
     have hout : lb = [] := by
-      simpa [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom] using hLea
+      simpa [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom] using hLea
     subst lb
     obtain ⟨fuel, hHE⟩ := DeclMatchSpec.matchAtoms_complete
       (DeclMatchSpec.MatchRel.varVar name name)
@@ -1001,7 +839,7 @@ theorem leaAddVarBinding_fresh_congruence_realization
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hclass : b.classValues key = [])
     (hLea : leaOut ∈
-      Metta.Bindings.addVarBinding lb key (toLeaTTaAtom value)) :
+      Metta.Bindings.addVarBinding lb key (encodeModelAtom value)) :
     ∃ heOut fuel,
       heOut ∈ addVarBinding b key value fuel ∧
         LeaBindingCongruence heOut leaOut := by
@@ -1047,21 +885,21 @@ theorem leaAddVarBinding_same_congruence_realization
     {key : String} {value first : Atom} {rest : List Atom}
     {leaValues : List Metta.Atom}
     (hbase : LeaBindingCongruence b lb)
-    (hnonvar : ∀ target, toLeaTTaAtom value ≠ .var target)
+    (hnonvar : ∀ target, encodeModelAtom value ≠ .var target)
     (hheClass : b.classValues key = first :: rest)
     (hheConsistent : Bindings.valuesConsistent (first :: rest) = true)
     (hsame : first = value)
     (hleaClass : Metta.Bindings.classValues lb key = leaValues)
     (hleaNonempty : leaValues ≠ [])
     (hleaUnify : Metta.Bindings.unifyValues
-      (leaValues ++ [toLeaTTaAtom value]) = some [])
+      (leaValues ++ [encodeModelAtom value]) = some [])
     (hLea : leaOut ∈
-      Metta.Bindings.addVarBinding lb key (toLeaTTaAtom value)) :
+      Metta.Bindings.addVarBinding lb key (encodeModelAtom value)) :
     ∃ heOut fuel,
       heOut ∈ addVarBinding b key value fuel ∧
         LeaBindingCongruence heOut leaOut := by
   have hcanonical : lb ∈
-      Metta.Bindings.addVarBinding lb key (toLeaTTaAtom value) := by
+      Metta.Bindings.addVarBinding lb key (encodeModelAtom value) := by
     rw [Metta.Bindings.addVarBinding_nochange
       hnonvar hleaClass hleaNonempty hleaUnify]
     simp
@@ -1203,133 +1041,6 @@ theorem leaMergeBranchRel_iff_mem_merge
   rw [leattaMergeFold_eq_flatMap_branchResults]
   simp
 
-private theorem assignment_mem_of_lookup_eq_some
-    {assignments : List (String × Atom)} {key : String} {value : Atom}
-    (hlookup : List.lookup key assignments = some value) :
-    (key, value) ∈ assignments := by
-  induction assignments with
-  | nil => simp at hlookup
-  | cons binding assignments ih =>
-      rcases binding with ⟨storedKey, storedValue⟩
-      by_cases hkey : key = storedKey
-      · subst storedKey
-        simp at hlookup
-        subst storedValue
-        simp
-      · have hbeq : (key == storedKey) = false := by simp [hkey]
-        simp only [List.lookup_cons, hbeq] at hlookup
-        exact List.mem_cons_of_mem _ (ih hlookup)
-
-private theorem heLookup_eq_some_of_assignment_mem_of_nodup
-    {assignments : List (String × Atom)}
-    (hkeys : (assignments.map Prod.fst).Nodup)
-    {key : String} {value : Atom}
-    (hmem : (key, value) ∈ assignments) :
-    List.lookup key assignments = some value := by
-  induction assignments with
-  | nil => cases hmem
-  | cons binding rest ih =>
-      rcases binding with ⟨headKey, headValue⟩
-      simp only [List.mem_cons, Prod.mk.injEq] at hmem
-      have hkeysTail : (rest.map Prod.fst).Nodup := by
-        simpa using (List.nodup_cons.mp hkeys).2
-      rcases hmem with hhead | htail
-      · rcases hhead with ⟨rfl, rfl⟩
-        simp
-      · have hheadFresh : headKey ∉ rest.map Prod.fst := by
-          simpa using (List.nodup_cons.mp hkeys).1
-        have hne : key ≠ headKey := by
-          intro heq
-          subst key
-          exact hheadFresh (List.mem_map_of_mem htail)
-        have hbeq : (key == headKey) = false := by simp [hne]
-        simpa [List.lookup_cons, hbeq] using ih hkeysTail htail
-
-/-- Every executable HE matcher output satisfies the no-bare-variable
-assignment invariant used by recursive merge-back. -/
-theorem heAssignmentsNonVariable_of_matchAtoms
-    {left right : Atom} {out : Bindings} {fuel : Nat}
-    (hmatch : out ∈ matchAtoms left right fuel) :
-    HEAssignmentsNonVariable out := by
-  intro key target hassignment
-  have hlookup : out.lookup key = some (.var target) := by
-    unfold Bindings.lookup
-    exact heLookup_eq_some_of_assignment_mem_of_nodup
-      (DeclMatchSpec.matchAtoms_assignmentsNodup hmatch) hassignment
-  exact DeclMatchSpec.matchAtoms_noVarAssignmentValues hmatch hlookup
-
-/-- Declarative matcher results have the same operational invariant. -/
-theorem heAssignmentsNonVariable_of_matchRel
-    {left right : Atom} {out : Bindings}
-    (hmatch : DeclMatchSpec.MatchRel left right out) :
-    HEAssignmentsNonVariable out := by
-  obtain ⟨fuel, hmem⟩ := DeclMatchSpec.matchAtoms_complete hmatch
-  exact heAssignmentsNonVariable_of_matchAtoms hmem
-
-/-- The no-bare-variable invariant reads directly at an assignment member. -/
-theorem HEAssignmentsNonVariable.isVarB_eq_false_of_assignment
-    {b : Bindings} (h : HEAssignmentsNonVariable b)
-    {key : String} {value : Atom}
-    (hvalue : (key, value) ∈ b.assignments) :
-    DeclMatchSpec.Atom.isVarB value = false := by
-  cases value with
-  | var target => exact (h key target hvalue).elim
-  | symbol name | grounded name | expression name => rfl
-
-/-- Overwriting or extending one assignment with a non-variable atom
-preserves the no-bare-variable invariant. -/
-theorem HEAssignmentsNonVariable.assign
-    {b : Bindings} (h : HEAssignmentsNonVariable b)
-    {key : String} {value : Atom}
-    (hvalue : DeclMatchSpec.Atom.isVarB value = false) :
-    HEAssignmentsNonVariable (b.assign key value) := by
-  intro storedKey target hmem
-  by_cases hbound : b.isBound key = true
-  · unfold Bindings.assign at hmem
-    simp only [hbound, if_true] at hmem
-    obtain ⟨binding, hbinding, hmap⟩ := List.mem_map.mp hmem
-    rcases binding with ⟨oldKey, oldValue⟩
-    by_cases hkey : oldKey = key
-    · simp [hkey] at hmap
-      rcases hmap with ⟨rfl, htarget⟩
-      subst value
-      simp [DeclMatchSpec.Atom.isVarB] at hvalue
-    · simp [hkey] at hmap
-      rcases hmap with ⟨rfl, rfl⟩
-      exact h oldKey target hbinding
-  · have hbound' : b.isBound key = false := by
-      cases h : b.isBound key <;> simp_all
-    unfold Bindings.assign at hmem
-    simp only [hbound', Bool.false_eq_true, if_false] at hmem
-    rcases List.mem_append.mp hmem with hold | hnew
-    · exact h storedKey target hold
-    · simp only [List.mem_singleton, Prod.mk.injEq] at hnew
-      rcases hnew with ⟨rfl, htarget⟩
-      subst value
-      simp [DeclMatchSpec.Atom.isVarB] at hvalue
-
-/-- Equality insertion leaves assignment payloads unchanged. -/
-theorem HEAssignmentsNonVariable.addEquality
-    {b : Bindings} (h : HEAssignmentsNonVariable b)
-    (left right : String) :
-    HEAssignmentsNonVariable (b.addEquality left right) := by
-  intro key target hmem
-  apply h key target
-  simpa [Bindings.addEquality] using hmem
-
-/-- Consequently every value selected from any equality class is a
-non-variable atom. -/
-theorem HEAssignmentsNonVariable.isVarB_eq_false_of_classValue
-    {b : Bindings} (h : HEAssignmentsNonVariable b)
-    {key : String} {value : Atom}
-    (hvalue : value ∈ b.classValues key) :
-    DeclMatchSpec.Atom.isVarB value = false := by
-  unfold Bindings.classValues at hvalue
-  rcases List.mem_filterMap.mp hvalue with ⟨storedKey, _hclass, hlookup⟩
-  apply h.isVarB_eq_false_of_assignment
-  exact assignment_mem_of_lookup_eq_some (by
-    simpa [Bindings.lookup] using hlookup)
-
 /-- Declarative HE merge preserves the no-bare-variable assignment invariant
 from both inputs.  Recursive conflict matches satisfy the invariant because
 HE represents variable/variable results as equality edges. -/
@@ -1449,7 +1160,7 @@ theorem heSatisfiedMatcherMergeRelExists_of_adds
       HEBindingSatisfied valuation seed →
       HEAssignmentsNonVariable seed →
       DeclMatchSpec.Atom.isVarB value = false →
-      valuation key = applyClassSolution valuation (toLeaTTaAtom value) →
+      valuation key = applyClassSolution valuation (encodeModelAtom value) →
       ∃ out, AddVarBindingRel seed key value out ∧
         HEBindingSatisfied valuation out ∧
           HEAssignmentsNonVariable out)
@@ -1472,7 +1183,7 @@ theorem heSatisfiedMatcherMergeRelExists_of_adds
       HEAssignmentsNonVariable before →
       (∀ key value, (key, value) ∈ assignments →
         valuation key =
-          applyClassSolution valuation (toLeaTTaAtom value)) →
+          applyClassSolution valuation (encodeModelAtom value)) →
       (∀ key value, (key, value) ∈ assignments →
         DeclMatchSpec.Atom.isVarB value = false) →
       ∃ after, MergeAssignsRel before assignments after ∧
@@ -1493,7 +1204,7 @@ theorem heSatisfiedMatcherMergeRelExists_of_adds
         have hrestSat : ∀ restKey restValue,
             (restKey, restValue) ∈ rest →
             valuation restKey = applyClassSolution valuation
-              (toLeaTTaAtom restValue) := by
+              (encodeModelAtom restValue) := by
           intro restKey restValue hmem
           exact hsat restKey restValue (by simp [hmem])
         have hrestValues : ∀ restKey restValue,
@@ -1744,11 +1455,11 @@ theorem leaMerge_singleton_fresh_value_congruence_realization
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hclass : seed.classValues key = [])
     (hLea : leaOut ∈ Metta.Bindings.merge leaSeed
-      [Metta.BindingRel.val key (toLeaTTaAtom value)]) :
+      [Metta.BindingRel.val key (encodeModelAtom value)]) :
     LeaMergeCongruenceRealization seed
       ⟨[(key, value)], []⟩ leaOut := by
   have hLeaAdd : leaOut ∈
-      Metta.Bindings.addVarBinding leaSeed key (toLeaTTaAtom value) := by
+      Metta.Bindings.addVarBinding leaSeed key (encodeModelAtom value) := by
     simpa [Metta.Bindings.merge, Metta.Bindings.mergeOne] using hLea
   obtain ⟨heOut, addFuel, hHEAdd, hcongruence⟩ :=
     leaAddVarBinding_fresh_congruence_realization
@@ -1831,7 +1542,7 @@ def LeaMatchedMergeCongruenceComplete : Prop :=
     HEAssignmentsNonVariable heLeft →
     heRight ∈ matchAtoms query pattern fuel →
     leaRight ∈ Metta.matchAtoms
-      (toLeaTTaAtom pattern) (toLeaTTaAtom query) →
+      (encodeModelAtom pattern) (encodeModelAtom query) →
     LeaBindingCongruence heLeft leaLeft →
     LeaBindingCongruence heRight leaRight →
     leaOut ∈ Metta.Bindings.merge leaLeft leaRight →
@@ -1845,12 +1556,12 @@ theorem leaMatchAtoms_congruence_realization_of_merge
     (hmerge : LeaMatchedMergeCongruenceComplete) :
     ∀ {query pattern : Atom} {leaOut : Metta.Bindings},
       leaOut ∈ Metta.matchAtoms
-        (toLeaTTaAtom pattern) (toLeaTTaAtom query) →
+        (encodeModelAtom pattern) (encodeModelAtom query) →
       LeaMatcherCongruenceRealization query pattern leaOut := by
   let AtomGoal : Atom → Prop := fun query =>
     ∀ {pattern : Atom} {leaOut : Metta.Bindings},
       leaOut ∈ Metta.matchAtoms
-        (toLeaTTaAtom pattern) (toLeaTTaAtom query) →
+        (encodeModelAtom pattern) (encodeModelAtom query) →
       LeaMatcherCongruenceRealization query pattern leaOut
   let ListGoal : List Atom → Prop := fun queries =>
     ∀ {patterns : List Atom} {heSeed : Bindings}
@@ -1858,7 +1569,7 @@ theorem leaMatchAtoms_congruence_realization_of_merge
       LeaBindingCongruence heSeed leaSeed →
       HEAssignmentsNonVariable heSeed →
       leaOut ∈ Metta.matchAll none [leaSeed]
-        (toLeaTTaAtoms patterns) (toLeaTTaAtoms queries) →
+        (encodeModelAtoms patterns) (encodeModelAtoms queries) →
       ∃ heOut,
         DeclMatchSpec.MatchListAccRel queries patterns heSeed heOut ∧
           LeaBindingCongruence heOut leaOut ∧
@@ -1887,23 +1598,23 @@ theorem leaMatchAtoms_congruence_realization_of_merge
             hLea (by simp [BothExpressions])
       | expression patterns =>
           have hraw : leaOut ∈ Metta.matchAtomsWith none
-              (toLeaTTaAtom (.expression patterns))
-              (toLeaTTaAtom (.expression queries)) :=
+              (encodeModelAtom (.expression patterns))
+              (encodeModelAtom (.expression queries)) :=
             ((by simpa [Metta.matchAtoms] using hLea) :
               leaOut ∈ Metta.matchAtomsWith none
-                  (toLeaTTaAtom (.expression patterns))
-                  (toLeaTTaAtom (.expression queries)) ∧
+                  (encodeModelAtom (.expression patterns))
+                  (encodeModelAtom (.expression queries)) ∧
                 leaOut.hasLoop = false).1
           change leaOut ∈ Metta.matchAll none [[]]
-            (toLeaTTaAtoms patterns) (toLeaTTaAtoms queries) at hraw
+            (encodeModelAtoms patterns) (encodeModelAtoms queries) at hraw
           obtain ⟨heOut, hlist, hcongruence, _houtNonvar⟩ :=
             hqueries LeaBindingCongruence.empty
               (by intro key target hmem; simp [Bindings.empty] at hmem) hraw
           have hloop : SemanticLoopFree heOut :=
             hcongruence.heSemanticLoopFree
               (leaMatchAtoms_semanticLoopFree
-                (toLeaTTaAtom_noFloat (.expression patterns))
-                (toLeaTTaAtom_noFloat (.expression queries)) hLea)
+                (encodeModelAtom_noFloat (.expression patterns))
+                (encodeModelAtom_noFloat (.expression queries)) hLea)
           obtain ⟨fuel, hHE⟩ :=
             DeclMatchSpec.matchAtoms_complete
               (DeclMatchSpec.MatchRel.expr hlist hloop)
@@ -1922,7 +1633,7 @@ theorem leaMatchAtoms_congruence_realization_of_merge
       cases patterns with
       | nil => simp [Metta.matchAll] at hLea
       | cons pattern patterns =>
-          simp only [toLeaTTaAtoms, Metta.matchAll,
+          simp only [encodeModelAtoms, Metta.matchAll,
             List.flatMap_cons, List.flatMap_nil, List.append_nil] at hLea
           obtain ⟨leaNext, hleaNext, htail⟩ :=
             leattaMem_matchAll_seedwise.mp hLea
@@ -1964,7 +1675,7 @@ theorem addVarBinding_fresh_congruence_transport
     (hclass : b.classValues v = [])
     (hHE : heOut ∈ addVarBinding b v value fuel) :
     ∃ leaOut,
-      leaOut ∈ Metta.Bindings.addVarBinding lb v (toLeaTTaAtom value) ∧
+      leaOut ∈ Metta.Bindings.addVarBinding lb v (encodeModelAtom value) ∧
         LeaBindingCongruence heOut leaOut := by
   have hout : heOut = b.assign v value := by
     cases fuel with
@@ -2201,7 +1912,7 @@ def LeaEliminationTraceAssignmentsExact
     (b : Bindings) (trace : List (String × Metta.Atom)) : Prop :=
   ∀ key value, (key, value) ∈ b.assignments →
     DeclMatchSpec.Atom.isVarB value = false ∧
-      (key, toLeaTTaAtom value) ∈ trace
+      (key, encodeModelAtom value) ∈ trace
 
 /-- List-facing form of exact trace provenance, used by the assignment fold
 inside the declarative HE merge relation. -/
@@ -2210,7 +1921,7 @@ def LeaEliminationTraceAssignmentListExact
     (trace : List (String × Metta.Atom)) : Prop :=
   ∀ key value, (key, value) ∈ assignments →
     DeclMatchSpec.Atom.isVarB value = false ∧
-      (key, toLeaTTaAtom value) ∈ trace
+      (key, encodeModelAtom value) ∈ trace
 
 /-! ### Derivation-local recursive matcher provenance
 
@@ -2681,12 +2392,12 @@ theorem LeaEliminationTraceAssignmentsExact.toSound
     LeaEliminationTraceAssignmentsSound b trace := by
   intro key value hmem
   have hexact := h key value hmem
-  have hnonvar : ∀ target, toLeaTTaAtom value ≠ .var target := by
+  have hnonvar : ∀ target, encodeModelAtom value ≠ .var target := by
     intro target heq
     cases value with
     | var name => simp [DeclMatchSpec.Atom.isVarB] at hexact
     | symbol name | grounded name | expression name => cases heq
-  exact ⟨key, toLeaTTaAtom value, hexact.2, hnonvar,
+  exact ⟨key, encodeModelAtom value, hexact.2, hnonvar,
     EqualityClosure.mem_eqClass_iff_reachable.mpr .rfl,
     HELeaAtomClassRel.translation b value⟩
 
@@ -3067,7 +2778,7 @@ theorem LeaEliminationTraceAssignmentsSound.assign_of_exact
     {key : String} {value : Atom}
     (hlookup : b.lookup key = none)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace) :
+    (hentry : (key, encodeModelAtom value) ∈ trace) :
     LeaEliminationTraceAssignmentsSound (b.assign key value) trace := by
   apply h.assign_of_lookup_none hlookup
     (HELeaAtomClassRel.translation b value) hentry
@@ -3176,7 +2887,7 @@ theorem mergeRel_assignmentsSound_of_exact_matchers
       (_ : AddVarBindingRel b _key _value result) =>
     LeaEliminationTraceAssignmentsSound b trace →
       (DeclMatchSpec.Atom.isVarB _value = false ∧
-        (_key, toLeaTTaAtom _value) ∈ trace) →
+        (_key, encodeModelAtom _value) ∈ trace) →
       LeaEliminationTraceAssignmentsSound result trace
   let AddEqualityMotive := fun
       (b : Bindings) (_left _right : String) (result : Bindings)
@@ -3240,7 +2951,7 @@ theorem mergeRel_assignmentsSound_of_exact_matchers
   · intro b key value rest next result hadd hrest ihadd ihrest
       hsound hexact
     have hhead : DeclMatchSpec.Atom.isVarB value = false ∧
-        (key, toLeaTTaAtom value) ∈ trace :=
+        (key, encodeModelAtom value) ∈ trace :=
       hexact key value (by simp)
     have htail : LeaEliminationTraceAssignmentListExact rest trace := by
       intro tailKey tailValue hmem
@@ -3935,7 +3646,7 @@ theorem HEConstraints_assignmentsSound
     (hnonvar : HEAssignmentsNonVariable b) :
     LeaEliminationTraceAssignmentsSound b (HEConstraints b ++ extra) := by
   intro key value hmem
-  refine ⟨key, toLeaTTaAtom value, ?_, ?_, ?_, ?_⟩
+  refine ⟨key, encodeModelAtom value, ?_, ?_, ?_, ?_⟩
   · apply List.mem_append_left extra
     simp only [HEConstraints, List.mem_append, List.mem_map]
     exact Or.inl ⟨(key, value), hmem, rfl⟩
@@ -5263,8 +4974,8 @@ inductive HETranslatedEquationMatchMergeChain
       {rest : List (Metta.Atom × Metta.Atom)}
       (hmatch : DeclMatchSpec.MatchRel left right matched)
       (hmerge : MergeRel before matched next)
-      (left_translation : toLeaTTaAtom left = leaLeft)
-      (right_translation : toLeaTTaAtom right = leaRight)
+      (left_translation : encodeModelAtom left = leaLeft)
+      (right_translation : encodeModelAtom right = leaRight)
       (match_trace : MatchTraceSound trace hmatch)
       (matched_assignments :
         LeaEliminationTraceAssignmentsSound matched trace)
@@ -5381,7 +5092,7 @@ structure HEEliminationTraceProgressStep
     HEBindingSatisfied valuation before →
     MettaConstraintsSatisfied valuation trace →
     MettaEquationSatisfied valuation
-      (toLeaTTaAtom left, toLeaTTaAtom right)
+      (encodeModelAtom left, encodeModelAtom right)
 
 /-- The full local certificate required from an original reconciliation
 conflict step.  It retains the exact matcher and merge derivations already
@@ -5465,7 +5176,7 @@ theorem HECertifiedMatcherMergeChain.equalityClosureBound
 match. This is separate from raw insertion, which may temporarily store a
 self-containing value. -/
 def HEEliminationTraceOccursSafe (trace : List (String × Metta.Atom)) : Prop :=
-  ∀ key value, (key, toLeaTTaAtom value) ∈ trace →
+  ∀ key value, (key, encodeModelAtom value) ∈ trace →
     DeclMatchSpec.Atom.isVarB value = false → ¬AtomOccurs value key
 
 /-- A genuine solution supplies the occurs boundary for every nonvariable
@@ -5491,9 +5202,9 @@ theorem exists_freshNonvarProgressStep
     (hclass : before.classValues key = [])
     (hvalue : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬AtomOccurs value key)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace)
+    (hentry : (key, encodeModelAtom value) ∈ trace)
     (hpending : ¬ LeaEliminationTraceEntryRealized before
-      (key, toLeaTTaAtom value))
+      (key, encodeModelAtom value))
     (hsound : LeaEliminationTraceAssignmentsSound before trace) :
     ∃ after, Nonempty (HEEliminationTraceProgressStep trace before after) := by
   have hbound : before.isBound key = false :=
@@ -5512,7 +5223,7 @@ theorem exists_freshNonvarProgressStep
       mergeBindings before (Bindings.empty.assign key value) 2 := by
     rw [mergeBindings_single_assign]
     exact hadd
-  have hleaNonvar : ∀ target, toLeaTTaAtom value ≠ .var target := by
+  have hleaNonvar : ∀ target, encodeModelAtom value ≠ .var target := by
     cases value with
     | var target => simp [DeclMatchSpec.Atom.isVarB] at hvalue
     | symbol name | grounded name | expression name =>
@@ -5523,7 +5234,7 @@ theorem exists_freshNonvarProgressStep
     hsound.assign_of_lookup_none hlookup
       (HELeaAtomClassRel.translation before value) hentry hleaNonvar
   have hrealized : LeaEliminationTraceEntryRealized
-      (before.assign key value) (key, toLeaTTaAtom value) := by
+      (before.assign key value) (key, encodeModelAtom value) := by
     cases value with
     | var target => simp [DeclMatchSpec.Atom.isVarB] at hvalue
     | symbol name | grounded name | expression name =>
@@ -5538,7 +5249,7 @@ theorem exists_freshNonvarProgressStep
     mergeFuel := 2
     match_mem := hmatch
     merge_mem := hmerge
-    entry := (key, toLeaTTaAtom value)
+    entry := (key, encodeModelAtom value)
     entry_mem := hentry
     pending_before := hpending
     realized_after := hrealized
@@ -5546,7 +5257,7 @@ theorem exists_freshNonvarProgressStep
     solutionPreserving := by
       intro valuation _hbefore htrace
       have hconstraint := htrace
-        (key, toLeaTTaAtom value) hentry
+        (key, encodeModelAtom value) hentry
       simpa [MettaEquationSatisfied, applyClassSolution] using hconstraint
   }⟩⟩
 
@@ -5613,7 +5324,7 @@ inductive HEEliminationTraceProgressFrontier
       HEEliminationTraceProgressFrontier trace before
   | valueConflict {key : String} {value : Atom} {leaValue : Metta.Atom}
       {first : Atom} {rest : List Atom} :
-      toLeaTTaAtom value = leaValue →
+      encodeModelAtom value = leaValue →
       DeclMatchSpec.Atom.isVarB value = false →
       before.classValues key = first :: rest →
       (key, leaValue) ∈ trace →
@@ -5635,7 +5346,7 @@ is inspected. -/
 theorem progressFrontier_of_pending
     {trace : List (String × Metta.Atom)} {before : Bindings}
     (himage : ∀ key term, (key, term) ∈ trace →
-      ∃ atom : Atom, toLeaTTaAtom atom = term)
+      ∃ atom : Atom, encodeModelAtom atom = term)
     (hoccurs : HEEliminationTraceOccursSafe trace)
     (hsound : LeaEliminationTraceAssignmentsSound before trace)
     (hpending : pendingEliminationTraceEntries before trace ≠ ∅) :
@@ -5662,7 +5373,7 @@ theorem progressFrontier_of_pending
   | sym symbol =>
       obtain ⟨value, hvalue⟩ := himage key (.sym symbol) hentry
       have hnonvar : DeclMatchSpec.Atom.isVarB value = false := by
-        cases value <;> simp_all [toLeaTTaAtom,
+        cases value <;> simp_all [encodeModelAtom,
           DeclMatchSpec.Atom.isVarB]
       cases hclass : before.classValues key with
       | nil =>
@@ -5678,7 +5389,7 @@ theorem progressFrontier_of_pending
   | gnd ground =>
       obtain ⟨value, hvalue⟩ := himage key (.gnd ground) hentry
       have hnonvar : DeclMatchSpec.Atom.isVarB value = false := by
-        cases value <;> simp_all [toLeaTTaAtom,
+        cases value <;> simp_all [encodeModelAtom,
           DeclMatchSpec.Atom.isVarB]
       cases hclass : before.classValues key with
       | nil =>
@@ -5694,7 +5405,7 @@ theorem progressFrontier_of_pending
   | expr atoms =>
       obtain ⟨value, hvalue⟩ := himage key (.expr atoms) hentry
       have hnonvar : DeclMatchSpec.Atom.isVarB value = false := by
-        cases value <;> simp_all [toLeaTTaAtom,
+        cases value <;> simp_all [encodeModelAtom,
           DeclMatchSpec.Atom.isVarB]
       cases hclass : before.classValues key with
       | nil =>
@@ -5718,11 +5429,11 @@ theorem valueConflict_equationSatisfied
     {leaValue : Metta.Atom}
     (hbefore : HEBindingSatisfied valuation before)
     (htrace : MettaConstraintsSatisfied valuation trace)
-    (hvalue : toLeaTTaAtom value = leaValue)
+    (hvalue : encodeModelAtom value = leaValue)
     (hclass : before.classValues key = first :: rest)
     (hentry : (key, leaValue) ∈ trace) :
     MettaEquationSatisfied valuation
-      (toLeaTTaAtom first, toLeaTTaAtom value) := by
+      (encodeModelAtom first, encodeModelAtom value) := by
   have hfirst : first ∈ before.classValues key := by
     rw [hclass]
     simp
@@ -5731,124 +5442,6 @@ theorem valueConflict_equationSatisfied
   have hproposed := htrace (key, leaValue) hentry
   rw [← hvalue] at hproposed
   exact hstored.symm.trans hproposed
-
-/-- Any two values already carried by one satisfying HE equality class have
-the same valuation image. -/
-theorem classValues_equationSatisfied
-    {before : Bindings} {valuation : String → Metta.Atom}
-    {key : String} {first second : Atom}
-    (hbefore : HEBindingSatisfied valuation before)
-    (hfirst : first ∈ before.classValues key)
-    (hsecond : second ∈ before.classValues key) :
-    MettaEquationSatisfied valuation
-      (toLeaTTaAtom first, toLeaTTaAtom second) := by
-  have hfirstValue :=
-    hbefore.eq_applyClassSolution_of_mem_classValues hfirst
-  have hsecondValue :=
-    hbefore.eq_applyClassSolution_of_mem_classValues hsecond
-  exact hfirstValue.symm.trans hsecondValue
-
-/-- A satisfying class and one co-satisfied proposed value validate the exact
-replicate/append list equation used by `AddVarBindingRel.reconcile`.  This is
-purely the semantic input to the original pointwise matcher; it asserts no
-matcher or merge existence. -/
-theorem classValues_reconcileList_satisfied
-    {valuation : String → Metta.Atom} {before : Bindings}
-    {key : String} {first value : Atom} {rest : List Atom}
-    (hbefore : HEBindingSatisfied valuation before)
-    (hclass : before.classValues key = first :: rest)
-    (hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value)) :
-    MettaAtomListsSatisfied valuation
-      (toLeaTTaAtoms (List.replicate (rest.length + 1) first))
-      (toLeaTTaAtoms (rest ++ [value])) := by
-  have hfirstMem : first ∈ before.classValues key := by
-    rw [hclass]
-    simp
-  have hfirstValue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom first) :=
-    hbefore.eq_applyClassSolution_of_mem_classValues hfirstMem
-  have hrestValue : ∀ other ∈ rest,
-      applyClassSolution valuation (toLeaTTaAtom other) =
-        applyClassSolution valuation (toLeaTTaAtom first) := by
-    intro other hmem
-    have hotherMem : other ∈ before.classValues key := by
-      rw [hclass]
-      simp [hmem]
-    have hotherValue :=
-      hbefore.eq_applyClassSolution_of_mem_classValues hotherMem
-    exact hotherValue.symm.trans hfirstValue
-  have hlast : applyClassSolution valuation (toLeaTTaAtom value) =
-      applyClassSolution valuation (toLeaTTaAtom first) :=
-    hvalue.symm.trans hfirstValue
-  have go : ∀ xs : List Atom,
-      (∀ other ∈ xs,
-        applyClassSolution valuation (toLeaTTaAtom other) =
-          applyClassSolution valuation (toLeaTTaAtom first)) →
-      MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms (List.replicate (xs.length + 1) first))
-        (toLeaTTaAtoms (xs ++ [value])) := by
-    intro xs hall
-    induction xs with
-    | nil =>
-        simpa [MettaAtomListsSatisfied, toLeaTTaAtoms] using hlast.symm
-    | cons other tail ih =>
-        have hother := hall other (by simp)
-        have htail : ∀ item ∈ tail,
-            applyClassSolution valuation (toLeaTTaAtom item) =
-              applyClassSolution valuation (toLeaTTaAtom first) := by
-          intro item hmem
-          exact hall item (by simp [hmem])
-        simpa [MettaAtomListsSatisfied, toLeaTTaAtoms,
-          List.replicate_succ, hother] using ih htail
-  exact go rest hrestValue
-
-/-- Pointwise equality of one class representative with every remaining
-class value.  This is the semantic input to the original class-wide HE list
-matcher; it makes no matcher-existence claim. -/
-theorem classValues_replicateTail_satisfied
-    {valuation : String → Metta.Atom} {b : Bindings}
-    {key : String} {first : Atom} {rest : List Atom}
-    (hbinding : HEBindingSatisfied valuation b)
-    (hclass : b.classValues key = first :: rest) :
-    MettaAtomListsSatisfied valuation
-      (toLeaTTaAtoms (List.replicate rest.length first))
-      (toLeaTTaAtoms rest) := by
-  have hfirstMem : first ∈ b.classValues key := by
-    rw [hclass]
-    simp
-  have hfirst :=
-    hbinding.eq_applyClassSolution_of_mem_classValues hfirstMem
-  have hall : ∀ other ∈ rest,
-      applyClassSolution valuation (toLeaTTaAtom other) =
-        applyClassSolution valuation (toLeaTTaAtom first) := by
-    intro other hmem
-    have hotherMem : other ∈ b.classValues key := by
-      rw [hclass]
-      simp [hmem]
-    have hother :=
-      hbinding.eq_applyClassSolution_of_mem_classValues hotherMem
-    exact hother.symm.trans hfirst
-  have go : ∀ xs : List Atom,
-      (∀ other ∈ xs,
-        applyClassSolution valuation (toLeaTTaAtom other) =
-          applyClassSolution valuation (toLeaTTaAtom first)) →
-      MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms (List.replicate xs.length first))
-        (toLeaTTaAtoms xs) := by
-    intro xs hxs
-    induction xs with
-    | nil => simp [MettaAtomListsSatisfied, toLeaTTaAtoms]
-    | cons other tail ih =>
-        have hother := hxs other (by simp)
-        have htail : ∀ item ∈ tail,
-            applyClassSolution valuation (toLeaTTaAtom item) =
-              applyClassSolution valuation (toLeaTTaAtom first) := by
-          intro item hmem
-          exact hxs item (by simp [hmem])
-        simpa [MettaAtomListsSatisfied, toLeaTTaAtoms,
-          List.replicate_succ, hother] using ih htail
-  exact go rest hall
 
 /-- Unequal values already present in one reachable, no-bare-variable class
 can only require expression recursion. -/
@@ -5883,7 +5476,7 @@ theorem bothExpressions_of_pending_valueConflict
     (hnonvar : HEAssignmentsNonVariable before)
     (hbefore : HEBindingSatisfied valuation before)
     (htrace : MettaConstraintsSatisfied valuation trace)
-    (hvalue : toLeaTTaAtom value = leaValue)
+    (hvalue : encodeModelAtom value = leaValue)
     (hvalueNonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hclass : before.classValues key = first :: rest)
     (hentry : (key, leaValue) ∈ trace)
@@ -5955,7 +5548,7 @@ theorem aliasConflict_classValues_equationSatisfied
     (hsecond : second ∈
       (before.addEquality left right).classValues left) :
     MettaEquationSatisfied valuation
-      (toLeaTTaAtom first, toLeaTTaAtom second) := by
+      (encodeModelAtom first, encodeModelAtom second) := by
   have hcandidate :=
     aliasConflict_candidateSatisfied hbefore htrace hentry
   have hfirstValue :=
@@ -6008,7 +5601,7 @@ inductive HESatisfiedEliminationTraceProgressFrontier
       HESatisfiedEliminationTraceProgressFrontier valuation trace before
   | valueExpressionConflict {key : String} {value : Atom}
       {leaValue : Metta.Atom} {first : Atom} {rest : List Atom} :
-      toLeaTTaAtom value = leaValue →
+      encodeModelAtom value = leaValue →
       DeclMatchSpec.Atom.isVarB value = false →
       before.classValues key = first :: rest →
       (key, leaValue) ∈ trace →
@@ -6036,7 +5629,7 @@ theorem satisfiedProgressFrontier_of_pending
     {valuation : String → Metta.Atom}
     {trace : List (String × Metta.Atom)} {before : Bindings}
     (himage : ∀ key term, (key, term) ∈ trace →
-      ∃ atom : Atom, toLeaTTaAtom atom = term)
+      ∃ atom : Atom, encodeModelAtom atom = term)
     (hnonvar : HEAssignmentsNonVariable before)
     (hsound : LeaEliminationTraceAssignmentsSound before trace)
     (hbefore : HEBindingSatisfied valuation before)
@@ -6433,13 +6026,13 @@ all discharged here. -/
 theorem exists_completeMatcherMergeChain_of_conflict_progress
     {trace : List (String × Metta.Atom)}
     (himage : ∀ key term, (key, term) ∈ trace →
-      ∃ atom : Atom, toLeaTTaAtom atom = term)
+      ∃ atom : Atom, encodeModelAtom atom = term)
     (hoccurs : HEEliminationTraceOccursSafe trace)
     (hvalueProgress : ∀
       (before : Bindings) (key : String) (value : Atom)
       (leaValue : Metta.Atom) (first : Atom) (rest : List Atom),
       HEAssignmentsNonVariable before →
-      toLeaTTaAtom value = leaValue →
+      encodeModelAtom value = leaValue →
       DeclMatchSpec.Atom.isVarB value = false →
       before.classValues key = first :: rest →
       (key, leaValue) ∈ trace →
@@ -6480,7 +6073,7 @@ theorem exists_completeSatisfiedMatcherMergeChain_of_conflict_progress
     {trace : List (String × Metta.Atom)}
     {valuation : String → Metta.Atom}
     (himage : ∀ key term, (key, term) ∈ trace →
-      ∃ atom : Atom, toLeaTTaAtom atom = term)
+      ∃ atom : Atom, encodeModelAtom atom = term)
     (htraceSatisfied : MettaConstraintsSatisfied valuation trace)
     (hvalueProgress : ∀
       (before : Bindings) (key : String) (value : Atom)
@@ -6488,7 +6081,7 @@ theorem exists_completeSatisfiedMatcherMergeChain_of_conflict_progress
       HEAssignmentsNonVariable before →
       LeaEliminationTraceAssignmentsSound before trace →
       HEBindingSatisfied valuation before →
-      toLeaTTaAtom value = leaValue →
+      encodeModelAtom value = leaValue →
       DeclMatchSpec.Atom.isVarB value = false →
       before.classValues key = first :: rest →
       (key, leaValue) ∈ trace →
@@ -7454,31 +7047,31 @@ Robinson constraints.  This includes nested expressions and HE grounded
 payloads. -/
 theorem decomposeEq_toLeaTTa_self (atom : Atom) :
     Metta.Unify.decomposeEq
-      (toLeaTTaAtom atom) (toLeaTTaAtom atom) = some [] := by
+      (encodeModelAtom atom) (encodeModelAtom atom) = some [] := by
   cases atom with
   | symbol name =>
-      simp [toLeaTTaAtom, Metta.Unify.decomposeEq]
+      simp [encodeModelAtom, Metta.Unify.decomposeEq]
   | var name =>
-      simp [toLeaTTaAtom, Metta.Unify.decomposeEq]
+      simp [encodeModelAtom, Metta.Unify.decomposeEq]
   | grounded value =>
       have hground : Metta.Ground.equiv
-          (toLeaTTaGround value) (toLeaTTaGround value) = true := by
-        simpa [toLeaTTaAtom, Metta.Atom.equiv] using
-          toLeaTTaAtom_grounded_equiv_self value
-      simp [toLeaTTaAtom, Metta.Unify.decomposeEq, hground]
+          (encodeModelGround value) (encodeModelGround value) = true := by
+        simpa [encodeModelAtom, Metta.Atom.equiv] using
+          encodeModelAtom_grounded_equiv_self value
+      simp [encodeModelAtom, Metta.Unify.decomposeEq, hground]
   | expression atoms =>
-      simp only [toLeaTTaAtom, Metta.Unify.decomposeEq]
+      simp only [encodeModelAtom, Metta.Unify.decomposeEq]
       exact decomposeList_toLeaTTa_self atoms
 termination_by 2 * sizeOf atom
 
 /-- Pointwise-list companion to reflexive translated decomposition. -/
 theorem decomposeList_toLeaTTa_self (atoms : List Atom) :
     Metta.Unify.decomposeList
-      (toLeaTTaAtoms atoms) (toLeaTTaAtoms atoms) = some [] := by
+      (encodeModelAtoms atoms) (encodeModelAtoms atoms) = some [] := by
   cases atoms with
-  | nil => simp [toLeaTTaAtoms, Metta.Unify.decomposeList]
+  | nil => simp [encodeModelAtoms, Metta.Unify.decomposeList]
   | cons head tail =>
-      simp only [toLeaTTaAtoms, Metta.Unify.decomposeList]
+      simp only [encodeModelAtoms, Metta.Unify.decomposeList]
       rw [decomposeEq_toLeaTTa_self, decomposeList_toLeaTTa_self]
       rfl
 termination_by 2 * sizeOf atoms + 1
@@ -7487,34 +7080,34 @@ decreasing_by all_goals simp_wf <;> omega
 end
 
 /-- HE-to-LeaTTa atom-list translation commutes with append. -/
-theorem toLeaTTaAtoms_append (first second : List Atom) :
-    toLeaTTaAtoms (first ++ second) =
-      toLeaTTaAtoms first ++ toLeaTTaAtoms second := by
+theorem encodeModelAtoms_append (first second : List Atom) :
+    encodeModelAtoms (first ++ second) =
+      encodeModelAtoms first ++ encodeModelAtoms second := by
   induction first with
   | nil => rfl
   | cons head tail ih =>
-      simp only [List.cons_append, toLeaTTaAtoms, List.cons_append,
+      simp only [List.cons_append, encodeModelAtoms, List.cons_append,
         List.cons.injEq, true_and]
       exact ih
 
 /-- Translation preserves list arity. -/
-theorem length_toLeaTTaAtoms (atoms : List Atom) :
-    (toLeaTTaAtoms atoms).length = atoms.length := by
+theorem length_encodeModelAtoms (atoms : List Atom) :
+    (encodeModelAtoms atoms).length = atoms.length := by
   induction atoms with
   | nil => rfl
   | cons head tail ih =>
-      simp only [toLeaTTaAtoms, List.length_cons, Nat.succ.injEq]
+      simp only [encodeModelAtoms, List.length_cons, Nat.succ.injEq]
       exact ih
 
 /-- A zipped translated list against itself is structurally solved before
 Robinson elimination begins. -/
 theorem decomposeAll_zip_toLeaTTa_self (atoms : List Atom) :
     Metta.Unify.decomposeAll
-      (List.zip (toLeaTTaAtoms atoms) (toLeaTTaAtoms atoms)) = some [] := by
+      (List.zip (encodeModelAtoms atoms) (encodeModelAtoms atoms)) = some [] := by
   induction atoms with
-  | nil => simp [toLeaTTaAtoms, Metta.Unify.decomposeAll]
+  | nil => simp [encodeModelAtoms, Metta.Unify.decomposeAll]
   | cons head tail ih =>
-      simp only [toLeaTTaAtoms, List.zip_cons_cons,
+      simp only [encodeModelAtoms, List.zip_cons_cons,
         Metta.Unify.decomposeAll]
       rw [decomposeEq_toLeaTTa_self, ih]
       rfl
@@ -7525,19 +7118,19 @@ theorem decomposeList_toLeaTTa_drop_common
     (common left right : List Atom)
     (hlength : left.length = right.length) :
     Metta.Unify.decomposeList
-        (toLeaTTaAtoms (common ++ left))
-        (toLeaTTaAtoms (common ++ right)) =
+        (encodeModelAtoms (common ++ left))
+        (encodeModelAtoms (common ++ right)) =
       Metta.Unify.decomposeList
-        (toLeaTTaAtoms left) (toLeaTTaAtoms right) := by
+        (encodeModelAtoms left) (encodeModelAtoms right) := by
   rw [← decomposeAll_zip_eq_decomposeList
-    (toLeaTTaAtoms (common ++ left))
-    (toLeaTTaAtoms (common ++ right)) (by
-      simp only [length_toLeaTTaAtoms, List.length_append]
+    (encodeModelAtoms (common ++ left))
+    (encodeModelAtoms (common ++ right)) (by
+      simp only [length_encodeModelAtoms, List.length_append]
       omega)]
   rw [← decomposeAll_zip_eq_decomposeList
-    (toLeaTTaAtoms left) (toLeaTTaAtoms right) (by
-      simpa only [length_toLeaTTaAtoms] using hlength)]
-  rw [toLeaTTaAtoms_append, toLeaTTaAtoms_append]
+    (encodeModelAtoms left) (encodeModelAtoms right) (by
+      simpa only [length_encodeModelAtoms] using hlength)]
+  rw [encodeModelAtoms_append, encodeModelAtoms_append]
   rw [List.zip_append (by rfl)]
   exact decomposeAll_append_of_left_nil _
     (decomposeAll_zip_toLeaTTa_self common)
@@ -7548,11 +7141,11 @@ those children, including reflexive variable equalities. -/
 theorem unifyRounds_zip_drop_translated_common
     (common left right : List Atom) (fuel : Nat) (subst : Metta.Subst) :
     Metta.Unify.unifyRounds fuel
-        (List.zip (toLeaTTaAtoms (common ++ left))
-          (toLeaTTaAtoms (common ++ right))) subst =
+        (List.zip (encodeModelAtoms (common ++ left))
+          (encodeModelAtoms (common ++ right))) subst =
       Metta.Unify.unifyRounds fuel
-        (List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right)) subst := by
-  rw [toLeaTTaAtoms_append, toLeaTTaAtoms_append]
+        (List.zip (encodeModelAtoms left) (encodeModelAtoms right)) subst := by
+  rw [encodeModelAtoms_append, encodeModelAtoms_append]
   rw [List.zip_append (by rfl)]
   apply unifyRounds_eq_of_decomposeAll_eq
   exact decomposeAll_append_of_left_nil _
@@ -7605,7 +7198,7 @@ theorem exists_firstDivergence_unifyRounds_expression_success
     {fuel : Nat} {left right : List Atom} {subst result : Metta.Subst}
     (hne : left ≠ right)
     (hrun : Metta.Unify.unifyRounds fuel
-      [(.expr (toLeaTTaAtoms left), .expr (toLeaTTaAtoms right))]
+      [(.expr (encodeModelAtoms left), .expr (encodeModelAtoms right))]
       subst = some result) :
     ∃ common leftHead leftTail rightHead rightTail,
       left = common ++ leftHead :: leftTail ∧
@@ -7613,25 +7206,25 @@ theorem exists_firstDivergence_unifyRounds_expression_success
         leftHead ≠ rightHead ∧
         leftTail.length = rightTail.length ∧
         Metta.Unify.unifyRounds fuel
-          [(.expr (toLeaTTaAtoms (leftHead :: leftTail)),
-            .expr (toLeaTTaAtoms (rightHead :: rightTail)))]
+          [(.expr (encodeModelAtoms (leftHead :: leftTail)),
+            .expr (encodeModelAtoms (rightHead :: rightTail)))]
           subst = some result := by
   have htranslatedLength :=
     length_eq_of_unifyRounds_expression_success hrun
   have hlength : left.length = right.length := by
-    rw [length_toLeaTTaAtoms, length_toLeaTTaAtoms] at htranslatedLength
+    rw [length_encodeModelAtoms, length_encodeModelAtoms] at htranslatedLength
     exact htranslatedLength
   obtain ⟨common, leftHead, leftTail, rightHead, rightTail,
       hleft, hright, hheadNe, htailLength⟩ :=
     exists_commonPrefix_unequal_heads hlength hne
   have hzip : Metta.Unify.unifyRounds fuel
-      (List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right)) subst =
+      (List.zip (encodeModelAtoms left) (encodeModelAtoms right)) subst =
         some result := by
     rw [← unifyRounds_expression_eq_zip htranslatedLength]
     exact hrun
   have hdivergenceZip : Metta.Unify.unifyRounds fuel
-      (List.zip (toLeaTTaAtoms (leftHead :: leftTail))
-        (toLeaTTaAtoms (rightHead :: rightTail))) subst = some result := by
+      (List.zip (encodeModelAtoms (leftHead :: leftTail))
+        (encodeModelAtoms (rightHead :: rightTail))) subst = some result := by
     rw [← unifyRounds_zip_drop_translated_common
       common (leftHead :: leftTail) (rightHead :: rightTail) fuel subst]
     rw [← hleft, ← hright]
@@ -7639,14 +7232,14 @@ theorem exists_firstDivergence_unifyRounds_expression_success
   refine ⟨common, leftHead, leftTail, rightHead, rightTail,
     hleft, hright, hheadNe, htailLength, ?_⟩
   have htailTranslatedLength :
-      (toLeaTTaAtoms leftTail).length =
-        (toLeaTTaAtoms rightTail).length := by
-    rw [length_toLeaTTaAtoms, length_toLeaTTaAtoms]
+      (encodeModelAtoms leftTail).length =
+        (encodeModelAtoms rightTail).length := by
+    rw [length_encodeModelAtoms, length_encodeModelAtoms]
     exact htailLength
   have hfullTranslatedLength :
-      (toLeaTTaAtoms (leftHead :: leftTail)).length =
-        (toLeaTTaAtoms (rightHead :: rightTail)).length := by
-    simp only [toLeaTTaAtoms, List.length_cons, Nat.succ.injEq]
+      (encodeModelAtoms (leftHead :: leftTail)).length =
+        (encodeModelAtoms (rightHead :: rightTail)).length := by
+    simp only [encodeModelAtoms, List.length_cons, Nat.succ.injEq]
     exact htailTranslatedLength
   rw [unifyRounds_expression_eq_zip hfullTranslatedLength]
   exact hdivergenceZip
@@ -7906,11 +7499,11 @@ from the elimination trace. -/
 theorem unificationEliminationTrace_zip_drop_translated_common
     (common left right : List Atom) (fuel : Nat) :
     unificationEliminationTrace fuel
-        (List.zip (toLeaTTaAtoms (common ++ left))
-          (toLeaTTaAtoms (common ++ right))) =
+        (List.zip (encodeModelAtoms (common ++ left))
+          (encodeModelAtoms (common ++ right))) =
       unificationEliminationTrace fuel
-        (List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right)) := by
-  rw [toLeaTTaAtoms_append, toLeaTTaAtoms_append]
+        (List.zip (encodeModelAtoms left) (encodeModelAtoms right)) := by
+  rw [encodeModelAtoms_append, encodeModelAtoms_append]
   rw [List.zip_append (by rfl)]
   apply unificationEliminationTrace_eq_of_decomposeAll_eq
   exact decomposeAll_append_of_left_nil _
@@ -7922,15 +7515,15 @@ theorem unificationEliminationTrace_expression_drop_translated_common
     (common left right : List Atom) (fuel : Nat)
     (hlength : left.length = right.length) :
     unificationEliminationTrace fuel
-        [(.expr (toLeaTTaAtoms (common ++ left)),
-          .expr (toLeaTTaAtoms (common ++ right)))] =
+        [(.expr (encodeModelAtoms (common ++ left)),
+          .expr (encodeModelAtoms (common ++ right)))] =
       unificationEliminationTrace fuel
-        [(.expr (toLeaTTaAtoms left), .expr (toLeaTTaAtoms right))] := by
+        [(.expr (encodeModelAtoms left), .expr (encodeModelAtoms right))] := by
   rw [unificationEliminationTrace_expression_eq_zip (by
-    simp only [length_toLeaTTaAtoms, List.length_append]
+    simp only [length_encodeModelAtoms, List.length_append]
     omega)]
   rw [unificationEliminationTrace_expression_eq_zip (by
-    simpa only [length_toLeaTTaAtoms] using hlength)]
+    simpa only [length_encodeModelAtoms] using hlength)]
   exact unificationEliminationTrace_zip_drop_translated_common
     common left right fuel
 
@@ -9297,7 +8890,7 @@ theorem selfContaining_rawReplay :
     LeaEliminationTraceExecutableReplay.nil rfl
     (HELeaAtomClassRel.translation Bindings.empty (.expression [.var "x"]))
   · intro target
-    simp [toLeaTTaAtom]
+    simp [encodeModelAtom]
   · decide
 
 /-- The same raw candidate has no accepted variable/expression derivation. -/
@@ -11037,7 +10630,7 @@ noncomputable def HELiveMergeCongruentCertified.withVarNonVarMatch
       (Bindings.empty.assign key value) subst)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬AtomOccurs value key)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace) :
+    (hentry : (key, encodeModelAtom value) ∈ trace) :
     HELiveMatchMergeCongruentCertified trace allowed
       (.var key) value seed subst := by
   let hrel : DeclMatchSpec.MatchRel (.var key) value
@@ -11191,7 +10784,7 @@ noncomputable def HELiveMergeCertified.withVarNonVarMatch
       (Bindings.empty.assign key value))
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬AtomOccurs value key)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace) :
+    (hentry : (key, encodeModelAtom value) ∈ trace) :
     HELiveMatchMergeCertified trace allowed
       (.var key) value seed := by
   let hrel : DeclMatchSpec.MatchRel (.var key) value
@@ -11241,7 +10834,7 @@ noncomputable def HELiveMergeCertified.withNonVarVarMatch
       (Bindings.empty.assign key value))
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬AtomOccurs value key)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace) :
+    (hentry : (key, encodeModelAtom value) ∈ trace) :
     HELiveMatchMergeCertified trace allowed
       value (.var key) seed := by
   let hrel : DeclMatchSpec.MatchRel value (.var key)
@@ -11333,7 +10926,7 @@ noncomputable def HELiveMergeSolutionCertified.withVarNonVarMatch
       (Bindings.empty.assign key value) subst)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬AtomOccurs value key)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace) :
+    (hentry : (key, encodeModelAtom value) ∈ trace) :
     HELiveMatchMergeSolutionCertified trace allowed
       (.var key) value seed subst := by
   let hrel : DeclMatchSpec.MatchRel (.var key) value
@@ -11903,7 +11496,7 @@ theorem HELiveMergeCongruentCertified.exists_freshAssignment
       (Metta.Bindings.ofSubst beforeSubst) key = none)
     (hresult : Metta.Bindings.ofSubst resultSubst =
       Metta.Bindings.addValRaw (Metta.Bindings.ofSubst beforeSubst)
-        key (toLeaTTaAtom value)) :
+        key (encodeModelAtom value)) :
     Nonempty (HELiveMergeCongruentCertified trace allowed seed
       (Bindings.empty.assign key value) resultSubst) := by
   have hmerge : seed.assign key value ∈
@@ -13149,7 +12742,7 @@ def HELiveMatchMergeCongruentCertified.toCertifiedProgressStep
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom left, toLeaTTaAtom right)) :
+        (encodeModelAtom left, encodeModelAtom right)) :
     HECertifiedEliminationTraceProgressStep trace allowed before h.after := {
   progress := {
     left := left
@@ -13192,7 +12785,7 @@ def HELiveMatchMergeSolutionCertified.toCertifiedProgressStep
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom left, toLeaTTaAtom right)) :
+        (encodeModelAtom left, encodeModelAtom right)) :
     HECertifiedEliminationTraceProgressStep trace allowed before h.after := {
   progress := {
     left := left
@@ -13227,9 +12820,9 @@ theorem freshNonvarCertifiedProgressStep
     (hclass : before.classValues key = [])
     (hvalue : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬AtomOccurs value key)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace)
+    (hentry : (key, encodeModelAtom value) ∈ trace)
     (hpending : ¬ LeaEliminationTraceEntryRealized before
-      (key, toLeaTTaAtom value))
+      (key, encodeModelAtom value))
     (hsound : LeaEliminationTraceAssignmentsSound before trace) :
     Nonempty (HECertifiedEliminationTraceProgressStep trace
       (eliminationTraceAliases trace) before
@@ -13250,7 +12843,7 @@ theorem freshNonvarCertifiedProgressStep
       mergeBindings before (Bindings.empty.assign key value) 2 := by
     rw [mergeBindings_single_assign]
     exact hadd
-  have hleaNonvar : ∀ target, toLeaTTaAtom value ≠ .var target := by
+  have hleaNonvar : ∀ target, encodeModelAtom value ≠ .var target := by
     cases value with
     | var target => simp [DeclMatchSpec.Atom.isVarB] at hvalue
     | symbol name | grounded name | expression name =>
@@ -13261,7 +12854,7 @@ theorem freshNonvarCertifiedProgressStep
     hsound.assign_of_lookup_none hlookup
       (HELeaAtomClassRel.translation before value) hentry hleaNonvar
   have hrealized : LeaEliminationTraceEntryRealized
-      (before.assign key value) (key, toLeaTTaAtom value) := by
+      (before.assign key value) (key, encodeModelAtom value) := by
     cases value with
     | var target => simp [DeclMatchSpec.Atom.isVarB] at hvalue
     | symbol name | grounded name | expression name =>
@@ -13277,7 +12870,7 @@ theorem freshNonvarCertifiedProgressStep
     mergeFuel := 2
     match_mem := hmatch
     merge_mem := hmerge
-    entry := (key, toLeaTTaAtom value)
+    entry := (key, encodeModelAtom value)
     entry_mem := hentry
     pending_before := hpending
     realized_after := hrealized
@@ -13285,7 +12878,7 @@ theorem freshNonvarCertifiedProgressStep
     solutionPreserving := by
       intro valuation _hbefore htrace
       have hconstraint := htrace
-        (key, toLeaTTaAtom value) hentry
+        (key, encodeModelAtom value) hentry
       simpa [MettaEquationSatisfied, applyClassSolution] using hconstraint
   }
   refine ⟨{
@@ -13410,7 +13003,7 @@ inductive HECertifiedEliminationTraceProgressFrontier
       HECertifiedEliminationTraceProgressFrontier trace before
   | valueConflict {key : String} {value : Atom}
       {leaValue : Metta.Atom} {first : Atom} {rest : List Atom} :
-      toLeaTTaAtom value = leaValue →
+      encodeModelAtom value = leaValue →
       DeclMatchSpec.Atom.isVarB value = false →
       before.classValues key = first :: rest →
       (key, leaValue) ∈ trace →
@@ -13432,7 +13025,7 @@ the stronger conclusion changes no operational choice. -/
 theorem certifiedProgressFrontier_of_pending
     {trace : List (String × Metta.Atom)} {before : Bindings}
     (himage : ∀ key term, (key, term) ∈ trace →
-      ∃ atom : Atom, toLeaTTaAtom atom = term)
+      ∃ atom : Atom, encodeModelAtom atom = term)
     (hoccurs : HEEliminationTraceOccursSafe trace)
     (hsound : LeaEliminationTraceAssignmentsSound before trace)
     (hpending : pendingEliminationTraceEntries before trace ≠ ∅) :
@@ -13458,7 +13051,7 @@ theorem certifiedProgressFrontier_of_pending
   | sym symbol =>
       obtain ⟨value, hvalue⟩ := himage key (.sym symbol) hentry
       have hnonvar : DeclMatchSpec.Atom.isVarB value = false := by
-        cases value <;> simp_all [toLeaTTaAtom,
+        cases value <;> simp_all [encodeModelAtom,
           DeclMatchSpec.Atom.isVarB]
       cases hclass : before.classValues key with
       | nil =>
@@ -13473,7 +13066,7 @@ theorem certifiedProgressFrontier_of_pending
   | gnd ground =>
       obtain ⟨value, hvalue⟩ := himage key (.gnd ground) hentry
       have hnonvar : DeclMatchSpec.Atom.isVarB value = false := by
-        cases value <;> simp_all [toLeaTTaAtom,
+        cases value <;> simp_all [encodeModelAtom,
           DeclMatchSpec.Atom.isVarB]
       cases hclass : before.classValues key with
       | nil =>
@@ -13488,7 +13081,7 @@ theorem certifiedProgressFrontier_of_pending
   | expr atoms =>
       obtain ⟨value, hvalue⟩ := himage key (.expr atoms) hentry
       have hnonvar : DeclMatchSpec.Atom.isVarB value = false := by
-        cases value <;> simp_all [toLeaTTaAtom,
+        cases value <;> simp_all [encodeModelAtom,
           DeclMatchSpec.Atom.isVarB]
       cases hclass : before.classValues key with
       | nil =>
@@ -13510,7 +13103,7 @@ theorem exists_completeSatisfiedCertifiedMatcherMergeChain_of_conflict_progress
     {trace : List (String × Metta.Atom)}
     {valuation : String → Metta.Atom}
     (himage : ∀ key term, (key, term) ∈ trace →
-      ∃ atom : Atom, toLeaTTaAtom atom = term)
+      ∃ atom : Atom, encodeModelAtom atom = term)
     (htraceSatisfied : MettaConstraintsSatisfied valuation trace)
     (hvalueProgress : ∀
       (before : Bindings) (key : String) (value : Atom)
@@ -13519,7 +13112,7 @@ theorem exists_completeSatisfiedCertifiedMatcherMergeChain_of_conflict_progress
       LeaEliminationTraceAssignmentsSound before trace →
       HEEqualityClosureBound before (eliminationTraceAliases trace) →
       HEBindingSatisfied valuation before →
-      toLeaTTaAtom value = leaValue →
+      encodeModelAtom value = leaValue →
       DeclMatchSpec.Atom.isVarB value = false →
       before.classValues key = first :: rest →
       (key, leaValue) ∈ trace →
@@ -13634,7 +13227,7 @@ theorem LeaEliminationTraceExecutableReplay.exists_matchListRel_reverse
           HELeaAtomClassRel.mono hext.classes hrel)
       refine ⟨left ++ [.var key], right ++ [.var target], ?_, ?_, ?_⟩
       · simp [hleft]
-      · simpa [toLeaTTaAtom] using
+      · simpa [encodeModelAtom] using
           heLeaAtomClassRel_forall₂_snoc hright'
           (HELeaAtomClassRel.translation
             (b.addEquality key target) (.var target))
@@ -13732,7 +13325,7 @@ theorem LeaEliminationTraceExecutableReplay.exists_matchListRelTraceSound_revers
       exact ⟨left ++ [.var key], right ++ [.var target], hlist',
         by simp [hleft],
         by
-          simpa [toLeaTTaAtom] using
+          simpa [encodeModelAtom] using
             heLeaAtomClassRel_forall₂_snoc hright'
               (HELeaAtomClassRel.translation
                 (b.addEquality key target) (.var target)),
@@ -13917,7 +13510,7 @@ theorem exists_eliminationTraceReplay_of_nodup_of_translation
     {trace : List (String × Metta.Atom)}
     (hkeys : (trace.map Prod.fst).Nodup)
     (htranslation : ∀ key leaValue, (key, leaValue) ∈ trace →
-      ∃ value : Atom, toLeaTTaAtom value = leaValue) :
+      ∃ value : Atom, encodeModelAtom value = leaValue) :
     ∃ out, LeaEliminationTraceReplay Bindings.empty trace out := by
   induction trace with
   | nil => exact ⟨Bindings.empty, .nil⟩
@@ -13929,7 +13522,7 @@ theorem exists_eliminationTraceReplay_of_nodup_of_translation
         (List.nodup_cons.mp hkeys).2
       have htailTranslation : ∀ tailKey tailValue,
           (tailKey, tailValue) ∈ trace →
-          ∃ value : Atom, toLeaTTaAtom value = tailValue := by
+          ∃ value : Atom, encodeModelAtom value = tailValue := by
         intro tailKey tailValue hmem
         exact htranslation tailKey tailValue (List.mem_cons_of_mem _ hmem)
       obtain ⟨out, hout⟩ := ih htailKeys htailTranslation
@@ -14006,7 +13599,7 @@ theorem wholeBindingReconciliation_eliminationTrace_keys_nodup
 This is deliberately stronger than `MettaAtomNoFloat`: host unit and error
 payloads are float-free but do not belong to the HE language. -/
 def LeaAtomInHEImage (leaAtom : Metta.Atom) : Prop :=
-  ∃ atom : Atom, toLeaTTaAtom atom = leaAtom
+  ∃ atom : Atom, encodeModelAtom atom = leaAtom
 
 /-- Every term stored in a substitution belongs to the HE atom image. -/
 def LeaSubstInHEImage (subst : Metta.Subst) : Prop :=
@@ -14029,7 +13622,7 @@ theorem LeaAtomInHEImage.noFloat
     {leaAtom : Metta.Atom} (h : LeaAtomInHEImage leaAtom) :
     MettaAtomNoFloat leaAtom := by
   obtain ⟨atom, rfl⟩ := h
-  exact toLeaTTaAtom_noFloat atom
+  exact encodeModelAtom_noFloat atom
 
 /-- Worklist companion to `LeaAtomInHEImage.noFloat`. -/
 theorem LeaEquationsInHEImage.noFloat
@@ -14041,7 +13634,7 @@ theorem LeaEquationsInHEImage.noFloat
   exact ⟨(h equation hmem).1.noFloat, (h equation hmem).2.noFloat⟩
 
 @[simp] theorem LeaAtomInHEImage.translation (atom : Atom) :
-    LeaAtomInHEImage (toLeaTTaAtom atom) :=
+    LeaAtomInHEImage (encodeModelAtom atom) :=
   ⟨atom, rfl⟩
 
 /-- The literal equation carrier of every HE binding record remains inside
@@ -14062,15 +13655,15 @@ length. -/
 theorem leaEquationsInHEImage_zip_translations
     (left right : List Atom) :
     LeaEquationsInHEImage
-      (List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right)) := by
+      (List.zip (encodeModelAtoms left) (encodeModelAtoms right)) := by
   induction left generalizing right with
-  | nil => intro equation hmem; simp [toLeaTTaAtoms] at hmem
+  | nil => intro equation hmem; simp [encodeModelAtoms] at hmem
   | cons leftHead leftTail ih =>
       cases right with
-      | nil => intro equation hmem; simp [toLeaTTaAtoms] at hmem
+      | nil => intro equation hmem; simp [encodeModelAtoms] at hmem
       | cons rightHead rightTail =>
           intro equation hmem
-          simp only [toLeaTTaAtoms, List.zip_cons_cons,
+          simp only [encodeModelAtoms, List.zip_cons_cons,
             List.mem_cons] at hmem
           rcases hmem with rfl | htail
           · exact ⟨LeaAtomInHEImage.translation leftHead,
@@ -14082,10 +13675,10 @@ worklist recursion recover the original HE atom at its singleton-equation
 boundary without imposing any analogous uniqueness on matcher bindings. -/
 theorem LeaAtomInHEImage.witness_unique
     {leaAtom : Metta.Atom} {left right : Atom}
-    (hleft : toLeaTTaAtom left = leaAtom)
-    (hright : toLeaTTaAtom right = leaAtom) :
+    (hleft : encodeModelAtom left = leaAtom)
+    (hright : encodeModelAtom right = leaAtom) :
     left = right :=
-  toLeaTTaAtom_injective (hleft.trans hright.symm)
+  encodeModelAtom_injective (hleft.trans hright.symm)
 
 mutual
 
@@ -14108,7 +13701,7 @@ theorem HELeaAtomClassRel.inHEImage
 theorem HELeaAtomClassRel.forall₂_inHEImage
     {b : Bindings} {atoms : List Atom} {leaAtoms : List Metta.Atom}
     (h : List.Forall₂ (HELeaAtomClassRel b) atoms leaAtoms) :
-    ∃ exactAtoms : List Atom, toLeaTTaAtoms exactAtoms = leaAtoms :=
+    ∃ exactAtoms : List Atom, encodeModelAtoms exactAtoms = leaAtoms :=
   match h with
   | .nil => ⟨[], rfl⟩
   | .cons hatom hrest =>
@@ -14179,40 +13772,40 @@ end
 
 mutual
 
-private theorem toLeaTTaAtom_substituteHEAtom
+private theorem encodeModelAtom_substituteHEAtom
     (key : String) (replacement atom : Atom) :
-    toLeaTTaAtom (substituteHEAtom key replacement atom) =
-      Metta.Subst.apply [(key, toLeaTTaAtom replacement)]
-        (toLeaTTaAtom atom) := by
+    encodeModelAtom (substituteHEAtom key replacement atom) =
+      Metta.Subst.apply [(key, encodeModelAtom replacement)]
+        (encodeModelAtom atom) := by
   cases atom with
-  | symbol name => simp [substituteHEAtom, toLeaTTaAtom, Metta.Subst.apply]
+  | symbol name => simp [substituteHEAtom, encodeModelAtom, Metta.Subst.apply]
   | var name =>
       by_cases h : name = key
       · subst name
-        simp [substituteHEAtom, toLeaTTaAtom, Metta.Subst.apply,
+        simp [substituteHEAtom, encodeModelAtom, Metta.Subst.apply,
           Metta.Subst.lookup]
       · have hbeq : (name == key) = false := by simp [h]
-        simp [substituteHEAtom, toLeaTTaAtom, Metta.Subst.apply,
+        simp [substituteHEAtom, encodeModelAtom, Metta.Subst.apply,
           Metta.Subst.lookup, hbeq]
   | grounded value =>
-      simp [substituteHEAtom, toLeaTTaAtom, Metta.Subst.apply]
+      simp [substituteHEAtom, encodeModelAtom, Metta.Subst.apply]
   | expression atoms =>
-      simp only [substituteHEAtom, toLeaTTaAtom, Metta.Subst.apply]
-      rw [toLeaTTaAtoms_substituteHEAtoms]
+      simp only [substituteHEAtom, encodeModelAtom, Metta.Subst.apply]
+      rw [encodeModelAtoms_substituteHEAtoms]
 termination_by 2 * sizeOf atom
 
-private theorem toLeaTTaAtoms_substituteHEAtoms
+private theorem encodeModelAtoms_substituteHEAtoms
     (key : String) (replacement : Atom) (atoms : List Atom) :
-    toLeaTTaAtoms (substituteHEAtoms key replacement atoms) =
-      (toLeaTTaAtoms atoms).map
-        (Metta.Subst.apply [(key, toLeaTTaAtom replacement)]) := by
+    encodeModelAtoms (substituteHEAtoms key replacement atoms) =
+      (encodeModelAtoms atoms).map
+        (Metta.Subst.apply [(key, encodeModelAtom replacement)]) := by
   cases atoms with
   | nil => rfl
   | cons atom atoms =>
-      simp only [substituteHEAtoms, toLeaTTaAtoms, List.map]
+      simp only [substituteHEAtoms, encodeModelAtoms, List.map]
       exact congrArg₂ List.cons
-        (toLeaTTaAtom_substituteHEAtom key replacement atom)
-        (toLeaTTaAtoms_substituteHEAtoms key replacement atoms)
+        (encodeModelAtom_substituteHEAtom key replacement atom)
+        (encodeModelAtoms_substituteHEAtoms key replacement atoms)
 termination_by 2 * sizeOf atoms + 1
 decreasing_by all_goals simp_wf <;> omega
 
@@ -14228,7 +13821,7 @@ theorem LeaAtomInHEImage.apply_singleton
   obtain ⟨heAtom, rfl⟩ := hatom
   obtain ⟨heTerm, rfl⟩ := hterm
   exact ⟨substituteHEAtom key heTerm heAtom,
-    toLeaTTaAtom_substituteHEAtom key heTerm heAtom⟩
+    encodeModelAtom_substituteHEAtom key heTerm heAtom⟩
 
 /-- Extending a substitution by an image term preserves the image invariant. -/
 theorem LeaSubstInHEImage.extend
@@ -14250,7 +13843,7 @@ private theorem LeaConstraintsInHEImage.nil :
 
 private theorem LeaConstraintsInHEImage.singleton_translation
     (key : String) (atom : Atom) :
-    LeaConstraintsInHEImage [(key, toLeaTTaAtom atom)] := by
+    LeaConstraintsInHEImage [(key, encodeModelAtom atom)] := by
   intro storedKey term hmem
   simp only [List.mem_singleton, Prod.mk.injEq] at hmem
   rcases hmem with ⟨rfl, rfl⟩
@@ -14272,29 +13865,29 @@ constraint term outside the HE atom image. -/
 private theorem decomposeEq_toLeaTTa_inHEImage
     (left right : Atom) {constraints : List (String × Metta.Atom)}
     (hdecompose : Metta.Unify.decomposeEq
-      (toLeaTTaAtom left) (toLeaTTaAtom right) = some constraints) :
+      (encodeModelAtom left) (encodeModelAtom right) = some constraints) :
     LeaConstraintsInHEImage constraints := by
   cases left with
   | symbol leftName =>
       cases right with
       | symbol rightName =>
-          simp only [toLeaTTaAtom, Metta.Unify.decomposeEq] at hdecompose
+          simp only [encodeModelAtom, Metta.Unify.decomposeEq] at hdecompose
           split at hdecompose
           · cases hdecompose
             exact LeaConstraintsInHEImage.nil
           · contradiction
       | var rightName =>
-          simp only [toLeaTTaAtom, Metta.Unify.decomposeEq,
+          simp only [encodeModelAtom, Metta.Unify.decomposeEq,
             Option.some.injEq] at hdecompose
           subst constraints
           exact LeaConstraintsInHEImage.singleton_translation
             rightName (.symbol leftName)
       | grounded rightValue | expression rightValue =>
-          simp [toLeaTTaAtom, Metta.Unify.decomposeEq] at hdecompose
+          simp [encodeModelAtom, Metta.Unify.decomposeEq] at hdecompose
   | var leftName =>
       cases right with
       | var rightName =>
-          simp only [toLeaTTaAtom, Metta.Unify.decomposeEq] at hdecompose
+          simp only [encodeModelAtom, Metta.Unify.decomposeEq] at hdecompose
           split at hdecompose
           · cases hdecompose
             exact LeaConstraintsInHEImage.nil
@@ -14303,19 +13896,19 @@ private theorem decomposeEq_toLeaTTa_inHEImage
             exact LeaConstraintsInHEImage.singleton_translation
               leftName (.var rightName)
       | symbol rightName =>
-          simp only [toLeaTTaAtom, Metta.Unify.decomposeEq,
+          simp only [encodeModelAtom, Metta.Unify.decomposeEq,
             Option.some.injEq] at hdecompose
           subst constraints
           exact LeaConstraintsInHEImage.singleton_translation
             leftName (.symbol rightName)
       | grounded rightValue =>
-          simp only [toLeaTTaAtom, Metta.Unify.decomposeEq,
+          simp only [encodeModelAtom, Metta.Unify.decomposeEq,
             Option.some.injEq] at hdecompose
           subst constraints
           exact LeaConstraintsInHEImage.singleton_translation
             leftName (.grounded rightValue)
       | expression rightAtoms =>
-          simp only [toLeaTTaAtom, Metta.Unify.decomposeEq,
+          simp only [encodeModelAtom, Metta.Unify.decomposeEq,
             Option.some.injEq] at hdecompose
           subst constraints
           exact LeaConstraintsInHEImage.singleton_translation
@@ -14323,23 +13916,23 @@ private theorem decomposeEq_toLeaTTa_inHEImage
   | grounded leftValue =>
       cases right with
       | var rightName =>
-          simp only [toLeaTTaAtom, Metta.Unify.decomposeEq,
+          simp only [encodeModelAtom, Metta.Unify.decomposeEq,
             Option.some.injEq] at hdecompose
           subst constraints
           exact LeaConstraintsInHEImage.singleton_translation
             rightName (.grounded leftValue)
       | grounded rightValue =>
-          simp only [toLeaTTaAtom, Metta.Unify.decomposeEq] at hdecompose
+          simp only [encodeModelAtom, Metta.Unify.decomposeEq] at hdecompose
           split at hdecompose
           · cases hdecompose
             exact LeaConstraintsInHEImage.nil
           · contradiction
       | symbol rightName | expression rightName =>
-          simp [toLeaTTaAtom, Metta.Unify.decomposeEq] at hdecompose
+          simp [encodeModelAtom, Metta.Unify.decomposeEq] at hdecompose
   | expression leftAtoms =>
       cases right with
       | var rightName =>
-          simp only [toLeaTTaAtom, Metta.Unify.decomposeEq,
+          simp only [encodeModelAtom, Metta.Unify.decomposeEq,
             Option.some.injEq] at hdecompose
           subst constraints
           exact LeaConstraintsInHEImage.singleton_translation
@@ -14348,36 +13941,36 @@ private theorem decomposeEq_toLeaTTa_inHEImage
           exact decomposeList_toLeaTTa_inHEImage
             leftAtoms rightAtoms hdecompose
       | symbol rightName | grounded rightName =>
-          simp [toLeaTTaAtom, Metta.Unify.decomposeEq] at hdecompose
+          simp [encodeModelAtom, Metta.Unify.decomposeEq] at hdecompose
 termination_by 2 * (sizeOf left + sizeOf right)
 
 /-- Pointwise-list companion to image preservation by decomposition. -/
 private theorem decomposeList_toLeaTTa_inHEImage
     (left right : List Atom) {constraints : List (String × Metta.Atom)}
     (hdecompose : Metta.Unify.decomposeList
-      (toLeaTTaAtoms left) (toLeaTTaAtoms right) = some constraints) :
+      (encodeModelAtoms left) (encodeModelAtoms right) = some constraints) :
     LeaConstraintsInHEImage constraints := by
   cases left with
   | nil =>
       cases right with
       | nil =>
-          simp [toLeaTTaAtoms, Metta.Unify.decomposeList] at hdecompose
+          simp [encodeModelAtoms, Metta.Unify.decomposeList] at hdecompose
           subst constraints
           exact LeaConstraintsInHEImage.nil
       | cons rightHead rightTail =>
-          simp [toLeaTTaAtoms, Metta.Unify.decomposeList] at hdecompose
+          simp [encodeModelAtoms, Metta.Unify.decomposeList] at hdecompose
   | cons leftHead leftTail =>
       cases right with
       | nil =>
-          simp [toLeaTTaAtoms, Metta.Unify.decomposeList] at hdecompose
+          simp [encodeModelAtoms, Metta.Unify.decomposeList] at hdecompose
       | cons rightHead rightTail =>
-          simp only [toLeaTTaAtoms, Metta.Unify.decomposeList] at hdecompose
+          simp only [encodeModelAtoms, Metta.Unify.decomposeList] at hdecompose
           cases hhead : Metta.Unify.decomposeEq
-              (toLeaTTaAtom leftHead) (toLeaTTaAtom rightHead) with
+              (encodeModelAtom leftHead) (encodeModelAtom rightHead) with
           | none => simp [hhead] at hdecompose
           | some headConstraints =>
               cases htail : Metta.Unify.decomposeList
-                  (toLeaTTaAtoms leftTail) (toLeaTTaAtoms rightTail) with
+                  (encodeModelAtoms leftTail) (encodeModelAtoms rightTail) with
               | none => simp [hhead, htail] at hdecompose
               | some tailConstraints =>
                   simp only [hhead, htail, Option.some.injEq] at hdecompose
@@ -15010,10 +14603,10 @@ theorem exists_expression_head_split_strict_state_inHEImage
         LeaSubstInHEImage headSubst := by
   have hleftNoFloat : MettaAtomNoFloat leftHead := by
     obtain ⟨left, rfl⟩ := hleftImage
-    exact toLeaTTaAtom_noFloat left
+    exact encodeModelAtom_noFloat left
   have hrightNoFloat : MettaAtomNoFloat rightHead := by
     obtain ⟨right, rfl⟩ := hrightImage
-    exact toLeaTTaAtom_noFloat right
+    exact encodeModelAtom_noFloat right
   obtain ⟨remainingFuel, tailWork, headSubst,
       hsplit, hcontinue, hlt⟩ :=
     unifyRounds_expression_head_split_strict_of_ne
@@ -15040,37 +14633,37 @@ theorem exists_translated_expression_head_split_strict_state
     (hne : leftHead ≠ rightHead)
     (hlength : leftTail.length = rightTail.length)
     (hrun : Metta.Unify.unifyRounds fuel
-      [(.expr (toLeaTTaAtoms (leftHead :: leftTail)),
-        .expr (toLeaTTaAtoms (rightHead :: rightTail)))]
+      [(.expr (encodeModelAtoms (leftHead :: leftTail)),
+        .expr (encodeModelAtoms (rightHead :: rightTail)))]
       subst = some result) :
     ∃ remainingFuel tailWork headSubst,
       UnifyRoundsPrefixSplit fuel
-          [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)]
-          (List.zip (toLeaTTaAtoms leftTail)
-            (toLeaTTaAtoms rightTail)) subst
+          [(encodeModelAtom leftHead, encodeModelAtom rightHead)]
+          (List.zip (encodeModelAtoms leftTail)
+            (encodeModelAtoms rightTail)) subst
           remainingFuel tailWork headSubst ∧
         Metta.Unify.unifyRounds remainingFuel tailWork headSubst =
           some result ∧
         remainingFuel < fuel ∧
         unificationEliminationTrace fuel
-            ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-              List.zip (toLeaTTaAtoms leftTail)
-                (toLeaTTaAtoms rightTail)) =
+            ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+              List.zip (encodeModelAtoms leftTail)
+                (encodeModelAtoms rightTail)) =
           unificationEliminationTrace fuel
-              [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
+              [(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
             unificationEliminationTrace remainingFuel tailWork ∧
         LeaEquationsInHEImage tailWork ∧
         LeaSubstInHEImage headSubst := by
   have hneTranslation :
-      toLeaTTaAtom leftHead ≠ toLeaTTaAtom rightHead := by
+      encodeModelAtom leftHead ≠ encodeModelAtom rightHead := by
     intro heq
-    exact hne (toLeaTTaAtom_injective heq)
+    exact hne (encodeModelAtom_injective heq)
   have htailLength :
-      (toLeaTTaAtoms leftTail).length =
-        (toLeaTTaAtoms rightTail).length := by
-    rw [length_toLeaTTaAtoms, length_toLeaTTaAtoms]
+      (encodeModelAtoms leftTail).length =
+        (encodeModelAtoms rightTail).length := by
+    rw [length_encodeModelAtoms, length_encodeModelAtoms]
     exact hlength
-  simpa only [toLeaTTaAtoms] using
+  simpa only [encodeModelAtoms] using
     (exists_expression_head_split_strict_state_inHEImage
       (hleftImage := LeaAtomInHEImage.translation leftHead)
       (hrightImage := LeaAtomInHEImage.translation rightHead)
@@ -15089,7 +14682,7 @@ theorem exists_translated_expression_firstDivergence_strict_state
     (hsubstImage : LeaSubstInHEImage subst)
     (hne : left ≠ right)
     (hrun : Metta.Unify.unifyRounds fuel
-      [(.expr (toLeaTTaAtoms left), .expr (toLeaTTaAtoms right))]
+      [(.expr (encodeModelAtoms left), .expr (encodeModelAtoms right))]
       subst = some result) :
     ∃ common leftHead leftTail rightHead rightTail
         remainingFuel tailWork childSubst,
@@ -15098,19 +14691,19 @@ theorem exists_translated_expression_firstDivergence_strict_state
         leftHead ≠ rightHead ∧
         leftTail.length = rightTail.length ∧
         UnifyRoundsPrefixSplit fuel
-            [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)]
-            (List.zip (toLeaTTaAtoms leftTail)
-              (toLeaTTaAtoms rightTail)) subst
+            [(encodeModelAtom leftHead, encodeModelAtom rightHead)]
+            (List.zip (encodeModelAtoms leftTail)
+              (encodeModelAtoms rightTail)) subst
             remainingFuel tailWork childSubst ∧
         Metta.Unify.unifyRounds remainingFuel tailWork childSubst =
           some result ∧
         remainingFuel < fuel ∧
         unificationEliminationTrace fuel
-            ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-              List.zip (toLeaTTaAtoms leftTail)
-                (toLeaTTaAtoms rightTail)) =
+            ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+              List.zip (encodeModelAtoms leftTail)
+                (encodeModelAtoms rightTail)) =
           unificationEliminationTrace fuel
-              [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
+              [(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
             unificationEliminationTrace remainingFuel tailWork ∧
         LeaEquationsInHEImage tailWork ∧
         LeaSubstInHEImage childSubst := by
@@ -15141,7 +14734,7 @@ theorem exists_unifyValues_trace_step_inHEImage_of_classValues
     ∃ (smallerFuel : Nat) (key : String) (term : Metta.Atom)
         (heTerm : Atom) (remaining : List (String × Metta.Atom)),
       smallerFuel < first.size + (rest.map Metta.Atom.size).sum ∧
-        toLeaTTaAtom heTerm = term ∧
+        encodeModelAtom heTerm = term ∧
         unificationEliminationTrace
             (first.size + (rest.map Metta.Atom.size).sum)
             (rest.map fun value => (first, value)) =
@@ -15334,10 +14927,10 @@ theorem exists_unifyValues_nonempty_trace_split_inHEImage_of_classValues
   obtain ⟨heSecond, hheSecond⟩ := hsecondImage
   have hfirstNoFloat : MettaAtomNoFloat first := by
     rw [← hheFirst]
-    exact toLeaTTaAtom_noFloat heFirst
+    exact encodeModelAtom_noFloat heFirst
   have hsecondNoFloat : MettaAtomNoFloat second := by
     rw [← hheSecond]
-    exact toLeaTTaAtom_noFloat heSecond
+    exact encodeModelAtom_noFloat heSecond
   obtain ⟨remainingFuel, tailWork, headSubst, entry, prefixTail,
       hsplit, hcontinue, hlt, htrace⟩ :=
     unifyValues_cons_cons_nonempty_trace_split_of_ne
@@ -15455,7 +15048,7 @@ theorem exists_unifyValues_executablePrefixWitness_of_classValues
         rw [hclass]
         simp)
     rw [← hheFirst]
-    exact toLeaTTaAtom_noFloat heFirst
+    exact encodeModelAtom_noFloat heFirst
   have hsecondNoFloat : MettaAtomNoFloat second := by
     obtain ⟨heSecond, hheSecond⟩ :=
       leaClassValue_inHEImage_of_congruence
@@ -15463,7 +15056,7 @@ theorem exists_unifyValues_executablePrefixWitness_of_classValues
         rw [hclass]
         simp)
     rw [← hheSecond]
-    exact toLeaTTaAtom_noFloat heSecond
+    exact encodeModelAtom_noFloat heSecond
   have hequations : LeaEquationsInHEImage
       ((second :: rest).map fun value => (first, value)) := by
     intro equation hequation
@@ -15630,18 +15223,18 @@ theorem exists_unifyValues_translations_of_commonValue
     {valuation : String → Metta.Atom} {key : String}
     (first : Atom) (rest : List Atom)
     (hfirst : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom first))
+      applyClassSolution valuation (encodeModelAtom first))
     (hrest : ∀ value ∈ rest, valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value)) :
+      applyClassSolution valuation (encodeModelAtom value)) :
     ∃ result, Metta.Bindings.unifyValues
-      (toLeaTTaAtom first :: rest.map toLeaTTaAtom) = some result := by
+      (encodeModelAtom first :: rest.map encodeModelAtom) = some result := by
   apply exists_unifyValues_of_satisfied
     (valuation := valuation)
-    (toLeaTTaAtom first) (rest.map toLeaTTaAtom)
-    (toLeaTTaAtom_noFloat first)
+    (encodeModelAtom first) (rest.map encodeModelAtom)
+    (encodeModelAtom_noFloat first)
   · intro value hmem
     obtain ⟨heValue, _hheValue, rfl⟩ := List.mem_map.mp hmem
-    exact toLeaTTaAtom_noFloat heValue
+    exact encodeModelAtom_noFloat heValue
   · intro value hmem
     obtain ⟨heValue, hheValue, rfl⟩ := List.mem_map.mp hmem
     exact hfirst.symm.trans (hrest heValue hheValue)
@@ -15655,7 +15248,7 @@ theorem exists_unifyValues_translated_HEClassSatisfaction
     (hbinding : HEBindingSatisfied valuation b)
     (hclass : b.classValues key = first :: rest) :
     ∃ result, Metta.Bindings.unifyValues
-      (toLeaTTaAtom first :: rest.map toLeaTTaAtom) = some result := by
+      (encodeModelAtom first :: rest.map encodeModelAtom) = some result := by
   have hfirstMem : first ∈ b.classValues key := by
     rw [hclass]
     simp
@@ -15675,10 +15268,10 @@ theorem exists_unifyValues_translated_HEClass_append_of_satisfaction
     (hbinding : HEBindingSatisfied valuation b)
     (hclass : b.classValues key = first :: rest)
     (hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value)) :
+      applyClassSolution valuation (encodeModelAtom value)) :
     ∃ result, Metta.Bindings.unifyValues
-      (toLeaTTaAtom first ::
-        (rest ++ [value]).map toLeaTTaAtom) = some result := by
+      (encodeModelAtom first ::
+        (rest ++ [value]).map encodeModelAtom) = some result := by
   have hfirstMem : first ∈ b.classValues key := by
     rw [hclass]
     simp
@@ -15760,28 +15353,28 @@ theorem exists_unifyValues_executablePrefixWitness_of_HEClassSatisfaction
     (hclass : b.classValues key = first :: second :: rest)
     (hne : first ≠ second) :
     ∃ result, Nonempty (LeaUnifyValuesExecutablePrefixWitness
-      (toLeaTTaAtom first) (toLeaTTaAtom second)
-      (rest.map toLeaTTaAtom) result) := by
-  have hfirstNoFloat : MettaAtomNoFloat (toLeaTTaAtom first) :=
-    toLeaTTaAtom_noFloat first
-  have hsecondNoFloat : MettaAtomNoFloat (toLeaTTaAtom second) :=
-    toLeaTTaAtom_noFloat second
-  have hrestNoFloat : ∀ value ∈ rest.map toLeaTTaAtom,
+      (encodeModelAtom first) (encodeModelAtom second)
+      (rest.map encodeModelAtom) result) := by
+  have hfirstNoFloat : MettaAtomNoFloat (encodeModelAtom first) :=
+    encodeModelAtom_noFloat first
+  have hsecondNoFloat : MettaAtomNoFloat (encodeModelAtom second) :=
+    encodeModelAtom_noFloat second
+  have hrestNoFloat : ∀ value ∈ rest.map encodeModelAtom,
       MettaAtomNoFloat value := by
     intro value hmem
     obtain ⟨heValue, _hheValue, rfl⟩ := List.mem_map.mp hmem
-    exact toLeaTTaAtom_noFloat heValue
+    exact encodeModelAtom_noFloat heValue
   have hfirstMem : first ∈ b.classValues key := by
     rw [hclass]
     simp
   have hfirstValue :=
     hbinding.eq_applyClassSolution_of_mem_classValues hfirstMem
   have hsatisfied : ∀ value ∈
-      toLeaTTaAtom second :: rest.map toLeaTTaAtom,
-      applyClassSolution valuation (toLeaTTaAtom first) =
+      encodeModelAtom second :: rest.map encodeModelAtom,
+      applyClassSolution valuation (encodeModelAtom first) =
         applyClassSolution valuation value := by
     intro value hmem
-    change value ∈ (second :: rest).map toLeaTTaAtom at hmem
+    change value ∈ (second :: rest).map encodeModelAtom at hmem
     obtain ⟨heValue, hheValue, rfl⟩ := List.mem_map.mp hmem
     have hclassValue : heValue ∈ b.classValues key := by
       rw [hclass]
@@ -15792,8 +15385,8 @@ theorem exists_unifyValues_executablePrefixWitness_of_HEClassSatisfaction
   obtain ⟨result, hunify⟩ :=
     exists_unifyValues_of_satisfied
       (valuation := valuation)
-      (toLeaTTaAtom first)
-      (toLeaTTaAtom second :: rest.map toLeaTTaAtom)
+      (encodeModelAtom first)
+      (encodeModelAtom second :: rest.map encodeModelAtom)
       hfirstNoFloat
       (by
         intro value hmem
@@ -15804,8 +15397,8 @@ theorem exists_unifyValues_executablePrefixWitness_of_HEClassSatisfaction
         · exact hrestNoFloat value hmem)
       hsatisfied
   have hequations : LeaEquationsInHEImage
-      ((toLeaTTaAtom second :: rest.map toLeaTTaAtom).map
-        fun value => (toLeaTTaAtom first, value)) := by
+      ((encodeModelAtom second :: rest.map encodeModelAtom).map
+        fun value => (encodeModelAtom first, value)) := by
     intro equation hequation
     obtain ⟨value, hvalue, rfl⟩ := List.mem_map.mp hequation
     have hvalueImage : LeaAtomInHEImage value := by
@@ -15817,9 +15410,9 @@ theorem exists_unifyValues_executablePrefixWitness_of_HEClassSatisfaction
           List.mem_map.mp hvalue
         exact LeaAtomInHEImage.translation heValue
     exact ⟨LeaAtomInHEImage.translation first, hvalueImage⟩
-  have hneTranslation : toLeaTTaAtom first ≠ toLeaTTaAtom second := by
+  have hneTranslation : encodeModelAtom first ≠ encodeModelAtom second := by
     intro hequal
-    exact hne (toLeaTTaAtom_injective hequal)
+    exact hne (encodeModelAtom_injective hequal)
   exact ⟨result,
     exists_unifyValues_executablePrefixWitness_of_success
       hfirstNoFloat hsecondNoFloat hequations hneTranslation hunify⟩
@@ -15834,24 +15427,24 @@ theorem exists_unifyValues_executablePrefixWitness_of_HEClass_append_satisfactio
     (hbinding : HEBindingSatisfied valuation b)
     (hclass : b.classValues key = first :: second :: rest)
     (hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value))
+      applyClassSolution valuation (encodeModelAtom value))
     (hne : first ≠ second) :
     ∃ result, Nonempty (LeaUnifyValuesExecutablePrefixWitness
-      (toLeaTTaAtom first) (toLeaTTaAtom second)
-      ((rest ++ [value]).map toLeaTTaAtom) result) := by
+      (encodeModelAtom first) (encodeModelAtom second)
+      ((rest ++ [value]).map encodeModelAtom) result) := by
   obtain ⟨result, hunify⟩ :=
     exists_unifyValues_translated_HEClass_append_of_satisfaction
       hbinding hclass hvalue
   have hunify' : Metta.Bindings.unifyValues
-      (toLeaTTaAtom first :: toLeaTTaAtom second ::
-        (rest ++ [value]).map toLeaTTaAtom) = some result := by
+      (encodeModelAtom first :: encodeModelAtom second ::
+        (rest ++ [value]).map encodeModelAtom) = some result := by
     simpa only [List.map_cons, List.map_append, List.map_singleton,
       List.cons_append] using
       hunify
   have hequations : LeaEquationsInHEImage
-      ((toLeaTTaAtom second ::
-        (rest ++ [value]).map toLeaTTaAtom).map
-          fun tailValue => (toLeaTTaAtom first, tailValue)) := by
+      ((encodeModelAtom second ::
+        (rest ++ [value]).map encodeModelAtom).map
+          fun tailValue => (encodeModelAtom first, tailValue)) := by
     intro equation hequation
     obtain ⟨tailValue, htailValue, rfl⟩ := List.mem_map.mp hequation
     have htailImage : LeaAtomInHEImage tailValue := by
@@ -15863,12 +15456,12 @@ theorem exists_unifyValues_executablePrefixWitness_of_HEClass_append_satisfactio
           List.mem_map.mp htailValue
         exact LeaAtomInHEImage.translation heValue
     exact ⟨LeaAtomInHEImage.translation first, htailImage⟩
-  have hneTranslation : toLeaTTaAtom first ≠ toLeaTTaAtom second := by
+  have hneTranslation : encodeModelAtom first ≠ encodeModelAtom second := by
     intro hequal
-    exact hne (toLeaTTaAtom_injective hequal)
+    exact hne (encodeModelAtom_injective hequal)
   exact ⟨result,
     exists_unifyValues_executablePrefixWitness_of_success
-      (toLeaTTaAtom_noFloat first) (toLeaTTaAtom_noFloat second)
+      (encodeModelAtom_noFloat first) (encodeModelAtom_noFloat second)
       hequations hneTranslation hunify'⟩
 
 /-- The selected first Robinson obligation is literally present in the exact
@@ -15908,44 +15501,44 @@ theorem LeaUnifyValuesExecutablePrefixWitness.exists_originalExpressionHeadSplit
     {leftHead rightHead : Atom} {leftTail rightTail : List Atom}
     {rest : List Metta.Atom} {result : Metta.Subst}
     (h : LeaUnifyValuesExecutablePrefixWitness
-      (toLeaTTaAtom (.expression (leftHead :: leftTail)))
-      (toLeaTTaAtom (.expression (rightHead :: rightTail))) rest result)
+      (encodeModelAtom (.expression (leftHead :: leftTail)))
+      (encodeModelAtom (.expression (rightHead :: rightTail))) rest result)
     (hne : leftHead ≠ rightHead) :
     let localFuel :=
-      (toLeaTTaAtom (.expression (leftHead :: leftTail))).size +
-        (((toLeaTTaAtom (.expression (rightHead :: rightTail))) :: rest).map
+      (encodeModelAtom (.expression (leftHead :: leftTail))).size +
+        (((encodeModelAtom (.expression (rightHead :: rightTail))) :: rest).map
           Metta.Atom.size).sum
     ∃ remainingFuel tailWork childSubst,
       UnifyRoundsPrefixSplit localFuel
-          [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)]
-          (List.zip (toLeaTTaAtoms leftTail)
-            (toLeaTTaAtoms rightTail)) []
+          [(encodeModelAtom leftHead, encodeModelAtom rightHead)]
+          (List.zip (encodeModelAtoms leftTail)
+            (encodeModelAtoms rightTail)) []
           remainingFuel tailWork childSubst ∧
         Metta.Unify.unifyRounds remainingFuel tailWork childSubst =
           some h.headSubst ∧
         remainingFuel < localFuel ∧
         unificationEliminationTrace localFuel
-            ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-              List.zip (toLeaTTaAtoms leftTail)
-                (toLeaTTaAtoms rightTail)) =
+            ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+              List.zip (encodeModelAtoms leftTail)
+                (encodeModelAtoms rightTail)) =
           unificationEliminationTrace localFuel
-              [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
+              [(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
             unificationEliminationTrace remainingFuel tailWork ∧
         LeaEquationsInHEImage tailWork ∧
         LeaSubstInHEImage childSubst := by
   dsimp only
   have hrun : Metta.Unify.unifyRounds
-      ((toLeaTTaAtom (.expression (leftHead :: leftTail))).size +
-        (((toLeaTTaAtom (.expression (rightHead :: rightTail))) :: rest).map
+      ((encodeModelAtom (.expression (leftHead :: leftTail))).size +
+        (((encodeModelAtom (.expression (rightHead :: rightTail))) :: rest).map
           Metta.Atom.size).sum)
-      [(.expr (toLeaTTaAtoms (leftHead :: leftTail)),
-        .expr (toLeaTTaAtoms (rightHead :: rightTail)))] [] =
+      [(.expr (encodeModelAtoms (leftHead :: leftTail)),
+        .expr (encodeModelAtoms (rightHead :: rightTail)))] [] =
         some h.headSubst := by
-    simpa [toLeaTTaAtom] using h.split.front_run
+    simpa [encodeModelAtom] using h.split.front_run
   have hfullLength :=
     length_eq_of_unifyRounds_expression_success hrun
   have htailLength : leftTail.length = rightTail.length := by
-    rw [length_toLeaTTaAtoms, length_toLeaTTaAtoms] at hfullLength
+    rw [length_encodeModelAtoms, length_encodeModelAtoms] at hfullLength
     simpa using hfullLength
   exact exists_translated_expression_head_split_strict_state
     (by intro key term hmem; simp at hmem) hne htailLength hrun
@@ -15959,12 +15552,12 @@ theorem LeaUnifyValuesExecutablePrefixWitness.exists_originalExpressionFirstDive
     {left right : List Atom} {rest : List Metta.Atom}
     {result : Metta.Subst}
     (h : LeaUnifyValuesExecutablePrefixWitness
-      (toLeaTTaAtom (.expression left))
-      (toLeaTTaAtom (.expression right)) rest result)
+      (encodeModelAtom (.expression left))
+      (encodeModelAtom (.expression right)) rest result)
     (hne : left ≠ right) :
     let localFuel :=
-      (toLeaTTaAtom (.expression left)).size +
-        (((toLeaTTaAtom (.expression right)) :: rest).map
+      (encodeModelAtom (.expression left)).size +
+        (((encodeModelAtom (.expression right)) :: rest).map
           Metta.Atom.size).sum
     ∃ common leftHead leftTail rightHead rightTail
         remainingFuel tailWork childSubst,
@@ -15973,30 +15566,30 @@ theorem LeaUnifyValuesExecutablePrefixWitness.exists_originalExpressionFirstDive
         leftHead ≠ rightHead ∧
         leftTail.length = rightTail.length ∧
         UnifyRoundsPrefixSplit localFuel
-            [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)]
-            (List.zip (toLeaTTaAtoms leftTail)
-              (toLeaTTaAtoms rightTail)) []
+            [(encodeModelAtom leftHead, encodeModelAtom rightHead)]
+            (List.zip (encodeModelAtoms leftTail)
+              (encodeModelAtoms rightTail)) []
             remainingFuel tailWork childSubst ∧
         Metta.Unify.unifyRounds remainingFuel tailWork childSubst =
           some h.headSubst ∧
         remainingFuel < localFuel ∧
         unificationEliminationTrace localFuel
-            ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-              List.zip (toLeaTTaAtoms leftTail)
-                (toLeaTTaAtoms rightTail)) =
+            ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+              List.zip (encodeModelAtoms leftTail)
+                (encodeModelAtoms rightTail)) =
           unificationEliminationTrace localFuel
-              [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
+              [(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
             unificationEliminationTrace remainingFuel tailWork ∧
         LeaEquationsInHEImage tailWork ∧
         LeaSubstInHEImage childSubst := by
   dsimp only
   have hrun : Metta.Unify.unifyRounds
-      ((toLeaTTaAtom (.expression left)).size +
-        (((toLeaTTaAtom (.expression right)) :: rest).map
+      ((encodeModelAtom (.expression left)).size +
+        (((encodeModelAtom (.expression right)) :: rest).map
           Metta.Atom.size).sum)
-      [(.expr (toLeaTTaAtoms left), .expr (toLeaTTaAtoms right))] [] =
+      [(.expr (encodeModelAtoms left), .expr (encodeModelAtoms right))] [] =
         some h.headSubst := by
-    simpa [toLeaTTaAtom] using h.split.front_run
+    simpa [encodeModelAtom] using h.split.front_run
   exact exists_translated_expression_firstDivergence_strict_state
     (by intro key term hmem; simp at hmem) hne hrun
 
@@ -16708,15 +16301,15 @@ theorem HELeaAtomClassRel.applyClassSolution_eq_of_eqClass
     (hclasses : ∀ {left right : String},
       right ∈ b.eqClass left → valuation left = valuation right)
     (hrel : HELeaAtomClassRel b atom leaAtom) :
-    applyClassSolution valuation (toLeaTTaAtom atom) =
+    applyClassSolution valuation (encodeModelAtom atom) =
       applyClassSolution valuation leaAtom := by
   let AtomGoal := fun (atom : Atom) (leaAtom : Metta.Atom)
       (_ : HELeaAtomClassRel b atom leaAtom) =>
-    applyClassSolution valuation (toLeaTTaAtom atom) =
+    applyClassSolution valuation (encodeModelAtom atom) =
       applyClassSolution valuation leaAtom
   let ListGoal := fun (atoms : List Atom) (leaAtoms : List Metta.Atom)
       (_ : List.Forall₂ (HELeaAtomClassRel b) atoms leaAtoms) =>
-    (toLeaTTaAtoms atoms).map (applyClassSolution valuation) =
+    (encodeModelAtoms atoms).map (applyClassSolution valuation) =
       leaAtoms.map (applyClassSolution valuation)
   have hrec : ∀ {atom leaAtom} (h : HELeaAtomClassRel b atom leaAtom),
       AtomGoal atom leaAtom h := by
@@ -16726,19 +16319,19 @@ theorem HELeaAtomClassRel.applyClassSolution_eq_of_eqClass
       rfl
     · intro left right hclass
       dsimp [AtomGoal]
-      simpa [toLeaTTaAtom, applyClassSolution] using
+      simpa [encodeModelAtom, applyClassSolution] using
         hclasses hclass
     · intro ground
       rfl
     · intro atoms leaAtoms hrels ih
       dsimp [AtomGoal]
-      simpa [toLeaTTaAtom, applyClassSolution] using
+      simpa [encodeModelAtom, applyClassSolution] using
         congrArg Metta.Atom.expr ih
     · rfl
     · intro atom leaAtom atoms leaAtoms hhead htail ihHead ihTail
       change
-        applyClassSolution valuation (toLeaTTaAtom atom) ::
-            (toLeaTTaAtoms atoms).map (applyClassSolution valuation) =
+        applyClassSolution valuation (encodeModelAtom atom) ::
+            (encodeModelAtoms atoms).map (applyClassSolution valuation) =
           applyClassSolution valuation leaAtom ::
             leaAtoms.map (applyClassSolution valuation)
       exact congrArg₂ List.cons ihHead ihTail
@@ -16751,15 +16344,15 @@ theorem HELeaAtomClassRel.applyClassSolution_eq
     {atom : Atom} {leaAtom : Metta.Atom}
     (hsat : HEBindingSatisfied valuation b)
     (hrel : HELeaAtomClassRel b atom leaAtom) :
-    applyClassSolution valuation (toLeaTTaAtom atom) =
+    applyClassSolution valuation (encodeModelAtom atom) =
       applyClassSolution valuation leaAtom := by
   let AtomGoal := fun (atom : Atom) (leaAtom : Metta.Atom)
       (_ : HELeaAtomClassRel b atom leaAtom) =>
-    applyClassSolution valuation (toLeaTTaAtom atom) =
+    applyClassSolution valuation (encodeModelAtom atom) =
       applyClassSolution valuation leaAtom
   let ListGoal := fun (atoms : List Atom) (leaAtoms : List Metta.Atom)
       (_ : List.Forall₂ (HELeaAtomClassRel b) atoms leaAtoms) =>
-    (toLeaTTaAtoms atoms).map (applyClassSolution valuation) =
+    (encodeModelAtoms atoms).map (applyClassSolution valuation) =
       leaAtoms.map (applyClassSolution valuation)
   have hrec : ∀ {atom leaAtom} (h : HELeaAtomClassRel b atom leaAtom),
       AtomGoal atom leaAtom h := by
@@ -16769,19 +16362,19 @@ theorem HELeaAtomClassRel.applyClassSolution_eq
       rfl
     · intro left right hclass
       dsimp [AtomGoal]
-      simpa [toLeaTTaAtom, applyClassSolution] using
+      simpa [encodeModelAtom, applyClassSolution] using
         hsat.eq_of_mem_eqClass hclass
     · intro ground
       rfl
     · intro atoms leaAtoms hrels ih
       dsimp [AtomGoal]
-      simpa [toLeaTTaAtom, applyClassSolution] using
+      simpa [encodeModelAtom, applyClassSolution] using
         congrArg Metta.Atom.expr ih
     · rfl
     · intro atom leaAtom atoms leaAtoms hhead htail ihHead ihTail
       change
-        applyClassSolution valuation (toLeaTTaAtom atom) ::
-            (toLeaTTaAtoms atoms).map (applyClassSolution valuation) =
+        applyClassSolution valuation (encodeModelAtom atom) ::
+            (encodeModelAtoms atoms).map (applyClassSolution valuation) =
           applyClassSolution valuation leaAtom ::
             leaAtoms.map (applyClassSolution valuation)
       exact congrArg₂ List.cons ihHead ihTail
@@ -17135,7 +16728,7 @@ def HELiveMatchMergeLocalProgressCertified.toCertifiedProgressStep
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom left, toLeaTTaAtom right)) :
+        (encodeModelAtom left, encodeModelAtom right)) :
     HECertifiedEliminationTraceProgressStep
       trace allowed before h.live.after :=
   h.live.toCertifiedProgressStep entry hentry hpending
@@ -17158,7 +16751,7 @@ def HELiveMatchMergeSolutionProgressCertified.toCertifiedProgressStep
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom left, toLeaTTaAtom right)) :
+        (encodeModelAtom left, encodeModelAtom right)) :
     HECertifiedEliminationTraceProgressStep
       trace allowed before h.live.after :=
   h.live.toCertifiedProgressStep entry hentry hpending
@@ -17180,7 +16773,7 @@ def HELiveMatchMergeCongruentCertified.toCertifiedProgressStep_of_traceReverse
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom left, toLeaTTaAtom right)) :
+        (encodeModelAtom left, encodeModelAtom right)) :
     HECertifiedEliminationTraceProgressStep trace allowed before h.after :=
   h.toCertifiedProgressStep entry hentry hpending
     (h.congruence.traceEntryRealized_ofSubst_reverse entry hentry)
@@ -17197,7 +16790,7 @@ theorem certifiedValueConflictProgress_of_inner
     {trace : List (String × Metta.Atom)} {before : Bindings}
     {key : String} {value first : Atom} {leaValue : Metta.Atom}
     {rest : List Atom}
-    (hvalue : toLeaTTaAtom value = leaValue)
+    (hvalue : encodeModelAtom value = leaValue)
     (hvalueNonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬ AtomOccurs value key)
     (hclass : before.classValues key = first :: rest)
@@ -17215,13 +16808,13 @@ theorem certifiedValueConflictProgress_of_inner
         before trace.reverse)) :
     ∃ after, Nonempty (HECertifiedEliminationTraceProgressStep trace
       (eliminationTraceAliases trace) before after) := by
-  have hentry' : (key, toLeaTTaAtom value) ∈ trace := by
+  have hentry' : (key, encodeModelAtom value) ∈ trace := by
     simpa only [hvalue] using hentry
   have hsolution : ∀ valuation,
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom (.var key), toLeaTTaAtom value) := by
+        (encodeModelAtom (.var key), encodeModelAtom value) := by
     intro valuation _hbefore htrace
     have hconstraint := htrace (key, leaValue) hentry
     simpa [hvalue, MettaEquationSatisfied, applyClassSolution] using
@@ -17314,7 +16907,7 @@ theorem certifiedAliasConflictProgress_of_inner
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom (.var left), toLeaTTaAtom (.var right)) := by
+        (encodeModelAtom (.var left), encodeModelAtom (.var right)) := by
     intro valuation _hbefore htrace
     have hconstraint := htrace (left, .var right) hentry
     simpa [MettaEquationSatisfied, applyClassSolution] using hconstraint
@@ -17364,7 +16957,7 @@ theorem certifiedValueConflictProgress_of_local_inner
     {trace : List (String × Metta.Atom)} {before : Bindings}
     {key : String} {value first : Atom} {leaValue : Metta.Atom}
     {rest : List Atom}
-    (hvalue : toLeaTTaAtom value = leaValue)
+    (hvalue : encodeModelAtom value = leaValue)
     (hvalueNonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬ AtomOccurs value key)
     (hclass : before.classValues key = first :: rest)
@@ -17383,13 +16976,13 @@ theorem certifiedValueConflictProgress_of_local_inner
         before (key, leaValue))) :
     ∃ after, Nonempty (HECertifiedEliminationTraceProgressStep trace
       (eliminationTraceAliases trace) before after) := by
-  have hentry' : (key, toLeaTTaAtom value) ∈ trace := by
+  have hentry' : (key, encodeModelAtom value) ∈ trace := by
     simpa only [hvalue] using hentry
   have hsolution : ∀ valuation,
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom (.var key), toLeaTTaAtom value) := by
+        (encodeModelAtom (.var key), encodeModelAtom value) := by
     intro valuation _hbefore htrace
     have hconstraint := htrace (key, leaValue) hentry
     simpa [hvalue, MettaEquationSatisfied, applyClassSolution] using
@@ -17460,7 +17053,7 @@ theorem certifiedValueConflictProgress_of_solution_inner
     {trace : List (String × Metta.Atom)} {before : Bindings}
     {key : String} {value first : Atom} {leaValue : Metta.Atom}
     {rest : List Atom}
-    (hvalue : toLeaTTaAtom value = leaValue)
+    (hvalue : encodeModelAtom value = leaValue)
     (hvalueNonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬ AtomOccurs value key)
     (hclass : before.classValues key = first :: rest)
@@ -17479,13 +17072,13 @@ theorem certifiedValueConflictProgress_of_solution_inner
         before (key, leaValue))) :
     ∃ after, Nonempty (HECertifiedEliminationTraceProgressStep trace
       (eliminationTraceAliases trace) before after) := by
-  have hentry' : (key, toLeaTTaAtom value) ∈ trace := by
+  have hentry' : (key, encodeModelAtom value) ∈ trace := by
     simpa only [hvalue] using hentry
   have hsolution : ∀ valuation,
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom (.var key), toLeaTTaAtom value) := by
+        (encodeModelAtom (.var key), encodeModelAtom value) := by
     intro valuation _hbefore htrace
     have hconstraint := htrace (key, leaValue) hentry
     simpa [hvalue, MettaEquationSatisfied, applyClassSolution] using
@@ -17609,7 +17202,7 @@ theorem certifiedAliasConflictProgress_of_local_inner
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom (.var left), toLeaTTaAtom (.var right)) := by
+        (encodeModelAtom (.var left), encodeModelAtom (.var right)) := by
     intro valuation _hbefore htrace
     have hconstraint := htrace (left, .var right) hentry
     simpa [MettaEquationSatisfied, applyClassSolution] using hconstraint
@@ -17710,7 +17303,7 @@ theorem certifiedAliasConflictProgress_of_solution_inner
       HEBindingSatisfied valuation before →
       MettaConstraintsSatisfied valuation trace →
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom (.var left), toLeaTTaAtom (.var right)) := by
+        (encodeModelAtom (.var left), encodeModelAtom (.var right)) := by
     intro valuation _hbefore htrace
     have hconstraint := htrace (left, .var right) hentry
     simpa [MettaEquationSatisfied, applyClassSolution] using hconstraint
@@ -17798,7 +17391,7 @@ theorem exists_completeSatisfiedCertifiedMatcherMergeChain_of_inner
     {trace : List (String × Metta.Atom)}
     {valuation : String → Metta.Atom}
     (himage : ∀ key term, (key, term) ∈ trace →
-      ∃ atom : Atom, toLeaTTaAtom atom = term)
+      ∃ atom : Atom, encodeModelAtom atom = term)
     (htraceSatisfied : MettaConstraintsSatisfied valuation trace)
     (hvalueInner : ∀
       (before : Bindings) (key : String) (value : Atom)
@@ -17807,7 +17400,7 @@ theorem exists_completeSatisfiedCertifiedMatcherMergeChain_of_inner
       LeaEliminationTraceAssignmentsSound before trace →
       HEEqualityClosureBound before (eliminationTraceAliases trace) →
       HEBindingSatisfied valuation before →
-      toLeaTTaAtom value = leaValue →
+      encodeModelAtom value = leaValue →
       DeclMatchSpec.Atom.isVarB value = false →
       before.classValues key = first :: rest →
       (key, leaValue) ∈ trace →
@@ -17891,7 +17484,7 @@ theorem exists_completeSatisfiedCertifiedMatcherMergeChain_of_local_inner
     {trace : List (String × Metta.Atom)}
     {valuation : String → Metta.Atom}
     (himage : ∀ key term, (key, term) ∈ trace →
-      ∃ atom : Atom, toLeaTTaAtom atom = term)
+      ∃ atom : Atom, encodeModelAtom atom = term)
     (htraceSatisfied : MettaConstraintsSatisfied valuation trace)
     (hvalueInner : ∀
       (before : Bindings) (key : String) (value : Atom)
@@ -17900,7 +17493,7 @@ theorem exists_completeSatisfiedCertifiedMatcherMergeChain_of_local_inner
       LeaEliminationTraceAssignmentsSound before trace →
       HEEqualityClosureBound before (eliminationTraceAliases trace) →
       HEBindingSatisfied valuation before →
-      toLeaTTaAtom value = leaValue →
+      encodeModelAtom value = leaValue →
       DeclMatchSpec.Atom.isVarB value = false →
       before.classValues key = first :: rest →
       (key, leaValue) ∈ trace →
@@ -17984,7 +17577,7 @@ theorem exists_completeSatisfiedCertifiedMatcherMergeChain_of_solution_inner
     {trace : List (String × Metta.Atom)}
     {valuation : String → Metta.Atom}
     (himage : ∀ key term, (key, term) ∈ trace →
-      ∃ atom : Atom, toLeaTTaAtom atom = term)
+      ∃ atom : Atom, encodeModelAtom atom = term)
     (htraceSatisfied : MettaConstraintsSatisfied valuation trace)
     (hvalueInner : ∀
       (before : Bindings) (key : String) (value : Atom)
@@ -17993,7 +17586,7 @@ theorem exists_completeSatisfiedCertifiedMatcherMergeChain_of_solution_inner
       LeaEliminationTraceAssignmentsSound before trace →
       HEEqualityClosureBound before (eliminationTraceAliases trace) →
       HEBindingSatisfied valuation before →
-      toLeaTTaAtom value = leaValue →
+      encodeModelAtom value = leaValue →
       DeclMatchSpec.Atom.isVarB value = false →
       before.classValues key = first :: rest →
       (key, leaValue) ∈ trace →
@@ -18105,13 +17698,13 @@ theorem oneConflict_cannot_close_independentTrace :
     · intro key value hmem
       simp only [List.mem_singleton, Prod.mk.injEq] at hmem
       rcases hmem with ⟨rfl, rfl⟩
-      simp [valuation, toLeaTTaAtom, applyClassSolution]
+      simp [valuation, encodeModelAtom, applyClassSolution]
     · intro left right hmem
       simp at hmem
   have hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom (.expression [.var "y"]),
-        toLeaTTaAtom (.expression [.symbol "a"])) := by
-    simp [MettaEquationSatisfied, valuation, toLeaTTaAtom,
+      (encodeModelAtom (.expression [.var "y"]),
+        encodeModelAtom (.expression [.symbol "a"])) := by
+    simp [MettaEquationSatisfied, valuation, encodeModelAtom,
       applyClassSolution]
   have hmatched : HEBindingSatisfied valuation h.matched :=
     (matchAtoms_solution_iff h.match_mem valuation).mpr hequation
@@ -18180,17 +17773,17 @@ theorem exists_leafMatchCertified_of_unifyRounds_success
     {fuel : Nat} {left right : Atom} {result : Metta.Subst}
     (hleaf : ¬ BothExpressions left right)
     (hrun : Metta.Unify.unifyRounds fuel
-      [(toLeaTTaAtom left, toLeaTTaAtom right)] [] = some result) :
+      [(encodeModelAtom left, encodeModelAtom right)] [] = some result) :
     Nonempty (HEMatchCertified
       (unificationEliminationTrace fuel
-        [(toLeaTTaAtom left, toLeaTTaAtom right)])
+        [(encodeModelAtom left, encodeModelAtom right)])
       (eliminationTraceAliases
         (unificationEliminationTrace fuel
-          [(toLeaTTaAtom left, toLeaTTaAtom right)]))
+          [(encodeModelAtom left, encodeModelAtom right)]))
       left right) := by
   obtain ⟨valuation, hequation⟩ :=
     exists_unifyRounds_equations_satisfied_empty
-      (equations := [(toLeaTTaAtom left, toLeaTTaAtom right)])
+      (equations := [(encodeModelAtom left, encodeModelAtom right)])
       (by
         intro equation hmem
         simp only [List.mem_singleton] at hmem
@@ -18199,7 +17792,7 @@ theorem exists_leafMatchCertified_of_unifyRounds_success
           LeaAtomInHEImage.translation right⟩)
       hrun
   have hsingle : MettaEquationSatisfied valuation
-      (toLeaTTaAtom left, toLeaTTaAtom right) :=
+      (encodeModelAtom left, encodeModelAtom right) :=
     hequation _ (by simp)
   obtain ⟨out, hmatch⟩ :=
     exists_matchRel_of_solution_leaf ⟨valuation, hsingle⟩ hleaf
@@ -18220,7 +17813,7 @@ theorem exists_leafMatchCertified_of_unifyRounds_success
     | symSym => exact .symSym
     | varVar left right =>
         apply MatchEqualityClosureBoundSound.varVar
-        simpa [toLeaTTaAtom] using
+        simpa [encodeModelAtom] using
           singletonVarEquation_reachable_in_eliminationTrace hrun
     | varNonVar hnonvar hoccurs => exact .varNonVar (hnonvar := hnonvar) (hoccurs := hoccurs)
     | nonVarVar hnonvar hoccurs => exact .nonVarVar (hnonvar := hnonvar) (hoccurs := hoccurs)
@@ -18516,20 +18109,20 @@ theorem exists_leafMatchCertified_of_prefixSplit
     {suffixWork : List (Metta.Atom × Metta.Atom)}
     {prefixSubst : Metta.Subst}
     (h : UnifyRoundsPrefixSplit fuel
-      [(toLeaTTaAtom left, toLeaTTaAtom right)] suffix []
+      [(encodeModelAtom left, encodeModelAtom right)] suffix []
       remainingFuel suffixWork prefixSubst)
     (hleaf : ¬ BothExpressions left right) :
     Nonempty (HEMatchCertified
       (unificationEliminationTrace fuel
-        ([(toLeaTTaAtom left, toLeaTTaAtom right)] ++ suffix))
+        ([(encodeModelAtom left, encodeModelAtom right)] ++ suffix))
       (eliminationTraceAliases
         (unificationEliminationTrace fuel
-          ([(toLeaTTaAtom left, toLeaTTaAtom right)] ++ suffix)))
+          ([(encodeModelAtom left, encodeModelAtom right)] ++ suffix)))
       left right) := by
   let localTrace := unificationEliminationTrace fuel
-    [(toLeaTTaAtom left, toLeaTTaAtom right)]
+    [(encodeModelAtom left, encodeModelAtom right)]
   let fullTrace := unificationEliminationTrace fuel
-    ([(toLeaTTaAtom left, toLeaTTaAtom right)] ++ suffix)
+    ([(encodeModelAtom left, encodeModelAtom right)] ++ suffix)
   obtain ⟨hlocal⟩ :=
     exists_leafMatchCertified_of_unifyRounds_success hleaf h.front_run
   have htraceEq : fullTrace = localTrace ++
@@ -18572,16 +18165,16 @@ theorem LeaUnifyValuesExecutablePrefixWitness.exists_originalExpressionFirstDive
     {left right : List Atom} {rest : List Metta.Atom}
     {result : Metta.Subst}
     (h : LeaUnifyValuesExecutablePrefixWitness
-      (toLeaTTaAtom (.expression left))
-      (toLeaTTaAtom (.expression right)) rest result)
+      (encodeModelAtom (.expression left))
+      (encodeModelAtom (.expression right)) rest result)
     (hne : left ≠ right) :
     let localFuel :=
-      (toLeaTTaAtom (.expression left)).size +
-        (((toLeaTTaAtom (.expression right)) :: rest).map
+      (encodeModelAtom (.expression left)).size +
+        (((encodeModelAtom (.expression right)) :: rest).map
           Metta.Atom.size).sum
     let fullTrace := unificationEliminationTrace localFuel
-      (((toLeaTTaAtom (.expression right)) :: rest).map
-        fun value => (toLeaTTaAtom (.expression left), value))
+      (((encodeModelAtom (.expression right)) :: rest).map
+        fun value => (encodeModelAtom (.expression left), value))
     ∃ common leftHead leftTail rightHead rightTail
         remainingFuel tailWork childSubst,
       left = common ++ leftHead :: leftTail ∧
@@ -18589,9 +18182,9 @@ theorem LeaUnifyValuesExecutablePrefixWitness.exists_originalExpressionFirstDive
         leftHead ≠ rightHead ∧
         leftTail.length = rightTail.length ∧
         UnifyRoundsPrefixSplit localFuel
-            [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)]
-            (List.zip (toLeaTTaAtoms leftTail)
-              (toLeaTTaAtoms rightTail)) []
+            [(encodeModelAtom leftHead, encodeModelAtom rightHead)]
+            (List.zip (encodeModelAtoms leftTail)
+              (encodeModelAtoms rightTail)) []
             remainingFuel tailWork childSubst ∧
         Metta.Unify.unifyRounds remainingFuel tailWork childSubst =
           some h.headSubst ∧
@@ -18619,65 +18212,65 @@ theorem LeaUnifyValuesExecutablePrefixWitness.exists_originalExpressionFirstDive
     obtain ⟨hlocal⟩ :=
       exists_leafMatchCertified_of_prefixSplit hsplit hexpressions
     let reducedTrace := unificationEliminationTrace
-      ((toLeaTTaAtom (.expression left)).size +
-        (((toLeaTTaAtom (.expression right)) :: rest).map
+      ((encodeModelAtom (.expression left)).size +
+        (((encodeModelAtom (.expression right)) :: rest).map
           Metta.Atom.size).sum)
-      ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-        List.zip (toLeaTTaAtoms leftTail) (toLeaTTaAtoms rightTail))
+      ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+        List.zip (encodeModelAtoms leftTail) (encodeModelAtoms rightTail))
     let outerTrace := unificationEliminationTrace
       h.remainingFuel h.tailWork
     have htranslatedTailLength :
-        (toLeaTTaAtoms leftTail).length =
-          (toLeaTTaAtoms rightTail).length := by
-      simpa only [length_toLeaTTaAtoms] using htailLength
+        (encodeModelAtoms leftTail).length =
+          (encodeModelAtoms rightTail).length := by
+      simpa only [length_encodeModelAtoms] using htailLength
     have hdrop :=
       unificationEliminationTrace_expression_drop_translated_common
         common (leftHead :: leftTail) (rightHead :: rightTail)
-        ((toLeaTTaAtom (.expression left)).size +
-          (((toLeaTTaAtom (.expression right)) :: rest).map
+        ((encodeModelAtom (.expression left)).size +
+          (((encodeModelAtom (.expression right)) :: rest).map
             Metta.Atom.size).sum)
         (by simpa using htailLength)
     rw [← hleft, ← hright] at hdrop
     have hfrontReduced :
         unificationEliminationTrace
-            ((toLeaTTaAtom (.expression left)).size +
-              (((toLeaTTaAtom (.expression right)) :: rest).map
+            ((encodeModelAtom (.expression left)).size +
+              (((encodeModelAtom (.expression right)) :: rest).map
                 Metta.Atom.size).sum)
-            [(toLeaTTaAtom (.expression left),
-              toLeaTTaAtom (.expression right))] = reducedTrace := by
+            [(encodeModelAtom (.expression left),
+              encodeModelAtom (.expression right))] = reducedTrace := by
       calc
         _ = unificationEliminationTrace
-              ((toLeaTTaAtom (.expression left)).size +
-                (((toLeaTTaAtom (.expression right)) :: rest).map
+              ((encodeModelAtom (.expression left)).size +
+                (((encodeModelAtom (.expression right)) :: rest).map
                   Metta.Atom.size).sum)
-              [(.expr (toLeaTTaAtoms left),
-                .expr (toLeaTTaAtoms right))] := by rfl
+              [(.expr (encodeModelAtoms left),
+                .expr (encodeModelAtoms right))] := by rfl
         _ = unificationEliminationTrace
-              ((toLeaTTaAtom (.expression left)).size +
-                (((toLeaTTaAtom (.expression right)) :: rest).map
+              ((encodeModelAtom (.expression left)).size +
+                (((encodeModelAtom (.expression right)) :: rest).map
                   Metta.Atom.size).sum)
-              [(.expr (toLeaTTaAtoms (leftHead :: leftTail)),
-                .expr (toLeaTTaAtoms (rightHead :: rightTail)))] := hdrop
+              [(.expr (encodeModelAtoms (leftHead :: leftTail)),
+                .expr (encodeModelAtoms (rightHead :: rightTail)))] := hdrop
         _ = reducedTrace := by
           rw [unificationEliminationTrace_expression_eq_zip (by
-            simpa only [toLeaTTaAtoms, List.length_cons] using
+            simpa only [encodeModelAtoms, List.length_cons] using
               congrArg Nat.succ htranslatedTailLength)]
           rfl
     have hfullTraceEq :
         unificationEliminationTrace
-            ((toLeaTTaAtom (.expression left)).size +
-              (((toLeaTTaAtom (.expression right)) :: rest).map
+            ((encodeModelAtom (.expression left)).size +
+              (((encodeModelAtom (.expression right)) :: rest).map
                 Metta.Atom.size).sum)
-            (((toLeaTTaAtom (.expression right)) :: rest).map
-              fun value => (toLeaTTaAtom (.expression left), value)) =
+            (((encodeModelAtom (.expression right)) :: rest).map
+              fun value => (encodeModelAtom (.expression left), value)) =
           reducedTrace ++ outerTrace := by
       calc
         _ = unificationEliminationTrace
-              ((toLeaTTaAtom (.expression left)).size +
-                (((toLeaTTaAtom (.expression right)) :: rest).map
+              ((encodeModelAtom (.expression left)).size +
+                (((encodeModelAtom (.expression right)) :: rest).map
                   Metta.Atom.size).sum)
-              [(toLeaTTaAtom (.expression left),
-                toLeaTTaAtom (.expression right))] ++ outerTrace := by
+              [(encodeModelAtom (.expression left),
+                encodeModelAtom (.expression right))] ++ outerTrace := by
               simpa only [List.map_cons, List.singleton_append, outerTrace]
                 using h.split.trace_append
         _ = reducedTrace ++ outerTrace := by rw [hfrontReduced]
@@ -18686,11 +18279,11 @@ theorem LeaUnifyValuesExecutablePrefixWitness.exists_originalExpressionFirstDive
       simpa only [reducedTrace] using hlocal
     have hlifted := hlocal'.appendTrace_of_leaf hexpressions outerTrace
     let fullTrace := unificationEliminationTrace
-      ((toLeaTTaAtom (.expression left)).size +
-        (((toLeaTTaAtom (.expression right)) :: rest).map
+      ((encodeModelAtom (.expression left)).size +
+        (((encodeModelAtom (.expression right)) :: rest).map
           Metta.Atom.size).sum)
-      (((toLeaTTaAtom (.expression right)) :: rest).map
-        fun value => (toLeaTTaAtom (.expression left), value))
+      (((encodeModelAtom (.expression right)) :: rest).map
+        fun value => (encodeModelAtom (.expression left), value))
     have hfullTraceEq' : fullTrace = reducedTrace ++ outerTrace := by
       simpa only [fullTrace] using hfullTraceEq
     rw [← hfullTraceEq'] at hlifted
@@ -18776,12 +18369,12 @@ theorem exists_classValue_equation_satisfied_of_reconciliation
     (hbase : LeaBindingCongruence b source)
     (hsourceNoFloat : LeaBindingsNoFloat source)
     (hreconcile : wholeBindingReconciliation source
-      [(.var key, toLeaTTaAtom proposed)] = some result)
+      [(.var key, encodeModelAtom proposed)] = some result)
     (hstored : stored ∈ b.classValues key) :
     ∃ valuation : String → Metta.Atom,
       HEBindingSatisfied valuation b ∧
         MettaEquationSatisfied valuation
-          (toLeaTTaAtom stored, toLeaTTaAtom proposed) := by
+          (encodeModelAtom stored, encodeModelAtom proposed) := by
   obtain ⟨valuation, hbinding, hextra⟩ :=
     exists_heBinding_and_extra_satisfied_of_reconciliation
       hbase hsourceNoFloat
@@ -18790,15 +18383,15 @@ theorem exists_classValue_equation_satisfied_of_reconciliation
           simp only [List.mem_singleton] at hmem
           subst equation
           exact ⟨by simp [MettaAtomNoFloat],
-            toLeaTTaAtom_noFloat proposed⟩)
+            encodeModelAtom_noFloat proposed⟩)
         hreconcile
   have hproposed : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom proposed) := by
+      applyClassSolution valuation (encodeModelAtom proposed) := by
     have h := hextra
-      (.var key, toLeaTTaAtom proposed) (by simp)
+      (.var key, encodeModelAtom proposed) (by simp)
     simpa [MettaEquationSatisfied, applyClassSolution] using h
   have hstoredValue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom stored) :=
+      applyClassSolution valuation (encodeModelAtom stored) :=
     hbinding.eq_applyClassSolution_of_mem_classValues hstored
   exact ⟨valuation, hbinding, by
     exact hstoredValue.symm.trans hproposed⟩
@@ -18811,7 +18404,7 @@ theorem exists_matchAtoms_classValue_of_reconciliation
     (hbase : LeaBindingCongruence b source)
     (hsourceNoFloat : LeaBindingsNoFloat source)
     (hreconcile : wholeBindingReconciliation source
-      [(.var key, toLeaTTaAtom proposed)] = some result)
+      [(.var key, encodeModelAtom proposed)] = some result)
     (hstored : stored ∈ b.classValues key)
     (hleaf : ¬ BothExpressions stored proposed) :
     ∃ out fuel, out ∈ matchAtoms stored proposed fuel := by
@@ -18831,7 +18424,7 @@ theorem bothExpressions_of_ne_classValue_reconciliation
     (hbase : LeaBindingCongruence b source)
     (hsourceNoFloat : LeaBindingsNoFloat source)
     (hreconcile : wholeBindingReconciliation source
-      [(.var key, toLeaTTaAtom proposed)] = some result)
+      [(.var key, encodeModelAtom proposed)] = some result)
     (hnonvar : HEAssignmentsNonVariable b)
     (hstored : stored ∈ b.classValues key)
     (hproposed : DeclMatchSpec.Atom.isVarB proposed = false)
@@ -18854,7 +18447,7 @@ theorem exists_matchAtoms_classValue_of_reconciliation_of_merge
     (hbase : LeaBindingCongruence b source)
     (hsourceNoFloat : LeaBindingsNoFloat source)
     (hreconcile : wholeBindingReconciliation source
-      [(.var key, toLeaTTaAtom proposed)] = some result)
+      [(.var key, encodeModelAtom proposed)] = some result)
     (hstored : stored ∈ b.classValues key) :
     ∃ out fuel, out ∈ matchAtoms stored proposed fuel := by
   obtain ⟨valuation, _hbinding, hequation⟩ :=
@@ -18876,7 +18469,7 @@ theorem exists_joinedClassValues_equation_satisfied_of_reconciliation
     ∃ valuation : String → Metta.Atom,
       HEBindingSatisfied valuation (b.addEquality left right) ∧
         MettaEquationSatisfied valuation
-          (toLeaTTaAtom first, toLeaTTaAtom second) := by
+          (encodeModelAtom first, encodeModelAtom second) := by
   obtain ⟨valuation, hbinding, hextra⟩ :=
     exists_heBinding_and_extra_satisfied_of_reconciliation
       hbase hsourceNoFloat
@@ -18901,10 +18494,10 @@ theorem exists_joinedClassValues_equation_satisfied_of_reconciliation
       · rcases hnew with ⟨rfl, rfl⟩
         exact hedge
   have hfirstValue : valuation left =
-      applyClassSolution valuation (toLeaTTaAtom first) :=
+      applyClassSolution valuation (encodeModelAtom first) :=
     hcandidate.eq_applyClassSolution_of_mem_classValues hfirst
   have hsecondValue : valuation left =
-      applyClassSolution valuation (toLeaTTaAtom second) :=
+      applyClassSolution valuation (encodeModelAtom second) :=
     hcandidate.eq_applyClassSolution_of_mem_classValues hsecond
   exact ⟨valuation, hcandidate,
     hfirstValue.symm.trans hsecondValue⟩
@@ -19403,9 +18996,9 @@ private theorem translatedAssignment_mem_decomposeAll
     {constraints : List (String × Metta.Atom)}
     {key : String} {value : Atom}
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
-    (hequation : (.var key, toLeaTTaAtom value) ∈ equations)
+    (hequation : (.var key, encodeModelAtom value) ∈ equations)
     (hdecompose : Metta.Unify.decomposeAll equations = some constraints) :
-    (key, toLeaTTaAtom value) ∈ constraints := by
+    (key, encodeModelAtom value) ∈ constraints := by
   induction equations generalizing constraints with
   | nil => simp at hequation
   | cons equation equations ih =>
@@ -19416,7 +19009,7 @@ private theorem translatedAssignment_mem_decomposeAll
         cases hrest : Metta.Unify.decomposeAll equations with
         | none =>
             cases value <;>
-              simp [DeclMatchSpec.Atom.isVarB, toLeaTTaAtom,
+              simp [DeclMatchSpec.Atom.isVarB, encodeModelAtom,
                 Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
                 hrest] at hnonvar hdecompose
         | some restConstraints =>
@@ -19424,27 +19017,27 @@ private theorem translatedAssignment_mem_decomposeAll
             | var target =>
                 simp [DeclMatchSpec.Atom.isVarB] at hnonvar
             | symbol name =>
-                simp [toLeaTTaAtom, Metta.Unify.decomposeAll,
+                simp [encodeModelAtom, Metta.Unify.decomposeAll,
                   Metta.Unify.decomposeEq, hrest] at hdecompose
                 subst constraints
-                simpa only [toLeaTTaAtom] using
+                simpa only [encodeModelAtom] using
                   (show (key, Metta.Atom.sym name) ∈
                     (key, Metta.Atom.sym name) :: restConstraints by simp)
             | grounded ground =>
-                simp [toLeaTTaAtom, Metta.Unify.decomposeAll,
+                simp [encodeModelAtom, Metta.Unify.decomposeAll,
                   Metta.Unify.decomposeEq, hrest] at hdecompose
                 subst constraints
-                simpa only [toLeaTTaAtom] using
-                  (show (key, Metta.Atom.gnd (toLeaTTaGround ground)) ∈
-                    (key, Metta.Atom.gnd (toLeaTTaGround ground)) ::
+                simpa only [encodeModelAtom] using
+                  (show (key, Metta.Atom.gnd (encodeModelGround ground)) ∈
+                    (key, Metta.Atom.gnd (encodeModelGround ground)) ::
                       restConstraints by simp)
             | expression atoms =>
-                simp [toLeaTTaAtom, Metta.Unify.decomposeAll,
+                simp [encodeModelAtom, Metta.Unify.decomposeAll,
                   Metta.Unify.decomposeEq, hrest] at hdecompose
                 subst constraints
-                simpa only [toLeaTTaAtom] using
-                  (show (key, Metta.Atom.expr (toLeaTTaAtoms atoms)) ∈
-                    (key, Metta.Atom.expr (toLeaTTaAtoms atoms)) ::
+                simpa only [encodeModelAtom] using
+                  (show (key, Metta.Atom.expr (encodeModelAtoms atoms)) ∈
+                    (key, Metta.Atom.expr (encodeModelAtoms atoms)) ::
                       restConstraints by simp)
       · cases hfirst : Metta.Unify.decomposeEq left right with
         | none =>
@@ -19475,7 +19068,7 @@ theorem exists_decomposeAll_HEEquations_cons_of_assignment
         some (constraint :: rest) := by
   obtain ⟨constraints, hdecompose⟩ :=
     decomposeAll_some_of_unifyRounds_success hrun
-  have hmem : (key, toLeaTTaAtom value) ∈ constraints :=
+  have hmem : (key, encodeModelAtom value) ∈ constraints :=
     translatedAssignment_mem_decomposeAll hnonvar (by
       simp only [HEEquations, List.mem_append, List.mem_map]
       exact Or.inl ⟨(key, value), hassignment, rfl⟩) hdecompose
@@ -20251,18 +19844,18 @@ theorem addVarBinding_reconciliation_congruence_of_structural
     (hsourceNoFloat : LeaBindingsNoFloat source)
     (hHE : heOut ∈ addVarBinding b key value fuel)
     (hreconcile : wholeBindingReconciliation source
-      [(.var key, toLeaTTaAtom value)] = some result)
+      [(.var key, encodeModelAtom value)] = some result)
     (hstruct : HEReconciliationTraceStructuralRel heOut source
-      [(.var key, toLeaTTaAtom value)] result) :
+      [(.var key, encodeModelAtom value)] result) :
     LeaBindingCongruence heOut
       (Metta.Bindings.rebuildFromReconciliation source source
-        [(.var key, toLeaTTaAtom value)] result) := by
+        [(.var key, encodeModelAtom value)] result) := by
   apply hstruct.toCongruence hbase hsourceNoFloat
     (hreconcile := hreconcile)
   · intro equation hmem
     simp only [List.mem_singleton] at hmem
     subst equation
-    exact ⟨by simp [MettaAtomNoFloat], toLeaTTaAtom_noFloat value⟩
+    exact ⟨by simp [MettaAtomNoFloat], encodeModelAtom_noFloat value⟩
   · intro valuation
     rw [addVarBinding_solution_iff hHE valuation]
     simp [MettaEquationsSatisfied, MettaEquationSatisfied,
@@ -20389,7 +19982,7 @@ theorem leafMatch_congruence_of_unifyRounds
     {out : Bindings}
     (hleaf : ¬ BothExpressions left right)
     (hrun : Metta.Unify.unifyRounds fuel
-      [(toLeaTTaAtom left, toLeaTTaAtom right)] [] = some result)
+      [(encodeModelAtom left, encodeModelAtom right)] [] = some result)
     (hmatch : DeclMatchSpec.MatchRel left right out) :
     LeaBindingCongruence out (Metta.Bindings.ofSubst result) := by
   have unifyRounds_nil (n : Nat) (subst : Metta.Subst) :
@@ -20455,11 +20048,11 @@ theorem leafMatch_congruence_of_unifyRounds
           Metta.Bindings.empty
         exact LeaBindingCongruence.reflexiveSingleton leftName
       · have hdecompose : Metta.Unify.decomposeAll
-            [(toLeaTTaAtom (.var leftName),
-              toLeaTTaAtom (.var rightName))] =
+            [(encodeModelAtom (.var leftName),
+              encodeModelAtom (.var rightName))] =
             some [(leftName, .var rightName)] := by
           simp [Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
-            toLeaTTaAtom, heq]
+            encodeModelAtom, heq]
         have hresult : result = [(leftName, .var rightName)] :=
           result_singleton_of_decompose_singleton _ leftName
             (.var rightName) hdecompose hrun
@@ -20473,14 +20066,14 @@ theorem leafMatch_congruence_of_unifyRounds
   | varNonVar hnonvar hoccurs =>
       rename_i key
       have hdecompose : Metta.Unify.decomposeAll
-          [(toLeaTTaAtom (.var key), toLeaTTaAtom right)] =
-          some [(key, toLeaTTaAtom right)] := by
+          [(encodeModelAtom (.var key), encodeModelAtom right)] =
+          some [(key, encodeModelAtom right)] := by
         cases right <;>
-          simp_all [DeclMatchSpec.Atom.isVarB, toLeaTTaAtom,
+          simp_all [DeclMatchSpec.Atom.isVarB, encodeModelAtom,
             Metta.Unify.decomposeAll, Metta.Unify.decomposeEq]
-      have hresult : result = [(key, toLeaTTaAtom right)] :=
+      have hresult : result = [(key, encodeModelAtom right)] :=
         result_singleton_of_decompose_singleton _ key
-          (toLeaTTaAtom right) hdecompose hrun
+          (encodeModelAtom right) hdecompose hrun
       subst result
       cases right with
       | var target =>
@@ -20488,7 +20081,7 @@ theorem leafMatch_congruence_of_unifyRounds
       | symbol name =>
           simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
             toLeaTTaMatchBindings, toLeaTTaMatchSubst,
-            Metta.Bindings.ofSubst, toLeaTTaAtom] using
+            Metta.Bindings.ofSubst, encodeModelAtom] using
             (LeaBindingCongruence.of_rel
               (leaBindingRelEquiv_canonical
                 (b := (⟨[(key, .symbol name)], []⟩ : Bindings))
@@ -20496,7 +20089,7 @@ theorem leafMatch_congruence_of_unifyRounds
       | grounded value =>
           simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
             toLeaTTaMatchBindings, toLeaTTaMatchSubst,
-            Metta.Bindings.ofSubst, toLeaTTaAtom] using
+            Metta.Bindings.ofSubst, encodeModelAtom] using
             (LeaBindingCongruence.of_rel
               (leaBindingRelEquiv_canonical
                 (b := (⟨[(key, .grounded value)], []⟩ : Bindings))
@@ -20504,7 +20097,7 @@ theorem leafMatch_congruence_of_unifyRounds
       | expression atoms =>
           simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
             toLeaTTaMatchBindings, toLeaTTaMatchSubst,
-            Metta.Bindings.ofSubst, toLeaTTaAtom] using
+            Metta.Bindings.ofSubst, encodeModelAtom] using
             (LeaBindingCongruence.of_rel
               (leaBindingRelEquiv_canonical
                 (b := (⟨[(key, .expression atoms)], []⟩ : Bindings))
@@ -20512,14 +20105,14 @@ theorem leafMatch_congruence_of_unifyRounds
   | nonVarVar hnonvar hoccurs =>
       rename_i key
       have hdecompose : Metta.Unify.decomposeAll
-          [(toLeaTTaAtom left, toLeaTTaAtom (.var key))] =
-          some [(key, toLeaTTaAtom left)] := by
+          [(encodeModelAtom left, encodeModelAtom (.var key))] =
+          some [(key, encodeModelAtom left)] := by
         cases left <;>
-          simp_all [DeclMatchSpec.Atom.isVarB, toLeaTTaAtom,
+          simp_all [DeclMatchSpec.Atom.isVarB, encodeModelAtom,
             Metta.Unify.decomposeAll, Metta.Unify.decomposeEq]
-      have hresult : result = [(key, toLeaTTaAtom left)] :=
+      have hresult : result = [(key, encodeModelAtom left)] :=
         result_singleton_of_decompose_singleton _ key
-          (toLeaTTaAtom left) hdecompose hrun
+          (encodeModelAtom left) hdecompose hrun
       subst result
       cases left with
       | var target =>
@@ -20527,7 +20120,7 @@ theorem leafMatch_congruence_of_unifyRounds
       | symbol name =>
           simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
             toLeaTTaMatchBindings, toLeaTTaMatchSubst,
-            Metta.Bindings.ofSubst, toLeaTTaAtom] using
+            Metta.Bindings.ofSubst, encodeModelAtom] using
             (LeaBindingCongruence.of_rel
               (leaBindingRelEquiv_canonical
                 (b := (⟨[(key, .symbol name)], []⟩ : Bindings))
@@ -20535,7 +20128,7 @@ theorem leafMatch_congruence_of_unifyRounds
       | grounded value =>
           simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
             toLeaTTaMatchBindings, toLeaTTaMatchSubst,
-            Metta.Bindings.ofSubst, toLeaTTaAtom] using
+            Metta.Bindings.ofSubst, encodeModelAtom] using
             (LeaBindingCongruence.of_rel
               (leaBindingRelEquiv_canonical
                 (b := (⟨[(key, .grounded value)], []⟩ : Bindings))
@@ -20543,7 +20136,7 @@ theorem leafMatch_congruence_of_unifyRounds
       | expression atoms =>
           simpa [toLeaTTaMatchBindingsFull, toLeaTTaEqualityBindings,
             toLeaTTaMatchBindings, toLeaTTaMatchSubst,
-            Metta.Bindings.ofSubst, toLeaTTaAtom] using
+            Metta.Bindings.ofSubst, encodeModelAtom] using
             (LeaBindingCongruence.of_rel
               (leaBindingRelEquiv_canonical
                 (b := (⟨[(key, .expression atoms)], []⟩ : Bindings))
@@ -20569,13 +20162,13 @@ theorem exists_leafMatchCongruentCertified_of_unifyRounds_success
     {fuel : Nat} {left right : Atom} {result : Metta.Subst}
     (hleaf : ¬ BothExpressions left right)
     (hrun : Metta.Unify.unifyRounds fuel
-      [(toLeaTTaAtom left, toLeaTTaAtom right)] [] = some result) :
+      [(encodeModelAtom left, encodeModelAtom right)] [] = some result) :
     Nonempty (HEMatchCongruentCertified
       (unificationEliminationTrace fuel
-        [(toLeaTTaAtom left, toLeaTTaAtom right)])
+        [(encodeModelAtom left, encodeModelAtom right)])
       (eliminationTraceAliases
         (unificationEliminationTrace fuel
-          [(toLeaTTaAtom left, toLeaTTaAtom right)]))
+          [(encodeModelAtom left, encodeModelAtom right)]))
       left right result) := by
   obtain ⟨hmatch⟩ :=
     exists_leafMatchCertified_of_unifyRounds_success hleaf hrun
@@ -20602,7 +20195,7 @@ theorem exists_leafMatch_mergeRel_reflexiveSeed_certified_congruent
     (hseedAssignments : seed.assignments = [])
     (hseedReflexive : ∀ edge ∈ seed.equalities, edge.1 = edge.2)
     (hrun : Metta.Unify.unifyRounds fuel
-      [(toLeaTTaAtom left, toLeaTTaAtom right)] [] = some result) :
+      [(encodeModelAtom left, encodeModelAtom right)] [] = some result) :
     ∃ out, ∃ hmerge : MergeRel seed matched out,
       MergeTraceSound trace hmerge ∧
         MergeEqualityClosureBoundSound allowed hmerge ∧
@@ -20616,7 +20209,7 @@ theorem exists_leafMatch_mergeRel_reflexiveSeed_certified_congruent
     MatchEqualityClosureBoundSound allowed matchRel →
       ¬ BothExpressions atomLeft atomRight →
       Metta.Unify.unifyRounds fuel
-          [(toLeaTTaAtom atomLeft, toLeaTTaAtom atomRight)] [] =
+          [(encodeModelAtom atomLeft, encodeModelAtom atomRight)] [] =
         some result →
       ∃ merged, ∃ hmerge : MergeRel seed out merged,
         MergeTraceSound trace hmerge ∧
@@ -20698,11 +20291,11 @@ theorem exists_leafMatch_mergeRel_reflexiveSeed_certified_congruent
           simpa [Metta.Bindings.ofSubst, Metta.Bindings.empty] using
             reflexiveOnly_congruence_empty hnewAssignments hnewReflexive
         · have hdecompose : Metta.Unify.decomposeAll
-              [(toLeaTTaAtom (.var varLeft),
-                toLeaTTaAtom (.var varRight))] =
+              [(encodeModelAtom (.var varLeft),
+                encodeModelAtom (.var varRight))] =
               some [(varLeft, .var varRight)] := by
             simp [Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
-              toLeaTTaAtom, hsame]
+              encodeModelAtom, hsame]
           have hresult : result = [(varLeft, .var varRight)] :=
             unifyRounds_result_singleton_of_decompose_singleton _
               varLeft (.var varRight) hdecompose hrun
@@ -20745,17 +20338,17 @@ theorem exists_leafMatch_mergeRel_reflexiveSeed_certified_congruent
       MergeEqualityClosureBoundSound.mk
         (.cons (.fresh (hclass := hclass)) .nil) .nil, ?_⟩
     have hdecompose : Metta.Unify.decomposeAll
-        [(toLeaTTaAtom (.var key), toLeaTTaAtom value)] =
-        some [(key, toLeaTTaAtom value)] := by
+        [(encodeModelAtom (.var key), encodeModelAtom value)] =
+        some [(key, encodeModelAtom value)] := by
       cases value with
       | var target =>
           simp [DeclMatchSpec.Atom.isVarB] at hnonvar
       | symbol name | grounded name | expression name =>
-          simp [toLeaTTaAtom, Metta.Unify.decomposeAll,
+          simp [encodeModelAtom, Metta.Unify.decomposeAll,
             Metta.Unify.decomposeEq]
-    have hresult : result = [(key, toLeaTTaAtom value)] :=
+    have hresult : result = [(key, encodeModelAtom value)] :=
       unifyRounds_result_singleton_of_decompose_singleton _ key
-        (toLeaTTaAtom value) hdecompose hrun
+        (encodeModelAtom value) hdecompose hrun
     have hseedLookup : seed.lookup key = none := by
       simp [Bindings.lookup, hseedAssignments]
     have hleaLookup :
@@ -20769,19 +20362,19 @@ theorem exists_leafMatch_mergeRel_reflexiveSeed_certified_congruent
     | symbol name =>
         change LeaBindingCongruence (seed.assign key (.symbol name))
           [Metta.BindingRel.val key (.sym name)]
-        simpa [toLeaTTaAtom, Metta.Bindings.empty,
+        simpa [encodeModelAtom, Metta.Bindings.empty,
           Metta.Bindings.addValRaw, Metta.Bindings.removeVal] using hraw
     | grounded ground =>
         change LeaBindingCongruence (seed.assign key (.grounded ground))
-          [Metta.BindingRel.val key (.gnd (toLeaTTaGround ground))]
-        simpa [toLeaTTaAtom, Metta.Bindings.empty,
+          [Metta.BindingRel.val key (.gnd (encodeModelGround ground))]
+        simpa [encodeModelAtom, Metta.Bindings.empty,
           Metta.Bindings.addValRaw, Metta.Bindings.removeVal] using hraw
     | expression atoms =>
         change LeaBindingCongruence (seed.assign key (.expression atoms))
-          [Metta.BindingRel.val key (.expr (toLeaTTaAtoms atoms))]
+          [Metta.BindingRel.val key (.expr (encodeModelAtoms atoms))]
         simpa [Metta.Bindings.ofSubst, Metta.Bindings.empty,
           Metta.Bindings.addValRaw, Metta.Bindings.removeVal,
-          toLeaTTaAtom] using hraw
+          encodeModelAtom] using hraw
   · intro value key hnonvar hoccurs _hbound _hleaf hrun
     have hclass : seed.classValues key = [] := by
       unfold Bindings.classValues Bindings.lookup
@@ -20800,17 +20393,17 @@ theorem exists_leafMatch_mergeRel_reflexiveSeed_certified_congruent
       MergeEqualityClosureBoundSound.mk
         (.cons (.fresh (hclass := hclass)) .nil) .nil, ?_⟩
     have hdecompose : Metta.Unify.decomposeAll
-        [(toLeaTTaAtom value, toLeaTTaAtom (.var key))] =
-        some [(key, toLeaTTaAtom value)] := by
+        [(encodeModelAtom value, encodeModelAtom (.var key))] =
+        some [(key, encodeModelAtom value)] := by
       cases value with
       | var target =>
           simp [DeclMatchSpec.Atom.isVarB] at hnonvar
       | symbol name | grounded name | expression name =>
-          simp [toLeaTTaAtom, Metta.Unify.decomposeAll,
+          simp [encodeModelAtom, Metta.Unify.decomposeAll,
             Metta.Unify.decomposeEq]
-    have hresult : result = [(key, toLeaTTaAtom value)] :=
+    have hresult : result = [(key, encodeModelAtom value)] :=
       unifyRounds_result_singleton_of_decompose_singleton _ key
-        (toLeaTTaAtom value) hdecompose hrun
+        (encodeModelAtom value) hdecompose hrun
     have hseedLookup : seed.lookup key = none := by
       simp [Bindings.lookup, hseedAssignments]
     have hleaLookup :
@@ -20824,19 +20417,19 @@ theorem exists_leafMatch_mergeRel_reflexiveSeed_certified_congruent
     | symbol name =>
         change LeaBindingCongruence (seed.assign key (.symbol name))
           [Metta.BindingRel.val key (.sym name)]
-        simpa [toLeaTTaAtom, Metta.Bindings.empty,
+        simpa [encodeModelAtom, Metta.Bindings.empty,
           Metta.Bindings.addValRaw, Metta.Bindings.removeVal] using hraw
     | grounded ground =>
         change LeaBindingCongruence (seed.assign key (.grounded ground))
-          [Metta.BindingRel.val key (.gnd (toLeaTTaGround ground))]
-        simpa [toLeaTTaAtom, Metta.Bindings.empty,
+          [Metta.BindingRel.val key (.gnd (encodeModelGround ground))]
+        simpa [encodeModelAtom, Metta.Bindings.empty,
           Metta.Bindings.addValRaw, Metta.Bindings.removeVal] using hraw
     | expression atoms =>
         change LeaBindingCongruence (seed.assign key (.expression atoms))
-          [Metta.BindingRel.val key (.expr (toLeaTTaAtoms atoms))]
+          [Metta.BindingRel.val key (.expr (encodeModelAtoms atoms))]
         simpa [Metta.Bindings.ofSubst, Metta.Bindings.empty,
           Metta.Bindings.addValRaw, Metta.Bindings.removeVal,
-          toLeaTTaAtom] using hraw
+          encodeModelAtom] using hraw
   · intro ground _hbound _hleaf hrun
     have hresult : result = [] :=
       unifyRounds_result_nil_of_decompose_nil _
@@ -20877,7 +20470,7 @@ theorem HEMatchCertified.exists_singletonListAcc_of_reflexiveSeed_congruent
     (hseedAssignments : seed.assignments = [])
     (hseedReflexive : ∀ edge ∈ seed.equalities, edge.1 = edge.2)
     (hrun : Metta.Unify.unifyRounds fuel
-      [(toLeaTTaAtom left, toLeaTTaAtom right)] [] = some result) :
+      [(encodeModelAtom left, encodeModelAtom right)] [] = some result) :
     Nonempty (HEMatchListAccCongruentCertified trace allowed
       [left] [right] seed result) := by
   obtain ⟨out, hmerge, hmergeTrace, hmergeBound, hcongruence⟩ :=
@@ -20909,8 +20502,8 @@ theorem HEMatchCertified.exists_singletonListAcc_of_reflexiveSeed_congruent
 equation. -/
 def translatedExpressionEquationFuel (left right : List Atom) : Nat :=
   Metta.Bindings.equationFuel
-    [(toLeaTTaAtom (.expression left),
-      toLeaTTaAtom (.expression right))]
+    [(encodeModelAtom (.expression left),
+      encodeModelAtom (.expression right))]
 
 /-- A length-aligned zipped equation worklist and pointwise list satisfaction
 have exactly the same valuation theory. -/
@@ -20963,8 +20556,8 @@ def HEOriginalListConstraintCoverage
     (trace : List (String × Metta.Atom))
     (left right : List Atom) : Prop :=
   ∀ constraints,
-    Metta.Unify.decomposeList (toLeaTTaAtoms left)
-        (toLeaTTaAtoms right) = some constraints →
+    Metta.Unify.decomposeList (encodeModelAtoms left)
+        (encodeModelAtoms right) = some constraints →
       ∀ entry ∈ constraints, entry ∈ trace
 
 /-- The raw constraint presentation of an HE record has exactly the direct
@@ -21051,7 +20644,7 @@ theorem HEEquationAtoms_originalConstraintCoverage
       cases value with
       | var target => simp [DeclMatchSpec.Atom.isVarB] at hvalueNonvar
       | symbol name | grounded name | expression name =>
-          simp [Metta.Unify.decomposeEq, toLeaTTaAtom] at hdecompose
+          simp [Metta.Unify.decomposeEq, encodeModelAtom] at hdecompose
           subst constraints
           simp only [List.mem_singleton] at hentry
           subst entry
@@ -21071,9 +20664,9 @@ theorem HEEquationAtoms_originalConstraintCoverage
         exact Or.inr ⟨(left, rightKey), hequality, rfl⟩
   intro constraints hdecompose entry hentry
   have hlength :
-      (toLeaTTaAtoms (HEEquationLeftAtoms right)).length =
-        (toLeaTTaAtoms (HEEquationRightAtoms right)).length := by
-    simpa only [length_toLeaTTaAtoms] using
+      (encodeModelAtoms (HEEquationLeftAtoms right)).length =
+        (encodeModelAtoms (HEEquationRightAtoms right)).length := by
+    simpa only [length_encodeModelAtoms] using
       HEEquationAtoms_length_eq right
   have hdecomposeAll :
       Metta.Unify.decomposeAll (HEEquations right) = some constraints := by
@@ -21123,22 +20716,22 @@ structure HEExpressionResidualFrontier
   head_ne : leftHead ≠ rightHead
   tail_length : leftTail.length = rightTail.length
   top_run : Metta.Unify.unifyRounds fuel
-      [(toLeaTTaAtom (.expression left),
-        toLeaTTaAtom (.expression right))] [] = some result
+      [(encodeModelAtom (.expression left),
+        encodeModelAtom (.expression right))] [] = some result
   residualSplit : UnifyRoundsPrefixSplit fuel
-      [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)]
-      (List.zip (toLeaTTaAtoms leftTail)
-        (toLeaTTaAtoms rightTail)) []
+      [(encodeModelAtom leftHead, encodeModelAtom rightHead)]
+      (List.zip (encodeModelAtoms leftTail)
+        (encodeModelAtoms rightTail)) []
       remainingFuel tailWork childSubst
   continue_run : Metta.Unify.unifyRounds remainingFuel tailWork childSubst =
     some result
   fuel_lt : remainingFuel < fuel
   trace_eq : unificationEliminationTrace fuel
-      ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-        List.zip (toLeaTTaAtoms leftTail)
-          (toLeaTTaAtoms rightTail)) =
+      ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+        List.zip (encodeModelAtoms leftTail)
+          (encodeModelAtoms rightTail)) =
     unificationEliminationTrace fuel
-        [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
+        [(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
       unificationEliminationTrace remainingFuel tailWork
   tailWork_inHEImage : LeaEquationsInHEImage tailWork
   childSubst_inHEImage : LeaSubstInHEImage childSubst
@@ -21146,14 +20739,14 @@ structure HEExpressionResidualFrontier
     BothExpressions leftHead rightHead ∨
       Nonempty (HEMatchListAccCongruentCertified
         (unificationEliminationTrace fuel
-          ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-            List.zip (toLeaTTaAtoms leftTail)
-              (toLeaTTaAtoms rightTail)))
+          ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+            List.zip (encodeModelAtoms leftTail)
+              (encodeModelAtoms rightTail)))
         (eliminationTraceAliases
           (unificationEliminationTrace fuel
-            ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-              List.zip (toLeaTTaAtoms leftTail)
-                (toLeaTTaAtoms rightTail))))
+            ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+              List.zip (encodeModelAtoms leftTail)
+                (encodeModelAtoms rightTail))))
         (common ++ [leftHead]) (common ++ [rightHead]) Bindings.empty
         childSubst)
 
@@ -21163,9 +20756,9 @@ def HEExpressionResidualFrontier.residualTrace
     (h : HEExpressionResidualFrontier fuel left right result) :
     List (String × Metta.Atom) :=
   unificationEliminationTrace fuel
-    ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-      List.zip (toLeaTTaAtoms h.leftTail)
-        (toLeaTTaAtoms h.rightTail))
+    ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+      List.zip (encodeModelAtoms h.leftTail)
+        (encodeModelAtoms h.rightTail))
 
 /-- The equality-closure upper bound attached to an expression frontier. -/
 def HEExpressionResidualFrontier.residualAllowed
@@ -21181,31 +20774,31 @@ theorem HEExpressionResidualFrontier.topTrace_eq_reducedTrace
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     (h : HEExpressionResidualFrontier fuel left right result) :
     unificationEliminationTrace fuel
-        [(toLeaTTaAtom (.expression left),
-          toLeaTTaAtom (.expression right))] =
+        [(encodeModelAtom (.expression left),
+          encodeModelAtom (.expression right))] =
       unificationEliminationTrace fuel
-        ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-          List.zip (toLeaTTaAtoms h.leftTail)
-            (toLeaTTaAtoms h.rightTail)) := by
+        ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+          List.zip (encodeModelAtoms h.leftTail)
+            (encodeModelAtoms h.rightTail)) := by
   have hpresentation :
-      [(toLeaTTaAtom (.expression left),
-        toLeaTTaAtom (.expression right))] =
-      [(toLeaTTaAtom (.expression
+      [(encodeModelAtom (.expression left),
+        encodeModelAtom (.expression right))] =
+      [(encodeModelAtom (.expression
           (h.common ++ h.leftHead :: h.leftTail)),
-        toLeaTTaAtom (.expression
+        encodeModelAtom (.expression
           (h.common ++ h.rightHead :: h.rightTail)))] := by
     rw [← h.left_eq, ← h.right_eq]
   rw [hpresentation]
   change unificationEliminationTrace fuel
-      [(.expr (toLeaTTaAtoms
+      [(.expr (encodeModelAtoms
           (h.common ++ h.leftHead :: h.leftTail)),
-        .expr (toLeaTTaAtoms
+        .expr (encodeModelAtoms
           (h.common ++ h.rightHead :: h.rightTail)))] = _
   rw [unificationEliminationTrace_expression_drop_translated_common
     h.common (h.leftHead :: h.leftTail)
       (h.rightHead :: h.rightTail) fuel (by simp [h.tail_length])]
   rw [unificationEliminationTrace_expression_eq_zip (by
-    simp [length_toLeaTTaAtoms, h.tail_length])]
+    simp [length_encodeModelAtoms, h.tail_length])]
   rfl
 
 /-- The exact substitution accumulated while solving the first divergent
@@ -21215,21 +20808,21 @@ theorem HEExpressionResidualFrontier.childSubst_subset_trace
     (h : HEExpressionResidualFrontier fuel left right result) :
     ∀ entry ∈ h.childSubst,
       entry ∈ unificationEliminationTrace fuel
-        ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-          List.zip (toLeaTTaAtoms h.leftTail)
-            (toLeaTTaAtoms h.rightTail)) := by
+        ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+          List.zip (encodeModelAtoms h.leftTail)
+            (encodeModelAtoms h.rightTail)) := by
   have hresultEq : h.childSubst =
       (unificationEliminationTrace fuel
-        [(toLeaTTaAtom h.leftHead,
-          toLeaTTaAtom h.rightHead)]).reverse := by
+        [(encodeModelAtom h.leftHead,
+          encodeModelAtom h.rightHead)]).reverse := by
     simpa using
       (unifyRounds_result_eq_eliminationTrace_reverse_append
         (by simp [UnifyStateFresh, mettaSubstKeys])
         h.residualSplit.front_run)
   intro entry hentry
   have hfront : entry ∈ unificationEliminationTrace fuel
-      [(toLeaTTaAtom h.leftHead,
-        toLeaTTaAtom h.rightHead)] := by
+      [(encodeModelAtom h.leftHead,
+        encodeModelAtom h.rightHead)] := by
     rw [hresultEq] at hentry
     simpa using hentry
   rw [h.residualSplit.trace_append]
@@ -21250,18 +20843,18 @@ theorem HEExpressionResidualFrontier.heContinuation_solution_iff
     (MettaEquationsSatisfied valuation h.tailWork ∧
         HEBindingSatisfied valuation seed) ↔
       MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms (h.leftHead :: h.leftTail))
-        (toLeaTTaAtoms (h.rightHead :: h.rightTail)) := by
+        (encodeModelAtoms (h.leftHead :: h.leftTail))
+        (encodeModelAtoms (h.rightHead :: h.rightTail)) := by
   have hfrontImage : LeaEquationsInHEImage
-      [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] := by
+      [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] := by
     intro equation hmem
     simp only [List.mem_singleton] at hmem
     subst equation
     exact ⟨LeaAtomInHEImage.translation h.leftHead,
       LeaAtomInHEImage.translation h.rightHead⟩
   have hsuffixImage : LeaEquationsInHEImage
-      (List.zip (toLeaTTaAtoms h.leftTail)
-        (toLeaTTaAtoms h.rightTail)) :=
+      (List.zip (encodeModelAtoms h.leftTail)
+        (encodeModelAtoms h.rightTail)) :=
     leaEquationsInHEImage_zip_translations h.leftTail h.rightTail
   have hbase := h.residualSplit.heContinuation_solution_iff
     hfrontImage hsuffixImage
@@ -21269,14 +20862,14 @@ theorem HEExpressionResidualFrontier.heContinuation_solution_iff
     (by simp [UnifyStateFresh, mettaSubstKeys])
     h.continue_run hseed valuation
   have hlength :
-      (toLeaTTaAtoms (h.leftHead :: h.leftTail)).length =
-        (toLeaTTaAtoms (h.rightHead :: h.rightTail)).length := by
-    simp only [toLeaTTaAtoms, List.length_cons, Nat.succ.injEq,
-      length_toLeaTTaAtoms]
+      (encodeModelAtoms (h.leftHead :: h.leftTail)).length =
+        (encodeModelAtoms (h.rightHead :: h.rightTail)).length := by
+    simp only [encodeModelAtoms, List.length_cons, Nat.succ.injEq,
+      length_encodeModelAtoms]
     exact h.tail_length
   have hzip := mettaEquationsSatisfied_zip_iff valuation hlength
   exact hbase.trans (by
-    simpa [toLeaTTaAtoms, MettaConstraintsSatisfied] using hzip)
+    simpa [encodeModelAtoms, MettaConstraintsSatisfied] using hzip)
 
 /-- Tail-facing form of the continuation invariant.  The prefix accumulator
 already embodies the first divergent equation, so the residual worklist is
@@ -21294,12 +20887,12 @@ theorem HEExpressionResidualFrontier.tailContinuation_solution_iff
         HEBindingSatisfied valuation seed) ↔
       (HEBindingSatisfied valuation seed ∧
         MettaAtomListsSatisfied valuation
-          (toLeaTTaAtoms h.leftTail)
-          (toLeaTTaAtoms h.rightTail)) := by
-  let front := [(toLeaTTaAtom h.leftHead,
-    toLeaTTaAtom h.rightHead)]
-  let suffix := List.zip (toLeaTTaAtoms h.leftTail)
-    (toLeaTTaAtoms h.rightTail)
+          (encodeModelAtoms h.leftTail)
+          (encodeModelAtoms h.rightTail)) := by
+  let front := [(encodeModelAtom h.leftHead,
+    encodeModelAtom h.rightHead)]
+  let suffix := List.zip (encodeModelAtoms h.leftTail)
+    (encodeModelAtoms h.rightTail)
   have hfrontImage : LeaEquationsInHEImage front := by
     intro equation hmem
     simp only [front, List.mem_singleton] at hmem
@@ -21331,9 +20924,9 @@ theorem HEExpressionResidualFrontier.tailContinuation_solution_iff
             h.residualSplit.front_run)
       _ ↔ MettaEquationsSatisfied valuation front := by
         simp [MettaConstraintsSatisfied]
-  have hlength : (toLeaTTaAtoms h.leftTail).length =
-      (toLeaTTaAtoms h.rightTail).length := by
-    simpa [length_toLeaTTaAtoms] using h.tail_length
+  have hlength : (encodeModelAtoms h.leftTail).length =
+      (encodeModelAtoms h.rightTail).length := by
+    simpa [length_encodeModelAtoms] using h.tail_length
   have hzip := mettaEquationsSatisfied_zip_iff valuation hlength
   constructor
   · intro hstate
@@ -21370,12 +20963,12 @@ theorem HEExpressionResidualFrontier.tailContinuation_solution_iff_of_solutions
         HEBindingSatisfied valuation seed) ↔
       (HEBindingSatisfied valuation seed ∧
         MettaAtomListsSatisfied valuation
-          (toLeaTTaAtoms h.leftTail)
-          (toLeaTTaAtoms h.rightTail)) := by
-  let front := [(toLeaTTaAtom h.leftHead,
-    toLeaTTaAtom h.rightHead)]
-  let suffix := List.zip (toLeaTTaAtoms h.leftTail)
-    (toLeaTTaAtoms h.rightTail)
+          (encodeModelAtoms h.leftTail)
+          (encodeModelAtoms h.rightTail)) := by
+  let front := [(encodeModelAtom h.leftHead,
+    encodeModelAtom h.rightHead)]
+  let suffix := List.zip (encodeModelAtoms h.leftTail)
+    (encodeModelAtoms h.rightTail)
   have hfrontImage : LeaEquationsInHEImage front := by
     intro equation hmem
     simp only [front, List.mem_singleton] at hmem
@@ -21406,9 +20999,9 @@ theorem HEExpressionResidualFrontier.tailContinuation_solution_iff_of_solutions
             h.residualSplit.front_run)
       _ ↔ MettaEquationsSatisfied valuation front := by
         simp [MettaConstraintsSatisfied]
-  have hlength : (toLeaTTaAtoms h.leftTail).length =
-      (toLeaTTaAtoms h.rightTail).length := by
-    simpa [length_toLeaTTaAtoms] using h.tail_length
+  have hlength : (encodeModelAtoms h.leftTail).length =
+      (encodeModelAtoms h.rightTail).length := by
+    simpa [length_encodeModelAtoms] using h.tail_length
   have hzip := mettaEquationsSatisfied_zip_iff valuation hlength
   constructor
   · intro hstate
@@ -21572,13 +21165,13 @@ theorem HEExpressionResidualFrontier.exists_tailHeadResidualSplit
         leftRest.length = rightRest.length ∧
         h.tailWork = headWork ++ untouchedTailWork ∧
         UnifyRoundsPrefixSplit fuel
-          [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)]
-          [(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight)] []
+          [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)]
+          [(encodeModelAtom nextLeft, encodeModelAtom nextRight)] []
           h.remainingFuel headWork h.childSubst ∧
         UnifyRoundsPrefixSplit fuel
-          [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)]
-          (List.zip (toLeaTTaAtoms leftRest)
-            (toLeaTTaAtoms rightRest)) []
+          [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)]
+          (List.zip (encodeModelAtoms leftRest)
+            (encodeModelAtoms rightRest)) []
           h.remainingFuel untouchedTailWork h.childSubst ∧
         UnifyRoundsPrefixSplit h.remainingFuel
           headWork untouchedTailWork h.childSubst
@@ -21594,8 +21187,8 @@ theorem HEExpressionResidualFrontier.exists_tailHeadResidualSplit
                   HEBindingSatisfied valuation seed) ↔
                 (HEBindingSatisfied valuation seed ∧
                   MettaEquationSatisfied valuation
-                    (toLeaTTaAtom nextLeft,
-                      toLeaTTaAtom nextRight))) := by
+                    (encodeModelAtom nextLeft,
+                      encodeModelAtom nextRight))) := by
   cases hrightTail : h.rightTail with
   | nil =>
       have hlength := h.tail_length
@@ -21609,9 +21202,9 @@ theorem HEExpressionResidualFrontier.exists_tailHeadResidualSplit
       obtain ⟨headWork, untouchedTailWork, hwork,
           hheadProjection, htailProjection⟩ :=
         h.residualSplit.splitSuffixAppend
-          [(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight)]
-          (List.zip (toLeaTTaAtoms leftRest)
-            (toLeaTTaAtoms rightRest)) (by
+          [(encodeModelAtom nextLeft, encodeModelAtom nextRight)]
+          (List.zip (encodeModelAtoms leftRest)
+            (encodeModelAtoms rightRest)) (by
               rw [hleftTail, hrightTail]
               rfl)
       have hcontinue : Metta.Unify.unifyRounds h.remainingFuel
@@ -21624,16 +21217,16 @@ theorem HEExpressionResidualFrontier.exists_tailHeadResidualSplit
       obtain ⟨headResult, hheadRun⟩ :=
         exists_unifyRounds_prefix_success hcontinue
       have hfrontImage : LeaEquationsInHEImage
-          [(toLeaTTaAtom h.leftHead,
-            toLeaTTaAtom h.rightHead)] := by
+          [(encodeModelAtom h.leftHead,
+            encodeModelAtom h.rightHead)] := by
         intro equation hmem
         simp only [List.mem_singleton] at hmem
         subst equation
         exact ⟨LeaAtomInHEImage.translation h.leftHead,
           LeaAtomInHEImage.translation h.rightHead⟩
       have hheadImage : LeaEquationsInHEImage
-          [(toLeaTTaAtom nextLeft,
-            toLeaTTaAtom nextRight)] := by
+          [(encodeModelAtom nextLeft,
+            encodeModelAtom nextRight)] := by
         intro equation hmem
         simp only [List.mem_singleton] at hmem
         subst equation
@@ -21647,8 +21240,8 @@ theorem HEExpressionResidualFrontier.exists_tailHeadResidualSplit
                   HEBindingSatisfied valuation seed) ↔
                 (HEBindingSatisfied valuation seed ∧
                   MettaEquationSatisfied valuation
-                    (toLeaTTaAtom nextLeft,
-                      toLeaTTaAtom nextRight)) := by
+                    (encodeModelAtom nextLeft,
+                      encodeModelAtom nextRight)) := by
         intro seed hseed valuation
         have hiff := hheadProjection.heSuffix_solution_iff
           hfrontImage hheadImage
@@ -21682,13 +21275,13 @@ structure HEExpressionTailHeadResidualPackage
   rest_length : leftRest.length = rightRest.length
   work_eq : h.tailWork = headWork ++ untouchedTailWork
   headProjection : UnifyRoundsPrefixSplit fuel
-    [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)]
-    [(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight)] []
+    [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)]
+    [(encodeModelAtom nextLeft, encodeModelAtom nextRight)] []
     h.remainingFuel headWork h.childSubst
   untouchedProjection : UnifyRoundsPrefixSplit fuel
-    [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)]
-    (List.zip (toLeaTTaAtoms leftRest)
-      (toLeaTTaAtoms rightRest)) []
+    [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)]
+    (List.zip (encodeModelAtoms leftRest)
+      (encodeModelAtoms rightRest)) []
     h.remainingFuel untouchedTailWork h.childSubst
   nextSplit : UnifyRoundsPrefixSplit h.remainingFuel
     headWork untouchedTailWork h.childSubst
@@ -21704,7 +21297,7 @@ structure HEExpressionTailHeadResidualPackage
             HEBindingSatisfied valuation seed) ↔
           (HEBindingSatisfied valuation seed ∧
             MettaEquationSatisfied valuation
-              (toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight))
+              (encodeModelAtom nextLeft, encodeModelAtom nextRight))
 
 /-- Package constructor for the exact next-tail split. -/
 theorem HEExpressionResidualFrontier.exists_tailHeadResidualPackage
@@ -21758,7 +21351,7 @@ structure HEListResidualState
         HEBindingSatisfied valuation seed) ↔
       (HEBindingSatisfied valuation seed ∧
         MettaAtomListsSatisfied valuation
-          (toLeaTTaAtoms left) (toLeaTTaAtoms right))
+          (encodeModelAtoms left) (encodeModelAtoms right))
 
 /-- After the exact next original atom match has been merged into the live
 seed, the projected residual package yields the complete recursive state for
@@ -21849,16 +21442,16 @@ theorem HEExpressionTailHeadResidualPackage.toTailResidualState
     hheadWorkImage huntouchedImage h.childSubst_inHEImage
       hcurrentFresh hhead.congruence valuation
   have hfrontImage : LeaEquationsInHEImage
-      [(toLeaTTaAtom h.leftHead,
-        toLeaTTaAtom h.rightHead)] := by
+      [(encodeModelAtom h.leftHead,
+        encodeModelAtom h.rightHead)] := by
     intro equation hmem
     simp only [List.mem_singleton] at hmem
     subst equation
     exact ⟨LeaAtomInHEImage.translation h.leftHead,
       LeaAtomInHEImage.translation h.rightHead⟩
   have horiginalTailImage : LeaEquationsInHEImage
-      (List.zip (toLeaTTaAtoms leftRest)
-        (toLeaTTaAtoms p.rightRest)) :=
+      (List.zip (encodeModelAtoms leftRest)
+        (encodeModelAtoms p.rightRest)) :=
     leaEquationsInHEImage_zip_translations leftRest p.rightRest
   have huntouchedTheory :=
     p.untouchedProjection.heSuffix_solution_iff_exact
@@ -21866,9 +21459,9 @@ theorem HEExpressionTailHeadResidualPackage.toTailResidualState
       (by intro key term hmem; simp at hmem)
       (by simp [UnifyStateFresh, mettaSubstKeys])
       hseed valuation
-  have htranslatedLength : (toLeaTTaAtoms leftRest).length =
-      (toLeaTTaAtoms p.rightRest).length := by
-    simpa [length_toLeaTTaAtoms] using p.rest_length
+  have htranslatedLength : (encodeModelAtoms leftRest).length =
+      (encodeModelAtoms p.rightRest).length := by
+    simpa [length_encodeModelAtoms] using p.rest_length
   have hzip := mettaEquationsSatisfied_zip_iff valuation
     htranslatedLength
   constructor
@@ -21942,13 +21535,13 @@ structure HEProjectedCertifiedListResidualState
     extends HECertifiedListResidualState trace allowed fuel work
       subst result left right seed where
   projection : UnifyRoundsPrefixSplit outerFuel front
-    (List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right)) outerSubst
+    (List.zip (encodeModelAtoms left) (encodeModelAtoms right)) outerSubst
     fuel work subst
   front_inHEImage : LeaEquationsInHEImage front
   outerSubst_inHEImage : LeaSubstInHEImage outerSubst
   outerStateFresh : UnifyStateFresh
-    (front ++ List.zip (toLeaTTaAtoms left)
-      (toLeaTTaAtoms right)) outerSubst
+    (front ++ List.zip (encodeModelAtoms left)
+      (encodeModelAtoms right)) outerSubst
   front_decomposes : ∃ constraint rest,
     Metta.Unify.decomposeAll front = some (constraint :: rest)
 
@@ -21972,7 +21565,7 @@ structure HEListResidualSolutionState
         HEBindingSatisfied valuation seed) ↔
       (HEBindingSatisfied valuation seed ∧
         MettaAtomListsSatisfied valuation
-          (toLeaTTaAtoms left) (toLeaTTaAtoms right))
+          (encodeModelAtoms left) (encodeModelAtoms right))
 
 /-- Certificate-bearing solution-only residual state.  These three
 intensional fields are precisely the data later composed by the outer
@@ -22011,13 +21604,13 @@ structure HEProjectedCertifiedListResidualSolutionState
     extends HECertifiedListResidualSolutionState trace allowed fuel work
       subst result left right seed where
   projection : UnifyRoundsPrefixSplit outerFuel front
-    (List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right)) outerSubst
+    (List.zip (encodeModelAtoms left) (encodeModelAtoms right)) outerSubst
     fuel work subst
   front_inHEImage : LeaEquationsInHEImage front
   outerSubst_inHEImage : LeaSubstInHEImage outerSubst
   outerStateFresh : UnifyStateFresh
-    (front ++ List.zip (toLeaTTaAtoms left)
-      (toLeaTTaAtoms right)) outerSubst
+    (front ++ List.zip (encodeModelAtoms left)
+      (encodeModelAtoms right)) outerSubst
   front_decomposes : ∃ constraint rest,
     Metta.Unify.decomposeAll front = some (constraint :: rest)
 
@@ -22156,9 +21749,9 @@ theorem exists_HEEquationMergeProjectedResidualState
     (by intro key term hmem; simp at hmem)
   have hseedSolutions := hsplit.seedSolutions_of_HEEquations
   have htranslatedLength :
-      (toLeaTTaAtoms (HEEquationLeftAtoms right)).length =
-        (toLeaTTaAtoms (HEEquationRightAtoms right)).length := by
-    simpa [length_toLeaTTaAtoms] using HEEquationAtoms_length_eq right
+      (encodeModelAtoms (HEEquationLeftAtoms right)).length =
+        (encodeModelAtoms (HEEquationRightAtoms right)).length := by
+    simpa [length_encodeModelAtoms] using HEEquationAtoms_length_eq right
   have hresultSubset : ∀ entry ∈ result, entry ∈ trace := by
     have hresultEq :=
       unifyRounds_result_eq_eliminationTrace_reverse_append
@@ -22213,13 +21806,13 @@ theorem exists_HEEquationMergeProjectedResidualState
           MettaEquationsSatisfied valuation (HEEquations right)) := hbase
       _ ↔ (HEBindingSatisfied valuation seed ∧
           MettaEquationsSatisfied valuation
-            (List.zip (toLeaTTaAtoms (HEEquationLeftAtoms right))
-              (toLeaTTaAtoms (HEEquationRightAtoms right)))) := by
+            (List.zip (encodeModelAtoms (HEEquationLeftAtoms right))
+              (encodeModelAtoms (HEEquationRightAtoms right)))) := by
         rw [zip_translated_HEEquationAtoms]
       _ ↔ (HEBindingSatisfied valuation seed ∧
           MettaAtomListsSatisfied valuation
-            (toLeaTTaAtoms (HEEquationLeftAtoms right))
-            (toLeaTTaAtoms (HEEquationRightAtoms right))) :=
+            (encodeModelAtoms (HEEquationLeftAtoms right))
+            (encodeModelAtoms (HEEquationRightAtoms right))) :=
         and_congr Iff.rfl hzip
   · intro entry hentry
     apply htrace entry
@@ -22257,8 +21850,8 @@ def HEExpressionLiveEquations
     (seed : Bindings) (left right : List Atom) :
     List (Metta.Atom × Metta.Atom) :=
   HEEquations seed ++
-    [(toLeaTTaAtom (.expression left),
-      toLeaTTaAtom (.expression right))]
+    [(encodeModelAtom (.expression left),
+      encodeModelAtom (.expression right))]
 
 /-- Ambient certificate carrier for the expression/live joint system.  Raw
 seed relations are retained for class-relative provenance; the normalized
@@ -22312,8 +21905,8 @@ theorem exists_HEExpressionLiveProjectedResidualState_of_satisfied
     (hseed : HEBindingSatisfied valuation seed)
     (hseedNonvar : HEAssignmentsNonVariable seed)
     (hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom (.expression left),
-        toLeaTTaAtom (.expression right)))
+      (encodeModelAtom (.expression left),
+        encodeModelAtom (.expression right)))
     (hfrontDecomposes : ∃ constraint rest,
       Metta.Unify.decomposeAll (HEEquations seed) =
         some (constraint :: rest)) :
@@ -22335,8 +21928,8 @@ theorem exists_HEExpressionLiveProjectedResidualState_of_satisfied
     · exact HEEquations_noFloat seed equation hseedEquation
     · simp only [List.mem_singleton] at hexpression
       subst equation
-      exact ⟨toLeaTTaAtom_noFloat (.expression left),
-        toLeaTTaAtom_noFloat (.expression right)⟩
+      exact ⟨encodeModelAtom_noFloat (.expression left),
+        encodeModelAtom_noFloat (.expression right)⟩
   have hsatisfied : MettaEquationsSatisfied valuation equations := by
     intro equation hmem
     rcases List.mem_append.mp hmem with hseedEquation | hexpression
@@ -22351,36 +21944,36 @@ theorem exists_HEExpressionLiveProjectedResidualState_of_satisfied
     simpa only [outerFuel] using hrun
   have hlength : left.length = right.length := by
     have hlists : MettaAtomListsSatisfied valuation
-        (toLeaTTaAtoms left) (toLeaTTaAtoms right) := by
-      simpa [MettaEquationSatisfied, toLeaTTaAtom,
+        (encodeModelAtoms left) (encodeModelAtoms right) := by
+      simpa [MettaEquationSatisfied, encodeModelAtom,
         applyClassSolution, MettaAtomListsSatisfied] using hequation
     have hmapLength := congrArg List.length hlists
-    simpa [length_toLeaTTaAtoms] using hmapLength
+    simpa [length_encodeModelAtoms] using hmapLength
   obtain ⟨remainingFuel, work, prefixSubst, hsplit, hcontinue⟩ :=
     unifyRounds_prefix_split_of_success
       (front := HEEquations seed)
       (suffix :=
-        [(toLeaTTaAtom (.expression left),
-          toLeaTTaAtom (.expression right))]) hrun'
+        [(encodeModelAtom (.expression left),
+          encodeModelAtom (.expression right))]) hrun'
   obtain ⟨frontConstraint, frontRest, hfront⟩ := hfrontDecomposes
   have hdecompose : Metta.Unify.decomposeAll
-      [(toLeaTTaAtom (.expression left),
-        toLeaTTaAtom (.expression right))] =
+      [(encodeModelAtom (.expression left),
+        encodeModelAtom (.expression right))] =
       Metta.Unify.decomposeAll
-        (List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right)) := by
-    simpa [toLeaTTaAtom] using
+        (List.zip (encodeModelAtoms left) (encodeModelAtoms right)) := by
+    simpa [encodeModelAtom] using
       decomposeAll_expression_eq_zip
-        (toLeaTTaAtoms left) (toLeaTTaAtoms right)
-        (by simpa [length_toLeaTTaAtoms] using hlength)
+        (encodeModelAtoms left) (encodeModelAtoms right)
+        (by simpa [length_encodeModelAtoms] using hlength)
   have hprojection : UnifyRoundsPrefixSplit outerFuel
       (HEEquations seed)
-      (List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right)) []
+      (List.zip (encodeModelAtoms left) (encodeModelAtoms right)) []
       remainingFuel work prefixSubst :=
     hsplit.suffix_congr_of_front_cons hfront _ hdecompose.symm
   have hfrontImage : LeaEquationsInHEImage (HEEquations seed) :=
     HEEquations_inHEImage seed
   have hsuffixImage : LeaEquationsInHEImage
-      (List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right)) :=
+      (List.zip (encodeModelAtoms left) (encodeModelAtoms right)) :=
     leaEquationsInHEImage_zip_translations left right
   have hstateImage := hprojection.state_inHEImage
     hfrontImage hsuffixImage
@@ -22406,8 +21999,8 @@ theorem exists_HEExpressionLiveProjectedResidualState_of_satisfied
         unificationEliminationTrace outerFuel equations := by
       change entry ∈ unificationEliminationTrace outerFuel
         (HEEquations seed ++
-          [(toLeaTTaAtom (.expression left),
-            toLeaTTaAtom (.expression right))])
+          [(encodeModelAtom (.expression left),
+            encodeModelAtom (.expression right))])
       rw [hsplit.trace_append]
       exact List.mem_append_right _ hentry
     simpa only [trace, HEExpressionLiveTrace, equations, outerFuel] using
@@ -22445,8 +22038,8 @@ theorem exists_HEExpressionLiveProjectedResidualState_of_satisfied
       (by simp [UnifyStateFresh, mettaSubstKeys])
       hseedSolutions otherValuation
     have htranslatedLength :
-        (toLeaTTaAtoms left).length = (toLeaTTaAtoms right).length := by
-      simpa only [length_toLeaTTaAtoms] using hlength
+        (encodeModelAtoms left).length = (encodeModelAtoms right).length := by
+      simpa only [length_encodeModelAtoms] using hlength
     have hzip := mettaEquationsSatisfied_zip_iff otherValuation
       htranslatedLength
     exact hbase.trans (and_congr Iff.rfl hzip)
@@ -22479,8 +22072,8 @@ theorem exists_HEExpressionLiveProjectedResidualState_of_classValue
     (hseedNonvar : HEAssignmentsNonVariable seed)
     (hclassValue : classValue ∈ seed.classValues key)
     (hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom (.expression left),
-        toLeaTTaAtom (.expression right))) :
+      (encodeModelAtom (.expression left),
+        encodeModelAtom (.expression right))) :
     ∃ result remainingFuel work prefixSubst,
       Nonempty (HEProjectedCertifiedListResidualSolutionState
         (HEExpressionLiveTrace seed left right)
@@ -22622,36 +22215,36 @@ theorem HEExpressionTailHeadResidualPackage.toCertifiedNestedListResidualState
     HECertifiedListResidualState trace allowed
       h.remainingFuel p.headWork h.childSubst p.nextSubst
       leftAtoms rightAtoms seed := by
-  have hfrontNe : toLeaTTaAtom h.leftHead ≠
-      toLeaTTaAtom h.rightHead := by
+  have hfrontNe : encodeModelAtom h.leftHead ≠
+      encodeModelAtom h.rightHead := by
     intro heq
-    exact h.head_ne (toLeaTTaAtom_injective heq)
+    exact h.head_ne (encodeModelAtom_injective heq)
   obtain ⟨frontConstraint, frontRest, hfront⟩ :=
     exists_decomposeAll_singleton_cons_of_success
-      (toLeaTTaAtom_noFloat h.leftHead)
-      (toLeaTTaAtom_noFloat h.rightHead) hfrontNe
+      (encodeModelAtom_noFloat h.leftHead)
+      (encodeModelAtom_noFloat h.rightHead) hfrontNe
       p.headProjection.front_run
   obtain ⟨suffixConstraints, hsuffix⟩ :=
     p.headProjection.exists_decomposeAll_suffix_of_front_cons hfront
   have hdecomposeList : Metta.Unify.decomposeList
-      (toLeaTTaAtoms leftAtoms) (toLeaTTaAtoms rightAtoms) =
+      (encodeModelAtoms leftAtoms) (encodeModelAtoms rightAtoms) =
       some suffixConstraints := by
     cases hdecompose : Metta.Unify.decomposeList
-        (toLeaTTaAtoms leftAtoms) (toLeaTTaAtoms rightAtoms) with
+        (encodeModelAtoms leftAtoms) (encodeModelAtoms rightAtoms) with
     | none =>
-        simp [hleft, hright, toLeaTTaAtom,
+        simp [hleft, hright, encodeModelAtom,
           Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
           hdecompose] at hsuffix
     | some constraints =>
         have hconstraints : constraints = suffixConstraints := by
-          simpa [hleft, hright, toLeaTTaAtom,
+          simpa [hleft, hright, encodeModelAtom,
             Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
             hdecompose] using hsuffix
         subst suffixConstraints
         rfl
   have hlength : leftAtoms.length = rightAtoms.length := by
     have htranslated := length_eq_of_decomposeList_success hdecomposeList
-    simpa [length_toLeaTTaAtoms] using htranslated
+    simpa [length_encodeModelAtoms] using htranslated
   have hworkNil : leftAtoms = [] → p.headWork = [] := by
     intro hleftNil
     have hrightLength : rightAtoms.length = 0 := by
@@ -22659,8 +22252,8 @@ theorem HEExpressionTailHeadResidualPackage.toCertifiedNestedListResidualState
     have hrightNil : rightAtoms = [] :=
       List.eq_nil_of_length_eq_zero hrightLength
     have hsuffixNil : Metta.Unify.decomposeAll
-        [(toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight)] = some [] := by
-      simp [hleft, hright, hleftNil, hrightNil, toLeaTTaAtom,
+        [(encodeModelAtom nextLeft, encodeModelAtom p.nextRight)] = some [] := by
+      simp [hleft, hright, hleftNil, hrightNil, encodeModelAtom,
         Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
         Metta.Unify.decomposeList]
     exact p.headProjection.suffixWork_eq_nil_of_front_cons_of_suffix_nil
@@ -22742,7 +22335,7 @@ theorem HEExpressionTailHeadResidualPackage.toCertifiedNestedListResidualState
     work_nil_of_left_nil := hworkNil
     solutionTheory := by
       intro valuation
-      simpa [hleft, hright, MettaEquationSatisfied, toLeaTTaAtom,
+      simpa [hleft, hright, MettaEquationSatisfied, encodeModelAtom,
         applyClassSolution, MettaAtomListsSatisfied] using
           (p.headTheory current.seed_congruence valuation)
     localTrace_subset := hheadTraceSubset
@@ -22769,9 +22362,9 @@ structure HEExpressionTailHeadNestedResidualPackage
     h.remainingFuel p.headWork h.childSubst p.nextSubst
     leftAtoms rightAtoms seed
   childProjection : UnifyRoundsPrefixSplit fuel
-    [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)]
-    (List.zip (toLeaTTaAtoms leftAtoms)
-      (toLeaTTaAtoms rightAtoms)) []
+    [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)]
+    (List.zip (encodeModelAtoms leftAtoms)
+      (encodeModelAtoms rightAtoms)) []
     h.remainingFuel p.headWork h.childSubst
 
 /-- Package the nested child state without rerunning either Robinson
@@ -22795,30 +22388,30 @@ theorem HEExpressionTailHeadResidualPackage.toCertifiedNestedResidualPackage
       leftAtoms rightAtoms := by
   let nestedState := p.toCertifiedNestedListResidualState
     current hleft hright
-  have hfrontNe : toLeaTTaAtom h.leftHead ≠
-      toLeaTTaAtom h.rightHead := by
+  have hfrontNe : encodeModelAtom h.leftHead ≠
+      encodeModelAtom h.rightHead := by
     intro heq
-    exact h.head_ne (toLeaTTaAtom_injective heq)
+    exact h.head_ne (encodeModelAtom_injective heq)
   obtain ⟨frontConstraint, frontRest, hfront⟩ :=
     exists_decomposeAll_singleton_cons_of_success
-      (toLeaTTaAtom_noFloat h.leftHead)
-      (toLeaTTaAtom_noFloat h.rightHead) hfrontNe
+      (encodeModelAtom_noFloat h.leftHead)
+      (encodeModelAtom_noFloat h.rightHead) hfrontNe
       p.headProjection.front_run
   have htranslatedLength :
-      (toLeaTTaAtoms leftAtoms).length =
-        (toLeaTTaAtoms rightAtoms).length := by
-    simpa [nestedState, length_toLeaTTaAtoms] using
+      (encodeModelAtoms leftAtoms).length =
+        (encodeModelAtoms rightAtoms).length := by
+    simpa [nestedState, length_encodeModelAtoms] using
       nestedState.length_eq
   have hdecompose := decomposeAll_expression_eq_zip
-    (toLeaTTaAtoms leftAtoms) (toLeaTTaAtoms rightAtoms)
+    (encodeModelAtoms leftAtoms) (encodeModelAtoms rightAtoms)
       htranslatedLength
   have hprojection : UnifyRoundsPrefixSplit fuel
-      [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)]
-      (List.zip (toLeaTTaAtoms leftAtoms)
-        (toLeaTTaAtoms rightAtoms)) []
+      [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)]
+      (List.zip (encodeModelAtoms leftAtoms)
+        (encodeModelAtoms rightAtoms)) []
       h.remainingFuel p.headWork h.childSubst := by
     apply p.headProjection.suffix_congr_of_front_cons hfront
-    simpa [hleft, hright, toLeaTTaAtom] using hdecompose.symm
+    simpa [hleft, hright, encodeModelAtom] using hdecompose.symm
   exact {
     state := nestedState
     childProjection := hprojection
@@ -22837,17 +22430,17 @@ theorem HEExpressionTailHeadNestedResidualPackage.toProjectedState
     (n : HEExpressionTailHeadNestedResidualPackage p trace allowed seed
       leftAtoms rightAtoms) :
     HEProjectedCertifiedListResidualState trace allowed fuel
-      [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] []
+      [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] []
       h.remainingFuel p.headWork h.childSubst p.nextSubst
       leftAtoms rightAtoms seed := by
-  have hfrontNe : toLeaTTaAtom h.leftHead ≠
-      toLeaTTaAtom h.rightHead := by
+  have hfrontNe : encodeModelAtom h.leftHead ≠
+      encodeModelAtom h.rightHead := by
     intro heq
-    exact h.head_ne (toLeaTTaAtom_injective heq)
+    exact h.head_ne (encodeModelAtom_injective heq)
   obtain ⟨frontConstraint, frontRest, hfront⟩ :=
     exists_decomposeAll_singleton_cons_of_success
-      (toLeaTTaAtom_noFloat h.leftHead)
-      (toLeaTTaAtom_noFloat h.rightHead) hfrontNe
+      (encodeModelAtom_noFloat h.leftHead)
+      (encodeModelAtom_noFloat h.rightHead) hfrontNe
       n.childProjection.front_run
   exact {
     toHECertifiedListResidualState := n.state
@@ -22989,37 +22582,37 @@ theorem HEExpressionResidualFrontier.toCertifiedTailResidualState
     (h : HEExpressionResidualFrontier fuel left right result)
     (certified : HEMatchListAccCongruentCertified
       (unificationEliminationTrace fuel
-        ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-          List.zip (toLeaTTaAtoms h.leftTail)
-            (toLeaTTaAtoms h.rightTail)))
+        ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+          List.zip (encodeModelAtoms h.leftTail)
+            (encodeModelAtoms h.rightTail)))
       (eliminationTraceAliases
         (unificationEliminationTrace fuel
-          ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-            List.zip (toLeaTTaAtoms h.leftTail)
-              (toLeaTTaAtoms h.rightTail))))
+          ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+            List.zip (encodeModelAtoms h.leftTail)
+              (encodeModelAtoms h.rightTail))))
       (h.common ++ [h.leftHead]) (h.common ++ [h.rightHead])
       Bindings.empty h.childSubst) :
     HECertifiedListResidualState
       (unificationEliminationTrace fuel
-        ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-          List.zip (toLeaTTaAtoms h.leftTail)
-            (toLeaTTaAtoms h.rightTail)))
+        ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+          List.zip (encodeModelAtoms h.leftTail)
+            (encodeModelAtoms h.rightTail)))
       (eliminationTraceAliases
         (unificationEliminationTrace fuel
-          ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-            List.zip (toLeaTTaAtoms h.leftTail)
-              (toLeaTTaAtoms h.rightTail))))
+          ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+            List.zip (encodeModelAtoms h.leftTail)
+              (encodeModelAtoms h.rightTail))))
       h.remainingFuel h.tailWork h.childSubst result
       h.leftTail h.rightTail certified.out := by
   let trace := unificationEliminationTrace fuel
-    ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-      List.zip (toLeaTTaAtoms h.leftTail)
-        (toLeaTTaAtoms h.rightTail))
+    ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+      List.zip (encodeModelAtoms h.leftTail)
+        (encodeModelAtoms h.rightTail))
   let allowed := eliminationTraceAliases trace
   have hresultEq : result =
       (unificationEliminationTrace fuel
-        [(toLeaTTaAtom (.expression left),
-          toLeaTTaAtom (.expression right))]).reverse := by
+        [(encodeModelAtom (.expression left),
+          encodeModelAtom (.expression right))]).reverse := by
     simpa using
       (unifyRounds_result_eq_eliminationTrace_reverse_append
         (by simp [UnifyStateFresh, mettaSubstKeys]) h.top_run)
@@ -23032,9 +22625,9 @@ theorem HEExpressionResidualFrontier.toCertifiedTailResidualState
       entry ∈ trace := by
     intro entry hentry
     change entry ∈ unificationEliminationTrace fuel
-      ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-        List.zip (toLeaTTaAtoms h.leftTail)
-          (toLeaTTaAtoms h.rightTail))
+      ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+        List.zip (encodeModelAtoms h.leftTail)
+          (encodeModelAtoms h.rightTail))
     rw [h.residualSplit.trace_append]
     exact List.mem_append_right _ hentry
   have hallowedMono : ∀ {start finish : String},
@@ -23079,37 +22672,37 @@ theorem HEExpressionResidualFrontier.toProjectedCertifiedTailResidualState
     (h : HEExpressionResidualFrontier fuel left right result)
     (certified : HEMatchListAccCongruentCertified
       (unificationEliminationTrace fuel
-        ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-          List.zip (toLeaTTaAtoms h.leftTail)
-            (toLeaTTaAtoms h.rightTail)))
+        ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+          List.zip (encodeModelAtoms h.leftTail)
+            (encodeModelAtoms h.rightTail)))
       (eliminationTraceAliases
         (unificationEliminationTrace fuel
-          ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-            List.zip (toLeaTTaAtoms h.leftTail)
-              (toLeaTTaAtoms h.rightTail))))
+          ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+            List.zip (encodeModelAtoms h.leftTail)
+              (encodeModelAtoms h.rightTail))))
       (h.common ++ [h.leftHead]) (h.common ++ [h.rightHead])
       Bindings.empty h.childSubst) :
     HEProjectedCertifiedListResidualState
       (unificationEliminationTrace fuel
-        ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-          List.zip (toLeaTTaAtoms h.leftTail)
-            (toLeaTTaAtoms h.rightTail)))
+        ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+          List.zip (encodeModelAtoms h.leftTail)
+            (encodeModelAtoms h.rightTail)))
       (eliminationTraceAliases
         (unificationEliminationTrace fuel
-          ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-            List.zip (toLeaTTaAtoms h.leftTail)
-              (toLeaTTaAtoms h.rightTail))))
-      fuel [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] []
+          ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+            List.zip (encodeModelAtoms h.leftTail)
+              (encodeModelAtoms h.rightTail))))
+      fuel [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] []
       h.remainingFuel h.tailWork h.childSubst result
       h.leftTail h.rightTail certified.out := by
-  have hfrontNe : toLeaTTaAtom h.leftHead ≠
-      toLeaTTaAtom h.rightHead := by
+  have hfrontNe : encodeModelAtom h.leftHead ≠
+      encodeModelAtom h.rightHead := by
     intro heq
-    exact h.head_ne (toLeaTTaAtom_injective heq)
+    exact h.head_ne (encodeModelAtom_injective heq)
   obtain ⟨frontConstraint, frontRest, hfront⟩ :=
     exists_decomposeAll_singleton_cons_of_success
-      (toLeaTTaAtom_noFloat h.leftHead)
-      (toLeaTTaAtom_noFloat h.rightHead) hfrontNe
+      (encodeModelAtom_noFloat h.leftHead)
+      (encodeModelAtom_noFloat h.rightHead) hfrontNe
       h.residualSplit.front_run
   exact {
     toHECertifiedListResidualState :=
@@ -23142,13 +22735,13 @@ theorem HEExpressionResidualFrontier.toProjectedCertifiedTailResidualSolutionSta
       Bindings.empty h.childSubst) :
     HEProjectedCertifiedListResidualSolutionState
       h.residualTrace h.residualAllowed
-      fuel [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] []
+      fuel [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] []
       h.remainingFuel h.tailWork h.childSubst result
       h.leftTail h.rightTail certified.out := by
   have hresultEq : result =
       (unificationEliminationTrace fuel
-        [(toLeaTTaAtom (.expression left),
-          toLeaTTaAtom (.expression right))]).reverse := by
+        [(encodeModelAtom (.expression left),
+          encodeModelAtom (.expression right))]).reverse := by
     simpa using
       (unifyRounds_result_eq_eliminationTrace_reverse_append
         (by simp [UnifyStateFresh, mettaSubstKeys]) h.top_run)
@@ -23162,9 +22755,9 @@ theorem HEExpressionResidualFrontier.toProjectedCertifiedTailResidualSolutionSta
       entry ∈ h.residualTrace := by
     intro entry hentry
     change entry ∈ unificationEliminationTrace fuel
-      ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-        List.zip (toLeaTTaAtoms h.leftTail)
-          (toLeaTTaAtoms h.rightTail))
+      ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+        List.zip (encodeModelAtoms h.leftTail)
+          (encodeModelAtoms h.rightTail))
     rw [h.residualSplit.trace_append]
     exact List.mem_append_right _ hentry
   have hallowedMono : ∀ {start finish : String},
@@ -23193,14 +22786,14 @@ theorem HEExpressionResidualFrontier.toProjectedCertifiedTailResidualSolutionSta
       certified.out h.residualAllowed :=
     certified.equalitySound.preserves
       (HEEqualityClosureBound.empty h.residualAllowed)
-  have hfrontNe : toLeaTTaAtom h.leftHead ≠
-      toLeaTTaAtom h.rightHead := by
+  have hfrontNe : encodeModelAtom h.leftHead ≠
+      encodeModelAtom h.rightHead := by
     intro heq
-    exact h.head_ne (toLeaTTaAtom_injective heq)
+    exact h.head_ne (encodeModelAtom_injective heq)
   obtain ⟨frontConstraint, frontRest, hfront⟩ :=
     exists_decomposeAll_singleton_cons_of_success
-      (toLeaTTaAtom_noFloat h.leftHead)
-      (toLeaTTaAtom_noFloat h.rightHead) hfrontNe
+      (encodeModelAtom_noFloat h.leftHead)
+      (encodeModelAtom_noFloat h.rightHead) hfrontNe
       h.residualSplit.front_run
   exact {
     run := h.continue_run
@@ -23258,11 +22851,11 @@ structure HEProjectedTailHeadResidualPackage
   rest_length : leftRest.length = rightRest.length
   work_eq : work = headWork ++ untouchedTailWork
   headProjection : UnifyRoundsPrefixSplit outerFuel front
-    [(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight)] outerSubst
+    [(encodeModelAtom nextLeft, encodeModelAtom nextRight)] outerSubst
     fuel headWork subst
   untouchedProjection : UnifyRoundsPrefixSplit outerFuel front
-    (List.zip (toLeaTTaAtoms leftRest)
-      (toLeaTTaAtoms rightRest)) outerSubst
+    (List.zip (encodeModelAtoms leftRest)
+      (encodeModelAtoms rightRest)) outerSubst
     fuel untouchedTailWork subst
   nextSplit : UnifyRoundsPrefixSplit fuel
     headWork untouchedTailWork subst
@@ -23275,7 +22868,7 @@ structure HEProjectedTailHeadResidualPackage
         HEBindingSatisfied valuation seed) ↔
       (HEBindingSatisfied valuation seed ∧
         MettaEquationSatisfied valuation
-          (toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight))
+          (encodeModelAtom nextLeft, encodeModelAtom nextRight))
 
 /-- Expose one original atom pair from a projected residual state and retain
 both its transformed head work and the untouched original tail.  The proof
@@ -23307,9 +22900,9 @@ theorem HEProjectedCertifiedListResidualState.exists_tailHeadResidualPackage
   obtain ⟨headWork, untouchedTailWork, hwork,
       hheadProjection, htailProjection⟩ :=
     s.projection.splitSuffixAppend
-      [(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight)]
-      (List.zip (toLeaTTaAtoms leftRest)
-        (toLeaTTaAtoms rightRest)) (by
+      [(encodeModelAtom nextLeft, encodeModelAtom nextRight)]
+      (List.zip (encodeModelAtoms leftRest)
+        (encodeModelAtoms rightRest)) (by
           rw [hleft, hright]
           rfl)
   have hcontinue : Metta.Unify.unifyRounds fuel
@@ -23320,7 +22913,7 @@ theorem HEProjectedCertifiedListResidualState.exists_tailHeadResidualPackage
       hnextSplit, hnextRun⟩ :=
     unifyRounds_prefix_split_of_success hcontinue
   have hheadImage : LeaEquationsInHEImage
-      [(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight)] := by
+      [(encodeModelAtom nextLeft, encodeModelAtom nextRight)] := by
     intro equation hmem
     simp only [List.mem_singleton] at hmem
     subst equation
@@ -23328,7 +22921,7 @@ theorem HEProjectedCertifiedListResidualState.exists_tailHeadResidualPackage
       LeaAtomInHEImage.translation nextRight⟩
   have hheadFresh : UnifyStateFresh
       (front ++
-        [(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight)])
+        [(encodeModelAtom nextLeft, encodeModelAtom nextRight)])
       outerSubst := by
     intro key hkey hmem
     apply s.outerStateFresh key hkey
@@ -23338,17 +22931,17 @@ theorem HEProjectedCertifiedListResidualState.exists_tailHeadResidualPackage
     · exact Or.inl hfrontMem
     · right
       apply List.mem_flatMap.mpr
-      refine ⟨(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight), ?_, ?_⟩
+      refine ⟨(encodeModelAtom nextLeft, encodeModelAtom nextRight), ?_, ?_⟩
       · rw [hleft, hright]
-        simp [toLeaTTaAtoms]
+        simp [encodeModelAtoms]
       · simpa [mettaEquationVars] using hheadMem
   have hheadTheory : ∀ valuation : String → Metta.Atom,
       (MettaEquationsSatisfied valuation headWork ∧
           HEBindingSatisfied valuation seed) ↔
         (HEBindingSatisfied valuation seed ∧
           MettaEquationSatisfied valuation
-            (toLeaTTaAtom nextLeft,
-              toLeaTTaAtom nextRight)) := by
+            (encodeModelAtom nextLeft,
+              encodeModelAtom nextRight)) := by
     intro valuation
     have htheory := hheadProjection.heSuffix_solution_iff_exact
       s.front_inHEImage hheadImage s.outerSubst_inHEImage
@@ -23426,11 +23019,11 @@ structure HEProjectedTailHeadResidualSolutionPackage
   rest_length : leftRest.length = rightRest.length
   work_eq : work = headWork ++ untouchedTailWork
   headProjection : UnifyRoundsPrefixSplit outerFuel front
-    [(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight)] outerSubst
+    [(encodeModelAtom nextLeft, encodeModelAtom nextRight)] outerSubst
     fuel headWork subst
   untouchedProjection : UnifyRoundsPrefixSplit outerFuel front
-    (List.zip (toLeaTTaAtoms leftRest)
-      (toLeaTTaAtoms rightRest)) outerSubst
+    (List.zip (encodeModelAtoms leftRest)
+      (encodeModelAtoms rightRest)) outerSubst
     fuel untouchedTailWork subst
   nextSplit : UnifyRoundsPrefixSplit fuel
     headWork untouchedTailWork subst
@@ -23443,7 +23036,7 @@ structure HEProjectedTailHeadResidualSolutionPackage
         HEBindingSatisfied valuation seed) ↔
       (HEBindingSatisfied valuation seed ∧
         MettaEquationSatisfied valuation
-          (toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight))
+          (encodeModelAtom nextLeft, encodeModelAtom nextRight))
 
 /-- Forget only the strong seed congruence from an exposed head package.
 Every exact prefix/suffix witness is retained definitionally. -/
@@ -23511,9 +23104,9 @@ theorem HEProjectedCertifiedListResidualSolutionState.exists_tailHeadResidualPac
   obtain ⟨headWork, untouchedTailWork, hwork,
       hheadProjection, htailProjection⟩ :=
     s.projection.splitSuffixAppend
-      [(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight)]
-      (List.zip (toLeaTTaAtoms leftRest)
-        (toLeaTTaAtoms rightRest)) (by
+      [(encodeModelAtom nextLeft, encodeModelAtom nextRight)]
+      (List.zip (encodeModelAtoms leftRest)
+        (encodeModelAtoms rightRest)) (by
           rw [hleft, hright]
           rfl)
   have hcontinue : Metta.Unify.unifyRounds fuel
@@ -23524,7 +23117,7 @@ theorem HEProjectedCertifiedListResidualSolutionState.exists_tailHeadResidualPac
       hnextSplit, hnextRun⟩ :=
     unifyRounds_prefix_split_of_success hcontinue
   have hheadImage : LeaEquationsInHEImage
-      [(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight)] := by
+      [(encodeModelAtom nextLeft, encodeModelAtom nextRight)] := by
     intro equation hmem
     simp only [List.mem_singleton] at hmem
     subst equation
@@ -23532,7 +23125,7 @@ theorem HEProjectedCertifiedListResidualSolutionState.exists_tailHeadResidualPac
       LeaAtomInHEImage.translation nextRight⟩
   have hheadFresh : UnifyStateFresh
       (front ++
-        [(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight)])
+        [(encodeModelAtom nextLeft, encodeModelAtom nextRight)])
       outerSubst := by
     intro key hkey hmem
     apply s.outerStateFresh key hkey
@@ -23542,17 +23135,17 @@ theorem HEProjectedCertifiedListResidualSolutionState.exists_tailHeadResidualPac
     · exact Or.inl hfrontMem
     · right
       apply List.mem_flatMap.mpr
-      refine ⟨(toLeaTTaAtom nextLeft, toLeaTTaAtom nextRight), ?_, ?_⟩
+      refine ⟨(encodeModelAtom nextLeft, encodeModelAtom nextRight), ?_, ?_⟩
       · rw [hleft, hright]
-        simp [toLeaTTaAtoms]
+        simp [encodeModelAtoms]
       · simpa [mettaEquationVars] using hheadMem
   have hheadTheory : ∀ valuation : String → Metta.Atom,
       (MettaEquationsSatisfied valuation headWork ∧
           HEBindingSatisfied valuation seed) ↔
         (HEBindingSatisfied valuation seed ∧
           MettaEquationSatisfied valuation
-            (toLeaTTaAtom nextLeft,
-              toLeaTTaAtom nextRight)) := by
+            (encodeModelAtom nextLeft,
+              encodeModelAtom nextRight)) := by
     intro valuation
     have htheory :=
       hheadProjection.heSuffix_solution_iff_exact_of_solutions
@@ -23623,7 +23216,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.headSatisfied_of_trace
     (htrace : MettaConstraintsSatisfied valuation trace) :
     HEBindingSatisfied valuation seed ∧
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight) := by
+        (encodeModelAtom nextLeft, encodeModelAtom p.nextRight) := by
   have hresult : MettaConstraintsSatisfied valuation result := by
     intro constraint hmem
     exact htrace constraint (s.result_subset_trace constraint hmem)
@@ -23675,12 +23268,12 @@ theorem HEProjectedTailHeadResidualSolutionPackage.assignmentConflict_bothExpres
   have hfirstValue :=
     hstate.1.eq_applyClassSolution_of_mem_classValues hfirstMem
   have hhead : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value) := by
+      applyClassSolution valuation (encodeModelAtom value) := by
     rw [hright] at hstate
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution] using hstate.2
   have hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom first, toLeaTTaAtom value) := by
+      (encodeModelAtom first, encodeModelAtom value) := by
     exact hfirstValue.symm.trans hhead
   have hseedNonvar : HEAssignmentsNonVariable seed :=
     s.seed_assignmentsSound.assignmentsNonVariable
@@ -23719,7 +23312,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.equalityPairConflict_bothExpr
   have hstate := p.headSatisfied_of_trace valuation htrace
   have halias : valuation left = valuation right := by
     rw [hright] at hstate
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution] using hstate.2
   have hcandidate : HEBindingSatisfied valuation
       (seed.addEquality left right) :=
@@ -23799,7 +23392,7 @@ def HELiveMatchMergeCertified.withProjectedHeadSolutions
       mergeBindings_solution_iff h.merge_mem valuation
     _ ↔ HEBindingSatisfied valuation seed ∧
           MettaEquationSatisfied valuation
-            (toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight) :=
+            (encodeModelAtom nextLeft, encodeModelAtom p.nextRight) :=
       and_congr Iff.rfl (matchAtoms_solution_iff h.match_mem valuation)
     _ ↔ MettaEquationsSatisfied valuation p.headWork ∧
           HEBindingSatisfied valuation seed :=
@@ -23873,7 +23466,7 @@ noncomputable def HELiveMatchMergeCoreCertified.withProjectedHeadSolutions
       mergeBindings_solution_iff h.liveMerge.merge_mem valuation
     _ ↔ HEBindingSatisfied valuation seed ∧
           MettaEquationSatisfied valuation
-            (toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight) :=
+            (encodeModelAtom nextLeft, encodeModelAtom p.nextRight) :=
       and_congr Iff.rfl (matchAtoms_solution_iff hmatchMem valuation)
     _ ↔ MettaEquationsSatisfied valuation p.headWork ∧
           HEBindingSatisfied valuation seed :=
@@ -23890,20 +23483,20 @@ theorem not_atomOccurs_of_varNonVar_equation
     {valuation : String → Metta.Atom} {key : String} {value : Atom}
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom (.var key), toLeaTTaAtom value)) :
+      (encodeModelAtom (.var key), encodeModelAtom value)) :
     ¬ AtomOccurs value key := by
   apply not_atomOccurs_of_satisfied_nonvariable_equation
   · intro target hvar
     subst value
     simp [DeclMatchSpec.Atom.isVarB] at hnonvar
-  · simpa [MettaEquationSatisfied, toLeaTTaAtom, applyClassSolution] using
+  · simpa [MettaEquationSatisfied, encodeModelAtom, applyClassSolution] using
       hequation
 
 theorem not_atomOccurs_of_nonVarVar_equation
     {valuation : String → Metta.Atom} {key : String} {value : Atom}
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom value, toLeaTTaAtom (.var key))) :
+      (encodeModelAtom value, encodeModelAtom (.var key))) :
     ¬ AtomOccurs value key :=
   not_atomOccurs_of_varNonVar_equation hnonvar hequation.symm
 
@@ -23925,7 +23518,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_liveVarNonVar_fresh
     {value : Atom} (hright : p.nextRight = value)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬ AtomOccurs value key)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace)
+    (hentry : (key, encodeModelAtom value) ∈ trace)
     (hclass : seed.classValues key = []) :
     Nonempty (HELiveMatchMergeSolutionCertified trace allowed
       (.var key) p.nextRight seed p.nextSubst) := by
@@ -23955,7 +23548,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_liveVarNonVar_same
     (hright : p.nextRight = value)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬ AtomOccurs value key)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace)
+    (hentry : (key, encodeModelAtom value) ∈ trace)
     (hclass : seed.classValues key = first :: rest)
     (hconsistent : Bindings.valuesConsistent (first :: rest) = true)
     (hsame : first = value) :
@@ -23985,7 +23578,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_liveNonVarVar_fresh
     {key : String} (hright : p.nextRight = .var key)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬ AtomOccurs value key)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace)
+    (hentry : (key, encodeModelAtom value) ∈ trace)
     (hclass : seed.classValues key = []) :
     Nonempty (HELiveMatchMergeSolutionCertified trace allowed
       value p.nextRight seed p.nextSubst) := by
@@ -24014,7 +23607,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_liveNonVarVar_same
     {key : String} (hright : p.nextRight = .var key)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬ AtomOccurs value key)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace)
+    (hentry : (key, encodeModelAtom value) ∈ trace)
     {first : Atom} {rest : List Atom}
     (hclass : seed.classValues key = first :: rest)
     (hconsistent : Bindings.valuesConsistent (first :: rest) = true)
@@ -24483,7 +24076,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualVarNonVar_
     {value : Atom} (hright : p.nextRight = value)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬ AtomOccurs value key)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace)
+    (hentry : (key, encodeModelAtom value) ∈ trace)
     (hclass : seed.classValues key = []) :
     Nonempty (HELiveMatchMergeCoreResidualCertified trace allowed
       (.var key) p.nextRight seed p.nextSubst) := by
@@ -24570,7 +24163,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualNonVarVar_
     {key : String} (hright : p.nextRight = .var key)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hoccurs : ¬ AtomOccurs value key)
-    (hentry : (key, toLeaTTaAtom value) ∈ trace)
+    (hentry : (key, encodeModelAtom value) ∈ trace)
     (hclass : seed.classValues key = []) :
     Nonempty (HELiveMatchMergeCoreResidualCertified trace allowed
       value p.nextRight seed p.nextSubst) := by
@@ -24654,7 +24247,7 @@ theorem HEProjectedTailHeadResidualPackage.nextSubst_eq_of_headDecompose_nil
     {nextLeft : Atom} {leftRest : List Atom}
     (p : HEProjectedTailHeadResidualPackage s nextLeft leftRest)
     (hdecompose : Metta.Unify.decomposeAll
-      [(toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight)] = some []) :
+      [(encodeModelAtom nextLeft, encodeModelAtom p.nextRight)] = some []) :
     p.nextSubst = subst := by
   obtain ⟨frontConstraint, frontRest, hfront⟩ := s.front_decomposes
   have hheadWork : p.headWork = [] :=
@@ -24702,9 +24295,9 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveSymbol_congruent
     Nonempty (HELiveMatchMergeCoreCongruentCertified trace allowed
       (.symbol name) p.nextRight seed p.nextSubst) := by
   have hdecompose : Metta.Unify.decomposeAll
-      [(toLeaTTaAtom (.symbol name), toLeaTTaAtom p.nextRight)] =
+      [(encodeModelAtom (.symbol name), encodeModelAtom p.nextRight)] =
         some [] := by
-    simp [hright, toLeaTTaAtom, Metta.Unify.decomposeAll,
+    simp [hright, encodeModelAtom, Metta.Unify.decomposeAll,
       Metta.Unify.decomposeEq]
   have hnext := p.nextSubst_eq_of_headDecompose_nil hdecompose
   let hmatch : HEMatchCertified trace allowed
@@ -24743,7 +24336,7 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveGrounded_congruent
     Nonempty (HELiveMatchMergeCoreCongruentCertified trace allowed
       (.grounded value) p.nextRight seed p.nextSubst) := by
   have hdecompose : Metta.Unify.decomposeAll
-      [(toLeaTTaAtom (.grounded value), toLeaTTaAtom p.nextRight)] =
+      [(encodeModelAtom (.grounded value), encodeModelAtom p.nextRight)] =
         some [] := by
     rw [hright]
     simp only [Metta.Unify.decomposeAll]
@@ -24791,7 +24384,7 @@ theorem HEProjectedTailHeadResidualPackage.exists_coreLiveVarVar_reflexive_congr
     Nonempty (HELiveMatchMergeCoreCongruentCertified trace allowed
       (.var key) p.nextRight seed p.nextSubst) := by
   have hdecompose : Metta.Unify.decomposeAll
-      [(toLeaTTaAtom (.var key), toLeaTTaAtom p.nextRight)] = some [] := by
+      [(encodeModelAtom (.var key), encodeModelAtom p.nextRight)] = some [] := by
     rw [hright]
     simp only [Metta.Unify.decomposeAll]
     rw [decomposeEq_toLeaTTa_self]
@@ -24869,7 +24462,7 @@ def HEProjectedAssignmentHeadSolutionComplete
     p.nextRight = value →
     DeclMatchSpec.Atom.isVarB value = false →
     ¬ AtomOccurs value key →
-    (key, toLeaTTaAtom value) ∈ trace →
+    (key, encodeModelAtom value) ∈ trace →
     Nonempty (HELiveMatchMergeSolutionCertified trace allowed
       (.var key) p.nextRight seed p.nextSubst)
 
@@ -24913,7 +24506,7 @@ def HEProjectedAssignmentConflictSolutionComplete
     p.nextRight = value →
     DeclMatchSpec.Atom.isVarB value = false →
     ¬ AtomOccurs value key →
-    (key, toLeaTTaAtom value) ∈ trace →
+    (key, encodeModelAtom value) ∈ trace →
     seed.classValues key = first :: rest →
     Bindings.valuesConsistent (first :: rest) = true →
     first ≠ value →
@@ -24938,7 +24531,7 @@ def HEProjectedAssignmentReconcileSolutionComplete
     p.nextRight = value →
     DeclMatchSpec.Atom.isVarB value = false →
     ¬ AtomOccurs value key →
-    (key, toLeaTTaAtom value) ∈ trace →
+    (key, encodeModelAtom value) ∈ trace →
     seed.classValues key = first :: rest →
     Bindings.valuesConsistent (first :: rest) = false →
     Nonempty (HELiveMatchMergeSolutionCertified trace allowed
@@ -25008,7 +24601,7 @@ def HEProjectedAssignmentConflictInnerComplete
       {value first : Atom} {rest : List Atom},
     p.nextRight = value →
     DeclMatchSpec.Atom.isVarB value = false →
-    (key, toLeaTTaAtom value) ∈ trace →
+    (key, encodeModelAtom value) ∈ trace →
     seed.classValues key = first :: rest →
     Bindings.valuesConsistent (first :: rest) = true →
     first ≠ value →
@@ -25033,7 +24626,7 @@ def HEProjectedAssignmentReconcileInnerComplete
       {value first : Atom} {rest : List Atom},
     p.nextRight = value →
     DeclMatchSpec.Atom.isVarB value = false →
-    (key, toLeaTTaAtom value) ∈ trace →
+    (key, encodeModelAtom value) ∈ trace →
     seed.classValues key = first :: rest →
     Bindings.valuesConsistent (first :: rest) = false →
     Nonempty (HELiveListMatchMergeSolutionCertified trace allowed
@@ -25110,7 +24703,7 @@ def HEProjectedAssignmentConflictOperationalInnerComplete
       {value first : Atom} {rest : List Atom},
     p.nextRight = value →
     DeclMatchSpec.Atom.isVarB value = false →
-    (key, toLeaTTaAtom value) ∈ trace →
+    (key, encodeModelAtom value) ∈ trace →
     seed.classValues key = first :: rest →
     Bindings.valuesConsistent (first :: rest) = true →
     first ≠ value →
@@ -25135,7 +24728,7 @@ def HEProjectedAssignmentReconcileOperationalInnerComplete
       {value first : Atom} {rest : List Atom},
     p.nextRight = value →
     DeclMatchSpec.Atom.isVarB value = false →
-    (key, toLeaTTaAtom value) ∈ trace →
+    (key, encodeModelAtom value) ∈ trace →
     seed.classValues key = first :: rest →
     Bindings.valuesConsistent (first :: rest) = false →
     Nonempty (HELiveListMatchMergeCertified trace allowed
@@ -25209,7 +24802,7 @@ def HEProjectedNonVarVarConflictOperationalInnerComplete
       {key : String} {first : Atom} {rest : List Atom},
     p.nextRight = .var key →
     DeclMatchSpec.Atom.isVarB value = false →
-    (key, toLeaTTaAtom value) ∈ trace →
+    (key, encodeModelAtom value) ∈ trace →
     seed.classValues key = first :: rest →
     Bindings.valuesConsistent (first :: rest) = true →
     first ≠ value →
@@ -25232,7 +24825,7 @@ def HEProjectedNonVarVarReconcileOperationalInnerComplete
       {key : String} {first : Atom} {rest : List Atom},
     p.nextRight = .var key →
     DeclMatchSpec.Atom.isVarB value = false →
-    (key, toLeaTTaAtom value) ∈ trace →
+    (key, encodeModelAtom value) ∈ trace →
     seed.classValues key = first :: rest →
     Bindings.valuesConsistent (first :: rest) = false →
     Nonempty (HELiveListMatchMergeCertified trace allowed
@@ -25365,7 +24958,7 @@ def HEProjectedNonVarVarHeadSolutionComplete
     p.nextRight = .var key →
     DeclMatchSpec.Atom.isVarB value = false →
     ¬ AtomOccurs value key →
-    (key, toLeaTTaAtom value) ∈ trace →
+    (key, encodeModelAtom value) ∈ trace →
     Nonempty (HELiveMatchMergeSolutionCertified trace allowed
       value p.nextRight seed p.nextSubst)
 
@@ -25500,14 +25093,14 @@ theorem HEProjectedCertifiedListResidualSolutionState.exists_originalConstraints
     (s : HEProjectedCertifiedListResidualSolutionState trace allowed
       outerFuel front outerSubst fuel work subst result left right seed) :
     ∃ constraints,
-      Metta.Unify.decomposeList (toLeaTTaAtoms left)
-        (toLeaTTaAtoms right) = some constraints := by
+      Metta.Unify.decomposeList (encodeModelAtoms left)
+        (encodeModelAtoms right) = some constraints := by
   obtain ⟨constraint, rest, hfront⟩ := s.front_decomposes
   obtain ⟨constraints, hsuffix⟩ :=
     s.projection.exists_decomposeAll_suffix_of_front_cons hfront
-  have hlength : (toLeaTTaAtoms left).length =
-      (toLeaTTaAtoms right).length := by
-    simpa only [length_toLeaTTaAtoms] using s.length_eq
+  have hlength : (encodeModelAtoms left).length =
+      (encodeModelAtoms right).length := by
+    simpa only [length_encodeModelAtoms] using s.length_eq
   refine ⟨constraints, ?_⟩
   simpa only [decomposeAll_zip_eq_decomposeList _ _ hlength] using hsuffix
 
@@ -25520,22 +25113,22 @@ theorem HEOriginalListConstraintCoverage.head
       (leftHead :: leftTail) (rightHead :: rightTail))
     (hsuccess : ∃ constraints,
       Metta.Unify.decomposeList
-        (toLeaTTaAtoms (leftHead :: leftTail))
-        (toLeaTTaAtoms (rightHead :: rightTail)) = some constraints) :
+        (encodeModelAtoms (leftHead :: leftTail))
+        (encodeModelAtoms (rightHead :: rightTail)) = some constraints) :
     ∀ headConstraints,
-      Metta.Unify.decomposeEq (toLeaTTaAtom leftHead)
-          (toLeaTTaAtom rightHead) = some headConstraints →
+      Metta.Unify.decomposeEq (encodeModelAtom leftHead)
+          (encodeModelAtom rightHead) = some headConstraints →
         ∀ entry ∈ headConstraints, entry ∈ trace := by
   intro headConstraints hhead entry hentry
   obtain ⟨allConstraints, hall⟩ := hsuccess
   cases htail : Metta.Unify.decomposeList
-      (toLeaTTaAtoms leftTail) (toLeaTTaAtoms rightTail) with
+      (encodeModelAtoms leftTail) (encodeModelAtoms rightTail) with
   | none =>
-      simp [toLeaTTaAtoms, Metta.Unify.decomposeList,
+      simp [encodeModelAtoms, Metta.Unify.decomposeList,
         hhead, htail] at hall
   | some tailConstraints =>
       apply h (headConstraints ++ tailConstraints)
-      · simp [toLeaTTaAtoms, Metta.Unify.decomposeList,
+      · simp [encodeModelAtoms, Metta.Unify.decomposeList,
           hhead, htail]
       · exact List.mem_append_left _ hentry
 
@@ -25548,19 +25141,19 @@ theorem HEOriginalListConstraintCoverage.tail
       (leftHead :: leftTail) (rightHead :: rightTail))
     (hsuccess : ∃ constraints,
       Metta.Unify.decomposeList
-        (toLeaTTaAtoms (leftHead :: leftTail))
-        (toLeaTTaAtoms (rightHead :: rightTail)) = some constraints) :
+        (encodeModelAtoms (leftHead :: leftTail))
+        (encodeModelAtoms (rightHead :: rightTail)) = some constraints) :
     HEOriginalListConstraintCoverage trace leftTail rightTail := by
   intro tailConstraints htail entry hentry
   obtain ⟨allConstraints, hall⟩ := hsuccess
   cases hhead : Metta.Unify.decomposeEq
-      (toLeaTTaAtom leftHead) (toLeaTTaAtom rightHead) with
+      (encodeModelAtom leftHead) (encodeModelAtom rightHead) with
   | none =>
-      simp [toLeaTTaAtoms, Metta.Unify.decomposeList,
+      simp [encodeModelAtoms, Metta.Unify.decomposeList,
         hhead] at hall
   | some headConstraints =>
       apply h (headConstraints ++ tailConstraints)
-      · simp [toLeaTTaAtoms, Metta.Unify.decomposeList,
+      · simp [encodeModelAtoms, Metta.Unify.decomposeList,
           hhead, htail]
       · exact List.mem_append_right _ hentry
 
@@ -25575,13 +25168,13 @@ theorem HEOriginalListConstraintCoverage.expressionHead
       (.expression rightAtoms :: rightTail))
     (hsuccess : ∃ constraints,
       Metta.Unify.decomposeList
-        (toLeaTTaAtoms (.expression leftAtoms :: leftTail))
-        (toLeaTTaAtoms (.expression rightAtoms :: rightTail)) =
+        (encodeModelAtoms (.expression leftAtoms :: leftTail))
+        (encodeModelAtoms (.expression rightAtoms :: rightTail)) =
           some constraints) :
     HEOriginalListConstraintCoverage trace leftAtoms rightAtoms := by
   intro childConstraints hchildren entry hentry
   apply h.head hsuccess childConstraints
-  · simpa [toLeaTTaAtom, Metta.Unify.decomposeEq] using hchildren
+  · simpa [encodeModelAtom, Metta.Unify.decomposeEq] using hchildren
   · exact hentry
 
 /-- The reduced original matcher presentation (divergent head plus untouched
@@ -25591,32 +25184,32 @@ theorem HEExpressionResidualFrontier.exists_originalConstraints
     (h : HEExpressionResidualFrontier fuel left right result) :
     ∃ constraints,
       Metta.Unify.decomposeList
-        (toLeaTTaAtoms (h.leftHead :: h.leftTail))
-        (toLeaTTaAtoms (h.rightHead :: h.rightTail)) =
+        (encodeModelAtoms (h.leftHead :: h.leftTail))
+        (encodeModelAtoms (h.rightHead :: h.rightTail)) =
           some constraints := by
-  have hfrontNe : toLeaTTaAtom h.leftHead ≠
-      toLeaTTaAtom h.rightHead := by
+  have hfrontNe : encodeModelAtom h.leftHead ≠
+      encodeModelAtom h.rightHead := by
     intro heq
-    exact h.head_ne (toLeaTTaAtom_injective heq)
+    exact h.head_ne (encodeModelAtom_injective heq)
   obtain ⟨frontConstraint, frontRest, hfront⟩ :=
     exists_decomposeAll_singleton_cons_of_success
-      (toLeaTTaAtom_noFloat h.leftHead)
-      (toLeaTTaAtom_noFloat h.rightHead) hfrontNe
+      (encodeModelAtom_noFloat h.leftHead)
+      (encodeModelAtom_noFloat h.rightHead) hfrontNe
       h.residualSplit.front_run
   obtain ⟨tailConstraints, htail⟩ :=
     h.residualSplit.exists_decomposeAll_suffix_of_front_cons hfront
   have hlength :
-      (toLeaTTaAtoms (h.leftHead :: h.leftTail)).length =
-        (toLeaTTaAtoms (h.rightHead :: h.rightTail)).length := by
-    simp only [length_toLeaTTaAtoms, List.length_cons, Nat.succ.injEq]
+      (encodeModelAtoms (h.leftHead :: h.leftTail)).length =
+        (encodeModelAtoms (h.rightHead :: h.rightTail)).length := by
+    simp only [length_encodeModelAtoms, List.length_cons, Nat.succ.injEq]
     exact h.tail_length
   let constraints := (frontConstraint :: frontRest) ++ tailConstraints
   refine ⟨constraints, ?_⟩
   rw [← decomposeAll_zip_eq_decomposeList _ _ hlength]
   change Metta.Unify.decomposeAll
-      ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-        List.zip (toLeaTTaAtoms h.leftTail)
-          (toLeaTTaAtoms h.rightTail)) = some constraints
+      ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+        List.zip (encodeModelAtoms h.leftTail)
+          (encodeModelAtoms h.rightTail)) = some constraints
   rw [decomposeAll_append, hfront, htail]
 
 /-- Canonical raw structural constraint carrier for the original reduced HE
@@ -25627,16 +25220,16 @@ def HEExpressionResidualFrontier.originalConstraints
     (h : HEExpressionResidualFrontier fuel left right result) :
     List (String × Metta.Atom) :=
   (Metta.Unify.decomposeList
-    (toLeaTTaAtoms (h.leftHead :: h.leftTail))
-    (toLeaTTaAtoms (h.rightHead :: h.rightTail))).getD []
+    (encodeModelAtoms (h.leftHead :: h.leftTail))
+    (encodeModelAtoms (h.rightHead :: h.rightTail))).getD []
 
 /-- The canonical carrier is the actual successful original decomposition. -/
 theorem HEExpressionResidualFrontier.decomposeList_eq_originalConstraints
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     (h : HEExpressionResidualFrontier fuel left right result) :
     Metta.Unify.decomposeList
-      (toLeaTTaAtoms (h.leftHead :: h.leftTail))
-      (toLeaTTaAtoms (h.rightHead :: h.rightTail)) =
+      (encodeModelAtoms (h.leftHead :: h.leftTail))
+      (encodeModelAtoms (h.rightHead :: h.rightTail)) =
         some h.originalConstraints := by
   obtain ⟨constraints, hconstraints⟩ := h.exists_originalConstraints
   unfold HEExpressionResidualFrontier.originalConstraints
@@ -25648,19 +25241,19 @@ original constraint carrier. -/
 theorem HEExpressionResidualFrontier.decomposeList_top_eq_originalConstraints
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     (h : HEExpressionResidualFrontier fuel left right result) :
-    Metta.Unify.decomposeList (toLeaTTaAtoms left)
-      (toLeaTTaAtoms right) = some h.originalConstraints := by
+    Metta.Unify.decomposeList (encodeModelAtoms left)
+      (encodeModelAtoms right) = some h.originalConstraints := by
   calc
-    Metta.Unify.decomposeList (toLeaTTaAtoms left)
-        (toLeaTTaAtoms right) =
+    Metta.Unify.decomposeList (encodeModelAtoms left)
+        (encodeModelAtoms right) =
       Metta.Unify.decomposeList
-        (toLeaTTaAtoms (h.common ++ h.leftHead :: h.leftTail))
-        (toLeaTTaAtoms (h.common ++ h.rightHead :: h.rightTail)) :=
+        (encodeModelAtoms (h.common ++ h.leftHead :: h.leftTail))
+        (encodeModelAtoms (h.common ++ h.rightHead :: h.rightTail)) :=
       congrArg₂ (fun l r => Metta.Unify.decomposeList
-        (toLeaTTaAtoms l) (toLeaTTaAtoms r)) h.left_eq h.right_eq
+        (encodeModelAtoms l) (encodeModelAtoms r)) h.left_eq h.right_eq
     _ = Metta.Unify.decomposeList
-        (toLeaTTaAtoms (h.leftHead :: h.leftTail))
-        (toLeaTTaAtoms (h.rightHead :: h.rightTail)) :=
+        (encodeModelAtoms (h.leftHead :: h.leftTail))
+        (encodeModelAtoms (h.rightHead :: h.rightTail)) :=
       decomposeList_toLeaTTa_drop_common h.common
         (h.leftHead :: h.leftTail) (h.rightHead :: h.rightTail) (by
           simp only [List.length_cons, Nat.succ.injEq]
@@ -25751,7 +25344,7 @@ theorem HEExpressionResidualFrontier.toCoveredProjectedCertifiedTailResidualSolu
       Bindings.empty h.childSubst) :
     HEOriginalConstraintCoveredProjectedListState
       h.certificateTrace h.certificateAllowed
-      fuel [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] []
+      fuel [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] []
       h.remainingFuel h.tailWork h.childSubst result
       h.leftTail h.rightTail certified.out := {
   state :=
@@ -25774,13 +25367,13 @@ theorem HEExpressionResidualFrontier.toCoveredProjectedTailFromCertificate
       Bindings.empty h.childSubst) :
     HEOriginalConstraintCoveredProjectedListState
       h.certificateTrace h.certificateAllowed
-      fuel [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] []
+      fuel [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] []
       h.remainingFuel h.tailWork h.childSubst result
       h.leftTail h.rightTail certified.out := by
   have hresultEq : result =
       (unificationEliminationTrace fuel
-        [(toLeaTTaAtom (.expression left),
-          toLeaTTaAtom (.expression right))]).reverse := by
+        [(encodeModelAtom (.expression left),
+          encodeModelAtom (.expression right))]).reverse := by
     simpa using
       (unifyRounds_result_eq_eliminationTrace_reverse_append
         (by simp [UnifyStateFresh, mettaSubstKeys]) h.top_run)
@@ -25797,9 +25390,9 @@ theorem HEExpressionResidualFrontier.toCoveredProjectedTailFromCertificate
     intro entry hentry
     apply h.residualTrace_subset_certificateTrace entry
     change entry ∈ unificationEliminationTrace fuel
-      ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-        List.zip (toLeaTTaAtoms h.leftTail)
-          (toLeaTTaAtoms h.rightTail))
+      ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+        List.zip (encodeModelAtoms h.leftTail)
+          (encodeModelAtoms h.rightTail))
     rw [h.residualSplit.trace_append]
     exact List.mem_append_right _ hentry
   have hallowedMono : ∀ {start finish : String},
@@ -25828,14 +25421,14 @@ theorem HEExpressionResidualFrontier.toCoveredProjectedTailFromCertificate
       certified.out h.certificateAllowed :=
     certified.equalitySound.preserves
       (HEEqualityClosureBound.empty h.certificateAllowed)
-  have hfrontNe : toLeaTTaAtom h.leftHead ≠
-      toLeaTTaAtom h.rightHead := by
+  have hfrontNe : encodeModelAtom h.leftHead ≠
+      encodeModelAtom h.rightHead := by
     intro heq
-    exact h.head_ne (toLeaTTaAtom_injective heq)
+    exact h.head_ne (encodeModelAtom_injective heq)
   obtain ⟨frontConstraint, frontRest, hfront⟩ :=
     exists_decomposeAll_singleton_cons_of_success
-      (toLeaTTaAtom_noFloat h.leftHead)
-      (toLeaTTaAtom_noFloat h.rightHead) hfrontNe
+      (encodeModelAtom_noFloat h.leftHead)
+      (encodeModelAtom_noFloat h.rightHead) hfrontNe
       h.residualSplit.front_run
   exact {
     state := {
@@ -25875,14 +25468,14 @@ theorem mem_originalConstraints_varNonVar_head
     {key : String} {value : Atom} {leftRest rightRest : List Atom}
     {constraints : List (String × Metta.Atom)}
     (hdecompose : Metta.Unify.decomposeList
-      (toLeaTTaAtoms (.var key :: leftRest))
-      (toLeaTTaAtoms (value :: rightRest)) = some constraints)
+      (encodeModelAtoms (.var key :: leftRest))
+      (encodeModelAtoms (value :: rightRest)) = some constraints)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false) :
-    (key, toLeaTTaAtom value) ∈ constraints := by
+    (key, encodeModelAtom value) ∈ constraints := by
   cases value <;>
     cases htail : Metta.Unify.decomposeList
-      (toLeaTTaAtoms leftRest) (toLeaTTaAtoms rightRest) <;>
-        simp_all [toLeaTTaAtoms, toLeaTTaAtom,
+      (encodeModelAtoms leftRest) (encodeModelAtoms rightRest) <;>
+        simp_all [encodeModelAtoms, encodeModelAtom,
           Metta.Unify.decomposeList, Metta.Unify.decomposeEq,
           DeclMatchSpec.Atom.isVarB]
   all_goals rw [← hdecompose]; simp
@@ -25893,14 +25486,14 @@ theorem mem_originalConstraints_nonVarVar_head
     {key : String} {value : Atom} {leftRest rightRest : List Atom}
     {constraints : List (String × Metta.Atom)}
     (hdecompose : Metta.Unify.decomposeList
-      (toLeaTTaAtoms (value :: leftRest))
-      (toLeaTTaAtoms (.var key :: rightRest)) = some constraints)
+      (encodeModelAtoms (value :: leftRest))
+      (encodeModelAtoms (.var key :: rightRest)) = some constraints)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false) :
-    (key, toLeaTTaAtom value) ∈ constraints := by
+    (key, encodeModelAtom value) ∈ constraints := by
   cases value <;>
     cases htail : Metta.Unify.decomposeList
-      (toLeaTTaAtoms leftRest) (toLeaTTaAtoms rightRest) <;>
-        simp_all [toLeaTTaAtoms, toLeaTTaAtom,
+      (encodeModelAtoms leftRest) (encodeModelAtoms rightRest) <;>
+        simp_all [encodeModelAtoms, encodeModelAtom,
           Metta.Unify.decomposeList, Metta.Unify.decomposeEq,
           DeclMatchSpec.Atom.isVarB]
   all_goals rw [← hdecompose]; simp
@@ -25911,13 +25504,13 @@ theorem mem_originalConstraints_varVar_head
     {left right : String} {leftRest rightRest : List Atom}
     {constraints : List (String × Metta.Atom)}
     (hdecompose : Metta.Unify.decomposeList
-      (toLeaTTaAtoms (.var left :: leftRest))
-      (toLeaTTaAtoms (.var right :: rightRest)) = some constraints)
+      (encodeModelAtoms (.var left :: leftRest))
+      (encodeModelAtoms (.var right :: rightRest)) = some constraints)
     (hne : left ≠ right) :
     (left, .var right) ∈ constraints := by
   cases htail : Metta.Unify.decomposeList
-    (toLeaTTaAtoms leftRest) (toLeaTTaAtoms rightRest) <;>
-      simp_all [toLeaTTaAtoms, toLeaTTaAtom,
+    (encodeModelAtoms leftRest) (encodeModelAtoms rightRest) <;>
+      simp_all [encodeModelAtoms, encodeModelAtom,
         Metta.Unify.decomposeList, Metta.Unify.decomposeEq]
   rw [← hdecompose]
   simp
@@ -25939,7 +25532,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.freshAssignmentEntry_of_origi
     (hcoverage : HEOriginalListConstraintCoverage trace left right)
     {value : Atom} (hright : p.nextRight = value)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false) :
-    (key, toLeaTTaAtom value) ∈ trace := by
+    (key, encodeModelAtom value) ∈ trace := by
   obtain ⟨constraints, hdecompose⟩ := s.exists_originalConstraints
   apply hcoverage constraints hdecompose
   apply mem_originalConstraints_varNonVar_head
@@ -25963,7 +25556,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.freshNonVarVarEntry_of_origin
     (hcoverage : HEOriginalListConstraintCoverage trace left right)
     {key : String} (hright : p.nextRight = .var key)
     (hnonvar : DeclMatchSpec.Atom.isVarB value = false) :
-    (key, toLeaTTaAtom value) ∈ trace := by
+    (key, encodeModelAtom value) ∈ trace := by
   obtain ⟨constraints, hdecompose⟩ := s.exists_originalConstraints
   apply hcoverage constraints hdecompose
   apply mem_originalConstraints_nonVarVar_head
@@ -26120,7 +25713,7 @@ def HEProjectedFreshAssignmentEntry
     p.nextRight = value →
     DeclMatchSpec.Atom.isVarB value = false →
     seed.classValues key = [] →
-    (key, toLeaTTaAtom value) ∈ trace
+    (key, encodeModelAtom value) ∈ trace
 
 /-- Symmetric fresh-assignment trace-entry obligation. -/
 def HEProjectedFreshNonVarVarEntry
@@ -26139,7 +25732,7 @@ def HEProjectedFreshNonVarVarEntry
     p.nextRight = .var key →
     DeclMatchSpec.Atom.isVarB value = false →
     seed.classValues key = [] →
-    (key, toLeaTTaAtom value) ∈ trace
+    (key, encodeModelAtom value) ∈ trace
 
 /-- Direct branches plus the two exact recursive callbacks discharge every
 variable/non-variable head without demanding standalone child provenance. -/
@@ -26557,7 +26150,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreLiveHead_of_cases
       | symbol rightName =>
           rw [hright] at hequation
           have hname : leftName = rightName := by
-            simpa [MettaEquationSatisfied, toLeaTTaAtom,
+            simpa [MettaEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation
           subst rightName
           simpa only [hright] using p.exists_coreLiveSymbol hright
@@ -26566,10 +26159,10 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreLiveHead_of_cases
             (not_atomOccurs_of_nonVarVar_equation rfl
               (by simpa only [hright] using hequation))
       | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
   | var leftName =>
       cases hright : p.nextRight with
@@ -26591,7 +26184,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreLiveHead_of_cases
   | grounded leftGround =>
       cases hright : p.nextRight with
       | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | var rightName =>
           simpa only [hright] using hnonvar p hright rfl
@@ -26600,25 +26193,25 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreLiveHead_of_cases
       | grounded rightGround =>
           rw [hright] at hequation
           have hground : leftGround = rightGround :=
-            toLeaTTaGround_injective (by
-              simpa [MettaEquationSatisfied, toLeaTTaAtom,
+            encodeModelGround_injective (by
+              simpa [MettaEquationSatisfied, encodeModelAtom,
                 applyClassSolution] using hequation)
           subst rightGround
           simpa only [hright] using p.exists_coreLiveGrounded hright
       | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
   | expression leftAtoms =>
       cases hright : p.nextRight with
       | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | var rightName =>
           simpa only [hright] using hnonvar p hright rfl
             (not_atomOccurs_of_nonVarVar_equation rfl
               (by simpa only [hright] using hequation))
       | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | expression rightAtoms =>
           simpa only [hright] using hexpression p hright
@@ -26661,7 +26254,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_ca
       | symbol rightName =>
           rw [hright] at hequation
           have hname : leftName = rightName := by
-            simpa [MettaEquationSatisfied, toLeaTTaAtom,
+            simpa [MettaEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation
           subst rightName
           simpa only [hright] using p.exists_coreResidualSymbol hright
@@ -26670,10 +26263,10 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_ca
             (not_atomOccurs_of_nonVarVar_equation rfl
               (by simpa only [hright] using hequation))
       | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
   | var leftName =>
       cases hright : p.nextRight with
@@ -26695,7 +26288,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_ca
   | grounded leftGround =>
       cases hright : p.nextRight with
       | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | var rightName =>
           simpa only [hright] using hnonvar p hright rfl
@@ -26704,25 +26297,25 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_ca
       | grounded rightGround =>
           rw [hright] at hequation
           have hground : leftGround = rightGround :=
-            toLeaTTaGround_injective (by
-              simpa [MettaEquationSatisfied, toLeaTTaAtom,
+            encodeModelGround_injective (by
+              simpa [MettaEquationSatisfied, encodeModelAtom,
                 applyClassSolution] using hequation)
           subst rightGround
           simpa only [hright] using p.exists_coreResidualGrounded hright
       | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
   | expression leftAtoms =>
       cases hright : p.nextRight with
       | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | var rightName =>
           simpa only [hright] using hnonvar p hright rfl
             (not_atomOccurs_of_nonVarVar_equation rfl
               (by simpa only [hright] using hequation))
       | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | expression rightAtoms =>
           simpa only [hright] using hexpression p hright
@@ -27375,7 +26968,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_co
       | symbol rightName =>
           rw [hright] at hequation
           have hname : leftName = rightName := by
-            simpa [MettaEquationSatisfied, toLeaTTaAtom,
+            simpa [MettaEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation
           subst rightName
           simpa only [hright] using p.exists_coreResidualSymbol hright
@@ -27392,10 +26985,10 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_co
                 kernel.nonVarVarReconcile covered p hright rfl
                   hclass hinconsistent)
       | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
   | var leftName =>
       cases hright : p.nextRight with
@@ -27450,7 +27043,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_co
   | grounded leftGround =>
       cases hright : p.nextRight with
       | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | var rightName =>
           simpa only [hright] using
@@ -27467,18 +27060,18 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_co
       | grounded rightGround =>
           rw [hright] at hequation
           have hground : leftGround = rightGround :=
-            toLeaTTaGround_injective (by
-              simpa [MettaEquationSatisfied, toLeaTTaAtom,
+            encodeModelGround_injective (by
+              simpa [MettaEquationSatisfied, encodeModelAtom,
                 applyClassSolution] using hequation)
           subst rightGround
           simpa only [hright] using p.exists_coreResidualGrounded hright
       | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
   | expression leftAtoms =>
       cases hright : p.nextRight with
       | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | var rightName =>
           simpa only [hright] using
@@ -27493,7 +27086,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_co
                 kernel.nonVarVarReconcile covered p hright rfl
                   hclass hinconsistent)
       | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | expression rightAtoms =>
           simpa only [hright] using kernel.expression covered p hright
@@ -27541,7 +27134,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_co
       | symbol rightName =>
           rw [hright] at hequation
           have hname : leftName = rightName := by
-            simpa [MettaEquationSatisfied, toLeaTTaAtom,
+            simpa [MettaEquationSatisfied, encodeModelAtom,
               applyClassSolution] using hequation
           subst rightName
           simpa only [hright] using p.exists_coreResidualSymbol hright
@@ -27552,10 +27145,10 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_co
               (not_atomOccurs_of_nonVarVar_equation rfl
                 (by simpa only [hright] using hequation)) hnonvarConflict hnonvarReconcile
       | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
   | var leftName =>
       cases hright : p.nextRight with
@@ -27586,7 +27179,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_co
   | grounded leftGround =>
       cases hright : p.nextRight with
       | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | var rightName =>
           simpa only [hright] using
@@ -27597,18 +27190,18 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_co
       | grounded rightGround =>
           rw [hright] at hequation
           have hground : leftGround = rightGround :=
-            toLeaTTaGround_injective (by
-              simpa [MettaEquationSatisfied, toLeaTTaAtom,
+            encodeModelGround_injective (by
+              simpa [MettaEquationSatisfied, encodeModelAtom,
                 applyClassSolution] using hequation)
           subst rightGround
           simpa only [hright] using p.exists_coreResidualGrounded hright
       | expression rightAtoms =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
   | expression leftAtoms =>
       cases hright : p.nextRight with
       | symbol rightName =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | var rightName =>
           simpa only [hright] using
@@ -27617,7 +27210,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_coreResidualHead_of_co
               (not_atomOccurs_of_nonVarVar_equation rfl
                 (by simpa only [hright] using hequation)) hnonvarConflict hnonvarReconcile
       | grounded rightGround =>
-          simp [MettaEquationSatisfied, toLeaTTaAtom,
+          simp [MettaEquationSatisfied, encodeModelAtom,
             applyClassSolution, hright] at hequation
       | expression rightAtoms =>
           simpa only [hright] using hexpression p hright
@@ -27909,8 +27502,8 @@ theorem HEProjectedTailHeadResidualPackage.toCertifiedTailResidualStateCore
         List.mem_append]
       exact Or.inl hmem)
   have horiginalTailFresh : UnifyStateFresh
-      (front ++ List.zip (toLeaTTaAtoms leftRest)
-        (toLeaTTaAtoms p.rightRest)) outerSubst := by
+      (front ++ List.zip (encodeModelAtoms leftRest)
+        (encodeModelAtoms p.rightRest)) outerSubst := by
     intro key hkey hmem
     apply s.outerStateFresh key hkey
     simp only [mettaEquationVars, List.flatMap_append,
@@ -27919,7 +27512,7 @@ theorem HEProjectedTailHeadResidualPackage.toCertifiedTailResidualStateCore
     · exact Or.inl hfrontMem
     · right
       rw [p.left_eq, p.right_eq]
-      simp only [toLeaTTaAtoms, List.zip_cons_cons,
+      simp only [encodeModelAtoms, List.zip_cons_cons,
         List.flatMap_cons, List.mem_append]
       exact Or.inr htailMem
   have hworkNil : leftRest = [] → p.nextTailWork = [] := by
@@ -28048,17 +27641,17 @@ theorem HEProjectedTailHeadResidualPackage.toCertifiedTailResidualStateCore
     hheadWorkImage huntouchedImage s.subst_inHEImage
       hcurrentFresh hhead.congruence valuation
   have horiginalTailImage : LeaEquationsInHEImage
-      (List.zip (toLeaTTaAtoms leftRest)
-        (toLeaTTaAtoms p.rightRest)) :=
+      (List.zip (encodeModelAtoms leftRest)
+        (encodeModelAtoms p.rightRest)) :=
     leaEquationsInHEImage_zip_translations leftRest p.rightRest
   have huntouchedTheory :=
     p.untouchedProjection.heSuffix_solution_iff_exact
       s.front_inHEImage horiginalTailImage
       s.outerSubst_inHEImage horiginalTailFresh
       s.seed_congruence valuation
-  have htranslatedLength : (toLeaTTaAtoms leftRest).length =
-      (toLeaTTaAtoms p.rightRest).length := by
-    simpa [length_toLeaTTaAtoms] using p.rest_length
+  have htranslatedLength : (encodeModelAtoms leftRest).length =
+      (encodeModelAtoms p.rightRest).length := by
+    simpa [length_encodeModelAtoms] using p.rest_length
   have hzip := mettaEquationsSatisfied_zip_iff valuation
     htranslatedLength
   constructor
@@ -28168,8 +27761,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toCertifiedTailResidualStateC
         List.mem_append]
       exact Or.inl hmem)
   have horiginalTailFresh : UnifyStateFresh
-      (front ++ List.zip (toLeaTTaAtoms leftRest)
-        (toLeaTTaAtoms p.rightRest)) outerSubst := by
+      (front ++ List.zip (encodeModelAtoms leftRest)
+        (encodeModelAtoms p.rightRest)) outerSubst := by
     intro key hkey hmem
     apply s.outerStateFresh key hkey
     simp only [mettaEquationVars, List.flatMap_append,
@@ -28178,7 +27771,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toCertifiedTailResidualStateC
     · exact Or.inl hfrontMem
     · right
       rw [p.left_eq, p.right_eq]
-      simp only [toLeaTTaAtoms, List.zip_cons_cons,
+      simp only [encodeModelAtoms, List.zip_cons_cons,
         List.flatMap_cons, List.mem_append]
       exact Or.inr htailMem
   have hworkNil : leftRest = [] → p.nextTailWork = [] := by
@@ -28305,17 +27898,17 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toCertifiedTailResidualStateC
       hheadWorkImage huntouchedImage s.subst_inHEImage
         hcurrentFresh hhead.solutions valuation
   have horiginalTailImage : LeaEquationsInHEImage
-      (List.zip (toLeaTTaAtoms leftRest)
-        (toLeaTTaAtoms p.rightRest)) :=
+      (List.zip (encodeModelAtoms leftRest)
+        (encodeModelAtoms p.rightRest)) :=
     leaEquationsInHEImage_zip_translations leftRest p.rightRest
   have huntouchedTheory :=
     p.untouchedProjection.heSuffix_solution_iff_exact_of_solutions
       s.front_inHEImage horiginalTailImage
       s.outerSubst_inHEImage horiginalTailFresh
       s.seedSolutions valuation
-  have htranslatedLength : (toLeaTTaAtoms leftRest).length =
-      (toLeaTTaAtoms p.rightRest).length := by
-    simpa [length_toLeaTTaAtoms] using p.rest_length
+  have htranslatedLength : (encodeModelAtoms leftRest).length =
+      (encodeModelAtoms p.rightRest).length := by
+    simpa [length_encodeModelAtoms] using p.rest_length
   have hzip := mettaEquationsSatisfied_zip_iff valuation
     htranslatedLength
   constructor
@@ -28372,8 +27965,8 @@ theorem HEProjectedTailHeadResidualPackage.toProjectedTailStateCore
     (hhead : HELiveMatchMergeCoreCongruentCertified trace allowed
       nextLeft p.nextRight seed p.nextSubst) :
     HEProjectedCertifiedListResidualState trace allowed outerFuel
-      (front ++ [(toLeaTTaAtom nextLeft,
-        toLeaTTaAtom p.nextRight)]) outerSubst
+      (front ++ [(encodeModelAtom nextLeft,
+        encodeModelAtom p.nextRight)]) outerSubst
       p.nextRemainingFuel p.nextTailWork p.nextSubst result
       leftRest p.rightRest hhead.liveMerge.after := by
   have hprojection := p.headProjection.promoteSuffixPrefix
@@ -28383,47 +27976,47 @@ theorem HEProjectedTailHeadResidualPackage.toProjectedTailStateCore
   obtain ⟨headConstraints, hheadDecompose⟩ :=
     p.headProjection.exists_decomposeAll_suffix_of_front_cons hfront
   have hnewFront : Metta.Unify.decomposeAll
-      (front ++ [(toLeaTTaAtom nextLeft,
-        toLeaTTaAtom p.nextRight)]) =
+      (front ++ [(encodeModelAtom nextLeft,
+        encodeModelAtom p.nextRight)]) =
         some (frontConstraint :: (frontRest ++ headConstraints)) := by
     rw [decomposeAll_append, hfront, hheadDecompose]
     rfl
-  have hleftTranslation := congrArg toLeaTTaAtoms p.left_eq
-  have hrightTranslation := congrArg toLeaTTaAtoms p.right_eq
+  have hleftTranslation := congrArg encodeModelAtoms p.left_eq
+  have hrightTranslation := congrArg encodeModelAtoms p.right_eq
   have hzipPresentation :
-      List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right) =
-        [(toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight)] ++
-          List.zip (toLeaTTaAtoms leftRest)
-            (toLeaTTaAtoms p.rightRest) := by
+      List.zip (encodeModelAtoms left) (encodeModelAtoms right) =
+        [(encodeModelAtom nextLeft, encodeModelAtom p.nextRight)] ++
+          List.zip (encodeModelAtoms leftRest)
+            (encodeModelAtoms p.rightRest) := by
     calc
-      List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right) =
-          List.zip (toLeaTTaAtoms (nextLeft :: leftRest))
-            (toLeaTTaAtoms (p.nextRight :: p.rightRest)) :=
+      List.zip (encodeModelAtoms left) (encodeModelAtoms right) =
+          List.zip (encodeModelAtoms (nextLeft :: leftRest))
+            (encodeModelAtoms (p.nextRight :: p.rightRest)) :=
         congrArg₂ List.zip hleftTranslation hrightTranslation
-      _ = [(toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight)] ++
-          List.zip (toLeaTTaAtoms leftRest)
-            (toLeaTTaAtoms p.rightRest) := by
+      _ = [(encodeModelAtom nextLeft, encodeModelAtom p.nextRight)] ++
+          List.zip (encodeModelAtoms leftRest)
+            (encodeModelAtoms p.rightRest) := by
         rfl
   have hpresentation :
-      (front ++ [(toLeaTTaAtom nextLeft,
-        toLeaTTaAtom p.nextRight)]) ++
-          List.zip (toLeaTTaAtoms leftRest)
-            (toLeaTTaAtoms p.rightRest) =
-        front ++ List.zip (toLeaTTaAtoms left)
-          (toLeaTTaAtoms right) := by
+      (front ++ [(encodeModelAtom nextLeft,
+        encodeModelAtom p.nextRight)]) ++
+          List.zip (encodeModelAtoms leftRest)
+            (encodeModelAtoms p.rightRest) =
+        front ++ List.zip (encodeModelAtoms left)
+          (encodeModelAtoms right) := by
     calc
-      (front ++ [(toLeaTTaAtom nextLeft,
-          toLeaTTaAtom p.nextRight)]) ++
-            List.zip (toLeaTTaAtoms leftRest)
-              (toLeaTTaAtoms p.rightRest) =
+      (front ++ [(encodeModelAtom nextLeft,
+          encodeModelAtom p.nextRight)]) ++
+            List.zip (encodeModelAtoms leftRest)
+              (encodeModelAtoms p.rightRest) =
           front ++
-            ([(toLeaTTaAtom nextLeft,
-              toLeaTTaAtom p.nextRight)] ++
-                List.zip (toLeaTTaAtoms leftRest)
-                  (toLeaTTaAtoms p.rightRest)) := by
+            ([(encodeModelAtom nextLeft,
+              encodeModelAtom p.nextRight)] ++
+                List.zip (encodeModelAtoms leftRest)
+                  (encodeModelAtoms p.rightRest)) := by
         rw [List.append_assoc]
-      _ = front ++ List.zip (toLeaTTaAtoms left)
-          (toLeaTTaAtoms right) :=
+      _ = front ++ List.zip (encodeModelAtoms left)
+          (encodeModelAtoms right) :=
         congrArg (fun equations => front ++ equations)
           hzipPresentation.symm
   exact {
@@ -28463,8 +28056,8 @@ theorem HEProjectedTailHeadResidualPackage.toProjectedTailState
     (hhead : HELiveMatchMergeCongruentCertified trace allowed
       nextLeft p.nextRight seed p.nextSubst) :
     HEProjectedCertifiedListResidualState trace allowed outerFuel
-      (front ++ [(toLeaTTaAtom nextLeft,
-        toLeaTTaAtom p.nextRight)]) outerSubst
+      (front ++ [(encodeModelAtom nextLeft,
+        encodeModelAtom p.nextRight)]) outerSubst
       p.nextRemainingFuel p.nextTailWork p.nextSubst result
       leftRest p.rightRest hhead.after :=
   by
@@ -28488,8 +28081,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toProjectedTailStateCore
     (hhead : HELiveMatchMergeCoreResidualCertified trace allowed
       nextLeft p.nextRight seed p.nextSubst) :
     HEProjectedCertifiedListResidualSolutionState trace allowed outerFuel
-      (front ++ [(toLeaTTaAtom nextLeft,
-        toLeaTTaAtom p.nextRight)]) outerSubst
+      (front ++ [(encodeModelAtom nextLeft,
+        encodeModelAtom p.nextRight)]) outerSubst
       p.nextRemainingFuel p.nextTailWork p.nextSubst result
       leftRest p.rightRest hhead.liveMerge.after := by
   have hprojection := p.headProjection.promoteSuffixPrefix
@@ -28499,47 +28092,47 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toProjectedTailStateCore
   obtain ⟨headConstraints, hheadDecompose⟩ :=
     p.headProjection.exists_decomposeAll_suffix_of_front_cons hfront
   have hnewFront : Metta.Unify.decomposeAll
-      (front ++ [(toLeaTTaAtom nextLeft,
-        toLeaTTaAtom p.nextRight)]) =
+      (front ++ [(encodeModelAtom nextLeft,
+        encodeModelAtom p.nextRight)]) =
         some (frontConstraint :: (frontRest ++ headConstraints)) := by
     rw [decomposeAll_append, hfront, hheadDecompose]
     rfl
-  have hleftTranslation := congrArg toLeaTTaAtoms p.left_eq
-  have hrightTranslation := congrArg toLeaTTaAtoms p.right_eq
+  have hleftTranslation := congrArg encodeModelAtoms p.left_eq
+  have hrightTranslation := congrArg encodeModelAtoms p.right_eq
   have hzipPresentation :
-      List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right) =
-        [(toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight)] ++
-          List.zip (toLeaTTaAtoms leftRest)
-            (toLeaTTaAtoms p.rightRest) := by
+      List.zip (encodeModelAtoms left) (encodeModelAtoms right) =
+        [(encodeModelAtom nextLeft, encodeModelAtom p.nextRight)] ++
+          List.zip (encodeModelAtoms leftRest)
+            (encodeModelAtoms p.rightRest) := by
     calc
-      List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right) =
-          List.zip (toLeaTTaAtoms (nextLeft :: leftRest))
-            (toLeaTTaAtoms (p.nextRight :: p.rightRest)) :=
+      List.zip (encodeModelAtoms left) (encodeModelAtoms right) =
+          List.zip (encodeModelAtoms (nextLeft :: leftRest))
+            (encodeModelAtoms (p.nextRight :: p.rightRest)) :=
         congrArg₂ List.zip hleftTranslation hrightTranslation
-      _ = [(toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight)] ++
-          List.zip (toLeaTTaAtoms leftRest)
-            (toLeaTTaAtoms p.rightRest) := by
+      _ = [(encodeModelAtom nextLeft, encodeModelAtom p.nextRight)] ++
+          List.zip (encodeModelAtoms leftRest)
+            (encodeModelAtoms p.rightRest) := by
         rfl
   have hpresentation :
-      (front ++ [(toLeaTTaAtom nextLeft,
-        toLeaTTaAtom p.nextRight)]) ++
-          List.zip (toLeaTTaAtoms leftRest)
-            (toLeaTTaAtoms p.rightRest) =
-        front ++ List.zip (toLeaTTaAtoms left)
-          (toLeaTTaAtoms right) := by
+      (front ++ [(encodeModelAtom nextLeft,
+        encodeModelAtom p.nextRight)]) ++
+          List.zip (encodeModelAtoms leftRest)
+            (encodeModelAtoms p.rightRest) =
+        front ++ List.zip (encodeModelAtoms left)
+          (encodeModelAtoms right) := by
     calc
-      (front ++ [(toLeaTTaAtom nextLeft,
-          toLeaTTaAtom p.nextRight)]) ++
-            List.zip (toLeaTTaAtoms leftRest)
-              (toLeaTTaAtoms p.rightRest) =
+      (front ++ [(encodeModelAtom nextLeft,
+          encodeModelAtom p.nextRight)]) ++
+            List.zip (encodeModelAtoms leftRest)
+              (encodeModelAtoms p.rightRest) =
           front ++
-            ([(toLeaTTaAtom nextLeft,
-              toLeaTTaAtom p.nextRight)] ++
-                List.zip (toLeaTTaAtoms leftRest)
-                  (toLeaTTaAtoms p.rightRest)) := by
+            ([(encodeModelAtom nextLeft,
+              encodeModelAtom p.nextRight)] ++
+                List.zip (encodeModelAtoms leftRest)
+                  (encodeModelAtoms p.rightRest)) := by
         rw [List.append_assoc]
-      _ = front ++ List.zip (toLeaTTaAtoms left)
-          (toLeaTTaAtoms right) :=
+      _ = front ++ List.zip (encodeModelAtoms left)
+          (encodeModelAtoms right) :=
         congrArg (fun equations => front ++ equations)
           hzipPresentation.symm
   exact {
@@ -28579,8 +28172,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toProjectedTailState
     (hhead : HELiveMatchMergeSolutionCertified trace allowed
       nextLeft p.nextRight seed p.nextSubst) :
     HEProjectedCertifiedListResidualSolutionState trace allowed outerFuel
-      (front ++ [(toLeaTTaAtom nextLeft,
-        toLeaTTaAtom p.nextRight)]) outerSubst
+      (front ++ [(encodeModelAtom nextLeft,
+        encodeModelAtom p.nextRight)]) outerSubst
       p.nextRemainingFuel p.nextTailWork p.nextSubst result
       leftRest p.rightRest hhead.after :=
   p.toProjectedTailStateCore
@@ -28644,24 +28237,24 @@ theorem HEProjectedTailHeadResidualPackage.toCertifiedNestedListResidualState
   obtain ⟨suffixConstraints, hsuffix⟩ :=
     p.headProjection.exists_decomposeAll_suffix_of_front_cons hfront
   have hdecomposeList : Metta.Unify.decomposeList
-      (toLeaTTaAtoms leftAtoms) (toLeaTTaAtoms rightAtoms) =
+      (encodeModelAtoms leftAtoms) (encodeModelAtoms rightAtoms) =
       some suffixConstraints := by
     cases hdecompose : Metta.Unify.decomposeList
-        (toLeaTTaAtoms leftAtoms) (toLeaTTaAtoms rightAtoms) with
+        (encodeModelAtoms leftAtoms) (encodeModelAtoms rightAtoms) with
     | none =>
-        simp [hleft, hright, toLeaTTaAtom,
+        simp [hleft, hright, encodeModelAtom,
           Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
           hdecompose] at hsuffix
     | some constraints =>
         have hconstraints : constraints = suffixConstraints := by
-          simpa [hleft, hright, toLeaTTaAtom,
+          simpa [hleft, hright, encodeModelAtom,
             Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
             hdecompose] using hsuffix
         subst suffixConstraints
         rfl
   have hlength : leftAtoms.length = rightAtoms.length := by
     have htranslated := length_eq_of_decomposeList_success hdecomposeList
-    simpa [length_toLeaTTaAtoms] using htranslated
+    simpa [length_encodeModelAtoms] using htranslated
   have hworkNil : leftAtoms = [] → p.headWork = [] := by
     intro hleftNil
     have hrightLength : rightAtoms.length = 0 := by
@@ -28669,9 +28262,9 @@ theorem HEProjectedTailHeadResidualPackage.toCertifiedNestedListResidualState
     have hrightNil : rightAtoms = [] :=
       List.eq_nil_of_length_eq_zero hrightLength
     have hsuffixNil : Metta.Unify.decomposeAll
-        [(toLeaTTaAtom nextLeft,
-          toLeaTTaAtom p.nextRight)] = some [] := by
-      simp [hleft, hright, hleftNil, hrightNil, toLeaTTaAtom,
+        [(encodeModelAtom nextLeft,
+          encodeModelAtom p.nextRight)] = some [] := by
+      simp [hleft, hright, hleftNil, hrightNil, encodeModelAtom,
         Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
         Metta.Unify.decomposeList]
     exact p.headProjection.suffixWork_eq_nil_of_front_cons_of_suffix_nil
@@ -28764,7 +28357,7 @@ theorem HEProjectedTailHeadResidualPackage.toCertifiedNestedListResidualState
     work_nil_of_left_nil := hworkNil
     solutionTheory := by
       intro valuation
-      simpa [hleft, hright, MettaEquationSatisfied, toLeaTTaAtom,
+      simpa [hleft, hright, MettaEquationSatisfied, encodeModelAtom,
         applyClassSolution, MettaAtomListsSatisfied] using
           (p.headTheory valuation)
     localTrace_subset := hheadTraceSubset
@@ -28800,38 +28393,38 @@ theorem HEProjectedTailHeadResidualPackage.toProjectedNestedState
     s.front_decomposes
   let nestedState := p.toCertifiedNestedListResidualState hleft hright
   have htranslatedLength :
-      (toLeaTTaAtoms leftAtoms).length =
-        (toLeaTTaAtoms rightAtoms).length := by
-    simpa [nestedState, length_toLeaTTaAtoms] using
+      (encodeModelAtoms leftAtoms).length =
+        (encodeModelAtoms rightAtoms).length := by
+    simpa [nestedState, length_encodeModelAtoms] using
       nestedState.length_eq
   have hdecompose := decomposeAll_expression_eq_zip
-    (toLeaTTaAtoms leftAtoms) (toLeaTTaAtoms rightAtoms)
+    (encodeModelAtoms leftAtoms) (encodeModelAtoms rightAtoms)
       htranslatedLength
   have hprojection : UnifyRoundsPrefixSplit outerFuel front
-      (List.zip (toLeaTTaAtoms leftAtoms)
-        (toLeaTTaAtoms rightAtoms)) outerSubst
+      (List.zip (encodeModelAtoms leftAtoms)
+        (encodeModelAtoms rightAtoms)) outerSubst
       fuel p.headWork subst := by
     apply p.headProjection.suffix_congr_of_front_cons hfront
-    simpa [hleft, hright, toLeaTTaAtom] using hdecompose.symm
-  have hleftTranslation := congrArg toLeaTTaAtoms p.left_eq
-  have hrightTranslation := congrArg toLeaTTaAtoms p.right_eq
+    simpa [hleft, hright, encodeModelAtom] using hdecompose.symm
+  have hleftTranslation := congrArg encodeModelAtoms p.left_eq
+  have hrightTranslation := congrArg encodeModelAtoms p.right_eq
   have hzipPresentation :
-      List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right) =
-        [(toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight)] ++
-          List.zip (toLeaTTaAtoms leftRest)
-            (toLeaTTaAtoms p.rightRest) := by
+      List.zip (encodeModelAtoms left) (encodeModelAtoms right) =
+        [(encodeModelAtom nextLeft, encodeModelAtom p.nextRight)] ++
+          List.zip (encodeModelAtoms leftRest)
+            (encodeModelAtoms p.rightRest) := by
     calc
-      List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right) =
-          List.zip (toLeaTTaAtoms (nextLeft :: leftRest))
-            (toLeaTTaAtoms (p.nextRight :: p.rightRest)) :=
+      List.zip (encodeModelAtoms left) (encodeModelAtoms right) =
+          List.zip (encodeModelAtoms (nextLeft :: leftRest))
+            (encodeModelAtoms (p.nextRight :: p.rightRest)) :=
         congrArg₂ List.zip hleftTranslation hrightTranslation
-      _ = [(toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight)] ++
-          List.zip (toLeaTTaAtoms leftRest)
-            (toLeaTTaAtoms p.rightRest) := by
+      _ = [(encodeModelAtom nextLeft, encodeModelAtom p.nextRight)] ++
+          List.zip (encodeModelAtoms leftRest)
+            (encodeModelAtoms p.rightRest) := by
         rfl
   have hheadInOriginal :
-      (toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight) ∈
-        List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right) := by
+      (encodeModelAtom nextLeft, encodeModelAtom p.nextRight) ∈
+        List.zip (encodeModelAtoms left) (encodeModelAtoms right) := by
     rw [hzipPresentation]
     simp
   exact {
@@ -28851,12 +28444,12 @@ theorem HEProjectedTailHeadResidualPackage.toProjectedNestedState
       · exact Or.inl hfrontMem
       · right
         apply List.mem_flatMap.mpr
-        refine ⟨(toLeaTTaAtom nextLeft,
-          toLeaTTaAtom p.nextRight), hheadInOriginal, ?_⟩
+        refine ⟨(encodeModelAtom nextLeft,
+          encodeModelAtom p.nextRight), hheadInOriginal, ?_⟩
         have hexpressionVars :=
           mem_expressionPair_vars_of_mem_mettaEquationVars_zip
             hchildrenMem
-        simpa [hleft, hright, toLeaTTaAtom] using hexpressionVars
+        simpa [hleft, hright, encodeModelAtom] using hexpressionVars
     front_decomposes :=
       ⟨frontConstraint, frontRest, hfront⟩
   }
@@ -28886,24 +28479,24 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toCertifiedNestedListResidual
   obtain ⟨suffixConstraints, hsuffix⟩ :=
     p.headProjection.exists_decomposeAll_suffix_of_front_cons hfront
   have hdecomposeList : Metta.Unify.decomposeList
-      (toLeaTTaAtoms leftAtoms) (toLeaTTaAtoms rightAtoms) =
+      (encodeModelAtoms leftAtoms) (encodeModelAtoms rightAtoms) =
       some suffixConstraints := by
     cases hdecompose : Metta.Unify.decomposeList
-        (toLeaTTaAtoms leftAtoms) (toLeaTTaAtoms rightAtoms) with
+        (encodeModelAtoms leftAtoms) (encodeModelAtoms rightAtoms) with
     | none =>
-        simp [hleft, hright, toLeaTTaAtom,
+        simp [hleft, hright, encodeModelAtom,
           Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
           hdecompose] at hsuffix
     | some constraints =>
         have hconstraints : constraints = suffixConstraints := by
-          simpa [hleft, hright, toLeaTTaAtom,
+          simpa [hleft, hright, encodeModelAtom,
             Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
             hdecompose] using hsuffix
         subst suffixConstraints
         rfl
   have hlength : leftAtoms.length = rightAtoms.length := by
     have htranslated := length_eq_of_decomposeList_success hdecomposeList
-    simpa [length_toLeaTTaAtoms] using htranslated
+    simpa [length_encodeModelAtoms] using htranslated
   have hworkNil : leftAtoms = [] → p.headWork = [] := by
     intro hleftNil
     have hrightLength : rightAtoms.length = 0 := by
@@ -28911,9 +28504,9 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toCertifiedNestedListResidual
     have hrightNil : rightAtoms = [] :=
       List.eq_nil_of_length_eq_zero hrightLength
     have hsuffixNil : Metta.Unify.decomposeAll
-        [(toLeaTTaAtom nextLeft,
-          toLeaTTaAtom p.nextRight)] = some [] := by
-      simp [hleft, hright, hleftNil, hrightNil, toLeaTTaAtom,
+        [(encodeModelAtom nextLeft,
+          encodeModelAtom p.nextRight)] = some [] := by
+      simp [hleft, hright, hleftNil, hrightNil, encodeModelAtom,
         Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
         Metta.Unify.decomposeList]
     exact p.headProjection.suffixWork_eq_nil_of_front_cons_of_suffix_nil
@@ -29006,7 +28599,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toCertifiedNestedListResidual
     work_nil_of_left_nil := hworkNil
     solutionTheory := by
       intro valuation
-      simpa [hleft, hright, MettaEquationSatisfied, toLeaTTaAtom,
+      simpa [hleft, hright, MettaEquationSatisfied, encodeModelAtom,
         applyClassSolution, MettaAtomListsSatisfied] using
           (p.headTheory valuation)
     localTrace_subset := hheadTraceSubset
@@ -29039,38 +28632,38 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toProjectedNestedState
     s.front_decomposes
   let nestedState := p.toCertifiedNestedListResidualState hleft hright
   have htranslatedLength :
-      (toLeaTTaAtoms leftAtoms).length =
-        (toLeaTTaAtoms rightAtoms).length := by
-    simpa [nestedState, length_toLeaTTaAtoms] using
+      (encodeModelAtoms leftAtoms).length =
+        (encodeModelAtoms rightAtoms).length := by
+    simpa [nestedState, length_encodeModelAtoms] using
       nestedState.length_eq
   have hdecompose := decomposeAll_expression_eq_zip
-    (toLeaTTaAtoms leftAtoms) (toLeaTTaAtoms rightAtoms)
+    (encodeModelAtoms leftAtoms) (encodeModelAtoms rightAtoms)
       htranslatedLength
   have hprojection : UnifyRoundsPrefixSplit outerFuel front
-      (List.zip (toLeaTTaAtoms leftAtoms)
-        (toLeaTTaAtoms rightAtoms)) outerSubst
+      (List.zip (encodeModelAtoms leftAtoms)
+        (encodeModelAtoms rightAtoms)) outerSubst
       fuel p.headWork subst := by
     apply p.headProjection.suffix_congr_of_front_cons hfront
-    simpa [hleft, hright, toLeaTTaAtom] using hdecompose.symm
-  have hleftTranslation := congrArg toLeaTTaAtoms p.left_eq
-  have hrightTranslation := congrArg toLeaTTaAtoms p.right_eq
+    simpa [hleft, hright, encodeModelAtom] using hdecompose.symm
+  have hleftTranslation := congrArg encodeModelAtoms p.left_eq
+  have hrightTranslation := congrArg encodeModelAtoms p.right_eq
   have hzipPresentation :
-      List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right) =
-        [(toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight)] ++
-          List.zip (toLeaTTaAtoms leftRest)
-            (toLeaTTaAtoms p.rightRest) := by
+      List.zip (encodeModelAtoms left) (encodeModelAtoms right) =
+        [(encodeModelAtom nextLeft, encodeModelAtom p.nextRight)] ++
+          List.zip (encodeModelAtoms leftRest)
+            (encodeModelAtoms p.rightRest) := by
     calc
-      List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right) =
-          List.zip (toLeaTTaAtoms (nextLeft :: leftRest))
-            (toLeaTTaAtoms (p.nextRight :: p.rightRest)) :=
+      List.zip (encodeModelAtoms left) (encodeModelAtoms right) =
+          List.zip (encodeModelAtoms (nextLeft :: leftRest))
+            (encodeModelAtoms (p.nextRight :: p.rightRest)) :=
         congrArg₂ List.zip hleftTranslation hrightTranslation
-      _ = [(toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight)] ++
-          List.zip (toLeaTTaAtoms leftRest)
-            (toLeaTTaAtoms p.rightRest) := by
+      _ = [(encodeModelAtom nextLeft, encodeModelAtom p.nextRight)] ++
+          List.zip (encodeModelAtoms leftRest)
+            (encodeModelAtoms p.rightRest) := by
         rfl
   have hheadInOriginal :
-      (toLeaTTaAtom nextLeft, toLeaTTaAtom p.nextRight) ∈
-        List.zip (toLeaTTaAtoms left) (toLeaTTaAtoms right) := by
+      (encodeModelAtom nextLeft, encodeModelAtom p.nextRight) ∈
+        List.zip (encodeModelAtoms left) (encodeModelAtoms right) := by
     rw [hzipPresentation]
     simp
   exact {
@@ -29087,12 +28680,12 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toProjectedNestedState
       · exact Or.inl hfrontMem
       · right
         apply List.mem_flatMap.mpr
-        refine ⟨(toLeaTTaAtom nextLeft,
-          toLeaTTaAtom p.nextRight), hheadInOriginal, ?_⟩
+        refine ⟨(encodeModelAtom nextLeft,
+          encodeModelAtom p.nextRight), hheadInOriginal, ?_⟩
         have hexpressionVars :=
           mem_expressionPair_vars_of_mem_mettaEquationVars_zip
             hchildrenMem
-        simpa [hleft, hright, toLeaTTaAtom] using hexpressionVars
+        simpa [hleft, hright, encodeModelAtom] using hexpressionVars
     front_decomposes :=
       ⟨frontConstraint, frontRest, hfront⟩
   }
@@ -29116,8 +28709,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedTailState
     (hhead : HELiveMatchMergeSolutionCertified trace allowed
       nextLeft p.nextRight seed p.nextSubst) :
     HEOriginalConstraintCoveredProjectedListState trace allowed outerFuel
-      (front ++ [(toLeaTTaAtom nextLeft,
-        toLeaTTaAtom p.nextRight)]) outerSubst
+      (front ++ [(encodeModelAtom nextLeft,
+        encodeModelAtom p.nextRight)]) outerSubst
       p.nextRemainingFuel p.nextTailWork p.nextSubst result
       leftRest p.rightRest hhead.after := by
   have hcoverage : HEOriginalListConstraintCoverage trace
@@ -29125,8 +28718,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedTailState
     simpa only [p.left_eq, p.right_eq] using covered.originalCoverage
   have hsuccess : ∃ constraints,
       Metta.Unify.decomposeList
-        (toLeaTTaAtoms (nextLeft :: leftRest))
-        (toLeaTTaAtoms (p.nextRight :: p.rightRest)) =
+        (encodeModelAtoms (nextLeft :: leftRest))
+        (encodeModelAtoms (p.nextRight :: p.rightRest)) =
           some constraints := by
     simpa only [p.left_eq, p.right_eq] using
       covered.state.exists_originalConstraints
@@ -29154,8 +28747,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedTailStateCo
     (hhead : HELiveMatchMergeCoreResidualCertified trace allowed
       nextLeft p.nextRight seed p.nextSubst) :
     HEOriginalConstraintCoveredProjectedListState trace allowed outerFuel
-      (front ++ [(toLeaTTaAtom nextLeft,
-        toLeaTTaAtom p.nextRight)]) outerSubst
+      (front ++ [(encodeModelAtom nextLeft,
+        encodeModelAtom p.nextRight)]) outerSubst
       p.nextRemainingFuel p.nextTailWork p.nextSubst result
       leftRest p.rightRest hhead.liveMerge.after := by
   have hcoverage : HEOriginalListConstraintCoverage trace
@@ -29163,8 +28756,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedTailStateCo
     simpa only [p.left_eq, p.right_eq] using covered.originalCoverage
   have hsuccess : ∃ constraints,
       Metta.Unify.decomposeList
-        (toLeaTTaAtoms (nextLeft :: leftRest))
-        (toLeaTTaAtoms (p.nextRight :: p.rightRest)) =
+        (encodeModelAtoms (nextLeft :: leftRest))
+        (encodeModelAtoms (p.nextRight :: p.rightRest)) =
           some constraints := by
     simpa only [p.left_eq, p.right_eq] using
       covered.state.exists_originalConstraints
@@ -29201,8 +28794,8 @@ theorem HEProjectedTailHeadResidualSolutionPackage.toCoveredProjectedNestedState
       covered.originalCoverage
   have hsuccess : ∃ constraints,
       Metta.Unify.decomposeList
-        (toLeaTTaAtoms (.expression leftAtoms :: leftRest))
-        (toLeaTTaAtoms (.expression rightAtoms :: p.rightRest)) =
+        (encodeModelAtoms (.expression leftAtoms :: leftRest))
+        (encodeModelAtoms (.expression rightAtoms :: p.rightRest)) =
           some constraints := by
     simpa only [p.left_eq, p.right_eq, hleft, hright] using
       covered.state.exists_originalConstraints
@@ -29495,7 +29088,7 @@ theorem HEProjectedCertifiedListResidualSolutionState.exists_matchBindingEquatio
       (∀ key value, (key, value) ∈ assignments →
         ¬ AtomOccurs value key) →
       (∀ key value, (key, value) ∈ assignments →
-        (key, toLeaTTaAtom value) ∈ trace) →
+        (key, encodeModelAtom value) ∈ trace) →
       (∀ left right, (left, right) ∈ equalities →
         (EqualityClosure.edgeGraph allowed).Reachable left right) →
       ∀ {outerFuel : Nat} {front : List (Metta.Atom × Metta.Atom)}
@@ -29611,7 +29204,7 @@ theorem HEProjectedCertifiedListResidualSolutionState.exists_matchBindingEquatio
         exact hnonvar restKey restValue (by simp [hmem])
       have hrestTrace : ∀ restKey restValue,
           (restKey, restValue) ∈ rest →
-            (restKey, toLeaTTaAtom restValue) ∈ trace := by
+            (restKey, encodeModelAtom restValue) ∈ trace := by
         intro restKey restValue hmem
         exact htrace restKey restValue (by simp [hmem])
       obtain ⟨tailMatch⟩ :=
@@ -29644,7 +29237,7 @@ theorem HEProjectedCertifiedListResidualSolutionState.exists_mergeRel_of_binding
     (hoccurs : ∀ key value, (key, value) ∈ right.assignments →
       ¬ AtomOccurs value key)
     (htrace : ∀ key value, (key, value) ∈ right.assignments →
-      (key, toLeaTTaAtom value) ∈ trace)
+      (key, encodeModelAtom value) ∈ trace)
     (hallowed : ∀ leftKey rightKey,
       (leftKey, rightKey) ∈ right.equalities →
         (EqualityClosure.edgeGraph allowed).Reachable leftKey rightKey) :
@@ -29698,7 +29291,7 @@ theorem HEProjectedCertifiedListResidualSolutionState.exists_mergeRel_of_innerCo
     (hoccurs : ∀ key value, (key, value) ∈ right.assignments →
       ¬ AtomOccurs value key)
     (htrace : ∀ key value, (key, value) ∈ right.assignments →
-      (key, toLeaTTaAtom value) ∈ trace)
+      (key, encodeModelAtom value) ∈ trace)
     (hallowed : ∀ leftKey rightKey,
       (leftKey, rightKey) ∈ right.equalities →
         (EqualityClosure.edgeGraph allowed).Reachable leftKey rightKey) :
@@ -30141,7 +29734,7 @@ theorem HEProjectedCertifiedListResidualSolutionState.exists_liveMerge_of_bindin
     (hoccurs : ∀ key value, (key, value) ∈ right.assignments →
       ¬ AtomOccurs value key)
     (htrace : ∀ key value, (key, value) ∈ right.assignments →
-      (key, toLeaTTaAtom value) ∈ trace)
+      (key, encodeModelAtom value) ∈ trace)
     (hallowed : ∀ leftKey rightKey,
       (leftKey, rightKey) ∈ right.equalities →
         (EqualityClosure.edgeGraph allowed).Reachable leftKey rightKey) :
@@ -30193,7 +29786,7 @@ theorem HEProjectedCertifiedListResidualSolutionState.exists_liveMerge_of_innerC
     (hoccurs : ∀ key value, (key, value) ∈ right.assignments →
       ¬ AtomOccurs value key)
     (htrace : ∀ key value, (key, value) ∈ right.assignments →
-      (key, toLeaTTaAtom value) ∈ trace)
+      (key, encodeModelAtom value) ∈ trace)
     (hallowed : ∀ leftKey rightKey,
       (leftKey, rightKey) ∈ right.equalities →
         (EqualityClosure.edgeGraph allowed).Reachable leftKey rightKey) :
@@ -30240,7 +29833,7 @@ theorem HEProjectedCertifiedListResidualSolutionState.exists_liveMerge_of_operat
     (hoccurs : ∀ key value, (key, value) ∈ right.assignments →
       ¬ AtomOccurs value key)
     (htrace : ∀ key value, (key, value) ∈ right.assignments →
-      (key, toLeaTTaAtom value) ∈ trace)
+      (key, encodeModelAtom value) ∈ trace)
     (hallowed : ∀ leftKey rightKey,
       (leftKey, rightKey) ∈ right.equalities →
         (EqualityClosure.edgeGraph allowed).Reachable leftKey rightKey) :
@@ -30597,26 +30190,26 @@ structure HEExpressionLeafResidualPackage
     (h : HEExpressionResidualFrontier fuel left right result) where
   prefixMatch : HEMatchListAccCongruentCertified
     (unificationEliminationTrace fuel
-      ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-        List.zip (toLeaTTaAtoms h.leftTail)
-          (toLeaTTaAtoms h.rightTail)))
+      ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+        List.zip (encodeModelAtoms h.leftTail)
+          (encodeModelAtoms h.rightTail)))
     (eliminationTraceAliases
       (unificationEliminationTrace fuel
-        ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-          List.zip (toLeaTTaAtoms h.leftTail)
-            (toLeaTTaAtoms h.rightTail))))
+        ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+          List.zip (encodeModelAtoms h.leftTail)
+            (encodeModelAtoms h.rightTail))))
     (h.common ++ [h.leftHead]) (h.common ++ [h.rightHead])
     Bindings.empty h.childSubst
   tailState : HECertifiedListResidualState
     (unificationEliminationTrace fuel
-      ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-        List.zip (toLeaTTaAtoms h.leftTail)
-          (toLeaTTaAtoms h.rightTail)))
+      ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+        List.zip (encodeModelAtoms h.leftTail)
+          (encodeModelAtoms h.rightTail)))
     (eliminationTraceAliases
       (unificationEliminationTrace fuel
-        ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-          List.zip (toLeaTTaAtoms h.leftTail)
-            (toLeaTTaAtoms h.rightTail))))
+        ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+          List.zip (encodeModelAtoms h.leftTail)
+            (encodeModelAtoms h.rightTail))))
     h.remainingFuel h.tailWork h.childSubst result
     h.leftTail h.rightTail prefixMatch.out
 
@@ -30627,8 +30220,8 @@ theorem HEExpressionResidualFrontier.exists_result_satisfied
     (h : HEExpressionResidualFrontier fuel left right result) :
     ∃ valuation : String → Metta.Atom,
       MettaConstraintsSatisfied valuation result := by
-  let equations := [(toLeaTTaAtom (.expression left),
-    toLeaTTaAtom (.expression right))]
+  let equations := [(encodeModelAtom (.expression left),
+    encodeModelAtom (.expression right))]
   let trace := unificationEliminationTrace fuel equations
   have hfresh : UnifyStateFresh equations [] := by
     simp [UnifyStateFresh, mettaSubstKeys]
@@ -31055,8 +30648,8 @@ theorem HEExpressionResidualFrontier.exists_residual_satisfied_of_congruentSeed
         HEBindingSatisfied valuation seed := by
   obtain ⟨valuation, htop⟩ :=
     exists_unifyRounds_equations_satisfied_empty
-      (equations := [(toLeaTTaAtom (.expression left),
-        toLeaTTaAtom (.expression right))])
+      (equations := [(encodeModelAtom (.expression left),
+        encodeModelAtom (.expression right))])
       (by
         intro equation hmem
         simp only [List.mem_singleton] at hmem
@@ -31065,21 +30658,21 @@ theorem HEExpressionResidualFrontier.exists_residual_satisfied_of_congruentSeed
           LeaAtomInHEImage.translation (.expression right)⟩)
       h.top_run
   have hequation := htop
-    (toLeaTTaAtom (.expression left),
-      toLeaTTaAtom (.expression right)) (by simp)
+    (encodeModelAtom (.expression left),
+      encodeModelAtom (.expression right)) (by simp)
   have hfull : MettaAtomListsSatisfied valuation
-      (toLeaTTaAtoms left) (toLeaTTaAtoms right) := by
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+      (encodeModelAtoms left) (encodeModelAtoms right) := by
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution, MettaAtomListsSatisfied] using hequation
   have hfull' : MettaAtomListsSatisfied valuation
-      (toLeaTTaAtoms (h.common ++ h.leftHead :: h.leftTail))
-      (toLeaTTaAtoms (h.common ++ h.rightHead :: h.rightTail)) := by
+      (encodeModelAtoms (h.common ++ h.leftHead :: h.leftTail))
+      (encodeModelAtoms (h.common ++ h.rightHead :: h.rightTail)) := by
     rw [← h.left_eq, ← h.right_eq]
     exact hfull
   have hsuffix : MettaAtomListsSatisfied valuation
-      (toLeaTTaAtoms (h.leftHead :: h.leftTail))
-      (toLeaTTaAtoms (h.rightHead :: h.rightTail)) := by
-    rw [toLeaTTaAtoms_append, toLeaTTaAtoms_append] at hfull'
+      (encodeModelAtoms (h.leftHead :: h.leftTail))
+      (encodeModelAtoms (h.rightHead :: h.rightTail)) := by
+    rw [encodeModelAtoms_append, encodeModelAtoms_append] at hfull'
     unfold MettaAtomListsSatisfied at hfull' ⊢
     simp only [List.map_append] at hfull'
     exact List.append_cancel_left hfull'
@@ -31095,21 +30688,21 @@ theorem HEExpressionResidualFrontier.exists_leafPrefix_assignmentsSound
     (hleaf : ¬ BothExpressions h.leftHead h.rightHead) :
     ∃ certified : HEMatchListAccCongruentCertified
         (unificationEliminationTrace fuel
-          ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-            List.zip (toLeaTTaAtoms h.leftTail)
-              (toLeaTTaAtoms h.rightTail)))
+          ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+            List.zip (encodeModelAtoms h.leftTail)
+              (encodeModelAtoms h.rightTail)))
         (eliminationTraceAliases
           (unificationEliminationTrace fuel
-            ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-              List.zip (toLeaTTaAtoms h.leftTail)
-                (toLeaTTaAtoms h.rightTail))))
+            ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+              List.zip (encodeModelAtoms h.leftTail)
+                (encodeModelAtoms h.rightTail))))
         (h.common ++ [h.leftHead]) (h.common ++ [h.rightHead])
         Bindings.empty h.childSubst,
       LeaEliminationTraceAssignmentsSound certified.out
         (unificationEliminationTrace fuel
-          ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-            List.zip (toLeaTTaAtoms h.leftTail)
-              (toLeaTTaAtoms h.rightTail))) := by
+          ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+            List.zip (encodeModelAtoms h.leftTail)
+              (encodeModelAtoms h.rightTail))) := by
   rcases h.divergenceFrontier with hexpressions | hcertified
   · exact (hleaf hexpressions).elim
   · obtain ⟨certified⟩ := hcertified
@@ -31141,8 +30734,8 @@ theorem exists_expressionResidualFrontier_of_unifyRounds
     {fuel : Nat} {left right : List Atom} {result : Metta.Subst}
     (hne : left ≠ right)
     (hrun : Metta.Unify.unifyRounds fuel
-      [(toLeaTTaAtom (.expression left),
-        toLeaTTaAtom (.expression right))] [] = some result) :
+      [(encodeModelAtom (.expression left),
+        encodeModelAtom (.expression right))] [] = some result) :
     Nonempty (HEExpressionResidualFrontier fuel left right result) := by
   obtain ⟨common, leftHead, leftTail, rightHead, rightTail,
       remainingFuel, tailWork, childSubst,
@@ -31180,9 +30773,9 @@ theorem exists_expressionResidualFrontier_of_unifyRounds
     obtain ⟨hlocal⟩ :=
       exists_leafMatchCertified_of_prefixSplit hsplit hexpressions
     let reducedTrace := unificationEliminationTrace fuel
-      ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-        List.zip (toLeaTTaAtoms leftTail)
-          (toLeaTTaAtoms rightTail))
+      ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+        List.zip (encodeModelAtoms leftTail)
+          (encodeModelAtoms rightTail))
     have hlocal' : HEMatchCertified reducedTrace
         (eliminationTraceAliases reducedTrace) leftHead rightHead := by
       simpa only [reducedTrace] using hlocal
@@ -31217,8 +30810,8 @@ theorem HEExpressionResidualFrontier.exists_nestedHeadFrontier
     apply h.head_ne
     rw [hleft, hright, heq]
   have hrun : Metta.Unify.unifyRounds fuel
-      [(toLeaTTaAtom (.expression leftAtoms),
-        toLeaTTaAtom (.expression rightAtoms))] [] =
+      [(encodeModelAtom (.expression leftAtoms),
+        encodeModelAtom (.expression rightAtoms))] [] =
       some h.childSubst := by
     simpa [hleft, hright] using h.residualSplit.front_run
   obtain ⟨nested⟩ :=
@@ -31241,18 +30834,18 @@ theorem HEExpressionResidualFrontier.nestedResidualTrace_subset
     ∀ entry ∈ nested.residualTrace, entry ∈ h.residualTrace := by
   intro entry hentry
   have hhead : entry ∈ unificationEliminationTrace fuel
-      [(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] := by
+      [(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] := by
     change entry ∈ unificationEliminationTrace fuel
-      ([(toLeaTTaAtom nested.leftHead,
-          toLeaTTaAtom nested.rightHead)] ++
-        List.zip (toLeaTTaAtoms nested.leftTail)
-          (toLeaTTaAtoms nested.rightTail)) at hentry
+      ([(encodeModelAtom nested.leftHead,
+          encodeModelAtom nested.rightHead)] ++
+        List.zip (encodeModelAtoms nested.leftTail)
+          (encodeModelAtoms nested.rightTail)) at hentry
     rw [← nested.topTrace_eq_reducedTrace] at hentry
     simpa only [hleft, hright] using hentry
   change entry ∈ unificationEliminationTrace fuel
-    ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-      List.zip (toLeaTTaAtoms h.leftTail)
-        (toLeaTTaAtoms h.rightTail))
+    ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+      List.zip (encodeModelAtoms h.leftTail)
+        (encodeModelAtoms h.rightTail))
   rw [h.residualSplit.trace_append]
   exact List.mem_append_left _ hhead
 
@@ -31303,11 +30896,11 @@ theorem HEExpressionResidualFrontier.nestedCertificateTrace_subset
   · have hheadCoverage :=
       h.originalConstraintCoverage.head h.exists_originalConstraints
     have hnestedFull : Metta.Unify.decomposeList
-        (toLeaTTaAtoms leftAtoms) (toLeaTTaAtoms rightAtoms) =
+        (encodeModelAtoms leftAtoms) (encodeModelAtoms rightAtoms) =
           some nested.originalConstraints :=
       nested.decomposeList_top_eq_originalConstraints
     apply hheadCoverage nested.originalConstraints
-    · simpa [hleft, hright, toLeaTTaAtom,
+    · simpa [hleft, hright, encodeModelAtom,
         Metta.Unify.decomposeEq] using hnestedFull
     · exact horiginal
   · apply h.residualTrace_subset_certificateTrace entry
@@ -31657,25 +31250,25 @@ structure HESatisfiedExpressionResidualFrontier
   tail_length : leftTail.length = rightTail.length
   top_run : Metta.Unify.unifyRounds
       (translatedExpressionEquationFuel left right)
-      [(toLeaTTaAtom (.expression left),
-        toLeaTTaAtom (.expression right))] [] = some result
+      [(encodeModelAtom (.expression left),
+        encodeModelAtom (.expression right))] [] = some result
   residualSplit : UnifyRoundsPrefixSplit
       (translatedExpressionEquationFuel left right)
-      [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)]
-      (List.zip (toLeaTTaAtoms leftTail)
-        (toLeaTTaAtoms rightTail)) []
+      [(encodeModelAtom leftHead, encodeModelAtom rightHead)]
+      (List.zip (encodeModelAtoms leftTail)
+        (encodeModelAtoms rightTail)) []
       remainingFuel tailWork childSubst
   continue_run : Metta.Unify.unifyRounds remainingFuel tailWork childSubst =
     some result
   fuel_lt : remainingFuel < translatedExpressionEquationFuel left right
   trace_eq : unificationEliminationTrace
       (translatedExpressionEquationFuel left right)
-      ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-        List.zip (toLeaTTaAtoms leftTail)
-          (toLeaTTaAtoms rightTail)) =
+      ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+        List.zip (encodeModelAtoms leftTail)
+          (encodeModelAtoms rightTail)) =
     unificationEliminationTrace
         (translatedExpressionEquationFuel left right)
-        [(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
+        [(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
       unificationEliminationTrace remainingFuel tailWork
   tailWork_inHEImage : LeaEquationsInHEImage tailWork
   childSubst_inHEImage : LeaSubstInHEImage childSubst
@@ -31684,15 +31277,15 @@ structure HESatisfiedExpressionResidualFrontier
       Nonempty (HEMatchListAccCongruentCertified
         (unificationEliminationTrace
           (translatedExpressionEquationFuel left right)
-          ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-            List.zip (toLeaTTaAtoms leftTail)
-              (toLeaTTaAtoms rightTail)))
+          ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+            List.zip (encodeModelAtoms leftTail)
+              (encodeModelAtoms rightTail)))
         (eliminationTraceAliases
           (unificationEliminationTrace
             (translatedExpressionEquationFuel left right)
-            ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-              List.zip (toLeaTTaAtoms leftTail)
-                (toLeaTTaAtoms rightTail))))
+            ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+              List.zip (encodeModelAtoms leftTail)
+                (encodeModelAtoms rightTail))))
         (common ++ [leftHead]) (common ++ [rightHead]) Bindings.empty
         childSubst)
 
@@ -31738,27 +31331,27 @@ theorem HESatisfiedExpressionResidualFrontier.result_solution_iff
     (valuation : String → Metta.Atom) :
     LeaBindingSatisfied valuation (Metta.Bindings.ofSubst h.result) ↔
       MettaEquationSatisfied valuation
-        (toLeaTTaAtom (.expression left),
-          toLeaTTaAtom (.expression right)) := by
+        (encodeModelAtom (.expression left),
+          encodeModelAtom (.expression right)) := by
   calc
     LeaBindingSatisfied valuation (Metta.Bindings.ofSubst h.result) ↔
         MettaConstraintsSatisfied valuation h.result :=
       leaOfSubst_solution_iff valuation h.result
     _ ↔ MettaEquationsSatisfied valuation
-          [(toLeaTTaAtom (.expression left),
-            toLeaTTaAtom (.expression right))] ∧
+          [(encodeModelAtom (.expression left),
+            encodeModelAtom (.expression right))] ∧
           MettaConstraintsSatisfied valuation [] :=
       unifyRounds_solution_iff valuation
         (by
           intro equation hmem
           simp only [List.mem_singleton] at hmem
           subst equation
-          exact ⟨toLeaTTaAtom_noFloat (.expression left),
-            toLeaTTaAtom_noFloat (.expression right)⟩)
+          exact ⟨encodeModelAtom_noFloat (.expression left),
+            encodeModelAtom_noFloat (.expression right)⟩)
         (by simp [UnifyStateFresh, mettaSubstKeys]) h.top_run
     _ ↔ MettaEquationSatisfied valuation
-          (toLeaTTaAtom (.expression left),
-            toLeaTTaAtom (.expression right)) := by
+          (encodeModelAtom (.expression left),
+            encodeModelAtom (.expression right)) := by
       simp [MettaEquationsSatisfied, MettaConstraintsSatisfied]
 
 /-- Every entry of the local result occurs in the exact elimination trace of
@@ -31770,13 +31363,13 @@ theorem HESatisfiedExpressionResidualFrontier.result_subset_localTrace
     ∀ entry ∈ h.result,
       entry ∈ unificationEliminationTrace
         (translatedExpressionEquationFuel left right)
-        [(toLeaTTaAtom (.expression left),
-          toLeaTTaAtom (.expression right))] := by
+        [(encodeModelAtom (.expression left),
+          encodeModelAtom (.expression right))] := by
   have hresultEq :=
     unifyRounds_result_eq_eliminationTrace_reverse_append
       (equations :=
-        [(toLeaTTaAtom (.expression left),
-          toLeaTTaAtom (.expression right))])
+        [(encodeModelAtom (.expression left),
+          encodeModelAtom (.expression right))])
       (subst := [])
       (by simp [UnifyStateFresh, mettaSubstKeys]) h.top_run
   intro entry hentry
@@ -31792,8 +31385,8 @@ theorem HESatisfiedExpressionResidualFrontier.result_inHEImage
     LeaSubstInHEImage h.result := by
   apply unifyRounds_result_inHEImage
     (equations :=
-      [(toLeaTTaAtom (.expression left),
-        toLeaTTaAtom (.expression right))])
+      [(encodeModelAtom (.expression left),
+        encodeModelAtom (.expression right))])
     (subst := [])
   · intro equation hmem
     simp only [List.mem_singleton] at hmem
@@ -31815,14 +31408,14 @@ theorem HESatisfiedExpressionResidualFrontier.childSubst_subset_trace
     ∀ entry ∈ h.childSubst,
       entry ∈ unificationEliminationTrace
         (translatedExpressionEquationFuel left right)
-        ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-          List.zip (toLeaTTaAtoms h.leftTail)
-            (toLeaTTaAtoms h.rightTail)) := by
+        ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+          List.zip (encodeModelAtoms h.leftTail)
+            (encodeModelAtoms h.rightTail)) := by
   have hresultEq : h.childSubst =
       (unificationEliminationTrace
         (translatedExpressionEquationFuel left right)
-        [(toLeaTTaAtom h.leftHead,
-          toLeaTTaAtom h.rightHead)]).reverse := by
+        [(encodeModelAtom h.leftHead,
+          encodeModelAtom h.rightHead)]).reverse := by
     simpa using
       (unifyRounds_result_eq_eliminationTrace_reverse_append
         (by simp [UnifyStateFresh, mettaSubstKeys])
@@ -31830,8 +31423,8 @@ theorem HESatisfiedExpressionResidualFrontier.childSubst_subset_trace
   intro entry hentry
   have hfront : entry ∈ unificationEliminationTrace
       (translatedExpressionEquationFuel left right)
-      [(toLeaTTaAtom h.leftHead,
-        toLeaTTaAtom h.rightHead)] := by
+      [(encodeModelAtom h.leftHead,
+        encodeModelAtom h.rightHead)] := by
     rw [hresultEq] at hentry
     simpa using hentry
   rw [h.residualSplit.trace_append]
@@ -31848,23 +31441,23 @@ theorem HESatisfiedExpressionResidualFrontier.exists_leafPrefix_assignmentsSound
     ∃ certified : HEMatchListAccCongruentCertified
         (unificationEliminationTrace
           (translatedExpressionEquationFuel left right)
-          ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-            List.zip (toLeaTTaAtoms h.leftTail)
-              (toLeaTTaAtoms h.rightTail)))
+          ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+            List.zip (encodeModelAtoms h.leftTail)
+              (encodeModelAtoms h.rightTail)))
         (eliminationTraceAliases
           (unificationEliminationTrace
             (translatedExpressionEquationFuel left right)
-            ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-              List.zip (toLeaTTaAtoms h.leftTail)
-                (toLeaTTaAtoms h.rightTail))))
+            ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+              List.zip (encodeModelAtoms h.leftTail)
+                (encodeModelAtoms h.rightTail))))
         (h.common ++ [h.leftHead]) (h.common ++ [h.rightHead])
         Bindings.empty h.childSubst,
       LeaEliminationTraceAssignmentsSound certified.out
         (unificationEliminationTrace
           (translatedExpressionEquationFuel left right)
-          ([(toLeaTTaAtom h.leftHead, toLeaTTaAtom h.rightHead)] ++
-            List.zip (toLeaTTaAtoms h.leftTail)
-              (toLeaTTaAtoms h.rightTail))) := by
+          ([(encodeModelAtom h.leftHead, encodeModelAtom h.rightHead)] ++
+            List.zip (encodeModelAtoms h.leftTail)
+              (encodeModelAtoms h.rightTail))) := by
   rcases h.divergenceFrontier with hexpressions | hcertified
   · exact (hleaf hexpressions).elim
   · obtain ⟨certified⟩ := hcertified
@@ -31879,13 +31472,13 @@ while a nested expression head remains the recursive alternative. -/
 theorem exists_satisfiedExpressionResidualFrontier
     {valuation : String → Metta.Atom} {left right : List Atom}
     (hsatisfied : MettaEquationSatisfied valuation
-      (toLeaTTaAtom (.expression left),
-        toLeaTTaAtom (.expression right)))
+      (encodeModelAtom (.expression left),
+        encodeModelAtom (.expression right)))
     (hne : left ≠ right) :
     Nonempty (HESatisfiedExpressionResidualFrontier left right) := by
   let equations : List (Metta.Atom × Metta.Atom) :=
-    [(toLeaTTaAtom (.expression left),
-      toLeaTTaAtom (.expression right))]
+    [(encodeModelAtom (.expression left),
+      encodeModelAtom (.expression right))]
   obtain ⟨result, hrun⟩ :=
     exists_unifyRounds_equationFuel_of_satisfied
       (valuation := valuation) equations
@@ -31893,8 +31486,8 @@ theorem exists_satisfiedExpressionResidualFrontier
         intro equation hmem
         simp only [equations, List.mem_singleton] at hmem
         subst equation
-        exact ⟨toLeaTTaAtom_noFloat (.expression left),
-          toLeaTTaAtom_noFloat (.expression right)⟩)
+        exact ⟨encodeModelAtom_noFloat (.expression left),
+          encodeModelAtom_noFloat (.expression right)⟩)
       (by
         intro equation hmem
         simp only [equations, List.mem_singleton] at hmem
@@ -31902,8 +31495,8 @@ theorem exists_satisfiedExpressionResidualFrontier
         exact hsatisfied)
   have hrun' : Metta.Unify.unifyRounds
       (translatedExpressionEquationFuel left right)
-      [(toLeaTTaAtom (.expression left),
-        toLeaTTaAtom (.expression right))] [] = some result := by
+      [(encodeModelAtom (.expression left),
+        encodeModelAtom (.expression right))] [] = some result := by
     simpa [translatedExpressionEquationFuel, equations] using hrun
   obtain ⟨common, leftHead, leftTail, rightHead, rightTail,
       remainingFuel, tailWork, childSubst,
@@ -31943,9 +31536,9 @@ theorem exists_satisfiedExpressionResidualFrontier
       exists_leafMatchCertified_of_prefixSplit hsplit hexpressions
     let reducedTrace := unificationEliminationTrace
       (translatedExpressionEquationFuel left right)
-      ([(toLeaTTaAtom leftHead, toLeaTTaAtom rightHead)] ++
-        List.zip (toLeaTTaAtoms leftTail)
-          (toLeaTTaAtoms rightTail))
+      ([(encodeModelAtom leftHead, encodeModelAtom rightHead)] ++
+        List.zip (encodeModelAtoms leftTail)
+          (encodeModelAtoms rightTail))
     have hlocal' : HEMatchCertified reducedTrace
         (eliminationTraceAliases reducedTrace) leftHead rightHead := by
       simpa only [reducedTrace] using hlocal
@@ -31959,38 +31552,6 @@ theorem exists_satisfiedExpressionResidualFrontier
       hcommon hsingleton
     exact ⟨by simpa only [reducedTrace] using hprefix⟩
 
-/-- An unequal non-variable value already carried by a satisfying HE class
-and any co-satisfied proposed value must form an expression/expression pair.
-This is the representation-free entry condition for the direct conflict
-branch: it uses the common valuation and the original HE leaf matcher only to
-exclude an impossible unequal leaf. -/
-theorem bothExpressions_of_ne_classValue_coSatisfied
-    {valuation : String → Metta.Atom} {before : Bindings}
-    {key : String} {first value : Atom} {rest : List Atom}
-    (hbinding : HEBindingSatisfied valuation before)
-    (hnonvar : HEAssignmentsNonVariable before)
-    (hclass : before.classValues key = first :: rest)
-    (hvalueNonvar : DeclMatchSpec.Atom.isVarB value = false)
-    (hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value))
-    (hne : first ≠ value) :
-    BothExpressions first value := by
-  have hfirstMem : first ∈ before.classValues key := by
-    rw [hclass]
-    simp
-  have hfirstNonvar : DeclMatchSpec.Atom.isVarB first = false :=
-    hnonvar.isVarB_eq_false_of_classValue hfirstMem
-  have hfirstValue :=
-    hbinding.eq_applyClassSolution_of_mem_classValues hfirstMem
-  have hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom first, toLeaTTaAtom value) := by
-    exact hfirstValue.symm.trans hvalue
-  by_contra hleaf
-  obtain ⟨matched, fuel, hmatch⟩ :=
-    exists_matchAtoms_of_solution_leaf ⟨valuation, hequation⟩ hleaf
-  exact hne (matchAtoms_eq_of_nonvariable_leaf
-    hfirstNonvar hvalueNonvar hleaf hmatch)
-
 /-- Exact local Robinson frontier for the direct value-conflict pair selected
 by a satisfying live class.  The result retains the original HE atom order;
 it neither chooses a binding representative nor identifies the local
@@ -32003,7 +31564,7 @@ theorem exists_classValueConflict_satisfiedResidualFrontier
     (hclass : before.classValues key = first :: rest)
     (hvalueNonvar : DeclMatchSpec.Atom.isVarB value = false)
     (hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value))
+      applyClassSolution valuation (encodeModelAtom value))
     (hne : first ≠ value) :
     ∃ left right,
       first = .expression left ∧
@@ -32064,7 +31625,7 @@ theorem exists_assignmentReconcile_satisfiedResidualFrontier
     (hbinding : HEBindingSatisfied valuation before)
     (hclass : before.classValues key = first :: rest)
     (hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value))
+      applyClassSolution valuation (encodeModelAtom value))
     (hinconsistent :
       Bindings.valuesConsistent (first :: rest) = false) :
     Nonempty (HESatisfiedExpressionResidualFrontier
@@ -32072,10 +31633,10 @@ theorem exists_assignmentReconcile_satisfiedResidualFrontier
   have hlists := classValues_reconcileList_satisfied
     hbinding hclass hvalue
   have hsatisfied : MettaEquationSatisfied valuation
-      (toLeaTTaAtom (.expression
+      (encodeModelAtom (.expression
         (List.replicate (rest.length + 1) first)),
-       toLeaTTaAtom (.expression (rest ++ [value]))) := by
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+       encodeModelAtom (.expression (rest ++ [value]))) := by
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution, MettaAtomListsSatisfied] using hlists
   have hne : List.replicate (rest.length + 1) first ≠
       rest ++ [value] := by
@@ -32103,9 +31664,9 @@ theorem exists_classReconcile_satisfiedResidualFrontier
       (List.replicate rest.length first) rest) := by
   have hlists := classValues_replicateTail_satisfied hbinding hclass
   have hsatisfied : MettaEquationSatisfied valuation
-      (toLeaTTaAtom (.expression (List.replicate rest.length first)),
-       toLeaTTaAtom (.expression rest)) := by
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+      (encodeModelAtom (.expression (List.replicate rest.length first)),
+       encodeModelAtom (.expression rest)) := by
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution, MettaAtomListsSatisfied] using hlists
   have hne : List.replicate rest.length first ≠ rest := by
     intro hequal
@@ -32144,7 +31705,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_assignmentConflict_sat
             leftAtoms rightAtoms) := by
   have hhead := p.headSatisfied_of_trace valuation htrace
   have hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value) := by
+      applyClassSolution valuation (encodeModelAtom value) := by
     have hequation := hhead.2
     rw [hright] at hequation
     simpa [MettaEquationSatisfied, applyClassSolution] using hequation
@@ -32179,7 +31740,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_assignmentReconcile_sa
       (List.replicate (rest.length + 1) first) (rest ++ [value])) := by
   have hhead := p.headSatisfied_of_trace valuation htrace
   have hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value) := by
+      applyClassSolution valuation (encodeModelAtom value) := by
     have hequation := hhead.2
     rw [hright] at hequation
     simpa [MettaEquationSatisfied, applyClassSolution] using hequation
@@ -32234,12 +31795,12 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_assignmentConflict_liv
   have hstored :=
     hhead.1.eq_applyClassSolution_of_mem_classValues hfirstMem
   have hproposed : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value) := by
+      applyClassSolution valuation (encodeModelAtom value) := by
     have hequation := hhead.2
     rw [hright] at hequation
     simpa [MettaEquationSatisfied, applyClassSolution] using hequation
   have hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom first, toLeaTTaAtom value) :=
+      (encodeModelAtom first, encodeModelAtom value) :=
     hstored.symm.trans hproposed
   refine ⟨leftAtoms, rightAtoms, hfirst, hvalue, ?_⟩
   exact exists_HEExpressionLiveProjectedResidualState_of_classValue
@@ -32282,17 +31843,17 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_assignmentReconcile_li
         (List.replicate (rest.length + 1) first) (rest ++ [value]) seed) := by
   have hhead := p.headSatisfied_of_trace valuation htrace
   have hvalue : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value) := by
+      applyClassSolution valuation (encodeModelAtom value) := by
     have hequation := hhead.2
     rw [hright] at hequation
     simpa [MettaEquationSatisfied, applyClassSolution] using hequation
   have hlists := classValues_reconcileList_satisfied
     hhead.1 hclass hvalue
   have hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom (.expression
+      (encodeModelAtom (.expression
         (List.replicate (rest.length + 1) first)),
-       toLeaTTaAtom (.expression (rest ++ [value]))) := by
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+       encodeModelAtom (.expression (rest ++ [value]))) := by
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution, MettaAtomListsSatisfied] using hlists
   have hfirstMem : first ∈ seed.classValues key := by
     rw [hclass]
@@ -32338,7 +31899,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_nonVarVarConflict_live
               localResult firstAtoms valueAtoms seed) := by
   have hhead := p.headSatisfied_of_trace valuation htrace
   have hproposed : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value) := by
+      applyClassSolution valuation (encodeModelAtom value) := by
     have hequation := hhead.2
     rw [hright] at hequation
     simpa [MettaEquationSatisfied, applyClassSolution] using hequation.symm
@@ -32352,7 +31913,7 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_nonVarVarConflict_live
   have hstored :=
     hhead.1.eq_applyClassSolution_of_mem_classValues hfirstMem
   have hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom first, toLeaTTaAtom value) :=
+      (encodeModelAtom first, encodeModelAtom value) :=
     hstored.symm.trans hproposed
   refine ⟨firstAtoms, valueAtoms, hfirstEq, hvalueEq, ?_⟩
   exact exists_HEExpressionLiveProjectedResidualState_of_classValue
@@ -32395,17 +31956,17 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_nonVarVarReconcile_liv
         (List.replicate (rest.length + 1) first) (rest ++ [value]) seed) := by
   have hhead := p.headSatisfied_of_trace valuation htrace
   have hproposed : valuation key =
-      applyClassSolution valuation (toLeaTTaAtom value) := by
+      applyClassSolution valuation (encodeModelAtom value) := by
     have hequation := hhead.2
     rw [hright] at hequation
     simpa [MettaEquationSatisfied, applyClassSolution] using hequation.symm
   have hlists := classValues_reconcileList_satisfied
     hhead.1 hclass hproposed
   have hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom (.expression
+      (encodeModelAtom (.expression
         (List.replicate (rest.length + 1) first)),
-       toLeaTTaAtom (.expression (rest ++ [value]))) := by
-    simpa [MettaEquationSatisfied, toLeaTTaAtom,
+       encodeModelAtom (.expression (rest ++ [value]))) := by
+    simpa [MettaEquationSatisfied, encodeModelAtom,
       applyClassSolution, MettaAtomListsSatisfied] using hlists
   have hfirstMem : first ∈ seed.classValues key := by
     rw [hclass]
@@ -32636,10 +32197,10 @@ theorem HEProjectedTailHeadResidualSolutionPackage.exists_equalityClass_liveProj
       ⟨hhead.1, hequality⟩
   have hlists := classValues_replicateTail_satisfied hcandidate hvalues
   have hequation : MettaEquationSatisfied valuation
-      (toLeaTTaAtom (.expression
+      (encodeModelAtom (.expression
         (List.replicate (rest.length + 2) first)),
-       toLeaTTaAtom (.expression (second :: third :: rest))) := by
-    simpa [MettaEquationSatisfied, toLeaTTaAtom, applyClassSolution,
+       encodeModelAtom (.expression (second :: third :: rest))) := by
+    simpa [MettaEquationSatisfied, encodeModelAtom, applyClassSolution,
       MettaAtomListsSatisfied, Nat.add_assoc, Nat.add_comm,
       Nat.add_left_comm] using hlists
   have hfirstMem : first ∈
@@ -32664,15 +32225,15 @@ theorem nestedFrontier_residualFuel_not_recursiveMeasure :
       [.expression [.var "x", .var "y"], .var "z"]
       [.expression [.symbol "a", .symbol "b"], .symbol "c"]
     fuel - (unificationEliminationTrace fuel
-      [(toLeaTTaAtom (.expression [.var "x", .var "y"]),
-        toLeaTTaAtom (.expression [.symbol "a", .symbol "b"]))]).length = 8 ∧
+      [(encodeModelAtom (.expression [.var "x", .var "y"]),
+        encodeModelAtom (.expression [.symbol "a", .symbol "b"]))]).length = 8 ∧
     fuel - (unificationEliminationTrace fuel
-      [(toLeaTTaAtom (.var "x"),
-        toLeaTTaAtom (.symbol "a"))]).length = 9 := by
+      [(encodeModelAtom (.var "x"),
+        encodeModelAtom (.symbol "a"))]).length = 9 := by
   have hyx : ("y" : String) ≠ "x" := by decide
   simp [translatedExpressionEquationFuel,
     Metta.Bindings.equationFuel, unificationEliminationTrace,
-    toLeaTTaAtom, toLeaTTaAtoms, Metta.Atom.size,
+    encodeModelAtom, encodeModelAtoms, Metta.Atom.size,
     Metta.Unify.decomposeAll, Metta.Unify.decomposeEq,
     Metta.Unify.decomposeList, Metta.Subst.apply,
     Metta.Subst.lookup, hyx]
@@ -32685,15 +32246,15 @@ theorem nestedExpression_satisfiedResidualFrontier :
       [.expression [.symbol "a"], .symbol "z"]) := by
   apply exists_satisfiedExpressionResidualFrontier
     (valuation := fun name => if name = "x" then .sym "a" else .var name)
-  · simp [MettaEquationSatisfied, applyClassSolution, toLeaTTaAtom]
+  · simp [MettaEquationSatisfied, applyClassSolution, encodeModelAtom]
   · decide
 
 /-- NEGATIVE: zero fuel cannot realize even the simplest unequal translated
 expression equation. -/
 theorem translatedExpression_zeroFuel_rejected :
     Metta.Unify.unifyRounds 0
-      [(toLeaTTaAtom (.expression [.var "x"]),
-        toLeaTTaAtom (.expression [.symbol "a"]))] [] = none := by
+      [(encodeModelAtom (.expression [.var "x"]),
+        encodeModelAtom (.expression [.symbol "a"]))] [] = none := by
   rfl
 
 /-! ## Replay oracles -/
@@ -32981,7 +32542,7 @@ theorem leaAtomInHEImage_unit_rejected :
   cases atom with
   | symbol name | var name | expression name => cases hatom
   | grounded value =>
-      exact toLeaTTaGround_ne_unit value
+      exact encodeModelGround_ne_unit value
         (Metta.Atom.gnd.inj hatom)
 
 /-- POSITIVE: internal recursive matching accepts the reflexive-variable leaf
@@ -32990,7 +32551,7 @@ between HE's reflexive edge and LeaTTa's empty presentation. -/
 theorem reflexiveVariable_internalLeaf_realization :
     LeaMatcherCongruenceRealization (.var "x") (.var "x") [] := by
   apply leaMatchAtoms_leaf_congruence_realization_internal
-  · simp [Metta.matchAtoms, Metta.matchAtomsWith, toLeaTTaAtom]
+  · simp [Metta.matchAtoms, Metta.matchAtomsWith, encodeModelAtom]
   · simp [BothExpressions]
 
 /-- NEGATIVE: a seed carrying a bare variable assignment is outside the
@@ -33111,7 +32672,7 @@ theorem eliminationTraceAssignmentsExact_single_value :
   simp [Bindings.empty, Bindings.assign, Bindings.isBound,
     Bindings.lookup] at hmem
   rcases hmem with ⟨rfl, rfl⟩
-  simp [DeclMatchSpec.Atom.isVarB, toLeaTTaAtom]
+  simp [DeclMatchSpec.Atom.isVarB, encodeModelAtom]
 
 /-- NEGATIVE: literal trace provenance rejects the bare-variable assignment
 shape that repaired matching represents as an equality edge. -/

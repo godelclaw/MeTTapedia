@@ -19,7 +19,7 @@ open LO.Propositional
 open Mettapedia.Logic.HOL
 open Mettapedia.Logic.HOL.WithParams
 open Mettapedia.Logic.HOL.HeytingSem.GoedelDummett
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Bridges.Logic.PLNIntuitionisticBridge
 
 abbrev ForkedBase := Mettapedia.Logic.HOL.KripkeHenkin.ForkedFrameBase

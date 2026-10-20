@@ -7,7 +7,7 @@ import Mettapedia.OSLF.MeTTaIL.Export
 `print` writes a module back in the format: imports, the module's theories and its entry. Rows are
 written as `languageDef!` writes them; a bound variable is written by its binder's name, an
 application of an authored abstraction as `(subst body argument)`, a nullary constructor as
-`(Zero)`. Equations are anonymous in the format and are written without their generated names.
+`(Zero)`, a curried binder type as `[A -> B -> C]` (an arrow domain in parentheses). Equations are anonymous in the format and are written without their generated names.
 
 `#module_roundtrip X` (in `ModuleSource.Commands`) prints `X.module`, reads the text back with the
 same syntax and checks that the data is unchanged.
@@ -18,13 +18,25 @@ set_option autoImplicit false
 namespace Mettapedia.GSLT.LanguageDef.ModuleSource.Printer
 
 open Mettapedia.OSLF.MeTTaIL.Syntax
-open Mettapedia.OSLF.MeTTaIL.Export (renderTypeExpr)
 
 private def quote (text : String) : String := "\"" ++ text ++ "\""
 
 private def commas (parts : List String) : String := ", ".intercalate parts
 
 /-! ## Rows -/
+
+/-- A type as rows write it: an arrow's codomain without brackets, an arrow domain in parentheses. -/
+def type : TypeExpr → String
+  | .base name => name
+  | .arrow domain codomain =>
+      let left := match domain with
+        | .arrow _ _ => "(" ++ type domain ++ ")"
+        | _ => type domain
+      left ++ " -> " ++ type codomain
+  | .multiBinder element => type element ++ "*"
+  | .collection kind element =>
+      let collection := match kind with | .vec => "Vec" | .hashBag => "HashBag" | .hashSet => "HashSet"
+      collection ++ "(" ++ type element ++ ")"
 
 /-- A pattern, with the names of the enclosing binders, innermost first. -/
 def pattern (names : List String) : Pattern → String
@@ -56,15 +68,15 @@ def premise : Premise → String
       | term => s!"{condition.varName} # {pattern [] term}"
   | .congruence source target => s!"{pattern [] source} ~> {pattern [] target}"
   | .scopedStep step =>
-      s!"scopedStep([{commas (step.binders.map renderTypeExpr)}], {renderTypeExpr step.resultType}, " ++
+      s!"scopedStep([{commas (step.binders.map type)}], {type step.resultType}, " ++
         s!"{pattern [] step.source}, {pattern [] step.target})"
   | .relationQuery relation arguments => s!"{relation}({commas (arguments.map (pattern []))})"
   | .forAll collection param body => s!"forAll({collection}, {param}, {premise body})"
 
 def termParam : TermParam → String
-  | .simple name type => s!"{name}:{renderTypeExpr type}"
-  | .abstractionNamed binder name type => s!"^{binder.getD "x"}.{name}:{renderTypeExpr type}"
-  | .multiAbstractionNamed binders name type => s!"^[{",".intercalate binders}].{name}:{renderTypeExpr type}"
+  | .simple name sort => s!"{name}:{type sort}"
+  | .abstractionNamed binder name sort => s!"^{binder.getD "x"}.{name}:[{type sort}]"
+  | .multiAbstractionNamed binders name sort => s!"^[{",".intercalate binders}].{name}:[{type sort}]"
 
 mutual
 
@@ -118,6 +130,7 @@ def block : Block → List String
   | .replacements rows => blockLines "Replacements" (rows.map fun row => s!"{row.old} => {rule row.rule}")
   | .equations rows => blockLines "Equations" (rows.map equation)
   | .rewrites rows => blockLines "Rewrites" (rows.map rewrite)
+  | .inductives families => blockLines "Inductives" (families.map InductiveSyntax.Family.print)
 
 def path (parts : Path) : String := ".".intercalate parts
 

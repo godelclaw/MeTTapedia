@@ -2,6 +2,10 @@ import Mettapedia.Languages.MeTTa.HE.LeaTTaEvaluatorConfigurationConformance
 import Mettapedia.Languages.MeTTa.HE.LeaTTaMergeExistence
 import Mettapedia.Languages.MeTTa.HE.LeaTTaQueryObservationalAnchor
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypeImage
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Expected-application binding projection

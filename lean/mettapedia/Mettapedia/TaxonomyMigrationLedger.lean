@@ -3565,7 +3565,7 @@ Verification scope:
 - Spot-check moved theorem axiom footprints remain within the accepted project
   footprint:
   `independent_implies_exact`,
-  `cmi_zero_implies_exact`,
+  `branch_screening_implies_exact`,
   `exact_regime_bounded`,
   `pln_bayes_optimal_for_binary_evidence`,
   `pln_revision_definetti_family_true_lower_envelope_greatest_scalar_lower_bound`,

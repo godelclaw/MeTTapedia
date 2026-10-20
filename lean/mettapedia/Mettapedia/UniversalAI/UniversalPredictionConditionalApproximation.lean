@@ -26,7 +26,7 @@ Negative example:
 namespace Mettapedia.UniversalAI.UniversalPrediction
 
 open scoped Classical
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 
 /-- The canonical geometric tail budget after keeping the first `n` mixture
 components. -/

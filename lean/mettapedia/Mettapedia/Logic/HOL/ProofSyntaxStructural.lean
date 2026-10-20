@@ -465,6 +465,6 @@ theorem rootObservation_subst {Γ Γ' : Ctx Base} (θ : Subst Const Γ Γ')
   all_goals try (refine (rootObservation_of_heq ?_ ?_ (mp_heq _ _)).trans ?_; rotate_left 2)
   all_goals first
     | rfl
-    | (simp [subst_instantiate, subst_weakenHyps, HOL.subst, Subst.lift]; done)
+    | simp [subst_instantiate, subst_weakenHyps, HOL.subst, Subst.lift]
 
 end Mettapedia.Logic.HOL.ProofSyntax

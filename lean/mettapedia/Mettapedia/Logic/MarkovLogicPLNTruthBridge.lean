@@ -58,7 +58,7 @@ noncomputable def dlrQueryOutcomeTypedWidthComplementITV
     (M : ClassicalInfiniteGroundMLNSpec Atom ClauseId)
     [Nonempty (DLRCompletion M)]
     (q : ConstraintQuery Atom) :
-    TypedITV (projectiveCredalWidthComplementITVSemantics.{0, 0} PUnit Bool) :=
+    TypedITV (projectiveCredalWidthComplementITVConstructor.{0, 0} PUnit Bool) :=
   TypedITV.fromProjectiveCredalWidthComplement
     (dlrQueryOutcomeWidthComplementITVSource M q)
 
@@ -160,7 +160,7 @@ theorem dlrQueryOutcomeWidthComplementITV_width_pos_of_queryStrictWidth
     (dlrQueryOutcomeTypedWidthComplementITV M q).lower =
       infiniteMLNLowerQueryEnvelope M q := by
   unfold dlrQueryOutcomeTypedWidthComplementITV
-  unfold TypedITV.lower TypedITV.value projectiveCredalWidthComplementITVSemantics
+  unfold TypedITV.lower TypedITV.value projectiveCredalWidthComplementITVConstructor
   unfold projectiveCredalWidthComplementITV
   unfold dlrQueryOutcomeWidthComplementITVSource
   unfold ProjectiveCredalWidthComplementITVSource.finite
@@ -178,7 +178,7 @@ theorem dlrQueryOutcomeWidthComplementITV_width_pos_of_queryStrictWidth
     (dlrQueryOutcomeTypedWidthComplementITV M q).upper =
       infiniteMLNUpperQueryEnvelope M q := by
   unfold dlrQueryOutcomeTypedWidthComplementITV
-  unfold TypedITV.upper TypedITV.value projectiveCredalWidthComplementITVSemantics
+  unfold TypedITV.upper TypedITV.value projectiveCredalWidthComplementITVConstructor
   unfold projectiveCredalWidthComplementITV
   unfold dlrQueryOutcomeWidthComplementITVSource
   unfold ProjectiveCredalWidthComplementITVSource.finite
@@ -195,7 +195,7 @@ theorem dlrQueryOutcomeWidthComplementITV_width_pos_of_queryStrictWidth
     (dlrQueryOutcomeTypedWidthComplementITV M q).width =
       infiniteMLNQueryEnvelopeWidth M q := by
   unfold dlrQueryOutcomeTypedWidthComplementITV
-  unfold TypedITV.width TypedITV.value projectiveCredalWidthComplementITVSemantics
+  unfold TypedITV.width TypedITV.value projectiveCredalWidthComplementITVConstructor
   unfold projectiveCredalWidthComplementITV ITV.width
   unfold dlrQueryOutcomeWidthComplementITVSource
   unfold ProjectiveCredalWidthComplementITVSource.finite
@@ -222,7 +222,7 @@ theorem dlrQueryOutcomeWidthComplementITV_width_pos_of_queryStrictWidth
         M q
   unfold dlrQueryOutcomeTypedWidthComplementITV
   unfold TypedITV.credibility TypedITV.value
-    projectiveCredalWidthComplementITVSemantics
+    projectiveCredalWidthComplementITVConstructor
   unfold projectiveCredalWidthComplementITV
   unfold dlrQueryOutcomeWidthComplementITVSource
   unfold ProjectiveCredalWidthComplementITVSource.finite

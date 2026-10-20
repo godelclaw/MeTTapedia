@@ -1,5 +1,6 @@
 import Mathlib.Data.Real.Basic
 import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeduction
+import Mettapedia.PLN.Evidence.BinaryEvidence
 
 /-!
 # PLN Weight-Based Truth Values
@@ -396,3 +397,44 @@ Confidence is computed on demand via `tv.confidence` when needed for users.
 -/
 
 end Mettapedia.PLN.TruthValues.PLNWeightTV
+
+/-! ## Binary evidence read as a weight-primary truth value -/
+
+namespace Mettapedia.PLN.Evidence.BinaryEvidence
+
+open scoped ENNReal
+open Mettapedia.PLN.TruthValues.PLNWeightTV
+
+/-- Convert evidence to weight-primary truth value.
+This is the natural representation: strength from `toStrength`, and weight computed
+so that `WTV.confidence` matches `toConfidence κ` (up to the `c2w` saturation at `c = 1`). -/
+noncomputable def toWTV (κ : ℝ≥0∞) (e : BinaryEvidence) : WTV where
+  strength := (toStrength e).toReal
+  weight := c2w (toConfidence κ e).toReal
+  strength_nonneg := by
+    apply ENNReal.toReal_nonneg
+  strength_le_one := by
+    have h := toStrength_le_one e
+    have : (1 : ℝ≥0∞) = ENNReal.ofReal 1 := by simp
+    rw [this] at h
+    exact ENNReal.toReal_le_of_le_ofReal (by norm_num) h
+  weight_nonneg := by
+    by_cases hconf : (toConfidence κ e).toReal < 1
+    · -- Main case: use the `c/(1-c)` branch.
+      exact Mettapedia.PLN.TruthValues.PLNWeightTV.WTV.c2w_nonneg _ (by
+        exact ENNReal.toReal_nonneg) hconf
+    · -- Saturation branch (`c ≥ 1`) returns a positive constant.
+      unfold c2w
+      simp [hconf]
+
+theorem toWTV_confidence_eq_toConfidence (κ : ℝ≥0∞) (e : BinaryEvidence)
+    (hconf : (toConfidence κ e).toReal < 1) :
+    (toWTV κ e).confidence = (toConfidence κ e).toReal := by
+  -- Expand the definitions: confidence = w2c(weight) and weight = c2w(confidence).
+  simp [toWTV, WTV.confidence, w2c, c2w, hconf]
+  -- Goal is the standard identity: w2c(c2w(c)) = c for c < 1.
+  have h1 : (1 - (toConfidence κ e).toReal) ≠ 0 := by linarith
+  field_simp [h1]
+  ring
+
+end Mettapedia.PLN.Evidence.BinaryEvidence

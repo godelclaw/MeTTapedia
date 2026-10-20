@@ -1,4 +1,5 @@
 import Mettapedia.PLN.Evidence.BinaryEvidence
+import Mettapedia.PLN.RuleFamilies.FirstOrder.PLNDeductionComposition
 
 /-!
 # PLN Semiring Quantale
@@ -21,7 +22,7 @@ This file formalizes the semiring quantale structure on BinaryEvidence:
 
 namespace Mettapedia.CategoryTheory.PLNSemiringQuantale
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 
 /-! ## Semiring Quantale Operations -/
 

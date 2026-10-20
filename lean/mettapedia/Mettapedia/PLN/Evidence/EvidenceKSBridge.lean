@@ -35,7 +35,7 @@ still has to be supplied, and Boolean complement laws do not follow.
 
 namespace Mettapedia.PLN.Evidence.EvidenceKSBridge
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open KnuthSkilling
 
 /-! ## BinaryEvidence IS a PlausibilitySpace

@@ -24,7 +24,7 @@ open Mettapedia.GSLT.LanguageDef.KernelAuthority
 open Mettapedia.PLN.Bridges.GSLT.WMQueryProofAuthority
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.WorldModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.PLN.WorldModel.SufficientStatisticEncoder
 
 set_option autoImplicit false
@@ -33,10 +33,6 @@ universe uObs uQuery uEvidence uPrior uCertificate uView
 
 variable {Obs : Type uObs} {Query : Type uQuery} {Ev : Type uEvidence}
 variable {Prior : Type uPrior} [AddCommMonoid Ev]
-
-local instance multisetStateEvidenceType {α : Type uObs} :
-    EvidenceType (Multiset α) :=
-  multisetEvidenceType α
 
 /-- Query extraction whose observation is the complete posterior state. -/
 def posteriorObserve

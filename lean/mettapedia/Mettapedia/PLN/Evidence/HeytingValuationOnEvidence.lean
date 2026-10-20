@@ -36,7 +36,7 @@ import KnuthSkilling.Core.HeytingBounds
 namespace Mettapedia.PLN.Evidence.HeytingValuationOnEvidence
 
 open scoped ENNReal
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open Mettapedia.PLN.Evidence.EvidenceIntervalBounds
 open BinaryEvidence
 

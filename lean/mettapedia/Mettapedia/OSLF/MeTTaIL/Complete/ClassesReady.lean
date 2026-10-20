@@ -338,8 +338,8 @@ theorem compiled_admitted
       have flat : obligation ∈ (selectedEquations snapshot permissions).flatMap
           (fun (equation, index, direction) => equationObligations snapshot index equation direction) :=
         List.mem_flatMap.mpr ⟨(authored, index, direction), selectedMember, inside⟩
-      simp only [compile, List.mem_append]
-      tauto
+      exact List.mem_append_left _ (List.mem_append_left _ (List.mem_append_left _
+        (List.mem_append_right _ flat)))
     have strata := obligation_stratification pending total
     subst strata
     unfold equationObligations at inside

@@ -1,13 +1,37 @@
 {
   "suite": "he_io",
   "engine": "hyperon",
-  "version": "metta-0.2.10",
-  "generated_utc": "2026-06-09T09:40:11.708485+00:00",
+  "version": "0.2.10",
+  "generated_utc": "2026-10-16T11:46:57.788852+00:00",
   "cases": [
+    {
+      "id": "he_atom_demand_holds_embedded_source",
+      "bag": {
+        "(unify X X (f) Fail)": 1
+      }
+    },
     {
       "id": "he_duplicate_multiplicity_preserved",
       "bag": {
         "x": 2
+      }
+    },
+    {
+      "id": "he_equation_function_caller_full",
+      "bag": {
+        "(Error (foo) NoReturn)": 1
+      }
+    },
+    {
+      "id": "he_equation_function_caller_raw",
+      "bag": {
+        "(Error (foo) NoReturn)": 1
+      }
+    },
+    {
+      "id": "he_existential_rhs_instances_distinct",
+      "bag": {
+        "ok": 1
       }
     },
     {
@@ -111,6 +135,52 @@
       "bag": {}
     },
     {
+      "id": "he_mutual_recursion_even",
+      "bag": {
+        "False": 1
+      }
+    },
+    {
+      "id": "he_mutual_recursion_odd",
+      "bag": {
+        "True": 1
+      }
+    },
+    {
+      "id": "he_nested_equation_call",
+      "bag": {
+        "(S (S Z))": 1
+      }
+    },
+    {
+      "id": "he_nested_equation_call_triple",
+      "bag": {
+        "(S (S (S Z)))": 1
+      }
+    },
+    {
+      "id": "he_nested_nondet_argument",
+      "bag": {
+        "(L (R Z))": 1,
+        "(R (R Z))": 1,
+        "(L (L Z))": 1,
+        "(R (L Z))": 1
+      }
+    },
+    {
+      "id": "he_nested_nondet_twin",
+      "bag": {
+        "((H H) (H H))": 1,
+        "((T T) (T T))": 1
+      }
+    },
+    {
+      "id": "he_nested_recursive_add",
+      "bag": {
+        "(S (S (S Z)))": 1
+      }
+    },
+    {
       "id": "he_nested_rewrite",
       "bag": {
         "b": 1
@@ -124,15 +194,51 @@
       }
     },
     {
+      "id": "he_ordinary_embedded_function_return",
+      "bag": {
+        "7": 1
+      }
+    },
+    {
+      "id": "he_ordinary_unify_return_evaluates",
+      "bag": {
+        "Value": 1
+      }
+    },
+    {
       "id": "he_pattern_variable_substitution",
       "bag": {
         "(result hello)": 1
       }
     },
     {
+      "id": "he_raw_unify_return_is_syntax",
+      "bag": {
+        "(f)": 1
+      }
+    },
+    {
+      "id": "he_recursive_peano_add",
+      "bag": {
+        "(S (S (S (S (S Z)))))": 1
+      }
+    },
+    {
+      "id": "he_shared_variable_unify_refused",
+      "bag": {
+        "no": 1
+      }
+    },
+    {
       "id": "he_simple_rewrite",
       "bag": {
         "b": 1
+      }
+    },
+    {
+      "id": "he_unify_selected_bindings_precede_equation_dispatch",
+      "bag": {
+        "(f B)": 1
       }
     },
     {

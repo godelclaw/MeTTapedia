@@ -1,6 +1,7 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Theory
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Freshness
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 /-!
 # Scoped observation of private type bindings
@@ -383,6 +384,60 @@ theorem of_solution_iff {left right : Bindings}
     exact ⟨model, (same model).mpr satisfied, fun _ _ => rfl⟩
 
 end BindingTheoryEquivAt
+
+/-- A private extension preserves the caller's full constraint support and
+its observations, together with the additional protected names. Support is
+retained even when an old constraint is tautological. -/
+structure ConservativeExtension (protectedNames : List String) (before after : Bindings) : Prop where
+  support : ∀ name ∈ specBindingVars before, name ∈ specBindingVars after
+  observations : BindingTheoryEquivAt (protectedNames ++ specBindingVars before) before after
+
+namespace ConservativeExtension
+
+@[refl] theorem refl (protectedNames : List String) (bindings : Bindings) :
+    ConservativeExtension protectedNames bindings bindings :=
+  ⟨fun _ member => member,BindingTheoryEquivAt.refl _ _⟩
+
+theorem of_eq (protectedNames : List String) {before after : Bindings} (same : after = before) :
+    ConservativeExtension protectedNames before after := by
+  subst after
+  exact refl _ _
+
+theorem restrict {protectedNames smaller : List String} {before after : Bindings}
+    (extension : ConservativeExtension protectedNames before after)
+    (included : ∀ name ∈ smaller, name ∈ protectedNames) :
+    ConservativeExtension smaller before after := by
+  refine ⟨extension.support,extension.observations.restrict ?_⟩
+  intro name member
+  rcases List.mem_append.mp member with member | member
+  · exact List.mem_append_left _ (included name member)
+  · exact List.mem_append_right _ member
+
+theorem trans {protectedNames : List String} {before middle after : Bindings}
+    (first : ConservativeExtension protectedNames before middle)
+    (second : ConservativeExtension protectedNames middle after) :
+    ConservativeExtension protectedNames before after := by
+  refine ⟨fun name member => second.support name (first.support name member),
+    first.observations.trans (second.observations.restrict ?_)⟩
+  intro name member
+  rcases List.mem_append.mp member with member | member
+  · exact List.mem_append_left _ member
+  · exact List.mem_append_right _ (first.support name member)
+
+/-- Assigning a previously unconstrained public name changes its possible
+observations. Such an update is not a private conservative extension. -/
+theorem visible_assignment_refused (name left right : String) (different : left ≠ right) :
+    ¬ConservativeExtension [name] Bindings.empty ⟨[(name,.symbol right)],[]⟩ := by
+  intro extension
+  obtain ⟨model,satisfied,agrees⟩ := extension.observations.leftToRight (fun _ => .symbol left)
+    (by simp [TypeBindingSatisfied,Bindings.empty])
+  have assigned := satisfied.1 name (.symbol right) (by simp)
+  simp only [applyTypeValuation] at assigned
+  have kept := agrees name (by simp)
+  apply different
+  exact Atom.symbol.inj (kept.trans assigned)
+
+end ConservativeExtension
 
 /-- Literal extension adds conjunctions of constraints. Their occurrences
 remain in the stored record, even when the model conditions are redundant. -/
@@ -892,6 +947,31 @@ theorem renameBindings_typeBindingSatisfied (rename : String → String)
       simp only [Prod.mk.injEq] at same
       obtain ⟨rfl, rfl⟩ := same
       exact satisfied.2 first second original
+
+/-- Renaming private coordinates preserves the caller's complete binding
+observer. The permutation must fix every observed name, but need not fix
+the private assignments, equality endpoints or their variable-valued data. -/
+theorem BindingTheoryEquivAt.of_renameBindings (scope : List String)
+    (bindings : Bindings) (names : Equiv.Perm String)
+    (fixed : ∀ name ∈ scope, names name = name) :
+    BindingTheoryEquivAt scope bindings (renameBindings names bindings) := by
+  constructor
+  · intro model satisfied
+    refine ⟨model ∘ names.symm, ?_, ?_⟩
+    · rw [renameBindings_typeBindingSatisfied]
+      have same : (model ∘ names.symm) ∘ names = model := by
+        funext name
+        simp only [Function.comp_apply, Equiv.symm_apply_apply]
+      simpa only [same] using satisfied
+    · intro name member
+      have inverseFixed : names.symm name = name := by
+        apply names.injective
+        simp only [Equiv.apply_symm_apply, fixed name member]
+      exact congrArg model inverseFixed.symm
+  · intro model satisfied
+    refine ⟨model ∘ names, (renameBindings_typeBindingSatisfied names bindings model).mp satisfied, ?_⟩
+    intro name member
+    exact congrArg model (fixed name member)
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
 
@@ -1741,7 +1821,7 @@ end Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge
 
 namespace Mettapedia.Languages.MeTTa.HE.EquationFreshening
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
-open LeaTTaBridge Spec.Type.RuntimeRefinement
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Spec.Type.RuntimeRefinement
 
 mutual
 
@@ -1749,25 +1829,25 @@ mutual
 valuation. Values returned by the valuation are left untouched. -/
 theorem applyClassSolution_renameTypeVars (valuation : String → Metta.Atom)
     (rename : String → String) (atom : Atom) :
-    applyClassSolution valuation (toLeaTTaAtom (renameTypeVars rename atom)) =
-      applyClassSolution (valuation ∘ rename) (toLeaTTaAtom atom) := by
+    applyClassSolution valuation (encodeModelAtom (renameTypeVars rename atom)) =
+      applyClassSolution (valuation ∘ rename) (encodeModelAtom atom) := by
   cases atom with
-  | symbol => simp [renameTypeVars, toLeaTTaAtom, applyClassSolution]
-  | var => simp [renameTypeVars, toLeaTTaAtom, applyClassSolution, Function.comp_apply]
-  | grounded => simp [renameTypeVars, toLeaTTaAtom, applyClassSolution]
+  | symbol => simp [renameTypeVars, encodeModelAtom, applyClassSolution]
+  | var => simp [renameTypeVars, encodeModelAtom, applyClassSolution, Function.comp_apply]
+  | grounded => simp [renameTypeVars, encodeModelAtom, applyClassSolution]
   | expression atoms =>
-      simpa only [renameTypeVars, toLeaTTaAtom, applyClassSolution] using
+      simpa only [renameTypeVars, encodeModelAtom, applyClassSolution] using
         congrArg Metta.Atom.expr (applyClassSolution_renameTypeVarsList valuation rename atoms)
 
 /-- List companion of valuation reindexing through a structural renaming. -/
 theorem applyClassSolution_renameTypeVarsList (valuation : String → Metta.Atom)
     (rename : String → String) (atoms : List Atom) :
-    (toLeaTTaAtoms (atoms.map (renameTypeVars rename))).map (applyClassSolution valuation) =
-      (toLeaTTaAtoms atoms).map (applyClassSolution (valuation ∘ rename)) := by
+    (encodeModelAtoms (atoms.map (renameTypeVars rename))).map (applyClassSolution valuation) =
+      (encodeModelAtoms atoms).map (applyClassSolution (valuation ∘ rename)) := by
   cases atoms with
   | nil => rfl
   | cons atom atoms =>
-      simpa only [List.map_cons, toLeaTTaAtoms] using
+      simpa only [List.map_cons, encodeModelAtoms] using
         congrArg₂ List.cons (applyClassSolution_renameTypeVars valuation rename atom)
           (applyClassSolution_renameTypeVarsList valuation rename atoms)
 
@@ -1899,6 +1979,22 @@ theorem trans {left middle right : Bindings} (first : BindingSourceAgreement lef
     (second : BindingSourceAgreement middle right) : BindingSourceAgreement left right :=
   ⟨fun v=>(first.solutions v).trans (second.solutions v),
     fun n=>(first.support n).trans (second.support n)⟩
+
+/-- Extending corresponding constraint presentations preserves the complete
+solution theory and the support needed by subsequent freshening. -/
+theorem append {left right extension otherExtension : Bindings}
+    (first : BindingSourceAgreement left right)
+    (second : BindingSourceAgreement extension otherExtension) :
+    BindingSourceAgreement
+      ⟨left.assignments ++ extension.assignments, left.equalities ++ extension.equalities⟩
+      ⟨right.assignments ++ otherExtension.assignments, right.equalities ++ otherExtension.equalities⟩ := by
+  constructor
+  · intro valuation
+    rw [bindingSatisfied_append_iff, bindingSatisfied_append_iff]
+    exact and_congr (first.solutions valuation) (second.solutions valuation)
+  · intro name
+    rw [mem_specBindingVars_append, mem_specBindingVars_append]
+    exact or_congr (first.support name) (second.support name)
 
 theorem of_recordPerm {left right : Bindings} (related : BindingRecordPerm left right) :
     BindingSourceAgreement left right := ⟨related.satisfied_iff,related.support_iff⟩
@@ -2155,41 +2251,41 @@ end LogicalMergeRel
 end Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
 
 
-namespace Mettapedia.Languages.MeTTa.HE.LeaTTaTypeConformance
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom GroundedValue)
-open LeaTTaBridge Spec.Type.RuntimeRefinement
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory Spec.Type.RuntimeRefinement
 
 mutual
 
 /-- Translating a native valuation after applying it is the same as applying
-its pointwise translation in the LeaTTa model language. -/
-theorem toLeaTTaAtom_applyTypeValuation
+its pointwise encoding in the structural model language. -/
+theorem encodeModelAtom_applyTypeValuation
     (valuation : String → Atom) (atom : Atom) :
-    toLeaTTaAtom (applyTypeValuation valuation atom) =
-      applyClassSolution (fun name => toLeaTTaAtom (valuation name))
-        (toLeaTTaAtom atom) := by
+    encodeModelAtom (applyTypeValuation valuation atom) =
+      applyClassSolution (fun name => encodeModelAtom (valuation name))
+        (encodeModelAtom atom) := by
   cases atom with
   | symbol | var | grounded =>
-      simp [applyTypeValuation, toLeaTTaAtom, applyClassSolution]
+      simp [applyTypeValuation, encodeModelAtom, applyClassSolution]
   | expression atoms =>
-      rw [applyTypeValuation, toLeaTTaAtom, toLeaTTaAtom,
+      rw [applyTypeValuation, encodeModelAtom, encodeModelAtom,
         applyClassSolution]
       exact congrArg Metta.Atom.expr
-        (toLeaTTaAtoms_applyTypeValuation valuation atoms)
+        (encodeModelAtoms_applyTypeValuation valuation atoms)
 termination_by 2 * sizeOf atom
 
-/-- List companion of `toLeaTTaAtom_applyTypeValuation`. -/
-theorem toLeaTTaAtoms_applyTypeValuation
+/-- List companion of `encodeModelAtom_applyTypeValuation`. -/
+theorem encodeModelAtoms_applyTypeValuation
     (valuation : String → Atom) (atoms : List Atom) :
-    toLeaTTaAtoms (atoms.map (applyTypeValuation valuation)) =
-      (toLeaTTaAtoms atoms).map
-        (applyClassSolution (fun name => toLeaTTaAtom (valuation name))) := by
+    encodeModelAtoms (atoms.map (applyTypeValuation valuation)) =
+      (encodeModelAtoms atoms).map
+        (applyClassSolution (fun name => encodeModelAtom (valuation name))) := by
   cases atoms with
   | nil => rfl
   | cons atom atoms =>
       exact congrArg₂ List.cons
-        (toLeaTTaAtom_applyTypeValuation valuation atom)
-        (toLeaTTaAtoms_applyTypeValuation valuation atoms)
+        (encodeModelAtom_applyTypeValuation valuation atom)
+        (encodeModelAtoms_applyTypeValuation valuation atoms)
 termination_by 2 * sizeOf atoms + 1
 decreasing_by all_goals simp_wf <;> omega
 
@@ -2197,34 +2293,34 @@ end
 
 mutual
 
-/-- Decoding commutes with semantic substitution for every LeaTTa atom, not
+/-- Decoding commutes with semantic substitution for every model term, not
 only atoms known to lie in the native translation image. -/
-theorem fromLeaTTaAtom_applyClassSolution_any
+theorem decodeModelAtom_applyClassSolution_any
     (valuation : String → Metta.Atom) (atom : Metta.Atom) :
-    fromLeaTTaAtom (applyClassSolution valuation atom) =
-      applyTypeValuation (fun name => fromLeaTTaAtom (valuation name))
-        (fromLeaTTaAtom atom) := by
+    decodeModelAtom (applyClassSolution valuation atom) =
+      applyTypeValuation (fun name => decodeModelAtom (valuation name))
+        (decodeModelAtom atom) := by
   cases atom with
   | sym | var | gnd =>
-      simp [applyClassSolution, fromLeaTTaAtom, applyTypeValuation]
+      simp [applyClassSolution, decodeModelAtom, applyTypeValuation]
   | expr atoms =>
-      simp only [applyClassSolution, fromLeaTTaAtom,
+      simp only [applyClassSolution, decodeModelAtom,
         applyTypeValuation.eq_def]
       exact congrArg Atom.expression
-        (fromLeaTTaAtoms_applyClassSolution_any valuation atoms)
+        (decodeModelAtoms_applyClassSolution_any valuation atoms)
 
-/-- List companion of `fromLeaTTaAtom_applyClassSolution_any`. -/
-theorem fromLeaTTaAtoms_applyClassSolution_any
+/-- List companion of `decodeModelAtom_applyClassSolution_any`. -/
+theorem decodeModelAtoms_applyClassSolution_any
     (valuation : String → Metta.Atom) (atoms : List Metta.Atom) :
-    fromLeaTTaAtoms (atoms.map (applyClassSolution valuation)) =
-      (fromLeaTTaAtoms atoms).map
-        (applyTypeValuation (fun name => fromLeaTTaAtom (valuation name))) := by
+    decodeModelAtoms (atoms.map (applyClassSolution valuation)) =
+      (decodeModelAtoms atoms).map
+        (applyTypeValuation (fun name => decodeModelAtom (valuation name))) := by
   cases atoms with
   | nil => rfl
   | cons atom atoms =>
       exact congrArg₂ List.cons
-        (fromLeaTTaAtom_applyClassSolution_any valuation atom)
-        (fromLeaTTaAtoms_applyClassSolution_any valuation atoms)
+        (decodeModelAtom_applyClassSolution_any valuation atom)
+        (decodeModelAtoms_applyClassSolution_any valuation atoms)
 
 end
 
@@ -2232,72 +2328,72 @@ end
 mutual
 
 /-- Decoding a substituted translated atom is the same as applying the
-pointwise decoded valuation natively.  The LeaTTa valuation itself need not
+pointwise decoded valuation natively. The model valuation itself need not
 lie in the image of the translation. -/
-theorem fromLeaTTaAtom_applyClassSolution
+theorem decodeModelAtom_applyClassSolution
     (valuation : String → Metta.Atom) (atom : Atom) :
-    fromLeaTTaAtom
-        (applyClassSolution valuation (toLeaTTaAtom atom)) =
-      applyTypeValuation (fun name => fromLeaTTaAtom (valuation name)) atom := by
+    decodeModelAtom
+        (applyClassSolution valuation (encodeModelAtom atom)) =
+      applyTypeValuation (fun name => decodeModelAtom (valuation name)) atom := by
   cases atom with
   | symbol | var | grounded =>
-      simp [applyTypeValuation, toLeaTTaAtom, applyClassSolution,
-        fromLeaTTaAtom]
+      simp [applyTypeValuation, encodeModelAtom, applyClassSolution,
+        decodeModelAtom]
   | expression atoms =>
-      rw [toLeaTTaAtom, applyClassSolution, fromLeaTTaAtom,
+      rw [encodeModelAtom, applyClassSolution, decodeModelAtom,
         applyTypeValuation]
       exact congrArg Atom.expression
-        (fromLeaTTaAtoms_applyClassSolution valuation atoms)
+        (decodeModelAtoms_applyClassSolution valuation atoms)
 termination_by 2 * sizeOf atom
 
-/-- List companion of `fromLeaTTaAtom_applyClassSolution`. -/
-theorem fromLeaTTaAtoms_applyClassSolution
+/-- List companion of `decodeModelAtom_applyClassSolution`. -/
+theorem decodeModelAtoms_applyClassSolution
     (valuation : String → Metta.Atom) (atoms : List Atom) :
-    fromLeaTTaAtoms
-        ((toLeaTTaAtoms atoms).map (applyClassSolution valuation)) =
+    decodeModelAtoms
+        ((encodeModelAtoms atoms).map (applyClassSolution valuation)) =
       atoms.map
-        (applyTypeValuation (fun name => fromLeaTTaAtom (valuation name))) := by
+        (applyTypeValuation (fun name => decodeModelAtom (valuation name))) := by
   cases atoms with
   | nil => rfl
   | cons atom atoms =>
       exact congrArg₂ List.cons
-        (fromLeaTTaAtom_applyClassSolution valuation atom)
-        (fromLeaTTaAtoms_applyClassSolution valuation atoms)
+        (decodeModelAtom_applyClassSolution valuation atom)
+        (decodeModelAtoms_applyClassSolution valuation atoms)
 termination_by 2 * sizeOf atoms + 1
 decreasing_by all_goals simp_wf <;> omega
 
 end
 
 
-/-- Native satisfaction maps into the established LeaTTa-valued observation
+/-- Native satisfaction maps into the structural-model observation
 language by translating a valuation pointwise. -/
 theorem heBindingSatisfied_of_specTypeBindingSatisfied
     {valuation : String → Atom} {bindings : Bindings}
     (hsatisfied : TypeBindingSatisfied valuation bindings) :
-    HEBindingSatisfied (fun name => toLeaTTaAtom (valuation name))
+    HEBindingSatisfied (fun name => encodeModelAtom (valuation name))
       bindings := by
   constructor
   · intro name value hmem
     have h := hsatisfied.1 name value hmem
-    exact (congrArg toLeaTTaAtom h).trans
-      (toLeaTTaAtom_applyTypeValuation valuation value)
+    exact (congrArg encodeModelAtom h).trans
+      (encodeModelAtom_applyTypeValuation valuation value)
   · intro left right hmem
-    exact congrArg toLeaTTaAtom (hsatisfied.2 left right hmem)
+    exact congrArg encodeModelAtom (hsatisfied.2 left right hmem)
 
-/-- Every model in the established LeaTTa-valued observation language
+/-- Every valuation in the structural-model observation language
 decodes to an honest native model of the same spec binding record. -/
 theorem specTypeBindingSatisfied_of_heBindingSatisfied
     {valuation : String → Metta.Atom} {bindings : Bindings}
     (hsatisfied : HEBindingSatisfied valuation bindings) :
     TypeBindingSatisfied
-      (fun name => fromLeaTTaAtom (valuation name)) bindings := by
+      (fun name => decodeModelAtom (valuation name)) bindings := by
   constructor
   · intro name value hmem
     have h := hsatisfied.1 name value hmem
-    have := congrArg fromLeaTTaAtom h
-    simpa [fromLeaTTaAtom_applyClassSolution] using this
+    have := congrArg decodeModelAtom h
+    simpa [decodeModelAtom_applyClassSolution] using this
   · intro left right hmem
-    exact congrArg fromLeaTTaAtom (hsatisfied.2 left right hmem)
+    exact congrArg decodeModelAtom (hsatisfied.2 left right hmem)
 
 /-- For a pointwise translated native valuation, the established observation
 language and native type-binding satisfaction coincide exactly. -/
@@ -2305,21 +2401,21 @@ theorem specTypeBindingSatisfied_iff_heBindingSatisfied_translated
     (valuation : String → Atom) (bindings : Bindings) :
     TypeBindingSatisfied valuation bindings ↔
       HEBindingSatisfied
-        (fun name => toLeaTTaAtom (valuation name)) bindings := by
+        (fun name => encodeModelAtom (valuation name)) bindings := by
   constructor
   · exact heBindingSatisfied_of_specTypeBindingSatisfied
   · intro hsatisfied
     constructor
     · intro name value hmem
-      apply Function.LeftInverse.injective fromLeaTTaAtom_toLeaTTaAtom
-      rw [toLeaTTaAtom_applyTypeValuation]
+      apply Function.LeftInverse.injective decodeModelAtom_encodeModelAtom
+      rw [encodeModelAtom_applyTypeValuation]
       exact hsatisfied.1 name value hmem
     · intro left right hmem
-      apply Function.LeftInverse.injective fromLeaTTaAtom_toLeaTTaAtom
+      apply Function.LeftInverse.injective decodeModelAtom_encodeModelAtom
       exact hsatisfied.2 left right hmem
 
 
-end Mettapedia.Languages.MeTTa.HE.LeaTTaTypeConformance
+end Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 namespace Mettapedia.Languages.MeTTa.HE.FreshPrivateMerge
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
@@ -2378,7 +2474,7 @@ private theorem fresh_assign (bindings : Bindings) (key : String) (value : Atom)
     (empty : bindings.classValues key=[]) (name : String) :
     name∈specBindingVars (bindings.assign key value) ↔
       name∈specBindingVars bindings ∨ name=key ∨ name∈TypeSubst.typeVars value := by
-  have unbound := LeaTTaBridge.isBound_eq_false_of_classValues_nil empty
+  have unbound := EqualityClosure.isBound_eq_false_of_classValues_nil empty
   simp only [specBindingVars,Bindings.assign,unbound,Bool.false_eq_true,↓reduceIte,
     List.flatMap_append,List.flatMap_cons,List.flatMap_nil,List.append_nil,List.mem_append,
     List.mem_cons]
@@ -2541,7 +2637,7 @@ end Mettapedia.Languages.MeTTa.HE.QueryBindingProjection.SourceSupport
 
 namespace Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge.MergeRel
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
-open Spec.Bindings.ScopeObservation Spec.Type.RuntimeRefinement LeaTTaTypeConformance
+open Spec.Bindings.ScopeObservation Spec.Type.RuntimeRefinement Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-- Independent merging preserves exactly the conjunction and complete support
 of its inputs, without any executable-query or representative premise. -/
@@ -2564,3 +2660,132 @@ theorem logicalMerge {left right output : Bindings}
     LogicalMergeRel left right output := ⟨derived.bindingSourceAgreement, model⟩
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Match.Merge.MergeRel
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type.Presentation Spec.Type.Presentation.Theory Spec.Type.RuntimeRefinement
+
+/-- Joint observations of a finite syntax packet under the binding theory.
+One model reads the entire packet, so repeated variables and correlations
+between a returned value and caller variables remain observable. Private
+variable spellings need not be chosen canonically. -/
+def observedTuples (bindings : Bindings) (atoms : List Atom) : Set (List Atom) :=
+  {values | ∃ model, TypeBindingSatisfied model bindings ∧
+    atoms.map (applyTypeValuation model) = values}
+
+/-- Model-preserving packet operations preserve the joint observer. The same
+model interprets every entry on both sides. -/
+theorem observedTuples_congr_models (bindings : Bindings) (before after : List Atom)
+    (preserved : ∀ model, TypeBindingSatisfied model bindings →
+      after.map (applyTypeValuation model) = before.map (applyTypeValuation model)) :
+    observedTuples bindings after = observedTuples bindings before := by
+  ext values
+  constructor
+  · rintro ⟨model, satisfied, returned⟩
+    exact ⟨model, satisfied, (preserved model satisfied).symm.trans returned⟩
+  · rintro ⟨model, satisfied, returned⟩
+    exact ⟨model, satisfied, (preserved model satisfied).trans returned⟩
+
+/-- The existing scoped observer preserves every joint packet whose variables
+are in that scope. This is a derived observation, not a new equality imposed
+on binding representations. -/
+theorem BindingTheoryEquivAt.observedTuples_eq {scope : List String} {left right : Bindings}
+    (equivalent : BindingTheoryEquivAt scope left right) (atoms : List Atom)
+    (covered : ∀ name ∈ TypeSubst.typeVarsList atoms, name ∈ scope) :
+    observedTuples left atoms = observedTuples right atoms := by
+  ext values
+  constructor
+  · rintro ⟨model, satisfied, returned⟩
+    obtain ⟨other, checked, agrees⟩ := equivalent.leftToRight model satisfied
+    have same := applyTypeValuationList_congr_of_typeVars atoms
+      (fun name present => agrees name (covered name present))
+    exact ⟨other, checked, same.symm.trans returned⟩
+  · rintro ⟨model, satisfied, returned⟩
+    obtain ⟨other, checked, agrees⟩ := equivalent.rightToLeft model satisfied
+    have same := applyTypeValuationList_congr_of_typeVars atoms
+      (fun name present => agrees name (covered name present))
+    exact ⟨other, checked, same.trans returned⟩
+
+/-- Reading the observable variable packet recovers exactly the established
+scoped binding equivalence, including joint correlations between its entries. -/
+theorem bindingTheoryEquivAt_iff_observedTuples (scope : List String) (left right : Bindings) :
+    BindingTheoryEquivAt scope left right ↔
+      observedTuples left (scope.map Atom.var) = observedTuples right (scope.map Atom.var) := by
+  constructor
+  · intro equivalent
+    apply equivalent.observedTuples_eq
+    have supportNames : TypeSubst.typeVarsList (scope.map Atom.var) = scope := by
+      clear equivalent
+      induction scope with
+      | nil => rfl
+      | cons name rest ih => simp [TypeSubst.typeVarsList, TypeSubst.typeVars, ih]
+    intro name present
+    simpa only [supportNames] using present
+  · intro equal
+    constructor
+    · intro model satisfied
+      have observed : scope.map model ∈ observedTuples left (scope.map Atom.var) :=
+        ⟨model, satisfied, by simp [List.map_map, applyTypeValuation]⟩
+      rw [equal] at observed
+      obtain ⟨other, checked, returned⟩ := observed
+      have same : scope.map other = scope.map model := by
+        simpa only [List.map_map, Function.comp_def, applyTypeValuation] using returned
+      exact ⟨other, checked, fun name present => (List.map_eq_map_iff.mp same name present).symm⟩
+    · intro model satisfied
+      have observed : scope.map model ∈ observedTuples right (scope.map Atom.var) :=
+        ⟨model, satisfied, by simp [List.map_map, applyTypeValuation]⟩
+      rw [← equal] at observed
+      obtain ⟨other, checked, returned⟩ := observed
+      have same : scope.map other = scope.map model := by
+        simpa only [List.map_map, Function.comp_def, applyTypeValuation] using returned
+      exact ⟨other, checked, fun name present => List.map_eq_map_iff.mp same name present⟩
+
+/-- One simultaneous permutation of constraints and observed syntax preserves
+the whole model-observation set. Renaming the syntax alone has no such law. -/
+theorem observedTuples_rename (names : Equiv.Perm String) (bindings : Bindings) (atoms : List Atom) :
+    observedTuples (renameBindings names bindings) (atoms.map (renameTypeVars names)) =
+      observedTuples bindings atoms := by
+  ext values
+  constructor
+  · rintro ⟨model, satisfied, returned⟩
+    refine ⟨model ∘ names, (renameBindings_typeBindingSatisfied names bindings model).mp satisfied, ?_⟩
+    simpa only [ApplicationEquivariance.applyTypeValuationList_renameTypeVars] using returned
+  · rintro ⟨model, satisfied, returned⟩
+    let other : String → Atom := model ∘ names.symm
+    have inverse : other ∘ names = model := by
+      funext name
+      simp [other]
+    refine ⟨other, (renameBindings_typeBindingSatisfied names bindings other).mpr ?_, ?_⟩
+    · simpa only [inverse] using satisfied
+    · rw [ApplicationEquivariance.applyTypeValuationList_renameTypeVars, inverse]
+      exact returned
+
+namespace TupleObservationControls
+
+/-- Separate scalar observations agree, but splitting a packet loses the
+distinction between one shared variable and two independent variables. -/
+theorem separate_observations_lose_correlation :
+    observedTuples Bindings.empty [.var "x"] = observedTuples Bindings.empty [.var "y"] ∧
+      observedTuples Bindings.empty [.var "x", .var "x"] ≠
+        observedTuples Bindings.empty [.var "x", .var "y"] := by
+  constructor
+  · have renamed := observedTuples_rename (Equiv.swap "x" "y") Bindings.empty [.var "x"]
+    simpa [renameTypeVars] using renamed.symm
+  · have distinct : (Atom.symbol "A") ≠ .symbol "B" := by decide
+    have offDiagonal : [Atom.symbol "A", .symbol "B"] ∈
+        observedTuples Bindings.empty [.var "x", .var "y"] := by
+      refine ⟨(fun name => if name = "x" then .symbol "A" else .symbol "B"), ?_, ?_⟩
+      · constructor <;> simp [Bindings.empty]
+      · simp [applyTypeValuation]
+    intro equal
+    rw [← equal] at offDiagonal
+    obtain ⟨model, _, returned⟩ := offDiagonal
+    have both : model "x" = .symbol "A" ∧ model "x" = .symbol "B" := by
+      simpa only [List.map_cons, List.map_nil, applyTypeValuation, List.cons.injEq,
+        and_true] using returned
+    exact distinct (both.1.symm.trans both.2)
+
+end TupleObservationControls
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation

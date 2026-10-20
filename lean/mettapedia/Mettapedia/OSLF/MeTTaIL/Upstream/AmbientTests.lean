@@ -6,8 +6,11 @@ import Mettapedia.OSLF.MeTTaIL.LanguageProfiles
 
 The 29 inputs of upstream's `languages/tests/ambient_tests.rs`, in order, as core patterns: a
 bag is `PPar`'s collection, `new(x, P)` binds by index, and every free name carries the sort
-upstream's parser gives it. `complex_mobility_with_binding` uses its bound name `x` as a
-process (`in(m, x)`); upstream is untyped there, and here the input is ill-sorted.
+upstream's parser gives it. One input is corrected: `complex_mobility_with_binding` writes its
+bound name `x` as a process, `new(x, {n[{in(m, x)}] | m[{}]})`, which is ill-sorted (`x` is a
+`Name`). Here the continuation is the ambient `x[{}]`, which keeps the test's point (a bound
+name in a capability's continuation, moved by a rewrite under `new`):
+`new(x, {n[{in(m, x[{}])}] | m[{}]})`, expected `new(x, {m[{n[{x[{}]}]}]})`.
 
 `conformanceLanguage` is the language the tests run in: upstream's text as written
 (`upstreamLiteral`) with the standard collection-laws profile, in core form.
@@ -52,7 +55,7 @@ def tests : List (String × List (String × TypeExpr) × Pattern) := [
   ("parallel_with_extrusion", [("m", .base "Name"), ("n", .base "Name"), ("p", .base "Proc"), ("q", .base "Proc"), ("r", .base "Proc")], (.collection .hashBag [(.apply "PNew" [.lambda none (.collection .hashBag [(.fvar "p"), (.apply "PAmb" [(.fvar "n"), (.collection .hashBag [(.apply "PIn" [(.fvar "m"), (.fvar "q")])] none)])] none)]), (.apply "PAmb" [(.fvar "m"), (.fvar "r")])] none)),
   ("zero_in_multiple_contexts", [("p", .base "Proc"), ("q", .base "Proc")], (.collection .hashBag [(.collection .hashBag [] none), (.fvar "p"), (.collection .hashBag [(.collection .hashBag [] none), (.fvar "q")] none)] none)),
   ("extrusion_amb_then_open", [("n", .base "Name"), ("p", .base "Proc"), ("q", .base "Proc"), ("r", .base "Proc")], (.collection .hashBag [(.apply "POpen" [(.fvar "n"), (.fvar "p")]), (.apply "PNew" [.lambda none (.collection .hashBag [(.fvar "q"), (.apply "PAmb" [(.fvar "n"), (.fvar "r")])] none)])] none)),
-  ("complex_mobility_with_binding", [("m", .base "Name"), ("n", .base "Name")], (.apply "PNew" [.lambda none (.collection .hashBag [(.apply "PAmb" [(.fvar "n"), (.collection .hashBag [(.apply "PIn" [(.fvar "m"), (.bvar 0)])] none)]), (.apply "PAmb" [(.fvar "m"), (.collection .hashBag [] none)])] none)])),
+  ("complex_mobility_with_binding", [("m", .base "Name"), ("n", .base "Name")], (.apply "PNew" [.lambda none (.collection .hashBag [(.apply "PAmb" [(.fvar "n"), (.collection .hashBag [(.apply "PIn" [(.fvar "m"), (.apply "PAmb" [(.bvar 0), (.collection .hashBag [] none)])])] none)]), (.apply "PAmb" [(.fvar "m"), (.collection .hashBag [] none)])] none)])),
   ("sequential_extrusions", [("n", .base "Name"), ("p", .base "Proc"), ("q", .base "Proc")], (.apply "PNew" [.lambda none (.apply "PNew" [.lambda none (.collection .hashBag [(.fvar "p"), (.apply "PIn" [(.fvar "n"), (.fvar "q")])] none)])])),
   ("zero_elimination_cascade", [], (.collection .hashBag [(.collection .hashBag [] none), (.collection .hashBag [] none), (.collection .hashBag [] none), (.collection .hashBag [] none)] none)),
   ("extrusion_with_out_and_in", [("k", .base "Name"), ("m", .base "Name"), ("n", .base "Name"), ("p", .base "Proc"), ("q", .base "Proc"), ("r", .base "Proc")], (.apply "PNew" [.lambda none (.collection .hashBag [(.apply "PAmb" [(.fvar "n"), (.collection .hashBag [(.apply "PIn" [(.fvar "m"), (.fvar "p")]), (.apply "POut" [(.fvar "k"), (.fvar "q")])] none)]), (.apply "PAmb" [(.fvar "m"), (.fvar "r")])] none)])),

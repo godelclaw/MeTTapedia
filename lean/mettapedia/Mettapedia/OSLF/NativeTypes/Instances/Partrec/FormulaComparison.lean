@@ -56,7 +56,7 @@ theorem translation_recognizes_fragment (formula : OSLFFormula) :
 theorem denotation_iff_original (bound : List TypeExpr) (interpretation : AtomSem)
     {formula : OSLFFormula} {generated : Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.Formula Empty}
     (translated : fromLegacy? formula = some generated) (source : Pattern) (typed : Source bound source) :
-    denotation (noLeaves bound) generated source ↔
+    denotation (noLeaves bound) generated (.empty _) source ↔
       sem Mettapedia.Languages.PartrecMachine.Reduces interpretation formula source := by
   induction formula generalizing generated source with
   | top =>
@@ -80,10 +80,10 @@ theorem denotation_iff_original (bound : List TypeExpr) (interpretation : AtomSe
   | dia body ih =>
       obtain ⟨inner, innerTranslated, same⟩ := Option.map_eq_some_iff.mp translated
       subst generated
-      rw [show denotation (noLeaves bound) (.possibility inner) source ↔
-          ∃ target, (theory bound).Step source target ∧ denotation (noLeaves bound) inner target from
+      rw [show denotation (noLeaves bound) (.possibility inner) (.empty _) source ↔
+          ∃ target, (theory bound).Step source target ∧ denotation (noLeaves bound) inner (.empty _) target from
         gsltDiamond_spec (theory bound) (denotation (noLeaves bound) inner).1 source]
-      change (∃ target, (theory bound).Step source target ∧ denotation (noLeaves bound) inner target) ↔
+      change (∃ target, (theory bound).Step source target ∧ denotation (noLeaves bound) inner (.empty _) target) ↔
         ∃ target, Mettapedia.Languages.PartrecMachine.Reduces source target ∧
           sem Mettapedia.Languages.PartrecMachine.Reduces interpretation body target
       constructor

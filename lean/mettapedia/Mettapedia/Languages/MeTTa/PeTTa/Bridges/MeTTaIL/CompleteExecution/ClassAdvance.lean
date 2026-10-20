@@ -131,7 +131,7 @@ theorem represented_returns (state : State) (pattern : Pattern) : ∀ reps : Lis
         simp only [same, List.any_cons, Bool.true_or]
         metta_eval
     · have different : InferenceCettaWire.encodePattern rep.pattern ≠ InferenceCettaWire.encodePattern pattern :=
-        fun equal => same (beq_iff_eq.mpr (encodePattern_injective equal))
+        fun equal => same (beq_iff_eq.mpr (InferenceCettaWire.encodePattern_injective equal))
       metta_call complete_checked
       metta_eval unfolding [encodeList, repTerm]
       all_goals

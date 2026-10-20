@@ -52,8 +52,8 @@ open scoped ENNReal
 
 open Mettapedia.PLN.Core.CompletePLN
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Evidence.PLNJointEvidence
 open Mettapedia.PLN.Evidence.PLNJointEvidence.JointEvidence
 open Mettapedia.PLN.Evidence.PLNJointEvidenceProbability
@@ -188,8 +188,8 @@ theorem anyTrue_eq_not_allFalse (facts : List (Fin n)) (w : Fin (2 ^ n)) :
 /-! ## §5 Revision Correspondence
 
 ProbLog's distribution semantics does not natively support "revision" (combining
-independent evidence sources). However, pointwise addition of `JointEvidence`
-corresponds to combining two independent observation batches into a single
+evidence from disjoint observations). However, pointwise addition of `JointEvidence`
+corresponds to combining two disjoint observation batches into a single
 Dirichlet posterior — this is the existing `evidence_add` law.
 
 The key insight from GPT-5.4's analysis: WM can subsume ProbLog *extensionally*

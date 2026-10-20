@@ -41,8 +41,8 @@ namespace Mettapedia.PLN.RuleFamilies.FirstOrder.RavenAsymmetricInduction
 open scoped ENNReal
 open scoped Topology
 open Filter
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.Evidence.BinaryEvidence
 open Mettapedia.PLN.RuleFamilies.FirstOrder.PLNRevision
 
 /-- Coordinatewise `pos` of a revision step (`+` is coordinatewise). -/
@@ -102,7 +102,7 @@ noncomputable def aggregateStep (contribution : Observation → BinaryEvidence)
 /-- Aggregate evidence by iterated revision over a finite observation list. -/
 noncomputable def aggregateEvidence (contribution : Observation → BinaryEvidence)
     (obs : List Observation) : BinaryEvidence :=
-  obs.foldl (aggregateStep contribution) Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero
+  obs.foldl (aggregateStep contribution) Mettapedia.PLN.Evidence.BinaryEvidence.zero
 
 /-- Canonical dataset with `R` black ravens and `M` black non-ravens. -/
 def ravenObservationDataset (R M : ℕ) : List Observation :=
@@ -150,7 +150,7 @@ private theorem aggregate_ravenBlack_aux (obs : List Observation) (R : ℕ) :
 theorem aggregate_ravenBlack_eq_count (obs : List Observation) :
     aggregateEvidence ravenBlackContribution obs = ravenBlackEvidence (ravenCount obs) := by
   unfold aggregateEvidence
-  simpa [ravenBlackEvidence, Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero]
+  simpa [ravenBlackEvidence, Mettapedia.PLN.Evidence.BinaryEvidence.zero]
     using aggregate_ravenBlack_aux obs 0
 
 private theorem aggregate_blackRaven_aux (obs : List Observation) (R M : ℕ) :
@@ -177,7 +177,7 @@ theorem aggregate_blackRaven_eq_counts (obs : List Observation) :
     aggregateEvidence blackRavenContribution obs =
       blackRavenEvidence (ravenCount obs) (blackNonRavenCount obs) := by
   unfold aggregateEvidence
-  simpa [blackRavenEvidence, Mettapedia.PLN.Evidence.EvidenceQuantale.BinaryEvidence.zero]
+  simpa [blackRavenEvidence, Mettapedia.PLN.Evidence.BinaryEvidence.zero]
     using aggregate_blackRaven_aux obs 0 0
 
 /-- The total number of black observations is exactly the dataset length. -/

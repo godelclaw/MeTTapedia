@@ -84,7 +84,7 @@ private theorem retainedConversion_support_iff_nonempty
       left right conversion.toSupport
 
 /-- Forget only the conversion path, retaining proposition-valued support. -/
-def toSupport
+theorem toSupport
     {retained : RetainedRoot.{uEvidence} rules}
     {context : FormedContext rules} {source target : TypeOver context}
     (conversion : TypeConversion retained source target) :
@@ -151,7 +151,7 @@ def reindex
 
 /-- If ordinary conversion support is absent, no proof-relevant formed-type
 conversion can be fabricated. -/
-@[reducible] def isEmpty_of_not_support
+theorem isEmpty_of_not_support
     {retained : RetainedRoot.{uEvidence} rules}
     {context : FormedContext rules} {source target : TypeOver context}
     (unsupported :

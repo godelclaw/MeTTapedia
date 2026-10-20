@@ -24,7 +24,7 @@ set_option autoImplicit false
 
 namespace Mettapedia.GSLT.Dynamics.IndependentEventValuationProduct
 
-open CategoryTheory
+open _root_.CategoryTheory
 open Mettapedia.Cybernetics
 open Mettapedia.GSLT
 open Mettapedia.GSLT.Core.ObservationIndexedPruning

@@ -52,8 +52,8 @@ open CategoryTheory Opposite
 namespace Mettapedia.Logic.WorldModel.Indexed.HyperdoctrineBridge
 
 open Mettapedia.PLN.Evidence.EvidenceClass
-open Mettapedia.PLN.Evidence.EvidenceQuantale
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.Evidence
+open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.Bridges.CategoryTheory.WorldModel.PLNWorldModelHyperdoctrine
 
 universe u v x
@@ -64,7 +64,7 @@ variable {State : Type} [EvidenceType State]
 
 /-- The hyperdoctrine's world model, over all typed queries at once, is a
 binary world model over one world. -/
-def pointModel (H : WMHyperdoctrine.{0, 0, 0} State) : FixedQuery.BinaryModel (Σ X : H.Obj, H.query X) :=
+def pointModel (H : WMHyperdoctrine.{0, 0, 0} State) : FixedQueryBridge.BinaryModel (Σ X : H.Obj, H.query X) :=
   letI : WorldModelSigma State H.Obj H.query := H.worldModel
   { State := State
     worldModel := WorldModelSigma.toWorldModelSigma State H.Obj H.query }

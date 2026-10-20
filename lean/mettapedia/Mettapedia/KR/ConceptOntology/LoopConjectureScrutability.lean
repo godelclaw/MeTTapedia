@@ -373,7 +373,7 @@ end CredalScrutability
 
 namespace ControlExample
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 /-- The exact crisp relation used by the control benchmark. -/

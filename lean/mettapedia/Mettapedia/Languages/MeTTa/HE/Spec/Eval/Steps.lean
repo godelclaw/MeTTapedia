@@ -1,6 +1,10 @@
 import Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation
 import Mettapedia.Languages.MeTTa.HE.Spec.Type
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation
+import Mettapedia.Logic.HostingStyles.NameEquality.NameSymmetry
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Executable-independent evaluator steps
@@ -28,6 +32,24 @@ def UnifyCandidateRel
     MatchRel equalityGroundedSemantic target pattern matched ∧
       LogicalMergeRel matched incoming output
 
+/-- A surviving unification candidate presents exactly its new equation and
+the full incoming constraint theory, independently of its record layout. -/
+theorem UnifyCandidateRel.solutions {target pattern : Atom} {incoming output : Bindings}
+    (candidate : UnifyCandidateRel target pattern incoming output) (valuation : String → Atom) :
+    Spec.Type.RuntimeRefinement.TypeBindingSatisfied valuation output ↔
+      Spec.Type.RuntimeRefinement.applyTypeValuation valuation target =
+        Spec.Type.RuntimeRefinement.applyTypeValuation valuation pattern ∧
+      Spec.Type.RuntimeRefinement.TypeBindingSatisfied valuation incoming := by
+  obtain ⟨matched,matching,merged⟩ := candidate
+  rw [merged.solutions]
+  apply and_congr_left
+  intro _
+  rw [Spec.Bindings.ScopeObservation.ModelTransport.specTypeBindingSatisfied_iff_heBindingSatisfied_translated,
+    Spec.Match.SolutionTheory.matchRel_solution_iff matching,
+    ← Spec.Bindings.ScopeObservation.ModelTransport.encodeModelAtom_applyTypeValuation,
+    ← Spec.Bindings.ScopeObservation.ModelTransport.encodeModelAtom_applyTypeValuation]
+  exact Spec.Match.SolutionTheory.encodeModelAtom_injective.eq_iff
+
 /-- Constraint-only observation of successful `unify` selection. The atom is
 equal to the template in every model of the merged bindings. Exact primitive
 execution additionally fixes its actual selected-frame readout. -/
@@ -36,8 +58,8 @@ def UnifySuccessRel
     (emitted : Atom) (output : Bindings) : Prop :=
     UnifyCandidateRel target pattern incoming output ∧
     ∀ valuation : String → Metta.Atom,
-      LeaTTaBridge.HEBindingSatisfied valuation output →
-        LeaTTaBridge.HEAtomEquationSatisfied valuation emitted thenBranch
+      Spec.Match.SolutionTheory.HEBindingSatisfied valuation output →
+        Spec.Match.SolutionTheory.HEAtomEquationSatisfied valuation emitted thenBranch
 
 /-- No structurally matched binding has a logically satisfiable conjunction. -/
 def UnifyNoMatchRel
@@ -183,8 +205,8 @@ def EquationQueryResultRel (incoming matched : Bindings) (freshRhs emitted : Ato
     (output : Bindings) : Prop :=
   LogicalMergeRel matched incoming output ∧
     ∀ valuation : String → Metta.Atom,
-      LeaTTaBridge.HEBindingSatisfied valuation output →
-        LeaTTaBridge.HEAtomEquationSatisfied valuation emitted freshRhs
+      Spec.Match.SolutionTheory.HEBindingSatisfied valuation output →
+        Spec.Match.SolutionTheory.HEAtomEquationSatisfied valuation emitted freshRhs
 
 /-- One selected equation rule survives the ambient merge and emits an atom
 observationally equal to the fresh RHS. -/
@@ -220,6 +242,36 @@ theorem candidate {space : Space} {live : List Atom} {query : Atom} {incoming : 
     ⟨rawLhs, rawRhs, List.mem_of_getElem? occurrence.stored, occurrence.selected⟩,
     occurrence.result⟩
 
+/-- The selected row presents exactly the incoming theory conjoined with
+one unification equation. Binding record order and representative choices
+do not introduce further semantic alternatives. -/
+theorem solutions {space : Space} {live : List Atom} {query : Atom} {incoming : Bindings}
+    {position : Nat} {left right pattern body : Atom} {matched : Bindings}
+    {emitted : Atom} {output : Bindings}
+    (selected : EquationQueryOccurrenceRel space live query incoming position
+      left right pattern body matched emitted output)
+    (valuation : String → Atom) :
+    Spec.Type.RuntimeRefinement.TypeBindingSatisfied valuation output ↔
+      Spec.Type.RuntimeRefinement.applyTypeValuation valuation query =
+        Spec.Type.RuntimeRefinement.applyTypeValuation valuation pattern ∧
+      Spec.Type.RuntimeRefinement.TypeBindingSatisfied valuation incoming := by
+  exact UnifyCandidateRel.solutions ⟨matched,selected.selected.2,selected.result.1⟩ valuation
+
+/-- A fixed fresh instance has one solution theory even when the source
+derivations choose different match or merge presentations. -/
+theorem solutionTheory_unique
+    {space : Space} {live : List Atom} {query : Atom} {incoming : Bindings}
+    {position : Nat} {left right pattern body : Atom} {firstMatch secondMatch : Bindings}
+    {firstAtom secondAtom : Atom} {first second : Bindings}
+    (a : EquationQueryOccurrenceRel space live query incoming position
+      left right pattern body firstMatch firstAtom first)
+    (b : EquationQueryOccurrenceRel space live query incoming position
+      left right pattern body secondMatch secondAtom second)
+    (valuation : String → Atom) :
+    Spec.Type.RuntimeRefinement.TypeBindingSatisfied valuation first ↔
+      Spec.Type.RuntimeRefinement.TypeBindingSatisfied valuation second :=
+  (a.solutions valuation).trans (b.solutions valuation).symm
+
 /-- A physical position fixes both raw sides, including when several equal
 rules occupy different positions. -/
 theorem raw_rule_unique {space : Space} {live : List Atom} {query : Atom} {incoming : Bindings}
@@ -251,6 +303,295 @@ theorem equationQueryCandidateRel_iff_occurrence
       ⟨atPosition, selected, result⟩⟩
   · rintro ⟨position, rawLhs, rawRhs, freshPattern, freshRhs, matched, occurrence⟩
     exact occurrence.candidate
+
+/-! ## Complete physical equation frontiers -/
+
+/-- A selected physical equation and its one principal constraint theory.
+The instantiated RHS remains source work; interpreting it is a separate
+recursive judgment. Distinct stored copies have distinct positions. -/
+structure EquationWork where
+  position : Nat
+  left : Atom
+  right : Atom
+  pattern : Atom
+  body : Atom
+  bindings : Bindings
+
+/-- One source row either contributes its principal match or has no viable
+match. The equality-grounded profile is unitary modulo binding solution
+theory; custom grounded branching is not folded into this profile. Fresh
+instances are chosen once per row, including failed rows. -/
+inductive EquationRowResultsRel (live : List Atom) (query : Atom) (incoming : Bindings) :
+    Nat → Atom → List EquationWork → Prop where
+  | irrelevant (position : Nat) (row : Atom) :
+      (∀ left right, row ≠ .expression [.symbol "=",left,right]) →
+      EquationRowResultsRel live query incoming position row []
+  | miss (position : Nat) (left right pattern body : Atom) :
+      AlphaVariantRel live query incoming left right pattern body →
+      (∀ otherPattern otherBody,
+        AlphaVariantRel live query incoming left right otherPattern otherBody →
+        ∀ matched output, ¬(MatchRel equalityGroundedSemantic query otherPattern matched ∧
+          LogicalMergeRel matched incoming output)) →
+      EquationRowResultsRel live query incoming position
+        (.expression [.symbol "=",left,right]) []
+  | hit (position : Nat) (left right pattern body : Atom) (matched output : Bindings) :
+      AlphaVariantRel live query incoming left right pattern body →
+      MatchRel equalityGroundedSemantic query pattern matched →
+      LogicalMergeRel matched incoming output →
+      EquationRowResultsRel live query incoming position
+        (.expression [.symbol "=",left,right])
+        [⟨position,left,right,pattern,body,output⟩]
+
+/-- Complete finite source coverage visits every physical stored row. The
+partition records zero or one principal work item per row; it does not count
+different proofs or presentations of the same unifier as alternatives. -/
+inductive EquationFrontierRel (space : Space) (live : List Atom) (query : Atom)
+    (incoming : Bindings) : List EquationWork → Prop where
+  | completed {blocks : List (List EquationWork)} :
+      List.Forall₂ (fun row block =>
+        EquationRowResultsRel live query incoming row.2 row.1 block)
+        space.atoms.zipIdx blocks →
+      EquationFrontierRel space live query incoming blocks.flatten
+
+theorem EquationRowResultsRel.positions
+    {live : List Atom} {query row : Atom} {incoming : Bindings} {position : Nat}
+    {results : List EquationWork}
+    (completed : EquationRowResultsRel live query incoming position row results) :
+    (results.map EquationWork.position).Sublist [position] := by
+  cases completed <;> simp
+
+theorem EquationRowResultsRel.occurrence
+    {space : Space} {live : List Atom} {query row : Atom} {incoming : Bindings}
+    {position : Nat} {results : List EquationWork}
+    (completed : EquationRowResultsRel live query incoming position row results)
+    (stored : space.atoms[position]? = some row)
+    {work : EquationWork} (present : work ∈ results) :
+    ∃ matched, EquationQueryOccurrenceRel space live query incoming work.position
+      work.left work.right work.pattern work.body matched work.body work.bindings := by
+  cases completed with
+  | irrelevant => simp at present
+  | miss => simp at present
+  | hit left right pattern body matched output alpha matching merged =>
+      obtain rfl := List.mem_singleton.mp present
+      exact ⟨matched,stored,⟨alpha,matching⟩,merged,fun _ _ => rfl⟩
+
+/-- A viable source occurrence cannot be discarded by its row's completion
+certificate, including when it uses a different legal fresh instance. -/
+theorem EquationRowResultsRel.covers
+    {space : Space} {live : List Atom} {query row : Atom} {incoming : Bindings}
+    {position : Nat} {results : List EquationWork}
+    (completed : EquationRowResultsRel live query incoming position row results)
+    (stored : space.atoms[position]? = some row)
+    {left right pattern body emitted : Atom} {matched output : Bindings}
+    (source : EquationQueryOccurrenceRel space live query incoming position
+      left right pattern body matched emitted output) :
+    ∃ work ∈ results, work.position = position := by
+  have shape : row = .expression [.symbol "=",left,right] :=
+    Option.some.inj (stored.symm.trans source.stored)
+  cases completed with
+  | irrelevant _ notEquation => exact False.elim (notEquation left right shape)
+  | miss selectedLeft selectedRight _ _ _ absent =>
+      have same : selectedLeft = left ∧ selectedRight = right := by simpa using shape
+      rcases same with ⟨rfl,rfl⟩
+      exact False.elim (absent pattern body source.selected.1 matched output
+        ⟨source.selected.2,source.result.1⟩)
+  | hit => exact ⟨_,List.mem_cons_self,rfl⟩
+
+/-- Every member of a completed source frontier carries a physical source
+occurrence. Coverage is constructed from the stored rows, not an evaluator
+output or a result-membership oracle. -/
+theorem EquationFrontierRel.occurrence
+    {space : Space} {live : List Atom} {query : Atom} {incoming : Bindings}
+    {results : List EquationWork} (completed : EquationFrontierRel space live query incoming results)
+    {work : EquationWork} (present : work ∈ results) :
+    ∃ matched, EquationQueryOccurrenceRel space live query incoming work.position
+      work.left work.right work.pattern work.body matched work.body work.bindings := by
+  cases completed with
+  | completed covered =>
+      have located : ∀ {rows : List (Atom × Nat)} {blocks : List (List EquationWork)},
+          List.Forall₂ (fun row block => EquationRowResultsRel live query incoming row.2 row.1 block)
+            rows blocks → work ∈ blocks.flatten →
+          ∃ row ∈ rows, ∃ block,
+            EquationRowResultsRel live query incoming row.2 row.1 block ∧ work ∈ block := by
+        intro rows blocks paired
+        induction paired with
+        | nil => simp
+        | cons head tail ih =>
+            intro member
+            simp only [List.flatten_cons,List.mem_append] at member
+            rcases member with member | member
+            · exact ⟨_,List.mem_cons_self,_,head,member⟩
+            · obtain ⟨row,inRows,block,derived,selected⟩ := ih member
+              exact ⟨row,List.mem_cons_of_mem _ inRows,block,derived,selected⟩
+      obtain ⟨⟨row,position⟩,stored,block,derived,selected⟩ := located covered present
+      rw [List.mem_zipIdx_iff_getElem?] at stored
+      exact derived.occurrence stored selected
+
+/-- Every viable physical source occurrence is represented in the completed
+frontier. This is independent source coverage, not a test of a runtime list. -/
+theorem EquationFrontierRel.covers
+    {space : Space} {live : List Atom} {query : Atom} {incoming : Bindings}
+    {results : List EquationWork} (completed : EquationFrontierRel space live query incoming results)
+    {position : Nat} {left right pattern body emitted : Atom} {matched output : Bindings}
+    (source : EquationQueryOccurrenceRel space live query incoming position
+      left right pattern body matched emitted output) :
+    ∃ work ∈ results, work.position = position := by
+  cases completed with
+  | completed covered =>
+      have counterpart : ∀ {rows : List (Atom × Nat)} {blocks : List (List EquationWork)},
+          List.Forall₂ (fun row block => EquationRowResultsRel live query incoming row.2 row.1 block)
+            rows blocks → ∀ row ∈ rows,
+          ∃ block ∈ blocks, EquationRowResultsRel live query incoming row.2 row.1 block := by
+        intro rows blocks paired
+        induction paired with
+        | nil => simp
+        | cons head tail ih =>
+            intro row member
+            rcases List.mem_cons.mp member with same | member
+            · subst row
+              exact ⟨_,List.mem_cons_self,head⟩
+            · obtain ⟨block,present,derived⟩ := ih row member
+              exact ⟨block,List.mem_cons_of_mem _ present,derived⟩
+      have stored : (.expression [.symbol "=",left,right],position) ∈ space.atoms.zipIdx :=
+        List.mem_zipIdx_iff_getElem?.mpr source.stored
+      obtain ⟨block,present,derived⟩ := counterpart covered _ stored
+      obtain ⟨work,member,same⟩ := derived.covers source.stored source
+      exact ⟨work,List.mem_flatten.mpr ⟨block,present,member⟩,same⟩
+
+/-- Exact support is indexed by stored occurrences. Different source proofs
+of one unifier do not add occurrences; equal stored copies remain distinct. -/
+theorem EquationFrontierRel.position_iff
+    {space : Space} {live : List Atom} {query : Atom} {incoming : Bindings}
+    {results : List EquationWork} (completed : EquationFrontierRel space live query incoming results)
+    (position : Nat) :
+    position ∈ results.map EquationWork.position ↔
+      ∃ left right pattern body matched emitted output,
+        EquationQueryOccurrenceRel space live query incoming position
+          left right pattern body matched emitted output := by
+  constructor
+  · intro member
+    obtain ⟨work,present,rfl⟩ := List.mem_map.mp member
+    obtain ⟨matched,source⟩ := completed.occurrence present
+    exact ⟨_,_,_,_,matched,_,_,source⟩
+  · rintro ⟨left,right,pattern,body,matched,emitted,output,source⟩
+    obtain ⟨work,present,same⟩ := completed.covers source
+    exact List.mem_map.mpr ⟨work,present,same⟩
+
+/-- An equation copy can contribute only once to one completed query phase.
+Equal equations in different positions remain separate occurrences. -/
+theorem EquationFrontierRel.positions_nodup
+    {space : Space} {live : List Atom} {query : Atom} {incoming : Bindings}
+    {results : List EquationWork} (completed : EquationFrontierRel space live query incoming results) :
+    (results.map EquationWork.position).Nodup := by
+  cases completed with
+  | completed covered =>
+      have selected : ∀ {rows : List (Atom × Nat)} {blocks : List (List EquationWork)},
+          List.Forall₂ (fun row block => EquationRowResultsRel live query incoming row.2 row.1 block)
+            rows blocks →
+          (blocks.flatten.map EquationWork.position).Sublist (rows.map Prod.snd) := by
+        intro rows blocks paired
+        induction paired with
+        | nil => simp
+        | cons head tail ih =>
+            simpa only [List.flatten_cons,List.map_append,List.map_cons,List.singleton_append] using
+              head.positions.append ih
+      have distinct : (space.atoms.zipIdx.map Prod.snd).Nodup := by
+        simpa using (List.nodup_range' (s := 0) (n := space.atoms.length))
+      exact distinct.sublist (selected covered)
+
+/-- All complete frontiers account for exactly the same physical copies.
+Fresh names and equivalent constraint records do not change multiplicity. -/
+theorem EquationFrontierRel.positions_perm
+    {space : Space} {live : List Atom} {query : Atom} {incoming : Bindings}
+    {first second : List EquationWork}
+    (a : EquationFrontierRel space live query incoming first)
+    (b : EquationFrontierRel space live query incoming second) :
+    (first.map EquationWork.position).Perm (second.map EquationWork.position) := by
+  apply (List.perm_ext_iff_of_nodup a.positions_nodup b.positions_nodup).mpr
+  intro position
+  exact (a.position_iff position).trans (b.position_iff position).symm
+
+/-- Complete decisions for one physical row agree on its raw source work.
+Fresh syntax and constraint presentations may differ, but a successful row
+cannot be discarded by another complete decision for the same query. -/
+theorem EquationRowResultsRel.source_related
+    {live : List Atom} {query row : Atom} {incoming : Bindings} {position : Nat}
+    {first second : List EquationWork}
+    (a : EquationRowResultsRel live query incoming position row first)
+    (b : EquationRowResultsRel live query incoming position row second) :
+    List.Forall₂ (fun before after => before.position = after.position ∧
+      before.left = after.left ∧ before.right = after.right) first second := by
+  cases a with
+  | irrelevant _ notEquation =>
+      cases b with
+      | irrelevant => exact .nil
+      | miss left right _pattern _body _fresh _absent => exact (notEquation left right rfl).elim
+      | hit left right _pattern _body _matched _output _fresh _matching _merged =>
+          exact (notEquation left right rfl).elim
+  | miss left right _pattern _body _fresh absent =>
+      cases b with
+      | irrelevant _notRow notEquation => exact (notEquation left right rfl).elim
+      | miss => exact .nil
+      | hit _left _right pattern body matched output fresh matching merged =>
+          exact (absent pattern body fresh matched output ⟨matching,merged⟩).elim
+  | hit left right pattern body matched output fresh matching merged =>
+      cases b with
+      | irrelevant _notRow notEquation => exact (notEquation left right rfl).elim
+      | miss _left _right _pattern _body _fresh absent =>
+          exact (absent pattern body fresh matched output ⟨matching,merged⟩).elim
+      | hit => exact .cons ⟨rfl,rfl,rfl⟩ .nil
+
+/-- Every completed frontier retains the same ordered raw source rows.
+This strengthens occurrence-bag agreement without identifying fresh names,
+binding records or the private instantiated body syntax. -/
+theorem EquationFrontierRel.source_related
+    {space : Space} {live : List Atom} {query : Atom} {incoming : Bindings}
+    {first second : List EquationWork}
+    (a : EquationFrontierRel space live query incoming first)
+    (b : EquationFrontierRel space live query incoming second) :
+    List.Forall₂ (fun before after => before.position = after.position ∧
+      before.left = after.left ∧ before.right = after.right) first second := by
+  have blocks {rows : List (Atom × Nat)} {left right : List (List EquationWork)}
+      (before : List.Forall₂ (fun row block => EquationRowResultsRel live query incoming row.2 row.1 block) rows left)
+      (after : List.Forall₂ (fun row block => EquationRowResultsRel live query incoming row.2 row.1 block) rows right) :
+      List.Forall₂ (List.Forall₂ (fun before after => before.position = after.position ∧
+        before.left = after.left ∧ before.right = after.right)) left right := by
+    induction before generalizing right with
+    | nil => cases after; exact .nil
+    | cons first remaining ih =>
+        cases after with
+        | cons second later => exact .cons (first.source_related second) (ih later)
+  cases a with
+  | completed before =>
+      cases b with
+      | completed after => exact List.rel_flatten (blocks before after)
+
+theorem EquationFrontierRel.length_eq
+    {space : Space} {live : List Atom} {query : Atom} {incoming : Bindings}
+    {first second : List EquationWork}
+    (a : EquationFrontierRel space live query incoming first)
+    (b : EquationFrontierRel space live query incoming second) : first.length = second.length := by
+  exact (a.source_related b).length_eq
+
+/-- Only a completed frontier licenses the absence of every viable equation
+candidate. A partial list of discovered work has no such consequence. -/
+theorem EquationFrontierRel.empty_iff_no_candidate
+    {space : Space} {live : List Atom} {query : Atom} {incoming : Bindings}
+    {results : List EquationWork} (completed : EquationFrontierRel space live query incoming results) :
+    results = [] ↔ ∀ emitted output,
+      ¬EquationQueryCandidateRel space live query incoming emitted output := by
+  constructor
+  · intro empty emitted output candidate
+    obtain ⟨position,left,right,pattern,body,matched,source⟩ :=
+      (equationQueryCandidateRel_iff_occurrence _ _ _ _ _ _).mp candidate
+    obtain ⟨work,present,_⟩ := completed.covers source
+    rw [empty] at present
+    exact List.not_mem_nil present
+  · intro absent
+    apply List.eq_nil_iff_forall_not_mem.mpr
+    intro work present
+    obtain ⟨_,source⟩ := completed.occurrence present
+    exact absent _ _ source.candidate
 
 /-- No selected equation rule matches the query.  This is the spec
 counterpart of the unchanged-query result, without an executable empty-list
@@ -333,12 +674,13 @@ private def oneRuleSpace : Space :=
   Space.ofList [
     .expression [.symbol "=", .symbol "a", .symbol "result"]]
 
-private theorem closedSymbolsAlphaVariant :
-    AlphaVariantRel [] (.symbol "a") Bindings.empty
-      (.symbol "a") (.symbol "result")
-      (.symbol "a") (.symbol "result") := by
+/-- Closed symbol rules need no private names under any caller scope. -/
+theorem AlphaVariantRel.symbols (live : List Atom) (query : Atom) (incoming : Bindings)
+    (left right : String) :
+    AlphaVariantRel live query incoming
+      (.symbol left) (.symbol right) (.symbol left) (.symbol right) := by
   refine ⟨id, Function.injective_id,
-    AlphaRenameAtomRel.symbol "a", AlphaRenameAtomRel.symbol "result", ?_⟩
+    AlphaRenameAtomRel.symbol left, AlphaRenameAtomRel.symbol right, ?_⟩
   intro name hocc
   rcases hocc with hocc | hocc <;> cases hocc
 
@@ -348,7 +690,7 @@ example : EquationQueryCandidateRel oneRuleSpace []
     (.symbol "a") Bindings.empty (.symbol "result") Bindings.empty := by
   refine ⟨.symbol "a", .symbol "result", Bindings.empty, ?_,
     mergeEmptyEmpty, ?_⟩
-  · refine ⟨.symbol "a", .symbol "result", ?_, closedSymbolsAlphaVariant,
+  · refine ⟨.symbol "a", .symbol "result", ?_, AlphaVariantRel.symbols _ _ _ _ _,
       MatchRel.symSym "a" semanticLoopFree_empty⟩
     simp [oneRuleSpace, Space.ofList]
   · intro valuation _
@@ -360,6 +702,70 @@ example : EquationQueryNoMatchRel Space.empty []
   intro freshPattern freshRhs matched hmatch
   obtain ⟨rawLhs, rawRhs, hmem, _⟩ := hmatch
   simp [Space.empty] at hmem
+
+namespace FrontierControls
+
+def rule : Atom := .expression [.symbol "=",.symbol "a",.symbol "result"]
+def missedRule : Atom := .expression [.symbol "=",.symbol "b",.symbol "missed"]
+def context : Space := Space.ofList [rule,.symbol "metadata",missedRule,rule]
+def work (position : Nat) : EquationWork :=
+  ⟨position,.symbol "a",.symbol "result",.symbol "a",.symbol "result",Bindings.empty⟩
+
+private theorem hit (position : Nat) :
+    EquationRowResultsRel [] (.symbol "a") Bindings.empty position rule [work position] :=
+  .hit _ _ _ _ _ _ _ (AlphaVariantRel.symbols _ _ _ _ _)
+    (.symSym "a" semanticLoopFree_empty) mergeEmptyEmpty
+
+private theorem miss (live : List Atom) (incoming : Bindings) (position : Nat) :
+    EquationRowResultsRel live (.symbol "a") incoming position missedRule [] := by
+  apply EquationRowResultsRel.miss position (.symbol "b") (.symbol "missed")
+    (.symbol "b") (.symbol "missed") (AlphaVariantRel.symbols _ _ _ _ _)
+  intro pattern body alpha matched output viable
+  obtain ⟨_,_,renamed,_,_⟩ := alpha
+  cases renamed
+  exact symbol_mismatch_not_match (by decide) matched viable.1
+
+/-- Both stored copies survive, with an irrelevant row and a certified miss
+between them. The proof covers the stored rows independently of execution. -/
+theorem complete : EquationFrontierRel context [] (.symbol "a") Bindings.empty [work 0,work 3] := by
+  apply EquationFrontierRel.completed (blocks := [[work 0],[],[],[work 3]])
+  exact .cons (hit 0) (.cons (.irrelevant 1 (.symbol "metadata") (by intro left right bad; cases bad))
+    (.cons (miss [] Bindings.empty 2) (.cons (hit 3) .nil)))
+
+theorem copies_have_distinct_origins :
+    ([work 0,work 3].map EquationWork.position) = [0,3] := rfl
+
+/-- A discovered prefix cannot be relabeled as completion while a viable
+stored copy is missing. -/
+theorem first_copy_alone_is_incomplete :
+    ¬EquationFrontierRel context [] (.symbol "a") Bindings.empty [work 0] := by
+  intro incomplete
+  obtain ⟨matched,source⟩ := complete.occurrence
+    (show work 3 ∈ [work 0,work 3] by simp)
+  obtain ⟨found,member,same⟩ := incomplete.covers source
+  obtain rfl := List.mem_singleton.mp member
+  simp [work] at same
+
+theorem one_copy_cannot_be_counted_twice :
+    ¬EquationFrontierRel context [] (.symbol "a") Bindings.empty [work 0,work 0] := by
+  intro duplicated
+  have distinct := duplicated.positions_nodup
+  simp [work] at distinct
+
+theorem live_copy_prevents_empty_completion :
+    ¬EquationFrontierRel context [] (.symbol "a") Bindings.empty [] := by
+  intro empty
+  obtain ⟨matched,source⟩ := complete.occurrence
+    (show work 0 ∈ [work 0,work 3] by simp)
+  exact (empty.empty_iff_no_candidate.mp rfl) _ _ source.candidate
+
+/-- A genuinely exhausted mismatch has a completed empty source frontier. -/
+theorem complete_miss (live : List Atom) (incoming : Bindings) :
+    EquationFrontierRel (Space.ofList [missedRule]) live (.symbol "a") incoming [] := by
+  apply EquationFrontierRel.completed (blocks := [[]])
+  exact .cons (miss live incoming 0) .nil
+
+end FrontierControls
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Eval.Steps
 
@@ -416,6 +822,96 @@ theorem alphaRenameAtoms_eq {rename : String → String} {source target : List A
 end
 
 end Mettapedia.Languages.MeTTa.HE.EquationFreshening
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Eval.Steps
+
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Match.Merge Spec.Type.Presentation Spec.Type.RuntimeRefinement
+
+/-- The structural occurrence judgment is contained in the finite syntax support. -/
+theorem atomOccurs_mem_typeVars {atom : Atom} {name : String}
+    (occurs : AtomOccurs atom name) : name ∈ TypeSubst.typeVars atom := by
+  induction occurs with
+  | var => simp [TypeSubst.typeVars]
+  | @expression atoms atom name member _occurs ih =>
+      change name ∈ TypeSubst.typeVarsList atoms
+      have included : ∀ {items : List Atom}, atom ∈ items →
+          name ∈ TypeSubst.typeVarsList items := by
+        intro items
+        induction items with
+        | nil => simp
+        | cons first rest tail =>
+            intro present
+            rcases List.mem_cons.mp present with rfl | present
+            · exact List.mem_append_left _ ih
+            · exact List.mem_append_right _ (tail present)
+      exact included member
+
+/-- Finite syntax support contains exactly the independently declared
+variable occurrences. -/
+theorem atomOccurs_iff_mem_typeVars (atom : Atom) (name : String) :
+    AtomOccurs atom name ↔ name ∈ TypeSubst.typeVars atom := by
+  constructor
+  · exact atomOccurs_mem_typeVars
+  · have complete : ∀ atom : Atom, ∀ name,
+        name ∈ TypeSubst.typeVars atom → AtomOccurs atom name := by
+      apply Atom.rec
+        (motive_1 := fun atom => ∀ name, name ∈ TypeSubst.typeVars atom → AtomOccurs atom name)
+        (motive_2 := fun atoms => ∀ name,
+          name ∈ TypeSubst.typeVarsList atoms → ∃ child ∈ atoms, AtomOccurs child name)
+      · intro _name name member
+        simp [TypeSubst.typeVars] at member
+      · intro original name member
+        obtain rfl : name = original := by simpa [TypeSubst.typeVars] using member
+        exact .var _
+      · intro _value name member
+        simp [TypeSubst.typeVars] at member
+      · intro atoms children name member
+        obtain ⟨child,present,occurs⟩ := children name member
+        exact .expression present occurs
+      · intro name member
+        simp [TypeSubst.typeVarsList] at member
+      · intro child children first rest name member
+        rcases List.mem_append.mp member with member | member
+        · exact ⟨child,List.mem_cons_self,first name member⟩
+        · obtain ⟨atom,present,occurs⟩ := rest name member
+          exact ⟨atom,List.mem_cons_of_mem _ present,occurs⟩
+    exact complete atom name
+
+/-- A finite injective rule renamer realizes the same source alpha-variant
+judgment as a globally injective renamer. The extension changes neither side
+of the rule, and freshness still covers the complete caller scope. -/
+theorem AlphaVariantRel.of_injOn
+    {live : List Atom} {query rawLhs rawRhs : Atom} {incoming : Bindings}
+    (rename : String → String)
+    (injective : Set.InjOn rename
+      {name | name ∈ TypeSubst.typeVars rawLhs ++ TypeSubst.typeVars rawRhs})
+    (fresh : ∀ name, (AtomOccurs rawLhs name ∨ AtomOccurs rawRhs name) →
+      ¬QueryVisibleName live query incoming (rename name)) :
+    AlphaVariantRel live query incoming rawLhs rawRhs
+      (renameTypeVars rename rawLhs) (renameTypeVars rename rawRhs) := by
+  obtain ⟨permutation,agrees⟩ :=
+    Mettapedia.Logic.HostingStyles.NameEquality.exists_perm_extending_injOn
+      (TypeSubst.typeVars rawLhs ++ TypeSubst.typeVars rawRhs) rename injective
+  have left : renameTypeVars permutation rawLhs = renameTypeVars rename rawLhs :=
+    ScopeObservation.renameTypeVars_congr_on_typeVars rawLhs
+      (fun name member => agrees name (List.mem_append_left _ member))
+  have right : renameTypeVars permutation rawRhs = renameTypeVars rename rawRhs :=
+    ScopeObservation.renameTypeVars_congr_on_typeVars rawRhs
+      (fun name member => agrees name (List.mem_append_right _ member))
+  refine ⟨permutation,permutation.injective,?_,?_,?_⟩
+  · rw [← left]
+    exact EquationFreshening.rename_alpha _ _
+  · rw [← right]
+    exact EquationFreshening.rename_alpha _ _
+  · intro name occurs
+    have member : name ∈ TypeSubst.typeVars rawLhs ++ TypeSubst.typeVars rawRhs :=
+      occurs.elim (fun occurrence => List.mem_append_left _ (atomOccurs_mem_typeVars occurrence))
+        (fun occurrence => List.mem_append_right _ (atomOccurs_mem_typeVars occurrence))
+    rw [agrees name member]
+    exact fresh name occurs
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Eval.Steps
 
 /-! ## Simultaneous variable renaming
 
@@ -478,7 +974,7 @@ open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Type Spec.Type.Presentation Spec.Type.RuntimeRefinement
 open Spec.Type.Presentation.ScopeObservation
 open Spec.Bindings.ScopeObservation Spec.Match.Merge Spec.Eval.Steps
-open LeaTTaBridge
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 /-- Reindex the complete binding theory, including all repeated rows. -/
 theorem binding_satisfied (rename : String → String) (bindings : Bindings)
@@ -586,7 +1082,7 @@ namespace Mettapedia.Languages.MeTTa.HE.Spec.Eval.Renaming
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Spec.Type Spec.Type.Presentation Spec.Type.RuntimeRefinement
 open Spec.Bindings.ScopeObservation Spec.Match.Merge Spec.Eval.Steps
-open LeaTTaBridge
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 
 theorem match_rename (p : Equiv.Perm String) {left right : Atom} {output : Bindings}
     (derived : MatchRel equalityGroundedSemantic left right output) :
@@ -723,6 +1219,100 @@ theorem query_filtered (p : Equiv.Perm String) {context : Space} {live : List At
   intro emitted output candidate
   apply refused (renameTypeVars p.symm emitted) (renameBindings p.symm output)
   simpa only [space_inverse,atoms_inverse,renameTypeVars_perm_inverse,renameBindings_perm_inverse] using query_candidate p.symm candidate
+
+end Mettapedia.Languages.MeTTa.HE.Spec.Eval.Renaming
+
+/-! ### Schematic stored equations
+
+A stored equation's variables are schematic. Renaming the complete caller
+therefore keeps the stored table unchanged and only composes the chosen
+freshening; the actions above rename the table as well. -/
+
+namespace Mettapedia.Languages.MeTTa.HE.Spec.Eval.Renaming
+open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Spec.Type.Presentation Spec.Type.RuntimeRefinement Spec.Bindings.ScopeObservation
+open Spec.Type.Presentation.ScopeObservation
+open Spec.Match.Merge Spec.Eval.Steps
+
+/-- A stored equation's variables are schematic. Renaming a complete caller
+therefore composes its chosen freshening while retaining the stored rule. -/
+theorem alpha_variant_schematic (p : Equiv.Perm String)
+    {live : List Atom} {query rawLeft rawRight freshLeft freshRight : Atom} {incoming : Bindings}
+    (variant : AlphaVariantRel live query incoming rawLeft rawRight freshLeft freshRight) :
+    AlphaVariantRel (live.map (renameTypeVars p)) (renameTypeVars p query)
+      (renameBindings p incoming) rawLeft rawRight (renameTypeVars p freshLeft)
+      (renameTypeVars p freshRight) := by
+  obtain ⟨rename,injective,left,right,fresh⟩ := variant
+  refine ⟨p ∘ rename,p.injective.comp injective,?_,?_,?_⟩
+  · rw [EquationFreshening.alphaRename_eq left,renameTypeVars_comp]
+    exact EquationFreshening.rename_alpha _ _
+  · rw [EquationFreshening.alphaRename_eq right,renameTypeVars_comp]
+    exact EquationFreshening.rename_alpha _ _
+  · intro name occurs visible
+    exact fresh name occurs ((query_visible p live query incoming (rename name)).mp visible)
+
+theorem rule_instance_schematic (p : Equiv.Perm String) {live : List Atom}
+    {query lhs rhs freshPattern freshRhs : Atom} {incoming matched : Bindings}
+    (selected : EquationRuleInstanceRel live query incoming lhs rhs freshPattern freshRhs matched) :
+    EquationRuleInstanceRel (live.map (renameTypeVars p)) (renameTypeVars p query)
+      (renameBindings p incoming) lhs rhs (renameTypeVars p freshPattern)
+      (renameTypeVars p freshRhs) (renameBindings p matched) :=
+  ⟨alpha_variant_schematic p selected.1,match_rename p selected.2⟩
+
+/-- Equation lookup is equivariant without rewriting the stored table. This
+statement concerns schematic equation lookup, not context-inspecting hosts. -/
+theorem rule_match_schematic (p : Equiv.Perm String) {context : Space} {live : List Atom}
+    {query freshPattern freshRhs : Atom} {incoming matched : Bindings}
+    (selected : EquationRuleMatchRel context live query incoming freshPattern freshRhs matched) :
+    EquationRuleMatchRel context (live.map (renameTypeVars p)) (renameTypeVars p query)
+      (renameBindings p incoming) (renameTypeVars p freshPattern) (renameTypeVars p freshRhs)
+      (renameBindings p matched) := by
+  obtain ⟨lhs,rhs,stored,instantiated⟩ := selected
+  exact ⟨lhs,rhs,stored,rule_instance_schematic p instantiated⟩
+
+theorem query_candidate_schematic (p : Equiv.Perm String) {context : Space} {live : List Atom}
+    {query emitted : Atom} {incoming output : Bindings}
+    (selected : EquationQueryCandidateRel context live query incoming emitted output) :
+    EquationQueryCandidateRel context (live.map (renameTypeVars p)) (renameTypeVars p query)
+      (renameBindings p incoming) (renameTypeVars p emitted) (renameBindings p output) := by
+  obtain ⟨pattern,rhs,matched,selected,observed⟩ := selected
+  exact ⟨renameTypeVars p pattern,renameTypeVars p rhs,renameBindings p matched,
+    rule_match_schematic p selected,query_result p observed⟩
+
+/-- The original physical row and its authored syntax are retained, while
+one action transforms the complete caller, fresh instance and result. -/
+theorem query_occurrence_schematic (p : Equiv.Perm String) {context : Space} {live : List Atom}
+    {query lhs rhs freshPattern freshRhs emitted : Atom} {incoming matched output : Bindings} {position : Nat}
+    (selected : EquationQueryOccurrenceRel context live query incoming position lhs rhs freshPattern freshRhs
+      matched emitted output) :
+    EquationQueryOccurrenceRel context (live.map (renameTypeVars p)) (renameTypeVars p query)
+      (renameBindings p incoming) position lhs rhs (renameTypeVars p freshPattern)
+      (renameTypeVars p freshRhs) (renameBindings p matched) (renameTypeVars p emitted)
+      (renameBindings p output) :=
+  ⟨selected.stored,rule_instance_schematic p selected.selected,query_result p selected.result⟩
+
+theorem query_no_match_schematic (p : Equiv.Perm String) {context : Space} {live : List Atom}
+    {query : Atom} {incoming : Bindings}
+    (missing : EquationQueryNoMatchRel context live query incoming) :
+    EquationQueryNoMatchRel context (live.map (renameTypeVars p)) (renameTypeVars p query)
+      (renameBindings p incoming) := by
+  intro pattern rhs matched selected
+  apply missing (renameTypeVars p.symm pattern) (renameTypeVars p.symm rhs) (renameBindings p.symm matched)
+  simpa only [atoms_inverse,renameTypeVars_perm_inverse,renameBindings_perm_inverse] using
+    rule_match_schematic p.symm selected
+
+theorem query_filtered_schematic (p : Equiv.Perm String) {context : Space} {live : List Atom}
+    {query : Atom} {incoming : Bindings}
+    (filtered : EquationQueryAllFilteredRel context live query incoming) :
+    EquationQueryAllFilteredRel context (live.map (renameTypeVars p)) (renameTypeVars p query)
+      (renameBindings p incoming) := by
+  obtain ⟨⟨pattern,rhs,matched,selected⟩,refused⟩ := filtered
+  refine ⟨⟨renameTypeVars p pattern,renameTypeVars p rhs,renameBindings p matched,
+    rule_match_schematic p selected⟩,?_⟩
+  intro emitted output candidate
+  apply refused (renameTypeVars p.symm emitted) (renameBindings p.symm output)
+  simpa only [atoms_inverse,renameTypeVars_perm_inverse,renameBindings_perm_inverse] using
+    query_candidate_schematic p.symm candidate
 
 end Mettapedia.Languages.MeTTa.HE.Spec.Eval.Renaming
 

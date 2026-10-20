@@ -1,4 +1,5 @@
 import Mathlib.Data.List.Basic
+import Mathlib.Data.List.Induction
 
 /-!
 # Ordered occurrence cursors
@@ -141,6 +142,113 @@ theorem values_preserve_order_and_multiplicity
       (space.filter accept).map Occurrence.value := by
   rw [Cursor.drain_capture_exact]
 
+namespace Positions
+
+/-- The logical row observation uses source coordinates, before any candidate
+selection. Equal values at different coordinates remain separate rows. -/
+def visible (keep : Nat → Bool) (rows : List α) : List α :=
+  (rows.zipIdx.filter fun row => keep row.2).map Prod.fst
+
+def rankBefore (keep : Nat → Bool) (position : Nat) : Nat :=
+  ((List.range position).filter keep).length
+
+/-- Project a sparse frontier without replacing its original coordinates by
+candidate-list positions. Surviving coordinates become visible row ranks. -/
+def project (keep : Nat → Bool) (indexed : List (α × Nat)) : List (α × Nat) :=
+  indexed.filterMap fun row =>
+    if keep row.2 then some (row.1, rankBefore keep row.2) else none
+
+theorem visible_length (keep : Nat → Bool) (rows : List α) :
+    (visible keep rows).length = rankBefore keep rows.length := by
+  unfold visible rankBefore
+  rw [List.length_map]
+  have coordinates :
+      ((rows.zipIdx.map Prod.snd).filter keep).length =
+        (rows.zipIdx.filter fun row => keep row.2).length := by
+    rw [List.filter_map, List.length_map]
+    rfl
+  rw [← coordinates, List.zipIdx_map_snd, ← List.range_eq_range']
+
+/-- Coordinate translation agrees with independently filtering full rows and
+only then enumerating the resulting logical observation. -/
+theorem project_zipIdx (keep : Nat → Bool) (rows : List α) :
+    project keep rows.zipIdx = (visible keep rows).zipIdx := by
+  induction rows using List.reverseRecOn with
+  | nil => rfl
+  | append_singleton rows row ih =>
+      cases retained : keep rows.length with
+      | false =>
+          simpa [project, visible, List.zipIdx_append, retained] using ih
+      | true =>
+          have rank : rankBefore keep rows.length =
+              (rows.zipIdx.filter fun entry => keep entry.2).length := by
+            simpa only [visible, List.length_map] using (visible_length keep rows).symm
+          simpa [project, visible, List.zipIdx_append, retained, rank] using
+            congrArg (fun before => before ++ [(row, rankBefore keep rows.length)]) ih
+
+/-- Payload filtering can be performed by an index before positional
+projection, provided that the source coordinates remain attached. -/
+theorem project_filter (keep : Nat → Bool) (candidate : α → Bool)
+    (indexed : List (α × Nat)) :
+    project keep (indexed.filter fun row => candidate row.1) =
+      (project keep indexed).filter fun row => candidate row.1 := by
+  induction indexed with
+  | nil => rfl
+  | cons row rest ih =>
+      simp only [project] at ih
+      cases accepted : candidate row.1 <;> cases retained : keep row.2 <;>
+        simp [project, accepted, retained, ih]
+
+theorem project_candidates (keep : Nat → Bool) (candidate : α → Bool) (rows : List α) :
+    project keep (rows.zipIdx.filter fun row => candidate row.1) =
+      ((visible keep rows).zipIdx.filter fun row => candidate row.1) := by
+  rw [project_filter, project_zipIdx]
+
+/-- Prefix admission tests original row coordinates, including when unrelated
+rows have already been omitted from a sparse candidate frontier. -/
+theorem zipIdx_filter_prefix (rows : List α) (ceiling start : Nat) :
+    ((rows.zipIdx start).filter fun row => decide (row.2 < start + ceiling)) =
+      (rows.take ceiling).zipIdx start := by
+  induction ceiling generalizing rows start with
+  | zero =>
+      simp only [List.take_zero, List.zipIdx_nil]
+      apply List.filter_eq_nil_iff.mpr
+      intro row member
+      have lower := List.le_snd_of_mem_zipIdx member
+      simpa only [Nat.add_zero, decide_eq_true_eq] using Nat.not_lt.mpr lower
+  | succ ceiling ih =>
+      cases rows with
+      | nil => simp
+      | cons row rest =>
+          have first : start < start + (ceiling + 1) := by omega
+          simp only [List.zipIdx_cons, List.filter_cons, first, decide_true,
+            ↓reduceIte, List.take_succ_cons]
+          have shifted : start + (ceiling + 1) = (start + 1) + ceiling := by omega
+          rw [shifted]
+          exact congrArg (List.cons (row, start)) (ih rest (start + 1))
+
+theorem zipIdx_filter_suffix (rows : List α) (lower start : Nat) :
+    ((rows.zipIdx start).filter fun row => decide (start + lower ≤ row.2)) =
+      (rows.drop lower).zipIdx (start + lower) := by
+  induction lower generalizing rows start with
+  | zero =>
+      simp only [Nat.add_zero, List.drop_zero]
+      apply List.filter_eq_self.mpr
+      intro row member
+      exact of_decide_eq_true (by simpa using List.le_snd_of_mem_zipIdx member)
+  | succ lower ih =>
+      cases rows with
+      | nil => simp
+      | cons row rest =>
+          have first : ¬start + (lower + 1) ≤ start := by omega
+          simp only [List.zipIdx_cons, List.filter_cons, first, decide_false,
+            List.drop_succ_cons]
+          have shifted : start + (lower + 1) = (start + 1) + lower := by omega
+          rw [shifted]
+          exact ih rest (start + 1)
+
+end Positions
+
 namespace Canaries
 
 def firstSeven : Occurrence Nat := ⟨0, 7⟩
@@ -184,6 +292,11 @@ end Canaries
 #print axioms append_after_capture_invisible
 #print axioms removal_after_capture_invisible
 #print axioms values_preserve_order_and_multiplicity
+#print axioms Positions.visible_length
+#print axioms Positions.project_zipIdx
+#print axioms Positions.project_candidates
+#print axioms Positions.zipIdx_filter_prefix
+#print axioms Positions.zipIdx_filter_suffix
 #print axioms Canaries.duplicate_values_remain_distinct_occurrences
 #print axioms Canaries.live_read_is_not_append_stable
 #print axioms Canaries.live_position_is_not_removal_stable

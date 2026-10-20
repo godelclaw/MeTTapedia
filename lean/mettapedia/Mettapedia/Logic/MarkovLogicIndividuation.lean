@@ -196,7 +196,7 @@ theorem IndividuatedSubsystem.wmQueryStrength_unique
 -- ═══════════════════════════════════════════════════════════════════════════
 
 open Mettapedia.Logic.MarkovLogicAbstract
-open Mettapedia.PLN.WorldModel.PLNWorldModel
+open Mettapedia.PLN.WorldModel
 open Mettapedia.Logic.MarkovLogicAbstract.MassState
 
 /-- **Capstone theorem: WM query strength is stable under ontology extension.**
@@ -206,7 +206,7 @@ open Mettapedia.Logic.MarkovLogicAbstract.MassState
     the PLN/WM truth value — is exactly the same for both specs.
 
     This is the full semantic chain:
-    infinite MLN → DLR measure → MassSemantics → BinaryEvidence → queryStrength,
+    infinite MLN → DLR measure → Mettapedia.ProbabilityTheory.MassSemantics → BinaryEvidence → queryStrength,
     and the queryStrength at the end is invariant under distant ontology growth.
 
     This is the theorem GPT-5.4 Pro identified as the "most beautiful use

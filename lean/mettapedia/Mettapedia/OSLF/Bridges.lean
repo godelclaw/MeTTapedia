@@ -1,5 +1,6 @@
 import Mettapedia.OSLF.Bridges.CategoryTheory
 import Mettapedia.OSLF.Bridges.Foundation
+import Mettapedia.OSLF.Bridges.TypeTheory.AuthoredIndexedVector
 
 /-!
 # OSLF Bridges

@@ -30,7 +30,7 @@ open Mettapedia.Logic
 open Mettapedia.PLN.Evidence.EvidenceClass
 open Mettapedia.PLN.Bridges.ProbabilityTheory.EvidenceDirichlet
 open Mettapedia.ProbabilityTheory.HiddenMarkovModels.FiniteHiddenMarkovModel
-open Mettapedia.PLN.WorldModel.PLNWorldModelAdditive
+open Mettapedia.PLN.WorldModel.WorldModelAdditive
 open Mettapedia.PLN.WorldModel.PLNWorldModelGeneric
 open Mettapedia.PLN.WorldModel
 open Mettapedia.PLN.WorldModel.SufficientStatisticEncoder
@@ -111,10 +111,6 @@ theorem aggregate_emissionMultiset_eq_emissionRowEvidenceOfWord
       simpa [emissionRowStatistic, emissionObservationEvidence,
         emissionRowEvidenceOfWord_cons] using congrArg
         (fun e => emissionObservationEvidence (latent := latent) (obs := obs) z q + e) ih
-
-instance instEvidenceTypeEmissionWMState :
-    EvidenceType (Multiset (EmissionObservation latent obs)) :=
-  multisetEvidenceType (EmissionObservation latent obs)
 
 noncomputable instance instAdditiveWorldModelEmissionWMState :
     AdditiveWorldModel (Multiset (EmissionObservation latent obs)) (Fin latent) (MultiEvidence obs) :=

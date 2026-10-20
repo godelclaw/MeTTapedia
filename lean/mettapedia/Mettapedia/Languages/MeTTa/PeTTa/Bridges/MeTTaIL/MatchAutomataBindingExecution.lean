@@ -22,7 +22,7 @@ open CettaWire MeTTaILFirstOrderRuleCompilation
 open Mettapedia.OSLF.MeTTaIL.Syntax Mettapedia.OSLF.MeTTaIL.Match
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
 open Mettapedia.Languages.ProcessCalculi.MORK (Subst applySubst matchAtom)
-open Effects (State)
+open _root_.Mettapedia.Languages.MeTTa.PeTTa.Effects (State)
 open Eval MatchAutomataProgram
 open MatchAutomataDerivativeExecution (positionTerm locationTerm)
 open SubtermMatching (Location Position)
@@ -1154,7 +1154,7 @@ private theorem rows_body_returns (state : State) (candidates : List Location)
       have tested := member_captured_returns bound state (locationTerm ⟨path, next⟩)
         (candidates.map locationTerm) [a "At" [v "path", v "next"], v "candidates"]
         (by simp [bound, selected, bindings, foldEnvironment, applySubst, applySubst.applySubstList,
-          Subst.lookup, locationTerm, CettaWireAtom.encode, CettaWireAtom.encodeMany, Function.comp_def]; rfl)
+          Subst.lookup, locationTerm, CettaWireAtom.encode, CettaWireAtom.encodeMany])
       have memberExact : locationTerm ⟨path, next⟩ ∈ candidates.map locationTerm ↔
           (⟨path, next⟩ : Location) ∈ candidates := by
         simp [locationTerm_injective.eq_iff]
@@ -1460,8 +1460,7 @@ mutual
           have returned := append_captured_returns selected state (path.map Term.natural) [Term.natural next]
             [v "path", a "LCons" [v "next", .symbol "LNil"]]
             (by simp [selected, bindings, foldEnvironment, applySubst, applySubst.applySubstList,
-              Subst.lookup, positionTerm, encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany,
-              Function.comp_def])
+              Subst.lookup, positionTerm, encodeList, CettaWireAtom.encode, CettaWireAtom.encodeMany])
           have values : path.map Term.natural ++ [Term.natural next] = childPath.map Term.natural := by
             simp [childPath]
           rw [values] at returned

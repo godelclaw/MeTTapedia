@@ -27,8 +27,8 @@ inductive Session (driver : Driver) (runtime : Engine driver)
   | unresolvedCube (source : driver.Decoded raw)
   | running (source : driver.Decoded raw)
       (state : Mettapedia.OSLF.NativeTypes.Decision.Machine.State
-        (Mettapedia.OSLF.NativeTypes.Decision.Machine.Observation runtime.cursor)
-        (Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation runtime.leaves formula source.val))
+        (Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence runtime.cursor)
+        (Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation runtime.leaves formula runtime.cursor.spatial.theory source.val))
 
 def Session.nativeResult {driver : Driver} {runtime : Engine driver}
     {formula : driver.Formula} {raw : Pattern} : Session driver runtime formula raw →
@@ -40,7 +40,9 @@ def Session.nativeResult {driver : Driver} {runtime : Engine driver}
   | .running source state => .checked source (.semantic (Outcome.map
       (Iff.of_eq (congrArg (fun predicate : GSLTTypeSynthesis.EquationPredicate driver.system =>
         predicate source.val) (Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation_comparison
-          runtime.leaves driver.tests runtime.leaf_meaning formula))) state.outcome))
+          runtime.leaves driver.tests runtime.leaf_meaning formula runtime.cursor.spatial.theory |>.trans
+            (congrArg (fun spatial => Mettapedia.OSLF.NativeTypes.Decision.Reference.Core.denotation driver.tests formula spatial)
+              runtime.spatial_meaning)))) state.outcome))
 
 def Session.readout {driver : Driver} {runtime : Engine driver}
     {formula : driver.Formula} {raw : Pattern} (session : Session driver runtime formula raw) :
@@ -49,8 +51,8 @@ def Session.readout {driver : Driver} {runtime : Engine driver}
 theorem running_readout {driver : Driver} {runtime : Engine driver}
     {formula : driver.Formula} {raw : Pattern} (source : driver.Decoded raw)
     (state : Mettapedia.OSLF.NativeTypes.Decision.Machine.State
-      (Mettapedia.OSLF.NativeTypes.Decision.Machine.Observation runtime.cursor)
-      (Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation runtime.leaves formula source.val)) :
+      (Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence runtime.cursor)
+      (Mettapedia.OSLF.NativeTypes.Decision.Machine.denotation runtime.leaves formula runtime.cursor.spatial.theory source.val)) :
     (Session.running source state).readout = .judgment
       (match state.outcome.answer with | some answer => .decided answer | none => .unknown) := by
   cases result : state.outcome <;> simp only [Session.readout, Session.nativeResult,
@@ -71,6 +73,21 @@ def Session.settled {driver : Driver} {runtime : Engine driver}
 def Session.observations {driver : Driver} {runtime : Engine driver}
     {formula : driver.Formula} {raw : Pattern} : Session driver runtime formula raw →
     List (Mettapedia.OSLF.NativeTypes.Decision.Machine.Observation runtime.cursor)
+  | .running _ state => state.observations.filterMap
+      Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence.operational?
+  | _ => []
+
+def Session.spatialObservations {driver : Driver} {runtime : Engine driver}
+    {formula : driver.Formula} {raw : Pattern} : Session driver runtime formula raw →
+    List (Mettapedia.OSLF.NativeTypes.Decision.Machine.SpatialObservation runtime.cursor)
+  | .running _ state => state.observations.filterMap
+      Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence.separation?
+  | _ => []
+
+/-- The joint archive retains the interleaving of operational and structural work. -/
+def Session.evidence {driver : Driver} {runtime : Engine driver}
+    {formula : driver.Formula} {raw : Pattern} : Session driver runtime formula raw →
+    List (Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence runtime.cursor)
   | .running _ state => state.observations
   | _ => []
 
@@ -97,7 +114,11 @@ theorem resume_observations_prefix {driver : Driver} {runtime : Engine driver}
     {formula : driver.Formula} {raw : Pattern} (fuel : Nat) (session : Session driver runtime formula raw) :
     ∃ suffix, (resume fuel session).observations = session.observations ++ suffix := by
   cases session with
-  | running source state => exact Mettapedia.OSLF.NativeTypes.Decision.Machine.resume_observations_prefix state fuel
+  | running source state =>
+    obtain ⟨suffix, extended⟩ :=
+      Mettapedia.OSLF.NativeTypes.Decision.Machine.resume_observations_prefix state fuel
+    exact ⟨suffix.filterMap Mettapedia.OSLF.NativeTypes.Decision.Machine.Evidence.operational?, by
+      simp only [resume, Session.observations, extended, List.filterMap_append]⟩
   | refusedSource | refusedFormula | rejectedCube | unresolvedCube => exact ⟨[], rfl⟩
 
 theorem resume_conclusive {driver : Driver} {runtime : Engine driver} {formula : driver.Formula} {raw : Pattern}
@@ -131,5 +152,22 @@ theorem observation_step {driver : Driver} {runtime : Engine driver} {formula : 
     (_listed : observation ∈ session.observations) :
     driver.system.Step observation.source (runtime.cursor.target observation.source observation.receipt) :=
   observation.step
+
+theorem spatial_observation_split {driver : Driver} {runtime : Engine driver}
+    {formula : driver.Formula} {raw : Pattern} (session : Session driver runtime formula raw)
+    (observation : Mettapedia.OSLF.NativeTypes.Decision.Machine.SpatialObservation runtime.cursor)
+    (_listed : observation ∈ session.spatialObservations) :
+    driver.backend.spatial.theory.Split observation.index observation.source
+      observation.parts.1 observation.parts.2 := by
+  rw [← runtime.spatial_meaning]
+  exact observation.split
+
+theorem resume_evidence_prefix {driver : Driver} {runtime : Engine driver}
+    {formula : driver.Formula} {raw : Pattern} (fuel : Nat) (session : Session driver runtime formula raw) :
+    ∃ suffix, (resume fuel session).evidence = session.evidence ++ suffix := by
+  cases session with
+  | running source state =>
+    exact Mettapedia.OSLF.NativeTypes.Decision.Machine.resume_observations_prefix state fuel
+  | refusedSource | refusedFormula | rejectedCube | unresolvedCube => exact ⟨[], rfl⟩
 
 end Mettapedia.OSLF.NativeTypes.Runtime

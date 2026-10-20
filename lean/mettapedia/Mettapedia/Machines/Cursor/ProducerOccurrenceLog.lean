@@ -4,6 +4,7 @@ import Mettapedia.Machines.Cursor.SharedFactorMachine
 import Mettapedia.Machines.ExecutionHistoryReadout
 import Mettapedia.GSLT.Core.InferenceRecordingPrefix
 import Mettapedia.GSLT.Contracts.RunAccounts
+import Mettapedia.Machines.Cursor.Amortized
 
 /-!
 # One selected producer feeding an owned occurrence log
@@ -11892,5 +11893,543 @@ theorem incomplete_inspection_retains_service_action :
 end InterleavedObservation
 
 end Accounting
+
+/-! ## Finite credit for the actual producer and delivery cursor
+
+The optional finite profile uses the existing shared lease ledger. Its source
+program sequences existing pump/delivery actions through the common primitive
+cursor. The source action account prices production and delivery separately;
+it is not a bound on arbitrary callbacks or the complete native service slot.
+The ordinary uncounted entry and its recording selection remain unchanged.
+-/
+
+namespace Accounting.LeaseExecution
+
+open Mettapedia.GSLT.Logic.AbstractSeparationLogic
+open Mettapedia.GSLT.Dynamics.ParallelFuelLease
+
+variable {Producer Borrowed Stored Context Output Effect Handoff : Type} {clients : Nat}
+variable [DecidableEq Stored] [DecidableEq Output]
+variable (step : Producer → ProducerOutcome Producer Borrowed Effect Handoff)
+variable (capture : Borrowed → Option Stored) (capacity : Stored → Bool)
+variable (compatible : Context → Bool)
+
+local notation "Cfg" =>
+  Configuration Producer Borrowed Stored Context Output Effect Handoff clients
+
+/-- A declared additive price for the existing two-coordinate account. -/
+def accountPrice (production delivery : Nat) (account : ProtocolAccount) : Nat :=
+  production * account.1.toAdd + delivery * account.2.toAdd
+
+theorem accountPrice_mul (production delivery : Nat) (first second : ProtocolAccount) :
+    accountPrice production delivery (first * second) =
+      accountPrice production delivery first + accountPrice production delivery second := by
+  simp [accountPrice, Nat.mul_add, Nat.add_assoc, Nat.add_left_comm]
+
+def program : List (Action Output clients) → Prog (Action Output clients) (fun _ => PUnit) PUnit
+  | [] => .ret .unit
+  | action :: rest => .call action fun _ => program rest
+
+def sourceStep (state : Cfg) (action : Action Output clients) : Cfg × Except Empty PUnit :=
+  ((advanceAction step capture capacity compatible action state).1, .ok .unit)
+
+def sourcePrice (production delivery : Nat) (state : Cfg) (action : Action Output clients) : Nat :=
+  accountPrice production delivery (advanceAction step capture capacity compatible action state).2
+
+abbrev sourceProvider :
+    Provider (PrimitiveProgram.protocol (Action Output clients) (fun _ => PUnit) Empty) :=
+  PrimitiveProgram.provider (sourceStep (Output := Output) (clients := clients)
+    step capture capacity compatible)
+abbrev sourceClient := PrimitiveProgram.client (Action Output clients) (fun _ => PUnit) PUnit Empty
+
+def sourceCharge (production delivery : Nat) :
+    Charge (sourceProvider (Output := Output) (clients := clients) step capture capacity compatible) :=
+  PrimitiveProgram.charge
+    (sourcePrice (Output := Output) (clients := clients) step capture capacity compatible production delivery)
+    (sourceStep (Output := Output) (clients := clients) step capture capacity compatible)
+
+def sourcePacket (actions : List (Action Output clients)) (state : Cfg) :
+    Packet (sourceProvider step capture capacity compatible)
+      (sourceClient (Output := Output) (clients := clients)) PUnit.unit :=
+  ⟨PUnit.unit, .ok (program actions), state⟩
+
+/-- The independent primitive interpreter executes the existing uncounted
+actions and obtains the independently maintained online source account. -/
+theorem direct_program (production delivery : Nat) (actions : List (Action Output clients))
+    (state : Cfg) :
+    PrimitiveProgram.direct (sourceStep step capture capacity compatible)
+      (sourcePrice step capture capacity compatible production delivery)
+      (actions.length + 1) (.ok (program actions)) state =
+      (accountPrice production delivery (count step capture capacity compatible actions (1, 1) state).2,
+        (.inl (.ok PUnit.unit), runActions step capture capacity compatible actions state)) := by
+  induction actions generalizing state with
+  | nil => rfl
+  | cons action rest ih =>
+      change
+        (sourcePrice step capture capacity compatible production delivery state action +
+          (PrimitiveProgram.direct (sourceStep step capture capacity compatible)
+            (sourcePrice step capture capacity compatible production delivery)
+            (rest.length + 1) (.ok (program rest))
+            (advanceAction step capture capacity compatible action state).1).1,
+          (PrimitiveProgram.direct (sourceStep step capture capacity compatible)
+            (sourcePrice step capture capacity compatible production delivery)
+            (rest.length + 1) (.ok (program rest))
+            (advanceAction step capture capacity compatible action state).1).2) = _
+      rw [ih]
+      have counted : (count step capture capacity compatible (action :: rest) (1, 1) state).2 =
+          (advanceAction step capture capacity compatible action state).2 *
+            (count step capture capacity compatible rest (1, 1)
+              (advanceAction step capture capacity compatible action state).1).2 := by
+        simpa only [count, Prod.mul_def, one_mul] using
+          count_scales step capture capacity compatible rest
+            (advanceAction step capture capacity compatible action state).2
+            (advanceAction step capture capacity compatible action state).1
+      rw [counted, accountPrice_mul]
+      cases action <;> rfl
+
+/-- The actual common cursor reaches exactly that state, paid prefix and
+terminal result. Equality of the full state preserves its selected producer,
+pending value, source history, delivery positions and publications. -/
+theorem cursor_program (production delivery : Nat) (actions : List (Action Output clients))
+    (state : Cfg) :
+    let result := advance (sourceProvider step capture capacity compatible)
+      (sourceClient (Output := Output) (clients := clients))
+      (sourceCharge step capture capacity compatible production delivery)
+      (actions.length + 1) (sourcePacket step capture capacity compatible actions state)
+    (result.1, PrimitiveProgram.readOutcome (sourceStep step capture capacity compatible) result.2) =
+      (accountPrice production delivery (count step capture capacity compatible actions (1, 1) state).2,
+        (.inl (.ok PUnit.unit), runActions step capture capacity compatible actions state)) := by
+  exact (PrimitiveProgram.advance_is_direct (sourceStep step capture capacity compatible)
+    (sourcePrice step capture capacity compatible production delivery) (actions.length + 1)
+    (.ok (program actions)) state).trans
+      (direct_program step capture capacity compatible production delivery actions state)
+
+/-- The charge word is derived from the actual reply-dependent cursor and
+agrees with the existing independent source-path RunAccount. -/
+theorem charges_are_source_account (production delivery : Nat)
+    (actions : List (Action Output clients)) (state : Cfg) :
+    letI := actionQuiver (Output := Output) (clients := clients) step capture capacity compatible
+    (Lease.charges (sourceClient (Output := Output) (clients := clients))
+      (sourceProvider step capture capacity compatible)
+      (sourceCharge step capture capacity compatible production delivery)
+      (actions.length + 1) (sourcePacket step capture capacity compatible actions state)).sum =
+      accountPrice production delivery ((splitAccount step capture capacity compatible).of
+        (actionPath step capture capacity compatible actions state)) := by
+  let _ := actionQuiver (Output := Output) (clients := clients) step capture capacity compatible
+  rw [Lease.charges_sum, ← count_eq_pathAccount]
+  exact congrArg Prod.fst
+    (cursor_program step capture capacity compatible production delivery actions state)
+
+omit [DecidableEq Stored] in
+theorem answerUnits_le_one (reply : DeliveryReply Stored) : answerUnits reply ≤ 1 := by
+  cases reply with
+  | contextRefused => simp [answerUnits]
+  | observed reply => cases reply <;> simp [answerUnits]
+
+/-- This is a bound on declared protocol prices, not on the work inside an
+arbitrary pump, capture, compatibility, or delivery callback. -/
+theorem sourcePrice_bound (production delivery : Nat) (state : Cfg)
+    (action : Action Output clients) :
+    sourcePrice step capture capacity compatible production delivery state action ≤
+      max production delivery := by
+  cases action with
+  | pump =>
+      change production * driverTicks (pump step capture capacity compatible state).1 + delivery * 0 ≤ _
+      have bounded := Nat.mul_le_mul_left production
+        (driverTicks_le_one (pump step capture capacity compatible state).1)
+      simp only [Nat.mul_zero, Nat.add_zero, Nat.mul_one] at bounded ⊢
+      exact bounded.trans (Nat.le_max_left _ _)
+  | deliver client output =>
+      change production * 0 + delivery * answerUnits (deliver compatible state client output).1 ≤ _
+      have bounded := Nat.mul_le_mul_left delivery
+        (answerUnits_le_one (deliver compatible state client output).1)
+      simp only [Nat.mul_zero, Nat.zero_add, Nat.mul_one] at bounded ⊢
+      exact bounded.trans (Nat.le_max_right _ _)
+
+noncomputable section
+
+/-- The actual selected provider moves every paid request to the shared spent
+account. Its production/delivery valuation comes from the real source walk. -/
+theorem financed_spent_is_source_account {Owner : Type} (owner : Owner)
+    (ledger : Ledger Owner) (production delivery : Nat)
+    (actions : List (Action Output clients)) (state : Cfg) :
+    let M := sourceProvider step capture capacity compatible
+    let C := sourceClient (Output := Output) (clients := clients)
+    let price : Charge M := sourceCharge step capture capacity compatible production delivery
+    let reached := advance (Lease.provider M price owner) C (Lease.price M price owner)
+      (actions.length + 1)
+      (Lease.attachPacket C M price owner ledger (sourcePacket step capture capacity compatible actions state))
+    (Lease.ledgerOf C M price owner reached.2).spent =
+      ledger.spent +
+        (accountPrice production delivery (count step capture capacity compatible actions (1, 1) state).2 : ℤ) := by
+  dsimp only
+  rw [Lease.advance_spent]
+  rw [congrArg Prod.fst (cursor_program step capture capacity compatible production delivery actions state)]
+
+namespace Controls
+
+def captureNat (value : Nat) : Option Nat := some value
+def permitNat (_ : Nat) : Bool := true
+def actions : List (Action Unit 2) := [.pump, .pump, .deliver 0 (), .deliver 1 ()]
+abbrev M := sourceProvider (Output := Unit) (clients := 2)
+  serviceCohortStep captureNat permitNat permitNat
+abbrev C := sourceClient (Output := Unit) (clients := 2)
+def price : Charge M := sourceCharge (Output := Unit) (clients := 2)
+  serviceCohortStep captureNat permitNat permitNat 5 1
+def start : Packet M C PUnit.unit :=
+  sourcePacket serviceCohortStep captureNat permitNat permitNat actions serviceCohort
+def first := advance M C price 2 start
+def complete := resume M C price 3 first
+def word := Lease.charges C M price 5 start
+
+theorem actual_shared_production_and_split :
+    word = [5, 0, 1, 1] ∧ first.1 = 5 ∧ complete.1 = 7 ∧
+      Lease.suffixCharges C M price 3 first.2 = [1, 1] ∧
+      complete = advance M C price 5 start ∧
+      (count serviceCohortStep captureNat permitNat permitNat actions (1, 1)
+        serviceCohort).2 = (Multiplicative.ofAdd 1, Multiplicative.ofAdd 2) := by
+  refine ⟨rfl, rfl, rfl, rfl, ?_, rfl⟩
+  exact (advance_add M C price 2 3 start).symm
+
+/-- The one production admission is the common predecessor of two distinct
+delivery occurrences. The complete ordinary state retains both cursor moves. -/
+theorem actual_history_and_duplicate_deliveries :
+    pathOccurrences serviceCohortStep captureNat permitNat permitNat
+      (actionPath serviceCohortStep captureNat permitNat permitNat actions serviceCohort) =
+        [admissionCausal 0, deliveryCausal (0 : Fin 2) 0, deliveryCausal (1 : Fin 2) 0] ∧
+      (runActions serviceCohortStep captureNat permitNat permitNat actions
+        serviceCohort).delivery.log.rows = [2] ∧
+      (runActions serviceCohortStep captureNat permitNat permitNat actions
+        serviceCohort).delivery.log.positions = (fun _ => some 1) := by
+  refine ⟨rfl, rfl, ?_⟩
+  funext client
+  fin_cases client <;> rfl
+
+/-- A real source interruption occurs after paid administrative work and
+before any produced or delivered answer. -/
+def interruptedStep (started : Bool) : ProducerOutcome Bool Nat Unit Unit :=
+  if started then .interrupted true else .progress true
+def interruptedStart : Configuration Bool Nat Nat Nat Unit Unit Unit 2 := initial false 8 2
+abbrev interruptedM := sourceProvider (Output := Unit) (clients := 2)
+  interruptedStep captureNat permitNat permitNat
+def interruptedPrice : Charge interruptedM := sourceCharge (Output := Unit) (clients := 2)
+  interruptedStep captureNat permitNat permitNat 3 1
+def interruptedPacket : Packet interruptedM C PUnit.unit :=
+  sourcePacket interruptedStep captureNat permitNat permitNat [.pump, .pump] interruptedStart
+
+theorem successful_answers_do_not_account_for_interrupted_work :
+    (advance interruptedM C interruptedPrice 3 interruptedPacket).1 = 3 ∧
+      Lease.charges C interruptedM interruptedPrice 3 interruptedPacket = [3, 0] ∧
+      (runActions interruptedStep captureNat permitNat permitNat [.pump, .pump]
+        interruptedStart).delivery.log.rows = [] ∧
+      (runActions interruptedStep captureNat permitNat permitNat [.pump, .pump]
+        interruptedStart).execution.map Execution.mode = some .interrupted := by
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+def bank : Ledger Nat := ⟨Finsupp.single 0 20, 0⟩
+def outer : Ledger Nat := reserved 0 1 (by decide) bank 12
+def sibling : Ledger Nat := reserved 0 3 (by decide) outer 4
+def inner : Ledger Nat := reserved 1 2 (by decide) sibling 6
+def productionLedger : Ledger Nat :=
+  Lease.ledgerOf C M price 2
+    (advance (Lease.provider M price 2) C (Lease.price M price 2) 2
+      (Lease.attachPacket C M price 2 inner start)).2
+def nestedRefund : Ledger Nat :=
+  (refundTransfer productionLedger 2 1 (by decide)).apply productionLedger
+def deliveryLedger : Ledger Nat :=
+  Lease.ledgerOf C M price 1
+    (resume (Lease.provider M price 1) C (Lease.price M price 1) 3
+      (first.1, Lease.attachOutcome C M price 1 nestedRefund first.2)).2
+def outerRefund : Ledger Nat :=
+  (refundTransfer deliveryLedger 1 0 (by decide)).apply deliveryLedger
+def interruptionLedger : Ledger Nat :=
+  Lease.ledgerOf C interruptedM interruptedPrice 3
+    (advance (Lease.provider interruptedM interruptedPrice 3) C
+      (Lease.price interruptedM interruptedPrice 3) 3
+      (Lease.attachPacket C interruptedM interruptedPrice 3 outerRefund interruptedPacket)).2
+def final : Ledger Nat :=
+  (refundTransfer interruptionLedger 3 0 (by decide)).apply interruptionLedger
+
+theorem actual_ledger_words :
+    productionLedger = spendWord 2 [5, 0] inner ∧
+      deliveryLedger = spendWord 1 [1, 1] nestedRefund ∧
+      interruptionLedger = spendWord 3 [3, 0] outerRefund := by
+  constructor
+  · rw [productionLedger, Lease.advance_exact, Lease.ledgerOf_attachOutcome]
+    rfl
+  · constructor
+    · rw [deliveryLedger, Lease.resume_exact, Lease.ledgerOf_attachOutcome]
+      rfl
+    · rw [interruptionLedger, Lease.advance_exact, Lease.ledgerOf_attachOutcome]
+      rfl
+
+theorem nested_shared_and_sibling_refunds_are_exact :
+    productionLedger.spent = 5 ∧ productionLedger.balances 2 = 1 ∧
+      nestedRefund.balances 1 = 7 ∧ deliveryLedger.spent = 7 ∧
+      outerRefund.balances 0 = 9 ∧ interruptionLedger.spent = 10 ∧
+      final.balances 0 = 10 ∧ final.balances 1 = 0 ∧ final.balances 2 = 0 ∧
+      final.balances 3 = 0 ∧ final.spent = 10 := by
+  simp only [actual_ledger_words.1, actual_ledger_words.2.1, actual_ledger_words.2.2,
+    final, outerRefund, nestedRefund]
+  norm_num [inner, sibling, outer, bank, reserved, reserveMovement, spendWord,
+    refundTransfer, Spend.apply, Transfer.apply]
+
+local notation "FuelRun" => Mettapedia.GSLT.Dynamics.ParallelFuelLease.Execution
+
+private theorem reserve_funded (before : Ledger Nat) (parent child : Nat)
+    (distinct : child ≠ parent) (upper : Nat) (available : (upper : ℤ) ≤ before.balances parent) :
+    FuelRun before (reserved parent child distinct before upper) := by
+  let receipt : Transfer.Receipt (reserveMovement parent child distinct upper) before :=
+    ⟨⟨Nat.cast_nonneg _, available⟩⟩
+  exact .cons (.transfer _ receipt) (.refl _)
+
+/-- One shared balance funds nested production, two deliveries and an
+interrupted sibling. Every real callback debit and each unused-credit refund
+is an admitted transition, rather than an equation only about final sums. -/
+theorem nested_shared_and_interrupted_execution_is_admitted :
+    FuelRun bank final ∧ final.Nonnegative ∧ final.total = 20 := by
+  have valid : bank.Nonnegative := by
+    constructor
+    · decide
+    · intro owner
+      by_cases same : owner = 0 <;> simp [bank, same]
+  have outerRun : FuelRun bank outer :=
+    reserve_funded bank 0 1 (by decide) 12 (by norm_num [bank])
+  have siblingRun : FuelRun outer sibling :=
+    reserve_funded outer 0 3 (by decide) 4 (by
+      norm_num [outer, reserved, reserveMovement, Transfer.apply, bank])
+  have innerRun : FuelRun sibling inner :=
+    reserve_funded sibling 1 2 (by decide) 6 (by
+      norm_num [sibling, outer, reserved, reserveMovement, Transfer.apply, bank])
+  have productionRun : FuelRun inner productionLedger :=
+    Lease.advance_admitted C M price 2 2 start inner (by
+      rw [show (advance M C price 2 start).1 = 5 from rfl]
+      norm_num [inner, sibling, outer, reserved, reserveMovement, Transfer.apply, bank])
+  have productionValid := productionRun.nonnegative_preserved
+    (innerRun.nonnegative_preserved (siblingRun.nonnegative_preserved
+      (outerRun.nonnegative_preserved valid)))
+  have nestedReturn : FuelRun productionLedger nestedRefund :=
+    .cons (.transfer _ (refundReceipt productionLedger productionValid 2 1 (by decide))) (.refl _)
+  have deliveryRun : FuelRun nestedRefund deliveryLedger :=
+    Lease.resume_admitted C M price 1 3 first.1 first.2 nestedRefund (by
+      rw [show (resume M C price 3 (first.1, first.2)).1 = 7 from rfl]
+      change (7 : ℤ) - 5 ≤ nestedRefund.balances 1
+      rw [nested_shared_and_sibling_refunds_are_exact.2.2.1]
+      decide)
+  have deliveryValid := deliveryRun.nonnegative_preserved
+    (nestedReturn.nonnegative_preserved productionValid)
+  have outerReturn : FuelRun deliveryLedger outerRefund :=
+    .cons (.transfer _ (refundReceipt deliveryLedger deliveryValid 1 0 (by decide))) (.refl _)
+  have interruptionRun : FuelRun outerRefund interruptionLedger :=
+    Lease.advance_admitted C interruptedM interruptedPrice 3 3 interruptedPacket outerRefund (by
+      rw [show (advance interruptedM C interruptedPrice 3 interruptedPacket).1 = 3 from rfl]
+      simp only [outerRefund, actual_ledger_words.2.1, nestedRefund, actual_ledger_words.1]
+      norm_num [inner, sibling, outer, reserved, reserveMovement, refundTransfer, spendWord,
+        Spend.apply, Transfer.apply, bank])
+  have interruptionValid := interruptionRun.nonnegative_preserved
+    (outerReturn.nonnegative_preserved deliveryValid)
+  have siblingReturn : FuelRun interruptionLedger final :=
+    .cons (.transfer _ (refundReceipt interruptionLedger interruptionValid 3 0 (by decide))) (.refl _)
+  have execution := outerRun.append (siblingRun.append (innerRun.append (productionRun.append
+    (nestedReturn.append (deliveryRun.append (outerReturn.append
+      (interruptionRun.append siblingReturn)))))))
+  refine ⟨execution, execution.nonnegative_preserved valid, ?_⟩
+  rw [execution.total_conserved]
+  norm_num [bank, Ledger.total, Finsupp.sum_single_index]
+
+theorem a_copied_positive_refund_is_refused :
+    ¬ (refundTransfer productionLedger 2 1 (by decide)).Admissible nestedRefund :=
+  Lease.positive_refund_not_replayable 2 productionLedger 1 (by decide)
+    (by rw [nested_shared_and_sibling_refunds_are_exact.2.1]; decide)
+
+theorem cancellation_keeps_the_surviving_delivery :
+    let admitted := runActions serviceCohortStep captureNat permitNat permitNat
+      [.pump, .pump] serviceCohort
+    let retired := retireConsumer admitted (0 : Fin 2)
+    let surviving := deliver permitNat retired (1 : Fin 2) ()
+    retired.delivery.log.positions 0 = none ∧
+      surviving.1 = .observed (.answer 0 2) ∧
+      acceptedCount surviving.2 = 1 ∧ first.1 = 5 ∧
+      productionLedger.spent = nestedRefund.spent := by
+  exact ⟨rfl, rfl, rfl, rfl, rfl⟩
+
+def ten : Ledger Nat := ⟨Finsupp.single 1 10, 0⟩
+def once : Ledger Nat :=
+  Lease.ledgerOf C M price 1
+    (advance (Lease.provider M price 1) C (Lease.price M price 1) 5
+      (Lease.attachPacket C M price 1 ten start)).2
+
+theorem copied_predebit_balance_does_not_fund_a_second_run :
+    Mettapedia.GSLT.Dynamics.ParallelFuelLease.Execution ten once ∧
+      once.balances 1 = 3 ∧
+      ¬ Mettapedia.GSLT.Dynamics.ParallelFuelLease.Execution once
+        (spendWord 1 (Lease.charges C M price 5 start) once) := by
+  have entered : Mettapedia.GSLT.Dynamics.ParallelFuelLease.Execution ten once :=
+    Lease.advance_admitted C M price 1 5 start ten (by
+      rw [show (advance M C price 5 start).1 = 7 from rfl]
+      norm_num [ten])
+  have balance : once.balances 1 = 3 := by
+    rw [once, Lease.advance_balance]
+    rw [show (advance M C price 5 start).1 = 7 from rfl]
+    norm_num [ten]
+  have validTen : ten.Nonnegative := by
+    constructor
+    · decide
+    · intro owner
+      by_cases same : owner = 1 <;> simp [ten, same]
+  refine ⟨entered, balance, ?_⟩
+  intro repeated
+  have funded := (spendWord_execution_iff 1 (Lease.charges C M price 5 start) once
+    (entered.nonnegative_preserved validTen)).mp repeated
+  rw [balance] at funded
+  change (7 : ℤ) ≤ 3 at funded
+  omega
+
+/-- Finite zero refuses the positive paid prefix. The ordinary unmetered
+provider still executes it; zero is not a spelling for the unmetered profile. -/
+theorem finite_zero_and_unmetered_are_distinct :
+    (advance M C price 2 start).1 = 5 ∧
+      ¬ Mettapedia.GSLT.Dynamics.ParallelFuelLease.Execution
+        (⟨0, 0⟩ : Ledger Nat) (spendWord 1 (Lease.charges C M price 2 start) ⟨0, 0⟩) := by
+  refine ⟨rfl, ?_⟩
+  intro execution
+  have valid : (⟨0, 0⟩ : Ledger Nat).Nonnegative := by simp [Ledger.Nonnegative]
+  have funded := (spendWord_execution_iff 1 (Lease.charges C M price 2 start) ⟨0, 0⟩ valid).mp execution
+  change (5 : ℤ) ≤ 0 at funded
+  omega
+
+private def trancheBank : Ledger Nat := ⟨Finsupp.single 0 7, 0⟩
+private def trancheGrant : Ledger Nat := reserved 0 1 (by decide) trancheBank 5
+private def tranchePrefix :=
+  advance (Lease.provider M price 1) C (Lease.price M price 1) 2
+    (Lease.attachPacket C M price 1 trancheGrant start)
+private def trancheUsed : Ledger Nat := Lease.ledgerOf C M price 1 tranchePrefix.2
+private def trancheCut := (Lease.forget M price 1).outcome C tranchePrefix.2
+private def trancheMove : Transfer Nat := ⟨0, 1, by decide, 2⟩
+private def trancheFunded : Ledger Nat := trancheMove.apply trancheUsed
+private def trancheTail :=
+  resume (Lease.provider M price 1) C (Lease.price M price 1) 3
+    (tranchePrefix.1, Lease.attachOutcome C M price 1 trancheFunded trancheCut)
+
+/-- An exhausted child can resume its exact retained source after a conserved
+transfer. The first prefix is not replayed or paid twice; shared production
+remains the common predecessor of both separately priced deliveries. -/
+theorem conserved_tranche_resumes_the_same_execution :
+    tranchePrefix.1 = 5 ∧ trancheUsed.balances 1 = 0 ∧ trancheUsed.spent = 5 ∧
+      ¬ Mettapedia.GSLT.Dynamics.ParallelFuelLease.Execution trancheUsed
+        (Lease.ledgerOf C M price 1
+          (resume (Lease.provider M price 1) C (Lease.price M price 1) 3 tranchePrefix).2) ∧
+      trancheMove.Admissible trancheUsed ∧
+      trancheFunded.spent = trancheUsed.spent ∧
+      trancheFunded.total = trancheUsed.total ∧
+      (tranchePrefix.1, (Lease.forget M price 1).outcome C
+        (Lease.attachOutcome C M price 1 trancheFunded trancheCut)) =
+        (tranchePrefix.1, (Lease.forget M price 1).outcome C tranchePrefix.2) ∧
+      (trancheTail.1, PrimitiveProgram.readOutcome
+        (sourceStep serviceCohortStep captureNat permitNat permitNat)
+        ((Lease.forget M price 1).outcome C trancheTail.2)) =
+        (7, (.inl (.ok PUnit.unit),
+          runActions serviceCohortStep captureNat permitNat permitNat actions serviceCohort)) ∧
+      trancheTail.1 = tranchePrefix.1 + 2 ∧
+      (Lease.ledgerOf C M price 1 trancheTail.2).spent = 7 ∧
+      (Lease.ledgerOf C M price 1 trancheTail.2).balances 0 = 0 ∧
+      (Lease.ledgerOf C M price 1 trancheTail.2).balances 1 = 0 ∧
+      Mettapedia.GSLT.Dynamics.ParallelFuelLease.Execution trancheBank
+        (Lease.ledgerOf C M price 1 trancheTail.2) ∧
+      (Lease.ledgerOf C M price 1 trancheTail.2).total = trancheBank.total := by
+  let final := Lease.ledgerOf C M price 1 trancheTail.2
+  have prefixExact : tranchePrefix =
+      (first.1, Lease.attachOutcome C M price 1 (spendWord 1 [5, 0] trancheGrant) first.2) := by
+    rw [tranchePrefix, Lease.advance_exact]
+    rfl
+  have prefixPaid : tranchePrefix.1 = 5 := by rw [prefixExact]; rfl
+  have usedExact : trancheUsed = spendWord 1 [5, 0] trancheGrant := by
+    rw [trancheUsed, prefixExact, Lease.ledgerOf_attachOutcome]
+  have cutExact : trancheCut = first.2 := by
+    rw [trancheCut, prefixExact, Lease.forget_attachOutcome]
+  have bankValid : trancheBank.Nonnegative := by
+    constructor
+    · decide
+    · intro owner
+      by_cases same : owner = 0 <;> simp [trancheBank, same]
+  have grantReceipt : Transfer.Receipt (reserveMovement 0 1 (by decide) 5) trancheBank :=
+    ⟨⟨by decide, by norm_num [trancheBank, reserveMovement]⟩⟩
+  have granted : Mettapedia.GSLT.Dynamics.ParallelFuelLease.Execution trancheBank trancheGrant :=
+    .cons (.transfer _ grantReceipt) (.refl _)
+  have prefixRun : Mettapedia.GSLT.Dynamics.ParallelFuelLease.Execution trancheGrant trancheUsed :=
+    Lease.advance_admitted C M price 1 2 start trancheGrant (by
+      rw [show (advance M C price 2 start).1 = 5 from rfl]
+      norm_num [trancheGrant, trancheBank, reserved, reserveMovement, Transfer.apply])
+  have usedValid := prefixRun.nonnegative_preserved (granted.nonnegative_preserved bankValid)
+  have exhausted : trancheUsed.balances 1 = 0 := by
+    rw [usedExact]
+    norm_num [trancheGrant, trancheBank, reserved, reserveMovement, spendWord, Spend.apply,
+      Transfer.apply]
+  have refused : ¬ Mettapedia.GSLT.Dynamics.ParallelFuelLease.Execution trancheUsed
+      (Lease.ledgerOf C M price 1
+        (resume (Lease.provider M price 1) C (Lease.price M price 1) 3 tranchePrefix).2) := by
+    intro repeated
+    have prefixRebuilt : tranchePrefix = (first.1, Lease.attachOutcome C M price 1 trancheUsed first.2) := by
+      rw [prefixExact, usedExact]
+    rw [prefixRebuilt, Lease.resume_exact, Lease.ledgerOf_attachOutcome] at repeated
+    have affordable := (spendWord_execution_iff 1
+      (Lease.suffixCharges C M price 3 first.2) trancheUsed usedValid).mp repeated
+    rw [exhausted] at affordable
+    change (2 : ℤ) ≤ 0 at affordable
+    omega
+  have transferReceipt : Transfer.Receipt trancheMove trancheUsed := by
+    refine ⟨⟨by decide, ?_⟩⟩
+    rw [usedExact]
+    norm_num [trancheMove, trancheGrant, trancheBank, reserved, reserveMovement, spendWord,
+      Spend.apply, Transfer.apply]
+  have transferRun : Mettapedia.GSLT.Dynamics.ParallelFuelLease.Execution trancheUsed trancheFunded :=
+    .cons (.transfer _ transferReceipt) (.refl _)
+  have tailRun : Mettapedia.GSLT.Dynamics.ParallelFuelLease.Execution trancheFunded final := by
+    apply Lease.resume_admitted C M price 1 3 tranchePrefix.1 trancheCut trancheFunded
+    rw [prefixPaid, cutExact]
+    change (7 : ℤ) - 5 ≤ trancheFunded.balances 1
+    rw [trancheFunded, usedExact]
+    norm_num [trancheMove, trancheGrant, trancheBank, reserved, reserveMovement, spendWord,
+      Spend.apply, Transfer.apply]
+  have full := granted.append (prefixRun.append (transferRun.append tailRun))
+  have tailExact : trancheTail =
+      (complete.1, Lease.attachOutcome C M price 1
+        (spendWord 1 [1, 1] trancheFunded) complete.2) := by
+    rw [trancheTail, prefixPaid, cutExact, Lease.resume_exact]
+    rfl
+  have finalExact : final = spendWord 1 [1, 1] trancheFunded := by
+    dsimp only [final]
+    rw [tailExact, Lease.ledgerOf_attachOutcome]
+  refine ⟨prefixPaid, exhausted, ?_, refused, transferReceipt.admission, rfl,
+    Transfer.total_apply _ _, ?_, ?_, ?_, ?_, ?_, ?_, full, full.total_conserved⟩
+  · rw [usedExact]
+    norm_num [trancheGrant, trancheBank, reserved, reserveMovement, spendWord, Spend.apply,
+      Transfer.apply]
+  · rw [Lease.forget_attachOutcome]
+    rfl
+  · rw [tailExact, Lease.forget_attachOutcome]
+    exact (cursor_program serviceCohortStep captureNat permitNat permitNat 5 1 actions serviceCohort)
+      |>.trans (by rfl)
+  · rw [tailExact, prefixPaid]
+    rfl
+  · change final.spent = 7
+    rw [finalExact, trancheFunded, usedExact]
+    norm_num [trancheMove, trancheGrant, trancheBank, reserved, reserveMovement, spendWord,
+      Spend.apply, Transfer.apply]
+  · change final.balances 0 = 0
+    rw [finalExact, trancheFunded, usedExact]
+    norm_num [trancheMove, trancheGrant, trancheBank, reserved, reserveMovement, spendWord,
+      Spend.apply, Transfer.apply]
+  · change final.balances 1 = 0
+    rw [finalExact, trancheFunded, usedExact]
+    norm_num [trancheMove, trancheGrant, trancheBank, reserved, reserveMovement, spendWord,
+      Spend.apply, Transfer.apply]
+
+
+end Controls
+
+end
+
+end Accounting.LeaseExecution
 
 end Mettapedia.Machines.Cursor.ProducerOccurrenceLog

@@ -107,7 +107,7 @@ private def startResult : Atom :=
      .symbol "LNil", .symbol "LNil", number 0]]
 
 private def startInnerCases : SpaceSemantics.Cases :=
-  [(a "Some" [v "inner"], startResult), (v "_", .symbol "None")]
+  [(a "Some" [v "inner"], startResult), (v "____________", .symbol "None")]
 
 private def startInner : Atom :=
   a "case" [a "gslt:premise:machine-start"
@@ -137,7 +137,7 @@ private def requestBindings (request : GeneralRuleJobExecution.Request) : Subst 
    ("frames", encoded (encodeList ScopedRuleJobReadoutExecution.typingFrameTerm request.job.site.typingFrames))].reverse
 
 private def startCases : SpaceSemantics.Cases :=
-  [(requestPattern, startInner), (v "_", .symbol "None")]
+  [(requestPattern, startInner), (v "_____________", .symbol "None")]
 
 private theorem start_shape : (equation .start).body =
     a "case" [v "request", .expression (startCases.map fun row => .expression [row.1, row.2])] := by
@@ -283,7 +283,7 @@ private def expansionAdvanced : Atom :=
      .symbol "LNil", .symbol "LNil"]]
 
 private def expansionAdvanceCases : SpaceSemantics.Cases :=
-  [(a "Some" [v "advanced"], expansionAdvanced), (v "_", .symbol "None")]
+  [(a "Some" [v "advanced"], expansionAdvanced), (v "____________", .symbol "None")]
 
 private def expansionAdvance : Atom :=
   a "case" [a "gslt:premise:machine-tick" [v "environment", expansionInnerState],
@@ -322,7 +322,7 @@ private def expansionBindings (request : GeneralRuleJobExecution.Request)
    ("work", number frame.state.work), ("cursor", number frame.cursor)].reverse
 
 private def expansionCases : SpaceSemantics.Cases :=
-  [(expansionPattern, expansionRow), (v "_", .symbol "None")]
+  [(expansionPattern, expansionRow), (v "_____________", .symbol "None")]
 
 private theorem expand_shape : (equation .expand).body =
     a "case" [a "RuleJobExpansionInput" [v "request", v "task"],
@@ -509,7 +509,7 @@ private def tickBody : Atom :=
 private def tickCases : SpaceSemantics.Cases :=
   [(a "PremiseState" [.symbol "LNil", v "answers", v "unresolved", v "work"], a "Some" [v "state"]),
    (a "PremiseState" [a "LCons" [v "task", v "rest"], v "answers", v "unresolved", v "work"], tickBody),
-   (v "_", .symbol "None")]
+   (v "___________", .symbol "None")]
 
 private theorem tick_shape : (equation .tick).body =
     a "case" [v "state", .expression (tickCases.map fun row => .expression [row.1, row.2])] := by
@@ -593,7 +593,7 @@ private def runContinue : Atom :=
     a "gslt:driver:job-run" [v "request", v "remaining", v "next"]]
 
 private def runCases : SpaceSemantics.Cases :=
-  [(a "Some" [v "next"], runContinue), (v "_", .symbol "None")]
+  [(a "Some" [v "next"], runContinue), (v "__________", .symbol "None")]
 
 private def runBody : Atom :=
   a "case" [a "gslt:driver:job-tick" [v "request", v "state"],
@@ -696,7 +696,7 @@ private def beginBody : Atom :=
   a "gslt:driver:job-run" [v "request", v "fuel", v "state"]
 
 private def beginCases : SpaceSemantics.Cases :=
-  [(a "Some" [v "state"], beginBody), (v "_", .symbol "None")]
+  [(a "Some" [v "state"], beginBody), (v "________", .symbol "None")]
 
 private theorem begin_shape : (equation .begin).body =
     a "case" [a "gslt:driver:job-start" [v "request"],

@@ -15,7 +15,7 @@ The layer is intentionally conservative:
 
 namespace Mettapedia.PLN.Evidence.IdentityEvidence
 
-open Mettapedia.PLN.Evidence.EvidenceQuantale
+open Mettapedia.PLN.Evidence
 open scoped ENNReal
 
 /-- Identity evidence relation: evidence that two entities are identical. -/

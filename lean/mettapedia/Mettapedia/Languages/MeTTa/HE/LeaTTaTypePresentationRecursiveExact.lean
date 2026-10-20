@@ -1,6 +1,10 @@
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationApplicationExact
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Conformance
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Freshness
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Recursive exact type-presentation conformance
@@ -36,8 +40,8 @@ def runtimeArgumentTypeLists
     (env : Metta.Minimal.MinEnv) (arguments : List Atom) :
     List (List Atom) :=
   arguments.map fun argument =>
-    fromLeaTTaAtoms
-      (Metta.Minimal.getTypes env (toLeaTTaAtom argument))
+    decodeModelAtoms
+      (Metta.Minimal.getTypes env (encodeModelAtom argument))
 
 private theorem observedTypeAlphaList_refl (types : List Atom) :
     List.Forall₂ ObservedTypeAlphaRel types types := by
@@ -72,60 +76,60 @@ private theorem notStateValueShape_toLeaTTa
     {head : Atom} {tail : List Atom}
     (notState : NotStateValueShape head tail) :
     ∀ leaValue,
-      toLeaTTaAtom head = .sym "StateValue" →
-      toLeaTTaAtoms tail = [leaValue] → False := by
+      encodeModelAtom head = .sym "StateValue" →
+      encodeModelAtoms tail = [leaValue] → False := by
   intro leaValue headEquation tailEquation
   cases head with
   | symbol name =>
-      simp [toLeaTTaAtom] at headEquation
+      simp [encodeModelAtom] at headEquation
       subst name
       cases tail with
-      | nil => simp [toLeaTTaAtoms] at tailEquation
+      | nil => simp [encodeModelAtoms] at tailEquation
       | cons value values =>
           cases values with
           | nil =>
               simpa using notState value
           | cons next values =>
-              simp [toLeaTTaAtoms] at tailEquation
-  | var name => simp [toLeaTTaAtom] at headEquation
-  | grounded value => simp [toLeaTTaAtom] at headEquation
-  | expression atoms => simp [toLeaTTaAtom] at headEquation
+              simp [encodeModelAtoms] at tailEquation
+  | var name => simp [encodeModelAtom] at headEquation
+  | grounded value => simp [encodeModelAtom] at headEquation
+  | expression atoms => simp [encodeModelAtom] at headEquation
 
 /-- Every complete recursively computed argument list re-encodes exactly. -/
 theorem runtimeArgumentTypeLists_roundtrip
     {space : Space} {env : Metta.Minimal.MinEnv}
     (index : TypeEnvironmentRel space env) (arguments : List Atom) :
-    (runtimeArgumentTypeLists env arguments).map toLeaTTaAtoms =
+    (runtimeArgumentTypeLists env arguments).map encodeModelAtoms =
       arguments.map fun argument =>
-        Metta.Minimal.getTypes env (toLeaTTaAtom argument) := by
+        Metta.Minimal.getTypes env (encodeModelAtom argument) := by
   induction arguments with
   | nil => rfl
   | cons argument arguments ih =>
       simp only [runtimeArgumentTypeLists, List.map_cons,
         List.cons.injEq]
       constructor
-      · apply toLeaTTaAtoms_fromLeaTTaAtoms_of_heImage
+      · apply encodeModelAtoms_decodeModelAtoms_of_heImage
         apply leaAtomsHEImage_of_forall
         intro leaType member
         exact getTypes_result_heImage index
-          (toLeaTTaAtom argument) leaType
-          (leaAtomHEImage_toLeaTTaAtom argument) member
+          (encodeModelAtom argument) leaType
+          (leaAtomHEImage_encodeModelAtom argument) member
       · simpa [runtimeArgumentTypeLists] using ih
 
 /-- The complete recursively computed operator list re-encodes exactly. -/
 theorem runtimeOperatorTypes_roundtrip
     {space : Space} {env : Metta.Minimal.MinEnv}
     (index : TypeEnvironmentRel space env) (operator : Atom) :
-    toLeaTTaAtoms
-        (fromLeaTTaAtoms
-          (Metta.Minimal.getTypes env (toLeaTTaAtom operator))) =
-      Metta.Minimal.getTypes env (toLeaTTaAtom operator) := by
-  apply toLeaTTaAtoms_fromLeaTTaAtoms_of_heImage
+    encodeModelAtoms
+        (decodeModelAtoms
+          (Metta.Minimal.getTypes env (encodeModelAtom operator))) =
+      Metta.Minimal.getTypes env (encodeModelAtom operator) := by
+  apply encodeModelAtoms_decodeModelAtoms_of_heImage
   apply leaAtomsHEImage_of_forall
   intro leaType member
   exact getTypes_result_heImage index
-    (toLeaTTaAtom operator) leaType
-    (leaAtomHEImage_toLeaTTaAtom operator) member
+    (encodeModelAtom operator) leaType
+    (leaAtomHEImage_encodeModelAtom operator) member
 
 private theorem freshenTypeCandidate_heImage
     (avoid : List String) (position : Nat) {atom : Metta.Atom}
@@ -136,7 +140,7 @@ private theorem freshenTypeCandidate_heImage
   refine ⟨renameTypeVars
     (Metta.Minimal.captureAvoidingName avoid position) native, ?_⟩
   simpa [Metta.Minimal.freshenTypeCandidate] using
-    toLeaTTaAtom_renameTypeVars
+    encodeModelAtom_renameTypeVars
       (Metta.Minimal.captureAvoidingName avoid position) native
 
 private theorem freshenArgumentTypes_heImage
@@ -177,16 +181,16 @@ theorem runtimeFreshenedArgumentTypes_roundtrip
     (index : TypeEnvironmentRel space env) (atom : Atom)
     (avoid : List String) (position : Nat) :
     let runtimeCandidates := Metta.Minimal.freshenArgumentTypes avoid position
-      (Metta.Minimal.getTypes env (toLeaTTaAtom atom))
-    toLeaTTaAtoms (fromLeaTTaAtoms runtimeCandidates) = runtimeCandidates := by
+      (Metta.Minimal.getTypes env (encodeModelAtom atom))
+    encodeModelAtoms (decodeModelAtoms runtimeCandidates) = runtimeCandidates := by
   dsimp only
-  apply toLeaTTaAtoms_fromLeaTTaAtoms_of_heImage
+  apply encodeModelAtoms_decodeModelAtoms_of_heImage
   apply freshenArgumentTypes_heImage
   apply leaAtomsHEImage_of_forall
   intro leaType member
   exact getTypes_result_heImage index
-    (toLeaTTaAtom atom) leaType
-    (leaAtomHEImage_toLeaTTaAtom atom) member
+    (encodeModelAtom atom) leaType
+    (leaAtomHEImage_encodeModelAtom atom) member
 
 /-- Freshening the complete recursively computed operator list preserves the
 exact native/runtime round trip.  This is the representation boundary needed
@@ -198,68 +202,17 @@ theorem runtimeFreshenedOperatorTypes_roundtrip
     (index : TypeEnvironmentRel space env) (operator : Atom)
     (avoid : List String) (position : Nat) :
     let runtimeCandidates :=
-      (Metta.Minimal.getTypes env (toLeaTTaAtom operator)).map
+      (Metta.Minimal.getTypes env (encodeModelAtom operator)).map
         (Metta.Minimal.freshenTypeCandidate avoid position)
-    toLeaTTaAtoms (fromLeaTTaAtoms runtimeCandidates) = runtimeCandidates := by
+    encodeModelAtoms (decodeModelAtoms runtimeCandidates) = runtimeCandidates := by
   dsimp only
-  apply toLeaTTaAtoms_fromLeaTTaAtoms_of_heImage
+  apply encodeModelAtoms_decodeModelAtoms_of_heImage
   apply freshenOperatorTypes_heImage
   apply leaAtomsHEImage_of_forall
   intro leaType member
   exact getTypes_result_heImage index
-    (toLeaTTaAtom operator) leaType
-    (leaAtomHEImage_toLeaTTaAtom operator) member
-
-/-- A presentation avoiding a larger suffix also realizes the same global
-operator presentation at the smaller prefix avoid set. -/
-private theorem operatorAlphaVariants_weaken_append
-    {avoid extra : List String} {sources targets : List Atom}
-    (variants : OperatorAlphaVariantsRel
-      (avoid ++ extra) sources targets) :
-    OperatorAlphaVariantsRel avoid sources targets := by
-  induction variants with
-  | nil => exact OperatorAlphaVariantsRel.nil
-  | @cons source target sources targets head tail ih =>
-      rcases head with ⟨rename, injective, presentation, fresh⟩
-      apply OperatorAlphaVariantsRel.cons
-      · exact ⟨rename, injective, presentation, by
-          intro name member avoidMember
-          exact fresh name member
-            (List.mem_append_left extra avoidMember)⟩
-      · exact ih
-
-/-- Avoiding every variable in every fresh argument choice implies the exact
-operator/choice cell-scope law carried by the independent matrix relation. -/
-private theorem operatorAlphaVariants_scopesSeparated
-    {avoid : List String} {rawOperators freshOperators : List Atom}
-    {freshArgumentChoices : List (List Atom)}
-    (variants : OperatorAlphaVariantsRel
-      (avoid ++ TypeSubst.typeVarsList freshArgumentChoices.flatten)
-      rawOperators freshOperators) :
-    ApplicationPackageScopesSeparated
-      freshArgumentChoices freshOperators := by
-  apply ApplicationPackageScopesSeparated.mk
-  intro actualTypes actualMember operatorType operatorMember
-  induction variants with
-  | nil => simp at operatorMember
-  | @cons source target sources targets head tail ih =>
-      rcases List.mem_cons.mp operatorMember with rfl | tailMember
-      · intro name operatorVar argumentVar
-        apply
-          (Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationExactConformance.TypeCandidateAlphaVariantRel.target_vars_fresh
-            head name operatorVar)
-        apply List.mem_append_right avoid
-        obtain ⟨argument, argumentMember, nameMember⟩ :=
-          Spec.Type.Presentation.Freshness.exists_mem_of_mem_typeVarsList
-            argumentVar
-        apply
-          Spec.Type.Presentation.Freshness.typeVars_mem_typeVarsList_of_mem
-            (atom := argument)
-            (atoms := freshArgumentChoices.flatten)
-        · exact List.mem_flatten.mpr
-            ⟨actualTypes, actualMember, argumentMember⟩
-        · exact nameMember
-      · exact ih tailMember
+    (encodeModelAtom operator) leaType
+    (leaAtomHEImage_encodeModelAtom operator) member
 
 /-- The one-candidate filter in the repaired runtime, named locally so the
 recursive `getTypes` equation can be compared with the native presentation
@@ -283,24 +236,24 @@ private theorem runtimeApplicationCandidate_decode
     (actualImage : LeaAtomsHEImage actualTypes)
     (operatorImage : LeaAtomHEImage operatorType) :
     runtimeApplicationCandidate
-        (fromLeaTTaAtoms actualTypes) (fromLeaTTaAtom operatorType) =
+        (decodeModelAtoms actualTypes) (decodeModelAtom operatorType) =
       leaRuntimeApplicationCandidate actualTypes operatorType := by
   obtain ⟨nativeActuals, actualEquation⟩ := actualImage
   obtain ⟨nativeOperator, operatorEquation⟩ := operatorImage
   rw [← actualEquation, ← operatorEquation]
-  simp only [fromLeaTTaAtoms_toLeaTTaAtoms,
-    fromLeaTTaAtom_toLeaTTaAtom]
+  simp only [decodeModelAtoms_encodeModelAtoms,
+    decodeModelAtom_encodeModelAtom]
   cases nativeOperator with
   | symbol name => simp [runtimeApplicationCandidate,
-      leaRuntimeApplicationCandidate, toLeaTTaAtom]
+      leaRuntimeApplicationCandidate, encodeModelAtom]
   | var name => simp [runtimeApplicationCandidate,
-      leaRuntimeApplicationCandidate, toLeaTTaAtom]
+      leaRuntimeApplicationCandidate, encodeModelAtom]
   | grounded value => simp [runtimeApplicationCandidate,
-      leaRuntimeApplicationCandidate, toLeaTTaAtom]
+      leaRuntimeApplicationCandidate, encodeModelAtom]
   | expression atoms =>
       cases atoms with
       | nil => simp [runtimeApplicationCandidate,
-          leaRuntimeApplicationCandidate, toLeaTTaAtom, toLeaTTaAtoms]
+          leaRuntimeApplicationCandidate, encodeModelAtom, encodeModelAtoms]
       | cons head tail =>
           cases head with
           | symbol name =>
@@ -309,44 +262,44 @@ private theorem runtimeApplicationCandidate_decode
                 cases last : tail.getLast? with
                 | none =>
                     simp [runtimeApplicationCandidate,
-                      leaRuntimeApplicationCandidate, toLeaTTaAtom,
-                      toLeaTTaAtoms, last]
+                      leaRuntimeApplicationCandidate, encodeModelAtom,
+                      encodeModelAtoms, last]
                 | some returnType =>
                     simp [runtimeApplicationCandidate,
-                      leaRuntimeApplicationCandidate, toLeaTTaAtom,
-                      toLeaTTaAtoms, last]
+                      leaRuntimeApplicationCandidate, encodeModelAtom,
+                      encodeModelAtoms, last]
                     cases matchEquation :
                         Metta.Minimal.matchApplicationTypeArguments
                           Metta.Bindings.empty
-                          (tail.map toLeaTTaAtom).dropLast
-                          (nativeActuals.map toLeaTTaAtom) <;>
+                          (tail.map encodeModelAtom).dropLast
+                          (nativeActuals.map encodeModelAtom) <;>
                       simp
               · simp [runtimeApplicationCandidate,
-                  leaRuntimeApplicationCandidate, toLeaTTaAtom,
-                  toLeaTTaAtoms, arrow]
+                  leaRuntimeApplicationCandidate, encodeModelAtom,
+                  encodeModelAtoms, arrow]
           | var name => simp [runtimeApplicationCandidate,
-              leaRuntimeApplicationCandidate, toLeaTTaAtom,
-              toLeaTTaAtoms]
+              leaRuntimeApplicationCandidate, encodeModelAtom,
+              encodeModelAtoms]
           | grounded value => simp [runtimeApplicationCandidate,
-              leaRuntimeApplicationCandidate, toLeaTTaAtom,
-              toLeaTTaAtoms]
+              leaRuntimeApplicationCandidate, encodeModelAtom,
+              encodeModelAtoms]
           | expression atoms => simp [runtimeApplicationCandidate,
-              leaRuntimeApplicationCandidate, toLeaTTaAtom,
-              toLeaTTaAtoms]
+              leaRuntimeApplicationCandidate, encodeModelAtom,
+              encodeModelAtoms]
 
 private theorem runtimeApplicationCandidates_decode
     {actualTypes operatorTypes : List Metta.Atom}
     (actualImage : LeaAtomsHEImage actualTypes)
     (operatorImage : LeaAtomsHEImage operatorTypes) :
     runtimeApplicationCandidates
-        (fromLeaTTaAtoms actualTypes) (fromLeaTTaAtoms operatorTypes) =
+        (decodeModelAtoms actualTypes) (decodeModelAtoms operatorTypes) =
       operatorTypes.filterMap
         (leaRuntimeApplicationCandidate actualTypes) := by
   induction operatorTypes with
   | nil => rfl
   | cons operator operators ih =>
       rw [leaAtomsHEImage_cons_iff] at operatorImage
-      simp only [runtimeApplicationCandidates, fromLeaTTaAtoms,
+      simp only [runtimeApplicationCandidates, decodeModelAtoms,
         List.filterMap_cons]
       rw [runtimeApplicationCandidate_decode actualImage operatorImage.1]
       have tailEquation := ih operatorImage.2
@@ -451,9 +404,9 @@ private theorem freshenArgumentChoices_alphaVariants
     (avoid : List String) (choices : List (List Atom)) :
     List.Forall₂ (ArgumentAlphaVariantsRel avoid) choices
       (choices.map fun choice =>
-        fromLeaTTaAtoms
+        decodeModelAtoms
           (Metta.Minimal.freshenArgumentTypes avoid 0
-            (toLeaTTaAtoms choice))) := by
+            (encodeModelAtoms choice))) := by
   induction choices with
   | nil => exact List.Forall₂.nil
   | cons choice choices ih =>
@@ -466,7 +419,7 @@ private theorem freshenArgumentChoices_heImage
     (avoid : List String) (choices : List (List Atom)) :
     ∀ freshChoice ∈ choices.map (fun choice =>
       Metta.Minimal.freshenArgumentTypes avoid 0
-        (toLeaTTaAtoms choice)),
+        (encodeModelAtoms choice)),
       LeaAtomsHEImage freshChoice := by
   intro freshChoice member
   obtain ⟨choice, _choiceMember, rfl⟩ := List.mem_map.mp member
@@ -483,54 +436,54 @@ private theorem runtimeFreshenedScopesSeparated
       choice.length = arity) :
     ApplicationPackageScopesSeparated
       (rawArgumentChoices.map fun choice =>
-        fromLeaTTaAtoms
+        decodeModelAtoms
           (Metta.Minimal.freshenArgumentTypes argumentAvoid 0
-            (toLeaTTaAtoms choice)))
-      (fromLeaTTaAtoms
-        ((toLeaTTaAtoms rawOperators).map
+            (encodeModelAtoms choice)))
+      (decodeModelAtoms
+        ((encodeModelAtoms rawOperators).map
           (Metta.Minimal.freshenTypeCandidate functionAvoid arity))) := by
   apply ApplicationPackageScopesSeparated.mk
   intro freshArguments freshArgumentsMember
     freshOperator freshOperatorMember name operatorVar argumentVar
   obtain ⟨rawArguments, rawArgumentsMember, rfl⟩ :=
     List.mem_map.mp freshArgumentsMember
-  simp only [toLeaTTaAtoms_eq_map, List.map_map,
-    fromLeaTTaAtoms_eq_map] at freshOperatorMember
+  simp only [encodeModelAtoms_eq_map, List.map_map,
+    decodeModelAtoms_eq_map] at freshOperatorMember
   obtain ⟨rawOperator, rawOperatorMember, rfl⟩ :=
     List.mem_map.mp freshOperatorMember
   let leaFreshOperator := Metta.Minimal.freshenTypeCandidate
-    functionAvoid arity (toLeaTTaAtom rawOperator)
+    functionAvoid arity (encodeModelAtom rawOperator)
   let leaFreshArguments := Metta.Minimal.freshenArgumentTypes
-    argumentAvoid 0 (toLeaTTaAtoms rawArguments)
+    argumentAvoid 0 (encodeModelAtoms rawArguments)
   have operatorImage : LeaAtomHEImage leaFreshOperator := by
     exact freshenTypeCandidate_heImage functionAvoid arity
-      (leaAtomHEImage_toLeaTTaAtom rawOperator)
+      (leaAtomHEImage_encodeModelAtom rawOperator)
   have argumentsImage : LeaAtomsHEImage leaFreshArguments := by
     exact freshenArgumentTypes_heImage argumentAvoid 0
       ⟨rawArguments, rfl⟩
   have operatorRoundtrip :
-      toLeaTTaAtom (fromLeaTTaAtom leaFreshOperator) =
+      encodeModelAtom (decodeModelAtom leaFreshOperator) =
         leaFreshOperator :=
-    toLeaTTaAtom_fromLeaTTaAtom_of_heImage operatorImage
+    encodeModelAtom_decodeModelAtom_of_heImage operatorImage
   have argumentsRoundtrip :
-      toLeaTTaAtoms (fromLeaTTaAtoms leaFreshArguments) =
+      encodeModelAtoms (decodeModelAtoms leaFreshArguments) =
         leaFreshArguments :=
-    toLeaTTaAtoms_fromLeaTTaAtoms_of_heImage argumentsImage
+    encodeModelAtoms_decodeModelAtoms_of_heImage argumentsImage
   have operatorMember : name ∈ leaFreshOperator.vars := by
     rw [← operatorRoundtrip,
-      toLeaTTaAtom_vars_eq_typeVars]
+      encodeModelAtom_vars_eq_typeVars]
     exact operatorVar
   have argumentsMember : name ∈ leaFreshArguments.flatMap Metta.Atom.vars := by
     have translated := argumentVar
-    rw [← toLeaTTaAtoms_vars_eq_typeVars] at translated
+    rw [← encodeModelAtoms_vars_eq_typeVars] at translated
     rw [argumentsRoundtrip] at translated
     exact translated
   have disjoint :=
     Metta.Minimal.freshenTypeCandidate_disjoint_from_positioned_arguments
-      argumentAvoid functionAvoid (toLeaTTaAtom rawOperator)
-        (toLeaTTaAtoms rawArguments)
-  rw [show (toLeaTTaAtoms rawArguments).length = arity by
-    simpa [toLeaTTaAtoms_eq_map] using
+      argumentAvoid functionAvoid (encodeModelAtom rawOperator)
+        (encodeModelAtoms rawArguments)
+  rw [show (encodeModelAtoms rawArguments).length = arity by
+    simpa [encodeModelAtoms_eq_map] using
       choiceLength rawArguments rawArgumentsMember] at disjoint
   exact disjoint name operatorMember argumentsMember
 
@@ -743,9 +696,9 @@ private theorem runtimeApplicationCandidateRow_decode
     (argumentImage : ∀ actualTypes ∈ argumentChoices,
       LeaAtomsHEImage actualTypes)
     (operatorImage : LeaAtomHEImage operatorType) :
-    (argumentChoices.map fromLeaTTaAtoms).filterMap
+    (argumentChoices.map decodeModelAtoms).filterMap
         (fun actualTypes => runtimeApplicationCandidate
-          actualTypes (fromLeaTTaAtom operatorType)) =
+          actualTypes (decodeModelAtom operatorType)) =
       argumentChoices.filterMap
         (fun actualTypes =>
           leaRuntimeApplicationCandidate actualTypes operatorType) := by
@@ -768,8 +721,8 @@ private theorem runtimeApplicationCandidateMatrix_decode
       LeaAtomsHEImage actualTypes)
     (operatorImage : LeaAtomsHEImage operatorTypes) :
     runtimeApplicationCandidateMatrix
-        (argumentChoices.map fromLeaTTaAtoms)
-        (fromLeaTTaAtoms operatorTypes) =
+        (argumentChoices.map decodeModelAtoms)
+        (decodeModelAtoms operatorTypes) =
       leaRuntimeApplicationCandidateMatrix
         argumentChoices operatorTypes := by
   induction operatorTypes with
@@ -777,7 +730,7 @@ private theorem runtimeApplicationCandidateMatrix_decode
   | cons operatorType operatorTypes ih =>
       rw [leaAtomsHEImage_cons_iff] at operatorImage
       simp only [runtimeApplicationCandidateMatrix,
-        leaRuntimeApplicationCandidateMatrix, fromLeaTTaAtoms,
+        leaRuntimeApplicationCandidateMatrix, decodeModelAtoms,
         List.flatMap_cons]
       rw [runtimeApplicationCandidateRow_decode
         argumentImage operatorImage.1]
@@ -799,7 +752,7 @@ private theorem applicationPackageOutcomeRow_complete
     (separated : ∀ actualTypes ∈ argumentChoices,
       VarsDisjoint operatorType (.expression actualTypes)) :
     List.Forall₂ ObservedTypeAlphaRel (observedTypes results)
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (argumentChoices.filterMap fun actualTypes =>
           runtimeApplicationCandidate actualTypes operatorType)) := by
   obtain ⟨outcomes, outcomeRel, outcomeEquation⟩ := row
@@ -822,7 +775,7 @@ private theorem applicationPackageOutcomeRow_complete
       | @success result success =>
           obtain ⟨leaResult, runtimeSome, alpha⟩ :=
             runtimeApplicationCandidate_complete success headSeparated
-          simpa [runtimeSome, observedTypes, fromLeaTTaAtoms] using
+          simpa [runtimeSome, observedTypes, decodeModelAtoms] using
             List.Forall₂.cons alpha (ih tailSeparated)
 
 /-- Matrix-level completeness of the repaired runtime.  This is the single
@@ -837,7 +790,7 @@ private theorem applicationPackageMatrix_complete
       ∀ operatorType ∈ operatorTypes,
         VarsDisjoint operatorType (.expression actualTypes)) :
     List.Forall₂ ObservedTypeAlphaRel (observedTypes results)
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (runtimeApplicationCandidateMatrix
           argumentChoices operatorTypes)) := by
   obtain ⟨rows, rowsRel, rowsEquation⟩ := matrix
@@ -859,7 +812,7 @@ private theorem applicationPackageMatrix_complete
         applicationPackageOutcomeRow_complete headRow headSeparated
       have tailAlpha := ih tailSeparated
       simpa [observedTypes, runtimeApplicationCandidateMatrix,
-        fromLeaTTaAtoms] using List.rel_append headAlpha tailAlpha
+        decodeModelAtoms] using List.rel_append headAlpha tailAlpha
 
 /-- The independent cell-scope predicate is exactly the structural
 disjointness premise required by one-candidate runtime completeness after
@@ -873,8 +826,8 @@ private theorem applicationPackageScopesSeparated_varsDisjoint
         VarsDisjoint operatorType (.expression actualTypes) := by
   intro actualTypes actualMember operatorType operatorMember
     name operatorVar argumentVar
-  rw [toLeaTTaAtom_vars_eq_typeVars] at operatorVar
-  rw [toLeaTTaAtom_vars_eq_typeVars] at argumentVar
+  rw [encodeModelAtom_vars_eq_typeVars] at operatorVar
+  rw [encodeModelAtom_vars_eq_typeVars] at argumentVar
   exact ApplicationPackageScopesSeparated.atom separated actualMember
     operatorMember operatorVar (by
       simpa [TypeSubst.typeVars, TypeSubst.typeVarsList] using argumentVar)
@@ -905,7 +858,7 @@ private theorem applicationPackageMatrix_transport_complete
     (leftMatrix : ApplicationPackageMatrixRel
       leftArgumentChoices leftOperators leftResults) :
     List.Forall₂ ObservedTypeAlphaRel (observedTypes leftResults)
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (runtimeApplicationCandidateMatrix
           rightArgumentChoices rightOperators)) := by
   obtain ⟨rightResults, rightMatrix, matrixAlpha⟩ :=
@@ -944,14 +897,14 @@ private theorem applicationPackageMatrix_concrete_alpha
     (arityEquation : runtimeArgumentLists.length = arity) :
     let runtimeRawChoices := orderedCartesian runtimeArgumentLists
     let runtimeFreshChoices := runtimeRawChoices.map fun choice =>
-      fromLeaTTaAtoms
+      decodeModelAtoms
         (Metta.Minimal.freshenArgumentTypes argumentAvoid 0
-          (toLeaTTaAtoms choice))
-    let runtimeFreshOperators := fromLeaTTaAtoms
-      ((toLeaTTaAtoms runtimeOperators).map
+          (encodeModelAtoms choice))
+    let runtimeFreshOperators := decodeModelAtoms
+      ((encodeModelAtoms runtimeOperators).map
         (Metta.Minimal.freshenTypeCandidate functionAvoid arity))
     List.Forall₂ ObservedTypeAlphaRel (observedTypes leftResults)
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (runtimeApplicationCandidateMatrix
           runtimeFreshChoices runtimeFreshOperators)) := by
   dsimp only
@@ -962,16 +915,16 @@ private theorem applicationPackageMatrix_concrete_alpha
       (ArgumentAlphaVariantsRel argumentAvoid)
       (orderedCartesian specArgumentLists)
       ((orderedCartesian runtimeArgumentLists).map fun choice =>
-        fromLeaTTaAtoms
+        decodeModelAtoms
           (Metta.Minimal.freshenArgumentTypes argumentAvoid 0
-            (toLeaTTaAtoms choice))) :=
+            (encodeModelAtoms choice))) :=
     argumentChoiceVariants_transport_left rawChoiceAlpha runtimeArgumentBase
   have runtimeOperatorBase := freshenOperatorTypes_alphaVariants
     functionAvoid arity runtimeOperators
   have runtimeOperatorVariants : OperatorAlphaVariantsRel
       functionAvoid specOperators
-      (fromLeaTTaAtoms
-        ((toLeaTTaAtoms runtimeOperators).map
+      (decodeModelAtoms
+        ((encodeModelAtoms runtimeOperators).map
           (Metta.Minimal.freshenTypeCandidate functionAvoid arity))) :=
     OperatorAlphaVariantsRel.transport_left
       operatorAlpha runtimeOperatorBase
@@ -1000,22 +953,22 @@ private theorem runtimeApplicationCandidateMatrix_encode
     let leaFreshArgumentChoices :=
       runtimeRawArgumentChoices.map fun choice =>
         Metta.Minimal.freshenArgumentTypes argumentAvoid 0
-          (toLeaTTaAtoms choice)
+          (encodeModelAtoms choice)
     let runtimeFreshArgumentChoices :=
-      leaFreshArgumentChoices.map fromLeaTTaAtoms
-    let runtimeRawOperators := fromLeaTTaAtoms
-      (Metta.Minimal.getTypes env (toLeaTTaAtom head))
+      leaFreshArgumentChoices.map decodeModelAtoms
+    let runtimeRawOperators := decodeModelAtoms
+      (Metta.Minimal.getTypes env (encodeModelAtom head))
     let leaFreshOperators :=
-      ((toLeaTTaAtoms runtimeRawOperators).map
+      ((encodeModelAtoms runtimeRawOperators).map
         (Metta.Minimal.freshenTypeCandidate functionAvoid arity))
-    let runtimeFreshOperators := fromLeaTTaAtoms leaFreshOperators
+    let runtimeFreshOperators := decodeModelAtoms leaFreshOperators
     runtimeApplicationCandidateMatrix
         runtimeFreshArgumentChoices runtimeFreshOperators =
-      ((Metta.Minimal.getTypes env (toLeaTTaAtom head)).map
+      ((Metta.Minimal.getTypes env (encodeModelAtom head)).map
         (Metta.Minimal.freshenTypeCandidate functionAvoid arity)).flatMap
           fun operatorType =>
             (Metta.Minimal.cartesian
-              ((toLeaTTaAtoms tail).map
+              ((encodeModelAtoms tail).map
                 (Metta.Minimal.getTypes env))).filterMap fun rawArguments =>
               leaRuntimeApplicationCandidate
                 (Metta.Minimal.freshenArgumentTypes
@@ -1026,11 +979,11 @@ private theorem runtimeApplicationCandidateMatrix_encode
     orderedCartesian (runtimeArgumentTypeLists env tail)
   let leaFreshArgumentChoices := runtimeRawArgumentChoices.map fun choice =>
     Metta.Minimal.freshenArgumentTypes argumentAvoid 0
-      (toLeaTTaAtoms choice)
-  let runtimeRawOperators := fromLeaTTaAtoms
-    (Metta.Minimal.getTypes env (toLeaTTaAtom head))
+      (encodeModelAtoms choice)
+  let runtimeRawOperators := decodeModelAtoms
+    (Metta.Minimal.getTypes env (encodeModelAtom head))
   let leaFreshOperators :=
-    (toLeaTTaAtoms runtimeRawOperators).map
+    (encodeModelAtoms runtimeRawOperators).map
       (Metta.Minimal.freshenTypeCandidate functionAvoid arity)
   have argumentImage : ∀ actualTypes ∈ leaFreshArgumentChoices,
       LeaAtomsHEImage actualTypes := by
@@ -1045,46 +998,46 @@ private theorem runtimeApplicationCandidateMatrix_encode
   have rawListRoundtrip := runtimeArgumentTypeLists_roundtrip index tail
   have rawChoiceRoundtrip :
       (orderedCartesian (runtimeArgumentTypeLists env tail)).map
-          toLeaTTaAtoms =
+          encodeModelAtoms =
         Metta.Minimal.cartesian
-          ((toLeaTTaAtoms tail).map (Metta.Minimal.getTypes env)) := by
+          ((encodeModelAtoms tail).map (Metta.Minimal.getTypes env)) := by
     calc
       (orderedCartesian (runtimeArgumentTypeLists env tail)).map
-          toLeaTTaAtoms =
+          encodeModelAtoms =
           (orderedCartesian (runtimeArgumentTypeLists env tail)).map
-            (List.map toLeaTTaAtom) := by
+            (List.map encodeModelAtom) := by
         apply List.map_congr_left
         intro choice _member
-        exact toLeaTTaAtoms_eq_map choice
+        exact encodeModelAtoms_eq_map choice
       _ =
           orderedCartesian
             ((runtimeArgumentTypeLists env tail).map
-              (List.map toLeaTTaAtom)) :=
-        orderedCartesian_map toLeaTTaAtom
+              (List.map encodeModelAtom)) :=
+        orderedCartesian_map encodeModelAtom
           (runtimeArgumentTypeLists env tail)
       _ = orderedCartesian
-          ((runtimeArgumentTypeLists env tail).map toLeaTTaAtoms) := by
+          ((runtimeArgumentTypeLists env tail).map encodeModelAtoms) := by
         apply congrArg orderedCartesian
         apply List.map_congr_left
         intro choice _member
-        exact (toLeaTTaAtoms_eq_map choice).symm
+        exact (encodeModelAtoms_eq_map choice).symm
       _ = orderedCartesian
           (tail.map fun argument =>
-            Metta.Minimal.getTypes env (toLeaTTaAtom argument)) :=
+            Metta.Minimal.getTypes env (encodeModelAtom argument)) :=
         congrArg orderedCartesian rawListRoundtrip
       _ = Metta.Minimal.cartesian
-          ((toLeaTTaAtoms tail).map (Metta.Minimal.getTypes env)) := by
+          ((encodeModelAtoms tail).map (Metta.Minimal.getTypes env)) := by
         rw [orderedCartesian_eq_runtimeCartesian]
-        simp [toLeaTTaAtoms_eq_map, List.map_map, Function.comp_def]
+        simp [encodeModelAtoms_eq_map, List.map_map, Function.comp_def]
   have freshChoiceEquation : leaFreshArgumentChoices =
       (Metta.Minimal.cartesian
-        ((toLeaTTaAtoms tail).map
+        ((encodeModelAtoms tail).map
           (Metta.Minimal.getTypes env))).map
             (Metta.Minimal.freshenArgumentTypes argumentAvoid 0) := by
     calc
       leaFreshArgumentChoices =
           ((orderedCartesian (runtimeArgumentTypeLists env tail)).map
-            toLeaTTaAtoms).map
+            encodeModelAtoms).map
               (Metta.Minimal.freshenArgumentTypes argumentAvoid 0) := by
         simp [leaFreshArgumentChoices, runtimeRawArgumentChoices,
           List.map_map, Function.comp_def]
@@ -1093,22 +1046,22 @@ private theorem runtimeApplicationCandidateMatrix_encode
         rawChoiceRoundtrip
   have operatorRoundtrip := runtimeOperatorTypes_roundtrip index head
   have freshOperatorEquation : leaFreshOperators =
-      (Metta.Minimal.getTypes env (toLeaTTaAtom head)).map
+      (Metta.Minimal.getTypes env (encodeModelAtom head)).map
         (Metta.Minimal.freshenTypeCandidate functionAvoid arity) := by
     simpa [leaFreshOperators, runtimeRawOperators] using congrArg
       (List.map (Metta.Minimal.freshenTypeCandidate functionAvoid arity))
       operatorRoundtrip
   calc
     runtimeApplicationCandidateMatrix
-        (leaFreshArgumentChoices.map fromLeaTTaAtoms)
-        (fromLeaTTaAtoms leaFreshOperators) =
+        (leaFreshArgumentChoices.map decodeModelAtoms)
+        (decodeModelAtoms leaFreshOperators) =
       leaRuntimeApplicationCandidateMatrix
         leaFreshArgumentChoices leaFreshOperators := decoded
-    _ = ((Metta.Minimal.getTypes env (toLeaTTaAtom head)).map
+    _ = ((Metta.Minimal.getTypes env (encodeModelAtom head)).map
         (Metta.Minimal.freshenTypeCandidate functionAvoid arity)).flatMap
           fun operatorType =>
             (Metta.Minimal.cartesian
-              ((toLeaTTaAtoms tail).map
+              ((encodeModelAtoms tail).map
                 (Metta.Minimal.getTypes env))).filterMap fun rawArguments =>
               leaRuntimeApplicationCandidate
                 (Metta.Minimal.freshenArgumentTypes
@@ -1129,7 +1082,7 @@ private theorem expressionTypes_filter_eq_nil
       (.expression (head :: tail)) space.atoms []) :
     env.exprTypes.filter (fun entry =>
       entry.1 ==
-        .expr (toLeaTTaAtom head :: toLeaTTaAtoms tail)) = [] := by
+        .expr (encodeModelAtom head :: encodeModelAtoms tail)) = [] := by
   have mapped := index.expressionTypes head tail
   have noAnnotationsEquation :
       getAnnotatedTypes space (.expression (head :: tail)) = [] := by
@@ -1139,9 +1092,9 @@ private theorem expressionTypes_filter_eq_nil
   have nativeMapped :
       (env.exprTypes.filter (fun entry =>
         entry.1 ==
-          .expr (toLeaTTaAtom head :: toLeaTTaAtoms tail))).map
+          .expr (encodeModelAtom head :: encodeModelAtoms tail))).map
             (fun entry => entry.2) = [] := by
-    simpa [toLeaTTaAtom, toLeaTTaAtoms_eq_map] using mapped
+    simpa [encodeModelAtom, encodeModelAtoms_eq_map] using mapped
   exact List.map_eq_nil_iff.mp nativeMapped
 
 /-- With direct annotations excluded, repaired LeaTTa's expression lookup is
@@ -1155,32 +1108,32 @@ private theorem getTypes_expression_eq_candidateMatrix
     (notState : NotStateValueShape head tail)
     (nativeNoDirect : env.exprTypes.filter (fun entry =>
       entry.1 ==
-        .expr (toLeaTTaAtom head :: toLeaTTaAtoms tail)) = []) :
+        .expr (encodeModelAtom head :: encodeModelAtoms tail)) = []) :
     let runtimeRawArgumentLists := runtimeArgumentTypeLists env tail
     let runtimeRawArgumentChoices :=
       orderedCartesian runtimeRawArgumentLists
     let leaAllRawArgumentTypes :=
-      ((toLeaTTaAtoms tail).map
+      ((encodeModelAtoms tail).map
         (Metta.Minimal.getTypes env)).flatten
-    let runtimeRawOperators := fromLeaTTaAtoms
-      (Metta.Minimal.getTypes env (toLeaTTaAtom head))
+    let runtimeRawOperators := decodeModelAtoms
+      (Metta.Minimal.getTypes env (encodeModelAtom head))
     let argumentAvoid := Metta.Minimal.typeInferenceAvoid env
-      (.expr (toLeaTTaAtom head :: toLeaTTaAtoms tail))
-      (Metta.Minimal.getTypes env (toLeaTTaAtom head) ++
+      (.expr (encodeModelAtom head :: encodeModelAtoms tail))
+      (Metta.Minimal.getTypes env (encodeModelAtom head) ++
         leaAllRawArgumentTypes)
     let functionAvoid := argumentAvoid ++
       leaAllRawArgumentTypes.flatMap Metta.Atom.vars
     let runtimeFreshArgumentChoices :=
       runtimeRawArgumentChoices.map fun choice =>
-        fromLeaTTaAtoms
+        decodeModelAtoms
           (Metta.Minimal.freshenArgumentTypes argumentAvoid 0
-            (toLeaTTaAtoms choice))
-    let runtimeFreshOperators := fromLeaTTaAtoms
-      ((toLeaTTaAtoms runtimeRawOperators).map
+            (encodeModelAtoms choice))
+    let runtimeFreshOperators := decodeModelAtoms
+      ((encodeModelAtoms runtimeRawOperators).map
         (Metta.Minimal.freshenTypeCandidate
           functionAvoid tail.length))
     Metta.Minimal.getTypes env
-        (toLeaTTaAtom (.expression (head :: tail))) =
+        (encodeModelAtom (.expression (head :: tail))) =
       match runtimeApplicationCandidateMatrix
           runtimeFreshArgumentChoices runtimeFreshOperators with
       | [] => [.sym "%Undefined%"]
@@ -1189,25 +1142,25 @@ private theorem getTypes_expression_eq_candidateMatrix
   have encoded := runtimeApplicationCandidateMatrix_encode
     index head tail
       (Metta.Minimal.typeInferenceAvoid env
-        (.expr (toLeaTTaAtom head :: toLeaTTaAtoms tail))
-        (Metta.Minimal.getTypes env (toLeaTTaAtom head) ++
-          ((toLeaTTaAtoms tail).map
+        (.expr (encodeModelAtom head :: encodeModelAtoms tail))
+        (Metta.Minimal.getTypes env (encodeModelAtom head) ++
+          ((encodeModelAtoms tail).map
             (Metta.Minimal.getTypes env)).flatten))
       (Metta.Minimal.typeInferenceAvoid env
-          (.expr (toLeaTTaAtom head :: toLeaTTaAtoms tail))
-          (Metta.Minimal.getTypes env (toLeaTTaAtom head) ++
-            ((toLeaTTaAtoms tail).map
+          (.expr (encodeModelAtom head :: encodeModelAtoms tail))
+          (Metta.Minimal.getTypes env (encodeModelAtom head) ++
+            ((encodeModelAtoms tail).map
               (Metta.Minimal.getTypes env)).flatten) ++
-        ((toLeaTTaAtoms tail).map
+        ((encodeModelAtoms tail).map
           (Metta.Minimal.getTypes env)).flatten.flatMap Metta.Atom.vars)
       tail.length
-  rw [show toLeaTTaAtom (.expression (head :: tail)) =
-      .expr (toLeaTTaAtom head :: toLeaTTaAtoms tail) by
-    simp [toLeaTTaAtom, toLeaTTaAtoms_eq_map]]
+  rw [show encodeModelAtom (.expression (head :: tail)) =
+      .expr (encodeModelAtom head :: encodeModelAtoms tail) by
+    simp [encodeModelAtom, encodeModelAtoms_eq_map]]
   rw [Metta.Minimal.getTypes.eq_10 env
-    (toLeaTTaAtom head) (toLeaTTaAtoms tail)
+    (encodeModelAtom head) (encodeModelAtoms tail)
     (notStateValueShape_toLeaTTa notState), nativeNoDirect]
-  simp only [toLeaTTaAtoms_eq_map, List.length_map]
+  simp only [encodeModelAtoms_eq_map, List.length_map]
   have fallbackEncoded := congrArg
     (fun results => match results with
       | [] => [Metta.Atom.sym "%Undefined%"]
@@ -1216,234 +1169,9 @@ private theorem getTypes_expression_eq_candidateMatrix
   convert fallbackEncoded.symm using 1
   all_goals
     simp only [leaRuntimeApplicationCandidate,
-      toLeaTTaAtoms_eq_map, List.flatMap_id,
+      encodeModelAtoms_eq_map, List.flatMap_id,
       List.map_map, Function.comp_def, Metta.Bindings.empty]
   all_goals rfl
-
-/-! ## Totality of the executable-independent presentation relation -/
-
-private theorem applicationPackageOutcomeRel_exists
-    (actualTypes : List Atom) (operatorType : Atom) :
-    ∃ output, ApplicationPackageOutcomeRel
-      actualTypes operatorType output := by
-  classical
-  by_cases success : ∃ result,
-      ApplicationPackageSuccessRel actualTypes operatorType result
-  · obtain ⟨result, resultSuccess⟩ := success
-    exact ⟨some result, ApplicationPackageOutcomeRel.success resultSuccess⟩
-  · refine ⟨none, ApplicationPackageOutcomeRel.failure ?_⟩
-    intro result resultSuccess
-    exact success ⟨result, resultSuccess⟩
-
-private theorem applicationPackageOutcomeRowRel_exists
-    (argumentChoices : List (List Atom)) (operatorType : Atom) :
-    ∃ results,
-      ApplicationPackageOutcomeRowRel
-        argumentChoices operatorType results := by
-  induction argumentChoices with
-  | nil =>
-      exact ⟨[], [], List.Forall₂.nil, rfl⟩
-  | cons actualTypes argumentChoices ih =>
-      obtain ⟨tailResults, tailOutcomes, tailRel, tailEquation⟩ := ih
-      obtain ⟨outcome, outcomeRel⟩ :=
-        applicationPackageOutcomeRel_exists actualTypes operatorType
-      cases outcome with
-      | none =>
-          refine ⟨tailResults, none :: tailOutcomes,
-            List.Forall₂.cons outcomeRel tailRel, ?_⟩
-          simpa using tailEquation
-      | some result =>
-          refine ⟨result :: tailResults, some result :: tailOutcomes,
-            List.Forall₂.cons outcomeRel tailRel, ?_⟩
-          simpa using congrArg (result :: ·) tailEquation
-
-private theorem applicationPackageMatrixRel_exists
-    (argumentChoices : List (List Atom)) : ∀ operatorTypes,
-    ∃ results,
-      ApplicationPackageMatrixRel
-        argumentChoices operatorTypes results := by
-  intro operatorTypes
-  induction operatorTypes with
-  | nil => exact ⟨[], [], List.Forall₂.nil, rfl⟩
-  | cons operatorType operatorTypes ih =>
-      obtain ⟨row, rowRel⟩ :=
-        applicationPackageOutcomeRowRel_exists
-          argumentChoices operatorType
-      obtain ⟨tailResults, tailRows, tailRel, tailEquation⟩ := ih
-      refine ⟨row ++ tailResults, row :: tailRows,
-        List.Forall₂.cons rowRel tailRel, ?_⟩
-      simpa using congrArg (row ++ ·) tailEquation
-
-private theorem argumentAlphaChoiceVariantsRel_exists
-    (avoid : List String) : ∀ choices : List (List Atom),
-    ∃ freshChoices,
-      List.Forall₂ (ArgumentAlphaVariantsRel avoid)
-        choices freshChoices := by
-  intro choices
-  induction choices with
-  | nil => exact ⟨[], List.Forall₂.nil⟩
-  | cons choice choices ih =>
-      let freshChoice := fromLeaTTaAtoms
-        (Metta.Minimal.freshenArgumentTypes avoid 0
-          (toLeaTTaAtoms choice))
-      have variant : ArgumentAlphaVariantsRel
-          avoid choice freshChoice := by
-        simpa [freshChoice] using
-          freshenArgumentTypes_alphaVariants avoid 0 choice
-      obtain ⟨freshChoices, variants⟩ := ih
-      exact ⟨freshChoice :: freshChoices,
-        List.Forall₂.cons variant variants⟩
-
-/-- The exact package-presentation relation is total on the independent atom
-language.  Concrete freshening is used only as an existence witness for the
-finite alpha contracts; it does not occur in the relation being constructed. -/
-theorem runtimeTypePackages_exists (space : Space) : ∀ atom : Atom,
-    ∃ packages, RuntimeTypePackagesRel space atom packages := by
-  intro atom
-  induction atom using Atom.rec
-      (motive_2 := fun atoms =>
-        ∃ packageLists : List (List TypePackage),
-          List.Forall₂ (RuntimeTypePackagesRel space)
-            atoms packageLists) with
-  | symbol name =>
-      let annotated := getAnnotatedTypes
-        (Space.ofList space.atoms) (.symbol name)
-      have annotation : AnnotationTypesRel (.symbol name)
-          space.atoms annotated :=
-        annotationTypesRel_getAnnotatedTypes (.symbol name) space.atoms
-      by_cases nonempty : annotated ≠ []
-      · exact ⟨annotated.map publishedPackage,
-          RuntimeTypePackagesRel.symbolKnown annotation nonempty⟩
-      · have empty : annotated = [] := by simpa using nonempty
-        rw [empty] at annotation
-        exact ⟨[publishedPackage Atom.undefinedType],
-          RuntimeTypePackagesRel.symbolUndefined annotation⟩
-  | var name =>
-      exact ⟨[publishedPackage Atom.undefinedType],
-        RuntimeTypePackagesRel.variable name⟩
-  | grounded value =>
-      cases value with
-      | int value =>
-          exact ⟨[publishedPackage (.symbol "Number")],
-            RuntimeTypePackagesRel.grounded
-              (IntrinsicGroundedTypeRel.int value)⟩
-      | string value =>
-          exact ⟨[publishedPackage (.symbol "String")],
-            RuntimeTypePackagesRel.grounded
-              (IntrinsicGroundedTypeRel.string value)⟩
-      | bool value =>
-          exact ⟨[publishedPackage (.symbol "Bool")],
-            RuntimeTypePackagesRel.grounded
-              (IntrinsicGroundedTypeRel.bool value)⟩
-      | custom type payload =>
-          exact ⟨[publishedPackage (.symbol type)],
-            RuntimeTypePackagesRel.grounded
-              (IntrinsicGroundedTypeRel.custom type payload)⟩
-  | expression atoms allTypes =>
-      cases atoms with
-      | nil =>
-          exact ⟨[publishedPackage Atom.undefinedType],
-            RuntimeTypePackagesRel.unit⟩
-      | cons head tail =>
-          obtain ⟨packageLists, packageTypes⟩ := allTypes
-          cases packageTypes with
-          | @cons _ headPackages _ tailPackageLists headTypes tailTypes =>
-              by_cases stateShape : head = .symbol "StateValue" ∧
-                  ∃ value, tail = [value]
-              · obtain ⟨rfl, value, rfl⟩ := stateShape
-                cases tailTypes with
-                | @cons _ valuePackages _ _ valueTypes emptyTypes =>
-                    cases emptyTypes
-                    obtain ⟨content, remaining, packagesEquation⟩ :=
-                      List.exists_cons_of_ne_nil valueTypes.nonempty
-                    subst valuePackages
-                    exact ⟨[stateMonadPackage content],
-                      RuntimeTypePackagesRel.stateValue valueTypes⟩
-              · have notState : NotStateValueShape head tail := by
-                  intro value
-                  by_cases headEquation : head = .symbol "StateValue"
-                  · exact Or.inr (by
-                      intro tailEquation
-                      exact stateShape
-                        ⟨headEquation, value, tailEquation⟩)
-                  · exact Or.inl headEquation
-                let expression := Atom.expression (head :: tail)
-                let annotated := getAnnotatedTypes
-                  (Space.ofList space.atoms) expression
-                have annotation : AnnotationTypesRel expression
-                    space.atoms annotated :=
-                  annotationTypesRel_getAnnotatedTypes
-                    expression space.atoms
-                by_cases nonempty : annotated ≠ []
-                · exact ⟨annotated.map publishedPackage,
-                    RuntimeTypePackagesRel.expressionKnown
-                      notState annotation nonempty⟩
-                · have empty : annotated = [] := by
-                    simpa using nonempty
-                  rw [empty] at annotation
-                  have noAnnotations : AnnotationTypesRel
-                      (.expression (head :: tail)) space.atoms [] := by
-                    simpa [expression] using annotation
-                  let rawArgumentLists :=
-                    tailPackageLists.map observedTypes
-                  let rawArgumentChoices :=
-                    orderedCartesian rawArgumentLists
-                  let rawOperators := observedTypes headPackages
-                  let avoid := inferenceAvoidNames space expression
-                    (rawOperators ++ rawArgumentLists.flatten)
-                  obtain ⟨freshArgumentChoices, argumentVariants⟩ :=
-                    argumentAlphaChoiceVariantsRel_exists
-                      avoid rawArgumentChoices
-                  let operatorAvoid :=
-                    avoid ++
-                      TypeSubst.typeVarsList rawArgumentLists.flatten
-                  let separatedOperatorAvoid :=
-                    operatorAvoid ++
-                      TypeSubst.typeVarsList freshArgumentChoices.flatten
-                  let freshOperators := fromLeaTTaAtoms
-                    ((toLeaTTaAtoms rawOperators).map
-                      (Metta.Minimal.freshenTypeCandidate
-                        separatedOperatorAvoid tail.length))
-                  have separatedOperatorVariants : OperatorAlphaVariantsRel
-                      separatedOperatorAvoid rawOperators freshOperators := by
-                    simpa [freshOperators] using
-                      freshenOperatorTypes_alphaVariants
-                        separatedOperatorAvoid tail.length rawOperators
-                  have operatorVariants : OperatorAlphaVariantsRel
-                      operatorAvoid rawOperators freshOperators := by
-                    apply operatorAlphaVariants_weaken_append
-                      (avoid := operatorAvoid)
-                      (extra := TypeSubst.typeVarsList
-                        freshArgumentChoices.flatten)
-                    exact separatedOperatorVariants
-                  have scopesSeparated : ApplicationPackageScopesSeparated
-                      freshArgumentChoices freshOperators := by
-                    apply operatorAlphaVariants_scopesSeparated
-                      (avoid := operatorAvoid)
-                    exact separatedOperatorVariants
-                  obtain ⟨results, scan⟩ :=
-                    applicationPackageMatrixRel_exists
-                      freshArgumentChoices freshOperators
-                  by_cases resultsNonempty : results ≠ []
-                  · exact ⟨results,
-                      RuntimeTypePackagesRel.expressionInferred
-                        notState noAnnotations headTypes tailTypes
-                        rfl rfl rfl argumentVariants operatorVariants
-                        scopesSeparated scan resultsNonempty⟩
-                  · have resultsEmpty : results = [] := by
-                      simpa using resultsNonempty
-                    subst results
-                    exact ⟨[publishedPackage Atom.undefinedType],
-                      RuntimeTypePackagesRel.expressionUndefined
-                        notState noAnnotations headTypes tailTypes
-                        rfl rfl rfl argumentVariants operatorVariants
-                        scopesSeparated scan⟩
-  | nil => exact ⟨[], List.Forall₂.nil⟩
-  | cons atom atoms atomTypes tailTypes =>
-      obtain ⟨packages, packagesRel⟩ := atomTypes
-      obtain ⟨packageLists, packageListsRel⟩ := tailTypes
-      exact ⟨packages :: packageLists,
-        List.Forall₂.cons packagesRel packageListsRel⟩
 
 /-- Every exact spec package presentation is alpha-exact with the concrete
 repaired runtime's complete recursive type list. -/
@@ -1453,8 +1181,8 @@ theorem runtimeTypePackages_complete
     {atom : Atom} {packages : List TypePackage}
     (types : RuntimeTypePackagesRel space atom packages) :
     List.Forall₂ ObservedTypeAlphaRel (observedTypes packages)
-      (fromLeaTTaAtoms
-        (Metta.Minimal.getTypes env (toLeaTTaAtom atom))) := by
+      (decodeModelAtoms
+        (Metta.Minimal.getTypes env (encodeModelAtom atom))) := by
   induction types using RuntimeTypePackagesRel.rec
       (motive_2 := fun arguments packageLists _ =>
         List.Forall₂ (List.Forall₂ ObservedTypeAlphaRel)
@@ -1463,8 +1191,8 @@ theorem runtimeTypePackages_complete
   case «variable» name =>
       simpa [observedTypes, publishedPackage,
         Spec.Type.Presentation.RuntimeTypePackage.published,
-        Metta.Minimal.getTypes, toLeaTTaAtom, fromLeaTTaAtoms,
-        fromLeaTTaAtom, Atom.undefinedType] using
+        Metta.Minimal.getTypes, encodeModelAtom, decodeModelAtoms,
+        decodeModelAtom, Atom.undefinedType] using
           (List.Forall₂.cons
             (ObservedTypeAlphaRel.refl Atom.undefinedType)
             List.Forall₂.nil)
@@ -1472,8 +1200,8 @@ theorem runtimeTypePackages_complete
       cases intrinsic <;>
         simpa [observedTypes, publishedPackage,
           Spec.Type.Presentation.RuntimeTypePackage.published,
-          Metta.Minimal.getTypes, toLeaTTaAtom, toLeaTTaGround,
-          fromLeaTTaAtoms, fromLeaTTaAtom] using
+          Metta.Minimal.getTypes, encodeModelAtom, encodeModelGround,
+          decodeModelAtoms, decodeModelAtom] using
             (List.Forall₂.cons
               (ObservedTypeAlphaRel.refl _) List.Forall₂.nil)
   case symbolKnown name annotated annotation nonempty =>
@@ -1486,11 +1214,11 @@ theorem runtimeTypePackages_complete
       rw [annotationEquation'] at indexEquation
       have runtimeEquation :
           Metta.Minimal.getTypes env
-              (toLeaTTaAtom (.symbol name)) =
-            toLeaTTaAtoms annotated := by
-        simp [Metta.Minimal.getTypes, toLeaTTaAtom,
+              (encodeModelAtom (.symbol name)) =
+            encodeModelAtoms annotated := by
+        simp [Metta.Minimal.getTypes, encodeModelAtom,
           indexEquation, nonempty]
-      rw [runtimeEquation, fromLeaTTaAtoms_toLeaTTaAtoms]
+      rw [runtimeEquation, decodeModelAtoms_encodeModelAtoms]
       rw [observedTypes_publishedPackages]
       exact observedTypeAlphaList_refl annotated
   case symbolUndefined name annotation =>
@@ -1503,9 +1231,9 @@ theorem runtimeTypePackages_complete
       rw [annotationEquation'] at indexEquation
       have runtimeEquation :
           Metta.Minimal.getTypes env
-              (toLeaTTaAtom (.symbol name)) =
+              (encodeModelAtom (.symbol name)) =
             [.sym "%Undefined%"] := by
-        simp [Metta.Minimal.getTypes, toLeaTTaAtom, indexEquation]
+        simp [Metta.Minimal.getTypes, encodeModelAtom, indexEquation]
       rw [runtimeEquation]
       change List.Forall₂ ObservedTypeAlphaRel
         [Atom.undefinedType] [Atom.undefinedType]
@@ -1514,19 +1242,19 @@ theorem runtimeTypePackages_complete
   case unit =>
       simpa [observedTypes, publishedPackage,
         Spec.Type.Presentation.RuntimeTypePackage.published,
-        Metta.Minimal.getTypes, toLeaTTaAtom, fromLeaTTaAtoms,
-        fromLeaTTaAtom, Atom.undefinedType] using
+        Metta.Minimal.getTypes, encodeModelAtom, decodeModelAtoms,
+        decodeModelAtom, Atom.undefinedType] using
           (List.Forall₂.cons
             (ObservedTypeAlphaRel.refl Atom.undefinedType)
             List.Forall₂.nil)
   case stateValue value content remaining contentTypes contentIH =>
       obtain ⟨runtimeHead, runtimeTail, runtimeTypesEquation⟩ :=
         List.exists_cons_of_ne_nil
-          (Metta.getTypes_ne_nil env (toLeaTTaAtom value))
+          (Metta.getTypes_ne_nil env (encodeModelAtom value))
       have decodedTypesEquation :
-          fromLeaTTaAtoms
-              (Metta.Minimal.getTypes env (toLeaTTaAtom value)) =
-            fromLeaTTaAtom runtimeHead :: fromLeaTTaAtoms runtimeTail := by
+          decodeModelAtoms
+              (Metta.Minimal.getTypes env (encodeModelAtom value)) =
+            decodeModelAtom runtimeHead :: decodeModelAtoms runtimeTail := by
         rw [runtimeTypesEquation]
         rfl
       rw [decodedTypesEquation] at contentIH
@@ -1534,16 +1262,16 @@ theorem runtimeTypePackages_complete
       | cons headAlpha tailAlpha =>
           have runtimeEquation :
               Metta.Minimal.getTypes env
-                  (toLeaTTaAtom
+                  (encodeModelAtom
                     (.expression [.symbol "StateValue", value])) =
                 [.expr [.sym "StateMonad", runtimeHead]] := by
-            simp [Metta.Minimal.getTypes, toLeaTTaAtom,
-              toLeaTTaAtoms, runtimeTypesEquation]
+            simp [Metta.Minimal.getTypes, encodeModelAtom,
+              encodeModelAtoms, runtimeTypesEquation]
           rw [runtimeEquation]
           change List.Forall₂ ObservedTypeAlphaRel
             [.expression [.symbol "StateMonad", content.observed]]
             [.expression
-              [.symbol "StateMonad", fromLeaTTaAtom runtimeHead]]
+              [.symbol "StateMonad", decodeModelAtom runtimeHead]]
           exact List.Forall₂.cons
             (observedTypeAlpha_stateMonad headAlpha)
             List.Forall₂.nil
@@ -1557,7 +1285,7 @@ theorem runtimeTypePackages_complete
       have indexEquation := index.expressionTypes head tail
       rw [annotationEquation'] at indexEquation
       let filtered := env.exprTypes.filter (fun entry =>
-        entry.1 == toLeaTTaAtom (.expression (head :: tail)))
+        entry.1 == encodeModelAtom (.expression (head :: tail)))
       have filteredNonempty : filtered ≠ [] := by
         intro filteredEmpty
         have emptyTypes :
@@ -1565,30 +1293,30 @@ theorem runtimeTypePackages_complete
           simp [filteredEmpty]
         rw [emptyTypes] at indexEquation
         have : annotated = [] := by
-          simpa using congrArg fromLeaTTaAtoms indexEquation.symm
+          simpa using congrArg decodeModelAtoms indexEquation.symm
         exact nonempty this
       obtain ⟨first, rest, filteredEquation⟩ :=
         List.exists_cons_of_ne_nil filteredNonempty
       have runtimeEquation :
           Metta.Minimal.getTypes env
-              (toLeaTTaAtom (.expression (head :: tail))) =
-            toLeaTTaAtoms annotated := by
-        rw [show toLeaTTaAtom (.expression (head :: tail)) =
-          .expr (toLeaTTaAtom head :: toLeaTTaAtoms tail) by
-            simp [toLeaTTaAtom, toLeaTTaAtoms_eq_map]]
+              (encodeModelAtom (.expression (head :: tail))) =
+            encodeModelAtoms annotated := by
+        rw [show encodeModelAtom (.expression (head :: tail)) =
+          .expr (encodeModelAtom head :: encodeModelAtoms tail) by
+            simp [encodeModelAtom, encodeModelAtoms_eq_map]]
         rw [Metta.Minimal.getTypes.eq_10 env
-          (toLeaTTaAtom head) (toLeaTTaAtoms tail)
+          (encodeModelAtom head) (encodeModelAtoms tail)
           (notStateValueShape_toLeaTTa notState)]
         have nativeFilteredEquation :
             env.exprTypes.filter (fun entry =>
               entry.1 ==
-                .expr (toLeaTTaAtom head :: toLeaTTaAtoms tail)) =
+                .expr (encodeModelAtom head :: encodeModelAtoms tail)) =
               first :: rest := by
-          simpa [filtered, toLeaTTaAtom,
-            toLeaTTaAtoms_eq_map] using filteredEquation
+          simpa [filtered, encodeModelAtom,
+            encodeModelAtoms_eq_map] using filteredEquation
         rw [nativeFilteredEquation]
         simpa [filtered, filteredEquation] using indexEquation
-      rw [runtimeEquation, fromLeaTTaAtoms_toLeaTTaAtoms]
+      rw [runtimeEquation, decodeModelAtoms_encodeModelAtoms]
       rw [observedTypes_publishedPackages]
       exact observedTypeAlphaList_refl annotated
   case expressionInferred head tail operatorPackages argumentPackages
@@ -1605,24 +1333,24 @@ theorem runtimeTypePackages_complete
       let runtimeRawArgumentChoices :=
         orderedCartesian runtimeRawArgumentLists
       let leaAllRawArgumentTypes :=
-        ((toLeaTTaAtoms tail).map
+        ((encodeModelAtoms tail).map
           (Metta.Minimal.getTypes env)).flatten
-      let runtimeRawOperators := fromLeaTTaAtoms
-        (Metta.Minimal.getTypes env (toLeaTTaAtom head))
+      let runtimeRawOperators := decodeModelAtoms
+        (Metta.Minimal.getTypes env (encodeModelAtom head))
       let runtimeAvoid :=
         Metta.Minimal.typeInferenceAvoid env
-          (.expr (toLeaTTaAtom head :: toLeaTTaAtoms tail))
-          (Metta.Minimal.getTypes env (toLeaTTaAtom head) ++
+          (.expr (encodeModelAtom head :: encodeModelAtoms tail))
+          (Metta.Minimal.getTypes env (encodeModelAtom head) ++
             leaAllRawArgumentTypes)
       let functionAvoid := runtimeAvoid ++
         leaAllRawArgumentTypes.flatMap Metta.Atom.vars
       let runtimeFreshArgumentChoices :=
         runtimeRawArgumentChoices.map fun choice =>
-          fromLeaTTaAtoms
+          decodeModelAtoms
             (Metta.Minimal.freshenArgumentTypes runtimeAvoid 0
-              (toLeaTTaAtoms choice))
-      let runtimeFreshOperators := fromLeaTTaAtoms
-        ((toLeaTTaAtoms runtimeRawOperators).map
+              (encodeModelAtoms choice))
+      let runtimeFreshOperators := decodeModelAtoms
+        ((encodeModelAtoms runtimeRawOperators).map
           (Metta.Minimal.freshenTypeCandidate
             functionAvoid tail.length))
       have argumentListLength :
@@ -1630,7 +1358,7 @@ theorem runtimeTypePackages_complete
         simp [runtimeRawArgumentLists, runtimeArgumentTypeLists]
       have concreteAlpha : List.Forall₂ ObservedTypeAlphaRel
           (observedTypes results)
-          (fromLeaTTaAtoms
+          (decodeModelAtoms
             (runtimeApplicationCandidateMatrix
               runtimeFreshArgumentChoices runtimeFreshOperators)) := by
         simpa [runtimeRawArgumentLists, runtimeRawArgumentChoices,
@@ -1648,7 +1376,7 @@ theorem runtimeTypePackages_complete
           calc
             results.length = (observedTypes results).length := by
               simp [observedTypes]
-            _ = (fromLeaTTaAtoms
+            _ = (decodeModelAtoms
                 (runtimeApplicationCandidateMatrix
                   runtimeFreshArgumentChoices
                   runtimeFreshOperators)).length :=
@@ -1678,24 +1406,24 @@ theorem runtimeTypePackages_complete
       let runtimeRawArgumentChoices :=
         orderedCartesian runtimeRawArgumentLists
       let leaAllRawArgumentTypes :=
-        ((toLeaTTaAtoms tail).map
+        ((encodeModelAtoms tail).map
           (Metta.Minimal.getTypes env)).flatten
-      let runtimeRawOperators := fromLeaTTaAtoms
-        (Metta.Minimal.getTypes env (toLeaTTaAtom head))
+      let runtimeRawOperators := decodeModelAtoms
+        (Metta.Minimal.getTypes env (encodeModelAtom head))
       let runtimeAvoid :=
         Metta.Minimal.typeInferenceAvoid env
-          (.expr (toLeaTTaAtom head :: toLeaTTaAtoms tail))
-          (Metta.Minimal.getTypes env (toLeaTTaAtom head) ++
+          (.expr (encodeModelAtom head :: encodeModelAtoms tail))
+          (Metta.Minimal.getTypes env (encodeModelAtom head) ++
             leaAllRawArgumentTypes)
       let functionAvoid := runtimeAvoid ++
         leaAllRawArgumentTypes.flatMap Metta.Atom.vars
       let runtimeFreshArgumentChoices :=
         runtimeRawArgumentChoices.map fun choice =>
-          fromLeaTTaAtoms
+          decodeModelAtoms
             (Metta.Minimal.freshenArgumentTypes runtimeAvoid 0
-              (toLeaTTaAtoms choice))
-      let runtimeFreshOperators := fromLeaTTaAtoms
-        ((toLeaTTaAtoms runtimeRawOperators).map
+              (encodeModelAtoms choice))
+      let runtimeFreshOperators := decodeModelAtoms
+        ((encodeModelAtoms runtimeRawOperators).map
           (Metta.Minimal.freshenTypeCandidate
             functionAvoid tail.length))
       have argumentListLength :
@@ -1703,7 +1431,7 @@ theorem runtimeTypePackages_complete
         simp [runtimeRawArgumentLists, runtimeArgumentTypeLists]
       have concreteAlpha : List.Forall₂ ObservedTypeAlphaRel
           (observedTypes ([] : List TypePackage))
-          (fromLeaTTaAtoms
+          (decodeModelAtoms
             (runtimeApplicationCandidateMatrix
               runtimeFreshArgumentChoices runtimeFreshOperators)) := by
         simpa [runtimeRawArgumentLists, runtimeRawArgumentChoices,
@@ -1717,7 +1445,7 @@ theorem runtimeTypePackages_complete
       have runtimeMatrixEmpty : runtimeApplicationCandidateMatrix
           runtimeFreshArgumentChoices runtimeFreshOperators = [] := by
         apply List.length_eq_zero_iff.mp
-        simpa [observedTypes, fromLeaTTaAtoms] using
+        simpa [observedTypes, decodeModelAtoms] using
           concreteAlpha.length_eq.symm
       have nativeNoDirect := expressionTypes_filter_eq_nil
         index noAnnotations
@@ -1752,8 +1480,8 @@ theorem runtimeGetTypes_has_exact_package_presentation
     ∃ packages,
       RuntimeTypePackagesRel space atom packages ∧
       List.Forall₂ ObservedTypeAlphaRel (observedTypes packages)
-        (fromLeaTTaAtoms
-          (Metta.Minimal.getTypes env (toLeaTTaAtom atom))) := by
+        (decodeModelAtoms
+          (Metta.Minimal.getTypes env (encodeModelAtom atom))) := by
   obtain ⟨packages, packagesRel⟩ := runtimeTypePackages_exists space atom
   exact ⟨packages, packagesRel,
     runtimeTypePackages_complete index packagesRel⟩

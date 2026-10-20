@@ -1010,7 +1010,7 @@ theorem rawSignature_fresh {name : DeclName} {entry : Entry Tower.Head}
 
 /-- Formation, freshness, and the absence of hidden delta definitions are
 proved independently of computational preservation. -/
-def rawSignature_formed : rawSignature.Formed Tower.rules where
+theorem rawSignature_formed : rawSignature.Formed Tower.rules where
   fresh := rawSignature_fresh
   types := rawSignature_types_formed
   values := by
@@ -1383,14 +1383,14 @@ def TypedIotaInstance.toDeclaredReceipt
     DeclaredStepReceipt Tower.rules rawSignature context left right type :=
   occurrence.toReceipt.toDeclaredReceipt
 
-def TypedIotaInstance.sourceTyping
+theorem TypedIotaInstance.sourceTyping
     {context : Tower.Ctx n} {left right type : Tower.Tm n}
     (occurrence : TypedIotaInstance context left right type) :
     HasType context left type :=
   occurrence.toReceipt.sourceTyping
 
 /-- Subject preservation is structural on the exact proof-carrying image. -/
-def TypedIotaInstance.targetTyping
+theorem TypedIotaInstance.targetTyping
     {context : Tower.Ctx n} {left right type : Tower.Tm n}
     (occurrence : TypedIotaInstance context left right type) :
     HasType context right type :=
@@ -1421,7 +1421,7 @@ def TypedIotaInstance.Adjusted.toReceipt
     targetTyping := principalReceipt.targetTyping.adjust occurrence.adjustment
     evidence := principalReceipt.evidence }
 
-def TypedIotaInstance.Adjusted.targetTyping
+theorem TypedIotaInstance.Adjusted.targetTyping
     {context : Tower.Ctx n} {left right displayedType : Tower.Tm n}
     (occurrence : TypedIotaInstance.Adjusted context left right displayedType) :
     HasType context right displayedType :=
@@ -1497,13 +1497,13 @@ theorem raw_iota_support_does_not_imply_typed_instance :
 
 /-! ## Strictly-positive family packages -/
 
-def natFamilyApplication :
+theorem natFamilyApplication :
     FamilyApplication natName 0 (natTm : Tower.Tm n) :=
   .intro [] rfl (by
     intro argument membership
     cases membership) rfl
 
-def vecFamilyApplication (element length : Tower.Tm n)
+theorem vecFamilyApplication (element length : Tower.Tm n)
     (elementFree : FreeOf vecName element)
     (lengthFree : FreeOf vecName length) :
     FamilyApplication vecName 2 (vecApp element length) :=

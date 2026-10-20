@@ -2,6 +2,10 @@ import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationFoldConformance
 import Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationCompleteness
 import Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.ApplicationEquivariance
 import Mathlib.Logic.Equiv.Fintype
+open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
+open Mettapedia.Languages.MeTTa.HE.BindingComposition
+open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
+open Mettapedia.Languages.MeTTa.HE.Spec.Bindings.ScopeObservation.ModelTransport
 
 /-!
 # Exact application-candidate correspondence
@@ -120,7 +124,7 @@ theorem ObservedTypeAlphaRel.transport_variant
     (variant : TypeCandidateAlphaVariantRel avoid right target) :
     TypeCandidateAlphaVariantRel avoid left target := by
   have targetVarsFresh :=
-    Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationExactConformance.TypeCandidateAlphaVariantRel.target_vars_fresh
+    Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Exact.TypeCandidateAlphaVariantRel.target_vars_fresh
       variant
   rcases alpha with
     ⟨source,
@@ -299,7 +303,7 @@ theorem ArgumentAlphaVariantsRel.targets_fresh
       rw [TypeSubst.typeVarsList] at member
       rcases List.mem_append.mp member with headMember | tailMember
       · exact
-          Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationExactConformance.TypeCandidateAlphaVariantRel.target_vars_fresh
+          Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Exact.TypeCandidateAlphaVariantRel.target_vars_fresh
             headVariant name headMember
       · intro avoidMember
         exact (ih name tailMember)
@@ -369,12 +373,12 @@ theorem application_scopes_exist_permutation
         leftOperatorVariant rightOperatorVariant)
     · intro name operatorMember argumentMember
       exact
-        (Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationExactConformance.TypeCandidateAlphaVariantRel.target_vars_fresh
+        (Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Exact.TypeCandidateAlphaVariantRel.target_vars_fresh
           leftOperatorVariant name operatorMember)
           (List.mem_append_right leftAvoid argumentMember)
     · intro name operatorMember argumentMember
       exact
-        (Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationExactConformance.TypeCandidateAlphaVariantRel.target_vars_fresh
+        (Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Exact.TypeCandidateAlphaVariantRel.target_vars_fresh
           rightOperatorVariant name operatorMember)
           (List.mem_append_right rightAvoid argumentMember)
     · exact scopedArguments
@@ -752,15 +756,15 @@ theorem applicationCandidate_sound
     {expectedTypes actualTypes : List Atom} {returnType : Atom}
     {leaOutput : Metta.Bindings}
     (success : Metta.Minimal.matchApplicationTypeArguments
-      Metta.Bindings.empty (toLeaTTaAtoms expectedTypes)
-        (toLeaTTaAtoms actualTypes) = some leaOutput) :
+      Metta.Bindings.empty (encodeModelAtoms expectedTypes)
+        (encodeModelAtoms actualTypes) = some leaOutput) :
     ∃ result,
       ApplicationPackageSuccessRel actualTypes
           (.expression
             (.symbol "->" :: (expectedTypes ++ [returnType]))) result ∧
         ObservedTypeAlphaRel result.observed
-          (fromLeaTTaAtom
-            (Metta.instantiate leaOutput (toLeaTTaAtom returnType))) := by
+          (decodeModelAtom
+            (Metta.instantiate leaOutput (encodeModelAtom returnType))) := by
   obtain ⟨presentation, specOutput, fold, state, alpha⟩ :=
     matchApplicationTypeArguments_exact_return success
   refine ⟨inferredPackage presentation returnType, ?_, ?_⟩
@@ -778,11 +782,11 @@ theorem applicationCandidate_complete
     (disjoint : AtomListsVarsDisjoint expectedTypes actualTypes) :
     ∃ leaOutput,
       Metta.Minimal.matchApplicationTypeArguments Metta.Bindings.empty
-          (toLeaTTaAtoms expectedTypes) (toLeaTTaAtoms actualTypes) =
+          (encodeModelAtoms expectedTypes) (encodeModelAtoms actualTypes) =
         some leaOutput ∧
       ObservedTypeAlphaRel result.observed
-        (fromLeaTTaAtom
-          (Metta.instantiate leaOutput (toLeaTTaAtom returnType))) := by
+        (decodeModelAtom
+          (Metta.instantiate leaOutput (encodeModelAtom returnType))) := by
   cases specSuccess with
   | @mk operatorType declaredReturn expected actual substitution shape fold =>
       have shapeParts :
@@ -838,10 +842,10 @@ def runtimeApplicationCandidate
       | none => none
       | some returnType =>
           match Metta.Minimal.matchApplicationTypeArguments
-              Metta.Bindings.empty (toLeaTTaAtoms types.dropLast)
-                (toLeaTTaAtoms actualTypes) with
+              Metta.Bindings.empty (encodeModelAtoms types.dropLast)
+                (encodeModelAtoms actualTypes) with
           | some bindings =>
-              some (Metta.instantiate bindings (toLeaTTaAtom returnType))
+              some (Metta.instantiate bindings (encodeModelAtom returnType))
           | none => none
   | _ => none
 
@@ -857,11 +861,11 @@ private theorem arrowExpected_disjoint
     varsDisjoint_expression_iff.mp disjoint
   intro name expectedMember actualMember
   have expectedIn : ∃ expected ∈ expectedTypes,
-      name ∈ (toLeaTTaAtom expected).vars := by
-    simpa [toLeaTTaAtoms_eq_map, List.mem_flatten, List.mem_map]
+      name ∈ (encodeModelAtom expected).vars := by
+    simpa [encodeModelAtoms_eq_map, List.mem_flatten, List.mem_map]
       using expectedMember
   exact allDisjoint name
-    (by simp [toLeaTTaAtoms_eq_map, expectedIn]) actualMember
+    (by simp [encodeModelAtoms_eq_map, expectedIn]) actualMember
 
 /-- A successful concrete candidate produces a spec success outcome with
 an alpha-exact observed return. -/
@@ -872,7 +876,7 @@ theorem runtimeApplicationCandidate_sound
       runtimeApplicationCandidate actualTypes operatorType = some leaResult) :
     ∃ result,
       ApplicationPackageOutcomeRel actualTypes operatorType (some result) ∧
-        ObservedTypeAlphaRel result.observed (fromLeaTTaAtom leaResult) := by
+        ObservedTypeAlphaRel result.observed (decodeModelAtom leaResult) := by
   cases operatorType with
   | symbol name => simp [runtimeApplicationCandidate] at runtimeSuccess
   | var name => simp [runtimeApplicationCandidate] at runtimeSuccess
@@ -912,15 +916,15 @@ theorem runtimeApplicationCandidate_sound
                     cases foldEquation :
                         Metta.Minimal.matchApplicationTypeArguments
                           Metta.Bindings.empty
-                            (toLeaTTaAtoms types.dropLast)
-                            (toLeaTTaAtoms actualTypes) with
+                            (encodeModelAtoms types.dropLast)
+                            (encodeModelAtoms actualTypes) with
                     | none =>
                         rw [foldEquation] at runtimeSuccess
                         contradiction
                     | some bindings =>
                         have resultEquation :
                             Metta.instantiate bindings
-                                (toLeaTTaAtom returnType) = leaResult := by
+                                (encodeModelAtom returnType) = leaResult := by
                           rw [foldEquation] at runtimeSuccess
                           exact Option.some.inj runtimeSuccess
                         obtain ⟨result, specSuccess, alpha⟩ :=
@@ -941,7 +945,7 @@ theorem runtimeApplicationCandidate_complete
     ∃ leaResult,
       runtimeApplicationCandidate actualTypes operatorType = some leaResult ∧
         ObservedTypeAlphaRel result.observed
-          (fromLeaTTaAtom leaResult) := by
+          (decodeModelAtom leaResult) := by
   cases specSuccess with
   | @mk _ returnType expectedTypes _ substitution shape fold =>
       subst operatorType
@@ -955,7 +959,7 @@ theorem runtimeApplicationCandidate_complete
       obtain ⟨leaOutput, runtimeFold, alpha⟩ :=
         applicationCandidate_complete (returnType := returnType)
           rebuilt scopeDisjoint
-      refine ⟨Metta.instantiate leaOutput (toLeaTTaAtom returnType), ?_,
+      refine ⟨Metta.instantiate leaOutput (encodeModelAtom returnType), ?_,
         alpha⟩
       simp only [runtimeApplicationCandidate]
       rw [show (expectedTypes ++ [returnType]).getLast? =
@@ -998,7 +1002,7 @@ theorem runtimeApplicationCandidate_outcome
         match specResult, runtimeApplicationCandidate actualTypes operatorType with
         | none, none => True
         | some package, some leaResult =>
-            ObservedTypeAlphaRel package.observed (fromLeaTTaAtom leaResult)
+            ObservedTypeAlphaRel package.observed (decodeModelAtom leaResult)
         | _, _ => False := by
   cases runtimeEquation : runtimeApplicationCandidate actualTypes operatorType with
   | none =>
@@ -1027,7 +1031,7 @@ theorem runtimeApplicationCandidates_sound
     ∃ results,
       ApplicationPackageScanRel actualTypes operatorTypes results ∧
         List.Forall₂ ObservedTypeAlphaRel (observedTypes results)
-          (fromLeaTTaAtoms
+          (decodeModelAtoms
             (runtimeApplicationCandidates actualTypes operatorTypes)) := by
   induction operatorTypes with
   | nil =>
@@ -1067,7 +1071,7 @@ theorem runtimeApplicationCandidates_complete
     (disjoint : ∀ operatorType ∈ operatorTypes,
       VarsDisjoint operatorType (.expression actualTypes)) :
     List.Forall₂ ObservedTypeAlphaRel (observedTypes results)
-      (fromLeaTTaAtoms
+      (decodeModelAtoms
         (runtimeApplicationCandidates actualTypes operatorTypes)) := by
   induction scan with
   | nil => exact List.Forall₂.nil
@@ -1107,7 +1111,7 @@ theorem private_sibling_variant_transport :
   apply ObservedTypeAlphaRel.transport_variant
       private_variables_alpha_siblings
   exact ⟨id, Function.injective_id,
-    by simp [renameTypeVars], by simp⟩
+    by simp, by simp⟩
 
 /-- Negative: alpha transport never permits a target variable that violates
 the declared finite avoid set. -/
@@ -1116,7 +1120,7 @@ theorem avoided_variable_not_variant :
       (.var "t") (.var "public") := by
   intro variant
   have fresh :=
-    Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationExactConformance.TypeCandidateAlphaVariantRel.target_vars_fresh
+    Mettapedia.Languages.MeTTa.HE.Spec.Type.Presentation.Exact.TypeCandidateAlphaVariantRel.target_vars_fresh
       variant
   exact fresh "public" (by simp [TypeSubst.typeVars]) (by simp)
 
@@ -1127,7 +1131,7 @@ theorem closed_nullary_candidate_complete :
       Metta.Minimal.matchApplicationTypeArguments Metta.Bindings.empty
           [] [] = some leaOutput ∧
         ObservedTypeAlphaRel (.symbol "R")
-          (fromLeaTTaAtom
+          (decodeModelAtom
             (Metta.instantiate leaOutput (.sym "R"))) := by
   have success : ApplicationPackageSuccessRel []
       (.expression [.symbol "->", .symbol "R"])
@@ -1140,8 +1144,8 @@ theorem closed_nullary_candidate_complete :
   have realized := applicationCandidate_complete
     (expectedTypes := []) (actualTypes := [])
     (returnType := .symbol "R") success
-    (by simp [AtomListsVarsDisjoint, toLeaTTaAtoms])
-  simpa [inferredPackage, toLeaTTaAtom, toLeaTTaAtoms] using realized
+    (by simp [AtomListsVarsDisjoint, encodeModelAtoms])
+  simpa [inferredPackage, encodeModelAtom, encodeModelAtoms] using realized
 
 /-- Negative: unequal arities have no spec success package. -/
 theorem unequal_arity_has_no_success (expected returnType : Atom) :

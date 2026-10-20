@@ -26,7 +26,7 @@ namespace Mettapedia.Logic.WorldModel.Indexed.ModalityControls
 
 open Mettapedia.OSLF.Framework.DerivedModalities
 open Mettapedia.Logic.WorldModel.Indexed.Quantifiers
-open Mettapedia.Logic.WorldModel.Indexed.Modal
+open Mettapedia.Logic.WorldModel.Indexed.Modalities
 
 /-- The existential image of the step modalities is the doctrine's existential
 quantifier at propositional evidence. -/

@@ -16,6 +16,7 @@ set_option autoImplicit false
 namespace Mettapedia.Languages.MeTTa.PeTTa.CettaReaderView
 
 open Mettapedia.Languages.MeTTa.OSLFCore (Atom)
+open Mettapedia.Languages.ProcessCalculi
 open Algorithms.MeTTa.Simple.Parser (SExpr)
 open Mettapedia.GSLT.Parsing.ExactDecimalLexeme (parseInteger?)
 
@@ -117,35 +118,118 @@ theorem token_view (token : String) :
                   simp [semanticView, nt, nf, Except.map]
 
 mutual
-  def readExpression : SExpr → Except String Atom
+  def readRawExpression : SExpr → Except String Atom
     | .atom token => readToken token
-    | .list items => .expression <$> readExpressions items
+    | .list items => .expression <$> readRawExpressions items
 
-  def readExpressions : List SExpr → Except String (List Atom)
+  def readRawExpressions : List SExpr → Except String (List Atom)
     | [] => .ok []
     | first :: rest => do
-        return (← readExpression first) :: (← readExpressions rest)
+        return (← readRawExpression first) :: (← readRawExpressions rest)
 end
 
 mutual
-  theorem expression_view (expression : SExpr) :
-      (readExpression expression).map semanticView = SpaceSemantics.readExpression expression := by
+  theorem raw_expression_view (expression : SExpr) :
+      (readRawExpression expression).map semanticView = SpaceSemantics.readRawExpression expression := by
     cases expression with
     | atom token => exact token_view token
     | list items =>
-        simp only [readExpression, SpaceSemantics.readExpression]
-        rw [← expressions_view items]
-        cases parsed : readExpressions items <;> rfl
+        simp only [readRawExpression, SpaceSemantics.readRawExpression]
+        rw [← raw_expressions_view items]
+        cases parsed : readRawExpressions items <;> rfl
 
-  theorem expressions_view (expressions : List SExpr) :
-      (readExpressions expressions).map semanticViews = SpaceSemantics.readExpressions expressions := by
+  theorem raw_expressions_view (expressions : List SExpr) :
+      (readRawExpressions expressions).map semanticViews = SpaceSemantics.readRawExpressions expressions := by
     cases expressions with
     | nil => rfl
     | cons first rest =>
-        simp only [readExpressions, SpaceSemantics.readExpressions]
-        rw [← expression_view first, ← expressions_view rest]
-        cases head : readExpression first <;> cases tail : readExpressions rest <;> rfl
+        simp only [readRawExpressions, SpaceSemantics.readRawExpressions]
+        rw [← raw_expression_view first, ← raw_expressions_view rest]
+        cases head : readRawExpression first <;> cases tail : readRawExpressions rest <;> rfl
 end
+
+mutual
+  theorem anonymous_expand_view (used : Finset String) (atom : Atom) :
+      SpaceSemantics.Anonymous.expand used (semanticView atom) =
+        let result := SpaceSemantics.Anonymous.expand used atom
+        (result.1,semanticView result.2) := by
+    cases atom with
+    | symbol name =>
+        by_cases positive : name = "true"
+        · simp [semanticView,SpaceSemantics.Anonymous.expand,positive]
+        · by_cases negative : name = "false" <;>
+            simp [semanticView,SpaceSemantics.Anonymous.expand,positive,negative]
+    | var name =>
+        by_cases anonymous : name = "_" <;>
+          simp [semanticView,SpaceSemantics.Anonymous.expand,anonymous]
+    | grounded value => rfl
+    | expression items =>
+        simp only [semanticView,SpaceSemantics.Anonymous.expand,anonymous_expandList_view used items]
+
+  theorem anonymous_expandList_view (used : Finset String) (atoms : List Atom) :
+      SpaceSemantics.Anonymous.expandList used (semanticViews atoms) =
+        let result := SpaceSemantics.Anonymous.expandList used atoms
+        (result.1,semanticViews result.2) := by
+    cases atoms with
+    | nil => rfl
+    | cons head tail =>
+        simp only [semanticViews,SpaceSemantics.Anonymous.expandList,
+          anonymous_expand_view used head,anonymous_expandList_view]
+end
+
+mutual
+  theorem semanticView_freeVars (atom : Atom) :
+      MORK.atomFreeVars (semanticView atom) = MORK.atomFreeVars atom := by
+    cases atom with
+    | symbol name =>
+        by_cases positive : name = "true"
+        · simp [semanticView,MORK.atomFreeVars,positive]
+        · by_cases negative : name = "false" <;>
+            simp [semanticView,MORK.atomFreeVars,positive,negative]
+    | var | grounded => rfl
+    | expression items => exact semanticViews_freeVars items
+
+  theorem semanticViews_freeVars (atoms : List Atom) :
+      MORK.atomFreeVars (.expression (semanticViews atoms)) = MORK.atomFreeVars (.expression atoms) := by
+    cases atoms with
+    | nil => rfl
+    | cons head tail =>
+        simp only [semanticViews,MORK.atomFreeVars,MORK.atomFreeVars.atomFreeVarsList]
+        rw [semanticView_freeVars head]
+        exact congrArg (List.append (MORK.atomFreeVars head)) (semanticViews_freeVars tail)
+end
+
+theorem anonymous_resolve_view (atom : Atom) :
+    SpaceSemantics.Anonymous.resolve (semanticView atom) =
+      semanticView (SpaceSemantics.Anonymous.resolve atom) := by
+  simp only [SpaceSemantics.Anonymous.resolve,semanticView_freeVars,anonymous_expand_view]
+
+theorem anonymous_resolveList_view (atoms : List Atom) :
+    SpaceSemantics.Anonymous.resolveList (semanticViews atoms) =
+      semanticViews (SpaceSemantics.Anonymous.resolveList atoms) := by
+  simp only [SpaceSemantics.Anonymous.resolveList,semanticViews_freeVars,anonymous_expandList_view]
+
+def readExpression (expression : SExpr) : Except String Atom :=
+  (readRawExpression expression).map SpaceSemantics.Anonymous.resolve
+
+def readExpressions (expressions : List SExpr) : Except String (List Atom) :=
+  (readRawExpressions expressions).map SpaceSemantics.Anonymous.resolveList
+
+theorem expression_view (expression : SExpr) :
+    (readExpression expression).map semanticView = SpaceSemantics.readExpression expression := by
+  unfold readExpression SpaceSemantics.readExpression
+  rw [← raw_expression_view expression]
+  cases parsed : readRawExpression expression with
+  | error reason => rfl
+  | ok raw => exact congrArg Except.ok (anonymous_resolve_view raw).symm
+
+theorem expressions_view (expressions : List SExpr) :
+    (readExpressions expressions).map semanticViews = SpaceSemantics.readExpressions expressions := by
+  unfold readExpressions SpaceSemantics.readExpressions
+  rw [← raw_expressions_view expressions]
+  cases parsed : readRawExpressions expressions with
+  | error reason => rfl
+  | ok raw => exact congrArg Except.ok (anonymous_resolveList_view raw).symm
 
 def readSource (source : String) : Except String (List Atom) := do
   let expressions ← (Algorithms.MeTTa.Simple.Parser.parseSExprProgramWithDetailed

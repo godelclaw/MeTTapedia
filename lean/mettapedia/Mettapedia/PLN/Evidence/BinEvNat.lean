@@ -3,8 +3,9 @@ import Mathlib.Algebra.Ring.Defs
 /-!
 # BinEvNat — Nat-valued Binary Evidence Counts
 
-Kernel-checkable binary evidence pairs. The pseudo-count IS the evidence
-(Morita et al. 2008): ESS = pos + neg.
+Kernel-checkable binary evidence pairs. The algebraic evidence volume is
+`pos + neg`. Interpreting that volume as statistical effective sample size
+requires a sampling model; source disjointness alone does not supply one.
 
 Componentwise addition and tensor multiplication form a `CommSemiring`.
 The laws do not authorize revising dependent observations; provenance and

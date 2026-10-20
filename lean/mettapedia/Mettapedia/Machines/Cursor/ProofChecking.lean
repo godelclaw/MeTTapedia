@@ -89,7 +89,8 @@ theorem answer_spec {interface : RuleWitness.{0, 0} rules} {store : Store J inte
     exact ⟨rfl, checked⟩
 
 def completedVerdict {interface : RuleWitness.{0, 0} rules} {store : Store J interface.W Origin} :
-    Outcome (Work interface store) (Report interface store) Empty → Option Bool
+    Mettapedia.GSLT.Distinction.ProductiveBlocks.Outcome
+      (Work interface store) (Report interface store) Empty → Option Bool
   | .finished report => some report.accepted
   | _ => none
 
@@ -435,7 +436,8 @@ theorem duplicate_premises_accepted :
     completedVerdict ((machine interface store).run 4 (start initial [0, 1])).2 = some true := by
   rfl
 
-private def inspect (outcome : Outcome (Work interface store) (Report interface store) Empty) :
+private def inspect (outcome : Mettapedia.GSLT.Distinction.ProductiveBlocks.Outcome
+    (Work interface store) (Report interface store) Empty) :
     Option (List NodeId × Nat × Status × Option Nat) :=
   match outcome with
   | .exhausted work =>
@@ -484,7 +486,8 @@ theorem deleting_a_duplicate_premise_is_refused :
       (start (CheckedCursor.begin interface deduplicatedStore) [0, 1])).2 = some false := by
   rfl
 
-private def inspectCache (outcome : Outcome (Work interface store) (Report interface store) Empty) : Option (Array Nat) :=
+private def inspectCache (outcome : Mettapedia.GSLT.Distinction.ProductiveBlocks.Outcome
+    (Work interface store) (Report interface store) Empty) : Option (Array Nat) :=
   match outcome with
   | .exhausted work => some work.cursor.state.cache
   | _ => none
@@ -497,7 +500,8 @@ theorem duplicate_schedule_address_is_refused :
     completedVerdict ((machine interface store).run 4 (start initial [0, 0])).2 = some false := by
   rfl
 
-private def inspectCompleted (outcome : Outcome (Work interface store) (Report interface store) Empty) :
+private def inspectCompleted (outcome : Mettapedia.GSLT.Distinction.ProductiveBlocks.Outcome
+    (Work interface store) (Report interface store) Empty) :
     Option (Bool × List NodeId × Nat × Status × Option Nat) :=
   match outcome with
   | .finished report =>
@@ -529,7 +533,8 @@ theorem check_only_completed_refusal_never_restarts :
       OutcomeRunner.run (machine interface store) 4 (start initial [0, 1, 2, 3]) := by
   rfl
 
-private def inspectCompletedCache (outcome : Outcome (Work interface store) (Report interface store) Empty) :
+private def inspectCompletedCache (outcome : Mettapedia.GSLT.Distinction.ProductiveBlocks.Outcome
+    (Work interface store) (Report interface store) Empty) :
     Option (Array Nat) :=
   match outcome with
   | .finished report => some report.work.cursor.state.cache

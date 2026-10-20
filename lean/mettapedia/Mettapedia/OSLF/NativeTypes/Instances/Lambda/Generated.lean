@@ -24,7 +24,7 @@ open Mettapedia.OSLF.NativeTypes.Generation
 open Mettapedia.OSLF.NativeTypes.Decision.Reference.Core
 open Mettapedia.GSLT.LanguageDef.WellSorted
 
-def snapshot : Snapshot := ⟨LambdaAuthoredFullRuleProfile.language, [], ⟨[], []⟩⟩
+def snapshot : Snapshot := ⟨LambdaAuthoredFullRuleProfile.language, [], ⟨[], [], []⟩⟩
 def fragment : LanguageFragment := {operational := {sites := .rootOnly}}
 def chosen : Snapshot := selectedSnapshot snapshot fragment
 def vertex : Mettapedia.OSLF.NativeTypes.SortProfiles.Derived.CubeVertex chosen.language := (fun _ => .star, fun _ => .star)

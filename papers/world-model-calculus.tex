@@ -285,7 +285,7 @@ This forms:
 \item a \textbf{quantale}: $\otimes$ distributes over arbitrary joins.
 \end{itemize}
 
-All algebraic laws are Lean-proven in \code{EvidenceQuantale.lean}.
+All algebraic laws are Lean-proven in \code{BinaryEvidence.lean}.
 
 
 \subsection{Views as projections}
@@ -665,8 +665,9 @@ fragments have different theorems.
 
 \paragraph{Scope of HOL/FOL completeness wrappers.}
 The infinitary HOL and FOL completeness modules
-(\code{PLNWorldModelHOLInfinitaryCompleteness.lean},
-\code{PLNWorldModelFOLInfinitaryCompleteness.lean}) provide
+(\code{PLNWorldModelPredCodeInfinitary.lean},
+\code{PLNWorldModelFOLInfinitary.lean}, over the generic crisp layer
+\code{PLNWorldModelCrispSpecialization.lean}) provide
 \emph{implication-level closure wrappers} over declared
 soundness/completeness assumptions of the underlying proof systems: given
 a pointwise implication $\varphi \Rightarrow \psi$ (or its singleton-strength
@@ -687,33 +688,33 @@ The main Lean artifacts (all in \code{Mettapedia/}):
 \hline
 \textbf{File} & \textbf{Role} \\ \hline
 \endhead
-\code{Logic/EvidenceClass.lean} & Evidence typeclasses,
+\code{PLN/Evidence/EvidenceClass.lean} & Evidence typeclasses,
   \code{InterpretableEvidence}, contexts \\
-\code{Logic/EvidenceQuantale.lean} & \code{Evidence} structure, complete
+\code{PLN/Evidence/BinaryEvidence.lean} & \code{Evidence} structure, complete
   lattice, quantale, views \\
-\code{Logic/PLNWorldModel.lean} & WM kernel: \code{WorldModel},
+\code{PLN/WorldModel/BinaryWorldModel.lean} & WM kernel: \code{WorldModel},
   \code{PLNQuery}, \code{WMJudgment} \\
-\code{Logic/PLNWorldModelCalculus.lean} & $\Sigma$-guarded rewrites,
+\code{PLN/WorldModel/WorldModelCalculus.lean} & $\Sigma$-guarded rewrites,
   \code{WMQueryEq}, strength rules \\
-\code{Logic/PLNJointEvidence.lean} & \code{JointEvidence} (Dirichlet over
+\code{PLN/Evidence/PLNJointEvidence.lean} & \code{JointEvidence} (Dirichlet over
   worlds) \\
-\code{Logic/PLNJointEvidenceNoGo.lean} & No-go theorem
+\code{PLN/Evidence/PLNJointEvidenceNoGo.lean} & No-go theorem
   (Theorem~\ref{thm:nogo}) \\
 \code{PLN/WorldModel/BayesNet/PLNBayesNetWorldModel.lean} & BN sublayer: CPT evidence,
   marginalization \\
 \code{PLN/Bridges/ProbabilityTheory/BayesNet/PLNBNCompilation.lean} & Screening-off rewrites for BN \\
-\code{Logic/PLNBayesNetFastRules.lean} & Compiled fast BN rules \\
-\code{Logic/PLNIntensionalWorldModel.lean} & Sort-indexed queries,
+\code{PLN/RuleFamilies/FirstOrder/PLNBayesNetFastRules.lean} & Compiled fast BN rules \\
+\code{PLN/ConceptGeometry/AssocPat/PLNIntensionalWorldModel.lean} & Sort-indexed queries,
   \code{WorldModelSigma} \\
-\code{Logic/PLNWorldModelInstitution.lean} & Institution-style signature
+\code{PLN/WorldModel/WorldModelInstitution.lean} & Institution-style signature
   transport with explicit satisfaction-condition theorems \\
 \code{Mettapedia/PLN/Bridges/CategoryTheory/WorldModel/PLNWorldModelHyperdoctrine.lean} & Hyperdoctrine-style typed
   query fibers, change-of-base, Beck-Chevalley transport \\
 \code{Mettapedia/PLN/Bridges/CategoryTheory/WorldModel/PLNWorldModelCategoricalBridge.lean} & Unified endpoint
   theorem linking institution transport and Beck-Chevalley transport \\
-\code{Logic/PLNWorldModelITV.lean} & ITV semantics (Bayes and
+\code{PLN/WorldModel/WorldModelITV.lean} & ITV semantics (Bayes and
   Walley~IDM) \\
-\code{Logic/PLNWorldModelITVHypercube.lean} & Interval-selector layer,
+\code{PLN/WorldModel/WorldModelITVHypercube.lean} & Interval-selector layer,
   typed ITV transport \\
 \code{PLN/Core/PLNCanonicalAPI.lean} & One-call end-to-end endpoints \\
 \code{PLN/RuleFamilies/FirstOrder/Quantifiers/QuantifierSemantics.lean} & Extensional vs
@@ -728,7 +729,7 @@ The main Lean artifacts (all in \code{Mettapedia/}):
   semantics \\
 \code{ProbabilityTheory/BayesianNetworks/VariableElimination.lean} & VE
   query engine \\
-\code{ProbabilityTheory/KnuthSkilling/Bridges/ValuationAlgebra.lean} &
+\code{ProbabilityTheory/BayesianNetworks/ValuationAlgebra.lean} &
   K\&S regraduation bridge \\
 \code{OSLF/PathMap/PLNBridge.lean} & PathMap $\leftrightarrow$ PLN
   evidence bridge \\
@@ -754,7 +755,7 @@ The main Lean artifacts (all in \code{Mettapedia/}):
   Canonical representation bridge \\
 \code{Mettapedia/PLN/Bridges/Logic/WorldModel/PLNWorldModelKripkeWeighted.lean} &
   Weighted/trusted-gate multiset semantics \\
-\code{Logic/PLNWorldModelHOLCompleteness.lean} &
+\code{PLN/Bridges/HOL/PLNWorldModelHOLCompleteness.lean} &
   HOL consequence-transfer wrappers +
   external-implication sound/complete bridge schema \\
 \code{Mettapedia/PLN/Bridges/Logic/WorldModel/PLNWorldModelFOLCompleteness.lean} &
@@ -786,18 +787,15 @@ The main Lean artifacts (all in \code{Mettapedia/}):
   threshold-soundness transport \\
 \code{PLN/WorldModel/Fixpoint/PLNWorldModelFixpointClosureRegression.lean} &
   Positive/negative finite closure fixtures (rule-driven growth vs empty-rule collapse) \\
-\code{Logic/PLNWorldModelHOLInfinitary.lean} &
+\code{PLN/Bridges/HOL/PLNWorldModelPredCodeInfinitary.lean} &
   Countable $\bigwedge$/$\bigvee$ HOL WM instance, singleton adequacy,
   pointwise-implication strength transfer (291 lines) \\
-\code{Logic/PLNWorldModelHOLInfinitaryCompleteness.lean} &
-  Implication consequence-transfer wrappers: \code{WMConsequenceRule} from
-  pointwise/singleton-strength (89 lines) \\
+\code{WorldModel/PLNWorldModelCrispSpecialization.lean} &
+  Generic crisp world model: singleton adequacy, consequence lifting,
+  \code{WMConsequenceRule} constructions, shared by all logic bridges \\
 \code{Mettapedia/PLN/Bridges/Logic/WorldModel/PLNWorldModelFOLInfinitary.lean} &
   Countable $\bigwedge$/$\bigvee$ FOL WM instance, singleton adequacy,
   pointwise-implication strength transfer (297 lines) \\
-\code{Mettapedia/PLN/Bridges/Logic/WorldModel/PLNWorldModelFOLInfinitaryCompleteness.lean} &
-  Implication consequence-transfer wrappers: \code{WMConsequenceRule} from
-  pointwise/singleton-strength (93 lines) \\
 \code{Mettapedia/PLN/Bridges/Logic/WorldModel/PLNWorldModelInfinitaryRegression.lean} &
   Concrete HOL+FOL infinitary fixture endpoints (129 lines) \\
 \hline
@@ -1049,7 +1047,7 @@ transport contract:
   \code{satisfactionCondition\_strengthWith},
   \code{satisfactionCondition\_confidence},
   and derived \code{WMInstitution.sat\_condition\_strength}
-  (\code{PLNWorldModelInstitution.lean}).
+  (\code{WorldModelInstitution.lean}).
 \item \textbf{Hyperdoctrine transport} over typed query fibers with
   change-of-base and Beck-Chevalley:
   \code{beckChevalley\_transport\_exists}
@@ -1072,14 +1070,14 @@ transport contract:
    \code{PLNWorldModelHOLCompleteness.lean},
    \code{PLNWorldModelFOLCompleteness.lean}).
   The FOL layer now includes a full implication bridge
-  \code{T |- (phi -> psi) <-> singletonConsequenceOnTheory T phi psi},
+  \code{T |- (phi -> psi) <-> singletonStrengthLEOn folSatisfies (models of T) phi psi},
   while HOL exposes a proof-system-agnostic sound/complete schema
-  (\code{externalImplication\_iff\_singletonConsequence\_of\_sound\_complete}).
+  (\code{externalImplication\_iff\_singletonStrengthLE\_of\_sound\_complete}).
 \item \textbf{Set-theory specialization}: the FOL bridge is now instantiated for
   set language $\mathcal L_{\mathrm{set}}$ (\code{L\_set}) and
   \code{Z/ZF/ZC/ZFC}
   (\code{PLNWorldModelSetTheoryBridge.lean}), including
-  \code{provable\_imp\_iff\_singletonStrengthLEOnTheory},
+  \code{provable\_imp\_iff\_singletonStrengthLEOn},
   multiset consequence transport, and categorical-contract wrappers.
 \item \textbf{OSLF$\rightarrow$NTT$\rightarrow$WM canonical endpoint}: presheaf/subobject
   modal transport and formula-level graph witness transport are exposed via
@@ -1116,7 +1114,7 @@ transport contract:
 \paragraph{Theorem-index scope split (FOL vs HOL).}
 For readers tracking theorem strength precisely: the FOL side is now a full
 implication bridge over theory-models
-\code{(T |- (phi -> psi)) <-> singletonConsequenceOnTheory T phi psi}
+\code{(T |- (phi -> psi)) <-> singletonStrengthLEOn folSatisfies (models of T) phi psi}
 and is consumable through concrete WM rule constructors
 (\code{wmConsequenceRuleOn\_of\_provable\_imp} with regression fixture
 \code{fol\_provable\_bridge\_rule\_singleton\_fixture}). The HOL side, by

@@ -6,6 +6,18 @@ import Mettapedia.Languages.MeTTa.PeTTa.MainlineCallGuardReferenceAuthority
 /-!
 # Closed mainline PeTTa type queries as an operational GSLT
 
+Source-correspondence correction: the recursive relation below uses fresh
+enumeration membership for function arguments, whereas the source calls
+`get-type` with each declared argument type already bound. These differ even
+for a fresh, ground outer query: with `f : (-> %Undefined% C)`, the source
+returns `C` for `(f 3)` and this model does not. See
+`MainlineTypeQueryEnumeration.Controls.old_closed_model_misses_result` and
+the separate fresh/bound relations in `MainlineTypeQueryModes` and
+`MainlineTypeQueryEnumeration`. The theorems below still characterize this
+model; they are not full source adequacy for those mode-sensitive queries.
+Consumers need the corrected source relation or an explicit agreement proof
+for their admitted queries before using these results to remove checks.
+
 This module presents the closed, resolved-declaration fragment of the type
 queries used by mainline PeTTa.  It follows the clause order of `get-type` and
 `get-metatype` rather than the optional `typecheck-v2` or `typecheck-v3`

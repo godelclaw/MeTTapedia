@@ -260,3 +260,1126 @@ theorem enter_denote (space : Space) (dispatch : GroundedDispatch) (task : Task)
   | completed value expected bindings fuel => rfl
 
 end Mettapedia.Languages.MeTTa.HE.RecursiveCorrectness
+
+namespace Mettapedia.Languages.MeTTa.HE.RecursiveCorrectness.Contextual
+
+open Spec.Eval
+open Spec.Eval.Completed (Policy Result)
+open RecursiveTasks.Contextual RecursiveMachine.Contextual
+
+/-- Every actual local control step reconstructs an independent source
+completion. Pending continuations retain their exact contextual results. -/
+theorem local_source_back
+    {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
+    {lookup : Completed.CastLookup} {policy : Policy}
+    {before after : Control × List Continuation} {current pending : List Result}
+    (advanced : LocalStep space dispatch lookup policy before after)
+    (controlled : after.1.SourceRel space dispatch lookup policy current)
+    (continued : StackRel space dispatch lookup policy after.2 current pending) :
+    ∃ initial, before.1.SourceRel space dispatch lookup policy initial ∧
+      StackRel space dispatch lookup policy before.2 initial pending := by
+  induction advanced generalizing current pending with
+  | delivered entered =>
+      cases controlled
+      exact ⟨_,.work (.delivered entered),continued⟩
+  | cast entered casted transported =>
+      cases controlled
+      exact ⟨_,.work (.cast entered casted transported),continued⟩
+  | atomTuple entered shaped untyped =>
+      cases controlled with
+      | work tuple =>
+          cases continued with
+          | cons called remaining =>
+              cases called with
+              | calls calls =>
+                  cases remaining with
+                  | cons published rest =>
+                      cases published with
+                      | publish priority =>
+                          exact ⟨_,.work (.tuple entered shaped untyped tuple calls priority),rest⟩
+  | atomFunction entered shaped selected =>
+      cases controlled with
+      | work invoked =>
+          cases continued with
+          | cons published rest =>
+              cases published with
+              | publish priority => exact ⟨_,.work (.function entered shaped selected invoked priority),rest⟩
+  | atomFallback entered shaped selected =>
+      cases controlled with
+      | work tuple =>
+          cases continued with
+          | cons called remaining =>
+              cases called with
+              | calls calls =>
+                  cases remaining with
+                  | cons diagnosed remaining =>
+                      cases diagnosed
+                      cases remaining with
+                      | cons published rest =>
+                          cases published with
+                          | publish priority => exact ⟨_,.work (.fallback entered shaped selected tuple calls priority),rest⟩
+  | atomSelectionFailed entered shaped selected =>
+      cases controlled
+      cases continued with
+      | cons published rest =>
+          cases published with
+          | publish priority => exact ⟨_,.work (.selectionFailed entered shaped selected priority),rest⟩
+  | tupleNil =>
+      cases controlled
+      exact ⟨_,.work .nil,continued⟩
+  | tupleSingleton =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons singleton rest =>
+              cases singleton
+              exact ⟨_,.work (.singleton child),rest⟩
+  | tupleCons =>
+      cases controlled with
+      | work head =>
+          cases continued with
+          | cons branches rest =>
+              cases branches with
+              | branches tail => exact ⟨_,.work (.cons head tail),rest⟩
+  | branchesNil =>
+      cases controlled
+      exact ⟨_,.work .nil,continued⟩
+  | branchesStopped stopped =>
+      cases controlled with
+      | work tail =>
+          cases continued with
+          | cons prepended rest =>
+              cases prepended
+              exact ⟨_,.work (.stopped stopped tail),rest⟩
+  | branchesContinue running =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons tupleTail remaining =>
+              cases tupleTail
+              cases remaining with
+              | cons appended rest =>
+                  cases appended with
+                  | append tail => exact ⟨_,.work (.continuing running child tail),rest⟩
+  | argumentsNil =>
+      cases controlled
+      exact ⟨_,.work .nil,continued⟩
+  | argumentsCons =>
+      cases controlled with
+      | work head =>
+          cases continued with
+          | cons arguments rest =>
+              cases arguments with
+              | arguments tail => exact ⟨_,.work (.cons head tail),rest⟩
+  | argumentBranchesNil =>
+      cases controlled
+      exact ⟨_,.work .nil,continued⟩
+  | argumentBranchesStopped stopped =>
+      cases controlled with
+      | work tail =>
+          cases continued with
+          | cons prepended rest =>
+              cases prepended
+              exact ⟨_,.work (.stopped stopped tail),rest⟩
+  | argumentBranchesContinue running =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons argumentTail remaining =>
+              cases argumentTail
+              cases remaining with
+              | cons appended rest =>
+                  cases appended with
+                  | append tail => exact ⟨_,.work (.continuing running child tail),rest⟩
+  | functionStart arity =>
+      cases controlled with
+      | work head =>
+          cases continued with
+          | cons branched rest =>
+              cases branched with
+              | functionHeads branches => exact ⟨_,.work (.evaluated arity head branches),rest⟩
+  | functionBranchesNil =>
+      cases controlled
+      exact ⟨_,.work .nil,continued⟩
+  | functionBranchesStopped stopped =>
+      cases controlled with
+      | work tail =>
+          cases continued with
+          | cons prepended rest =>
+              cases prepended
+              exact ⟨_,.work (.stopped stopped tail),rest⟩
+  | functionBranchesContinue running =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons assembled remaining =>
+              cases assembled
+              cases remaining with
+              | cons appended rest =>
+                  cases appended with
+                  | append tail => exact ⟨_,.work (.continuing running child tail),rest⟩
+  | invocationsNil =>
+      cases controlled
+      exact ⟨_,.work .nil,continued⟩
+  | invocationsCons =>
+      cases controlled with
+      | work interpreted =>
+          cases continued with
+          | cons called remaining =>
+              cases called with
+              | calls calls =>
+                  cases remaining with
+                  | cons appended rest =>
+                      cases appended with
+                      | append tail => exact ⟨_,.work (.cons interpreted calls tail),rest⟩
+  | callsNil =>
+      cases controlled
+      exact ⟨_,.work .nil,continued⟩
+  | callsCons =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons appended rest =>
+              cases appended with
+              | append tail => exact ⟨_,.work (.cons child tail),rest⟩
+  | callError failed =>
+      cases controlled
+      exact ⟨_,.work (.error failed),continued⟩
+  | callEmbedded clean ordinary entered =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons followed rest =>
+              cases followed with
+              | boundaryBatch returned => exact ⟨_,.work (.embedded clean ordinary entered child returned),rest⟩
+  | callAbsent clean ordinary frontier =>
+      cases controlled
+      exact ⟨_,.work (.absent clean ordinary frontier),continued⟩
+  | callEquations clean ordinary frontier nonempty =>
+      cases controlled with
+      | work bodies => exact ⟨_,.work (.equations clean ordinary frontier nonempty bodies),continued⟩
+  | equationsNil =>
+      cases controlled
+      exact ⟨_,.work .nil,continued⟩
+  | equationsCons reached unified =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons followed remaining =>
+              cases followed with
+              | boundaryBatch returned =>
+                  cases remaining with
+                  | cons appended rest =>
+                      cases appended with
+                      | append tail => exact ⟨_,.work (.cons reached unified child returned tail),rest⟩
+  | returnRefused refused =>
+      cases controlled
+      exact ⟨_,.work (.notReducible refused),continued⟩
+  | returnStopped stopped =>
+      cases controlled
+      exact ⟨_,.work (.stopped stopped),continued⟩
+  | returnEvaluate accepted running =>
+      cases controlled with
+      | work child => exact ⟨_,.work (.evaluate accepted running child),continued⟩
+  | minimalData terminal =>
+      cases controlled
+      exact ⟨_,.work (.data terminal),continued⟩
+  | minimalEval =>
+      cases controlled with
+      | work child => exact ⟨_,.work (.eval child),continued⟩
+  | minimalEvalc services =>
+      cases controlled with
+      | context child saved =>
+          cases child with
+          | work child =>
+              cases saved
+              exact ⟨_,.work (.evalc services child),continued⟩
+  | minimalChain =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons followed rest =>
+              cases followed with
+              | boundaryBatch batch => exact ⟨_,.work (.chain child batch),rest⟩
+  | minimalUnifyYes selected unified =>
+      cases controlled
+      exact ⟨_,.work (.unifyYes selected unified),continued⟩
+  | minimalUnifyNo missing =>
+      cases controlled
+      exact ⟨_,.work (.unifyNo missing),continued⟩
+  | minimalUnifyBadArity malformed =>
+      cases controlled
+      exact ⟨_,.work (.unifyBadArity malformed),continued⟩
+  | minimalConsAtom =>
+      cases controlled
+      exact ⟨_,.work .consAtom,continued⟩
+  | minimalDeconsAtom =>
+      cases controlled
+      exact ⟨_,.work .deconsAtom,continued⟩
+  | minimalFunction shaped =>
+      cases controlled with
+      | work body =>
+          cases continued with
+          | cons followed rest =>
+              cases followed with
+              | boundaryBatch batch => exact ⟨_,.work (.function shaped body batch),rest⟩
+  | minimalMetta services =>
+      cases controlled with
+      | context child saved =>
+          cases child with
+          | work child =>
+              cases saved
+              exact ⟨_,.work (.metta services child),continued⟩
+  | minimalContextSpace services =>
+      cases controlled
+      exact ⟨_,.work (.contextSpace services),continued⟩
+  | bodyStart =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons followed rest =>
+              cases followed with
+              | boundaryBatch batch => exact ⟨_,.work (.run child batch),rest⟩
+  | invocationEmbedded ordinary entered =>
+      cases controlled with
+      | work child => exact ⟨_,.work (.embedded ordinary entered child),continued⟩
+  | invocationAbsent ordinary frontier =>
+      cases controlled
+      exact ⟨_,.work (.absent ordinary frontier),continued⟩
+  | invocationEquations ordinary frontier nonempty =>
+      cases controlled with
+      | work children => exact ⟨_,.work (.equations ordinary frontier nonempty children),continued⟩
+  | invocationEquationsNil =>
+      cases controlled
+      exact ⟨_,.work .nil,continued⟩
+  | invocationEquationsCons reached unified =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons appended rest =>
+              cases appended with
+              | append tail => exact ⟨_,.work (.cons reached unified child tail),rest⟩
+  | boundaryChain =>
+      cases controlled with
+      | work child => exact ⟨_,.work (.chain child),continued⟩
+  | boundaryBodyTerminal terminal =>
+      cases controlled
+      exact ⟨_,.work (.bodyTerminal terminal),continued⟩
+  | boundaryBodyResume entered =>
+      cases controlled with
+      | work child => exact ⟨_,.work (.bodyResume entered child),continued⟩
+  | boundaryFunctionReturn =>
+      cases controlled
+      exact ⟨_,.work .functionReturn,continued⟩
+  | boundaryFunctionNoReturn noReturn =>
+      cases controlled
+      exact ⟨_,.work (.functionNoReturn noReturn),continued⟩
+  | boundaryProducerRaw ordinary =>
+      cases controlled
+      exact ⟨_,.work (.producerRaw ordinary),continued⟩
+  | boundaryProducerFunction activeFunction =>
+      cases controlled with
+      | work child => exact ⟨_,.work (.producerFunction activeFunction child),continued⟩
+  | boundaryReturned =>
+      cases controlled with
+      | work child => exact ⟨_,.work (.returned child),continued⟩
+  | boundaryBatchNil =>
+      cases controlled
+      exact ⟨_,.work .nil,continued⟩
+  | boundaryBatchCons =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons appended rest =>
+              cases appended with
+              | append tail => exact ⟨_,.work (.cons child tail),rest⟩
+  | boundaryNativeEmittedRaw =>
+      cases controlled with
+      | work child => exact ⟨_,.work (.nativeEmittedRaw child),continued⟩
+  | boundaryNativeEmittedReturn =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons returned rest =>
+              cases returned with
+              | boundaryBatch batch => exact ⟨_,.work (.nativeEmittedReturn child batch),rest⟩
+  | boundaryNativeCompletedRaw =>
+      cases controlled
+      exact ⟨_,.work .nativeCompletedRaw,continued⟩
+  | boundaryNativeCompletedReturn returned =>
+      cases controlled
+      exact ⟨_,.work (.nativeCompletedReturn returned),continued⟩
+  | publish priority =>
+      cases controlled
+      exact ⟨_,.returning _,.cons (.publish priority) continued⟩
+  | singleton =>
+      cases controlled
+      exact ⟨_,.returning _,.cons (.singleton _) continued⟩
+  | branches =>
+      cases controlled with
+      | work tail => exact ⟨_,.returning _,.cons (.branches tail) continued⟩
+  | tupleTail =>
+      cases controlled
+      exact ⟨_,.returning _,.cons (.tupleTail _ _) continued⟩
+  | arguments =>
+      cases controlled with
+      | work tail => exact ⟨_,.returning _,.cons (.arguments tail) continued⟩
+  | argumentTail =>
+      cases controlled
+      exact ⟨_,.returning _,.cons (.argumentTail _ _) continued⟩
+  | functionHeads =>
+      cases controlled with
+      | work branches => exact ⟨_,.returning _,.cons (.functionHeads branches) continued⟩
+  | functionAssemble =>
+      cases controlled
+      exact ⟨_,.returning _,.cons (.functionAssemble _ _) continued⟩
+  | diagnostics =>
+      cases controlled
+      exact ⟨_,.returning _,.cons (.diagnostics _ _ _) continued⟩
+  | boundaryBatch =>
+      cases controlled with
+      | work batch => exact ⟨_,.returning _,.cons (.boundaryBatch batch) continued⟩
+  | calls =>
+      cases controlled with
+      | work calls => exact ⟨_,.returning _,.cons (.calls calls) continued⟩
+  | append =>
+      cases controlled with
+      | work tail =>
+          cases continued with
+          | cons prepended rest =>
+              cases prepended
+              exact ⟨_,.returning _,.cons (.append tail) rest⟩
+  | prepend =>
+      cases controlled
+      exact ⟨_,.returning _,.cons (.prepend _ _) continued⟩
+  | contextStep _ ih =>
+      cases controlled with
+      | context child inner =>
+          obtain ⟨initial,earlier,saved⟩ := ih child inner
+          exact ⟨_,.context earlier saved,continued⟩
+  | contextReturn =>
+      cases controlled
+      exact ⟨_,.context (.returning _) (.nil _),continued⟩
+
+theorem step_source_back
+    {dispatch : Spec.Eval.GroundedDispatch} {lookup : Completed.CastLookup} {policy : Policy}
+    {before after : Configuration} {answers : List Result}
+    (advanced : Step dispatch lookup policy before after)
+    (source : after.SourceRel dispatch lookup policy answers) :
+    before.SourceRel dispatch lookup policy answers := by
+  obtain ⟨current,pending,controlled,continued,same⟩ := source
+  cases advanced with
+  | internal advance =>
+      obtain ⟨initial,earlier,saved⟩ := local_source_back advance controlled continued
+      exact ⟨initial,pending,earlier,saved,same⟩
+  | publish =>
+      cases controlled
+      cases continued
+      refine ⟨_,_,.returning _,.nil _,?_⟩
+      simpa only [List.append_assoc,List.singleton_append] using same
+
+theorem steps_source_back
+    {dispatch : Spec.Eval.GroundedDispatch} {lookup : Completed.CastLookup} {policy : Policy}
+    {before after : Configuration} {answers : List Result}
+    (path : Steps dispatch lookup policy before after)
+    (source : after.SourceRel dispatch lookup policy answers) :
+    before.SourceRel dispatch lookup policy answers := by
+  revert source
+  induction path using Relation.ReflTransGen.head_induction_on with
+  | refl => exact fun source => source
+  | head first _ ih => exact fun source => step_source_back first (ih source)
+
+theorem initial_source_iff
+    (space : Space) (dispatch : Spec.Eval.GroundedDispatch) (lookup : Completed.CastLookup)
+    (policy : Policy) (task : Task) (answers : List Result) :
+    (Configuration.initial space task).SourceRel dispatch lookup policy answers ↔
+      task.SourceRel space dispatch lookup policy answers := by
+  constructor
+  · rintro ⟨current,pending,controlled,continued,same⟩
+    cases controlled with
+    | work source =>
+        cases continued
+        simp only [Configuration.initial,List.nil_append] at same
+        cases same
+        exact source
+  · intro source
+    exact ⟨answers,answers,.work source,.nil _,rfl⟩
+
+end Mettapedia.Languages.MeTTa.HE.RecursiveCorrectness.Contextual
+
+
+namespace Mettapedia.Languages.MeTTa.HE.RecursiveCorrectness.Contextual.Stateful
+
+open Spec.Eval
+open Spec.Eval.Completed (Policy Result WorldEnvironment)
+open RecursiveTasks.Contextual RecursiveMachine.Contextual
+
+variable {Context World : Type} {environment : WorldEnvironment Context World} {policy : Policy}
+
+/-- Ordinary transitions read the reached world's space. Their completed
+source reconstruction retains the worlds of every saved child. -/
+private theorem core_source_back
+    {label : Context} {world childWorld finalWorld : World}
+    {before after : Control Context} {flatBefore flatAfter : Control}
+    {stack remaining : List Continuation} {current pending : List Result}
+    (advanced : LocalStep (environment.view world label) environment.dispatch environment.lookup policy
+      (flatBefore,stack) (flatAfter,remaining))
+    (first : UnscopedControl before flatBefore) (managed : managedContextControl before = false)
+    (last : UnscopedControl after flatAfter)
+    (controlled : after.WorldSourceRel environment policy label world current childWorld)
+    (continued : WorldStackRel environment policy label childWorld remaining current pending finalWorld) :
+    ∃ initial initialWorld, before.WorldSourceRel environment policy label world initial initialWorld ∧
+      WorldStackRel environment policy label initialWorld stack initial pending finalWorld := by
+  cases advanced with
+  | delivered entered =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.delivered entered),continued⟩
+  | cast entered casted transported =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.cast entered casted transported),continued⟩
+  | atomTuple entered shaped untyped =>
+      cases first
+      cases last
+      cases controlled with
+      | work tuple =>
+          cases continued with
+          | cons called remaining =>
+              cases called with
+              | calls calls =>
+                  cases remaining with
+                  | cons published rest =>
+                      cases published with
+                      | publish priority =>
+                          exact ⟨_,_,.work (.tuple entered shaped untyped tuple calls priority),rest⟩
+  | atomFunction entered shaped selected =>
+      cases first
+      cases last
+      cases controlled with
+      | work invoked =>
+          cases continued with
+          | cons published rest =>
+              cases published with
+              | publish priority => exact ⟨_,_,.work (.function entered shaped selected invoked priority),rest⟩
+  | atomFallback entered shaped selected =>
+      cases first
+      cases last
+      cases controlled with
+      | work tuple =>
+          cases continued with
+          | cons called remaining =>
+              cases called with
+              | calls calls =>
+                  cases remaining with
+                  | cons diagnosed remaining =>
+                      cases diagnosed
+                      cases remaining with
+                      | cons published rest =>
+                          cases published with
+                          | publish priority => exact ⟨_,_,.work (.fallback entered shaped selected tuple calls priority),rest⟩
+  | atomSelectionFailed entered shaped selected =>
+      cases first
+      cases last
+      cases controlled
+      cases continued with
+      | cons published rest =>
+          cases published with
+          | publish priority => exact ⟨_,_,.work (.selectionFailed entered shaped selected priority),rest⟩
+  | tupleNil =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .nil,continued⟩
+  | tupleSingleton =>
+      cases first
+      cases last
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons singleton rest =>
+              cases singleton
+              exact ⟨_,_,.work (.singleton child),rest⟩
+  | tupleCons =>
+      cases first
+      cases last
+      cases controlled with
+      | work head =>
+          cases continued with
+          | cons branches rest =>
+              cases branches with
+              | branches tail => exact ⟨_,_,.work (.cons head tail),rest⟩
+  | branchesNil =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .nil,continued⟩
+  | branchesStopped stopped =>
+      cases first
+      cases last
+      cases controlled with
+      | work tail =>
+          cases continued with
+          | cons prepended rest =>
+              cases prepended
+              exact ⟨_,_,.work (.stopped stopped tail),rest⟩
+  | branchesContinue running =>
+      cases first
+      cases last
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons tupleTail remaining =>
+              cases tupleTail
+              cases remaining with
+              | cons appended rest =>
+                  cases appended with
+                  | append tail => exact ⟨_,_,.work (.continuing running child tail),rest⟩
+  | argumentsNil =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .nil,continued⟩
+  | argumentsCons =>
+      cases first
+      cases last
+      cases controlled with
+      | work head =>
+          cases continued with
+          | cons arguments rest =>
+              cases arguments with
+              | arguments tail => exact ⟨_,_,.work (.cons head tail),rest⟩
+  | argumentBranchesNil =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .nil,continued⟩
+  | argumentBranchesStopped stopped =>
+      cases first
+      cases last
+      cases controlled with
+      | work tail =>
+          cases continued with
+          | cons prepended rest =>
+              cases prepended
+              exact ⟨_,_,.work (.stopped stopped tail),rest⟩
+  | argumentBranchesContinue running =>
+      cases first
+      cases last
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons argumentTail remaining =>
+              cases argumentTail
+              cases remaining with
+              | cons appended rest =>
+                  cases appended with
+                  | append tail => exact ⟨_,_,.work (.continuing running child tail),rest⟩
+  | functionStart arity =>
+      cases first
+      cases last
+      cases controlled with
+      | work head =>
+          cases continued with
+          | cons branched rest =>
+              cases branched with
+              | functionHeads branches => exact ⟨_,_,.work (.evaluated arity head branches),rest⟩
+  | functionBranchesNil =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .nil,continued⟩
+  | functionBranchesStopped stopped =>
+      cases first
+      cases last
+      cases controlled with
+      | work tail =>
+          cases continued with
+          | cons prepended rest =>
+              cases prepended
+              exact ⟨_,_,.work (.stopped stopped tail),rest⟩
+  | functionBranchesContinue running =>
+      cases first
+      cases last
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons assembled remaining =>
+              cases assembled
+              cases remaining with
+              | cons appended rest =>
+                  cases appended with
+                  | append tail => exact ⟨_,_,.work (.continuing running child tail),rest⟩
+  | invocationsNil =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .nil,continued⟩
+  | invocationsCons =>
+      cases first
+      cases last
+      cases controlled with
+      | work interpreted =>
+          cases continued with
+          | cons called remaining =>
+              cases called with
+              | calls calls =>
+                  cases remaining with
+                  | cons appended rest =>
+                      cases appended with
+                      | append tail => exact ⟨_,_,.work (.cons interpreted calls tail),rest⟩
+  | callsNil =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .nil,continued⟩
+  | callsCons =>
+      cases first
+      cases last
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons appended rest =>
+              cases appended with
+              | append tail => exact ⟨_,_,.work (.cons child tail),rest⟩
+  | callError failed =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.error failed),continued⟩
+  | callEmbedded clean ordinary entered =>
+      cases first
+      cases last
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons followed rest =>
+              cases followed with
+              | boundaryBatch returned => exact ⟨_,_,.work (.embedded clean ordinary entered child returned),rest⟩
+  | callAbsent clean ordinary frontier =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.absent clean ordinary frontier),continued⟩
+  | callEquations clean ordinary frontier nonempty =>
+      cases first
+      cases last
+      cases controlled with
+      | work bodies => exact ⟨_,_,.work (.equations clean ordinary frontier nonempty bodies),continued⟩
+  | equationsNil =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .nil,continued⟩
+  | equationsCons reached unified =>
+      cases first
+      cases last
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons followed remaining =>
+              cases followed with
+              | boundaryBatch returned =>
+                  cases remaining with
+                  | cons appended rest =>
+                      cases appended with
+                      | append tail => exact ⟨_,_,.work (.cons reached unified child returned tail),rest⟩
+  | returnRefused refused =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.notReducible refused),continued⟩
+  | returnStopped stopped =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.stopped stopped),continued⟩
+  | returnEvaluate accepted running =>
+      cases first
+      cases last
+      cases controlled with
+      | work child => exact ⟨_,_,.work (.evaluate accepted running child),continued⟩
+  | minimalData terminal =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.data terminal),continued⟩
+  | minimalEval =>
+      cases first
+      cases last
+      cases controlled with
+      | work child => exact ⟨_,_,.work (.eval child),continued⟩
+  | minimalEvalc => cases last
+  | minimalChain =>
+      cases first
+      cases last
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons followed rest =>
+              cases followed with
+              | boundaryBatch batch => exact ⟨_,_,.work (.chain child batch),rest⟩
+  | minimalUnifyYes selected unified =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.unifyYes selected unified),continued⟩
+  | minimalUnifyNo missing =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.unifyNo missing),continued⟩
+  | minimalUnifyBadArity malformed =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.unifyBadArity malformed),continued⟩
+  | minimalConsAtom =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .consAtom,continued⟩
+  | minimalDeconsAtom =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .deconsAtom,continued⟩
+  | minimalFunction shaped =>
+      cases first
+      cases last
+      cases controlled with
+      | work body =>
+          cases continued with
+          | cons followed rest =>
+              cases followed with
+              | boundaryBatch batch => exact ⟨_,_,.work (.function shaped body batch),rest⟩
+  | minimalMetta => cases last
+  | minimalContextSpace =>
+      cases first
+      simp [managedContextControl] at managed
+  | bodyStart =>
+      cases first
+      cases last
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons followed rest =>
+              cases followed with
+              | boundaryBatch batch => exact ⟨_,_,.work (.run child batch),rest⟩
+  | invocationEmbedded ordinary entered =>
+      cases first
+      cases last
+      cases controlled with
+      | work child => exact ⟨_,_,.work (.embedded ordinary entered child),continued⟩
+  | invocationAbsent ordinary frontier =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.absent ordinary frontier),continued⟩
+  | invocationEquations ordinary frontier nonempty =>
+      cases first
+      cases last
+      cases controlled with
+      | work children => exact ⟨_,_,.work (.equations ordinary frontier nonempty children),continued⟩
+  | invocationEquationsNil =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .nil,continued⟩
+  | invocationEquationsCons reached unified =>
+      cases first
+      cases last
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons appended rest =>
+              cases appended with
+              | append tail => exact ⟨_,_,.work (.cons reached unified child tail),rest⟩
+  | boundaryChain =>
+      cases first
+      cases last
+      cases controlled with
+      | work child => exact ⟨_,_,.work (.chain child),continued⟩
+  | boundaryBodyTerminal terminal =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.bodyTerminal terminal),continued⟩
+  | boundaryBodyResume entered =>
+      cases first
+      cases last
+      cases controlled with
+      | work child => exact ⟨_,_,.work (.bodyResume entered child),continued⟩
+  | boundaryFunctionReturn =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .functionReturn,continued⟩
+  | boundaryFunctionNoReturn noReturn =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.functionNoReturn noReturn),continued⟩
+  | boundaryProducerRaw ordinary =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.producerRaw ordinary),continued⟩
+  | boundaryProducerFunction activeFunction =>
+      cases first
+      cases last
+      cases controlled with
+      | work child => exact ⟨_,_,.work (.producerFunction activeFunction child),continued⟩
+  | boundaryReturned =>
+      cases first
+      cases last
+      cases controlled with
+      | work child => exact ⟨_,_,.work (.returned child),continued⟩
+  | boundaryBatchNil =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .nil,continued⟩
+  | boundaryBatchCons =>
+      cases first
+      cases last
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons appended rest =>
+              cases appended with
+              | append tail => exact ⟨_,_,.work (.cons child tail),rest⟩
+  | boundaryNativeEmittedRaw =>
+      cases first
+      cases last
+      cases controlled with
+      | work child => exact ⟨_,_,.work (.nativeEmittedRaw child),continued⟩
+  | boundaryNativeEmittedReturn =>
+      cases first
+      cases last
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons returned rest =>
+              cases returned with
+              | boundaryBatch batch => exact ⟨_,_,.work (.nativeEmittedReturn child batch),rest⟩
+  | boundaryNativeCompletedRaw =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work .nativeCompletedRaw,continued⟩
+  | boundaryNativeCompletedReturn returned =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.work (.nativeCompletedReturn returned),continued⟩
+  | publish priority =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.returning _,.cons (.publish priority) continued⟩
+  | singleton =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.returning _,.cons (.singleton _) continued⟩
+  | branches =>
+      cases first
+      cases last
+      cases controlled with
+      | work tail => exact ⟨_,_,.returning _,.cons (.branches tail) continued⟩
+  | tupleTail =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.returning _,.cons (.tupleTail _ _) continued⟩
+  | arguments =>
+      cases first
+      cases last
+      cases controlled with
+      | work tail => exact ⟨_,_,.returning _,.cons (.arguments tail) continued⟩
+  | argumentTail =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.returning _,.cons (.argumentTail _ _) continued⟩
+  | functionHeads =>
+      cases first
+      cases last
+      cases controlled with
+      | work branches => exact ⟨_,_,.returning _,.cons (.functionHeads branches) continued⟩
+  | functionAssemble =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.returning _,.cons (.functionAssemble _ _) continued⟩
+  | diagnostics =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.returning _,.cons (.diagnostics _ _ _) continued⟩
+  | boundaryBatch =>
+      cases first
+      cases last
+      cases controlled with
+      | work batch => exact ⟨_,_,.returning _,.cons (.boundaryBatch batch) continued⟩
+  | calls =>
+      cases first
+      cases last
+      cases controlled with
+      | work calls => exact ⟨_,_,.returning _,.cons (.calls calls) continued⟩
+  | append =>
+      cases first
+      cases last
+      cases controlled with
+      | work tail =>
+          cases continued with
+          | cons prepended rest =>
+              cases prepended
+              exact ⟨_,_,.returning _,.cons (.append tail) rest⟩
+  | prepend =>
+      cases first
+      cases last
+      cases controlled
+      exact ⟨_,_,.returning _,.cons (.prepend _ _) continued⟩
+  | contextStep => cases first
+  | contextReturn => cases first
+
+/-- Every local world transition reconstructs a source completion. A native
+reply changes the world once; nested contexts return that actual world. -/
+theorem local_source_back
+    {label : Context} {world afterWorld childWorld finalWorld : World}
+    {before after : Control Context × List Continuation} {current pending : List Result}
+    (advanced : WorldLocalStep environment.view environment.services environment.dispatch environment.lookup policy
+      world label before afterWorld after)
+    (controlled : after.1.WorldSourceRel environment policy label afterWorld current childWorld)
+    (continued : WorldStackRel environment policy label childWorld after.2 current pending finalWorld) :
+    ∃ initial initialWorld, before.1.WorldSourceRel environment policy label world initial initialWorld ∧
+      WorldStackRel environment policy label initialWorld before.2 initial pending finalWorld := by
+  induction advanced generalizing current pending childWorld finalWorld with
+  | core first managed primitive last => exact core_source_back primitive first managed last controlled continued
+  | context _ ih =>
+      cases controlled with
+      | context child inner =>
+          obtain ⟨initial,initialWorld,earlier,saved⟩ := ih child inner
+          exact ⟨_,_,.context earlier saved,continued⟩
+  | contextReturn =>
+      cases controlled
+      exact ⟨_,_,.context (.returning _) (.nil _),continued⟩
+  | evalc =>
+      cases controlled with
+      | context child saved =>
+          cases child with
+          | work child =>
+              cases saved
+              exact ⟨_,_,.work (.evalc child),continued⟩
+  | metta =>
+      cases controlled with
+      | context child saved =>
+          cases child with
+          | work child =>
+              cases saved
+              exact ⟨_,_,.work (.metta child),continued⟩
+  | contextSpace =>
+      cases controlled
+      exact ⟨_,_,.work .contextSpace,continued⟩
+  | native called =>
+      cases controlled
+      exact ⟨_,_,.work (.native called),continued⟩
+  | callGroundedDone shaped executable nonerror produced outcome =>
+      cases controlled
+      exact ⟨_,_,.work (.groundedDone shaped executable nonerror produced outcome),continued⟩
+  | callGroundedResume shaped executable nonerror produced outcome =>
+      cases controlled with
+      | work batch => exact ⟨_,_,.work (.groundedResume shaped executable nonerror produced outcome batch),continued⟩
+  | invocationGroundedDone shaped executable produced outcome =>
+      cases controlled
+      exact ⟨_,_,.work (.groundedDone shaped executable produced outcome),continued⟩
+  | invocationGroundedResume shaped executable produced outcome =>
+      cases controlled with
+      | work batch => exact ⟨_,_,.work (.groundedResume shaped executable produced outcome batch),continued⟩
+  | collapseEnter provided =>
+      cases controlled with
+      | work child =>
+          cases continued with
+          | cons collected rest =>
+              cases collected with
+              | collect installed captured => exact ⟨_,_,.work (.collapseBind installed child captured),rest⟩
+  | collectEnter provided =>
+      cases controlled with
+      | work source =>
+          obtain ⟨snapshots,packed,installed,captured,same⟩ := source
+          cases same
+          exact ⟨_,_,.returning _,.cons (.collect installed captured) continued⟩
+  | captureNil provided =>
+      cases controlled
+      exact ⟨_,_,.work ⟨_,_,provided,.nil,rfl⟩,continued⟩
+  | captureEmpty provided missing =>
+      cases controlled with
+      | work source =>
+          obtain ⟨snapshots,packed,installed,captured,same⟩ := source
+          have agreement := Option.some.inj (provided.symm.trans installed)
+          cases agreement
+          exact ⟨_,_,.work ⟨_,packed,provided,.empty missing captured,same⟩,continued⟩
+  | captureOne provided present stored =>
+      cases controlled with
+      | work source =>
+          obtain ⟨snapshots,packed,installed,captured,same⟩ := source
+          have agreement := Option.some.inj (provided.symm.trans installed)
+          cases agreement
+          exact ⟨_,_,.work ⟨_,packed,provided,.cons present stored captured,same⟩,continued⟩
+  | superposeEnter provided =>
+      cases controlled with
+      | work source =>
+          obtain ⟨snapshots,installed,reached,restored⟩ := source
+          cases reached
+          exact ⟨_,_,.work (.superposeBind installed restored),continued⟩
+  | restoreNil provided =>
+      cases controlled
+      exact ⟨_,_,.work ⟨_,provided,rfl,.nil⟩,continued⟩
+  | restoreOne provided loaded merged =>
+      cases controlled with
+      | work source =>
+          obtain ⟨snapshots,installed,reached,restored⟩ := source
+          cases reached
+          have agreement := Option.some.inj (provided.symm.trans installed)
+          cases agreement
+          exact ⟨_,_,.work ⟨_,provided,rfl,.cons loaded merged restored⟩,continued⟩
+  | restoreRejected provided loaded impossible =>
+      cases controlled with
+      | work source =>
+          obtain ⟨snapshots,installed,reached,restored⟩ := source
+          cases reached
+          have agreement := Option.some.inj (provided.symm.trans installed)
+          cases agreement
+          exact ⟨_,_,.work ⟨_,provided,rfl,.rejected loaded impossible restored⟩,continued⟩
+
+theorem step_source_back
+    {before after : WorldConfiguration Context World} {answers : List Result} {finalWorld : World}
+    (advanced : WorldStep environment.view environment.services environment.dispatch environment.lookup policy before after)
+    (source : after.SourceRel environment policy answers finalWorld) :
+    before.SourceRel environment policy answers finalWorld := by
+  obtain ⟨current,pending,childWorld,controlled,continued,same⟩ := source
+  cases advanced with
+  | internal advance =>
+      obtain ⟨initial,initialWorld,earlier,saved⟩ := local_source_back advance controlled continued
+      exact ⟨initial,pending,initialWorld,earlier,saved,same⟩
+  | publish =>
+      cases controlled
+      cases continued
+      refine ⟨_,_,_,.returning _,.nil _,?_⟩
+      simpa only [List.append_assoc,List.singleton_append] using same
+
+theorem steps_source_back
+    {before after : WorldConfiguration Context World} {answers : List Result} {finalWorld : World}
+    (path : WorldSteps environment.view environment.services environment.dispatch environment.lookup policy before after)
+    (source : after.SourceRel environment policy answers finalWorld) :
+    before.SourceRel environment policy answers finalWorld := by
+  revert source
+  induction path using Relation.ReflTransGen.head_induction_on with
+  | refl => exact fun source => source
+  | head first _ ih => exact fun source => step_source_back first (ih source)
+
+end Mettapedia.Languages.MeTTa.HE.RecursiveCorrectness.Contextual.Stateful

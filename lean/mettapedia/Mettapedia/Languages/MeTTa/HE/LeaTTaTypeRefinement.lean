@@ -47,8 +47,8 @@ private def applicationLeaAtom : Metta.Atom :=
 /-- The published direct-lookup relation assigns `%Undefined%` when the
 application itself has no annotation. -/
 theorem published_application_type_undefined :
-    TypesOfRel applicationSpace applicationAtom [Atom.undefinedType] := by
-  apply TypesOfRel.expressionUndefined
+    StorageTypesRel applicationSpace applicationAtom [Atom.undefinedType] := by
+  apply StorageTypesRel.expressionUndefined
   exact AnnotationTypesRel.skip (by simp)
     (AnnotationTypesRel.skip (by simp)
       AnnotationTypesRel.nil)
@@ -82,7 +82,7 @@ theorem leatta_application_type_inferred_B :
 /-- Strict-refinement canary: the same application is `%Undefined%` in the
 published direct-lookup relation and has inferred type `B` in LeaTTa. -/
 theorem application_type_inference_strictly_extends_published_lookup :
-    TypesOfRel applicationSpace applicationAtom [Atom.undefinedType] ∧
+    StorageTypesRel applicationSpace applicationAtom [Atom.undefinedType] ∧
       ¬TypeOfRel applicationSpace applicationAtom (.symbol "B") ∧
       R1ApplicationResultRel applicationSpace applicationAtom (.symbol "B") ∧
       Metta.Minimal.getTypes applicationEnv applicationLeaAtom = [.sym "B"] :=
