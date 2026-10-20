@@ -4,16 +4,17 @@ import Std
 # Pinned Omega agent core
 
 Executable observation model for singnet/Omega
-ee0618a293ec3662a32b10b09c6cbb073f59d6b2, src/loop.metta.
+94d7b9a2e1ef6b5873aee764ca1ef16de8dcd943, src/loop.metta and
+src/providers.py.
 This is the agent loop, not the UniversalAI Omega theory.
 
-Host assumptions: configuration, channels, prompt assembly and command parsing
+Host assumptions: configuration, channels, prompt assembly and tool execution
 return their recorded values. Integer fixture-clock readings stand for the
-source's get_time comparisons. Command bodies remain opaque observations.
-The source builds context before receiving input; its provider accepts a
-prompt string, token limit and reasoning mode, and returns command text.
-Provider exceptions are uncaught. File/embedding/plugin behavior is outside
-these transition proofs and is checked separately by conformance.
+source's get_time comparisons. Tool bodies remain opaque observations. The
+source builds context before receiving input; its provider accepts structured
+messages and tool specifications and returns ID-bearing calls. providers.py
+contains provider exceptions as an empty response. File/embedding/plugin
+behavior is outside these transition proofs and is checked by conformance.
 -/
 
 namespace OmegaArchitecture
@@ -24,20 +25,19 @@ structure Config where
   wakeInterval : Int := 600
   maxTokens : Nat := 6000
   reasoning : String := "medium"
-  spamShield : Bool := false
 deriving Repr, DecidableEq
 
 structure State where
   loops : Int
   previous : String
-  lastResults : String
+  messages : List String
   history : List String
   nextWake : Option Int
 deriving Repr, DecidableEq
 
 /-- initLoop resets control; initMemory leaves persisted history available. -/
 def boot (cfg : Config) (history : List String) : State :=
-  ⟨cfg.newInputLoops, "", "", history, none⟩
+  ⟨cfg.newInputLoops, "", [], history, none⟩
 
 /-- src/loop.metta: omega decrements on every k>1, including idle iterations.
 The counter is signed: repeated idle ticks can make it negative. -/
@@ -86,27 +86,32 @@ theorem wake_is_strict (cfg : Config) (state : State) (deadline : Int)
 
 structure Request where
   context : String
-  humanMessage : Option String
-  spamReminder : Bool
+  message : String
+  priorMessages : List String
+  tools : List String
   maxTokens : Nat
   reasoning : String
 deriving Repr, DecidableEq
 
 /-- Context is the pre-receive snapshot, supplied by the host observation. -/
-def request (cfg : Config) (context : String) (state : State)
-    (novel : Bool) : Request :=
-  ⟨context, if novel then some state.previous else none,
-    !novel && cfg.spamShield, cfg.maxTokens, cfg.reasoning⟩
+def request (cfg : Config) (context message : String) (state : State)
+    (tools : List String) : Request :=
+  ⟨context, message, state.messages, tools, cfg.maxTokens, cfg.reasoning⟩
+
+structure Call where
+  id : String
+  name : String
+deriving Repr, DecidableEq
 
 inductive Response where
-  | providerFailure (reason : String)
-  | parsed (commands : List String) (response results : String)
-  | parseFailure (response feedback : String)
+  | calls (items : List Call) (response : String) (messages : List String)
+  | responseError (feedback : String) (messages : List String)
+  | providerFailure (reason : String) (messages : List String)
 deriving Repr, DecidableEq
 
 inductive Action where
   | providerRequest (request : Request)
-  | dispatch (command : String)
+  | dispatch (call : Call)
   | appendHistory (entry : String)
   | sleep
   | providerFailure (reason : String)
@@ -123,42 +128,74 @@ records new input, response, timestamp and error feedback. -/
 def finishActive (state : State) (req : Request) (novel : Bool)
     (response : Response) (historyEntry : String) : Transition :=
   match response with
-  | .providerFailure reason =>
-    ⟨state, [.providerRequest req, .providerFailure reason], true⟩
-  | .parsed commands _response results =>
-    let keep := novel || !commands.isEmpty
-    let next : State := { state with lastResults := results, history := if keep then state.history ++ [historyEntry] else state.history }
-    ⟨next, [.providerRequest req] ++ commands.map Action.dispatch ++
+  | .providerFailure reason messages =>
+    -- providers.py catches the exception and supplies an empty LLMResponse;
+    -- the loop reaches its ordinary history/sleep boundary with no invented
+    -- call. A genuinely new human message is still retained.
+    let next : State := { { state with messages := messages } with
+      history := if novel then state.history ++ [historyEntry] else state.history }
+    ⟨next, [.providerRequest req, .providerFailure reason] ++
+      (if novel then [.appendHistory historyEntry] else []) ++ [.sleep], false⟩
+  | .calls calls _response messages =>
+    let keep := novel || !calls.isEmpty
+    let next : State := { { state with messages := messages } with
+      history := if keep then state.history ++ [historyEntry] else state.history }
+    ⟨next, [.providerRequest req] ++ calls.map Action.dispatch ++
       (if keep then [.appendHistory historyEntry] else []) ++ [.sleep], false⟩
-  | .parseFailure _response feedback =>
-    ⟨{ state with lastResults := feedback, history := state.history ++ [historyEntry] },
+  | .responseError _feedback messages =>
+    ⟨{ { state with messages := messages } with
+         history := state.history ++ [historyEntry] },
       [.providerRequest req, .appendHistory historyEntry, .sleep], false⟩
 
-def dispatches : List Action → List String
+def dispatches : List Action → List Call
   | [] => []
   | .dispatch command :: rest => command :: dispatches rest
   | _ :: rest => dispatches rest
 
-/-- Selected property 3: a provider failure halts before dispatch or history
-append; the source has no enclosing catch/retry around llmProviderChat. -/
-theorem provider_failure_has_no_dispatch_or_history (state : State)
-    (req : Request) (novel : Bool) (reason historyEntry : String) :
-    let failed := finishActive state req novel (.providerFailure reason) historyEntry
-    failed.halted = true ∧ failed.state.history = state.history ∧
-      dispatches failed.actions = [] := by
-  simp [finishActive, dispatches]
+theorem dispatches_map_append (calls : List Call) (suffix : List Action) :
+    dispatches (calls.map Action.dispatch ++ suffix) = calls ++ dispatches suffix := by
+  induction calls with
+  | nil => rfl
+  | cons head tail ih => simp [dispatches, ih]
+
+/-- Selected property 3: provider containment invents no dispatch and reaches
+the normal sleep boundary. -/
+theorem provider_failure_is_contained (state : State)
+    (req : Request) (novel : Bool) (reason historyEntry : String)
+    (messages : List String) :
+    let failed := finishActive state req novel (.providerFailure reason messages) historyEntry
+    failed.halted = false ∧
+      failed.state.history = (if novel then state.history ++ [historyEntry]
+                              else state.history) ∧
+      dispatches failed.actions = [] ∧ failed.actions.getLast? = some .sleep := by
+  by_cases h : novel = true
+  · simp [finishActive, dispatches, h]
+  · simp [finishActive, dispatches, h]
+
+/-- Selected property 4: structured dispatch preserves the provider call IDs
+and order exactly. -/
+theorem dispatch_preserves_call_ids (state : State) (req : Request)
+    (novel : Bool) (calls : List Call) (response historyEntry : String)
+    (messages : List String) :
+    (dispatches (finishActive state req novel (.calls calls response messages)
+      historyEntry).actions).map Call.id = calls.map Call.id := by
+  by_cases keep : novel = true ∨ ¬ calls = []
+  · simp [finishActive, dispatches_map_append, dispatches, keep]
+  · simp [finishActive, dispatches_map_append, dispatches, keep]
 
 /-- Actual core action order, excluding logging and heartbeat host observers. -/
-def cycle (cfg : Config) (k : Nat) (state : State) (event context : String)
-    (now : Int) (response : Response) (historyEntry : String) : Transition :=
+def cycle (cfg : Config) (k : Nat) (state : State) (event context message : String)
+    (tools : List String) (now : Int) (response : Response)
+    (historyEntry : String) : Transition :=
   let (received, novel) := receivePhase cfg k state event
   if received.loops > 0 then
     let active := armWake cfg received now
-    finishActive active (request cfg context active novel) novel response historyEntry
+    finishActive active (request cfg context message active tools) novel response historyEntry
   else ⟨idleWake cfg received now, [.sleep], false⟩
 
 end OmegaArchitecture
 
 #print axioms OmegaArchitecture.duplicate_input_does_not_rearm
 #print axioms OmegaArchitecture.wake_is_strict
-#print axioms OmegaArchitecture.provider_failure_has_no_dispatch_or_history
+#print axioms OmegaArchitecture.provider_failure_is_contained
+#print axioms OmegaArchitecture.dispatch_preserves_call_ids
