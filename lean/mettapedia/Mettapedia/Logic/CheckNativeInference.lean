@@ -17,6 +17,7 @@ import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.IndexedFami
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Examples.InductiveElaboration
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorProgramChecking
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorComputationProfiles
+import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorCheckingProfiles
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorConversion
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorAnnotatedChecking
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorAnnotatedAppend
@@ -27,10 +28,13 @@ import Mettapedia.Languages.MM0.NaturalClosure
 import Mettapedia.Languages.MM0.NaturalInduction
 import Mettapedia.Languages.MM0.NaturalCarrier
 import Mettapedia.Languages.MM0.NaturalType
+import Mettapedia.Languages.MM0.NaturalRecursion
+import Mettapedia.Languages.MM0.NaturalFactsMeaning
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorRawPreservation
 import Mettapedia.Languages.MM0.HOLTypeDefinitionBoundary
 import Mettapedia.Languages.HOLLight.NaturalFacts
 import Mettapedia.Languages.Megalodon.NaturalRecursion
+import Mettapedia.Languages.Megalodon.NaturalTheoryProfile
 import Mettapedia.GSLT.LanguageDef.IndexedInductiveAppendChecking
 import Mettapedia.TypeTheory.Calculi.SingleBaseSTLC.HOLComparison
 import Mettapedia.Logic.HOL.ConversionRecipeControls
@@ -167,6 +171,8 @@ def checks : List (String × Bool) :=
   Mettapedia.Languages.MM0.NaturalInduction.verdicts ++
   Mettapedia.Languages.MM0.NaturalCarrier.verdicts ++
   Mettapedia.Languages.MM0.NaturalType.verdicts ++
+  Mettapedia.Languages.MM0.NaturalRecursion.verdicts ++
+  Mettapedia.Languages.MM0.NaturalFactsMeaning.verdicts ++
   Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.ComputationProfiles.NaturalConversion.RawPreservation.verdicts ++
   Mettapedia.Languages.MM0.HOLTypeDefinitionBoundary.verdicts ++
   Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Annotated.Functions.verdicts ++
@@ -174,10 +180,12 @@ def checks : List (String × Bool) :=
   Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Annotated.Append.computationVerdicts ++
   Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Annotated.Append.profileVerdicts ++
   Mettapedia.Languages.Megalodon.NaturalRecursion.verdicts ++
+  Mettapedia.Languages.Megalodon.NaturalTheoryProfile.verdicts ++
   Mettapedia.GSLT.LanguageDef.IndexedInductive.OperationSource.Controls.verdicts ++
   Mettapedia.GSLT.LanguageDef.IndexedInductive.OperationSource.Controls.clauseVerdicts ++
   Mettapedia.GSLT.LanguageDef.IndexedInductive.AppendSource.verdicts ++
   Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.ComputationProfiles.verdicts ++
+  Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.CheckingProfiles.verdicts ++
   Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation.ScopedSubstitutionInversion.Controls.verdicts ++
   Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.Computation.verdicts ++
   Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies.Programs.verdicts ++

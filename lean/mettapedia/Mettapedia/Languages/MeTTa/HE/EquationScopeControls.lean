@@ -62,7 +62,20 @@ private theorem match_identity (name : String) :
 private theorem scoped_fresh_rule :
     ScopedEquationQuery.freshRule [] query incoming nativeIncoming 0 lhs rhs =
       (.expression [.symbol "identity", .var "#######x#0"], .var "#######x#0") := by
-  decide +kernel
+  have dedup : (["x#0"] : List String).eraseDups = ["x#0"] := by decide
+  have avoid : ScopedEquationQuery.avoidNames [] query incoming nativeIncoming =
+      ["x#0", "x#0"] := by
+    simp [ScopedEquationQuery.avoidNames, EquationScope.visibleNames,
+      EquationScope.bindingNames, query, incoming, nativeIncoming, encodeModelAtom,
+      encodeModelAtoms, Metta.Atom.vars, Metta.Bindings.vars, dedup]
+  have legacyCollision : ("x#" ++ Nat.repr 0 : String) = "x#0" := by decide
+  have fallback : Metta.Minimal.captureAvoidingName ["x#0", "x#0"] 0 "x" =
+      "#######x#0" := by decide
+  rw [ScopedEquationQuery.freshRule,
+    LeaTTaTypePresentationExactConformance.EquationFreshening.freshRule, avoid]
+  simp [lhs, rhs, encodeModelAtom, decodeModelAtom, Metta.Minimal.freshenRuleAvoiding,
+    Metta.Minimal.freshenRule, Metta.Atom.vars, Metta.Subst.apply, Metta.Subst.lookup,
+    legacyCollision, fallback, Metta.Minimal.renameAllVars]
 
 private theorem scoped_merge :
     Metta.Bindings.merge nativeIncoming [.val "#######x#0" (.sym "b")] =
@@ -320,7 +333,28 @@ theorem ordered_duplicate_values_retained :
 theorem mismatched_head_rejected :
     (ScopedEquationQuery.ruleResults [] (.expression [.symbol "different", .symbol "b"])
       Bindings.empty Metta.Bindings.empty 0 lhs rhs).map ScopedEquationQuery.Hit.value = [] := by
-  decide +kernel
+  have fresh : ScopedEquationQuery.freshRule []
+      (.expression [.symbol "different", .symbol "b"])
+      Bindings.empty Metta.Bindings.empty 0 lhs rhs =
+      (.expression [.symbol "identity", .var "x#0"], .var "x#0") := by
+    have avoid : ScopedEquationQuery.avoidNames []
+        (.expression [.symbol "different", .symbol "b"])
+        Bindings.empty Metta.Bindings.empty = [] := by
+      simp [ScopedEquationQuery.avoidNames, EquationScope.visibleNames,
+        EquationScope.bindingNames, Bindings.empty, Metta.Bindings.empty,
+        encodeModelAtom, encodeModelAtoms, Metta.Atom.vars, Metta.Bindings.vars]
+    rw [ScopedEquationQuery.freshRule,
+      LeaTTaTypePresentationExactConformance.EquationFreshening.freshRule, avoid]
+    have zero : ("x#" ++ Nat.repr 0 : String) = "x#0" := by decide
+    simp [lhs, rhs, encodeModelAtom, decodeModelAtom, Metta.Minimal.freshenRuleAvoiding,
+      Metta.Minimal.freshenRule, Metta.Atom.vars, Metta.Subst.apply, Metta.Subst.lookup, zero]
+  have noMatch : Metta.matchAtoms
+      (.expr [.sym "identity", .var "x#0"])
+      (.expr [.sym "different", .sym "b"]) = [] := by
+    simp [Metta.matchAtoms, Metta.matchAtomsWith, Metta.matchAll]
+  unfold ScopedEquationQuery.ruleResults
+  rw [fresh]
+  simp [encodeModelAtom, noMatch]
 
 theorem malformed_retained_state_rejected :
     RecursiveScope.freshRuleData (.symbol "not-a-configuration") query incoming 0 lhs rhs = none := by decide +kernel
@@ -455,7 +489,8 @@ theorem independent_occurrence_is_realized :
     ScopedEquationQuery.bindingInvariant_empty
   convert constant_independent_occurrence using 1 <;>
     simp [ScopedEquationQuery.freshRule, ScopedEquationQuery.avoidNames,
-      EquationFreshening.freshRule, EquationScope.visibleNames, EquationScope.bindingNames,
+      LeaTTaTypePresentationExactConformance.EquationFreshening.freshRule,
+      EquationScope.visibleNames, EquationScope.bindingNames,
       Bindings.empty, Metta.Bindings.empty, encodeModelAtom, Metta.Atom.vars, Metta.Bindings.vars,
       Metta.Minimal.freshenRuleAvoiding, Metta.Minimal.freshenRule,
       decodeModelAtom]
@@ -469,9 +504,14 @@ def alphaMatched : Bindings := Bindings.empty.assign "raw#7" (.symbol "answer")
 
 private theorem alpha_source_variant : AlphaVariantRel alphaLive (.symbol "answer") Bindings.empty
     (.var "raw") (.var "raw") (.var "raw#7") (.var "raw#7") := by
+  have visible : EquationScope.visibleNames alphaLive (.symbol "answer") Bindings.empty =
+      ["caller", "nested"] := by
+    simp [EquationScope.visibleNames, EquationScope.bindingNames, alphaLive,
+      Bindings.empty, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars]
   have fresh : EquationFreshening.freshRule
       (EquationScope.visibleNames alphaLive (.symbol "answer") Bindings.empty) 7
       (.var "raw") (.var "raw") = (.var "raw#7", .var "raw#7") := by
+    rw [visible]
     decide +kernel
   simpa only [fresh] using EquationFreshening.freshRule_alphaVariant alphaLive (.symbol "answer")
     (.var "raw") (.var "raw") Bindings.empty 7
@@ -531,12 +571,49 @@ theorem arbitrary_private_variant_is_realized :
         Bindings.empty, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars])
   exact ⟨permutation, output, result, fixed _ caller, fixed _ nestedName, member, invariant⟩
 
+private theorem alpha_rule_results_exact :
+    ScopedEquationQuery.ruleResults alphaLive (.symbol "answer") Bindings.empty
+      Metta.Bindings.empty 1 (.var "raw") (.var "raw") =
+        [⟨.symbol "answer", [.val "raw#1" (.sym "answer")]⟩] := by
+  have visible : EquationScope.visibleNames alphaLive (.symbol "answer") Bindings.empty =
+      ["caller", "nested"] := by
+    simp [EquationScope.visibleNames, EquationScope.bindingNames, alphaLive,
+      Bindings.empty, encodeModelAtom, encodeModelAtoms, Metta.Atom.vars]
+  have fresh : ScopedEquationQuery.freshRule alphaLive (.symbol "answer") Bindings.empty
+      Metta.Bindings.empty 1 (.var "raw") (.var "raw") =
+      (.var "raw#1", .var "raw#1") := by
+    have avoid : ScopedEquationQuery.avoidNames alphaLive (.symbol "answer")
+        Bindings.empty Metta.Bindings.empty = ["caller", "nested"] := by
+      simp [ScopedEquationQuery.avoidNames, visible, Metta.Bindings.empty,
+        Metta.Bindings.vars, List.eraseDups]
+    have one : ("raw#" ++ Nat.repr 1 : String) = "raw#1" := by decide
+    rw [ScopedEquationQuery.freshRule,
+      LeaTTaTypePresentationExactConformance.EquationFreshening.freshRule, avoid]
+    simp [encodeModelAtom, decodeModelAtom, Metta.Minimal.freshenRuleAvoiding,
+      Metta.Minimal.freshenRule, Metta.Atom.vars, Metta.Subst.apply,
+      Metta.Subst.lookup, one]
+  have added : Metta.Bindings.addVarBinding [] "raw#1" (.sym "answer") =
+      [[.val "raw#1" (.sym "answer")]] := by
+    simpa [Metta.Bindings.addValRaw, Metta.Bindings.removeVal] using
+      (Metta.Bindings.addVarBinding_fresh (Metta.Bindings.classValues_empty "raw#1")
+        (by intro other impossible; cases impossible))
+  have loopFree : Metta.Bindings.hasLoop [.val "raw#1" (.sym "answer")] = false :=
+    Metta.Bindings.hasLoop_singleton_val_of_not_mem _ _ (by simp [Metta.Atom.vars])
+  have value : Metta.instantiate [.val "raw#1" (.sym "answer")] (.var "raw#1") =
+      .sym "answer" :=
+    Metta.instantiate_singleton_val_var_of_not_mem _ _ (by simp [Metta.Atom.vars])
+  unfold ScopedEquationQuery.ruleResults
+  rw [fresh]
+  simp [encodeModelAtom, Metta.matchAtoms, Metta.matchAtomsWith,
+    Metta.Bindings.empty, Metta.Bindings.merge, Metta.Bindings.mergeOne,
+    added, loopFree, value, decodeModelAtom]
+
 /-- The source spelling differs from the native chosen spelling; the actual
 query still returns the same constant without an evaluation-fuel parameter. -/
 theorem private_variant_native_answer :
     (ScopedEquationQuery.queryResults alphaSpace alphaLive (.symbol "answer")
       Bindings.empty Metta.Bindings.empty 0).map (fun hit => hit.result.value) = [.symbol "answer"] := by
-  decide +kernel
+  simp [ScopedEquationQuery.queryResults, alphaSpace, Space.ofList, alpha_rule_results_exact]
 
 /-- Caller freshness is necessary: a permutation fixing a public variable
 cannot simultaneously turn that variable into a distinct private spelling. -/
@@ -587,10 +664,16 @@ theorem actual_stack_private_source_occurrence :
         (.var "raw") (.var "raw") (.var "raw#7") (.var "raw#7")
         alphaMatched (.var "raw#7") output := by
   obtain ⟨output, source⟩ := private_source_occurrence
+  have visible : EquationScope.visibleNames (LeaTTaScopedQuery.liveScope actualAlphaPrevious)
+      (.symbol "answer") Bindings.empty = ["frameOnly", "caller", "nested"] := by
+    simp [EquationScope.visibleNames, EquationScope.bindingNames,
+      LeaTTaScopedQuery.liveScope, actualAlphaPrevious, Metta.Minimal.liveStackVars,
+      Bindings.empty, encodeModelAtom, Metta.Atom.vars]
   have fresh : EquationFreshening.freshRule
       (EquationScope.visibleNames (LeaTTaScopedQuery.liveScope actualAlphaPrevious)
         (.symbol "answer") Bindings.empty) 7
       (.var "raw") (.var "raw") = (.var "raw#7", .var "raw#7") := by
+    rw [visible]
     decide +kernel
   have variant := EquationFreshening.freshRule_alphaVariant
     (LeaTTaScopedQuery.liveScope actualAlphaPrevious) (.symbol "answer")

@@ -1348,23 +1348,30 @@ def ClauseAgreement (caller : Control) (destination : Atom) (older : List Goal)
       (fun name => decode (environment name)) work.bindings ↔
         Solves environment selected.2.bindings
 
-/-- The scoped clause boundary retains its source occurrence, actual body
-continuation and one joint body/caller observation. Private destinations need
-not have corresponding variables in the two complete stores. -/
-def ClausePendingAgreement (destination : Atom) (older : List Goal)
-    (pending sourcePending : List Atom)
-    (selected : Nat × Control) (work : HE.Spec.Eval.Steps.EquationWork) : Prop :=
-  work.position = selected.1 ∧
-    selected.2.goals = .evaluate work.body destination :: older ∧
+/-- The scoped clause boundary retains the exact selected source extension,
+caller frame, physical occurrence and joint body/caller observation. Private
+destinations need not have corresponding variables in the two stores. -/
+structure ClausePendingAgreement (caller : Control) (sourceQuery destination : Atom)
+    (older : List Goal) (pending sourcePending : List Atom)
+    (selected : Nat × Control) (work : HE.Spec.Eval.Steps.EquationWork) : Prop where
+  occurrence : work.position = selected.1
+  bindings : selected.2.bindings = caller.bindings ++ [(sourceQuery,work.pattern)]
+  goals : selected.2.goals = .evaluate work.body destination :: older
+  destination : selected.2.destination = caller.destination
+  reserved : selected.2.reserved = caller.reserved
+  cutBoundary : selected.2.cutBoundary = caller.cutBoundary
+  observations :
     HE.Spec.Bindings.ScopeObservation.observedTuples work.bindings (work.body :: pending) =
       solutionTuples selected.2.bindings (work.body :: sourcePending)
 
 /-- Forgetting the body component retains the whole correlated caller
 packet. This projection uses the same model; it does not compare marginals. -/
 theorem ClausePendingAgreement.pending_observations
-    {destination : Atom} {older : List Goal} {pending sourcePending : List Atom}
+    {caller : Control} {sourceQuery destination : Atom} {older : List Goal}
+    {pending sourcePending : List Atom}
     {selected : Nat × Control} {work : HE.Spec.Eval.Steps.EquationWork}
-    (related : ClausePendingAgreement destination older pending sourcePending selected work) :
+    (related : ClausePendingAgreement caller sourceQuery destination older pending sourcePending
+      selected work) :
     HE.Spec.Bindings.ScopeObservation.observedTuples work.bindings pending =
       solutionTuples selected.2.bindings sourcePending := by
   ext values
@@ -1373,14 +1380,14 @@ theorem ClausePendingAgreement.pending_observations
     have packet : (work.body :: pending).map
         (HE.Spec.Type.RuntimeRefinement.applyTypeValuation valuation) ∈
         solutionTuples selected.2.bindings (work.body :: sourcePending) := by
-      rw [← related.2.2]
+      rw [← related.observations]
       exact ⟨valuation,model,rfl⟩
     obtain ⟨environment,solved,same⟩ := packet
     exact ⟨environment,solved,(List.cons.inj same).2.trans returned⟩
   · rintro ⟨environment,model,returned⟩
     have packet : (work.body :: sourcePending).map (read environment) ∈
         HE.Spec.Bindings.ScopeObservation.observedTuples work.bindings (work.body :: pending) := by
-      rw [related.2.2]
+      rw [related.observations]
       exact ⟨environment,model,rfl⟩
     obtain ⟨valuation,solved,same⟩ := packet
     exact ⟨valuation,solved,(List.cons.inj same).2.trans returned⟩
@@ -1389,9 +1396,12 @@ theorem ClausePendingAgreement.pending_observations
 frontier comparison with multiplicity. Traversal order is forgotten only by
 the declared multiset observer. -/
 theorem ClausePendingAgreement.pending_occurrences
-    {destination : Atom} {older : List Goal} {pending sourcePending : List Atom}
+    {caller : Control} {sourceQuery destination : Atom} {older : List Goal}
+    {pending sourcePending : List Atom}
     {choices : List (Nat × Control)} {works : List HE.Spec.Eval.Steps.EquationWork}
-    (related : List.Forall₂ (ClausePendingAgreement destination older pending sourcePending) choices works) :
+    (related : List.Forall₂
+      (ClausePendingAgreement caller sourceQuery destination older pending sourcePending)
+      choices works) :
     (works.map (fun work => (work.position,
       HE.Spec.Bindings.ScopeObservation.observedTuples work.bindings pending)) : Multiset (Nat × Set (List Atom))) =
       (choices.map (fun selected => (selected.1,
@@ -1403,7 +1413,7 @@ theorem ClausePendingAgreement.pending_occurrences
     induction related with
     | nil => rfl
     | cons one _rest ih =>
-      simp only [List.map_cons,one.1,one.pending_observations,ih]
+      simp only [List.map_cons,one.occurrence,one.pending_observations,ih]
   exact congrArg (fun packets : List (Nat × Set (List Atom)) =>
     (packets : Multiset (Nat × Set (List Atom)))) packets
 
@@ -1554,7 +1564,8 @@ theorem protected_petta_joint_decision_he_row
       ∃ equation works, program.equations[position]? = some equation ∧
         HE.Spec.Eval.Steps.EquationRowResultsRel live query incoming position
           (PeTTa.SpaceSemantics.Equation.toAtom equation) works ∧
-        List.Forall₂ (fun next work => ClausePendingAgreement destination older pending sourcePending
+        List.Forall₂ (fun next work => ClausePendingAgreement guarded
+          (.expression (.symbol head :: arguments)) destination older pending sourcePending
           (position,next) work) result.toList works := by
   intro sourceAtoms forbidden guarded position result decision
   have miss (equation : PeTTa.SpaceSemantics.Equation)
@@ -1579,6 +1590,10 @@ theorem protected_petta_joint_decision_he_row
   | selected equation bindings row _same compatible =>
       obtain ⟨left,right,covered⟩ := protected_clause_freshness
         control head arguments position equation live query incoming pending sourcePending
+      have bindingsEq : bindings = guarded.bindings ++
+          [(.expression (.symbol head :: arguments),ClauseChoice.freshPattern guarded position equation)] := by
+        cases compatible
+        rfl
       obtain ⟨output,candidate,observations⟩ := petta_fresh_clause_joint_refinement related left right compatible
       obtain ⟨matched,matching,merged⟩ := candidate
       refine ⟨equation,[⟨position,ClauseChoice.pattern equation,equation.body,
@@ -1587,7 +1602,7 @@ theorem protected_petta_joint_decision_he_row
       · exact .hit _ _ _ _ _ _ _
           (petta_fresh_instance_he_alpha (ClauseChoice.fresh_clause_instance guarded position equation) covered)
           matching merged
-      · exact .cons ⟨rfl,rfl,observations⟩ .nil
+      · exact .cons ⟨rfl,bindingsEq,rfl,rfl,rfl,rfl,observations⟩ .nil
 
 private theorem petta_frontier_he_rows
     {program : PeTTa.SpaceSemantics.Program} {control : Control}
@@ -1645,8 +1660,9 @@ private theorem petta_frontier_he_rows
 
 /-- Lift constructed row counterparts over one complete source enumeration.
 The relation on retained work is supplied by each proved local interface;
-full-store and scoped-observation clients share this occurrence fold. -/
-private theorem petta_frontier_he_frontier_of_decision
+full-store and scoped-observation clients share this occurrence fold while
+retaining physical occurrence multiplicity. -/
+theorem petta_frontier_he_frontier_of_decision
     {program : PeTTa.SpaceSemantics.Program} {control : Control}
     {head : String} {arguments : List Atom} {destination : Atom} {older : List Goal}
     {answers : List (Nat × Control)} {live : List Atom} {query : Atom} {incoming : HE.Bindings}
@@ -1716,7 +1732,9 @@ theorem protected_petta_joint_choices_he_frontier
     let choices := ClauseChoice.choices program guarded head arguments destination older
     ∃ works, HE.Spec.Eval.Steps.EquationFrontierRel
         (HE.Space.ofList (program.equations.map PeTTa.SpaceSemantics.Equation.toAtom)) live query incoming works ∧
-      List.Forall₂ (ClausePendingAgreement destination older pending sourcePending) choices works ∧
+      List.Forall₂ (ClausePendingAgreement guarded
+        (.expression (.symbol head :: arguments)) destination older pending sourcePending)
+        choices works ∧
       (works.map (fun work => (work.position,
         HE.Spec.Bindings.ScopeObservation.observedTuples work.bindings pending)) : Multiset (Nat × Set (List Atom))) =
         (choices.map (fun selected => (selected.1,
@@ -1726,7 +1744,8 @@ theorem protected_petta_joint_choices_he_frontier
     live query incoming pending sourcePending related
   have completed := (ClauseChoice.choices_iff_frontier program guarded head arguments destination older _).mp rfl
   obtain ⟨works,frontier,paired⟩ := petta_frontier_he_frontier_of_decision
-    (ClausePendingAgreement destination older pending sourcePending) rowLaw completed
+    (ClausePendingAgreement guarded (.expression (.symbol head :: arguments))
+      destination older pending sourcePending) rowLaw completed
   exact ⟨works,frontier,paired,ClausePendingAgreement.pending_occurrences paired⟩
 
 /-- The actual PeTTa clause selector therefore earns the complete HE source
@@ -2150,7 +2169,8 @@ theorem private_destination_duplicate_frontier :
         (HE.Space.ofList (program.equations.map PeTTa.SpaceSemantics.Equation.toAtom))
         FrontierControls.live query incoming works ∧
       works.map HE.Spec.Eval.Steps.EquationWork.position = [0,1,2] ∧
-      List.Forall₂ (ClausePendingAgreement (.var "answer") FrontierControls.older pending pending) choices works := by
+      List.Forall₂ (ClausePendingAgreement guarded query (.var "answer")
+        FrontierControls.older pending pending) choices works := by
   intro program query pending caller sourceAtoms forbidden guarded choices
   have initial := reached_pending_observations initial_agreement (.var "x" :: query :: pending)
   have hidden := private_destination_pending_observations initial "private-result"
@@ -2207,11 +2227,12 @@ theorem private_destination_duplicate_frontier :
           (.skip (.other FrontierControls.otherRule rfl (by decide +kernel)) .nil)))
   have mapping {chosen : List (Nat × Control)} {jobs : List HE.Spec.Eval.Steps.EquationWork}
       (paired : List.Forall₂
-        (ClausePendingAgreement (.var "answer") FrontierControls.older pending pending) chosen jobs) :
+        (ClausePendingAgreement guarded query (.var "answer")
+          FrontierControls.older pending pending) chosen jobs) :
       jobs.map HE.Spec.Eval.Steps.EquationWork.position = chosen.map Prod.fst := by
     induction paired with
     | nil => rfl
-    | cons one _rest ih => simp only [List.map_cons,one.1,ih]
+    | cons one _rest ih => simp only [List.map_cons,one.occurrence,ih]
   have selected : choices.map Prod.fst = [0,1,2] := by rw [choicesExact]; rfl
   exact ⟨works,frontier,(mapping paired).trans selected,paired⟩
 

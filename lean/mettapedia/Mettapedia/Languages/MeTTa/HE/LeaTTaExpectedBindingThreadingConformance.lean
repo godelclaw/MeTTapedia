@@ -29,6 +29,7 @@ open Metta.Minimal
 open Mettapedia.Languages.MeTTa.HE
 open Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.RuntimeCorrectness
 open LeaTTaBridge
+open LeaTTaTypePresentationFoldConformance
 open Spec.Type.Presentation.ScopeObservation
 
 /-- The evaluator's bounded fixpoint wrapper does not change the value of an

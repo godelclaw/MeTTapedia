@@ -3,6 +3,8 @@ import Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.QueryOpBridge
 import Mettapedia.Languages.MeTTa.HE.QueryBindingProjection
 import Mettapedia.Languages.MeTTa.HE.Spec.Match.Completeness
 import Mettapedia.Languages.MeTTa.HE.Spec.Eval
+import Mettapedia.Languages.MeTTa.HE.ScopedEquationQuery
+import Mettapedia.Languages.MeTTa.HE.LeaTTaQueryObservationalAnchor
 open Mettapedia.Languages.MeTTa.HE.Spec.Match.SolutionTheory
 open Mettapedia.Languages.MeTTa.HE.BindingComposition
 open Mettapedia.Languages.MeTTa.HE.MatchSizeTheory
@@ -1153,7 +1155,7 @@ theorem unifyCandidateBindings_sound
     Spec.Match.Completeness.exists_specMatch_of_solution equation
   obtain ⟨specOutput, specMerge, specSatisfied, nonvariable⟩ :=
     Spec.Match.Completeness.exists_specMerge_of_solution matchedSatisfied
-      (specMatch_assignmentsNonVariable specMatch)
+      (Spec.Match.ModelTheory.specMatch_assignmentsNonVariable specMatch)
       ((paired.semantic.solutionTheory valuation).mpr split.1)
       paired.semantic.specAssignmentsNonVariable
   have theory : LeaBindingSolutionTheoryEquiv specOutput output := by
@@ -1302,7 +1304,7 @@ theorem unifyCandidateBindings_nonempty_iff_common_model
       Spec.Match.Completeness.exists_specMatch_of_solution equation
     obtain ⟨output, merging, outputSatisfied, nonvariable⟩ :=
       Spec.Match.Completeness.exists_specMerge_of_solution matchedSatisfied
-        (specMatch_assignmentsNonVariable matching)
+        (Spec.Match.ModelTheory.specMatch_assignmentsNonVariable matching)
         incomingSatisfied paired.semantic.specAssignmentsNonVariable
     have candidate : Spec.Eval.Steps.UnifyCandidateRel target pattern specIncoming output :=
       ⟨matched, matching, merging.logicalMerge

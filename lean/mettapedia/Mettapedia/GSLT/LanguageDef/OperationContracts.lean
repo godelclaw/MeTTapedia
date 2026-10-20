@@ -33,6 +33,12 @@ two operations with independent footprints can still be told apart by an
 ordered-stream observer (`ResourceAwareControl`), so a parallel admission
 built on footprints needs a separate certificate for ordered output.
 
+**Worker placement contribution.** `query_row_requires_coordinator` connects a
+derived nonzero query row to coordinator placement advice. Unknown footprints
+stay `unresolved`, never silently local. This is only the effect contribution:
+current authority, progress/yield and ordered-output permission remain
+separate obligations.
+
 **Declared tables.** `tableOk` is the decidable check of a declared table;
 `admitted_laws` states what it guarantees.
 -/
@@ -431,6 +437,49 @@ def queryEffect (v : Vocabulary) (op : Operation) : Option Nat :=
     if f.writes.any v.stores.contains then 2
     else if f.reads.any v.stores.contains then 1 else 0
 
+/-! ### Effect-only worker placement advice
+
+This is the contribution of the declared store footprint to worker placement,
+not full admission. `local` still requires current authority, a suitable
+progress/yield contract and permission to reorder any ordered observations.
+`coordinator` says only that the store effect crosses this worker boundary.
+`unresolved` preserves an unknown footprint as unknown. Handler conformance to
+the declaration remains the separate `Conforms` obligation above. -/
+
+inductive WorkerPlacementAdvice where
+  | local
+  | coordinator
+  | unresolved
+deriving DecidableEq, Repr
+
+def workerPlacementAdvice (v : Vocabulary) (op : Operation) : WorkerPlacementAdvice :=
+  match queryEffect v op with
+  | none => .unresolved
+  | some 0 => .local
+  | some (_ + 1) => .coordinator
+
+theorem workerPlacementAdvice_nonzero (v : Vocabulary) {op : Operation} {effect : Nat}
+    (known : queryEffect v op = some effect) (nonzero : effect ≠ 0) :
+    workerPlacementAdvice v op = .coordinator := by
+  cases effect with
+  | zero => contradiction
+  | succ effect => simp [workerPlacementAdvice, known]
+
+theorem workerPlacementAdvice_unresolved_iff (v : Vocabulary) (op : Operation) :
+    workerPlacementAdvice v op = .unresolved ↔ op.footprint = none := by
+  cases footprint : op.footprint with
+  | none => simp [workerPlacementAdvice, queryEffect, footprint]
+  | some value =>
+      cases actual : queryEffect v op with
+      | none => simp [queryEffect, footprint] at actual
+      | some effect =>
+          constructor
+          · intro advice
+            unfold workerPlacementAdvice at advice
+            rw [actual] at advice
+            cases effect <;> simp at advice
+          · intro impossible; cases impossible
+
 /-- What `tableOk` guarantees of each operation of the table. -/
 structure Laws (v : Vocabulary) (op : Operation) : Prop where
   declared : ∀ f, op.footprint = some f → ∀ r ∈ f.reads ++ f.writes, r ∈ v.resourceNames
@@ -480,6 +529,11 @@ theorem queryEffect_pure (v : Vocabulary) {op : Operation} {f : Footprint String
   unfold Footprint.pure at h
   simp only [Bool.and_eq_true, List.isEmpty_iff] at h
   simp [queryEffect, hf, h.1, h.2]
+
+theorem workerPlacementAdvice_pure (v : Vocabulary) {op : Operation}
+    {f : Footprint String} (hf : op.footprint = some f) (pure : f.pure = true) :
+    workerPlacementAdvice v op = .local := by
+  rw [workerPlacementAdvice, queryEffect_pure v hf pure]
 
 /-- A known writer of a store gets the write bit, whatever it reads. -/
 theorem queryEffect_writer (v : Vocabulary) {op : Operation} {f : Footprint String} (hf : op.footprint = some f)
@@ -534,6 +588,15 @@ theorem query_row_spec {v : Vocabulary} {ops : List Operation} {s : String} {e :
       | succ n =>
           simp only [Option.some.injEq, Prod.mk.injEq] at hq
           exact ⟨hq.1, by rw [hq.2], by omega⟩
+
+/-- Every generated nonzero query row contributes coordinator placement.
+This theorem does not provide authority, progress/yield, ordered-output safety
+or conformance of a native handler to its declaration. -/
+theorem query_row_requires_coordinator {v : Vocabulary} {ops : List Operation}
+    {symbol : String} {effect : Nat} (row : (symbol, effect) ∈ (lowerRows v ops).query) :
+    ∃ op ∈ ops, op.symbol = symbol ∧ workerPlacementAdvice v op = .coordinator := by
+  obtain ⟨op, member, spelling, known, nonzero⟩ := query_row_spec row
+  exact ⟨op, member, spelling, workerPlacementAdvice_nonzero v known nonzero⟩
 
 /-- Every operation the runtime admits under speculation (the pure list and
 the speculative list) is not a known writer, in an admitted table. -/
@@ -790,6 +853,29 @@ def footprintAtom (reads writes : List String) : Atom :=
 
 def unknownFootprint : Atom := .list [.symbol "Footprint", .text "unknown"]
 
+def examplePlacement (operation : Atom) : Option WorkerPlacementAdvice := do
+  let vocabulary ← decodeVocabulary exampleVocabulary
+  let decoded ← decodeOperation operation
+  pure (workerPlacementAdvice vocabulary decoded)
+
+/-- Positive read/write/pure controls and the negative unknown control. `size`
+is a declared may-read here: this advice does not claim every dynamic call of
+an overloaded head performs that read. -/
+theorem workerPlacementAdvice_controls :
+    examplePlacement
+        (exampleOperation "size" "size" (footprintAtom ["space"] []) "no" "yes") =
+          some .coordinator ∧
+      examplePlacement
+        (exampleOperation "space-push" "space_push" (footprintAtom [] ["space"]) "no" "no") =
+          some .coordinator ∧
+      examplePlacement
+        (exampleOperation "car-atom" "car_atom" (footprintAtom [] []) "yes" "no") =
+          some .local ∧
+      examplePlacement
+        (exampleOperation "py-call" "py_call" unknownFootprint "no" "no") =
+          some .unresolved := by
+  decide
+
 example : tableAdmitted exampleVocabulary
     [exampleOperation "size" "size" (footprintAtom ["space"] []) "no" "yes",
      exampleOperation "space-push" "space_push" (footprintAtom [] ["space"]) "no" "no",
@@ -819,5 +905,11 @@ example : (decodeTable exampleVocabulary
      exampleOperation "car-atom" "car_atom" (footprintAtom [] []) "yes" "no",
      exampleOperation "py-call" "py_call" unknownFootprint "no" "no"]).map (fun p => lowerRows p.1 p.2) =
     some ⟨[], ["car_atom"], [], ["size"], [("size", 1), ("space_push", 2)], ["py_call"]⟩ := by decide
+
+#print axioms workerPlacementAdvice_pure
+#print axioms workerPlacementAdvice_nonzero
+#print axioms workerPlacementAdvice_unresolved_iff
+#print axioms query_row_requires_coordinator
+#print axioms workerPlacementAdvice_controls
 
 end Mettapedia.GSLT.LanguageDef.OperationContracts

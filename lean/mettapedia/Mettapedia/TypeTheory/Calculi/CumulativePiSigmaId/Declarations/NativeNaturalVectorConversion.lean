@@ -450,6 +450,14 @@ theorem operational_rule_roots {n : Nat} {Γ : Tower.Ctx n} {source target type 
     (fun impossible => impossible.elim) (Annotated.opaque_values naturalOnly)).mp step
   exact operational_roots judgment evidence
 
+/-- The complete four-row operational package is sound against the smaller
+natural-only checking judgment.  This cross-policy contract does not install
+the vector rows as conversion rules of that judgment. -/
+theorem operational_preservation_against :
+    RootPreservationAgainst selectedRules Programs.rules := by
+  intro n Γ source target type context typed step
+  exact (operational_rule_roots ⟨context, typed⟩ step).typing
+
 end Preservation
 
 namespace Controls

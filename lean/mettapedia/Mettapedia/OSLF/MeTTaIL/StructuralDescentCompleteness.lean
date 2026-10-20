@@ -202,7 +202,7 @@ theorem runRoot_complete (environment : Environment) (oracle : Oracle environmen
           rw [dif_pos admitted, dif_pos sourceCheck]
           apply List.mem_flatMap.mpr
           refine ⟨⟨wanted, foundValid⟩, member, ?_⟩
-          simp only [wanted, captureCheck, ↓reduceDIte]
+          simp only [finishRootMatch, wanted, captureCheck, ↓reduceDIte]
           apply List.mem_filterMap.mpr
           refine ⟨⟨completed, history, premises⟩, premiseMember, ?_⟩
           split

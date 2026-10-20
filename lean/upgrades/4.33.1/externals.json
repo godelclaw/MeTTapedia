@@ -642,7 +642,7 @@
       }
     },
     "externals/LeaTTa": {
-      "base": "26d05f0663a1083085565b2e161a683542df53a8",
+      "base": "63cba425c9cfd4caf4fe000f354e4bcfc382425d",
       "files": {
         ".github/ISSUE_TEMPLATE/config.yml": "af99c5e1664133f3a3a5f5852805f7232df6c12b33f23df451e57f2d8334aacd",
         ".github/workflows/ci.yml": "12c4680d868a4b1b5fc3303e554008c42a7ef3c71809a1a379daa01386dfe5af",
@@ -762,8 +762,8 @@
         "MeTTaILTests/Runtime.lean": "29552d57e9958b6256d79323395475f0b7534db982567fc1d12e27642474f954",
         "MettaHyperonFull.lean": "bb94aae20bd86670ae05284720e6e9c62b1db3f9325260bec284ae3494c85b24",
         "MettaHyperonFull/Core/Alpha.lean": "bdfb6262af8c072ed7211abb78b9639ae5cd24ca3f9103bcaa62e0feafcea847",
-        "MettaHyperonFull/Core/Atom.lean": "cb333e643938ad00226fe90ea170439b2ce0c13b1ed02dad63e2ebe217365edb",
-        "MettaHyperonFull/Core/Bindings.lean": "e57ed7f36b546042e37452aa967133d1f89a89415cc443a851f0842b4b128edc",
+        "MettaHyperonFull/Core/Atom.lean": "e3924862c4ee77756f2fd1bea5dff40f62c6c38cc57b2a8d047f05142630b3ee",
+        "MettaHyperonFull/Core/Bindings.lean": "21677e6ab0e3b31b68856773773c4476804f21cea9b071085f7c13605dd84381",
         "MettaHyperonFull/Core/Builtins.lean": "a12c7974f7d1cbf38ae69f8918579f2869707489f6e0f45f54092f8f5ea16730",
         "MettaHyperonFull/Core/FreeVars.lean": "a536c2d409b6b036f5af6c92eec82deb9410b9d6b890944b33d94483f39e9916",
         "MettaHyperonFull/Core/Grounding.lean": "b6e60da23f27e8d3688f0f35750914fcea2bee9294568d16632d23db39876536",
@@ -809,7 +809,7 @@
         "MettaHyperonFull/Proofs.lean": "32dbc2163381e7f910440c57c99db0555794129771e3ccecbdafc5b7655b385a",
         "MettaHyperonFull/Proofs/Alpha.lean": "db625bfc02820ebef33c2999082f4670334ff4eb8423f021710dfcb53418414c",
         "MettaHyperonFull/Proofs/Basic.lean": "c4626f9e9419f4caced902ff3b36dd3841166db381a9fb30c3d68d24b118163e",
-        "MettaHyperonFull/Proofs/BindingLaws.lean": "24b40dd3d94add36c90e4c6bcdbbea309021ba1248de0648e9ea13225132b335",
+        "MettaHyperonFull/Proofs/BindingLaws.lean": "e2d23c36b8d7818d0ff69d54378cd345e8d44b058d8b97e9795bb8c7199c6e23",
         "MettaHyperonFull/Proofs/CaptureAvoidingFreshening.lean": "3667a85355fbf77bcd989db26708057f754eba500f707422abb7c07bf9376ff8",
         "MettaHyperonFull/Proofs/Confluence.lean": "820de40aabdd24d6ceb51a66be1f395888f13f187915aea94e98e7c1dbc25c14",
         "MettaHyperonFull/Proofs/Correspondence.lean": "b2e0957082489e4e40a2a7a3dddb4fe8ed1449b658f0af88211ab9db87b4e06d",
@@ -830,7 +830,7 @@
         "MettaHyperonFull/Proofs/MorkNamespace.lean": "c770f66817ddf2d774ba9915deaa86b6275ef58afd1bf1e29c1fe04dd70dd9dd",
         "MettaHyperonFull/Proofs/MorkPrepared.lean": "bd63264aeb65f8b2ecf6d4b299bffc08735aa85ca133a94de01b63dde7d977d2",
         "MettaHyperonFull/Proofs/MorkSharded.lean": "d30fd134eb6c59fa34a7886ea285466e6b0fdc5bfd3dee3b5680477286591474",
-        "MettaHyperonFull/Proofs/MultipleSignatureSelection.lean": "c982768d280d0f6f696287e64ec2b5aa74c44283db2cdd9bc95da518c672455b",
+        "MettaHyperonFull/Proofs/MultipleSignatureSelection.lean": "012831eac99661cdc4605a7901247c0cb3f65b55584ac3450d251eb60a23b3e7",
         "MettaHyperonFull/Proofs/Preservation.lean": "e1c9afd6c4807fe82aac5735c3383e042249ad89fa85ada4626bd687aad88768",
         "MettaHyperonFull/Proofs/QueryBackend.lean": "2b95dfa1f48540eadc0c1419522b59dfecf400b39ef449d0ddd2a7ce046bf944",
         "MettaHyperonFull/Proofs/Results.lean": "d1af4ad44225d18cb165468bdc4e22b4a2ed29f4b73917010d2d87a18ef46c4b",
@@ -895,8 +895,8 @@
         "docbuild/lake-manifest.json": "b43abf281295e0370a5f3e166207cb774d725fbac37b8ef9389a52c176acd99e",
         "docbuild/lakefile.toml": "56efc3151a8a208587c6e06f3e315334820df12f08c8d393356572abda51995e",
         "docbuild/lean-toolchain": "3aac669c7a910ec2389f4e4f921b605adf6ebf2d1e0c9b9cd0be4d33f3f5db71",
-        "lake-manifest.json": "406f6398fded0cdc3991026f60796c2bf125093e4d6242e463993960e42dbb3d",
-        "lakefile.lean": "63652665abf1e331f27b6f05baa0bd0c2e26b14846d3ae5710217ac460509ccd",
+        "lake-manifest.json": "0b5f59425150118200179cefae097359497821955d04ada2884545faed7d95a1",
+        "lakefile.lean": "27cd285406b9450f594c8dd75753829442a6535da31eb3100104461951067dcf",
         "lean-toolchain": "3aac669c7a910ec2389f4e4f921b605adf6ebf2d1e0c9b9cd0be4d33f3f5db71",
         "scripts/apply-license-headers.py": "f7c243b048d18aff7b0bb16b8d91ea33c70b81e59f105ad338dd7dd41fe2218c",
         "scripts/build-release.sh": "31470b3f70ec5fbf8d4df40351f1f4f3d20ed65950c2c43dca16136cf6e0a770",
@@ -905,6 +905,7 @@
         "scripts/ci/check-license-headers.sh": "594c01abe5120bfacbc8bd9c2f807f4f8fe5d08af332e3baab307f594cfcf26e",
         "scripts/ci/check-no-forbidden.sh": "d96353cc2fc21d5f3d4edffe95ac14e194588bf7094b320ef9ed3ed7ef763805",
         "scripts/install.sh": "996f99b85c57159dc8edf9127430d7b238fbfa2420d86e46649f8ba2b1617ac6",
+        "scripts/run-he-conformance.py": "d3a4cb34500564b6b8237d16a0fc025021f2dedbebe889b3701b4507dcde1133",
         "scripts/run-oracle.sh": "21829227ed97389fe0c81b0f7f02d4ad72f7f33617d3a880ca6244c34d4d61c1",
         "scripts/run-regression.sh": "c295f359ac4987a9513d12073268859ba10abece9e5ada422db0816af178bc51",
         "scripts/write-release-readme.sh": "69128e873d54a7086cf060c8747027d6344e4ab9e8ce26034925baf4e3ea8f59",
@@ -937,27 +938,18 @@
         "tests/regression/alpha.metta": "ace3260b72ca6a68cf4cbb84dd1f799e1a9fefb0dfe63c25a4309f063ea98657",
         "tests/regression/control.metta": "62e197da262edccc88db08f8c0c7396a3fadfb17d5d67fd89dbeb355f27d06d1",
         "tests/regression/freshness.metta": "2fc3bf07d855a7cc6a200d70ca0aa60905087b057c4b68e56d285492f541c434",
+        "tests/regression/he-conformance.metta": "7ae4fb98c449d19fbfd1cdaa30ecb2e4d9cf3bd655fabef7f2481a564cf3b921",
         "tests/regression/math.metta": "56ca8003dc65fc683a763d6563c4674c7bee00995dd97ea10c9bf2d1fee5a205",
         "tests/regression/spaces.metta": "ea5ecaf7c7816f845761867bb4b8de2cf24275f6c09d5f810e8f0f3d2d7f4aee",
         "tests/regression/typeops.metta": "098278c9ab82c8990d004f9fba7422c61288f0b97655c30d30a8a08e0d72b118"
       },
       "origin": "git@github.com:zariuq/LeaTTa.git",
       "patch": "patches/externals--LeaTTa.patch",
-      "patch_sha256": "7f39cfa76a71c385bb207d148ddc288e9a50ffa1118d94cd411077c71ce41af1",
+      "patch_sha256": "a9adeed6645e4d032ee8ab43d240c16c928df3592c69c417d57763f70658c230",
       "published": {
-        "branch": "lean-upgrade/tauceti-lean__externals__LeaTTa",
-        "commit": "e5c5d364158caca098fcb50bfc5f553b01cb38cc",
-        "url": "git@github.com:zariuq/LeaTTa.git"
-      },
-      "overlay": {
-        "base": "e5c5d364158caca098fcb50bfc5f553b01cb38cc",
-        "patch": "patches/externals--LeaTTa-shared-atom-overlay.patch",
-        "patch_sha256": "08e050fdc341811e90bc424b073d38d03c8a5f24812610204b63da6a0c5f496a",
-        "files": {
-          "MettaHyperonFull/Core/Atom.lean": "e3924862c4ee77756f2fd1bea5dff40f62c6c38cc57b2a8d047f05142630b3ee",
-          "lakefile.lean": "27cd285406b9450f594c8dd75753829442a6535da31eb3100104461951067dcf",
-          "lake-manifest.json": "0b5f59425150118200179cefae097359497821955d04ada2884545faed7d95a1"
-        }
+        "url": "git@github.com:zariuq/LeaTTa.git",
+        "branch": "metatheory",
+        "commit": "63cba425c9cfd4caf4fe000f354e4bcfc382425d"
       }
     },
     "externals/LeaTTa-vanilla": {

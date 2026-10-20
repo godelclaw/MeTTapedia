@@ -27,6 +27,26 @@ type at the simply typed vertex, under any bubble
 core (`polymorphism_in_weak_core`). No bubble added to the simply typed vertex
 reaches the weak core at the top (`no_bubble_simulates_polymorphism`).
 
+**Direct value indexing is a vertex.** A well-formed context
+`A : Type, P : A → Type`, together with the direct Curry--Howard proposition
+`Π x : A, P x`, exists exactly when the ordinary function rule and the
+value-to-type product rule are licensed
+(`directValueIndexedForall_iff_contains_dependentProducts`).
+This characterization holds under every conversion bubble. The dependent
+vertex supplies it in the weak core; the simple, polymorphic and type-operator
+vertices do not (`directValueIndexedForall_at_dependent`,
+`directValueIndexedForall_absent_off_dependent_face`). The statement is about
+using the same term-level values as indices; it does not rule out encodings
+that first reify values at another level.
+
+**Least bases depend on the interface.** Adding the polymorphic identity type
+and the kind `Type → Type` to that direct interface requires exactly the four
+CoC formation rules (`directFormationInterfaces_iff_contains_constructionProducts`).
+The result is uniform in the conversion bubble; it does not identify arbitrary
+bubbles with CoC, characterize all encodings of higher-order logic, or supply
+MLTT's universe and inductive rules. Direct abstraction and application retain
+the same value in the evidence type (`directForall_abstract`, `directForall_apply`).
+
 **Type-level conversion is a bubble.** In the context `A : ∗, a : A`, the
 judgment `a : (λ X : ∗. X) A` holds at the top vertex with the type-level beta
 bubble (`redex_typed_with_typeBeta`) and holds at no vertex in the weak core
@@ -160,6 +180,33 @@ theorem TypedUnder.mono {small large : Profile} {conversion conversion' : PTerm 
   | app _ _ member _ _ ihDomain ihBodyType ihFunction ihArgument =>
       exact .app ihDomain ihBodyType (products member) ihFunction ihArgument
   | conv _ convertible _ ihTerm ihTarget => exact .conv ihTerm (convs convertible) ihTarget
+
+/-- A context is well formed for a conversion-parametric profile when every
+entry is a type over the preceding context.  Keeping this judgment beside
+`TypedUnder` lets profile and bubble comparisons retain the same context
+discipline. -/
+inductive ContextFormedUnder
+    (profile : Profile) (conversion : PTerm → PTerm → Prop) : SortedCtx → Prop where
+  | nil : ContextFormedUnder profile conversion []
+  | cons {context : SortedCtx} {type : PTerm} {sort : Srt} :
+      ContextFormedUnder profile conversion context →
+      TypedUnder profile conversion context (.type type sort) →
+      ContextFormedUnder profile conversion ((type, sort) :: context)
+
+/-- Context formation is monotone in both the product profile and the
+conversion bubble. -/
+theorem ContextFormedUnder.mono
+    {small large : Profile} {conversion conversion' : PTerm → PTerm → Prop}
+    (sameAxiom : small.sortAxiom = large.sortAxiom)
+    (products : small.products ⊆ large.products)
+    (conversions : ∀ {source target : PTerm}, conversion source target → conversion' source target)
+    {context : SortedCtx}
+    (formed : ContextFormedUnder small conversion context) :
+    ContextFormedUnder large conversion' context := by
+  induction formed with
+  | nil => exact .nil
+  | cons _ entryTyped ih =>
+      exact .cons ih (entryTyped.mono sameAxiom products conversions)
 
 /-- A product annotation that is a derivation's subject is a rule of the
 system, under any conversion. -/
@@ -397,7 +444,233 @@ def operatorProducts : List ProductRule :=
 /-- The top vertex, the calculus of constructions. -/
 def constructionProducts : List ProductRule := constructions.products
 
+/-! ## Direct value-indexed Curry--Howard needs the dependent vertex
+
+The context below uses one and the same term-level carrier `A` both for
+ordinary values and as the domain of the type family `P`.  It therefore
+captures direct value indexing: there is no reified copy of values at another
+level.  The exact characterization is independent of the conversion bubble.
+-/
+
+/-- `A : Type, P : A → Type`.  Context entries are written innermost first. -/
+def directPredicateContext : SortedCtx :=
+  [(.pi Mettapedia.GSLT.LanguageDef.LFProfile.typeKindKind
+      (.var 0) (.sort .type), .kind),
+    (.sort .type, .kind)]
+
+/-- The direct Curry--Howard proposition `Π x : A, P x`. -/
+def directForall : PTerm :=
+  .pi Mettapedia.GSLT.LanguageDef.LFProfile.typeTypeType
+    (.var 1) (.app (.var 1) (.var 0))
+
+/-- The direct value-indexed universal is available when both its context and
+its proposition type are well formed. -/
+def DirectValueIndexedForall
+    (products : List ProductRule) (steps : PTerm → PTerm → Prop) : Prop :=
+  ContextFormedUnder (vertex products) (bubbleConv steps) directPredicateContext ∧
+    Kernel products steps directPredicateContext (.type directForall .type)
+
+/-- The predicate context is well formed whenever the value-to-type product
+rule is licensed. -/
+theorem directPredicateContext_formed (products : List ProductRule)
+    (steps : PTerm → PTerm → Prop)
+    (dependent : Mettapedia.GSLT.LanguageDef.LFProfile.typeKindKind ∈ products) :
+    ContextFormedUnder (vertex products) (bubbleConv steps) directPredicateContext := by
+  apply ContextFormedUnder.cons
+  · exact .cons .nil (.sort rfl)
+  · exact .pi (.ofTerm (.var rfl) rfl) (.sort rfl) dependent
+
+/-- Conversely, no conversion policy can make the direct predicate context
+well formed without licensing the value-to-type product rule. -/
+theorem directPredicateContext_needs_dependency
+    (products : List ProductRule) (steps : PTerm → PTerm → Prop)
+    (formed : ContextFormedUnder (vertex products) (bubbleConv steps)
+      directPredicateContext) :
+    Mettapedia.GSLT.LanguageDef.LFProfile.typeKindKind ∈ products := by
+  cases formed with
+  | cons _ predicateType =>
+      exact predicateType.pi_rule_mem rfl
+
+/-- Exact syntactic boundary: direct value-indexed predicates are available
+exactly at profiles containing the dependent product rule, independently of
+their conversion bubble. -/
+theorem directPredicateContext_formed_iff
+    (products : List ProductRule) (steps : PTerm → PTerm → Prop) :
+    ContextFormedUnder (vertex products) (bubbleConv steps) directPredicateContext ↔
+      Mettapedia.GSLT.LanguageDef.LFProfile.typeKindKind ∈ products :=
+  ⟨directPredicateContext_needs_dependency products steps,
+    directPredicateContext_formed products steps⟩
+
+/-- The body `P x` is a type over the actual value `x : A`. -/
+theorem directPredicateBody_formed (products : List ProductRule)
+    (steps : PTerm → PTerm → Prop)
+    (dependent : Mettapedia.GSLT.LanguageDef.LFProfile.typeKindKind ∈ products) :
+    Kernel products steps ((.var 1, .type) :: directPredicateContext)
+      (.type (.app (.var 1) (.var 0)) .type) := by
+  have familyDomainFormed : Kernel products steps
+      ((.var 1, .type) :: directPredicateContext) (.type (.var 2) .type) :=
+    .ofTerm (.var rfl) rfl
+  have familyBodyFormed : Kernel products steps
+      ((.var 2, .type) :: (.var 1, .type) :: directPredicateContext)
+      (.type (.sort .type) .kind) :=
+    .sort rfl
+  have family : Kernel products steps
+      ((.var 1, .type) :: directPredicateContext)
+      (.term (.var 1)
+        (.pi Mettapedia.GSLT.LanguageDef.LFProfile.typeKindKind
+          (.var 2) (.sort .type)) .kind) :=
+    .var rfl
+  have argument : Kernel products steps
+      ((.var 1, .type) :: directPredicateContext)
+      (.term (.var 0) (.var 2) .type) :=
+    .var rfl
+  have familyApplied : Kernel products steps
+      ((.var 1, .type) :: directPredicateContext)
+      (.term (.app (.var 1) (.var 0)) (.sort .type) .kind) :=
+    .app familyDomainFormed familyBodyFormed dependent family argument
+  exact .ofTerm familyApplied rfl
+
+/-- Once ordinary functions and value-indexed families are both licensed,
+the direct Curry--Howard universal is a type. -/
+theorem directForall_formed (products : List ProductRule)
+    (steps : PTerm → PTerm → Prop)
+    (simple : Mettapedia.GSLT.LanguageDef.LFProfile.typeTypeType ∈ products)
+    (dependent : Mettapedia.GSLT.LanguageDef.LFProfile.typeKindKind ∈ products) :
+    Kernel products steps directPredicateContext (.type directForall .type) :=
+  .pi (.ofTerm (.var rfl) rfl)
+    (directPredicateBody_formed products steps dependent) simple
+
+/-- Abstraction produces the direct universal from evidence over the same
+value variable, without a reified index or a conversion step. -/
+theorem directForall_abstract (products : List ProductRule)
+    (steps : PTerm → PTerm → Prop)
+    (simple : Mettapedia.GSLT.LanguageDef.LFProfile.typeTypeType ∈ products)
+    (dependent : Mettapedia.GSLT.LanguageDef.LFProfile.typeKindKind ∈ products)
+    {body : PTerm}
+    (bodyTyped : Kernel products steps ((.var 1, .type) :: directPredicateContext)
+      (.term body (.app (.var 1) (.var 0)) .type)) :
+    Kernel products steps directPredicateContext
+      (.term (.lam .type (.var 1) body) directForall .type) :=
+  .lam (.ofTerm (.var rfl) rfl)
+    (directPredicateBody_formed products steps dependent) simple bodyTyped
+
+/-- Application substitutes the actual argument into the evidence type.
+The conclusion is `P argument`, with the same argument used in execution. -/
+theorem directForall_apply (products : List ProductRule)
+    (steps : PTerm → PTerm → Prop)
+    (simple : Mettapedia.GSLT.LanguageDef.LFProfile.typeTypeType ∈ products)
+    (dependent : Mettapedia.GSLT.LanguageDef.LFProfile.typeKindKind ∈ products)
+    {function argument : PTerm}
+    (functionTyped : Kernel products steps directPredicateContext
+      (.term function directForall .type))
+    (argumentTyped : Kernel products steps directPredicateContext
+      (.term argument (.var 1) .type)) :
+    Kernel products steps directPredicateContext
+      (.term (.app function argument) (.app (.var 0) argument) .type) :=
+  .app (.ofTerm (.var rfl) rfl)
+    (directPredicateBody_formed products steps dependent) simple functionTyped argumentTyped
+
+/-- The least formation basis for this direct interface consists of ordinary
+functions and value-indexed families. Neither rule is assumed in advance. -/
+theorem directValueIndexedForall_iff_contains_dependentProducts
+    (products : List ProductRule) (steps : PTerm → PTerm → Prop) :
+    DirectValueIndexedForall products steps ↔ dependentProducts ⊆ products := by
+  constructor
+  · intro available rule required
+    rcases List.mem_cons.mp required with rfl | required
+    · exact available.2.pi_rule_mem rfl
+    · rcases List.mem_cons.mp required with rfl | impossible
+      · exact directPredicateContext_needs_dependency products steps available.1
+      · cases impossible
+  · intro contains
+    have simple := contains (by decide :
+      Mettapedia.GSLT.LanguageDef.LFProfile.typeTypeType ∈ dependentProducts)
+    have dependent := contains (by decide :
+      Mettapedia.GSLT.LanguageDef.LFProfile.typeKindKind ∈ dependentProducts)
+    exact ⟨directPredicateContext_formed products steps dependent,
+      directForall_formed products steps simple dependent⟩
+
+/-- Formation of this interface is unchanged by replacing the conversion
+bubble, even when the two bubbles are not comparable. -/
+theorem directValueIndexedForall_bubble_iff (products : List ProductRule)
+    (first second : PTerm → PTerm → Prop) :
+    DirectValueIndexedForall products first ↔ DirectValueIndexedForall products second := by
+  rw [directValueIndexedForall_iff_contains_dependentProducts,
+    directValueIndexedForall_iff_contains_dependentProducts]
+
+/-- The dependent vertex supplies the interface under every bubble, and
+every supplying profile contains its product rules. -/
+theorem dependentProducts_least_directInterface (steps : PTerm → PTerm → Prop) :
+    DirectValueIndexedForall dependentProducts steps ∧
+      ∀ products, DirectValueIndexedForall products steps → dependentProducts ⊆ products :=
+  ⟨(directValueIndexedForall_iff_contains_dependentProducts _ _).2 (fun _ member => member),
+    fun products => (directValueIndexedForall_iff_contains_dependentProducts products steps).1⟩
+
+/-- Under the ordinary function rule, direct value-indexed Curry--Howard is
+available exactly when the dependent product rule is present. -/
+theorem directValueIndexedForall_iff
+    (products : List ProductRule) (steps : PTerm → PTerm → Prop)
+    (simple : Mettapedia.GSLT.LanguageDef.LFProfile.typeTypeType ∈ products) :
+    DirectValueIndexedForall products steps ↔
+      Mettapedia.GSLT.LanguageDef.LFProfile.typeKindKind ∈ products := by
+  constructor
+  · exact fun available =>
+      directPredicateContext_needs_dependency products steps available.1
+  · intro dependent
+    exact ⟨directPredicateContext_formed products steps dependent,
+      directForall_formed products steps simple dependent⟩
+
+/-- Positive control: the dependent vertex supports direct value-indexed
+Curry--Howard even in the weak conversion core. -/
+theorem directValueIndexedForall_at_dependent :
+    DirectValueIndexedForall dependentProducts noSteps :=
+  (directValueIndexedForall_iff dependentProducts noSteps (by decide)).2 (by decide)
+
+/-- Negative controls: neither simple functions, polymorphism nor type
+operators substitute for direct value dependency, under any bubble. -/
+theorem directValueIndexedForall_absent_off_dependent_face
+    (steps : PTerm → PTerm → Prop) :
+    ¬ DirectValueIndexedForall simplyTypedProducts steps ∧
+      ¬ DirectValueIndexedForall polymorphicProducts steps ∧
+      ¬ DirectValueIndexedForall operatorProducts steps := by
+  constructor
+  · rw [directValueIndexedForall_iff _ _ (by decide)]
+    decide
+  constructor
+  · rw [directValueIndexedForall_iff _ _ (by decide)]
+    decide
+  · rw [directValueIndexedForall_iff _ _ (by decide)]
+    decide
+
 /-! ## Polymorphism is a vertex -/
+
+/-- The polymorphic identity type is formed at every profile that licenses
+ordinary functions and polymorphic products. -/
+theorem polymorphicIdentityType_formed (products : List ProductRule)
+    (steps : PTerm → PTerm → Prop)
+    (simple : Mettapedia.GSLT.LanguageDef.LFProfile.typeTypeType ∈ products)
+    (polymorphic : kindTypeType ∈ products) :
+    Kernel products steps [] (.type Example.polymorphicIdentityType .type) := by
+  have variableType : Kernel products steps [(.sort .type, .kind)]
+      (.type (.var 0) .type) := .ofTerm (.var rfl) rfl
+  have outerType : Kernel products steps [(.var 0, .type), (.sort .type, .kind)]
+      (.type (.var 1) .type) := .ofTerm (.var rfl) rfl
+  exact .pi (.sort rfl) (.pi variableType outerType simple) polymorphic
+
+/-- The same two product rules type the actual polymorphic identity program;
+the formation result is not just an uninhabited interface. -/
+theorem polymorphicIdentity_typed (products : List ProductRule)
+    (steps : PTerm → PTerm → Prop)
+    (simple : Mettapedia.GSLT.LanguageDef.LFProfile.typeTypeType ∈ products)
+    (polymorphic : kindTypeType ∈ products) :
+    Kernel products steps []
+      (.term Example.polymorphicIdentity Example.polymorphicIdentityType .type) := by
+  have variableType : Kernel products steps [(.sort .type, .kind)]
+      (.type (.var 0) .type) := .ofTerm (.var rfl) rfl
+  have outerType : Kernel products steps [(.var 0, .type), (.sort .type, .kind)]
+      (.type (.var 1) .type) := .ofTerm (.var rfl) rfl
+  exact .lam (.sort rfl) (.pi variableType outerType simple) polymorphic
+    (.lam variableType outerType simple (.var rfl))
 
 /-- **No bubble types the polymorphic identity's type at the simply typed vertex.** -/
 theorem polymorphism_needs_vertex (steps : PTerm → PTerm → Prop) (context : SortedCtx) (sort : Srt) :
@@ -410,29 +683,89 @@ theorem polymorphism_needs_vertex (steps : PTerm → PTerm → Prop) (context : 
 /-- **The weak core at the top vertex types the polymorphic identity.** -/
 theorem polymorphism_in_weak_core :
     Kernel constructionProducts noSteps []
-      (.term Example.polymorphicIdentity Example.polymorphicIdentityType .type) := by
-  have variableType : Kernel constructionProducts noSteps [(.sort .type, .kind)] (.type (.var 0) .type) :=
-    .ofTerm (.var rfl) rfl
-  have outerType : Kernel constructionProducts noSteps [(.var 0, .type), (.sort .type, .kind)]
-      (.type (.var 1) .type) := .ofTerm (.var rfl) rfl
-  have inner : Kernel constructionProducts noSteps [(.sort .type, .kind)]
-      (.term (.lam .type (.var 0) (.var 0))
-        (.pi Mettapedia.GSLT.LanguageDef.LFProfile.typeTypeType (.var 0) (.var 1)) .type) :=
-    .lam variableType outerType (by decide) (.var rfl)
-  exact .lam (.sort rfl) (.pi variableType outerType (by decide)) (by decide) inner
+      (.term Example.polymorphicIdentity Example.polymorphicIdentityType .type) :=
+  polymorphicIdentity_typed _ _ (by decide) (by decide)
 
 /-- **No bubble added to the simply typed vertex reaches the weak core at the top.** -/
 theorem no_bubble_simulates_polymorphism (steps : PTerm → PTerm → Prop) :
     ¬ ∀ context judgment, Kernel constructionProducts noSteps context judgment →
       Kernel simplyTypedProducts steps context judgment := by
   intro simulate
-  have formed : Kernel constructionProducts noSteps [] (.type Example.polymorphicIdentityType .type) := by
-    have variableType : Kernel constructionProducts noSteps [(.sort .type, .kind)] (.type (.var 0) .type) :=
-      .ofTerm (.var rfl) rfl
-    have outerType : Kernel constructionProducts noSteps [(.var 0, .type), (.sort .type, .kind)]
-        (.type (.var 1) .type) := .ofTerm (.var rfl) rfl
-    exact .pi (.sort rfl) (.pi variableType outerType (by decide)) (by decide)
+  have formed := polymorphicIdentityType_formed constructionProducts noSteps (by decide) (by decide)
   exact polymorphism_needs_vertex steps [] .type (simulate _ _ formed)
+
+/-! ## A least formation basis relative to three direct interfaces
+
+These interfaces require actual typings in the existing annotated syntax.
+Their least product set is the four-rule formation profile of the calculus of
+constructions. This does not characterize arbitrary encodings of logic or
+identify every conversion policy at that vertex with ordinary CoC.
+-/
+
+/-- The kind `Type → Type`, using a type as a parameter of a type operator. -/
+def typeOperatorKind : PTerm :=
+  .pi Mettapedia.GSLT.LanguageDef.LFProfile.kindKindKind (.sort .type) (.sort .type)
+
+theorem typeOperatorKind_formed (products : List ProductRule)
+    (steps : PTerm → PTerm → Prop)
+    (operators : Mettapedia.GSLT.LanguageDef.LFProfile.kindKindKind ∈ products) :
+    Kernel products steps [] (.type typeOperatorKind .kind) :=
+  .pi (.sort rfl) (.sort rfl) operators
+
+/-- The direct value-indexed universal, the polymorphic identity type and
+the kind of unary type operators, all in their stated contexts. -/
+def DirectFormationInterfaces
+    (products : List ProductRule) (steps : PTerm → PTerm → Prop) : Prop :=
+  DirectValueIndexedForall products steps ∧
+    Kernel products steps [] (.type Example.polymorphicIdentityType .type) ∧
+    Kernel products steps [] (.type typeOperatorKind .kind)
+
+/-- Exactly the four CoC formation rules are required by these three direct
+interfaces, independently of the conversion bubble. -/
+theorem directFormationInterfaces_iff_contains_constructionProducts
+    (products : List ProductRule) (steps : PTerm → PTerm → Prop) :
+    DirectFormationInterfaces products steps ↔ constructionProducts ⊆ products := by
+  constructor
+  · rintro ⟨direct, polymorphic, operators⟩ rule required
+    rcases List.mem_cons.mp required with rfl | required
+    · exact direct.2.pi_rule_mem rfl
+    · rcases List.mem_cons.mp required with rfl | required
+      · exact directPredicateContext_needs_dependency products steps direct.1
+      · rcases List.mem_cons.mp required with rfl | required
+        · exact polymorphic.pi_rule_mem rfl
+        · rcases List.mem_cons.mp required with rfl | impossible
+          · exact operators.pi_rule_mem rfl
+          · cases impossible
+  · intro contains
+    have simple := contains (by decide :
+      Mettapedia.GSLT.LanguageDef.LFProfile.typeTypeType ∈ constructionProducts)
+    have dependent := contains (by decide :
+      Mettapedia.GSLT.LanguageDef.LFProfile.typeKindKind ∈ constructionProducts)
+    have polymorphic := contains (by decide : kindTypeType ∈ constructionProducts)
+    have operators := contains (by decide :
+      Mettapedia.GSLT.LanguageDef.LFProfile.kindKindKind ∈ constructionProducts)
+    exact ⟨(directValueIndexedForall_iff products steps simple).2 dependent,
+      polymorphicIdentityType_formed products steps simple polymorphic,
+      typeOperatorKind_formed products steps operators⟩
+
+/-- The four-rule vertex is a least formation basis for the stated
+interfaces, rather than a least theory for every representation of them. -/
+theorem constructionProducts_least_directInterfaces (steps : PTerm → PTerm → Prop) :
+    DirectFormationInterfaces constructionProducts steps ∧
+      ∀ products, DirectFormationInterfaces products steps → constructionProducts ⊆ products :=
+  ⟨(directFormationInterfaces_iff_contains_constructionProducts _ _).2
+      (fun _ member => member),
+    fun products => (directFormationInterfaces_iff_contains_constructionProducts products steps).1⟩
+
+/-- Deleting any one of the four formation rules defeats at least one of
+the three interfaces, even if arbitrary conversions remain available. -/
+theorem directInterfaces_refused_of_missing_rule
+    (products : List ProductRule) (steps : PTerm → PTerm → Prop)
+    {rule : ProductRule} (required : rule ∈ constructionProducts) (missing : rule ∉ products) :
+    ¬ DirectFormationInterfaces products steps := by
+  intro interfaces
+  exact missing ((directFormationInterfaces_iff_contains_constructionProducts products steps).1
+    interfaces required)
 
 /-! ## Type-level conversion is a bubble -/
 
@@ -824,5 +1157,19 @@ theorem universalTop_not_vertex (products : List ProductRule) :
 
 #print axioms vertex_consistent
 #print axioms paradox_not_constructions
+#print axioms directPredicateContext_formed_iff
+#print axioms directValueIndexedForall_iff
+#print axioms directValueIndexedForall_at_dependent
+#print axioms directValueIndexedForall_absent_off_dependent_face
+#print axioms directForall_abstract
+#print axioms directForall_apply
+#print axioms directValueIndexedForall_iff_contains_dependentProducts
+#print axioms directValueIndexedForall_bubble_iff
+#print axioms dependentProducts_least_directInterface
+#print axioms polymorphicIdentity_typed
+#print axioms typeOperatorKind_formed
+#print axioms directFormationInterfaces_iff_contains_constructionProducts
+#print axioms constructionProducts_least_directInterfaces
+#print axioms directInterfaces_refused_of_missing_rule
 
 end Mettapedia.TypeTheory.HypercubeBubbles

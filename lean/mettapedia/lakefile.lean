@@ -26,7 +26,13 @@ require catLogic from "Mettapedia/CategoricalLogic"
 
 require Metatheory from "../externals/Metatheory"
 
-require MettaHyperonFull from "../externals/LeaTTa"
+/- LeaTTa is an optional realization and comparison target.  The ordinary
+MeTTapedia profile neither resolves nor builds it; pass `-Kleatta` together
+with the recorded package override to opt in. -/
+def leattaIntegrationEnabled : Bool := (get_config? leatta).isSome
+
+meta if leattaIntegrationEnabled then
+  require MettaHyperonFull from "../externals/LeaTTa"
 
 require algorithms from "../algorithms"
 
@@ -54,6 +60,58 @@ input_dir primeMotivationSources where
   filter := .extension "metta"
 
 @[default_target] lean_lib Mettapedia
+
+/- Maximal roots of the modules whose declared semantics or executable
+comparison depends on LeaTTa.  Their local imports are built recursively. -/
+meta if leattaIntegrationEnabled then
+@[default_target] lean_lib LeaTTaIntegration where
+  roots := #[
+    `Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaArgumentExecution,
+    `Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaBindingExecutionBoundary,
+    `Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaFresheningCorrespondence,
+    `Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaPatternExecution,
+    `Mettapedia.GSLT.LanguageDef.DeterministicEquations.MeTTaProgramEnvironment,
+    `Mettapedia.GSLT.LanguageDef.LFEngineProbe,
+    `Mettapedia.GSLT.LanguageDef.MIEvalEncoding,
+    `Mettapedia.Languages.MeTTa.Experimental.TwoSortPiSigmaId.Adapters.LeaTTaDIndGEvaluator,
+    `Mettapedia.Languages.MeTTa.HE.CanonicalEquationBridge,
+    `Mettapedia.Languages.MeTTa.HE.EquationScopeControls,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaApplicationTypeCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaArgumentTypeSelectionCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaBranchFresheningDiagnosticCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaCollapseBindingCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaConcreteConformance,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaContextSpaceCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaEvaluatorBindingPayloadCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaEvaluatorServiceAwareConformance,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaExpectedApplicationBindingRetentionCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaExpectedApplicationErrorChronologyCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaExpectedBindingConflictCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaExpectedBindingThreadingCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaExpectedReturnSelectionCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaFuelObservability,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaGetTypeArityCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaGroundTypeCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaMalformedArrowCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaMettaBoundaryCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaMultipleActualTypeCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaMultipleSignatureCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaOperatorHeadCastConformance,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaOperatorHeadEvaluationCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaOperatorHeadFreshnessCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaSignatureExpectedCaptureCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaStateFreeConfigurationConformance,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaStateValueRefinement,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaTypeInferenceScopeCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaTypePresentationMatchConformance,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaTypeRefinement,
+    `Mettapedia.Languages.MeTTa.HE.LeaTTaTypeVariableEscapeCounterexample,
+    `Mettapedia.Languages.MeTTa.HE.MatchAllChildNil,
+    `Mettapedia.Languages.MeTTa.HE.NativeBindingsDataControls,
+    `Mettapedia.Languages.MeTTa.HE.SpaceAlgebraLeaTTa,
+    `Mettapedia.Languages.MeTTa.HE.StateComponentAlgebra,
+    `Mettapedia.Languages.MeTTa.HE.UnificationCompleteness,
+    `Mettapedia.Languages.MeTTa.LeaTTa]
 
 -- Only this module quotes the curriculum files. Its importers inherit the
 -- dependency through the normal module graph, without invalidating unrelated
@@ -307,9 +365,12 @@ lean_lib GSLTInductiveM1Qualification where
     `Mettapedia.Languages.MeTTa.PeTTa.Bridges.NativeTypes.NaturalCounterExecution,
     `Mettapedia.GSLT.LanguageDef.IndexedInductiveNaturalHOL,
     `Mettapedia.Languages.HOLLight.NaturalFacts,
-    `Mettapedia.Languages.MM0.NaturalClosure,
+    `Mettapedia.Languages.MM0.NaturalRecursion,
+    `Mettapedia.GSLT.LanguageDef.IndexedInductiveNaturalMM0,
     `Mettapedia.Languages.Megalodon.NaturalClosure,
     `Mettapedia.Languages.Megalodon.NaturalRecursion,
+    `Mettapedia.GSLT.LanguageDef.IndexedInductiveNaturalMegalodonProfile,
+    `Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorCheckingProfiles,
     `Mettapedia.Languages.Megalodon.NativeSyntaxWire,
     `Mettapedia.GSLT.LanguageDef.IntegerRepresentationPublicationControls,
     `Mettapedia.OSLF.NativeTypes.Instances.Natural.RetainedCounterControls]

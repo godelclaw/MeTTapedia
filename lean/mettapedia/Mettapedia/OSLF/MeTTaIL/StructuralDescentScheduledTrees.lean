@@ -108,7 +108,7 @@ def treeRootMatch (environment : Environment) (outer : Goal)
     (frame : RootMatchFrame environment outer) (bodies : RootBodies environment outer frame) :
     Tree environment outer (.rootMatch frame) := by
   apply Scheduler.TaskTree.branch
-  simp only [expand, expandRootMatch]
+  simp only [expand, expandRootMatch, continueRootAnswer]
   split
   · rename_i answer found
     have decrease := matcherDebt_cursor (rootRequest frame) frame.state frame.cursor answer found

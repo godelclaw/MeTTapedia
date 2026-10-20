@@ -255,5 +255,170 @@ theorem InstanceRequest.rootCode_accepted {n : Nat} {context : Ctx Head n}
   simpa only [accepted.2.2.1, accepted.2.2.2.1] using decoded
 
 end TypedReplay
+
+/-! ## Checking-profile contracts
+
+An admitted schema row has three distinct possible observations.  A client
+may retain its typed receipt, expose an object-theory proposition about the
+equation, or license the equation as judgmental conversion.  These fields are
+kept separate because none of the three readings follows from either of the
+others without an additional theorem.
+
+The profile also records which universe heads may occur as elimination
+targets and which optional identity principles have propositional or
+judgmental authority.  The underlying universe rules and declarations remain
+the parameters of the profile; the record does not duplicate them.
+-/
+
+/-- Optional identity principles beyond identity formation and reflexivity,
+which are already constructors of the parameterized calculus. -/
+inductive IdentityPrinciple where
+  | elimination
+  | propositionExtensionality
+  | functionExtensionality
+  | uip
+  | equalityReflection
+  deriving DecidableEq, Repr
+
+/-- Authority for an optional object-theory principle.  Propositional
+availability does not turn the principle into conversion. -/
+structure PrinciplePolicy where
+  propositional : Bool
+  judgmental : Bool
+  deriving DecidableEq, Repr
+
+/-- Authority for one admitted computation row.  A typed receipt is retained
+evidence about a source step, not automatically an object-theory equality. -/
+structure EquationPolicy where
+  receipt : Bool
+  propositional : Bool
+  judgmental : Bool
+  deriving DecidableEq, Repr
+
+/-- A checking profile over one admitted schema table.  Judgmental rows must
+retain their typed receipt.  Propositional fields require profile-specific
+realization theorems before they can be consumed. -/
+structure Profile (schemas : Schemas base signature computation) where
+  eliminationTarget : Head → Bool
+  identity : IdentityPrinciple → PrinciplePolicy
+  iota : Fin (table schemas).length → EquationPolicy
+  judgmentalHasReceipt : ∀ index,
+    (iota index).judgmental = true → (iota index).receipt = true
+
+namespace Profile
+
+variable {schemas : Schemas base signature computation}
+
+/-- The exact rows installed in structural conversion by a profile. -/
+def enabled (profile : Profile schemas) : Fin (table schemas).length → Bool :=
+  fun index => (profile.iota index).judgmental
+
+/-- The actual conversion rules selected by the profile. -/
+abbrev rules (profile : Profile schemas) : Rules Head :=
+  Checking.rules schemas profile.enabled
+
+/-- Fieldwise capability inclusion.  It compares declared observations; it
+does not by itself establish conservativity or realize a propositional field. -/
+structure Extends (small large : Profile schemas) : Prop where
+  elimination : ∀ head,
+    small.eliminationTarget head = true → large.eliminationTarget head = true
+  identityPropositional : ∀ principle,
+    (small.identity principle).propositional = true →
+      (large.identity principle).propositional = true
+  identityJudgmental : ∀ principle,
+    (small.identity principle).judgmental = true →
+      (large.identity principle).judgmental = true
+  iotaReceipt : ∀ index,
+    (small.iota index).receipt = true → (large.iota index).receipt = true
+  iotaPropositional : ∀ index,
+    (small.iota index).propositional = true →
+      (large.iota index).propositional = true
+  iotaJudgmental : ∀ index,
+    (small.iota index).judgmental = true →
+      (large.iota index).judgmental = true
+
+theorem Extends.refl (profile : Profile schemas) : profile.Extends profile where
+  elimination := fun _ known => known
+  identityPropositional := fun _ known => known
+  identityJudgmental := fun _ known => known
+  iotaReceipt := fun _ known => known
+  iotaPropositional := fun _ known => known
+  iotaJudgmental := fun _ known => known
+
+theorem Extends.trans {first middle last : Profile schemas}
+    (firstMiddle : first.Extends middle) (middleLast : middle.Extends last) :
+    first.Extends last where
+  elimination := fun head known => middleLast.elimination head
+    (firstMiddle.elimination head known)
+  identityPropositional := fun principle known =>
+    middleLast.identityPropositional principle
+      (firstMiddle.identityPropositional principle known)
+  identityJudgmental := fun principle known =>
+    middleLast.identityJudgmental principle
+      (firstMiddle.identityJudgmental principle known)
+  iotaReceipt := fun index known => middleLast.iotaReceipt index
+    (firstMiddle.iotaReceipt index known)
+  iotaPropositional := fun index known => middleLast.iotaPropositional index
+    (firstMiddle.iotaPropositional index known)
+  iotaJudgmental := fun index known => middleLast.iotaJudgmental index
+    (firstMiddle.iotaJudgmental index known)
+
+/-- Capability inclusion preserves every selected computation step.  Other
+profile fields do not participate in this rules morphism. -/
+theorem computationMorphism {small large : Profile schemas}
+    (extension : small.Extends large) :
+    small.rules.Morphism large.rules (fun head => head) where
+  headTyping := fun known => known
+  isUniverse := fun known => known
+  join := fun known => known
+  cumulative := fun known => known
+  headEq := fun known => known
+  constantType := by
+    intro name type known
+    simpa only [rules, Checking.rules, Tm.mapHead_id] using known
+  computation := by
+    intro n left right step
+    simp only [Tm.mapHead_id]
+    change (SchemaTableConversionCode.root (table schemas)
+      (fun index => (large.iota index).judgmental)).step left right
+    change (SchemaTableConversionCode.root (table schemas)
+      (fun index => (small.iota index).judgmental)).step left right at step
+    exact SchemaTableConversionCode.root_mono
+      (fun index permitted => extension.iotaJudgmental index permitted) step
+
+/-- Formation-sensitive typing transports along the judgmental part of a
+profile extension. -/
+theorem judgment_mono {small large : Profile schemas}
+    (extension : small.Extends large) {n : Nat} {context : Ctx Head n}
+    {term type : Tm Head n}
+    (judgment : FormationSensitive.Judgment small.rules context term type) :
+    FormationSensitive.Judgment large.rules context term type := by
+  simpa only [Ctx.mapHead_id, Tm.mapHead_id] using
+    judgment.mapHead (computationMorphism extension)
+
+/-- A licensed row always has the retained receipt required by the profile
+contract. -/
+theorem judgmental_receipt (profile : Profile schemas) (index : Fin (table schemas).length)
+    (licensed : profile.enabled index = true) :
+    (profile.iota index).receipt = true :=
+  profile.judgmentalHasReceipt index licensed
+
+/-- An actual calculus realizing a profile may add independently qualified
+declarations or logical constants.  It must include the profile's selected
+checking rules; the realization does not infer authority for those additions. -/
+structure Realization (profile : Profile schemas) where
+  actualRules : Rules Head
+  selectedMorphism : profile.rules.Morphism actualRules (fun head => head)
+
+/-- A profile judgment remains valid in every stated realization. -/
+theorem Realization.includeJudgment {profile : Profile schemas}
+    (realization : Realization profile) {n : Nat} {context : Ctx Head n}
+    {term type : Tm Head n}
+    (judgment : FormationSensitive.Judgment profile.rules context term type) :
+    FormationSensitive.Judgment realization.actualRules context term type := by
+  simpa only [Ctx.mapHead_id, Tm.mapHead_id] using
+    judgment.mapHead realization.selectedMorphism
+
+end Profile
 end Declaration.IndexedFamily.Checking
 end Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.Presentation

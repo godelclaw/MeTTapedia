@@ -860,6 +860,13 @@ theorem ValueBindings.eqVarsInOrder_nil :
   | BindingRel.val _ _ :: rest, ValueBindings.val hrest => by
       simpa [Bindings.eqVarsInOrder] using ValueBindings.eqVarsInOrder_nil hrest
 
+/-- A value-only binding set contains no explicit equality relation. -/
+theorem ValueBindings.eq_not_mem {b : Bindings} (h : ValueBindings b)
+    {left right : VarName} : BindingRel.eq left right ∉ b := by
+  induction h with
+  | nil => simp
+  | val hrest ih => simpa using ih
+
 /-- Consequently, every equality class in a value-only binding set is the singleton queried class. -/
 theorem ValueBindings.eqClassOrdered_singleton {b : Bindings} (h : ValueBindings b)
     (x : VarName) :
@@ -2566,12 +2573,14 @@ exactly the raw-cons merge result. -/
 theorem merge_singleton_eq_eq_of_valueless_class
     {acc : Bindings} {x y : VarName}
     (hxy : x ≠ y)
-    (hvalues : Bindings.classValues (BindingRel.eq x y :: acc) x = []) :
+    (hvalues : Bindings.classValues (BindingRel.eq x y :: acc) x = [])
+    (hnot : BindingRel.eq x y ∉ acc) :
     Bindings.merge acc [BindingRel.eq x y] =
       [[BindingRel.eq x y] ++ acc] := by
-  have hbeq : (x == y) = false := beq_eq_false_iff_ne.mpr hxy
+  have hadd : Bindings.addEqRaw acc x y = BindingRel.eq x y :: acc :=
+    Bindings.addEqRaw_of_not_mem acc x y hxy hnot
   simp [Bindings.merge, Bindings.mergeOne, Bindings.addVarEquality,
-    Bindings.addEqRaw, hbeq, hvalues, Bindings.unifyValues]
+    hadd, hvalues, Bindings.unifyValues]
 
 /-- A value-only accumulator accepts a non-variable value at any fresh key with
 exactly the raw-cons result. -/
@@ -5362,13 +5371,8 @@ theorem ValueBindings.eq_edge_mem_append {values caller : Bindings}
     (hvalues : ValueBindings values) {left right : VarName}
     (hmem : BindingRel.eq left right ∈ values ++ caller) :
     BindingRel.eq left right ∈ caller := by
-  have noEq : ∀ {xs : Bindings}, ValueBindings xs → BindingRel.eq left right ∉ xs := by
-    intro xs hxs
-    induction hxs with
-    | nil => simp
-    | val htail ih => simpa using ih
   rcases List.mem_append.mp hmem with hvaluesMem | hcaller
-  · exact False.elim (noEq hvalues hvaluesMem)
+  · exact False.elim (hvalues.eq_not_mem hvaluesMem)
   · exact hcaller
 
 /-- The caller cannot join a fresh key to one of its alias classes. -/

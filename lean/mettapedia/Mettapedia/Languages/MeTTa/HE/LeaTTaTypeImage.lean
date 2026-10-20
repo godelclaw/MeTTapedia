@@ -575,12 +575,8 @@ private theorem addEqRaw_image {lb : Metta.Bindings}
     (himage : LeaBindingsHEImage lb) (x y : String) :
     LeaBindingsHEImage (Metta.Bindings.addEqRaw lb x y) := by
   intro z v hv
-  unfold Metta.Bindings.addEqRaw at hv
-  split at hv
-  · exact himage z v hv
-  · rcases List.mem_cons.mp hv with heq | hmem
-    · cases heq
-    · exact himage z v hmem
+  exact himage z v
+    ((Metta.Bindings.val_mem_addEqRaw_iff lb x y z v).mp hv)
 
 private theorem addValRaw_image {lb : Metta.Bindings}
     (himage : LeaBindingsHEImage lb) {x : String} {value : Metta.Atom}

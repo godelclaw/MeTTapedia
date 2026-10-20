@@ -1,6 +1,8 @@
 import Mettapedia.Machines.Cursor.Sequence
 import Mettapedia.Machines.SnapshotBatch
 import Mettapedia.Machines.BindingPublication
+import Mettapedia.Machines.SubstitutionFold
+import Mettapedia.GSLT.LanguageDef.OperationCostProtocol
 
 /-!
 # A resumable fold client for a pull protocol
@@ -21,7 +23,7 @@ set_option autoImplicit false
 namespace Mettapedia.Machines.Cursor.Fold
 
 open Mettapedia.TypeTheory
-open CategoryTheory
+open _root_.CategoryTheory
 
 variable {Item Accumulator : Type}
 
@@ -964,6 +966,56 @@ theorem fromCallbacks_amortized
     callback_call_instantiates_common_cursor target targetCharge allowance 0 accepted pending
       (h.map state) terminalAfter] at bounded
   exact bounded
+
+/-- An actual monotone service counter composes through the same cursor.
+The counter must account for each real request's post-state, including a
+refused callback; invocation counts are not used as its work price. -/
+theorem advance_counter {Return : Unit → Unit → Type}
+    (reader : Client (P := protocol Item Terminal) (Return := Return))
+    (counter : Potential M)
+    (counts : ∀ {base index} (state : M.State base index)
+      (request : (protocol Item Terminal).Shape base index),
+      counter (M.step state request).2 = counter state + charge state request)
+    (fuel : Nat)
+    (held : Mettapedia.Machines.Cursor.Packet M reader ()) :
+    outcomePotential reader counter
+        (Mettapedia.Machines.Cursor.advance M reader
+          charge fuel held).2 =
+      counter held.2.2 +
+        (Mettapedia.Machines.Cursor.advance M reader
+          charge fuel held).1 := by
+  induction fuel generalizing held with
+  | zero => simp [Mettapedia.Machines.Cursor.advance, outcomePotential]
+  | succ fuel ih =>
+      rcases held with ⟨index, control, state⟩
+      cases exposed : reader.str () index control with
+      | mk shape children =>
+          cases shape with
+          | inl value => simp [Mettapedia.Machines.Cursor.advance, exposed, outcomePotential]
+          | inr request =>
+              dsimp only [withHoles] at children
+              simp only [Mettapedia.Machines.Cursor.advance, exposed]
+              dsimp only [withHoles]
+              have later := ih ⟨_, children (M.step state request).1,
+                (M.step state request).2⟩
+              have localCount := counts state request
+              dsimp only at later localCount ⊢
+              omega
+
+theorem fromCallbacks_counter (counter : Potential M)
+    (counts : ∀ {base index} (state : M.State base index)
+      (request : (protocol Item Terminal).Shape base index),
+      counter (M.step state request).2 = counter state + charge state request)
+    (allowance accepted : Nat) (pending : Option Item) (state : M.State () ())
+    (terminalAfter : Item → Option Terminal := fun _ => none) :
+    counter (fromCallbacks M charge allowance pending accepted state terminalAfter).2.2 =
+      counter state + (fromCallbacks M charge allowance pending accepted state terminalAfter).1 := by
+  have actual := advance_counter M charge (client Item Terminal terminalAfter)
+    counter counts (2*allowance+0+1)
+    (packet M allowance pending accepted state terminalAfter)
+  rw [callback_call_instantiates_common_cursor M charge allowance 0 accepted pending state terminalAfter]
+    at actual
+  simpa only [outcomePotential, packet] using actual
 
 /-- Transport an already paid callback account without replay. This map keeps
 the whole terminal/loan record and the corresponding provider state. -/
@@ -2159,6 +2211,1279 @@ theorem binding_schedule_eq_checked_reference
               (Option.map fun environment => {row with environment := environment}),
           nextWork state row)) append) grants (start saved rows (initial work sink)) := by
   simp_rw [bindingPreparation_eq_checked_reference]
+
+/-! A measurable preparation service uses the same frozen publisher. Its
+counter observes actual private work, including refused attempts; neither
+callback count nor accepted-row count supplies the work price. -/
+
+theorem check_measure_mono (measure : Work → Nat)
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (monotone : ∀ work raw, measure work ≤ measure (prepare work raw).2)
+    (append : Sink → Ready → Bool × Sink)
+    (context : PreparationContext Raw Ready Work Sink) (raw : Raw) :
+    measure context.work ≤ measure (check prepare append context raw).2.work := by
+  cases cached : context.cached with
+  | some ready => simp [check, cached, appendPrepared]
+  | none =>
+      have bounded := monotone context.work raw
+      simp only [check, cached]
+      split <;> simpa only [appendPrepared] using bounded
+
+def workMeasure {Saved : Type} (measure : Work → Nat)
+    (state : State Saved Raw (PreparationContext Raw Ready Work Sink)) : Nat :=
+  measure state.2.accumulator.2.work
+
+theorem provider_measure_mono {Saved : Type} (measure : Work → Nat)
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (monotone : ∀ work raw, measure work ≤ measure (prepare work raw).2)
+    (append : Sink → Ready → Bool × Sink) {base index : Unit}
+    (state : (FrozenPublication.provider (Saved := Saved) (check prepare append)).State base index)
+    (request : (protocol Raw Unit).Shape base index) :
+    workMeasure measure state ≤ workMeasure measure
+      ((FrozenPublication.provider (check prepare append)).step state request).2 := by
+  rcases state with ⟨saved, ⟨remaining, pending, ⟨delivered, context⟩, requested, accepted⟩⟩
+  cases request with
+  | next =>
+      cases pending with
+      | some row => simp [workMeasure, FrozenPublication.provider]
+      | none => cases remaining <;> simp [workMeasure, FrozenPublication.provider]
+  | accept item =>
+      cases pending with
+      | none => simp [workMeasure, FrozenPublication.provider]
+      | some row => exact check_measure_mono measure prepare monotone append context row
+
+def workDebit {Saved : Type} (measure : Work → Nat)
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (append : Sink → Ready → Bool × Sink) :
+    Charge (FrozenPublication.provider (Saved := Saved) (check prepare append)) := fun state request =>
+  workMeasure measure ((FrozenPublication.provider (check prepare append)).step state request).2 -
+    workMeasure measure state
+
+theorem provider_measure_counter {Saved : Type} (measure : Work → Nat)
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (monotone : ∀ work raw, measure work ≤ measure (prepare work raw).2)
+    (append : Sink → Ready → Bool × Sink) {base index : Unit}
+    (state : (FrozenPublication.provider (Saved := Saved) (check prepare append)).State base index)
+    (request : (protocol Raw Unit).Shape base index) :
+    workMeasure measure ((FrozenPublication.provider (check prepare append)).step state request).2 =
+      workMeasure measure state + workDebit measure prepare append state request := by
+  have grows := provider_measure_mono measure prepare monotone append state request
+  simp only [workDebit]
+  omega
+
+theorem callback_preparation_account {Saved : Type} (measure : Work → Nat)
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (monotone : ∀ work raw, measure work ≤ measure (prepare work raw).2)
+    (append : Sink → Ready → Bool × Sink)
+    (allowance accepted : Nat) (pending : Option Raw)
+    (state : State Saved Raw (PreparationContext Raw Ready Work Sink)) :
+    let actual := fromCallbacks (FrozenPublication.provider (check prepare append))
+      (workDebit measure prepare append) allowance pending accepted state
+    workMeasure measure actual.2.2 = workMeasure measure state + actual.1 :=
+  fromCallbacks_counter (FrozenPublication.provider (check prepare append))
+    (workDebit measure prepare append) (fun {_ _} state => workMeasure measure state)
+    (provider_measure_counter measure prepare monotone append) allowance accepted pending state
+
+theorem measured_resume_erases {Saved : Type} (measure : Work → Nat)
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (append : Sink → Ready → Bool × Sink) (allowance : Nat)
+    (call : Call Saved Raw (PreparationContext Raw Ready Work Sink)) :
+    (resumeCall (FrozenPublication.provider (check prepare append))
+      (workDebit measure prepare append) allowance call).2 =
+        (FrozenPublication.run (check prepare append) allowance call).2 := by
+  unfold FrozenPublication.run resumeCall
+  cases finished : call.2.1.terminal with
+  | some reason => rfl
+  | none =>
+      simpa only [Hom.id, id_eq] using fromCallbacks_transport
+        (FrozenPublication.provider (check prepare append)) (workDebit measure prepare append)
+        (Hom.id _) (fun _ _ => 1) allowance call.2.1.accepted call.2.1.pending call.2.2
+
+theorem measured_resume_account {Saved : Type} (measure : Work → Nat)
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (monotone : ∀ work raw, measure work ≤ measure (prepare work raw).2)
+    (append : Sink → Ready → Bool × Sink) (allowance : Nat)
+    (call : Call Saved Raw (PreparationContext Raw Ready Work Sink)) :
+    let later := resumeCall (FrozenPublication.provider (check prepare append))
+      (workDebit measure prepare append) allowance call
+    workMeasure measure later.2.2 + call.1 = workMeasure measure call.2.2 + later.1 := by
+  unfold resumeCall
+  cases finished : call.2.1.terminal with
+  | some reason => rfl
+  | none =>
+      have actual := callback_preparation_account measure prepare monotone append
+        allowance call.2.1.accepted call.2.1.pending call.2.2
+      dsimp only at actual ⊢
+      omega
+
+set_option backward.isDefEq.respectTransparency false in
+/-- Arbitrary publication grant words retain the exact raw partition and
+saved producer, while accumulating the measured work of every preparation
+attempt. This does not merge distinct stateful refusal/retry boundaries. -/
+theorem measured_grant_word {Saved : Type} (measure : Work → Nat)
+    (prepare : Work → Raw → Except Refusal (Option Ready) × Work)
+    (monotone : ∀ work raw, measure work ≤ measure (prepare work raw).2)
+    (append : Sink → Ready → Bool × Sink) (grants : List Nat)
+    (call : Call Saved Raw (PreparationContext Raw Ready Work Sink)) :
+    let later := grants.foldl (fun previous allowance =>
+      resumeCall (FrozenPublication.provider (check prepare append))
+        (workDebit measure prepare append) allowance previous) call
+    later.2.2.1 = call.2.2.1 ∧ content later.2.2 = content call.2.2 ∧
+      workMeasure measure later.2.2 + call.1 = workMeasure measure call.2.2 + later.1 := by
+  induction grants generalizing call with
+  | nil => exact ⟨rfl, rfl, rfl⟩
+  | cons allowance rest ih =>
+      let later := resumeCall (FrozenPublication.provider (check prepare append))
+        (workDebit measure prepare append) allowance call
+      have erased := measured_resume_erases measure prepare append allowance call
+      have preserved := FrozenPublication.run_preserves (check prepare append) allowance call
+      have oneSource : later.2.2.1 = call.2.2.1 :=
+        (congrArg (fun value => value.2.1) erased).trans preserved.1
+      have onePartition : content later.2.2 = content call.2.2 :=
+        (congrArg (fun value => content value.2) erased).trans preserved.2
+      have oneAccount := measured_resume_account measure prepare monotone append allowance call
+      obtain ⟨source, partition, account⟩ := ih later
+      refine ⟨source.trans oneSource, partition.trans onePartition, ?_⟩
+      dsimp only [later] at oneAccount account ⊢
+      simp only [List.foldl_cons]
+      omega
+
+#print axioms check_measure_mono
+#print axioms provider_measure_counter
+#print axioms callback_preparation_account
+#print axioms measured_resume_erases
+#print axioms measured_grant_word
+
+/-! An indexed service can implement every stage of one row's preparation.
+The original service's terminal value is already `Except Conflict Ready`:
+only that witnessed conflict skips a row. A provider refusal or inspection
+pause keeps the whole raw loan and its exact original phase. -/
+namespace IndexedService
+
+open Mettapedia.GSLT.LanguageDef.OperationCostProtocol (Account Profile Event)
+
+open Mettapedia.GSLT.LanguageDef
+
+variable {Base : Type} {Index : Base → Type}
+  {P : IndexedPolynomial.{0, 0, 0, 0} Base Index} {Denied Conflict : Type}
+  (source : Provider P)
+  (reader : Client (P := P) (Return := fun _ _ => Except Conflict Ready))
+  (notice : OperationCostProtocol.Indexed.Notice P Denied)
+  (gate : OperationCostProtocol.Indexed.Gate (Denied := Denied) source)
+  (profiles : {base : Base} → {index : Index base} → P.Shape base index → Profile)
+  (replay : {base : Base} → {index : Index base} → P.Shape base index → Bool)
+  (invoice : OperationCostProtocol.Indexed.Invoice source) (base : Base)
+
+abbrev PhaseOutcome := OperationCostProtocol.Indexed.Outcome source gate profiles replay invoice reader notice base
+
+/-- The equality is erased proof data: the retained cursor and the bank of
+paid invoices cannot be combined from different preparation attempts. -/
+structure WorkState where
+  account : Account
+  residual : Option {outcome : PhaseOutcome source reader notice gate profiles replay invoice base //
+    OperationCostProtocol.Indexed.accountOf source gate profiles replay invoice reader notice outcome = account}
+
+def cold (account : Account) : WorkState source reader notice gate profiles replay invoice base :=
+  ⟨account, none⟩
+
+/-- The service owner may replace the checker between resumptions. Private
+computation, invoices and reply-selected control remain the same. -/
+def replaceGate (next : OperationCostProtocol.Indexed.Gate (Denied := Denied) source)
+    (work : WorkState source reader notice gate profiles replay invoice base) :
+    WorkState source reader notice next profiles replay invoice base where
+  account := work.account
+  residual := work.residual.map fun held =>
+    ⟨OperationCostProtocol.Indexed.replaceGate source gate profiles replay invoice reader notice next held.1,
+      (OperationCostProtocol.Indexed.replaceGate_preserves_account source gate profiles replay invoice
+        reader notice next held.1).trans held.2⟩
+
+theorem replaceGate_account (next : OperationCostProtocol.Indexed.Gate (Denied := Denied) source)
+    (work : WorkState source reader notice gate profiles replay invoice base) :
+    (replaceGate source reader notice gate profiles replay invoice base next work).account = work.account := rfl
+
+variable (load : Account → Raw → Mettapedia.Machines.Cursor.Packet source reader base)
+
+def finished : PhaseOutcome source reader notice gate profiles replay invoice base → Bool
+  | .done ⟨_, .inl _, _⟩ => true
+  | _ => false
+
+def selected (work : WorkState source reader notice gate profiles replay invoice base) (raw : Raw) :
+    PhaseOutcome source reader notice gate profiles replay invoice base :=
+  let start := load work.account raw
+  let fresh : PhaseOutcome source reader notice gate profiles replay invoice base :=
+    .paused ⟨start.1, .inl start.2.1, start.2.2, work.account⟩
+  match work.residual with
+  | some retained =>
+      if finished source reader notice gate profiles replay invoice base retained.1 then fresh else retained.1
+  | none => fresh
+
+theorem selected_account (work : WorkState source reader notice gate profiles replay invoice base) (raw : Raw) :
+    OperationCostProtocol.Indexed.accountOf source gate profiles replay invoice reader notice
+      (selected source reader notice gate profiles replay invoice base load work raw) = work.account := by
+  cases retained : work.residual with
+  | none => simp [selected, retained, OperationCostProtocol.Indexed.accountOf,
+      OperationCostProtocol.Indexed.outcomeAccount]
+  | some value =>
+      simp only [selected, retained]
+      split
+      · rfl
+      · exact value.2
+
+def attempt (grant : Nat) (work : WorkState source reader notice gate profiles replay invoice base) (raw : Raw) :
+    Nat × PhaseOutcome source reader notice gate profiles replay invoice base :=
+  OperationCostProtocol.Indexed.resume source gate profiles replay invoice reader notice grant
+    (0, OperationCostProtocol.Indexed.retry source gate profiles replay invoice reader notice
+      (selected source reader notice gate profiles replay invoice base load work raw))
+
+def retained (outcome : PhaseOutcome source reader notice gate profiles replay invoice base) :
+    WorkState source reader notice gate profiles replay invoice base :=
+  ⟨OperationCostProtocol.Indexed.accountOf source gate profiles replay invoice reader notice outcome, some ⟨outcome, rfl⟩⟩
+
+abbrev finishAttempt (outcome : PhaseOutcome source reader notice gate profiles replay invoice base) :
+    Except (Option (OperationCostProtocol.Indexed.Reason Denied)) (Option Ready) ×
+      WorkState source reader notice gate profiles replay invoice base :=
+  match outcome with
+  | .paused packet =>
+      (.error none, retained source reader notice gate profiles replay invoice base (.paused packet))
+  | .done ⟨index, .inr (reason, control), state⟩ =>
+      (.error (some reason), retained source reader notice gate profiles replay invoice base
+        (.done ⟨index, .inr (reason, control), state⟩))
+  | .done ⟨index, .inl (.error conflict), state⟩ =>
+      (.ok none, retained source reader notice gate profiles replay invoice base
+        (.done ⟨index, .inl (.error conflict), state⟩))
+  | .done ⟨index, .inl (.ok ready), state⟩ =>
+      (.ok (some ready), retained source reader notice gate profiles replay invoice base
+        (.done ⟨index, .inl (.ok ready), state⟩))
+
+theorem finishAttempt_retains
+    (outcome : PhaseOutcome source reader notice gate profiles replay invoice base) :
+    ((finishAttempt source reader notice gate profiles replay invoice base outcome).2.residual.map
+      Subtype.val) = some outcome := by
+  cases outcome with
+  | paused packet => rfl
+  | done result =>
+      rcases result with ⟨index, verdict, state⟩
+      cases verdict with
+      | inr reason => rfl
+      | inl answer => cases answer <;> rfl
+
+def prepare (grant : Nat) (work : WorkState source reader notice gate profiles replay invoice base) (raw : Raw) :
+    Except (Option (OperationCostProtocol.Indexed.Reason Denied)) (Option Ready) ×
+      WorkState source reader notice gate profiles replay invoice base :=
+  if grant = 0 then (.error none, work)
+  else
+    let result := attempt source reader notice gate profiles replay invoice base load grant work raw
+    finishAttempt source reader notice gate profiles replay invoice base result.2
+
+theorem prepare_zero (work : WorkState source reader notice gate profiles replay invoice base) (raw : Raw) :
+    prepare source reader notice gate profiles replay invoice base load 0 work raw = (.error none, work) := by
+  simp [prepare]
+
+/-- The full ready record is exactly the original client's result. It is
+never reconstructed from a payload, previous row, or unfinished phase. -/
+theorem prepare_ready_iff (grant : Nat) (positive : grant ≠ 0)
+    (work : WorkState source reader notice gate profiles replay invoice base) (raw : Raw) (ready : Ready) :
+    (prepare source reader notice gate profiles replay invoice base load grant work raw).1 = .ok (some ready) ↔
+      ∃ index state, (attempt source reader notice gate profiles replay invoice base load grant work raw).2 =
+        .done ⟨index, .inl (.ok ready), state⟩ := by
+  cases actual : (attempt source reader notice gate profiles replay invoice base load grant work raw).2 with
+  | paused packet => simp [prepare, positive, actual]
+  | done result =>
+      rcases result with ⟨index, verdict, state⟩
+      cases verdict with
+      | inr reason => simp [prepare, positive, actual]
+      | inl answer => cases answer <;> simp [prepare, positive, actual]
+
+theorem prepare_incompatible_iff (grant : Nat) (positive : grant ≠ 0)
+    (work : WorkState source reader notice gate profiles replay invoice base) (raw : Raw) :
+    (prepare source reader notice gate profiles replay invoice base load grant work raw).1 = .ok none ↔
+      ∃ index conflict state, (attempt source reader notice gate profiles replay invoice base load grant work raw).2 =
+        .done ⟨index, .inl (.error conflict), state⟩ := by
+  cases actual : (attempt source reader notice gate profiles replay invoice base load grant work raw).2 with
+  | paused packet => simp [prepare, positive, actual]
+  | done result =>
+      rcases result with ⟨index, verdict, state⟩
+      cases verdict with
+      | inr reason => simp [prepare, positive, actual]
+      | inl answer => cases answer <;> simp [prepare, positive, actual]
+
+set_option backward.isDefEq.respectTransparency false in
+/-- A prepared value keeps its actual terminal world through publication
+refusal. Selecting another raw row, rather than preparing this one, releases
+that phase control. The public cached record never replaces this owner. -/
+theorem prepare_retains_attempt (grant : Nat) (positive : grant ≠ 0)
+    (work : WorkState source reader notice gate profiles replay invoice base) (raw : Raw) :
+    ((prepare source reader notice gate profiles replay invoice base load grant work raw).2.residual.map
+      Subtype.val) = some (attempt source reader notice gate profiles replay invoice base load grant work raw).2 := by
+  unfold prepare
+  rw [if_neg positive]
+  exact finishAttempt_retains source reader notice gate profiles replay invoice base _
+
+theorem preparation_account (grant : Nat)
+    (work : WorkState source reader notice gate profiles replay invoice base) (raw : Raw) :
+    let after := (prepare source reader notice gate profiles replay invoice base load grant work raw).2.account
+    after.remaining + OperationCostProtocol.work after.events =
+      work.account.remaining + OperationCostProtocol.work work.account.events ∧
+      OperationCostProtocol.work work.account.events ≤ OperationCostProtocol.work after.events := by
+  by_cases zero : grant = 0
+  · simp [prepare, zero]
+  · have actual := OperationCostProtocol.Indexed.resume_account source gate profiles replay invoice reader notice grant
+      (0, OperationCostProtocol.Indexed.retry source gate profiles replay invoice reader notice
+        (selected source reader notice gate profiles replay invoice base load work raw))
+    rw [OperationCostProtocol.Indexed.retry_preserves_account,
+      selected_account source reader notice gate profiles replay invoice base load work raw] at actual
+    dsimp only at actual
+    have balance :
+        (OperationCostProtocol.Indexed.accountOf source gate profiles replay invoice reader notice
+          (attempt source reader notice gate profiles replay invoice base load grant work raw).2).remaining +
+          OperationCostProtocol.work (OperationCostProtocol.Indexed.accountOf source gate profiles replay invoice reader notice
+            (attempt source reader notice gate profiles replay invoice base load grant work raw).2).events =
+          work.account.remaining + OperationCostProtocol.work work.account.events := by
+      dsimp only [attempt]
+      omega
+    have grows : OperationCostProtocol.work work.account.events ≤
+        OperationCostProtocol.work (OperationCostProtocol.Indexed.accountOf source gate profiles replay invoice reader notice
+          (attempt source reader notice gate profiles replay invoice base load grant work raw).2).events := by
+      dsimp only [attempt]
+      omega
+    cases result : (attempt source reader notice gate profiles replay invoice base load grant work raw).2 with
+    | paused packet => exact ⟨by simpa [prepare, zero, result, retained] using balance,
+        by simpa [prepare, zero, result, retained] using grows⟩
+    | done finished =>
+        rcases finished with ⟨index, verdict, state⟩
+        rw [result] at balance grows
+        change state.2.remaining + OperationCostProtocol.work state.2.events = _ at balance
+        change OperationCostProtocol.work work.account.events ≤ OperationCostProtocol.work state.2.events at grows
+        cases verdict with
+        | inr refused =>
+            exact ⟨by simpa [prepare, zero, result, retained, OperationCostProtocol.Indexed.accountOf,
+                OperationCostProtocol.Indexed.outcomeAccount] using balance,
+              by simpa [prepare, zero, result, retained, OperationCostProtocol.Indexed.accountOf,
+                OperationCostProtocol.Indexed.outcomeAccount] using grows⟩
+        | inl answer => cases answer <;>
+            exact ⟨by simpa [prepare, zero, result, retained, OperationCostProtocol.Indexed.accountOf,
+                OperationCostProtocol.Indexed.outcomeAccount] using balance,
+              by simpa [prepare, zero, result, retained, OperationCostProtocol.Indexed.accountOf,
+                OperationCostProtocol.Indexed.outcomeAccount] using grows⟩
+
+variable {Saved Sink : Type} (grant : Nat) (append : Sink → Ready → Bool × Sink)
+
+abbrev service := FrozenPublication.provider (Saved := Saved)
+  (check (prepare source reader notice gate profiles replay invoice base load grant) append)
+
+def measure (work : WorkState source reader notice gate profiles replay invoice base) : Nat :=
+  OperationCostProtocol.work work.account.events
+
+theorem measure_mono (work : WorkState source reader notice gate profiles replay invoice base) (raw : Raw) :
+    measure source reader notice gate profiles replay invoice base work ≤
+      measure source reader notice gate profiles replay invoice base
+        (prepare source reader notice gate profiles replay invoice base load grant work raw).2 :=
+  (preparation_account source reader notice gate profiles replay invoice base load grant work raw).2
+
+def debit : Charge (service source reader notice gate profiles replay invoice base load grant append
+    (Saved := Saved)) :=
+  workDebit (measure source reader notice gate profiles replay invoice base)
+    (prepare source reader notice gate profiles replay invoice base load grant) append
+
+/-- This is the same checked publisher's work account, now derived from
+native invoices of all actual preparation phases, including refused work. -/
+theorem callback_account (allowance accepted : Nat) (pending : Option Raw)
+    (state : (service source reader notice gate profiles replay invoice base load grant append
+      (Saved := Saved)).State () ()) :
+    let actual := fromCallbacks
+      (service source reader notice gate profiles replay invoice base load grant append)
+      (debit source reader notice gate profiles replay invoice base load grant append)
+      allowance pending accepted state
+    workMeasure (measure source reader notice gate profiles replay invoice base) actual.2.2 =
+      workMeasure (measure source reader notice gate profiles replay invoice base) state + actual.1 :=
+  callback_preparation_account _ _ (measure_mono source reader notice gate profiles replay invoice base load grant)
+    append allowance accepted pending state
+
+/-- A cached append does not execute a phase or mint a new preparation
+invoice. Publication permission must still be checked by the append owner. -/
+theorem cached_retry_preserves_work
+    (context : PreparationContext Raw Ready
+      (WorkState source reader notice gate profiles replay invoice base) Sink)
+    (raw : Raw) (ready : Ready) (cached : context.cached = some ready) :
+    (check (prepare source reader notice gate profiles replay invoice base load grant) append context raw).2.work =
+      context.work := by
+  simp [check, cached, appendPrepared]
+
+/-- Whole-row phase invoices and the checked return publisher share one
+retained account through every actual grant/refusal/retry boundary. The saved
+producer is never polled to reconstruct the row or its private phase state. -/
+theorem grant_word_account (grants : List Nat)
+    (call : Call Saved Raw (PreparationContext Raw Ready
+      (WorkState source reader notice gate profiles replay invoice base) Sink)) :
+    let later := grants.foldl (fun previous allowance =>
+      resumeCall (service source reader notice gate profiles replay invoice base load grant append)
+        (debit source reader notice gate profiles replay invoice base load grant append) allowance previous) call
+    later.2.2.1 = call.2.2.1 ∧ content later.2.2 = content call.2.2 ∧
+      workMeasure (measure source reader notice gate profiles replay invoice base) later.2.2 + call.1 =
+        workMeasure (measure source reader notice gate profiles replay invoice base) call.2.2 + later.1 :=
+  measured_grant_word _ _ (measure_mono source reader notice gate profiles replay invoice base load grant)
+    append grants call
+
+namespace Controls
+
+open Mettapedia.GSLT.Contracts
+
+abbrev Row := Returned Nat Nat
+
+local instance : Fintype Access :=
+  ⟨{.none, .read, .consume}, by intro access; cases access <;> simp⟩
+
+local instance permissionDecision (point : IndexedAuthority.Point revocationWorlds) :
+    Decidable (FrameUpdate point.authority (Access.consume : revocationWorlds.Fibre point.world)) :=
+  inferInstanceAs (Decidable (∀ frame : Access,
+    Access.separate point.authority frame = true → Access.separate Access.consume frame = true))
+
+/-- Materialization returns the actual index of the validation phase. -/
+def phases : IndexedPolynomial Unit (fun _ => Option Nat) where
+  Shape _ _ := Row
+  Position := fun {_} {index} _ => match index with
+    | none => Nat
+    | some _ => Bool
+  next := fun {_} {index} _ => match index with
+    | none => fun value => some value
+    | some value => fun _ => some value
+
+structure Private where
+  steps : Nat
+  nextEvent : Nat
+  right : Access
+  revision : Nat
+  revokeAfter : Bool
+  changeAfter : Bool
+  deriving DecidableEq, Repr
+
+def machine : Provider phases where
+  State _ _ := Private
+  step := fun {_} {index} state row => match index with
+    | none => ⟨row.payload + row.environment + 100 * state.steps,
+        {state with
+          steps := state.steps + 1
+          nextEvent := state.nextEvent + 1
+          right := if state.revokeAfter then .read else state.right
+          revision := if state.changeAfter then 8 else state.revision}⟩
+    | some value => ⟨decide (value ≠ 99),
+        {state with steps := state.steps + 1, nextEvent := state.nextEvent + 1}⟩
+
+def phaseExpose (index : Option Nat) (control : Row × Option Bool) :
+    (phases.withHoles (fun _ _ => Except Unit Row)).Extension
+      (fun _ _ => Row × Option Bool) () index :=
+  match control.2 with
+  | some accepted =>
+      ⟨.inl (if accepted then .ok control.1 else .error ()), fun impossible => nomatch impossible⟩
+  | none => match index with
+    | none => ⟨.inr control.1, fun value => ({control.1 with payload := value}, none)⟩
+    | some _ => ⟨.inr control.1, fun accepted => (control.1, some accepted)⟩
+
+abbrev program : Client (P := phases) (Return := fun _ _ => Except Unit Row) where
+  V _ _ := Row × Option Bool
+  str := fun _ index => ↾(phaseExpose index)
+
+def phaseGate : OperationCostProtocol.Indexed.Gate (Denied := String) machine := fun state _ =>
+  let point : IndexedAuthority.Point revocationWorlds := ⟨false, state.right⟩
+  letI : Decidable (FrameUpdate point.authority (Access.consume : revocationWorlds.Fibre point.world)) :=
+    permissionDecision point
+  OperationCostProtocol.Indexed.currentGate revocationWorlds point Access.consume
+    (fun _ : Unit => state.revision) [((), 7)] "denied" "changed"
+
+def phaseProfile : Profile :=
+  ⟨"row", [("lookup", some .heapLookup), ("validate", some .analysisStep)], .steps, none, .transparent⟩
+
+def phaseProfiles {base : Unit} {index : Option Nat} (_ : phases.Shape base index) : Profile := phaseProfile
+def phaseReplay {base : Unit} {index : Option Nat} (_ : phases.Shape base index) : Bool := false
+
+def phaseInvoice : OperationCostProtocol.Indexed.Invoice machine := fun {_} {index} state row =>
+  [(state.nextEvent, ⟨row.environment, row.payload,
+    if index.isNone then .heapLookup else .analysisStep, if index.isNone then 3 else 5⟩)]
+
+def continuous : OperationCostProtocol.Indexed.Notice phases String := fun _ _ => none
+
+def stopAfterMaterialization : OperationCostProtocol.Indexed.Notice phases String :=
+  fun {_} {index} _ _ => if index.isNone then some "partial" else none
+
+def phaseLoad (revoke changed : Bool) (account : Account) (row : Row) :
+    Mettapedia.Machines.Cursor.Packet machine program () :=
+  ⟨none, (row, none), ⟨0, account.calls, .consume, 7, revoke, changed⟩⟩
+
+def first : Row := ⟨7, 11, .conditional, [4, 9]⟩
+def second : Row := ⟨7, 22, .completed, [8, 8]⟩
+def conflict : Row := ⟨7, 92, .source, []⟩
+
+abbrev PhaseWork := WorkState machine program continuous phaseGate phaseProfiles phaseReplay phaseInvoice ()
+
+def seedWork : PhaseWork := cold machine program continuous phaseGate phaseProfiles phaseReplay phaseInvoice ()
+  (OperationCostProtocol.initial phaseProfile 100)
+
+def prepareRow (grant : Nat) := prepare machine program continuous phaseGate phaseProfiles phaseReplay phaseInvoice ()
+  (phaseLoad false false) grant
+
+theorem raw_entry_and_reply_selected_phase_are_retained :
+    let one := prepareRow 1 seedWork first
+    one.1 = .error none ∧ one.2.account.remaining = 97 ∧ one.2.account.calls = 1 ∧
+      OperationCostProtocol.work one.2.account.events = 3 ∧
+      (prepareRow 2 one.2 first).1 = .ok (some {first with payload := 18}) ∧
+      (prepareRow 2 one.2 first).2.account.remaining = 92 := by decide
+
+theorem exhausted_inspections_cannot_certify_a_row :
+    (prepareRow 2 seedWork first).1 = .error none ∧
+      (prepareRow 3 seedWork first).1 = .ok (some {first with payload := 18}) ∧
+      (prepareRow 0 (prepareRow 2 seedWork first).2 first).2.account = (prepareRow 2 seedWork first).2.account := by decide
+
+theorem paid_logical_refutation_is_distinct_from_refusal :
+    (prepareRow 3 seedWork conflict).1 = .ok none ∧
+      OperationCostProtocol.work (prepareRow 3 seedWork conflict).2.account.events = 8 ∧
+      (prepareRow 3 (prepareRow 3 seedWork conflict).2 first).1 = .ok (some {first with payload := 18}) ∧
+      (prepareRow 3 (prepareRow 3 seedWork conflict).2 first).2.account.calls = 4 := by decide
+
+theorem later_phase_checks_its_current_authority :
+    let answer := prepare machine program continuous phaseGate phaseProfiles phaseReplay phaseInvoice ()
+      (phaseLoad true false) 3 seedWork first
+    answer.1 = .error (some (.inl "denied")) ∧ answer.2.account.calls = 1 ∧
+      OperationCostProtocol.work answer.2.account.events = 3 := by decide
+
+theorem later_phase_checks_the_retained_manifest :
+    let answer := prepare machine program continuous phaseGate phaseProfiles phaseReplay phaseInvoice ()
+      (phaseLoad false true) 3 seedWork first
+    answer.1 = .error (some (.inl "changed")) ∧ answer.2.account.calls = 1 ∧
+      OperationCostProtocol.work answer.2.account.events = 3 := by decide
+
+abbrev PartialWork := WorkState machine program stopAfterMaterialization phaseGate phaseProfiles phaseReplay phaseInvoice ()
+
+def partialInitial : PartialWork := cold machine program stopAfterMaterialization phaseGate phaseProfiles phaseReplay phaseInvoice ()
+  (OperationCostProtocol.initial phaseProfile 100)
+
+def runPartial (grant : Nat) := prepare machine program stopAfterMaterialization phaseGate phaseProfiles phaseReplay phaseInvoice ()
+  (phaseLoad false false) grant
+
+theorem paid_reply_refusal_retries_the_selected_child :
+    let held := runPartial 2 partialInitial first
+    held.1 = .error (some (.inl "partial")) ∧ held.2.account.remaining = 97 ∧
+      (runPartial 2 held.2 first).1 = .ok (some {first with payload := 18}) ∧
+      (runPartial 2 held.2 first).2.account.calls = 2 ∧
+      OperationCostProtocol.work (runPartial 2 held.2 first).2.account.events = 8 := by decide
+
+def restartedBeforeReply : PartialWork :=
+  let after := (runPartial 2 partialInitial first).2.account
+  let old : PhaseOutcome machine program stopAfterMaterialization phaseGate phaseProfiles phaseReplay phaseInvoice () :=
+    .paused ⟨none, .inl (first, none), ⟨1, 1, .consume, 7, false, false⟩, after⟩
+  ⟨after, some ⟨old, rfl⟩⟩
+
+theorem restarting_pre_call_state_loses_selected_child_progress :
+    let repeated := runPartial 2 restartedBeforeReply first
+    let done := runPartial 2 repeated.2 first
+    done.1 = .ok (some {first with payload := 118}) ∧ done.2.account.calls = 3 ∧
+      OperationCostProtocol.work done.2.account.events = 11 ∧
+      done.1 ≠ (runPartial 2 (runPartial 2 partialInitial first).2 first).1 := by decide
+
+def publishAllowed (sink : Bool × List Row) (row : Row) : Bool × (Bool × List Row) :=
+  if sink.1 then (true, (true, sink.2 ++ [row])) else (false, sink)
+
+def context : PreparationContext Row Row PhaseWork (Bool × List Row) := CheckedPreparation.initial seedWork (false, [])
+
+def held := check (prepareRow 3) publishAllowed context first
+
+theorem cached_publication_retries_with_zero_preparation_and_current_permission :
+    held.1 = false ∧ held.2.cached = some {first with payload := 18} ∧
+      held.2.work.account.calls = 2 ∧
+      (check (prepareRow 0) publishAllowed held.2 first).1 = false ∧
+      (check (prepareRow 0) publishAllowed {held.2 with sink := (true, [])} first).1 = true ∧
+      (check (prepareRow 0) publishAllowed {held.2 with sink := (true, [])} first).2.attempts = 1 ∧
+      (check (prepareRow 0) publishAllowed {held.2 with sink := (true, [])} first).2.work.account = held.2.work.account := by decide
+
+def publication : Call String Row (PreparationContext Row Row PhaseWork (Bool × List Row)) :=
+  FrozenPublication.start "source cut" [conflict, first, second]
+    (CheckedPreparation.initial seedWork (true, []))
+
+def delivered := FrozenPublication.run (check (prepareRow 3) publishAllowed) 4 publication
+
+theorem complete_pipeline_skips_only_conflict_and_preserves_full_siblings :
+    published delivered.2.2.2.accumulator.2 =
+      [{first with payload := 18}, {second with payload := 29}] ∧
+      skipped delivered.2.2.2.accumulator.2 = [conflict] ∧
+      delivered.2.2.1 = "source cut" ∧ content delivered.2.2 = [conflict, first, second] ∧
+      delivered.2.2.2.accumulator.2.work.account.calls = 6 ∧
+      OperationCostProtocol.work delivered.2.2.2.accumulator.2.work.account.events = 24 := by decide
+
+def revokedChecker : OperationCostProtocol.Indexed.Gate (Denied := String) machine := fun state row =>
+  phaseGate {state with right := .read} row
+
+def changedChecker : OperationCostProtocol.Indexed.Gate (Denied := String) machine := fun state row =>
+  phaseGate {state with revision := 8} row
+
+def retryView {checker : OperationCostProtocol.Indexed.Gate (Denied := String) machine}
+    (work : WorkState machine program continuous checker phaseProfiles phaseReplay phaseInvoice ()) :
+    Option (Option Nat × (Row × Option Bool) × Private × Account) :=
+  work.residual.bind fun held =>
+    match OperationCostProtocol.Indexed.retry machine checker phaseProfiles phaseReplay phaseInvoice
+      program continuous held.1 with
+    | .paused ⟨index, .inl control, state⟩ => some (index, control, state)
+    | _ => none
+
+def capturedPhase : PhaseWork := (prepareRow 1 seedWork first).2
+
+def revokedPhase := replaceGate machine program continuous phaseGate phaseProfiles phaseReplay phaseInvoice ()
+  revokedChecker capturedPhase
+
+def deniedResume := prepare machine program continuous revokedChecker phaseProfiles phaseReplay phaseInvoice ()
+  (phaseLoad false false) 2 revokedPhase first
+
+theorem replacing_checker_revokes_without_rewriting_private_phase :
+    retryView (checker := revokedChecker) revokedPhase = retryView (checker := phaseGate) capturedPhase ∧
+      revokedPhase.account = capturedPhase.account ∧
+      (retryView (checker := revokedChecker) revokedPhase).map (fun view => view.2.2.1.right) = some .consume ∧
+      deniedResume.1 = .error (some (.inl "denied")) ∧
+      retryView (checker := revokedChecker) deniedResume.2 = retryView (checker := phaseGate) capturedPhase ∧
+      deniedResume.2.account = capturedPhase.account := by
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩ <;> rfl
+
+theorem replacing_checker_revalidates_read_manifest_without_replaying :
+    let revised := replaceGate machine program continuous phaseGate phaseProfiles phaseReplay phaseInvoice ()
+      changedChecker capturedPhase
+    let result := prepare machine program continuous changedChecker phaseProfiles phaseReplay phaseInvoice ()
+      (phaseLoad false false) 2 revised first
+    retryView (checker := changedChecker) revised = retryView (checker := phaseGate) capturedPhase ∧
+      result.1 = .error (some (.inl "changed")) ∧
+      retryView (checker := changedChecker) result.2 = retryView (checker := phaseGate) capturedPhase ∧
+      result.2.account = capturedPhase.account := by
+  dsimp only
+  refine ⟨?_, ?_, ?_, ?_⟩ <;> rfl
+
+theorem insufficient_work_budget_is_not_logical_refutation :
+    let limited := cold machine program continuous phaseGate phaseProfiles phaseReplay phaseInvoice ()
+      (OperationCostProtocol.initial phaseProfile 4)
+    let result := prepareRow 3 limited first
+    result.1 = .error (some (.inr .budget)) ∧ result.2.account.remaining = 1 ∧
+      result.2.account.calls = 1 ∧ OperationCostProtocol.work result.2.account.events = 3 := by decide
+
+def repeatedInvoice : OperationCostProtocol.Indexed.Invoice machine := fun state row =>
+  (phaseInvoice state row).map fun event => (0, event.2)
+
+theorem repeated_receipt_refuses_without_reexecuting_next_phase :
+    let initialWork := cold machine program continuous phaseGate phaseProfiles phaseReplay repeatedInvoice ()
+      (OperationCostProtocol.initial phaseProfile 100)
+    let result := prepare machine program continuous phaseGate phaseProfiles phaseReplay repeatedInvoice ()
+      (phaseLoad false false) 3 initialWork first
+    result.1 = .error (some (.inr .repeatedIdentity)) ∧ result.2.account.calls = 1 ∧
+      OperationCostProtocol.work result.2.account.events = 3 := by decide
+
+def publishCurrent (sink : Private × List Row) (row : Row) : Bool × (Private × List Row) :=
+  match phaseGate (base := ()) (index := none) sink.1 row with
+  | .error _ => (false, sink)
+  | .ok _ => (true, (sink.1, sink.2 ++ [row]))
+
+def publicationHeld := check (prepareRow 3) publishCurrent
+  (CheckedPreparation.initial seedWork (⟨0, 0, .read, 7, false, false⟩, [])) first
+
+theorem cached_row_has_no_ambient_publication_authority :
+    publicationHeld.1 = false ∧ publicationHeld.2.cached = some {first with payload := 18} ∧
+      publicationHeld.2.work.residual.isSome = true ∧
+      (check (prepareRow 0) publishCurrent
+        {publicationHeld.2 with sink := (⟨0, 0, .consume, 8, false, false⟩, [])} first).1 = false ∧
+      (check (prepareRow 0) publishCurrent
+        {publicationHeld.2 with sink := (⟨0, 0, .consume, 7, false, false⟩, [])} first).1 = true ∧
+      (check (prepareRow 0) publishCurrent
+        {publicationHeld.2 with sink := (⟨0, 0, .consume, 7, false, false⟩, [])} first).2.work.account.calls = 2 := by decide
+
+/-! The same retained phase outcome can feed the existing validated-commit
+owner.  Its source submission supplies the dependency manifest; the installed
+phase gate and the publication permission remain current service inputs. -/
+
+def publicationSnapshot : Nat → Nat
+  | 0 => 7
+  | _ => 0
+
+def publicationTransaction : ValidatedCommit.Transaction Nat Nat :=
+  .read 0 fun revision => .pure [(1, revision + 11)]
+
+def terminalAttempt := attempt machine program continuous phaseGate phaseProfiles phaseReplay phaseInvoice ()
+  (phaseLoad false false) 3 seedWork first
+
+abbrev PublishedInvocation := OperationCostProtocol.Indexed.Invocation
+  (Key := Nat) (Value := Nat) machine phaseGate phaseProfiles phaseReplay phaseInvoice program continuous ()
+
+def retainedInvocation : PublishedInvocation :=
+  ⟨(publicationSnapshot, publicationTransaction), terminalAttempt.1, terminalAttempt.2⟩
+
+def pausedAttempt := attempt machine program continuous phaseGate phaseProfiles phaseReplay phaseInvoice ()
+  (phaseLoad false false) 1 seedWork first
+
+def pausedInvocation : PublishedInvocation :=
+  ⟨(publicationSnapshot, publicationTransaction), pausedAttempt.1, pausedAttempt.2⟩
+
+def resumedInvocation := OperationCostProtocol.Indexed.Invocation.resumeWith
+  (source := machine) (gate := phaseGate) (profiles := phaseProfiles)
+  (replay := phaseReplay) (invoice := phaseInvoice) (reader := program)
+  (notice := continuous) phaseGate 2 pausedInvocation
+
+def revokedInvocation := OperationCostProtocol.Indexed.Invocation.resumeWith
+  (source := machine) (gate := phaseGate) (profiles := phaseProfiles)
+  (replay := phaseReplay) (invoice := phaseInvoice) (reader := program)
+  (notice := continuous) revokedChecker 2 pausedInvocation
+
+theorem resumption_installs_current_checker_without_rewriting_manifest_or_account :
+    resumedInvocation.reads = pausedInvocation.reads ∧
+      resumedInvocation.spent = 8 ∧ resumedInvocation.account.remaining = 92 ∧
+      resumedInvocation.account.calls = 2 ∧
+      (match resumedInvocation.outcome with
+        | .done ⟨_, .inl (.ok _), _⟩ => true
+        | _ => false) = true ∧
+      revokedInvocation.reads = pausedInvocation.reads ∧
+      revokedInvocation.spent = 3 ∧ revokedInvocation.account = pausedInvocation.account ∧
+      (match revokedInvocation.outcome with
+        | .done ⟨_, .inr (.inl "denied", _), _⟩ => true
+        | _ => false) = true := by
+  refine ⟨?_, rfl, rfl, rfl, rfl, ?_, rfl, rfl, rfl⟩
+  · exact OperationCostProtocol.Indexed.Invocation.resumeWith_reads
+      (source := machine) (gate := phaseGate) (profiles := phaseProfiles)
+      (replay := phaseReplay) (invoice := phaseInvoice) (reader := program)
+      (notice := continuous) phaseGate 2 pausedInvocation
+  · exact OperationCostProtocol.Indexed.Invocation.resumeWith_reads
+      (source := machine) (gate := phaseGate) (profiles := phaseProfiles)
+      (replay := phaseReplay) (invoice := phaseInvoice) (reader := program)
+      (notice := continuous) revokedChecker 2 pausedInvocation
+
+def publicationWrites : {_index : Option Nat} → Except Unit Row → ValidatedCommit.Writes Nat Nat :=
+  fun {_} result => match result with
+    | .error _ => []
+    | .ok row => [(1, row.payload)]
+
+theorem retained_invocation_is_ready :
+    OperationCostProtocol.Indexed.Invocation.Ready
+      (source := machine) (gate := phaseGate) (profiles := phaseProfiles)
+      (replay := phaseReplay) (invoice := phaseInvoice) (reader := program)
+      (notice := continuous)
+      (fun {index} result => publicationWrites (_index := index) result) retainedInvocation := by
+  refine ⟨some 18, .ok {first with payload := 18},
+    (⟨2, 2, .consume, 7, false, false⟩,
+      ⟨92, none, 2,
+        [(0, ⟨11, 7, .heapLookup, 3⟩), (1, ⟨11, 18, .analysisStep, 5⟩)]⟩), rfl, rfl⟩
+
+/-- The publication permission is read now.  The completed invocation stores
+neither this point nor a transferable consume right. -/
+def publicationPermission (right : Access) : Except String Unit :=
+  phaseGate (base := ()) (index := none) ⟨0, 0, right, 7, false, false⟩ first
+
+theorem ready_current_invocation_publishes_its_validated_writes :
+    OperationCostProtocol.Indexed.Invocation.publish
+      (source := machine) (gate := phaseGate) (profiles := phaseProfiles)
+      (replay := phaseReplay) (invoice := phaseInvoice) (reader := program)
+      (notice := continuous)
+      (fun {index} result => publicationWrites (_index := index) result)
+      retainedInvocation retained_invocation_is_ready
+      publicationPermission .consume publicationSnapshot =
+        .ok (some (ValidatedCommit.write publicationSnapshot [(1, 18)])) := by
+  rfl
+
+theorem revoked_publication_keeps_current_store_unmodified :
+    OperationCostProtocol.Indexed.Invocation.publish
+      (source := machine) (gate := phaseGate) (profiles := phaseProfiles)
+      (replay := phaseReplay) (invoice := phaseInvoice) (reader := program)
+      (notice := continuous)
+      (fun {index} result => publicationWrites (_index := index) result)
+      retainedInvocation retained_invocation_is_ready
+      publicationPermission .read publicationSnapshot = .error "denied" := by
+  rfl
+
+def changedPublicationStore : Nat → Nat := Function.update publicationSnapshot 0 8
+
+theorem changed_dependency_refuses_ready_publication :
+    OperationCostProtocol.Indexed.Invocation.publish
+      (source := machine) (gate := phaseGate) (profiles := phaseProfiles)
+      (replay := phaseReplay) (invoice := phaseInvoice) (reader := program)
+      (notice := continuous)
+      (fun {index} result => publicationWrites (_index := index) result)
+      retainedInvocation retained_invocation_is_ready
+      publicationPermission .consume changedPublicationStore = .ok none := by
+  rfl
+
+def unrelatedPublicationStore : Nat → Nat := Function.update publicationSnapshot 2 99
+
+theorem unrelated_change_preserves_validated_publication :
+    OperationCostProtocol.Indexed.Invocation.publish
+      (source := machine) (gate := phaseGate) (profiles := phaseProfiles)
+      (replay := phaseReplay) (invoice := phaseInvoice) (reader := program)
+      (notice := continuous)
+      (fun {index} result => publicationWrites (_index := index) result)
+      retainedInvocation retained_invocation_is_ready
+      publicationPermission .consume unrelatedPublicationStore =
+        .ok (some (ValidatedCommit.write unrelatedPublicationStore [(1, 18)])) ∧
+      (ValidatedCommit.write unrelatedPublicationStore [(1, 18)]) 0 = 7 ∧
+      (ValidatedCommit.write unrelatedPublicationStore [(1, 18)]) 1 = 18 ∧
+      (ValidatedCommit.write unrelatedPublicationStore [(1, 18)]) 2 = 99 := by
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+end Controls
+
+#print axioms finishAttempt_retains
+#print axioms prepare_ready_iff
+#print axioms prepare_incompatible_iff
+#print axioms prepare_retains_attempt
+#print axioms preparation_account
+#print axioms grant_word_account
+#print axioms Controls.raw_entry_and_reply_selected_phase_are_retained
+#print axioms Controls.paid_logical_refutation_is_distinct_from_refusal
+#print axioms Controls.paid_reply_refusal_retries_the_selected_child
+#print axioms Controls.restarting_pre_call_state_loses_selected_child_progress
+#print axioms Controls.complete_pipeline_skips_only_conflict_and_preserves_full_siblings
+#print axioms Controls.replacing_checker_revokes_without_rewriting_private_phase
+#print axioms Controls.replacing_checker_revalidates_read_manifest_without_replaying
+#print axioms Controls.cached_row_has_no_ambient_publication_authority
+#print axioms Controls.resumption_installs_current_checker_without_rewriting_manifest_or_account
+#print axioms Controls.retained_invocation_is_ready
+#print axioms Controls.ready_current_invocation_publishes_its_validated_writes
+#print axioms Controls.revoked_publication_keeps_current_store_unmodified
+#print axioms Controls.changed_dependency_refuses_ready_publication
+#print axioms Controls.unrelated_change_preserves_validated_publication
+
+end IndexedService
+
+/-! A substitution service prepares the held occurrence through the existing
+explicit stack. Its transition debit is separate from source production and
+accepted publication. The complete terminal configuration remains private
+until another occurrence starts; append refusal uses the existing ready cache.
+-/
+namespace RetainedSubstitution
+
+open Mettapedia.Machines
+
+variable {Name Leaf Key Scope Path Store Environment : Type}
+variable (substitution : SubstitutionFold.Subst Name Leaf Key Scope Path Store)
+
+abbrev Configuration := SubstitutionFold.Config Name Leaf Key Scope Path Store
+abbrev Row := Returned (SubstitutionFold.Term Name Leaf) Environment
+abbrev WorkState := Nat × Option (Configuration (Name := Name) (Leaf := Leaf)
+  (Key := Key) (Scope := Scope) (Path := Path) (Store := Store))
+
+variable (scope : Environment → Scope) (path : Environment → Path)
+    (initialStore : Environment → Store)
+
+def loadRow (row : Row (Name := Name) (Leaf := Leaf) (Environment := Environment)) :
+    Configuration (Name := Name) (Leaf := Leaf) (Key := Key)
+      (Scope := Scope) (Path := Path) (Store := Store) :=
+  .descend (scope row.environment) (path row.environment) row.payload []
+    (initialStore row.environment)
+
+/-- A completed configuration belongs to the preceding prepared occurrence.
+The checked publisher bypasses this loader while that occurrence is cached.
+A paused or failed configuration keeps its scope, stack and private store. -/
+def selected (work : WorkState (Name := Name) (Leaf := Leaf) (Key := Key)
+      (Scope := Scope) (Path := Path) (Store := Store))
+    (row : Row (Name := Name) (Leaf := Leaf) (Environment := Environment)) :=
+  match work.2 with
+  | none => loadRow scope path initialStore row
+  | some (.ascend _ [] _) => loadRow scope path initialStore row
+  | some configuration => configuration
+
+/-- `error none` is a retained service pause; `error (some ())` is an explicit
+resolution refusal. Neither witnesses an incompatible logical candidate. -/
+def prepare (grant : Nat)
+    (work : WorkState (Name := Name) (Leaf := Leaf) (Key := Key)
+      (Scope := Scope) (Path := Path) (Store := Store))
+    (row : Row (Name := Name) (Leaf := Leaf) (Environment := Environment)) :
+    Except (Option Unit) (Option (Row (Name := Name) (Leaf := Leaf)
+      (Environment := Environment))) ×
+      WorkState (Name := Name) (Leaf := Leaf) (Key := Key)
+        (Scope := Scope) (Path := Path) (Store := Store) :=
+  if grant = 0 then (.error none, work) else
+    let later := MachineCore.paidSlice (SubstitutionFold.Executable.machineCore substitution)
+      grant (work.1, selected scope path initialStore work row)
+    let retained := (later.1, some later.2)
+    match SubstitutionFold.readout substitution later.2 with
+    | none => (.error none, retained)
+    | some (.error ()) => (.error (some ()), retained)
+    | some (.ok (value, _)) => (.ok (some {row with payload := value}), retained)
+
+theorem prepare_zero
+    (work : WorkState (Name := Name) (Leaf := Leaf) (Key := Key)
+      (Scope := Scope) (Path := Path) (Store := Store))
+    (row : Row (Name := Name) (Leaf := Leaf) (Environment := Environment)) :
+    prepare substitution scope path initialStore 0 work row = (.error none, work) := by
+  simp [prepare]
+
+theorem prepare_never_skips (grant : Nat)
+    (work : WorkState (Name := Name) (Leaf := Leaf) (Key := Key)
+      (Scope := Scope) (Path := Path) (Store := Store))
+    (row : Row (Name := Name) (Leaf := Leaf) (Environment := Environment)) :
+    (prepare substitution scope path initialStore grant work row).1 ≠ .ok none := by
+  unfold prepare
+  split
+  · simp
+  · dsimp only
+    split <;> simp
+
+theorem prepare_preserves_record (grant : Nat)
+    (work : WorkState (Name := Name) (Leaf := Leaf) (Key := Key)
+      (Scope := Scope) (Path := Path) (Store := Store))
+    (row ready : Row (Name := Name) (Leaf := Leaf) (Environment := Environment))
+    (prepared : (prepare substitution scope path initialStore grant work row).1 =
+      .ok (some ready)) :
+    ready.environment = row.environment ∧ ready.form = row.form ∧
+      ready.conditions = row.conditions := by
+  unfold prepare at prepared
+  split at prepared
+  · simp at prepared
+  · dsimp only at prepared
+    split at prepared <;> simp_all
+    subst ready
+    exact ⟨rfl, rfl, rfl⟩
+
+theorem prepare_debit_bounds (grant : Nat)
+    (work : WorkState (Name := Name) (Leaf := Leaf) (Key := Key)
+      (Scope := Scope) (Path := Path) (Store := Store))
+    (row : Row (Name := Name) (Leaf := Leaf) (Environment := Environment)) :
+    work.1 ≤ (prepare substitution scope path initialStore grant work row).2.1 ∧
+      (prepare substitution scope path initialStore grant work row).2.1 ≤ work.1 + grant := by
+  by_cases zero : grant = 0
+  · simp [prepare, zero]
+  · have bounded := MachineCore.paidSlice_debit_bounds
+      (SubstitutionFold.Executable.machineCore substitution) grant
+      (work.1, selected scope path initialStore work row)
+    unfold prepare
+    simp only [if_neg zero]
+    split <;> exact bounded
+
+theorem prepare_retains_endpoint (grant : Nat) (positive : grant ≠ 0)
+    (work : WorkState (Name := Name) (Leaf := Leaf) (Key := Key)
+      (Scope := Scope) (Path := Path) (Store := Store))
+    (row : Row (Name := Name) (Leaf := Leaf) (Environment := Environment)) :
+    (prepare substitution scope path initialStore grant work row).2 =
+      let later := MachineCore.paidSlice (SubstitutionFold.Executable.machineCore substitution)
+        grant (work.1, selected scope path initialStore work row)
+      (later.1, some later.2) := by
+  unfold prepare
+  simp only [if_neg positive]
+  split <;> rfl
+
+/-- A cold successful preparation agrees with the independent recursive
+fold and preserves the original environment, role and conditions. -/
+theorem cold_ready_eq_fold (grant paid : Nat)
+    (row ready : Row (Name := Name) (Leaf := Leaf) (Environment := Environment))
+    (value : SubstitutionFold.Term Name Leaf) (laterStore : Store)
+    (fold : SubstitutionFold.Fold substitution (scope row.environment) (path row.environment)
+      (initialStore row.environment) row.payload value laterStore)
+    (prepared : (prepare substitution scope path initialStore grant (paid, none) row).1 =
+      .ok (some ready)) : ready = {row with payload := value} := by
+  by_cases zero : grant = 0
+  · simp [prepare, zero] at prepared
+  · unfold prepare at prepared
+    simp only [if_neg zero, selected, loadRow] at prepared
+    split at prepared
+    · simp at prepared
+    · simp at prepared
+    · rename_i image store observed
+      have terminal := (SubstitutionFold.readout_final_iff
+        (σ := substitution) _).mp (by rw [observed]; rfl)
+      have endpoint := SubstitutionFold.Executable.completed_slice_eq_fold
+        substitution fold grant terminal
+      have equalImage : image = value := by
+        change SubstitutionFold.readout substitution
+          (MachineCore.runSlice (SubstitutionFold.Executable.machineCore substitution) grant
+            (.descend (scope row.environment) (path row.environment) row.payload []
+              (initialStore row.environment))).1 = _ at observed
+        rw [endpoint] at observed
+        have same : value = image ∧ laterStore = store := by
+          simpa only [SubstitutionFold.readout, Option.some.injEq,
+            Except.ok.injEq, Prod.mk.injEq] using observed
+        exact same.1.symm
+      simpa [equalImage] using prepared.symm
+
+/-- A cached append retry performs no substitution transition or source
+request, including when its independent preparation grant is zero. -/
+theorem cached_retry_preserves_work {Sink : Type}
+    (append : Sink → Row (Name := Name) (Leaf := Leaf) (Environment := Environment) → Bool × Sink)
+    (context : PreparationContext
+      (Row (Name := Name) (Leaf := Leaf) (Environment := Environment))
+      (Row (Name := Name) (Leaf := Leaf) (Environment := Environment))
+      (WorkState (Name := Name) (Leaf := Leaf) (Key := Key)
+        (Scope := Scope) (Path := Path) (Store := Store)) Sink)
+    (row ready : Row (Name := Name) (Leaf := Leaf) (Environment := Environment))
+    (cached : context.cached = some ready) (grant : Nat) :
+    (check (prepare substitution scope path initialStore grant) append context row).2.work =
+      context.work ∧
+    (check (prepare substitution scope path initialStore grant) append context row).2.attempts =
+      context.attempts := by
+  simp [check, cached, appendPrepared]
+
+abbrev ConsumerState (Sink : Type) := PreparationContext
+  (Row (Name := Name) (Leaf := Leaf) (Environment := Environment))
+  (Row (Name := Name) (Leaf := Leaf) (Environment := Environment))
+  (WorkState (Name := Name) (Leaf := Leaf) (Key := Key)
+    (Scope := Scope) (Path := Path) (Store := Store)) Sink
+
+variable {Saved Sink : Type}
+variable (grant : Nat)
+variable (append : Sink → Row (Name := Name) (Leaf := Leaf)
+  (Environment := Environment) → Bool × Sink)
+
+/-- The maintained frozen-record provider, with retained substitution as its
+checked consumer. No source operation is introduced by this adapter. -/
+abbrev service := FrozenPublication.provider (Saved := Saved)
+  (check (prepare substitution scope path initialStore grant) append)
+
+def paid (state : (service substitution scope path initialStore grant append
+    (Saved := Saved)).State () ()) : Nat := state.2.accumulator.2.work.1
+
+theorem check_work_mono
+    (context : ConsumerState (Name := Name) (Leaf := Leaf) (Key := Key)
+      (Scope := Scope) (Path := Path) (Store := Store)
+      (Environment := Environment) Sink)
+    (row : Row (Name := Name) (Leaf := Leaf) (Environment := Environment)) :
+    context.work.1 ≤
+      (check (prepare substitution scope path initialStore grant) append context row).2.work.1 := by
+  exact check_measure_mono Prod.fst (prepare substitution scope path initialStore grant)
+    (fun work row => (prepare_debit_bounds substitution scope path initialStore grant work row).1) append context row
+
+theorem check_work_bound
+    (context : ConsumerState (Name := Name) (Leaf := Leaf) (Key := Key)
+      (Scope := Scope) (Path := Path) (Store := Store)
+      (Environment := Environment) Sink)
+    (row : Row (Name := Name) (Leaf := Leaf) (Environment := Environment)) :
+    (check (prepare substitution scope path initialStore grant) append context row).2.work.1 ≤
+      context.work.1 + grant := by
+  have bounded := (prepare_debit_bounds substitution scope path initialStore grant context.work row).2
+  cases cached : context.cached with
+  | some value => simp [check, cached, appendPrepared]
+  | none =>
+      simp only [check, cached]
+      split <;> simpa only [appendPrepared] using bounded
+
+theorem service_paid_mono {base index : Unit}
+    (state : (service substitution scope path initialStore grant append
+      (Saved := Saved)).State base index)
+    (request : (protocol (Row (Name := Name) (Leaf := Leaf)
+      (Environment := Environment)) Unit).Shape base index) :
+    paid substitution scope path initialStore grant append state ≤
+      paid substitution scope path initialStore grant append
+        ((service substitution scope path initialStore grant append).step state request).2 := by
+  exact provider_measure_mono Prod.fst (prepare substitution scope path initialStore grant)
+    (fun work row => (prepare_debit_bounds substitution scope path initialStore grant work row).1) append state request
+
+theorem service_paid_bound {base index : Unit}
+    (state : (service substitution scope path initialStore grant append
+      (Saved := Saved)).State base index)
+    (request : (protocol (Row (Name := Name) (Leaf := Leaf)
+      (Environment := Environment)) Unit).Shape base index) :
+    paid substitution scope path initialStore grant append
+        ((service substitution scope path initialStore grant append).step state request).2 ≤
+      paid substitution scope path initialStore grant append state + grant := by
+  rcases state with ⟨saved, ⟨remaining, pending, ⟨delivered, context⟩, requested, accepted⟩⟩
+  cases request with
+  | next =>
+      cases pending with
+      | some row => simp [paid, service, FrozenPublication.provider]
+      | none => cases remaining <;> simp [paid, service, FrozenPublication.provider]
+  | accept item =>
+      cases pending with
+      | none => simp [paid, service, FrozenPublication.provider]
+      | some row =>
+          exact check_work_bound substitution scope path initialStore grant append context row
+
+/-- A mathematical observation of actual retained preparation transitions.
+The runtime need not execute a second callback to obtain this observation. -/
+def debit : Charge (service substitution scope path initialStore grant append
+    (Saved := Saved)) := fun state request =>
+  paid substitution scope path initialStore grant append
+      ((service substitution scope path initialStore grant append).step state request).2 -
+    paid substitution scope path initialStore grant append state
+
+theorem service_debit_le_grant {base index : Unit}
+    (state : (service substitution scope path initialStore grant append
+      (Saved := Saved)).State base index)
+    (request : (protocol (Row (Name := Name) (Leaf := Leaf)
+      (Environment := Environment)) Unit).Shape base index) :
+    debit substitution scope path initialStore grant append state request ≤ grant := by
+  have bounded := service_paid_bound substitution scope path initialStore grant append state request
+  simp only [debit]
+  omega
+
+theorem service_counter {base index : Unit}
+    (state : (service substitution scope path initialStore grant append
+      (Saved := Saved)).State base index)
+    (request : (protocol (Row (Name := Name) (Leaf := Leaf)
+      (Environment := Environment)) Unit).Shape base index) :
+    paid substitution scope path initialStore grant append
+        ((service substitution scope path initialStore grant append).step state request).2 =
+      paid substitution scope path initialStore grant append state +
+        debit substitution scope path initialStore grant append state request := by
+  exact provider_measure_counter Prod.fst (prepare substitution scope path initialStore grant)
+    (fun work row => (prepare_debit_bounds substitution scope path initialStore grant work row).1) append state request
+
+/-- The shared callback cursor records precisely the service's structural
+work, including a failed attempt. It does not price calls as one unit. -/
+theorem callback_exact_account (allowance accepted : Nat)
+    (pending : Option (Row (Name := Name) (Leaf := Leaf) (Environment := Environment)))
+    (state : (service substitution scope path initialStore grant append
+      (Saved := Saved)).State () ()) :
+    let later := fromCallbacks (service substitution scope path initialStore grant append)
+      (debit substitution scope path initialStore grant append)
+      allowance pending accepted state
+    paid substitution scope path initialStore grant append later.2.2 =
+      paid substitution scope path initialStore grant append state + later.1 := by
+  exact callback_preparation_account Prod.fst (prepare substitution scope path initialStore grant)
+    (fun work row => (prepare_debit_bounds substitution scope path initialStore grant work row).1) append allowance accepted pending state
+
+/-- Erasing only the service debit gives the existing checked publication
+run. Full source, prepared context and occurrence fields remain identical. -/
+theorem resume_erases
+    (allowance : Nat)
+    (call : Call Saved
+      (Row (Name := Name) (Leaf := Leaf) (Environment := Environment))
+      (ConsumerState (Name := Name) (Leaf := Leaf) (Key := Key)
+        (Scope := Scope) (Path := Path) (Store := Store)
+        (Environment := Environment) Sink)) :
+    (resumeCall (service substitution scope path initialStore grant append)
+      (debit substitution scope path initialStore grant append) allowance call).2 =
+      (FrozenPublication.run (check (prepare substitution scope path initialStore grant) append)
+        allowance call).2 := by
+  exact measured_resume_erases Prod.fst (prepare substitution scope path initialStore grant) append allowance call
+
+theorem resume_exact_account (allowance : Nat)
+    (call : Call Saved
+      (Row (Name := Name) (Leaf := Leaf) (Environment := Environment))
+      (ConsumerState (Name := Name) (Leaf := Leaf) (Key := Key)
+        (Scope := Scope) (Path := Path) (Store := Store)
+        (Environment := Environment) Sink)) :
+    let later := resumeCall (service substitution scope path initialStore grant append)
+      (debit substitution scope path initialStore grant append) allowance call
+    paid substitution scope path initialStore grant append later.2.2 + call.1 =
+      paid substitution scope path initialStore grant append call.2.2 + later.1 := by
+  exact measured_resume_account Prod.fst (prepare substitution scope path initialStore grant)
+    (fun work row => (prepare_debit_bounds substitution scope path initialStore grant work row).1) append allowance call
+
+set_option backward.isDefEq.respectTransparency false in
+/-- Every actual grant word preserves the original source and complete raw
+partition while charging exactly the retained preparation transitions. -/
+theorem grant_word_source_partition_and_account
+    (grants : List Nat)
+    (call : Call Saved
+      (Row (Name := Name) (Leaf := Leaf) (Environment := Environment))
+      (ConsumerState (Name := Name) (Leaf := Leaf) (Key := Key)
+        (Scope := Scope) (Path := Path) (Store := Store)
+        (Environment := Environment) Sink)) :
+    let later := grants.foldl (fun previous allowance =>
+      resumeCall (service substitution scope path initialStore grant append)
+        (debit substitution scope path initialStore grant append) allowance previous) call
+    later.2.2.1 = call.2.2.1 ∧ content later.2.2 = content call.2.2 ∧
+      paid substitution scope path initialStore grant append later.2.2 + call.1 =
+        paid substitution scope path initialStore grant append call.2.2 + later.1 := by
+  exact measured_grant_word Prod.fst (prepare substitution scope path initialStore grant)
+    (fun work row => (prepare_debit_bounds substitution scope path initialStore grant work row).1) append grants call
+
+namespace Controls
+
+private def choosing : SubstitutionFold.Subst Nat Nat Nat Nat Unit Nat where
+  step scope _ state name :=
+    if name = 99 then .failed else
+      .bound name (.leaf (scope + name)) scope () (state + 1)
+  store state _ _ := state + 1
+  hasVars term := match term with
+    | .leaf _ => false
+    | _ => true
+
+private abbrev R := Returned (SubstitutionFold.Term Nat Nat) Nat
+private abbrev W := WorkState (Name := Nat) (Leaf := Nat) (Key := Nat)
+  (Scope := Nat) (Path := Unit) (Store := Nat)
+private abbrev SinkState := Bool × List R
+private abbrev Private := PreparationContext R R W SinkState
+
+private def first : R := ⟨.var 7, 11, .completed, [.leaf 3, .var 9]⟩
+private def second : R := ⟨.var 7, 22, .conditional, [.var 9, .var 9]⟩
+private def firstReady : R := {first with payload := .leaf 18}
+private def secondReady : R := {second with payload := .leaf 29}
+
+private def appendRow (sink : SinkState) (row : R) : Bool × SinkState :=
+  if sink.1 then (true, (true, sink.2 ++ [row])) else (false, (true, sink.2))
+
+private abbrev prepared (grant : Nat) := service choosing id (fun _ => ()) (fun _ => 0)
+  grant appendRow (Saved := Nat × List Nat)
+private abbrev charged (grant : Nat) : Charge (prepared grant) :=
+  debit choosing id (fun _ => ()) (fun _ => 0) grant appendRow (Saved := Nat × List Nat)
+
+private def beginning : Call (Nat × List Nat) R Private :=
+  start (47, [1, 1, 9]) [first, second] (initial (0, none) (false, []))
+
+private def visits (grants : List Nat) : Call (Nat × List Nat) R Private :=
+  grants.foldl (fun held allowance =>
+  resumeCall (prepared 1) (charged 1) allowance held) beginning
+
+theorem partial_preparation_keeps_raw_loan_source_and_paid_prefix :
+    let held := visits [1, 1]
+    held.1 = 2 ∧ held.2.1.pending = some first ∧ held.2.1.accepted = 0 ∧
+      held.2.2.1 = (47, [1, 1, 9]) ∧ held.2.2.2.requested = 1 ∧
+      held.2.2.2.accumulator.2.work =
+        (2, some (.ascend (.leaf 18) [.var 7] 1)) ∧
+      published held.2.2.2.accumulator.2 = [] := by
+  exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+theorem prepared_append_refusal_keeps_full_record_and_final_store :
+    let held := visits [1, 1, 1]
+    held.1 = 3 ∧ held.2.1.pending = some first ∧ held.2.1.accepted = 0 ∧
+      held.2.2.2.requested = 1 ∧
+      held.2.2.2.accumulator.2.cached = some firstReady ∧
+      held.2.2.2.accumulator.2.work = (3, some (.ascend (.leaf 18) [] 2)) ∧
+      held.2.2.2.accumulator.2.sink = (true, []) := by
+  exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+theorem zero_preparation_grant_retries_only_the_cached_append :
+    let held := resumeCall (prepared 0) (charged 0) 1 (visits [1, 1, 1])
+    held.1 = 3 ∧ held.2.1.pending = none ∧ held.2.1.accepted = 1 ∧
+      held.2.2.1 = (47, [1, 1, 9]) ∧ held.2.2.2.requested = 1 ∧
+      held.2.2.2.accumulator.2.work.1 = 3 ∧
+      published held.2.2.2.accumulator.2 = [firstReady] := by
+  exact ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+theorem completed_occurrences_keep_distinct_environments_roles_and_conditions :
+    let finished := visits [1, 1, 1, 1, 1, 1, 1, 1]
+    finished.1 = 6 ∧ finished.2.1.terminal = some () ∧
+      finished.2.1.accepted = 2 ∧ finished.2.2.1 = (47, [1, 1, 9]) ∧
+      published finished.2.2.2.accumulator.2 = [firstReady, secondReady] ∧
+      finished.2.2.2.accumulator.2.sink.2 = [firstReady, secondReady] := by
+  exact ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+private def rejecting : R := ⟨.var 99, 11, .completed, [.var 9]⟩
+private def refused : Call (Nat × List Nat) R Private :=
+  resumeCall (prepared 1) (charged 1) 1
+    (start (47, [1, 1, 9]) [rejecting] (initial (0, none) (true, [])))
+
+theorem explicit_resolution_failure_is_neither_skip_nor_exhaustion :
+    refused.1 = 0 ∧ refused.2.1.pending = some rejecting ∧
+      refused.2.1.accepted = 0 ∧ refused.2.1.terminal = none ∧
+      refused.2.2.2.accumulator.2.resolved = [] ∧
+      refused.2.2.2.accumulator.2.work =
+        (0, some (.descend 11 () (.var 99) [] 0)) := by
+  exact ⟨rfl, rfl, rfl, rfl, rfl, rfl⟩
+
+private def restarted : Call (Nat × List Nat) R Private :=
+  let held := visits [1, 1, 1]
+  let context := held.2.2.2.accumulator.2
+  let broken := {context with cached := none, work := (context.work.1, none)}
+  (held.1, held.2.1, held.2.2.1, {held.2.2.2 with accumulator := ([], broken)})
+
+theorem discarding_prepared_state_repeats_paid_work_and_delays_publication :
+    let held := resumeCall (prepared 1) (charged 1) 1 restarted
+    held.1 = 4 ∧ held.2.1.accepted = 0 ∧
+      held.2.2.2.accumulator.2.work.1 = 4 ∧
+      published held.2.2.2.accumulator.2 = [] := by
+  exact ⟨rfl, rfl, rfl, rfl⟩
+
+end Controls
+
+#print axioms callback_exact_account
+#print axioms resume_erases
+#print axioms resume_exact_account
+#print axioms grant_word_source_partition_and_account
+#print axioms Controls.partial_preparation_keeps_raw_loan_source_and_paid_prefix
+#print axioms Controls.prepared_append_refusal_keeps_full_record_and_final_store
+#print axioms Controls.zero_preparation_grant_retries_only_the_cached_append
+#print axioms Controls.completed_occurrences_keep_distinct_environments_roles_and_conditions
+#print axioms Controls.explicit_resolution_failure_is_neither_skip_nor_exhaustion
+#print axioms Controls.discarding_prepared_state_repeats_paid_work_and_delays_publication
+
+end RetainedSubstitution
 
 namespace Controls
 

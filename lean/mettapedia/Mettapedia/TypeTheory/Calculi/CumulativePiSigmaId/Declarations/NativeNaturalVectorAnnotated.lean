@@ -1,5 +1,6 @@
 import Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.Declarations.NativeNaturalVectorComputationProfiles
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Annotated.SchemaTable
+import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Annotated.SchemaDeterminism
 import Mettapedia.TypeTheory.Calculi.ParameterizedPiSigmaId.TypedEquality.Annotated.Validity
 
 /-!
@@ -108,6 +109,173 @@ theorem vector_cons_repeats_parameter :
 theorem vector_cons_repeats_index :
     AlgebraicSchema.variableMultiplicity (2 : Fin 7) vecConsIotaLeft = 2 := by decide
 
+/-! ## Repeated-parameter lifting boundary -/
+
+namespace RepeatedParameterCanary
+
+/-- Two abstractions with different domains erase to the same raw identity. -/
+def firstElement : CTm Tower.Head 0 :=
+  .lam (.head .legacyGround) (.var 0)
+
+def secondElement : CTm Tower.Head 0 :=
+  .lam (.head (.sort Tower.zero)) (.var 0)
+
+theorem firstElement_ne_secondElement : firstElement ≠ secondElement := by
+  intro same
+  cases same
+
+theorem erase_elements_eq : firstElement.erase = secondElement.erase := rfl
+
+def motive : CTm Tower.Head 0 := .const `RepeatedParameter.motive
+def nilCase : CTm Tower.Head 0 := .const `RepeatedParameter.nilCase
+def consCase : CTm Tower.Head 0 := .const `RepeatedParameter.consCase
+
+def appFunction : CTm Tower.Head 0 → CTm Tower.Head 0
+  | .app function _ => function
+  | term => term
+
+def appArgument : CTm Tower.Head 0 → CTm Tower.Head 0
+  | .app _ argument => argument
+  | term => term
+
+def headName : CTm Tower.Head 0 → Option DeclName
+  | .const name => some name
+  | .app function _ => headName function
+  | _ => none
+
+def firstSpineArgument (term : CTm Tower.Head 0) : CTm Tower.Head 0 :=
+  appArgument (appFunction (appFunction (appFunction (appFunction (appFunction term)))))
+
+def constructorElement (term : CTm Tower.Head 0) : CTm Tower.Head 0 :=
+  appArgument (appArgument term)
+
+/-- The outer eliminator argument and the constructor payload have equal
+erasures but retain different lambda-domain annotations. -/
+def source : CTm Tower.Head 0 :=
+  .app
+    (.app
+      (.app
+        (.app
+          (.app
+            (.app (.const vecEliminateName) firstElement)
+            motive)
+          nilCase)
+        consCase)
+      (.const zeroName))
+    (.app (.const vnilName) secondElement)
+
+def rawAssignment : Sub Tower.Head 4 0 :=
+  fun index => Fin.cases consCase.erase
+    (fun prior => Fin.cases nilCase.erase
+      (fun earlier => Fin.cases motive.erase
+        (fun _ => firstElement.erase) earlier) prior) index
+
+/-- Erasure admits the raw vector-nil row because it identifies the two
+payload occurrences. -/
+theorem raw_step :
+    (ComputationProfiles.rules (fun _ => true)).computation.step
+      source.erase nilCase.erase := by
+  apply (presentation (fun _ => true)).mpr
+  have selected : family (fun _ => true) vecNilIotaLeft vecNilIotaRight :=
+    ⟨⟨2, by decide⟩, rfl, rfl⟩
+  exact AlgebraicSchema.SchemaStep.instantiate selected rawAssignment
+
+/-- No annotated schema instance starts at the same source: one substitution
+would have to assign both distinct annotations to the repeated parameter. -/
+theorem no_annotated_step (target : CTm Tower.Head 0) :
+    ¬ (church (fun _ => true)).computation.step source target := by
+  intro step
+  change CSchemaStep
+    (elaborateFamily (elabDeclarations
+      (ComputationProfiles.rules (fun _ => true)).constantType)
+      (family (fun _ => true))) source target at step
+  obtain ⟨arity, annotatedLeft, annotatedRight, substitution, rule,
+      sourceEquation, _targetEquation⟩ := CSchemaStep.exists_instance step
+  obtain ⟨rawLeft, rawRight, selected, rfl, rfl⟩ := rule
+  obtain ⟨index, _permitted, row⟩ := selected
+  fin_cases index
+  · change (⟨3, natZeroIotaLeft, natZeroIotaRight⟩ :
+      Σ k, Tower.Tm k × Tower.Tm k) = ⟨arity, rawLeft, rawRight⟩ at row
+    cases row
+    have elaborated : elabLeft
+        (elabDeclarations (ComputationProfiles.rules (fun _ => true)).constantType)
+        natZeroIotaLeft = liftTm natZeroIotaLeft := by
+      apply elab_lamFree
+      decide
+    rw [elaborated] at sourceEquation
+    have different := congrArg headName sourceEquation
+    simp [headName, source, liftTm, CTm.annotateWith, natZeroIotaLeft,
+      natEliminateAtParameters, CTm.subst] at different
+    exact (by decide : vecEliminateName ≠ natEliminateName) different
+  · change (⟨4, natSuccIotaLeft, natSuccIotaRight⟩ :
+      Σ k, Tower.Tm k × Tower.Tm k) = ⟨arity, rawLeft, rawRight⟩ at row
+    cases row
+    have elaborated : elabLeft
+        (elabDeclarations (ComputationProfiles.rules (fun _ => true)).constantType)
+        natSuccIotaLeft = liftTm natSuccIotaLeft := by
+      apply elab_lamFree
+      decide
+    rw [elaborated] at sourceEquation
+    have different := congrArg (fun term => headName (appArgument term)) sourceEquation
+    simp [headName, appArgument, source, liftTm, CTm.annotateWith, natSuccIotaLeft,
+      natEliminateAtSuccParameters, succApp, CTm.subst] at different
+    exact (by decide : vnilName ≠ succName) different
+  · change (⟨4, vecNilIotaLeft, vecNilIotaRight⟩ :
+      Σ k, Tower.Tm k × Tower.Tm k) = ⟨arity, rawLeft, rawRight⟩ at row
+    cases row
+    have elaborated : elabLeft
+        (elabDeclarations (ComputationProfiles.rules (fun _ => true)).constantType)
+        vecNilIotaLeft = liftTm vecNilIotaLeft := by
+      apply elab_lamFree
+      decide
+    rw [elaborated] at sourceEquation
+    have outer := congrArg firstSpineArgument sourceEquation
+    have inner := congrArg constructorElement sourceEquation
+    simp [firstSpineArgument, constructorElement, appFunction, appArgument,
+      source, liftTm, CTm.annotateWith, vecNilIotaLeft,
+      vecEliminateAtParameters, vnilApp, CTm.subst] at outer inner
+    exact firstElement_ne_secondElement (outer.trans inner.symm)
+  · change (⟨7, vecConsIotaLeft, vecConsIotaRight⟩ :
+      Σ k, Tower.Tm k × Tower.Tm k) = ⟨arity, rawLeft, rawRight⟩ at row
+    cases row
+    have elaborated : elabLeft
+        (elabDeclarations (ComputationProfiles.rules (fun _ => true)).constantType)
+        vecConsIotaLeft = liftTm vecConsIotaLeft := by
+      apply elab_lamFree
+      decide
+    rw [elaborated] at sourceEquation
+    have different := congrArg (fun term => headName (appArgument term)) sourceEquation
+    simp [headName, appArgument, source, liftTm, CTm.annotateWith, vecConsIotaLeft,
+      vecEliminateAtConsParameters, vconsApp, succApp, CTm.subst] at different
+    exact (by decide : vnilName ≠ vconsName) different
+
+theorem unrestricted_lifting_fails :
+    ¬ ∀ {n : Nat} (left : CTm Tower.Head n) (right : Tower.Tm n),
+      (ComputationProfiles.rules (fun _ => true)).computation.step left.erase right →
+        ∃ result, (church (fun _ => true)).computation.step left result ∧
+          result.erase = right := by
+  intro lifting
+  obtain ⟨result, step, _⟩ := lifting source nilCase.erase raw_step
+  exact no_annotated_step result step
+
+end RepeatedParameterCanary
+
+/-- The exact annotation boundary of the current schemas: both natural rows
+lift from raw instances, while the four-row relation does not lift for every
+annotated source with the same erasure. -/
+theorem natural_lifts_but_full_does_not :
+    (∀ {n : Nat} (left : CTm Tower.Head n) (right : Tower.Tm n),
+      (ComputationProfiles.rules ComputationProfiles.naturalOnly).computation.step
+          left.erase right →
+        ∃ result, (church ComputationProfiles.naturalOnly).computation.step left result ∧
+          result.erase = right) ∧
+      ¬ ∀ {n : Nat} (left : CTm Tower.Head n) (right : Tower.Tm n),
+        (ComputationProfiles.rules (fun _ => true)).computation.step left.erase right →
+          ∃ result, (church (fun _ => true)).computation.step left result ∧
+            result.erase = right :=
+  ⟨fun _ _ step => lift_natural_root step,
+    RepeatedParameterCanary.unrestricted_lifting_fails⟩
+
 def verdicts : List (String × Bool) := [
   ("natural checking roots meet annotation lifting condition",
     SchemaTable.linearCheck Checking.table ComputationProfiles.naturalOnly),
@@ -118,9 +286,20 @@ def verdicts : List (String × Bool) := [
   ("vector cons repeats its payload type parameter",
     decide (AlgebraicSchema.variableMultiplicity (6 : Fin 7) vecConsIotaLeft = 2)),
   ("vector cons repeats its length index",
-    decide (AlgebraicSchema.variableMultiplicity (2 : Fin 7) vecConsIotaLeft = 2))]
+    decide (AlgebraicSchema.variableMultiplicity (2 : Fin 7) vecConsIotaLeft = 2)),
+  ("distinct lambda annotations erase alike",
+    decide (RepeatedParameterCanary.firstElement.erase =
+      RepeatedParameterCanary.secondElement.erase)),
+  ("distinct lambda annotations remain distinct",
+    decide (RepeatedParameterCanary.firstElement ≠
+      RepeatedParameterCanary.secondElement))]
 
 theorem all_verdicts : verdicts.all Prod.snd = true := by decide
+
+#print axioms RepeatedParameterCanary.raw_step
+#print axioms RepeatedParameterCanary.no_annotated_step
+#print axioms RepeatedParameterCanary.unrestricted_lifting_fails
+#print axioms natural_lifts_but_full_does_not
 
 end Programs.Annotated
 end Mettapedia.TypeTheory.Calculi.CumulativePiSigmaId.NativeNaturalVectorFamilies

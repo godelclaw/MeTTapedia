@@ -151,6 +151,35 @@ def runPremises (environment : Environment) (oracle : Oracle environment)
         (runPremises environment oracle context.next premises answer.assignment).map fun rest =>
           ⟨rest.assignment, answer.event :: rest.history, .cons answer.valid rest.valid⟩
 
+/-- The shared continuation after a root matcher has produced checked scoped
+captures. Matcher backends differ only before this boundary; capture typing,
+premises, reflective instantiation and target typing stay on this one path. -/
+def finishRootMatch (environment : Environment) (oracle : Oracle environment)
+    (bound : List TypeExpr) (type : TypeExpr) (source : Pattern) (index : Nat)
+    (rule : RewriteRule) (spec : RuleBindingSpec)
+    (declared : environment.language.rewrites[index]? = some rule)
+    (specified : specification? environment index = some spec)
+    (admitted : admittedFor rule spec = true)
+    (sourceTyped : OpenPatternWellSorted environment.language environment.free bound type source)
+    (matched : {answer : GeneralScopedMatchMachine.Answer //
+      answer.Valid ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩}) :
+    List (RootAnswer environment bound type source) :=
+  let context : Context := ⟨index, rule, spec, bound, 0, 0⟩
+  if capturedTyped : checkTypedAssignment environment context matched.val.assignment then
+    (runPremises environment oracle context rule.premises matched.val.assignment).filterMap fun answer =>
+      match converted : reductWith? (ScopedReflectiveExecution.binderOperation
+          environment.reflection rule) rule spec bound.length answer.assignment with
+      | none => none
+      | some target =>
+          if targetTyped : checkOpenPatternWellSorted environment.language environment.free bound type target then
+            some ⟨index, matched.val.trace, matched.val.assignment, answer.assignment,
+              answer.history, target,
+              .fire declared specified admitted sourceTyped matched.property
+                (checkTypedAssignment_sound capturedTyped) answer.valid converted
+                (checkOpenPatternWellSorted_sound targetTyped)⟩
+          else none
+  else []
+
 def runRoot (environment : Environment) (oracle : Oracle environment)
     (bound : List TypeExpr) (type : TypeExpr) (source : Pattern) (index : Nat) :
     List (RootAnswer environment bound type source) :=
@@ -165,21 +194,8 @@ def runRoot (environment : Environment) (oracle : Oracle environment)
               let request : GeneralScopedMatchMachine.Request :=
                 ⟨rule, spec, bound.length, .left, [], 0, [], rule.left, source⟩
               (FiniteServices.Matcher.answers request).flatMap fun matched =>
-                let context : Context := ⟨index, rule, spec, bound, 0, 0⟩
-                if capturedTyped : checkTypedAssignment environment context matched.val.assignment then
-                  (runPremises environment oracle context rule.premises matched.val.assignment).filterMap fun answer =>
-                    match converted : reductWith? (ScopedReflectiveExecution.binderOperation
-                        environment.reflection rule) rule spec bound.length answer.assignment with
-                    | none => none
-                    | some target =>
-                        if targetTyped : checkOpenPatternWellSorted environment.language environment.free bound type target then
-                          some ⟨index, matched.val.trace, matched.val.assignment, answer.assignment,
-                            answer.history, target,
-                            .fire declared specified admitted (checkOpenPatternWellSorted_sound sorted)
-                              matched.property (checkTypedAssignment_sound capturedTyped) answer.valid
-                              converted (checkOpenPatternWellSorted_sound targetTyped)⟩
-                        else none
-                else []
+                finishRootMatch environment oracle bound type source index rule spec
+                  declared specified admitted (checkOpenPatternWellSorted_sound sorted) matched
             else []
           else []
 

@@ -61,6 +61,7 @@ import Mettapedia.TypeTheory.ContextualCBPVPolarizedFresh
 import Mettapedia.TypeTheory.ContextualCBPVPolarizedComplete
 import Mettapedia.TypeTheory.ContextualCBPVStrategyThunks
 import Mettapedia.TypeTheory.ContextualCBPVStrategyLaws
+import Mettapedia.TypeTheory.ContextualCBPVDataAtomCoherence
 import Mettapedia.TypeTheory.HenkinLogicalCodeDescent
 import Mettapedia.TypeTheory.ContextualModalCapabilities
 import Mettapedia.TypeTheory.ContextualModalLawCapabilities

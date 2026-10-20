@@ -35,6 +35,18 @@ abbrev RootPreservation (R : Rules Head) : Prop :=
     ContextFormation R Γ → Typing R Γ source type →
       R.computation.step source target → Typing R Γ target type
 
+/-- An operational root family may run against a smaller checking judgment.
+This records the exact cross-policy obligation without installing the
+operational roots as conversion rules of the checking calculus. -/
+abbrev RootPreservationAgainst (checking execution : Rules Head) : Prop :=
+  ∀ {n : Nat} {Γ : Ctx Head n} {source target type : Tm Head n},
+    ContextFormation checking Γ → Typing checking Γ source type →
+      execution.computation.step source target → Typing checking Γ target type
+
+theorem RootPreservation.toAgainst (preserves : RootPreservation R) :
+    RootPreservationAgainst R R :=
+  preserves
+
 /-- Every contextual computation preserves the actual displayed type of
 the refined derivation. This includes reductions beneath dependent binders. -/
 theorem Typing.step_preserves

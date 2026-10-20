@@ -122,14 +122,31 @@ private theorem match_cons_vars_raw (head tail : Metta.Atom)
   simp [Metta.matchAtomsWith, Metta.Bindings.merge]
   unfold Metta.matchAll
   rw [match_var_nonvar_atom "x" head hHead]
-  simp [Metta.Bindings.merge, Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
-    Metta.Bindings.addValRaw, Metta.Bindings.removeVal, Metta.Bindings.lookupVal]
+  have headMerge : Metta.Bindings.merge []
+      [Metta.BindingRel.val "x" head] =
+        [[Metta.BindingRel.val "x" head]] :=
+    singleton_val_merge_empty_eq "x" head (by
+      intro name impossible
+      subst head
+      simp [Metta.Atom.vars] at hHead)
+  have headLoopFree : Metta.Bindings.hasLoop
+      [Metta.BindingRel.val "x" head] = false :=
+    hasLoop_singleton_val_closed_false "x" head hHead
+  simp [headMerge, headLoopFree]
   unfold Metta.matchAll
   rw [match_var_nonvar_atom "xs" tail hTail]
-  simp [Metta.Bindings.merge, Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
-    Metta.Bindings.addValRaw, Metta.Bindings.removeVal, Metta.Bindings.lookupVal]
   unfold Metta.matchAll
-  rfl
+  have pairMerge : Metta.Bindings.merge
+      [Metta.BindingRel.val "x" head]
+      [Metta.BindingRel.val "xs" tail] =
+        [[Metta.BindingRel.val "xs" tail,
+          Metta.BindingRel.val "x" head]] :=
+    merge_singleton_closed_vals_eq hHead hTail (by decide)
+  rw [show List.filter (fun bindings => !Metta.Bindings.hasLoop bindings)
+      [[Metta.BindingRel.val "xs" tail]] =
+        [[Metta.BindingRel.val "xs" tail]] by
+    simp [hasLoop_singleton_val_closed_false "xs" tail hTail]]
+  simpa using pairMerge
 
 private theorem rev_nil_mops_readout :
     listAtom [] ∈ Metta.equalityReductions ⟨reverseRules⟩ (revQuery []) := by
@@ -146,8 +163,7 @@ private theorem rev_nil_mops_readout :
       simp [Metta.matchAtomsWith, Metta.Bindings.merge]
       unfold Metta.matchAll
       simp
-    · simp [listAtom, Metta.instantiate, Metta.bindingsToSubst, Metta.Subst.apply,
-        mSym]
+    · simp [listAtom, Metta.instantiate, mSym]
 
 private theorem rev_nil_mops_step :
     Metta.MopsStep reverseRules (revQuery []) (listAtom []) := by
@@ -174,12 +190,33 @@ private theorem rev_cons_mops_readout (x : Nat) (xs : List Nat) :
       unfold Metta.matchAll
       rw [match_cons_vars_raw (peano x) (listAtom xs)
         (peano_vars_nil x) (listAtom_vars_nil xs)]
-      simp [Metta.Bindings.merge, Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
-        Metta.Bindings.addValRaw, Metta.Bindings.removeVal, Metta.Bindings.lookupVal]
-      unfold Metta.matchAll
-      simp
-    · simp [revQuery, revQueryAtom, listAtom, mE, mVar, mSym,
-        Metta.instantiate, Metta.bindingsToSubst, Metta.Subst.apply, Metta.Subst.lookup]
+      have incomingClosed : ClosedValueBindings
+          [Metta.BindingRel.val "xs" (listAtom xs),
+            Metta.BindingRel.val "x" (peano x)] :=
+        .val (listAtom_vars_nil xs) (.val (peano_vars_nil x) .nil)
+      have incomingLoopFree := ClosedValueBindings.hasLoop_false incomingClosed
+      have merged : Metta.Bindings.merge []
+          [Metta.BindingRel.val "xs" (listAtom xs),
+            Metta.BindingRel.val "x" (peano x)] =
+          [[Metta.BindingRel.val "x" (peano x),
+            Metta.BindingRel.val "xs" (listAtom xs)]] := by
+        apply merge_closed_noConflict_eq incomingClosed
+        · simp [bindingValueKeys]
+        · exact .nil
+        · simp [bindingValueKeys]
+      have outputClosed : ClosedValueBindings
+          [Metta.BindingRel.val "x" (peano x),
+            Metta.BindingRel.val "xs" (listAtom xs)] :=
+        .val (peano_vars_nil x) (.val (listAtom_vars_nil xs) .nil)
+      have outputLoopFree := ClosedValueBindings.hasLoop_false outputClosed
+      simp [incomingLoopFree, merged, outputLoopFree, Metta.matchAll]
+    · have outputClosed : ClosedValueBindings
+          [Metta.BindingRel.val "x" (peano x),
+            Metta.BindingRel.val "xs" (listAtom xs)] :=
+        .val (peano_vars_nil x) (.val (listAtom_vars_nil xs) .nil)
+      rw [outputClosed.instantiate_eq_subst_apply]
+      simp [revQuery, revQueryAtom, listAtom, mE, mVar, mSym,
+        Metta.bindingsToSubst, Metta.Subst.apply, Metta.Subst.lookup]
 
 private theorem rev_cons_mops_step (x : Nat) (xs : List Nat) :
     Metta.MopsStep reverseRules (revQuery (x :: xs))

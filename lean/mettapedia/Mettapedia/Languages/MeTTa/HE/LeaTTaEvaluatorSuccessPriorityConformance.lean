@@ -253,13 +253,18 @@ theorem InterpretExpressionResultsRuntimeSound.of_functionPath
     {services : Spec.Eval.Minimal.Services} {scope : List String}
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
     {live : List Atom} {expression expectedType operator : Atom}
-    {arguments types : List Atom} {bindings applicableBindings : Bindings}
+    {arguments rawTypes types : List Atom} {bindings applicableBindings : Bindings}
     {policy : SelectedTypePolicy}
     {runtimeResults : List (Metta.Atom × Metta.Bindings)}
     {typing : EvalTypeService}
     (expressionShape : expression = .expression (operator :: arguments))
-    (typesOf : typing.typesOf space operator types)
-    (scan : typing.candidateScan space expression expectedType bindings types
+    (typesOf : typing.typesOf space operator rawTypes)
+    (instantiated : typing.instantiateTypes
+      (invocationTypeScope [] live expression expectedType bindings)
+      rawTypes types)
+    (scan : typing.candidateScan
+      (invocationTypeScope [] live expression expectedType bindings)
+      space expression expectedType bindings types
       (.success policy applicableBindings))
     (worker : SelectedApplicationResultsRuntimeSound services scope space
       dispatch live expression expectedType policy applicableBindings
@@ -271,11 +276,12 @@ theorem InterpretExpressionResultsRuntimeSound.of_functionPath
       resultRelation⟩ := worker runtimeResult member
   exact ⟨callResult,
     InterpretExpressionRel.functionPath expression expectedType operator
-      arguments types policy
+      arguments rawTypes types policy
       (if policy.returnType = Atom.expressionType
         then Atom.undefinedType else policy.returnType)
       bindings applicableBindings interpreted callResult expressionShape
-      typesOf scan rfl interpretedDerivation callDerivation,
+      typesOf instantiated scan (.historical _ _) rfl
+      interpretedDerivation callDerivation,
     resultRelation⟩
 
 /-- Assemble tuple fallback into the expression interpreter without
@@ -284,12 +290,17 @@ theorem InterpretExpressionResultsRuntimeSound.of_tuplePath
     {services : Spec.Eval.Minimal.Services} {scope : List String}
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
     {live : List Atom} {expression expectedType operator : Atom}
-    {arguments types errors : List Atom} {bindings : Bindings}
+    {arguments rawTypes types errors : List Atom} {bindings : Bindings}
     {runtimeResults : List (Metta.Atom × Metta.Bindings)}
     {typing : EvalTypeService}
     (expressionShape : expression = .expression (operator :: arguments))
-    (typesOf : typing.typesOf space operator types)
-    (scan : typing.candidateScan space expression expectedType bindings types
+    (typesOf : typing.typesOf space operator rawTypes)
+    (instantiated : typing.instantiateTypes
+      (invocationTypeScope [] live expression expectedType bindings)
+      rawTypes types)
+    (scan : typing.candidateScan
+      (invocationTypeScope [] live expression expectedType bindings)
+      space expression expectedType bindings types
       (.exhausted errors true))
     (worker : TupleApplicationResultsRuntimeSound services scope space
       dispatch live expression expectedType bindings runtimeResults typing) :
@@ -300,8 +311,8 @@ theorem InterpretExpressionResultsRuntimeSound.of_tuplePath
       resultRelation⟩ := worker runtimeResult member
   exact ⟨callResult,
     InterpretExpressionRel.tuplePath expression expectedType operator
-      arguments types errors bindings tupleResult callResult expressionShape
-      typesOf scan tupleDerivation callDerivation,
+      arguments rawTypes types errors bindings tupleResult callResult expressionShape
+      typesOf instantiated scan tupleDerivation callDerivation,
     resultRelation⟩
 
 /-- The raw empty/error constructor is complete as well as sound: every other
@@ -398,7 +409,7 @@ runtime cast arms. -/
 theorem EvalAtomRawRel.typeCast_of_castGate
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
     {live : List Atom} {atom expectedType metaType : Atom}
-    {bindings : Bindings} {result : ResultPair} {typing : EvalTypeService}
+    {bindings : BindingFrame} {result : FrameResult} {typing : EvalTypeService}
     {protectedScope : List String}
     (notEmptyOrError : ¬IsEmptyOrErrorRel atom)
     (metaTypeRelation : MetaTypeRel atom metaType)
@@ -410,7 +421,9 @@ theorem EvalAtomRawRel.typeCast_of_castGate
     (rawResult : EvalAtomRawRel space dispatch live
       (protectedScope := protectedScope) (typing := typing)
       atom expectedType bindings result) :
-    typing.typeCast protectedScope space atom expectedType bindings result := by
+    typing.typeCast
+      (invocationTypeScope protectedScope live atom expectedType bindings.bindings)
+      space atom expectedType bindings.bindings (BindingFrame.rawResult result) := by
   cases rawResult with
   | emptyOrError _ _ _ emptyOrError =>
       exact (notEmptyOrError emptyOrError).elim
@@ -435,15 +448,18 @@ comes from the expression interpreter. -/
 theorem EvalAtomRawRel.interpretExpression_of_expressionGate
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
     {live : List Atom} {atom expectedType metaType : Atom}
-    {bindings : Bindings} {result : ResultPair} {typing : EvalTypeService}
+    {bindings : BindingFrame} {result : FrameResult} {typing : EvalTypeService}
+    {protectedScope : List String}
     (notEmptyOrError : ¬IsEmptyOrErrorRel atom)
     (metaTypeRelation : MetaTypeRel atom metaType)
     (doesNotPass : ¬(expectedType = Atom.atomType ∨
       expectedType = metaType ∨ metaType = Atom.variableType))
     (expressionShape : ∃ head tail, atom = .expression (head :: tail))
-    (rawResult : EvalAtomRawRel space dispatch live (typing := typing)
+    (rawResult : EvalAtomRawRel space dispatch live
+      (protectedScope := protectedScope) (typing := typing)
       atom expectedType bindings result) :
-    InterpretExpressionRel space dispatch live (typing := typing)
+    InterpretExpressionRel space dispatch live
+      (protectedScope := protectedScope) (typing := typing)
       atom expectedType bindings result := by
   cases rawResult with
   | emptyOrError _ _ _ emptyOrError =>
@@ -507,8 +523,12 @@ theorem RawEvaluatorResultsRuntimeRel.of_interpretExpression
         resultRelation⟩
   · intro result rawResult
     exact relation.complete result
-      (EvalAtomRawRel.interpretExpression_of_expressionGate notEmptyOrError
-        metaTypeRelation doesNotPass expressionShape rawResult)
+      (EvalAtomRawRel.interpretExpression_of_expressionGate
+        (space := space) (dispatch := dispatch) (live := live)
+        (atom := atom) (expectedType := expectedType) (metaType := metaType)
+        (bindings := BindingFrame.historical bindings) (result := result) (typing := typing)
+        (protectedScope := []) notEmptyOrError metaTypeRelation doesNotPass
+        expressionShape rawResult)
 
 /-- Soundness-only companion of `of_interpretExpression`.  This is the form
 consumed by the arbitrary-fuel evaluator proof: each emitted runtime result
@@ -970,14 +990,19 @@ theorem InterpretExpressionResultsRuntimeSound.of_functionErrors
     {services : Spec.Eval.Minimal.Services} {scope : List String}
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
     {live : List Atom} {expression expectedType operator : Atom}
-    {arguments types specErrors : List Atom} {tupleEligible : Bool}
+    {arguments rawTypes types specErrors : List Atom} {tupleEligible : Bool}
     {bindings : Bindings} {runtimeBindings : Metta.Bindings}
     {runtimeExpression : Metta.Atom}
     {runtimeErrors : List Metta.Minimal.ExpectedFunctionTypeError}
     {typing : EvalTypeService} {presentation : TypeSubst}
     (expressionShape : expression = .expression (operator :: arguments))
-    (typesOf : typing.typesOf space operator types)
-    (scan : typing.candidateScan space expression expectedType bindings types
+    (typesOf : typing.typesOf space operator rawTypes)
+    (instantiated : typing.instantiateTypes
+      (invocationTypeScope [] live expression expectedType bindings)
+      rawTypes types)
+    (scan : typing.candidateScan
+      (invocationTypeScope [] live expression expectedType bindings)
+      space expression expectedType bindings types
       (.exhausted specErrors tupleEligible))
     (state : TypePresentationSimulationState
       presentation bindings runtimeBindings)
@@ -998,8 +1023,8 @@ theorem InterpretExpressionResultsRuntimeSound.of_functionErrors
       runtimeError runtimeErrorMember
   exact ⟨(specError, bindings),
     InterpretExpressionRel.functionError expression expectedType operator
-      specError arguments types specErrors tupleEligible bindings
-      expressionShape typesOf scan specErrorMember,
+      specError arguments rawTypes types specErrors tupleEligible bindings
+      expressionShape typesOf instantiated scan specErrorMember,
     candidateErrorAtomRuntimeRel_toScopedEvaluatorResult state
       sourceObservation errorRelation⟩
 
@@ -1010,15 +1035,20 @@ theorem InterpretExpressionResultsRuntimeSound.of_runtimeExhausted
     {services : Spec.Eval.Minimal.Services} {scope : List String}
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
     {live : List Atom} {expression expectedType operator : Atom}
-    {arguments types : List Atom} {bindings : Bindings}
+    {arguments rawTypes types : List Atom} {bindings : Bindings}
     {runtimeBindings : Metta.Bindings}
     {runtimeExpression : Metta.Atom}
     {runtimeErrors : List Metta.Minimal.ExpectedFunctionTypeError}
     {typing : EvalTypeService} {presentation : TypeSubst}
     {outcome : FunctionCandidateScanOutcome}
     (expressionShape : expression = .expression (operator :: arguments))
-    (typesOf : typing.typesOf space operator types)
-    (scan : typing.candidateScan space expression expectedType bindings
+    (typesOf : typing.typesOf space operator rawTypes)
+    (instantiated : typing.instantiateTypes
+      (invocationTypeScope [] live expression expectedType bindings)
+      rawTypes types)
+    (scan : typing.candidateScan
+      (invocationTypeScope [] live expression expectedType bindings)
+      space expression expectedType bindings
       types outcome)
     (runtimeOutcome : FunctionCandidateScanOutcomeRuntimeRel scope expression
       bindings outcome (.exhausted runtimeErrors false))
@@ -1034,7 +1064,7 @@ theorem InterpretExpressionResultsRuntimeSound.of_runtimeExhausted
   | exhausted errors tupleEquation =>
       have tupleFalse : _ = false := tupleEquation
       subst tupleFalse
-      exact .of_functionErrors expressionShape typesOf scan state
+      exact .of_functionErrors expressionShape typesOf instantiated scan state
         sourceObservation errors
 
 /-- Every structured selector failure is already an evaluator error atom.
@@ -1100,7 +1130,7 @@ theorem rawEvaluatorResultsRuntimeSound_mettaEvalExpected_functionErrors
     {services : Spec.Eval.Minimal.Services} {scope : List String}
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
     {live : List Atom} {expression expectedType metaType operator : Atom}
-    {arguments types specErrors : List Atom} {bindings : Bindings}
+    {arguments rawTypes types specErrors : List Atom} {bindings : Bindings}
     {presentation : TypeSubst}
     {runtimeAtom runtimeExpected runtimeSource runtimeExpression : Metta.Atom}
     {runtimeBindings : Metta.Bindings}
@@ -1130,8 +1160,13 @@ theorem rawEvaluatorResultsRuntimeSound_mettaEvalExpected_functionErrors
           runtimeBindings =
           .exhausted runtimeErrors false)
     (expressionShape : expression = .expression (operator :: arguments))
-    (typesOf : typing.typesOf space operator types)
-    (scan : typing.candidateScan space expression expectedType bindings types
+    (typesOf : typing.typesOf space operator rawTypes)
+    (instantiated : typing.instantiateTypes
+      (invocationTypeScope [] live expression expectedType bindings)
+      rawTypes types)
+    (scan : typing.candidateScan
+      (invocationTypeScope [] live expression expectedType bindings)
+      space expression expectedType bindings types
       (.exhausted specErrors false))
     (inputState : TypePresentationSimulationState
       presentation bindings runtimeBindings)
@@ -1157,7 +1192,7 @@ theorem rawEvaluatorResultsRuntimeSound_mettaEvalExpected_functionErrors
     specNotEmptyOrError metaTypeRelation specDoesNotPass
       ⟨operator, arguments, expressionShape⟩
   exact InterpretExpressionResultsRuntimeSound.of_functionErrors
-    expressionShape typesOf scan inputState sourceObservation errors
+    expressionShape typesOf instantiated scan inputState sourceObservation errors
 
 /-- A1-outcome form of the non-tuple exhaustion theorem.  This is the
 constructor boundary used by the concrete configuration: the specification
@@ -1167,7 +1202,7 @@ theorem rawEvaluatorResultsRuntimeSound_mettaEvalExpected_functionErrors_of_runt
     {services : Spec.Eval.Minimal.Services} {scope : List String}
     {space : Space} {dispatch : Spec.Eval.GroundedDispatch}
     {live : List Atom} {expression expectedType metaType operator : Atom}
-    {arguments types : List Atom} {bindings : Bindings}
+    {arguments rawTypes types : List Atom} {bindings : Bindings}
     {presentation : TypeSubst}
     {runtimeAtom runtimeExpected runtimeSource runtimeExpression : Metta.Atom}
     {runtimeBindings : Metta.Bindings}
@@ -1197,8 +1232,13 @@ theorem rawEvaluatorResultsRuntimeSound_mettaEvalExpected_functionErrors_of_runt
           runtimeBindings =
           .exhausted runtimeErrors false)
     (expressionShape : expression = .expression (operator :: arguments))
-    (typesOf : typing.typesOf space operator types)
-    (scan : typing.candidateScan space expression expectedType bindings
+    (typesOf : typing.typesOf space operator rawTypes)
+    (instantiated : typing.instantiateTypes
+      (invocationTypeScope [] live expression expectedType bindings)
+      rawTypes types)
+    (scan : typing.candidateScan
+      (invocationTypeScope [] live expression expectedType bindings)
+      space expression expectedType bindings
       types outcome)
     (runtimeOutcome : FunctionCandidateScanOutcomeRuntimeRel scope expression
       bindings outcome (.exhausted runtimeErrors false))
@@ -1224,7 +1264,7 @@ theorem rawEvaluatorResultsRuntimeSound_mettaEvalExpected_functionErrors_of_runt
     specNotEmptyOrError metaTypeRelation specDoesNotPass
       ⟨operator, arguments, expressionShape⟩
   exact InterpretExpressionResultsRuntimeSound.of_runtimeExhausted
-    expressionShape typesOf scan runtimeOutcome inputState sourceObservation
+    expressionShape typesOf instantiated scan runtimeOutcome inputState sourceObservation
 
 /-- **A1-to-evaluator composition for the exhausted non-tuple branch.**
 A canonical runtime configuration supplies both the exact prepared type list
@@ -1323,14 +1363,14 @@ theorem RuntimeConfigurationRel.functionErrorsSound
       runtimeSourceNotEmptyOrError runtimeDoesNotPass runtimeSourceShape
       selectedSourceEquation
       (by simp [encodeModelAtom, encodeModelAtoms_eq_map]) selectorEquation
-      rfl typesOf scan runtimeOutcome inputState sourceObservation
+      rfl typesOf rfl scan runtimeOutcome inputState sourceObservation
       specNotEmptyOrError metaTypeRelation specDoesNotPass
 
 /-- Every rejected runtime type has the corresponding exact specification
 cast failure and diagnostic observation. -/
 theorem preparedTypeCastOutcomeRuntimeRel_failure_sound
     {services : Spec.Eval.Minimal.Services}
-    {oracle : TypePreparationOracle} {scope : List String}
+    {oracle : TypePreparationOracle} {scope protectedScope : List String}
     {space : Space} {atom expectedType : Atom} {bindings : Bindings}
     {presentation : TypeSubst} {runtimeBindings : Metta.Bindings}
     {runtimeSource runtimeExpected : Metta.Atom}
@@ -1341,10 +1381,11 @@ theorem preparedTypeCastOutcomeRuntimeRel_failure_sound
     (sourceUnchanged : presentation.apply atom = atom)
     (expectedEquation : runtimeExpected = encodeModelAtom expectedType)
     (outcome : PreparedTypeCastOutcomeRuntimeRel oracle space atom
-      expectedType bindings (.inl rejected)) :
+      expectedType bindings (.inl rejected) protectedScope) :
     ∀ runtimeActual, runtimeActual ∈ rejected →
       ∃ result,
-        PreparedTypeCastRel oracle space atom expectedType bindings result ∧
+        PreparedTypeCastRel oracle space atom expectedType bindings result
+          protectedScope ∧
         ScopedEvaluatorResultRuntimeRel services scope result
           (Metta.Minimal.badTypeAtom runtimeSource runtimeExpected
             runtimeActual, runtimeBindings) := by
@@ -1368,7 +1409,7 @@ theorem preparedTypeCastOutcomeRuntimeRel_failure_complete
     {services : Spec.Eval.Minimal.Services}
     {oracle : TypePreparationOracle}
     (functional : TypePreparationFunctional oracle)
-    {scope : List String} {space : Space} {env : Metta.Minimal.MinEnv}
+    {scope protectedScope : List String} {space : Space} {env : Metta.Minimal.MinEnv}
     (index : TypeEnvironmentRel space env)
     {atom expectedType : Atom} {bindings : Bindings}
     {presentation : TypeSubst} {runtimeBindings : Metta.Bindings}
@@ -1384,9 +1425,10 @@ theorem preparedTypeCastOutcomeRuntimeRel_failure_complete
     (sourceUnchanged : presentation.apply atom = atom)
     (expectedEquation : runtimeExpected = encodeModelAtom expectedType)
     (outcome : PreparedTypeCastOutcomeRuntimeRel oracle space atom
-      expectedType bindings (.inl rejected)) :
+      expectedType bindings (.inl rejected) protectedScope) :
     ∀ result,
-      PreparedTypeCastRel oracle space atom expectedType bindings result →
+      PreparedTypeCastRel oracle space atom expectedType bindings result
+        protectedScope →
       ∃ runtimeActual, runtimeActual ∈ rejected ∧
         ScopedEvaluatorResultRuntimeRel services scope result
           (Metta.Minimal.badTypeAtom runtimeSource runtimeExpected
@@ -1401,6 +1443,18 @@ theorem preparedTypeCastOutcomeRuntimeRel_failure_complete
     exact Spec.Type.Presentation.Freshness.typeVars_mem_typeVarsList_of_mem
       (atoms := space.atoms ++ [atom, expectedType])
       (atom := expectedType) (by simp) name member
+  have inputCoveredProtected : ∀ name,
+      name ∈ specBindingVars (⟨presentation, []⟩ : Bindings) →
+        name ∈ protectedScope ++
+          typeServicePrivateAvoid space atom expectedType bindings := by
+    intro name member
+    exact List.mem_append_right _ (inputCovered name member)
+  have expectedCoveredProtected : ∀ name,
+      name ∈ TypeSubst.typeVars expectedType →
+        name ∈ protectedScope ++
+          typeServicePrivateAvoid space atom expectedType bindings := by
+    intro name member
+    exact List.mem_append_right _ (expectedCovered name member)
   cases outcome with
   | failure selectedPresent selectedVariants _nonempty selectedAllFailed =>
       intro result competingCast
@@ -1411,7 +1465,7 @@ theorem preparedTypeCastOutcomeRuntimeRel_failure_complete
               competingPresent selectedPresent competingVariants
                 selectedVariants
           exact (FirstTypeCastSuccessRel.not_allFailures_of_privateAlpha
-            inputState candidatesAlpha inputCovered expectedCovered
+            inputState candidatesAlpha inputCoveredProtected expectedCoveredProtected
               competingFirst selectedAllFailed).elim
       | failure competingPresent competingVariants competingMember
           _competingAllFailed =>
@@ -1480,16 +1534,16 @@ theorem preparedTypeCastOutcomeRuntimeRel_success_result
     {oracle : TypePreparationOracle} {space : Space}
     {atom expectedType : Atom} {incoming : Bindings}
     {runtimeOutput : Metta.Bindings} {runtimeSource : Metta.Atom}
-    {scope : List String}
+    {scope protectedScope : List String}
     (outcome : PreparedTypeCastOutcomeRuntimeRel oracle space atom
-      expectedType incoming (.inr runtimeOutput))
+      expectedType incoming (.inr runtimeOutput) protectedScope)
     (sourceRelation : AtomRuntimeRel services atom runtimeSource)
     (castShape :
       (∃ name, atom = .symbol name) ∨
         (∃ value, atom = .grounded value) ∨ atom = Atom.unit) :
     ∃ output,
       PreparedTypeCastRel oracle space atom expectedType incoming
-          (atom, output) ∧
+          (atom, output) protectedScope ∧
         ScopedEvaluatorResultRuntimeRel services scope
           (atom, output) (runtimeSource, runtimeOutput) := by
   cases outcome with
@@ -1514,7 +1568,7 @@ theorem preparedTypeCastOutcomeRuntimeRel_success_complete
     {atom expectedType : Atom} {incoming : Bindings}
     {inputPresentation : TypeSubst}
     {runtimeIncoming runtimeOutput : Metta.Bindings}
-    {runtimeSource : Metta.Atom} {scope : List String}
+    {runtimeSource : Metta.Atom} {scope protectedScope : List String}
     (inputState : TypePresentationSimulationState
       inputPresentation incoming runtimeIncoming)
     (inputCovered : ∀ name,
@@ -1524,13 +1578,14 @@ theorem preparedTypeCastOutcomeRuntimeRel_success_complete
     (scopeCovered : ∀ name, name ∈ scope →
       name ∈ typeServicePrivateAvoid space atom expectedType incoming)
     (outcome : PreparedTypeCastOutcomeRuntimeRel oracle space atom
-      expectedType incoming (.inr runtimeOutput))
+      expectedType incoming (.inr runtimeOutput) protectedScope)
     (sourceRelation : AtomRuntimeRel services atom runtimeSource)
     (castShape :
       (∃ name, atom = .symbol name) ∨
         (∃ value, atom = .grounded value) ∨ atom = Atom.unit) :
     ∀ result,
-      PreparedTypeCastRel oracle space atom expectedType incoming result →
+      PreparedTypeCastRel oracle space atom expectedType incoming result
+        protectedScope →
         ScopedEvaluatorResultRuntimeRel services scope result
           (runtimeSource, runtimeOutput) := by
   have expectedCovered : ∀ name,
@@ -1543,6 +1598,23 @@ theorem preparedTypeCastOutcomeRuntimeRel_success_complete
     exact Spec.Type.Presentation.Freshness.typeVars_mem_typeVarsList_of_mem
       (atoms := space.atoms ++ [atom, expectedType])
       (atom := expectedType) (by simp) name member
+  have inputCoveredProtected : ∀ name,
+      name ∈ specBindingVars (⟨inputPresentation, []⟩ : Bindings) →
+        name ∈ protectedScope ++
+          typeServicePrivateAvoid space atom expectedType incoming := by
+    intro name member
+    exact List.mem_append_right _ (inputCovered name member)
+  have expectedCoveredProtected : ∀ name,
+      name ∈ TypeSubst.typeVars expectedType →
+        name ∈ protectedScope ++
+          typeServicePrivateAvoid space atom expectedType incoming := by
+    intro name member
+    exact List.mem_append_right _ (expectedCovered name member)
+  have scopeCoveredProtected : ∀ name, name ∈ scope →
+      name ∈ protectedScope ++
+        typeServicePrivateAvoid space atom expectedType incoming := by
+    intro name member
+    exact List.mem_append_right _ (scopeCovered name member)
   cases outcome with
   | success selectedCast selectedState =>
       obtain ⟨selectedSources, selectedCandidates, selectedPresent,
@@ -1556,7 +1628,8 @@ theorem preparedTypeCastOutcomeRuntimeRel_success_complete
                 competingVariants selectedVariants
           obtain ⟨presentation, specSolutions, runtimeState⟩ :=
             FirstTypeCastSuccessRel.outputsScoped inputState selectedState
-              candidatesAlpha inputCovered expectedCovered scopeCovered
+              candidatesAlpha inputCoveredProtected expectedCoveredProtected
+                scopeCoveredProtected
                 competingFirst selectedFirst
           apply ScopedEvaluatorResultRuntimeRel.ofScopedUnchangedAtom
             specSolutions runtimeState sourceRelation
@@ -1568,7 +1641,7 @@ theorem preparedTypeCastOutcomeRuntimeRel_success_complete
               functional index selectedPresent competingPresent
                 selectedVariants competingVariants
           exact (FirstTypeCastSuccessRel.not_allFailures_of_privateAlpha
-            inputState candidatesAlpha inputCovered expectedCovered
+            inputState candidatesAlpha inputCoveredProtected expectedCoveredProtected
               selectedFirst allFailed).elim
 
 /-- Soundness of the complete executable cast-success arm.  Exact type
@@ -1600,7 +1673,8 @@ theorem rawEvaluatorResultsRuntimeSound_mettaEvalExpected_castSuccess
     (castSuccess : Metta.Minimal.mettaTypeCast env state.world
       runtimeBindings runtimeSource runtimeExpected = .inr runtimeOutput)
     (outcome : PreparedTypeCastOutcomeRuntimeRel oracle space atom
-      expectedType bindings (.inr runtimeOutput))
+      expectedType bindings (.inr runtimeOutput)
+        (invocationTypeScope [] live atom expectedType bindings))
     (sourceRelation : AtomRuntimeRel services atom runtimeSource)
     (specNotEmptyOrError : ¬IsEmptyOrErrorRel atom)
     (metaTypeRelation : MetaTypeRel atom metaType)
@@ -1618,7 +1692,9 @@ theorem rawEvaluatorResultsRuntimeSound_mettaEvalExpected_castSuccess
     preparedTypeCastOutcomeRuntimeRel_success_result
       (scope := scope) outcome sourceRelation specCastShape
   have serviceCast :
-      (preparedPackageTypeService oracle).typeCast [] space atom expectedType
+      (preparedPackageTypeService oracle).typeCast
+        (invocationTypeScope [] live atom expectedType bindings)
+        space atom expectedType
         bindings (atom, output) := by
     simpa using cast
   rw [mettaEvalExpected_succ_castSuccess env fuel state runtimeBindings
@@ -1632,7 +1708,7 @@ theorem rawEvaluatorResultsRuntimeSound_mettaEvalExpected_castSuccess
   exact ⟨(atom, output),
     EvalAtomRawRel.cast atom expectedType metaType bindings (atom, output)
       specNotEmptyOrError metaTypeRelation specDoesNotPass specCastShape
-      serviceCast,
+      serviceCast (.historical _ _),
     resultRelation⟩
 
 /-- Bidirectional correspondence for the executable cast-success arm.  The
@@ -1675,7 +1751,8 @@ theorem rawEvaluatorResultsRuntimeRel_mettaEvalExpected_castSuccess
     (castSuccess : Metta.Minimal.mettaTypeCast env state.world
       runtimeBindings runtimeSource runtimeExpected = .inr runtimeOutput)
     (outcome : PreparedTypeCastOutcomeRuntimeRel oracle space atom
-      expectedType bindings (.inr runtimeOutput))
+      expectedType bindings (.inr runtimeOutput)
+        (invocationTypeScope [] live atom expectedType bindings))
     (sourceRelation : AtomRuntimeRel services atom runtimeSource)
     (specNotEmptyOrError : ¬IsEmptyOrErrorRel atom)
     (metaTypeRelation : MetaTypeRel atom metaType)
@@ -1704,9 +1781,14 @@ theorem rawEvaluatorResultsRuntimeRel_mettaEvalExpected_castSuccess
   · exact sound
   · intro result rawResult
     have serviceCast :
-        PreparedTypeCastRel oracle space atom expectedType bindings result := by
-      exact EvalAtomRawRel.typeCast_of_castGate specNotEmptyOrError
-        metaTypeRelation specDoesNotPass specCastShape rawResult
+        PreparedTypeCastRel oracle space atom expectedType bindings result
+          (invocationTypeScope [] live atom expectedType bindings) := by
+      simpa using (EvalAtomRawRel.typeCast_of_castGate specNotEmptyOrError
+        (space := space) (dispatch := dispatch) (live := live)
+        (atom := atom) (expectedType := expectedType) (metaType := metaType)
+        (bindings := BindingFrame.historical bindings) (result := result)
+        (typing := preparedPackageTypeService oracle) (protectedScope := [])
+        metaTypeRelation specDoesNotPass specCastShape rawResult)
     have resultRelation :=
       preparedTypeCastOutcomeRuntimeRel_success_complete functional index
         inputState inputCovered scopeCovered outcome sourceRelation
@@ -1757,7 +1839,8 @@ theorem rawEvaluatorResultsRuntimeRel_mettaEvalExpected_castFailure
     (castFailure : Metta.Minimal.mettaTypeCast env state.world
       runtimeBindings runtimeSource runtimeExpected = .inl rejected)
     (outcome : PreparedTypeCastOutcomeRuntimeRel oracle space atom
-      expectedType bindings (.inl rejected))
+      expectedType bindings (.inl rejected)
+        (invocationTypeScope [] live atom expectedType bindings))
     (sourceRelation : AtomRuntimeRel services atom runtimeSource)
     (expectedEquation : runtimeExpected = encodeModelAtom expectedType)
     (specNotEmptyOrError : ¬IsEmptyOrErrorRel atom)
@@ -1790,13 +1873,18 @@ theorem rawEvaluatorResultsRuntimeRel_mettaEvalExpected_castFailure
     exact ⟨result,
       EvalAtomRawRel.cast atom expectedType metaType bindings result
         specNotEmptyOrError metaTypeRelation specDoesNotPass specCastShape
-          serviceCast,
+          serviceCast (.historical _ _),
       resultRelation⟩
   · intro result rawResult
     have serviceCast :
-        PreparedTypeCastRel oracle space atom expectedType bindings result :=
-      EvalAtomRawRel.typeCast_of_castGate specNotEmptyOrError
-        metaTypeRelation specDoesNotPass specCastShape rawResult
+        PreparedTypeCastRel oracle space atom expectedType bindings result
+          (invocationTypeScope [] live atom expectedType bindings) := by
+      simpa using (EvalAtomRawRel.typeCast_of_castGate specNotEmptyOrError
+        (space := space) (dispatch := dispatch) (live := live)
+        (atom := atom) (expectedType := expectedType) (metaType := metaType)
+        (bindings := BindingFrame.historical bindings) (result := result)
+        (typing := preparedPackageTypeService oracle) (protectedScope := [])
+        metaTypeRelation specDoesNotPass specCastShape rawResult)
     obtain ⟨runtimeActual, actualMember, resultRelation⟩ :=
       preparedTypeCastOutcomeRuntimeRel_failure_complete functional index
         inputState inputCovered sourceRelation sourceUnchanged

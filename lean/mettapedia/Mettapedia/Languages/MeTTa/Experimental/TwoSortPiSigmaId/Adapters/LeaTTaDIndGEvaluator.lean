@@ -4375,7 +4375,7 @@ private theorem merge_empty_renamed_letRuleBindings_eq
          , Metta.BindingRel.val (f "atom") atom
          , Metta.BindingRel.val (f "template") template ]] := by
     simpa using merge_singleton_eq_eq_of_valueless_class
-      hPatternBinder hclassValues
+      hPatternBinder hclassValues (by simp)
   simp only [letRuleBindings, renameBindings, Metta.Bindings.merge,
     List.foldl_cons, List.foldl_nil]
   rw [show Metta.Bindings.mergeOne [[]]
@@ -4421,6 +4421,7 @@ private theorem merge_empty_reversed_renamed_letRuleBindings_eq
         [[Metta.BindingRel.eq (f "pattern") binder]] := by
     exact merge_singleton_eq_eq_of_valueless_class hPatternBinder
       (Bindings.classValues_one_eq_eq_nil (f "pattern") binder (f "pattern"))
+      (by simp)
   have hsecond :
       Metta.Bindings.merge [Metta.BindingRel.eq (f "pattern") binder]
           [Metta.BindingRel.val (f "atom") atom] =
@@ -63744,7 +63745,8 @@ private theorem restrict_merge_reversed_letRuleBindings_with_singleton
     rw [Metta.Bindings.classValues, hFirstClass]
     simp [first, incoming, Metta.Bindings.lookupVal, hBinderOuter, hpO]
   have hFirst : Metta.Bindings.merge incoming [.eq p binder] = [first] := by
-    exact merge_singleton_eq_eq_of_valueless_class hpB hFirstValues
+    exact merge_singleton_eq_eq_of_valueless_class hpB hFirstValues (by
+      simp [incoming])
   have hAtomClass : Metta.Bindings.eqClassOrdered first a = [a] := by
     simp [first, incoming, Metta.Bindings.eqClassOrdered, Metta.Bindings.eqVarsInOrder,
       Metta.Bindings.eqClass, Metta.Bindings.eqClassAux, Metta.Bindings.eqStep,
@@ -64425,6 +64427,7 @@ private theorem mettaEval_kernelDefControlEnv_propToType0Witness_convReadoutAfte
           [candidate] := by
       simpa [candidate] using
         merge_singleton_eq_eq_of_valueless_class hPatternBinder hvaluesPattern
+          (ValueBindings.eq_not_mem (ValueBindings.val hWithTemplateValues))
     have hFirstStep :
         Metta.Bindings.mergeOne [ambient]
             (Metta.BindingRel.val templateKey template) = [withTemplate] := by
@@ -64979,6 +64982,7 @@ private theorem mettaEval_kernelDefControlEnv_propToType0Witness_convReadoutAfte
           [candidate] := by
       simpa [candidate] using
         merge_singleton_eq_eq_of_valueless_class hPatternBinder hvaluesPattern
+          (ValueBindings.eq_not_mem (ValueBindings.val hWithTemplateValues))
     have hFirstStep :
         Metta.Bindings.mergeOne [ambient]
             (Metta.BindingRel.val templateKey template) = [withTemplate] := by
@@ -79689,6 +79693,7 @@ private theorem mettaEval_kernelDefControlEnv_cicStage3RawArtifactSig_con_z_conv
           [candidate] := by
       simpa [candidate] using
         merge_singleton_eq_eq_of_valueless_class hPatternBinder hvaluesPattern
+          (ValueBindings.eq_not_mem (ValueBindings.val hWithTemplateValues))
     have hFirstStep :
         Metta.Bindings.mergeOne [ambient]
             (Metta.BindingRel.val templateKey template) = [withTemplate] := by

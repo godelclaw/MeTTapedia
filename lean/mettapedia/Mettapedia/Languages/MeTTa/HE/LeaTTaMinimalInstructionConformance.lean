@@ -456,7 +456,9 @@ theorem unify_step_complete {caller : Option Atom}
       (emitted, output) (typing := typing) (caller := caller))
     (environment : Metta.Minimal.MinEnv) (fuel : Nat) (state : Metta.Minimal.St)
     (previous : Metta.Minimal.Stack) (scope : List String) :
-    ∃ value merged,
+    ∃ selected value merged,
+      Spec.Eval.Steps.UnifyStep target pattern yes no bindings selected output ∧
+      (selected = emitted ∨ BindingMaterializationRel output selected emitted) ∧
       Metta.Minimal.interpretStack1 environment fuel state
         ⟨{ atom := encodeModelAtom (.expression [.symbol "unify", target, pattern, yes, no]),
             vars := scope } :: previous, native⟩ =
@@ -464,28 +466,36 @@ theorem unify_step_complete {caller : Option Atom}
       LeaBindingSolutionTheoryEquiv output merged ∧
       LeaTTaSpecConformance.LeaRuntimeBindingInvariant merged ∧ LeaBindingsHEImage merged ∧
       ∀ valuation, HEBindingSatisfied valuation output →
-        applyClassSolution valuation value = applyClassSolution valuation (encodeModelAtom emitted) := by
-  have branch : Spec.Eval.Steps.UnifyStep target pattern yes no bindings emitted output := by
-    generalize shape : (Atom.expression [.symbol "unify", target, pattern, yes, no]) = atom at source
-    cases source with
-    | unify _ _ _ _ _ _ _ _ selected =>
-        simp only [Atom.expression.injEq, List.cons.injEq, true_and, and_true] at shape
-        obtain ⟨rfl, rfl, rfl, rfl⟩ := shape
-        exact selected
-    | _ => simp at shape
-  obtain ⟨value, merged, selected, theory, runtime, image, observed⟩ :=
+        applyClassSolution valuation value = applyClassSolution valuation (encodeModelAtom selected) := by
+  obtain ⟨selected, branch, readout⟩ : ∃ selected,
+      Spec.Eval.Steps.UnifyStep target pattern yes no bindings selected output ∧
+      (selected = emitted ∨ BindingMaterializationRel output selected emitted) := by
+    rcases (Spec.Eval.Minimal.unify_step_exact (space := space)
+      (dispatch := dispatch) (live := live) (typing := typing) (caller := caller)
+      (target := target) (pattern := pattern) (yes := yes) (no := no)
+      (incoming := bindings) (result := (emitted, output))).mp source with
+      ⟨candidate, _updated, materialized⟩ | ⟨missing, same⟩
+    · exact ⟨yes, .success ⟨candidate, fun _ _ => rfl⟩,
+        Or.inr materialized⟩
+    · have emittedEq : emitted = no :=
+        congrArg (fun result : Spec.Eval.FrameResult => result.1) same
+      have outputEq : output = bindings := by
+        simpa using congrArg
+          (fun result : Spec.Eval.FrameResult => result.2.bindings) same
+      subst emitted
+      subst output
+      exact ⟨no, .noMatch missing, Or.inl rfl⟩
+  obtain ⟨value, merged, nativeExact, theory, runtime, image, observed⟩ :=
     unifyStep_complete paired branch previous
-  refine ⟨value, merged, ?_, theory, runtime, image, observed⟩
-  simpa only [encodeModelAtom, encodeModelAtoms, selected] using
+  refine ⟨selected, value, merged, branch, readout, ?_, theory, runtime, image, observed⟩
+  simpa only [encodeModelAtom, encodeModelAtoms, nativeExact] using
     step_unify environment fuel state previous scope (encodeModelAtom target)
       (encodeModelAtom pattern) (encodeModelAtom yes) (encodeModelAtom no) native
 
 /-- Every actual selected unify item has an independent minimal step and a
 paired output binding frame. Equal visible values do not identify success
 with fallback or replace the carried output frame. -/
-theorem unify_step_item_sound {caller : Option Atom}
-    (space : Space) (dispatch : Spec.Eval.GroundedDispatch) (live : List Atom)
-    (typing : Spec.Eval.EvalTypeService) (target pattern yes no : Atom)
+theorem unify_step_item_sound (target pattern yes no : Atom)
     {bindings : Bindings} {native : Metta.Bindings}
     (paired : ScopedEquationQuery.BindingInvariant bindings native)
     (environment : Metta.Minimal.MinEnv) (fuel : Nat) (state : Metta.Minimal.St)
@@ -495,9 +505,7 @@ theorem unify_step_item_sound {caller : Option Atom}
           vars := scope } :: previous, native⟩).1) :
     ∃ emitted output value merged,
       item = Metta.Minimal.finItem previous value merged ∧
-      CoreStepRel space dispatch live
-        (.expression [.symbol "unify", target, pattern, yes, no]) bindings
-        (emitted, output) (typing := typing) (caller := caller) ∧
+      Spec.Eval.Steps.UnifyStep target pattern yes no bindings emitted output ∧
       ScopedEquationQuery.BindingInvariant output merged ∧
       ∀ valuation, HEBindingSatisfied valuation output →
         applyClassSolution valuation value = applyClassSolution valuation (encodeModelAtom emitted) := by
@@ -506,8 +514,7 @@ theorem unify_step_item_sound {caller : Option Atom}
     simpa only [encodeModelAtom, encodeModelAtoms, step_unify] using member
   obtain ⟨emitted, output, value, merged, same, selected, outputPaired, observed⟩ :=
     unifyOp_item_sound paired previous actualMember
-  exact ⟨emitted, output, value, merged, same,
-    .unify space target pattern yes no emitted bindings output selected, outputPaired, observed⟩
+  exact ⟨emitted, output, value, merged, same, selected, outputPaired, observed⟩
 
 /-- The primitive itself preserves every operand exactly. In particular,
 open syntax is allowed and no hidden materialization is attributed to the
@@ -1321,8 +1328,12 @@ inductive CoveredControlDerivation :
       CoveredControlDerivation bindings .run caller
         (.expression [.symbol "decons-atom", .expression (head :: tail)])
         (.expression [head, .expression tail]) bindings false
-  | unify {bindings output : Bindings} {caller : Option Atom} (target pattern yes no result : Atom)
-      (selected : Spec.Eval.Steps.UnifyStep target pattern yes no bindings result output) :
+  | unifySuccess {bindings output : Bindings} {caller : Option Atom}
+      (target pattern yes no result : Atom)
+      (candidate : Spec.Eval.Steps.UnifyCandidateRel target pattern bindings output)
+      (materialized : BindingMaterializationRel output yes result)
+      (closed : TypeSubst.typeVars result = [])
+      (nonvariable : HEAssignmentsNonVariable output) :
       CoveredControlDerivation bindings .run caller
         (.expression [.symbol "unify", target, pattern, yes, no]) result output true
   | chain {bindings middle output : Bindings} {firstUpdates nextUpdates : Bool}
@@ -1384,9 +1395,11 @@ theorem CoveredControlDerivation.sound {bindings output : Bindings} {updates : B
   | decons head tail =>
     exact .instruction space _ _ _ (by simp [embeddedInstruction])
       (by rintro ⟨rest, impossible⟩; simp at impossible) (.deconsAtom space head tail _)
-  | unify target pattern yes no result selected =>
+  | unifySuccess target pattern yes no result candidate materialized closed nonvariable =>
     exact .instruction space _ _ _ (by simp [embeddedInstruction])
-      (by rintro ⟨rest, impossible⟩; simp at impossible) (.unify space target pattern yes no result _ _ selected)
+      (by rintro ⟨rest, impossible⟩; simp at impossible)
+      (.unifySuccess space target pattern yes no result _ _ candidate
+        (.historical _ _) materialized)
   | chain source raw normalized template result name first materialized closed next ihFirst ihNext =>
     exact .chain space _ _ _ _ ⟨_, rfl⟩
       (.chain space source name template _ (raw, _) normalized
@@ -1404,16 +1417,6 @@ theorem CoveredControlDerivation.sound {bindings output : Bindings} {updates : B
   | resume source raw normalized result run materialized closed sourceInstruction nativeInstruction body ihRun ihBody =>
     exact .resume space source _ (raw, _) normalized (result, _)
       (ihRun live) materialized sourceInstruction (ihBody live)
-
-private theorem unify_output_nonvariable {target pattern yes no emitted : Atom} {bindings output : Bindings}
-    (selected : Spec.Eval.Steps.UnifyStep target pattern yes no bindings emitted output)
-    (before : HEAssignmentsNonVariable bindings) : HEAssignmentsNonVariable output := by
-  cases selected with
-  | noMatch => exact before
-  | success successful =>
-    obtain ⟨⟨matched, matching, merging, _⟩, _⟩ := successful
-    exact Spec.Match.ModelTheory.specMerge_assignmentsNonVariable merging
-      (Spec.Match.ModelTheory.specMatch_assignmentsNonVariable matching) before
 
 private def scopedFinished (previous : Stack) (atom : Metta.Atom) (bindings : Metta.Bindings)
     (scope : List String) : Item :=
@@ -1529,15 +1532,25 @@ private theorem CoveredControlDerivation.realizes {bindings output : Bindings} {
     refine ⟨fuel + 1, [], _, .single ?_, rfl⟩
     apply coveredPendingStep_singleton (by rfl) (pending := by rfl)
     simp [encodeModelAtom, encodeModelAtoms, atomToStack, interpretStack1, scopedFinished, finItem]
-  | unify target pattern yes no result selected =>
+  | unifySuccess target pattern yes no result candidate materialized closed nonvariable =>
     intro parent previous captured
+    let branch : Spec.Eval.Steps.UnifyStep target pattern yes no _ yes _ :=
+      .success ⟨candidate, fun _ _ => rfl⟩
     obtain ⟨value, merged, selectedNative, theory, runtime, image, observed⟩ :=
-      unifyStep_complete_materialized paired selected (parent :: previous)
+      unifyStep_complete_materialized paired branch (parent :: previous)
     have outputPaired : ScopedEquationQuery.BindingInvariant _ merged :=
-      ⟨⟨theory, unify_output_nonvariable selected paired.semantic.specAssignmentsNonVariable, runtime⟩, image⟩
+      ⟨⟨theory, nonvariable, runtime⟩, image⟩
+    have readout : Metta.instantiate merged (encodeModelAtom yes) =
+        encodeModelAtom result :=
+      materialization_closed_native outputPaired materialized closed
+    have resultClosed : Metta.instantiate merged (encodeModelAtom result) =
+        encodeModelAtom result := by
+      apply Mettapedia.Languages.MeTTa.LeaTTa.EvaluatorCorrectness.RuntimeCorrectness.instantiate_eq_self_of_vars_nil
+      simpa only [Spec.Type.Presentation.encodeModelAtom_vars_eq_typeVars] using closed
     refine ⟨merged, outputPaired, by simp, ?_⟩
     intro fuel
-    refine ⟨fuel + 1, [], value, .single ?_, observed⟩
+    refine ⟨fuel + 1, [], value, .single ?_,
+      observed.trans (readout.trans resultClosed.symm)⟩
     apply coveredPendingStep_singleton (by rfl) (pending := by rfl)
     simpa only [encodeModelAtom, encodeModelAtoms, atomToStack, scopedFinished, finItem] using
       (step_unify environment fuel state (parent :: previous) []
@@ -1961,24 +1974,20 @@ private def reuseNested (name : String) : Atom :=
 /-- An independent finite unification proof supplies the changed binding
 frame used at both occurrences in the following constructor instruction. -/
 theorem binding_reuse_body {bindings output : Bindings} (name : String)
-    (candidate : Spec.Eval.Steps.UnifyCandidateRel (.var name) (.symbol "A") bindings output) :
+    (candidate : Spec.Eval.Steps.UnifyCandidateRel (.var name) (.symbol "A") bindings output)
+    (nonvariable : HEAssignmentsNonVariable output) :
     CoveredControlDerivation bindings .body (some (.expression [.symbol "function", reuseBody name]))
       (reuseBody name) (.expression [.symbol "return", reused]) output true := by
-  obtain ⟨matched, matching, merging, acyclic, model, satisfied⟩ := candidate
-  have satisfiable : ∃ valuation, TypeBindingSatisfied valuation output :=
-    ⟨_, specTypeBindingSatisfied_of_heBindingSatisfied satisfied⟩
+  obtain ⟨matched, matching, merging⟩ := candidate
+  have satisfiable : ∃ valuation, TypeBindingSatisfied valuation output := merging.2
   have fixed : ∀ valuation, TypeBindingSatisfied valuation output → valuation name = .symbol "A" := by
     intro valuation modelSatisfied
-    have split := (Spec.Match.SolutionTheory.mergeRel_solution_iff merging
-      (fun key => encodeModelAtom (valuation key))).mp
-        (heBindingSatisfied_of_specTypeBindingSatisfied modelSatisfied)
-    have same := (Spec.Match.SolutionTheory.matchRel_solution_iff matching _).mp split.1
+    have split := (merging.solutions valuation).mp modelSatisfied
+    have same := (Spec.Match.SolutionTheory.matchRel_solution_iff matching _).mp
+      (heBindingSatisfied_of_specTypeBindingSatisfied split.1)
     have decoded := congrArg decodeModelAtom same
     simpa only [HEAtomEquationSatisfied, encodeModelAtom, applyClassSolution,
       decodeModelAtom_encodeModelAtom, decodeModelAtom] using decoded
-  have selected : Spec.Eval.Steps.UnifyStep (.var name) (.symbol "A") (reuseTemplate name)
-      (.expression [.symbol "return", .symbol "refused"]) bindings (reuseTemplate name) output :=
-    .success ⟨⟨matched, matching, merging, acyclic, model, satisfied⟩, fun _ _ => rfl⟩
   have materialized : BindingMaterializationRel output (reuseTemplate name) normalizedTemplate := by
     apply BindingMaterializationRel.of_model_constant satisfiable
     intro valuation sat
@@ -1986,18 +1995,28 @@ theorem binding_reuse_body {bindings output : Bindings} (name : String)
   have closedResult : BindingMaterializationRel output
       (.expression [.symbol "return", reused]) (.expression [.symbol "return", reused]) :=
     (BindingMaterializationRel.closed_iff _ _ _ (by rfl)).mpr ⟨rfl, satisfiable⟩
-  exact .resume (reuseBody name) (reuseTemplate name) normalizedTemplate _
-    (.unify (.var name) (.symbol "A") _ _ _ selected) materialized (by rfl) (by rfl) (by rfl)
+  have normalizedSelf : BindingMaterializationRel output normalizedTemplate normalizedTemplate :=
+    (BindingMaterializationRel.closed_iff _ _ _ (by rfl)).mpr ⟨rfl, satisfiable⟩
+  have first : CoveredControlDerivation bindings .run
+      (some (.expression [.symbol "function", reuseBody name]))
+      (reuseBody name) normalizedTemplate output true := by
+    simpa [reuseBody] using
+      (CoveredControlDerivation.unifySuccess (.var name) (.symbol "A") (reuseTemplate name)
+      (.expression [.symbol "return", .symbol "refused"]) normalizedTemplate
+      ⟨matched, matching, merging⟩ materialized (by rfl) nonvariable)
+  exact .resume (reuseBody name) normalizedTemplate normalizedTemplate _
+    first normalizedSelf (by rfl) (by rfl) (by rfl)
     (.terminal normalizedTemplate _ _ (.cons (.symbol "return") [reused]) closedResult (by rfl) (by rfl) (by rfl))
 
 /-- A nested function carries the changed frame through its captured caller
 and a second enclosing continuation. -/
 theorem binding_reuse_nested_body {bindings output : Bindings} (name : String)
-    (candidate : Spec.Eval.Steps.UnifyCandidateRel (.var name) (.symbol "A") bindings output) :
+    (candidate : Spec.Eval.Steps.UnifyCandidateRel (.var name) (.symbol "A") bindings output)
+    (nonvariable : HEAssignmentsNonVariable output) :
     CoveredControlDerivation bindings .body (some (.expression [.symbol "function", reuseNested name]))
       (reuseNested name) (.expression [.symbol "return", reused]) output true := by
   have model : ∃ valuation, TypeBindingSatisfied valuation output :=
-    ⟨_, specTypeBindingSatisfied_of_heBindingSatisfied candidate.choose_spec.2.2.2.choose_spec⟩
+    candidate.choose_spec.2.2
   have pairMaterialized : BindingMaterializationRel output reused reused :=
     (BindingMaterializationRel.closed_iff _ _ _ (by rfl)).mpr ⟨rfl, model⟩
   have returnedMaterialized : BindingMaterializationRel output
@@ -2006,7 +2025,8 @@ theorem binding_reuse_nested_body {bindings output : Bindings} (name : String)
   apply CoveredControlDerivation.terminal (reuseNested name) _ _ (materialized := returnedMaterialized)
     (closed := by rfl) (sourceTerminal := by rfl) (nativeTerminal := by rfl)
   apply CoveredControlDerivation.chain _ reused reused _ _ "pair-result"
-    (.functionReturn (reuseBody name) reused ⟨_, rfl⟩ (binding_reuse_body name candidate)) pairMaterialized (by rfl)
+    (.functionReturn (reuseBody name) reused ⟨_, rfl⟩
+      (binding_reuse_body name candidate nonvariable)) pairMaterialized (by rfl)
   simpa [substituteName] using
     (CoveredControlDerivation.data (bindings := output)
       (caller := some (.expression [.symbol "function", reuseNested name]))
@@ -2017,6 +2037,7 @@ source derivation. The output frame is the actual reached native record. -/
 theorem binding_reuse_nested_completed {bindings output : Bindings} {native : Metta.Bindings}
     (paired : ScopedEquationQuery.BindingInvariant bindings native) (name : String)
     (candidate : Spec.Eval.Steps.UnifyCandidateRel (.var name) (.symbol "A") bindings output)
+    (nonvariable : HEAssignmentsNonVariable output)
     (environment : MinEnv) (state : St) :
     ∃ nativeOutput, ScopedEquationQuery.BindingInvariant output nativeOutput ∧
       ∃ depth ticks final,
@@ -2025,7 +2046,8 @@ theorem binding_reuse_nested_completed {bindings output : Bindings} {native : Me
           ([(.expr [.sym "pair", .sym "A", .sym "A"], nativeOutput)], .finished final) ∧
         final.runtime = state := by
   obtain ⟨actual, actualPaired, _, depth, ticks, final, ran, world, _⟩ :=
-    (binding_reuse_nested_body name candidate).invocation_completed paired ⟨_, rfl⟩ environment state
+    (binding_reuse_nested_body name candidate nonvariable).invocation_completed
+      paired ⟨_, rfl⟩ environment state
   refine ⟨actual, actualPaired, depth, ticks, final, ?_, world⟩
   simpa [functionTerminalResult, reused, encodeModelAtom, encodeModelAtoms, Metta.instantiate,
     Metta.Bindings.resolveAtom, emptyA,
@@ -2040,23 +2062,26 @@ private def environment := MinEnv.ofAtomsGT [] Metta.Builtins.table
 /-- The composed positive witness obtains its unifier from an actual
 independent match and merge, retaining a different caller binding. -/
 theorem reuse_candidate : Spec.Eval.Steps.UnifyCandidateRel (.var "x") (.symbol "A") incoming reached := by
-  refine ⟨selected, .varNonVar (by rfl) ?_, ?_, ?_, (fun name => if name = "x" then .sym "A" else .sym "kept"), ?_⟩
-  · exact Spec.Match.Merge.semanticLoopFree_single_assignment (by intro occurs; cases occurs)
-  · apply Spec.Match.Merge.MergeRel.mk (order := [.value "caller" (.symbol "kept")])
-    · decide
-    · exact .value (.fresh (by decide)) .nil
-  · exact (Spec.Match.Merge.hasLoop_eq_false_iff_semanticLoopFree reached).mp (by decide)
-  · constructor
-    · intro key value member
-      simp only [reached, selected, Bindings.assign, Bindings.empty] at member
-      simp_all [Bindings.isBound, Bindings.lookup]
-      rcases member with h | h
-      · obtain ⟨rfl, rfl⟩ := h
-        simp [applyClassSolution, encodeModelAtom]
-      · obtain ⟨rfl, rfl⟩ := h
-        simp [applyClassSolution, encodeModelAtom]
-    · intro left right member
-      simp [reached, selected, Bindings.assign, Bindings.empty] at member
+  refine ⟨selected, ?_, ?_⟩
+  · apply Spec.Match.Merge.MatchRel.varNonVar (by rfl)
+    exact Spec.Match.Merge.semanticLoopFree_single_assignment
+      (by intro occurs; cases occurs)
+  · apply Spec.Bindings.ScopeObservation.LogicalMergeRel.append_of_common_model
+    let valuation : String → Atom :=
+      fun name => if name = "x" then .symbol "A" else .symbol "kept"
+    refine ⟨valuation, ?_, ?_⟩
+    · simp [selected, TypeBindingSatisfied, Bindings.empty, Bindings.assign,
+        Bindings.isBound, Bindings.lookup, applyTypeValuation, valuation]
+    · simp [incoming, TypeBindingSatisfied, Bindings.empty, Bindings.assign,
+        Bindings.isBound, Bindings.lookup, applyTypeValuation, valuation]
+
+private theorem reached_nonvariable : HEAssignmentsNonVariable reached := by
+  intro key target member
+  have shape : reached.assignments =
+      [("x", .symbol "A"), ("caller", .symbol "kept")] := by
+    decide +kernel
+  rw [shape] at member
+  simp at member
 
 private theorem incoming_paired : ScopedEquationQuery.BindingInvariant incoming nativeIncoming := by
   have image : LeaBindingsHEImage nativeIncoming := by
@@ -2086,7 +2111,8 @@ theorem reuse_with_caller_completed (environment : MinEnv) (state : St) :
           (functionConfiguration depth state [] (reuseNested "x") nativeIncoming [] [] []) =
           ([(.expr [.sym "pair", .sym "A", .sym "A"], nativeOutput)], .finished final) ∧
         final.runtime = state :=
-  binding_reuse_nested_completed incoming_paired "x" reuse_candidate environment state
+  binding_reuse_nested_completed incoming_paired "x" reuse_candidate
+    reached_nonvariable environment state
 
 private def loaded := functionConfiguration 30 St.init [] (reuseNested "x") nativeIncoming [] [] []
 #guard ((machine environment).run 30 loaded).1 ==
@@ -2105,10 +2131,13 @@ private def incompatibleNative : Metta.Bindings :=
 binding; the common-model condition rules out the success branch. -/
 theorem incompatible_binding_refuses :
     Spec.Eval.Steps.UnifyNoMatchRel (.var "x") (.symbol "A") incompatible := by
-  rintro output ⟨matched, matching, merging, _, valuation, satisfied⟩
-  have split := (Spec.Match.SolutionTheory.mergeRel_solution_iff merging valuation).mp satisfied
-  have newValue := (Spec.Match.SolutionTheory.matchRel_solution_iff matching valuation).mp split.1
-  have oldValue := split.2.1 "x" (.symbol "B") (by decide)
+  rintro output ⟨matched, matching, merging⟩
+  obtain ⟨valuation, matchedModel, incomingModel⟩ := merging.common_model
+  have newValue := (Spec.Match.SolutionTheory.matchRel_solution_iff matching
+    (fun name => encodeModelAtom (valuation name))).mp
+      (heBindingSatisfied_of_specTypeBindingSatisfied matchedModel)
+  have incomingSatisfied := heBindingSatisfied_of_specTypeBindingSatisfied incomingModel
+  have oldValue := incomingSatisfied.1 "x" (.symbol "B") (by decide)
   simp only [encodeModelAtom, applyClassSolution] at newValue oldValue
   have impossible := newValue.symm.trans oldValue
   simp at impossible
@@ -2200,17 +2229,19 @@ theorem queryWork_function_invocation
         CoveredControlDerivation output .body (some (.expression [.symbol "function", body]))
           body terminal finalBindings updates →
         (∃ entries, body = .expression entries) →
-        ∀ environment state caller,
-        previous.head?.map (fun frame => frame.atom) = caller.map encodeModelAtom →
+        ∀ environment state outerCaller,
+        previous.head?.map (fun frame => frame.atom) = some (encodeModelAtom query) →
         ∀ dispatch typing,
         ¬HostCall dispatch query → embeddedInstruction query = false →
         CoreInvocationRel (Space.ofList (atoms ++ added ++ imported)) dispatch (liveScope previous)
           query (QueryBindingProjection.project incoming)
-          (functionTerminalResult caller terminal, finalBindings) (typing := typing) (caller := caller) ∧
+          (functionTerminalResult (some query) terminal, finalBindings)
+          (typing := typing) (caller := outerCaller) ∧
         ∀ fuel queued completed receipts,
         ∃ nativeFinal, ScopedEquationQuery.BindingInvariant finalBindings nativeFinal ∧
         (updates = false → nativeFinal = merged) ∧
-        let result := finItem previous (encodeModelAtom (functionTerminalResult caller terminal)) nativeFinal
+        let result := finItem previous
+          (encodeModelAtom (functionTerminalResult (some query) terminal)) nativeFinal
         ∃ depth ticks after,
           (machine environment).run ticks
             (⟨depth, state, occurrence.item :: queued, completed, receipts⟩ : Configuration) =
@@ -2226,21 +2257,24 @@ theorem queryWork_function_invocation
       (liveScope previous) query (QueryBindingProjection.project incoming) rawRhs output := by
     refine ⟨pattern, rawRhs, matched,
       ⟨occurrence.rule.lhs, occurrence.rule.rhs, List.mem_of_getElem? source.stored, source.selected⟩,
-      source.result.1, source.result.2.1, source.result.2.2.1, ?_⟩
+      source.result.1, ?_⟩
     intro valuation satisfied
     rfl
   refine ⟨rawRhs, output, merged, candidate, paired, ?_⟩
   intro body terminal finalBindings updates materialized closed derivation expression
-    environment state caller captured dispatch typing notHost ordinary
+    environment state outerCaller captured dispatch typing notHost ordinary
   constructor
-  · exact .equation _ query rawRhs _ _ output _ notHost ordinary candidate materialized
-      (derivation.invocation_sound expression _ dispatch typing (liveScope previous) caller)
+  · exact .equation _ query rawRhs _ _ output _ notHost ordinary candidate
+      (.historical _ _) materialized
+      (derivation.invocation_sound expression _ dispatch typing
+        (liveScope previous) (some query))
   · intro fuel queued completed receipts
     have readout := materialization_closed_native paired materialized closed
     rw [emittedEq, readout, decodeModelAtom_encodeModelAtom] at item
     obtain ⟨nativeFinal, finalPaired, readOnly, depth, ticks, after, ran, depthEq,
       world, pending, done, history⟩ :=
-      derivation.invocation_retained paired expression environment state previous caller captured
+      derivation.invocation_retained paired expression environment state previous
+        (some query) captured
         fuel queued completed receipts
     refine ⟨nativeFinal, finalPaired, readOnly, depth, ticks, after, ?_, depthEq, world, pending, done, history⟩
     simpa only [functionConfiguration, ← item] using ran

@@ -6,7 +6,9 @@ cd "$repo_root"
 
 failed=0
 slash=/
-home_path_regex="(${slash}home${slash}[[:alnum:]_.-]+${slash}|~${slash}[[:alnum:]_.-]+${slash})"
+# Require a token boundary so a legitimate URL path such as
+# https://example.org/home/author/paper.pdf is not mistaken for a host path.
+home_path_regex="(^|[[:space:]\"'({=:])(${slash}home${slash}[[:alnum:]_.-]+${slash}|~${slash}[[:alnum:]_.-]+${slash})"
 
 if git grep -nI -E "$home_path_regex" -- .; then
   echo "error: tracked text contains a machine-local home-directory path" >&2

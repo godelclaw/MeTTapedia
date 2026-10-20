@@ -47,6 +47,7 @@ private theorem first_argument_match : Metta.Minimal.matchType []
     Metta.matchAtomsWith, Metta.Bindings.merge,
     Metta.Bindings.mergeOne, Metta.Bindings.addVarBinding,
     Metta.Bindings.addValRaw, Metta.Bindings.removeVal,
+    Metta.Subst.occurs,
     Metta.Atom.beq, BEq.beq, hloop]
 
 private theorem second_instantiated_argument_match :

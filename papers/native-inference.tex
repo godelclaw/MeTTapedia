@@ -37,7 +37,7 @@
 \title{\color{ink}Native Inference\\[3pt]
   \large From grounded judgments to composable proof, computation and meaning}
 \author{Mettapedia Working Notes}
-\date{19 October 2026}
+\date{20 October 2026}
 
 \begin{document}
 \maketitle
@@ -989,6 +989,153 @@ judgment. Full HE or PeTTa evaluation, resource consumption and mathematical
 multi-premise inference require their respective judgments. No single one
 of these observations defines every useful MeTTa kernel. The design of a MeTTa kernel integrating these judgments remains open;
 the following connection uses an existing mathematical calculus.
+
+\subsection{An exact reason to require dependency}
+
+The need for dependent typing can be stated without treating every richer
+type theory as one system. Fix the direct Curry--Howard contract
+\[
+  A : \mathsf{Type},\qquad P : A \to \mathsf{Type},\qquad
+  \prod_{x:A} P(x),
+\]
+where the indices are the same values that programs consume, rather than
+codes copied into a second level. In the maintained annotated pure type
+system, this context and product are well formed if and only if both the
+ordinary function and value-to-type product rules are present. Neither rule
+is assumed in advance. This identifies a least formation basis for this
+interface, uniformly in the conversion bubble. Thus the dependent vertex
+admits the contract even in the weak conversion core, while the simple,
+polymorphic and type-operator vertices reject it under every conversion
+policy. The actual introduction and application rules retain the same value:
+given $f:\prod_{x:A}P(x)$ and $a:A$, application has type $P(a)$, with $a$
+substituted directly into the evidence type.
+\lean{HypercubeBubbles.directValueIndexedForall_iff_contains_dependentProducts, HypercubeBubbles.dependentProducts_least_directInterface, HypercubeBubbles.directForall_abstract, HypercubeBubbles.directForall_apply, HypercubeBubbles.directValueIndexedForall_absent_off_dependent_face}
+
+\paragraph{A minimum relative to the requested interfaces.}
+Write $F=(\ast,\ast,\ast)$ for ordinary functions,
+$D=(\ast,\square,\square)$ for value-indexed type families,
+$P=(\square,\ast,\ast)$ for polymorphism, and
+$O=(\square,\square,\square)$ for type operators. Each triple records the
+sort of the domain, codomain and resulting product. With the fixed sort
+axiom $\ast:\square$, the checked formation requirements are:
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}Xl@{}}
+\toprule
+Direct interface in the annotated syntax & Least product basis \\
+\midrule
+$A:\mathsf{Type},\ P:A\to\mathsf{Type};\ \prod_{x:A}P(x)$ & $\{F,D\}$ \\
+The preceding interface, $\prod_{X:\mathsf{Type}}X\to X$,
+and the kind $\mathsf{Type}\to\mathsf{Type}$ & $\{F,D,P,O\}$ \\
+\bottomrule
+\end{tabularx}
+\end{center}
+The second row is proved by constructing the three actual typing derivations
+and recovering every required rule from any such derivations. Removing any
+of the four rules defeats at least one requested interface, under every
+bubble. The polymorphic identity also has its actual program inhabitant.
+\lean{HypercubeBubbles.directFormationInterfaces_iff_contains_constructionProducts, HypercubeBubbles.constructionProducts_least_directInterfaces, HypercubeBubbles.directInterfaces_refused_of_missing_rule, HypercubeBubbles.polymorphicIdentity_typed}
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, every node/.style={align=center,font=\small},
+  profile/.style={draw=ink!70,rounded corners,fill=ink!4,minimum width=25mm}]
+\node[profile] (simple) at (0,0) {$\lambda\!\to$\\$F$};
+\node[profile] (dep) at (-3,1.3) {$\lambda P$\\$F,D$};
+\node[profile] (poly) at (3,1.3) {$\lambda 2$\\$F,P$};
+\node[profile] (both) at (0,2.6) {$F,D,P$};
+\node[profile] (coc) at (0,4) {CoC formation\\$F,D,P,O$};
+\draw[->] (simple) -- node[left] {add $D$} (dep);
+\draw[->] (simple) -- node[right] {add $P$} (poly);
+\draw[->] (dep) -- node[left] {add $P$} (both);
+\draw[->] (poly) -- node[right] {add $D$} (both);
+\draw[->] (both) -- node[right] {add $O$} (coc);
+\end{tikzpicture}
+\end{center}
+This is one projection of the profile graph: it shows product formation with
+the conversion bubble held as a parameter. The four-rule endpoint is CoC's
+formation profile; ordinary CoC also fixes beta conversion. An arbitrary
+bubble at that endpoint need not be consistent or decidable. MLTT-like
+profiles additionally state their universes, dependent pairs, identity
+elimination and admitted inductive rules. Those are further branches, not
+consequences of the two-rule dependency result. The cube is the classical
+formation framework~\cite{BarendregtCube}; the theorem here identifies the
+minimum for these particular annotated interfaces.
+
+This is a necessity theorem for a named interface, not the claim that all
+logic or verification requires dependent types. HOL can quantify with logical
+constants, and singleton or two-level encodings can reify values before types
+refer to them. Those encodings change the interface: a separate route must
+relate a runtime value to its type-level representative. LF presents logics
+through signatures and judgments-as-types~\cite{HarperHonsellPlotkin};
+adequacy relates the specified object judgments to their LF evidence. The
+formation minimum above is not that adequacy theorem and does not imply
+that every encoding of higher-order logic requires a CoC host.
+
+\paragraph{Which distinctions must a representation retain?}
+The semantic results answer a complementary question, with the observation
+map fixed. They distinguish three contracts:
+\begin{enumerate}
+\item Literal descent through the canonical simple-family inclusion.
+  Over an inhabited context, this holds exactly when the family is constant.
+  A varying Boolean family and $n\mapsto\mathsf{Fin}(n)$ are outside that image.
+\item Descent up to fibrewise equivalence. A factorization supplies a target
+  family and an equivalence of each source fibre with the fibre over its
+  observed index. Equivalent fibres preserve and reflect the existence of
+  such a factorization. In particular, any number of the existing exact-code
+  layers preserves this boundary. The positive constant-family and negative
+  singleton/Boolean-family controls survive every such depth.
+\item Inhabitation alone. Distinct data-bearing types can have the same
+  inhabitation observations. Agreement here cannot justify transporting
+  their values, equality fibres or retained proof histories.
+\end{enumerate}
+\lean{DependencyDescentCriterion.descends_iff_constant, DependencyDescentCriterion.varying_outside_image, DependencyDescentCriterion.finFamily_not_constant}
+\lean{DependentFamilyEquivalenceTransport.codeFamily_factorization_iff, DependentFamilyEquivalenceTransport.Canary.exact_representation_preserves_observer_boundary, DependencyDescentCriterion.readout_identifies_inhabited_types}
+
+A stronger requirement has a sharp boundary: every source-anchored equality
+family can factor through an observer if and only if that observer is
+injective. Thus a lossy observation may support selected dependent families
+while failing to preserve source equality. This theorem concerns Lean's
+equality families, not an automatically faithful interpretation of every
+guest identity type. Exact coding preserves the family; it does not repair
+an observer that erased an index distinction needed by that family.
+\lean{EqualityFamilyObserverFactorization.EqualityFamilyFactorization.all_anchored_nonempty_iff_injective}
+
+These semantic and syntactic criteria have different subjects. They are not
+a proved interpretation of every cube profile in a family model. Dependency
+and function extensionality are likewise separate: the existing simple and
+genuinely dependent beta function spaces each admit extensional and
+route-retaining carriers. HoTT path structure is another choice. A profile
+edge must therefore say whether it preserves formation, conversion,
+provability, data, operational observations or evidence authority; a result
+about one does not automatically fill the others.
+\lean{DependencyExtensionalityOrthogonality.simpleExtensional_applicationExtensional, DependencyExtensionalityOrthogonality.dependentExtensional_applicationExtensional, DependencyExtensionalityOrthogonality.simpleRouteSensitive_not_applicationExtensional, DependencyExtensionalityOrthogonality.dependentRouteSensitive_not_applicationExtensional}
+
+\paragraph{The existing proof-level vine.}
+The STTfa hub already connects a named object calculus to dependent evidence.
+It compiles the maintained HOL rules for implication, universal quantification
+and core beta retyping into typed lambda-Pi-modulo terms. Normal inhabitants
+reflect closed implicational proofs. Reflection for core universal formulas,
+including free objects, additionally requires that quantified witnesses are
+coded translations of source terms. These are independently stated typing,
+normality and coding premises, not the formation requirement above.
+\lean{GSLT.Dedukti.HOLHub.sttfa_adequate, GSLT.Dedukti.HOLHub.sttfa_adequate_coded, GSLT.Dedukti.HOLHub.sttfa_adequate_coded_open}
+
+Detour-free source proofs with core witnesses have a computed normal form;
+for core conclusions it decodes back to a proof of that conclusion. Every
+normal form of such a compiled proof equals the computed one and retains
+the coding condition. The checked comparison keeps the detour-free premise.
+It does not supply normalization for every typed hub term or reconstruct the
+original proof history.
+\lean{GSLT.Dedukti.HOLHub.sttfa_round_trip, GSLT.Dedukti.HOLHub.compile_normalForm_coded}
+
+The negative example is useful: an unrestricted hub proof can use the bare
+connective \name{and} as a universal witness even though it is not the
+translation of any source HOL term. Its conclusion still has a HOL proof
+with another witness. Thus failure of exact evidence reconstruction is not
+itself failure of theorem conservativity. This existing hub uses its own
+declarations and rewrite theory; connecting it to every chosen formation
+profile, a total qualified normalizer or the native kernels requires the
+corresponding additional laws.
+\lean{GSLT.Dedukti.HOLHub.sttfa_not_exactly_adequate, GSLT.Dedukti.HOLHub.sttfa_coding_needed}
 
 \subsection{Finite dependent evidence through the common interfaces}
 
@@ -2224,6 +2371,83 @@ is retained in exact statement comparison. This is a checked natural-subtype
 construction, not yet primitive recursion, a complete comparison with the
 authored Nat interpretation, or a refinement of the compiler/native C.
 
+\paragraph{Native primitive recursion.}
+The MM0 extension defines the least binary graph for a start value and a
+result-before-predecessor step method. Existing natural induction proves
+existence; constructor separation and injectivity give zero uniqueness,
+successor inversion and functionality. The existing choice rule then
+selects a graph value and yields the zero and successor equations. The
+universally quantified recursion theorem retains an arbitrary result type.
+No natural-number fact is added as an axiom. This proof uses the existing
+choice principles during totality as well as during final selection;
+its existence proof is not claimed choice-free.
+
+An independent intrinsic formula prints the final statement. Its standard
+interpretation agrees with the shared natural fact, whose numeral wrapper
+is interpreted as identity. This is a proved comparison of those stated
+interpretations, not a syntactic identification or an arbitrary-Henkin-model
+comparison. A nonempty natural-number instance satisfies the formula;
+a fixed-point zero/successor carrier refutes it.
+\lean{MM0.NaturalRecursion.formula_meaning, MM0.NaturalRecursion.shared_fact_meaning, MM0.NaturalRecursion.standard_natural_recursion, MM0.NaturalRecursion.fixed_zero_refuses_recursion, MM0.NaturalRecursion.all_verdicts}
+
+The maintained native gate compares twelve added public statements and two
+definitions against the independent reference. Both optimized and
+ASan/UBSan configurations pass 74 controls per dialect on the same
+195,296-byte artifact. Altered graph output, reversed method arguments,
+changed selection, missing functionality evidence and forged replay
+conclusions refuse. The older closure, induction, carrier and subtype
+profiles retain their artifact identities and controls. Sanitizer leak
+detection was disabled. The complete theorem retains the existing HOL
+choice, infinity and type-definition assumptions; dependency inspection
+does not establish compiler/native-C refinement or complete authored-source
+transport to this native carrier.
+
+\paragraph{Authored-carrier comparison for MM0.}
+The independent intrinsic graph prints the exact native definition and
+denotes the finite inductive recursion graph in the declared standard
+interpretation. Its value is exactly the existing authored recursor's
+value, with result/predecessor order transposed once and natural indices
+transported through the carrier comparison. Any selector satisfying the
+explicit selection law returns that value. An incorrect successor output
+is rejected on the same well-formed carrier.
+The guarded native induction sequent retains its two typing hypotheses
+and its two logical premises. The constructor, induction, recursion and
+infinity readings agree with the five shared natural laws on the authored
+interpretation. Named injection and surjectivity predicates are accounted
+for by genuine closed-definition reducts, whose satisfaction comparison
+holds in arbitrary Henkin models. The graph and shared-law comparisons
+retain their stated standard-model scope. This connects selected native
+claim forms to source meaning; full proof extraction, soundness of the
+entire supplied HOL presentation and linked-C refinement remain separate.
+\lean{MM0.NaturalFactsMeaning.graph_definition_prints, MM0.NaturalFactsMeaning.graph_meaning, MM0.NaturalFactsMeaning.induction_statement_prints, MM0.NaturalFactsMeaning.infinity_definitions_meaning, MM0.NaturalFactsMeaning.shared_fact_meaning, IndexedInductiveNaturalMM0.source_graph_iff, IndexedInductiveNaturalMM0.source_selector_agrees, IndexedInductiveNaturalMM0.wrong_successor_output_refused}
+
+\paragraph{An explicit Megalodon natural profile.}
+The axiom-free Mathdata development proves recursion conditionally from
+constructor separation, injectivity and a selector law. A separate optional
+profile discharges those interfaces with one polymorphic selector parameter
+and exactly three named axioms: its selection law, double-negation elimination
+and Dedekind infinity. These are admitted by an explicit import policy; the
+Egal profile tag contributes no axioms. Removing any one refuses import.
+
+The profile derives selected zero and successor operations, constructor
+separation, injectivity, guarded induction, non-surjectivity and polymorphic
+recursion on the generated carrier. Its independent Lean interpretation
+selects the existing authored successor as the infinite injection and the
+existing zero as the omitted point. Those selected operations therefore agree
+with the authored carrier, and the graph-selected function agrees with its
+maintained eliminator at every result type. Singleton infinity and a constant
+successor provide negative controls.
+
+The source exporter is separated from optional Proofgold metadata:
+polymorphic Mathdata definitions and explicitly identified polymorphic
+parameters export when only the native source stream is requested, while
+Proofgold or HTML requests retain their prior refusal. Earlier natural proof
+streams remain byte-identical, malformed proofs refuse, and native HE/PeTTa
+replay checks every exported theorem. This is one optional classical theory
+node, not a default kernel extension, HOTG import, parametricity result or
+whole-compiler refinement.
+\lean{Megalodon.NaturalTheoryProfile.successor_ne_zero, Megalodon.NaturalTheoryProfile.successor_injective, Megalodon.NaturalTheoryProfile.recursion, Megalodon.NaturalTheoryProfile.unit_refuses_infinity, IndexedInductiveNaturalMegalodonProfile.selected_successor_eq, IndexedInductiveNaturalMegalodonProfile.selected_zero_eq, IndexedInductiveNaturalMegalodonProfile.source_recursor_agrees, IndexedInductiveNaturalMegalodonProfile.constant_successor_refused}
+
 \paragraph{Direct raw authority for the selected checking policy.}
 The existing raw generation and Pi conversion boundary recover dependent
 arguments at a declaration-rooted spine. The exact conversion/cumulativity
@@ -2291,6 +2515,11 @@ Axioms are those reported by \code{#print axioms} on the listed declaration:
   assumptions and executed cost bounds remain separate obligations. Compare
   derived checking bases with the existing native kernels under the same
   fragment and cost model.
+\item \textbf{Coding closure beyond detour-free source evidence.}
+  The checked STTfa roundtrip retains detour-freedom and core witnesses.
+  Extend the coding-preservation argument to arbitrary typed reducts before
+  using a broader normal-form reflection theorem. This obligation remains
+  separate from termination of normalization on every typed hub term.
 \end{enumerate}
 
 \begin{thebibliography}{99}
@@ -2337,6 +2566,19 @@ J. Jang, A. Gaulin, J.~Z.~S. Hu and B. Pientka.
 McTT: A verified kernel for a proof assistant.
 \emph{Proceedings of the ACM on Programming Languages}, ICFP, 2025.
 \url{https://doi.org/10.1145/3747511}.
+
+\bibitem{BarendregtCube}
+H.~P. Barendregt. Lambda calculi with types.
+In S. Abramsky, D.~M. Gabbay and T.~S.~E. Maibaum (eds.),
+\emph{Handbook of Logic in Computer Science}, volume~2.
+Oxford University Press, 1992.
+\url{https://www.cs.ru.nl/~henk/papers.html}.
+
+\bibitem{HarperHonsellPlotkin}
+R. Harper, F. Honsell and G. Plotkin. A framework for defining logics.
+\emph{Journal of the ACM} 40(1), 1993, 143--184.
+Earlier report ECS-LFCS-91-162, 1991.
+\url{https://publish.lfcs.inf.ed.ac.uk/reports/91/ECS-LFCS-91-162/}.
 
 \bibitem{TTobs}
 L. Pujet and N. Tabareau. Observational equality: now for good.
