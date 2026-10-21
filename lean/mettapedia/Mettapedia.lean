@@ -130,6 +130,7 @@ import Mettapedia.QuantumTheory.FromSymmetry
 import Mettapedia.Algebra.PrimeDecomposition
 import Mettapedia.Algebra.QuantaleWeakness
 import Mettapedia.Algebra.TemporalQuantale
+import Mettapedia.GSLT.LanguageDef.HyperoperationModule
 
 -- Category Theory (Hypercube/OSLF framework for quantales)
 import Mettapedia.CategoryTheory.FuzzyFrame
