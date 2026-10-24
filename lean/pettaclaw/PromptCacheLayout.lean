@@ -15,6 +15,10 @@ common prefix: that is the cacheable part.  One changing segment placed ahead
 of stable text can make two prompts share nothing, however much stable text
 follows.  The deployed layout (head, stable sources, conversation, per-turn
 state, with a cache boundary after each of the first three) is an instance.
+
+A shared prefix is not by itself evidence of a cache hit. For providers with
+explicit cache entries, `ExplicitPromptCache.lean` additionally models writes,
+expiry and the finite lookback window.
 -/
 
 namespace PettaClaw.PromptCacheLayout
